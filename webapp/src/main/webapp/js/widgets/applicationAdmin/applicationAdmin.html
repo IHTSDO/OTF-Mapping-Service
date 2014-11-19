@@ -621,11 +621,14 @@
 							<th style="width: 60%;">Value</th>
 						</tr>
 					</thead>
-					Name
-					</td>
-								<td style="width:60%;"><input style="width:100%;"
-						ng-model="definition.name"
-						ng-change="setEditingPerformed(definition)" style="width: 100%;">
+					
+					<tbody>
+							<tr>
+							<td style="width:40%;" tooltip-placement="top" tooltip="Name of report definition">Name</td>
+							<td style="width:60%;">
+								<input style="width:100%;"
+									ng-model="definition.name"
+									ng-change="setEditingPerformed(definition)">
 								</td>
 							</tr>
 							<tr>
@@ -699,12 +702,12 @@
 		<button class="btn btn-sm btn-primary" ng-click="revertUnsavedReportDefinitions()"  ng-show="reportDefinitionInEditingPerformed() == true" >Revert Unsaved</button>
 
 	 <form name="reportDefinitionForm" >
-      <div style="margin-top:15px;"><b>Create New Report Definition</b></div><hr>
+      <div style="margin-top:15px;"><b>Create New Report Definition</b></div>
       <table class="table pure-table" >
       <thead>
           <tr>
-            <th style="width: 25%;"></th>           
-            <th style="width: 75%;"></th>
+            <th style="width: 25%;">Parameter</th>           
+            <th style="width: 75%;">Value</th>
           </tr>
       </thead>
       <tbody>
@@ -712,36 +715,73 @@
         <input id="newReportDefinitionName" type="text" ng-model="newReportDefinitionName">  </td></tr>
          <tr><td>Report Definition Role Required</td><td> 
         <select  
+    							
 								ng-model="newReportDefinitionRoleRequired"
 								ng-options="role as role for role in definitionRoles"
 								></select>
       </td></tr>
       <tr><td>Report Definition Result Type</td><td>
         <select 
+        						
 								ng-model="newReportDefinitionResultType"
 								ng-options="resultType as resultType for resultType in definitionResultTypes"
 								></select>   </td></tr>
       <tr><td>Report Definition Query Type</td><td> 
         <select 
+        						
 								ng-model="newReportDefinitionQueryType"
 								ng-options="queryType as queryType for queryType in definitionQueryTypes"
 								></select>   </td></tr>    
      
+   		<tr>
+   			<td>Report Definition Frequency</td>
+   			<td>
+   				<select 
+   						ng-model="newReportDefinitionFrequency"
+   						ng-options="timePeriod as timePeriod for timePeriod in definitionTimePeriods"></select>  
+    		</td>
+		</tr>
       <tr><td>Report Definition Diff Report Flag</td><td> 
-         <select ng-model="newReportDefinitionDiffReport"
+         <select  ng-model="newReportDefinitionDiffReport"
         ng-options="item for item in [true, false]">   </td></tr>     
         <tr ng-show="newReportDefinitionDiffReport == true"><td>Report Definition Diff Report Time Period</td><td> 
-         <select ng-model="newReportDefinitionDiffReportTimePeriod"
+         <select  ng-model="newReportDefinitionDiffReportTimePeriod"
         ng-options="timePeriod as timePeriod for timePeriod in definitionTimePeriods">   </td></tr>                           
       <tr><td>Report Definition Query</td><td>
-        <textarea
+        <textarea		
 						ng-model="newReportDefinitionQuery"
 						></textarea>    </td></tr>
 
 			<tr>
-				<td><button class="btn btn-sm btn-primary"
-						ng-click="submitNewReportDefinition(newReportDefinitionName, newReportDefinitionRoleRequired, newReportDefinitionResultType, newReportDefinitionQueryType, newReportDefinitionDiffReport, newReportDefinitionDiffReportTimePeriod, newReportDefinitionQuery)">Submit</button></td>
-				<td></td>
+				<td>
+
+				<div ng-show = "testReportSuccess == true">
+					<button class="btn btn-sm btn-primary"
+							ng-click="submitNewReportDefinition(newReportDefinitionName, newReportDefinitionRoleRequired, newReportDefinitionResultType, newReportDefinitionQueryType, newReportDefinitionDiffReport, newReportDefinitionDiffReportTimePeriod, newReportDefinitionFrequency, newReportDefinitionQuery)">Submit</button>
+					
+				
+				</div>
+				
+				<div ng-show = "testReportSuccess == false">
+					<button class="btn btn-sm btn-primary"
+							ng-click="testReportDefinition(newReportDefinitionName, newReportDefinitionRoleRequired, newReportDefinitionResultType, newReportDefinitionQueryType, newReportDefinitionDiffReport, newReportDefinitionDiffReportTimePeriod, newReportDefinitionFrequency, newReportDefinitionQuery)">Test Report</button>
+				</div>
+				
+           		</td>
+     
+				<td>
+					<div class="border-error alert-error" ng-show = "testReportError != null">
+    					<div class="alert alert-danger alert-error" >{{testReportError}}
+    						<div style="display: inline; float: right; width: 3%;">
+               					<i 	class="glyphicon glyphicon-remove"
+                 					ng-click="testReportError = null"></i>
+           					</div>	
+           				</div>
+           			</div>
+           			<div ng-show="testReportSuccess == true" class="alert alert-warning " >Test report generated successfully, but you must click Submit to add the definition.
+           				</div>
+				
+				</td>
 			</tr>
 		</tbody></table>
       </form>

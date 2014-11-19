@@ -33,6 +33,8 @@ import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
 import org.hibernate.search.query.dsl.QueryBuilder;
+import org.ihtsdo.otf.mapping.helpers.ComplexMapRefSetMemberList;
+import org.ihtsdo.otf.mapping.helpers.ComplexMapRefSetMemberListJpa;
 import org.ihtsdo.otf.mapping.helpers.ConceptList;
 import org.ihtsdo.otf.mapping.helpers.ConceptListJpa;
 import org.ihtsdo.otf.mapping.helpers.DescriptionList;
@@ -77,6 +79,7 @@ import org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Content Services for the Jpa model.
  */
@@ -91,51 +94,52 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	/** The compute tree position last time. */
 	Long computeTreePositionLastTime;
 
-    /**  The tree position field names. */
-    private static Set<String> treePositionFieldNames;
+	/** The tree position field names. */
+	private static Set<String> treePositionFieldNames;
 
-    /**
+	/**
 	 * Instantiates an empty {@link ContentServiceJpa}.
 	 * 
 	 * @throws Exception
+	 *             the exception
 	 */
 	public ContentServiceJpa() throws Exception {
 		super();
 		initializeFieldNames();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.services.RootService#initializeFieldNames()
+	 */
+	@Override
+	public void initializeFieldNames() throws Exception {
+		super.initializeFieldNames();
+		if (treePositionFieldNames == null) {
+			treePositionFieldNames = new HashSet<>();
+			EntityManager manager = factory.createEntityManager();
+			FullTextEntityManager fullTextEntityManager = org.hibernate.search.jpa.Search
+					.getFullTextEntityManager(manager);
+			IndexReaderAccessor indexReaderAccessor = fullTextEntityManager
+					.getSearchFactory().getIndexReaderAccessor();
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.ihtsdo.otf.mapping.services.RootService#initializeFieldNames()
-     */
-    @Override
-    public void initializeFieldNames() throws Exception {
-      super.initializeFieldNames();
-        if (treePositionFieldNames == null) {
-            treePositionFieldNames = new HashSet<>();
-            EntityManager manager = factory.createEntityManager();
-            FullTextEntityManager fullTextEntityManager = org.hibernate.search.jpa.Search
-                    .getFullTextEntityManager(manager);
-            IndexReaderAccessor indexReaderAccessor = fullTextEntityManager
-                    .getSearchFactory().getIndexReaderAccessor();
-            
-            IndexReader indexReader = indexReaderAccessor.open("org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa");
-            try {
-                for (FieldInfo info : ReaderUtil
-                        .getMergedFieldInfos(indexReader)) {
-                    treePositionFieldNames.add(info.name);
-                }
-            } finally {
-                indexReaderAccessor.close(indexReader);
-            }
-            
+			IndexReader indexReader = indexReaderAccessor
+					.open("org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa");
+			try {
+				for (FieldInfo info : ReaderUtil
+						.getMergedFieldInfos(indexReader)) {
+					treePositionFieldNames.add(info.name);
+				}
+			} finally {
+				indexReaderAccessor.close(indexReader);
+			}
 
-            fullTextEntityManager.close();
-        }
-    }
-    /*
+			fullTextEntityManager.close();
+		}
+	}
+
+	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see org.ihtsdo.otf.mapping.services.ContentService#close()
@@ -155,7 +159,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		ConceptList.setTotalCount(m.size());
 		return ConceptList;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -185,16 +189,24 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 			query.setParameter("terminology", terminology);
 			query.setParameter("terminologyVersion", terminologyVersion);
 			Concept c = (Concept) query.getSingleResult();
-      return c;
-    } catch (NoResultException e) {
-      Logger.getLogger(ContentServiceJpa.class).info(
-          "Concept query for terminologyId = " + terminologyId
-              + ", terminology = " + terminology + ", terminologyVersion = "
-              + terminologyVersion + " returned no results!");
-      return null;
-    }
+			return c;
+		} catch (NoResultException e) {
+			Logger.getLogger(ContentServiceJpa.class).info(
+					"Concept query for terminologyId = " + terminologyId
+							+ ", terminology = " + terminology
+							+ ", terminologyVersion = " + terminologyVersion
+							+ " returned no results!");
+			return null;
+		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#getAllConcepts(java.lang
+	 * .String, java.lang.String)
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public ConceptList getAllConcepts(String terminology,
@@ -213,14 +225,22 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 			conceptList.setConcepts(concepts);
 			return conceptList;
 		} catch (NoResultException e) {
-          e.printStackTrace();
-          Logger.getLogger(ContentServiceJpa.class).info(
-              "Concept query terminology = " + terminology + ", terminologyVersion = "
-                  + terminologyVersion + " returned no results!");
+			e.printStackTrace();
+			Logger.getLogger(ContentServiceJpa.class).info(
+					"Concept query terminology = " + terminology
+							+ ", terminologyVersion = " + terminologyVersion
+							+ " returned no results!");
 			return null;
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#addConcept(org.ihtsdo.
+	 * otf.mapping.rf2.Concept)
+	 */
 	@Override
 	public Concept addConcept(Concept concept) throws Exception {
 		if (getTransactionPerOperation()) {
@@ -235,6 +255,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		return concept;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#updateConcept(org.ihtsdo
+	 * .otf.mapping.rf2.Concept)
+	 */
 	@Override
 	public void updateConcept(Concept concept) throws Exception {
 
@@ -249,6 +276,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#removeTreePosition(java
+	 * .lang.Long)
+	 */
 	@Override
 	public void removeTreePosition(Long id) throws Exception {
 
@@ -278,6 +312,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#removeConcept(java.lang
+	 * .Long)
+	 */
 	@Override
 	public void removeConcept(Long id) throws Exception {
 
@@ -350,6 +391,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#addDescription(org.ihtsdo
+	 * .otf.mapping.rf2.Description)
+	 */
 	@Override
 	public Description addDescription(Description description) throws Exception {
 		if (getTransactionPerOperation()) {
@@ -364,6 +412,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		return description;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#updateDescription(org.
+	 * ihtsdo.otf.mapping.rf2.Description)
+	 */
 	@Override
 	public void updateDescription(Description description) throws Exception {
 
@@ -378,6 +433,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#removeDescription(java
+	 * .lang.Long)
+	 */
 	@Override
 	public void removeDescription(Long id) throws Exception {
 
@@ -420,6 +482,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		return c;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#getRelationshipId(java
+	 * .lang.String, java.lang.String, java.lang.String)
+	 */
 	@Override
 	public Long getRelationshipId(String terminologyId, String terminology,
 			String terminologyVersion) throws Exception {
@@ -440,12 +509,12 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 							+ " and version " + terminologyVersion);
 			return null;
 		} catch (Exception e) {
-		  e.printStackTrace();
-		  Logger.getLogger(ContentServiceJpa.class).info(
-		      "Unexpected exception retrieving relationship id for"
-		          + terminologyId + " for terminology " + terminology
-		          + " and version " + terminologyVersion);
-		  return null;
+			e.printStackTrace();
+			Logger.getLogger(ContentServiceJpa.class).info(
+					"Unexpected exception retrieving relationship id for"
+							+ terminologyId + " for terminology " + terminology
+							+ " and version " + terminologyVersion);
+			return null;
 		}
 
 	}
@@ -469,7 +538,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 			Relationship c = (Relationship) query.getSingleResult();
 			return c;
 		} catch (Exception e) {
-		  e.printStackTrace();
+			e.printStackTrace();
 			Logger.getLogger(ContentServiceJpa.class).info(
 					"Relationship query for terminologyId = " + terminologyId
 							+ ", terminology = " + terminology
@@ -479,6 +548,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#addRelationship(org.ihtsdo
+	 * .otf.mapping.rf2.Relationship)
+	 */
 	@Override
 	public Relationship addRelationship(Relationship relationship)
 			throws Exception {
@@ -494,6 +570,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		return relationship;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#updateRelationship(org
+	 * .ihtsdo.otf.mapping.rf2.Relationship)
+	 */
 	@Override
 	public void updateRelationship(Relationship relationship) throws Exception {
 
@@ -508,6 +591,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#removeRelationship(java
+	 * .lang.Long)
+	 */
 	@Override
 	public void removeRelationship(Long id) throws Exception {
 
@@ -584,6 +674,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#addAttributeValueRefSetMember
+	 * (org.ihtsdo.otf.mapping.rf2.AttributeValueRefSetMember)
+	 */
 	@Override
 	public AttributeValueRefSetMember addAttributeValueRefSetMember(
 			AttributeValueRefSetMember attributeValueRefSetMember)
@@ -600,6 +697,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		return attributeValueRefSetMember;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.services.ContentService#
+	 * updateAttributeValueRefSetMember
+	 * (org.ihtsdo.otf.mapping.rf2.AttributeValueRefSetMember)
+	 */
 	@Override
 	public void updateAttributeValueRefSetMember(
 			AttributeValueRefSetMember attributeValueRefSetMember)
@@ -616,6 +720,12 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.services.ContentService#
+	 * removeAttributeValueRefSetMember(java.lang.Long)
+	 */
 	@Override
 	public void removeAttributeValueRefSetMember(Long id) throws Exception {
 
@@ -693,6 +803,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#addComplexMapRefSetMember
+	 * (org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember)
+	 */
 	@Override
 	public ComplexMapRefSetMember addComplexMapRefSetMember(
 			ComplexMapRefSetMember complexMapRefSetMember) throws Exception {
@@ -708,6 +825,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		return complexMapRefSetMember;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#updateComplexMapRefSetMember
+	 * (org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember)
+	 */
 	@Override
 	public void updateComplexMapRefSetMember(
 			ComplexMapRefSetMember complexMapRefSetMember) throws Exception {
@@ -723,6 +847,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#removeComplexMapRefSetMember
+	 * (java.lang.Long)
+	 */
 	@Override
 	public void removeComplexMapRefSetMember(Long id) throws Exception {
 
@@ -798,6 +929,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#addLanguageRefSetMember
+	 * (org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember)
+	 */
 	@Override
 	public LanguageRefSetMember addLanguageRefSetMember(
 			LanguageRefSetMember languageRefSetMember) throws Exception {
@@ -813,6 +951,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		return languageRefSetMember;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#updateLanguageRefSetMember
+	 * (org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember)
+	 */
 	@Override
 	public void updateLanguageRefSetMember(
 			LanguageRefSetMember languageRefSetMember) throws Exception {
@@ -828,6 +973,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#removeLanguageRefSetMember
+	 * (java.lang.Long)
+	 */
 	@Override
 	public void removeLanguageRefSetMember(Long id) throws Exception {
 
@@ -904,6 +1056,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#addSimpleMapRefSetMember
+	 * (org.ihtsdo.otf.mapping.rf2.SimpleMapRefSetMember)
+	 */
 	@Override
 	public SimpleMapRefSetMember addSimpleMapRefSetMember(
 			SimpleMapRefSetMember simpleMapRefSetMember) throws Exception {
@@ -919,6 +1078,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		return simpleMapRefSetMember;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#updateSimpleMapRefSetMember
+	 * (org.ihtsdo.otf.mapping.rf2.SimpleMapRefSetMember)
+	 */
 	@Override
 	public void updateSimpleMapRefSetMember(
 			SimpleMapRefSetMember simpleMapRefSetMember) throws Exception {
@@ -934,6 +1100,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#removeSimpleMapRefSetMember
+	 * (java.lang.Long)
+	 */
 	@Override
 	public void removeSimpleMapRefSetMember(Long id) throws Exception {
 
@@ -1006,6 +1179,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#addSimpleRefSetMember(
+	 * org.ihtsdo.otf.mapping.rf2.SimpleRefSetMember)
+	 */
 	@Override
 	public SimpleRefSetMember addSimpleRefSetMember(
 			SimpleRefSetMember simpleRefSetMember) throws Exception {
@@ -1021,6 +1201,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		return simpleRefSetMember;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#updateSimpleRefSetMember
+	 * (org.ihtsdo.otf.mapping.rf2.SimpleRefSetMember)
+	 */
 	@Override
 	public void updateSimpleRefSetMember(SimpleRefSetMember simpleRefSetMember)
 			throws Exception {
@@ -1036,6 +1223,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#removeSimpleRefSetMember
+	 * (java.lang.Long)
+	 */
 	@Override
 	public void removeSimpleRefSetMember(Long id) throws Exception {
 
@@ -1321,7 +1515,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 			Logger.getLogger(this.getClass()).info(
 					"  " + results + " tree positions deleted");
 		}
-		
+
 		Logger.getLogger(this.getClass()).info(
 				"Finished:  deleted " + results + " tree positions");
 
@@ -1330,6 +1524,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#computeTreePositions(java
+	 * .lang.String, java.lang.String, java.lang.String, java.lang.String)
+	 */
 	@Override
 	public void computeTreePositions(String terminology,
 			String terminologyVersion, String typeId, String rootId)
@@ -1380,13 +1581,19 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	 * NOTE: This function is designed to keep as little Concept information in
 	 * storage as possible. See inline notes.
 	 * 
-	 * @param terminologyId
-	 * @param terminology
-	 * @param terminologyVersion
+	 * @param concept
+	 *            the concept
 	 * @param typeId
+	 *            the type id
 	 * @param ancestorPath
+	 *            the ancestor path
+	 * @param computeTreePositionCommitCt
+	 *            the compute tree position commit ct
+	 * @param computeTreePositionTransaction
+	 *            the compute tree position transaction
 	 * @return tree positions at this level
 	 * @throws Exception
+	 *             the exception
 	 */
 	@SuppressWarnings("unused")
 	private Set<Long> computeTreePositionsHelper(Concept concept,
@@ -1535,7 +1742,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		return descConceptIds;
 
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -1558,6 +1765,15 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		return treePositionList;
 	}
 
+	/**
+	 * Gets the child tree positions.
+	 * 
+	 * @param treePosition
+	 *            the tree position
+	 * @return the child tree positions
+	 * @throws Exception
+	 *             the exception
+	 */
 	@SuppressWarnings("unchecked")
 	private TreePositionList getChildTreePositions(TreePosition treePosition)
 			throws Exception {
@@ -1625,44 +1841,52 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		TreePositionListJpa treePositionList = new TreePositionListJpa();
 		treePositionList.setTreePositions(treePositions);
 		treePositionList.setTotalCount(treePositions.size());
-		
+
 		TreePositionListJpa treePositionsWithDescendants = new TreePositionListJpa();
 
 		// for each tree position
 		for (TreePosition treePosition : treePositionList.getTreePositions()) {
 
-			treePositionsWithDescendants.addTreePosition(getTreePositionWithDescendants(treePosition));
+			treePositionsWithDescendants
+					.addTreePosition(getTreePositionWithDescendants(treePosition));
 		}
-		treePositionsWithDescendants.setTotalCount(treePositionsWithDescendants.getTreePositions()
-				.size());
+		treePositionsWithDescendants.setTotalCount(treePositionsWithDescendants
+				.getTreePositions().size());
 		return treePositionsWithDescendants;
 	}
-	
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#getTreePositionWithDescendants
+	 * (org.ihtsdo.otf.mapping.rf2.TreePosition)
+	 */
 	@Override
-	public TreePosition getTreePositionWithDescendants(TreePosition tp) throws Exception {
-		
-		
+	public TreePosition getTreePositionWithDescendants(TreePosition tp)
+			throws Exception {
+
 		if (tp.getChildrenCount() > 0) {
-			
+
 			TreePositionList tpChildren = getChildTreePositions(tp);
-			
+
 			for (TreePosition tpChild : tpChildren.getTreePositions()) {
 				tp.addChild(getTreePositionWithDescendants(tpChild));
 			}
 		}
-		
+
 		return tp;
 	}
 
 	/**
 	 * Given a local tree position, returns the root tree with this tree
-	 * position as terminal child
-	 * 
+	 * position as terminal child.
 	 * 
 	 * @param treePosition
 	 *            the tree position
 	 * @return the root tree position for concept
 	 * @throws Exception
+	 *             the exception
 	 */
 	public TreePosition constructRootTreePosition(TreePosition treePosition)
 			throws Exception {
@@ -1837,6 +2061,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		return treePositionList;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#computeTreePositionInformation
+	 * (org.ihtsdo.otf.mapping.helpers.TreePositionList)
+	 */
 	@Override
 	public void computeTreePositionInformation(TreePositionList tpList)
 			throws Exception {
@@ -1880,8 +2111,14 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	 * to link to
 	 * 
 	 * @param treePosition
-	 * @return
+	 *            the tree position
+	 * @param descTypes
+	 *            the desc types
+	 * @param relTypes
+	 *            the rel types
+	 * @return the tree position
 	 * @throws Exception
+	 *             the exception
 	 */
 	private TreePosition computeTreePositionInformationHelper(
 			TreePosition treePosition, Map<String, String> descTypes,
@@ -1889,7 +2126,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 		// // System.out.println("");
 		// // System.out.println("***************************");
-		// // System.out.println("Computing information for tree position, concept: "
+		// //
+		// System.out.println("Computing information for tree position, concept: "
 		// + treePosition.getTerminologyId());
 		// // System.out.println("***************************");
 		// get the concept for this tree position
@@ -2015,8 +2253,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 			}
 		}
 
-		treePosition.setDescGroups(new ArrayList<>(
-				descGroups.values()));
+		treePosition.setDescGroups(new ArrayList<>(descGroups.values()));
 
 		// calculate information for all children
 		if (treePosition.getChildrenCount() > 0) {
@@ -2039,6 +2276,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	 * @param query
 	 *            the query
 	 * @return the full lucene query text
+	 * @throws Exception
+	 *             the exception
 	 */
 	private static String constructTreePositionQuery(String terminology,
 			String terminologyVersion, String query) throws Exception {
@@ -2250,6 +2489,14 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#getConceptsModifiedSinceDate
+	 * (java.lang.String, java.util.Date,
+	 * org.ihtsdo.otf.mapping.helpers.PfsParameter)
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public ConceptList getConceptsModifiedSinceDate(String terminology,
@@ -2269,10 +2516,10 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 				"terminology", terminology);
 
 		Date tempDate = (Date) query.getSingleResult();
-        Logger.getLogger(ContentServiceJpa.class).info(
-            "Max date   = " + tempDate.toString());
+		Logger.getLogger(ContentServiceJpa.class).info(
+				"Max date   = " + tempDate.toString());
 
-        Date localDate = date;
+		Date localDate = date;
 		if (localDate == null) {
 			localDate = tempDate;
 		} else {
@@ -2291,15 +2538,15 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		if (localPfsParameter.getQueryRestriction() == null) {
 			luceneQuery = qb
 					.bool()
-					.must(qb.keyword().onField("effectiveTime").matching(localDate)
-							.createQuery())
+					.must(qb.keyword().onField("effectiveTime")
+							.matching(localDate).createQuery())
 					.must(qb.keyword().onField("terminology")
 							.matching(terminology).createQuery()).createQuery();
 		} else {
 			luceneQuery = qb
 					.bool()
-					.must(qb.keyword().onField("effectiveTime").matching(localDate)
-							.createQuery())
+					.must(qb.keyword().onField("effectiveTime")
+							.matching(localDate).createQuery())
 					.must(qb.keyword().onField("terminology")
 							.matching(terminology).createQuery())
 					.must(qb.keyword()
@@ -2308,7 +2555,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 							.createQuery()).createQuery();
 
 		}
-        Logger.getLogger(ContentServiceJpa.class).info(
+		Logger.getLogger(ContentServiceJpa.class).info(
 				"Query text: " + luceneQuery.toString());
 
 		org.hibernate.search.jpa.FullTextQuery ftquery = fullTextEntityManager
@@ -2325,6 +2572,12 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		return results;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.services.ContentService#
+	 * getDescriptionsModifiedSinceDate(java.lang.String, java.util.Date)
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public DescriptionList getDescriptionsModifiedSinceDate(String terminology,
@@ -2343,6 +2596,12 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		return results;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.services.ContentService#
+	 * getRelationshipsModifiedSinceDate(java.lang.String, java.util.Date)
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public RelationshipList getRelationshipsModifiedSinceDate(
@@ -2362,6 +2621,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		return results;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.services.ContentService#
+	 * getLanguageRefSetMembersModifiedSinceDate(java.lang.String,
+	 * java.util.Date)
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public LanguageRefSetMemberList getLanguageRefSetMembersModifiedSinceDate(
@@ -2381,6 +2647,12 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		return results;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.services.ContentService#
+	 * getAllRelationshipTerminologyIds(java.lang.String, java.lang.String)
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public Set<String> getAllRelationshipTerminologyIds(String terminology,
@@ -2397,6 +2669,12 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.services.ContentService#
+	 * getAllDescriptionTerminologyIds(java.lang.String, java.lang.String)
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public Set<String> getAllDescriptionTerminologyIds(String terminology,
@@ -2413,6 +2691,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.services.ContentService#
+	 * getAllLanguageRefSetMemberTerminologyIds(java.lang.String,
+	 * java.lang.String)
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public Set<String> getAllLanguageRefSetMemberTerminologyIds(
@@ -2429,17 +2714,47 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 	}
 
-
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#getTreePositionsWithChildren
+	 * (java.lang.String, java.lang.String, java.lang.String)
+	 */
 	@Override
 	public TreePositionList getTreePositionsWithChildren(String terminologyId,
 			String terminology, String terminologyVersion) throws Exception {
-		TreePositionList treePositionList = this.getTreePositions(terminologyId, terminology, terminologyVersion);
-		
+		TreePositionList treePositionList = this.getTreePositions(
+				terminologyId, terminology, terminologyVersion);
+
 		for (TreePosition tp : treePositionList.getTreePositions()) {
 			tp.setChildren(this.getChildTreePositions(tp).getTreePositions());
 		}
 
 		return treePositionList;
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.services.ContentService#
+	 * getComplexMapRefSetMembersForRefSetId(java.lang.String)
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public ComplexMapRefSetMemberList getComplexMapRefSetMembersForRefSetId(
+			String refSetId) throws Exception {
+		List<ComplexMapRefSetMember> complexMapRefSetMembers = manager
+				.createQuery(
+						"select c from ComplexMapRefSetMemberJpa c where refSetId = :refSetId")
+				.setParameter("refSetId", refSetId).getResultList();
+
+		ComplexMapRefSetMemberList complexMapRefSetMemberList = new ComplexMapRefSetMemberListJpa();
+		complexMapRefSetMemberList
+				.setComplexMapRefSetMembers(complexMapRefSetMembers);
+		return complexMapRefSetMemberList;
+	}
+
+
 
 }
