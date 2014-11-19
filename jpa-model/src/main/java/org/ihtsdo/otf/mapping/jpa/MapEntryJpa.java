@@ -65,7 +65,7 @@ public class MapEntryJpa implements MapEntry {
 
 	/** The target name. */
 	@Column(nullable = true, length = 4000)
-	@Field @Analyzer(definition = "noStopWord")
+	@Analyzer(definition = "noStopWord")
 	private String targetName;
 
 	/** The rule. */

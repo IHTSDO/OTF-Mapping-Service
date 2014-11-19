@@ -889,6 +889,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				}
 				return 0;
 			}
+
+
 		};
 
 		List<MapAdvice> advices = new ArrayList<>(mapEntry.getMapAdvices());
@@ -907,7 +909,23 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 		return sb.toString();
 	}
-
+	
+    /**
+     * Returns the lowest workflow status.
+     * 
+     * @param mapRecords
+     *            the map records
+     * @return the lowest workflow status
+     */
+    @SuppressWarnings("static-method")
+    public WorkflowStatus getLowestWorkflowStatus(Set<MapRecord> mapRecords) {
+      WorkflowStatus workflowStatus = WorkflowStatus.REVISION;
+      for (MapRecord mr : mapRecords) {
+          if (mr.getWorkflowStatus().compareTo(workflowStatus) < 0)
+              workflowStatus = mr.getWorkflowStatus();
+      }
+      return workflowStatus;
+    }
 	/**
 	 * For default project, all target codes are considered valid.
 	 * 
@@ -1231,7 +1249,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 			if (getLowestWorkflowStatus(mapRecords).equals(WorkflowStatus.QA_NEEDED)) {
 				if (mapRecords.size() == 2) {
-					
+					// do nothing
 				} else {
 					throw new Exception("  Expected exactly two map records.");
 				}
@@ -2401,23 +2419,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		for (MapRecord mr : mapRecords) {
 			// System.out.println(mr.getWorkflowStatus());
 			if (mr.getWorkflowStatus().compareTo(workflowStatus) > 0)
-				workflowStatus = mr.getWorkflowStatus();
-		}
-		return workflowStatus;
-	}
-
-	/**
-	 * Returns the lowest workflow status.
-	 * 
-	 * @param mapRecords
-	 *            the map records
-	 * @return the lowest workflow status
-	 */
-	@SuppressWarnings("static-method")
-	public WorkflowStatus getLowestWorkflowStatus(Set<MapRecord> mapRecords) {
-		WorkflowStatus workflowStatus = WorkflowStatus.REVISION;
-		for (MapRecord mr : mapRecords) {
-			if (mr.getWorkflowStatus().compareTo(workflowStatus) < 0)
 				workflowStatus = mr.getWorkflowStatus();
 		}
 		return workflowStatus;
