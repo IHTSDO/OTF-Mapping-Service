@@ -1,3 +1,6 @@
+/*
+ * 
+ */
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.io.BufferedReader;
@@ -85,10 +88,20 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
   /** The dpn acceptability id. */
   private Long dpnAcceptabilityId;
 
-  /** File readers. */
-  private BufferedReader conceptReader, descriptionReader,
-      textDefinitionReader, relationshipReader, // statedRelationshipReader,
-      languageReader;
+  /** The concept reader. */
+  private BufferedReader conceptReader;
+
+  /** The description reader. */
+  private BufferedReader descriptionReader;
+
+  /** The text definition reader. */
+  private BufferedReader textDefinitionReader;
+
+  /** The relationship reader. */
+  private BufferedReader relationshipReader;
+
+  /** The language reader. */
+  private BufferedReader languageReader;
 
   /** progress tracking variables. */
   private int objectCt; //
@@ -192,21 +205,25 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
       int nRelationshipsUpdated = 0;
 
       for (Concept c : conceptCache.values()) {
-        if (c.getEffectiveTime().equals(this.deltaLoaderStartDate))
+        if (c.getEffectiveTime().equals(deltaLoaderStartDate)) {
           nConceptsUpdated++;
+        }
       }
       for (Relationship r : relationshipCache.values()) {
-        if (r.getEffectiveTime().equals(this.deltaLoaderStartDate))
+        if (r.getEffectiveTime().equals(deltaLoaderStartDate)) {
           nRelationshipsUpdated++;
+        }
       }
       for (Description d : descriptionCache.values()) {
-        if (d.getEffectiveTime().equals(this.deltaLoaderStartDate))
+        if (d.getEffectiveTime().equals(deltaLoaderStartDate)) {
           nDescriptionsUpdated++;
+        }
       }
 
       for (LanguageRefSetMember l : languageRefSetMemberCache.values()) {
-        if (l.getEffectiveTime().equals(this.deltaLoaderStartDate))
+        if (l.getEffectiveTime().equals(deltaLoaderStartDate)) {
           nLanguagesUpdated++;
+        }
       }
 
       // Report counts
@@ -419,9 +436,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
       startTime = System.nanoTime();
       loadConcepts(conceptReader);
       getLog().info(
-          "    " + Integer.toString(objectCt)
-              + " Concepts evaluated/loaded in " + getElapsedTime(startTime)
-              + "s" + " (Ended at " + ft.format(new Date()) + ")");
+          "      evaluated = " + Integer.toString(objectCt) + " (Ended at "
+              + ft.format(new Date()) + ")");
     }
 
     // Load relationships
@@ -430,12 +446,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
       startTime = System.nanoTime();
       loadRelationships(relationshipReader);
       getLog().info(
-          "    " + Integer.toString(objectCt)
-              + " Relationships evaluated/loaded in "
-              + getElapsedTime(startTime) + "s" + " (Ended at "
+          "      evaluated = " + Integer.toString(objectCt) + " (Ended at "
               + ft.format(new Date()) + ")");
-      getLog().info(
-          "      Running total of concepts modified: " + conceptCache.size());
     }
 
     // Load descriptions
@@ -444,12 +456,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
       startTime = System.nanoTime();
       loadDescriptions(descriptionReader);
       getLog().info(
-          "    " + Integer.toString(objectCt)
-              + " Descriptions evaluated/loaded in "
-              + getElapsedTime(startTime) + "s" + " (Ended at "
+          "      evaluated = " + Integer.toString(objectCt) + " (Ended at "
               + ft.format(new Date()) + ")");
-      getLog().info(
-          "      Running total of concepts modified: " + conceptCache.size());
     }
 
     // Load text definitions
@@ -458,12 +466,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
       startTime = System.nanoTime();
       loadDescriptions(textDefinitionReader);
       getLog().info(
-          "    " + Integer.toString(objectCt)
-              + " Text Definitions evaluated/loaded in "
-              + getElapsedTime(startTime) + "s" + " (Ended at "
+          "      evaluated = " + Integer.toString(objectCt) + " (Ended at "
               + ft.format(new Date()) + ")");
-      getLog().info(
-          "      Running total of concepts modified: " + conceptCache.size());
     }
 
     // Load language refset members
@@ -472,12 +476,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
       startTime = System.nanoTime();
       loadLanguageRefSetMembers(languageReader);
       getLog().info(
-          "    " + Integer.toString(objectCt)
-              + " LanguageRefSets evaluated/loaded in "
-              + getElapsedTime(startTime) + "s" + " (Ended at "
+          "      evaluated = " + Integer.toString(objectCt) + " (Ended at "
               + ft.format(new Date()) + ")");
-      getLog().info(
-          "      Running total of concepts modified: " + conceptCache.size());
     }
 
     // Skip other delta data structures
@@ -515,7 +515,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
         if (concept == null) {
           newConcept = new ConceptJpa();
         } else {
-          newConcept = new ConceptJpa(concept);
+          newConcept = new ConceptJpa(concept, false);
         }
 
         // Set fields
@@ -537,15 +537,15 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
         // If concept has changed, update it
         else if (!newConcept.equals(concept)) {
-          getLog()
-              .info("      update concept " + newConcept.getTerminologyId());
+          getLog().info(
+              "        update concept " + newConcept.getTerminologyId());
           contentService.updateConcept(newConcept);
           objectsUpdated++;
         }
 
-        // Otherwise, do nothing
+        // Otherwise, reset effective time (for modified check later)
         else {
-          // do nothing
+          newConcept.setEffectiveTime(concept.getEffectiveTime());
         }
 
         // Cache the concept element
@@ -580,7 +580,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     // Setup vars
     String line = "";
     objectCt = 0;
-    Long localTime = System.currentTimeMillis();
     int objectsAdded = 0;
     int objectsUpdated = 0;
     // Iterate through description reader
@@ -636,7 +635,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
           if (description == null) {
             newDescription = new DescriptionJpa();
           } else {
-            newDescription = new DescriptionJpa(description);
+            newDescription = new DescriptionJpa(description, false);
           }
           newDescription.setConcept(concept);
 
@@ -664,18 +663,17 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
           // If description has changed, update it
           else if (!newDescription.equals(description)) {
-            getLog()
-                .info(
-                    "      update description "
-                        + newDescription.getTerminologyId());
+            getLog().info(
+                "        update description "
+                    + newDescription.getTerminologyId());
             contentService.updateDescription(newDescription);
             cacheDescription(newDescription);
             objectsUpdated++;
           }
 
-          // otherwise
+          // Otherwise, reset effective time (for modified check later)
           else {
-            // do nothing
+            newDescription.setEffectiveTime(description.getEffectiveTime());
           }
 
         }
@@ -689,12 +687,9 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
         // Log progress
         if (++objectCt % logCt == 0) {
-          Long objPerMinute =
-              (logCt * 1000 * 60) / (System.currentTimeMillis() - localTime);
           getLog().info(
-              "  " + objectCt + " evaluated/loaded (" + objPerMinute.toString()
-                  + " per minute)");
-          localTime = System.currentTimeMillis();
+              "      evaluated = " + Integer.toString(objectCt) + " (Ended at "
+                  + ft.format(new Date()) + ")");
         }
       }
     }
@@ -779,7 +774,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
           newLanguageRefSetMember = new LanguageRefSetMemberJpa();
         } else {
           newLanguageRefSetMember =
-              new LanguageRefSetMemberJpa(languageRefSetMember);
+              new LanguageRefSetMemberJpa(languageRefSetMember, false);
         }
         newLanguageRefSetMember.setDescription(description);
 
@@ -808,16 +803,17 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
         // If language refset entry is changed, update it
         else if (!newLanguageRefSetMember.equals(languageRefSetMember)) {
           getLog().info(
-              "      update language "
+              "        update language "
                   + newLanguageRefSetMember.getTerminologyId());
           contentService.updateLanguageRefSetMember(newLanguageRefSetMember);
           cacheLanguageRefSetMember(newLanguageRefSetMember);
           objectsUpdated++;
         }
 
-        // otherwise
+        // Otherwise, reset effective time (for modified check later)
         else {
-          // do nothing
+          newLanguageRefSetMember.setEffectiveTime(languageRefSetMember
+              .getEffectiveTime());
         }
 
         // Log progress
@@ -848,7 +844,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     // Setup variables
     String line = "";
     objectCt = 0;
-    Long localTime = System.currentTimeMillis();
     int objectsAdded = 0;
     int objectsUpdated = 0;
 
@@ -921,7 +916,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
         if (relationship == null) {
           newRelationship = new RelationshipJpa();
         } else {
-          newRelationship = new RelationshipJpa(relationship);
+          newRelationship = new RelationshipJpa(relationship, false);
         }
 
         // Set fields
@@ -949,29 +944,25 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
         // If relationship is changed, update it
         else if (relationship != null && !newRelationship.equals(relationship)) {
-          getLog()
-              .info(
-                  "      update relationship "
-                      + newRelationship.getTerminologyId());
+          getLog().info(
+              "        update relationship "
+                  + newRelationship.getTerminologyId());
           contentService.updateRelationship(newRelationship);
           cacheRelationship(newRelationship);
           objectsUpdated++;
         }
 
-        // otherwise
+        // Otherwise, reset effective time (for modified check later)
         else {
-          // do nothing
+          newRelationship.setEffectiveTime(relationship.getEffectiveTime());
         }
       }
 
       // Log progress
       if (++objectCt % logCt == 0) {
-        Long objPerMinute =
-            (logCt * 1000 * 60) / (System.currentTimeMillis() - localTime);
         getLog().info(
-            "  " + objectCt + " evaluated/loaded (" + objPerMinute.toString()
-                + " per minute)");
-        localTime = System.currentTimeMillis();
+            "      evaluated = " + Integer.toString(objectCt) + " (Ended at "
+                + ft.format(new Date()) + ")");
       }
     }
 
@@ -1087,7 +1078,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
    */
   private void cacheConcept(Concept c) {
     if (!conceptCache.containsKey(c.getTerminologyId())) {
-      c.setEffectiveTime(this.deltaLoaderStartDate);
+
       for (Relationship r : c.getRelationships()) {
         relationshipCache.put(r.getTerminologyId(), r);
       }
@@ -1109,7 +1100,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
   private void cacheDescription(Description d) {
 
     if (!descriptionCache.containsKey(d.getTerminologyId())) {
-      d.setEffectiveTime(this.deltaLoaderStartDate);
+      d.setEffectiveTime(deltaLoaderStartDate);
       for (LanguageRefSetMember l : d.getLanguageRefSetMembers()) {
         languageRefSetMemberCache.put(l.getTerminologyId(), l);
       }
@@ -1123,7 +1114,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
    * @param r the r
    */
   private void cacheRelationship(Relationship r) {
-    r.setEffectiveTime(this.deltaLoaderStartDate);
+    r.setEffectiveTime(deltaLoaderStartDate);
     relationshipCache.put(r.getTerminologyId(), r);
   }
 
@@ -1134,18 +1125,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
    * @param l the l
    */
   private void cacheLanguageRefSetMember(LanguageRefSetMember l) {
-    l.setEffectiveTime(this.deltaLoaderStartDate);
+    l.setEffectiveTime(deltaLoaderStartDate);
     languageRefSetMemberCache.put(l.getTerminologyId(), l);
   }
 
-  /**
-   * Returns the elapsed time.
-   *
-   * @param time the time
-   * @return the elapsed time
-   */
-  @SuppressWarnings("boxing")
-  private static Long getElapsedTime(long time) {
-    return (System.nanoTime() - time) / 1000000000;
-  }
 }

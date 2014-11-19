@@ -28,16 +28,16 @@ import org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember;
  * Concrete implementation of {@link Description} for use with JPA.
  */
 @Entity
-//@UniqueConstraint here is being used to create an index, not to enforce uniqueness
+// @UniqueConstraint here is being used to create an index, not to enforce
+// uniqueness
 @Table(name = "descriptions", uniqueConstraints = @UniqueConstraint(columnNames = {
     "terminologyId", "terminology", "terminologyVersion"
 }))
-//@Audited
+// @Audited
 @XmlRootElement(name = "description")
 public class DescriptionJpa extends AbstractComponent implements Description {
 
-
-/** The language code. */
+  /** The language code. */
   @Column(nullable = false, length = 10)
   private String languageCode;
 
@@ -60,7 +60,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
 
   /** The language RefSet members */
   @OneToMany(mappedBy = "description", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = LanguageRefSetMemberJpa.class)
- // @IndexedEmbedded(targetElement = LanguageRefSetMemberJpa.class) PG
+  // @IndexedEmbedded(targetElement = LanguageRefSetMemberJpa.class) PG
   private Set<LanguageRefSetMember> languageRefSetMembers = new HashSet<>();
 
   /**
@@ -83,25 +83,31 @@ public class DescriptionJpa extends AbstractComponent implements Description {
    * Instantiates a new description jpa.
    *
    * @param description the description
+   * @param deepCopy indicates whether or not to perform a deep copy
    */
-  public DescriptionJpa(Description description) {
+  public DescriptionJpa(Description description, boolean deepCopy) {
 
-	    super.setId(description.getId());
-	    super.setActive(description.isActive());
-	    super.setEffectiveTime(description.getEffectiveTime());
-	    super.setLabel(description.getLabel());
-	    super.setModuleId(description.getModuleId());
-	    super.setTerminology(description.getTerminology());
-	    super.setTerminologyId(description.getTerminologyId());
-	    super.setTerminologyVersion(description.getTerminologyVersion());
-		this.languageCode = description.getLanguageCode();
-		this.typeId = description.getTypeId();
-		this.term = description.getTerm();
-		this.caseSignificanceId = description.getCaseSignificanceId();
-		this.concept = description.getConcept();
-		this.languageRefSetMembers = description.getLanguageRefSetMembers();
-	}
-  
+    setId(description.getId());
+    setActive(description.isActive());
+    setEffectiveTime(description.getEffectiveTime());
+    setLabel(description.getLabel());
+    setModuleId(description.getModuleId());
+    setTerminology(description.getTerminology());
+    setTerminologyId(description.getTerminologyId());
+    setTerminologyVersion(description.getTerminologyVersion());
+    languageCode = description.getLanguageCode();
+    typeId = description.getTypeId();
+    term = description.getTerm();
+    caseSignificanceId = description.getCaseSignificanceId();
+    concept = description.getConcept();
+    if (deepCopy) {
+      languageRefSetMembers = new HashSet<>();
+      for (LanguageRefSetMember member : description.getLanguageRefSetMembers()) {
+        languageRefSetMembers.add(new LanguageRefSetMemberJpa(member, true));
+      }
+    }
+  }
+
   /**
    * Returns the language code.
    * 
@@ -279,55 +285,56 @@ public class DescriptionJpa extends AbstractComponent implements Description {
   }
 
   @Override
-public int hashCode() {
-	final int prime = 31;
-	int result = super.hashCode();
-	result = prime
-			* result
-			+ ((caseSignificanceId == null) ? 0 : caseSignificanceId.hashCode());
-	result = prime * result + ((concept == null) ? 0 : concept.hashCode());
-	result = prime * result
-			+ ((languageCode == null) ? 0 : languageCode.hashCode());
-	result = prime * result + ((term == null) ? 0 : term.hashCode());
-	result = prime * result + ((typeId == null) ? 0 : typeId.hashCode());
-	return result;
-}
+  public int hashCode() {
+    final int prime = 31;
+    int result = super.hashCode();
+    result =
+        prime
+            * result
+            + ((caseSignificanceId == null) ? 0 : caseSignificanceId.hashCode());
+    result = prime * result + ((concept == null) ? 0 : concept.hashCode());
+    result =
+        prime * result + ((languageCode == null) ? 0 : languageCode.hashCode());
+    result = prime * result + ((term == null) ? 0 : term.hashCode());
+    result = prime * result + ((typeId == null) ? 0 : typeId.hashCode());
+    return result;
+  }
 
   @Override
-public boolean equals(Object obj) {
-	if (this == obj)
-		return true;
-	if (!super.equals(obj))
-		return false;
-	if (getClass() != obj.getClass())
-		return false;
-	DescriptionJpa other = (DescriptionJpa) obj;
-	if (caseSignificanceId == null) {
-		if (other.caseSignificanceId != null)
-			return false;
-	} else if (!caseSignificanceId.equals(other.caseSignificanceId))
-		return false;
-	if (concept == null) {
-		if (other.concept != null)
-			return false;
-	} else if (!concept.equals(other.concept))
-		return false;
-	if (languageCode == null) {
-		if (other.languageCode != null)
-			return false;
-	} else if (!languageCode.equals(other.languageCode))
-		return false;
-	if (term == null) {
-		if (other.term != null)
-			return false;
-	} else if (!term.equals(other.term))
-		return false;
-	if (typeId == null) {
-		if (other.typeId != null)
-			return false;
-	} else if (!typeId.equals(other.typeId))
-		return false;
-	return true;
-}
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (!super.equals(obj))
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    DescriptionJpa other = (DescriptionJpa) obj;
+    if (caseSignificanceId == null) {
+      if (other.caseSignificanceId != null)
+        return false;
+    } else if (!caseSignificanceId.equals(other.caseSignificanceId))
+      return false;
+    if (concept == null) {
+      if (other.concept != null)
+        return false;
+    } else if (!concept.equals(other.concept))
+      return false;
+    if (languageCode == null) {
+      if (other.languageCode != null)
+        return false;
+    } else if (!languageCode.equals(other.languageCode))
+      return false;
+    if (term == null) {
+      if (other.term != null)
+        return false;
+    } else if (!term.equals(other.term))
+      return false;
+    if (typeId == null) {
+      if (other.typeId != null)
+        return false;
+    } else if (!typeId.equals(other.typeId))
+      return false;
+    return true;
+  }
 
 }
