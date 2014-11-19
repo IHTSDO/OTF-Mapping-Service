@@ -123,7 +123,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 	@Override
 	public MapRelation computeMapRelation(MapRecord mapRecord, MapEntry mapEntry) throws Exception {
 
-		// System.out.println("Computing map relation");
+		System.out.println("Computing map relation");
 		// if entry has no target
 		if (mapEntry.getTargetId() == null || mapEntry.getTargetId().isEmpty()) {
 
@@ -150,7 +150,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 			return null;
 		}
 
-		// System.out.println("Entry has target");
+		System.out.println("Entry has target with rule " + mapEntry.getRule());
 
 		// if entry has a gender rule
 		if (mapEntry.getRule().contains("MALE")) {
@@ -176,6 +176,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
 			// if the entry has a non-gender, non-age IFA
 		} else if (mapEntry.getRule().startsWith("IFA")) {
+			
+			System.out.println("Entry has IFA rule");
 
 			// retrieve the relations by terminology id
             // 447639009 - Map of source concept is context dependent
@@ -188,7 +190,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 		// using contains here to capture TRUE and OTHERWISE TRUE
 		} else if (mapEntry.getRule().contains("TRUE")) {
 
-			// System.out.println("Entry has TRUE rule");
+			System.out.println("Entry has TRUE rule");
 
 			// retrieve the relations by terminology id
 			for (MapRelation relation : mapProject.getMapRelations()) {
