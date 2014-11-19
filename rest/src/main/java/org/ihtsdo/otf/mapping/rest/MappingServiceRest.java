@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -145,19 +146,32 @@ public class MappingServiceRest extends RootServiceRest {
 			MapProjectListJpa mapProjects = (MapProjectListJpa) mappingService
 					.getMapProjects();
 
-			if (role == MapUserRole.VIEWER && user.equals("guest")) {
-				MapProject toRemove = null;
+			// remove project if users' role is VIEWER and project is not public
+			if (role == MapUserRole.VIEWER) {
+				Set<MapProject> toRemoveSet = new HashSet<>();
 				for (MapProject project : mapProjects.getIterable()) {
-					// Remove unmapped for viewer - MAP-921,
-					// Implement this better: MAP-922
-					if (project.getId() == 10) {
-						toRemove = project;
-						break;
+					if (!project.isPublic()) {
+						toRemoveSet.add(project);
 					}
 				}
-				mapProjects.removeMapProject(toRemove);
-				mapProjects.setTotalCount(mapProjects.getTotalCount() - 1);
+				for (MapProject toRemove : toRemoveSet) {
+				  mapProjects.removeMapProject(toRemove);
+				}
 			}
+
+			// remove project if user's role on it is NONE
+			Set<MapProject> toRemoveSet = new HashSet<>();
+			for (MapProject project : mapProjects.getIterable()) {
+				if (securityService.getMapProjectRoleForToken(authToken, project.getId()) == MapUserRole.NONE) {
+					toRemoveSet.add(project);
+				}
+			}
+			for (MapProject toRemove : toRemoveSet) {
+				  mapProjects.removeMapProject(toRemove);
+			}
+			
+			mapProjects.setTotalCount(mapProjects.getTotalCount() - 1);
+			
 			mapProjects.sortBy(new Comparator<MapProject>() {
 				@Override
 				public int compare(MapProject o1, MapProject o2) {
@@ -173,7 +187,7 @@ public class MappingServiceRest extends RootServiceRest {
 			return null;
 		}
 	}
-
+	
 	/**
 	 * Returns the project for a given id (auto-generated) in JSON format
 	 * 
@@ -468,7 +482,6 @@ public class MappingServiceRest extends RootServiceRest {
 			return null;
 		}
 	}
-
 	// ///////////////////////////////////////////////////
 	// SCRUD functions: Map Users
 	// ///////////////////////////////////////////////////
@@ -3135,8 +3148,9 @@ public class MappingServiceRest extends RootServiceRest {
 			File archiveDir = new File(docDir + "/archive");
 
 			// compose the name of the stored file
-			MapProject mapProject = getMapProject(new Long(mapProjectId),
-					authToken);
+			MappingService mappingService = new MappingServiceJpa();
+			MapProject mapProject = mappingService.getMapProject(new Long(mapProjectId));
+			mappingService.close();
 			SimpleDateFormat dt = new SimpleDateFormat("yyyymmdd");
 			String date = dt.format(new Date());
 
