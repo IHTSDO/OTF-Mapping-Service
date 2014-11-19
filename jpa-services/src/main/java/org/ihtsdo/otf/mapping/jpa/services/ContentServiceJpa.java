@@ -79,7 +79,6 @@ import org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Content Services for the Jpa model.
  */
@@ -378,8 +377,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 			query.setParameter("terminologyId", terminologyId);
 			query.setParameter("terminology", terminology);
 			query.setParameter("terminologyVersion", terminologyVersion);
-			Description c = (Description) query.getSingleResult();
-			return c;
+			Description description = (Description) query.getSingleResult();
+			return description;
 		} catch (NoResultException e) {
 			Logger.getLogger(ContentServiceJpa.class).warn(
 					"Could not retrieve description " + terminologyId
