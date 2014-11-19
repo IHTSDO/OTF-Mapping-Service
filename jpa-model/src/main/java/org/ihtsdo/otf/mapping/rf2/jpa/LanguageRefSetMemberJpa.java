@@ -46,6 +46,7 @@ public class LanguageRefSetMemberJpa extends AbstractDescriptionRefSetMember
     setTerminology(member.getTerminology());
     setTerminologyId(member.getTerminologyId());
     setTerminologyVersion(member.getTerminologyVersion());
+    setRefSetId(member.getRefSetId());
     setAcceptabilityId(member.getAcceptabilityId());
   }
 
