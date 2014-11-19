@@ -530,7 +530,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
         // If concept is new, add it
         if (concept == null) {
-          getLog().info("      add concept " + newConcept.getTerminologyId());
+          getLog().info("        add concept " + newConcept.getTerminologyId());
           contentService.addConcept(newConcept);
           objectsAdded++;
         }
@@ -655,7 +655,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
           // If description is new, add it
           if (description == null) {
             getLog().info(
-                "      add description " + newDescription.getTerminologyId());
+                "        add description " + newDescription.getTerminologyId());
             contentService.addDescription(newDescription);
             cacheDescription(newDescription);
             objectsAdded++;
@@ -683,13 +683,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
         else {
           throw new Exception("Could not find concept " + fields[4]
               + " for Description " + fields[0]);
-        }
-
-        // Log progress
-        if (++objectCt % logCt == 0) {
-          getLog().info(
-              "      evaluated = " + Integer.toString(objectCt) + " (Ended at "
-                  + ft.format(new Date()) + ")");
         }
       }
     }
@@ -793,7 +786,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
         // If language refset entry is new, add it
         if (languageRefSetMember == null) {
           getLog().info(
-              "      add language "
+              "        add language "
                   + newLanguageRefSetMember.getTerminologyId());
           contentService.addLanguageRefSetMember(newLanguageRefSetMember);
           cacheLanguageRefSetMember(newLanguageRefSetMember);
@@ -936,7 +929,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
         // If relationship is new, add it
         if (!existingRelationshipIds.contains(fields[0])) {
           getLog().info(
-              "      add relationship " + newRelationship.getTerminologyId());
+              "        add relationship " + newRelationship.getTerminologyId());
           contentService.addRelationship(newRelationship);
           cacheRelationship(newRelationship);
           objectsAdded++;
@@ -956,13 +949,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
         else {
           newRelationship.setEffectiveTime(relationship.getEffectiveTime());
         }
-      }
-
-      // Log progress
-      if (++objectCt % logCt == 0) {
-        getLog().info(
-            "      evaluated = " + Integer.toString(objectCt) + " (Ended at "
-                + ft.format(new Date()) + ")");
       }
     }
 
