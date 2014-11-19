@@ -313,7 +313,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
 		if (terminologyId.matches(".[0-9].")) {
 
-			if (terminologyId.matches("W..|X..|Y[0-2].|Y3[0-4]"))
+			if (terminologyId.toUpperCase().matches("W..|X..|Y[0-2].|Y3[0-4]"))
 				return true;
 
 			/*
