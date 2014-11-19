@@ -117,8 +117,9 @@
 				Status: {{record.workflowStatus}}
 
 			</div>
-
-			<div otf-map-record-wide record="record" project="focusProject"
+			<div ng-show="currentRole === 'Lead' || currentRole === 'Administrator' ||
+			    currentRole === 'Specialist' || (currentRole === 'Viewer' && focusProject.public === 'true')" 
+			    otf-map-record-wide record="record" project="focusProject"
 				show-title="false"></div>
 		</div>
 
