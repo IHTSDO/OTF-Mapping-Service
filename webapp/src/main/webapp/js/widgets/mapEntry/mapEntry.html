@@ -59,7 +59,7 @@
 			<td style="vertical-align: top; padding: 5px; width: 50px;"></td>
 			<td style="vertical-align: top; padding: 5px;">Set relation: <select ng-show="allowableMapRelations.length > 0"
 				style="width: 80%" ng-model="mapRelationInput"
-				ng-change="selectMapRelation(mapRelationInput)"
+				ng-change="selectMapRelation(mapRelationInput); mapRelationInput = null;"
 				ng-options="mapRelation as mapRelation.displayName for mapRelation in allowableMapRelations"></select>
 				<span style="color: lightgray;" ng-show="allowableMapRelations.length == 0">No relations available to select.</span>
 			</td>
