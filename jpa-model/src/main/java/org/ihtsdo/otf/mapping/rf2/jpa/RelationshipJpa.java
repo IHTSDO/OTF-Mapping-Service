@@ -60,24 +60,24 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
   
   /**
    * Instantiates a new relationship jpa.
-   *
    * @param relationship the relationship
+   * @param deepCopy indicates whether or not to perform a deep copy
    */
-  public RelationshipJpa(Relationship relationship) {
-	    super.setId(relationship.getId());
-	    super.setActive(relationship.isActive());
-	    super.setEffectiveTime(relationship.getEffectiveTime());
-	    super.setLabel(relationship.getLabel());
-	    super.setModuleId(relationship.getModuleId());
-	    super.setTerminology(relationship.getTerminology());
-	    super.setTerminologyId(relationship.getTerminologyId());
-	    super.setTerminologyVersion(relationship.getTerminologyVersion());
-		this.sourceConcept = relationship.getSourceConcept();
-		this.destinationConcept = relationship.getDestinationConcept();
-		this.typeId = relationship.getTypeId();
-		this.characteristicTypeId = relationship.getCharacteristicTypeId();
-		this.modifierId = relationship.getModifierId();
-		this.relationshipGroup = relationship.getRelationshipGroup();
+  public RelationshipJpa(Relationship relationship, boolean deepCopy) {
+	    setId(relationship.getId());
+	    setActive(relationship.isActive());
+	    setEffectiveTime(relationship.getEffectiveTime());
+	    setLabel(relationship.getLabel());
+	    setModuleId(relationship.getModuleId());
+	    setTerminology(relationship.getTerminology());
+	    setTerminologyId(relationship.getTerminologyId());
+	    setTerminologyVersion(relationship.getTerminologyVersion());
+		sourceConcept = relationship.getSourceConcept();
+		destinationConcept = relationship.getDestinationConcept();
+		typeId = relationship.getTypeId();
+		characteristicTypeId = relationship.getCharacteristicTypeId();
+		modifierId = relationship.getModifierId();
+		relationshipGroup = relationship.getRelationshipGroup();
   }  
   
   /**

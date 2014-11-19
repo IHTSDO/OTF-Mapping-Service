@@ -18,7 +18,7 @@
 
 	<profiles>
 
-		<!-- Load SNOMED -->
+    <!-- Load SNOMED -Drun.config=.. must also be specified. -->
 		<profile>
 			<id>SNOMEDCT</id>
 			<build>
@@ -44,7 +44,7 @@
 			</build>
 		</profile>
 
-		<!-- Load SNOMED delta -->
+    <!-- Load SNOMED delta -Drun.config=.. must also be specified. -->
 		<profile>
 			<id>SNOMEDCTDelta</id>
 			<build>
@@ -70,7 +70,7 @@
 			</build>
 		</profile>
 
-		<!-- Load SNOMED tree positions only -->
+    <!-- Load SNOMED tree positions -Drun.config=.. must also be specified. -->
 		<profile>
 			<id>SNOMEDCT-treepos</id>
 			<build>
@@ -96,7 +96,7 @@
 			</build>
 		</profile>
 
-		<!-- Load ICD10 -->
+    <!-- Load ICD10 -Drun.config=.. must also be specified. -->
 		<profile>
 			<id>ICD10</id>
 			<build>
@@ -122,7 +122,7 @@
 			</build>
 		</profile>
 
-		<!-- Load ICD9CM -->
+    <!-- Load ICD9CM -Drun.config=.. must also be specified. -->
 		<profile>
 			<id>ICD9CM</id>
 			<build>
@@ -148,7 +148,7 @@
 			</build>
 		</profile>
 
-		<!-- Load ICPC -->
+    <!-- Load ICPC -Drun.config=.. must also be specified. -->
 		<profile>
 			<id>ICPC</id>
 			<build>
@@ -174,7 +174,7 @@
 			</build>
 		</profile>
 
-		<!-- Load map records from RF2 map file -->
+    <!-- Load map records from RF2 -Drun.config=.. must also be specified. -->
 		<profile>
 			<id>MapRecords</id>
 			<build>
@@ -197,7 +197,8 @@
 			</build>
 		</profile>
 
-		<!-- Load a sample of map records from RF2 map file -->
+    <!-- Load a sample of map records from RF2 -Drun.config=.. must also be specified. -->
+    <!-- Used only for "Unmapped SNOMED to ICD10" project, TODO: remove this after -->
 		<profile>
 			<id>MapRecordsSample</id>
 			<build>
@@ -220,7 +221,8 @@
 			</build>
 		</profile>
 
-		<!-- Create map records from content tables -->
+    <!-- Create map records from loaded terminology -Drun.config=.. must also be 
+      specified. -->
 		<profile>
 			<id>CreateMapRecords</id>
 			<build>
@@ -246,7 +248,7 @@
 			</build>
 		</profile>
 
-		<!-- Load map notes from file -->
+    <!-- Load map notes from RF2 -Drun.config=.. must also be specified. -->
 		<profile>
 			<id>MapNotes</id>
 			<build>
@@ -271,7 +273,7 @@
 			</build>
 		</profile>
 
-		<!-- Compute workflow for a map project -->
+    <!-- Compute workflow for a map project -Drun.config=.. must also be specified. -->
 		<profile>
 			<id>ComputeWorkflow</id>
 			<build>
@@ -299,31 +301,8 @@
 			</build>
 		</profile>
 
-		<!-- Compute workflow for a map project -->
-		<profile>
-			<id>ImportUserErrors</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.ihtsdo.otf.mapping</groupId>
-						<artifactId>mapping-admin-mojo</artifactId>
-						<version>${project.version}</version>
-						<executions>
-							<execution>
-								<id>import-user-errors</id>
-								<phase>package</phase>
-								<goals>
-									<goal>import-user-errors</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-
-				</plugins>
-			</build>
-		</profile>
-
-		<!-- Fix the error flag in feedback objects -->
+    <!-- Fix the error flag in feedback objects -Drun.config=.. must also be specified. -->
+    <!-- This is a single-use admin tool, TODO: remove when not needed -->
 		<profile>
 			<id>FixFeedbackErrorFlag</id>
 			<build>
@@ -346,7 +325,9 @@
 			</build>
 		</profile>
 
-		<!-- Fix the error messages in feedback objects -->
+    <!-- Fix the error messages in feedback objects -Drun.config=.. must also be 
+      specified. -->
+    <!-- This is a single-use admin tool, TODO: remove when not needed -->
 		<profile>
 			<id>FixErrorMessages</id>
 			<build>
@@ -368,7 +349,9 @@
 				</plugins>
 			</build>
 		</profile>
-		<!-- Fix the error messages in feedback objects -->
+
+    <!-- Generate daily reports -Drun.config=.. must also be specified. -->
+    <!-- Typically, this is called from a cron job or CI server -->
 		<profile>
 			<id>GenerateDailyReports</id>
 			<build>
@@ -395,5 +378,6 @@
 				</plugins>
 			</build>
 		</profile>
+    
 	</profiles>
 </project>

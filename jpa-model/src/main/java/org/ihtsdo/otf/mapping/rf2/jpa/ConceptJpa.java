@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.rf2.jpa;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -32,23 +33,24 @@ import org.ihtsdo.otf.mapping.rf2.SimpleRefSetMember;
  * Concrete implementation of {@link Concept} for use with JPA.
  */
 @Entity
-//@UniqueConstraint here is being used to create an index, not to enforce uniqueness
+// @UniqueConstraint here is being used to create an index, not to enforce
+// uniqueness
 @Table(name = "concepts", uniqueConstraints = @UniqueConstraint(columnNames = {
     "terminologyId", "terminology", "terminologyVersion"
 }))
-//@Audited
+// @Audited
 @Indexed
 @XmlRootElement(name = "concept")
 public class ConceptJpa extends AbstractComponent implements Concept {
 
-
-/** The definition status id. */
+  /** The definition status id. */
   @Column(nullable = false)
   private Long definitionStatusId;
 
   /** The descriptions. */
   @OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = DescriptionJpa.class)
-  @IndexedEmbedded(targetElement = DescriptionJpa.class) //PG
+  @IndexedEmbedded(targetElement = DescriptionJpa.class)
+  // PG
   private Set<Description> descriptions = new HashSet<>();
 
   /** The relationships. */
@@ -85,34 +87,47 @@ public class ConceptJpa extends AbstractComponent implements Concept {
    * Instantiates a new concept jpa.
    */
   public ConceptJpa() {
-	  
+
   }
-  
+
   /**
    * Instantiates a new concept jpa.
    *
    * @param concept the concept
    */
-  public ConceptJpa(Concept concept) {
-	    super.setId(concept.getId());
-	    super.setActive(concept.isActive());
-	    super.setEffectiveTime(concept.getEffectiveTime());
-	    super.setLabel(concept.getLabel());
-	    super.setModuleId(concept.getModuleId());
-	    super.setTerminology(concept.getTerminology());
-	    super.setTerminologyId(concept.getTerminologyId());
-	    super.setTerminologyVersion(concept.getTerminologyVersion());
-		this.definitionStatusId = concept.getDefinitionStatusId();
-		this.descriptions = concept.getDescriptions();
-		this.relationships = concept.getRelationships();
-		this.inverseRelationships = concept.getInverseRelationships();
-		this.simpleRefSetMembers = concept.getSimpleRefSetMembers();
-		this.simpleMapRefSetMembers = concept.getSimpleMapRefSetMembers();
-		this.complexMapRefSetMembers = concept.getComplexMapRefSetMembers();
-		this.attributeValueRefSetMembers = concept.getAttributeValueRefSetMembers();
-		this.defaultPreferredName = concept.getDefaultPreferredName();
-	}
-  
+  public ConceptJpa(Concept concept, boolean deepCopy) {
+    setId(concept.getId());
+    setActive(concept.isActive());
+    setEffectiveTime(concept.getEffectiveTime());
+    setLabel(concept.getLabel());
+    setModuleId(concept.getModuleId());
+    setTerminology(concept.getTerminology());
+    setTerminologyId(concept.getTerminologyId());
+    setTerminologyVersion(concept.getTerminologyVersion());
+    defaultPreferredName = concept.getDefaultPreferredName();
+    definitionStatusId = concept.getDefinitionStatusId();
+    if (deepCopy) {
+      descriptions = new HashSet<>();
+      for (Description description : concept.getDescriptions()) {
+        Description d = new DescriptionJpa(description, true);
+        d.setConcept(this);
+        descriptions.add(d);
+      }
+      relationships = new HashSet<>();
+      for (Relationship relationship : concept.getRelationships()) {
+        Relationship rel = new RelationshipJpa(relationship, true);
+        rel.setSourceConcept(this);
+        relationships.add(rel);
+      }
+      // Ignore these for now
+      // inverseRelationships
+      // simpleRefSetMembers = concept.getSimpleRefSetMembers();
+      // simpleMapRefSetMembers = concept.getSimpleMapRefSetMembers();
+      // complexMapRefSetMembers = concept.getComplexMapRefSetMembers();
+      // attributeValueRefSetMembers = concept.getAttributeValueRefSetMembers();
+    }
+  }
+
   /**
    * Returns the definition status id.
    * 
@@ -396,32 +411,32 @@ public class ConceptJpa extends AbstractComponent implements Concept {
     AttributeValueRefSetMember attributeValueRefSetMember) {
     this.attributeValueRefSetMembers.remove(attributeValueRefSetMember);
   }
-  
+
   /**
    * Override get effective time to allow indexing
    */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.YES)
   @Override
   public Date getEffectiveTime() {
-	  return super.getEffectiveTime();
+    return super.getEffectiveTime();
   }
-  
+
   /**
    * Override get effective time to allow indexing
    */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.YES)
   @Override
   public String getTerminology() {
-	  return super.getTerminology();
+    return super.getTerminology();
   }
-  
+
   /**
    * Override get effective time to allow indexing
    */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.YES)
   @Override
   public String getTerminologyVersion() {
-	  return super.getTerminologyVersion();
+    return super.getTerminologyVersion();
   }
 
   /**
@@ -463,34 +478,32 @@ public class ConceptJpa extends AbstractComponent implements Concept {
                                                                              // fields
   }
 
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = super.hashCode();
+    result =
+        prime
+            * result
+            + ((definitionStatusId == null) ? 0 : definitionStatusId.hashCode());
+    return result;
+  }
 
-
-@Override
-public int hashCode() {
-	final int prime = 31;
-	int result = super.hashCode();
-	result = prime
-			* result
-			+ ((definitionStatusId == null) ? 0 : definitionStatusId.hashCode());
-	return result;
-}
-
-@Override
-public boolean equals(Object obj) {
-	if (this == obj)
-		return true;
-	if (!super.equals(obj))
-		return false;
-	if (getClass() != obj.getClass())
-		return false;
-	ConceptJpa other = (ConceptJpa) obj;
-	if (definitionStatusId == null) {
-		if (other.definitionStatusId != null)
-			return false;
-	} else if (!definitionStatusId.equals(other.definitionStatusId))
-		return false;
-	return true;
-}
-
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (!super.equals(obj))
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    ConceptJpa other = (ConceptJpa) obj;
+    if (definitionStatusId == null) {
+      if (other.definitionStatusId != null)
+        return false;
+    } else if (!definitionStatusId.equals(other.definitionStatusId))
+      return false;
+    return true;
+  }
 
 }

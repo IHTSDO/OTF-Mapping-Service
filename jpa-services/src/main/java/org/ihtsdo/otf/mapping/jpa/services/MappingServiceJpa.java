@@ -3003,6 +3003,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			return MapUserRole.SPECIALIST;
 		}
 
+		// return role NONE if role is VIEWER and project is private
+		if (!mapProject.isPublic())
+			return MapUserRole.NONE;
+		
 		// default role is Viewer
 		return MapUserRole.VIEWER;
 	}

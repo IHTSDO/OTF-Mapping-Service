@@ -18,14 +18,21 @@
   <properties>
     <execFinalName>exec-${project.build.finalName}.jar</execFinalName>
     <packageName>${project.parent.artifactId}-rest</packageName>
+    <!-- Specify default build.config - references config project -->
+    <!-- This requires some images to be in c:/data/images -->
+    <!-- Used -->
+    <build.config>${basedir}/../config/src/main/resources/config.properties.dev</build.config>
   </properties>
 
   <dependencies>
+
+    <!-- Servlet API, provided by container -->
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
       <scope>provided</scope>
     </dependency>
+
     <!-- Model interfaces. -->
     <dependency>
       <groupId>org.ihtsdo.otf.mapping</groupId>
@@ -77,6 +84,8 @@
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
     </dependency>
+
+    <!-- Logging -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
@@ -131,16 +140,107 @@
       <groupId>com.wordnik</groupId>
       <artifactId>swagger-jersey-jaxrs_2.10</artifactId>
     </dependency>
-      <dependency>
-        <groupId>com.sun.mail</groupId>
-        <artifactId>javax.mail</artifactId>
-      </dependency>
+
+    <!-- Sending email -->
+    <dependency>
+      <groupId>com.sun.mail</groupId>
+      <artifactId>javax.mail</artifactId>
+    </dependency>
   </dependencies>
 
-  <!-- Always build, use dev configuration by default -->
   <build>
+
+    <!-- Artifact final name -->
     <finalName>${project.artifactId}</finalName>
+
     <plugins>
+
+      <!-- Configure environment-specific build time information through a build.config 
+        file settings -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>properties-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>initialize</phase>
+            <goals>
+              <goal>read-project-properties</goal>
+            </goals>
+            <configuration>
+              <files>
+                <file>${build.config}</file>
+              </files>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Copy files -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+
+          <!-- Copy the favicon file -->
+          <execution>
+            <id>copy-favicon</id>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target name="copy favicon">
+                <copy file="${deploy.favicon}"
+                  tofile="${project.build.directory}/custom/images/favicon.png" />
+              </target>
+            </configuration>
+          </execution>
+
+          <!-- Copy the logo file -->
+          <execution>
+            <id>copy-logo</id>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target name="copy logo">
+                <copy file="${deploy.favicon}"
+                  tofile="${project.build.directory}/custom/images/logo.png" />
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Configure .war build -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <configuration>
+          <webResources>
+            <resource>
+              <directory>${project.build.directory}/custom</directory>
+            </resource>
+            <resource>
+              <directory>src/main/webapp</directory>
+              <filtering>true</filtering>
+              <includes>
+                <include>index.html</include>
+              </includes>
+            </resource>
+            <resource>
+              <directory>src/main/webapp</directory>
+              <filtering>false</filtering>
+              <excludes>
+                <exclude>index.html</exclude>
+              </excludes>
+            </resource>
+          </webResources>
+        </configuration>
+      </plugin>
+
+      <!-- Executable tomcat war file and debian build -->
       <plugin>
         <groupId>org.apache.tomcat.maven</groupId>
         <artifactId>tomcat7-maven-plugin</artifactId>
@@ -233,26 +333,12 @@
                   <linkTarget>/var/opt/${packageName}/log</linkTarget>
                   <symlink>true</symlink>
                 </data>
- <!-- Moved to ansible, kept for reference
-               <data>
-                  <src>${basedir}/..</src>
-                  <type>directory</type>
-                  <mapper>
-                    <type>perm</type>
-                    <prefix>/opt/${packageName}/lib/admin</prefix>
-                  </mapper>
-                </data>-->
- <!--               <data>
-                  <src>${basedir}/src/deb/log4j.xml</src>
-                  <dst>/etc/opt/${packageName}/log4j.xml</dst>
-                  <type>file</type>
-                  <conffile>true</conffile>
-                  <mapper>
-                    <type>perm</type>
-                    <group>${packageName}</group>
-                    <filemode>0640</filemode>
-                  </mapper>
-                </data> -->
+                <!-- Moved to ansible, kept for reference <data> <src>${basedir}/..</src> 
+                  <type>directory</type> <mapper> <type>perm</type> <prefix>/opt/${packageName}/lib/admin</prefix> 
+                  </mapper> </data> -->
+                <!-- <data> <src>${basedir}/src/deb/log4j.xml</src> <dst>/etc/opt/${packageName}/log4j.xml</dst> 
+                  <type>file</type> <conffile>true</conffile> <mapper> <type>perm</type> <group>${packageName}</group> 
+                  <filemode>0640</filemode> </mapper> </data> -->
               </dataSet>
             </configuration>
           </execution>
