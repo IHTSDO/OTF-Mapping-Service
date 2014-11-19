@@ -1,12 +1,15 @@
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.jpa.handlers.ReleaseHandlerJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
@@ -134,7 +137,7 @@ public class ReleaseProcessingMojo extends AbstractMojo {
 				// add check for scope concepts contained in the map record set
 
 				// FOR TESTING ONLY
-				Set<MapRecord> mapRecords = new HashSet<>();
+				List<MapRecord> mapRecords = new ArrayList<>();
 
 				boolean testRun = false;
 
@@ -148,20 +151,25 @@ public class ReleaseProcessingMojo extends AbstractMojo {
 
 				if (testRun) {
 
-					/*
-					 * String conceptIds[] = { "10000006", "10001005",
-					 * "1001000119102", "10041001", "10050004",
-					 * "100581000119102", "10061007", "10065003", "10070005" };
-					 */
+					
+					  String conceptIds[] = { "10000006" } ;
+//					  
+//					  , "10001005",
+//					  "1001000119102", "10041001", "10050004",
+//					  "100581000119102", "10061007", "10065003", "10070005", "703619001" };
+//					 
 
-					/*String conceptIds[] = { "42434002" };
+					
 
 					for (String conceptId : conceptIds) {
-						MapRecord mr = mappingService
-								.getMapRecordForProjectAndConcept(
+						MapRecordList mrl = mappingService
+								.getMapRecordsForProjectAndConcept(
 										mapProject.getId(), conceptId);
-						mapRecords.add(mr);
-					}*/
+						
+						System.out.println("Retrieved " + mrl.getCount() + " records for concept " + conceptId);
+						mapRecords.add(mrl.getMapRecords().get(0));
+					}
+					
 				}
 
 				getLog().info(
@@ -172,26 +180,10 @@ public class ReleaseProcessingMojo extends AbstractMojo {
 				if (!outputDirName.endsWith("/"))
 					outputDirName += "/";
 				
-				//der2_iisssccRefset_ExtendedMapSnapshot_INT_20140731
-
-				String machineReadableOutputFileName = outputDirName + "der2_"
-						
-						+ mapProject.getDestinationTerminology() +
-						mapProject.getMapRefsetPattern() + "_INT_" +
-						effectiveTime + ".txt";
 				
-				//tls_${project}HumanReadableMap_INT_${releaseVersion}.tsv
-				
-				String humanReadableOutputFileName = outputDirName + "tls_"
-						+ mapProject.getDestinationTerminology() + "HumanReadableMap_INT_"
-						+ mapProject.getSourceTerminologyVersion() + "_"
-						+ effectiveTime + ".tsv";
-
-				getLog().info("  Machine-readable release file:  " + machineReadableOutputFileName);
-				getLog().info("  Human-readable release file:    " + humanReadableOutputFileName);
-				
+				// Instantiate release handler and for now, run everything as a delta + snapshot release
 				ReleaseHandler releaseHandler = new ReleaseHandlerJpa();		
-				releaseHandler.processRelease(mapProject, machineReadableOutputFileName, humanReadableOutputFileName, mapRecords, effectiveTime, moduleId );
+				releaseHandler.processRelease(mapProject, mapRecords, outputDirName, effectiveTime, moduleId );
 
 			}
 

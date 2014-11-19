@@ -55,6 +55,8 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 				$scope.allowableWorkflowTypes = new Array(); 			
 				$scope.handlers = new Array();
 				
+				$scope.testReportSuccess = false; // flag for whether new report has passed testing
+				$scope.testReportError = null; // error returned for report not passing test
 				$scope.definitionQueryTypes = ['SQL', 'HQL', 'LUCENE'];
 				$scope.definitionResultTypes = ['CONCEPT', 'MAP_RECORD'];
 				$scope.definitionRoles = ['VIEWER', 'SPECIALIST', 'LEAD', 'ADMIN'];
@@ -1422,13 +1424,76 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 
 					});				
 				};
+				
+				// function to allow a user to test whether report successfully runs before 
+				// officially adding it
+				$scope.testReportDefinition = function(name, roleRequired, resultType, queryType, diffReport, timePeriod, frequency, query) {
+					
+					$rootScope.glassPane++;
+					console.debug("Testing report definition");
+				
+					
+					var obj = 			  
+					{		"name":name,
+							"roleRequired":roleRequired,
+							"resultType":resultType,
+							"queryType":queryType,
+							"frequency":frequency,
+							"diffReport":diffReport,
+							"timePeriod":timePeriod,
+							"qaCheck":"false",
+							"query":query };
 
-				$scope.updateReportDefinition = function(reportDefinition) {
-					console.debug("in updateReportDefinition");
+
+					$http({						
+						url: root_reporting + "report/generate/project/id/" + $scope.focusProject.id + "/user/id/" + $scope.currentUser.userName,
+						dataType: "json",
+						data: obj,
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json"
+						}
+					}).success(function(data) {
+						$rootScope.glassPane--;
+						$scope.testReportSuccess = true;
+						$scope.testReportError = null;
+						
+						console.debug("Success", $scope.testReportSuccess);
+						
+					// NOTE: Do not handle this as normal http error
+					// 		 instead set a local error variable
+					}).error(function(data, status, headers, config) {
+						$rootScope.glassPane--;
+						$scope.testReportSuccess = false;
+						$scope.testReportError = data.replace(/"/g, '');
+						
+						console.debug("Error", $scope.testReportSuccess);
+					});
+					
+					console.debug($scope.testReportSuccess);
+				};
+
+				$scope.updateReportDefinition = function(name, roleRequired, resultType, queryType, diffReport, timePeriod, frequency, query) {
+				
+					// if no time period specified, set it to null
+					if (timePeriod === undefined || timePeriod === '')
+						timePeriod = null;
+					
+					var obj = 			  
+					{		"name":name,
+							"roleRequired":roleRequired,
+							"resultType":resultType,
+							"queryType":queryType,
+							"frequency":frequency,
+							"diffReport":diffReport,
+							"timePeriod":timePeriod,
+							"qaCheck":"false",
+							"query":query };
+
 					$http({						
 						url: root_reporting + "definition/update",
 						dataType: "json",
-						data: reportDefinition,
+						data: obj,
 						method: "POST",
 						headers: {
 							"Content-Type": "application/json"
@@ -1471,7 +1536,7 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 					});				
 				};
 				
-				$scope.submitNewReportDefinition = function(name, roleRequired, resultType, queryType, diffReport, timePeriod, query) {
+				$scope.submitNewReportDefinition = function(name, roleRequired, resultType, queryType, diffReport, timePeriod, frequency, query) {
 				
 					if (timePeriod === undefined || timePeriod === '')
 						timePeriod = null;
@@ -1482,6 +1547,7 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 							"roleRequired":roleRequired,
 							"resultType":resultType,
 							"queryType":queryType,
+							"frequency":frequency,
 							"diffReport":diffReport,
 							"timePeriod":timePeriod,
 							"qaCheck":"false",
@@ -1496,6 +1562,8 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 							"Content-Type": "application/json"
 						}
 					}).success(function(data) {
+						$scope.testReportSuccess = false;
+						$scope.testReportError = null;
 						console.debug("success to addReportDefinition");
 					}).error(function(data, status, headers, config) {
 						$scope.recordError = "Error adding new map reportDefinition.";
