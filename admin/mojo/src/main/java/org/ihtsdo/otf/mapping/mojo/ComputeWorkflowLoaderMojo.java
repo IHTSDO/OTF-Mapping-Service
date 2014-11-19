@@ -83,7 +83,7 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
 		} catch (Exception e1) {
 			throw new MojoExecutionException("Failed to retrieve config properties");
 		}
-		String notificationRecipients = config.getProperty("loader.SNOMEDCT.delta.notification.recipients");
+		String notificationRecipients = config.getProperty("send.notification.recipients");
 		String notificationMessage = "";
 		
 
