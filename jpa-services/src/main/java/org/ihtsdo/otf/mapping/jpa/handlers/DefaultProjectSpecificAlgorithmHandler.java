@@ -1058,8 +1058,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				newRecord.setOwner(mapUser);
 				newRecord.setLastModifiedBy(mapUser);
 				newRecord.setWorkflowStatus(WorkflowStatus.QA_NEEDED);
-				// TODO: remove label setting here
-				newRecord.addLabel("TEST_LABEL");
 
 				// add the record to the list
 				newRecords.add(newRecord);

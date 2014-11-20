@@ -106,9 +106,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
   /** progress tracking variables. */
   private int objectCt; //
 
-  /** The log ct. */
-  private int logCt = 2000;
-
   /** The ft. */
   SimpleDateFormat ft = new SimpleDateFormat("hh:mm:ss a"); // for
 
@@ -494,7 +491,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     // Setup vars
     String line;
     objectCt = 0;
-    Long localTime = System.currentTimeMillis();
     int objectsAdded = 0;
     int objectsUpdated = 0;
 
@@ -530,7 +526,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
         // If concept is new, add it
         if (concept == null) {
-          getLog().info("      add concept " + newConcept.getTerminologyId());
+          getLog().info("        add concept " + newConcept.getTerminologyId());
           contentService.addConcept(newConcept);
           objectsAdded++;
         }
@@ -551,15 +547,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
         // Cache the concept element
         cacheConcept(newConcept);
 
-        // Log progress
-        if (++objectCt % logCt == 0) {
-          Long objPerMinute =
-              (logCt * 1000 * 60) / (System.currentTimeMillis() - localTime);
-          getLog().info(
-              "      " + objectCt + " loaded (" + objPerMinute.toString()
-                  + " per minute)");
-          localTime = System.currentTimeMillis();
-        }
       }
 
     }
@@ -635,7 +622,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
           if (description == null) {
             newDescription = new DescriptionJpa();
           } else {
-            newDescription = new DescriptionJpa(description, false);
+            newDescription = new DescriptionJpa(description, true);
           }
           newDescription.setConcept(concept);
 
@@ -655,7 +642,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
           // If description is new, add it
           if (description == null) {
             getLog().info(
-                "      add description " + newDescription.getTerminologyId());
+                "        add description " + newDescription.getTerminologyId());
             contentService.addDescription(newDescription);
             cacheDescription(newDescription);
             objectsAdded++;
@@ -684,13 +671,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
           throw new Exception("Could not find concept " + fields[4]
               + " for Description " + fields[0]);
         }
-
-        // Log progress
-        if (++objectCt % logCt == 0) {
-          getLog().info(
-              "      evaluated = " + Integer.toString(objectCt) + " (Ended at "
-                  + ft.format(new Date()) + ")");
-        }
       }
     }
     getLog().info("      new = " + objectsAdded);
@@ -709,7 +689,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     // Setup variables
     String line = "";
     objectCt = 0;
-    Long localTime = System.currentTimeMillis();
     int objectsAdded = 0;
     int objectsUpdated = 0;
 
@@ -793,7 +772,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
         // If language refset entry is new, add it
         if (languageRefSetMember == null) {
           getLog().info(
-              "      add language "
+              "        add language "
                   + newLanguageRefSetMember.getTerminologyId());
           contentService.addLanguageRefSetMember(newLanguageRefSetMember);
           cacheLanguageRefSetMember(newLanguageRefSetMember);
@@ -814,16 +793,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
         else {
           newLanguageRefSetMember.setEffectiveTime(languageRefSetMember
               .getEffectiveTime());
-        }
-
-        // Log progress
-        if (++objectCt % logCt == 0) {
-          Long objPerMinute =
-              (logCt * 1000 * 60) / (System.currentTimeMillis() - localTime);
-          getLog().info(
-              "  " + objectCt + " loaded (" + objPerMinute.toString()
-                  + " per minute)");
-          localTime = System.currentTimeMillis();
         }
       }
     }
@@ -936,7 +905,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
         // If relationship is new, add it
         if (!existingRelationshipIds.contains(fields[0])) {
           getLog().info(
-              "      add relationship " + newRelationship.getTerminologyId());
+              "        add relationship " + newRelationship.getTerminologyId());
           contentService.addRelationship(newRelationship);
           cacheRelationship(newRelationship);
           objectsAdded++;
@@ -956,13 +925,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
         else {
           newRelationship.setEffectiveTime(relationship.getEffectiveTime());
         }
-      }
-
-      // Log progress
-      if (++objectCt % logCt == 0) {
-        getLog().info(
-            "      evaluated = " + Integer.toString(objectCt) + " (Ended at "
-                + ft.format(new Date()) + ")");
       }
     }
 
@@ -1078,7 +1040,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
    */
   private void cacheConcept(Concept c) {
     if (!conceptCache.containsKey(c.getTerminologyId())) {
-
       for (Relationship r : c.getRelationships()) {
         relationshipCache.put(r.getTerminologyId(), r);
       }
@@ -1100,7 +1061,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
   private void cacheDescription(Description d) {
 
     if (!descriptionCache.containsKey(d.getTerminologyId())) {
-      d.setEffectiveTime(deltaLoaderStartDate);
       for (LanguageRefSetMember l : d.getLanguageRefSetMembers()) {
         languageRefSetMemberCache.put(l.getTerminologyId(), l);
       }
@@ -1114,7 +1074,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
    * @param r the r
    */
   private void cacheRelationship(Relationship r) {
-    r.setEffectiveTime(deltaLoaderStartDate);
     relationshipCache.put(r.getTerminologyId(), r);
   }
 
@@ -1125,7 +1084,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
    * @param l the l
    */
   private void cacheLanguageRefSetMember(LanguageRefSetMember l) {
-    l.setEffectiveTime(deltaLoaderStartDate);
     languageRefSetMemberCache.put(l.getTerminologyId(), l);
   }
 

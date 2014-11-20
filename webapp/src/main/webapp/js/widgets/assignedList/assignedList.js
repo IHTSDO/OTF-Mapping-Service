@@ -37,9 +37,6 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	
 	// labels for QA filtering
 	$scope.labelNames = [];
-	$scope.labelNames.push("TEST_LABEL");
-	$scope.labelNames.push("TEST_LABEL2");
-	$scope.labelNames.push("TEST_LABEL3");
 	
 	// table sort fields - currently unused
 	$scope.tableFields = [ {id: 0, title: 'id', sortDir: 'asc', sortOn: false}];
@@ -155,6 +152,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			
 			$scope.retrieveAssignedWork($scope.assignedWorkPage, null, $scope.assignedWorkType);
 			$scope.retrieveAssignedQAWork(1, null, $scope.assignedQAWorkType);
+			$scope.retrieveLabels();
 			if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
 				$scope.retrieveAssignedConflicts(1, null, $scope.assignedConflictType);
 				$scope.retrieveAssignedReviewWork(1, null, $scope.assignedReviewWorkType);
@@ -284,6 +282,30 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		});
 	};
 	
+	$scope.retrieveLabels = function() {
+		console.debug('assignedListCtrl: Retrieving labels');
+
+	  	$rootScope.glassPane++;
+		$http({
+			url: root_reporting + "qaLabel/qaLabels",
+			dataType: "json",
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json"
+			}
+		}).success(function(data) {
+			console.debug("Success in getting qa labels.");
+
+		  	$rootScope.glassPane--;
+		  	for (var i = 0; i<data.searchResult.length; i++) {
+		  		$scope.labelNames.push(data.searchResult[i].value);
+		  	}
+		}).error(function(data, status, headers, config) {
+		  	$rootScope.glassPane--;
+			$rootScope.handleHttpError(data, status, headers, config);
+		});			
+	};
+	
 	$scope.retrieveAssignedQAWork = function(page, query, assignedWorkType) {
 		
 		console.debug('Retrieving Assigned QA Work: ', page, query, assignedWorkType);
@@ -343,7 +365,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 				var concept = $scope.assignedQAWork[i];
 					
 			    $scope.assignedQAWork[i].name = concept.value;
-			    $scope.assignedQAWork[i].labels = concept.value2;					
+			    $scope.assignedQAWork[i].labels = concept.value2.replace(/;/g, ' ');
 			}
 			
 		}).error(function(data, status, headers, config) {
