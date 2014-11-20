@@ -860,7 +860,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			StringBuffer labelBuffer = new StringBuffer();
 			for (MapRecord record : getMapRecordsForTrackingRecord(tr)) {
 			  for (String label : record.getLabels()) {
-			  	labelBuffer.append(";").append(label);
+				if (labelBuffer.indexOf(label) == -1)
+			  	  labelBuffer.append(";").append(label);
 			  }
 			}
 			result.setValue2(labelBuffer.toString());
@@ -1663,7 +1664,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			StringBuffer labelBuffer = new StringBuffer();
 			for (MapRecord record : getMapRecordsForTrackingRecord(tr)) {
 			  for (String label : record.getLabels()) {
-			  	labelBuffer.append(";").append(label);
+				if (labelBuffer.indexOf(label) == -1)
+			  	  labelBuffer.append(";").append(label);
 			  }
 			}
 			result.setValue2(labelBuffer.toString());
