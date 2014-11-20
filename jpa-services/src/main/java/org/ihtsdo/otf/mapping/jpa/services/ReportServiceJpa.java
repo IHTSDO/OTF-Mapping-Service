@@ -1433,24 +1433,22 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 		return qaCheckDefinitionList;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.services.ReportDefinitionService#getQACheckDefinition
-	 * (java.lang.Long)
-	 */
-	@Override
-	public ReportDefinition getQACheckDefinition(Long qaCheckDefinitionId) {
-		ReportDefinition r = null;
 
-		javax.persistence.Query query = manager
-				.createQuery("select r from ReportDefinitionJpa r where id = :id");
-		query.setParameter("id", qaCheckDefinitionId);
+		
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.services.ReportService#getQALabels()
+   */
+  @Override
+  public SearchResultList getQALabels() {
 
-		r = (ReportDefinition) query.getSingleResult();
+  	  ReportDefinitionList definitions = getQACheckDefinitions();
+      
+      SearchResultList searchResultList = new SearchResultListJpa();
+      for (ReportDefinition def : definitions.getReportDefinitions()) {
+  			searchResultList.addSearchResult(new SearchResultJpa(def.getId(), null, def.getName(), "")); 			
+      }
+      return searchResultList;
 
-		return r;
 	}
 
 	/*
@@ -1484,64 +1482,4 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.services.ReportDefinitionService#
-	 * updateReportDefinition(org.ihtsdo
-	 * .otf.mapping.reportDefinitions.ReportDefinition)
-	 */
-	@Override
-	public void updateQACheckDefinition(ReportDefinition qaCheckDefinition) {
-		// ensure isQACheck flag is set to true
-		qaCheckDefinition.setQACheck(true);
-
-		if (getTransactionPerOperation()) {
-			tx = manager.getTransaction();
-			tx.begin();
-			manager.merge(qaCheckDefinition);
-			tx.commit();
-		} else {
-			manager.merge(qaCheckDefinition);
-		}
-
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.services.ReportDefinitionService#
-	 * removeQACheckDefinition(java.lang. Long)
-	 */
-	@Override
-	public void removeQACheckDefinition(Long qaCheckDefinitionId)
-			throws Exception {
-
-		ReportDefinition qaCheckDefinition = manager.find(
-				ReportDefinitionJpa.class, qaCheckDefinitionId);
-
-		// check if this definition is used by map projects
-		MappingService mappingService = new MappingServiceJpa();
-		MapProjectList mapProjects = mappingService.getMapProjects();
-		mappingService.close();
-
-		for (MapProject mapProject : mapProjects.getIterable()) {
-			if (mapProject.getReportDefinitions().contains(qaCheckDefinition)) {
-				throw new LocalException(
-						"QA Check definition is currently in use by project "
-								+ mapProject.getName()
-								+ " and cannot be deleted");
-			}
-		}
-
-		// now remove the entry
-		tx.begin();
-		if (manager.contains(qaCheckDefinition)) {
-			manager.remove(qaCheckDefinition);
-		} else {
-			manager.remove(manager.merge(qaCheckDefinition));
-		}
-		tx.commit();
-
-	}
 }
