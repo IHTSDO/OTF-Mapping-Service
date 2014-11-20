@@ -106,9 +106,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
   /** progress tracking variables. */
   private int objectCt; //
 
-  /** The log ct. */
-  private int logCt = 2000;
-
   /** The ft. */
   SimpleDateFormat ft = new SimpleDateFormat("hh:mm:ss a"); // for
 
@@ -494,7 +491,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     // Setup vars
     String line;
     objectCt = 0;
-    Long localTime = System.currentTimeMillis();
     int objectsAdded = 0;
     int objectsUpdated = 0;
 
@@ -551,15 +547,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
         // Cache the concept element
         cacheConcept(newConcept);
 
-        // Log progress
-        if (++objectCt % logCt == 0) {
-          Long objPerMinute =
-              (logCt * 1000 * 60) / (System.currentTimeMillis() - localTime);
-          getLog().info(
-              "      " + objectCt + " loaded (" + objPerMinute.toString()
-                  + " per minute)");
-          localTime = System.currentTimeMillis();
-        }
       }
 
     }
@@ -702,7 +689,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     // Setup variables
     String line = "";
     objectCt = 0;
-    Long localTime = System.currentTimeMillis();
     int objectsAdded = 0;
     int objectsUpdated = 0;
 
@@ -807,16 +793,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
         else {
           newLanguageRefSetMember.setEffectiveTime(languageRefSetMember
               .getEffectiveTime());
-        }
-
-        // Log progress
-        if (++objectCt % logCt == 0) {
-          Long objPerMinute =
-              (logCt * 1000 * 60) / (System.currentTimeMillis() - localTime);
-          getLog().info(
-              "  " + objectCt + " loaded (" + objPerMinute.toString()
-                  + " per minute)");
-          localTime = System.currentTimeMillis();
         }
       }
     }
