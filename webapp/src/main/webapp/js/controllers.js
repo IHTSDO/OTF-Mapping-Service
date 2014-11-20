@@ -401,6 +401,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 			path = "help/" + $scope.currentRole + "DashboardHelp.html";
 		}
 		console.debug("go to help page " + path);
+		
 		// redirect page
 		$location.path(path);
 	};

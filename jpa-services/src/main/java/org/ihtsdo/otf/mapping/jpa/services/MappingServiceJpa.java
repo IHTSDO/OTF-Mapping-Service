@@ -90,7 +90,6 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
-
 /**
  * JPA implementation of the {@link MappingService}.
  */
@@ -857,26 +856,30 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		mapRecordList.setTotalCount(revisions.size());
 		return mapRecordList;
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.MappingService#getMapRecordRevisionsForConcept(java.lang.String)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#
+	 * getMapRecordRevisionsForConcept(java.lang.String)
 	 */
 	@Override
-	public MapRecordList getMapRecordRevisionsForConcept(String conceptId, Long mapProjectId) {
+	public MapRecordList getMapRecordRevisionsForConcept(String conceptId,
+			Long mapProjectId) {
 
 		AuditReader reader = AuditReaderFactory.get(manager);
 		@SuppressWarnings("unchecked")
-        List<MapRecord> revisions = reader.createQuery()
+		List<MapRecord> revisions = reader.createQuery()
 
 		// all revisions, returned as objects, not finding deleted entries
 				.forRevisionsOfEntity(MapRecordJpa.class, true, false)
 
 				// search by conceptId
 				.add(AuditEntity.property("conceptId").eq(conceptId))
-				
+
 				// constrain by mapProjectId
 				.add(AuditEntity.property("mapProjectId").eq(mapProjectId))
-				
+
 				// order by descending timestamp
 				.addOrder(AuditEntity.property("lastModified").desc())
 
@@ -894,7 +897,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				mostRecentHistoricalRecords.add(mapRecord);
 			}
 		}
-		mapRecordList.setMapRecords(mostRecentHistoricalRecords);		
+		mapRecordList.setMapRecords(mostRecentHistoricalRecords);
 		mapRecordList.setTotalCount(mapRecordList.getMapRecords().size());
 		return mapRecordList;
 	}
@@ -1071,7 +1074,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 							"select m from MapRecordJpa m where mapProjectId = :mapProjectId and conceptId = :conceptId")
 					.setParameter("mapProjectId", mapProjectId)
 					.setParameter("conceptId", terminologyId).getResultList();
-			
+
 			System.out.println("Retrieved records: " + mapRecords.size());
 			mapRecordList.setMapRecords(mapRecords);
 		} catch (NoResultException e) {
@@ -2486,16 +2489,18 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				// status already exists
 				MapRecordList mapRecordList = null;
 				mapRecordList = this.getMapRecordsForProjectAndConcept(
-							mapProjectId, refSetMember.getTerminologyId());
-                boolean recordForWorkflowStatusExists = false;
-				if (mapRecordList != null ) {
-				  // cycle over any records found and check for user and workflow status
-				  for (MapRecord mr : mapRecordList.getMapRecords()) {
-				    if (mr.getWorkflowStatus().equals(workflowStatus) && mr.getOwner().equals(mapUser)) {
-				      recordForWorkflowStatusExists = true;
-				      break;
-				    }
-                  }
+						mapProjectId, refSetMember.getTerminologyId());
+				boolean recordForWorkflowStatusExists = false;
+				if (mapRecordList != null) {
+					// cycle over any records found and check for user and
+					// workflow status
+					for (MapRecord mr : mapRecordList.getMapRecords()) {
+						if (mr.getWorkflowStatus().equals(workflowStatus)
+								&& mr.getOwner().equals(mapUser)) {
+							recordForWorkflowStatusExists = true;
+							break;
+						}
+					}
 				}
 				// if this record does not already exist
 				if (!recordForWorkflowStatusExists) {
@@ -3006,7 +3011,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		// return role NONE if role is VIEWER and project is private
 		if (!mapProject.isPublic())
 			return MapUserRole.NONE;
-		
+
 		// default role is Viewer
 		return MapUserRole.VIEWER;
 	}
@@ -3200,13 +3205,13 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				WorkflowType.CONFLICT_PROJECT) && (mapRecord
 				.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW)
 				|| mapRecord.getWorkflowStatus().equals(
-						WorkflowStatus.REVIEW_IN_PROGRESS) || mapRecord
-				.getWorkflowStatus().equals(WorkflowStatus.REVIEW_RESOLVED)
-				||		mapRecord
-						.getWorkflowStatus().equals(WorkflowStatus.QA_NEW)
-						|| mapRecord.getWorkflowStatus().equals(
-								WorkflowStatus.QA_IN_PROGRESS) || mapRecord
-						.getWorkflowStatus().equals(WorkflowStatus.QA_RESOLVED)))
+						WorkflowStatus.REVIEW_IN_PROGRESS)
+				|| mapRecord.getWorkflowStatus().equals(
+						WorkflowStatus.REVIEW_RESOLVED)
+				|| mapRecord.getWorkflowStatus().equals(WorkflowStatus.QA_NEW)
+				|| mapRecord.getWorkflowStatus().equals(
+						WorkflowStatus.QA_IN_PROGRESS) || mapRecord
+				.getWorkflowStatus().equals(WorkflowStatus.QA_RESOLVED)))
 
 				||
 
@@ -3228,7 +3233,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				try {
 
 					if (mr.getWorkflowStatus().equals(
-							WorkflowStatus.REVIEW_NEEDED) || mr.getWorkflowStatus().equals(WorkflowStatus.QA_NEEDED)) {
+							WorkflowStatus.REVIEW_NEEDED)
+							|| mr.getWorkflowStatus().equals(
+									WorkflowStatus.QA_NEEDED)) {
 						conflictRecords.addMapRecord(getMapRecord(originId));
 						foundReviewRecord = true;
 					} else if (mr.getWorkflowStatus().equals(
@@ -3248,13 +3255,13 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				}
 
 			}
-			
+
 			// this is the case on the QA_PATH
 			if (foundReviewRecord || foundRevisionRecord) {
 				conflictRecords.setTotalCount(conflictRecords.getCount());
 				return conflictRecords;
 			}
-			
+
 		} else if (mapProject.getWorkflowType().equals(
 				WorkflowType.REVIEW_PROJECT)
 				&& mapRecord.getWorkflowStatus().equals(
@@ -3263,12 +3270,11 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 						WorkflowStatus.REVIEW_IN_PROGRESS)
 				|| mapRecord.getWorkflowStatus().equals(
 						WorkflowStatus.REVIEW_RESOLVED)
+				|| mapRecord.getWorkflowStatus().equals(WorkflowStatus.QA_NEW)
 				|| mapRecord.getWorkflowStatus().equals(
-								WorkflowStatus.QA_NEW)
+						WorkflowStatus.QA_IN_PROGRESS)
 				|| mapRecord.getWorkflowStatus().equals(
-										WorkflowStatus.QA_IN_PROGRESS)
-				|| mapRecord.getWorkflowStatus().equals(
-										WorkflowStatus.QA_RESOLVED)) {
+						WorkflowStatus.QA_RESOLVED)) {
 
 			System.out.println("Getting origin id for REVIEW_PROJECT record");
 
@@ -3278,8 +3284,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 					.getTrackingRecordForMapProjectAndConcept(mapProject,
 							mapRecord.getConceptId());
 
-			if (tr.getWorkflowPath().equals(WorkflowPath.REVIEW_PROJECT_PATH) ||
-					tr.getWorkflowPath().equals(WorkflowPath.QA_PATH)) {
+			if (tr.getWorkflowPath().equals(WorkflowPath.REVIEW_PROJECT_PATH)
+					|| tr.getWorkflowPath().equals(WorkflowPath.QA_PATH)) {
 
 				for (Long originId : mapRecord.getOriginIds()) {
 
@@ -3289,8 +3295,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 						// check assumption
 						if (!mr.getWorkflowStatus().equals(
-								WorkflowStatus.REVIEW_NEEDED) && 
-								!mr.getWorkflowStatus().equals(WorkflowStatus.QA_NEEDED)) {
+								WorkflowStatus.REVIEW_NEEDED)
+								&& !mr.getWorkflowStatus().equals(
+										WorkflowStatus.QA_NEEDED)) {
 							throw new Exception(
 									"Single origin record found for review, but was not REVIEW_NEEDED or QA_NEEDED");
 						}
@@ -3672,41 +3679,159 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.MappingService#getMapProjectMetadata()
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.MappingService#getMapProjectMetadata()
 	 */
 	@Override
-	public Map<String, Map<String, String>> getMapProjectMetadata() throws Exception {
+	public Map<String, Map<String, String>> getMapProjectMetadata()
+			throws Exception {
 		Map<String, Map<String, String>> idNameMapList = new HashMap<>();
-		
+
 		Map<String, String> workflowNameMap = new HashMap<>();
-		for (WorkflowType type : WorkflowType.values() ) {
+		for (WorkflowType type : WorkflowType.values()) {
 			workflowNameMap.put(type.name(), type.getDisplayName());
 		}
 		if (workflowNameMap.size() > 0) {
 			idNameMapList.put("Workflow Types", workflowNameMap);
 		}
-		
+
 		Map<String, String> relationStyleNameMap = new HashMap<>();
-		for (RelationStyle type : RelationStyle.values() ) {
+		for (RelationStyle type : RelationStyle.values()) {
 			relationStyleNameMap.put(type.name(), type.getDisplayName());
 		}
 		if (relationStyleNameMap.size() > 0) {
 			idNameMapList.put("Relation Styles", relationStyleNameMap);
-		}		
-		
+		}
+
 		Map<String, String> mapRefsetPatternNameMap = new HashMap<>();
-		for (MapRefsetPattern type : MapRefsetPattern.values() ) {
+		for (MapRefsetPattern type : MapRefsetPattern.values()) {
 			mapRefsetPatternNameMap.put(type.name(), type.getDisplayName());
 		}
 		if (mapRefsetPatternNameMap.size() > 0) {
 			idNameMapList.put("Map Refset Patterns", mapRefsetPatternNameMap);
-		}		
-		
-		
+		}
+
 		return idNameMapList;
 	}
 
-	
+	@Override
+	public SearchResultList getScopeConceptsForMapProject(
+			MapProject mapProject, PfsParameter pfsParameter) throws Exception {
+
+		SearchResultList searchResultList = new SearchResultListJpa();
+
+		// if pfsParamter is null, construct a blank pfs parameter object
+		if (pfsParameter == null)
+			pfsParameter = new PfsParameterJpa();
+
+		// convert set to list
+		List<String> scopeConcepts = new ArrayList<>(
+				mapProject.getScopeConcepts());
+
+		// sort lexically
+		Collections.sort(scopeConcepts);
+
+		// calculate the start and end indices
+		int startIndex = pfsParameter.getStartIndex() == -1 ? 0 : Math.min(
+				pfsParameter.getStartIndex(), scopeConcepts.size());
+		int endIndex = pfsParameter.getMaxResults() == -1 ? scopeConcepts
+				.size() : Math.min(startIndex + pfsParameter.getMaxResults(),
+				scopeConcepts.size());
+
+		// set the total count
+		searchResultList.setTotalCount(scopeConcepts.size());
+
+		// get the sublist
+		scopeConcepts = scopeConcepts.subList(startIndex, endIndex);
+
+		// for each concept id in sublist, get the
+		ContentService contentService = new ContentServiceJpa();
+		for (String conceptId : scopeConcepts) {
+
+			SearchResult searchResult = new SearchResultJpa();
+			searchResult.setTerminology(mapProject.getSourceTerminology());
+			searchResult.setTerminologyVersion(mapProject
+					.getSourceTerminologyVersion());
+			searchResult.setTerminologyId(conceptId);
+
+			// get the concept
+			Concept concept = contentService.getConcept(conceptId,
+					mapProject.getSourceTerminology(),
+					mapProject.getSourceTerminologyVersion());
+
+			// if concept found, set search result parameters from concept,
+			// otherwise, set error text
+			searchResult
+					.setValue(concept == null ? "Concept could not be retrieved"
+							: concept.getDefaultPreferredName());
+
+			searchResultList.addSearchResult(searchResult);
+		}
+		contentService.close();
+
+		return searchResultList;
+	}
+
+	@Override
+	public SearchResultList getScopeExcludedConceptsForMapProject(
+			MapProject mapProject, PfsParameter pfsParameter) throws Exception {
+
+		SearchResultList searchResultList = new SearchResultListJpa();
+
+		// if pfsParamter is null, construct a blank pfs parameter object
+		if (pfsParameter == null)
+			pfsParameter = new PfsParameterJpa();
+
+		// convert set to list
+		List<String> scopeExcludedConcepts = new ArrayList<>(
+				mapProject.getScopeExcludedConcepts());
+
+		// sort lexically
+		Collections.sort(scopeExcludedConcepts);
+
+		// calculate the start and end indices
+		int startIndex = pfsParameter.getStartIndex() == -1 ? 0 : Math.min(
+				pfsParameter.getStartIndex(), scopeExcludedConcepts.size());
+		int endIndex = pfsParameter.getMaxResults() == -1 ? scopeExcludedConcepts
+				.size() : Math.min(startIndex + pfsParameter.getMaxResults(),
+				scopeExcludedConcepts.size());
+
+		// set the total count
+		searchResultList.setTotalCount(scopeExcludedConcepts.size());
+
+		// get the sublist
+		scopeExcludedConcepts = scopeExcludedConcepts.subList(startIndex,
+				endIndex);
+
+		// for each concept id in sublist, get the concept name
+		ContentService contentService = new ContentServiceJpa();
+		for (String conceptId : scopeExcludedConcepts) {
+
+			SearchResult searchResult = new SearchResultJpa();
+			searchResult.setTerminology(mapProject.getSourceTerminology());
+			searchResult.setTerminologyVersion(mapProject
+					.getSourceTerminologyVersion());
+			searchResult.setTerminologyId(conceptId);
+
+			// get the concept
+			Concept concept = contentService.getConcept(conceptId,
+					mapProject.getSourceTerminology(),
+					mapProject.getSourceTerminologyVersion());
+
+			// if concept found, set search result parameters from concept,
+			// otherwise, set error text
+			searchResult
+					.setValue(concept == null ? "Concept could not be retrieved"
+							: concept.getDefaultPreferredName());
+
+			searchResultList.addSearchResult(searchResult);
+		}
+		contentService.close();
+
+		return searchResultList;
+	}
 
 }

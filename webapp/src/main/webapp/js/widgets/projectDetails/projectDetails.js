@@ -75,7 +75,7 @@ angular
 				return out;
 			};
 		})
-	
+
 		.controller(
 				'projectDetailsCtrl',
 				[
@@ -301,9 +301,11 @@ angular
 										})
 										.success(
 												function(data) {
-													//$scope.reportDefinitions = data.reportDefinition;
-													for (var i=0; i<data.reportDefinition.length; i++) {
-														$scope.reportDefinitions.push(data.reportDefinition[i]);
+													// $scope.reportDefinitions
+													// = data.reportDefinition;
+													for (var i = 0; i < data.reportDefinition.length; i++) {
+														$scope.reportDefinitions
+																.push(data.reportDefinition[i]);
 													}
 													localStorageService
 															.add(
@@ -339,8 +341,9 @@ angular
 										.success(
 												function(data) {
 													$scope.qaCheckDefinitions = data.reportDefinition;
-													for (var i=0; i<$scope.qaCheckDefinitions.length; i++) {
-														$scope.reportDefinitions.push($scope.qaCheckDefinitions[i]);
+													for (var i = 0; i < $scope.qaCheckDefinitions.length; i++) {
+														$scope.reportDefinitions
+																.push($scope.qaCheckDefinitions[i]);
 													}
 													localStorageService
 															.add(
@@ -362,7 +365,7 @@ angular
 															data, status,
 															headers, config);
 												});
-								
+
 								// find selected elements from the allowable
 								// lists
 								$scope.selectedMapType = $scope
@@ -467,7 +470,9 @@ angular
 
 							$scope.getPagedReportDefinitions = function(page,
 									filter) {
-								console.debug("Getting pagedproject definitions", $scope.focusProject.reportDefinition);
+								console.debug(
+										"Getting pagedproject definitions",
+										$scope.focusProject.reportDefinition);
 								$scope.reportDefinitionFilter = filter;
 								$scope.pagedReportDefinition = $scope
 										.sortByKey(
@@ -487,114 +492,94 @@ angular
 										.debug("Called paged scope concept for page "
 												+ page);
 
-								$scope.pagedScopeConcept = $scope.focusProject.scopeConcepts;
-								$scope.pagedScopeConceptCount = $scope.pagedScopeConcept.length;
+								// construct a paging/filtering/sorting object
+								var pfsParameterObj = {
+									"startIndex" : page == -1 ? -1 : (page - 1)
+											* $scope.pageSize,
+									"maxResults" : page == -1 ? -1
+											: $scope.pageSize,
+									"sortField" : '',
+									"queryRestriction" : ''
+								};
 
-								$scope.pagedScopeConcept = $scope.pagedScopeConcept
-										.slice((page - 1) * $scope.pageSize,
-												page * $scope.pageSize);
+								$rootScope.glassPane++;
 
-								// find concept based on source terminology
-								for (var i = (page - 1) * $scope.pageSize; i < (page * $scope.pageSize) + $scope.pageSize; i++) {
-									$rootScope.glassPane++;
-									$http(
-											{
-												url : root_content
-														+ "concept/id/"
-														+ $scope.focusProject.sourceTerminology
-														+ "/"
-														+ $scope.focusProject.sourceTerminologyVersion
-														+ "/"
-														+ $scope.focusProject.scopeConcepts[i],
-												dataType : "json",
-												method : "GET",
-												headers : {
-													"Content-Type" : "application/json"
-												}
-											})
-											.success(
-													function(data) {
-														$rootScope.glassPane--;
-														var obj = {
-															key : data.terminologyId,
-															concept : data
-														};
-														$scope.scopeMap[obj.key] = obj.concept.defaultPreferredName;
-													})
-											.error(
-													function(data, status,
-															headers, config) {
-														$rootScope.glassPane--;
+								$http(
+										{
+											url : root_mapping + "project/id/"
+													+ $scope.focusProject.id
+													+ "/scopeConcepts",
+											dataType : "json",
+											data : pfsParameterObj,
+											method : "POST",
+											headers : {
+												"Content-Type" : "application/json"
+											}
+										})
+										.success(
+												function(data) {
+													$rootScope.glassPane--;
+													$scope.pagedScopeConcept = data.searchResult;
+													$scope.pagedScopeConceptCount = data.totalCount;
+												}).error(
+												function(data, status, headers,
+														config) {
+													$rootScope.glassPane--;
 
-														$rootScope
-																.handleHttpError(
-																		data,
-																		status,
-																		headers,
-																		config);
-													});
-								}
-
-								console.debug($scope.pagedScopeConcept);
+													$rootScope.handleHttpError(
+															data, status,
+															headers, config);
+												});
 							};
 
 							$scope.getPagedScopeExcludedConcepts = function(
 									page, filter) {
 								console
-										.debug("Called paged scope excluded concept for page "
+										.debug("Called paged scope concept for page "
 												+ page);
-								$scope.pagedScopeExcludedConcept = $scope
-										.sortByKey(
-												$scope.focusProject.scopeExcludedConcepts,
-												'id')
-										.filter(
-												containsScopeExcludedConceptFilter);
-								$scope.pagedScopeExcludedConceptCount = $scope.pagedScopeExcludedConcept.length;
-								$scope.pagedScopeExcludedConcept = $scope.pagedScopeExcludedConcept
-										.slice((page - 1) * $scope.pageSize,
-												page * $scope.pageSize);
 
-								// fill the scope map for these variables
-								for (var i = (page - 1) * $scope.pageSize; i < (page * $scope.pageSize) + $scope.pageSize; i++) {
-									$rootScope.glassPane++;
-									$http({
-												url : root_content
-														+ "concept/id/"
-														+ $scope.focusProject.sourceTerminology
-														+ "/"
-														+ $scope.focusProject.sourceTerminologyVersion
-														+ "/"
-														+ $scope.focusProject.scopeExcludedConcepts[i],
-												dataType : "json",
-												method : "GET",
-												headers : {
-													"Content-Type" : "application/json"
-												}
-											})
-											.success(
-													function(data) {
-														$rootScope.glassPane--;
-														var obj = {
-															key : data.terminologyId,
-															concept : data
-														};
-														$scope.scopeExcludedMap[obj.key] = obj.concept.defaultPreferredName;
-													})
-											.error(
-													function(data, status,
-															headers, config) {
-														$rootScope.glassPane--;
+								// construct a paging/filtering/sorting object
+								var pfsParameterObj = {
+									"startIndex" : page == -1 ? -1 : (page - 1)
+											* $scope.pageSize,
+									"maxResults" : page == -1 ? -1
+											: $scope.pageSize,
+									"sortField" : '',
+									"queryRestriction" : ''
+								};
 
-														$rootScope
-																.handleHttpError(
-																		data,
-																		status,
-																		headers,
-																		config);
-													});
-								}
+								$rootScope.glassPane++;
 
-								console.debug($scope.pagedScopeExcludedConcept);
+								$http(
+										{
+											url : root_mapping + "project/id/"
+													+ $scope.focusProject.id
+													+ "/scopeExcludedConcepts",
+											dataType : "json",
+											data : pfsParameterObj,
+											method : "POST",
+											headers : {
+												"Content-Type" : "application/json"
+											}
+										})
+										.success(
+												function(data) {
+													$rootScope.glassPane--;
+													$scope.pagedScopeExcludedConcept = data.searchResult;
+													$scope.pagedScopeExcludedConceptCount = data.totalCount;
+												})
+										.error(
+												function(data, status, headers,
+														config) {
+													$rootScoped.glassPane--;
+
+													$rootScope
+															.handleHttpError(
+																	data,
+																	status,
+																	headers,
+																	config);
+												});
 							};
 
 							// functions to reset the filter and retrieve
@@ -797,11 +782,13 @@ angular
 										|| $scope.reportDefinitionFilter == null)
 									return true;
 
-								// otherwise check if upper-case reportDefinition filter
+								// otherwise check if upper-case
+								// reportDefinition filter
 								// matches upper-case element name or detail
 								if (element.name.toString().toUpperCase()
 										.indexOf(
-												$scope.reportDefinitionFilter.toString()
+												$scope.reportDefinitionFilter
+														.toString()
 														.toUpperCase()) != -1)
 									return true;
 
@@ -1394,13 +1381,14 @@ angular
 
 												});
 							};
-							
-							$scope.deleteReportDefinition = function(reportDefinition) {
+
+							$scope.deleteReportDefinition = function(
+									reportDefinition) {
 								console.debug("in deleteReportDefinition");
 								for (var j = 0; j < $scope.focusProject.reportDefinition.length; j++) {
 									if (reportDefinition.name === $scope.focusProject.reportDefinition[j].name) {
-										$scope.focusProject.reportDefinition.splice(
-												j, 1);
+										$scope.focusProject.reportDefinition
+												.splice(j, 1);
 									}
 								}
 								// update and broadcast the updated focus
@@ -1418,10 +1406,14 @@ angular
 								$scope.updateMapProject();
 							};
 
-							$scope.addReportDefinition = function(reportDefinition) {
-								console.debug("in addReportDefinition", reportDefinition);
-								$scope.focusProject.reportDefinition.push(reportDefinition);
-								console.debug($scope.focusProject.reportDefinitions)
+							$scope.addReportDefinition = function(
+									reportDefinition) {
+								console.debug("in addReportDefinition",
+										reportDefinition);
+								$scope.focusProject.reportDefinition
+										.push(reportDefinition);
+								console
+										.debug($scope.focusProject.reportDefinitions)
 								// update and broadcast the updated focus
 								// project
 								localStorageService.set('focusProject',
@@ -1808,95 +1800,136 @@ angular
 							};
 
 							$scope.deleteScopeIncludedConcept = function(
-									scopeConcept) {
+									scopeConcept, currentPage) {
 								// TODO: recalculate workflow
 								console.debug("in deleteScopeIncludedConcept");
-								for (var j = 0; j < $scope.focusProject.scopeConcepts.length; j++) {
-									if (scopeConcept === $scope.focusProject.scopeConcepts[j]) {
-										$scope.focusProject.scopeConcepts
-												.splice(j, 1);
-									}
-								}
-								// update and broadcast the updated focus
-								// project
-								localStorageService.set('focusProject',
-										$scope.focusProject);
-								$rootScope
-										.$broadcast(
-												'localStorageModule.notification.setFocusProject',
-												{
-													key : 'focusProject',
-													focusProject : $scope.focusProject
+								$rootScope.glassPane++;
+
+								$http(
+										{
+											url : root_mapping + "project/id/"
+													+ $scope.focusProject.id
+													+ "/scopeConcepts/remove",
+											dataType : "json",
+											data : scopeConcept.terminologyId,
+											method : "POST",
+											headers : {
+												"Content-Type" : "application/json"
+											}
+										}).success(function(data) {
+									$rootScope.glassPane--;
+									$scope.getPagedScopeConcepts(currentPage);
+								})
+										.error(
+												function(data, status, headers,
+														config) {
+													$rootScope.glassPane--;
+
+													$rootScope.handleHttpError(
+															data, status,
+															headers, config);
 												});
-								$scope.resetScopeConceptFilter();
-								$scope.updateMapProject();
 							};
 
 							$scope.submitNewScopeIncludedConcept = function(
 									scopeConcept) {
 								console
 										.debug("in submitNewScopeIncludedConcept");
-								$scope.focusProject.scopeConcepts
-										.push(scopeConcept);
-								// update and broadcast the updated focus
-								// project
-								localStorageService.set('focusProject',
-										$scope.focusProject);
-								$rootScope
-										.$broadcast(
-												'localStorageModule.notification.setFocusProject',
-												{
-													key : 'focusProject',
-													focusProject : $scope.focusProject
+
+								$rootScope.glassPane++;
+
+								$http(
+										{
+											url : root_mapping + "project/id/"
+													+ $scope.focusProject.id
+													+ "/scopeConcepts/add",
+											dataType : "json",
+											data : scopeConcept,
+											method : "POST",
+											headers : {
+												"Content-Type" : "application/json"
+											}
+										}).success(function(data) {
+									$rootScope.glassPane--;
+									$scope.getPagedScopeConcepts(1);
+								})
+										.error(
+												function(data, status, headers,
+														config) {
+													$rootScope.glassPane--;
+
+													$rootScope.handleHttpError(
+															data, status,
+															headers, config);
 												});
-								$scope.resetScopeConceptFilter();
-								$scope.updateMapProject();
+
 							};
 
 							$scope.deleteScopeExcludedConcept = function(
-									scopeConcept) {
+									scopeConcept, currentPage) {
 								// TODO: recalculate workflow
 								console.debug("in deleteScopeExcludedConcept");
-								for (var j = 0; j < $scope.focusProject.scopeExcludedConcepts.length; j++) {
-									if (scopeConcept === $scope.focusProject.scopeExcludedConcepts[j]) {
-										$scope.focusProject.scopeExcludedConcepts
-												.splice(j, 1);
-									}
-								}
-								// update and broadcast the updated focus
-								// project
-								localStorageService.set('focusProject',
-										$scope.focusProject);
-								$rootScope
-										.$broadcast(
-												'localStorageModule.notification.setFocusProject',
-												{
-													key : 'focusProject',
-													focusProject : $scope.focusProject
+								$rootScope.glassPane++;
+
+								$http(
+										{
+											url : root_mapping
+													+ "project/id/"
+													+ $scope.focusProject.id
+													+ "/scopeExcludedConcepts/remove",
+											dataType : "json",
+											data : scopeConcept.terminologyId,
+											method : "POST",
+											headers : {
+												"Content-Type" : "application/json"
+											}
+										}).success(function(data) {
+									$rootScope.glassPane--;
+									$scope.getPagedScopeExcludedConcepts(currentPage);
+								})
+										.error(
+												function(data, status, headers,
+														config) {
+													$rootScope.glassPane--;
+
+													$rootScope.handleHttpError(
+															data, status,
+															headers, config);
 												});
-								$scope.resetScopeExcludedConceptFilter();
-								$scope.updateMapProject();
 							};
 
 							$scope.submitNewScopeExcludedConcept = function(
 									scopeConcept) {
 								console
 										.debug("in submitNewScopeExcludedConcept");
-								$scope.focusProject.scopeExcludedConcepts
-										.push(scopeConcept);
-								// update and broadcast the updated focus
-								// project
-								localStorageService.set('focusProject',
-										$scope.focusProject);
-								$rootScope
-										.$broadcast(
-												'localStorageModule.notification.setFocusProject',
-												{
-													key : 'focusProject',
-													focusProject : $scope.focusProject
+
+								$rootScope.glassPane++;
+
+								$http(
+										{
+											url : root_mapping + "project/id/"
+													+ $scope.focusProject.id
+													+ "/scopeExcludedConcepts/add",
+											dataType : "json",
+											data : scopeConcept,
+											method : "POST",
+											headers : {
+												"Content-Type" : "application/json"
+											}
+										}).success(function(data) {
+									$rootScope.glassPane--;
+									$scope.getPagedScopeExcludedConcepts(1);
+								})
+										.error(
+												function(data, status, headers,
+														config) {
+													$rootScope.glassPane--;
+
+													$rootScope.handleHttpError(
+															data, status,
+															headers, config);
 												});
-								$scope.resetScopeExcludedConceptFilter();
-								$scope.updateMapProject();
+
 							};
 
 							$scope.resetModel = function() {
