@@ -15,6 +15,7 @@ import org.ihtsdo.otf.mapping.model.FeedbackConversation;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
+import org.ihtsdo.otf.mapping.reports.Report;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 import org.ihtsdo.otf.mapping.workflow.WorkflowException;
@@ -588,6 +589,14 @@ public interface WorkflowService extends RootService {
 	 */
 	public SearchResultList findAssignedQAWork(MapProject mapProject, MapUser mapUser,
 			String query, PfsParameter pfsParameter) throws Exception;
+
+	/**
+	 * Creates the qa work.
+	 *
+	 * @param report the report
+	 * @throws Exception the exception
+	 */
+	public void createQAWork(Report report) throws Exception;
 
 }
 

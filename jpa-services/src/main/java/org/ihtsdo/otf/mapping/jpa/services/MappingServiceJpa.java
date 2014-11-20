@@ -1065,18 +1065,12 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			String terminologyId) throws Exception {
 
 		MapRecordList mapRecordList = new MapRecordListJpa();
-		try {
-			List<MapRecord> mapRecords = manager
-					.createQuery(
-							"select m from MapRecordJpa m where mapProjectId = :mapProjectId and conceptId = :conceptId")
-					.setParameter("mapProjectId", mapProjectId)
-					.setParameter("conceptId", terminologyId).getResultList();
-			
-			System.out.println("Retrieved records: " + mapRecords.size());
-			mapRecordList.setMapRecords(mapRecords);
-		} catch (NoResultException e) {
-			// do nothing
+		for (MapRecord mapRecord : mapRecords) {
+			handleMapRecordLazyInitialization(mapRecord);
 		}
+
+		mapRecordList.setMapRecords(mapRecords);
+		mapRecordList.setTotalCount(mapRecords.size());
 		return mapRecordList;
 
 	}
