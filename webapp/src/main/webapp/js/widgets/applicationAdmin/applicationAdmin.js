@@ -1432,7 +1432,7 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 					$rootScope.glassPane++;
 					console.debug("Testing report definition");
 				
-					
+					var qaCheck = false;
 					var obj = 			  
 					{		"name":name,
 							"roleRequired":roleRequired,
@@ -1441,7 +1441,7 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 							"frequency":frequency,
 							"diffReport":diffReport,
 							"timePeriod":timePeriod,
-							"qaCheck":"false",
+							"qaCheck":qaCheck,
 							"query":query };
 
 
@@ -1479,6 +1479,7 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 					if (timePeriod === undefined || timePeriod === '')
 						timePeriod = null;
 					
+					var qaCheck = false;
 					var obj = 			  
 					{		"name":name,
 							"roleRequired":roleRequired,
@@ -1487,7 +1488,7 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 							"frequency":frequency,
 							"diffReport":diffReport,
 							"timePeriod":timePeriod,
-							"qaCheck":"false",
+							"qaCheck":qaCheck,
 							"query":query };
 
 					$http({						
@@ -1542,6 +1543,7 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 						timePeriod = null;
 					
 					console.debug("in submitNewReportDefinition");
+					var qaCheck = false;
 					var obj = 			  
 					{		"name":name,
 							"roleRequired":roleRequired,
@@ -1550,7 +1552,7 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 							"frequency":frequency,
 							"diffReport":diffReport,
 							"timePeriod":timePeriod,
-							"qaCheck":"false",
+							"qacheck":qaCheck,
 							"query":query };
 					
 					$http({						
@@ -1597,7 +1599,7 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 						return;
 					
 					$http({						
-						url: root_reporting + "qaCheckDefinition/delete",
+						url: root_reporting + "definition/delete",
 						dataType: "json",
 						data: qaCheckDefinition,
 						method: "DELETE",
@@ -1693,20 +1695,21 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 				
 				$scope.submitNewQACheckDefinition = function(name, roleRequired, resultType, queryType,  query) {
 
-					
+					var qaCheck = true;
+					var diffReport = false;
 					console.debug("in submitNewQACheckDefinition");
 					var obj = 			  
 					{		"name":name,
 							"roleRequired":roleRequired,
 							"resultType":resultType,
 							"queryType":queryType,
-							"diffReport":"false",
-							"qaCheck":"true",
+							"diffReport":diffReport,
+							"qacheck":qaCheck,
 							"timePeriod":null,
 							"query":query };
 					
 					$http({						
-						url: root_reporting + "qaCheckDefinition/add",
+						url: root_reporting + "definition/add",
 						dataType: "json",
 						data: obj,
 						method: "POST",

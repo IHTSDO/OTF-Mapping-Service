@@ -543,50 +543,6 @@ public class ReportServiceRest extends RootServiceRest {
 		}
 	}
 	
-
-	/**
-	 * Adds the qaCheck definitions.
-	 *
-	 * @param qaCheckDefinition the qaCheck definition
-	 * @param authToken the auth token
-	 * @return the qaCheck definition
-	 */
-	@POST
-	@Path("/qaCheckDefinition/add")
-	@ApiOperation(value = "Add a qaCheck definition", notes = "Adds a qaCheck definition based on a JSON or XML object", response = ReportDefinitionJpa.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public ReportDefinition addQACheckDefinitions(
-			@ApiParam(value = "The qaCheck definition to add", required = true) ReportDefinitionJpa qaCheckDefinition,
-			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
-		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Report):  /qaCheckDefinition/add");
-		String user = "";
-
-		try {
-			// authorize call
-			MapUserRole role = securityService
-					.getApplicationRoleForToken(authToken);
-			user = securityService.getUsernameForToken(authToken);
-			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
-				throw new WebApplicationException(
-						Response.status(401)
-								.entity("User does not have permissions to add a qaCheck definition.")
-								.build()); 
-
-			// get the qaChecks
-			ReportService qaCheckService = new ReportServiceJpa();
-			ReportDefinition definition = qaCheckService
-					.addQACheckDefinition(qaCheckDefinition);
-			qaCheckService.close();
-
-			return definition;
-		} catch (Exception e) {
-			handleException(e, "trying to add a qaCheck definition", user, "", "");
-			return null;
-		}
-
-	}
-
 	@GET
 	@Path("/qaLabel/qaLabels")
 	@ApiOperation(value = "Gets all qa labels", notes = "Returns all qa labels in JSON or XML format", response = ReportDefinitionJpa.class)
