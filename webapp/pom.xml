@@ -36,6 +36,7 @@
 
   <!-- Standard build profile, no special configuration needed -->
   <build>
+    <finalName>${project.artifactId}</finalName>
 
     <!-- Add target images folder to the resources list -->
     <resources>
@@ -83,7 +84,7 @@
             </goals>
             <configuration>
               <target name="copy favicon">
-                <copy file="${deploy.favicon}"
+                <copy file="${deploy.favicon}" overwrite="true"
                   tofile="${project.build.directory}/custom/img/favicon.png" />
               </target>
             </configuration>
@@ -98,7 +99,7 @@
             </goals>
             <configuration>
               <target name="copy logo">
-                <copy file="${deploy.favicon}"
+                <copy file="${deploy.favicon}" overwrite="true"
                   tofile="${project.build.directory}/img/images/logo.png" />
               </target>
             </configuration>

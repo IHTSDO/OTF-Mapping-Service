@@ -61,6 +61,8 @@ import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
+import org.ihtsdo.otf.mapping.reports.Report;
+import org.ihtsdo.otf.mapping.reports.ReportResultItem;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
@@ -81,7 +83,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	 * 
 	 * @throws Exception
 	 */
-
 	public WorkflowServiceJpa() throws Exception {
 		super();
 
@@ -859,7 +860,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			StringBuffer labelBuffer = new StringBuffer();
 			for (MapRecord record : getMapRecordsForTrackingRecord(tr)) {
 			  for (String label : record.getLabels()) {
-			  	labelBuffer.append(";").append(label);
+				if (labelBuffer.indexOf(label) == -1)
+			  	  labelBuffer.append(";").append(label);
 			  }
 			}
 			result.setValue2(labelBuffer.toString());
@@ -1662,7 +1664,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			StringBuffer labelBuffer = new StringBuffer();
 			for (MapRecord record : getMapRecordsForTrackingRecord(tr)) {
 			  for (String label : record.getLabels()) {
-			  	labelBuffer.append(";").append(label);
+				if (labelBuffer.indexOf(label) == -1)
+			  	  labelBuffer.append(";").append(label);
 			  }
 			}
 			result.setValue2(labelBuffer.toString());
@@ -1675,6 +1678,67 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		return assignedReviewWork;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#createQAWork(org.ihtsdo.otf.mapping.reports.Report)
+	 */
+	@Override
+	public void createQAWork(Report report) throws Exception {
+		
+		if (report.getResults() == null || report.getResults().size() != 1) {
+			throw new Exception(
+					"Failed to provide a report with one result set "
+							+ report.getId());
+		}
+		
+		Set<String> conceptIds = new HashSet<>();
+		for (ReportResultItem resultItem : report.getResults().get(0).getReportResultItems()) {
+			conceptIds.add(resultItem.getItemId());
+		}
+		
+		// open the services
+		ContentService contentService = new ContentServiceJpa();
+		MappingService mappingService = new MappingServiceJpa();
+
+		// get the map project and concept
+		MapProject mapProject = mappingService.getMapProject(report
+				.getMapProjectId());
+		
+
+
+		// find the qa user
+		MapUser mapUser = null;
+		for (MapUser user : mappingService.getMapUsers().getMapUsers()) {
+			if (user.getUserName().equals("qa"))
+				mapUser = user;
+		}
+		
+		mappingService.close();
+		
+		for (String conceptId : conceptIds) {
+		
+			Concept concept = contentService.getConcept(
+					conceptId,
+					mapProject.getSourceTerminology(),
+					mapProject.getSourceTerminologyVersion());
+			
+			mappingService = new MappingServiceJpa();
+			
+			MapRecordList recordList = mappingService.getMapRecordsForProjectAndConcept(mapProject.getId(), conceptId);
+			
+			mappingService.close();
+			
+			for (MapRecord mapRecord : recordList.getMapRecords()) {
+		    // set the label on the record
+		    mapRecord.addLabel(report.getReportDefinition().getName());
+			
+		    // process the workflow action
+		    processWorkflowAction(mapProject, concept,
+				  mapUser, mapRecord, WorkflowAction.CREATE_QA_RECORD);
+			}
+		}
+		
+		contentService.close();
+	}
 
 	/**
 	 * Perform workflow actions based on a specified action.
@@ -1796,7 +1860,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				trackingRecord.setWorkflowPath(WorkflowPath.QA_PATH);
 
 				// perform the assign action via the algorithm handler
-				// TODO: user fake QA user from service - don't look it up in assignFromInitialRecord
 				mapRecords = algorithmHandler.assignFromInitialRecord(
 						trackingRecord, mapRecords, mapRecord, mapUser);
 			} else {
@@ -2322,18 +2385,28 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			}
 
 			// check if REVISION record is present
+			// check if QA record is present
 			boolean revisionRecordPresent = false;
+			boolean qaRecordPresent = false;
 			for (MapRecord mr : mapRecordsForTrackingRecord) {
 				if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION))
 					revisionRecordPresent = true;
+				if (mr.getWorkflowStatus().equals(WorkflowStatus.QA_NEEDED) ||
+						mr.getWorkflowStatus().equals(WorkflowStatus.QA_NEW)||
+						mr.getWorkflowStatus().equals(WorkflowStatus.QA_IN_PROGRESS) ||
+						mr.getWorkflowStatus().equals(WorkflowStatus.QA_RESOLVED)) {
+					qaRecordPresent = true;
+				}
 			}
 
-			// if REVISION found, set to FIX_ERROR_PATH
-			if (revisionRecordPresent == true) {
+			// if REVISION found and no qa records, set to FIX_ERROR_PATH
+			if (revisionRecordPresent && !qaRecordPresent) {
 				trackingRecord.setWorkflowPath(WorkflowPath.FIX_ERROR_PATH);
-
-				// otherwise, set to the WorkflowPath corresponding to the
-				// project WorkflowType
+			// if REVISION found and qa records, set to QA_PATH
+			} else if (revisionRecordPresent && qaRecordPresent) {
+        trackingRecord.setWorkflowPath(WorkflowPath.QA_PATH);
+			// otherwise, set to the WorkflowPath corresponding to the
+		  // project WorkflowType
 			} else {
 				if (mapProject.getWorkflowType().equals(
 						WorkflowType.CONFLICT_PROJECT))
