@@ -1078,17 +1078,12 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 		if (reportDefinition.isDiffReport() == true) {
 
 			// get the ids corresponding to reports to be diffed
-			try {
-				resultSet.next();
-				report.setReport1Id(new Long(resultSet.getString("itemId")));
-				resultSet.next();
-				report.setReport2Id(new Long(resultSet.getString("itemId")));
-			} catch (SQLException e) {
-				Logger.getLogger(ReportServiceJpa.class).warn(
-						"Could not retrieve report ids for diff report");
-				resultSet.close();
-				return null;
-			}
+			
+			resultSet.next();
+			report.setReport1Id(new Long(resultSet.getString("itemId")));
+			resultSet.next();
+			report.setReport2Id(new Long(resultSet.getString("itemId")));
+			
 
 			// if either report id is null, cannot construct report, return null
 			if (report.getReport1Id() == null || report.getReport2Id() == null) {
@@ -1278,10 +1273,23 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
 		// crude check: check for data manipulation commands
 		if (query.toUpperCase().matches(
-				"ALTER|CREATE|DROP|DELETE|INSERT|TRUNCATE|UPDATE")) {
+				"ALTER |CREATE |DROP |DELETE |INSERT |TRUNCATE |UPDATE ")) {
 			throw new LocalException(
 					"SQL Query has bad format:  data manipulation request detected");
 		}
+		
+		// check for proper format for insertion into reports
+		String selectSubStr = query.substring(0, query.toUpperCase().indexOf("FROM"));
+		
+		if (!selectSubStr.contains("itemId"))
+				throw new LocalException(
+						"Report query must return column result with name of 'itemId'");
+		
+		if (!selectSubStr.contains("itemName"))
+			throw new LocalException("Report query must return column result with name of 'itemName'");
+		
+		if (!selectSubStr.contains("value"))
+			throw new LocalException("Report query must return column result with name of 'value'");
 
 		// get the database parameters
 		Properties config = ConfigUtility.getConfigProperties();
