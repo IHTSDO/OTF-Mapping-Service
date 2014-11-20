@@ -50,6 +50,7 @@ import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
+import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionListJpa;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
@@ -530,6 +531,248 @@ public class MappingServiceRest extends RootServiceRest {
 		} catch (Exception e) {
 			handleException(e, "trying to retrieve a concept", user, "", "");
 			return null;
+		}
+	}
+	
+	@POST
+	@Path("/project/id/{projectId}/scopeConcepts")
+	@ApiOperation(value = "Get scope concepts for a map project.", notes = "Gets a (pageable) list of scope concepts for a map project", response = SearchResultListJpa.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public SearchResultList getScopeConceptsForMapProject(
+			@ApiParam(value = "Map project id", required = true) @PathParam("projectId") Long projectId,
+			@ApiParam(value = "Paging/filtering/sorting object", required = true) PfsParameterJpa pfsParameter,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping):  /project/id/" + projectId + "/scopeConcepts");
+		String projectName = "(not retrieved)";
+		String user = "(not retrieved)";
+
+		try {
+			// authorize call
+			MapUserRole role = securityService
+					.getMapProjectRoleForToken(authToken, projectId);
+			user = securityService.getUsernameForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to retrieve scope concepts.")
+								.build());
+
+			MappingService mappingService = new MappingServiceJpa();
+			MapProject mapProject = mappingService.getMapProject(projectId);
+
+			SearchResultList results = mappingService.getScopeConceptsForMapProject(mapProject, pfsParameter);
+
+			mappingService.close();
+			
+			return results;
+			
+		} catch (Exception e) {
+			this.handleException(e, "trying to retrieve scope concepts", user,
+					projectName, "");
+			return null;
+		}
+	}
+	
+	@POST
+	@Path("/project/id/{projectId}/scopeConcepts/add")
+	@ApiOperation(value = "Adds scope concept to a map project.", notes = "Adds scope concept to a map project.", response = Response.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public void addScopeConceptToMapProject(
+			@ApiParam(value = "Concept to add", required = true) String terminologyId,
+			@ApiParam(value = "Map project id", required = true) @PathParam("projectId") Long projectId,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping):  /project/id/" + projectId + "/scopeConcepts");
+		String projectName = "(not retrieved)";
+		String user = "(not retrieved)";
+
+		try {
+			// authorize call
+			MapUserRole role = securityService
+					.getMapProjectRoleForToken(authToken, projectId);
+			user = securityService.getUsernameForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.LEAD))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to retrieve scope concepts.")
+								.build());
+
+			MappingService mappingService = new MappingServiceJpa();
+			MapProject mapProject = mappingService.getMapProject(projectId);
+			
+			mapProject.addScopeConcept(terminologyId);
+			mappingService.updateMapProject(mapProject);
+
+			mappingService.close();
+
+			
+		} catch (Exception e) {
+			this.handleException(e, "trying to add scope concept to project", user,
+					projectName, "");
+		}
+	}
+	
+	@POST
+	@Path("/project/id/{projectId}/scopeConcepts/remove")
+	@ApiOperation(value = "Removes scope concept from a map project.", notes = "Removes scope concept from a map project.", response = Response.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public void removeScopeConceptFromMapProject(
+			@ApiParam(value = "Concept to add", required = true) String terminologyId,
+			@ApiParam(value = "Map project id", required = true) @PathParam("projectId") Long projectId,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping):  /project/id/" + projectId + "/scopeConcepts");
+		String projectName = "(not retrieved)";
+		String user = "(not retrieved)";
+
+		try {
+			// authorize call
+			MapUserRole role = securityService
+					.getMapProjectRoleForToken(authToken, projectId);
+			user = securityService.getUsernameForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.LEAD))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to remove scope concepts.")
+								.build());
+
+			MappingService mappingService = new MappingServiceJpa();
+			MapProject mapProject = mappingService.getMapProject(projectId);
+			
+			mapProject.removeScopeConcept(terminologyId);
+			mappingService.updateMapProject(mapProject);
+
+			mappingService.close();
+
+			
+		} catch (Exception e) {
+			this.handleException(e, "trying to remove scope concept from project", user,
+					projectName, "");
+		}
+	}
+	
+	@POST
+	@Path("/project/id/{projectId}/scopeExcludedConcepts")
+	@ApiOperation(value = "Get scope excluded concepts for a map project.", notes = "Gets a (pageable) list of scope excluded concepts for a map project", response = SearchResultListJpa.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public SearchResultList getScopeExcludedConceptsForMapProject(
+			@ApiParam(value = "Map project id", required = true) @PathParam("projectId") Long projectId,
+			@ApiParam(value = "Paging/filtering/sorting object", required = true) PfsParameterJpa pfsParameter,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping):  /project/id/" + projectId + "/scopeExcludedConcepts");
+		String projectName = "(not retrieved)";
+		String user = "(not retrieved)";
+
+		try {
+			// authorize call
+			MapUserRole role = securityService
+					.getMapProjectRoleForToken(authToken, projectId);
+			user = securityService.getUsernameForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to retrieve scope excluded concepts.")
+								.build());
+
+			MappingService mappingService = new MappingServiceJpa();
+			MapProject mapProject = mappingService.getMapProject(projectId);
+
+			SearchResultList results = mappingService.getScopeExcludedConceptsForMapProject(mapProject, pfsParameter);
+	
+			mappingService.close();
+			
+			return results;
+			
+		} catch (Exception e) {
+			this.handleException(e, "trying to retrieve scope excluded concepts", user,
+					projectName, "");
+			return null;
+		}
+	}
+	
+	@POST
+	@Path("/project/id/{projectId}/scopeExcludedConcepts/add")
+	@ApiOperation(value = "Adds scope excluded concept to a map project.", notes = "Adds scope excluded concept to a map project.", response = Response.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public void addScopeExcludedConceptsoMapProject(
+			@ApiParam(value = "ExcludedConcept to add", required = true) String terminologyId,
+			@ApiParam(value = "Map project id", required = true) @PathParam("projectId") Long projectId,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping):  /project/id/" + projectId + "/scopeExcludedConcepts");
+		String projectName = "(not retrieved)";
+		String user = "(not retrieved)";
+
+		try {
+			// authorize call
+			MapUserRole role = securityService
+					.getMapProjectRoleForToken(authToken, projectId);
+			user = securityService.getUsernameForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.LEAD))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to retrieve scope excluded concepts.")
+								.build());
+
+			MappingService mappingService = new MappingServiceJpa();
+			MapProject mapProject = mappingService.getMapProject(projectId);
+			
+			mapProject.addScopeExcludedConcept(terminologyId);
+			mappingService.updateMapProject(mapProject);
+
+			mappingService.close();
+
+			
+		} catch (Exception e) {
+			this.handleException(e, "trying to add scope excluded concept to project", user,
+					projectName, "");
+		}
+	}
+	
+	@POST
+	@Path("/project/id/{projectId}/scopeExcludedConcepts/remove")
+	@ApiOperation(value = "Removes scope excluded concept from a map project.", notes = "Removes scope excluded concept from a map project.", response = Response.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public void removeScopeExcludedConceptFromMapProject(
+			@ApiParam(value = "ExcludedConcept to add", required = true) String terminologyId,
+			@ApiParam(value = "Map project id", required = true) @PathParam("projectId") Long projectId,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping):  /project/id/" + projectId + "/scopeExcludedConcepts");
+		String projectName = "(not retrieved)";
+		String user = "(not retrieved)";
+
+		try {
+			// authorize call
+			MapUserRole role = securityService
+					.getMapProjectRoleForToken(authToken, projectId);
+			user = securityService.getUsernameForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.LEAD))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to remove scope excluded concepts.")
+								.build());
+
+			MappingService mappingService = new MappingServiceJpa();
+			MapProject mapProject = mappingService.getMapProject(projectId);
+			
+			mapProject.removeScopeExcludedConcept(terminologyId);
+			mappingService.updateMapProject(mapProject);
+
+			mappingService.close();
+
+			
+		} catch (Exception e) {
+			this.handleException(e, "trying to remove scope excluded concept from project", user,
+					projectName, "");
 		}
 	}
 
