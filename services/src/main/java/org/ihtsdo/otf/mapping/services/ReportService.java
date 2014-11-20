@@ -346,13 +346,6 @@ public interface ReportService extends RootService {
 	 */
 	public ReportDefinitionList getQACheckDefinitions();
 
-	/**
-	 * Returns the QA check definition.
-	 *
-	 * @param qaCheckDefinitionId the qa check definition id
-	 * @return the QA check definition
-	 */
-	public ReportDefinition getQACheckDefinition(Long qaCheckDefinitionId);
 
 	/**
 	 * Adds the qa check definition.
@@ -363,19 +356,12 @@ public interface ReportService extends RootService {
 	public ReportDefinition addQACheckDefinition(ReportDefinition qaCheckDefinition);
 
 	/**
-	 * Update qa check definition.
+	 * Returns the QA labels.
 	 *
-	 * @param qaCheckDefinition the qa check definition
+	 * @return the QA labels
 	 */
-	public void updateQACheckDefinition(ReportDefinition qaCheckDefinition);
+	public SearchResultList getQALabels();
 
-	/**
-	 * Removes the qa check definition.
-	 *
-	 * @param qaCheckDefinitionId the qa check definition id
-	 * @throws Exception the exception
-	 */
-	public void removeQACheckDefinition(Long qaCheckDefinitionId) throws Exception;
 
 
 
