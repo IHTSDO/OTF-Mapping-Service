@@ -34,15 +34,18 @@ import org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.ReportServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.model.FeedbackConversation;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
+import org.ihtsdo.otf.mapping.reports.Report;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
+import org.ihtsdo.otf.mapping.services.ReportService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
@@ -1501,6 +1504,13 @@ public class WorkflowServiceRest extends RootServiceRest {
 
 	}
 
+	/**
+	 * Creates the qa record.
+	 *
+	 * @param mapRecord the map record
+	 * @param authToken the auth token
+	 * @throws Exception the exception
+	 */
 	@POST
 	@Path("/createQARecord")
 	@ApiOperation(value = "Creates a qa record.", notes = "Creates a qa record given a map record.")
@@ -1552,6 +1562,8 @@ public class WorkflowServiceRest extends RootServiceRest {
 			// process the workflow action
 			workflowService.processWorkflowAction(mapProject, concept,
 					mapUser, mapRecord, WorkflowAction.CREATE_QA_RECORD);
+			
+			workflowService.close();
 		} catch (Exception e) {
 			handleException(e, "trying to create a qa map record",
 					userName, project, mapRecord.getId().toString());
@@ -1559,6 +1571,60 @@ public class WorkflowServiceRest extends RootServiceRest {
 
 	}
 
+	/**
+	 * Creates the qa work given a report of concepts.
+	 *
+	 * @param reportId the report id
+	 * @param authToken the auth token
+	 * @throws Exception the exception
+	 */
+	@POST
+	@Path("/createQAWork")
+	@ApiOperation(value = "Creates qa work.", notes = "Creates qa work given a report of concepts.")
+	public void createQAWork(
+			@ApiParam(value = "Report of concepts to create qa records for , in JSON or XML POST data") Long reportId,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+			throws Exception {
+
+		Logger.getLogger(WorkflowServiceRest.class).info(
+				"RESTful call (Workflow): /createQAWork for report with id = "
+						+ reportId);
+
+		String userName = "";
+		String project = "";
+		Report report = null;
+
+		try {
+			// authorize call
+			userName = securityService.getUsernameForToken(authToken);
+			
+			// get report and projectId
+			ReportService reportService = new ReportServiceJpa();
+			report = reportService.getReport(reportId);
+
+			// authorize call
+			MapUserRole role = securityService.getMapProjectRoleForToken(
+					authToken, report.getMapProjectId());
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to create qa work from a report of concepts.")
+								.build());
+
+			WorkflowService workflowService = new WorkflowServiceJpa();			
+			workflowService.createQAWork(report);
+			workflowService.close();
+
+			reportService.close();
+			
+		} catch (Exception e) {
+			handleException(e, "trying to create qa work",
+					userName, project, report.getId().toString());
+		}
+
+	}
+	
+	
 	/**
 	 * Gets the assigned map record from the existing workflow for concept and
 	 * map user, if it exists
