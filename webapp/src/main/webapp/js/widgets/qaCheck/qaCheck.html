@@ -1,0 +1,69 @@
+<div
+  style="float: left; width: 40%; padding: 10px; ">
+
+  <form>
+    <table>
+      <tr>
+        <td style="padding: 10px 5px 10px 5px;">QA Check Type:</td>
+        <td style="padding: 5px;"><select id="reportSearch"
+          ng-options="definition as definition.name for definition in definitions |  filter: {qacheck:true}"
+          ng-change="getReports(1, selectedDefinition, queryReport)"
+          ng-model="selectedDefinition"></select></td>
+      </tr>
+      <tr>
+        <td><button ng-show="reportDisplayed == null || reportDisplayed.id != null"
+          class="btn btn-sm btn-primary"
+          ng-click="generateNewReport(selectedDefinition)">Generate</button>
+        </td>
+      </tr>
+    </table>
+  </form>
+</div>
+
+<div>
+  <div style="float: right; width: 60%; padding: 10px 0px 10px 10px; border-left: thin solid #ddd;">
+
+    <h4 ng-show="reportDisplayed == null">No QA check results generated</h4>
+
+    <div ng-show="reportDisplayed != null">
+      <h4>
+        <!--  First row:  QA Check name -->
+        <div style="width: 100%; padding: 0px 0px 15px 0px;">
+          <div style="float: left; width: 20%">QA Check:</div>
+          <div style="float: left; width: 80%">{{reportDisplayed.name}}</div>
+        </div>
+      </h4>
+
+
+      <div ng-repeat="result in reportDisplayed.results">
+
+        <!--  The result items -->
+
+        <div>
+          <pagination ng-show="result.nPages > 1" total-items="result.ct"
+            page="result.page" max-size="5" class="pagination-sm"
+            boundary-links="true" rotate="true" num-pages="result.nPages"
+            on-select-page="getResultItems(result, page)"></pagination>
+        </div>
+
+        <div ng-repeat="reportResultItem in result.reportResultItems">
+
+          <!-- the actual result items -->
+          <div style="float: left; padding: 5px; width: 100%;">
+
+            <a
+              ng-href="{{'index.html#/record/conceptId/' + reportResultItem.itemId}}"
+              target="_blank">{{reportResultItem.itemId}}</a>,
+            {{reportResultItem.itemName}}
+          </div>
+          
+        </div>
+        
+      </div>
+      <button ng-show="reportDisplayed != null"
+          class="btn btn-sm btn-primary"
+          ng-click="addToQAWorkflow(reportDisplayed)">Add to QA Workflow</button>
+    </div>
+  </div>
+</div>
+
