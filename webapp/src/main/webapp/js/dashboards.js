@@ -975,6 +975,14 @@ mapProjectAppDashboards
 											title : "Project Reports"
 										} ]
 									} ]
+								}, {
+									columns : [ {
+										class : 'col-md-12',
+										widgets : [ {
+											type : "qaCheck",
+											title : "QA Checks"
+										} ]
+									} ]
 								} ]
 							};
 
