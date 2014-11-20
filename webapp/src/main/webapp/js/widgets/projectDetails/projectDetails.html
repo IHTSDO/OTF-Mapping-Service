@@ -1001,8 +1001,8 @@
         <tbody ng-repeat="scopeConcept in pagedScopeConcept "
 						style="border: 2px solid #ccc;">
           <tr>
-            <td>{{scopeConcept}}</td>
-            <td>{{scopeMap[scopeConcept]}}</td>
+            <td>{{scopeConcept.terminologyId}}</td>
+            <td>{{scopeConcept.value}}</td>
             <td ng-show="editModeEnabled == true">
               <i class="glyphicon glyphicon-remove"
 								ng-click="deleteScopeIncludedConcept(scopeConcept)"></i>
@@ -1073,11 +1073,11 @@
 						ng-repeat="scopeExcludedConcept in pagedScopeExcludedConcept "
 						style="border: 2px solid #ccc;">
           <tr>
-            <td>{{scopeExcludedConcept}}</td>
-            <td>{{scopeExcludedMap[scopeExcludedConcept]}}</td>
+            <td>{{scopeExcludedConcept.terminologyId}}</td>
+            <td>{{scopeExcludedConcept.value}}</td>
             <td ng-show="editModeEnabled == true">
               <i class="glyphicon glyphicon-remove"
-								ng-click="deleteScopeExcludedConcept(scopeExcludedConcept)"></i>
+								ng-click="deleteScopeExcludedConcept(scopeExcludedConcept, pageScopeExcludedConcept)"></i>
             </td>
             <td
 								ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
