@@ -56,9 +56,6 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	
 	// labels for QA filtering
 	$scope.labelNames = [];
-	$scope.labelNames.push("TEST_LABEL");
-	$scope.labelNames.push("TEST_LABEL2");
-	$scope.labelNames.push("TEST_LABEL3");
 	
 
 	// watch for project change and modify the local variable if necessary
@@ -142,6 +139,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			console.debug('Project Users:');
 			console.debug($scope.projectUsers);
 			
+			$scope.retrieveLabels();
 			$scope.retrieveAvailableWork($scope.availableWorkPage);
 			$scope.retrieveAvailableQAWork($scope.availableQAWorkPage);
 			if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Admin') {
@@ -151,6 +149,30 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		}
 	});
 
+	$scope.retrieveLabels = function() {
+		console.debug('workAvailableCtrl: Retrieving labels');
+
+	  	$rootScope.glassPane++;
+		$http({
+			url: root_reporting + "qaLabel/qaLabels",
+			dataType: "json",
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json"
+			}
+		}).success(function(data) {
+			console.debug("Success in getting qa labels.");
+
+		  	$rootScope.glassPane--;
+		  	for (var i = 0; i<data.searchResult.length; i++) {
+		  		$scope.labelNames.push(data.searchResult[i].value);
+		  	}
+		}).error(function(data, status, headers, config) {
+		  	$rootScope.glassPane--;
+			$rootScope.handleHttpError(data, status, headers, config);
+		});			
+	};
+	
 	$scope.retrieveAvailableConflicts = function(page, query, user) {
 		console.debug('workAvailableCtrl: Retrieving available conflicts');
 		
@@ -338,7 +360,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 				var concept = $scope.availableQAWork[i];
 				
 				$scope.availableQAWork[i].name = concept.value;
-				$scope.availableQAWork[i].labels = concept.value2;					
+				$scope.availableQAWork[i].labels = concept.value2.replace(/;/g, ' ');					
 			}
 			
 			//$scope.availableCount = data.totalCount;

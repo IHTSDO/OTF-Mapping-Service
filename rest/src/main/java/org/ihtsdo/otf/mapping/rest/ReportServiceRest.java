@@ -20,6 +20,7 @@ import org.ihtsdo.otf.mapping.helpers.ReportDefinitionList;
 import org.ihtsdo.otf.mapping.helpers.ReportList;
 import org.ihtsdo.otf.mapping.helpers.ReportListJpa;
 import org.ihtsdo.otf.mapping.helpers.ReportResultItemList;
+import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ReportServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
@@ -236,7 +237,7 @@ public class ReportServiceRest extends RootServiceRest {
 			@ApiParam(value = "Report report to update", required = true) ReportJpa report,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Report):  /report/reports");
+				"RESTful call (Report):  /report/add/project/id/" + mapProjectId.toString());
 		String user = "";
 
 		try {
@@ -304,9 +305,16 @@ public class ReportServiceRest extends RootServiceRest {
 			ReportList reportList = reportService
 					.getReportsForMapProject(mapProject,
 							pfsParameter);
+			
+			// remove qa checks
+			ReportList finalReportList = new ReportListJpa();
+			for (Report report : reportList.getReports()) {
+				if (!report.getReportDefinition().isQACheck())
+					finalReportList.addReport(report);
+			}
 			reportService.close();
 
-			return reportList;
+			return finalReportList;
 		} catch (Exception e) {
 			handleException(e, "trying to retrieve all reports", user,
 					projectName, "");
@@ -335,7 +343,8 @@ public class ReportServiceRest extends RootServiceRest {
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Report):  /report/reports");
+				"RESTful call (Report):  /report/reports/project/id/" + projectId.toString() + 
+				"/definition/id/" + definitionId.toString());
 		String user = "";
 		String projectName = "";
 
@@ -421,6 +430,7 @@ public class ReportServiceRest extends RootServiceRest {
 			report = reportService.generateReport(mapProject, mapUser,
 					reportDefinition.getName(), reportDefinition, new Date(),
 					false);
+			report = reportService.addReport(report);
 			reportService.close();
 
 			return report;
@@ -577,21 +587,14 @@ public class ReportServiceRest extends RootServiceRest {
 
 	}
 
-	/**
-	 * Update qaCheck definitions.
-	 *
-	 * @param definition the definition
-	 * @param authToken the auth token
-	 */
-	@POST
-	@Path("/qaCheckDefinition/update")
-	@ApiOperation(value = "Updates a qaCheck definition", notes = "Updates the attached qaCheck definition", response = Response.class)
+	@GET
+	@Path("/qaLabel/qaLabels")
+	@ApiOperation(value = "Gets all qa labels", notes = "Returns all qa labels in JSON or XML format", response = ReportDefinitionJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public void updateQACheckDefinitions(
-			@ApiParam(value = "QACheck definition to update", required = true) ReportDefinitionJpa definition,
+	public SearchResultList getQALabels(
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Report):  /definition/update");
+				"RESTful call (Report):  /qaLabel/qaLabels");
 		String user = "";
 
 		try {
@@ -599,60 +602,22 @@ public class ReportServiceRest extends RootServiceRest {
 			MapUserRole role = securityService
 					.getApplicationRoleForToken(authToken);
 			user = securityService.getUsernameForToken(authToken);
-			if (!role.hasPrivilegesOf(MapUserRole.VIEWER)) 
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
 				throw new WebApplicationException(
 						Response.status(401)
-								.entity("User does not have permissions to update qaCheck qaCheckDefinitions.")
+								.entity("User does not have permissions to get qa labels.")
 								.build()); 
 
 			// get the qaChecks
 			ReportService qaCheckService = new ReportServiceJpa();
-			qaCheckService.updateQACheckDefinition(definition);
+			SearchResultList labelList = qaCheckService.getQALabels();
 			qaCheckService.close();
 
+			return labelList;
 		} catch (Exception e) {
-			handleException(e, "trying to update a qaCheck definition", user, "", "");
+			handleException(e, "trying to get qa labels", user, "", "");
+			return null;
 		}
-
 	}
-	
-	/**
-	 * Deletes the qaCheck definitions.
-	 *
-	 * @param qaCheckDefinition the qaCheck definition
-	 * @param authToken the auth token
-	 */
-	@DELETE
-	@Path("/qaCheckDefinition/delete")
-	@ApiOperation(value = "Delete a qaCheck definition", notes = "Deletes a qaCheck definition based on a JSON or XML object", response = ReportDefinitionJpa.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public void removeQACheckDefinitions(
-			@ApiParam(value = "The qaCheck definition to delete", required = true) ReportDefinitionJpa qaCheckDefinition,
-			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
-		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Report):  /qaCheckDefinition/delete");
-		String user = "";
 
-		try {
-			// authorize call
-			MapUserRole role = securityService
-					.getApplicationRoleForToken(authToken);
-			user = securityService.getUsernameForToken(authToken);
-			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
-				throw new WebApplicationException(
-						Response.status(401)
-								.entity("User does not have permissions to delete a qaCheck definition.")
-								.build()); 
-
-			// get the qaChecks
-			ReportService qaCheckService = new ReportServiceJpa();
-			qaCheckService
-					.removeQACheckDefinition(qaCheckDefinition.getId());
-			qaCheckService.close();
-
-		} catch (Exception e) {
-			handleException(e, "trying to delete a qaCheck definition", user, "", "");
-		}
-
-	}
 }
