@@ -635,7 +635,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
           if (description == null) {
             newDescription = new DescriptionJpa();
           } else {
-            newDescription = new DescriptionJpa(description, false);
+            newDescription = new DescriptionJpa(description, true);
           }
           newDescription.setConcept(concept);
 
@@ -1064,7 +1064,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
    */
   private void cacheConcept(Concept c) {
     if (!conceptCache.containsKey(c.getTerminologyId())) {
-
       for (Relationship r : c.getRelationships()) {
         relationshipCache.put(r.getTerminologyId(), r);
       }
@@ -1086,7 +1085,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
   private void cacheDescription(Description d) {
 
     if (!descriptionCache.containsKey(d.getTerminologyId())) {
-      d.setEffectiveTime(deltaLoaderStartDate);
       for (LanguageRefSetMember l : d.getLanguageRefSetMembers()) {
         languageRefSetMemberCache.put(l.getTerminologyId(), l);
       }
@@ -1100,7 +1098,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
    * @param r the r
    */
   private void cacheRelationship(Relationship r) {
-    r.setEffectiveTime(deltaLoaderStartDate);
     relationshipCache.put(r.getTerminologyId(), r);
   }
 
@@ -1111,7 +1108,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
    * @param l the l
    */
   private void cacheLanguageRefSetMember(LanguageRefSetMember l) {
-    l.setEffectiveTime(deltaLoaderStartDate);
     languageRefSetMemberCache.put(l.getTerminologyId(), l);
   }
 
