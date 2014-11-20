@@ -1,6 +1,5 @@
 package org.ihtsdo.otf.mapping.rf2.jpa;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -94,6 +93,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
    * Instantiates a new concept jpa.
    *
    * @param concept the concept
+   * @param deepCopy the deep copy flag
    */
   public ConceptJpa(Concept concept, boolean deepCopy) {
     setId(concept.getId());
@@ -109,13 +109,13 @@ public class ConceptJpa extends AbstractComponent implements Concept {
     if (deepCopy) {
       descriptions = new HashSet<>();
       for (Description description : concept.getDescriptions()) {
-        Description d = new DescriptionJpa(description, true);
+        Description d = new DescriptionJpa(description, deepCopy);
         d.setConcept(this);
         descriptions.add(d);
       }
       relationships = new HashSet<>();
       for (Relationship relationship : concept.getRelationships()) {
-        Relationship rel = new RelationshipJpa(relationship, true);
+        Relationship rel = new RelationshipJpa(relationship, deepCopy);
         rel.setSourceConcept(this);
         relationships.add(rel);
       }
