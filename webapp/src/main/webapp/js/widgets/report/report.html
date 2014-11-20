@@ -6,7 +6,7 @@
 			<tr>
 				<td style="padding: 5px;">Filter by Report Type:</td>
 				<td style="padding: 5px;"><select id="reportSearch"
-					ng-options="definition as definition.name for definition in definitions"
+					ng-options="definition as definition.name for definition in definitions |  filter: {qacheck:false}"
 					ng-change="getReports(1, selectedDefinition, queryReport)"
 					ng-model="selectedDefinition"></select></td>
 				<td style="padding: 5px">

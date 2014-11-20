@@ -1578,7 +1578,7 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 					
 					console.debug("in updateQACheckDefinition");
 					$http({						
-						url: root_reporting + "qaCheckDefinition/update",
+						url: root_reporting + "definition/update",
 						dataType: "json",
 						data: qaCheckDefinition,
 						method: "POST",

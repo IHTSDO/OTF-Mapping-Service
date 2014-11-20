@@ -1070,7 +1070,12 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				.setParameter("mapProjectId", mapProjectId)
 				.setParameter("conceptId", terminologyId).getResultList();
 		MapRecordList mapRecordList = new MapRecordListJpa();
+		for (MapRecord mapRecord : mapRecords) {
+			handleMapRecordLazyInitialization(mapRecord);
+		}
+
 		mapRecordList.setMapRecords(mapRecords);
+		mapRecordList.setTotalCount(mapRecords.size());
 		return mapRecordList;
 
 	}
