@@ -199,20 +199,26 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 			if ($scope.records[i].mapProjectId === $scope.focusProject.id) {
 				$scope.recordsInProject.push($scope.records[i]);
 			} else {
-				
-				var projectExists = false;
-				for (var j = 0; j < $scope.recordsNotInProject.length; j++) {
+				var project = $scope.getProject($scope.records[i]);
+				var projectPublic = project.public;
+				if ($scope.currentUser.name == 'Administrator' ||
+					$scope.currentUser.name == 'Lead' ||
+					$scope.currentUser.name == 'Specialist' ||
+					($scope.currentUser.name == 'Guest' && projectPublic == true)) {
+				  var projectExists = false;
+				  for (var j = 0; j < $scope.recordsNotInProject.length; j++) {
 					
 					if ($scope.recordsNotInProject[j][0].mapProjectId === $scope.records[i].mapProjectId) {
 						console.debug("Found match for " + $scope.records[i].mapProjectId);
 						$scope.recordsNotInProject[j].push($scope.records[i]);
 						projectExists = true;
 					}
-				}
-				if (!projectExists) {
+				  }
+				  if (!projectExists) {
 					var newArray = [];
 					newArray.push($scope.records[i]);
 					$scope.recordsNotInProject.push(newArray);
+				  }
 				}
 			}
 		}
@@ -483,6 +489,7 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 		
 		
 	};
+	
 	
     // opens SNOMED CT browser
 	$scope.getBrowserUrl = function() {
