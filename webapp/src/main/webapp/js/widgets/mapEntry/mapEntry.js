@@ -192,7 +192,6 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 			}	
 		}).success(function(data) {
 
-			$rootScope.glassPane--;
 			if (data) {
 				
 				entry.mapRelation = data;
@@ -203,16 +202,17 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 				$scope.allowableAdvices = getAllowableAdvices(entry, $scope.project.mapAdvice);
 				sortByKey($scope.allowableAdvices, 'detail');
 				$scope.allowableMapRelations = getAllowableRelations(entry, $scope.project.mapRelation);
+	      $rootScope.glassPane--;
 			
 				// return the promise
 				deferred.resolve(entry);
 			} else {
+	      $rootScope.glassPane--;
 				console.debug("No map relation computed for this entry");
 				deferred.resolve(entry);
 			}
 		}).error(function(data, status, headers, config) {
 		    $rootScope.glassPane--;
-
 		    $rootScope.handleHttpError(data, status, headers, config);			
 		  
 		    // reject the promise
@@ -241,7 +241,6 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 				"Content-Type": "application/json"
 			}	
 		}).success(function(data) {
-			$rootScope.glassPane--;
 			
 			if (data) {
 				
@@ -253,10 +252,11 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 				$scope.allowableAdvices = getAllowableAdvices(entry, $scope.project.mapAdvice);
 				sortByKey($scope.allowableAdvices, 'detail');
 				$scope.allowableMapRelations = getAllowableRelations(entry, $scope.project.mapRelation);
-			
+        $rootScope.glassPane--;
 				// return the promise
 				deferred.resolve(entry);
 			} else {
+        $rootScope.glassPane--;
 				console.debug("No map advice computed");
 				deferred.resolve(entry);
 			}
