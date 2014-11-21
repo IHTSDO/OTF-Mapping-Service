@@ -145,6 +145,7 @@ angular
 										function(data) {
 											$rootScope.glassPane--;
 											$scope.reportDisplayed = data;
+
 											$scope.definitionMsg = "Successfully generated new qa check";
 
 											reportResult = $scope
@@ -179,6 +180,7 @@ angular
 								.success(
 										function(data) {
 											$rootScope.glassPane--;
+										  	$rootScope.$broadcast('qaCheckWidget.notification.qaWorkCreated');
 											$scope.reportDisplayed = null;
 											$scope.definitionMsg = "Successfully added concepts to qa workflow";
 										})
