@@ -3006,7 +3006,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			return MapUserRole.SPECIALIST;
 		}
 
-		// return role NONE if role is VIEWER and project is private
+		// return role NONE if user is not on role lists and project is private
 		if (!mapProject.isPublic())
 			return MapUserRole.NONE;
 
@@ -3437,8 +3437,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 */
 	private void handleMapProjectLazyInitialization(MapProject mapProject) {
 		// handle all lazy initializations
-		mapProject.getScopeConcepts().size();
-		mapProject.getScopeExcludedConcepts().size();
+		// scope concept includes and excludes are transient, do not need to be retrieved
 		mapProject.getMapAdvices().size();
 		mapProject.getMapRelations().size();
 		mapProject.getMapLeads().size();
