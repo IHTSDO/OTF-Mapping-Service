@@ -531,9 +531,9 @@
   <tr>
     <td style="padding: 5px;">Filter by label:</td>
       <td style="padding: 5px;"><select ng-model="selected"
+        ng-click="retrieveAssignedQAWork(1, selected, assignedQAWorkType);"
         ng-options="lbl for lbl in labelNames">
         </select>
-        <button class="btn btn-sm btn-primary"  type="submit" ng-click="retrieveAssignedQAWork(1, selected, assignedQAWorkType);">Filter</button>   
         <button class="btn btn-sm btn-primary" 
           ng-click="retrieveAssignedQAWork(1, 'null', assignedQAWorkType); selected = null;">Reset</button>
       </td>

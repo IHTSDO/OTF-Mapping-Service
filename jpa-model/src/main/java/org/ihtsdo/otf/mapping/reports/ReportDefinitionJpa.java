@@ -6,6 +6,7 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -23,11 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  */
 @Entity
 @Audited
-@Table(name = "report_definitions", uniqueConstraints = {
-		@UniqueConstraint(columnNames = {
-				"name"
-		})
-})
+@Table(name = "report_definitions", uniqueConstraints = { @UniqueConstraint(columnNames = { "name" }) })
 @JsonIgnoreProperties(ignoreUnknown = true)
 @XmlRootElement(name = "reportDefinition")
 public class ReportDefinitionJpa implements ReportDefinition {
@@ -40,26 +37,22 @@ public class ReportDefinitionJpa implements ReportDefinition {
 	/** The report type name. */
 	@Column(nullable = false)
 	private String name;
-	
+
 	/** The is diff report. */
 	@Column(nullable = false)
 	private boolean isDiffReport = false;
-	
-	/** The is rate report. */
-	@Column(nullable = false)
-	private boolean isRateReport = false;
-	
-	/**  The is qa check. */
+
+	/** The is qa check. */
 	private boolean isQACheck = false;
 
 	/** The time period (in days) for diff and rate reports */
 	@Enumerated(EnumType.STRING)
 	private ReportTimePeriod timePeriod;
-	
+
 	/** The frequency with which the report is run */
 	@Enumerated(EnumType.STRING)
 	private ReportTimePeriod frequency;
-	
+
 	/** The result type. */
 	@Enumerated(EnumType.STRING)
 	private ReportResultType resultType;
@@ -69,12 +62,16 @@ public class ReportDefinitionJpa implements ReportDefinition {
 	private ReportQueryType queryType;
 
 	/** The query. */
-	@Column(nullable = false, length = 10000)
+	@Column(nullable = true, length = 10000)
 	private String query;
 
 	/** The role required. */
 	@Enumerated(EnumType.STRING)
 	private MapUserRole roleRequired;
+
+	/** The report definition used for constructing diff reports (if applicable) */
+	@Column(nullable = true)
+	private String diffReportDefinitionName;
 
 	/**
 	 * Gets the id.
@@ -231,49 +228,66 @@ public class ReportDefinitionJpa implements ReportDefinition {
 	public MapUserRole getRoleRequired() {
 		return roleRequired;
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#setRoleRequired(org.ihtsdo.otf.mapping.helpers.MapUserRole)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.reports.ReportDefinition#setRoleRequired(org.ihtsdo
+	 * .otf.mapping.helpers.MapUserRole)
 	 */
 	@Override
 	public void setRoleRequired(MapUserRole roleRequired) {
 		this.roleRequired = roleRequired;
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#isDiffReport()
 	 */
 	@Override
 	public boolean isDiffReport() {
 		return isDiffReport;
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#setDiffReport(boolean)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.reports.ReportDefinition#setDiffReport(boolean)
 	 */
 	@Override
 	public void setDiffReport(boolean isDiffReport) {
 		this.isDiffReport = isDiffReport;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#getTimePeriodInDays()
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.reports.ReportDefinition#getTimePeriodInDays()
 	 */
 	@Override
 	public ReportTimePeriod getTimePeriod() {
 		return this.timePeriod;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#setTimePeriodInDays(int)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.reports.ReportDefinition#setTimePeriodInDays(int)
 	 */
 	@Override
 	public void setTimePeriod(ReportTimePeriod timePeriod) {
 		this.timePeriod = timePeriod;
-		
+
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#isQACheck()
 	 */
 	@Override
@@ -281,27 +295,30 @@ public class ReportDefinitionJpa implements ReportDefinition {
 		return isQACheck;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#setQACheck(boolean)
 	 */
 	@Override
 	public void setQACheck(boolean isQACheck) {
 		this.isQACheck = isQACheck;
 	}
-	
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
+
 	@Override
 	public String toString() {
-		return "ReportDefinitionJpa [name=" + name + ", isDiffReport="
-				+ isDiffReport + ", isRateReport=" + isRateReport + ", isQACheck=" + isQACheck
-				+ ", timePeriod=" + timePeriod + ", resultType=" + resultType
-				+ ", queryType=" + queryType + ", query=" + query
-				+ ", roleRequired=" + roleRequired + "]";
+		return "ReportDefinitionJpa [id=" + id + ", name=" + name
+				+ ", isDiffReport=" + isDiffReport + ", isQACheck=" + isQACheck
+				+ ", timePeriod=" + timePeriod + ", frequency=" + frequency
+				+ ", resultType=" + resultType + ", queryType=" + queryType
+				+ ", query=" + query + ", roleRequired=" + roleRequired
+				+ ", diffReportDefinitionName=" + diffReportDefinitionName
+				+ "]";
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#getFrequency()
 	 */
 	@Override
@@ -309,76 +326,93 @@ public class ReportDefinitionJpa implements ReportDefinition {
 		return this.frequency;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#setFrequency(org.ihtsdo.otf.mapping.helpers.ReportTimePeriod)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.reports.ReportDefinition#setFrequency(org.ihtsdo
+	 * .otf.mapping.helpers.ReportTimePeriod)
 	 */
 	@Override
 	public void setFrequency(ReportTimePeriod timePeriod) {
 		this.frequency = timePeriod;
 	}
 
-  /* (non-Javadoc)
-   * @see java.lang.Object#hashCode()
-   */
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((frequency == null) ? 0 : frequency.hashCode());
-    result = prime * result + (isDiffReport ? 1231 : 1237);
-    result = prime * result + (isRateReport ? 1231 : 1237);
-    result = prime * result + (isQACheck ? 1231 : 1237);
-    result = prime * result + ((name == null) ? 0 : name.hashCode());
-    result = prime * result + ((query == null) ? 0 : query.hashCode());
-    result = prime * result + ((queryType == null) ? 0 : queryType.hashCode());
-    result =
-        prime * result + ((resultType == null) ? 0 : resultType.hashCode());
-    result =
-        prime * result + ((roleRequired == null) ? 0 : roleRequired.hashCode());
-    result =
-        prime * result + ((timePeriod == null) ? 0 : timePeriod.hashCode());
-    return result;
-  }
+	@Override
+	public String getDiffReportDefinitionName() {
+		return diffReportDefinitionName;
+	}
 
-  /* (non-Javadoc)
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
-    ReportDefinitionJpa other = (ReportDefinitionJpa) obj;
-    if (frequency != other.frequency)
-      return false;
-    if (isDiffReport != other.isDiffReport)
-      return false;
-    if (isRateReport != other.isRateReport)
-      return false;
-    if (isQACheck != other.isQACheck)
-      return false;
-    if (name == null) {
-      if (other.name != null)
-        return false;
-    } else if (!name.equals(other.name))
-      return false;
-    if (query == null) {
-      if (other.query != null)
-        return false;
-    } else if (!query.equals(other.query))
-      return false;
-    if (queryType != other.queryType)
-      return false;
-    if (resultType != other.resultType)
-      return false;
-    if (roleRequired != other.roleRequired)
-      return false;
-    if (timePeriod != other.timePeriod)
-      return false;
-    return true;
-  }
+	@Override
+	public void setDiffReportDefinitionName(String diffReportDefinitionName) {
+		this.diffReportDefinitionName = diffReportDefinitionName;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime
+				* result
+				+ ((diffReportDefinitionName == null) ? 0
+						: diffReportDefinitionName.hashCode());
+		result = prime * result
+				+ ((frequency == null) ? 0 : frequency.hashCode());
+		result = prime * result + (isDiffReport ? 1231 : 1237);
+		result = prime * result + (isQACheck ? 1231 : 1237);
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((query == null) ? 0 : query.hashCode());
+		result = prime * result
+				+ ((queryType == null) ? 0 : queryType.hashCode());
+		result = prime * result
+				+ ((resultType == null) ? 0 : resultType.hashCode());
+		result = prime * result
+				+ ((roleRequired == null) ? 0 : roleRequired.hashCode());
+		result = prime * result
+				+ ((timePeriod == null) ? 0 : timePeriod.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ReportDefinitionJpa other = (ReportDefinitionJpa) obj;
+		if (diffReportDefinitionName == null) {
+			if (other.diffReportDefinitionName != null)
+				return false;
+		} else if (!diffReportDefinitionName
+				.equals(other.diffReportDefinitionName))
+			return false;
+		if (frequency != other.frequency)
+			return false;
+		if (isDiffReport != other.isDiffReport)
+			return false;
+		if (isQACheck != other.isQACheck)
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (query == null) {
+			if (other.query != null)
+				return false;
+		} else if (!query.equals(other.query))
+			return false;
+		if (queryType != other.queryType)
+			return false;
+		if (resultType != other.resultType)
+			return false;
+		if (roleRequired != other.roleRequired)
+			return false;
+		if (timePeriod != other.timePeriod)
+			return false;
+		return true;
+	}
 
 }

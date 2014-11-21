@@ -150,5 +150,22 @@ public interface ReportDefinition {
 	 * @param isQACheck the QA check
 	 */
 	public void setQACheck(boolean isQACheck);
+
+	
+
+	/**
+	 * Gets the diff report definition name.
+	 *
+	 * @return the diff report definition name
+	 */
+	public String getDiffReportDefinitionName();
+
+	/**
+	 * Sets the diff report definition name.
+	 *
+	 * @param diffReportDefinitionName the diff report definition name
+	 * @return the string
+	 */
+	public void setDiffReportDefinitionName(String diffReportDefinitionName);
 	
 }

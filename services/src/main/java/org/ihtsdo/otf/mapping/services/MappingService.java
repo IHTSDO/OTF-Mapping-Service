@@ -937,4 +937,27 @@ public interface MappingService extends RootService {
 	 */
 	public MapRecordList getMapRecordRevisionsForConcept(String conceptId, Long mapProjectId) throws Exception;
 
+
+	/**
+	 * Gets the scope excluded concepts for map project.
+	 *
+	 * @param mapProject the map project
+	 * @param pfsParameter the pfs parameter
+	 * @return the scope excluded concepts for map project
+	 * @throws Exception the exception
+	 */
+	public SearchResultList getScopeExcludedConceptsForMapProject(
+			MapProject mapProject, PfsParameter pfsParameter) throws Exception;
+
+	/**
+	 * Gets the scope concepts for map project.
+	 *
+	 * @param mapProject the map project
+	 * @param pfsParameter the pfs parameter
+	 * @return the scope concepts for map project
+	 * @throws Exception the exception
+	 */
+	public SearchResultList getScopeConceptsForMapProject(MapProject mapProject,
+			PfsParameter pfsParameter) throws Exception;
+
 }

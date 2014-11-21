@@ -297,10 +297,9 @@
     
   <tr>
     <td style="padding: 5px;">Filter by label:</td>
-      <td style="padding: 5px;"><select ng-model="selected"
+      <td style="padding: 5px;"><select ng-model="selected" ng-click="retrieveAvailableQAWork(1, selected, null);"
         ng-options="lbl for lbl in labelNames">
-        </select>
-        <button class="btn btn-sm btn-primary"  type="submit" ng-click="retrieveAvailableQAWork(1, selected, null);">Filter</button>   
+        </select>  
         <button class="btn btn-sm btn-primary" 
           ng-click="retrieveAvailableQAWork(1, 'null', 'null'); selected = null;">Reset</button>
       </td>
