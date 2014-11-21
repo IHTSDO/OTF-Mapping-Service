@@ -1001,20 +1001,26 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 						+ reportDefinition.getName() + " for date "
 						+ date.toString());
 
-		// get the query to replace parameterized values
-		String query = reportDefinition.getQuery();
-
 		// instantiate the calendar object
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
 
-		query = query.replaceAll(":MAP_PROJECT_ID:", mapProject.getId()
-				.toString());
-		query = query.replaceAll(":TIMESTAMP:", Long.toString(date.getTime()));
+		// get the query to replace parameterized values
+		String query = reportDefinition.getQuery();
 
-		// if a diff report, need to construct a second timestamp corresponding
-		// to earlier report
+		// if a diff report, need to construct a query based on specified report
+		// definition
 		if (reportDefinition.isDiffReport() == true) {
+
+			query = "select 'Report' value, name itemName, id itemId "
+					+ "from reports where name = '"
+					+ reportDefinition.getDiffReportDefinitionName()
+					+ "' "
+					+ "and (timestamp = "
+					+ "(select max(timestamp) from reports "
+					+ "where timestamp <= :TIMESTAMP:) OR timestamp = "
+					+ "(select max(timestamp) from reports where timestamp <= :TIMESTAMP2:)) "
+					+ "order by timestamp desc;";
 
 			// modify date by appropriate increment
 			switch (reportDefinition.getTimePeriod()) {
@@ -1038,6 +1044,11 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 			query = query.replaceAll(":TIMESTAMP2:",
 					Long.toString(cal.getTimeInMillis()));
 		}
+
+		// replace the map project id and timestamp parameters
+		query = query.replaceAll(":MAP_PROJECT_ID:", mapProject.getId()
+				.toString());
+		query = query.replaceAll(":TIMESTAMP:", Long.toString(date.getTime()));
 
 		// instantiate the report
 		Report report = new ReportJpa();
@@ -1078,16 +1089,15 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 		if (reportDefinition.isDiffReport() == true) {
 
 			// get the ids corresponding to reports to be diffed
+
 			try {
 				resultSet.next();
 				report.setReport1Id(new Long(resultSet.getString("itemId")));
 				resultSet.next();
 				report.setReport2Id(new Long(resultSet.getString("itemId")));
 			} catch (SQLException e) {
-				Logger.getLogger(ReportServiceJpa.class).warn(
-						"Could not retrieve report ids for diff report");
-				resultSet.close();
-				return null;
+				throw new LocalException(
+						"Error retrieving reports for calculating difference report.  The required reports may not exist.");
 			}
 
 			// if either report id is null, cannot construct report, return null
@@ -1102,7 +1112,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 			try {
 				report2 = getReport(report.getReport2Id());
 			} catch (Exception e) {
-				throw new LocalException("Could not retrieve second report for diff report", e);
+				throw new LocalException(
+						"Could not retrieve second report for diff report", e);
 			}
 			// cycle over first result and find matching values in the second
 			// report
@@ -1262,7 +1273,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
 		// check for sql query errors -- throw as local exception
 		// this is used to propagate errors back to user when testing queries
-		
+
 		// ensure that query begins with SELECT (i.e. prevent injection
 		// problems)
 		if (!query.toUpperCase().startsWith("SELECT")) {
@@ -1278,10 +1289,26 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
 		// crude check: check for data manipulation commands
 		if (query.toUpperCase().matches(
-				"ALTER|CREATE|DROP|DELETE|INSERT|TRUNCATE|UPDATE")) {
+				"ALTER |CREATE |DROP |DELETE |INSERT |TRUNCATE |UPDATE ")) {
 			throw new LocalException(
 					"SQL Query has bad format:  data manipulation request detected");
 		}
+
+		// check for proper format for insertion into reports
+		String selectSubStr = query.substring(0,
+				query.toUpperCase().indexOf("FROM"));
+
+		if (!selectSubStr.contains("itemId"))
+			throw new LocalException(
+					"Report query must return column result with name of 'itemId'");
+
+		if (!selectSubStr.contains("itemName"))
+			throw new LocalException(
+					"Report query must return column result with name of 'itemName'");
+
+		if (!selectSubStr.contains("value"))
+			throw new LocalException(
+					"Report query must return column result with name of 'value'");
 
 		// get the database parameters
 		Properties config = ConfigUtility.getConfigProperties();
@@ -1308,7 +1335,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 			// if a syntax error, throw local exception
 			// this is used to pass errors back for user query testing
 			if (e instanceof SQLSyntaxErrorException) {
-				throw new LocalException("Invalid SQL Syntax: " + e.getMessage(), e);
+				throw new LocalException("Invalid SQL Syntax: "
+						+ e.getMessage(), e);
 
 				// if another error, throw normal exception
 			} else {
@@ -1433,21 +1461,22 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 		return qaCheckDefinitionList;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.services.ReportService#getQALabels()
+	 */
+	@Override
+	public SearchResultList getQALabels() {
 
-		
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.services.ReportService#getQALabels()
-   */
-  @Override
-  public SearchResultList getQALabels() {
+		ReportDefinitionList definitions = getQACheckDefinitions();
 
-  	  ReportDefinitionList definitions = getQACheckDefinitions();
-      
-      SearchResultList searchResultList = new SearchResultListJpa();
-      for (ReportDefinition def : definitions.getReportDefinitions()) {
-  			searchResultList.addSearchResult(new SearchResultJpa(def.getId(), null, def.getName(), "")); 			
-      }
-      return searchResultList;
+		SearchResultList searchResultList = new SearchResultListJpa();
+		for (ReportDefinition def : definitions.getReportDefinitions()) {
+			searchResultList.addSearchResult(new SearchResultJpa(def.getId(),
+					null, def.getName(), ""));
+		}
+		return searchResultList;
 
 	}
 
