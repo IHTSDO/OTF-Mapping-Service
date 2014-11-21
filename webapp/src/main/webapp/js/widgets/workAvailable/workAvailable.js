@@ -87,6 +87,12 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		}
 	});
 	
+	// on creation of qa work, refresh the available work widget
+	$scope.$on('qaCheckWidget.notification.qaWorkCreated', function(event, parameters) { 	
+		console.debug("WorkAvailableCtrl:  Detected new qa work");
+		$scope.retrieveAvailableQAWork($scope.availableQAWorkPage);
+	});
+	
 	// watch for first retrieval of last tab for this session
 	$scope.$watch('availableTab', function () {
 		console.debug('availableTab retrieved', $scope.availableTab);
