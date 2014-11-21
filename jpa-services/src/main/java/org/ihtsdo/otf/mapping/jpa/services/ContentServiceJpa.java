@@ -1600,13 +1600,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 			int computeTreePositionCommitCt,
 			EntityTransaction computeTreePositionTransaction) throws Exception {
 
-		Set<Long> descConceptIds = new HashSet<>();
+		final Set<Long> descConceptIds = new HashSet<>();
 
 		// if concept is active
 		if (concept.isActive()) {
 
 			// instantiate the tree position
-			TreePosition tp = new TreePositionJpa();
+			final TreePosition tp = new TreePositionJpa();
 
 			// logging information
 			int ancestorCount = ancestorPath.length()
@@ -1629,15 +1629,15 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 			manager.persist(tp);
 
 			// construct the ancestor path terminating at this concept
-			String conceptPath = (ancestorPath.equals("") ? concept
+			final String conceptPath = (ancestorPath.equals("") ? concept
 					.getTerminologyId() : ancestorPath + "~"
 					+ concept.getTerminologyId());
 
 			// construct the list of terminology ids representing valid children
-			Set<Long> childrenConceptIds = new HashSet<>();
+			final Set<Long> childrenConceptIds = new HashSet<>();
 
 			// cycle over all relationships
-			for (Relationship rel : concept.getInverseRelationships()) {
+			for (final Relationship rel : concept.getInverseRelationships()) {
 
 				// if relationship is active, typeId equals the provided typeId,
 				// and
@@ -1645,13 +1645,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 				if (rel.isActive() && rel.getTypeId().toString().equals(typeId)
 						&& rel.getSourceConcept().isActive()) {
 
-					// Logger.get//
-					// Logger(ContentServiceJpa.class).info(loggerPrefix +
-					// "  Relationship " + rel.getTerminologyId() +
-					// " active, matches typeId, source concept active");
-
 					// get the child concept
-					Concept childConcept = rel.getSourceConcept();
+					final Concept childConcept = rel.getSourceConcept();
 
 					// add this terminology id to the set of children
 					childrenConceptIds.add(childConcept.getId());
@@ -1660,10 +1655,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 					descConceptIds.add(childConcept.getId());
 				}
 			}
-
-			// Logger.get// Logger(ContentServiceJpa.class).info(loggerPrefix +
-			// " " + childrenConceptIds.size() + " children");
-
+			
 			// iterate over the child terminology ids
 			// this iteration is entirely local and depends on no managed
 			// objects
@@ -1722,15 +1714,6 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 								+ "\t"
 								+ Double.toString(computeTreePositionCommitCt
 										/ elapsedTime));
-
-				/*
-				 * // // System.out.println( "*** Tree Positions: " +
-				 * computeTreePositionGlobalCount + ", Current memory usage: " +
-				 * Math.floor(runtime.totalMemory() / 1024 / 1024) +
-				 * "MB, Commit interval: " + "s, Average speed: " +
-				 * Double.toString(computeTreePositionCommitCt / elapsedTime) +
-				 * " tree positisions / s");
-				 */
 
 			}
 		}
