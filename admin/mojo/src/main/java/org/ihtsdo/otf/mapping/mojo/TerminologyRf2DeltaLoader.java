@@ -107,7 +107,10 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
   private int objectCt; //
 
   /** The ft. */
-  SimpleDateFormat ft = new SimpleDateFormat("hh:mm:ss a"); // for
+  SimpleDateFormat ft = new SimpleDateFormat("hh:mm:ss a"); 
+
+  /** The dt. */
+  SimpleDateFormat dt = new SimpleDateFormat("yyyyMMdd");
 
   /** The start time. */
   long startTime;
@@ -135,6 +138,9 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
       new HashMap<>();
 
   // These track data that existed prior to the delta loader run
+
+  /** The delta concept ids. */
+  private Set<String> deltaConceptIds = new HashSet<>();
 
   /** The existing concept cache. */
   private Map<String, Concept> existingConceptCache = new HashMap<>();
@@ -478,6 +484,11 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     }
 
     // Skip other delta data structures
+
+    // Remove concepts in the DB that were created by prior
+    // deltas that no longer exist in the delta
+    getLog().info("    Retire non-existent concepts..");
+    retireRemovedConcepts();
   }
 
   /**
@@ -505,6 +516,9 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
         // Check if concept exists from before
         Concept concept = existingConceptCache.get(fields[0]);
+        
+        // Track all delta concept ids so we can properly remove concepts later.
+        deltaConceptIds.add(fields[0]);
 
         // Setup delta concept (either new or based on existing one)
         Concept newConcept = null;
@@ -1029,6 +1043,28 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     getLog().info("  skipped = " + dpnSkippedCt);
 
   }
+  
+  /**
+   * Retires concepts that were removed from prior deltas. Find
+   * concepts in the DB that are not in the current delta and
+   * which have effective times greater than the latest release date.
+   * The latest release date is the "terminologyVersion" in this case.
+   * @throws Exception 
+   */
+  public void retireRemovedConcepts() throws Exception {
+    int ct = 0;
+    for (Concept concept : conceptCache.values()) {
+      if (concept.getEffectiveTime().after(dt.parse(terminologyVersion)) &&
+          !deltaConceptIds.contains(concept.getTerminologyId())) {
+        // Retire this concept.
+        ct++;
+        concept.setActive(false);
+        concept.setEffectiveTime(deltaLoaderStartDate);
+        contentService.updateConcept(concept);
+      }
+    }
+    getLog().info("      retired =  " + ct);
+  }
 
   // helper function to update and store concept
   // as well as putting all descendant objects in the cache
@@ -1086,5 +1122,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
   private void cacheLanguageRefSetMember(LanguageRefSetMember l) {
     languageRefSetMemberCache.put(l.getTerminologyId(), l);
   }
+  
+  
 
 }
