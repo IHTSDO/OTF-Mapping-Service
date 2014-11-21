@@ -17,14 +17,12 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 	});
 })
 
-.controller('terminologyBrowserWidgetCtrl', function($scope, $rootScope, $q, $timeout, $http, $routeParams, $location, localStorageService, metadataService){
+.controller('terminologyBrowserWidgetCtrl', function($scope, $rootScope, $q, $timeout, $http, $routeParams, $location, localStorageService){
 	
 	$scope.focusProject = localStorageService.get('focusProject');
 	$scope.userToken = localStorageService.get('userToken');
 	$scope.terminology = null;
 	$scope.terminologyVersion = null;
-	$scope.metadata = null;
-	
 
 	// initialize currently displayed concept as empty object
 	$scope.currentOpenConcepts = {};
@@ -66,10 +64,6 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 			
 			// get the root trees
 			$scope.getRootTree();
-			
-			console.debug("TB: etrieving metadata for ", $scope.focusProject);
-			
-			$scope.metadata = localStorageService.get('metadata_' + $scope.focusProject.destinationTerminology.name);
 		}
 	});
 	
