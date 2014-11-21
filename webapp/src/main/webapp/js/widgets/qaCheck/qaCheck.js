@@ -179,6 +179,7 @@ angular
 								.success(
 										function(data) {
 											$rootScope.glassPane--;
+											$scope.reportDisplayed = null;
 											$scope.definitionMsg = "Successfully added concepts to qa workflow";
 										})
 								.error(

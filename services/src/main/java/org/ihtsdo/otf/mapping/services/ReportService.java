@@ -31,7 +31,7 @@ public interface ReportService extends RootService {
 	 *             the exception
 	 */
 	@Override
-  public void close() throws Exception;
+    public void close() throws Exception;
 
 	/**
 	 * Gets the reports.
@@ -346,23 +346,12 @@ public interface ReportService extends RootService {
 	 */
 	public ReportDefinitionList getQACheckDefinitions();
 
-
-	/**
-	 * Adds the qa check definition.
-	 *
-	 * @param qaCheckDefinition the qa check definition
-	 * @return the report definition
-	 */
-	public ReportDefinition addQACheckDefinition(ReportDefinition qaCheckDefinition);
-
 	/**
 	 * Returns the QA labels.
 	 *
 	 * @return the QA labels
 	 */
 	public SearchResultList getQALabels();
-
-
 
 
 }
