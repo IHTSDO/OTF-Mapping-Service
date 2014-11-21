@@ -1451,35 +1451,4 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.services.ReportDefinitionService#addQACheckDefinition
-	 * (org.ihtsdo.otf .mapping.reportDefinitions.ReportDefinition)
-	 */
-	@Override
-	public ReportDefinition addQACheckDefinition(
-			ReportDefinition qaCheckDefinition) {
-
-		// ensure isQACheck is set to true
-		qaCheckDefinition.setQACheck(true);
-
-		if (getTransactionPerOperation()) {
-			tx = manager.getTransaction();
-			tx.begin();
-			manager.persist(qaCheckDefinition);
-			tx.commit();
-
-			return qaCheckDefinition;
-		} else {
-			if (!tx.isActive()) {
-				throw new IllegalStateException(
-						"Error attempting to change data without an active transaction");
-			}
-			manager.persist(qaCheckDefinition);
-			return qaCheckDefinition;
-		}
-	}
-
 }
