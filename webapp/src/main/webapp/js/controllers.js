@@ -2,7 +2,7 @@
 
 var mapProjectAppControllers = angular.module('mapProjectAppControllers', ['ui.bootstrap', 'ui.sortable', 'mapProjectAppDirectives', 'mapProjectAppServices', 'mapProjectAppDashboards']);
 
-//var root_url = "${base.url}/mapping-rest/";
+// var root_url = "${base.url}/mapping-rest/";
 var root_url = "/mapping-rest/";
 
 var root_mapping = root_url + "mapping/";
@@ -14,13 +14,16 @@ var root_reporting = root_url + "reporting/";
 
 mapProjectAppControllers.run(function($rootScope, $http, localStorageService, $location) {
 	
-	// global variable to display a glass pane (if non-zero) preventing user interaction
+	// global variable to display a glass pane (if non-zero) preventing user
+	// interaction
 	$rootScope.glassPane = 0;
 	
-	// global variable, contains user-viewable error text displayed one very page if not empty
+	// global variable, contains user-viewable error text displayed one very
+	// page if not empty
 	$rootScope.globalError = '';
 	
-	// global function to handle any type of error.  Currently only specifically implemented for authorizatoin failures.
+	// global function to handle any type of error. Currently only specifically
+	// implemented for authorizatoin failures.
     $rootScope.handleHttpError = function (data, status, headers, config) {
 		$rootScope.globalError = data.replace(/"/g, '');
 		if (status == "401") {
@@ -53,7 +56,8 @@ mapProjectAppControllers.run(function($rootScope, $http, localStorageService, $l
    		      event.preventDefault();
    		   	} else {
    		   		// always set this to false
-   		   		// it is the responsibility of a "dirty" page controller to set this to true
+   		   		// it is the responsibility of a "dirty" page controller to set
+				// this to true
    		   		console.debug("Setting dirty to false");
    		   		$rootScope.currentPageDirty = false;
    		   	}
@@ -70,13 +74,14 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
     $scope.mapUsers = [];
     $scope.userName = '';
     
-    //$rootScope.globalError = 'rootScopeGlobalError';
+    // $rootScope.globalError = 'rootScopeGlobalError';
     $scope.globalError = $rootScope.globalError;
 		
     // clear the local storage service
     localStorageService.clearAll();
 	
-	// set the user, role, focus project, and preferences to null (i.e. clear) by broadcasting to rest of app
+	// set the user, role, focus project, and preferences to null (i.e. clear)
+	// by broadcasting to rest of app
 	$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', currentUser: null});  
 	$rootScope.$broadcast('localStorageModule.notification.setRole',{key: 'currentRole', currentRole: null});  
 	$rootScope.$broadcast('localStorageModule.notification.setFocusProject', {key: 'focusProject', focusProject: null});
@@ -122,7 +127,8 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 			console.debug($scope.userName);
 			
 			// turn on the glass pane during login process/authentication
-			// turned off at each error stage or before redirecting to dashboards
+			// turned off at each error stage or before redirecting to
+			// dashboards
 			$rootScope.glassPane++;
 			
 			$http({
@@ -316,23 +322,6 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 					
 				      $rootScope.handleHttpError(data, status, headers, config);
 				}).then(function(data) {
-					$http({
-						url: root_metadata + "terminology/terminologies/latest",
-						dataType: "json",
-						method: "GET",
-						headers: {
-							"Content-Type": "application/json"
-						}
-					}).success(function(response) {
-						var keyValuePairs = response.keyValuePair;
-						for (var i = 0; i < keyValuePairs.length; i++) {
-							console.debug("Retrieving metadata for " + keyValuePairs[i].key + ", " + keyValuePairs[i].value);		
-							addMetadataToLocalStorageService(keyValuePairs[i].key, keyValuePairs[i].value);
-						}
-					}).error(function(data, status, headers, config) {
-						$rootScope.glassPane--;	
-					    $rootScope.handleHttpError(data, status, headers, config);
-					}).then(function(data) {
 						$http({
 							url: root_mapping + "mapProject/metadata",
 							dataType: "json",
@@ -353,27 +342,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 						    $rootScope.handleHttpError(data, status, headers, config);
 						});
 					});
-
-				});
-		}
-		
-
-
-		// function to add metadata to local storage service
-		// written to ensure correct handling of asynchronous responses
-		function addMetadataToLocalStorageService(terminology, version) {
-			$http({
-				url: root_metadata + "metadata/terminology/id/" + terminology + "/" + version,
-				dataType: "json",
-				method: "GET",
-				headers: {
-					"Content-Type": "application/json"
-				}
-			}).success(function(response) {
-				console.debug("Adding metadata for " + terminology);
-				localStorageService.add('metadata_' + terminology, response.keyValuePairList);
-			});
-		}
+		};
 
 	};
 	
