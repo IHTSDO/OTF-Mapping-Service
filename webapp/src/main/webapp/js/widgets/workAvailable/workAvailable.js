@@ -360,7 +360,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 				var concept = $scope.availableQAWork[i];
 				
 				$scope.availableQAWork[i].name = concept.value;
-				$scope.availableQAWork[i].labels = concept.value2;					
+				$scope.availableQAWork[i].labels = concept.value2.replace(/;/g, ' ');					
 			}
 			
 			//$scope.availableCount = data.totalCount;
