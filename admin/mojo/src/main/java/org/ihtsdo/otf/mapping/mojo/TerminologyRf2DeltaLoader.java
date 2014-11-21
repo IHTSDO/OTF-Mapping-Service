@@ -1053,9 +1053,10 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
    */
   public void retireRemovedConcepts() throws Exception {
     int ct = 0;
-    for (Concept concept : conceptCache.values()) {
+    for (Concept concept : existingConceptCache.values()) {
       if (concept.getEffectiveTime().after(dt.parse(terminologyVersion)) &&
-          !deltaConceptIds.contains(concept.getTerminologyId())) {
+          !deltaConceptIds.contains(concept.getTerminologyId()) &&
+          concept.isActive())  {
         // Retire this concept.
         ct++;
         concept.setActive(false);
