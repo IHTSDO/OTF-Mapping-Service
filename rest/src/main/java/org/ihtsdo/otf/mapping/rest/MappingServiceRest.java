@@ -144,41 +144,32 @@ public class MappingServiceRest extends RootServiceRest {
 
 			MappingService mappingService = new MappingServiceJpa();
 
-			MapProjectListJpa mapProjects = (MapProjectListJpa) mappingService
-					.getMapProjects();
-
-			// remove project if users' role is VIEWER and project is not public
-			if (role == MapUserRole.VIEWER) {
-				Set<MapProject> toRemoveSet = new HashSet<>();
-				for (MapProject project : mapProjects.getIterable()) {
-					if (!project.isPublic()) {
-						toRemoveSet.add(project);
-					}
+			// instantiate list of projects to return
+			MapProjectListJpa mapProjects =new MapProjectListJpa();
+			
+			// cycle over projects and verify that this user can view each project
+			for (MapProject mapProject :  mappingService.getMapProjects().getMapProjects()) {
+					
+				// if this user has a role of VIEWER or above for this project (i.e. is not NONE)
+				if (!securityService.getMapProjectRoleForToken(authToken, mapProject.getId())
+						.equals(MapUserRole.NONE)) {
+					mapProjects.addMapProject(mapProject);
 				}
-				for (MapProject toRemove : toRemoveSet) {
-				  mapProjects.removeMapProject(toRemove);
-				}
+				
 			}
 
-			// remove project if user's role on it is NONE
-			Set<MapProject> toRemoveSet = new HashSet<>();
-			for (MapProject project : mapProjects.getIterable()) {
-				if (securityService.getMapProjectRoleForToken(authToken, project.getId()) == MapUserRole.NONE) {
-					toRemoveSet.add(project);
-				}
-			}
-			for (MapProject toRemove : toRemoveSet) {
-				  mapProjects.removeMapProject(toRemove);
-			}
+			// set total count to count for completeness (not a paged list)
+			mapProjects.setTotalCount(mapProjects.getCount());
 			
-			mapProjects.setTotalCount(mapProjects.getTotalCount() - 1);
-			
+			// sort projects by name
 			mapProjects.sortBy(new Comparator<MapProject>() {
 				@Override
 				public int compare(MapProject o1, MapProject o2) {
 					return o1.getName().compareTo(o2.getName());
 				}
 			});
+			
+			// close the mapping service and return the viewable projects
 			mappingService.close();
 			return mapProjects;
 
