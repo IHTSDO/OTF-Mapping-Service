@@ -188,6 +188,7 @@ public class RootServiceJpa implements RootService {
 					"Error attempting to commit a transaction when there "
 							+ "is no active transaction");
 		tx.commit();
+		manager.clear();
 	}
 	
 	@Override
