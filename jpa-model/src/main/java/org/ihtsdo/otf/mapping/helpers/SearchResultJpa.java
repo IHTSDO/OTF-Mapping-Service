@@ -3,9 +3,6 @@ package org.ihtsdo.otf.mapping.helpers;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.ihtsdo.otf.mapping.helpers.SearchResult;
-
-
 /**
  * The search result for the Jpa package.
  *
@@ -14,22 +11,22 @@ import org.ihtsdo.otf.mapping.helpers.SearchResult;
 @XmlRootElement(name = "searchResult")
 public class SearchResultJpa implements SearchResult {
 
-  /**  The id. */
+  /** The id. */
   private Long id;
 
-  /**  The terminology id. */
+  /** The terminology id. */
   private String terminologyId;
 
-  /**  The terminology. */
+  /** The terminology. */
   private String terminology;
 
-  /**  The terminology version. */
+  /** The terminology version. */
   private String terminologyVersion;
 
-  /**  The value. */
+  /** The value. */
   private String value;
-  
-  /**  The value2. */
+
+  /** The value2. */
   private String value2;
 
   /**
@@ -46,7 +43,8 @@ public class SearchResultJpa implements SearchResult {
    * @param terminologyId the terminologyId
    * @param value the value
    */
-  public SearchResultJpa(Long id, String terminologyId, String value, String value2) {
+  public SearchResultJpa(Long id, String terminologyId, String value,
+      String value2) {
     this.id = id;
     this.terminologyId = terminologyId;
     this.value = value;
@@ -97,7 +95,9 @@ public class SearchResultJpa implements SearchResult {
 
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.ihtsdo.otf.mapping.helpers.SearchResult#getTerminology()
    */
   @Override
@@ -105,15 +105,21 @@ public class SearchResultJpa implements SearchResult {
     return this.terminology;
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.helpers.SearchResult#setTerminology(java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.helpers.SearchResult#setTerminology(java.lang.String
+   * )
    */
   @Override
   public void setTerminology(String terminology) {
     this.terminology = terminology;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.ihtsdo.otf.mapping.helpers.SearchResult#getTerminologyVersion()
    */
   @Override
@@ -121,8 +127,12 @@ public class SearchResultJpa implements SearchResult {
     return this.terminologyVersion;
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.helpers.SearchResult#setTerminologyVersion(java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.helpers.SearchResult#setTerminologyVersion(java.
+   * lang.String)
    */
   @Override
   public void setTerminologyVersion(String terminologyVersion) {
@@ -150,26 +160,33 @@ public class SearchResultJpa implements SearchResult {
     this.value = value;
 
   }
-  
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.helpers.SearchResult#getValue2()
-	 */
-	@Override  
-	@XmlElement(name = "value2")
-	public String getValue2() {
-		return value2;
-	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.helpers.SearchResult#setValue2(java.lang.String)
-	 */
-	@Override
-	public void setValue2(String value2) {
-		this.value2 = value2;
-		
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.helpers.SearchResult#getValue2()
+   */
+  @Override
+  @XmlElement(name = "value2")
+  public String getValue2() {
+    return value2;
+  }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.helpers.SearchResult#setValue2(java.lang.String)
+   */
+  @Override
+  public void setValue2(String value2) {
+    this.value2 = value2;
+
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#hashCode()
    */
   @Override
@@ -190,7 +207,9 @@ public class SearchResultJpa implements SearchResult {
     return result;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#equals(java.lang.Object)
    */
   @Override
@@ -230,16 +249,16 @@ public class SearchResultJpa implements SearchResult {
     return true;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
-public String toString() {
-	return "SearchResultJpa [id=" + id + ", terminologyId=" + terminologyId
-			+ ", terminology=" + terminology + ", terminologyVersion="
-			+ terminologyVersion + ", value=" + value + ", value2=" + value2 + "]";
-}
-
-
+  public String toString() {
+    return "SearchResultJpa [id=" + id + ", terminologyId=" + terminologyId
+        + ", terminology=" + terminology + ", terminologyVersion="
+        + terminologyVersion + ", value=" + value + ", value2=" + value2 + "]";
+  }
 
 }

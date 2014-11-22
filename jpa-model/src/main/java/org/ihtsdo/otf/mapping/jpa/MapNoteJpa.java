@@ -68,7 +68,7 @@ public class MapNoteJpa implements MapNote {
     this.note = note;
     this.timestamp = timestamp;
   }
-  
+
   /**
    * Instantiates a {@link MapNoteJpa} from the specified parameters.
    *
@@ -76,18 +76,19 @@ public class MapNoteJpa implements MapNote {
    * @param keepIds the keep ids
    */
   public MapNoteJpa(MapNote mapNote, boolean keepIds) {
-  
-	// if deep copy not indicated, copy id and timestamp
-	if (!keepIds) {
-		this.id = mapNote.getId();
-		this.timestamp = mapNote.getTimestamp();
-	}
-	
-	// copy basic type fields (non-persisted objects)
-	this.note = mapNote.getNote();
-	
-	// copy objects/collections excluded from deep copy (i.e. retain persistence references)
-	this.user = new MapUserJpa(mapNote.getUser());
+
+    // if deep copy not indicated, copy id and timestamp
+    if (!keepIds) {
+      this.id = mapNote.getId();
+      this.timestamp = mapNote.getTimestamp();
+    }
+
+    // copy basic type fields (non-persisted objects)
+    this.note = mapNote.getNote();
+
+    // copy objects/collections excluded from deep copy (i.e. retain persistence
+    // references)
+    this.user = new MapUserJpa(mapNote.getUser());
   }
 
   /**
@@ -192,7 +193,9 @@ public class MapNoteJpa implements MapNote {
         + ", timestamp=" + timestamp + "]";
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#hashCode()
    */
   @Override
@@ -204,7 +207,9 @@ public class MapNoteJpa implements MapNote {
     return result;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#equals(java.lang.Object)
    */
   @Override

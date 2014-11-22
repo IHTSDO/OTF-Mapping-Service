@@ -40,7 +40,7 @@ import org.ihtsdo.otf.mapping.services.WorkflowService;
  *           </plugin>
  *         </plugins>
  *       </build>
- *     </profile> 
+ *     </profile>
  * </pre>
  * 
  * @goal qa-workflow

@@ -76,64 +76,64 @@ public class MapProjectDataExportMojo extends AbstractMojo {
             "Specified export.output.dir directory does not exist: "
                 + outputDirString);
       }
-      
+
       JAXBContext jaxbContext = null;
       jaxbContext = JAXBContext.newInstance(MapProjectJpa.class);
       Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
-            
+
       // export project data to project specific files
       MappingService mappingService = new MappingServiceJpa();
       for (MapProject mpr : mappingService.getMapProjects().getMapProjects()) {
-      	StringWriter writer = new StringWriter();
-        
-        File projectsFile = new File(outputDir, "Project" + mpr.getId() + ".xml");
+        StringWriter writer = new StringWriter();
+
+        File projectsFile =
+            new File(outputDir, "Project" + mpr.getId() + ".xml");
         // if file doesn't exist, then create it
         if (!projectsFile.exists()) {
-        	projectsFile.createNewFile();
+          projectsFile.createNewFile();
         }
-      	
-      	BufferedWriter projectWriter =
-            new BufferedWriter(
-                new FileWriter(projectsFile.getAbsoluteFile()));
-        
+
+        BufferedWriter projectWriter =
+            new BufferedWriter(new FileWriter(projectsFile.getAbsoluteFile()));
+
         jaxbMarshaller.marshal(mpr, writer);
 
         projectWriter.write(writer.toString());
         writer.close();
         projectWriter.close();
-        
-        
-        // Write out scope includes/excludes lists to separate files, also by project
-        File scopeIncludesFile = new File(outputDir, "Project" + mpr.getId() + "Scope.txt");
+
+        // Write out scope includes/excludes lists to separate files, also by
+        // project
+        File scopeIncludesFile =
+            new File(outputDir, "Project" + mpr.getId() + "Scope.txt");
         // if file doesn't exist, then create it
         if (!scopeIncludesFile.exists()) {
           scopeIncludesFile.createNewFile();
         }
         BufferedWriter scopeIncludesWriter =
-            new BufferedWriter(
-                new FileWriter(scopeIncludesFile.getAbsoluteFile()));
+            new BufferedWriter(new FileWriter(
+                scopeIncludesFile.getAbsoluteFile()));
 
-        File scopeExcludesFile = new File(outputDir, "Project" + mpr.getId() + "ScopeExcludes.txt");
+        File scopeExcludesFile =
+            new File(outputDir, "Project" + mpr.getId() + "ScopeExcludes.txt");
         // if file doesn't exist, then create it
         if (!scopeExcludesFile.exists()) {
           scopeExcludesFile.createNewFile();
         }
         BufferedWriter scopeExcludesWriter =
-            new BufferedWriter(
-                new FileWriter(scopeExcludesFile.getAbsoluteFile()));
+            new BufferedWriter(new FileWriter(
+                scopeExcludesFile.getAbsoluteFile()));
 
-        
         for (String concept : mpr.getScopeConcepts()) {
           scopeIncludesWriter.write(concept + "\n");
         }
         scopeIncludesWriter.close();
-        
+
         for (String concept : mpr.getScopeExcludedConcepts()) {
           scopeExcludesWriter.write(concept + "\n");
         }
         scopeExcludesWriter.close();
       }
-      
 
       mappingService.close();
 

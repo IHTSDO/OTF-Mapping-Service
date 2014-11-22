@@ -38,26 +38,26 @@ public interface RootService {
    * Sets the transaction per operation.
    *
    * @param transactionPerOperation the new transaction per operation
-   * @throws Exception 
+   * @throws Exception
    */
   public void setTransactionPerOperation(boolean transactionPerOperation)
     throws Exception;
 
   /**
    * Commit.
-   * @throws Exception 
+   * @throws Exception
    */
   public void commit() throws Exception;
 
   /**
    * Begin transaction.
-   * @throws Exception 
+   * @throws Exception
    */
   public void beginTransaction() throws Exception;
 
   /**
    * Closes the manager
-   * @throws Exception 
+   * @throws Exception
    */
   public void close() throws Exception;
 

@@ -83,7 +83,8 @@ public class MapProjectDataRemoverMojo extends AbstractMojo {
       // Remove map projects
       for (MapProject p : mappingService.getMapProjects().getIterable()) {
         getLog().info("  Remove map project - " + p.getName());
-        if (mappingService.getMapRecordsForMapProject(p.getId()).getTotalCount() != 0) {
+        if (mappingService.getMapRecordsForMapProject(p.getId())
+            .getTotalCount() != 0) {
           throw new MojoFailureException(
               "Attempt to delete a map project that has map records, delete the map records first");
         }
@@ -91,11 +92,13 @@ public class MapProjectDataRemoverMojo extends AbstractMojo {
       }
 
       // Remove map preferences
-      for (MapUserPreferences p : mappingService.getMapUserPreferences().getIterable()) {
-    	  getLog().info("  Remove map user preferences - " + p.getMapUser().getName());
-    	  mappingService.removeMapUserPreferences(p.getId());
+      for (MapUserPreferences p : mappingService.getMapUserPreferences()
+          .getIterable()) {
+        getLog().info(
+            "  Remove map user preferences - " + p.getMapUser().getName());
+        mappingService.removeMapUserPreferences(p.getId());
       }
-      
+
       // Remove map users
       for (MapUser l : mappingService.getMapUsers().getIterable()) {
         getLog().info("  Remove map user - " + l.getName());
@@ -127,7 +130,8 @@ public class MapProjectDataRemoverMojo extends AbstractMojo {
       }
 
       // Remove report definitions
-      for (ReportDefinition def : reportService.getReportDefinitions().getReportDefinitions()) {
+      for (ReportDefinition def : reportService.getReportDefinitions()
+          .getReportDefinitions()) {
         getLog().info("  Remove report definition - " + def.getName());
         reportService.removeReportDefinition(def.getId());
       }

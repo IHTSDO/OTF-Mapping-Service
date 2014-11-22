@@ -22,8 +22,8 @@ public class GraphHelper {
    * @return the descendant concepts
    * @throws Exception the exception
    */
-  public static Set<Concept> getDescendantConcepts(Concept rootConcept, String typeId)
-    throws Exception {
+  public static Set<Concept> getDescendantConcepts(Concept rootConcept,
+    String typeId) throws Exception {
 
     Queue<Concept> conceptQueue = new LinkedList<>();
     Set<Concept> conceptSet = new HashSet<>();

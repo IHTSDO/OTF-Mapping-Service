@@ -22,82 +22,83 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ReportNoteJpa implements ReportNote {
 
-	/** The id. */
-	@Id
-	@GeneratedValue
-	private Long id;
+  /** The id. */
+  @Id
+  @GeneratedValue
+  private Long id;
 
-	/** The note. */
-	@Column(nullable = false)
-	private String note;
+  /** The note. */
+  @Column(nullable = false)
+  private String note;
 
-	/** The timestamp. */
-	@Temporal(TemporalType.TIMESTAMP)
-	@Column(nullable = false)
-	private Date timestamp = new Date();
+  /** The timestamp. */
+  @Temporal(TemporalType.TIMESTAMP)
+  @Column(nullable = false)
+  private Date timestamp = new Date();
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.reports.ReportNote#getId()
-	 */
-	@Override
-	public Long getId() {
-		return id;
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.reports.ReportNote#getId()
+   */
+  @Override
+  public Long getId() {
+    return id;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.reports.ReportNote#setId(java.lang.Long)
-	 */
-	@Override
-	public void setId(Long id) {
-		this.id = id;
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.reports.ReportNote#setId(java.lang.Long)
+   */
+  @Override
+  public void setId(Long id) {
+    this.id = id;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.reports.ReportNote#getNote()
-	 */
-	@Override
-	public String getNote() {
-		return note;
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.reports.ReportNote#getNote()
+   */
+  @Override
+  public String getNote() {
+    return note;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.reports.ReportNote#setNote(java.lang.String)
-	 */
-	@Override
-	public void setNote(String note) {
-		this.note = note;
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.reports.ReportNote#setNote(java.lang.String)
+   */
+  @Override
+  public void setNote(String note) {
+    this.note = note;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.reports.ReportNote#getTimestamp()
-	 */
-	@Override
-	public Date getTimestamp() {
-		return timestamp;
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.reports.ReportNote#getTimestamp()
+   */
+  @Override
+  public Date getTimestamp() {
+    return timestamp;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.reports.ReportNote#setTimestamp(java.util.Date)
-	 */
-	@Override
-	public void setTimestamp(Date timestamp) {
-		this.timestamp = timestamp;
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.reports.ReportNote#setTimestamp(java.util.Date)
+   */
+  @Override
+  public void setTimestamp(Date timestamp) {
+    this.timestamp = timestamp;
+  }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#hashCode()
    */
   @Override
@@ -108,7 +109,9 @@ public class ReportNoteJpa implements ReportNote {
     return result;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#equals(java.lang.Object)
    */
   @Override

@@ -1059,29 +1059,31 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
           && concept.isActive()) {
         // Because it's possible that a concept element changed and that
         // change was retracted, we need to double-check whether all of
-        // the concept elements are also new. If so, proceed.  It is possible
+        // the concept elements are also new. If so, proceed. It is possible
         // that ALL descriptions and relationships changed and all of those
         // changes were retracted. in that case the worst thing that happens
         // the record has to be remapped
         boolean proceed = true;
         for (Description description : concept.getDescriptions()) {
-          if (!description.getEffectiveTime().after(dt.parse(terminologyVersion))) {
+          if (!description.getEffectiveTime().after(
+              dt.parse(terminologyVersion))) {
             proceed = false;
             break;
           }
         }
         if (proceed) {
           for (Relationship relationship : concept.getRelationships()) {
-            if (!relationship.getEffectiveTime().after(dt.parse(terminologyVersion))) {
+            if (!relationship.getEffectiveTime().after(
+                dt.parse(terminologyVersion))) {
               proceed = false;
               break;
             }
-          }          
+          }
         }
         // One gap in the logic is if a concept was retired and that
-        // retirement was retracted, we don't know.  again, the consequence
+        // retirement was retracted, we don't know. again, the consequence
         // is that the concept will have to be remapped.
-        
+
         // Retire this concept.
         if (proceed) {
           ct++;

@@ -112,7 +112,7 @@ public interface MapUserPreferences {
    * @param model the model
    */
   public void addDashboardModel(String name, String model);
-  
+
   /**
    * Removes the dashboard model.
    *

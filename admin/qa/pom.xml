@@ -69,7 +69,7 @@
         </plugins>
       </build>
     </profile>
-    
+
     <!-- See {@link WorkflowFinishSpecialistEditingMojo} for details -->
     <!-- TODO: likely no longer needed, remove this -->
     <profile>
@@ -96,6 +96,6 @@
         </plugins>
       </build>
     </profile>
-    
+
   </profiles>
 </project>

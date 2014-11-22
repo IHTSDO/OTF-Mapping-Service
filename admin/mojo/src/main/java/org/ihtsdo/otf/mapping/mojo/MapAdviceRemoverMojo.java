@@ -13,29 +13,29 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  * 
  * <pre>
  *     <profile>
-			<id>MapAdvice</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.ihtsdo.otf.mapping</groupId>
-						<artifactId>mapping-admin-mojo</artifactId>
-						<version>${project.version}</version>
-						<executions>
-							<execution>
-								<id>remove-map-advice</id>
-								<phase>package</phase>
-								<goals>
-									<goal>remove-map-advice</goal>
-								</goals>
-								<configuration>
-									<mapAdviceName>${mapAdvice.name}</mapAdviceName>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
+ * 			<id>MapAdvice</id>
+ * 			<build>
+ * 				<plugins>
+ * 					<plugin>
+ * 						<groupId>org.ihtsdo.otf.mapping</groupId>
+ * 						<artifactId>mapping-admin-mojo</artifactId>
+ * 						<version>${project.version}</version>
+ * 						<executions>
+ * 							<execution>
+ * 								<id>remove-map-advice</id>
+ * 								<phase>package</phase>
+ * 								<goals>
+ * 									<goal>remove-map-advice</goal>
+ * 								</goals>
+ * 								<configuration>
+ * 									<mapAdviceName>${mapAdvice.name}</mapAdviceName>
+ * 								</configuration>
+ * 							</execution>
+ * 						</executions>
+ * 					</plugin>
+ * 				</plugins>
+ * 			</build>
+ * 		</profile>
  * </pre>
  * 
  * @goal remove-map-advice
@@ -59,7 +59,8 @@ public class MapAdviceRemoverMojo extends AbstractMojo {
     getLog().info("Removing map advice from environment - " + mapAdviceName);
 
     if (mapAdviceName == null) {
-      throw new MojoExecutionException("You must specify the full name of the map advice.");
+      throw new MojoExecutionException(
+          "You must specify the full name of the map advice.");
     }
 
     try {
@@ -68,17 +69,18 @@ public class MapAdviceRemoverMojo extends AbstractMojo {
 
       MapAdvice mapAdvice = null;
       for (MapAdvice ma : mappingService.getMapAdvices().getIterable()) {
-    	  if (ma.getName().equals(mapAdviceName))
-    		  mapAdvice = ma;
+        if (ma.getName().equals(mapAdviceName))
+          mapAdvice = ma;
       }
-      
+
       if (mapAdvice == null)
-    	  throw new MojoExecutionException("The map advice to be removed does not exist");
-      
-      getLog().info("Found map advice to remove (id = " + mapAdvice.getId() + ")");
-      
+        throw new MojoExecutionException(
+            "The map advice to be removed does not exist");
+
+      getLog().info(
+          "Found map advice to remove (id = " + mapAdvice.getId() + ")");
+
       mappingService.removeMapAdviceFromEnvironment(mapAdvice);
-      
 
       getLog().info("done ...");
       mappingService.close();

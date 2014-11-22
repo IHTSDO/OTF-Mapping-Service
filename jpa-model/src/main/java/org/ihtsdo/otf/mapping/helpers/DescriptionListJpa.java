@@ -15,8 +15,8 @@ import org.ihtsdo.otf.mapping.rf2.jpa.DescriptionJpa;
  * JAXB enabled implementation of {@link DescriptionList}.
  */
 @XmlRootElement(name = "descriptionList")
-public class DescriptionListJpa extends AbstractResultList<Description> implements
-    DescriptionList {
+public class DescriptionListJpa extends AbstractResultList<Description>
+    implements DescriptionList {
 
   /** The map descriptions. */
   private List<Description> descriptions = new ArrayList<>();
@@ -32,8 +32,8 @@ public class DescriptionListJpa extends AbstractResultList<Description> implemen
    * (non-Javadoc)
    * 
    * @see
-   * org.ihtsdo.otf.mapping.helpers.DescriptionList#addDescription(org.ihtsdo.otf.mapping
-   * .rf2.Description)
+   * org.ihtsdo.otf.mapping.helpers.DescriptionList#addDescription(org.ihtsdo
+   * .otf.mapping .rf2.Description)
    */
   @Override
   public void addDescription(Description Description) {
@@ -44,8 +44,8 @@ public class DescriptionListJpa extends AbstractResultList<Description> implemen
    * (non-Javadoc)
    * 
    * @see
-   * org.ihtsdo.otf.mapping.helpers.DescriptionList#removeDescription(org.ihtsdo.otf
-   * .mapping.rf2.Description)
+   * org.ihtsdo.otf.mapping.helpers.DescriptionList#removeDescription(org.ihtsdo
+   * .otf .mapping.rf2.Description)
    */
   @Override
   public void removeDescription(Description Description) {
@@ -55,7 +55,9 @@ public class DescriptionListJpa extends AbstractResultList<Description> implemen
   /*
    * (non-Javadoc)
    * 
-   * @see org.ihtsdo.otf.mapping.helpers.DescriptionList#setDescriptions(java.util.List)
+   * @see
+   * org.ihtsdo.otf.mapping.helpers.DescriptionList#setDescriptions(java.util
+   * .List)
    */
   @Override
   public void setDescriptions(List<Description> Descriptions) {
