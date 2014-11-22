@@ -109,7 +109,6 @@ public class MapRecordJpa implements MapRecord {
 
   /** The concept name. */
   @Column(nullable = false)
-  @Field @Analyzer(definition = "noStopWord")
   private String conceptName;
 
   /** The count descendant concepts. */
@@ -384,6 +383,7 @@ public class MapRecordJpa implements MapRecord {
    */
   @Override
   @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  @Analyzer(definition = "noStopWord")
   public String getConceptName() {
     return this.conceptName;
   }
