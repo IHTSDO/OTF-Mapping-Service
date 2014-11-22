@@ -57,7 +57,7 @@ public class TrackingRecordJpa implements TrackingRecord {
 
   /** The default preferred name. */
   @Column(nullable = false)
-  @Analyzer(definition = "noStopWord")
+  @Field @Analyzer(definition = "noStopWord")
   private String defaultPreferredName;
 
   /** The sort key. */
