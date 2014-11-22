@@ -301,8 +301,9 @@ public class TrackingRecordJpa implements TrackingRecord {
     String pair = workflowStatus + "_" + userName;
 
     if (this.userAndWorkflowStatusPairs.indexOf(pair) != -1) {
-      this.userAndWorkflowStatusPairs.replaceAll(pair, "").replace("  ", " ")
-          .trim();
+      userAndWorkflowStatusPairs =
+          userAndWorkflowStatusPairs.replaceAll(pair, "").replace("  ", " ")
+              .trim();
     }
   }
 

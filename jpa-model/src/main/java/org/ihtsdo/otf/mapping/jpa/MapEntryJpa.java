@@ -565,11 +565,11 @@ public class MapEntryJpa implements MapEntry {
     // advices must be identical
     if (this.mapAdvices == null && me.getMapAdvices() != null) {
       return false;
-    } else if (this.mapAdvices != null & me.getMapAdvices() == null) {
+    } else if (this.mapAdvices != null && me.getMapAdvices() == null) {
       return false;
-    } else if (this.mapAdvices.size() != me.getMapAdvices().size()) {
+    } else if (mapAdvices != null && mapAdvices.size() != me.getMapAdvices().size()) {
       return false;
-    } else {
+    } else if (mapAdvices != null) {
       for (MapAdvice ma : this.mapAdvices) {
         if (!me.getMapAdvices().contains(ma))
           return false;
