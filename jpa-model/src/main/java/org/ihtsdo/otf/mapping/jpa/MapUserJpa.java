@@ -48,18 +48,18 @@ public class MapUserJpa implements MapUser {
   /** The email. */
   @Column(nullable = false)
   private String email;
-  
+
   /** The application role. */
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   private MapUserRole applicationRole;
 
   /**
-   *  The default constructor.
+   * The default constructor.
    */
   public MapUserJpa() {
   }
-  
+
   /**
    * Instantiates a new map user jpa.
    *
@@ -69,36 +69,35 @@ public class MapUserJpa implements MapUser {
    * @param email the email
    * @param applicationRole the application role
    */
-  public MapUserJpa(Long id, String userName, String name, String email, MapUserRole applicationRole) {
-	super();
-	this.id = id;
-	this.userName = userName;
-	this.name = name;
-	this.email = email;
-	this.applicationRole = applicationRole;
-}
-  
+  public MapUserJpa(Long id, String userName, String name, String email,
+      MapUserRole applicationRole) {
+    super();
+    this.id = id;
+    this.userName = userName;
+    this.name = name;
+    this.email = email;
+    this.applicationRole = applicationRole;
+  }
+
   /**
    * Instantiates a new map user jpa.
    *
    * @param mapUser the map user
    */
   public MapUserJpa(MapUser mapUser) {
-	  super();
-	  this.id = mapUser.getId();
-	  this.userName = mapUser.getUserName();
-	  this.name = mapUser.getName();
-	  this.email = mapUser.getEmail();
-	  this.applicationRole = mapUser.getApplicationRole();
+    super();
+    this.id = mapUser.getId();
+    this.userName = mapUser.getUserName();
+    this.name = mapUser.getName();
+    this.email = mapUser.getEmail();
+    this.applicationRole = mapUser.getApplicationRole();
   }
 
-
-
-/**
- * Return the id.
- *
- * @return the id
- */
+  /**
+   * Return the id.
+   *
+   * @return the id
+   */
   @Override
   public Long getId() {
     return this.id;
@@ -136,7 +135,7 @@ public class MapUserJpa implements MapUser {
    * @return the user name
    */
   @Override
-	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public String getUserName() {
     return userName;
   }
@@ -167,7 +166,7 @@ public class MapUserJpa implements MapUser {
    * @return the name
    */
   @Override
-	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   public String getName() {
     return name;
   }
@@ -198,7 +197,7 @@ public class MapUserJpa implements MapUser {
    * @return the email
    */
   @Override
-	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public String getEmail() {
     return email;
   }
@@ -218,26 +217,26 @@ public class MapUserJpa implements MapUser {
     this.email = email;
   }
 
-	/**
-	 * Returns the application role.
-	 *
-	 * @return the application role
-	 */
-	@Override
-	public MapUserRole getApplicationRole() {
-		return applicationRole;
-	}
+  /**
+   * Returns the application role.
+   *
+   * @return the application role
+   */
+  @Override
+  public MapUserRole getApplicationRole() {
+    return applicationRole;
+  }
 
-	/**
-	 * Sets the application role.
-	 *
-	 * @param role the application role
-	 */
-	@Override
-	public void setApplicationRole(MapUserRole role) {
-		this.applicationRole = role;
-	}
-	
+  /**
+   * Sets the application role.
+   *
+   * @param role the application role
+   */
+  @Override
+  public void setApplicationRole(MapUserRole role) {
+    this.applicationRole = role;
+  }
+
   /**
    * {@inheritDoc}
    */
@@ -245,62 +244,60 @@ public class MapUserJpa implements MapUser {
   public String toString() {
 
     return this.getId() + "," + this.getUserName() + "," + this.getEmail()
-        + "," + this.getName() + "," + this.getApplicationRole().getValue(); 
+        + "," + this.getName() + "," + this.getApplicationRole().getValue();
   }
 
-	/**
-	 * Hash code.
-	 *
-	 * @return the int
-	 */
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result =
-				prime * result
-						+ ((applicationRole == null) ? 0 : applicationRole.hashCode());
-		result = prime * result + ((email == null) ? 0 : email.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result + ((userName == null) ? 0 : userName.hashCode());
-		return result;
-	}
+  /**
+   * Hash code.
+   *
+   * @return the int
+   */
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result =
+        prime * result
+            + ((applicationRole == null) ? 0 : applicationRole.hashCode());
+    result = prime * result + ((email == null) ? 0 : email.hashCode());
+    result = prime * result + ((name == null) ? 0 : name.hashCode());
+    result = prime * result + ((userName == null) ? 0 : userName.hashCode());
+    return result;
+  }
 
-	/**
-	 * Equals.
-	 *
-	 * @param obj the obj
-	 * @return true, if successful
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		MapUserJpa other = (MapUserJpa) obj;
-		if (applicationRole != other.applicationRole)
-			return false;
-		if (email == null) {
-			if (other.email != null)
-				return false;
-		} else if (!email.equals(other.email))
-			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
-		if (userName == null) {
-			if (other.userName != null)
-				return false;
-		} else if (!userName.equals(other.userName))
-			return false;
-		return true;
-	}
-
-
+  /**
+   * Equals.
+   *
+   * @param obj the obj
+   * @return true, if successful
+   */
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    MapUserJpa other = (MapUserJpa) obj;
+    if (applicationRole != other.applicationRole)
+      return false;
+    if (email == null) {
+      if (other.email != null)
+        return false;
+    } else if (!email.equals(other.email))
+      return false;
+    if (name == null) {
+      if (other.name != null)
+        return false;
+    } else if (!name.equals(other.name))
+      return false;
+    if (userName == null) {
+      if (other.userName != null)
+        return false;
+    } else if (!userName.equals(other.userName))
+      return false;
+    return true;
+  }
 
 }

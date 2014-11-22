@@ -10,7 +10,7 @@ import org.ihtsdo.otf.mapping.rf2.SimpleRefSetMember;
  */
 @Entity
 @Table(name = "simple_refset_members")
-//@Audited
+// @Audited
 public class SimpleRefSetMemberJpa extends AbstractConceptRefSetMember
     implements SimpleRefSetMember {
 

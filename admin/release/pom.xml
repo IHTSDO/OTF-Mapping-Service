@@ -15,10 +15,23 @@
   <description>OTF Administrator Tool for Publication Release</description>
   <packaging>pom</packaging>
 
+  <properties>
+    <!-- Specify the refset id to publish -->
+    <refset.id></refset.id>
+
+    <!-- Specify the output directory where it should go -->
+    <output.dir></output.dir>
+
+    <!-- Specify the effectiveTime of the release -->
+    <time></time>
+
+    <!-- Specify the moduleId to use for RF2 files -->
+    <module.id></module.id>
+  </properties>
 
   <profiles>
 
-    <!-- Remove SNOMED -->
+    <!-- Release SNOMED, specify -Drun.config=... -->
     <profile>
       <id>Release</id>
       <build>
@@ -48,6 +61,5 @@
       </build>
     </profile>
 
- 
   </profiles>
 </project>

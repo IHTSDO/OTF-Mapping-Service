@@ -29,7 +29,12 @@ a {
   background-color: #F3F7F2;
 }
 
-
+/* to make padding smaller on tab headers */
+.nav > li > a {
+  position: relative;
+  display: block;
+  padding: 10px 10px;
+}
 
 
 html,body {

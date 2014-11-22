@@ -10,198 +10,202 @@
 </head>
 <body>
 
-	<!--  Record 1 -->
-	<div style="float: left; width: 50%; padding:10px; border-right: thin solid black;">
+  <!--  Record 1 -->
+  <div
+    style="float: left; width: 50%; padding: 10px; border-right: thin solid black;">
 
-		<h4>Record owned by {{record1.owner.name}}</h4>
-		<hr>
-		<div otf-map-record-narrow record="record1" project="project"
-			show-title="false"></div>
-		<button class="btn btn-sm btn-primary" style="margin: 4px"
-			ng-click="populateMapRecord(record1)">Start here</button>
-		<hr>
+    <h4>Record owned by {{record1.owner.name}}</h4>
+    <hr>
+    <div otf-map-record-narrow record="record1" project="project"
+      show-title="false"></div>
+    <button class="btn btn-sm btn-primary" style="margin: 4px"
+      ng-click="populateMapRecord(record1)">Start here</button>
+    <hr>
 
-		<div ng-show="conversation1.feedback.length > 0">
-			<div ng-repeat="feedback in conversation1.feedback">
-				<div class="alert alert-warning" disabled>
-					[By {{feedback.sender.name}} to <span
-						ng-repeat="recipient in feedback.recipients">
-						{{recipient.name}}</span> on {{feedback.timestamp | date:'MM-dd-yyyy
-					HH:mm'}}]
-					<div ng-show="feedback.mapError != 'None'"
-						style="padding-left: 20px;"
-						ng-bind-html="to_trusted(feedback.mapError)"></div>
-					<div style="padding-left: 20px;"
-						ng-bind-html="to_trusted(feedback.message)"></div>
-				</div>
-			</div>
-			<hr>
-		</div>
+    <div ng-show="conversation1.feedback.length > 0">
+      <div ng-repeat="feedback in conversation1.feedback">
+        <div class="alert alert-warning" disabled>
+          [By {{feedback.sender.name}} to <span
+            ng-repeat="recipient in feedback.recipients">
+            {{recipient.name}}</span> on {{feedback.timestamp | date:'MM-dd-yyyy
+          HH:mm'}}]
+          <div ng-show="feedback.mapError != 'None'" style="padding-left: 20px;"
+            ng-bind-html="to_trusted(feedback.mapError)"></div>
+          <div style="padding-left: 20px;"
+            ng-bind-html="to_trusted(feedback.message)"></div>
+        </div>
+      </div>
+      <hr>
+    </div>
 
-		<form style="margin-top: 8px; margin-left: 4px;">
-			<table>
-				<tr>
-					<form method="post">
-						<textarea id="tinymce-feedback1" ui-tinymce="tinymceOptions"
-							ng-model="feedbackComment1"></textarea>
-					</form>
-				</tr>
-				<tr>
-					<td>Error Message:&nbsp;</td>
-					<td><select ng-model="selectedErrorMessage1"
-						style="margin: 4px"
-						ng-options=" msg as msg for msg in errorMessages">
-					</select></td>
-				</tr>
-			</table>
-			<div>
-				<button class="btn btn-sm btn-primary" style="margin: 4px"
-					ng-show="selectedErrorMessage1 == errorMessages[0]"
-					ng-click="submitNewFeedback(record1, selectedErrorMessage1, feedbackComment1); feedbackComment1 = ''; selectedErrorMessage1 = errorMessages[0];">Submit
-					feedback</button>
-				<button class="btn btn-sm btn-primary" style="margin: 4px"
-					ng-show="selectedErrorMessage1 != errorMessages[0]"
-					ng-click="submitNewFeedback(record1, selectedErrorMessage1, feedbackComment1); feedbackComment1 = ''; selectedErrorMessage1 = errorMessages[0];">Submit
-					error</button>
-			</div>
-		</form>
-		<hr>
-	</div>
+    <form style="margin-top: 8px; margin-left: 4px;">
+      <table>
+        <tr>
+          <form method="post">
+            <textarea id="tinymce-feedback1" ui-tinymce="tinymceOptions"
+              ng-model="feedbackComment1"></textarea>
+          </form>
+        </tr>
+        <tr>
+          <td>Error Message:&nbsp;</td>
+          <td><select ng-model="selectedErrorMessage1" style="margin: 4px"
+            ng-options=" msg as msg for msg in errorMessages">
+          </select></td>
+        </tr>
+      </table>
+      <div>
+        <button class="btn btn-sm btn-primary" style="margin: 4px"
+          ng-show="selectedErrorMessage1 == errorMessages[0]"
+          ng-click="submitNewFeedback(record1, selectedErrorMessage1, feedbackComment1); feedbackComment1 = ''; selectedErrorMessage1 = errorMessages[0];">Submit
+          feedback</button>
+        <button class="btn btn-sm btn-primary" style="margin: 4px"
+          ng-show="selectedErrorMessage1 != errorMessages[0]"
+          ng-click="submitNewFeedback(record1, selectedErrorMessage1, feedbackComment1); feedbackComment1 = ''; selectedErrorMessage1 = errorMessages[0];">Submit
+          error</button>
+      </div>
+    </form>
+    <hr>
+  </div>
 
-	<!--  Record 2 -->
-	<div style="float: right; width: 50%; padding:10px" ng-show="record2 != null">
-		<h4>Record owned by {{record2.owner.name}}</h4>
-		<hr>
-		<div otf-map-record-narrow record="record2" project="project"
-			show-title="false"></div>
-		<button class="btn btn-sm btn-primary" style="margin: 4px"
-			ng-click="populateMapRecord(record2)">Start here</button>
-		<hr>
-		
-		<div ng-show="conversation2.feedback.length > 0">
-			<div ng-repeat="feedback in conversation2.feedback">
-				<div class="alert alert-warning" disabled>
-					[By {{feedback.sender.name}} to <span
-						ng-repeat="recipient in feedback.recipients">
-						{{recipient.name}}</span> on {{feedback.timestamp | date:'MM-dd-yyyy
-					HH:mm'}}]
-					<div ng-show="feedback.mapError != 'None'"
-						style="padding-left: 20px;"
-						ng-bind-html="to_trusted(feedback.mapError)"></div>
-					<div style="padding-left: 20px;"
-						ng-bind-html="to_trusted(feedback.message)"></div>
-				</div>
-			</div>
-			<hr>
-		</div>
+  <!--  Record 2 -->
+  <div style="float: right; width: 50%; padding: 10px" ng-show="record2 != null">
+    <h4>Record owned by {{record2.owner.name}}</h4>
+    <hr>
+    <div otf-map-record-narrow record="record2" project="project"
+      show-title="false"></div>
+    <button class="btn btn-sm btn-primary" style="margin: 4px"
+      ng-click="populateMapRecord(record2)">Start here</button>
+    <hr>
 
-		<form style="margin-top: 8px; margin-left: 4px;">
-			<table>
-				<tr>
-					<form method="post">
-						<textarea id="tinymce-feedback2" ui-tinymce="tinymceOptions"
-							ng-model="feedbackComment2"></textarea>
-					</form>
-				</tr>
-				<tr>
-					<td>Error Message:&nbsp;</td>
-					<td><select ng-model="selectedErrorMessage2"
-						style="margin: 4px"
-						ng-options="msg as msg for msg in errorMessages">
-					</select></td>
-				</tr>
-			</table>
-			<div>
-				<button class="btn btn-sm btn-primary" style="margin: 4px"
-					ng-show="selectedErrorMessage2 == errorMessages[0]"
-					ng-click="submitNewFeedback(record2, selectedErrorMessage2, feedbackComment2); feedbackComment2 = ''; selectedErrorMessage2 = errorMessages[0];">Submit
-					feedback</button>
-				<button class="btn btn-sm btn-primary" style="margin: 4px"
-					ng-show="selectedErrorMessage2 != errorMessages[0]"
-					ng-click="submitNewFeedback(record2, selectedErrorMessage2, feedbackComment2); feedbackComment2 = ''; selectedErrorMessage2 = errorMessages[0];">Submit
-					error</button>
-			</div>
-		</form>
-		
-		<hr>
-	</div>
-	
+    <div ng-show="conversation2.feedback.length > 0">
+      <div ng-repeat="feedback in conversation2.feedback">
+        <div class="alert alert-warning" disabled>
+          [By {{feedback.sender.name}} to <span
+            ng-repeat="recipient in feedback.recipients">
+            {{recipient.name}}</span> on {{feedback.timestamp | date:'MM-dd-yyyy
+          HH:mm'}}]
+          <div ng-show="feedback.mapError != 'None'" style="padding-left: 20px;"
+            ng-bind-html="to_trusted(feedback.mapError)"></div>
+          <div style="padding-left: 20px;"
+            ng-bind-html="to_trusted(feedback.message)"></div>
+        </div>
+      </div>
+      <hr>
+    </div>
 
-	
-	<div style="float:left; width: 100%" id="report">
-			<accordion close-others = "false"> 
-				<accordion-group is-open="isGroupFeedbackOpen">
-				<accordion-heading> Group Feedback<i
-					class="pull-right glyphicon"
-					ng-class="{'glyphicon-chevron-down': isGroupFeedbackOpen, 'glyphicon-chevron-right': !isGroupFeedbackOpen}"></i>
-				</accordion-heading>
- 				
-                <div ng-show="leadConversation.feedback.length > 0">
-                  <div ng-repeat="feedback in leadConversation.feedback">
-                    <div class="alert alert-warning" disabled>
-                      [By {{feedback.sender.name}}
-                      to <span ng-repeat="recipient in feedback.recipients">
-                         {{recipient.name}}<span ng-if="$last == false">,</span></span>
-                      on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
-                      <div style="padding-left: 20px;"
-                        ng-bind-html="to_trusted(feedback.message)"></div>
-                    </div>
-                  </div>
-                  <hr>
-                </div>        
-        
-                <form method="post">
-                  <div ng-dropdown-multiselect="" options="allUsers" selected-model="returnRecipients" 
-                    extra-settings="multiSelectSettings" translation-texts="multiSelectCustomTexts"></div>             
-                  <textarea id="tinymce-feedback3" ui-tinymce="tinymceOptions" ng-model="groupFeedback"></textarea>
-                </form>
-				<button class="btn btn-sm btn-primary" style="margin: 4px"
-								ng-click="submitGroupFeedback(groupFeedback, returnRecipients); groupFeedback = ''">Submit feedback</button>
-		 		
-                <input type="checkbox" ng-model="indicateDiscrepancyReview" ng-change="selectDiscrepancyReview(indicateDiscrepancyReview)"> Mark for Discrepancy Review						
-               <!--  <select multiple size="3"  ng-model="returnRecipients"
+    <form style="margin-top: 8px; margin-left: 4px;">
+      <table>
+        <tr>
+          <form method="post">
+            <textarea id="tinymce-feedback2" ui-tinymce="tinymceOptions"
+              ng-model="feedbackComment2"></textarea>
+          </form>
+        </tr>
+        <tr>
+          <td>Error Message:&nbsp;</td>
+          <td><select ng-model="selectedErrorMessage2" style="margin: 4px"
+            ng-options="msg as msg for msg in errorMessages">
+          </select></td>
+        </tr>
+      </table>
+      <div>
+        <button class="btn btn-sm btn-primary" style="margin: 4px"
+          ng-show="selectedErrorMessage2 == errorMessages[0]"
+          ng-click="submitNewFeedback(record2, selectedErrorMessage2, feedbackComment2); feedbackComment2 = ''; selectedErrorMessage2 = errorMessages[0];">Submit
+          feedback</button>
+        <button class="btn btn-sm btn-primary" style="margin: 4px"
+          ng-show="selectedErrorMessage2 != errorMessages[0]"
+          ng-click="submitNewFeedback(record2, selectedErrorMessage2, feedbackComment2); feedbackComment2 = ''; selectedErrorMessage2 = errorMessages[0];">Submit
+          error</button>
+      </div>
+    </form>
+
+    <hr>
+  </div>
+
+
+
+  <div style="float: left; width: 100%" id="report">
+    <accordion close-others="false"> <accordion-group
+      is-open="isGroupFeedbackOpen"> <accordion-heading>
+    Group Feedback<i class="pull-right glyphicon"
+      ng-class="{'glyphicon-chevron-down': isGroupFeedbackOpen, 'glyphicon-chevron-right': !isGroupFeedbackOpen}"></i>
+    </accordion-heading>
+
+    <div ng-show="leadConversation.feedback.length > 0">
+      <div ng-repeat="feedback in leadConversation.feedback">
+        <div class="alert alert-warning" disabled>
+          [By {{feedback.sender.name}} to <span
+            ng-repeat="recipient in feedback.recipients">
+            {{recipient.name}}<span ng-if="$last == false">,</span>
+          </span> on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
+          <div style="padding-left: 20px;"
+            ng-bind-html="to_trusted(feedback.message)"></div>
+        </div>
+      </div>
+      <hr>
+    </div>
+
+    <form method="post">
+      <div ng-dropdown-multiselect="" options="allUsers"
+        selected-model="returnRecipients" extra-settings="multiSelectSettings"
+        translation-texts="multiSelectCustomTexts"></div>
+      <textarea id="tinymce-feedback3" ui-tinymce="tinymceOptions"
+        ng-model="groupFeedback"></textarea>
+    </form>
+    <button class="btn btn-sm btn-primary" style="margin: 4px"
+      ng-click="submitGroupFeedback(groupFeedback, returnRecipients); groupFeedback = ''">Submit
+      feedback</button>
+
+    <input type="checkbox" ng-model="indicateDiscrepancyReview"
+      ng-change="selectDiscrepancyReview(indicateDiscrepancyReview)">
+    Mark for Discrepancy Review <!--  <select multiple size="3"  ng-model="returnRecipients"
                    ng-options="mapUser as mapUser.name for mapUser in allUsers track by mapUser.name">
-                </select> -->
-        </accordion-group>
-                
-			<accordion-group ng-show="record2 != null" is-open="isReportOpen">
-				<accordion-heading> Conflict Report <i
-					class="pull-right glyphicon"
-					ng-class="{'glyphicon-chevron-down': isReportOpen, 'glyphicon-chevron-right': !isReportOpen}"></i>
-				</accordion-heading>
-	
-				<div ng-show="validationResult.errors.length == 0 && validationResult.warnings.length == 0">
-					Records are identical.
-				</div>
-	
-				<div ng-show="validationResult.errors.length > 0">
-					<div ng-repeat="result in validationResult.errors">
-                      <div ng-class="{'alert alert-danger' : !isFalseConflict, 'alert alert-success' : isFalseConflict}" role="alert" style="padding:5px;margin-top:9px;margin-bottom:0px">
-                      	<span ng-show="isFalseConflict">[Error Ignored] </span>{{result}}</div>
-					</div>
-				</div>
-				<div ng-show="validationResult.warnings.length > 0">
-                    <div ng-repeat="result in validationResult.warnings">
-                      <div ng-class="{'alert alert-warning' : !isFalseConflict, 'alert alert-success' : isFalseConflict} role="alert" style="padding:5px;margin-top:9px;margin-bottom:0px">
-                   	   <span ng-show="isFalseConflict">[Warning Ignored] </span>{{result}}</div>
-					</div>
-				</div>
-				<br>
-				
-				<!--  controls to mark/unmark as false conflict.  Displayed only if conflict resolution and api returns definite true/false flag -->
-				<div ng-show="leadRecord.workflowStatus != 'REVIEW_NEW' && leadRecord.workflowStatus != 'REVIEW_IN_PROGRESS' && leadRecord.workflowStatus != 'REVIEW_RESOLVED'">
-				
-					<div ng-show="isFalseConflict == false">
-						<button class="btn btn-sm btn-primary"  ng-click="toggleFalseConflict()">Mark as Not In Conflict</button>
-					</div>
-					<div ng-show="isFalseConflict === true">
-						Marked as not in conflict 
-						<button class="btn btn-sm btn-primary" ng-click="toggleFalseConflict()">Unmark</button>
-					</div>
-				</div>
-				</accordion-group> 
-			</accordion>
-		</div>
+                </select> --> </accordion-group> <accordion-group ng-show="record2 != null"
+      is-open="isReportOpen"> <accordion-heading>
+    Conflict Report <i class="pull-right glyphicon"
+      ng-class="{'glyphicon-chevron-down': isReportOpen, 'glyphicon-chevron-right': !isReportOpen}"></i>
+    </accordion-heading>
+
+    <div
+      ng-show="validationResult.errors.length == 0 && validationResult.warnings.length == 0">
+      Records are identical.</div>
+
+    <div ng-show="validationResult.errors.length > 0">
+      <div ng-repeat="result in validationResult.errors">
+        <div
+          ng-class="{'alert alert-danger' : !isFalseConflict, 'alert alert-success' : isFalseConflict}"
+          role="alert" style="padding: 5px; margin-top: 9px; margin-bottom: 0px">
+          <span ng-show="isFalseConflict">[Error Ignored] </span>{{result}}
+        </div>
+      </div>
+    </div>
+    <div ng-show="validationResult.warnings.length > 0">
+      <div ng-repeat="result in validationResult.warnings">
+        <div
+          ng-class="{'alert alert-warning' : !isFalseConflict, 'alert alert-success' : isFalseConflict} role="
+          alert" style="padding: 5px; margin-top: 9px; margin-bottom: 0px">
+          <span ng-show="isFalseConflict">[Warning Ignored] </span>{{result}}
+        </div>
+      </div>
+    </div>
+    <br>
+
+    <!--  controls to mark/unmark as false conflict.  Displayed only if conflict resolution and api returns definite true/false flag -->
+    <div
+      ng-show="leadRecord.workflowStatus != 'REVIEW_NEW' && leadRecord.workflowStatus != 'REVIEW_IN_PROGRESS' && leadRecord.workflowStatus != 'REVIEW_RESOLVED'">
+
+      <div ng-show="isFalseConflict == false">
+        <button class="btn btn-sm btn-primary" ng-click="toggleFalseConflict()">Mark
+          as Not In Conflict</button>
+      </div>
+      <div ng-show="isFalseConflict === true">
+        Marked as not in conflict
+        <button class="btn btn-sm btn-primary" ng-click="toggleFalseConflict()">Unmark</button>
+      </div>
+    </div>
+    </accordion-group> </accordion>
+  </div>
 
 
 

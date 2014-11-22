@@ -13,14 +13,14 @@ import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
 
 /**
- * Admin tool to force comparison and validation of Conflict Project tracking records
- * in situations where two specialists have finished work but the workflow
- * did not successfully compare and generate CONFLICT_DETECTED or READY_FOR_PUBLICATION
- * map records.
+ * Admin tool to force comparison and validation of Conflict Project tracking
+ * records in situations where two specialists have finished work but the
+ * workflow did not successfully compare and generate CONFLICT_DETECTED or
+ * READY_FOR_PUBLICATION map records.
  * 
- * Created to address an issue discovered in early October 2014 where workflow advancement
- * was not properly being executed.  Only valid for projects of workflow type
- * CONFLICT_PROJECT
+ * Created to address an issue discovered in early October 2014 where workflow
+ * advancement was not properly being executed. Only valid for projects of
+ * workflow type CONFLICT_PROJECT
  * 
  * Sample execution:
  * 
@@ -48,7 +48,7 @@ import org.ihtsdo.otf.mapping.services.WorkflowService;
  *           </plugin>
  *         </plugins>
  *       </build>
- *     </profile> 
+ *     </profile>
  * </pre>
  * 
  * @goal finish-specialist-editing
@@ -69,7 +69,9 @@ public class WorkflowFinishSpecialistEditingMojo extends AbstractMojo {
    */
   @Override
   public void execute() throws MojoExecutionException {
-    getLog().info("Forcing workflow finish actions on errant tracking records - " + refSetId);
+    getLog().info(
+        "Forcing workflow finish actions on errant tracking records - "
+            + refSetId);
 
     if (refSetId == null) {
       throw new MojoExecutionException("You must specify a refSetId.");
@@ -92,15 +94,17 @@ public class WorkflowFinishSpecialistEditingMojo extends AbstractMojo {
       // Perform the QA checks
       WorkflowService workflowService = new WorkflowServiceJpa();
       for (MapProject mapProject : mapProjects) {
-    	  
-    	  if (mapProject.getWorkflowType().equals(WorkflowType.CONFLICT_PROJECT)) {
-	        getLog().info(
-	            "Checking workflow for " + mapProject.getName() + ", "
-	                + mapProject.getId());
-	        workflowService.finishEditingDoneTrackingRecords(mapProject);
-    	  } else {
-    		  getLog().error("Project " + mapProject.getName() + " is not a Conflict Project -- cannot process");
-    	  }
+
+        if (mapProject.getWorkflowType().equals(WorkflowType.CONFLICT_PROJECT)) {
+          getLog().info(
+              "Checking workflow for " + mapProject.getName() + ", "
+                  + mapProject.getId());
+          workflowService.finishEditingDoneTrackingRecords(mapProject);
+        } else {
+          getLog().error(
+              "Project " + mapProject.getName()
+                  + " is not a Conflict Project -- cannot process");
+        }
       }
 
       getLog().info("done ...");
