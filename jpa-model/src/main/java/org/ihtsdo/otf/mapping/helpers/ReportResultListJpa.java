@@ -15,8 +15,8 @@ import org.ihtsdo.otf.mapping.reports.ReportResultJpa;
  * JAXB enabled implementation of {@link ReportResultList}
  */
 @XmlRootElement(name = "reportList")
-public class ReportResultListJpa extends AbstractResultList<ReportResult> implements
-    ReportResultList {
+public class ReportResultListJpa extends AbstractResultList<ReportResult>
+    implements ReportResultList {
 
   /** The map projects. */
   private List<ReportResult> reports = new ArrayList<>();
@@ -44,8 +44,8 @@ public class ReportResultListJpa extends AbstractResultList<ReportResult> implem
    * (non-Javadoc)
    * 
    * @see
-   * org.ihtsdo.otf.mapping.helpers.ReportResultList#removeReportResult(org.ihtsdo
-   * .otf.mapping.model.ReportResult)
+   * org.ihtsdo.otf.mapping.helpers.ReportResultList#removeReportResult(org.
+   * ihtsdo .otf.mapping.model.ReportResult)
    */
   @Override
   public void removeReportResult(ReportResult ReportResult) {
@@ -55,8 +55,7 @@ public class ReportResultListJpa extends AbstractResultList<ReportResult> implem
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * org.ihtsdo.otf.mapping.helpers.ReportResultList#setreports(java.util.
+   * @see org.ihtsdo.otf.mapping.helpers.ReportResultList#setreports(java.util.
    * List)
    */
   @Override

@@ -15,7 +15,8 @@ import org.ihtsdo.otf.mapping.model.FeedbackConversation;
  * JAXB enabled implementation of {@link FeedbackConversationList}.
  */
 @XmlRootElement(name = "feedbackConversationList")
-public class FeedbackConversationListJpa extends AbstractResultList<FeedbackConversation> implements
+public class FeedbackConversationListJpa extends
+    AbstractResultList<FeedbackConversation> implements
     FeedbackConversationList {
 
   /** The user errors. */
@@ -28,33 +29,30 @@ public class FeedbackConversationListJpa extends AbstractResultList<FeedbackConv
     // do nothing
   }
 
-
   @Override
   public void addFeedbackConversation(FeedbackConversation feedbackConversation) {
     feedbackConversations.add(feedbackConversation);
   }
 
-
   @Override
-  public void removeFeedbackConversation(FeedbackConversation feedbackConversation) {
+  public void removeFeedbackConversation(
+    FeedbackConversation feedbackConversation) {
     feedbackConversations.remove(feedbackConversation);
   }
 
-
   @Override
-  public void setFeedbackConversations(List<FeedbackConversation> feedbackConversations) {
+  public void setFeedbackConversations(
+    List<FeedbackConversation> feedbackConversations) {
     this.feedbackConversations = new ArrayList<>();
     this.feedbackConversations.addAll(feedbackConversations);
 
   }
 
- 
   @Override
   @XmlElement(type = FeedbackConversationJpa.class, name = "feedbackConversation")
   public List<FeedbackConversation> getFeedbackConversations() {
     return feedbackConversations;
   }
-
 
   @Override
   @XmlElement(name = "count")
@@ -62,18 +60,15 @@ public class FeedbackConversationListJpa extends AbstractResultList<FeedbackConv
     return feedbackConversations.size();
   }
 
- 
   @Override
   public void sortBy(Comparator<FeedbackConversation> comparator) {
     Collections.sort(feedbackConversations, comparator);
   }
 
-
   @Override
   public boolean contains(FeedbackConversation element) {
     return feedbackConversations.contains(element);
   }
-
 
   @Override
   public Iterable<FeedbackConversation> getIterable() {

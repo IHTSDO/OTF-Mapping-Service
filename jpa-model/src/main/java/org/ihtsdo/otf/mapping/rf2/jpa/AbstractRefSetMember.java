@@ -9,7 +9,7 @@ import org.ihtsdo.otf.mapping.rf2.RefSetMember;
  * Abstract implementation of {@link RefSetMember} for use with JPA
  */
 @MappedSuperclass
-//@Audited
+// @Audited
 public abstract class AbstractRefSetMember extends AbstractComponent implements
     RefSetMember {
 

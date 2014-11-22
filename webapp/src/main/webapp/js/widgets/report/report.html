@@ -1,182 +1,185 @@
 <div
-	style="float: left; width: 40%; padding: 10px; border-right: thin solid #ddd;">
+  style="float: left; width: 40%; padding: 10px; border-right: thin solid #ddd;">
 
-	<form>
-		<table>
-			<tr>
-				<td style="padding: 5px;">Filter by Report Type:</td>
-				<td style="padding: 5px;"><select id="reportSearch"
-					ng-options="definition as definition.name for definition in definitions"
-					ng-change="getReports(1, selectedDefinition, queryReport)"
-					ng-model="selectedDefinition"></select></td>
-				<td style="padding: 5px">
-					<button class="btn btn-sm btn-primary"
-						ng-click="getReports(1, null, queryReport); selectedDefinition = null;">Reset</button>
-				</td>
-			</tr>
-		</table>
-	</form>
+  <form>
+    <table>
+      <tr>
+        <td style="padding: 5px;">Filter by Report Type:</td>
+        <td style="padding: 5px;"><select id="reportSearch"
+          ng-options="definition as definition.name for definition in definitions |  filter: {qacheck:false}"
+          ng-change="getReports(1, selectedDefinition, queryReport)"
+          ng-model="selectedDefinition"></select></td>
+        <td style="padding: 5px">
+          <button class="btn btn-sm btn-primary"
+            ng-click="getReports(1, null, queryReport); selectedDefinition = null;">Reset</button>
+        </td>
+      </tr>
+    </table>
+  </form>
 
-	<pagination ng-show="nReportPages > 1" total-items="nReports"
-		page="reportPage" max-size="5" class="pagination-sm"
-		boundary-links="true" rotate="true" num-pages="nReportPages"
-		on-select-page="getReports(page, selectedDefinition, queryReport)"></pagination>
+  <pagination ng-show="nReportPages > 1" total-items="nReports"
+    page="reportPage" max-size="5" class="pagination-sm" boundary-links="true"
+    rotate="true" num-pages="nReportPages"
+    on-select-page="getReports(page, selectedDefinition, queryReport)"></pagination>
 
-	<div ng-show="nReports != 0">
-
-
+  <div ng-show="nReports != 0">
 
 
-		<table class="table"">
-
-			<thead>
-				<tr>
-					<th style="width: 70%; padding: 5px;">Name</th>
-					<th style="width: 30%; padding: 5px;">Date</th>
-
-				</tr>
-
-			</thead>
-
-			<tbody>
-
-				<tr ng-repeat="report in reports">
 
 
-					<td style="width: 70%; padding: 5px;"><a
-						ng-show="report.id != reportDisplayed.id"
-						ng-click="viewReport(report)">{{report.name}}</a> <span
-						ng-show="report.id == reportDisplayed.id">{{report.name}}</span></td>
-					<td style="width: 30%; padding: 5px;">{{report.timestamp |
-						date: 'MM/dd/yyyy'}}</td>
-			</tbody>
+    <table class="table"">
 
-		</table>
-	</div>
+      <thead>
+        <tr>
+          <th style="width: 70%; padding: 5px;">Name</th>
+          <th style="width: 30%; padding: 5px;">Date</th>
+
+        </tr>
+
+      </thead>
+
+      <tbody>
+
+        <tr ng-repeat="report in reports">
+
+
+          <td style="width: 70%; padding: 5px;"><a
+            ng-show="report.id != reportDisplayed.id"
+            ng-click="viewReport(report)">{{report.name}}</a> <span
+            ng-show="report.id == reportDisplayed.id">{{report.name}}</span></td>
+          <td style="width: 30%; padding: 5px;">{{report.timestamp | date:
+            'MM/dd/yyyy'}}</td>
+      </tbody>
+
+    </table>
+  </div>
 </div>
 
 <div>
-	<div style="float: right; width: 60%; padding: 10px">
+  <div style="float: right; width: 60%; padding: 10px">
 
-		<h4 ng-show="reportDisplayed == null">No report selected</h4>
+    <h4 ng-show="reportDisplayed == null">No report selected</h4>
 
-		<div ng-show="reportDisplayed != null">
-			<h4>
-				<!--  First row:  Report name -->
-				<div style="width: 100%; padding: 0px 0px 15px 0px;">
-					<div style="float: left; width: 15%">Report:</div>
-					<div style="float: left; width: 85%">
-						{{reportDisplayed.name}}</div>
-				</div>
+    <div ng-show="reportDisplayed != null">
+      <h4>
+        <!--  First row:  Report name -->
+        <div style="width: 100%; padding: 0px 0px 15px 0px;">
+          <div style="float: left; width: 15%">Report:</div>
+          <div style="float: left; width: 85%">{{reportDisplayed.name}}</div>
+        </div>
 
-				<!--  second row:  date run -->
-				<div style="width: 100%; padding: 15px 0px 15px 0px;">
-					<div style="float: left; width: 15%">Date run:</div>
-					<div style="float: left; width: 85%">
-						{{reportDisplayed.timestamp | date: 'MM/dd/yyyy'}}</div>
-				</div>
+        <!--  second row:  date run -->
+        <div style="width: 100%; padding: 15px 0px 15px 0px;">
+          <div style="float: left; width: 15%">Date run:</div>
+          <div style="float: left; width: 85%">
+            {{reportDisplayed.timestamp | date: 'MM/dd/yyyy'}}</div>
+        </div>
 
-				<!--  fourth row:  command buttons -->
-				<div style="width: 100%; padding: 15px 0px 15px 0px;">
-					<div style="float: left; width: 15%">Date run:</div>
-					<div style="float: left; width: 85%">
-						<span ng-show="reportDisplayed.autoGenerated == true">Auto-generated</span>
-						<span ng-show="reportDisplayed.autoGenerated == false">{{reportDisplayed.owner.name}}</span>
-					</div>
-				</div>
-
-				<div style="width: 100%; padding: 15px 0px 15px 0px;">
-					<div style="float: left; width: 15%">&nbsp</div>
-					<div style="float: left; width: 85%">
-
-
-						<button ng-show="reportDisplayed.id != null"
-							class="btn btn-sm btn-primary"
-							ng-click="generateNewReport(reportDisplayed.reportDefinition)">Generate
-							New Report</button>
-
-						<button ng-show="reportDisplayed.id == null"
-							class="btn btn-sm btn-primary"
-							ng-click="saveNewReport(reportDisplayed)">Save Report</button>
-
-						<div ng-show="reportDisplayedSaved == true" style="color: green">Report
-							successfully saved</div>
-
-						<button class="btn btn-sm btn-primary"
-							ng-click="exportReport(reportDisplayed)">Export</button>
-
-					</div>
-				</div>
-				<hr>
-
-			</h4>
+        <!--  fourth row:  command buttons -->
+        <div style="width: 100%; padding: 15px 0px 15px 0px;">
+          <div style="float: left; width: 15%">Date run:</div>
+          <div style="float: left; width: 85%">
+            <span ng-show="reportDisplayed.autoGenerated == true">Auto-generated</span>
+            <span ng-show="reportDisplayed.autoGenerated == false">{{reportDisplayed.owner.name}}</span>
+          </div>
+        </div>
+      </h4>
 
 
 
 
-			<div style="float: left; padding: 5px; width: 5%"></div>
-			<div style="float: left; padding: 5px; width: 10%">
-				<strong>Count</strong>
-			</div>
-			<div style="float: left; padding: 5px; width: 85%">
-				<strong>Value</strong>
-			</div>
+      <div style="float: left; padding: 5px; width: 5%"></div>
+      <div style="float: left; padding: 5px; width: 10%">
+        <strong>Count</strong>
+      </div>
+      <div style="float: left; padding: 5px; width: 85%">
+        <strong>Value</strong>
+      </div>
 
 
 
-			<div ng-repeat="result in reportDisplayed.results">
+      <div ng-repeat="result in reportDisplayed.results">
 
-				<!--  First row:  The result items expander, value, and count -->
-				<div style="width: 100%;"padding: 5px;">
-					<div style="float: left; padding: 5px; width: 5%">
-						<a ng-click="toggleResultItems(result, result.page)"> [<i
-							ng-class="{'glyphicon-minus': !result.isCollapsed, 'glyphicon-plus': result.isCollapsed}"></i>]
-						</a>
-					</div>
-					<div style="float: left; padding: 5px; width: 10%">{{result.ct}}</div>
-					<div style="float: left; padding: 5px; width: 85%">{{result.value}}</div>
-
-
-				</div>
-
-				<!--  Second row:  The result items -->
-
-				<div collapse="result.isCollapsed">
-
-					<!--  Placeholder divs to ensure table-like format -->
-					<div style="float: left; padding: 5px; width: 5%"></div>
-					<div style="float: left; padding: 5px; width: 10%"></div>
-					<div style="float: left; padding: 5px; width: 85%;">
-						<pagination ng-show="result.nPages > 1" total-items="result.ct"
-							page="result.page" max-size="5" class="pagination-sm"
-							boundary-links="true" rotate="true" num-pages="result.nPages"
-							on-select-page="getReportItems(result, page)"></pagination>
-					</div>
-
-					<div ng-repeat="reportResultItem in result.reportResultItems"">
-						<!--  Placeholder divs to ensure table-like format -->
-						<div style="float: left; padding: 5px; width: 5%"></div>
-						<div style="float: left; padding: 5px; width: 10%"></div>
-
-						<!-- the actual result items -->
-						<div style="float: left; padding: 5px; width: 85%;">
-
-							<a
-								ng-href="{{'index.html#/record/conceptId/' + reportResultItem.itemId}}"
-								target="_blank">{{reportResultItem.itemId}}</a>,
-							{{reportResultItem.itemName}}
-						</div>
-					</div>
+        <!--  First row:  The result items expander, value, and count -->
+        <div style="width: 100%;"padding: 5px;">
+          <div style="float: left; padding: 5px; width: 5%">
+            <a ng-click="toggleResultItems(result, result.page)"> [<i
+              ng-class="{'glyphicon-minus': !result.isCollapsed, 'glyphicon-plus': result.isCollapsed}"></i>]
+            </a>
+          </div>
+          <div style="float: left; padding: 5px; width: 10%">{{result.ct}}</div>
+          <div style="float: left; padding: 5px; width: 85%">{{result.value}}</div>
 
 
-				</div>
+        </div>
 
-			</div>
-		</div>
+        <!--  Second row:  The result items -->
+
+        <div collapse="result.isCollapsed">
+
+          <!--  Placeholder divs to ensure table-like format -->
+          <div style="float: left; padding: 5px; width: 5%"></div>
+          <div style="float: left; padding: 5px; width: 10%"></div>
+          <div style="float: left; padding: 5px; width: 85%;">
+            <pagination ng-show="result.nPages > 1" total-items="result.ct"
+              page="result.page" max-size="5" class="pagination-sm"
+              boundary-links="true" rotate="true" num-pages="result.nPages"
+              on-select-page="getReportItems(result, page)"></pagination>
+          </div>
+
+          <div ng-repeat="reportResultItem in result.reportResultItems"">
+            <!--  Placeholder divs to ensure table-like format -->
+            <div style="float: left; padding: 5px; width: 5%"></div>
+            <div style="float: left; padding: 5px; width: 10%"></div>
+
+            <!-- the actual result items -->
+            <div style="float: left; padding: 5px; width: 85%;">
+
+              <a
+                ng-href="{{'index.html#/record/conceptId/' + reportResultItem.itemId}}"
+                target="_blank">{{reportResultItem.itemId}}</a>,
+              {{reportResultItem.itemName}}
+            </div>
+          </div>
+
+
+        </div>
+
+      </div>
+    </div>
+
+    <hr>
+
+    <div style="width: 100%; padding: 15px 0px 15px 0px;">
+
+      <div style="float: left; width: 85%">
+
+
+        <button ng-show="reportDisplayed == null || reportDisplayed.id != null"
+          class="btn btn-sm btn-primary"
+          ng-click="generateNewReport(selectedDefinition)">Generate New
+          Report</button>
+
+        <button ng-show="reportDisplayed != null && reportDisplayed.id == null"
+          class="btn btn-sm btn-primary"
+          ng-click="saveNewReport(reportDisplayed)">Save Report</button>
+
+        <div ng-show="reportDisplayedSaved == true" style="color: green">Report
+          successfully saved</div>
+
+        <button class="btn btn-sm btn-primary"
+          ng-click="exportReport(reportDisplayed)">Export</button>
+
+      </div>
+    </div>
 
 
 
-	</div>
+
+
+
+
+  </div>
 
 
 </div>

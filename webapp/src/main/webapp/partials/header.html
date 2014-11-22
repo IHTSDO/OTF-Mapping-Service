@@ -4,7 +4,7 @@
     <!-- Brand and toggle get grouped for better mobile display -->
     <div class="navbar-header">
       <img class="pull-left" src="img/logo.png" height="50px">
-      <p class="navbar-brand">&nbsp; &nbsp; &nbsp; IHTSDO Mapping Tool ${deploy.type}</p>
+      <p class="navbar-brand">&nbsp; &nbsp; &nbsp; ${deploy.title}</p>
     </div>
 
     <!-- Collect the nav links, forms, and other content for toggling -->
@@ -15,25 +15,26 @@
           <p class="navbar-text" ng-show="currentUser.name != null">
             {{currentUser.name}} ({{currentRole}}) &nbsp; <a
               ng-show="currentUser.name != null" title="Log out"
-              href="index.html#/" ><i
-              class="glyphicon glyphicon-log-out"></i></a>
+              href="index.html#/"><i class="glyphicon glyphicon-log-out"></i></a>
           </p>
         </li>
         <li>
           <!-- Focus Project tool -->
           <div class="navbar-text dropdown" ng-show="currentUser.name != null">
 
-            <div class="dropdown-toggle" style="cursor:pointer;">Project: {{focusProject.name}} &nbsp <a 
-              title="Change Focus Project"><i
-              class="glyphicon glyphicon-edit"></i></a>
-              </div>
-            <div class="dropdown-menu" style="position: absolute; width: 350px; text-align:right;padding:15px;">
-              <div ng-repeat="mapProject in mapProjects"><span
-                ng-click="changeFocusProject(mapProject)">&nbsp&nbsp<a>{{mapProject.name}}</a>&nbsp&nbsp</span>
-                
+            <div class="dropdown-toggle" style="cursor: pointer;">
+              Project: {{focusProject.name}} &nbsp <a
+                title="Change Focus Project"><i
+                class="glyphicon glyphicon-edit"></i></a>
+            </div>
+            <div class="dropdown-menu"
+              style="position: absolute; width: 350px; text-align: right; padding: 15px;">
+              <div ng-repeat="mapProject in mapProjects">
+                <span ng-click="changeFocusProject(mapProject)">&nbsp&nbsp<a>{{mapProject.name}}</a>&nbsp&nbsp
+                </span>
+
               </div>
             </div>
-
         </li>
         <li>
           <p class="navbar-text">

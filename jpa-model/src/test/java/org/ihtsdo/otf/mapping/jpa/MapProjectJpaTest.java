@@ -177,7 +177,8 @@ public class MapProjectJpaTest {
     mapProject1.setPublished(testPublished);
     mapProject1.setMapRelationStyle(RelationStyle.MAP_CATEGORY_STYLE);
     mapProject1.setMapPrincipleSourceDocument("mapPrincipleSourceDocument1");
-    mapProject1.setMapPrincipleSourceDocumentName("mapPrincipleSourceDocument1");
+    mapProject1
+        .setMapPrincipleSourceDocumentName("mapPrincipleSourceDocument1");
     mapProject1.setRuleBased(true);
     mapProject1.setMapRefsetPattern(MapRefsetPattern.ComplexMap);
     mapProject1
@@ -201,7 +202,8 @@ public class MapProjectJpaTest {
     mapProject3.setPublished(testPublished);
     mapProject3.setMapRelationStyle(RelationStyle.MAP_CATEGORY_STYLE);
     mapProject3.setMapPrincipleSourceDocument("mapPrincipleSourceDocument3");
-    mapProject3.setMapPrincipleSourceDocumentName("mapPrincipleSourceDocument3");
+    mapProject3
+        .setMapPrincipleSourceDocumentName("mapPrincipleSourceDocument3");
     mapProject3.setRuleBased(true);
     mapProject3.setMapRefsetPattern(MapRefsetPattern.ComplexMap);
     mapProject3
@@ -395,20 +397,22 @@ public class MapProjectJpaTest {
 
   /**
    * Clean up.
-   * @throws Exception 
+   * @throws Exception
    */
   public static void cleanUp() throws Exception {
     Logger.getLogger(MapProjectJpaTest.class).info("Cleaning up.");
 
     // create new database connection
     String configFileName = System.getProperty("run.config.test");
-    Logger.getLogger(MapProjectJpaTest.class).info("  run.config.test = " + configFileName);
+    Logger.getLogger(MapProjectJpaTest.class).info(
+        "  run.config.test = " + configFileName);
     Properties config = new Properties();
-    FileReader in = new FileReader(new File(configFileName)); 
+    FileReader in = new FileReader(new File(configFileName));
     config.load(in);
     in.close();
     Logger.getLogger(MapProjectJpaTest.class).info("  properties = " + config);
-    factory = Persistence.createEntityManagerFactory("MappingServiceDS", config);
+    factory =
+        Persistence.createEntityManagerFactory("MappingServiceDS", config);
     manager = factory.createEntityManager();
     EntityTransaction tx = manager.getTransaction();
 

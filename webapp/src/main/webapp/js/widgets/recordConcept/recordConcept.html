@@ -3,131 +3,116 @@
 
 <!--  No map records for this project -->
 <div ng-show="recordsInProjectNotFound == true && historicalRecords.length == 0">
-	<h4>
-		<img src="img/warning-circle_25px.png">&nbspNo Map Records exist
-		for {{focusProject.name}}
-	</h4>
+  <h4>
+    <img src="img/warning-circle_25px.png">&nbspNo Map Records exist for
+    {{focusProject.name}}
+  </h4>
 </div>
 
 <!--  Map Records Found for this project -->
 <div ng-show="recordsInProject.length > 0 || historicalRecords.length > 0">
 
-	<h4>
-		<button class="btn btn-sm btn-primary" ng-click="goMapRecords()">Map
-			Records</button>
-		<button class="btn btn-sm btn-primary" ng-click="openConceptBrowser()">SNOMED
-		CT Browser</button>
-		<div style="display: inline" class="dropdown"
-		ng-show="concept.relationship.length > 0">
-		<button class="dropdown-toggle btn btn-sm btn-primary">Parents</button>
-		<ul class="dropdown-menu">
-			<strong>Parents</strong>
-			<li
-				ng-repeat="relationship in concept.relationship | orderBy:'destinationConceptPreferredName'">
-				<a href="#/record/conceptId/{{relationship.destinationConceptId}}">{{relationship.destinationConceptId}}:
-					{{relationship.destinationConceptPreferredName}}</a>
-			</li>
-		</ul>
-		</div>
-		<div style="display: inline" class="dropdown"
-		ng-show="concept.children.length > 0">
-		<button class="dropdown-toggle btn btn-sm btn-primary">Children</button>
-		<ul class="dropdown-menu">
-			<strong>Children</strong>
-			<li ng-repeat="concept in concept.children | orderBy: 'value'">
-				<a href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}:
-					{{concept.value}}</a>
-			</li>
-		</ul>
-		</div>
-	</h4>
+  <h4>
+    <button class="btn btn-sm btn-primary" ng-click="goMapRecords()">Map
+      Records</button>
+    <button class="btn btn-sm btn-primary" ng-click="openConceptBrowser()">SNOMED
+      CT Browser</button>
+    <div style="display: inline" class="dropdown"
+      ng-show="concept.relationship.length > 0">
+      <button class="dropdown-toggle btn btn-sm btn-primary">Parents</button>
+      <ul class="dropdown-menu">
+        <strong>Parents</strong>
+        <li
+          ng-repeat="relationship in concept.relationship | orderBy:'destinationConceptPreferredName'">
+          <a href="#/record/conceptId/{{relationship.destinationConceptId}}">{{relationship.destinationConceptId}}:
+            {{relationship.destinationConceptPreferredName}}</a>
+        </li>
+      </ul>
+    </div>
+    <div style="display: inline" class="dropdown"
+      ng-show="concept.children.length > 0">
+      <button class="dropdown-toggle btn btn-sm btn-primary">Children</button>
+      <ul class="dropdown-menu">
+        <strong>Children</strong>
+        <li ng-repeat="concept in concept.children | orderBy: 'value'"><a
+          href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}:
+            {{concept.value}}</a></li>
+      </ul>
+    </div>
+  </h4>
 
-<accordion close-others="false"> 
-  <accordion-group
-	is-open="true"> <accordion-heading>
-<h5>
-	<span tooltip-placement="right"> {{focusProject.name}} </span>
-</h5>
-</accordion-heading>
-		
-
-	<div style="width: 100%" ng-repeat="record in recordsInProject"
-		ng-class-odd="'odd'" ng-class-even="'even'">
-			
-		<div
-			ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
-			Owner: {{record.owner.name}}&nbsp<a title="Edit"
-				ng-show="isEditable(record) == true" ng-click="editRecord(record)"><i
-				class="glyphicon glyphicon glyphicon-pencil pull-right"></i></a><br>
-			Status: {{record.workflowStatus}}
-
-		</div>
+  <accordion close-others="false"> <accordion-group is-open="true">
+  <accordion-heading>
+  <h5>
+    <span tooltip-placement="right"> {{focusProject.name}} </span>
+  </h5>
+  </accordion-heading>
 
 
-		<div otf-map-record-wide record="record" project="focusProject"
-			show-title="false"></div>
+  <div style="width: 100%" ng-repeat="record in recordsInProject"
+    ng-class-odd="'odd'" ng-class-even="'even'">
 
-	</div>
-  </accordion-group>
+    <div ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
+      Owner: {{record.owner.name}}&nbsp<a title="Edit"
+        ng-show="isEditable(record) == true" ng-click="editRecord(record)"><i
+        class="glyphicon glyphicon glyphicon-pencil pull-right"></i></a><br>
+      Status: {{record.workflowStatus}}
 
-    <accordion-group
-	is-open="false" ng-show="historicalRecords.length > 0"> <accordion-heading>
-<h5>
-	<span tooltip-placement="right"> Historical Map Records </span>
-</h5>
-</accordion-heading>
+    </div>
 
 
-		<div ng-repeat="record in historicalRecords" ng-class-odd="'odd'"
-			ng-class-even="'even'">
-		
-			<div
-				ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
-				Owner: {{record.owner.name}}<br>
-				Status: {{record.workflowStatus}}
+    <div otf-map-record-wide record="record" project="focusProject"
+      show-title="false"></div>
 
-			</div>
+  </div>
+  </accordion-group> <accordion-group is-open="false" ng-show="historicalRecords.length > 0">
+  <accordion-heading>
+  <h5>
+    <span tooltip-placement="right"> Historical Map Records </span>
+  </h5>
+  </accordion-heading>
 
-			<div otf-map-record-wide record="record" project="focusProject"
-				show-title="false"></div>
-		</div>
 
-  </accordion-group>
-  
-  <accordion-group
-	is-open="false" ng-show="recordsNotInProject.length > 0"> <accordion-heading>
-<h5>
-	<span tooltip-placement="right"> Map Records for Other
-		Projects </span>
-</h5>
-</accordion-heading>
+  <div ng-repeat="record in historicalRecords" ng-class-odd="'odd'"
+    ng-class-even="'even'">
 
-	<div ng-repeat="recordsForProject in recordsNotInProject">
+    <div ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
+      Owner: {{record.owner.name}}<br> Status: {{record.workflowStatus}}
 
-		<h4>{{getProjectName(recordsForProject[0])}}</h4>
+    </div>
 
-		<div ng-repeat="record in recordsForProject" ng-class-odd="'odd'"
-			ng-class-even="'even'">
+    <div otf-map-record-wide record="record" project="focusProject"
+      show-title="false"></div>
+  </div>
 
-			<div
-				ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
-				Owner: {{record.owner.name}}&nbsp<a title="Edit"
-					ng-show="isEditable(record) == true" ng-click="editRecord(record)"><i
-					class="glyphicon glyphicon glyphicon-pencil pull-right"></i></a><br>
-				Status: {{record.workflowStatus}}
+  </accordion-group> <accordion-group is-open="false" ng-show="recordsNotInProject.length > 0">
+  <accordion-heading>
+  <h5>
+    <span tooltip-placement="right"> Map Records for Other Projects </span>
+  </h5>
+  </accordion-heading>
 
-			</div>
+  <div ng-repeat="recordsForProject in recordsNotInProject">
 
-			<div otf-map-record-wide record="record" project="focusProject"
-				show-title="false"></div>
-		</div>
+    <h4>{{getProjectName(recordsForProject[0])}}</h4>
 
-	</div>
+    <div ng-repeat="record in recordsForProject" ng-class-odd="'odd'"
+      ng-class-even="'even'">
+
+      <div ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
+        Owner: {{record.owner.name}}&nbsp<a title="Edit"
+          ng-show="isEditable(record) == true" ng-click="editRecord(record)"><i
+          class="glyphicon glyphicon glyphicon-pencil pull-right"></i></a><br>
+        Status: {{record.workflowStatus}}
+
+      </div>
+      <div otf-map-record-wide record="record" project="focusProject"
+        show-title="false"></div>
+    </div>
+
+  </div>
 
   </accordion-group>
-  
-  
-
 </div>
 
 

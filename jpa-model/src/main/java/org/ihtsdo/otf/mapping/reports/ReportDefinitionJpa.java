@@ -18,262 +18,393 @@ import org.ihtsdo.otf.mapping.helpers.ReportTimePeriod;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class ReportDefinitionJpa.
+ * JPA enabled implementation of {@link ReportDefinition}.
  */
 @Entity
 @Audited
 @Table(name = "report_definitions", uniqueConstraints = {
-		@UniqueConstraint(columnNames = {
-				"name"
-		})
+  @UniqueConstraint(columnNames = {
+    "name"
+  })
 })
 @JsonIgnoreProperties(ignoreUnknown = true)
 @XmlRootElement(name = "reportDefinition")
 public class ReportDefinitionJpa implements ReportDefinition {
 
-	/** Auto-generated id. */
-	@Id
-	@GeneratedValue
-	private Long id;
+  /** Auto-generated id. */
+  @Id
+  @GeneratedValue
+  private Long id;
 
-	/** The report type name. */
-	@Column(nullable = false)
-	private String name;
-	
-	/** The is diff report. */
-	@Column(nullable = false)
-	private boolean isDiffReport = false;
-	
-	/** The is rate report. */
-	@Column(nullable = false)
-	private boolean isRateReport = false;
-	
-	/** The time period (in days) for diff and rate reports */
-	@Enumerated(EnumType.STRING)
-	private ReportTimePeriod timePeriod;
-	
-	/** The result type. */
-	@Enumerated(EnumType.STRING)
-	private ReportResultType resultType;
+  /** The report type name. */
+  @Column(nullable = false)
+  private String name;
 
-	/** The query type. */
-	@Enumerated(EnumType.STRING)
-	private ReportQueryType queryType;
+  /** The is diff report. */
+  @Column(nullable = false)
+  private boolean isDiffReport = false;
 
-	/** The query. */
-	@Column(nullable = false, length = 10000)
-	private String query;
+  /** The is qa check. */
+  private boolean isQACheck = false;
 
-	/** The role required. */
-	@Enumerated(EnumType.STRING)
-	private MapUserRole roleRequired;
+  /** The time period (in days) for diff and rate reports */
+  @Enumerated(EnumType.STRING)
+  private ReportTimePeriod timePeriod;
 
-	/**
-	 * Gets the id.
-	 * 
-	 * @return the id
-	 */
-	@Override
-	public Long getId() {
-		return id;
-	}
+  /** The frequency with which the report is run */
+  @Enumerated(EnumType.STRING)
+  private ReportTimePeriod frequency;
 
-	/**
-	 * Sets the id.
-	 * 
-	 * @param id
-	 *            the new id
-	 */
-	@Override
-	public void setId(Long id) {
-		this.id = id;
-	}
+  /** The result type. */
+  @Enumerated(EnumType.STRING)
+  private ReportResultType resultType;
 
-	/**
-	 * Gets the report name.
-	 * 
-	 * @return the report name
-	 */
-	@Override
-	public String getName() {
-		return name;
-	}
+  /** The query type. */
+  @Enumerated(EnumType.STRING)
+  private ReportQueryType queryType;
 
-	/**
-	 * Sets the report name.
-	 * 
-	 * @param name
-	 *            the new report name
-	 */
-	@Override
-	public void setName(String name) {
-		this.name = name;
-	}
+  /** The query. */
+  @Column(nullable = true, length = 10000)
+  private String query;
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.helpers.ReportDefinition#getResultType()
-	 */
-	/**
-	 * Gets the result type.
-	 * 
-	 * @return the result type
-	 */
-	@Override
-	public ReportResultType getResultType() {
-		return resultType;
-	}
+  /** The role required. */
+  @Enumerated(EnumType.STRING)
+  private MapUserRole roleRequired;
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.helpers.ReportDefinition#setResultType(org.ihtsdo
-	 * .otf.mapping.helpers.ReportResultType)
-	 */
-	/**
-	 * Sets the result type.
-	 * 
-	 * @param resultType
-	 *            the new result type
-	 */
-	@Override
-	public void setResultType(ReportResultType resultType) {
-		this.resultType = resultType;
-	}
+  /** The report definition used for constructing diff reports (if applicable) */
+  @Column(nullable = true)
+  private String diffReportDefinitionName;
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.helpers.ReportDefinition#getQueryType()
-	 */
-	/**
-	 * Gets the query type.
-	 * 
-	 * @return the query type
-	 */
-	@Override
-	public ReportQueryType getQueryType() {
-		return queryType;
-	}
+  /**
+   * Gets the id.
+   * 
+   * @return the id
+   */
+  @Override
+  public Long getId() {
+    return id;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.helpers.ReportDefinition#setQueryType(org.ihtsdo
-	 * .otf.mapping.helpers.ReportQueryType)
-	 */
-	/**
-	 * Sets the query type.
-	 * 
-	 * @param queryType
-	 *            the new query type
-	 */
-	@Override
-	public void setQueryType(ReportQueryType queryType) {
-		this.queryType = queryType;
-	}
+  /**
+   * Sets the id.
+   * 
+   * @param id the new id
+   */
+  @Override
+  public void setId(Long id) {
+    this.id = id;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.helpers.ReportDefinition#getQuery()
-	 */
-	/**
-	 * Gets the query.
-	 * 
-	 * @return the query
-	 */
-	@Override
-	public String getQuery() {
-		return query;
-	}
+  /**
+   * Gets the report name.
+   * 
+   * @return the report name
+   */
+  @Override
+  public String getName() {
+    return name;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.helpers.ReportDefinition#setQuery(java.lang.String
-	 * )
-	 */
-	/**
-	 * Sets the query.
-	 * 
-	 * @param query
-	 *            the new query
-	 */
-	@Override
-	public void setQuery(String query) {
-		this.query = query;
-	}
+  /**
+   * Sets the report name.
+   * 
+   * @param name the new report name
+   */
+  @Override
+  public void setName(String name) {
+    this.name = name;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.helpers.ReportDefinition#getRoleRequired()
-	 */
-	/**
-	 * Gets the role required.
-	 * 
-	 * @return the role required
-	 */
-	@Override
-	public MapUserRole getRoleRequired() {
-		return roleRequired;
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#setRoleRequired(org.ihtsdo.otf.mapping.helpers.MapUserRole)
-	 */
-	@Override
-	public void setRoleRequired(MapUserRole roleRequired) {
-		this.roleRequired = roleRequired;
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#isDiffReport()
-	 */
-	@Override
-	public boolean isDiffReport() {
-		return isDiffReport;
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#setDiffReport(boolean)
-	 */
-	@Override
-	public void setDiffReport(boolean isDiffReport) {
-		this.isDiffReport = isDiffReport;
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.helpers.ReportDefinition#getResultType()
+   */
+  /**
+   * Gets the result type.
+   * 
+   * @return the result type
+   */
+  @Override
+  public ReportResultType getResultType() {
+    return resultType;
+  }
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#getTimePeriodInDays()
-	 */
-	@Override
-	public ReportTimePeriod getTimePeriod() {
-		return this.timePeriod;
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.helpers.ReportDefinition#setResultType(org.ihtsdo
+   * .otf.mapping.helpers.ReportResultType)
+   */
+  /**
+   * Sets the result type.
+   * 
+   * @param resultType the new result type
+   */
+  @Override
+  public void setResultType(ReportResultType resultType) {
+    this.resultType = resultType;
+  }
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#setTimePeriodInDays(int)
-	 */
-	@Override
-	public void setTimePeriod(ReportTimePeriod timePeriod) {
-		this.timePeriod = timePeriod;
-		
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.helpers.ReportDefinition#getQueryType()
+   */
+  /**
+   * Gets the query type.
+   * 
+   * @return the query type
+   */
+  @Override
+  public ReportQueryType getQueryType() {
+    return queryType;
+  }
 
-	@Override
-	public String toString() {
-		return "ReportDefinitionJpa [name=" + name + ", isDiffReport="
-				+ isDiffReport + ", isRateReport=" + isRateReport
-				+ ", timePeriod=" + timePeriod + ", resultType=" + resultType
-				+ ", queryType=" + queryType + ", query=" + query
-				+ ", roleRequired=" + roleRequired + "]";
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.helpers.ReportDefinition#setQueryType(org.ihtsdo
+   * .otf.mapping.helpers.ReportQueryType)
+   */
+  /**
+   * Sets the query type.
+   * 
+   * @param queryType the new query type
+   */
+  @Override
+  public void setQueryType(ReportQueryType queryType) {
+    this.queryType = queryType;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.helpers.ReportDefinition#getQuery()
+   */
+  /**
+   * Gets the query.
+   * 
+   * @return the query
+   */
+  @Override
+  public String getQuery() {
+    return query;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.helpers.ReportDefinition#setQuery(java.lang.String )
+   */
+  /**
+   * Sets the query.
+   * 
+   * @param query the new query
+   */
+  @Override
+  public void setQuery(String query) {
+    this.query = query;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.helpers.ReportDefinition#getRoleRequired()
+   */
+  /**
+   * Gets the role required.
+   * 
+   * @return the role required
+   */
+  @Override
+  public MapUserRole getRoleRequired() {
+    return roleRequired;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.reports.ReportDefinition#setRoleRequired(org.ihtsdo
+   * .otf.mapping.helpers.MapUserRole)
+   */
+  @Override
+  public void setRoleRequired(MapUserRole roleRequired) {
+    this.roleRequired = roleRequired;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#isDiffReport()
+   */
+  @Override
+  public boolean isDiffReport() {
+    return isDiffReport;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#setDiffReport(boolean)
+   */
+  @Override
+  public void setDiffReport(boolean isDiffReport) {
+    this.isDiffReport = isDiffReport;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#getTimePeriodInDays()
+   */
+  @Override
+  public ReportTimePeriod getTimePeriod() {
+    return this.timePeriod;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.reports.ReportDefinition#setTimePeriodInDays(int)
+   */
+  @Override
+  public void setTimePeriod(ReportTimePeriod timePeriod) {
+    this.timePeriod = timePeriod;
+
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#isQACheck()
+   */
+  @Override
+  public boolean isQACheck() {
+    return isQACheck;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#setQACheck(boolean)
+   */
+  @Override
+  public void setQACheck(boolean isQACheck) {
+    this.isQACheck = isQACheck;
+  }
+
+  @Override
+  public String toString() {
+    return "ReportDefinitionJpa [id=" + id + ", name=" + name
+        + ", isDiffReport=" + isDiffReport + ", isQACheck=" + isQACheck
+        + ", timePeriod=" + timePeriod + ", frequency=" + frequency
+        + ", resultType=" + resultType + ", queryType=" + queryType
+        + ", query=" + query + ", roleRequired=" + roleRequired
+        + ", diffReportDefinitionName=" + diffReportDefinitionName + "]";
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#getFrequency()
+   */
+  @Override
+  public ReportTimePeriod getFrequency() {
+    return this.frequency;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.reports.ReportDefinition#setFrequency(org.ihtsdo
+   * .otf.mapping.helpers.ReportTimePeriod)
+   */
+  @Override
+  public void setFrequency(ReportTimePeriod timePeriod) {
+    this.frequency = timePeriod;
+  }
+
+  @Override
+  public String getDiffReportDefinitionName() {
+    return diffReportDefinitionName;
+  }
+
+  @Override
+  public void setDiffReportDefinitionName(String diffReportDefinitionName) {
+    this.diffReportDefinitionName = diffReportDefinitionName;
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result =
+        prime
+            * result
+            + ((diffReportDefinitionName == null) ? 0
+                : diffReportDefinitionName.hashCode());
+    result = prime * result + ((frequency == null) ? 0 : frequency.hashCode());
+    result = prime * result + (isDiffReport ? 1231 : 1237);
+    result = prime * result + (isQACheck ? 1231 : 1237);
+    result = prime * result + ((name == null) ? 0 : name.hashCode());
+    result = prime * result + ((query == null) ? 0 : query.hashCode());
+    result = prime * result + ((queryType == null) ? 0 : queryType.hashCode());
+    result =
+        prime * result + ((resultType == null) ? 0 : resultType.hashCode());
+    result =
+        prime * result + ((roleRequired == null) ? 0 : roleRequired.hashCode());
+    result =
+        prime * result + ((timePeriod == null) ? 0 : timePeriod.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    ReportDefinitionJpa other = (ReportDefinitionJpa) obj;
+    if (diffReportDefinitionName == null) {
+      if (other.diffReportDefinitionName != null)
+        return false;
+    } else if (!diffReportDefinitionName.equals(other.diffReportDefinitionName))
+      return false;
+    if (frequency != other.frequency)
+      return false;
+    if (isDiffReport != other.isDiffReport)
+      return false;
+    if (isQACheck != other.isQACheck)
+      return false;
+    if (name == null) {
+      if (other.name != null)
+        return false;
+    } else if (!name.equals(other.name))
+      return false;
+    if (query == null) {
+      if (other.query != null)
+        return false;
+    } else if (!query.equals(other.query))
+      return false;
+    if (queryType != other.queryType)
+      return false;
+    if (resultType != other.resultType)
+      return false;
+    if (roleRequired != other.roleRequired)
+      return false;
+    if (timePeriod != other.timePeriod)
+      return false;
+    return true;
+  }
 
 }

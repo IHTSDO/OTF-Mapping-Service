@@ -55,11 +55,13 @@ public class SecurityServiceRest extends RootServiceRest {
       SecurityService securityService = new SecurityServiceJpa();
       return securityService.authenticate(username, password);
     } catch (LocalException e) {
-    	Logger.getLogger(SecurityServiceRest.class).error("Local exception thrown");
+      Logger.getLogger(SecurityServiceRest.class).error(
+          "Local exception thrown");
       throw new WebApplicationException(Response.status(401)
           .entity(e.getMessage()).build());
     } catch (Exception e) {
-    	Logger.getLogger(SecurityServiceRest.class).error("General exception thrown");
+      Logger.getLogger(SecurityServiceRest.class).error(
+          "General exception thrown");
       handleException(e, "Unexpected error trying to authenticate a map user");
       return null;
     }
