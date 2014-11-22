@@ -3,11 +3,12 @@
   <div class="container-fluid">
     <div class="navbar-header">
       <ul class="nav navbar-nav navbar-left">
-        <li><p class="navbar-text" ><a class="navbar-link" href="http://www.ihtsdo.org/">Copyright
-            @2014 IHTSDO</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<!-- NOTE: for maven filtering to work as of 3.0.5, this needs to be on its own line -->
-${project.version} (gpc: {{glassPane}})
-</p></li>
+        <li><p class="navbar-text">
+            <a class="navbar-link" href="http://www.ihtsdo.org/">Copyright
+              @2014 IHTSDO</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <!-- NOTE: for maven filtering to work as of 3.0.5, this needs to be on its own line -->
+            ${project.version} (gpc: {{glassPane}})
+          </p></li>
       </ul>
     </div>
     <div class="collapse navbar-collapse">
@@ -18,14 +19,16 @@ ${project.version} (gpc: {{glassPane}})
             Record Dashboard</p>
           <p class="navbar-text" ng-show="page == 'concept'">Mapped Concept
             View</p>
-          <p class="navbar-text" ng-show="page == 'projectDetailsDashboard'">Map Project
-            Details View</p>
+          <p class="navbar-text" ng-show="page == 'projectDetailsDashboard'">Map
+            Project Details View</p>
           <p class="navbar-text" ng-show="page == 'records'">Map Record View</p>
           <p class="navbar-text" ng-show="page == 'resolveConflictsDashboard'">Conflict
             Resolution Dashboard</p>
-          <p class="navbar-text" ng-show="page == 'feedbackConversationsDashboard'">Feedback
+          <p class="navbar-text"
+            ng-show="page == 'feedbackConversationsDashboard'">Feedback
             Conversation Dashboard</p>
-          <p class="navbar-text" ng-show="page == 'mainDashboard'">Dashboard</p></li>
+          <p class="navbar-text" ng-show="page == 'mainDashboard'">Dashboard</p>
+        </li>
       </ul>
     </div>
   </div>

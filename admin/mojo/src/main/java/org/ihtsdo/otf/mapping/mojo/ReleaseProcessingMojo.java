@@ -65,137 +65,140 @@ import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
  */
 public class ReleaseProcessingMojo extends AbstractMojo {
 
-	/**
-	 * The refSet id
-	 * 
-	 * @parameter refSetId
-	 */
-	private String refSetId = null;
+  /**
+   * The refSet id
+   * 
+   * @parameter refSetId
+   */
+  private String refSetId = null;
 
-	/**
-	 * The refSet id
-	 * 
-	 * @parameter outputDirName
-	 */
-	private String outputDirName = null;
+  /**
+   * The refSet id
+   * 
+   * @parameter outputDirName
+   */
+  private String outputDirName = null;
 
-	/**
-	 * The effective time of release
-	 * 
-	 * @parameter effectiveTime
-	 */
-	private String effectiveTime = null;
+  /**
+   * The effective time of release
+   * 
+   * @parameter effectiveTime
+   */
+  private String effectiveTime = null;
 
-	/**
-	 * The module id.
-	 * 
-	 * @parameter moduleId
-	 */
-	private String moduleId = null;
+  /**
+   * The module id.
+   * 
+   * @parameter moduleId
+   */
+  private String moduleId = null;
 
-	@Override
-	public void execute() throws MojoExecutionException, MojoFailureException {
-		getLog().info("Processing release for ref set ids: " + refSetId);
+  @Override
+  public void execute() throws MojoExecutionException, MojoFailureException {
+    getLog().info("Processing release for ref set ids: " + refSetId);
 
-		if (refSetId == null) {
-			throw new MojoExecutionException("You must specify a refSetId.");
-		}
+    if (refSetId == null) {
+      throw new MojoExecutionException("You must specify a refSetId.");
+    }
 
-		if (refSetId == null) {
-			throw new MojoExecutionException(
-					"You must specify an output file directory.");
-		}
+    if (refSetId == null) {
+      throw new MojoExecutionException(
+          "You must specify an output file directory.");
+    }
 
-		File outputDir = new File(outputDirName);
-		if (!outputDir.isDirectory())
-			throw new MojoExecutionException("Output file directory ("
-					+ outputDirName + ") could not be found.");
+    File outputDir = new File(outputDirName);
+    if (!outputDir.isDirectory())
+      throw new MojoExecutionException("Output file directory ("
+          + outputDirName + ") could not be found.");
 
-		if (effectiveTime == null)
-			throw new MojoExecutionException("You must specify a release time");
+    if (effectiveTime == null)
+      throw new MojoExecutionException("You must specify a release time");
 
-		if (moduleId == null)
-			throw new MojoExecutionException("You must specify a module id");
+    if (moduleId == null)
+      throw new MojoExecutionException("You must specify a module id");
 
-		try {
+    try {
 
-			MappingService mappingService = new MappingServiceJpa();
-			Set<MapProject> mapProjects = new HashSet<>();
+      MappingService mappingService = new MappingServiceJpa();
+      Set<MapProject> mapProjects = new HashSet<>();
 
-			for (MapProject mapProject : mappingService.getMapProjects()
-					.getIterable()) {
-				for (String id : refSetId.split(",")) {
-					if (mapProject.getRefSetId().equals(id)) {
-						mapProjects.add(mapProject);
-					}
-				}
-			}
+      for (MapProject mapProject : mappingService.getMapProjects()
+          .getIterable()) {
+        for (String id : refSetId.split(",")) {
+          if (mapProject.getRefSetId().equals(id)) {
+            mapProjects.add(mapProject);
+          }
+        }
+      }
 
-			// Perform the release processing
-			for (MapProject mapProject : mapProjects) {
+      // Perform the release processing
+      for (MapProject mapProject : mapProjects) {
 
-				// add check for scope concepts contained in the map record set
+        // add check for scope concepts contained in the map record set
 
-				// FOR TESTING ONLY
-				List<MapRecord> mapRecords = new ArrayList<>();
+        // FOR TESTING ONLY
+        List<MapRecord> mapRecords = new ArrayList<>();
 
-				boolean testRun = false;
+        boolean testRun = false;
 
-				if (!testRun) {
+        if (!testRun) {
 
-					// RETRIEVE MAP RECORDS HERE
-					mapRecords.addAll(mappingService
-							.getPublishedAndReadyForPublicationMapRecordsForMapProject(
-									mapProject.getId(), null).getMapRecords());
-				}
+          // RETRIEVE MAP RECORDS HERE
+          mapRecords.addAll(mappingService
+              .getPublishedAndReadyForPublicationMapRecordsForMapProject(
+                  mapProject.getId(), null).getMapRecords());
+        }
 
-				if (testRun) {
+        if (testRun) {
 
-					
-					  String conceptIds[] = { "10000006" } ;
-//					  
-//					  , "10001005",
-//					  "1001000119102", "10041001", "10050004",
-//					  "100581000119102", "10061007", "10065003", "10070005", "703619001" };
-//					 
+          String conceptIds[] = {
+            "10000006"
+          };
+          //
+          // , "10001005",
+          // "1001000119102", "10041001", "10050004",
+          // "100581000119102", "10061007", "10065003", "10070005", "703619001"
+          // };
+          //
 
-					
+          for (String conceptId : conceptIds) {
+            MapRecordList mrl =
+                mappingService.getMapRecordsForProjectAndConcept(
+                    mapProject.getId(), conceptId);
 
-					for (String conceptId : conceptIds) {
-						MapRecordList mrl = mappingService
-								.getMapRecordsForProjectAndConcept(
-										mapProject.getId(), conceptId);
-						
-						System.out.println("Retrieved " + mrl.getCount() + " records for concept " + conceptId);
-						mapRecords.add(mrl.getMapRecords().get(0));
-					}
-					
-				}
+            System.out.println("Retrieved " + mrl.getCount()
+                + " records for concept " + conceptId);
+            mapRecords.add(mrl.getMapRecords().get(0));
+          }
 
-				getLog().info(
-						"Processing release for " + mapProject.getName() + ", "
-								+ mapProject.getId() + ", with " + mapRecords.size() + " records to publish");
+        }
 
-				// ensure output directory name has a terminating /
-				if (!outputDirName.endsWith("/"))
-					outputDirName += "/";
-				
-				
-				// Instantiate release handler and for now, run everything as a delta + snapshot release
-				ReleaseHandler releaseHandler = new ReleaseHandlerJpa();		
-				releaseHandler.processRelease(mapProject, mapRecords, outputDirName, effectiveTime, moduleId );
+        getLog().info(
+            "Processing release for " + mapProject.getName() + ", "
+                + mapProject.getId() + ", with " + mapRecords.size()
+                + " records to publish");
 
-			}
+        // ensure output directory name has a terminating /
+        if (!outputDirName.endsWith("/"))
+          outputDirName += "/";
 
-			getLog().info("done ...");
-			mappingService.close();
+        // Instantiate release handler and for now, run everything as a delta +
+        // snapshot release
+        ReleaseHandler releaseHandler = new ReleaseHandlerJpa();
+        releaseHandler.processRelease(mapProject, mapRecords, outputDirName,
+            effectiveTime, moduleId);
 
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new MojoExecutionException(
-					"Performing release processing failed.", e);
-		}
+      }
 
-	}
+      getLog().info("done ...");
+      mappingService.close();
+
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new MojoExecutionException("Performing release processing failed.",
+          e);
+    }
+
+  }
 
 }

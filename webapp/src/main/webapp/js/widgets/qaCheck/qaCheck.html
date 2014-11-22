@@ -1,5 +1,4 @@
-<div
-  style="float: left; width: 40%; padding: 10px; ">
+<div style="float: left; width: 40%; padding: 10px;">
 
   <form>
     <table>
@@ -11,17 +10,18 @@
           ng-model="selectedDefinition"></select></td>
       </tr>
       <tr>
-        <td><button ng-show="reportDisplayed == null || reportDisplayed.id != null"
-          class="btn btn-sm btn-primary"
-          ng-click="generateNewReport(selectedDefinition)">Generate</button>
-        </td>
+        <td><button
+            ng-show="reportDisplayed == null || reportDisplayed.id != null"
+            class="btn btn-sm btn-primary"
+            ng-click="generateNewReport(selectedDefinition)">Generate</button></td>
       </tr>
     </table>
   </form>
 </div>
 
 <div>
-  <div style="float: right; width: 60%; padding: 10px 0px 10px 10px; border-left: thin solid #ddd;">
+  <div
+    style="float: right; width: 60%; padding: 10px 0px 10px 10px; border-left: thin solid #ddd;">
 
     <h4 ng-show="reportDisplayed == null">No QA check results generated</h4>
 
@@ -56,13 +56,12 @@
               target="_blank">{{reportResultItem.itemId}}</a>,
             {{reportResultItem.itemName}}
           </div>
-          
+
         </div>
-        
+
       </div>
-      <button ng-show="reportDisplayed != null"
-          class="btn btn-sm btn-primary"
-          ng-click="addToQAWorkflow(reportDisplayed)">Add to QA Workflow</button>
+      <button ng-show="reportDisplayed != null" class="btn btn-sm btn-primary"
+        ng-click="addToQAWorkflow(reportDisplayed)">Add to QA Workflow</button>
     </div>
   </div>
 </div>

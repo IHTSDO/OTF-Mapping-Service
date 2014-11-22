@@ -17,16 +17,16 @@ import org.ihtsdo.otf.mapping.rf2.Relationship;
  * Concrete implementation of {@link Relationship} for use with JPA.
  */
 @Entity
-//@UniqueConstraint here is being used to create an index, not to enforce uniqueness
+// @UniqueConstraint here is being used to create an index, not to enforce
+// uniqueness
 @Table(name = "relationships", uniqueConstraints = @UniqueConstraint(columnNames = {
     "terminologyId", "terminology", "terminologyVersion"
 }))
-//@Audited
+// @Audited
 @XmlRootElement(name = "relationship")
 public class RelationshipJpa extends AbstractComponent implements Relationship {
 
-
-/** The source concept. */
+  /** The source concept. */
   @ManyToOne(targetEntity = ConceptJpa.class, optional = false)
   @ContainedIn
   private Concept sourceConcept;
@@ -55,31 +55,31 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
    * Instantiates a new relationship jpa.
    */
   public RelationshipJpa() {
-	//empty  
+    // empty
   }
-  
+
   /**
    * Instantiates a new relationship jpa.
    * @param relationship the relationship
    * @param deepCopy indicates whether or not to perform a deep copy
    */
   public RelationshipJpa(Relationship relationship, boolean deepCopy) {
-	    setId(relationship.getId());
-	    setActive(relationship.isActive());
-	    setEffectiveTime(relationship.getEffectiveTime());
-	    setLabel(relationship.getLabel());
-	    setModuleId(relationship.getModuleId());
-	    setTerminology(relationship.getTerminology());
-	    setTerminologyId(relationship.getTerminologyId());
-	    setTerminologyVersion(relationship.getTerminologyVersion());
-		sourceConcept = relationship.getSourceConcept();
-		destinationConcept = relationship.getDestinationConcept();
-		typeId = relationship.getTypeId();
-		characteristicTypeId = relationship.getCharacteristicTypeId();
-		modifierId = relationship.getModifierId();
-		relationshipGroup = relationship.getRelationshipGroup();
-  }  
-  
+    setId(relationship.getId());
+    setActive(relationship.isActive());
+    setEffectiveTime(relationship.getEffectiveTime());
+    setLabel(relationship.getLabel());
+    setModuleId(relationship.getModuleId());
+    setTerminology(relationship.getTerminology());
+    setTerminologyId(relationship.getTerminologyId());
+    setTerminologyVersion(relationship.getTerminologyVersion());
+    sourceConcept = relationship.getSourceConcept();
+    destinationConcept = relationship.getDestinationConcept();
+    typeId = relationship.getTypeId();
+    characteristicTypeId = relationship.getCharacteristicTypeId();
+    modifierId = relationship.getModifierId();
+    relationshipGroup = relationship.getRelationshipGroup();
+  }
+
   /**
    * Returns the type id.
    * 
@@ -259,66 +259,70 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
   }
 
   @Override
-public int hashCode() {
-	final int prime = 31;
-	int result = super.hashCode();
-	result = prime
-			* result
-			+ ((characteristicTypeId == null) ? 0 : characteristicTypeId
-					.hashCode());
-	result = prime
-			* result
-			+ ((destinationConcept == null) ? 0 : destinationConcept.hashCode());
-	result = prime * result
-			+ ((modifierId == null) ? 0 : modifierId.hashCode());
-	result = prime * result
-			+ ((relationshipGroup == null) ? 0 : relationshipGroup.hashCode());
-	result = prime * result
-			+ ((sourceConcept == null) ? 0 : sourceConcept.hashCode());
-	result = prime * result + ((typeId == null) ? 0 : typeId.hashCode());
-	return result;
-}
+  public int hashCode() {
+    final int prime = 31;
+    int result = super.hashCode();
+    result =
+        prime
+            * result
+            + ((characteristicTypeId == null) ? 0 : characteristicTypeId
+                .hashCode());
+    result =
+        prime
+            * result
+            + ((destinationConcept == null) ? 0 : destinationConcept.hashCode());
+    result =
+        prime * result + ((modifierId == null) ? 0 : modifierId.hashCode());
+    result =
+        prime * result
+            + ((relationshipGroup == null) ? 0 : relationshipGroup.hashCode());
+    result =
+        prime * result
+            + ((sourceConcept == null) ? 0 : sourceConcept.hashCode());
+    result = prime * result + ((typeId == null) ? 0 : typeId.hashCode());
+    return result;
+  }
 
   @Override
-public boolean equals(Object obj) {
-	if (this == obj)
-		return true;
-	if (!super.equals(obj))
-		return false;
-	if (getClass() != obj.getClass())
-		return false;
-	RelationshipJpa other = (RelationshipJpa) obj;
-	if (characteristicTypeId == null) {
-		if (other.characteristicTypeId != null)
-			return false;
-	} else if (!characteristicTypeId.equals(other.characteristicTypeId))
-		return false;
-	if (destinationConcept == null) {
-		if (other.destinationConcept != null)
-			return false;
-	} else if (!destinationConcept.equals(other.destinationConcept))
-		return false;
-	if (modifierId == null) {
-		if (other.modifierId != null)
-			return false;
-	} else if (!modifierId.equals(other.modifierId))
-		return false;
-	if (relationshipGroup == null) {
-		if (other.relationshipGroup != null)
-			return false;
-	} else if (!relationshipGroup.equals(other.relationshipGroup))
-		return false;
-	if (sourceConcept == null) {
-		if (other.sourceConcept != null)
-			return false;
-	} else if (!sourceConcept.equals(other.sourceConcept))
-		return false;
-	if (typeId == null) {
-		if (other.typeId != null)
-			return false;
-	} else if (!typeId.equals(other.typeId))
-		return false;
-	return true;
-}
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (!super.equals(obj))
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    RelationshipJpa other = (RelationshipJpa) obj;
+    if (characteristicTypeId == null) {
+      if (other.characteristicTypeId != null)
+        return false;
+    } else if (!characteristicTypeId.equals(other.characteristicTypeId))
+      return false;
+    if (destinationConcept == null) {
+      if (other.destinationConcept != null)
+        return false;
+    } else if (!destinationConcept.equals(other.destinationConcept))
+      return false;
+    if (modifierId == null) {
+      if (other.modifierId != null)
+        return false;
+    } else if (!modifierId.equals(other.modifierId))
+      return false;
+    if (relationshipGroup == null) {
+      if (other.relationshipGroup != null)
+        return false;
+    } else if (!relationshipGroup.equals(other.relationshipGroup))
+      return false;
+    if (sourceConcept == null) {
+      if (other.sourceConcept != null)
+        return false;
+    } else if (!sourceConcept.equals(other.sourceConcept))
+      return false;
+    if (typeId == null) {
+      if (other.typeId != null)
+        return false;
+    } else if (!typeId.equals(other.typeId))
+      return false;
+    return true;
+  }
 
 }

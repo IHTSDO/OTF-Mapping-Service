@@ -6,7 +6,8 @@ import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
 
 /**
- * Admin tool to fix the error flag on feedback objects based on the setting of mapError.
+ * Admin tool to fix the error flag on feedback objects based on the setting of
+ * mapError.
  * 
  * Sample execution:
  * 
@@ -31,14 +32,13 @@ import org.ihtsdo.otf.mapping.services.WorkflowService;
  *           </plugin>
  *         </plugins>
  *       </build>
- *     </profile> 
+ *     </profile>
  * </pre>
  * 
  * @goal fix-feedback-error-flag
  * @phase package
  */
 public class FixFeedbackErrorFlagMojo extends AbstractMojo {
-
 
   /**
    * Executes the plugin.
@@ -49,15 +49,14 @@ public class FixFeedbackErrorFlagMojo extends AbstractMojo {
   public void execute() throws MojoExecutionException {
     getLog().info("Starting the fix of feedback error flags.");
 
-
     try {
 
       WorkflowService workflowService = new WorkflowServiceJpa();
       workflowService.setTransactionPerOperation(false);
       workflowService.beginTransaction();
-      
+
       workflowService.fixFeedbackErrorFlag();
-      
+
       workflowService.commit();
 
       getLog().info("done ...");
@@ -66,7 +65,8 @@ public class FixFeedbackErrorFlagMojo extends AbstractMojo {
 
     } catch (Exception e) {
       e.printStackTrace();
-      throw new MojoExecutionException("Fixing the feedback error flag failed.", e);
+      throw new MojoExecutionException(
+          "Fixing the feedback error flag failed.", e);
     }
 
   }
