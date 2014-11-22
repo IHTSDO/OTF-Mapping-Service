@@ -9,163 +9,160 @@ import org.ihtsdo.otf.mapping.helpers.ReportTimePeriod;
  * Generically represents a report definition.
  */
 public interface ReportDefinition {
-	
-	/**
-	 * Gets the id.
-	 *
-	 * @return the id
-	 */
-	public Long getId();
 
-	/**
-	 * Sets the id.
-	 *
-	 * @param id the new id
-	 */
-	public void setId(Long id);
+  /**
+   * Gets the id.
+   *
+   * @return the id
+   */
+  public Long getId();
 
-	/**
-	 * Gets the report name.
-	 *
-	 * @return the report name
-	 */
-	public String getName();
+  /**
+   * Sets the id.
+   *
+   * @param id the new id
+   */
+  public void setId(Long id);
 
-	/**
-	 * Sets the report name.
-	 *
-	 * @param name the new report name
-	 */
-	public void setName(String name);
+  /**
+   * Gets the report name.
+   *
+   * @return the report name
+   */
+  public String getName();
 
+  /**
+   * Sets the report name.
+   *
+   * @param name the new report name
+   */
+  public void setName(String name);
 
-	/**
-	 * Gets the result type.
-	 *
-	 * @return the result type
-	 */
-	public ReportResultType getResultType();
+  /**
+   * Gets the result type.
+   *
+   * @return the result type
+   */
+  public ReportResultType getResultType();
 
-	/**
-	 * Sets the result type.
-	 *
-	 * @param resultType the new result type
-	 */
-	public void setResultType(ReportResultType resultType);
+  /**
+   * Sets the result type.
+   *
+   * @param resultType the new result type
+   */
+  public void setResultType(ReportResultType resultType);
 
-	/**
-	 * Gets the query type.
-	 *
-	 * @return the query type
-	 */
-	public ReportQueryType getQueryType();
+  /**
+   * Gets the query type.
+   *
+   * @return the query type
+   */
+  public ReportQueryType getQueryType();
 
-	/**
-	 * Sets the query type.
-	 *
-	 * @param queryType the new query type
-	 */
-	public void setQueryType(ReportQueryType queryType);
+  /**
+   * Sets the query type.
+   *
+   * @param queryType the new query type
+   */
+  public void setQueryType(ReportQueryType queryType);
 
-	/**
-	 * Gets the query.
-	 *
-	 * @return the query
-	 */
-	public String getQuery();
+  /**
+   * Gets the query.
+   *
+   * @return the query
+   */
+  public String getQuery();
 
-	/**
-	 * Sets the query.
-	 *
-	 * @param query the new query
-	 */
-	public void setQuery(String query);
+  /**
+   * Sets the query.
+   *
+   * @param query the new query
+   */
+  public void setQuery(String query);
 
-	/**
-	 * Gets the role required.
-	 *
-	 * @return the role required
-	 */
-	public MapUserRole getRoleRequired();
+  /**
+   * Gets the role required.
+   *
+   * @return the role required
+   */
+  public MapUserRole getRoleRequired();
 
-	
-	/**
-	 * Sets the role required.
-	 *
-	 * @param roleRequired the new role required
-	 */
-	void setRoleRequired(MapUserRole roleRequired);
-	
-	/**
-	 * Gets the time period.
-	 *
-	 * @return the time period
-	 */
-	public ReportTimePeriod getTimePeriod();
-	
-	/**
-	 * Sets the time period.
-	 *
-	 * @param timePeriod the new time period
-	 */
-	public void setTimePeriod(ReportTimePeriod timePeriod);
+  /**
+   * Sets the role required.
+   *
+   * @param roleRequired the new role required
+   */
+  void setRoleRequired(MapUserRole roleRequired);
 
-	/**
-	 * Gets the frequency.
-	 *
-	 * @return the frequency
-	 */
-	public ReportTimePeriod getFrequency();
-	
-	/**
-	 * Sets the frequency.
-	 *
-	 * @param timePeriod the new frequency
-	 */
-	public void setFrequency(ReportTimePeriod timePeriod);
-	/**
-	 * Checks if is diff report.
-	 *
-	 * @return true, if is diff report
-	 */
-	public boolean isDiffReport();
+  /**
+   * Gets the time period.
+   *
+   * @return the time period
+   */
+  public ReportTimePeriod getTimePeriod();
 
-	/**
-	 * Sets the diff report.
-	 *
-	 * @param isDiffReport the new diff report
-	 */
-	public void setDiffReport(boolean isDiffReport);
+  /**
+   * Sets the time period.
+   *
+   * @param timePeriod the new time period
+   */
+  public void setTimePeriod(ReportTimePeriod timePeriod);
 
-	/**
-	 * Indicates whether or not QA check is the case.
-	 *
-	 * @return <code>true</code> if so, <code>false</code> otherwise
-	 */
-	public boolean isQACheck();
+  /**
+   * Gets the frequency.
+   *
+   * @return the frequency
+   */
+  public ReportTimePeriod getFrequency();
 
-	/**
-	 * Sets the QA check.
-	 *
-	 * @param isQACheck the QA check
-	 */
-	public void setQACheck(boolean isQACheck);
+  /**
+   * Sets the frequency.
+   *
+   * @param timePeriod the new frequency
+   */
+  public void setFrequency(ReportTimePeriod timePeriod);
 
-	
+  /**
+   * Checks if is diff report.
+   *
+   * @return true, if is diff report
+   */
+  public boolean isDiffReport();
 
-	/**
-	 * Gets the diff report definition name.
-	 *
-	 * @return the diff report definition name
-	 */
-	public String getDiffReportDefinitionName();
+  /**
+   * Sets the diff report.
+   *
+   * @param isDiffReport the new diff report
+   */
+  public void setDiffReport(boolean isDiffReport);
 
-	/**
-	 * Sets the diff report definition name.
-	 *
-	 * @param diffReportDefinitionName the diff report definition name
-	 * @return the string
-	 */
-	public void setDiffReportDefinitionName(String diffReportDefinitionName);
-	
+  /**
+   * Indicates whether or not QA check is the case.
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public boolean isQACheck();
+
+  /**
+   * Sets the QA check.
+   *
+   * @param isQACheck the QA check
+   */
+  public void setQACheck(boolean isQACheck);
+
+  /**
+   * Gets the diff report definition name.
+   *
+   * @return the diff report definition name
+   */
+  public String getDiffReportDefinitionName();
+
+  /**
+   * Sets the diff report definition name.
+   *
+   * @param diffReportDefinitionName the diff report definition name
+   * @return the string
+   */
+  public void setDiffReportDefinitionName(String diffReportDefinitionName);
+
 }

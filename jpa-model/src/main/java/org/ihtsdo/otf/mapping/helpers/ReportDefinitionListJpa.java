@@ -15,8 +15,8 @@ import org.ihtsdo.otf.mapping.reports.ReportDefinitionJpa;
  * JAXB enabled implementation of {@link ReportDefinitionList}.
  */
 @XmlRootElement(name = "reportDefinitionList")
-public class ReportDefinitionListJpa extends AbstractResultList<ReportDefinition> implements
-    ReportDefinitionList {
+public class ReportDefinitionListJpa extends
+    AbstractResultList<ReportDefinition> implements ReportDefinitionList {
 
   /** The map users. */
   private List<ReportDefinition> reportDefinitions = new ArrayList<>();
@@ -27,22 +27,23 @@ public class ReportDefinitionListJpa extends AbstractResultList<ReportDefinition
   public ReportDefinitionListJpa() {
     // do nothing
   }
-  
+
   /**
-   * Instantiates a {@link ReportDefinitionListJpa} from the specified parameters.
+   * Instantiates a {@link ReportDefinitionListJpa} from the specified
+   * parameters.
    *
    * @param reportDefinitions the report definitions
    */
   public ReportDefinitionListJpa(List<ReportDefinition> reportDefinitions) {
-	  this.reportDefinitions = reportDefinitions;
+    this.reportDefinitions = reportDefinitions;
   }
 
   /*
    * (non-Javadoc)
    * 
    * @see
-   * org.ihtsdo.otf.mapping.helpers.ReportDefinitionList#addReportDefinition(org.ihtsdo.otf.mapping
-   * .model.ReportDefinition)
+   * org.ihtsdo.otf.mapping.helpers.ReportDefinitionList#addReportDefinition
+   * (org.ihtsdo.otf.mapping .model.ReportDefinition)
    */
   @Override
   public void addReportDefinition(ReportDefinition ReportDefinition) {
@@ -53,8 +54,8 @@ public class ReportDefinitionListJpa extends AbstractResultList<ReportDefinition
    * (non-Javadoc)
    * 
    * @see
-   * org.ihtsdo.otf.mapping.helpers.ReportDefinitionList#removeReportDefinition(org.ihtsdo.otf
-   * .mapping.model.ReportDefinition)
+   * org.ihtsdo.otf.mapping.helpers.ReportDefinitionList#removeReportDefinition
+   * (org.ihtsdo.otf .mapping.model.ReportDefinition)
    */
   @Override
   public void removeReportDefinition(ReportDefinition ReportDefinition) {
@@ -64,7 +65,9 @@ public class ReportDefinitionListJpa extends AbstractResultList<ReportDefinition
   /*
    * (non-Javadoc)
    * 
-   * @see org.ihtsdo.otf.mapping.helpers.ReportDefinitionList#setReportDefinitions(java.util.List)
+   * @see
+   * org.ihtsdo.otf.mapping.helpers.ReportDefinitionList#setReportDefinitions
+   * (java.util.List)
    */
   @Override
   public void setReportDefinitions(List<ReportDefinition> reportDefinitions) {
@@ -76,7 +79,8 @@ public class ReportDefinitionListJpa extends AbstractResultList<ReportDefinition
   /*
    * (non-Javadoc)
    * 
-   * @see org.ihtsdo.otf.mapping.helpers.ReportDefinitionList#getReportDefinitions()
+   * @see
+   * org.ihtsdo.otf.mapping.helpers.ReportDefinitionList#getReportDefinitions()
    */
   @Override
   @XmlElement(type = ReportDefinitionJpa.class, name = "reportDefinition")

@@ -14,7 +14,8 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
 /**
  * Implementation of {@link MetadataService} for SNOMEDCT.
  */
-public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements MetadataService {
+public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements
+    MetadataService {
 
   /**
    * Instantiates an empty {@link SnomedMetadataServiceJpaHelper}.
@@ -22,11 +23,10 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements Me
    * @throws Exception the exception
    */
   public SnomedMetadataServiceJpaHelper() throws Exception {
-		super();
-	}
+    super();
+  }
 
-
-/** The Constant isaRelationshipType. */
+  /** The Constant isaRelationshipType. */
   private final static String isaRelationshipType = "116680003";
 
   /*
@@ -57,11 +57,11 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements Me
 
     // find all active descendants of 900000000000443000
     ContentService contentService = new ContentServiceJpa();
-    
+
     // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
-        getDescendantConcepts(contentService, "900000000000443000", terminology,
-            version, isaRelationshipType);
+        getDescendantConcepts(contentService, "900000000000443000",
+            terminology, version, isaRelationshipType);
 
     for (Concept descendant : descendants) {
       if (descendant.isActive()) {
@@ -72,7 +72,6 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements Me
     contentService.close();
     return map;
   }
-
 
   /*
    * (non-Javadoc)
@@ -88,11 +87,11 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements Me
 
     // find all active descendants of 900000000000480006
     ContentService contentService = new ContentServiceJpa();
-    
+
     // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
-        getDescendantConcepts(contentService,"900000000000480006", terminology,
-            version, isaRelationshipType);
+        getDescendantConcepts(contentService, "900000000000480006",
+            terminology, version, isaRelationshipType);
 
     for (Concept descendant : descendants) {
       if (descendant.isActive()) {
@@ -118,11 +117,11 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements Me
 
     // find all active descendants of 447250001
     ContentService contentService = new ContentServiceJpa();
-    
+
     // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
-        getDescendantConcepts(contentService,"447250001", terminology, version,
-            isaRelationshipType);
+        getDescendantConcepts(contentService, "447250001", terminology,
+            version, isaRelationshipType);
 
     for (Concept descendant : descendants) {
       if (descendant.isActive()) {
@@ -149,11 +148,11 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements Me
 
     // find all active descendants of 900000000000506000
     ContentService contentService = new ContentServiceJpa();
-    
+
     // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
-        getDescendantConcepts(contentService,"900000000000506000", terminology,
-            version, isaRelationshipType);
+        getDescendantConcepts(contentService, "900000000000506000",
+            terminology, version, isaRelationshipType);
 
     for (Concept descendant : descendants) {
       if (descendant.isActive()) {
@@ -179,11 +178,11 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements Me
 
     // find all active descendants of 900000000000496009
     ContentService contentService = new ContentServiceJpa();
-    
+
     // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
-        getDescendantConcepts(contentService,"900000000000496009", terminology,
-            version, isaRelationshipType);
+        getDescendantConcepts(contentService, "900000000000496009",
+            terminology, version, isaRelationshipType);
 
     for (Concept descendant : descendants) {
       if (descendant.isActive()) {
@@ -209,11 +208,11 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements Me
 
     // find all active descendants of 446609009
     ContentService contentService = new ContentServiceJpa();
-    
+
     // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
-        getDescendantConcepts(contentService,"446609009", terminology, version,
-            isaRelationshipType);
+        getDescendantConcepts(contentService, "446609009", terminology,
+            version, isaRelationshipType);
 
     for (Concept descendant : descendants) {
       if (descendant.isActive()) {
@@ -240,11 +239,11 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements Me
     // find all active descendants of 609330002
     // 609330002 - Map category value
     ContentService contentService = new ContentServiceJpa();
-    
+
     // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
-        getDescendantConcepts(contentService,"447634004", terminology, version,
-            isaRelationshipType);
+        getDescendantConcepts(contentService, "447634004", terminology,
+            version, isaRelationshipType);
 
     Logger.getLogger(this.getClass()).debug(
         "Descendants of 447634004 " + descendants);
@@ -259,8 +258,8 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements Me
     // 447247004 - SNOMED CT source code not mappable to target coding scheme
     // want all descendants, do not use pfsParameter
     descendants =
-        getDescendantConcepts(contentService,"447247004", terminology, version,
-            isaRelationshipType);
+        getDescendantConcepts(contentService, "447247004", terminology,
+            version, isaRelationshipType);
 
     Logger.getLogger(this.getClass()).debug(
         "Descendants of 447247004 " + descendants);
@@ -289,11 +288,11 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements Me
 
     // find all active descendants of 900000000000444006
     ContentService contentService = new ContentServiceJpa();
-    
+
     // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
-        getDescendantConcepts(contentService,"900000000000444006", terminology,
-            version, isaRelationshipType);
+        getDescendantConcepts(contentService, "900000000000444006",
+            terminology, version, isaRelationshipType);
 
     for (Concept descendant : descendants) {
       if (descendant.isActive()) {
@@ -319,11 +318,11 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements Me
 
     // find all active descendants of 900000000000446008
     ContentService contentService = new ContentServiceJpa();
-    
+
     // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
-        getDescendantConcepts(contentService,"900000000000446008", terminology,
-            version, isaRelationshipType);
+        getDescendantConcepts(contentService, "900000000000446008",
+            terminology, version, isaRelationshipType);
 
     for (Concept descendant : descendants) {
       if (descendant.isActive()) {
@@ -349,11 +348,11 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements Me
 
     // find all active descendants of 900000000000447004
     ContentService contentService = new ContentServiceJpa();
-    
+
     // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
-        getDescendantConcepts(contentService,"900000000000447004", terminology,
-            version, isaRelationshipType);
+        getDescendantConcepts(contentService, "900000000000447004",
+            terminology, version, isaRelationshipType);
 
     for (Concept descendant : descendants) {
       if (descendant.isActive()) {
@@ -379,11 +378,11 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements Me
 
     // find all active descendants of 106237007
     ContentService contentService = new ContentServiceJpa();
-    
+
     // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
-        getDescendantConcepts(contentService,"106237007", terminology, version,
-            isaRelationshipType);
+        getDescendantConcepts(contentService, "106237007", terminology,
+            version, isaRelationshipType);
 
     for (Concept descendant : descendants) {
       if (descendant.isActive()) {
@@ -430,11 +429,11 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements Me
 
     // find all active descendants of 900000000000449001
     ContentService contentService = new ContentServiceJpa();
-    
+
     // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
-        getDescendantConcepts(contentService,"900000000000449001", terminology,
-            version, isaRelationshipType);
+        getDescendantConcepts(contentService, "900000000000449001",
+            terminology, version, isaRelationshipType);
 
     for (Concept descendant : descendants) {
       if (descendant.isActive()) {
@@ -460,11 +459,11 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements Me
 
     // find all active descendants of 900000000000450001
     ContentService contentService = new ContentServiceJpa();
-    
+
     // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
-        getDescendantConcepts(contentService,"900000000000450001", terminology,
-            version, isaRelationshipType);
+        getDescendantConcepts(contentService, "900000000000450001",
+            terminology, version, isaRelationshipType);
 
     for (Concept descendant : descendants) {
       if (descendant.isActive()) {
@@ -505,7 +504,6 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements Me
     return null;
   }
 
-
   /**
    * Helper method for getting descendants.
    * @param contentService
@@ -519,7 +517,9 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements Me
   private Set<Concept> getDescendantConcepts(ContentService contentService,
     String terminologyId, String terminology, String terminologyVersion,
     String typeId) throws Exception {
-    Concept concept = contentService.getConcept(terminologyId, terminology, terminologyVersion);
+    Concept concept =
+        contentService.getConcept(terminologyId, terminology,
+            terminologyVersion);
     return GraphHelper.getDescendantConcepts(concept, typeId);
 
   }

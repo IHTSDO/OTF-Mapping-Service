@@ -11,14 +11,12 @@ import org.ihtsdo.otf.mapping.model.Feedback;
  */
 public interface FeedbackList extends ResultList<Feedback> {
 
-
   /**
    * Adds the feedback.
    *
    * @param Feedback the feedback
    */
   public void addFeedback(Feedback Feedback);
-
 
   /**
    * Removes the feedback.

@@ -5,9 +5,9 @@ package org.ihtsdo.otf.mapping.helpers;
  */
 public enum ReportResultType {
 
-	/**  The concept. */
-	CONCEPT,
-	
-	/**  The map record. */
-	MAP_RECORD
+  /** The concept. */
+  CONCEPT,
+
+  /** The map record. */
+  MAP_RECORD
 }
