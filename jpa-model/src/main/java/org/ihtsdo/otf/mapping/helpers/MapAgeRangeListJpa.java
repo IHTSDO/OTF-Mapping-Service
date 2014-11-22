@@ -17,8 +17,8 @@ import org.ihtsdo.otf.mapping.model.MapAgeRange;
  * @author ${author}
  */
 @XmlRootElement(name = "mapAgeRangeList")
-public class MapAgeRangeListJpa extends AbstractResultList<MapAgeRange> implements
-    MapAgeRangeList {
+public class MapAgeRangeListJpa extends AbstractResultList<MapAgeRange>
+    implements MapAgeRangeList {
 
   /** The map projects. */
   private List<MapAgeRange> mapAgeRanges = new ArrayList<>();

@@ -31,8 +31,7 @@ public class ReportListJpa extends AbstractResultList<Report> implements
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * org.ihtsdo.otf.mapping.helpers.ReportList#addReport(org.ihtsdo.
+   * @see org.ihtsdo.otf.mapping.helpers.ReportList#addReport(org.ihtsdo.
    * otf.mapping.model.Report)
    */
   @Override
@@ -43,8 +42,7 @@ public class ReportListJpa extends AbstractResultList<Report> implements
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * org.ihtsdo.otf.mapping.helpers.ReportList#removeReport(org.ihtsdo
+   * @see org.ihtsdo.otf.mapping.helpers.ReportList#removeReport(org.ihtsdo
    * .otf.mapping.model.Report)
    */
   @Override
@@ -55,9 +53,7 @@ public class ReportListJpa extends AbstractResultList<Report> implements
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * org.ihtsdo.otf.mapping.helpers.ReportList#setreports(java.util.
-   * List)
+   * @see org.ihtsdo.otf.mapping.helpers.ReportList#setreports(java.util. List)
    */
   @Override
   public void setReports(List<Report> reports) {

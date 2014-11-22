@@ -61,19 +61,19 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   @OneToMany(mappedBy = "destinationConcept", orphanRemoval = true, targetEntity = RelationshipJpa.class)
   private Set<Relationship> inverseRelationships = null;
 
-  /**  The simple RefSet members. */
+  /** The simple RefSet members. */
   @OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = SimpleRefSetMemberJpa.class)
   private Set<SimpleRefSetMember> simpleRefSetMembers = null;
 
-  /**  The simpleMap RefSet members. */
+  /** The simpleMap RefSet members. */
   @OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = SimpleMapRefSetMemberJpa.class)
   private Set<SimpleMapRefSetMember> simpleMapRefSetMembers = null;
 
-  /**  The complexMap RefSet members. */
+  /** The complexMap RefSet members. */
   @OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = ComplexMapRefSetMemberJpa.class)
   private Set<ComplexMapRefSetMember> complexMapRefSetMembers = null;
 
-  /**  The attributeValue RefSet members. */
+  /** The attributeValue RefSet members. */
   @OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = AttributeValueRefSetMemberJpa.class)
   private Set<AttributeValueRefSetMember> attributeValueRefSetMembers = null;
 
@@ -212,8 +212,12 @@ public class ConceptJpa extends AbstractComponent implements Concept {
     return relationships;
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rf2.Concept#addRelationship(org.ihtsdo.otf.mapping.rf2.Relationship)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rf2.Concept#addRelationship(org.ihtsdo.otf.mapping
+   * .rf2.Relationship)
    */
   @Override
   public void addRelationship(Relationship relationship) {
@@ -223,8 +227,12 @@ public class ConceptJpa extends AbstractComponent implements Concept {
     this.relationships.add(relationship);
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rf2.Concept#removeRelationship(org.ihtsdo.otf.mapping.rf2.Relationship)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rf2.Concept#removeRelationship(org.ihtsdo.otf.mapping
+   * .rf2.Relationship)
    */
   @Override
   public void removeRelationship(Relationship relationship) {
@@ -233,7 +241,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
     }
     this.relationships.remove(relationship);
   }
-  
+
   /**
    * Sets the relationships.
    * 
@@ -258,8 +266,12 @@ public class ConceptJpa extends AbstractComponent implements Concept {
     return inverseRelationships;
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rf2.Concept#addInverseRelationship(org.ihtsdo.otf.mapping.rf2.Relationship)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rf2.Concept#addInverseRelationship(org.ihtsdo.otf
+   * .mapping.rf2.Relationship)
    */
   @Override
   public void addInverseRelationship(Relationship relationship) {
@@ -269,8 +281,12 @@ public class ConceptJpa extends AbstractComponent implements Concept {
     inverseRelationships.add(relationship);
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rf2.Concept#removeInverseRelationship(org.ihtsdo.otf.mapping.rf2.Relationship)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rf2.Concept#removeInverseRelationship(org.ihtsdo
+   * .otf.mapping.rf2.Relationship)
    */
   @Override
   public void removeInverseRelationship(Relationship relationship) {
@@ -279,6 +295,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
     }
     inverseRelationships.remove(relationship);
   }
+
   /**
    * Sets the inverse relationships.
    * 
@@ -474,7 +491,8 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   }
 
   /**
-   * Adds a AttributeValueRefSetMember to the set of AttributeValueRefSetMembers.
+   * Adds a AttributeValueRefSetMember to the set of
+   * AttributeValueRefSetMembers.
    *
    * @param attributeValueRefSetMember the AttributeValueRefSetMembers to be
    *          added
@@ -576,7 +594,9 @@ public class ConceptJpa extends AbstractComponent implements Concept {
                                                                    // fields
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.ihtsdo.otf.mapping.rf2.jpa.AbstractComponent#hashCode()
    */
   @Override
@@ -590,8 +610,11 @@ public class ConceptJpa extends AbstractComponent implements Concept {
     return result;
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rf2.jpa.AbstractComponent#equals(java.lang.Object)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rf2.jpa.AbstractComponent#equals(java.lang.Object)
    */
   @Override
   public boolean equals(Object obj) {

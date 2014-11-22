@@ -15,11 +15,13 @@ import org.ihtsdo.otf.mapping.rf2.jpa.ComplexMapRefSetMemberJpa;
  * JAXB enabled implementation of {@link ComplexMapRefSetMemberList}.
  */
 @XmlRootElement(name = "complexMapRefSetMemberList")
-public class ComplexMapRefSetMemberListJpa extends AbstractResultList<ComplexMapRefSetMember> implements
+public class ComplexMapRefSetMemberListJpa extends
+    AbstractResultList<ComplexMapRefSetMember> implements
     ComplexMapRefSetMemberList {
 
   /** The map complexMapRefSetMembers. */
-  private List<ComplexMapRefSetMember> complexMapRefSetMembers = new ArrayList<>();
+  private List<ComplexMapRefSetMember> complexMapRefSetMembers =
+      new ArrayList<>();
 
   /**
    * Instantiates a new map complexMapRefSetMember list.
@@ -31,34 +33,38 @@ public class ComplexMapRefSetMemberListJpa extends AbstractResultList<ComplexMap
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * org.ihtsdo.otf.mapping.helpers.ComplexMapRefSetMemberList#addComplexMapRefSetMember(org.ihtsdo.otf.mapping
+   * @see org.ihtsdo.otf.mapping.helpers.ComplexMapRefSetMemberList#
+   * addComplexMapRefSetMember(org.ihtsdo.otf.mapping
    * .rf2.ComplexMapRefSetMember)
    */
   @Override
-  public void addComplexMapRefSetMember(ComplexMapRefSetMember ComplexMapRefSetMember) {
+  public void addComplexMapRefSetMember(
+    ComplexMapRefSetMember ComplexMapRefSetMember) {
     complexMapRefSetMembers.add(ComplexMapRefSetMember);
   }
 
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * org.ihtsdo.otf.mapping.helpers.ComplexMapRefSetMemberList#removeComplexMapRefSetMember(org.ihtsdo.otf
+   * @see org.ihtsdo.otf.mapping.helpers.ComplexMapRefSetMemberList#
+   * removeComplexMapRefSetMember(org.ihtsdo.otf
    * .mapping.rf2.ComplexMapRefSetMember)
    */
   @Override
-  public void removeComplexMapRefSetMember(ComplexMapRefSetMember ComplexMapRefSetMember) {
+  public void removeComplexMapRefSetMember(
+    ComplexMapRefSetMember ComplexMapRefSetMember) {
     complexMapRefSetMembers.remove(ComplexMapRefSetMember);
   }
 
   /*
    * (non-Javadoc)
    * 
-   * @see org.ihtsdo.otf.mapping.helpers.ComplexMapRefSetMemberList#setComplexMapRefSetMembers(java.util.List)
+   * @see org.ihtsdo.otf.mapping.helpers.ComplexMapRefSetMemberList#
+   * setComplexMapRefSetMembers(java.util.List)
    */
   @Override
-  public void setComplexMapRefSetMembers(List<ComplexMapRefSetMember> ComplexMapRefSetMembers) {
+  public void setComplexMapRefSetMembers(
+    List<ComplexMapRefSetMember> ComplexMapRefSetMembers) {
     this.complexMapRefSetMembers = new ArrayList<>();
     if (ComplexMapRefSetMembers != null) {
       this.complexMapRefSetMembers.addAll(ComplexMapRefSetMembers);
@@ -68,7 +74,8 @@ public class ComplexMapRefSetMemberListJpa extends AbstractResultList<ComplexMap
   /*
    * (non-Javadoc)
    * 
-   * @see org.ihtsdo.otf.mapping.helpers.ComplexMapRefSetMemberList#getComplexMapRefSetMembers()
+   * @see org.ihtsdo.otf.mapping.helpers.ComplexMapRefSetMemberList#
+   * getComplexMapRefSetMembers()
    */
   @Override
   @XmlElement(type = ComplexMapRefSetMemberJpa.class, name = "complexMapRefSetMember")

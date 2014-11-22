@@ -60,6 +60,6 @@
         </plugins>
       </build>
     </profile>
- 
+
   </profiles>
 </project>

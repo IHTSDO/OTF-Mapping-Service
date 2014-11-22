@@ -5,7 +5,6 @@ package org.ihtsdo.otf.mapping.helpers;
  */
 public enum WorkflowAction {
 
-	
   /** The assign from scratch. */
   ASSIGN_FROM_SCRATCH,
 
@@ -23,13 +22,13 @@ public enum WorkflowAction {
 
   /** The finish editing. */
   FINISH_EDITING,
-  
+
   /** The publish */
   PUBLISH,
-  
+
   /** Cancel work */
   CANCEL,
-  
+
   /** Create qa record */
   CREATE_QA_RECORD;
 }

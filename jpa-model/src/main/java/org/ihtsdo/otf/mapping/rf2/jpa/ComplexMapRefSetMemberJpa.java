@@ -11,7 +11,7 @@ import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
  */
 @Entity
 @Table(name = "complex_map_refset_members")
-//@Audited
+// @Audited
 public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
     implements ComplexMapRefSetMember {
 
@@ -244,53 +244,54 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
   }
 
   @Override
-public int hashCode() {
-	final int prime = 31;
-	int result = super.hashCode();
-	result = prime * result + ((mapAdvice == null) ? 0 : mapAdvice.hashCode());
-	result = prime * result + mapGroup;
-	result = prime * result + mapPriority;
-	result = prime * result
-			+ ((mapRelationId == null) ? 0 : mapRelationId.hashCode());
-	result = prime * result + ((mapRule == null) ? 0 : mapRule.hashCode());
-	result = prime * result + ((mapTarget == null) ? 0 : mapTarget.hashCode());
-	return result;
-}
+  public int hashCode() {
+    final int prime = 31;
+    int result = super.hashCode();
+    result = prime * result + ((mapAdvice == null) ? 0 : mapAdvice.hashCode());
+    result = prime * result + mapGroup;
+    result = prime * result + mapPriority;
+    result =
+        prime * result
+            + ((mapRelationId == null) ? 0 : mapRelationId.hashCode());
+    result = prime * result + ((mapRule == null) ? 0 : mapRule.hashCode());
+    result = prime * result + ((mapTarget == null) ? 0 : mapTarget.hashCode());
+    return result;
+  }
 
   @Override
-public boolean equals(Object obj) {
-	if (this == obj)
-		return true;
-	if (!super.equals(obj))
-		return false;
-	if (getClass() != obj.getClass())
-		return false;
-	ComplexMapRefSetMemberJpa other = (ComplexMapRefSetMemberJpa) obj;
-	if (mapAdvice == null) {
-		if (other.mapAdvice != null)
-			return false;
-	} else if (!mapAdvice.equals(other.mapAdvice))
-		return false;
-	if (mapGroup != other.mapGroup)
-		return false;
-	if (mapPriority != other.mapPriority)
-		return false;
-	if (mapRelationId == null) {
-		if (other.mapRelationId != null)
-			return false;
-	} else if (!mapRelationId.equals(other.mapRelationId))
-		return false;
-	if (mapRule == null) {
-		if (other.mapRule != null)
-			return false;
-	} else if (!mapRule.equals(other.mapRule))
-		return false;
-	if (mapTarget == null) {
-		if (other.mapTarget != null)
-			return false;
-	} else if (!mapTarget.equals(other.mapTarget))
-		return false;
-	return true;
-}
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (!super.equals(obj))
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    ComplexMapRefSetMemberJpa other = (ComplexMapRefSetMemberJpa) obj;
+    if (mapAdvice == null) {
+      if (other.mapAdvice != null)
+        return false;
+    } else if (!mapAdvice.equals(other.mapAdvice))
+      return false;
+    if (mapGroup != other.mapGroup)
+      return false;
+    if (mapPriority != other.mapPriority)
+      return false;
+    if (mapRelationId == null) {
+      if (other.mapRelationId != null)
+        return false;
+    } else if (!mapRelationId.equals(other.mapRelationId))
+      return false;
+    if (mapRule == null) {
+      if (other.mapRule != null)
+        return false;
+    } else if (!mapRule.equals(other.mapRule))
+      return false;
+    if (mapTarget == null) {
+      if (other.mapTarget != null)
+        return false;
+    } else if (!mapTarget.equals(other.mapTarget))
+      return false;
+    return true;
+  }
 
 }

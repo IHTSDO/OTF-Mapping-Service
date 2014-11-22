@@ -55,7 +55,8 @@ import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
  *     </plugin>
  * </pre>
  * 
- * NOTE: run with -Dmini if using a mini data set as all scope concepts may not exist
+ * NOTE: run with -Dmini if using a mini data set as all scope concepts may not
+ * exist
  * 
  * @goal import-project-data
  * 
@@ -343,7 +344,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
         // attach report definitions
         getLog().info("    Attach report definitions");
         for (ReportDefinition reportDefinition : project.getReportDefinitions()) {
-          for (ReportDefinition rd: reportService.getReportDefinitions()
+          for (ReportDefinition rd : reportService.getReportDefinitions()
               .getReportDefinitions()) {
             if (rd.equals(reportDefinition)) {
               bareProject.addReportDefinition(rd);
@@ -370,7 +371,8 @@ public class MapProjectDataImportMojo extends AbstractMojo {
             // if it's mini, just ignore this
           } else if (c == null) {
             // if it's not mini, then throw an error
-            throw new Exception("Scope concept + " + line.trim() + " cannot be found.");
+            throw new Exception("Scope concept + " + line.trim()
+                + " cannot be found.");
           } else {
             conceptsInScope.add(line.trim());
           }
@@ -397,7 +399,8 @@ public class MapProjectDataImportMojo extends AbstractMojo {
             // if it's mini, just ignore this
           } else if (c == null) {
             // if it's not mini, then throw an error
-            throw new Exception("Scope excluded concept + " + line.trim() + " cannot be found.");
+            throw new Exception("Scope excluded concept + " + line.trim()
+                + " cannot be found.");
           } else {
             conceptsExcludedScope.add(line.trim());
           }
