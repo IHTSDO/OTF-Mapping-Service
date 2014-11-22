@@ -68,14 +68,14 @@ public interface MapUser {
    * @param email the email
    */
   public void setEmail(String email);
-  
+
   /**
    * Returns the application role.
    *
    * @return the application role
    */
   public MapUserRole getApplicationRole();
-  
+
   /**
    * Sets the application role.
    *

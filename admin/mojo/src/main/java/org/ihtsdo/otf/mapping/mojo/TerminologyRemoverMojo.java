@@ -90,7 +90,7 @@ public class TerminologyRemoverMojo extends AbstractMojo {
     try {
       Properties config = ConfigUtility.getConfigProperties();
 
-      // NOTE: ideall this would not use entity manager, 
+      // NOTE: ideall this would not use entity manager,
       // but we do not have services for all data types yet.
       EntityManagerFactory factory =
           Persistence.createEntityManagerFactory("MappingServiceDS", config);
@@ -188,7 +188,7 @@ public class TerminologyRemoverMojo extends AbstractMojo {
       manager.close();
       factory.close();
 
-    } catch (Throwable e) {
+    } catch (Exception e) {
       e.printStackTrace();
       throw new MojoFailureException("Unexpected exception:", e);
     }

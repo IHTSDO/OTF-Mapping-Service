@@ -118,7 +118,7 @@ public interface Component {
    * @param label the label to set
    */
   public void setLabel(String label);
-  
+
   /**
    * Returns a string of comma-separated fields of this object.
    * 

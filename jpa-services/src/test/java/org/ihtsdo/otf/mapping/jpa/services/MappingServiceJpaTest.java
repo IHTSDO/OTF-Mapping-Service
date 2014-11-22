@@ -53,7 +53,7 @@ public class MappingServiceJpaTest {
   /**
    * Creates db tables, load test objects and create indexes to prepare for test
    * cases.
-   * @throws Exception 
+   * @throws Exception
    */
   @BeforeClass
   public static void init() throws Exception {
@@ -68,8 +68,8 @@ public class MappingServiceJpaTest {
 
   /**
    * Cleanup database
-   * @throws Exception 
-   * @throws FileNotFoundException 
+   * @throws Exception
+   * @throws FileNotFoundException
    */
   @SuppressWarnings("static-method")
   @After
@@ -80,7 +80,8 @@ public class MappingServiceJpaTest {
 
     // create new database connection
     Properties config = ConfigUtility.getTestConfigProperties();
-    factory = Persistence.createEntityManagerFactory("MappingServiceDS", config);
+    factory =
+        Persistence.createEntityManagerFactory("MappingServiceDS", config);
     manager = factory.createEntityManager();
     EntityTransaction tx = manager.getTransaction();
 

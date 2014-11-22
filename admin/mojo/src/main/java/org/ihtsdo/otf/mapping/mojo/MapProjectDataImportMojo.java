@@ -55,6 +55,9 @@ import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
  *     </plugin>
  * </pre>
  * 
+ * NOTE: run with -Dmini if using a mini data set as all scope concepts may not
+ * exist
+ * 
  * @goal import-project-data
  * 
  * @phase package
@@ -75,6 +78,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
    * 
    * @see org.apache.maven.plugin.Mojo#execute()
    */
+  @SuppressWarnings("resource")
   @Override
   public void execute() throws MojoFailureException {
     getLog().info("Starting importing metadata ...");
@@ -84,6 +88,8 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 
       // set the input directory
       String inputDirString = config.getProperty("import.input.dir");
+      getLog().info("  inputDir = " + inputDirString);
+      getLog().info("  mini = " + System.getProperty("mini"));
       File inputDir = new File(inputDirString);
       if (!inputDir.exists()) {
         throw new MojoFailureException(
@@ -93,242 +99,325 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 
       // get all project .xml files
       FilenameFilter projectFilter = new FilenameFilter() {
-  			@Override
+        @Override
         public boolean accept(File dir, String name) {
-  				String lowercaseName = name.toLowerCase();
-  				if (lowercaseName.endsWith(".xml") && lowercaseName.startsWith("project")) {
-  					return true;
-  				} else {
-  					return false;
-  				}
-  			}
-  		};
-      File [] projectFiles = inputDir.listFiles(projectFilter);
-      
+          String lowercaseName = name.toLowerCase();
+          if (lowercaseName.endsWith(".xml")
+              && lowercaseName.startsWith("project")) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      };
+      File[] projectFiles = inputDir.listFiles(projectFilter);
+
+      // Open services
       ReportService reportService = new ReportServiceJpa();
       MappingService mappingService = new MappingServiceJpa();
       ContentService contentService = new ContentServiceJpa();
-      
+
       JAXBContext context = JAXBContext.newInstance(MapProjectJpa.class);
-	  Unmarshaller unmarshaller = context.createUnmarshaller();
-		
-      
-			// read project .xml files one at a time
-			for (File projectFile : projectFiles) {
-				BufferedReader projectReader =
-						new BufferedReader(new FileReader(projectFile));
+      Unmarshaller unmarshaller = context.createUnmarshaller();
 
-				// Unmarshal from XML
-				MapProject project =
-						(MapProjectJpa) unmarshaller.unmarshal(new StreamSource(
-								new StringReader(projectReader.readLine())));
-				projectReader.close();
-				
-				Set<MapAdvice> advices = project.getMapAdvices();
-				List<MapAdvice> currentAdvices =
-						mappingService.getMapAdvices().getMapAdvices();
-				for (MapAdvice advice : advices) {
-					if (!currentAdvices.contains(advice)) {
-						// System.out.println("ready to add " + advice);
-						advice.setId(null);
-						mappingService.addMapAdvice(advice);
-					}
-				}
+      // read project .xml files one at a time
+      for (File projectFile : projectFiles) {
+        BufferedReader projectReader =
+            new BufferedReader(new FileReader(projectFile));
 
-				Set<MapPrinciple> principles = project.getMapPrinciples();
-				List<MapPrinciple> currentPrinciples =
-						mappingService.getMapPrinciples().getMapPrinciples();
-				for (MapPrinciple principle : principles) {
-					if (!currentPrinciples.contains(principle)) {
-						// System.out.println("ready to add " + principle);
-						principle.setId(null);
-						mappingService.addMapPrinciple(principle);
-					}
-				}
+        // Unmarshal project from XML
+        MapProject project =
+            (MapProjectJpa) unmarshaller.unmarshal(new StreamSource(
+                new StringReader(projectReader.readLine())));
+        projectReader.close();
 
-				Set<MapRelation> relations = project.getMapRelations();
-				List<MapRelation> currentRelations =
-						mappingService.getMapRelations().getMapRelations();
-				for (MapRelation relation : relations) {
-					if (!currentRelations.contains(relation)) {
-						// System.out.println("ready to add " + relation);
-						relation.setId(null);
-						mappingService.addMapRelation(relation);
-					}
-				}
+        // Add advices if they do not already exist
+        Set<MapAdvice> advices = project.getMapAdvices();
+        List<MapAdvice> currentAdvices =
+            mappingService.getMapAdvices().getMapAdvices();
+        for (MapAdvice advice : advices) {
+          if (!currentAdvices.contains(advice)) {
+            getLog().info("  Adding advice " + advice.getName());
+            advice.setId(null);
+            mappingService.addMapAdvice(advice);
+          } else {
+            getLog().info("  Advice already exists " + advice.getName());
+          }
+        }
 
-				Set<MapAgeRange> ageRanges = project.getPresetAgeRanges();
-				List<MapAgeRange> currentAgeRanges =
-						mappingService.getMapAgeRanges().getMapAgeRanges();
-				for (MapAgeRange mapAgeRange : ageRanges) {
-					if (!currentAgeRanges.contains(mapAgeRange)) {
-						// System.out.println("ready to add " + mapAgeRange);
-						mapAgeRange.setId(null);
-						mappingService.addMapAgeRange(mapAgeRange);
-					}
-				}
+        // Add principles if they do not already exist
+        Set<MapPrinciple> principles = project.getMapPrinciples();
+        List<MapPrinciple> currentPrinciples =
+            mappingService.getMapPrinciples().getMapPrinciples();
+        for (MapPrinciple principle : principles) {
+          if (!currentPrinciples.contains(principle)) {
+            getLog().info("  Adding principle " + principle.getName());
+            principle.setId(null);
+            mappingService.addMapPrinciple(principle);
+          } else {
+            getLog().info("  Principle already exists " + principle.getName());
+          }
+        }
 
-				Set<MapUser> leads = project.getMapLeads();
-				Set<MapUser> specialists = project.getMapSpecialists();
-				Set<MapUser> admins = project.getMapAdministrators();
-				List<MapUser> currentUsers = mappingService.getMapUsers().getMapUsers();
-				for (MapUser user : leads) {
-					if (!currentUsers.contains(user)) {
-						// System.out.println("ready to add " + user);
-						user.setId(null);
-						mappingService.addMapUser(user);
-					}
-				}
-				for (MapUser user : specialists) {
-					if (!currentUsers.contains(user)) {
-						// System.out.println("ready to add " + user);
-						user.setId(null);
-						mappingService.addMapUser(user);
-					}
-				}
-				for (MapUser user : admins) {
-					if (!currentUsers.contains(user)) {
-						// System.out.println("ready to add " + user);
-						user.setId(null);
-						mappingService.addMapUser(user);
-					}
-				}
-				
-				Set<ReportDefinition> reportDefinitions = project.getReportDefinitions();
-				List<ReportDefinition> currentReportDefinitions =
-						reportService.getReportDefinitions().getReportDefinitions();
-				for (ReportDefinition reportDefinition : reportDefinitions) {
-					if (!currentReportDefinitions.contains(reportDefinition)) {
-						reportDefinition.setId(null);
-						reportService.addReportDefinition(reportDefinition);
-					}
-				}
+        // Add relations if they do not already exist
+        Set<MapRelation> relations = project.getMapRelations();
+        List<MapRelation> currentRelations =
+            mappingService.getMapRelations().getMapRelations();
+        for (MapRelation relation : relations) {
+          if (!currentRelations.contains(relation)) {
+            getLog().info("  Adding relation " + relation.getName());
+            relation.setId(null);
+            mappingService.addMapRelation(relation);
+          } else {
+            getLog().info("  Relation already exists " + relation.getName());
+          }
+        }
 
-				// copy project
-				MapProject bareProject = new MapProjectJpa(project);
-				
-				// clear copied project of all collections
-				bareProject.setMapAdministrators(new HashSet<MapUser>());
-				bareProject.setMapAdvices(new HashSet<MapAdvice>());
-				bareProject.setMapLeads(new HashSet<MapUser>());
-				bareProject.setMapSpecialists(new HashSet<MapUser>());
-				bareProject.setMapPrinciples(new HashSet<MapPrinciple>());
-				bareProject.setMapRelations(new HashSet<MapRelation>());
-				bareProject.setId(null);
-				
-				// add the blank project
-				mappingService.addMapProject(bareProject);
-				
-				// go back and cycle over one at a time and add them
-				for (MapUser specialist : project.getMapSpecialists()) {
-					MapUser user = mappingService.getMapUser(specialist.getUserName());
-					bareProject.addMapSpecialist(user);
-				}
-				mappingService.updateMapProject(bareProject);
-				for (MapRelation relation : project.getMapRelations()) {
-					for (MapRelation rel : mappingService.getMapRelations().getMapRelations()) {
-						if (rel.equals(relation)) {
-							bareProject.addMapRelation(rel);
-						}
-					}
-				}
-				mappingService.updateMapProject(bareProject);
-				for (MapPrinciple principle : project.getMapPrinciples()) {
-					for (MapPrinciple pcpl : mappingService.getMapPrinciples().getMapPrinciples()) {
-						if (pcpl.equals(principle)) {
-							bareProject.addMapPrinciple(pcpl);
-						}
-					}
-				}
-				mappingService.updateMapProject(bareProject);
-				for (MapAdvice advice : project.getMapAdvices()) {
-					for (MapAdvice avc : mappingService.getMapAdvices().getMapAdvices()) {
-						if (avc.equals(advice)) {
-							bareProject.addMapAdvice(avc);
-						}
-					}
-				}
-				mappingService.updateMapProject(bareProject);	
-				for (MapUser lead : project.getMapLeads()) {
-					MapUser user = mappingService.getMapUser(lead.getUserName());
-					bareProject.addMapLead(user);
-				}
-				mappingService.updateMapProject(bareProject);
-				for (MapUser administrator : project.getMapAdministrators()) {
-					MapUser user = mappingService.getMapUser(administrator.getUserName());
-					bareProject.addMapAdministrator(user);
-				}
-				mappingService.updateMapProject(bareProject);
+        // Add age ranges if they do not already exist
+        Set<MapAgeRange> ageRanges = project.getPresetAgeRanges();
+        List<MapAgeRange> currentAgeRanges =
+            mappingService.getMapAgeRanges().getMapAgeRanges();
+        for (MapAgeRange ageRange : ageRanges) {
+          if (!currentAgeRanges.contains(ageRange)) {
+            getLog().info("  Adding age range " + ageRange.getName());
+            ageRange.setId(null);
+            mappingService.addMapAgeRange(ageRange);
+          } else {
+            getLog().info("  Age range already exists " + ageRange.getName());
+          }
+        }
 
-				// add scope concepts to project from Project*Scope.txt file
-				BufferedReader scopeIncludesReader = new BufferedReader(
-						new FileReader(new File(projectFile.getAbsolutePath().replace(".xml", "Scope.txt"))));
+        // Add users
+        Set<MapUser> leads = project.getMapLeads();
+        Set<MapUser> specialists = project.getMapSpecialists();
+        Set<MapUser> admins = project.getMapAdministrators();
+        List<MapUser> currentUsers = mappingService.getMapUsers().getMapUsers();
+        for (MapUser user : leads) {
+          if (!currentUsers.contains(user)) {
+            getLog().info("  Adding user " + user.getName());
+            user.setId(null);
+            mappingService.addMapUser(user);
+          } else {
+            getLog().info("  User already exists " + user.getName());
+          }
+        }
+        for (MapUser user : specialists) {
+          if (!currentUsers.contains(user)) {
+            getLog().info("  Adding user " + user.getName());
+            user.setId(null);
+            mappingService.addMapUser(user);
+          } else {
+            getLog().info("  User already exists " + user.getName());
+          }
+        }
+        for (MapUser user : admins) {
+          if (!currentUsers.contains(user)) {
+            getLog().info("  Adding user " + user.getName());
+            user.setId(null);
+            mappingService.addMapUser(user);
+          } else {
+            getLog().info("  User already exists " + user.getName());
+          }
+        }
 
-				String line = "";
-				// hashmap of project id -> Set of concept terminology ids
-				Set<String> conceptsInScope = new HashSet<>();
+        // Add report definitions if they don't already exist
+        Set<ReportDefinition> reportDefinitions =
+            project.getReportDefinitions();
+        List<ReportDefinition> currentReportDefinitions =
+            reportService.getReportDefinitions().getReportDefinitions();
+        for (ReportDefinition reportDefinition : reportDefinitions) {
+          if (!currentReportDefinitions.contains(reportDefinition)) {
+            getLog().info(
+                "  Adding report definition " + reportDefinition.getName());
+            reportDefinition.setId(null);
+            reportService.addReportDefinition(reportDefinition);
+          } else {
+            getLog().info(
+                "  Report definition already exists "
+                    + reportDefinition.getName());
+          }
+        }
 
-				while ((line = scopeIncludesReader.readLine()) != null) {
+        // copy project
+        MapProject bareProject = new MapProjectJpa(project);
 
-					Concept c = contentService.getConcept(line.trim(),
-							project.getSourceTerminology(),
-							project.getSourceTerminologyVersion());
-					if (c == null) {
-						getLog().warn(
-								"Scope Includes concept + " + line.trim()
-										+ " is not in the data.");
-					} else {
-						conceptsInScope.add(line.trim());
-					}
-				}
+        // clear copied project of all collections
+        bareProject.setMapSpecialists(new HashSet<MapUser>());
+        bareProject.setMapLeads(new HashSet<MapUser>());
+        bareProject.setMapAdministrators(new HashSet<MapUser>());
 
-				// set the map project scope concepts and update the project
-				bareProject.setScopeConcepts(conceptsInScope);
-				mappingService.updateMapProject(bareProject);
+        bareProject.setMapAdvices(new HashSet<MapAdvice>());
+        bareProject.setMapPrinciples(new HashSet<MapPrinciple>());
+        bareProject.setMapRelations(new HashSet<MapRelation>());
+        bareProject.setPresetAgeRanges(new HashSet<MapAgeRange>());
 
-				getLog().info(
-						"  " + Integer.toString(conceptsInScope.size())
-								+ " included concepts added for "
-								+ bareProject.getName() + " projects.");
+        bareProject.setReportDefinitions(new HashSet<ReportDefinition>());
+        bareProject.setScopeConcepts(new HashSet<String>());
+        bareProject.setScopeExcludedConcepts(new HashSet<String>());
+        bareProject.setId(null);
 
-				scopeIncludesReader.close();
+        // add the blank project (because cascade is not used)
+        getLog().info("  Add Project: " + bareProject.getName());
+        mappingService.addMapProject(bareProject);
 
-				// add scope concepts to project from Project*ScopeExcludes.txt file
-				BufferedReader scopeExcludesReader = new BufferedReader(
-						new FileReader(new File(projectFile.getAbsolutePath().replace(".xml", "ScopeExcludes.txt"))));
-				Set<String> conceptsExcludedScope = new HashSet<>();
+        // attach specialists
+        getLog().info("    Attach specialists");
+        for (MapUser specialist : project.getMapSpecialists()) {
+          MapUser user = mappingService.getMapUser(specialist.getUserName());
+          bareProject.addMapSpecialist(user);
+        }
+        getLog()
+            .info("      count = " + bareProject.getMapSpecialists().size());
+        mappingService.updateMapProject(bareProject);
 
-				while ((line = scopeExcludesReader.readLine()) != null) {
+        // attach leads
+        getLog().info("    Attach leads");
+        for (MapUser lead : project.getMapLeads()) {
+          MapUser user = mappingService.getMapUser(lead.getUserName());
+          bareProject.addMapLead(user);
+        }
+        getLog().info("      count = " + bareProject.getMapLeads().size());
+        mappingService.updateMapProject(bareProject);
 
-					Concept c = contentService.getConcept(line.trim(),
-							project.getSourceTerminology(),
-							project.getSourceTerminologyVersion());
-					if (c == null) {
-						getLog().warn(
-								"Scope Excludes concept + " + line.trim()
-										+ " is not in the data.");
-					} else {
-						conceptsExcludedScope.add(line.trim());
-					}
-				}
+        // attach administrators
+        getLog().info("    Attach administrators");
+        for (MapUser administrator : project.getMapAdministrators()) {
+          MapUser user = mappingService.getMapUser(administrator.getUserName());
+          bareProject.addMapAdministrator(user);
+        }
+        getLog().info(
+            "      count = " + bareProject.getMapAdministrators().size());
+        mappingService.updateMapProject(bareProject);
 
-				// set the map project scope concepts and update the project
-				bareProject.setScopeExcludedConcepts(conceptsExcludedScope);
-				mappingService.updateMapProject(bareProject);
+        // attach advices
+        getLog().info("    Attach advices");
+        for (MapAdvice advice : project.getMapAdvices()) {
+          for (MapAdvice avc : mappingService.getMapAdvices().getMapAdvices()) {
+            if (avc.equals(advice)) {
+              bareProject.addMapAdvice(avc);
+            }
+          }
+        }
+        getLog().info("      count = " + bareProject.getMapAdvices().size());
+        mappingService.updateMapProject(bareProject);
 
-				getLog().info(
-						"  " + Integer.toString(conceptsExcludedScope.size())
-								+ " excluded concepts added for "
-								+ bareProject.getName() + " projects.");
+        // attach principles
+        getLog().info("    Attach principles");
+        for (MapPrinciple principle : project.getMapPrinciples()) {
+          for (MapPrinciple pcpl : mappingService.getMapPrinciples()
+              .getMapPrinciples()) {
+            if (pcpl.equals(principle)) {
+              bareProject.addMapPrinciple(pcpl);
+            }
+          }
+        }
+        getLog().info("      count = " + bareProject.getMapPrinciples().size());
+        mappingService.updateMapProject(bareProject);
 
-				scopeExcludesReader.close();
-			}
+        // attach relations
+        getLog().info("    Attach relations");
+        for (MapRelation relation : project.getMapRelations()) {
+          for (MapRelation rel : mappingService.getMapRelations()
+              .getMapRelations()) {
+            if (rel.equals(relation)) {
+              bareProject.addMapRelation(rel);
+            }
+          }
+        }
+        getLog().info("      count = " + bareProject.getMapRelations().size());
+        mappingService.updateMapProject(bareProject);
 
-			getLog().info("done ...");
-			mappingService.close();
-			contentService.close();
+        // attach age ranges
+        getLog().info("    Attach age ranges");
+        for (MapAgeRange ageRange : project.getPresetAgeRanges()) {
+          for (MapAgeRange ar : mappingService.getMapAgeRanges()
+              .getMapAgeRanges()) {
+            if (ar.equals(ageRange)) {
+              bareProject.addPresetAgeRange(ar);
+            }
+          }
+        }
+        getLog().info(
+            "      count = " + bareProject.getPresetAgeRanges().size());
+        mappingService.updateMapProject(bareProject);
 
-    } catch (Throwable e) {
+        // attach report definitions
+        getLog().info("    Attach report definitions");
+        for (ReportDefinition reportDefinition : project.getReportDefinitions()) {
+          for (ReportDefinition rd : reportService.getReportDefinitions()
+              .getReportDefinitions()) {
+            if (rd.equals(reportDefinition)) {
+              bareProject.addReportDefinition(rd);
+            }
+          }
+        }
+        getLog().info(
+            "      count = " + bareProject.getPresetAgeRanges().size());
+        mappingService.updateMapProject(bareProject);
+
+        // attach scope concepts
+        getLog().info("    Attach scope concepts");
+        BufferedReader scopeIncludesReader =
+            new BufferedReader(new FileReader(new File(projectFile
+                .getAbsolutePath().replace(".xml", "Scope.txt"))));
+        String line = null;
+        Set<String> conceptsInScope = new HashSet<>();
+        while ((line = scopeIncludesReader.readLine()) != null) {
+          Concept c =
+              contentService.getConcept(line.trim(),
+                  project.getSourceTerminology(),
+                  project.getSourceTerminologyVersion());
+          if (c == null && "true".equals(System.getProperty("mini"))) {
+            // if it's mini, just ignore this
+          } else if (c == null) {
+            // if it's not mini, then throw an error
+            throw new Exception("Scope concept + " + line.trim()
+                + " cannot be found.");
+          } else {
+            conceptsInScope.add(line.trim());
+          }
+        }
+
+        // set the map project scope concepts and update the project
+        bareProject.setScopeConcepts(conceptsInScope);
+        getLog().info("      count = " + conceptsInScope.size());
+        mappingService.updateMapProject(bareProject);
+        scopeIncludesReader.close();
+
+        // attach scope excluded concepts
+        getLog().info("    Attach scope excluded concepts");
+        BufferedReader scopeExcludesReader =
+            new BufferedReader(new FileReader(new File(projectFile
+                .getAbsolutePath().replace(".xml", "ScopeExcludes.txt"))));
+        Set<String> conceptsExcludedScope = new HashSet<>();
+        while ((line = scopeExcludesReader.readLine()) != null) {
+          Concept c =
+              contentService.getConcept(line.trim(),
+                  project.getSourceTerminology(),
+                  project.getSourceTerminologyVersion());
+          if (c == null && "true".equals(System.getProperty("mini"))) {
+            // if it's mini, just ignore this
+          } else if (c == null) {
+            // if it's not mini, then throw an error
+            throw new Exception("Scope excluded concept + " + line.trim()
+                + " cannot be found.");
+          } else {
+            conceptsExcludedScope.add(line.trim());
+          }
+        }
+
+        // set the map project scope concepts and update the project
+        bareProject.setScopeExcludedConcepts(conceptsExcludedScope);
+        getLog().info("      count = " + conceptsExcludedScope.size());
+        mappingService.updateMapProject(bareProject);
+        scopeExcludesReader.close();
+      }
+
+      getLog().info("done ...");
+      mappingService.close();
+      contentService.close();
+
+    } catch (Exception e) {
       e.printStackTrace();
       throw new MojoFailureException("Unexpected exception:", e);
     }

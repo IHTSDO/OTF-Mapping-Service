@@ -38,7 +38,6 @@
     <slf4j.log4j12.version>1.7.5</slf4j.log4j12.version>
     <maven.plugin.api.version>3.1.1</maven.plugin.api.version>
     <jersey.version>1.17.1</jersey.version>
-
     <jettison.version>1.1</jettison.version>
     <jsr311-api.version>1.1.1</jsr311-api.version>
     <asm.version>3.1</asm.version>
@@ -50,6 +49,7 @@
 
   <dependencyManagement>
     <dependencies>
+
       <!-- Model interfaces. -->
       <dependency>
         <groupId>org.ihtsdo.otf.mapping</groupId>
@@ -71,6 +71,7 @@
         <artifactId>mapping-jpa-services</artifactId>
         <version>${project.version}</version>
       </dependency>
+
       <!-- JPA dependencies -->
       <dependency>
         <groupId>org.hibernate.javax.persistence</groupId>
@@ -112,12 +113,15 @@
         <artifactId>mysql-connector-java</artifactId>
         <version>${mysql.connector.java.version}</version>
       </dependency>
+
+      <!-- Logging -->
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-log4j12</artifactId>
         <version>${slf4j.log4j12.version}</version>
       </dependency>
 
+      <!-- Maven plugins -->
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-plugin-api</artifactId>
@@ -197,27 +201,35 @@
         <scope>provided</scope>
       </dependency>
 
+      <!-- Unit testing -->
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
         <version>${junit.version}</version>
       </dependency>
 
+      <!-- Sending email -->
       <dependency>
         <groupId>com.sun.mail</groupId>
         <artifactId>javax.mail</artifactId>
         <version>${javax.mail.version}</version>
       </dependency>
-
     </dependencies>
   </dependencyManagement>
 
 
   <build>
 
-    <!-- Declare Project Plugin Versions -->
+    <!-- Plugins -->
     <pluginManagement>
       <plugins>
+
+        <!-- Maven plugins -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-antrun-plugin</artifactId>
+          <version>1.7</version>
+        </plugin>
 
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -250,13 +262,30 @@
           <version>${maven.war.plugin.version}</version>
         </plugin>
 
+        <!-- Properties plugin, for loading properties from a file -->
         <plugin>
-          <groupId>external.atlassian.jgitflow</groupId>
-          <artifactId>jgitflow-maven-plugin</artifactId>
-          <version>1.0-m4.3</version>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>properties-maven-plugin</artifactId>
+          <version>1.0-alpha-1</version>
         </plugin>
+
+        <!-- For attaching zip artifacts -->
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>1.9.1</version>
+        </plugin>
+        
+        <!-- For building zip files -->
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>truezip-maven-plugin</artifactId>
+          <version>1.2</version>
+        </plugin>
+
       </plugins>
     </pluginManagement>
+
   </build>
 
   <distributionManagement>

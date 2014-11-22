@@ -75,7 +75,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class TerminologyClamlLoaderMojo extends AbstractMojo {
 
-  /**  The date format. */
+  /** The date format. */
   final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyymmdd");
 
   /**
@@ -101,9 +101,9 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
   /** The roots. */
   List<String> roots = null;
 
-  /**  The content service. */
+  /** The content service. */
   ContentService contentService;
-  
+
   /**
    * child to parent code map NOTE: this assumes a single superclass
    **/
@@ -121,7 +121,6 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
    * Executes the plugin.
    * @throws MojoExecutionException the mojo execution exception
    */
-  @SuppressWarnings("null")
   @Override
   public void execute() throws MojoExecutionException {
     getLog().info("Starting loading " + terminology + " data ...");
@@ -129,14 +128,13 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
     FileInputStream fis = null;
     InputStream inputStream = null;
     Reader reader = null;
-    FileReader in = null;
     try {
 
       Properties config = ConfigUtility.getConfigProperties();
       contentService = new ContentServiceJpa();
       contentService.setTransactionPerOperation(false);
       contentService.beginTransaction();
-      
+
       // set the input directory
       String inputFile =
           config.getProperty("loader." + terminology + ".input.data");
@@ -212,11 +210,6 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       }
       try {
         reader.close();
-      } catch (IOException e) {
-        // do nothing
-      }
-      try {
-        in.close();
       } catch (IOException e) {
         // do nothing
       }

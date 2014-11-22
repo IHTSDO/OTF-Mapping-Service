@@ -63,8 +63,8 @@ public class InitializationListener implements AbstractResourceModelListener {
 
         // For now, the timer is not doing anything
 
-      } catch (Exception e) { 
-      	e.printStackTrace();
+      } catch (Exception e) {
+        e.printStackTrace();
         Logger.getLogger(this.getClass()).error(
             "Error running the process to compute list of finished records.");
       }

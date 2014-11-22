@@ -39,7 +39,7 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  *           </plugin>
  *         </plugins>
  *       </build>
- *     </profile> 
+ *     </profile>
  * </pre>
  * 
  * @goal qa-map-groups
@@ -53,12 +53,12 @@ public class QAMapGroups extends AbstractMojo {
    * @parameter mode
    */
   private String refSetId = null;
-  
+
   /**
    * Flag for updating vs simply checking
    * @parameter updateRecords
    */
-  
+
   private String mode = null;
 
   /**
@@ -73,9 +73,10 @@ public class QAMapGroups extends AbstractMojo {
     if (refSetId == null) {
       throw new MojoExecutionException("You must specify a refSetId.");
     }
-    
+
     if (mode == null) {
-    	throw new MojoExecutionException("You must specify a mode (check for diagnostics only, update to fix group numbering errors).");
+      throw new MojoExecutionException(
+          "You must specify a mode (check for diagnostics only, update to fix group numbering errors).");
     }
 
     try {
@@ -83,16 +84,18 @@ public class QAMapGroups extends AbstractMojo {
       MappingService mappingService = new MappingServiceJpa();
       mappingService.setTransactionPerOperation(false);
       mappingService.beginTransaction();
-      
+
       Set<MapProject> mapProjects = new HashSet<>();
 
       for (MapProject mapProject : mappingService.getMapProjects()
           .getIterable()) {
         for (String id : refSetId.split(",")) {
           if (mapProject.getRefSetId().equals(id)) {
-        	  if (mapProject.isGroupStructure() == false) {
-        		  getLog().info("Map Project " + mapProject.getName() + " does not have group structure, skipping.");
-        	  }
+            if (!mapProject.isGroupStructure()) {
+              getLog().info(
+                  "Map Project " + mapProject.getName()
+                      + " does not have group structure, skipping.");
+            }
             mapProjects.add(mapProject);
           }
         }
@@ -106,7 +109,7 @@ public class QAMapGroups extends AbstractMojo {
         boolean updateRecords = mode.equals("update");
         mappingService.checkMapGroupsForMapProject(mapProject, updateRecords);
       }
-      
+
       mappingService.commit();
 
       getLog().info("done ...");

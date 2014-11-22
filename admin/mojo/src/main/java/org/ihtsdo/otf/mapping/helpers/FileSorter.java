@@ -238,8 +238,8 @@ public class FileSorter {
     int currentSize = 0; // counter for current file size
     String line; // current file line
     List<String> lines = new ArrayList<>(10000); // set of lines to be
-                                                       // sorted via
-                                                       // Collections.sort
+                                                 // sorted via
+                                                 // Collections.sort
     List<String> splitFiles = new ArrayList<>();
 
     // open file

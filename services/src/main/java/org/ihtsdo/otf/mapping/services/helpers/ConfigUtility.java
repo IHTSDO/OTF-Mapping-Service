@@ -52,7 +52,8 @@ public class ConfigUtility {
       FileReader in = new FileReader(new File(configFileName));
       testConfig.load(in);
       in.close();
-      Logger.getLogger(ConfigUtility.class).info("  properties = " + testConfig);
+      Logger.getLogger(ConfigUtility.class)
+          .info("  properties = " + testConfig);
     }
     return testConfig;
   }
