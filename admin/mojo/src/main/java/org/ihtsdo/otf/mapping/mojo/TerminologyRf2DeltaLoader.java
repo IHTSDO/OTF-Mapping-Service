@@ -107,7 +107,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
   private int objectCt; //
 
   /** The ft. */
-  SimpleDateFormat ft = new SimpleDateFormat("hh:mm:ss a"); 
+  SimpleDateFormat ft = new SimpleDateFormat("hh:mm:ss a");
 
   /** The dt. */
   SimpleDateFormat dt = new SimpleDateFormat("yyyyMMdd");
@@ -516,7 +516,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
         // Check if concept exists from before
         Concept concept = existingConceptCache.get(fields[0]);
-        
+
         // Track all delta concept ids so we can properly remove concepts later.
         deltaConceptIds.add(fields[0]);
 
@@ -1043,25 +1043,52 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     getLog().info("  skipped = " + dpnSkippedCt);
 
   }
-  
+
   /**
-   * Retires concepts that were removed from prior deltas. Find
-   * concepts in the DB that are not in the current delta and
-   * which have effective times greater than the latest release date.
-   * The latest release date is the "terminologyVersion" in this case.
-   * @throws Exception 
+   * Retires concepts that were removed from prior deltas. Find concepts in the
+   * DB that are not in the current delta and which have effective times greater
+   * than the latest release date. The latest release date is the
+   * "terminologyVersion" in this case.
+   * @throws Exception
    */
   public void retireRemovedConcepts() throws Exception {
     int ct = 0;
     for (Concept concept : existingConceptCache.values()) {
-      if (concept.getEffectiveTime().after(dt.parse(terminologyVersion)) &&
-          !deltaConceptIds.contains(concept.getTerminologyId()) &&
-          concept.isActive())  {
+      if (concept.getEffectiveTime().after(dt.parse(terminologyVersion))
+          && !deltaConceptIds.contains(concept.getTerminologyId())
+          && concept.isActive()) {
+        // Because it's possible that a concept element changed and that
+        // change was retracted, we need to double-check whether all of
+        // the concept elements are also new. If so, proceed.  It is possible
+        // that ALL descriptions and relationships changed and all of those
+        // changes were retracted. in that case the worst thing that happens
+        // the record has to be remapped
+        boolean proceed = true;
+        for (Description description : concept.getDescriptions()) {
+          if (!description.getEffectiveTime().after(dt.parse(terminologyVersion))) {
+            proceed = false;
+            break;
+          }
+        }
+        if (proceed) {
+          for (Relationship relationship : concept.getRelationships()) {
+            if (!relationship.getEffectiveTime().after(dt.parse(terminologyVersion))) {
+              proceed = false;
+              break;
+            }
+          }          
+        }
+        // One gap in the logic is if a concept was retired and that
+        // retirement was retracted, we don't know.  again, the consequence
+        // is that the concept will have to be remapped.
+        
         // Retire this concept.
-        ct++;
-        concept.setActive(false);
-        concept.setEffectiveTime(deltaLoaderStartDate);
-        contentService.updateConcept(concept);
+        if (proceed) {
+          ct++;
+          concept.setActive(false);
+          concept.setEffectiveTime(deltaLoaderStartDate);
+          contentService.updateConcept(concept);
+        }
       }
     }
     getLog().info("      retired =  " + ct);
@@ -1123,7 +1150,5 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
   private void cacheLanguageRefSetMember(LanguageRefSetMember l) {
     languageRefSetMemberCache.put(l.getTerminologyId(), l);
   }
-  
-  
 
 }
