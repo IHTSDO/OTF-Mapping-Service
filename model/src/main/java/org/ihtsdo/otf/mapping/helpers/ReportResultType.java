@@ -1,8 +1,13 @@
 package org.ihtsdo.otf.mapping.helpers;
 
+/**
+ * The Enum ReportResultType.
+ */
 public enum ReportResultType {
 
-	CONCEPT,
-	
-	MAP_RECORD
+  /** The concept. */
+  CONCEPT,
+
+  /** The map record. */
+  MAP_RECORD
 }

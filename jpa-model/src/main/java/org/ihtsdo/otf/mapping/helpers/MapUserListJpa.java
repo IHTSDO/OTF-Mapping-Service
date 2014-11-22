@@ -27,14 +27,14 @@ public class MapUserListJpa extends AbstractResultList<MapUser> implements
   public MapUserListJpa() {
     // do nothing
   }
-  
+
   /**
    * Instantiates a {@link MapUserListJpa} from the specified parameters.
    *
    * @param mapUsers the map users
    */
   public MapUserListJpa(List<MapUser> mapUsers) {
-	  this.mapUsers = mapUsers;
+    this.mapUsers = mapUsers;
   }
 
   /*

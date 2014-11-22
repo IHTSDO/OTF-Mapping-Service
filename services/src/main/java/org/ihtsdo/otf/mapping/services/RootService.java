@@ -1,8 +1,7 @@
 package org.ihtsdo.otf.mapping.services;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Interface RootService. Manages Factory and lucene field names
+ * Generically represents a service, with common functionality.
  */
 public interface RootService {
 
@@ -39,26 +38,26 @@ public interface RootService {
    * Sets the transaction per operation.
    *
    * @param transactionPerOperation the new transaction per operation
-   * @throws Exception 
+   * @throws Exception
    */
   public void setTransactionPerOperation(boolean transactionPerOperation)
     throws Exception;
 
   /**
    * Commit.
-   * @throws Exception 
+   * @throws Exception
    */
   public void commit() throws Exception;
 
   /**
    * Begin transaction.
-   * @throws Exception 
+   * @throws Exception
    */
   public void beginTransaction() throws Exception;
 
   /**
    * Closes the manager
-   * @throws Exception 
+   * @throws Exception
    */
   public void close() throws Exception;
 

@@ -31,14 +31,13 @@ import org.ihtsdo.otf.mapping.services.WorkflowService;
  *           </plugin>
  *         </plugins>
  *       </build>
- *     </profile> 
+ *     </profile>
  * </pre>
  * 
  * @goal fix-error-messages
  * @phase package
  */
 public class FixErrorMessagesMojo extends AbstractMojo {
-
 
   /**
    * Executes the plugin.
@@ -49,15 +48,14 @@ public class FixErrorMessagesMojo extends AbstractMojo {
   public void execute() throws MojoExecutionException {
     getLog().info("Starting the fix of error messages.");
 
-
     try {
 
       WorkflowService workflowService = new WorkflowServiceJpa();
       workflowService.setTransactionPerOperation(false);
       workflowService.beginTransaction();
-      
+
       workflowService.fixErrorMessages();
-      
+
       workflowService.commit();
 
       getLog().info("done ...");

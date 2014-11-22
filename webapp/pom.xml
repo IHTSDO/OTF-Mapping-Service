@@ -17,7 +17,10 @@
 
   <properties>
     <packageName>${project.parent.artifactId}-webapp</packageName>
-    <deploy.type></deploy.type>
+    <!-- Specify default build.config - references config project -->
+    <!-- This requires some images to be in c:/data/images -->
+    <!-- Used -->
+    <build.config>${basedir}/../config/src/main/resources/config.properties.dev</build.config>
   </properties>
 
   <!-- Declare Project Dependency Versions -->
@@ -33,30 +36,109 @@
 
   <!-- Standard build profile, no special configuration needed -->
   <build>
+    <finalName>${project.artifactId}</finalName>
+
+    <!-- Add target images folder to the resources list -->
+    <resources>
+      <resource>
+        <directory>
+        ${project.build.dir}/custom
+        </directory>
+      </resource>
+    </resources>
+
     <plugins>
+
+      <!-- Configure environment-specific build time information through a build.config 
+        file settings -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>properties-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>initialize</phase>
+            <goals>
+              <goal>read-project-properties</goal>
+            </goals>
+            <configuration>
+              <files>
+                <file>${build.config}</file>
+              </files>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Copy files -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+
+          <!-- Copy the favicon file -->
+          <execution>
+            <id>copy-favicon</id>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target name="copy favicon">
+                <copy file="${deploy.favicon}" overwrite="true"
+                  tofile="${project.build.directory}/custom/img/favicon.png" />
+              </target>
+            </configuration>
+          </execution>
+
+          <!-- Copy the logo file -->
+          <execution>
+            <id>copy-logo</id>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target name="copy logo">
+                <copy file="${deploy.favicon}" overwrite="true"
+                  tofile="${project.build.directory}/img/images/logo.png" />
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Configure .war build -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
         <configuration>
           <webResources>
             <resource>
-              <directory>src/main/webapp</directory>
-              <filtering>true</filtering>
-              <includes><include>partials/footer.html</include></includes>
-              <includes><include>partials/header.html</include></includes>
+              <directory>${project.build.directory}/custom</directory>
             </resource>
             <resource>
-				<directory>src/main/webapp</directory>
-				<filtering>false</filtering>
-				<excludes>
-					<exclude>partials/footer.html</exclude>
-					<exclude>partials/header.html</exclude>
-				</excludes>
-			</resource>
+              <directory>src/main/webapp</directory>
+              <filtering>true</filtering>
+              <includes>
+                <include>index.html</include>
+                <include>partials/footer.html</include>
+                <include>partials/header.html</include>
+              </includes>
+            </resource>
+            <resource>
+              <directory>src/main/webapp</directory>
+              <filtering>false</filtering>
+              <excludes>
+                <exclude>index.html</exclude>
+                <exclude>partials/footer.html</exclude>
+                <exclude>partials/header.html</exclude>
+              </excludes>
+            </resource>
           </webResources>
         </configuration>
       </plugin>
 
+      <!-- Configure debian package -->
       <plugin>
         <groupId>org.vafer</groupId>
         <artifactId>jdeb</artifactId>
@@ -102,6 +184,5 @@
 
     </plugins>
   </build>
-
 
 </project>
