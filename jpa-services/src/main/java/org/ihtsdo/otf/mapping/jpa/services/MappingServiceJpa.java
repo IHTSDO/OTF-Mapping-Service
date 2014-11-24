@@ -95,6 +95,9 @@ import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
  */
 public class MappingServiceJpa extends RootServiceJpa implements MappingService {
 
+  /** The commit count. */
+  private final static int commitCt = 500;
+
   /**
    * Instantiates an empty {@link MappingServiceJpa}.
    * 
@@ -934,7 +937,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     }
 
     // if query terms specified, add
-    if (pfsParameter.getQueryRestriction() != null) {
+    if (pfsParameter != null && pfsParameter.getQueryRestriction() != null) {
       String[] queryTerms = pfsParameter.getQueryRestriction().split(" ");
       query.add(AuditEntity.or(
           AuditEntity.property("conceptId").in(queryTerms),
@@ -1258,7 +1261,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     String full_query;
 
     // if no filter supplied, return query based on map project id only
-    if (pfsParameter.getQueryRestriction() == null
+    if (pfsParameter != null && pfsParameter.getQueryRestriction() == null
         || pfsParameter.getQueryRestriction().equals("")) {
       full_query = "mapProjectId:" + mapProjectId;
       return full_query;
@@ -2510,10 +2513,11 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
             addMapRecord(mapRecord);
 
-            if (++ct % 500 == 0) {
+            if (++ct % commitCt == 0) {
               Logger.getLogger(MappingServiceJpa.class).info(
                   "    " + ct + " records created");
               commit();
+              manager.clear();
               beginTransaction();
               // For memory management, avoid keeping cache of
               // tree
@@ -2545,7 +2549,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
           String relationName = null;
           if (refSetMember.getMapRelationId() != null) {
             relationName =
-                relationIdNameMap.get(refSetMember.getMapRelationId());
+                relationIdNameMap.get(refSetMember.getMapRelationId()
+                    .toString());
             Logger.getLogger(this.getClass()).debug(
                 "      Look up relation name = " + relationName);
           }
@@ -2664,13 +2669,14 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
   @Override
   public void commit() {
 
-    if (getTransactionPerOperation())
+    if (getTransactionPerOperation()) {
       throw new IllegalStateException(
           "Error attempting to commit a transaction when using transactions per operation mode.");
-    else if (tx != null && !tx.isActive())
+    } else if (tx == null || (tx != null && !tx.isActive())) {
       throw new IllegalStateException(
           "Error attempting to commit a transaction when there "
               + "is no active transaction");
+    }
     tx.commit();
   }
 
@@ -3072,12 +3078,14 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     MapRecordList conflictRecords = new MapRecordListJpa();
 
     MapRecord mapRecord = getMapRecord(mapRecordId);
-    MapProject mapProject = getMapProject(mapRecord.getMapProjectId());
-
-    if (mapRecord == null)
+    if (mapRecord == null) {
       throw new Exception(
           "getRecordsInConflict: Could not find map record with id = "
               + mapRecordId.toString() + "!");
+    }
+
+    MapProject mapProject = getMapProject(mapRecord.getMapProjectId());
+
 
     /*
      * Three cases where this is called CONFLICT_PROJECT: Two specialists in
@@ -3616,8 +3624,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     SearchResultList searchResultList = new SearchResultListJpa();
 
     // if pfsParamter is null, construct a blank pfs parameter object
-    if (pfsParameter == null)
-      pfsParameter = new PfsParameterJpa();
+    PfsParameter localPfsParameter = pfsParameter;
+    if (localPfsParameter == null)
+      localPfsParameter = new PfsParameterJpa();
 
     // convert set to list
     List<String> scopeConcepts = new ArrayList<>(mapProject.getScopeConcepts());
@@ -3627,11 +3636,11 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
     // calculate the start and end indices
     int startIndex =
-        pfsParameter.getStartIndex() == -1 ? 0 : Math.min(
-            pfsParameter.getStartIndex(), scopeConcepts.size());
+        localPfsParameter.getStartIndex() == -1 ? 0 : Math.min(
+            localPfsParameter.getStartIndex(), scopeConcepts.size());
     int endIndex =
-        pfsParameter.getMaxResults() == -1 ? scopeConcepts.size() : Math.min(
-            startIndex + pfsParameter.getMaxResults(), scopeConcepts.size());
+        localPfsParameter.getMaxResults() == -1 ? scopeConcepts.size() : Math.min(
+            startIndex + localPfsParameter.getMaxResults(), scopeConcepts.size());
 
     // set the total count
     searchResultList.setTotalCount(scopeConcepts.size());
@@ -3673,9 +3682,11 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
     SearchResultList searchResultList = new SearchResultListJpa();
 
+    PfsParameter localPfsParameter = pfsParameter;
+
     // if pfsParamter is null, construct a blank pfs parameter object
-    if (pfsParameter == null)
-      pfsParameter = new PfsParameterJpa();
+    if (localPfsParameter == null)
+      localPfsParameter = new PfsParameterJpa();
 
     // convert set to list
     List<String> scopeExcludedConcepts =
@@ -3686,11 +3697,11 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
     // calculate the start and end indices
     int startIndex =
-        pfsParameter.getStartIndex() == -1 ? 0 : Math.min(
-            pfsParameter.getStartIndex(), scopeExcludedConcepts.size());
+        localPfsParameter.getStartIndex() == -1 ? 0 : Math.min(
+            localPfsParameter.getStartIndex(), scopeExcludedConcepts.size());
     int endIndex =
-        pfsParameter.getMaxResults() == -1 ? scopeExcludedConcepts.size()
-            : Math.min(startIndex + pfsParameter.getMaxResults(),
+        localPfsParameter.getMaxResults() == -1 ? scopeExcludedConcepts.size()
+            : Math.min(startIndex + localPfsParameter.getMaxResults(),
                 scopeExcludedConcepts.size());
 
     // set the total count
