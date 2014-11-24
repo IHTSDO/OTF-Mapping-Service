@@ -47,6 +47,9 @@ import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
  */
 public class MapNoteRf2LoaderMojo extends AbstractMojo {
 
+  /**  The commit count. */
+  private final static int commitCt = 500;
+
   /**
    * Executes the plugin.
    * 
@@ -137,8 +140,10 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
                 mapRecord.addMapNote(mapNote);
                 mappingService.updateMapRecord(mapRecord);
 
-                if (++ct % 500 == 0) {
+                if (++ct % commitCt == 0) {
                   getLog().info("      " + ct + " notes processed");
+                  mappingService.commit();
+                  mappingService.beginTransaction();
                 }
               }
             }
