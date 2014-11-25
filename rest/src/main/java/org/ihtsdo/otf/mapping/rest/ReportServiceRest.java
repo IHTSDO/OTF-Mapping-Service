@@ -569,6 +569,12 @@ public class ReportServiceRest extends RootServiceRest {
     }
   }
 
+  /**
+   * Returns the QA labels.
+   *
+   * @param authToken the auth token
+   * @return the QA labels
+   */
   @GET
   @Path("/qaLabel/qaLabels")
   @ApiOperation(value = "Gets all qa labels", notes = "Returns all qa labels in JSON or XML format", response = ReportDefinitionJpa.class)

@@ -288,10 +288,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       throw new Exception("Output file directory (" + outputDirName
           + ") could not be found.");
 
-    // ensure output file directory name ends with a '/' for file creation
-    if (!outputDirName.endsWith("/"))
-      outputDirName += "/";
-
     // declare the file names and file writers
     String snapshotMachineReadableFileName = null;
     String snapshotHumanReadableFileName = null;
@@ -305,18 +301,18 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // Create file names, instantiate writers, write headers
     // /////////////////////////////////////////////////////
     snapshotMachineReadableFileName =
-        outputDirName + "der2_" + mapProject.getDestinationTerminology()
+        outputDirName + "/der2_" + mapProject.getDestinationTerminology()
             + mapProject.getMapRefsetPattern() + "Snapshot_INT_"
             + effectiveTime + ".txt";
 
     snapshotHumanReadableFileName =
-        outputDirName + "tls_" + mapProject.getDestinationTerminology()
+        outputDirName + "/tls_" + mapProject.getDestinationTerminology()
             + "HumanReadableMap_INT_"
             + mapProject.getSourceTerminologyVersion() + "_" + effectiveTime
             + ".tsv";
 
     deltaMachineReadableFileName =
-        outputDirName + "der2_" + mapProject.getDestinationTerminology()
+        outputDirName + "/der2_" + mapProject.getDestinationTerminology()
             + mapProject.getMapRefsetPattern() + "Delta_INT_" + effectiveTime
             + ".txt";
 

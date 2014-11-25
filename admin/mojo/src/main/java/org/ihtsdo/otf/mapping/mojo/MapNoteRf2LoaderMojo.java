@@ -47,7 +47,7 @@ import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
  */
 public class MapNoteRf2LoaderMojo extends AbstractMojo {
 
-  /**  The commit count. */
+  /** The commit count. */
   private final static int commitCt = 500;
 
   /**
