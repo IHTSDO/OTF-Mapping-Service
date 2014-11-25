@@ -96,6 +96,9 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
   /** The tree position field names. */
   private static Set<String> treePositionFieldNames;
 
+  /** The concept field names. */
+  private static Set<String> conceptFieldNames;
+
   /**
    * Instantiates an empty {@link ContentServiceJpa}.
    * 
@@ -103,7 +106,9 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
    */
   public ContentServiceJpa() throws Exception {
     super();
-    initializeFieldNames();
+    if (treePositionFieldNames == null) {
+      initializeFieldNames();
+    }
   }
 
   /*
@@ -112,29 +117,39 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
    * @see org.ihtsdo.otf.mapping.services.RootService#initializeFieldNames()
    */
   @Override
-  public void initializeFieldNames() throws Exception {
-    super.initializeFieldNames();
-    if (treePositionFieldNames == null) {
-      treePositionFieldNames = new HashSet<>();
-      EntityManager manager = factory.createEntityManager();
-      FullTextEntityManager fullTextEntityManager =
-          org.hibernate.search.jpa.Search.getFullTextEntityManager(manager);
-      IndexReaderAccessor indexReaderAccessor =
-          fullTextEntityManager.getSearchFactory().getIndexReaderAccessor();
-
-      IndexReader indexReader =
-          indexReaderAccessor
-              .open("org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa");
-      try {
-        for (FieldInfo info : ReaderUtil.getMergedFieldInfos(indexReader)) {
-          treePositionFieldNames.add(info.name);
-        }
-      } finally {
-        indexReaderAccessor.close(indexReader);
+  public synchronized void initializeFieldNames() throws Exception {
+    treePositionFieldNames = new HashSet<>();
+    conceptFieldNames = new HashSet<>();
+    Map<String, Set<String>> fieldNamesMap = new HashMap<>();
+    fieldNamesMap.put("TreePositionJpa", treePositionFieldNames);
+    fieldNamesMap.put("ConceptJpa", conceptFieldNames);
+    EntityManager manager = factory.createEntityManager();
+    FullTextEntityManager fullTextEntityManager =
+        org.hibernate.search.jpa.Search.getFullTextEntityManager(manager);
+    IndexReaderAccessor indexReaderAccessor =
+        fullTextEntityManager.getSearchFactory().getIndexReaderAccessor();
+    Set<String> indexedClassNames =
+        fullTextEntityManager.getSearchFactory().getStatistics()
+            .getIndexedClassNames();
+    for (String indexClass : indexedClassNames) {
+      Set<String> fieldNames = null;
+      if (indexClass.indexOf("TreePositionJpa") != 0) {
+        fieldNames = fieldNamesMap.get("TrePositionJpa");
+      } else if (indexClass.indexOf("ConceptJpa") != 0) {
+        fieldNames = fieldNamesMap.get("ConceptJpa");
       }
-
-      fullTextEntityManager.close();
+      if (fieldNames != null) {
+        IndexReader indexReader = indexReaderAccessor.open(indexClass);
+        try {
+          for (FieldInfo info : ReaderUtil.getMergedFieldInfos(indexReader)) {
+            fieldNames.add(info.name);
+          }
+        } finally {
+          indexReaderAccessor.close(indexReader);
+        }
+      }
     }
+    fullTextEntityManager.close();
   }
 
   /*
@@ -1262,7 +1277,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       if (searchString.indexOf(':') == -1) {
         MultiFieldQueryParser queryParser =
             new MultiFieldQueryParser(Version.LUCENE_36,
-                fieldNames.toArray(new String[0]),
+                conceptFieldNames.toArray(new String[0]),
                 searchFactory.getAnalyzer(ConceptJpa.class));
         queryParser.setAllowLeadingWildcard(false);
         luceneQuery = queryParser.parse(searchString);

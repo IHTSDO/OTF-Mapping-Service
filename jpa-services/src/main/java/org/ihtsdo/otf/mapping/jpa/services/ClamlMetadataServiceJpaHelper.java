@@ -476,4 +476,9 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     contentService.close();
     return map;
   }
+
+  @Override
+  public void initializeFieldNames() throws Exception {
+    // no need
+  }
 }

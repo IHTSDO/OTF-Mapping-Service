@@ -3,8 +3,6 @@ package org.ihtsdo.otf.mapping.rest;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.MapProjectList;
 import org.ihtsdo.otf.mapping.helpers.MapUserList;
-import org.ihtsdo.otf.mapping.model.MapProject;
-import org.ihtsdo.otf.mapping.model.MapUser;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
