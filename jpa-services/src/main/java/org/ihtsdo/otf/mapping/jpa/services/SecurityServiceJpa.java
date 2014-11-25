@@ -50,6 +50,14 @@ public class SecurityServiceJpa extends RootServiceJpa implements
     super();
   }
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.services.RootService#initializeFieldNames()
+   */
+  @Override
+  public void initializeFieldNames() throws Exception {
+    // no need
+  }
+
   @SuppressWarnings("unchecked")
   @Override
   public String authenticate(String username, String password) throws Exception {

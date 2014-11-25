@@ -678,10 +678,11 @@ public interface ContentService extends RootService {
     String terminology, String terminologyVersion) throws Exception;
 
   /**
-   * Returns all complex map ref set members for a given refset id
-   * @param refSetId
-   * @return
-   * @throws Exception
+   * Returns all complex map ref set members for a given refset id.
+   *
+   * @param refSetId the ref set id
+   * @return the complex map ref set members for ref set id
+   * @throws Exception the exception
    */
   public ComplexMapRefSetMemberList getComplexMapRefSetMembersForRefSetId(
     String refSetId) throws Exception;

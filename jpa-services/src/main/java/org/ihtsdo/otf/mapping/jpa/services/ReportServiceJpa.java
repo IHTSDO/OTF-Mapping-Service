@@ -14,13 +14,19 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.persistence.EntityManager;
+
 import org.apache.log4j.Logger;
+import org.apache.lucene.index.FieldInfo;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryParser.MultiFieldQueryParser;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.util.ReaderUtil;
 import org.apache.lucene.util.Version;
 import org.hibernate.search.SearchFactory;
+import org.hibernate.search.indexes.IndexReaderAccessor;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.helpers.LocalException;
@@ -59,6 +65,9 @@ import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
  */
 public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
+  /** The map record indexed field names. */
+  protected static Set<String> reportFieldNames;
+
   /**
    * Instantiates a new report service jpa.
    * 
@@ -66,6 +75,40 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
    */
   public ReportServiceJpa() throws Exception {
     super();
+    if (reportFieldNames == null) {
+      initializeFieldNames();
+    }
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.services.RootService#initializeFieldNames()
+   */
+  @Override
+  public synchronized void initializeFieldNames() throws Exception {
+    reportFieldNames = new HashSet<>();
+    EntityManager manager = factory.createEntityManager();
+    FullTextEntityManager fullTextEntityManager =
+        org.hibernate.search.jpa.Search.getFullTextEntityManager(manager);
+    IndexReaderAccessor indexReaderAccessor =
+        fullTextEntityManager.getSearchFactory().getIndexReaderAccessor();
+    Set<String> indexedClassNames =
+        fullTextEntityManager.getSearchFactory().getStatistics()
+            .getIndexedClassNames();
+    for (String indexClass : indexedClassNames) {
+      if (indexClass.indexOf("ReportJpa") != 0) {
+        IndexReader indexReader = indexReaderAccessor.open(indexClass);
+        try {
+          for (FieldInfo info : ReaderUtil.getMergedFieldInfos(indexReader)) {
+            reportFieldNames.add(info.name);
+          }
+        } finally {
+          indexReaderAccessor.close(indexReader);
+        }
+      }
+    }
+    fullTextEntityManager.close();
   }
 
   /*
@@ -135,7 +178,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
       if (query.indexOf(':') == -1) { // no fields indicated
         MultiFieldQueryParser queryParser =
             new MultiFieldQueryParser(Version.LUCENE_36,
-                fieldNames.toArray(new String[0]),
+                reportFieldNames.toArray(new String[0]),
                 searchFactory.getAnalyzer(ReportJpa.class));
         queryParser.setAllowLeadingWildcard(false);
         luceneQuery = queryParser.parse(query);
@@ -976,6 +1019,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
    * java.lang.String, org.ihtsdo.otf.mapping.reports.ReportDefinition,
    * java.util.Date, boolean)
    */
+  @SuppressWarnings("resource")
   @Override
   public Report generateReport(MapProject mapProject, MapUser owner,
     String name, ReportDefinition reportDefinition, Date date,
@@ -1302,12 +1346,14 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     // attempt to execute the query
     try {
       // open the JDBC connection
+      @SuppressWarnings("resource")
       java.sql.Connection conn =
           DriverManager
               .getConnection(config.getProperty("javax.persistence.jdbc.url"),
                   connectionProps);
 
       // create the statement and execute the query
+      @SuppressWarnings("resource")
       java.sql.Statement stmt = conn.createStatement();
       rs = stmt.executeQuery(query);
     } catch (SQLException e) {
