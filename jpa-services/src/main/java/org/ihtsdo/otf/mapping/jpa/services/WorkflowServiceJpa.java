@@ -1387,7 +1387,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     }
 
     // don't get qa path
-    full_query += " AND workflowPath:REVIEW_PROJECT_PATH";
+    full_query += " AND NOT workflowPath:QA_PATH";
 
     // System.out.println("FindAssignedReviewWork query: " + full_query);
 
