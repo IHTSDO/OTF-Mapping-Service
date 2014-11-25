@@ -66,7 +66,7 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
    * The send notification.
    * @parameter sendNotification
    */
-  private int sendNotification = 0;
+  private Boolean sendNotification = null;
 
   /**
    * Executes the plugin.
@@ -91,14 +91,18 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
     if (refSetId == null) {
       throw new MojoExecutionException("You must specify a refSetId.");
     }
+    
+    // if no notification parameter specified, assume false
+    if (sendNotification == null)
+    	sendNotification = false;
 
-    if (sendNotification == 0) {
+    if (sendNotification == false) {
       getLog().info(
           "No notifications will be sent as a result of workflow computation.");
     }
 
-    if (sendNotification == 1
-        && config.getProperty("loader.SNOMEDCT.delta.notification.recipients") == null) {
+    if (sendNotification == true
+        && config.getProperty("send.notification.recipients") == null) {
       throw new MojoExecutionException(
           "Email notification was requested, but no recipients were specified.");
     } else {
@@ -196,7 +200,7 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
       workflowService.close();
 
       // if notification requested, send email
-      if (sendNotification == 1) {
+      if (sendNotification == true) {
         OtfEmailHandler emailHandler = new OtfEmailHandler();
         emailHandler.sendSimpleEmail(notificationRecipients,
             "[OTF-Mapping-Tool] Drip feed results", notificationMessage);

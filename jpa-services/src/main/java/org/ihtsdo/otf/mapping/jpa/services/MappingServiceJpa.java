@@ -3338,8 +3338,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
    */
   private void handleMapProjectLazyInitialization(MapProject mapProject) {
     // handle all lazy initializations
-    // scope concept includes and excludes are transient, do not need to be
-    // retrieved
     mapProject.getMapAdvices().size();
     mapProject.getMapRelations().size();
     mapProject.getMapLeads().size();
@@ -3348,6 +3346,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     mapProject.getPresetAgeRanges().size();
     mapProject.getErrorMessages().size();
     mapProject.getReportDefinitions().size();
+    mapProject.getScopeConcepts().size();
+    mapProject.getScopeExcludedConcepts().size();
+    
   }
 
   /*
