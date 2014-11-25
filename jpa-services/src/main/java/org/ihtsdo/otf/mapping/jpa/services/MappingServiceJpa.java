@@ -11,16 +11,20 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.log4j.Logger;
+import org.apache.lucene.index.FieldInfo;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryParser.MultiFieldQueryParser;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
+import org.apache.lucene.util.ReaderUtil;
 import org.apache.lucene.util.Version;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.envers.AuditReader;
@@ -28,6 +32,7 @@ import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
 import org.hibernate.envers.query.AuditQuery;
 import org.hibernate.search.SearchFactory;
+import org.hibernate.search.indexes.IndexReaderAccessor;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.helpers.LocalException;
@@ -98,6 +103,12 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
   /** The commit count. */
   private final static int commitCt = 500;
 
+  /** The map record indexed field names. */
+  protected static Set<String> mapRecordFieldNames;
+
+  /** The map record indexed field names. */
+  protected static Set<String> mapProjectFieldNames;
+
   /**
    * Instantiates an empty {@link MappingServiceJpa}.
    * 
@@ -105,6 +116,50 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
    */
   public MappingServiceJpa() throws Exception {
     super();
+    if (mapRecordFieldNames == null) {
+      initializeFieldNames();
+    }
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.services.RootService#initializeFieldNames()
+   */
+  @Override
+  public synchronized void initializeFieldNames() throws Exception {
+    mapRecordFieldNames = new HashSet<>();
+    mapProjectFieldNames = new HashSet<>();
+    Map<String, Set<String>> fieldNamesMap = new HashMap<>();
+    fieldNamesMap.put("MapRecordJpa", mapRecordFieldNames);
+    fieldNamesMap.put("MapProjectJpa", mapProjectFieldNames);
+    EntityManager manager = factory.createEntityManager();
+    FullTextEntityManager fullTextEntityManager =
+        org.hibernate.search.jpa.Search.getFullTextEntityManager(manager);
+    IndexReaderAccessor indexReaderAccessor =
+        fullTextEntityManager.getSearchFactory().getIndexReaderAccessor();
+    Set<String> indexedClassNames =
+        fullTextEntityManager.getSearchFactory().getStatistics()
+            .getIndexedClassNames();
+    for (String indexClass : indexedClassNames) {
+      Set<String> fieldNames = null;
+      if (indexClass.indexOf("MapRecordJpa") != 0) {
+        fieldNames = fieldNamesMap.get("MapRecordJpa");
+      } else if (indexClass.indexOf("MapProjectJpa") != 0) {
+        fieldNames = fieldNamesMap.get("MapProjectJpa");
+      }
+      if (fieldNames != null) {
+        IndexReader indexReader = indexReaderAccessor.open(indexClass);
+        try {
+          for (FieldInfo info : ReaderUtil.getMergedFieldInfos(indexReader)) {
+            fieldNames.add(info.name);
+          }
+        } finally {
+          indexReaderAccessor.close(indexReader);
+        }
+      }
+    }
+    fullTextEntityManager.close();
   }
 
   /**
@@ -241,7 +296,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       if (query.indexOf(':') == -1) { // no fields indicated
         MultiFieldQueryParser queryParser =
             new MultiFieldQueryParser(Version.LUCENE_36,
-                fieldNames.toArray(new String[0]),
+                mapProjectFieldNames.toArray(new String[0]),
                 searchFactory.getAnalyzer(MapProjectJpa.class));
         queryParser.setAllowLeadingWildcard(false);
         luceneQuery = queryParser.parse(query);
@@ -655,7 +710,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       if (query.indexOf(':') == -1) { // no fields indicated
         MultiFieldQueryParser queryParser =
             new MultiFieldQueryParser(Version.LUCENE_36,
-                fieldNames.toArray(new String[0]),
+                mapRecordFieldNames.toArray(new String[0]),
                 searchFactory.getAnalyzer(MapRecordJpa.class));
         queryParser.setAllowLeadingWildcard(false);
         luceneQuery = queryParser.parse(query);
@@ -1261,8 +1316,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     String full_query;
 
     // if no filter supplied, return query based on map project id only
-    if (pfsParameter != null && pfsParameter.getQueryRestriction() == null
-        || pfsParameter.getQueryRestriction().equals("")) {
+    if (pfsParameter != null
+        && (pfsParameter.getQueryRestriction() == null || pfsParameter
+            .getQueryRestriction().equals(""))) {
       full_query = "mapProjectId:" + mapProjectId;
       return full_query;
     }
@@ -1414,7 +1470,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
         full_query += "(";
 
         // add fielded query for each indexed term, separated by OR
-        Iterator<String> names_iter = fieldNames.iterator();
+        Iterator<String> names_iter = mapRecordFieldNames.iterator();
         while (names_iter.hasNext()) {
           full_query += names_iter.next() + ":" + parsedTerms.get(i);
           if (names_iter.hasNext())
@@ -3086,7 +3142,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
     MapProject mapProject = getMapProject(mapRecord.getMapProjectId());
 
-
     /*
      * Three cases where this is called CONFLICT_PROJECT: Two specialists in
      * conflict Requires two CONFLICT_DETECTED records in database Record must
@@ -3639,8 +3694,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
         localPfsParameter.getStartIndex() == -1 ? 0 : Math.min(
             localPfsParameter.getStartIndex(), scopeConcepts.size());
     int endIndex =
-        localPfsParameter.getMaxResults() == -1 ? scopeConcepts.size() : Math.min(
-            startIndex + localPfsParameter.getMaxResults(), scopeConcepts.size());
+        localPfsParameter.getMaxResults() == -1 ? scopeConcepts.size() : Math
+            .min(startIndex + localPfsParameter.getMaxResults(),
+                scopeConcepts.size());
 
     // set the total count
     searchResultList.setTotalCount(scopeConcepts.size());

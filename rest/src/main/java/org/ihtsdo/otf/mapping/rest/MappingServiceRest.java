@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -701,6 +700,13 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
+  /**
+   * Adds the scope excluded conceptso map project.
+   *
+   * @param terminologyId the terminology id
+   * @param projectId the project id
+   * @param authToken the auth token
+   */
   @POST
   @Path("/project/id/{projectId}/scopeExcludedConcepts/add")
   @ApiOperation(value = "Adds scope excluded concept to a map project.", notes = "Adds scope excluded concept to a map project.", response = Response.class)
@@ -746,6 +752,13 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
+  /**
+   * Removes the scope excluded concept from map project.
+   *
+   * @param terminologyId the terminology id
+   * @param projectId the project id
+   * @param authToken the auth token
+   */
   @POST
   @Path("/project/id/{projectId}/scopeExcludedConcepts/remove")
   @ApiOperation(value = "Removes scope excluded concept from a map project.", notes = "Removes scope excluded concept from a map project.", response = Response.class)

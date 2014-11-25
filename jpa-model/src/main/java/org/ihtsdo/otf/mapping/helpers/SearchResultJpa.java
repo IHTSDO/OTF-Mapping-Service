@@ -42,6 +42,7 @@ public class SearchResultJpa implements SearchResult {
    * @param id the id
    * @param terminologyId the terminologyId
    * @param value the value
+   * @param value2 the value2
    */
   public SearchResultJpa(Long id, String terminologyId, String value,
       String value2) {

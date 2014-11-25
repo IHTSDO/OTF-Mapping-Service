@@ -161,7 +161,6 @@ public interface ReportDefinition {
    * Sets the diff report definition name.
    *
    * @param diffReportDefinitionName the diff report definition name
-   * @return the string
    */
   public void setDiffReportDefinitionName(String diffReportDefinitionName);
 
