@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.rest;
 
+import java.io.File;
 import java.util.Map;
 
 import javax.ws.rs.GET;
@@ -21,6 +22,7 @@ import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.rf2.Concept;
@@ -28,6 +30,7 @@ import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Relationship;
 import org.ihtsdo.otf.mapping.services.ContentService;
+import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
 
@@ -431,5 +434,79 @@ public class ContentServiceRest extends RootServiceRest {
       return null;
     }
   }
+  
+  @GET
+  @Path("/indexViewer/{terminology}/{terminologyVersion}")
+  @ApiOperation(value = "Return the indexes available for given terminology and version.", notes = "Returns the indexes available for the given terminology and version.", response = SearchResultList.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public SearchResultList getIndexViewerIndexes(
+	@ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
+	@ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
+    Logger.getLogger(ContentServiceRest.class).info(
+        "RESTful call (Content): /indexViewer/" + terminology + "/" + terminologyVersion);
+
+    try {
+      // authorize call
+      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+        throw new WebApplicationException(
+            Response
+                .status(401)
+                .entity(
+                    "User does not have permissions to retrieve the indexes to be viewed.")
+                .build());
+
+      ContentService contentService = new ContentServiceJpa();
+      SearchResultList searchResultList = contentService.getIndexViewerIndexes(terminology, terminologyVersion);
+      contentService.close();
+      return searchResultList;
+
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve the indexes to be viewed");
+      return null;
+    }
+  }
+
+  @GET
+  @Path("/indexViewer/{terminology}/{terminologyVersion}/{index}")
+  @ApiOperation(value = "Return the index page names available for given terminology, version and domain.", notes = "Returns the pages available for the given terminology, version and domain.", response = SearchResultList.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public SearchResultList getIndexViewerPagesForIndex(
+	@ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
+	@ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
+	@ApiParam(value = "Name of index or domain", required = true) @PathParam("index") String index,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+    Logger.getLogger(ContentServiceRest.class).info(
+        "RESTful call (Content): /indexViewer/" + terminology + "/" + terminologyVersion + "/" +
+      index);
+
+    try {
+      // authorize call
+      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+        throw new WebApplicationException(
+            Response
+                .status(401)
+                .entity(
+                    "User does not have permissions to retrieve the page names for the given index.")
+                .build());
+    
+      ContentService contentService = new ContentServiceJpa();
+      SearchResultList searchResultList = contentService.getIndexViewerPagesForIndex(terminology, terminologyVersion, index);
+      
+      contentService.close();
+      return searchResultList;
+
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve the page names for the given index");
+      return null;
+    }
+  }
 }

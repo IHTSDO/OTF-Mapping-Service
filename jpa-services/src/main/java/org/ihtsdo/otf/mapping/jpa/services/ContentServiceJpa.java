@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,6 +11,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
@@ -78,6 +80,7 @@ import org.ihtsdo.otf.mapping.rf2.jpa.SimpleRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 /**
  * The Content Services for the Jpa model.
@@ -2706,5 +2709,77 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
         .setComplexMapRefSetMembers(complexMapRefSetMembers);
     return complexMapRefSetMemberList;
   }
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.services.ContentService#getIndexViewerIndexes(java.lang.String, java.lang.String)
+   */
+  @Override
+  public SearchResultList getIndexViewerIndexes(String terminology,
+    String terminologyVersion) throws Exception {
+
+    SearchResultList searchResultList = new SearchResultListJpa();
+
+    Properties config = ConfigUtility.getConfigProperties();
+
+    String dataDir = config.getProperty("index.viewer.data");
+
+    for (File termDir : new File(dataDir).listFiles()) {
+      if (termDir.getName().equals(terminology)) {
+        for (File versionDir : termDir.listFiles()) {
+          if (versionDir.getName().equals(terminologyVersion)) {
+            for (File typeDir : versionDir.listFiles()) {
+              if (typeDir.getName().equals("html")) {
+                for (File domainDir : typeDir.listFiles()) {
+                  SearchResult searchResult = new SearchResultJpa();
+                  searchResult.setValue(domainDir.getName());
+                  searchResultList.addSearchResult(searchResult);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return searchResultList;
+  }
+
+/* (non-Javadoc)
+ * @see org.ihtsdo.otf.mapping.services.ContentService#getIndexViewerPagesForIndex(java.lang.String, java.lang.String, java.lang.String)
+ */
+@Override
+public SearchResultList getIndexViewerPagesForIndex(String terminology,
+		String terminologyVersion, String index) throws Exception {
+
+  SearchResultList searchResultList = new SearchResultListJpa();
+
+  Properties config = ConfigUtility.getConfigProperties();
+
+  String dataDir = config.getProperty("index.viewer.data");
+
+  for (File termDir : new File(dataDir).listFiles()) {
+    if (termDir.getName().equals(terminology)) {
+      for (File versionDir : termDir.listFiles()) {
+        if (versionDir.getName().equals(terminologyVersion)) {
+          for (File typeDir : versionDir.listFiles()) {
+            if (typeDir.getName().equals("html")) {
+              for (File domainDir : typeDir.listFiles()) {
+                if (domainDir.getName().equals(index)) {
+                  for (File pageFile : domainDir.listFiles()) {
+                    SearchResult searchResult = new SearchResultJpa();
+                    searchResult.setValue(pageFile.getName().substring(0, pageFile.getName().indexOf('.')));
+                    searchResultList.addSearchResult(searchResult);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return searchResultList;
+}
 
 }
