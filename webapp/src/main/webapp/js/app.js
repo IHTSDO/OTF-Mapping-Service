@@ -17,7 +17,8 @@ var mapProjectApp = angular.module(
     'mapProjectApp.widgets.feedback',
     'mapProjectApp.widgets.feedbackConversation',
     'mapProjectApp.widgets.applicationAdmin', 'mapProjectApp.widgets.report',
-    'mapProjectApp.widgets.qaCheck', 'LocalStorageModule', 'ngCookies',
+    'mapProjectApp.widgets.qaCheck', 'mapProjectApp.widgets.indexViewer',
+    'LocalStorageModule', 'ngCookies',
     'ui.tinymce', 'angularjs-dropdown-multiselect', 'angularFileUpload',
     'ui.tree' ]).value('prefix', '').config(function(dashboardProvider) {
 
