@@ -120,9 +120,13 @@ public class IndexXmlToLuceneMojo extends AbstractMojo {
           String inputDir = config.getProperty("index.viewer.data");
           String baseDir = inputDir + "/" + terminology + "/" + terminologyVersion;
           inputDir = baseDir + "/xml";
-          outputDir = baseDir + "/lucene/" + domain;
+          
+          // set the lucene output directory
+          String indexBaseDir = config.getProperty("hibernate.search.default.indexBase");
+          outputDir = indexBaseDir + "/" + terminology + "/" + terminologyVersion + "/" + domain;
           String dictionaryDir = outputDir + "/config/dict";
           dictionaryFile = "words.txt";
+          
           getLog().info("  inputDir: " + inputDir);
           getLog().info("  outputDir: " + outputDir);
           getLog().info("  dictionaryDir: " + dictionaryDir);
