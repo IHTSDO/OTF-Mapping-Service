@@ -106,3 +106,8 @@ mail.smtp.port=587
 mail.smtp.starttls.enable=true
 mail.smtp.auth=true
 mail.smtp.to=EDIT_THIS
+
+#
+# Index Viewer data & settings
+#
+index.viewer.data=/home/ihtsdo/data/indexViewerData
