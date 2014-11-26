@@ -858,6 +858,14 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope,
               title : "QA Checks"
             } ]
           } ]
+        }, {
+            columns : [ {
+              class : 'col-md-12',
+              widgets : [ {
+                type : "indexViewer",
+                title : "Index Viewer"
+              } ]
+            } ]
         } ]
       };
 

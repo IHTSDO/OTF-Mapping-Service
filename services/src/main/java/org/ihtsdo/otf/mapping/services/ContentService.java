@@ -686,4 +686,27 @@ public interface ContentService extends RootService {
   public ComplexMapRefSetMemberList getComplexMapRefSetMembersForRefSetId(
     String refSetId) throws Exception;
 
+  /**
+   * Gets the index viewer indexes.
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @return the index viewer indexes
+   * @throws Exception 
+   */
+  public SearchResultList getIndexViewerIndexes(String terminology,
+		String terminologyVersion) throws Exception;
+  
+  /**
+   * Gets the index viewer pages for index.
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @param index the index
+   * @return the index viewer pages for index
+   * @throws Exception 
+   */
+  public SearchResultList getIndexViewerPagesForIndex(
+		  String terminology, String terminologyVersion, String index) throws Exception;
+
 }
