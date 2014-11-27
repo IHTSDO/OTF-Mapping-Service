@@ -5,12 +5,15 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.jpa.MapNoteJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapNote;
@@ -86,6 +89,10 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
       getLog().info("  Lookup map projects");
       List<MapProject> mapProjects =
           mappingService.getMapProjects().getMapProjects();
+      Map<String, Long> mapProjectMap = new HashMap<>();
+      for (MapProject mapProject : mapProjects) {
+        mapProjectMap.put(mapProject.getRefSetId(), mapProject.getId());
+      }
 
       // Iterate through the file
       mapNoteReader = new BufferedReader(new FileReader(new File(inputFile)));
@@ -117,40 +124,34 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
         }
         mapNote.setNote(note);
 
-        List<MapRecord> mapRecords =
-            mappingService.getMapRecordsForConcept(fields[5]).getMapRecords();
+        MapRecordList mapRecords =
+            mappingService.getMapRecordsForProjectAndConcept(
+                mapProjectMap.get(fields[4]), fields[5]);
 
         // Verify matching map records were found, otherwise fail
-        if (mapRecords != null && mapRecords.size() > 0) {
+        if (mapRecords != null && mapRecords.getCount() > 0) {
 
-          // Iterate through records
-          for (MapRecord mapRecord : mapRecords) {
+          // Iterate through records and add note to each one
+          // Note, if there are multiple records in the workflow, they all get 
+          // the note
+          for (MapRecord mapRecord : mapRecords.getMapRecords()) {
+            getLog().debug(
+                mapNote.getNote().length() + " " + "    Adding note to record "
+                    + fields[4] + ", " + mapRecord.getConceptId() + " = "
+                    + mapNote.getNote());
+            mapRecord.addMapNote(mapNote);
+            mappingService.updateMapRecord(mapRecord);
 
-            // Find matching map project
-            for (MapProject mapProject : mapProjects) {
-
-              // find matching refset id
-              if (mapProject.getRefSetId().equals(fields[4])
-                  && mapRecord.getMapProjectId().equals(mapProject.getId())) {
-                getLog().debug(
-                    mapNote.getNote().length() + " "
-                        + "    Adding note to record "
-                        + mapProject.getRefSetId() + ", "
-                        + mapRecord.getConceptId() + " = " + mapNote.getNote());
-                mapRecord.addMapNote(mapNote);
-                mappingService.updateMapRecord(mapRecord);
-
-                if (++ct % commitCt == 0) {
-                  getLog().info("      commit = " + ct);
-                  mappingService.commit();
-                  mappingService.beginTransaction();
-                }
-              }
+            if (++ct % commitCt == 0) {
+              getLog().info("      commit = " + ct);
+              mappingService.commit();
+              mappingService.beginTransaction();
             }
           }
         } else {
-          getLog()
-              .info("Map note references non-existent concept " + fields[5]);
+          getLog().info(
+              "Map note references non-existent concept for project "
+                  + fields[5]);
         }
       }
       getLog().info("  " + ct + " map notes inserted");
