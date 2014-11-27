@@ -66,7 +66,7 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
    * The send notification.
    * @parameter sendNotification
    */
-  private Boolean sendNotification = null;
+  private boolean sendNotification = false;
 
   /**
    * Executes the plugin.
@@ -93,8 +93,8 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
     }
     
     // if no notification parameter specified, assume false
-    if (sendNotification == null)
-    	sendNotification = false;
+   /* if (sendNotification == null)
+    	sendNotification = false;*/
 
     if (sendNotification == false) {
       getLog().info(
