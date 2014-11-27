@@ -71,7 +71,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
   /**
    * Instantiates a new report service jpa.
    * 
-   * @throws Exception the exception
+	 * @throws Exception
+	 *             the exception
    */
   public ReportServiceJpa() throws Exception {
     super();
@@ -138,8 +139,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     List<Report> Reports = null;
 
     // construct query
-    javax.persistence.Query query =
-        manager.createQuery("select m from ReportJpa m");
+		javax.persistence.Query query = manager
+				.createQuery("select m from ReportJpa m");
 
     Reports = query.getResultList();
 
@@ -157,7 +158,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
   /*
    * (non-Javadoc)
    * 
-   * @see org.ihtsdo.otf.mapping.services.ReportService#findReportsForQuery(java
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ReportService#findReportsForQuery(java
    * .lang.String, org.ihtsdo.otf.mapping.helpers.PfsParameter)
    */
   @Override
@@ -167,8 +169,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
     SearchResultList s = new SearchResultListJpa();
 
-    FullTextEntityManager fullTextEntityManager =
-        Search.getFullTextEntityManager(manager);
+		FullTextEntityManager fullTextEntityManager = Search
+				.getFullTextEntityManager(manager);
 
     SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
     Query luceneQuery;
@@ -184,9 +186,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
         luceneQuery = queryParser.parse(query);
 
       } else { // field:value
-        QueryParser queryParser =
-            new QueryParser(Version.LUCENE_36, "summary",
-                searchFactory.getAnalyzer(ReportJpa.class));
+				QueryParser queryParser = new QueryParser(Version.LUCENE_36,
+						"summary", searchFactory.getAnalyzer(ReportJpa.class));
         luceneQuery = queryParser.parse(query);
       }
     } catch (ParseException e) {
@@ -196,9 +197,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
     List<Report> reports;
 
-    reports =
-        fullTextEntityManager.createFullTextQuery(luceneQuery, ReportJpa.class)
-            .getResultList();
+		reports = fullTextEntityManager.createFullTextQuery(luceneQuery,
+				ReportJpa.class).getResultList();
     // if a parse exception, throw a local exception
 
     Logger.getLogger(this.getClass()).debug(
@@ -237,8 +237,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
   public Report getReport(Long reportId) {
     Report r = null;
 
-    javax.persistence.Query query =
-        manager.createQuery("select r from ReportJpa r where id = :id");
+		javax.persistence.Query query = manager
+				.createQuery("select r from ReportJpa r where id = :id");
     query.setParameter("id", reportId);
 
     r = (Report) query.getSingleResult();
@@ -253,7 +253,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
   /*
    * (non-Javadoc)
    * 
-   * @see org.ihtsdo.otf.mapping.services.ReportService#addReport(org.ihtsdo.otf
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ReportService#addReport(org.ihtsdo.otf
    * .mapping.reports.Report)
    */
   @Override
@@ -278,7 +279,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
   /*
    * (non-Javadoc)
    * 
-   * @see org.ihtsdo.otf.mapping.services.ReportService#updateReport(org.ihtsdo
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ReportService#updateReport(org.ihtsdo
    * .otf.mapping.reports.Report)
    */
   @Override
@@ -297,7 +299,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
   /*
    * (non-Javadoc)
    * 
-   * @see org.ihtsdo.otf.mapping.services.ReportService#removeReport(java.lang.
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ReportService#removeReport(java.lang.
    * Long)
    */
   @Override
@@ -331,8 +334,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
   public ReportResult getReportResult(Long reportResultId) {
     ReportResult r = null;
 
-    javax.persistence.Query query =
-        manager.createQuery("select r from ReportResultJpa r where id = :id");
+		javax.persistence.Query query = manager
+				.createQuery("select r from ReportResultJpa r where id = :id");
     query.setParameter("id", reportResultId);
 
     r = (ReportResult) query.getSingleResult();
@@ -369,7 +372,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
   /*
    * (non-Javadoc)
    * 
-   * @see org.ihtsdo.otf.mapping.services.ReportService#updateReportResult(org.
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ReportService#updateReportResult(org.
    * ihtsdo.otf.mapping.reports.ReportResult)
    */
   @Override
@@ -388,14 +392,15 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
   /*
    * (non-Javadoc)
    * 
-   * @see org.ihtsdo.otf.mapping.services.ReportService#removeReportResult(java
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ReportService#removeReportResult(java
    * .lang.Long)
    */
   @Override
   public void removeReportResult(Long reportResultId) {
 
-    ReportResult reportResult =
-        manager.find(ReportResultJpa.class, reportResultId);
+		ReportResult reportResult = manager.find(ReportResultJpa.class,
+				reportResultId);
 
     // now remove the entry
     tx.begin();
@@ -415,15 +420,15 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
   /*
    * (non-Javadoc)
    * 
-   * @see org.ihtsdo.otf.mapping.services.ReportService#getReportResultItem(java
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ReportService#getReportResultItem(java
    * .lang.Long)
    */
   @Override
   public ReportResultItem getReportResultItem(Long reportResultItemId) {
     ReportResultItem r = null;
 
-    javax.persistence.Query query =
-        manager
+		javax.persistence.Query query = manager
             .createQuery("select r from ReportResultItemJpa r where id = :id");
     query.setParameter("id", reportResultItemId);
 
@@ -435,11 +440,13 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
   /*
    * (non-Javadoc)
    * 
-   * @see org.ihtsdo.otf.mapping.services.ReportService#addReportResultItem(org
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ReportService#addReportResultItem(org
    * .ihtsdo.otf.mapping.reports.ReportResultItem)
    */
   @Override
-  public ReportResultItem addReportResultItem(ReportResultItem reportResultItem) {
+	public ReportResultItem addReportResultItem(
+			ReportResultItem reportResultItem) {
     if (getTransactionPerOperation()) {
       tx = manager.getTransaction();
       tx.begin();
@@ -460,7 +467,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
   /*
    * (non-Javadoc)
    * 
-   * @see org.ihtsdo.otf.mapping.services.ReportService#updateReportResultItem(
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ReportService#updateReportResultItem(
    * org.ihtsdo.otf.mapping.reports.ReportResultItem)
    */
   @Override
@@ -479,14 +487,15 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
   /*
    * (non-Javadoc)
    * 
-   * @see org.ihtsdo.otf.mapping.services.ReportService#removeReportResultItem(
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ReportService#removeReportResultItem(
    * java.lang.Long)
    */
   @Override
   public void removeReportResultItem(Long reportResultItemId) {
 
-    ReportResultItem reportResultItem =
-        manager.find(ReportResultItemJpa.class, reportResultItemId);
+		ReportResultItem reportResultItem = manager.find(
+				ReportResultItemJpa.class, reportResultItemId);
 
     // now remove the entry
     tx.begin();
@@ -506,15 +515,16 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
   /*
    * (non-Javadoc)
    * 
-   * @see org.ihtsdo.otf.mapping.services.ReportService#getReportNote(java.lang
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ReportService#getReportNote(java.lang
    * .Long)
    */
   @Override
   public ReportNote getReportNote(Long reportNoteId) {
     ReportNote r = null;
 
-    javax.persistence.Query query =
-        manager.createQuery("select r from ReportNoteJpa r where id = :id");
+		javax.persistence.Query query = manager
+				.createQuery("select r from ReportNoteJpa r where id = :id");
     query.setParameter("id", reportNoteId);
 
     r = (ReportNote) query.getSingleResult();
@@ -525,7 +535,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
   /*
    * (non-Javadoc)
    * 
-   * @see org.ihtsdo.otf.mapping.services.ReportService#addReportNote(org.ihtsdo
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ReportService#addReportNote(org.ihtsdo
    * .otf.mapping.reports.ReportNote)
    */
   @Override
@@ -593,7 +604,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
   /**
    * Handle report lazy initialization.
    * 
-   * @param report the report
+	 * @param report
+	 *            the report
    */
   private void handleReportLazyInitialization(Report report) {
     report.getNotes().size();
@@ -621,8 +633,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     // + role.toString());
 
     // get all definitions
-    List<ReportDefinition> definitions =
-        manager.createQuery(
+		List<ReportDefinition> definitions = manager.createQuery(
             "select d from ReportDefinitionJpa d where isQACheck = false")
             .getResultList();
 
@@ -648,14 +659,12 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     List<ReportDefinition> ReportDefinitions = null;
 
     // construct query
-    javax.persistence.Query query =
-        manager
+		javax.persistence.Query query = manager
             .createQuery("select m from ReportDefinitionJpa m where isQACheck = false");
 
     ReportDefinitions = query.getResultList();
 
-    ReportDefinitionListJpa ReportDefinitionList =
-        new ReportDefinitionListJpa();
+		ReportDefinitionListJpa ReportDefinitionList = new ReportDefinitionListJpa();
     ReportDefinitionList.setReportDefinitions(ReportDefinitions);
     ReportDefinitionList.setTotalCount(ReportDefinitions.size());
     return ReportDefinitionList;
@@ -672,8 +681,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
   public ReportDefinition getReportDefinition(Long reportDefinitionId) {
     ReportDefinition r = null;
 
-    javax.persistence.Query query =
-        manager
+		javax.persistence.Query query = manager
             .createQuery("select r from ReportDefinitionJpa r where id = :id");
     query.setParameter("id", reportDefinitionId);
 
@@ -690,7 +698,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
    * (org.ihtsdo.otf .mapping.reportDefinitions.ReportDefinition)
    */
   @Override
-  public ReportDefinition addReportDefinition(ReportDefinition reportDefinition) {
+	public ReportDefinition addReportDefinition(
+			ReportDefinition reportDefinition) {
     if (getTransactionPerOperation()) {
       tx = manager.getTransaction();
       tx.begin();
@@ -735,10 +744,11 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
    * removeReportDefinition(java.lang. Long)
    */
   @Override
-  public void removeReportDefinition(Long reportDefinitionId) throws Exception {
+	public void removeReportDefinition(Long reportDefinitionId)
+			throws Exception {
 
-    ReportDefinition reportDefinition =
-        manager.find(ReportDefinitionJpa.class, reportDefinitionId);
+		ReportDefinition reportDefinition = manager.find(
+				ReportDefinitionJpa.class, reportDefinitionId);
 
     // check if this definition is used by map projects
     MappingService mappingService = new MappingServiceJpa();
@@ -749,7 +759,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
       if (mapProject.getReportDefinitions().contains(reportDefinition)) {
         throw new LocalException(
             "Report definition is currently in use by project "
-                + mapProject.getName() + " and cannot be deleted");
+								+ mapProject.getName()
+								+ " and cannot be deleted");
       }
     }
 
@@ -767,7 +778,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
   /*
    * (non-Javadoc)
    * 
-   * @see org.ihtsdo.otf.mapping.services.ReportService#getReportsForMapProject
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ReportService#getReportsForMapProject
    * (org.ihtsdo.otf.mapping.model.MapProject,
    * org.ihtsdo.otf.mapping.helpers.PfsParameter)
    */
@@ -811,20 +823,25 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     // instead of using direct queries
     javax.persistence.Query query;
 
-    // construct query based on whether reportType is specified
-    // note that results are ordered by descending timestamp
+		// if definition supplied, return only results for that definition
     if (reportDefinition != null) {
 
-      query =
-          manager
-              .createQuery(
-                  "select r from ReportJpa r where mapProjectId = :mapProjectId and reportDefinition_id = :reportDefinition_id order by timestamp desc")
-              .setParameter("reportDefinition_id", reportDefinition.getId());
+			query = manager.createQuery(
+					"select r from ReportJpa r "
+							+ "where mapProjectId = :mapProjectId "
+							+ "and reportDefinition_id = :reportDefinition_id "
+							+ "order by timestamp desc").setParameter(
+					"reportDefinition_id", reportDefinition.getId());
 
+			// if no definition supplied, return all results, excluding QA
+			// checks
     } else {
-      query =
-          manager
-              .createQuery("select r from ReportJpa r where mapProjectId = :mapProjectId order by timestamp desc");
+			query = manager
+					.createQuery("select r from ReportJpa r, ReportDefinitionJpa d "
+							+ "where mapProjectId = :mapProjectId "
+							+ "and d.id = reportDefinition_id "
+							+ "and d.isQACheck = false "
+							+ "order by timestamp desc");
     }
 
     // add project parameter for both cases
@@ -842,7 +859,6 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     }
 
     // reports are ALWAYS sorted in reverse order of date
-
     List<Report> reports = query.getResultList();
 
     for (Report report : reports)
@@ -877,7 +893,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     Set<ReportDefinition> diffReportDefinitions = new HashSet<>();
 
     // sort the report definitions into daily and diff sets
-    for (ReportDefinition reportDefinition : reportDefinitions.getIterable()) {
+		for (ReportDefinition reportDefinition : reportDefinitions
+				.getIterable()) {
       if (reportDefinition.isDiffReport() == true)
         diffReportDefinitions.add(reportDefinition);
       else
@@ -899,12 +916,12 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
         if (isDateToRunReport(reportDefinition, localStartDate)) {
           Logger.getLogger(ReportServiceJpa.class).info(
-              "    Generating report " + reportDefinition.getName());
+							"    Generating report "
+									+ reportDefinition.getName());
 
-          Report report =
-              this.generateReport(mapProject, mapUser,
-                  reportDefinition.getName(), reportDefinition, localStartDate,
-                  true);
+					Report report = this.generateReport(mapProject, mapUser,
+							reportDefinition.getName(), reportDefinition,
+							localStartDate, true);
 
           Logger.getLogger(ReportServiceJpa.class).info(
               "     Persisting report.");
@@ -922,22 +939,30 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
         if (isDateToRunReport(reportDefinition, localStartDate) == true) {
 
           Logger.getLogger(ReportServiceJpa.class).info(
-              "    Generating report " + reportDefinition.getName());
+							"    Generating report "
+									+ reportDefinition.getName());
+					Report report;
+					try {
 
-          Report report =
-              this.generateReport(mapProject, mapUser,
-                  reportDefinition.getName(), reportDefinition, localStartDate,
-                  true);
+						report = this.generateReport(mapProject, mapUser,
+								reportDefinition.getName(), reportDefinition,
+								localStartDate, true);
 
           if (report != null) {
             Logger.getLogger(ReportServiceJpa.class).info(
-                "     Persisting report " + report.toString());
+									"     Persisting report "
+											+ report.toString());
 
             // persist the report
             report = this.addReport(report);
           } else {
-            Logger.getLogger(ReportService.class).warn("    Skipping report");
+							Logger.getLogger(ReportService.class).warn(
+									"    Skipping report");
           }
+					} catch (LocalException e) {
+						Logger.getLogger(ReportServiceJpa.class).warn(
+								e.getMessage());
+					}
 
         }
 
@@ -952,16 +977,16 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
   }
 
   /**
-   * Helper function Given a report definition and a date, assesses whether this
-   * report should be run, based on definition frequency
+	 * Helper function Given a report definition and a date, assesses whether
+	 * this report should be run, based on definition frequency
    * 
    * @param reportDefinition
    * @param date
    * @return
    * @throws Exception
    */
-  private boolean isDateToRunReport(ReportDefinition reportDefinition, Date date)
-    throws Exception {
+	private boolean isDateToRunReport(ReportDefinition reportDefinition,
+			Date date) throws Exception {
 
     Calendar cal = Calendar.getInstance();
     cal.setTime(date);
@@ -983,7 +1008,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
           return true;
         break;
       default:
-        throw new Exception("Report definition found with invalid time period.");
+			throw new Exception(
+					"Report definition found with invalid time period.");
     }
 
     return false;
@@ -992,8 +1018,10 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
   /*
    * (non-Javadoc)
    * 
-   * @see org.ihtsdo.otf.mapping.services.ReportService#generateDailyReports(org
-   * .ihtsdo.otf.mapping.model.MapProject, org.ihtsdo.otf.mapping.model.MapUser)
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ReportService#generateDailyReports(org
+	 * .ihtsdo.otf.mapping.model.MapProject,
+	 * org.ihtsdo.otf.mapping.model.MapUser)
    */
   @Override
   public void generateDailyReports(MapProject mapProject, MapUser mapUser)
@@ -1027,7 +1055,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
     Logger.getLogger(ReportServiceJpa.class).info(
         "Generating report " + name + " for report definition "
-            + reportDefinition.getName() + " for date " + date.toString());
+						+ reportDefinition.getName() + " for date "
+						+ date.toString());
 
     // instantiate the calendar object
     Calendar cal = Calendar.getInstance();
@@ -1040,8 +1069,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     // definition
     if (reportDefinition.isDiffReport() == true) {
 
-      query =
-          "select 'Report' value, name itemName, id itemId "
+			query = "select 'Report' value, name itemName, id itemId "
               + "from reports where name = '"
               + reportDefinition.getDiffReportDefinitionName()
               + "' "
@@ -1070,13 +1098,13 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
       }
 
       // replace the second timestamp with the modified date
-      query =
-          query
-              .replaceAll(":TIMESTAMP2:", Long.toString(cal.getTimeInMillis()));
+			query = query.replaceAll(":TIMESTAMP2:",
+					Long.toString(cal.getTimeInMillis()));
     }
 
     // replace the map project id and timestamp parameters
-    query = query.replaceAll(":MAP_PROJECT_ID:", mapProject.getId().toString());
+		query = query.replaceAll(":MAP_PROJECT_ID:", mapProject.getId()
+				.toString());
     query = query.replaceAll(":TIMESTAMP:", Long.toString(date.getTime()));
 
     // instantiate the report
@@ -1144,56 +1172,40 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
         throw new LocalException(
             "Could not retrieve second report for diff report", e);
       }
-      // cycle over first result and find matching values in the second
-      // report
+
+			// cycle over results in first report
       for (ReportResult result1 : report1.getResults()) {
 
-        ReportResult resultDiff = new ReportResultJpa();
-        resultDiff.setReport(report);
-        resultDiff.setValue(result1.getValue());
+				// check if an result with this value exists
+				ReportResult result2 = this.getReportResultForValue(report2,
+						result1.getValue());
 
-        boolean matchingValueFound = false;
+				// find items in first not in second -- these are NEW
+				ReportResult resultNew = this.getReportResultItemsNotInResult(
+						result1, result2);
 
-        // cycle over second report to find the corresponding value (if
-        // it exists)
-        for (ReportResult result2 : report2.getResults()) {
-          if (result1.getValue().equals(result2.getValue())) {
-            resultDiff.setCt(result1.getCt() - result2.getCt());
-            matchingValueFound = true;
-          }
-        }
+				
+				resultNew.setDateValue("");
+				resultNew.setName(result1.getName());
+				resultNew.setProjectName(result1.getProjectName());
+				resultNew.setValue(result1.getValue());
+				resultNew.setReport(report);
+				report.addResult(resultNew);
+				
 
-        // if matching value was not found, this is a new item (i.e. no
-        // diff)
-        if (!matchingValueFound) {
-          resultDiff.setValue(result1.getValue());
-          resultDiff.setCt(result1.getCt());
-        }
+				// find items in second not in first -- these are REMOVED
+				ReportResult resultRemoved = this
+						.getReportResultItemsNotInResult(result2, result1);
 
-        report.addResult(resultDiff);
-
+				if (resultRemoved.getCt() > 0) {
+					resultRemoved.setDateValue("");
+					resultRemoved.setName(result1.getName());
+					resultRemoved.setProjectName(result1.getProjectName());
+					resultRemoved.setValue(result1.getValue() + " (Removed)");
+					resultRemoved.setReport(report);
+					report.addResult(resultRemoved);
       }
-
-      // cycle over the second result and find any non-matching values
-      // (i.e. removed values)
-      for (ReportResult result2 : report2.getResults()) {
-
-        boolean matchingValueFound = false;
-        for (ReportResult result1 : report1.getResults()) {
-          if (result1.getValue().equals(result2.getValue()))
-            matchingValueFound = true;
         }
-
-        if (!matchingValueFound) {
-
-          ReportResult resultDiff = new ReportResultJpa();
-          resultDiff.setReport(report);
-          resultDiff.setValue("Items removed since previous report");
-          resultDiff.setCt(-result2.getCt());
-
-          report.addResult(resultDiff);
-        }
-      }
 
       // if a data-point report
     } else {
@@ -1222,7 +1234,6 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
         // add the item to the list and update count
         reportResult.addReportResultItem(item);
-        reportResult.setCt(reportResult.getReportResultItems().size());
 
         // update the value map
         valueMap.put(value, reportResult);
@@ -1241,8 +1252,10 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
   /**
    * Gets the report result for value.
    * 
-   * @param report the report
-   * @param value the value
+	 * @param report
+	 *            the report
+	 * @param value
+	 *            the value
    * @return the report result for value
    */
   @SuppressWarnings("unused")
@@ -1258,27 +1271,44 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
    * Helper function Returns the result items in the first result that are not
    * present in the second result.
    * 
-   * @param result1 the result1
-   * @param result2 the result2
+	 * @param result1
+	 *            the set to be checked for new items
+	 * @param result2
+	 *            the older set against which items will be compared
    * @return the report result items added
    */
   @SuppressWarnings("unused")
-  private ReportResultItemList getReportResultItemsAdded(ReportResult result1,
+	private ReportResult getReportResultItemsNotInResult(ReportResult result1,
     ReportResult result2) {
 
-    ReportResultItemList newItems = new ReportResultItemListJpa();
+		ReportResult result = new ReportResultJpa();
 
+		
+		// construct empty sets if null passed in
+		if (result1 == null)
+			result1 = new ReportResultJpa();
+		
+		if (result2 == null)
+			result2 = new ReportResultJpa();
+
+		// cycle over all result items in the first report
     for (ReportResultItem item1 : result1.getReportResultItems()) {
-      if (result2 == null || !result2.getReportResultItems().contains(item1)) {
+
+			// if second result set does not contain this item, add it to result
+			// list
+			if (!result2.getReportResultItems().contains(item1)) {
+				
+				// construct a new item to ensure clean data structure
         ReportResultItem newItem = new ReportResultItemJpa();
         newItem.setItemId(item1.getItemId());
         newItem.setItemName(item1.getItemName());
+				newItem.setReportResult(result);
         newItem.setResultType(item1.getResultType());
-        newItems.addReportResultItem(newItem);
+				result.addReportResultItem(newItem);
       }
     }
 
-    return newItems;
+		return result;
   }
 
   // /////////////////////////////////////////////////////
@@ -1287,9 +1317,11 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
   /**
    * Execute sql query.
    * 
-   * @param query the query
+	 * @param query
+	 *            the query
    * @return the result set
-   * @throws Exception the exception
+	 * @throws Exception
+	 *             the exception
    */
   private ResultSet executeSqlQuery(String query) throws Exception {
 
@@ -1317,8 +1349,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     }
 
     // check for proper format for insertion into reports
-    String selectSubStr =
-        query.substring(0, query.toUpperCase().indexOf("FROM"));
+		String selectSubStr = query.substring(0,
+				query.toUpperCase().indexOf("FROM"));
 
     if (!selectSubStr.contains("itemId"))
       throw new LocalException(
@@ -1360,7 +1392,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
       // if a syntax error, throw local exception
       // this is used to pass errors back for user query testing
       if (e instanceof SQLSyntaxErrorException) {
-        throw new LocalException("Invalid SQL Syntax: " + e.getMessage(), e);
+				throw new LocalException("Invalid SQL Syntax: "
+						+ e.getMessage(), e);
 
         // if another error, throw normal exception
       } else {
@@ -1386,7 +1419,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
   public void removeReportsForMapProject(MapProject mapProject) {
 
     Logger.getLogger(ReportServiceJpa.class).info(
-        "Retrieving reports for project " + mapProject.getName() + "...");
+				"Retrieving reports for project " + mapProject.getName()
+						+ "...");
 
     ReportList reports = getReportsForMapProject(mapProject, null);
 
@@ -1414,8 +1448,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
     ReportResultItemList reportResultItemList = new ReportResultItemListJpa();
 
-    javax.persistence.Query query =
-        manager
+		javax.persistence.Query query = manager
             .createQuery(
                 "select r from ReportResultItemJpa r where reportResult_id = :reportResultId")
             .setParameter("reportResultId", reportResultId);
@@ -1447,8 +1480,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     // + role.toString());
 
     // get all definitions
-    List<ReportDefinition> definitions =
-        manager.createQuery(
+		List<ReportDefinition> definitions = manager.createQuery(
             "select d from ReportDefinitionJpa d where isQACheck = true")
             .getResultList();
 
@@ -1465,7 +1497,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
   /*
    * (non-Javadoc)
    * 
-   * @see org.ihtsdo.otf.mapping.services.ReportService#getQACheckDefinitions()
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ReportService#getQACheckDefinitions()
    */
   @Override
   @SuppressWarnings("unchecked")
@@ -1474,14 +1507,12 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     List<ReportDefinition> qaCheckDefinitions = null;
 
     // construct query
-    javax.persistence.Query query =
-        manager
+		javax.persistence.Query query = manager
             .createQuery("select m from ReportDefinitionJpa m where isQACheck = true");
 
     qaCheckDefinitions = query.getResultList();
 
-    ReportDefinitionListJpa qaCheckDefinitionList =
-        new ReportDefinitionListJpa();
+		ReportDefinitionListJpa qaCheckDefinitionList = new ReportDefinitionListJpa();
     qaCheckDefinitionList.setReportDefinitions(qaCheckDefinitions);
     qaCheckDefinitionList.setTotalCount(qaCheckDefinitions.size());
     return qaCheckDefinitionList;
@@ -1499,8 +1530,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
     SearchResultList searchResultList = new SearchResultListJpa();
     for (ReportDefinition def : definitions.getReportDefinitions()) {
-      searchResultList.addSearchResult(new SearchResultJpa(def.getId(), null,
-          def.getName(), ""));
+			searchResultList.addSearchResult(new SearchResultJpa(def.getId(),
+					null, def.getName(), ""));
     }
     return searchResultList;
 

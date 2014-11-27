@@ -1,4 +1,4 @@
-package org.ihtsdo.otf.mapping.helpers;
+package org.ihtsdo.otf.mapping.services.helpers;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -21,6 +22,29 @@ public class FileSorter {
 
   /**
    * Performs merge sort on a file.
+   * 
+   * @param inputFile the input file
+   * @param comparator the comparator
+   * @throws Exception the exception
+   */
+  public static void sortFile(String inputFileName,
+    Comparator<String> comparator) throws Exception {
+
+    // construct temporary file name
+    String outputFileName = inputFileName + ".sort";
+
+    // sort the file into temporary file
+    sortFile(inputFileName, outputFileName, comparator);
+
+    // delete the original file
+    Files.delete(Paths.get(inputFileName));
+
+    // copy the sorted file into the original file path
+    Files.move(Paths.get(outputFileName), Paths.get(inputFileName));
+  }
+
+  /**
+   * Performs merge sort on a file, outputs to specified output file
    * 
    * @param inputFile the file_in_str
    * @param outputFile the file_out_str
