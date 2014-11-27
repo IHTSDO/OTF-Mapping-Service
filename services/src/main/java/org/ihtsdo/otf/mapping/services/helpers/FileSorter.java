@@ -22,8 +22,8 @@ public class FileSorter {
 
   /**
    * Performs merge sort on a file.
-   * 
-   * @param inputFile the input file
+   *
+   * @param inputFileName the input file name
    * @param comparator the comparator
    * @throws Exception the exception
    */
