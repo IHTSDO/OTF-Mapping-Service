@@ -21,7 +21,9 @@
     <!-- Specify default build.config - references config project -->
     <!-- This requires some images to be in c:/data/images -->
     <!-- Used -->
+    <config.dir>${basedir}/../config</config.dir>
     <build.config>${basedir}/../config/src/main/resources/config.properties.dev</build.config>
+    <images.dir>${config.dir}/src/main/images/</images.dir>
   </properties>
 
   <dependencies>
@@ -190,7 +192,7 @@
             </goals>
             <configuration>
               <target name="copy favicon">
-                <copy file="${deploy.favicon}" overwrite="true"
+                <copy file="${images.dir}/${deploy.favicon}" overwrite="true"
                   tofile="${project.build.directory}/custom/images/favicon.png" />
               </target>
             </configuration>
@@ -205,7 +207,7 @@
             </goals>
             <configuration>
               <target name="copy logo">
-                <copy file="${deploy.favicon}" overwrite="true"
+                <copy file="${images.dir}/${deploy.favicon}" overwrite="true"
                   tofile="${project.build.directory}/custom/images/logo.png" />
               </target>
             </configuration>
