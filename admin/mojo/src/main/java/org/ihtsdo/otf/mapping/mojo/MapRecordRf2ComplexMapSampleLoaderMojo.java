@@ -15,7 +15,7 @@ import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.ihtsdo.otf.mapping.helpers.FileSorter;
+import org.ihtsdo.otf.mapping.services.helpers.FileSorter;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
