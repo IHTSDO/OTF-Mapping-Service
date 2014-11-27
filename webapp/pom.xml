@@ -87,11 +87,6 @@
             </goals>
             <configuration>
               <target name="copy favicon">
-              <echo>[config.dir]: ${config.dir}</echo>
-              <echo>[images.dir]: ${images.dir}</echo>
-               <property environment="env" />
-               <echoproperties />
-              
                 <copy file="${images.dir}/${deploy.favicon}" overwrite="true"
                   tofile="${project.build.directory}/custom/img/favicon.png" />
               </target>
