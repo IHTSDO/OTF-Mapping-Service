@@ -1615,7 +1615,8 @@ public class WorkflowServiceRest extends RootServiceRest {
       reportService.close();
 
     } catch (Exception e) {
-      handleException(e, "trying to create qa work", userName, project, report
+      handleException(e, "trying to create qa work", userName, project, 
+          report == null ? "" : report
           .getId().toString());
     }
 
@@ -1871,7 +1872,7 @@ public class WorkflowServiceRest extends RootServiceRest {
       if (!mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_NEW)
           && !mapRecord.getWorkflowStatus().equals(
               WorkflowStatus.CONFLICT_DETECTED))
-        return null;
+        return false;
 
       WorkflowException workflowException =
           workflowService.getWorkflowException(mapProject,
@@ -1888,7 +1889,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     }
 
     // return default false
-    return null;
+    return false;
   }
 
   // ///////////////////////////////////////////////////
