@@ -108,6 +108,8 @@ angular
           function(data) {
             $rootScope.glassPane--;
             $scope.reports = data.report;
+            
+            console.debug("Reports fetched: ", data.report);
 
             // set paging parameters
             $scope.nReports = data.totalCount;
@@ -183,6 +185,8 @@ angular
       $scope.getResultItems = function(reportResult, page) {
 
         $rootScope.glassPane++;
+        
+        console.debug("Getting report result items", reportResult, page);
 
         // construct a PFS object
         var pfsParameterObj = {
@@ -220,21 +224,6 @@ angular
         });
       }
 
-      $scope.getItemUrl = function(reportResultItem) {
-
-        console.debug("Getting item url", reportResultItem)
-
-        switch (reportResultItem.resultType) {
-        case 'CONCEPT':
-          return '/record/conceptId/' + resultType.itemId;
-        case 'MAP_RECORD':
-          return '/record/conceptId/' + resultType.itemId;
-        default:
-          return null;
-
-        }
-      };
-
       var initializeCollapsed = function(report) {
         for (var i = 0; i < report.results.length; i++) {
           report.results[i].isCollapsed = true;
@@ -245,65 +234,7 @@ angular
         }
       };
 
-      $scope.saveDefinition = function(definition) {
-
-        $rootScope.glassPane++;
-        console.debug("Definition", definition);
-        // add or update based on whether definition has a
-        // hibernate id
-        $http(
-          {
-            url : root_reporting + "definition/"
-              + (definition.id != null ? "update" : "add"),
-            method : "POST",
-            dataType : "json",
-            data : definition,
-            headers : {
-              "Content-Type" : "application/json"
-            }
-          }).success(
-          function(data) {
-            $rootScope.glassPane--;
-            $scope.definitionMsg = "Successfully saved definition";
-
-            // if new report, and selected to
-            // add to project, update project
-            if ($scope.isAddingDefinition == true
-              && $scope.addDefinitionToProject == true) {
-
-              console.debug("Also adding to project");
-              $rootScope.glassPane++;
-
-              // add this definition to
-              // locally cached project
-              $scope.focusProject.reportDefinition.push(definition);
-
-              // update the project
-              $http({
-                url : root_mapping + "project/update",
-                method : "POST",
-                dataType : "json",
-                data : $scope.focusProject,
-                headers : {
-                  "Content-Type" : "application/json"
-                }
-              }).success(function(data) {
-                $rootScope.glassPane--;
-                $scope.definitionMsg = "Successfully updated project";
-              }).error(function(data, status, headers, config) {
-                $rootScope.glassPane--;
-                $rootScope.handleHttpError(data, status, headers, config);
-              });
-            }
-
-            $scope.isAddingDefinition = false;
-          }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
-          $rootScope.handleHttpError(data, status, headers, config);
-        });
-      };
-
-      // @Path("/report/generate/project/id/{projectId}/user/id/{userName}")
+    
 
       $scope.generateNewReport = function(reportDefinition) {
         $rootScope.glassPane++;
