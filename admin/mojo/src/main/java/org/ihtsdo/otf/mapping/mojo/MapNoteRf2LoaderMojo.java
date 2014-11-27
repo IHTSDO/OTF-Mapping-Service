@@ -15,7 +15,6 @@ import java.util.Set;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.jpa.MapNoteJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapNote;
@@ -53,7 +52,7 @@ import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 public class MapNoteRf2LoaderMojo extends AbstractMojo {
 
   /** The commit count. */
-  private final static int commitCt = 500;
+  private final static int commitCt = 2000;
 
   /**
    * Executes the plugin.
@@ -95,6 +94,8 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
       Map<String, Map<String, Set<MapRecord>>> mapProjectMap = new HashMap<>();
       for (MapProject mapProject : mapProjects) {
         Map<String, Set<MapRecord>> mapRecordsMap = new HashMap<>();
+        // TODO: factor this out so we only read map records for
+        // refSetIds that have notes associated with them.
         for (MapRecord mapRecord : mappingService.getMapRecordsForMapProject(
             mapProject.getId()).getMapRecords()) {
           if (!mapRecordsMap.containsKey(mapRecord.getConceptId())) {
