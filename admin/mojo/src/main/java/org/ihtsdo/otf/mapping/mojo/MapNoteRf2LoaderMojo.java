@@ -150,8 +150,8 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
           }
         } else {
           getLog().info(
-              "Map note references non-existent concept for project "
-                  + fields[5]);
+              "Map note references non-existent concept/project "
+                  + fields[5] + "/" + fields[4]);
         }
       }
       getLog().info("    count = " + ct);
