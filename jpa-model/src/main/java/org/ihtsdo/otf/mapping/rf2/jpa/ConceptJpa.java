@@ -58,7 +58,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   private Set<Relationship> relationships = null;
 
   /** The inverse relationships. */
-  @OneToMany(mappedBy = "destinationConcept", orphanRemoval = true, targetEntity = RelationshipJpa.class)
+  @OneToMany(mappedBy = "destinationConcept", targetEntity = RelationshipJpa.class)
   private Set<Relationship> inverseRelationships = null;
 
   /** The simple RefSet members. */

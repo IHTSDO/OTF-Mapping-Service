@@ -401,7 +401,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
         boolean isValidGroup = false;
         for (MapEntry entry : entries) {
-          if (entry.getTargetId() != null && entry.getTargetId() != "")
+          if (entry.getTargetId() != null && !entry.getTargetId().equals(""))
             isValidGroup = true;
         }
 
@@ -499,7 +499,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     ValidationResult validationResult = new ValidationResultJpa();
 
     // compare mapProjectId
-    if (record1.getMapProjectId() != record2.getMapProjectId()) {
+    if (!record1.getMapProjectId().equals(record2.getMapProjectId())) {
       validationResult
           .addError("Invalid comparison, map project ids do not match ("
               + record1.getMapProjectId() + ", " + record2.getMapProjectId()

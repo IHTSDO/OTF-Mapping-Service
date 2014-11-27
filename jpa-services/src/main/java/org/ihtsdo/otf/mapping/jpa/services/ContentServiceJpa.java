@@ -133,9 +133,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
             .getIndexedClassNames();
     for (String indexClass : indexedClassNames) {
       Set<String> fieldNames = null;
-      if (indexClass.indexOf("TreePositionJpa") != 0) {
+      if (indexClass.indexOf("TreePositionJpa") != -1) {
+        Logger.getLogger(ContentServiceJpa.class).info(
+            "FOUND TreePositionJpa index");
         fieldNames = fieldNamesMap.get("TrePositionJpa");
-      } else if (indexClass.indexOf("ConceptJpa") != 0) {
+      } else if (indexClass.indexOf("ConceptJpa") != -1) {
+        Logger.getLogger(ContentServiceJpa.class)
+            .info("FOUND ConceptJpa index");
         fieldNames = fieldNamesMap.get("ConceptJpa");
       }
       if (fieldNames != null) {
@@ -1458,6 +1462,41 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
     // return the search result list
     return searchResultList;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.ContentService#getDescendants(java.lang
+   * .String, java.lang.String, java.lang.String, java.lang.Long)
+   */
+  @Override
+  public int getDescendantConceptsCount(String terminologyId,
+    String terminology, String terminologyVersion) throws Exception {
+
+    Logger.getLogger(ContentServiceJpa.class).debug(
+        "getDescendantConceptsCount called: " + terminologyId + ", " + terminology
+            + ", " + terminologyVersion);
+
+    javax.persistence.Query query =
+        manager
+            .createQuery("select distinct tp.descendantCount from TreePositionJpa tp "
+                + "where tp.terminologyId = :terminologyId "
+                + "and tp.terminology = :terminology "
+                + "and tp.terminologyVersion = :terminologyVersion");
+    query.setParameter("terminologyId", terminologyId);
+    query.setParameter("terminology", terminology);
+    query.setParameter("terminologyVersion", terminologyVersion);
+
+    @SuppressWarnings("unchecked")
+    List<Object> results = query.getResultList();
+    if (results.size() > 0) {
+      return Integer.parseInt(results.get(0).toString());
+    } else {
+      return 0;
+    }
+
   }
 
   /*

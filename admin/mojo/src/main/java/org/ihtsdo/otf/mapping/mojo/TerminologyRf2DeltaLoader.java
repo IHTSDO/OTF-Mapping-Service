@@ -937,7 +937,9 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
         // Otherwise, reset effective time (for modified check later)
         else {
-          newRelationship.setEffectiveTime(relationship.getEffectiveTime());
+          if (relationship != null) {
+            newRelationship.setEffectiveTime(relationship.getEffectiveTime());
+          }
         }
       }
     }
