@@ -136,7 +136,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       if (indexClass.indexOf("TreePositionJpa") != -1) {
         Logger.getLogger(ContentServiceJpa.class).info(
             "FOUND TreePositionJpa index");
-        fieldNames = fieldNamesMap.get("TrePositionJpa");
+        fieldNames = fieldNamesMap.get("TreePositionJpa");
       } else if (indexClass.indexOf("ConceptJpa") != -1) {
         Logger.getLogger(ContentServiceJpa.class)
             .info("FOUND ConceptJpa index");
