@@ -115,7 +115,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         fullTextEntityManager.getSearchFactory().getStatistics()
             .getIndexedClassNames();
     for (String indexClass : indexedClassNames) {
-      if (indexClass.indexOf("TrackingRecordJpa") != 0) {
+      if (indexClass.indexOf("TrackingRecordJpa") != -1) {
+        Logger.getLogger(ContentServiceJpa.class).info("FOUND TrackingRecordJpa index");
         IndexReader indexReader = indexReaderAccessor.open(indexClass);
         try {
           for (FieldInfo info : ReaderUtil.getMergedFieldInfos(indexReader)) {

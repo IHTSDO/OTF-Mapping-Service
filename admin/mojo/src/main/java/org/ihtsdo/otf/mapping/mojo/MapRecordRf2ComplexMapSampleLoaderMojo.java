@@ -16,6 +16,7 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.helpers.FileSorter;
+import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
@@ -266,6 +267,7 @@ public class MapRecordRf2ComplexMapSampleLoaderMojo extends AbstractMojo {
     BufferedReader complexMapReader =
         new BufferedReader(new FileReader(complexMapFile));
     ContentService contentService = new ContentServiceJpa();
+    MappingService mappingService = new MappingServiceJpa();
 
     // Set up sets for any map records we encounter
     String line = null;
@@ -317,9 +319,21 @@ public class MapRecordRf2ComplexMapSampleLoaderMojo extends AbstractMojo {
                 mapProjectMap.get(refSetId).getSourceTerminology(),
                 mapProjectMap.get(refSetId).getSourceTerminologyVersion());
 
-        // Only add entries for active concept
+        // Only add entries for active concept where map records do not
+        // already exist
         if (concept != null) {
-          if (!concept.isActive()) {
+
+          // check for existing map record
+          MapRecordList mapRecordList =
+              mappingService.getMapRecordsForProjectAndConcept(mapProjectMap
+                  .get(refSetId).getId(), concept.getTerminologyId());
+
+          if (mapRecordList != null && mapRecordList.getCount() > 0) {
+            getLog()
+                .info(
+                    "  MAP RECORD ALREADY EXISTS for "
+                        + concept.getTerminologyId());
+          } else if (!concept.isActive()) {
             getLog()
                 .info(
                     "  INACTIVE concept encountered: "
