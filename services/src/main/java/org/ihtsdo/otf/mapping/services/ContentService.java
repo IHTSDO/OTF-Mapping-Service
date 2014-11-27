@@ -448,6 +448,18 @@ public interface ContentService extends RootService {
     throws Exception;
 
   /**
+   * Returns the descendant concepts count.
+   *
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @return the descendant concepts count
+   * @throws Exception the exception
+   */
+  public int getDescendantConceptsCount(String terminologyId,
+    String terminology, String terminologyVersion) throws Exception;
+
+  /**
    * Clear tree positions.
    * 
    * @param terminology the terminology

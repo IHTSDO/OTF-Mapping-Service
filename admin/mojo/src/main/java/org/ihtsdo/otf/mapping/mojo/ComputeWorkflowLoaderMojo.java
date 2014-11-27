@@ -17,7 +17,6 @@ import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.ihtsdo.otf.mapping.services.helpers.OtfEmailHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
-// TODO: Auto-generated Javadoc
 /**
  * Loads unpublished complex maps.
  * 

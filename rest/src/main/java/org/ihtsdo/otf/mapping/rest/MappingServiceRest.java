@@ -524,6 +524,14 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
+  /**
+   * Returns the scope concepts for map project.
+   *
+   * @param projectId the project id
+   * @param pfsParameter the pfs parameter
+   * @param authToken the auth token
+   * @return the scope concepts for map project
+   */
   @POST
   @Path("/project/id/{projectId}/scopeConcepts")
   @ApiOperation(value = "Get scope concepts for a map project.", notes = "Gets a (pageable) list of scope concepts for a map project", response = SearchResultListJpa.class)
@@ -570,6 +578,13 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
+  /**
+   * Adds the scope concept to map project.
+   *
+   * @param terminologyId the terminology id
+   * @param projectId the project id
+   * @param authToken the auth token
+   */
   @POST
   @Path("/project/id/{projectId}/scopeConcepts/add")
   @ApiOperation(value = "Adds scope concept to a map project.", notes = "Adds scope concept to a map project.", response = Response.class)
@@ -612,6 +627,13 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
+  /**
+   * Removes the scope concept from map project.
+   *
+   * @param terminologyId the terminology id
+   * @param projectId the project id
+   * @param authToken the auth token
+   */
   @POST
   @Path("/project/id/{projectId}/scopeConcepts/remove")
   @ApiOperation(value = "Removes scope concept from a map project.", notes = "Removes scope concept from a map project.", response = Response.class)
@@ -652,6 +674,14 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
+  /**
+   * Returns the scope excluded concepts for map project.
+   *
+   * @param projectId the project id
+   * @param pfsParameter the pfs parameter
+   * @param authToken the auth token
+   * @return the scope excluded concepts for map project
+   */
   @POST
   @Path("/project/id/{projectId}/scopeExcludedConcepts")
   @ApiOperation(value = "Get scope excluded concepts for a map project.", notes = "Gets a (pageable) list of scope excluded concepts for a map project", response = SearchResultListJpa.class)
@@ -1899,7 +1929,8 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
     Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /record/id/" + mapRecordId.toString());
+        "RESTful call (Mapping): /record/id/" + (mapRecordId == null ? ""
+            : mapRecordId.toString()));
 
     String user = "";
     MapRecord mapRecord = null;
@@ -1928,8 +1959,9 @@ public class MappingServiceRest extends RootServiceRest {
 
       return mapRecord;
     } catch (Exception e) {
-      handleException(e, "trying to retrieve the map record", user, mapRecord
-          .getMapProjectId().toString(), mapRecordId.toString());
+      handleException(e, "trying to retrieve the map record", user,
+          mapRecord == null ? "" : mapRecord.getMapProjectId().toString(),
+          mapRecordId == null ? "" : mapRecordId.toString());
       return null;
     }
   }
@@ -2732,8 +2764,9 @@ public class MappingServiceRest extends RootServiceRest {
       return mapRelation;
 
     } catch (Exception e) {
-      handleException(e, "trying to compute the map relations", user, mapRecord
-          .getMapProjectId().toString(), mapRecord.getId().toString());
+      handleException(e, "trying to compute the map relations", user,
+          mapRecord == null ? "" : mapRecord.getMapProjectId().toString(),
+          mapRecord == null ? "" : mapRecord.getId().toString());
       return null;
     }
   }
@@ -2796,8 +2829,9 @@ public class MappingServiceRest extends RootServiceRest {
       return mapAdviceList;
 
     } catch (Exception e) {
-      handleException(e, "trying to compute the map advice", user, mapRecord
-          .getMapProjectId().toString(), mapRecord.getId().toString());
+      handleException(e, "trying to compute the map advice", user,
+          mapRecord == null ? "" : mapRecord.getMapProjectId().toString(),
+          mapRecord == null ? "" : mapRecord.getId().toString());
       return null;
     }
   }
@@ -3580,7 +3614,9 @@ public class MappingServiceRest extends RootServiceRest {
       outputStream.close();
     } catch (IOException e) {
       try {
-        outputStream.close();
+        if (outputStream != null) {
+          outputStream.close();
+        }
       } catch (IOException e1) {
         // do nothing
       }

@@ -20,9 +20,6 @@ public abstract class RootServiceJpa implements RootService {
   /** The factory. */
   protected static EntityManagerFactory factory;
 
-  /** The lock. */
-  private static String lock = "lock";
-
   /** The manager. */
   protected EntityManager manager;
 
@@ -39,10 +36,8 @@ public abstract class RootServiceJpa implements RootService {
    */
   public RootServiceJpa() throws Exception {
     // created once or if the factory has closed
-    synchronized (lock) {
-      if (factory == null || !factory.isOpen()) {
-        openFactory();
-      }
+    if (factory == null || !factory.isOpen()) {
+      openFactory();
     }
 
     // created on each instantiation
@@ -56,7 +51,7 @@ public abstract class RootServiceJpa implements RootService {
    * @see org.ihtsdo.otf.mapping.services.RootService#openFactory()
    */
   @Override
-  public void openFactory() throws Exception {
+  public synchronized void openFactory() throws Exception {
 
     // if factory has not been instantiated or has been closed, open it
     if (factory == null || !factory.isOpen()) {
