@@ -136,7 +136,7 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
           // the note
           for (MapRecord mapRecord : mapRecords.getMapRecords()) {
             getLog().debug(
-                mapNote.getNote().length() + " " + "    Adding note to record "
+                mapNote.getNote().length() + " " + "    Adding note "
                     + fields[4] + ", " + mapRecord.getConceptId() + " = "
                     + mapNote.getNote());
             mapRecord.addMapNote(mapNote);
@@ -154,7 +154,7 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
                   + fields[5]);
         }
       }
-      getLog().info("  " + ct + " map notes inserted");
+      getLog().info("    count = " + ct);
       getLog().info("done ...");
       mappingService.commit();
       mappingService.close();
