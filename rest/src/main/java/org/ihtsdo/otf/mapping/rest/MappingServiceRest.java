@@ -48,6 +48,7 @@ import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
+import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
@@ -156,7 +157,12 @@ public class MappingServiceRest extends RootServiceRest {
         // not NONE)
         if (!securityService.getMapProjectRoleForToken(authToken,
             mapProject.getId()).equals(MapUserRole.NONE)) {
-          mapProjects.addMapProject(mapProject);
+          
+        	// do not serialize the scope concepts or excludes (retrieval optimization)
+        	mapProject.setScopeConcepts(null);
+        	mapProject.setScopeExcludedConcepts(null);
+        	
+        	mapProjects.addMapProject(mapProject);
         }
 
       }
@@ -318,6 +324,15 @@ public class MappingServiceRest extends RootServiceRest {
             .build());
 
       MappingService mappingService = new MappingServiceJpa();
+      
+      // scope includes and excludes are transient, and must be added to project before update from webapp
+      MapProject mapProjectFromDatabase = mappingService.getMapProject(mapProject.getId());
+      
+      // set the scope concepts and excludes to the contents of the database prior to update
+      mapProject.setScopeConcepts(mapProjectFromDatabase.getScopeConcepts());
+      mapProject.setScopeExcludedConcepts(mapProjectFromDatabase.getScopeExcludedConcepts());
+      
+      // update the project and close the service
       mappingService.updateMapProject(mapProject);
       mappingService.close();
 

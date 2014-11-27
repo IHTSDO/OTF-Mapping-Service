@@ -240,24 +240,22 @@ public class ReportServiceRest extends RootServiceRest {
    * @param authToken the auth token
    */
   @POST
-  @Path("/report/add/project/id/{projectId}")
+  @Path("/report/add")
   @ApiOperation(value = "Adds a report", notes = "Adds a report", response = Response.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public void updateReports(
-    @ApiParam(value = "Project to add report to", required = true) @PathParam("projectId") Long mapProjectId,
     @ApiParam(value = "Report report to update", required = true) ReportJpa report,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
     Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Report):  /report/add/project/id/"
-            + mapProjectId.toString());
+        "RESTful call (Report):  /report/add");
     String user = "";
 
     try {
       // authorize call
       MapUserRole role =
-          securityService.getMapProjectRoleForToken(authToken, mapProjectId);
+          securityService.getMapProjectRoleForToken(authToken, report.getMapProjectId());
       user = securityService.getUsernameForToken(authToken);
       if (!role.hasPrivilegesOf(MapUserRole.LEAD))
         throw new WebApplicationException(Response.status(401)
@@ -320,16 +318,10 @@ public class ReportServiceRest extends RootServiceRest {
       ReportService reportService = new ReportServiceJpa();
       ReportList reportList =
           reportService.getReportsForMapProject(mapProject, pfsParameter);
-
-      // remove qa checks
-      ReportList finalReportList = new ReportListJpa();
-      for (Report report : reportList.getReports()) {
-        if (!report.getReportDefinition().isQACheck())
-          finalReportList.addReport(report);
-      }
+      
       reportService.close();
 
-      return finalReportList;
+      return reportList;
     } catch (Exception e) {
       handleException(e, "trying to retrieve all reports", user, projectName,
           "");
@@ -445,11 +437,12 @@ public class ReportServiceRest extends RootServiceRest {
       MapUser mapUser = mappingService.getMapUser(userName);
       mappingService.close();
 
+      // generate the report -- note, do NOT persist
       ReportService reportService = new ReportServiceJpa();
       report =
           reportService.generateReport(mapProject, mapUser,
               reportDefinition.getName(), reportDefinition, new Date(), false);
-      report = reportService.addReport(report);
+    
       reportService.close();
 
       return report;

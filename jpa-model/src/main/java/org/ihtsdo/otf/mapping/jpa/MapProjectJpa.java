@@ -960,7 +960,6 @@ public class MapProjectJpa implements MapProject {
    * @see org.ihtsdo.otf.mapping.model.MapProject#getScopeConcepts()
    */
   @Override
-  @XmlTransient
   public Set<String> getScopeConcepts() {
     return scopeConcepts;
   }
@@ -1026,7 +1025,6 @@ public class MapProjectJpa implements MapProject {
    * @see org.ihtsdo.otf.mapping.model.MapProject#getScopeExcludedConcepts()
    */
   @Override
-  @XmlTransient
   public Set<String> getScopeExcludedConcepts() {
     return scopeExcludedConcepts;
   }
