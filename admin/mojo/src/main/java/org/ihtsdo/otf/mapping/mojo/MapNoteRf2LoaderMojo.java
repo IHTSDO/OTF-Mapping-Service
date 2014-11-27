@@ -141,7 +141,7 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
                 mappingService.updateMapRecord(mapRecord);
 
                 if (++ct % commitCt == 0) {
-                  getLog().info("      " + ct + " notes processed");
+                  getLog().info("      commit = " + ct);
                   mappingService.commit();
                   mappingService.beginTransaction();
                 }
