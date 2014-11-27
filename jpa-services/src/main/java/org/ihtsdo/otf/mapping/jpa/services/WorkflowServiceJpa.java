@@ -905,19 +905,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
     // must have a REVIEW_NEEDED tag with any user
     full_query += " AND userAndWorkflowStatusPairs:REVIEW_NEEDED_*";
-
-    // don't get qa path -- this is handled in a separate retrieval routine
-    // as of 11/25/14, the two paths retrieved are REVIEW_PROJECT_PATH 
-    // and QA_PATH
-    full_query += " AND NOT workflowPath:QA_PATH";
-
+    				
     // there must not be an already claimed review record
     full_query +=
         " AND NOT (userAndWorkflowStatusPairs:REVIEW_NEW_*"
             + " OR userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_*"
             + " OR userAndWorkflowStatusPairs:REVIEW_RESOLVED_*" + ")";
-
-    // System.out.println("FindAvailableReviewWork query: " + full_query);
 
     QueryParser queryParser =
         new QueryParser(Version.LUCENE_36, "summary",
@@ -1385,9 +1378,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
                 + mapUser.getUserName() + ")";
         break;
     }
-
-    // don't get qa path
-    full_query += " AND NOT workflowPath:QA_PATH";
 
     // System.out.println("FindAssignedReviewWork query: " + full_query);
 
