@@ -156,7 +156,7 @@ public class MappingServiceRest extends RootServiceRest {
         // if this user has a role of VIEWER or above for this project (i.e. is
         // not NONE)
         if (!securityService.getMapProjectRoleForToken(authToken,
-            mapProject.getId()).equals(MapUserRole.NONE)) {
+            mapProject.getId()).equals(MapUserRole.NONE) || mapProject.isPublic() == true) {
           
         	// do not serialize the scope concepts or excludes (retrieval optimization)
         	mapProject.setScopeConcepts(null);
