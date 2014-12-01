@@ -11,16 +11,20 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.log4j.Logger;
+import org.apache.lucene.index.FieldInfo;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryParser.MultiFieldQueryParser;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
+import org.apache.lucene.util.ReaderUtil;
 import org.apache.lucene.util.Version;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.envers.AuditReader;
@@ -28,6 +32,7 @@ import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
 import org.hibernate.envers.query.AuditQuery;
 import org.hibernate.search.SearchFactory;
+import org.hibernate.search.indexes.IndexReaderAccessor;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.helpers.LocalException;
@@ -95,6 +100,15 @@ import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
  */
 public class MappingServiceJpa extends RootServiceJpa implements MappingService {
 
+  /** The commit count. */
+  private final static int commitCt = 2000;
+
+  /** The map record indexed field names. */
+  protected static Set<String> mapRecordFieldNames;
+
+  /** The map record indexed field names. */
+  protected static Set<String> mapProjectFieldNames;
+
   /**
    * Instantiates an empty {@link MappingServiceJpa}.
    * 
@@ -102,6 +116,54 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
    */
   public MappingServiceJpa() throws Exception {
     super();
+    if (mapRecordFieldNames == null) {
+      initializeFieldNames();
+    }
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.services.RootService#initializeFieldNames()
+   */
+  @Override
+  public synchronized void initializeFieldNames() throws Exception {
+    mapRecordFieldNames = new HashSet<>();
+    mapProjectFieldNames = new HashSet<>();
+    Map<String, Set<String>> fieldNamesMap = new HashMap<>();
+    fieldNamesMap.put("MapRecordJpa", mapRecordFieldNames);
+    fieldNamesMap.put("MapProjectJpa", mapProjectFieldNames);
+    EntityManager manager = factory.createEntityManager();
+    FullTextEntityManager fullTextEntityManager =
+        org.hibernate.search.jpa.Search.getFullTextEntityManager(manager);
+    IndexReaderAccessor indexReaderAccessor =
+        fullTextEntityManager.getSearchFactory().getIndexReaderAccessor();
+    Set<String> indexedClassNames =
+        fullTextEntityManager.getSearchFactory().getStatistics()
+            .getIndexedClassNames();
+    for (String indexClass : indexedClassNames) {
+      Set<String> fieldNames = null;
+      if (indexClass.indexOf("MapRecordJpa") != -1) {
+        Logger.getLogger(ContentServiceJpa.class).info(
+            "FOUND MapRecordJpa index");
+        fieldNames = fieldNamesMap.get("MapRecordJpa");
+      } else if (indexClass.indexOf("MapProjectJpa") != -1) {
+        Logger.getLogger(ContentServiceJpa.class).info(
+            "FOUND MapProjectJpa index");
+        fieldNames = fieldNamesMap.get("MapProjectJpa");
+      }
+      if (fieldNames != null) {
+        IndexReader indexReader = indexReaderAccessor.open(indexClass);
+        try {
+          for (FieldInfo info : ReaderUtil.getMergedFieldInfos(indexReader)) {
+            fieldNames.add(info.name);
+          }
+        } finally {
+          indexReaderAccessor.close(indexReader);
+        }
+      }
+    }
+    fullTextEntityManager.close();
   }
 
   /**
@@ -238,7 +300,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       if (query.indexOf(':') == -1) { // no fields indicated
         MultiFieldQueryParser queryParser =
             new MultiFieldQueryParser(Version.LUCENE_36,
-                fieldNames.toArray(new String[0]),
+                mapProjectFieldNames.toArray(new String[0]),
                 searchFactory.getAnalyzer(MapProjectJpa.class));
         queryParser.setAllowLeadingWildcard(false);
         luceneQuery = queryParser.parse(query);
@@ -652,7 +714,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       if (query.indexOf(':') == -1) { // no fields indicated
         MultiFieldQueryParser queryParser =
             new MultiFieldQueryParser(Version.LUCENE_36,
-                fieldNames.toArray(new String[0]),
+                mapRecordFieldNames.toArray(new String[0]),
                 searchFactory.getAnalyzer(MapRecordJpa.class));
         queryParser.setAllowLeadingWildcard(false);
         luceneQuery = queryParser.parse(query);
@@ -934,7 +996,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     }
 
     // if query terms specified, add
-    if (pfsParameter.getQueryRestriction() != null) {
+    if (pfsParameter != null && pfsParameter.getQueryRestriction() != null) {
       String[] queryTerms = pfsParameter.getQueryRestriction().split(" ");
       query.add(AuditEntity.or(
           AuditEntity.property("conceptId").in(queryTerms),
@@ -1258,8 +1320,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     String full_query;
 
     // if no filter supplied, return query based on map project id only
-    if (pfsParameter.getQueryRestriction() == null
-        || pfsParameter.getQueryRestriction().equals("")) {
+    if (pfsParameter != null
+        && (pfsParameter.getQueryRestriction() == null || pfsParameter
+            .getQueryRestriction().equals(""))) {
       full_query = "mapProjectId:" + mapProjectId;
       return full_query;
     }
@@ -1411,7 +1474,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
         full_query += "(";
 
         // add fielded query for each indexed term, separated by OR
-        Iterator<String> names_iter = fieldNames.iterator();
+        Iterator<String> names_iter = mapRecordFieldNames.iterator();
         while (names_iter.hasNext()) {
           full_query += names_iter.next() + ":" + parsedTerms.get(i);
           if (names_iter.hasNext())
@@ -2428,165 +2491,131 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
            */
         }
 
-        // check if a map record with this terminology id and workflow
-        // status already exists
-        MapRecordList mapRecordList = null;
-        mapRecordList =
-            this.getMapRecordsForProjectAndConcept(mapProjectId,
-                refSetMember.getTerminologyId());
-        boolean recordForWorkflowStatusExists = false;
-        if (mapRecordList != null) {
-          // cycle over any records found and check for user and
-          // workflow status
-          for (MapRecord mr : mapRecordList.getMapRecords()) {
-            if (mr.getWorkflowStatus().equals(workflowStatus)
-                && mr.getOwner().equals(mapUser)) {
-              recordForWorkflowStatusExists = true;
-              break;
-            }
+        // if different concept than previous ref set member, create
+        // new
+        // mapRecord
+        if (!concept.getTerminologyId().equals(prevConceptId)) {
+          Logger.getLogger(MappingServiceJpa.class).debug(
+              "    Creating map record for " + concept.getTerminologyId());
+
+          mapPriorityCt = 0;
+          prevMapGroup = 0;
+          mapRecord = new MapRecordJpa();
+          mapRecord.setConceptId(concept.getTerminologyId());
+          mapRecord.setConceptName(concept.getDefaultPreferredName());
+          mapRecord.setMapProjectId(mapProject.getId());
+
+          // get the number of descendants
+          mapRecord.setCountDescendantConcepts(
+              (long)contentService.getDescendantConceptsCount(
+                  concept.getTerminologyId(), concept.getTerminology(),
+                  concept.getTerminologyVersion()));
+          Logger.getLogger(MappingServiceJpa.class).debug(
+              "      Computing descendant ct = "
+                  + mapRecord.getCountDescendantConcepts());
+
+          // set the previous concept to this concept
+          prevConceptId = refSetMember.getConcept().getTerminologyId();
+
+          // set the owner and lastModifiedBy user fields to
+          // loaderUser
+          mapRecord.setOwner(mapUser);
+          mapRecord.setLastModifiedBy(mapUser);
+
+          // random determine workflow state
+          // based on sampling percentage
+          // NOTE: Explicit equality check for -1.0f put in to
+          // avoid
+          // any possible errors
+          // in multiplication/division/comparison
+          if (samplingRate != -1.0f
+              && random.nextInt(100 + 1) / 100.0 <= samplingRate) {
+            samplingRecordsCreated++;
+            mapRecord.setWorkflowStatus(workflowStatus);
+          } else {
+            samplingRecordsPublished++;
+            mapRecord.setWorkflowStatus(WorkflowStatus.PUBLISHED);
+          }
+
+          addMapRecord(mapRecord);
+
+          if (++ct % commitCt == 0) {
+            Logger.getLogger(MappingServiceJpa.class).info(
+                "    " + ct + " records created");
+            commit();
+            manager.clear();
+            beginTransaction();
+            // For memory management, avoid keeping cache of
+            // tree
+            // positions
+            contentService.close();
+            contentService = new ContentServiceJpa();
           }
         }
-        // if this record does not already exist
-        if (!recordForWorkflowStatusExists) {
 
-          // if different concept than previous ref set member, create
-          // new
-          // mapRecord
-          if (!concept.getTerminologyId().equals(prevConceptId)) {
-            Logger.getLogger(MappingServiceJpa.class).debug(
-                "    Creating map record for " + concept.getTerminologyId());
+        // check if target is in desired terminology; if so, create
+        // entry
+        String targetName = null;
 
-            mapPriorityCt = 0;
-            prevMapGroup = 0;
-            mapRecord = new MapRecordJpa();
-            mapRecord.setConceptId(concept.getTerminologyId());
-            mapRecord.setConceptName(concept.getDefaultPreferredName());
-            mapRecord.setMapProjectId(mapProject.getId());
-
-            // get the number of descendants - Need to optimize this
-            // Need a tool to compute and save this for LLCs (e.g.
-            // having < 11
-            // descendants)
-            PfsParameter pfsParameter = new PfsParameterJpa();
-            pfsParameter.setMaxResults(100);
-
-            TreePositionList treePositionList =
-                contentService.getTreePositionsWithDescendants(
-                    concept.getTerminologyId(), concept.getTerminology(),
-                    concept.getTerminologyVersion());
-            long descCt = 0;
-            if (treePositionList.getCount() > 0) {
-              descCt =
-                  treePositionList.getTreePositions().get(0)
-                      .getDescendantCount();
-            }
-            mapRecord.setCountDescendantConcepts(descCt);
-            Logger.getLogger(MappingServiceJpa.class).debug(
-                "      Computing descendant ct = "
-                    + mapRecord.getCountDescendantConcepts());
-
-            // set the previous concept to this concept
-            prevConceptId = refSetMember.getConcept().getTerminologyId();
-
-            // set the owner and lastModifiedBy user fields to
-            // loaderUser
-            mapRecord.setOwner(mapUser);
-            mapRecord.setLastModifiedBy(mapUser);
-
-            // random determine workflow state
-            // based on sampling percentage
-            // NOTE: Explicit equality check for -1.0f put in to
-            // avoid
-            // any possible errors
-            // in multiplication/division/comparison
-            if (samplingRate != -1.0f
-                && random.nextInt(100 + 1) / 100.0 <= samplingRate) {
-              samplingRecordsCreated++;
-              mapRecord.setWorkflowStatus(workflowStatus);
-            } else {
-              samplingRecordsPublished++;
-              mapRecord.setWorkflowStatus(WorkflowStatus.PUBLISHED);
-            }
-
-            addMapRecord(mapRecord);
-
-            if (++ct % 500 == 0) {
-              Logger.getLogger(MappingServiceJpa.class).info(
-                  "    " + ct + " records created");
-              commit();
-              beginTransaction();
-              // For memory management, avoid keeping cache of
-              // tree
-              // positions
-              contentService.close();
-              contentService = new ContentServiceJpa();
-            }
+        if (!refSetMember.getMapTarget().equals("")) {
+          Concept c =
+              contentService.getConcept(refSetMember.getMapTarget(),
+                  mapProject.getDestinationTerminology(),
+                  mapProject.getDestinationTerminologyVersion());
+          if (c == null) {
+            targetName = "Target name could not be determined";
+          } else {
+            targetName = c.getDefaultPreferredName();
           }
+          Logger.getLogger(this.getClass()).debug(
+              "      Setting target name " + targetName);
+        }
 
-          // check if target is in desired terminology; if so, create
-          // entry
-          String targetName = null;
+        // Set map relation id as well from the cache
+        String relationName = null;
+        if (refSetMember.getMapRelationId() != null) {
+          relationName =
+              relationIdNameMap.get(refSetMember.getMapRelationId().toString());
+          Logger.getLogger(this.getClass()).debug(
+              "      Look up relation name = " + relationName);
+        }
 
-          if (!refSetMember.getMapTarget().equals("")) {
-            Concept c =
-                contentService.getConcept(refSetMember.getMapTarget(),
-                    mapProject.getDestinationTerminology(),
-                    mapProject.getDestinationTerminologyVersion());
-            if (c == null) {
-              targetName = "Target name could not be determined";
-            } else {
-              targetName = c.getDefaultPreferredName();
-            }
-            Logger.getLogger(this.getClass()).debug(
-                "      Setting target name " + targetName);
-          }
+        Logger.getLogger(this.getClass()).debug("      Create map entry");
+        MapEntry mapEntry = new MapEntryJpa();
+        mapEntry.setTargetId(refSetMember.getMapTarget());
+        mapEntry.setTargetName(targetName);
+        mapEntry.setMapRecord(mapRecord);
+        mapEntry.setMapRelation(mapRelationIdMap.get(refSetMember
+            .getMapRelationId().toString()));
+        String rule = refSetMember.getMapRule();
+        if (rule.equals("OTHERWISE TRUE"))
+          rule = "TRUE";
+        mapEntry.setRule(rule);
+        mapEntry.setMapBlock(refSetMember.getMapBlock());
+        mapEntry.setMapGroup(refSetMember.getMapGroup());
+        if (prevMapGroup != refSetMember.getMapGroup()) {
+          mapPriorityCt = 0;
+          prevMapGroup = refSetMember.getMapGroup();
+        }
+        // Increment map priority as we go through records
+        mapEntry.setMapPriority(++mapPriorityCt);
 
-          // Set map relation id as well from the cache
-          String relationName = null;
-          if (refSetMember.getMapRelationId() != null) {
-            relationName =
-                relationIdNameMap.get(refSetMember.getMapRelationId());
-            Logger.getLogger(this.getClass()).debug(
-                "      Look up relation name = " + relationName);
-          }
+        mapRecord.addMapEntry(mapEntry);
 
-          Logger.getLogger(this.getClass()).debug("      Create map entry");
-          MapEntry mapEntry = new MapEntryJpa();
-          mapEntry.setTargetId(refSetMember.getMapTarget());
-          mapEntry.setTargetName(targetName);
-          mapEntry.setMapRecord(mapRecord);
-          mapEntry.setMapRelation(mapRelationIdMap.get(refSetMember
-              .getMapRelationId().toString()));
-          String rule = refSetMember.getMapRule();
-          if (rule.equals("OTHERWISE TRUE"))
-            rule = "TRUE";
-          mapEntry.setRule(rule);
-          mapEntry.setMapBlock(refSetMember.getMapBlock());
-          mapEntry.setMapGroup(refSetMember.getMapGroup());
-          if (prevMapGroup != refSetMember.getMapGroup()) {
-            mapPriorityCt = 0;
-            prevMapGroup = refSetMember.getMapGroup();
-          }
-          // Increment map priority as we go through records
-          mapEntry.setMapPriority(++mapPriorityCt);
-
-          mapRecord.addMapEntry(mapEntry);
-
-          // Add support for advices - and there can be multiple map
-          // advice values
-          // Only add advice if it is an allowable value and doesn't
-          // match
-          // relation name
-          // This should automatically exclude IFA/ALWAYS advice
-          Logger.getLogger(this.getClass()).debug("      Setting map advice");
-          if (refSetMember.getMapAdvice() != null
-              && !refSetMember.getMapAdvice().equals("")) {
-            for (MapAdvice ma : mapAdvices.getIterable()) {
-              if (refSetMember.getMapAdvice().indexOf(ma.getName()) != -1
-                  && !ma.getName().equals(relationName)) {
-                mapEntry.addMapAdvice(ma);
-                Logger.getLogger(this.getClass()).debug("    " + ma.getName());
-              }
+        // Add support for advices - and there can be multiple map
+        // advice values
+        // Only add advice if it is an allowable value and doesn't
+        // match
+        // relation name
+        // This should automatically exclude IFA/ALWAYS advice
+        Logger.getLogger(this.getClass()).debug("      Setting map advice");
+        if (refSetMember.getMapAdvice() != null
+            && !refSetMember.getMapAdvice().equals("")) {
+          for (MapAdvice ma : mapAdvices.getIterable()) {
+            if (refSetMember.getMapAdvice().indexOf(ma.getName()) != -1
+                && !ma.getName().equals(relationName)) {
+              mapEntry.addMapAdvice(ma);
+              Logger.getLogger(this.getClass()).debug("    " + ma.getName());
             }
           }
         }
@@ -2664,13 +2693,14 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
   @Override
   public void commit() {
 
-    if (getTransactionPerOperation())
+    if (getTransactionPerOperation()) {
       throw new IllegalStateException(
           "Error attempting to commit a transaction when using transactions per operation mode.");
-    else if (tx != null && !tx.isActive())
+    } else if (tx == null || (tx != null && !tx.isActive())) {
       throw new IllegalStateException(
           "Error attempting to commit a transaction when there "
               + "is no active transaction");
+    }
     tx.commit();
   }
 
@@ -3072,12 +3102,13 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     MapRecordList conflictRecords = new MapRecordListJpa();
 
     MapRecord mapRecord = getMapRecord(mapRecordId);
-    MapProject mapProject = getMapProject(mapRecord.getMapProjectId());
-
-    if (mapRecord == null)
+    if (mapRecord == null) {
       throw new Exception(
           "getRecordsInConflict: Could not find map record with id = "
               + mapRecordId.toString() + "!");
+    }
+
+    MapProject mapProject = getMapProject(mapRecord.getMapProjectId());
 
     /*
      * Three cases where this is called CONFLICT_PROJECT: Two specialists in
@@ -3617,8 +3648,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     SearchResultList searchResultList = new SearchResultListJpa();
 
     // if pfsParamter is null, construct a blank pfs parameter object
-    if (pfsParameter == null)
-      pfsParameter = new PfsParameterJpa();
+    PfsParameter localPfsParameter = pfsParameter;
+    if (localPfsParameter == null)
+      localPfsParameter = new PfsParameterJpa();
 
     // convert set to list
     List<String> scopeConcepts = new ArrayList<>(mapProject.getScopeConcepts());
@@ -3628,11 +3660,12 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
     // calculate the start and end indices
     int startIndex =
-        pfsParameter.getStartIndex() == -1 ? 0 : Math.min(
-            pfsParameter.getStartIndex(), scopeConcepts.size());
+        localPfsParameter.getStartIndex() == -1 ? 0 : Math.min(
+            localPfsParameter.getStartIndex(), scopeConcepts.size());
     int endIndex =
-        pfsParameter.getMaxResults() == -1 ? scopeConcepts.size() : Math.min(
-            startIndex + pfsParameter.getMaxResults(), scopeConcepts.size());
+        localPfsParameter.getMaxResults() == -1 ? scopeConcepts.size() : Math
+            .min(startIndex + localPfsParameter.getMaxResults(),
+                scopeConcepts.size());
 
     // set the total count
     searchResultList.setTotalCount(scopeConcepts.size());
@@ -3674,9 +3707,11 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
     SearchResultList searchResultList = new SearchResultListJpa();
 
+    PfsParameter localPfsParameter = pfsParameter;
+
     // if pfsParamter is null, construct a blank pfs parameter object
-    if (pfsParameter == null)
-      pfsParameter = new PfsParameterJpa();
+    if (localPfsParameter == null)
+      localPfsParameter = new PfsParameterJpa();
 
     // convert set to list
     List<String> scopeExcludedConcepts =
@@ -3687,11 +3722,11 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
     // calculate the start and end indices
     int startIndex =
-        pfsParameter.getStartIndex() == -1 ? 0 : Math.min(
-            pfsParameter.getStartIndex(), scopeExcludedConcepts.size());
+        localPfsParameter.getStartIndex() == -1 ? 0 : Math.min(
+            localPfsParameter.getStartIndex(), scopeExcludedConcepts.size());
     int endIndex =
-        pfsParameter.getMaxResults() == -1 ? scopeExcludedConcepts.size()
-            : Math.min(startIndex + pfsParameter.getMaxResults(),
+        localPfsParameter.getMaxResults() == -1 ? scopeExcludedConcepts.size()
+            : Math.min(startIndex + localPfsParameter.getMaxResults(),
                 scopeExcludedConcepts.size());
 
     // set the total count
