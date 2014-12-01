@@ -199,17 +199,23 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
           "Conversion of Claml to RF2 objects failed", e);
     } finally {
       try {
-        fis.close();
+        if (fis != null) {
+          fis.close();
+        }
       } catch (IOException e) {
         // do nothing
       }
       try {
-        inputStream.close();
+        if (inputStream != null) {
+          inputStream.close();
+        }
       } catch (IOException e) {
         // do nothing
       }
       try {
-        reader.close();
+        if (reader != null) {
+          reader.close();
+        }
       } catch (IOException e) {
         // do nothing
       }

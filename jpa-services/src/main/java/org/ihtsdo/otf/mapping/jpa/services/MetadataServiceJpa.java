@@ -448,5 +448,10 @@ public class MetadataServiceJpa extends RootServiceJpa implements
     return resultMap;
 
   }
+  
+  @Override
+  public void initializeFieldNames() throws Exception {
+    // no need
+  }
 
 }

@@ -12,17 +12,22 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 
 import org.apache.log4j.Logger;
+import org.apache.lucene.index.FieldInfo;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
+import org.apache.lucene.util.ReaderUtil;
 import org.apache.lucene.util.Version;
 import org.hibernate.CacheMode;
 import org.hibernate.search.SearchFactory;
+import org.hibernate.search.indexes.IndexReaderAccessor;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.helpers.FeedbackConversationList;
@@ -78,6 +83,9 @@ import org.ihtsdo.otf.mapping.workflow.WorkflowExceptionJpa;
 public class WorkflowServiceJpa extends RootServiceJpa implements
     WorkflowService {
 
+  /** The map record indexed field names. */
+  protected static Set<String> trackingRecordFieldNames;
+
   /**
    * Instantiates an empty {@link WorkflowServiceJpa}.
    * 
@@ -85,7 +93,41 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    */
   public WorkflowServiceJpa() throws Exception {
     super();
+    if (trackingRecordFieldNames == null) {
+      initializeFieldNames();
+    }
+  }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.services.RootService#initializeFieldNames()
+   */
+  @Override
+  public synchronized void initializeFieldNames() throws Exception {
+    trackingRecordFieldNames = new HashSet<>();
+    EntityManager manager = factory.createEntityManager();
+    FullTextEntityManager fullTextEntityManager =
+        org.hibernate.search.jpa.Search.getFullTextEntityManager(manager);
+    IndexReaderAccessor indexReaderAccessor =
+        fullTextEntityManager.getSearchFactory().getIndexReaderAccessor();
+    Set<String> indexedClassNames =
+        fullTextEntityManager.getSearchFactory().getStatistics()
+            .getIndexedClassNames();
+    for (String indexClass : indexedClassNames) {
+      if (indexClass.indexOf("TrackingRecordJpa") != -1) {
+        Logger.getLogger(ContentServiceJpa.class).info("FOUND TrackingRecordJpa index");
+        IndexReader indexReader = indexReaderAccessor.open(indexClass);
+        try {
+          for (FieldInfo info : ReaderUtil.getMergedFieldInfos(indexReader)) {
+            trackingRecordFieldNames.add(info.name);
+          }
+        } finally {
+          indexReaderAccessor.close(indexReader);
+        }
+      }
+    }
+    fullTextEntityManager.close();
   }
 
   /*
@@ -514,7 +556,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         full_query += "(";
 
         // add fielded query for each indexed term, separated by OR
-        Iterator<String> names_iter = fieldNames.iterator();
+        Iterator<String> names_iter = trackingRecordFieldNames.iterator();
         while (names_iter.hasNext()) {
           full_query += names_iter.next() + ":" + parsedTerms.get(i);
           if (names_iter.hasNext())
@@ -658,8 +700,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     SearchResultList availableConflicts = new SearchResultListJpa();
 
     // TODO This really should be handled in the webapp
-    if (mapProject.getWorkflowType().equals("REVIEW_PROJECT_PATH"))
+    if (mapProject.getWorkflowType().toString().equals("REVIEW_PROJECT_PATH")) {
       return availableConflicts;
+    }
 
     FullTextEntityManager fullTextEntityManager =
         Search.getFullTextEntityManager(manager);
@@ -788,7 +831,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     availableQAWork.setTotalCount(ftquery.getResultSize());
 
     List<TrackingRecord> allResults = ftquery.getResultList();
-    List<TrackingRecord> results = new ArrayList<TrackingRecord>();
+    List<TrackingRecord> results = new ArrayList<>();
 
     if (query == null || query.equals("") || query.equals("null")
         || query.equals("undefined")) {
@@ -1174,7 +1217,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
     SearchResultList assignedConflicts = new SearchResultListJpa();
 
-    if (mapProject.getWorkflowType().equals("REVIEW_PROJECT_PATH"))
+    if (mapProject.getWorkflowType().toString().equals("REVIEW_PROJECT_PATH"))
       return assignedConflicts;
 
     PfsParameter localPfsParameter = pfsParameter;
@@ -1544,7 +1587,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     assignedReviewWork.setTotalCount(ftquery.getResultSize());
 
     List<TrackingRecord> allResults = ftquery.getResultList();
-    List<TrackingRecord> results = new ArrayList<TrackingRecord>();
+    List<TrackingRecord> results = new ArrayList<>();
 
     if (query == null || query.equals("") || query.equals("null")
         || query.equals("undefined")) {
@@ -3457,6 +3500,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
           } catch (Exception e2) {
             errors.add("Could not retrieve map record " + id);
           }
+          if (mr == null) {
+            throw new Exception("Unexpected null map record");
+          }
 
           // check that the workflow status on record matches that on
           // tracking record
@@ -3985,22 +4031,24 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
             + "feedbacks.recipients.userName:" + userName + ")";
 
     // add terms based on query restriction
-    switch (pfsParameter.getQueryRestriction()) {
-      case "DISCREPANCY_REVIEW_FEEDBACK":
-        full_query += " AND title:Discrepancy Review Feedback";
-        break;
-      case "ERROR_FEEDBACK":
-        full_query += " AND title:Error Feedback";
-        break;
-      case "GROUP_FEEDBACK":
-        full_query += " AND title:Group Feedback";
-        break;
-      case "FEEDBACK":
-        full_query +=
-            " AND title:Feedback NOT title:Discrepancy NOT title:Error NOT title:Group";
-        break;
-      default:
-        break;
+    if (pfsParameter != null) {
+      switch (pfsParameter.getQueryRestriction()) {
+        case "DISCREPANCY_REVIEW_FEEDBACK":
+          full_query += " AND title:Discrepancy Review Feedback";
+          break;
+        case "ERROR_FEEDBACK":
+          full_query += " AND title:Error Feedback";
+          break;
+        case "GROUP_FEEDBACK":
+          full_query += " AND title:Group Feedback";
+          break;
+        case "FEEDBACK":
+          full_query +=
+              " AND title:Feedback NOT title:Discrepancy NOT title:Error NOT title:Group";
+          break;
+        default:
+          break;
+      }
     }
 
     Logger.getLogger(MappingServiceJpa.class).info(full_query);
@@ -4156,7 +4204,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
     for (FeedbackConversation conversation : conversations) {
       for (Feedback feedback : conversation.getFeedbacks()) {
-        if (conversation.getMapProjectId() == icd9cmProjectId
+        if (conversation.getMapProjectId().longValue() == icd9cmProjectId
             && feedback.getMapError().equals(
                 "Map advice assignment is in error"))
           feedback.setMapError("Map parameter missing or incomplete");

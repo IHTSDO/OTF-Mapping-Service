@@ -59,7 +59,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
             .addError("A relation indicating the reason must be selected when no target is assigned.");
 
         // if a target is specified check it
-      } else if (mapEntry.getTargetId() != null && mapEntry.getTargetId() != "") {
+      } else if (mapEntry.getTargetId() != null && !mapEntry.getTargetId().equals("")) {
 
         // first, check terminology id based on above rules
         if (!mapEntry.getTargetId().equals("")

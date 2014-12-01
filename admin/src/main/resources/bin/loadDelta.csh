@@ -24,7 +24,6 @@ echo "Taking down the server"
 service tomcat7 stop
 if ($status != 0) then
 	echo "ERROR stopping server"
-	cat mvn.log
 	exit 1
 endif
 
@@ -33,7 +32,6 @@ cd /home/ihtsdo/.m2/repository/org/ihtsdo/intl/release/process/wb-release-proces
 rm -fr wb-release-process-1.18-SNAPSHOT-delta
 if ($status != 0) then
     echo "ERROR retrieving latest delta data"
-    cat mvn.log
     exit 1
 endif
 
@@ -46,7 +44,6 @@ mvn org.apache.maven.plugins:maven-dependency-plugin:2.4:get \
   -Dtransitive=false
 if ($status != 0) then
     echo "ERROR retrieving latest delta data"
-    cat mvn.log
     exit 1
 endif
 
@@ -55,7 +52,6 @@ cd /home/ihtsdo/.m2/repository/org/ihtsdo/intl/release/process/wb-release-proces
 unzip wb-release-process-1.18-SNAPSHOT-delta.zip -d wb-release-process-1.18-SNAPSHOT-delta
 if ($status != 0) then
     echo "ERROR unzipping delta data"
-    cat mvn.log
     exit 1
 endif
 
@@ -63,8 +59,7 @@ echo "    Load the delta ... '/bin/date'"
 cd $OTF_MAPPING_HOME/admin/loader
 mvn install -PSNOMEDCTDelta -Drun.config=$OTF_MAPPING_CONFIG
 if ($status != 0) then
-    echo "ERROR unzipping delta data"
-    cat mvn.log
+    echo "ERROR processing delta data"
     exit 1
 endif
 
@@ -73,7 +68,6 @@ cd $OTF_MAPPING_HOME/admin/remover
 mvn install -PSNOMEDCT-treepos -Drun.config=$OTF_MAPPING_CONFIG
 if ($status != 0) then
     echo "ERROR removing tree positions"
-    cat mvn.log
     exit 1
 endif
 
@@ -82,16 +76,14 @@ cd $OTF_MAPPING_HOME/admin/loader
 mvn install -PSNOMEDCT-treepos -Drun.config=$OTF_MAPPING_CONFIG
 if ($status != 0) then
     echo "ERROR computing tree positions"
-    cat mvn.log
     exit 1
 endif
 
 echo "    Compute workflow ...`/bin/date`"
 cd $OTF_MAPPING_HOME/admin/loader
-mvn -PComputeWorkflow -Drun.config=$OTF_MAPPING_CONFIG -Drefset.id=447563008,447562003,450993002 install -Dsend.notification=true >&! mvn.log
+mvn -PComputeWorkflow -Drun.config=$OTF_MAPPING_CONFIG -Drefset.id=447563008,447562003,450993002 install -Dsend.notification=true
 if ($status != 0) then
     echo "ERROR computing workflow"
-    cat mvn.log
     exit 1
 endif
 
