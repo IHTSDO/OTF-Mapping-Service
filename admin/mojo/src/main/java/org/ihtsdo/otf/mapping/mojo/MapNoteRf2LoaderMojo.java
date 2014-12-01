@@ -5,8 +5,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -47,6 +51,9 @@ import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
  */
 public class MapNoteRf2LoaderMojo extends AbstractMojo {
 
+  /** The commit count. */
+  private final static int commitCt = 2000;
+
   /**
    * Executes the plugin.
    * 
@@ -79,10 +86,28 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
       mappingService.setTransactionPerOperation(false);
       mappingService.beginTransaction();
 
-      // Look up map projects
+      // Look up map projects amd ,a[ recprds
       getLog().info("  Lookup map projects");
       List<MapProject> mapProjects =
           mappingService.getMapProjects().getMapProjects();
+      // refsetId -> conceptId -> Set<MapRecord>s
+      Map<String, Map<String, Set<MapRecord>>> mapProjectMap = new HashMap<>();
+      for (MapProject mapProject : mapProjects) {
+        Map<String, Set<MapRecord>> mapRecordsMap = new HashMap<>();
+        // TODO: factor this out so we only read map records for
+        // refSetIds that have notes associated with them.
+        for (MapRecord mapRecord : mappingService.getMapRecordsForMapProject(
+            mapProject.getId()).getMapRecords()) {
+          if (!mapRecordsMap.containsKey(mapRecord.getConceptId())) {
+            Set<MapRecord> mapRecordSet = new HashSet<>();
+            mapRecordsMap.put(mapRecord.getConceptId(), mapRecordSet);
+          }
+          Set<MapRecord> mapRecordSet =
+              mapRecordsMap.get(mapRecord.getConceptId());
+          mapRecordSet.add(mapRecord);
+        }
+        mapProjectMap.put(mapProject.getRefSetId(), mapRecordsMap);
+      }
 
       // Iterate through the file
       mapNoteReader = new BufferedReader(new FileReader(new File(inputFile)));
@@ -114,41 +139,35 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
         }
         mapNote.setNote(note);
 
-        List<MapRecord> mapRecords =
-            mappingService.getMapRecordsForConcept(fields[5]).getMapRecords();
+        Set<MapRecord> mapRecords = mapProjectMap.get(fields[4]).get(fields[5]);
 
         // Verify matching map records were found, otherwise fail
         if (mapRecords != null && mapRecords.size() > 0) {
 
-          // Iterate through records
+          // Iterate through records and add note to each one
+          // Note, if there are multiple records in the workflow, they all get
+          // the note
           for (MapRecord mapRecord : mapRecords) {
+            getLog().debug(
+                mapNote.getNote().length() + " " + "    Adding note "
+                    + fields[4] + ", " + mapRecord.getConceptId() + " = "
+                    + mapNote.getNote());
+            mapRecord.addMapNote(mapNote);
+            mappingService.updateMapRecord(mapRecord);
 
-            // Find matching map project
-            for (MapProject mapProject : mapProjects) {
-
-              // find matching refset id
-              if (mapProject.getRefSetId().equals(fields[4])
-                  && mapRecord.getMapProjectId().equals(mapProject.getId())) {
-                getLog().debug(
-                    mapNote.getNote().length() + " "
-                        + "    Adding note to record "
-                        + mapProject.getRefSetId() + ", "
-                        + mapRecord.getConceptId() + " = " + mapNote.getNote());
-                mapRecord.addMapNote(mapNote);
-                mappingService.updateMapRecord(mapRecord);
-
-                if (++ct % 500 == 0) {
-                  getLog().info("      " + ct + " notes processed");
-                }
-              }
+            if (++ct % commitCt == 0) {
+              getLog().info("      commit = " + ct);
+              mappingService.commit();
+              mappingService.beginTransaction();
             }
           }
         } else {
-          getLog()
-              .info("Map note references non-existent concept " + fields[5]);
+          getLog().info(
+              "Map note references non-existent concept/project " + fields[5]
+                  + "/" + fields[4]);
         }
       }
-      getLog().info("  " + ct + " map notes inserted");
+      getLog().info("    count = " + ct);
       getLog().info("done ...");
       mappingService.commit();
       mappingService.close();

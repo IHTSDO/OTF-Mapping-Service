@@ -23,7 +23,7 @@ public class ConfigUtility {
    *
    * @throws Exception the exception
    */
-  public static Properties getConfigProperties() throws Exception {
+  public synchronized static Properties getConfigProperties() throws Exception {
     if (config == null) {
       String configFileName = System.getProperty("run.config");
       Logger.getLogger(ConfigUtility.class.getName()).info(
@@ -43,7 +43,7 @@ public class ConfigUtility {
    *
    * @throws Exception the exception
    */
-  public static Properties getTestConfigProperties() throws Exception {
+  public synchronized static Properties getTestConfigProperties() throws Exception {
     if (testConfig == null) {
       String configFileName = System.getProperty("run.config.test");
       Logger.getLogger(ConfigUtility.class.getName()).info(

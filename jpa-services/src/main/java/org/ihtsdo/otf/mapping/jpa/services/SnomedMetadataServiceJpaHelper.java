@@ -523,4 +523,10 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements
     return GraphHelper.getDescendantConcepts(concept, typeId);
 
   }
+
+  @Override
+  public void initializeFieldNames() throws Exception {
+    // no need
+  }
+
 }
