@@ -71,18 +71,12 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
 
       // set the input directory
       String inputFile = config.getProperty("loader.complexmap.input.data");
-      if (!new File(inputFile).exists()) {
+      if (inputFile == null || !new File(inputFile).exists()) {
         throw new MojoFailureException(
             "Specified loader.complexmap.input.data directory does not exist: "
                 + inputFile);
       }
       Logger.getLogger(this.getClass()).info("  inputFile: " + inputFile);
-
-      // Bail if input file is not set
-      if (inputFile == null) {
-        throw new MojoExecutionException(
-            "Failed to set input file from property file parameter");
-      }
 
       // sort input file
       getLog().info(

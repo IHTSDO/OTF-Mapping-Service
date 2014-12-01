@@ -448,6 +448,18 @@ public interface ContentService extends RootService {
     throws Exception;
 
   /**
+   * Returns the descendant concepts count.
+   *
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @return the descendant concepts count
+   * @throws Exception the exception
+   */
+  public int getDescendantConceptsCount(String terminologyId,
+    String terminology, String terminologyVersion) throws Exception;
+
+  /**
    * Clear tree positions.
    * 
    * @param terminology the terminology
@@ -678,10 +690,11 @@ public interface ContentService extends RootService {
     String terminology, String terminologyVersion) throws Exception;
 
   /**
-   * Returns all complex map ref set members for a given refset id
-   * @param refSetId
-   * @return
-   * @throws Exception
+   * Returns all complex map ref set members for a given refset id.
+   *
+   * @param refSetId the ref set id
+   * @return the complex map ref set members for ref set id
+   * @throws Exception the exception
    */
   public ComplexMapRefSetMemberList getComplexMapRefSetMembersForRefSetId(
     String refSetId) throws Exception;
