@@ -130,9 +130,19 @@ public class ReleaseProcessingMojo extends AbstractMojo {
           }
         }
       }
-
+      
+      ReleaseHandler releaseHandler = new ReleaseHandlerJpa();
+      for (MapProject mapProject : mapProjects) {
+        getLog().info(
+            "Performing release QA for " + mapProject.getName() + ", "
+                + mapProject.getId());
+       releaseHandler.performBeginReleaseQAChecks(mapProject);
+      }
+      
+      /*
       // Perform the release processing
       for (MapProject mapProject : mapProjects) {
+       
 
         // add check for scope concepts contained in the map record set
 
@@ -187,12 +197,15 @@ public class ReleaseProcessingMojo extends AbstractMojo {
         ReleaseHandler releaseHandler = new ReleaseHandlerJpa();
         releaseHandler.processRelease(mapProject, mapRecords, outputDirName,
             effectiveTime, moduleId);
+            
+            
 
       }
 
       getLog().info("done ...");
       mappingService.close();
-
+      
+      */
     } catch (Exception e) {
       e.printStackTrace();
       throw new MojoExecutionException("Performing release processing failed.",
