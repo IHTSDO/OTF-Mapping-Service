@@ -90,3 +90,17 @@
       {{principle.name}}</div>
   </div>
 </div>
+<div ng-show="record.errors.length > 0" style="color: red;">
+  Errors detected:
+  <ul>
+    <li ng-repeat="error in record.errors">{{error}}</li>
+  </ul>
+ </div>
+  
+<div ng-show="record.warnings.length > 0" style="color: orange;">
+  Warnings:
+  <ul>
+    <li ng-repeat="warning in record.warnings">{{warning}}</li>
+  </ul>
+ 
+</span>
