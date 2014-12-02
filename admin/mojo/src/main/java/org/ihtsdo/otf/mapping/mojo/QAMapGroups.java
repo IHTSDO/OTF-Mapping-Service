@@ -76,14 +76,12 @@ public class QAMapGroups extends AbstractMojo {
 
     if (mode == null) {
       throw new MojoExecutionException(
-          "You must specify a mode (check for diagnostics only, update to fix group numbering errors).");
+          "You must specify a mode (check for diagnostics only, update to fix errors).");
     }
 
     try {
 
       MappingService mappingService = new MappingServiceJpa();
-      mappingService.setTransactionPerOperation(false);
-      mappingService.beginTransaction();
 
       Set<MapProject> mapProjects = new HashSet<>();
 
@@ -109,8 +107,6 @@ public class QAMapGroups extends AbstractMojo {
         boolean updateRecords = mode.equals("update");
         mappingService.checkMapGroupsForMapProject(mapProject, updateRecords);
       }
-
-      mappingService.commit();
 
       getLog().info("done ...");
       mappingService.close();
