@@ -1726,7 +1726,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   }
 
   @Override
-  public void performBeginReleaseQAChecks(MapProject mapProject)
+  public void performBeginReleaseQAChecks(MapProject mapProject, boolean removeRecords)
     throws Exception {
 
     // instantiate required services
@@ -1797,6 +1797,47 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         "  " + mapRecords.getCount() + " map records retrieved.");
 
     Logger.getLogger(ReleaseHandlerJpa.class).info("Cycling over concepts...");
+    
+    // create a temp set of id to map record
+    Set<String> conceptsWithNoRecord = new HashSet<>();
+    for (MapRecord mr : mapRecords.getMapRecords())
+      conceptsWithNoRecord.add(mr.getConceptId());
+    
+    // create a temp set of scope concept ids
+    Set<String> conceptIdsTemp = new HashSet<>(scopeConceptTerminologyIds);
+    
+    // cycle over concept ids and remove ids with a 
+    for (String terminologyId : conceptIdsTemp) {
+      if (conceptsWithNoRecord.contains(terminologyId))
+        conceptsWithNoRecord.remove(terminologyId);
+    }
+    
+    // if any ids remain, add them to report as error
+    if (conceptsWithNoRecord.size() != 0) {
+      ReportResult reportResult = new ReportResultJpa();
+      reportResult.setReport(report);
+      reportResult.setValue("In-scope concepts have no map record");
+      reportResult.setProjectName(mapProject.getName());
+      report.addResult(reportResult);
+      
+      ContentService contentService = new ContentServiceJpa();
+      
+      // cycle over remaining ids
+      for (String terminologyId : conceptsWithNoRecord) {
+        
+        // get the concept
+        Concept c = contentService.getConcept(terminologyId, mapProject.getSourceTerminology(), mapProject.getSourceTerminologyVersion());
+      
+        ReportResultItem item = new ReportResultItemJpa();
+        item.setReportResult(reportResult);
+        item.setItemId(terminologyId);
+        item.setItemName(c.getDefaultPreferredName());
+        item.setResultType(ReportResultType.CONCEPT);
+        reportResult.addReportResultItem(item);
+      }
+      
+      contentService.close();
+    }
 
     Logger.getLogger(ReleaseHandlerJpa.class).info("Cycling over records...");
 
