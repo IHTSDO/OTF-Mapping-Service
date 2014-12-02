@@ -11,6 +11,7 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
 
+// TODO: Auto-generated Javadoc
 /**
  * Loads unpublished complex maps.
  * 
@@ -49,10 +50,16 @@ import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
 public class QARelease extends AbstractMojo {
 
   /**
-   * The refSet id
+   * The refSet id.
    * @parameter refSetId
    */
   private String refSetId = null;
+
+  /**
+   * The update records.
+   * @parameter updateRecords
+   */
+  private boolean updateRecords = false;
 
   /**
    * Executes the plugin.
@@ -61,11 +68,12 @@ public class QARelease extends AbstractMojo {
    */
   @Override
   public void execute() throws MojoExecutionException {
-    getLog().info("Starting begin release QA checks - " + refSetId);
+    getLog().info("Starting begin release QA checks - " + refSetId + ", " + updateRecords);
 
     if (refSetId == null) {
       throw new MojoExecutionException("You must specify a refSetId.");
     }
+
 
     try {
 
@@ -87,7 +95,7 @@ public class QARelease extends AbstractMojo {
         getLog().info(
             "Performing release QA for " + mapProject.getName() + ", "
                 + mapProject.getId());
-       releaseHandler.performBeginReleaseQAChecks(mapProject);
+        releaseHandler.performBeginReleaseQAChecks(mapProject, updateRecords);
       }
 
       getLog().info("done ...");
