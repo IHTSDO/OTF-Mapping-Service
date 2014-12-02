@@ -3391,7 +3391,11 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
   @Override
   public void checkMapGroupsForMapProject(MapProject mapProject,
     boolean updateRecords) throws Exception {
-
+    
+    if (updateRecords == true) {
+      this.setTransactionPerOperation(false);
+      this.beginTransaction();
+    }
     Logger.getLogger(MappingServiceJpa.class).info(
         "Checking map group numbering and empty groups for project "
             + mapProject.getName());
@@ -3482,6 +3486,11 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
         nMapRecordsAltered++;
       }
     }
+    
+    if (updateRecords == true) {
+      this.commit();
+      this.beginTransaction();
+    }
 
     Logger.getLogger(MappingServiceJpa.class).info(
         "Records modified: " + nMapRecordsAltered);
@@ -3491,8 +3500,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
         "Entries removed : " + nMapEntriesRemoved);
 
     // ////////////////////////////////////////////
-    // Group Number Checking //
-    // Must come after high-level group checking //
+    // Group Number Checking                     //
+    // MUST come after high-level group checking //
     // ////////////////////////////////////////////
 
     // cycle over all records
@@ -3613,6 +3622,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
                   + nRecordsRemapped + " with group errors");
         }
       }
+    }
+    
+    if (updateRecords == true) {
+      this.commit();
     }
 
     Logger.getLogger(MappingServiceJpa.class).info(
