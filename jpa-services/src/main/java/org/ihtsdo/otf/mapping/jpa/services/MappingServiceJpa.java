@@ -3411,7 +3411,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
         (int) Math.floor(mapRecordsInProject.getCount() / 10);
 
     // /////////////////////////
-    // Empty Group Checking  ///
+    // Empty Group Checking ///
     // /////////////////////////
 
     // tracking/logging variables
@@ -3476,14 +3476,14 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
             this.updateMapRecord(mr);
           }
 
-          // update the counter
-          if (mapRecordAltered) {
-            nMapRecordsAltered++;
-          }
+        }
+        
+        // update the counter
+        if (mapRecordAltered) {
+          nMapRecordsAltered++;
         }
       }
     }
-
 
     Logger.getLogger(MappingServiceJpa.class).info(
         "Records modified: " + nMapRecordsAltered);
