@@ -3469,16 +3469,13 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
             nMapGroupsRemoved++;
           }
-
-          // if record latered and update flag set, updat ethe record
-          if (mapRecordAltered == true && updateRecords == true) {
-            this.handleMapRecordLazyInitialization(mr);
-            this.updateMapRecord(mr);
-          }
-
         }
-        
-        
+      }
+      
+      // if record latered and update flag set, updat ethe record
+      if (mapRecordAltered == true && updateRecords == true) {
+        this.handleMapRecordLazyInitialization(mr);
+        this.updateMapRecord(mr);
       }
       // update the counter
       if (mapRecordAltered) {
