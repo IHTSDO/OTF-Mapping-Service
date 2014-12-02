@@ -3404,9 +3404,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     Logger.getLogger(MappingServiceJpa.class).info(
         "Checking " + mapRecordsInProject.getCount() + " map records.");
 
-    ProjectSpecificAlgorithmHandler algorithmHandler =
-        this.getProjectSpecificAlgorithmHandler(mapProject);
-
     // logging variables
     int nRecordsChecked = 0;
     int nRecordsRemapped = 0;
@@ -3414,23 +3411,20 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
         (int) Math.floor(mapRecordsInProject.getCount() / 10);
 
     // /////////////////////////
-    // Empty Group Checking ///
+    // Empty Group Checking  ///
     // /////////////////////////
 
-    if (updateRecords) {
-      this.setTransactionPerOperation(false);
-      this.beginTransaction();
-    }
-    
+    // tracking/logging variables
     int nMapRecordsAltered = 0;
     int nMapGroupsRemoved = 0;
     int nMapEntriesRemoved = 0;
 
+    // cycle over all map records for this project
     for (MapRecord mr : mapRecordsInProject.getIterable()) {
       Map<Integer, List<MapEntry>> entriesByGroup = new HashMap<>();
 
       boolean mapRecordAltered = false;
-   
+
       // sort entries by group
       for (MapEntry me : mr.getMapEntries()) {
         // get the cached entries
@@ -3465,37 +3459,39 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
           // if not a valid group, remove all entries
           if (isValidGroup == false) {
-            
+
             mapRecordAltered = true;
-            
+
             for (MapEntry entry : entries) {
               mr.removeMapEntry(entry);
               nMapEntriesRemoved++;
             }
-            
-            nMapGroupsRemoved++;
 
+            nMapGroupsRemoved++;
+          }
+
+          // if record latered and update flag set, updat ethe record
+          if (mapRecordAltered == true && updateRecords == true) {
+            this.handleMapRecordLazyInitialization(mr);
             this.updateMapRecord(mr);
           }
-          
-          if (mapRecordAltered == true)
+
+          // update the counter
+          if (mapRecordAltered) {
             nMapRecordsAltered++;
+          }
         }
       }
     }
 
-    // commit changes
-    if (updateRecords) {
-      this.commit();
-    }
-    
-    Logger.getLogger(MappingServiceJpa.class).info("Records modified: " + nMapRecordsAltered);
-    Logger.getLogger(MappingServiceJpa.class).info("Groups removed  : " + nMapGroupsRemoved);
-    Logger.getLogger(MappingServiceJpa.class).info("Entries removed : " + nMapEntriesRemoved);
-    
-    
-    
-    
+
+    Logger.getLogger(MappingServiceJpa.class).info(
+        "Records modified: " + nMapRecordsAltered);
+    Logger.getLogger(MappingServiceJpa.class).info(
+        "Groups removed  : " + nMapGroupsRemoved);
+    Logger.getLogger(MappingServiceJpa.class).info(
+        "Entries removed : " + nMapEntriesRemoved);
+
     // ////////////////////////////////////////////
     // Group Number Checking //
     // Must come after high-level group checking //
