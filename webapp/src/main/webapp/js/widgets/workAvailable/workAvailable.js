@@ -587,7 +587,7 @@ angular
           .success(
             function(data) {
 
-              $rootScope.glassPane--;
+             
               console.debug("Claim batch:  Checking against viewed concepts");
 
               var trackingRecords = data.searchResult;
@@ -623,7 +623,7 @@ angular
 
                 console.debug("Calling batch assignment API");
 
-                $rootScope.glassPane++;
+            
                 $http(
                   {
                     url : root_workflow + "assignBatch/project/id/"
@@ -712,7 +712,7 @@ angular
           .success(
             function(data) {
 
-              $rootScope.glassPane--;
+             
               console.debug("Claim batch:  Checking against viewed conflicts");
 
               var trackingRecords = data.searchResult;
@@ -750,7 +750,6 @@ angular
 
                 console.debug("Calling batch assignment API");
 
-                $rootScope.glassPane++;
                 $http(
                   {
                     url : root_workflow + "assignBatch/project/id/"
@@ -785,6 +784,7 @@ angular
                         .debug("Could not retrieve available work when assigning batch.");
                     });
               } else {
+                $rootScope.glassPane--;
                 console.debug("Unexpected error in assigning batch");
               }
             }).error(function(data, status, headers, config) {
@@ -839,7 +839,7 @@ angular
           .success(
             function(data) {
 
-              $rootScope.glassPane--;
+            
               console
                 .debug("Claim batch:  Checking against viewed review work");
 
@@ -875,7 +875,6 @@ angular
 
                 console.debug("Calling batch assignment API");
 
-                $rootScope.glassPane++;
                 $http(
                   {
                     url : root_workflow + "assignBatch/project/id/"
@@ -910,6 +909,7 @@ angular
                         .debug("Could not retrieve available review work when assigning batch.");
                     });
               } else {
+                $rootScope.glassPane--;
                 console.debug("Unexpected error in assigning review batch");
               }
             }).error(function(data, status, headers, config) {
@@ -964,7 +964,6 @@ angular
           .success(
             function(data) {
 
-              $rootScope.glassPane--;
               console.debug("Claim batch:  Checking against viewed qa work");
 
               var trackingRecords = data.searchResult;
@@ -1034,6 +1033,7 @@ angular
                     });
               } else {
                 console.debug("Unexpected error in assigning qa batch");
+                $rootScope.glassPane--;
               }
             }).error(function(data, status, headers, config) {
             $rootScope.glassPane--;
