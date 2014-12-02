@@ -97,8 +97,10 @@ public interface ReleaseHandler {
    * Perform begin release qa checks.
    *
    * @param mapProject the map project
-   * @throws Exception 
+   * @param removeRecords the remove records
+   * @throws Exception the exception
    */
-  void performBeginReleaseQAChecks(MapProject mapProject) throws Exception;
+ void performBeginReleaseQAChecks(MapProject mapProject, boolean removeRecords)
+    throws Exception;
 
 }
