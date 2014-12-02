@@ -1808,8 +1808,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     
     // cycle over concept ids and remove ids with a 
     for (String terminologyId : conceptIdsTemp) {
-      if (conceptsWithNoRecord.contains(terminologyId))
-        conceptsWithNoRecord.remove(terminologyId);
+      conceptsWithNoRecord.remove(terminologyId);
     }
     
     // if any ids remain, add them to report as error
@@ -1854,19 +1853,19 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           WorkflowStatus.READY_FOR_PUBLICATION)
           && !mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)) {
         mapRecordErrors.add("Not marked ready for publication");
+      } else {
+        // CHECK: Map record (must be ready for publication) passes project specific validation checks
+        ValidationResult result = algorithmHandler.validateRecord(mapRecord);
+        if (!result.isValid()) {
+          for (String error : result.getErrors()) {   
+            mapRecordErrors.add("Failed validation check: " + error);
+          }
+        }
       }
 
       // CHECK: Concept is in scope
       if (!scopeConceptTerminologyIds.contains(mapRecord.getConceptId())) {
         mapRecordErrors.add("Concept is not in scope");
-      }
-
-      // CHECK: Map record passes project specific validation checks
-      ValidationResult result = algorithmHandler.validateRecord(mapRecord);
-      if (!result.isValid()) {
-        for (String error : result.getErrors()) {   
-          mapRecordErrors.add("Failed validation check: " + error);
-        }
       }
 
       // CONVERT: Error list into report results

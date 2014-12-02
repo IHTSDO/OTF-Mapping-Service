@@ -100,7 +100,7 @@ angular
           }
         }).success(
           function(data) {
-            $rootScope.glassPane--;
+           
             $scope.conversation = data;
             console.debug("Feedback Conversation:");
             console.debug($scope.conversation);
@@ -108,7 +108,7 @@ angular
             initializeReturnRecipients($scope.conversation);
 
             $scope.record = null;
-            $rootScope.glassPane++;
+            
 
             // load record to be displayed; try to find active record first
             $http(
@@ -123,7 +123,7 @@ angular
                 }
               }).success(
               function(data) {
-                $rootScope.glassPane--;
+                
                 $scope.record = data;
                 console.debug("Record:");
                 console.debug($scope.record);
@@ -144,7 +144,7 @@ angular
                       }
                     }).success(
                     function(data) {
-                      $rootScope.glassPane--;
+                      
                       $scope.record1 = data;
                       console.debug("Record1:");
                       console.debug($scope.record1);
