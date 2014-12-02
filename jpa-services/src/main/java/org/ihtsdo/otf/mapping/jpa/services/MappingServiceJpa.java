@@ -2506,10 +2506,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
           mapRecord.setMapProjectId(mapProject.getId());
 
           // get the number of descendants
-          mapRecord.setCountDescendantConcepts(
-              (long)contentService.getDescendantConceptsCount(
-                  concept.getTerminologyId(), concept.getTerminology(),
-                  concept.getTerminologyVersion()));
+          mapRecord.setCountDescendantConcepts((long) contentService
+              .getDescendantConceptsCount(concept.getTerminologyId(),
+                  concept.getTerminology(), concept.getTerminologyVersion()));
           Logger.getLogger(MappingServiceJpa.class).debug(
               "      Computing descendant ct = "
                   + mapRecord.getCountDescendantConcepts());
@@ -3379,7 +3378,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     mapProject.getReportDefinitions().size();
     mapProject.getScopeConcepts().size();
     mapProject.getScopeExcludedConcepts().size();
-    
+
   }
 
   /*
@@ -3394,7 +3393,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     boolean updateRecords) throws Exception {
 
     Logger.getLogger(MappingServiceJpa.class).info(
-        "Checking map group numbering for project " + mapProject.getName());
+        "Checking map group numbering and empty groups for project "
+            + mapProject.getName());
     Logger.getLogger(MappingServiceJpa.class).info(
         "  Mode: " + (updateRecords ? "Update" : "Check"));
 
@@ -3404,11 +3404,102 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     Logger.getLogger(MappingServiceJpa.class).info(
         "Checking " + mapRecordsInProject.getCount() + " map records.");
 
+    ProjectSpecificAlgorithmHandler algorithmHandler =
+        this.getProjectSpecificAlgorithmHandler(mapProject);
+
     // logging variables
     int nRecordsChecked = 0;
     int nRecordsRemapped = 0;
     int nMessageInterval =
         (int) Math.floor(mapRecordsInProject.getCount() / 10);
+
+    // /////////////////////////
+    // Empty Group Checking ///
+    // /////////////////////////
+
+    if (updateRecords) {
+      this.setTransactionPerOperation(false);
+      this.beginTransaction();
+    }
+    
+    int nMapRecordsAltered = 0;
+    int nMapGroupsRemoved = 0;
+    int nMapEntriesRemoved = 0;
+
+    for (MapRecord mr : mapRecordsInProject.getIterable()) {
+      Map<Integer, List<MapEntry>> entriesByGroup = new HashMap<>();
+
+      boolean mapRecordAltered = false;
+   
+      // sort entries by group
+      for (MapEntry me : mr.getMapEntries()) {
+        // get the cached entries
+        List<MapEntry> entries = entriesByGroup.get(me.getMapGroup());
+
+        // if this group not encountered, instantiate new list
+        if (entries == null)
+          entries = new ArrayList<>();
+
+        // add entry to list
+        entries.add(me);
+
+        // replace cached list
+        entriesByGroup.put(me.getMapGroup(), entries);
+      }
+
+      // NOTE: This duplicates DefaultProjectSpecificAlgorithmHandler
+      // Consider changing return content of Validation Result
+      // cycle over each group
+      for (int group : entriesByGroup.keySet()) {
+
+        // skip first group
+        if (group != 1) {
+          List<MapEntry> entries = entriesByGroup.get(group);
+
+          // cycle over entries in this group
+          boolean isValidGroup = false;
+          for (MapEntry entry : entries) {
+            if (entry.getTargetId() != null && !entry.getTargetId().equals(""))
+              isValidGroup = true;
+          }
+
+          // if not a valid group, remove all entries
+          if (isValidGroup == false) {
+            
+            mapRecordAltered = true;
+            
+            for (MapEntry entry : entries) {
+              mr.removeMapEntry(entry);
+              nMapEntriesRemoved++;
+            }
+            
+            nMapGroupsRemoved++;
+
+            this.updateMapRecord(mr);
+          }
+          
+          if (mapRecordAltered == true)
+            nMapRecordsAltered++;
+        }
+      }
+    }
+
+    // commit changes
+    if (updateRecords) {
+      this.commit();
+    }
+    
+    Logger.getLogger(MappingServiceJpa.class).info("Records modified: " + nMapRecordsAltered);
+    Logger.getLogger(MappingServiceJpa.class).info("Groups removed  : " + nMapGroupsRemoved);
+    Logger.getLogger(MappingServiceJpa.class).info("Entries removed : " + nMapEntriesRemoved);
+    
+    
+    
+    
+    // ////////////////////////////////////////////
+    // Group Number Checking //
+    // Must come after high-level group checking //
+    // ////////////////////////////////////////////
 
     // cycle over all records
     for (MapRecord mapRecord : mapRecordsInProject.getIterable()) {
