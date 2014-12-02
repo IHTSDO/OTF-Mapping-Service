@@ -794,7 +794,7 @@ angular
                     + terminologyIdsConcepts.length + ")",
                     terminologyIdsConcepts);
                 unassignBatch(mapUser, terminologyIdsConcepts, 'concept');
-                $rootScope.glassPane--;
+               
               }).error(function(data, status, headers, config) {
               $rootScope.glassPane--;
               $rootScope.handleHttpError(data, status, headers, config);
@@ -841,7 +841,6 @@ angular
                   terminologyIdsConflicts);
                 unassignBatch(mapUser, terminologyIdsConflicts, 'conflict');
 
-                $rootScope.glassPane--;
               }).error(function(data, status, headers, config) {
               $rootScope.glassPane--;
               $rootScope.handleHttpError(data, status, headers, config);
@@ -887,7 +886,7 @@ angular
                     + terminologyIdsReview.length + ")", terminologyIdsReview);
                   unassignBatch(mapUser, terminologyIdsReview, 'review');
 
-                  $rootScope.glassPane--;
+               
 
                 }).error(function(data, status, headers, config) {
                 $rootScope.glassPane--;
@@ -933,7 +932,6 @@ angular
                   + ")", terminologyIdsQA);
                 unassignBatch(mapUser, terminologyIdsQA, 'qa');
 
-                $rootScope.glassPane--;
 
               }).error(function(data, status, headers, config) {
               $rootScope.glassPane--;
