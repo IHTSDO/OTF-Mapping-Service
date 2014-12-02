@@ -3478,10 +3478,11 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
         }
         
-        // update the counter
-        if (mapRecordAltered) {
-          nMapRecordsAltered++;
-        }
+        
+      }
+      // update the counter
+      if (mapRecordAltered) {
+        nMapRecordsAltered++;
       }
     }
 
