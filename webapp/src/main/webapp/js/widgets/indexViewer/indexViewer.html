@@ -10,32 +10,39 @@
   <button class="btn btn-sm btn-primary"
     ng-click="resetSearch(1, 'null', assignedMapUser); searchField = null; 
               subSearchField = null; subSubSearchField = null;">Reset</button>
-
 </form>
-<div style="float: left; width: 60%; padding: 10px;">{{mainTermLabel}}</div>
-<div style="float: right; width: 40%; padding: 10px;">
-  <a title="Go to first search result" ng-click="goFirstResult()"><i
-    class="glyphicon glyphicon-backward"></i></a> <a
-    title="Go to previous search result" ng-click="goPreviousResult()"><i
-    class="glyphicon glyphicon-step-backward"></i></a> {{searchResultsLabel}} <a
-    title="Go to next search result" ng-click="goNextResult()"><i
-    class="glyphicon glyphicon-step-forward"></i></a> <a
-    title="Go to last search result" ng-click="goLastResult()"><i
-    class="glyphicon glyphicon-forward"></i></a>
+
+
+<div style="float: left; width: 60%; padding: 10px;">
+  <b>{{mainTermLabel}}</b>
 </div>
 
-<tabset>
-<tab ng-repeat="indexTab in indexTabs" heading="{{indexTab.title}}"
-  active="indexTab.active">
-<div id="scrollArea" style="height: 250px;">
-  <a ng-click="gotoElement('skin')">Go to 'skin'</a><br /> <a
-    ng-click="gotoElement('bottom')">Go to bottom</a>
-  <p ng-bind-html="renderHtml(indexTab.contents)"></p>
-  {{templateUrl}}
-  <div class="slide-animate" ng-include src="templateUrl"></div>
-  <a id="bottom"></a> You're at the bottom!
+<div style="float: right; width: 40%; padding: 10px;">
+  <a title="Go to first search result" ng-show="firstArrow"
+    ng-click="goFirstResult()"><i class="glyphicon glyphicon-backward"></i></a>
+  <a title="Go to previous search result" ng-show="previousArrow"
+    ng-click="goPreviousResult()"><i
+    class="glyphicon glyphicon-step-backward"></i></a> {{searchResultsLabel}} <a
+    title="Go to next search result" ng-show="nextArrow"
+    ng-click="goNextResult()"><i class="glyphicon glyphicon-step-forward"></i></a>
+  <a title="Go to last search result" ng-show="lastArrow"
+    ng-click="goLastResult()"><i class="glyphicon glyphicon-forward"></i></a>
 </div>
-</tab> </tabset>
+
+<div>
+  <tabset> <tab ng-repeat="domain in domains" heading="{{domain}}"
+    ng-click="retrieveIndexPages(domain);"> </tab></tabset>
+</div>
+
+<div style="">
+<div style="display: inline; padding: 8px;" ng-repeat="indexTab in indexPages">
+  <a ng-click="updateUrl(indexTab)">{{indexTab}}</a>
+</div>
+</div>
+
+<div id="scrollArea" style="height: 250px;">
+  <div class="slide-animate" ng-include src="tUrl" autoscroll></div>
+</div>
 
 
 

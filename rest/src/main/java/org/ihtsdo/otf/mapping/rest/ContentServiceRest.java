@@ -1,6 +1,5 @@
 package org.ihtsdo.otf.mapping.rest;
 
-import java.io.File;
 import java.util.Map;
 
 import javax.ws.rs.GET;
@@ -22,7 +21,6 @@ import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
-import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.rf2.Concept;
@@ -30,7 +28,6 @@ import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Relationship;
 import org.ihtsdo.otf.mapping.services.ContentService;
-import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
 
@@ -509,4 +506,60 @@ public class ContentServiceRest extends RootServiceRest {
       return null;
     }
   }
+  
+  /**
+   * Find index viewer search result entries.
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @param domain the domain
+   * @param searchField the search field
+   * @param subSearchField the sub search field
+   * @param subSubSearchField the sub sub search field
+   * @param authToken the auth token
+   * @return the search result list
+   */
+  @GET  
+  @Path("/indexViewer/{terminology}/{terminologyVersion}/{domain}/search/{searchField}/subSearch/{subSearchField}/subSubSearch/{subSubSearchField}")
+  @ApiOperation(value = "Peform the search given the search terms.", notes = "Performs the search given the search terms in the given terminology.", response = SearchResultList.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public SearchResultList findIndexViewerEntries(
+    @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
+    @ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
+    @ApiParam(value = "Domain/Index within terminology", required = true) @PathParam("domain") String domain,
+    @ApiParam(value = "First level search field", required = true) @PathParam("searchField") String searchField,
+    @ApiParam(value = "Second level search field to refine search", required = true) @PathParam("subSearchField") String subSearchField,
+    @ApiParam(value = "Third level search field to reine search", required = true) @PathParam("subSubSearchField") String subSubSearchField,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+    Logger.getLogger(ContentServiceRest.class).info(
+        "RESTful call (Content): /indexViewer/" + terminology + "/" + terminologyVersion +
+        "/" + domain + "/" + searchField + "/" + subSearchField + "/" + subSubSearchField);
+
+    try {
+      // authorize call
+      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+        throw new WebApplicationException(
+            Response
+                .status(401)
+                .entity(
+                    "User does not have permissions to perform a search of the indexes.")
+                .build());
+
+      ContentService contentService = new ContentServiceJpa();
+      SearchResultList searchResultList = contentService.findIndexViewerEntries(terminology, 
+          terminologyVersion, domain, searchField, subSearchField, subSubSearchField);
+      searchResultList.setTotalCount(searchResultList.getCount());
+      contentService.close();
+      return searchResultList;
+
+    } catch (Exception e) {
+      handleException(e, "trying to perform a search of the indexes");
+      return null;
+    }
+  }
+
 }

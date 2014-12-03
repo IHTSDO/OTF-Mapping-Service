@@ -19,14 +19,24 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
 
 import org.apache.log4j.Logger;
+import org.apache.lucene.analysis.KeywordAnalyzer;
+import org.apache.lucene.analysis.PerFieldAnalyzerWrapper;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.document.Document;
 import org.apache.lucene.index.FieldInfo;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryParser.MultiFieldQueryParser;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.queryParser.QueryParser.Operator;
+import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.ReaderUtil;
 import org.apache.lucene.util.Version;
 import org.hibernate.search.SearchFactory;
@@ -98,7 +108,14 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
   /** The tree position field names. */
   private static Set<String> treePositionFieldNames;
+  
+  /** Query cache */
+  private Map<String, TopDocs> resultsCache = new HashMap<String, TopDocs>();
 
+  /** Track main level label by first component of link */
+  private Map<String, String> linkToLabelMap = new HashMap<String, String>();
+
+  
   /**
    * Instantiates an empty {@link ContentServiceJpa}.
    * 
@@ -2780,6 +2797,178 @@ public SearchResultList getIndexViewerPagesForIndex(String terminology,
   }
 
   return searchResultList;
+}
+
+/* (non-Javadoc)
+ * @see org.ihtsdo.otf.mapping.services.ContentService#performAggregatedSearch(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+ */
+@Override
+public SearchResultList findIndexViewerEntries(String terminology,
+  String terminologyVersion, String domain, String searchField, String subSearchField, String subSubSearchField) throws Exception {
+  clearResultsCache();
+
+  SearchResultList searchResultList = new SearchResultListJpa();
+  
+  List<String> mainSearchResults = new ArrayList<String>();
+  List<String> subSearchResults = new ArrayList<String>();
+  List<String> subSubSearchResults = new ArrayList<String>();
+  
+  Properties config = ConfigUtility.getConfigProperties();
+  
+  int startLevel = Integer.parseInt(config.getProperty("index.viewer.searchStartLevel"));
+  int endLevel = Integer.parseInt(config.getProperty("index.viewer.searchEndLevel"));
+  mainSearchResults =
+          performSearch(terminology, terminologyVersion, domain, searchField, startLevel, endLevel, null,
+                  (subSearchField != null && !subSearchField.equals("undefined") && !subSearchField.equals("")));
+
+  if ( subSearchField == null || subSearchField.equals("undefined") || subSearchField.equals("")) {
+    for (String result : mainSearchResults) {
+      SearchResult searchResult = new SearchResultJpa();
+      searchResult.setValue(result);
+      searchResult.setValue2(linkToLabelMap.get(result));
+      searchResultList.addSearchResult(searchResult);
+    }
+    return searchResultList;
+  } else {
+      startLevel = Integer.parseInt(config.getProperty("index.viewer.subSearchStartLevel"));
+      endLevel = Integer.parseInt(config.getProperty("index.viewer.subSearchEndLevel"));
+      for (int i = 0; i < mainSearchResults.size(); i++) {
+          subSearchResults.addAll(performSearch(terminology, terminologyVersion, domain, subSearchField,
+                  startLevel, endLevel, mainSearchResults.get(i), false));
+      }
+  }
+
+  if (subSubSearchField == null || subSubSearchField.equals("undefined") ||subSubSearchField.equals("")) {
+    for (String result : subSearchResults) {
+      SearchResult searchResult = new SearchResultJpa();
+      searchResult.setValue(result);
+      searchResult.setValue2(linkToLabelMap.get(result));
+      searchResultList.addSearchResult(searchResult);
+    }
+    return searchResultList;
+  } else {
+      startLevel =
+              Integer.parseInt(config.getProperty("index.viewer.subSubSearchStartLevel"));
+      endLevel = Integer.parseInt(config.getProperty("index.viewer.subSubSearchEndLevel"));
+      for (int i = 0; i < subSearchResults.size(); i++) {
+          subSubSearchResults.addAll(performSearch(terminology, terminologyVersion, domain, subSubSearchField,
+                  startLevel, endLevel, subSearchResults.get(i), false));
+      }
+  }
+
+  for (String result : subSubSearchResults) {
+    SearchResult searchResult = new SearchResultJpa();
+    searchResult.setValue(result);
+    searchResult.setValue2(linkToLabelMap.get(result));
+    searchResultList.addSearchResult(searchResult);
+  }
+  return searchResultList;
+
+}
+
+/**
+ * Performs the search
+ * 
+ * @param searchStr the search string
+ * @param startLevel the start level
+ * @param endLevel the end level
+ * @param subSearchAnchor the sub search anchor
+ * @return the results
+ * @throws Exception the exception
+ */
+public List<String> performSearch(String terminology,
+    String terminologyVersion, String domain, String searchStr, int startLevel,
+    int endLevel, String subSearchAnchor, boolean requireHasChild)
+    throws Exception {
+  
+    Properties config = ConfigUtility.getConfigProperties();
+    String indexBaseDir = config.getProperty("hibernate.search.default.indexBase");
+    String indexesDir = indexBaseDir + "/" + terminology + "/" + terminologyVersion + "/" + domain;
+    
+    List<String> searchResults = new ArrayList<String>();
+    // configure
+    File selectedDomainDir = new File(indexesDir);
+    String query = searchStr + " " + getLevelConstraint(startLevel, endLevel);
+    if (requireHasChild)
+        query = query + " hasChild:true";
+    if (subSearchAnchor != null && subSearchAnchor.indexOf(".") == -1)
+        query = query + " topLink:" + subSearchAnchor;
+    if (subSearchAnchor != null && subSearchAnchor.indexOf(".") != -1)
+        query =
+                query + " topLink:"
+                        + subSearchAnchor.substring(0, subSearchAnchor.indexOf('.'));
+    
+    int maxHits = Integer.parseInt(config.getProperty("index.viewer.maxHits"));
+
+    // Open index
+    Directory dir = FSDirectory.open(selectedDomainDir);
+    IndexReader reader = IndexReader.open(dir);
+
+    // Prep searcher
+    IndexSearcher searcher = new IndexSearcher(reader);
+    String defaultField = "title";
+    PerFieldAnalyzerWrapper analyzer =
+            new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_30));
+    analyzer.addAnalyzer("code", new KeywordAnalyzer());
+
+    QueryParser parser =
+            new QueryParser(Version.LUCENE_30, defaultField, analyzer);
+
+    // Prep query
+    parser.setAllowLeadingWildcard(true);
+    parser.setDefaultOperator(Operator.AND);
+    // System.out.println("QUERY: " + query);
+    TopDocs hits = null;
+    if (resultsCache.containsKey(query)) {
+        hits = resultsCache.get(query);
+        // System.out.println(" cached = " + hits.scoreDocs.length);
+    } else {
+        Query q = parser.parse(query);
+        hits = searcher.search(q, maxHits);
+        resultsCache.put(query, hits);
+        // System.out.println(" added to cache = " + hits.scoreDocs.length);
+    }
+
+    ScoreDoc[] scoreDocs = hits.scoreDocs;
+    for (int n = 0; n < scoreDocs.length; ++n) {
+        final ScoreDoc sd = scoreDocs[n];
+        final Document d = searcher.doc(sd.doc);
+        final String link = d.get("link");
+        final String levelTag = d.get("level");
+        final String label = d.get("label");
+        int level = Integer.parseInt(levelTag);
+
+        String linkFirstComponent =
+                (link.indexOf(".") != -1) ? link.substring(0, link.indexOf("."))
+                        : link;
+        if (label != null)
+            linkToLabelMap.put(linkFirstComponent, label);
+
+        // If subSearchAnchor is specified, the link must start with it
+        if (subSearchAnchor != null && !link.startsWith(subSearchAnchor + "."))
+            continue;
+
+        // If actual level is within desired range (inclusive), add match
+        else if (level >= startLevel && level <= endLevel)
+            searchResults.add(link);
+
+    }
+    return searchResults;
+}
+
+private String getLevelConstraint(int s, int e) {
+  if (s == e) {
+      return "level:" + s;
+  } else {
+      return "level:[" + s + " TO " + e + "]";
+  }
+}
+
+/**
+ * Clears query cache.
+ */
+public void clearResultsCache() {
+    resultsCache.clear();
 }
 
 }
