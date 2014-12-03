@@ -28,6 +28,7 @@ angular
       $scope.searchResultsLabel = '';
       $scope.searchResultsIndex = 0;
       $scope.mainTermLabel = '';
+      $scope.allCheckBox = false;
 
       // watch for project change
       $scope.$on('localStorageModule.notification.setFocusProject', function(
@@ -81,26 +82,27 @@ angular
       $scope.performSearchFromLink = function(searchText) {
         console.debug("searchText:", searchText);
 
+        $scope.allCheckBox = false;
         var res = searchText.split(","); 
         if (res.length == 1) {
-          $scope.performAggregatedSearch(false, res[0], 'undefined', 'undefined');
+          $scope.performAggregatedSearch(res[0], 'undefined', 'undefined');
           $scope.searchField = res[0];
           $scope.subSearchField = '';
           $scope.subSubSearchField = '';
         } else if (res.length == 2){
-          $scope.performAggregatedSearch(false, res[0], res[1].trim(), 'undefined');
+          $scope.performAggregatedSearch(res[0], res[1].trim(), 'undefined');
           $scope.searchField = res[0];
           $scope.subSearchField = res[1];
           $scope.subSubSearchField = '';
         } else {
-          $scope.performAggregatedSearch(false, res[0], res[1].trim(), res[2].trim());
+          $scope.performAggregatedSearch(res[0], res[1].trim(), res[2].trim());
           $scope.searchField = res[0];
           $scope.subSearchField = res[1];
           $scope.subSubSearchField = res[2];
         }
       };
       
-      $scope.performAggregatedSearch = function(allFlag, searchField,
+      $scope.performAggregatedSearch = function(searchField,
         subSearchField, subSubSearchField) {
 
         console.debug(searchField + " " + subSearchField + " "
@@ -116,10 +118,10 @@ angular
           return;
         }
         if (subSearchField == '') {
-          subSearchField = null;
+          subSearchField = 'undefined';
         }
         if (subSubSearchField == '') {
-          subSubSearchField = null;
+          subSubSearchField = 'undefined';
         }
 
         $rootScope.glassPane++;
@@ -127,7 +129,7 @@ angular
         var url = root_content + "indexViewer/" + $scope.focusProject.destinationTerminology
           + "/" + $scope.focusProject.destinationTerminologyVersion + "/" + $scope.selectedDomain + "/search/"
           + searchField + "/subSearch/"
-          + subSearchField + "/subSubSearch/" + subSubSearchField;
+          + subSearchField + "/subSubSearch/" + subSubSearchField + "/" + $scope.allCheckBox;
 
         $http(
           {
@@ -191,6 +193,7 @@ angular
           }
           
           $scope.selectedDomain = domain;
+          $scope.selectedPage = $scope.indexPages[0];
           $scope.updateUrl($scope.indexPages[0]);
           
         }).error(function(data, status, headers, config) {
@@ -199,23 +202,31 @@ angular
       };
 
       
-      // starts the process of scrolling to the given eID
+      // scrolling to the given eID on the correct html page
       $scope.goToElement = function(eID) {
 
-        // parse the eID to find the name of the target html page
-        $scope.selectedPage = eID.charAt(0);
-        // switch to the target html page
-        $scope.updateUrl($scope.selectedPage);
-        
-        $scope.eID = eID;
-        
-        // when the html page finishes loading the scrolling will happen
-        // see $rootScope.$on('includeContentLoaded'...
+        // if needing to switch to different html page
+        if (eID.charAt(0) != $scope.selectedPage) {
+          // parse the eID to find the name of the target html page
+          $scope.selectedPage = eID.charAt(0);
+          // switch to the target html page
+          $scope.updateUrl($scope.selectedPage);       
+          $scope.eID = eID;
+          
+          // when the html page finishes loading the scrolling will happen
+          // see $rootScope.$on('includeContentLoaded'...
+        } else {
+          // staying on same html page, so just scroll
+          $location.hash(eID);        
+          $anchorScroll();
+        }
+       
       };
       
       // updates the url to switch to display a new html page in the index viewer
       $scope.updateUrl = function(pageName) {
         $rootScope.glassPane++;
+        $scope.selectedPage = pageName;
         
         $scope.tUrl = $scope.focusProject.destinationTerminology + "/"
         + $scope.focusProject.destinationTerminologyVersion + "/html/" + 
@@ -287,5 +298,11 @@ angular
         
         $rootScope.glassPane--;
         
-    });
+      });
+      
+      $scope.set_style = function (indexTab) {
+        if (indexTab == $scope.selectedPage) {
+          return { color: "red"}
+        }
+      };
     });

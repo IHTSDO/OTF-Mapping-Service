@@ -6,7 +6,7 @@
     style="margin: 5px;"> <input type="checkbox" ng-model="allCheckBox"
     style="margin: 5px;"> All
   <button class="btn btn-sm btn-primary" style="margin: 5px;"
-    ng-click="performAggregatedSearch(allCheckBox, searchField, subSearchField, subSubSearchField);">Go</button>
+    ng-click="performAggregatedSearch(searchField, subSearchField, subSubSearchField);">Go</button>
   <button class="btn btn-sm btn-primary"
     ng-click="resetSearch(1, 'null', assignedMapUser); searchField = null; 
               subSearchField = null; subSubSearchField = null;">Reset</button>
@@ -34,10 +34,10 @@
     ng-click="retrieveIndexPages(domain);"> </tab></tabset>
 </div>
 
-<div style="">
-<div style="display: inline; padding: 8px;" ng-repeat="indexTab in indexPages">
-  <a ng-click="updateUrl(indexTab)">{{indexTab}}</a>
-</div>
+<div align="center" style="padding: 10px;">
+  <div style="display: inline; padding: 8px;" ng-repeat="indexTab in indexPages">
+    <a ng-style="set_style(indexTab)" ng-click="updateUrl(indexTab)">{{indexTab}}</a>
+  </div>
 </div>
 
 <div id="scrollArea" style="height: 250px;">
