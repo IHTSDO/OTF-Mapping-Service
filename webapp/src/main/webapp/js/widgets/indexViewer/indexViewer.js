@@ -22,12 +22,12 @@ angular
       $scope.currentRole = localStorageService.get('currentRole');
       $scope.focusProject = localStorageService.get('focusProject');
 
-      // value field parsing
-      $scope.domainTabs = [];
-      $scope.indexTabs = [];
-      $scope.searchResultsLabel = 'Initial label';
+      $scope.domains = [];
+      $scope.indexPages = [];
+      $scope.selectedPage;
+      $scope.searchResultsLabel = '';
       $scope.searchResultsIndex = 0;
-      $scope.mainTermLabel = 'Initial main term label';
+      $scope.mainTermLabel = '';
 
       // watch for project change
       $scope.$on('localStorageModule.notification.setFocusProject', function(
@@ -48,36 +48,13 @@ angular
               && $scope.currentUserToken != null) {
               $http.defaults.headers.common.Authorization = $scope.currentUserToken;
 
-              $scope.indexTabs.push({
-                title : "A",
-                contents : "<html><b>A content</b></html>",
-                active : true
-              });
-              $scope.indexTabs.push({
-                title : "B",
-                contents : "<html><b>B content</b></html>",
-                active : true
-              });
-
-              $scope.templateUrl = "partials/doc/ICD10CM/2010/Index/"
-                + $scope.indexTabs[1].title + ".html";
-              console.debug("templateUrl: ", $scope.templateUrl);
-
-              console.debug("Index Tabs: ", $scope.indexTabs);
-
-              // retrieve the first page of
-              // reports
-              //$scope.getReports(1, null, null);
-
               $scope.go();
             }
           });
 
-      $scope.renderHtml = function(html_code) {
-        return $sce.trustAsHtml(html_code);
-      };
 
       $scope.go = function() {
+        
         $http(
           {
             url : root_content + "indexViewer/"
@@ -90,12 +67,39 @@ angular
             }
           }).success(function(data) {
           console.debug("Success in getting viewable indexes.");
-          $scope.domains = data.searchResult;
+          for (var i = 0; i < data.searchResult.length; i++) {
+            $scope.domains.push(data.searchResult[i].value);
+          }
+          $scope.selectedDomain = $scope.domains[0];
+          $scope.retrieveIndexPages($scope.domains[0]);
         }).error(function(data, status, headers, config) {
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
 
+      // parses the text from a link and calls the search method
+      $scope.performSearchFromLink = function(searchText) {
+        console.debug("searchText:", searchText);
+
+        var res = searchText.split(","); 
+        if (res.length == 1) {
+          $scope.performAggregatedSearch(false, res[0], 'undefined', 'undefined');
+          $scope.searchField = res[0];
+          $scope.subSearchField = '';
+          $scope.subSubSearchField = '';
+        } else if (res.length == 2){
+          $scope.performAggregatedSearch(false, res[0], res[1].trim(), 'undefined');
+          $scope.searchField = res[0];
+          $scope.subSearchField = res[1];
+          $scope.subSubSearchField = '';
+        } else {
+          $scope.performAggregatedSearch(false, res[0], res[1].trim(), res[2].trim());
+          $scope.searchField = res[0];
+          $scope.subSearchField = res[1];
+          $scope.subSubSearchField = res[2];
+        }
+      };
+      
       $scope.performAggregatedSearch = function(allFlag, searchField,
         subSearchField, subSubSearchField) {
 
@@ -106,45 +110,52 @@ angular
           window.alert("The first search box must not be empty");
           return;
         }
-        if ((subSearchField == null || subSearchField == '')
-          && (!subSubSearchField == null || subSubSearchField == '')) {
-          window
-            .alert("If using the third search box,\nthe second one must not be empty");
-          return;
-        }
         if (searchField == '*' && subSearchField == '*'
           && subSubSearchField == '*') {
           window.alert("Oh behave - That search isn't useful!");
           return;
         }
+        if (subSearchField == '') {
+          subSearchField = null;
+        }
+        if (subSubSearchField == '') {
+          subSubSearchField = null;
+        }
 
         $rootScope.glassPane++;
 
-        var url = root_content + "index/indexes/project/id/"
-          + $scope.focusProject.id + "/search/" + searchField + "/subSearch/"
+        var url = root_content + "indexViewer/" + $scope.focusProject.destinationTerminology
+          + "/" + $scope.focusProject.destinationTerminologyVersion + "/" + $scope.selectedDomain + "/search/"
+          + searchField + "/subSearch/"
           + subSearchField + "/subSubSearch/" + subSubSearchField;
 
-        $http({
-          url : url,
-          dataType : "json",
-          //data : pfsParameterObj,
-          method : "POST",
-          headers : {
-            "Content-Type" : "application/json"
-          }
-        }).success(function(data) {
+        $http(
+          {
+            url : url,
+            dataType : "json",
+            method : "GET",
+            headers : {
+              "Content-Type" : "application/json"
+            }
+          }).success(function(data) {
           $rootScope.glassPane--;
           $scope.results = data.searchResult;
 
           $scope.nResults = data.totalCount;
           if ($scope.nResults > 0) {
             $scope.searchResultsLabel = "1 of " + $scope.nResults;
+            $scope.mainTermLabel = $scope.results[0].value2;
             $scope.searchResultsIndex = 0;
-            setBackwardButtonsEnabled(false);
+       
+            if ($scope.nResults > 0) {
+              $scope.goToElement($scope.results[$scope.searchResultsIndex].value);
+            }
+            
+            $scope.setBackwardButtonsDisplayed(false);
             if ($scope.nResults == 1) {
-              setNavigationButtonsEnabled(false);
+              $scope.setForwardButtonsDisplayed(false);
             } else {
-              setNavigationButtonsEnabled(true);
+              $scope.setForwardButtonsDisplayed(true);
             }
           } else {
             window.alert("No Matching Search Results.");
@@ -157,22 +168,124 @@ angular
         });
       };
 
+
+      
+      // returns the set of titles of html pages for the given domain
+      $scope.retrieveIndexPages = function(domain) {
+        console.debug('retrieveIndexPages', domain);
+        $http(
+          {
+            url : root_content + "indexViewer/"
+              + $scope.focusProject.destinationTerminology + "/"
+              + $scope.focusProject.destinationTerminologyVersion + "/" + domain,
+            dataType : "json",
+            method : "GET",
+            headers : {
+              "Content-Type" : "application/json"
+            }
+          }).success(function(data) {
+          console.debug("Success in getting viewable pages for index.");
+          $scope.indexPages = [];
+          for (var i = 0; i < data.searchResult.length; i++) {
+            $scope.indexPages.push(data.searchResult[i].value);
+          }
+          
+          $scope.selectedDomain = domain;
+          $scope.updateUrl($scope.indexPages[0]);
+          
+        }).error(function(data, status, headers, config) {
+          $rootScope.handleHttpError(data, status, headers, config);
+        });
+      };
+
+      
+      // starts the process of scrolling to the given eID
+      $scope.goToElement = function(eID) {
+
+        // parse the eID to find the name of the target html page
+        $scope.selectedPage = eID.charAt(0);
+        // switch to the target html page
+        $scope.updateUrl($scope.selectedPage);
+        
+        $scope.eID = eID;
+        
+        // when the html page finishes loading the scrolling will happen
+        // see $rootScope.$on('includeContentLoaded'...
+      };
+      
+      // updates the url to switch to display a new html page in the index viewer
+      $scope.updateUrl = function(pageName) {
+        $rootScope.glassPane++;
+        
+        $scope.tUrl = $scope.focusProject.destinationTerminology + "/"
+        + $scope.focusProject.destinationTerminologyVersion + "/html/" + 
+        $scope.selectedDomain + "/" + pageName + ".html";
+      };
+      
       $scope.goFirstResult = function() {
-        console.debug('goFirstResult called');
+        console.debug('goFirstResult called', $scope.searchResultsIndex);
+        $scope.goToElement($scope.results[0].value);
+        $scope.searchResultsLabel = "1 of " + $scope.nResults;
+        $scope.mainTermLabel = $scope.results[0].value2;
+        $scope.setBackwardButtonsDisplayed(false);
+        $scope.setForwardButtonsDisplayed(true);
       };
 
       $scope.goPreviousResult = function() {
-        console.debug('goPreviousResult called');
-
+        console.debug('goPreviousResult called', $scope.searchResultsIndex);
+        $scope.searchResultsLabel = $scope.searchResultsIndex + " of " + $scope.nResults;
+        $scope.searchResultsIndex--;
+        $scope.goToElement($scope.results[$scope.searchResultsIndex].value);
+        $scope.mainTermLabel = $scope.results[$scope.searchResultsIndex].value2;
+        if ($scope.searchResultsIndex == 0)
+          $scope.setBackwardButtonsDisplayed(false);
+        $scope.setForwardButtonsDisplayed(true);
       };
+      
+      $scope.goNextResult = function() {
+        console.debug('goNextResult called', $scope.searchResultsIndex);
+        $scope.searchResultsIndex++;
+        $scope.searchResultsLabel = ($scope.searchResultsIndex + 1) + " of " + $scope.nResults;
+        $scope.mainTermLabel = $scope.results[$scope.searchResultsIndex].value2;
+        $scope.goToElement($scope.results[$scope.searchResultsIndex].value);
+        if ($scope.results.length == $scope.searchResultsIndex + 1)
+          $scope.setForwardButtonsDisplayed(false);
+        $scope.setBackwardButtonsDisplayed(true);
+      };
+      
+      $scope.goLastResult = function() {
+        console.debug('goLastResult called', $scope.searchResultsIndex);
+        $scope.goToElement($scope.results[$scope.results.length - 1].value);
+        $scope.searchResultsLabel = $scope.nResults + " of " + $scope.nResults;
+        $scope.mainTermLabel = $scope.results[$scope.results.length - 1].value2;
+        $scope.setForwardButtonsDisplayed(false);
+        $scope.setBackwardButtonsDisplayed(true);
+      };
+      
+      $scope.setBackwardButtonsDisplayed = function(b) {
+        $scope.previousArrow = b;
+        $scope.firstArrow = b;
+      };
+      
+      
+      $scope.setForwardButtonsDisplayed = function(b) {
+        $scope.nextArrow = b;
+        $scope.lastArrow = b;
+      };
+      
+      $scope.$on('$locationChangeStart', function(ev) {
+        ev.preventDefault();
+      });
+      
+      // called when ng-include completes loading an html page
+      $rootScope.$on('$includeContentLoaded', function() {
 
-      $scope.gotoElement = function(eID) {
-
-        // set the location.hash to the id of
-        // the element you wish to scroll to.
-        $location.hash(eID);
-
-        // call $anchorScroll()
+        console.debug('includeContentLoaded', $scope.eID);
+        $location.hash($scope.eID);
+        
         $anchorScroll();
-      };
+        
+        $rootScope.glassPane--;
+        
+    });
     });
