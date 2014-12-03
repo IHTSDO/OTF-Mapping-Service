@@ -718,12 +718,13 @@ public interface ContentService extends RootService {
    * @param searchField the search field
    * @param subSearchField the sub search field
    * @param subSubSearchField the sub sub search field
+   * @param allFlag TODO
    * @return the search result list
    * @throws Exception the exception
    */
 
   public SearchResultList findIndexViewerEntries(String terminology,
     String terminologyVersion, String domain, String searchField,
-    String subSearchField, String subSubSearchField) throws Exception;
+    String subSearchField, String subSubSearchField, boolean allFlag) throws Exception;
 
 }
