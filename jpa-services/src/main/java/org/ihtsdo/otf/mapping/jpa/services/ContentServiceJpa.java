@@ -2804,7 +2804,7 @@ public SearchResultList getIndexViewerPagesForIndex(String terminology,
  */
 @Override
 public SearchResultList findIndexViewerEntries(String terminology,
-  String terminologyVersion, String domain, String searchField, String subSearchField, String subSubSearchField) throws Exception {
+  String terminologyVersion, String domain, String searchField, String subSearchField, String subSubSearchField, boolean allFlag) throws Exception {
   clearResultsCache();
 
   SearchResultList searchResultList = new SearchResultListJpa();
@@ -2814,6 +2814,22 @@ public SearchResultList findIndexViewerEntries(String terminology,
   List<String> subSubSearchResults = new ArrayList<String>();
   
   Properties config = ConfigUtility.getConfigProperties();
+  
+  if (allFlag) {
+    config.setProperty("index.viewer.searchStartLevel", "0");
+    config.setProperty("index.viewer.searchEndLevel", "9");
+    config.setProperty("index.viewer.subSearchStartLevel", "0");
+    config.setProperty("index.viewer.subSearchEndLevel", "9");
+    config.setProperty("index.viewer.subSubSearchStartLevel", "0");
+    config.setProperty("index.viewer.subSubSearchEndLevel", "9");
+  } else {
+    config.setProperty("index.viewer.searchStartLevel", "0");
+    config.setProperty("index.viewer.searchEndLevel", "0");
+    config.setProperty("index.viewer.subSearchStartLevel", "1");
+    config.setProperty("index.viewer.subSearchEndLevel", "1");
+    config.setProperty("index.viewer.subSubSearchStartLevel", "2");
+    config.setProperty("index.viewer.subSubSearchEndLevel", "2");    
+  }
   
   int startLevel = Integer.parseInt(config.getProperty("index.viewer.searchStartLevel"));
   int endLevel = Integer.parseInt(config.getProperty("index.viewer.searchEndLevel"));
