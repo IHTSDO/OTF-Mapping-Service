@@ -466,7 +466,7 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
 			if (key.equals("title")) {
 				// Set the aname pointer and write it
 				aname = letter + act;
-				out.println("</p><p><a name=\"" + aname + "\">");
+				out.println("</p><p><div id=\"" + aname + "\"></div>");
 				out.println("<b>" + data.get(key) + "</b>");
 
 				// Handle writing the title, including embedded nemod
@@ -483,16 +483,16 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
 
 			// Handle writing the "see" tag
 			else if (key.equals("see")) {
-				out.println(" &mdash; <i>see</i> <a href=\"search:" + data.get(key)
-						+ "\">" + data.get(key) + "</a>");
+				out.println(" &mdash; <i>see</i> <a href=\"\" ng-click=\"performSearchFromLink('" + data.get(key) + "')\"" 
+						+ ">" + data.get(key) + "</a>");
 			}
 
 			// handle writing seealso tag
 			else if (key.equals("seealso") && data.get(key).startsWith("subcategory")) {
 				out.println(" &mdash; <i>see also</i> " + data.get(key));
 			} else if (key.equals("seealso")) {
-				out.println(" &mdash; <i>see also</i> <a href=\"search:"
-						+ data.get(key) + "\">" + data.get(key) + "</a>");
+				out.println(" &mdash; <i>see also</i> <a href=\"\" ng-click=\"performSearchFromLink('" + data.get(key) + "')\""
+						 + ">" + data.get(key) + "</a>");
 			}
 
 			// handle writing subcategory
@@ -532,7 +532,7 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
 				aname = letter + act;
 
 				// write anchor and title
-				out.println("</td></tr><tr><td><a name=\"" + aname + "\">");
+				out.println("</td></tr><tr><td><div id=\"" + aname + "\"></div>");
 				out.println(data.get(key));
 
 				// handle embedded nemod in title
@@ -546,14 +546,14 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
 
 			// handle see tag
 			else if (key.equals("see")) {
-				out.println(" &mdash; <i>see</i> <a href=\"search:" + data.get(key)
-						+ "\">" + data.get(key) + "</a>");
+				out.println(" &mdash; <i>see</i> <a href=\"\" ng-click=\"performSearchFromLink('" + data.get(key) + "')\"" 
+						+ ">" + data.get(key) + "</a>");
 			}
 
 			// handle seealso tag
 			else if (key.equals("seealso")) {
-				out.println(" &mdash; <i>see also</i> <a href=\"search:"
-						+ data.get(key) + "\">" + data.get(key) + "</a>");
+				out.println(" &mdash; <i>see also</i> <a href=\"\" ng-click=\"performSearchFromLink('" + data.get(key) + "')\""
+						 + ">" + data.get(key) + "</a>");
 			}
 
 			// handle cell tag - print blank cells if columns are skipped
@@ -589,7 +589,7 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
 			if (key.equals("title")) {
 				aname = aname + "." + act;
 				out.println("</p><p>");
-				out.println("<a name=\"" + aname + "\">");
+				out.println("<div id=\"" + aname + "\"></div>");
 				out.println("- - - - - - - - - - - ".substring(0, level * 2)
 						+ data.get("title"));
 				// out.println("<h" + hLevel + ">" + data.get(key) + "</h" +
@@ -604,14 +604,14 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
 					}
 				}
 			} else if (key.equals("see")) {
-				out.println(" &mdash; <i>see</i> <a href=\"search:" + data.get(key)
-						+ "\">" + data.get(key) + "</a>");
+				out.println(" &mdash; <i>see</i> <a href=\"\" ng-click=\"performSearchFromLink('" + data.get(key) + "')\""
+						+ ">" + data.get(key) + "</a>");
 			} else if (key.equals("seealso")
 					&& data.get(key).startsWith("subcategory")) {
 				out.println(" &mdash; <i>see also</i> " + data.get(key));
 			} else if (key.equals("seealso")) {
-				out.println(" &mdash; <i>see also</i> <a href=\"search:"
-						+ data.get(key) + "\">" + data.get(key) + "</a>");
+				out.println(" &mdash; <i>see also</i> <a href=\"\" ng-click=\"performSearchFromLink('" + data.get(key) + "')\""
+						 + ">" + data.get(key) + "</a>");
 			} else if (key.equals("subcat")) {
 				out.println(" &mdash; see subcategory " + data.get(key));
 			} else if (key.equals("etiology")) {
@@ -638,7 +638,7 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
 				cellCt = 1;
 				aname = aname + "." + act;
 				out.println("</td></tr><tr><td>");
-				out.println("<a name=\"" + aname + "\">");
+				out.println("<div id=\"" + aname + "\"></div>");
 				out.println("- - - - - - - - - - - ".substring(0, level * 2)
 						+ data.get("title"));
 
@@ -648,11 +648,11 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
 					nemodInTitle = false;
 				}
 			} else if (key.equals("see")) {
-				out.println(" &mdash; <i>see</i> <a href=\"search:" + data.get(key)
-						+ "\">" + data.get(key) + "</a>");
+				out.println(" &mdash; <i>see</i> <a href=\"\" ng-click=\"performSearchFromLink('" + data.get(key) + "')\"" 
+						+ ">" + data.get(key) + "</a>");
 			} else if (key.equals("seealso")) {
-				out.println(" &mdash; <i>see also</i> <a href=\"search:"
-						+ data.get(key) + "\">" + data.get(key) + "</a>");
+				out.println(" &mdash; <i>see also</i> <a href=\"\" ng-click=\"performSearchFromLink('" + data.get(key) + "')\""
+						 + ">" + data.get(key) + "</a>");
 			} else if (key.equals("cell")) {
 				while (++cellCt < cellIndex) {
 					out.println("</td><td>&nbsp;");

@@ -709,4 +709,21 @@ public interface ContentService extends RootService {
   public SearchResultList getIndexViewerPagesForIndex(
 		  String terminology, String terminologyVersion, String index) throws Exception;
 
+  /**
+   * Perform aggregated search.
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @param domain the domain
+   * @param searchField the search field
+   * @param subSearchField the sub search field
+   * @param subSubSearchField the sub sub search field
+   * @return the search result list
+   * @throws Exception the exception
+   */
+
+  public SearchResultList findIndexViewerEntries(String terminology,
+    String terminologyVersion, String domain, String searchField,
+    String subSearchField, String subSubSearchField) throws Exception;
+
 }
