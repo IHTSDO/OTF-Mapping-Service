@@ -1798,19 +1798,51 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     Logger.getLogger(ReleaseHandlerJpa.class).info("Cycling over concepts...");
     
-    // create a temp set of id to map record
-    Set<String> conceptsWithNoRecord = new HashSet<>();
-    for (MapRecord mr : mapRecords.getMapRecords())
-      conceptsWithNoRecord.add(mr.getConceptId());
-    
-    // create a temp set of scope concept ids
-    Set<String> conceptIdsTemp = new HashSet<>(scopeConceptTerminologyIds);
-    
-    // cycle over concept ids and remove ids with a 
-    for (String terminologyId : conceptIdsTemp) {
-      conceptsWithNoRecord.remove(terminologyId);
+    // create a temp set of scope terminology ids
+    Set<String> conceptsWithNoRecord = new HashSet<>(scopeConceptTerminologyIds);
+
+    Logger.getLogger(ReleaseHandlerJpa.class).info("Cycling over records...");
+
+    // for each map record, check for errors
+    // NOTE: Report Result names are constructed from error lists assigned
+    // Each individual result is stored as a Report Result Item
+    for (MapRecord mapRecord : mapRecords.getMapRecords()) {
+      
+      // first, remove this concept id from the dynamic conceptsWithNoRecord set
+      conceptsWithNoRecord.remove(mapRecord.getConceptId());
+
+      // constuct a list of errors for this concept
+      List<String> mapRecordErrors = new ArrayList<>();
+
+      // CHECK: Map record is READY_FOR_PUBLICATION or PUBLISHED
+      if (!mapRecord.getWorkflowStatus().equals(
+          WorkflowStatus.READY_FOR_PUBLICATION)
+          && !mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)) {
+        mapRecordErrors.add("Not marked ready for publication");
+        
+      // if record is ready for publication
+      } else {
+        // CHECK: Map record (must be ready for publication) passes project specific validation checks
+        ValidationResult result = algorithmHandler.validateRecord(mapRecord);
+        if (!result.isValid()) {
+          for (String error : result.getErrors()) {   
+            mapRecordErrors.add("Failed validation check: " + error);
+          }
+        }
+      }
+
+      // CHECK: Concept is in scope
+      if (!scopeConceptTerminologyIds.contains(mapRecord.getConceptId())) {
+        mapRecordErrors.add("Concept is not in scope");
+      }
+
+      // CONVERT: Add all reported errors to the report
+      for (String error : mapRecordErrors) {
+        addReportError(report, mapProject, mapRecord, error);
+      }
     }
     
+
     // if any ids remain, add them to report as error
     if (conceptsWithNoRecord.size() != 0) {
       ReportResult reportResult = new ReportResultJpa();
@@ -1836,42 +1868,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       }
       
       contentService.close();
-    }
-
-    Logger.getLogger(ReleaseHandlerJpa.class).info("Cycling over records...");
-
-    // for each map record, check for errors
-    // NOTE: Report Result names are constructed from error lists assigned
-    // Each individual result is stored as a Report Result Item
-    for (MapRecord mapRecord : mapRecords.getMapRecords()) {
-
-      // list of errors for this concept
-      List<String> mapRecordErrors = new ArrayList<>();
-
-      // CHECK: Map record is READY_FOR_PUBLICATION or PUBLISHED
-      if (!mapRecord.getWorkflowStatus().equals(
-          WorkflowStatus.READY_FOR_PUBLICATION)
-          && !mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)) {
-        mapRecordErrors.add("Not marked ready for publication");
-      } else {
-        // CHECK: Map record (must be ready for publication) passes project specific validation checks
-        ValidationResult result = algorithmHandler.validateRecord(mapRecord);
-        if (!result.isValid()) {
-          for (String error : result.getErrors()) {   
-            mapRecordErrors.add("Failed validation check: " + error);
-          }
-        }
-      }
-
-      // CHECK: Concept is in scope
-      if (!scopeConceptTerminologyIds.contains(mapRecord.getConceptId())) {
-        mapRecordErrors.add("Concept is not in scope");
-      }
-
-      // CONVERT: Error list into report results
-      for (String error : mapRecordErrors) {
-        addReportError(report, mapProject, mapRecord, error);
-      }
     }
 
     Logger.getLogger(ReleaseHandlerJpa.class).info(
