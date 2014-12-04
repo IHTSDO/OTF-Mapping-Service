@@ -1795,8 +1795,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     Logger.getLogger(ReleaseHandlerJpa.class).info(
         "  " + mapRecords.getCount() + " map records retrieved.");
-
-    Logger.getLogger(ReleaseHandlerJpa.class).info("Cycling over concepts...");
     
     // create a temp set of scope terminology ids
     Set<String> conceptsWithNoRecord = new HashSet<>(scopeConceptTerminologyIds);
@@ -1833,7 +1831,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
       // CHECK: Concept is in scope
       if (!scopeConceptTerminologyIds.contains(mapRecord.getConceptId())) {
-        mapRecordErrors.add("Concept is not in scope");
+        
+        // separate error-type by previously-published or this-cycle-edited
+        if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED))    
+          mapRecordErrors.add("Concept is not in scope - previously published");
+        else
+          mapRecordErrors.add("Concept is not in scope - edited this cycle");
       }
 
       // CONVERT: Add all reported errors to the report
