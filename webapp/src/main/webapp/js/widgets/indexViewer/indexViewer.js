@@ -33,9 +33,7 @@ angular
       // watch for project change
       $scope.$on('localStorageModule.notification.setFocusProject', function(
         event, parameters) {
-        console
-          .debug("MapProjectWidgetCtrl:  Detected change in focus project");
-        $scope.focusProject = parameters.focusProject;
+        window.alert("The project and terminology cannot be changed on the index viewer.");
       });
 
       // on any change of focusProject, set headers
@@ -117,10 +115,10 @@ angular
           window.alert("Oh behave - That search isn't useful!");
           return;
         }
-        if (subSearchField == '') {
+        if (subSearchField == '' || subSearchField == null) {
           subSearchField = 'undefined';
         }
-        if (subSubSearchField == '') {
+        if (subSubSearchField == '' || subSubSearchField == null) {
           subSubSearchField = 'undefined';
         }
 
@@ -277,8 +275,7 @@ angular
         $scope.previousArrow = b;
         $scope.firstArrow = b;
       };
-      
-      
+           
       $scope.setForwardButtonsDisplayed = function(b) {
         $scope.nextArrow = b;
         $scope.lastArrow = b;
