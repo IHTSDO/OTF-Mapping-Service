@@ -74,6 +74,9 @@ angular
 
       // testing new sortable features
       $scope.groupsTree = [];
+      
+      // flag indicating if index viewer is available for dest terminology
+      $scope.indexViewerExists = false;
 
       // options for angular-ui-tree
       $scope.options = {
@@ -188,6 +191,7 @@ angular
         function() {
           if ($scope.project != null && $scope.userToken != null) {
             $http.defaults.headers.common.Authorization = $scope.userToken;
+            setIndexViewerStatus();
             retrieveRecord();
           }
         });
@@ -284,6 +288,29 @@ angular
       }
       ;
 
+      function setIndexViewerStatus() {       
+        $http(
+          {
+            url : root_content + "indexViewer/"
+              + $scope.project.destinationTerminology + "/"
+              + $scope.project.destinationTerminologyVersion,
+            dataType : "json",
+            method : "GET",
+            headers : {
+              "Content-Type" : "application/json"
+            }
+          }).success(function(data) {
+          console.debug("Success in getting viewable indexes.");
+          if (data.searchResult.length > 0) {
+            $scope.indexViewerExists = true;
+          } else {
+            $scope.indexViewerExists = false;
+          }
+        }).error(function(data, status, headers, config) {
+          $scope.indexViewerExists = false;
+        });
+      };
+      
       // /////////////////////////////
       // Initialization Functions ///
       // /////////////////////////////
@@ -1503,6 +1530,15 @@ angular
 
       $scope.openConceptBrowser = function() {
         var myWindow = window.open($scope.getBrowserUrl(), "browserWindow");
+        myWindow.focus();
+      };
+      
+      $scope.openIndexViewer = function() {
+        console.debug("page location is", window.location.href);
+        var currentUrl = window.location.href;
+        var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
+        var newUrl = baseUrl + "/index/viewer";
+        var myWindow = window.open(newUrl, "indexViewerWindow");
         myWindow.focus();
       };
 
