@@ -135,6 +135,11 @@ mapProjectApp.config([ '$routeProvider', function($routeProvider) {
     templateUrl : 'partials/otf-dashboard.html',
     controller : 'ResolveConflictsDashboardCtrl'
   });
+  
+  $routeProvider.when('/index/viewer', {
+    templateUrl : 'partials/otf-dashboard.html',
+    controller : 'IndexViewerDashboardCtrl'
+  });
 
   // ////////////////////////////
   // HELP PAGES
