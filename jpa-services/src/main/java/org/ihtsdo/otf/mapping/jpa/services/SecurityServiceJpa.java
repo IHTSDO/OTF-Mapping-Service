@@ -181,6 +181,23 @@ public class SecurityServiceJpa extends RootServiceJpa implements
     return token;
   }
 
+  @Override
+  public void logout(String userName) throws Exception {
+    // read ihtsdo security url and active status from config file
+    if (config == null) {
+      config = ConfigUtility.getConfigProperties();
+    }
+
+    if (userName == null || userName.isEmpty())
+      throw new LocalException("No user specified for logout",
+          "401");
+
+    // remove this user name from the security service maps
+    tokenUsernameMap.remove(userName);
+    tokenLoginMap.remove(userName);
+
+  }
+  
   /*
    * (non-Javadoc)
    * 

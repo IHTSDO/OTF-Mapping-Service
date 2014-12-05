@@ -93,4 +93,14 @@ public interface ReleaseHandler {
     List<MapRecord> mapRecordsToPublish, String outputDirName,
     String effectiveTime, String moduleId) throws Exception;
 
+  /**
+   * Perform begin release qa checks.
+   *
+   * @param mapProject the map project
+   * @param removeRecords the remove records
+   * @throws Exception the exception
+   */
+ void performBeginReleaseQAChecks(MapProject mapProject, boolean removeRecords)
+    throws Exception;
+
 }

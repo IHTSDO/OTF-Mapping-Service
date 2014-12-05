@@ -1,19 +1,15 @@
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.jpa.handlers.ReleaseHandlerJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
-import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
 
@@ -92,6 +88,13 @@ public class ReleaseProcessingMojo extends AbstractMojo {
    * @parameter moduleId
    */
   private String moduleId = null;
+  
+  /**
+   * The update records.
+   * @parameter updateRecords
+   */
+  private boolean updateRecords = false;
+
 
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
@@ -116,6 +119,9 @@ public class ReleaseProcessingMojo extends AbstractMojo {
 
     if (moduleId == null)
       throw new MojoExecutionException("You must specify a module id");
+    
+
+   
 
     try {
 
@@ -130,9 +136,19 @@ public class ReleaseProcessingMojo extends AbstractMojo {
           }
         }
       }
-
+      
+      ReleaseHandler releaseHandler = new ReleaseHandlerJpa();
+      for (MapProject mapProject : mapProjects) {
+        getLog().info(
+            "Performing release QA for " + mapProject.getName() + ", "
+                + mapProject.getId());
+       releaseHandler.performBeginReleaseQAChecks(mapProject, updateRecords);
+      }
+      
+      /*
       // Perform the release processing
       for (MapProject mapProject : mapProjects) {
+       
 
         // add check for scope concepts contained in the map record set
 
@@ -187,12 +203,15 @@ public class ReleaseProcessingMojo extends AbstractMojo {
         ReleaseHandler releaseHandler = new ReleaseHandlerJpa();
         releaseHandler.processRelease(mapProject, mapRecords, outputDirName,
             effectiveTime, moduleId);
+            
+            
 
       }
 
       getLog().info("done ...");
       mappingService.close();
-
+      
+      */
     } catch (Exception e) {
       e.printStackTrace();
       throw new MojoExecutionException("Performing release processing failed.",
