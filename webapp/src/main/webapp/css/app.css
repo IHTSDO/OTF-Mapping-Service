@@ -1,5 +1,14 @@
 /* CSS file for OTF Mapping WebApp */
 
+#scrollArea {
+    height: 100%;
+    overflow: auto;
+  }
+ 
+  #bottom {
+    display: block;
+  }
+
 /* ensures that all links properly display a pointer cursor */
 a {
 	cursor:pointer;
