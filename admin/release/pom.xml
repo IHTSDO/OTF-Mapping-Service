@@ -60,6 +60,32 @@
         </plugins>
       </build>
     </profile>
+    
+    <profile>
+      <id>ReleaseQA</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <version>${project.version}</version>
+            <executions>
+              <execution>
+                <id>release-qa</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>release-qa</goal>
+                </goals>
+                <configuration>
+                  <refSetId>${refset.id}</refSetId>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    
 
   </profiles>
 </project>

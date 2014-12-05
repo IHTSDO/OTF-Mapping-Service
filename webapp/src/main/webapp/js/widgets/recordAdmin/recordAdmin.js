@@ -17,16 +17,20 @@ angular
     'recordAdminCtrl',
     function($scope, $rootScope, $http, $location, localStorageService) {
 
-      $scope.user = localStorageService.get('currentUser');
-      $scope.project = localStorageService.get('focusProject');
+      $scope.currentUser = localStorageService.get('currentUser');
+      $scope.focusProject = localStorageService.get('focusProject');
 
-      $scope.userToken = localStorageService.get('userToken');
+      $scope.currentUserToken = localStorageService.get('userToken');
       $scope.$watch([ 'focusProject', 'userToken' ], function() {
-        console.debug('editedListCtrl:  Detected project set/change');
+     
+        if ($scope.focusProject != null && $scope.currentUserToken != null) {
 
-        if ($scope.focusProject != null && $scope.userToken != null) {
-
-          $http.defaults.headers.common.Authorization = $scope.userToken;
+          $http.defaults.headers.common.Authorization = $scope.currentUserToken;
+          
+          console.debug("Project and users", $scope.focusProject, $scope.focusProject.mapSpecialist, $scope.focusProject.mapLead);
+          
+          // construct list of specialists and leads
+          $scope.projectUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
 
         }
       });
@@ -148,7 +152,7 @@ angular
         $http(
           {
             url : root_mapping + "record/records/delete/project/id/"
-              + $scope.project.id + "/batch",
+              + $scope.focusProject.id + "/batch",
             method : "DELETE",
             dataType : "json",
             data : terminologyIds,
@@ -158,6 +162,43 @@ angular
           }).success(function(data) {
           $rootScope.glassPane--;
           $scope.validationResult = data;
+        }).error(function(data, status, headers, config) {
+          $rootScope.glassPane--;
+          $rootScope.handleHttpError(data, status, headers, config);
+        });
+
+      };
+      
+      $scope.assignFixError = function(terminologyIdsUnsplit, mapUser) {
+
+        if (mapUser == null || mapUser == undefined) {
+          alert("You must specify a user");
+          return;
+        }
+        
+        if (confirm("ARE YOU ABSOLUTELY SURE? Any eligible concepts in this list will be re-inserted into the workflow") == false)
+          return;
+
+        console.debug("Removing batch of records by terminologyId",
+          terminologyIdsUnsplit);
+
+        var terminologyIds = terminologyIdsUnsplit.split(/,\s*|\s+/);
+
+        $rootScope.glassPane++;
+        $http(
+          {
+            url : root_workflow + "assign/fixErrorPath/project/id/"
+              + $scope.focusProject.id + "/user/id/" + mapUser.userName,
+            method : "POST",
+            dataType : "json",
+            data : terminologyIds,
+            headers : {
+              "Content-Type" : "application/json"
+            }
+          }).success(function(data) {
+          $rootScope.glassPane--;   
+          $scope.validationResultAssign = data;
+          console.debug("validation result: ", $scope.validationResultAssign);
         }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
           $rootScope.handleHttpError(data, status, headers, config);

@@ -5,18 +5,21 @@ import java.util.Set;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.ihtsdo.otf.mapping.jpa.handlers.ReleaseHandlerJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.services.MappingService;
+import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
 
+// TODO: Auto-generated Javadoc
 /**
- * QA Check for Properly Numbered Map Groups
+ * Loads unpublished complex maps.
  * 
  * Sample execution:
  * 
  * <pre>
  *     <profile>
- *       <id>MapGroups</id>
+ *       <id>ReleaseQA</id>
  *       <build>
  *         <plugins>
  *           <plugin>
@@ -25,14 +28,13 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  *             <version>${project.version}</version>
  *             <executions>
  *               <execution>
- *                 <id>qa-map-groups</id>
+ *                 <id>release-qa</id>
  *                 <phase>package</phase>
  *                 <goals>
- *                   <goal>qa-map-groups</goal>
+ *                   <goal>release-qa</goal>
  *                 </goals>
  *                 <configuration>
  *                   <refSetId>${refset.id}</refSetId>
- *                   <mode>${updateRecords}</mode>
  *                 </configuration>
  *               </execution>
  *             </executions>
@@ -42,24 +44,22 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  *     </profile>
  * </pre>
  * 
- * @goal qa-map-groups
+ * @goal release-qa
  * @phase package
  */
-public class QAMapGroups extends AbstractMojo {
+public class QARelease extends AbstractMojo {
 
   /**
-   * The refSet id
+   * The refSet id.
    * @parameter refSetId
-   * @parameter mode
    */
   private String refSetId = null;
 
   /**
-   * Flag for updating vs simply checking
+   * The update records.
    * @parameter updateRecords
    */
-
-  private String mode = null;
+  private boolean updateRecords = false;
 
   /**
    * Executes the plugin.
@@ -68,53 +68,41 @@ public class QAMapGroups extends AbstractMojo {
    */
   @Override
   public void execute() throws MojoExecutionException {
-    getLog().info("Starting map group quality assurance checks - " + refSetId);
+    getLog().info("Starting begin release QA checks - " + refSetId + ", " + updateRecords);
 
     if (refSetId == null) {
       throw new MojoExecutionException("You must specify a refSetId.");
     }
 
-    if (mode == null) {
-      throw new MojoExecutionException(
-          "You must specify a mode (check for diagnostics only, update to fix errors).");
-    }
 
     try {
 
       MappingService mappingService = new MappingServiceJpa();
-
       Set<MapProject> mapProjects = new HashSet<>();
 
       for (MapProject mapProject : mappingService.getMapProjects()
           .getIterable()) {
         for (String id : refSetId.split(",")) {
           if (mapProject.getRefSetId().equals(id)) {
-            if (!mapProject.isGroupStructure()) {
-              getLog().info(
-                  "Map Project " + mapProject.getName()
-                      + " does not have group structure, skipping.");
-            }
             mapProjects.add(mapProject);
           }
         }
       }
 
       // Perform the QA checks
+      ReleaseHandler releaseHandler = new ReleaseHandlerJpa();
       for (MapProject mapProject : mapProjects) {
         getLog().info(
-            "Checking map groups for " + mapProject.getName() + ", "
+            "Performing release QA for " + mapProject.getName() + ", "
                 + mapProject.getId());
-        boolean updateRecords = mode.equals("update");
-        mappingService.checkMapGroupsForMapProject(mapProject, updateRecords);
+        releaseHandler.performBeginReleaseQAChecks(mapProject, updateRecords);
       }
 
       getLog().info("done ...");
-      mappingService.close();
-      mappingService.close();
 
     } catch (Exception e) {
       e.printStackTrace();
-      throw new MojoExecutionException("Performing map group QA failed.", e);
+      throw new MojoExecutionException("Performing workflow QA failed.", e);
     }
 
   }

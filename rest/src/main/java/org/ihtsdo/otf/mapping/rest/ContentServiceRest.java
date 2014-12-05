@@ -431,5 +431,136 @@ public class ContentServiceRest extends RootServiceRest {
       return null;
     }
   }
+  
+  @GET
+  @Path("/indexViewer/{terminology}/{terminologyVersion}")
+  @ApiOperation(value = "Return the indexes available for given terminology and version.", notes = "Returns the indexes available for the given terminology and version.", response = SearchResultList.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public SearchResultList getIndexViewerIndexes(
+	@ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
+	@ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+    Logger.getLogger(ContentServiceRest.class).info(
+        "RESTful call (Content): /indexViewer/" + terminology + "/" + terminologyVersion);
+
+    try {
+      // authorize call
+      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+        throw new WebApplicationException(
+            Response
+                .status(401)
+                .entity(
+                    "User does not have permissions to retrieve the indexes to be viewed.")
+                .build());
+
+      ContentService contentService = new ContentServiceJpa();
+      SearchResultList searchResultList = contentService.getIndexViewerIndexes(terminology, terminologyVersion);
+      contentService.close();
+      return searchResultList;
+
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve the indexes to be viewed");
+      return null;
+    }
+  }
+
+  @GET
+  @Path("/indexViewer/{terminology}/{terminologyVersion}/{index}")
+  @ApiOperation(value = "Return the index page names available for given terminology, version and domain.", notes = "Returns the pages available for the given terminology, version and domain.", response = SearchResultList.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public SearchResultList getIndexViewerPagesForIndex(
+	@ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
+	@ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
+	@ApiParam(value = "Name of index or domain", required = true) @PathParam("index") String index,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+    Logger.getLogger(ContentServiceRest.class).info(
+        "RESTful call (Content): /indexViewer/" + terminology + "/" + terminologyVersion + "/" +
+      index);
+
+    try {
+      // authorize call
+      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+        throw new WebApplicationException(
+            Response
+                .status(401)
+                .entity(
+                    "User does not have permissions to retrieve the page names for the given index.")
+                .build());
+    
+      ContentService contentService = new ContentServiceJpa();
+      SearchResultList searchResultList = contentService.getIndexViewerPagesForIndex(terminology, terminologyVersion, index);
+      
+      contentService.close();
+      return searchResultList;
+
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve the page names for the given index");
+      return null;
+    }
+  }
+  
+  /**
+   * Find index viewer search result entries.
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @param domain the domain
+   * @param searchField the search field
+   * @param subSearchField the sub search field
+   * @param subSubSearchField the sub sub search field
+   * @param authToken the auth token
+   * @return the search result list
+   */
+  @GET  
+  @Path("/indexViewer/{terminology}/{terminologyVersion}/{domain}/search/{searchField}/subSearch/{subSearchField}/subSubSearch/{subSubSearchField}/{allFlag}")
+  @ApiOperation(value = "Peform the search given the search terms.", notes = "Performs the search given the search terms in the given terminology.", response = SearchResultList.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public SearchResultList findIndexViewerEntries(
+    @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
+    @ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
+    @ApiParam(value = "Domain/Index within terminology", required = true) @PathParam("domain") String domain,
+    @ApiParam(value = "First level search field", required = true) @PathParam("searchField") String searchField,
+    @ApiParam(value = "Second level search field to refine search", required = true) @PathParam("subSearchField") String subSearchField,
+    @ApiParam(value = "Third level search field to refine search", required = true) @PathParam("subSubSearchField") String subSubSearchField,
+    @ApiParam(value = "If all levels should be searched, e.g. true", required = true) @PathParam("allFlag") boolean allFlag,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+    Logger.getLogger(ContentServiceRest.class).info(
+        "RESTful call (Content): /indexViewer/" + terminology + "/" + terminologyVersion +
+        "/" + domain + "/" + searchField + "/" + subSearchField + "/" + subSubSearchField + "/" + allFlag);
+
+    try {
+      // authorize call
+      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+        throw new WebApplicationException(
+            Response
+                .status(401)
+                .entity(
+                    "User does not have permissions to perform a search of the indexes.")
+                .build());
+
+      ContentService contentService = new ContentServiceJpa();
+      SearchResultList searchResultList = contentService.findIndexViewerEntries(terminology, 
+          terminologyVersion, domain, searchField, subSearchField, subSubSearchField, allFlag);
+      searchResultList.setTotalCount(searchResultList.getCount());
+      contentService.close();
+      return searchResultList;
+
+    } catch (Exception e) {
+      handleException(e, "trying to perform a search of the indexes");
+      return null;
+    }
+  }
 
 }

@@ -1943,7 +1943,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
                   mapRecords, mapRecord, mapUser);
         } else {
 
-          throw new Exception(
+          throw new LocalException(
               "Assignment from published record failed -- concept already in workflow");
 
         }
@@ -2104,6 +2104,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
       trackingRecord.addUserAndWorkflowStatusPair(mr.getOwner().getUserName(),
           mr.getWorkflowStatus().toString());
     }
+    
+    Logger.getLogger(WorkflowServiceJpa.class).info("Revised tracking record: " + trackingRecord.toString());
+    
 
     // if the tracking record is ready for removal, delete it
     if ((getWorkflowStatusForTrackingRecord(trackingRecord).equals(
@@ -2111,15 +2114,17 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         trackingRecord).equals(WorkflowStatus.PUBLISHED))
         && trackingRecord.getMapRecordIds().size() == 1) {
 
+      Logger.getLogger(WorkflowServiceJpa.class).info("  Publication ready, removing tracking record.");
       removeTrackingRecord(trackingRecord.getId());
 
       // else add the tracking record if new
     } else if (trackingRecord.getId() == null) {
+      Logger.getLogger(WorkflowServiceJpa.class).info("  New workflow concept, adding tracking record.");
       addTrackingRecord(trackingRecord);
 
       // otherwise update the tracking record
     } else {
-
+      Logger.getLogger(WorkflowServiceJpa.class).info("  Still in workflow, updating tracking record.");
       updateTrackingRecord(trackingRecord);
     }
 
