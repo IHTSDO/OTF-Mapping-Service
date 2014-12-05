@@ -74,6 +74,9 @@ angular
 
           // groups tree for dynamic sorting/repositioning
           $scope.groupsTree = [];
+      
+      // flag indicating if index viewer is available for dest terminology
+      $scope.indexViewerExists = false;
 
           // options for angular-ui-tree
           $scope.options = {
@@ -183,17 +186,16 @@ angular
 
               });
 
-          // on successful retrieval of project, get the
-          // record/concept
-          $scope
-              .$watch(
-                  [ 'project', 'userToken', 'role', 'user', 'record' ],
-                  function() {
-                    if ($scope.project != null && $scope.userToken != null) {
-                      $http.defaults.headers.common.Authorization = $scope.userToken;
-                      retrieveRecord();
-                    }
-                  });
+      // on successful retrieval of project, get the
+      // record/concept
+      $scope.$watch([ 'project', 'userToken', 'role', 'user', 'record' ],
+        function() {
+          if ($scope.project != null && $scope.userToken != null) {
+            $http.defaults.headers.common.Authorization = $scope.userToken;
+            setIndexViewerStatus();
+            retrieveRecord();
+          }
+        });
 
           // any time the record changes, broadcast it to the record
           // summary widget
@@ -290,6 +292,29 @@ angular
           }
           ;
 
+          
+      function setIndexViewerStatus() {       
+        $http(
+          {
+            url : root_content + "indexViewer/"
+              + $scope.project.destinationTerminology + "/"
+              + $scope.project.destinationTerminologyVersion,
+            dataType : "json",
+            method : "GET",
+            headers : {
+              "Content-Type" : "application/json"
+            }
+          }).success(function(data) {
+          console.debug("Success in getting viewable indexes.");
+          if (data.searchResult.length > 0) {
+            $scope.indexViewerExists = true;
+          } else {
+            $scope.indexViewerExists = false;
+          }
+        }).error(function(data, status, headers, config) {
+          $scope.indexViewerExists = false;
+        });
+      };
           // /////////////////////////////
           // Initialization Functions ///
           // /////////////////////////////
@@ -1690,11 +1715,21 @@ angular
 
           // sort and return an array by string key
           function sortByKey(array, key) {
-            return array.sort(function(a, b) {
-              var x = a[key];
-              var y = b[key];
-              return ((x < y) ? -1 : ((x > y) ? 1 : 0));
-            });
-          }
-          ;
+        return array.sort(function(a, b) {
+          var x = a[key];
+          var y = b[key];
+          return ((x < y) ? -1 : ((x > y) ? 1 : 0));
         });
+      }
+      ;
+
+      $scope.openIndexViewer = function() {
+        console.debug("page location is", window.location.href);
+        var currentUrl = window.location.href;
+        var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
+        var newUrl = baseUrl + "/index/viewer";
+        var myWindow = window.open(newUrl, "indexViewerWindow");
+        myWindow.focus();
+      };
+
+    });

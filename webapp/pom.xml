@@ -104,6 +104,24 @@
               </target>
             </configuration>
           </execution>
+          
+          <!-- Copy index files -->
+          <execution>
+            <id>copy-indexes</id>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target name="copy indexes">
+                <copy overwrite="true"
+                  todir="${project.build.directory}/indexViewerData" >
+                  <fileset dir="${index.viewer.data}" includes="**/*html" />
+                </copy>
+              </target>
+            </configuration>
+          </execution>
+          
         </executions>
       </plugin>
 
@@ -133,6 +151,9 @@
                 <exclude>partials/footer.html</exclude>
                 <exclude>partials/header.html</exclude>
               </excludes>
+            </resource>
+            <resource>
+              <directory>${project.build.directory}/indexViewerData</directory>
             </resource>
           </webResources>
         </configuration>
