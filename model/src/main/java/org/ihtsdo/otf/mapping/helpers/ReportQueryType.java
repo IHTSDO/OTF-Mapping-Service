@@ -13,5 +13,8 @@ public enum ReportQueryType {
   HQL,
 
   /** SQL type. */
-  SQL
+  SQL, 
+  
+  /** No query used, no query type */
+  NONE
 }

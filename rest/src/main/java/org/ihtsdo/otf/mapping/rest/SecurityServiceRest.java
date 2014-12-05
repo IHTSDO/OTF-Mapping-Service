@@ -67,4 +67,36 @@ public class SecurityServiceRest extends RootServiceRest {
     }
 
   }
+
+  /**
+   * Authenticate.
+   *
+   * @param username the username
+   * @return the string
+   */
+  @POST
+  @Path("/logout/user/id/{userName}")
+  @ApiOperation(value = "Log out.", notes = "Logs a map user out of the tool.", response = Response.class)
+  public void logout(
+    @ApiParam(value = "Username", required = true) @PathParam("userName") String userName) {
+
+    Logger.getLogger(SecurityServiceRest.class).info(
+        "RESTful call (Logout) : /logout/user/id/"
+            + userName);
+    try {
+      SecurityService securityService = new SecurityServiceJpa();
+      securityService.logout(userName);
+      securityService.close();
+    } catch (LocalException e) {
+      Logger.getLogger(SecurityServiceRest.class).error(
+          "Local exception thrown");
+      throw new WebApplicationException(Response.status(401)
+          .entity(e.getMessage()).build());
+    } catch (Exception e) {
+      Logger.getLogger(SecurityServiceRest.class).error(
+          "General exception thrown");
+      handleException(e, "Unexpected error trying to authenticate a map user");
+    }
+
+  }
 }

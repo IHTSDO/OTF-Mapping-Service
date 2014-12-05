@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.services;
 
+import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 
 /**
@@ -50,4 +51,13 @@ public interface SecurityService extends RootService {
    */
   public MapUserRole getApplicationRoleForToken(String authToken)
     throws Exception;
+
+  /**
+   * Logout.
+   *
+   * @param authToken the auth token
+   * @throws LocalException 
+   * @throws Exception 
+   */
+  public void logout(String authToken) throws Exception;
 }

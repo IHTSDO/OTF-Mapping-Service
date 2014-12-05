@@ -3,6 +3,7 @@
  */
 package org.ihtsdo.otf.mapping.rest;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -23,11 +24,15 @@ import javax.ws.rs.core.Response;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.FeedbackConversationList;
 import org.ihtsdo.otf.mapping.helpers.FeedbackConversationListJpa;
+import org.ihtsdo.otf.mapping.helpers.LocalException;
+import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
+import org.ihtsdo.otf.mapping.helpers.ValidationResult;
+import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa;
@@ -512,7 +517,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
   /**
    * Find available qa work.
-   *
+   * 
    * @param mapProjectId the map project id
    * @param query the query
    * @param pfsParameter the pfs parameter
@@ -649,7 +654,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
   /**
    * Find assigned qa work.
-   *
+   * 
    * @param mapProjectId the map project id
    * @param userName the user name
    * @param query the query
@@ -1392,17 +1397,22 @@ public class WorkflowServiceRest extends RootServiceRest {
     String project = "";
 
     try {
+
       // authorize call
       MapUserRole role =
           securityService.getMapProjectRoleForToken(authToken,
               mapRecord.getMapProjectId());
       if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-        throw new WebApplicationException(
-            Response
-                .status(401)
-                .entity(
-                    "User does not have permissions to set a record to editing in progress.")
-                .build());
+        throw new WebApplicationException(Response.status(401)
+            .entity("User does not have permissions to save a map record.")
+            .build());
+
+      securityService.getMapProjectRoleForToken(authToken,
+          mapRecord.getMapProjectId());
+      if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+        throw new WebApplicationException(Response.status(401)
+            .entity("User does not have permissions to save a map record.")
+            .build());
 
       // get the map project and map user
       MappingService mappingService = new MappingServiceJpa();
@@ -1497,7 +1507,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
   /**
    * Creates the qa record.
-   *
+   * 
    * @param mapRecord the map record
    * @param authToken the auth token
    * @throws Exception the exception
@@ -1567,7 +1577,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
   /**
    * Creates the qa work given a report of concepts.
-   *
+   * 
    * @param reportId the report id
    * @param authToken the auth token
    * @throws Exception the exception
@@ -1615,9 +1625,8 @@ public class WorkflowServiceRest extends RootServiceRest {
       reportService.close();
 
     } catch (Exception e) {
-      handleException(e, "trying to create qa work", userName, project, 
-          report == null ? "" : report
-          .getId().toString());
+      handleException(e, "trying to create qa work", userName, project,
+          report == null ? "" : report.getId().toString());
     }
 
   }
@@ -1828,7 +1837,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
   /**
    * Is map record false conflict.
-   *
+   * 
    * @param recordId the record id
    * @param authToken the auth token
    * @return the boolean
@@ -1946,7 +1955,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
   /**
    * Sets the map record false conflict.
-   *
+   * 
    * @param recordId the record id
    * @param isFalseConflict the is false conflict
    * @param authToken the auth token
@@ -2135,7 +2144,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
   /**
    * Returns the feedback conversations for map project.
-   *
+   * 
    * @param mapProjectId the map project id
    * @param userName the user name
    * @param query the query
@@ -2202,7 +2211,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
   /**
    * Returns the feedback conversations for terminology id.
-   *
+   * 
    * @param mapProjectId the map project id
    * @param conceptId the concept id
    * @param authToken the auth token
@@ -2251,4 +2260,142 @@ public class WorkflowServiceRest extends RootServiceRest {
       return null;
     }
   }
+
+  @POST
+  @Path("/assign/fixErrorPath/project/id/{projectId}/user/id/{userName}")
+  @ApiOperation(value = "Assign concepts to fix error path", notes = "Assigns publication-ready map records to the Fix Error Workflow Path given a list of concept ids", response = ValidationResult.class)
+  @Consumes({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  @CookieParam(value = "userInfo")
+  public ValidationResult assignBatchToFixErrorPath(
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long mapProjectId,
+    @ApiParam(value = "List of terminology ids to assign", required = true) List<String> terminologyIds,
+    @ApiParam(value = "Map user to assign to", required = true) @PathParam("userName") String userName,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+    // log call
+    Logger.getLogger(MappingServiceRest.class).info(
+        "RESTful call (Mapping): /assign/project/id/" + mapProjectId
+            + "/fixErrorPath with ids: " + terminologyIds.toString());
+
+    String user = "";
+    // execute the service call
+    try {
+      // authorize call
+      MapUserRole role =
+          securityService.getMapProjectRoleForToken(authToken, mapProjectId);
+      user = securityService.getUsernameForToken(authToken);
+      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+        throw new WebApplicationException(
+            Response
+                .status(401)
+                .entity(
+                    "User does not have permissions to assign map records to the fix error path.")
+                .build());
+
+      MappingService mappingService = new MappingServiceJpa();
+     
+      MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      MapUser mapUser = mappingService.getMapUser(userName);
+
+      if (mapUser == null)
+        throw new LocalException("The user could not be retrieved");
+
+      ValidationResult result = new ValidationResultJpa();
+
+      List<MapRecord> mapRecords = new ArrayList<>();
+
+      // cycle over these ids
+      for (String terminologyId : terminologyIds) {
+
+        MapRecordList mrList =
+            mappingService.getMapRecordsForProjectAndConcept(mapProjectId,
+                terminologyId);
+        
+        // first check:  records retrieved
+        if (mrList.getCount() == 0) {
+          result.addError("No records found for concept " + terminologyId);
+          continue;
+        }
+
+        // first check: only one record
+        if (mrList.getCount() != 1) {
+          result.addError("Multiple records present for concept "
+              + terminologyId);
+          continue;
+        }
+        
+
+        // get the first record
+        MapRecord mapRecord = mrList.getIterable().iterator().next();
+
+
+      
+        // second check: PUBLISHED or READY_FOR_PUBLICATION
+        if (!mapRecord.getWorkflowStatus().equals(
+            WorkflowStatus.READY_FOR_PUBLICATION)
+            && !mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)) {
+          result.addError("Record is not publication-ready for concept "
+              + terminologyId + ", " + mapRecord.getConceptName());
+          continue;
+        }
+
+        mapRecords.add(mapRecord);
+      }
+      
+      // close the mapping service
+      mappingService.close();
+      
+      // open workflow and content services
+      WorkflowService workflowService = new WorkflowServiceJpa();
+      ContentService contentService = new ContentServiceJpa();
+      
+      // cycle over all eligible map records
+      for (MapRecord mapRecord : mapRecords) {
+
+        // get concept for this terminology id
+        Concept concept =
+            contentService.getConcept(mapRecord.getConceptId(),
+                mapProject.getSourceTerminology(),
+                mapProject.getSourceTerminologyVersion());
+
+        if (concept == null) {
+          result.addError("Could not retrieve concept for id "
+              + mapRecord.getConceptId());
+          continue;
+        }
+
+        try {
+
+          // assign the user to this concept and record
+          workflowService.processWorkflowAction(mapProject, concept, mapUser,
+              mapRecord, WorkflowAction.ASSIGN_FROM_INITIAL_RECORD);
+
+          // add success message if no errors thrown
+          result.addMessage("Successfully assigned concept "
+              + mapRecord.getConceptId() + ", "
+              + concept.getDefaultPreferredName());
+        } catch (LocalException e) {
+          result
+              .addError("Concept already in workflow, could not assign concept "
+                  + mapRecord.getConceptId()
+                  + ", "
+                  + concept.getDefaultPreferredName());
+        }
+      }
+
+      return result;
+
+    } catch (Exception e) {
+      handleException(e, "trying to assign concepts along the fix error path.",
+          user, mapProjectId.toString(), "");
+      return null;
+    }
+
+  }
+
 }
