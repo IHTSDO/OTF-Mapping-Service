@@ -69,6 +69,7 @@ angular
           for (var i = 0; i < data.searchResult.length; i++) {
             $scope.domains.push(data.searchResult[i].value);
           }
+          $scope.domains.sort();
           $scope.selectedDomain = $scope.domains[0];
           $scope.retrieveIndexPages($scope.domains[0]);
           $scope.mainTermLabel = '';
@@ -193,6 +194,7 @@ angular
           for (var i = 0; i < data.searchResult.length; i++) {
             $scope.indexPages.push(data.searchResult[i].value);
           }
+          $scope.indexPages.sort();
           
           $scope.selectedDomain = domain;
           $scope.selectedPage = $scope.indexPages[0];
@@ -205,11 +207,13 @@ angular
               + $scope.focusProject.destinationTerminologyVersion + "/html/" + 
               $scope.selectedDomain + "/" + $scope.indexPages[i] + ".html"
 
+              $rootScope.glassPane++;
               $http.get(url, {
                 cache: $templateCache
               }).then(function(result) {
                 console.log(result);
                 $templateCache.put(url, result); 
+                $rootScope.glassPane--;
               });       
           }
           
