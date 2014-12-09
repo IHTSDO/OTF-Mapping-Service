@@ -1047,7 +1047,6 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
    * java.lang.String, org.ihtsdo.otf.mapping.reports.ReportDefinition,
    * java.util.Date, boolean)
    */
-  @SuppressWarnings("resource")
   @Override
   public Report generateReport(MapProject mapProject, MapUser owner,
     String name, ReportDefinition reportDefinition, Date date,
@@ -1258,7 +1257,6 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 	 *            the value
    * @return the report result for value
    */
-  @SuppressWarnings("unused")
   private ReportResult getReportResultForValue(Report report, String value) {
     for (ReportResult result : report.getResults()) {
       if (result.getValue().equals(value))
@@ -1277,8 +1275,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 	 *            the older set against which items will be compared
    * @return the report result items added
    */
-  @SuppressWarnings("unused")
-	private ReportResult getReportResultItemsNotInResult(ReportResult result1,
+  private ReportResult getReportResultItemsNotInResult(ReportResult result1,
     ReportResult result2) {
 
 		ReportResult result = new ReportResultJpa();
@@ -1378,14 +1375,12 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     // attempt to execute the query
     try {
       // open the JDBC connection
-      @SuppressWarnings("resource")
       java.sql.Connection conn =
           DriverManager
               .getConnection(config.getProperty("javax.persistence.jdbc.url"),
                   connectionProps);
 
       // create the statement and execute the query
-      @SuppressWarnings("resource")
       java.sql.Statement stmt = conn.createStatement();
       rs = stmt.executeQuery(query);
     } catch (SQLException e) {

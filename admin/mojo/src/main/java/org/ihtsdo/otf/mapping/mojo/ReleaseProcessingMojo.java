@@ -136,63 +136,13 @@ public class ReleaseProcessingMojo extends AbstractMojo {
           }
         }
       }
+    
       
-      ReleaseHandler releaseHandler = new ReleaseHandlerJpa();
       for (MapProject mapProject : mapProjects) {
-        getLog().info(
-            "Performing release QA for " + mapProject.getName() + ", "
-                + mapProject.getId());
-       releaseHandler.performBeginReleaseQAChecks(mapProject, updateRecords);
-      }
-      
-      /*
-      // Perform the release processing
-      for (MapProject mapProject : mapProjects) {
-       
-
-        // add check for scope concepts contained in the map record set
-
-        // FOR TESTING ONLY
-        List<MapRecord> mapRecords = new ArrayList<>();
-
-        boolean testRun = false;
-
-        if (!testRun) {
-
-          // RETRIEVE MAP RECORDS HERE
-          mapRecords.addAll(mappingService
-              .getPublishedAndReadyForPublicationMapRecordsForMapProject(
-                  mapProject.getId(), null).getMapRecords());
-        }
-
-        if (testRun) {
-
-          String conceptIds[] = {
-            "10000006"
-          };
-          //
-          // , "10001005",
-          // "1001000119102", "10041001", "10050004",
-          // "100581000119102", "10061007", "10065003", "10070005", "703619001"
-          // };
-          //
-
-          for (String conceptId : conceptIds) {
-            MapRecordList mrl =
-                mappingService.getMapRecordsForProjectAndConcept(
-                    mapProject.getId(), conceptId);
-
-            System.out.println("Retrieved " + mrl.getCount()
-                + " records for concept " + conceptId);
-            mapRecords.add(mrl.getMapRecords().get(0));
-          }
-
-        }
-
+ 
         getLog().info(
             "Processing release for " + mapProject.getName() + ", "
-                + mapProject.getId() + ", with " + mapRecords.size()
-                + " records to publish");
+                + mapProject.getId());
 
         // ensure output directory name has a terminating /
         if (!outputDirName.endsWith("/"))
@@ -201,17 +151,12 @@ public class ReleaseProcessingMojo extends AbstractMojo {
         // Instantiate release handler and for now, run everything as a delta +
         // snapshot release
         ReleaseHandler releaseHandler = new ReleaseHandlerJpa();
-        releaseHandler.processRelease(mapProject, mapRecords, outputDirName,
-            effectiveTime, moduleId);
-            
-            
-
+        releaseHandler.processReleaseDelta(mapProject, outputDirName, effectiveTime, moduleId);
       }
 
       getLog().info("done ...");
       mappingService.close();
-      
-      */
+
     } catch (Exception e) {
       e.printStackTrace();
       throw new MojoExecutionException("Performing release processing failed.",
