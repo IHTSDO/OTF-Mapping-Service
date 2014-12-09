@@ -11,15 +11,15 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
 
-// TODO: Auto-generated Javadoc
 /**
- * Loads unpublished complex maps.
+ * Checks validity of a map project for release.
+ * If remove.records set to true, remoes out of scope records
  * 
  * Sample execution:
  * 
  * <pre>
  *     <profile>
- *       <id>ReleaseQA</id>
+ *       <id>BeginRelease/id>
  *       <build>
  *         <plugins>
  *           <plugin>
@@ -28,13 +28,14 @@ import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
  *             <version>${project.version}</version>
  *             <executions>
  *               <execution>
- *                 <id>release-qa</id>
+ *                 <id>begin-release</id>
  *                 <phase>package</phase>
  *                 <goals>
- *                   <goal>release-qa</goal>
+ *                   <goal>begin-release</goal>
  *                 </goals>
  *                 <configuration>
  *                   <refSetId>${refset.id}</refSetId>
+ *                   <removeRecords>${remove.records}</removeRecords>
  *                 </configuration>
  *               </execution>
  *             </executions>
@@ -44,10 +45,10 @@ import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
  *     </profile>
  * </pre>
  * 
- * @goal release-qa
+ * @goal begin-release
  * @phase package
  */
-public class QARelease extends AbstractMojo {
+public class ReleaseBeginMojo extends AbstractMojo {
 
   /**
    * The refSet id.
@@ -56,10 +57,10 @@ public class QARelease extends AbstractMojo {
   private String refSetId = null;
 
   /**
-   * The update records.
-   * @parameter updateRecords
+   * The remove records.
+   * @parameter removeRecords
    */
-  private boolean updateRecords = false;
+  private boolean removeRecords = false;
 
   /**
    * Executes the plugin.
@@ -68,7 +69,7 @@ public class QARelease extends AbstractMojo {
    */
   @Override
   public void execute() throws MojoExecutionException {
-    getLog().info("Starting begin release QA checks - " + refSetId + ", " + updateRecords);
+    getLog().info("Starting begin release QA checks - " + refSetId + ", " + removeRecords);
 
     if (refSetId == null) {
       throw new MojoExecutionException("You must specify a refSetId.");
@@ -95,7 +96,7 @@ public class QARelease extends AbstractMojo {
         getLog().info(
             "Performing release QA for " + mapProject.getName() + ", "
                 + mapProject.getId());
-        releaseHandler.performBeginReleaseQAChecks(mapProject, updateRecords);
+        releaseHandler.beginRelease(mapProject, removeRecords);
       }
 
       getLog().info("done ...");
