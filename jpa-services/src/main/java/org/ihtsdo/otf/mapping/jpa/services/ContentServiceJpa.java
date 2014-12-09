@@ -2946,6 +2946,7 @@ public SearchResultList findIndexViewerEntries(String terminology,
  * @return the results
  * @throws Exception the exception
  */
+@SuppressWarnings("deprecation")
 public List<String> performSearch(String terminology,
     String terminologyVersion, String domain, String searchStr, int startLevel,
     int endLevel, String subSearchAnchor, boolean requireHasChild)
@@ -3023,6 +3024,7 @@ public List<String> performSearch(String terminology,
             searchResults.add(link);
 
     }
+    searcher.close();
     return searchResults;
 }
 
