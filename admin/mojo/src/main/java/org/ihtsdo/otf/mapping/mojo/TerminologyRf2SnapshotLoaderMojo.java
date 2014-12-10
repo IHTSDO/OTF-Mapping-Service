@@ -68,14 +68,14 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
   /** The version. */
   private String version = null;
 
-  /** the defaultPreferredNames values. */
-  private Long dpnTypeId;
+  /** the defaultPreferredNames type id. */
+  private Long dpnTypeId = 900000000000003001L;
 
   /** The dpn ref set id. */
-  private Long dpnrefsetId;
+  private Long dpnrefsetId = 900000000000509007L;
 
   /** The dpn acceptability id. */
-  private Long dpnAcceptabilityId;
+  private Long dpnAcceptabilityId = 900000000000548007L;
 
   /** The date format. */
   private final SimpleDateFormat dt = new SimpleDateFormat("yyyymmdd");
@@ -156,16 +156,22 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
             + ".input.data directory does not exist: " + coreInputDirString);
       }
 
-      // Set the parameters for determining defaultPreferredNames
-      dpnTypeId =
-          Long.valueOf(config
-              .getProperty("loader.defaultPreferredNames.typeId"));
-      dpnrefsetId =
-          Long.valueOf(config
-              .getProperty("loader.defaultPreferredNames.refsetId"));
+      // set the parameters for determining defaultPreferredNames
+      String prop = config.getProperty("loader.defaultPreferredNames.typeId");
+      if (prop != null) {
+        dpnTypeId = Long.valueOf(prop);
+      }
+
+      prop = config.getProperty("loader.defaultPreferredNames.refsetId");
+      if (prop != null) {
+        dpnrefsetId = Long.valueOf(prop);
+      }
+      prop = config
+          .getProperty("loader.defaultPreferredNames.acceptabilityId");
+      if (prop != null) {
       dpnAcceptabilityId =
-          Long.valueOf(config
-              .getProperty("loader.defaultPreferredNames.acceptabilityId"));
+          Long.valueOf(prop);
+      }
 
       //
       // Determine version

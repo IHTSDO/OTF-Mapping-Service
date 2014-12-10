@@ -80,13 +80,13 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
   private File deltaDir;
 
   /** the defaultPreferredNames type id. */
-  private Long dpnTypeId;
+  private Long dpnTypeId = 900000000000003001L;
 
   /** The dpn ref set id. */
-  private Long dpnrefsetId;
+  private Long dpnrefsetId = 900000000000509007L;
 
   /** The dpn acceptability id. */
-  private Long dpnAcceptabilityId;
+  private Long dpnAcceptabilityId = 900000000000548007L;
 
   /** The concept reader. */
   private BufferedReader conceptReader;
@@ -357,14 +357,21 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     }
 
     // set the parameters for determining defaultPreferredNames
-    dpnTypeId =
-        Long.valueOf(config.getProperty("loader.defaultPreferredNames.typeId"));
-    dpnrefsetId =
-        Long.valueOf(config
-            .getProperty("loader.defaultPreferredNames.refsetId"));
+    String prop = config.getProperty("loader.defaultPreferredNames.typeId");
+    if (prop != null) {
+      dpnTypeId = Long.valueOf(prop);
+    }
+
+    prop = config.getProperty("loader.defaultPreferredNames.refsetId");
+    if (prop != null) {
+      dpnrefsetId = Long.valueOf(prop);
+    }
+    prop = config
+        .getProperty("loader.defaultPreferredNames.acceptabilityId");
+    if (prop != null) {
     dpnAcceptabilityId =
-        Long.valueOf(config
-            .getProperty("loader.defaultPreferredNames.acceptabilityId"));
+        Long.valueOf(prop);
+    }
 
     // output relevant properties/settings to console
     getLog().info("Terminology Version: " + terminologyVersion);
