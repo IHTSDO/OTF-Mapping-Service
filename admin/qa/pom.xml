@@ -171,7 +171,7 @@
                     <property>
                       <name>Validate map project source terminology exists</name>
                       <value>
-                        SELECT a.id, a.name
+                        SELECT a.id, a.name, a.sourceTerminology
                         FROM map_projects a
                         WHERE NOT EXISTS
                         (SELECT * FROM concepts b
@@ -183,7 +183,7 @@
                     <property>
                       <name>Validate map project destination terminology exists</name>
                       <value>
-                        SELECT a.id, a.name
+                        SELECT a.id, a.name, a.destinationTerminology
                         FROM map_projects a
                         WHERE NOT EXISTS
                         (SELECT * FROM concepts b
