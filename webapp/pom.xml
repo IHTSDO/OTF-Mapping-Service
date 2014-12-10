@@ -18,8 +18,8 @@
   <properties>
     <packageName>${project.parent.artifactId}-webapp</packageName>
     <!-- Specify the config artifact parameters -->
-    <config.groupId>org.ihtsdo.otf.term-server</config.groupId>
-    <config.artifactId>term-server-config-windows-dev</config.artifactId>
+    <config.groupId>org.ihtsdo.otf.mapping</config.groupId>
+    <config.artifactId>mapping-config-dev-windows</config.artifactId>
     <config.version>${project.version}</config.version>
   </properties>
 
@@ -66,7 +66,7 @@
                   <artifactId>${config.artifactId}</artifactId>
                   <version>${config.version}</version>
                   <type>zip</type>
-                  <outputDirectory>${project.build.directory}/config</outputDirectory>
+                  <outputDirectory>${project.build.directory}/config/resources</outputDirectory>
                 </artifactItem>
               </artifactItems>
             </configuration>
@@ -80,11 +80,13 @@
             <configuration>
               <artifactItems>
                 <artifactItem>
-                  <groupId>${config.groupId}</groupId>
-                  <artifactId>${config.artifactId}</artifactId>
-                  <version>${config.version}</version>
+                  <!-- These are set by the properties in the read-project-properties 
+                    call. They can be manually overridden with -D as desired. -->
+                  <groupId>${index.viewer.groupId}</groupId>
+                  <artifactId>${index.viewer.artifactId}</artifactId>
+                  <version>${index.viewer.version}</version>
                   <type>zip</type>
-                  <outputDirectory>${project.build.directory}/config</outputDirectory>
+                  <outputDirectory>${project.build.directory}/config/resources</outputDirectory>
                 </artifactItem>
               </artifactItems>
             </configuration>
@@ -119,8 +121,13 @@
         <configuration>
           <webResources>
             <resource>
-              <directory>${project.build.directory}/custom/resources</directory>
-            </resource>
+              <directory>${project.build.directory}/config/resources</directory>
+              <!-- avoid unnecessary stuff -->
+              <excludes>
+                <exclude>bin/**</exclude>
+                <exclude>config*.properties</exclude>
+              </excludes>
+          </resource>
             <resource>
               <directory>src/main/webapp</directory>
               <filtering>true</filtering>
@@ -138,9 +145,6 @@
                 <exclude>partials/footer.html</exclude>
                 <exclude>partials/header.html</exclude>
               </excludes>
-            </resource>
-            <resource>
-              <directory>${project.build.directory}/indexViewerData</directory>
             </resource>
           </webResources>
         </configuration>

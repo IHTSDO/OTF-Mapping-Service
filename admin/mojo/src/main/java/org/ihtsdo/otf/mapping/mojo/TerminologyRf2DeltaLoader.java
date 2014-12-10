@@ -83,7 +83,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
   private Long dpnTypeId;
 
   /** The dpn ref set id. */
-  private Long dpnRefSetId;
+  private Long dpnrefsetId;
 
   /** The dpn acceptability id. */
   private Long dpnAcceptabilityId;
@@ -359,9 +359,9 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     // set the parameters for determining defaultPreferredNames
     dpnTypeId =
         Long.valueOf(config.getProperty("loader.defaultPreferredNames.typeId"));
-    dpnRefSetId =
+    dpnrefsetId =
         Long.valueOf(config
-            .getProperty("loader.defaultPreferredNames.refSetId"));
+            .getProperty("loader.defaultPreferredNames.refsetId"));
     dpnAcceptabilityId =
         Long.valueOf(config
             .getProperty("loader.defaultPreferredNames.acceptabilityId"));
@@ -370,7 +370,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     getLog().info("Terminology Version: " + terminologyVersion);
     getLog().info("Default preferred name settings:");
     getLog().info("  typeId:          " + dpnTypeId);
-    getLog().info("  refSetId:        " + dpnRefSetId);
+    getLog().info("  refsetId:        " + dpnrefsetId);
     getLog().info("  acceptabilityId: " + dpnAcceptabilityId);
 
     // Open files
@@ -998,12 +998,12 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
               .getLanguageRefSetMembers()) {
             getLog().info(
                 "    Checking language " + language.getTerminologyId()
-                    + ", active = " + language.isActive() + ", refSetId = "
+                    + ", active = " + language.isActive() + ", refsetId = "
                     + language.getRefSetId() + ", acceptabilityId = "
                     + language.getAcceptabilityId());
 
             // If prefrred and has correct refset
-            if (new Long(language.getRefSetId()).equals(dpnRefSetId)
+            if (new Long(language.getRefSetId()).equals(dpnrefsetId)
                 && language.isActive()
                 && language.getAcceptabilityId().equals(dpnAcceptabilityId)) {
               getLog().info("      MATCH FOUND: " + description.getTerm());

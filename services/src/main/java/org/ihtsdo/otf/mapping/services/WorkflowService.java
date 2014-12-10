@@ -508,20 +508,6 @@ public interface WorkflowService extends RootService {
   FeedbackList getFeedbackErrorsForRecord(MapRecord mapRecord) throws Exception;
 
   /**
-   * Fix feedback error flag.
-   *
-   * @throws Exception the exception
-   */
-  public void fixFeedbackErrorFlag() throws Exception;
-
-  /**
-   * Fix error messages.
-   *
-   * @throws Exception the exception
-   */
-  public void fixErrorMessages() throws Exception;
-
-  /**
    * Finish editing done tracking records. Used for one-off error correction.
    *
    * @param mapProject the map project
