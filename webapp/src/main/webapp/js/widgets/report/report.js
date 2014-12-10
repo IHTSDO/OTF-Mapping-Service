@@ -255,7 +255,7 @@ angular
             }
           }).success(function(data) {
           $rootScope.glassPane--;
-          $scope.reportDisplayed = data;
+          $scope.viewReport(data);
           $scope.definitionMsg = "Successfully saved definition";
         }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;

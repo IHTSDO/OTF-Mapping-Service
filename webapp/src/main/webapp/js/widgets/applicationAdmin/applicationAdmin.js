@@ -2077,7 +2077,7 @@ angular
 
                 $http(
                     {
-                      url : root_reporting + "report/generate/project/id/"
+                      url : root_reporting + "report/test/project/id/"
                           + $scope.focusProject.id + "/user/id/"
                           + $scope.currentUser.userName,
                       dataType : "json",
