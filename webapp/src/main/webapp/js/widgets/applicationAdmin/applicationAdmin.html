@@ -1148,12 +1148,43 @@
         <td>QA Check Definition Query</td>
         <td><textarea ng-model="newQACheckDefinitionQuery"></textarea></td>
       </tr>
+      
+     <tr>
+        <td>
 
-      <tr>
-        <td><button class="btn btn-sm btn-primary"
-            ng-click="submitNewQACheckDefinition(newQACheckDefinitionName, newQACheckDefinitionRoleRequired, newQACheckDefinitionResultType, newQACheckDefinitionQueryType, newQACheckDefinitionQuery)">Submit</button></td>
-        <td></td>
+          <div
+            ng-show="testQACheckSuccess == true">
+            <button class="btn btn-sm btn-primary"
+              ng-click="submitNewQACheckDefinition(newQACheckDefinitionName, newQACheckDefinitionRoleRequired, newQACheckDefinitionResultType, newQACheckDefinitionQueryType, newQACheckDefinitionQuery)">Submit</button>
+          </div>
+
+          <div
+            ng-show="testQACheckSuccess == false">
+            <button class="btn btn-sm btn-primary"
+              ng-click="testQACheckDefinition(newQACheckDefinitionName, newQACheckDefinitionRoleRequired, newQACheckDefinitionResultType, newQACheckDefinitionQueryType, newQACheckDefinitionQuery)">Test
+              Report</button>
+          </div>
+
+        </td>
+
+        <td>
+          <div class="border-error alert-error"
+            ng-show="testReportError != null">
+            <div class="alert alert-danger alert-error">
+              {{testReportError}}
+              <div style="display: inline; float: right; width: 3%;">
+                <i class="glyphicon glyphicon-remove"
+                  ng-click="testReportError = null"></i>
+              </div>
+            </div>
+          </div>
+          <div ng-show="testReportSuccess == true" class="alert alert-warning ">Test
+            report generated successfully, but you must click Submit to add the
+            definition.</div>
+
+        </td>
       </tr>
+      
     </tbody>
   </table>
 </form>
