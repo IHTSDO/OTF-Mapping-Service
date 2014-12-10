@@ -94,6 +94,7 @@ map.principle.source.document.dir=C:/data/doc
 #
 ihtsdo.security.activated=false
 ihtsdo.security.url=https://usermanagement.ihtsdotools.org/security-web/query/
+ihtsdo.security.timeout=7200000
 
 #
 # Exception processing emails

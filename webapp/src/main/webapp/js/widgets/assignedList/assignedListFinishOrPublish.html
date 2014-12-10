@@ -35,5 +35,11 @@
 
   <div otf-map-record-narrow record="currentRecord" project="project"
     show-title="true"></div>
-
+  <div ng-show="records.length > 1"> 
+   <hr>
+   
+   <button class="btn btn-sm btn-primary" ng-click="finishAllRecords()">{{actionText}} All Records</button>
+   <div class="alert alert-success" ng-show="recordsFinished > 0">Records {{actionText}}ed: {{recordsFinished}}</div>
+   <div class="alert alert-warning" ng-show="recordsNotFinished > 0">Records not {{actionText}}ed: {{recordsNotFinished}}</div>
+</div> 
 </div>

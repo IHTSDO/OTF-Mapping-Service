@@ -1,3 +1,6 @@
+<script type="text/ng-template" id="templateId.html">
+  <p>This is the content of the template</p>
+</script>
 
 <form>
   Search: <input id="searchField" ng-model="searchField" style="margin: 5px;">
@@ -30,12 +33,12 @@
 </div>
 
 <div>
-  <tabset> <tab ng-repeat="domain in domains" heading="{{domain}}"
+  <tabset> <tab ng-repeat="domain in domains  | orderBy: 'toString()'" heading="{{domain}}"
     ng-click="retrieveIndexPages(domain);"> </tab></tabset>
 </div>
 
 <div align="center" style="padding: 10px;">
-  <div style="display: inline; padding: 8px;" ng-repeat="indexTab in indexPages">
+  <div style="display: inline; padding: 8px;" ng-repeat="indexTab in indexPages  | orderBy: 'toString()'">
     <a ng-style="set_style(indexTab)" ng-click="updateUrl(indexTab)">{{indexTab}}</a>
   </div>
 </div>
