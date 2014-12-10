@@ -1,15 +1,13 @@
-<div style="float: left; width: 40%; padding: 10px;">
+<div style="float: left; width: 40%; padding-top: 10px;">
 
   <form>
     <table>
       <tr>
-        <td style="padding: 10px 5px 10px 5px;">QA Check Type:</td>
-        <td style="padding: 5px;"><select id="reportSearch"
+        <td style="padding: 5px; width: 30%"><select id="reportSearch"
           ng-options="definition as definition.name for definition in definitions |  filter: {qacheck:true}"
           ng-change="getReports(1, selectedDefinition, queryReport)"
           ng-model="selectedDefinition"></select></td>
-      </tr>
-      <tr>
+
         <td><button
             ng-show="reportDisplayed == null || reportDisplayed.id != null"
             class="btn btn-sm btn-primary"
@@ -23,7 +21,8 @@
   <div
     style="float: right; width: 60%; padding: 10px 0px 10px 10px; border-left: thin solid #ddd;">
 
-    <h4 ng-show="reportDisplayed == null">No QA check results generated</h4>
+    <div class="alert alert-warning" ng-show="reportDisplayed == null">
+      No QA Check results generated</div>
 
     <div ng-show="reportDisplayed != null">
       <h4>

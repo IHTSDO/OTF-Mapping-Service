@@ -255,37 +255,13 @@ angular
             }
           }).success(function(data) {
           $rootScope.glassPane--;
-          $scope.reportDisplayed = data;
+          $scope.viewReport(data);
+          $scope.getReports(1, null, null);
           $scope.definitionMsg = "Successfully saved definition";
         }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
           $rootScope.handleHttpError(data, status, headers, config);
         });
-      };
-
-      $scope.saveNewReport = function(report) {
-        $rootScope.glassPane++;
-
-        // obtain the record
-        $http(
-          {
-            url : root_reporting + "report/add/project/id/"
-              + $scope.focusProject.id,
-            method : "POST",
-            dataType : "json",
-            data : report,
-            headers : {
-              "Content-Type" : "application/json"
-            }
-          }).success(function(data) {
-          $rootScope.glassPane--;
-          $scope.reportDisplayed = data;
-          $scope.definitionMsg = "Successfully saved report";
-        }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
-          $rootScope.handleHttpError(data, status, headers, config);
-        });
-
       };
 
       $scope.exportReport = function(report) {
@@ -311,5 +287,35 @@ angular
         $scope.isAddingDefinition = true;
 
       };
+
+      
+      $scope.deleteReport = function(report, page, selectedDefinition, queryReport) {
+          console.debug("in delete Report from reports");
+
+          if (confirm("Are you sure that you want to delete a report?") == false)
+            return;
+
+          $http({
+            url : root_reporting + "report/delete",
+            dataType : "json",
+            data : report,
+            method : "DELETE",
+            headers : {
+              "Content-Type" : "application/json"
+            }
+          })
+            .success(
+               function(data) {
+                    console
+                        .debug("success to delete report from application");
+                    $scope.getReports(page, selectedDefinition, queryReport);
+            })
+            .error(
+               function(data, status, headers, config) {
+                    $scope.recordError = "Error deleting map report from application.";
+                    $rootScope.handleHttpError(data, status, headers,
+                        config);
+            });
+        };
 
     });
