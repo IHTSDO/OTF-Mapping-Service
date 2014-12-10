@@ -1,6 +1,7 @@
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.io.File;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -11,6 +12,7 @@ import org.ihtsdo.otf.mapping.jpa.handlers.ReleaseHandlerJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.services.MappingService;
+import org.ihtsdo.otf.mapping.services.helpers.FileSorter;
 import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
 
 /**
@@ -121,8 +123,6 @@ public class ReleaseProcessingMojo extends AbstractMojo {
       throw new MojoExecutionException("You must specify a module id");
     
 
-   
-
     try {
 
       MappingService mappingService = new MappingServiceJpa();
@@ -147,6 +147,12 @@ public class ReleaseProcessingMojo extends AbstractMojo {
         // ensure output directory name has a terminating /
         if (!outputDirName.endsWith("/"))
           outputDirName += "/";
+        
+        getLog().info(
+            "  Map project refset pattern is " + mapProject.getMapRefsetPattern().toString());
+        
+        getLog().info(
+            "  Map project is " + (mapProject.isRuleBased() ? "" : "not ") + "rule-based");
 
         // Instantiate release handler and for now, run everything as a delta +
         // snapshot release
