@@ -10,10 +10,10 @@
     <relativePath>../parent</relativePath>
   </parent>
 
-  <artifactId>mapping-config</artifactId>
+  <artifactId>mapping-config-dev-windows</artifactId>
   <packaging>pom</packaging>
-  <name>OTF RF2 Configuration</name>
-  <description>OTF RF2 configuration resources</description>
+  <name>Mapping Config - DEV (windows)</name>
+  <description>Mapping tool configuration for a Windows dev environment</description>
 
   <build>
     <plugins>
@@ -24,7 +24,7 @@
         <artifactId>maven-assembly-plugin</artifactId>
         <executions>
           <execution>
-            <id>zip-filter-properties</id>
+            <id>zip-resources</id>
             <configuration>
               <appendAssemblyId>false</appendAssemblyId>
               <descriptors>
@@ -41,12 +41,5 @@
     </plugins>
   </build>
 
-  <!-- Specific config modules -->
-  <modules>
-    <module>dev-windows</module>
-    <module>uat</module>
-    <module>prod</module>
-    <module>empty</module>
-  </modules>
 </project>
 
