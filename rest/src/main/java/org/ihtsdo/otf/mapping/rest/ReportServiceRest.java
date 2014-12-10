@@ -437,18 +437,82 @@ public class ReportServiceRest extends RootServiceRest {
       MapUser mapUser = mappingService.getMapUser(userName);
       mappingService.close();
 
-      // generate the report -- note, do NOT persist
       ReportService reportService = new ReportServiceJpa();
       report =
           reportService.generateReport(mapProject, mapUser,
               reportDefinition.getName(), reportDefinition, new Date(), false);
-    
+      
+      reportService.addReport(report);
       reportService.close();
 
       return report;
     } catch (Exception e) {
 
       handleException(e, "trying to generate a report", userName,
+          mapProjectName, "");
+      return null;
+
+    }
+  }
+
+  /**
+   * Tests the generation of a report.
+   * @param reportDefinition the report definition
+   *
+   * @param projectId the project id
+   * @param userName the user name
+   * @param authToken the auth token
+   * @return the report
+   */
+  @POST
+  @Path("/report/test/project/id/{projectId}/user/id/{userName}")
+  @ApiOperation(value = "Tests a report", notes = "Generates a report given a definition, indicates if the generation was successful or not.", response = ReportJpa.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public Report testReport(
+    @ApiParam(value = "The report definition", required = true) ReportDefinitionJpa reportDefinition,
+    @ApiParam(value = "Map project id", required = true) @PathParam("projectId") Long projectId,
+    @ApiParam(value = "User generating report", required = true) @PathParam("userName") String userName,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+    Logger.getLogger(MappingServiceRest.class).info(
+        "RESTful call (Report):  /report/test/project/id/" + projectId
+            + "/user/id/" + userName + " with report definition "
+            + reportDefinition.getName());
+
+    String mapProjectName = "(not retrieved)";
+
+    Report report = null;
+
+    try {
+      // authorize call
+      MapUserRole role =
+          securityService.getMapProjectRoleForToken(authToken, projectId);
+      if (!role.hasPrivilegesOf(MapUserRole.LEAD))
+        throw new WebApplicationException(Response.status(401)
+            .entity("User does not have permissions to test  reports.")
+            .build());
+
+      // get the required objects
+      MappingService mappingService = new MappingServiceJpa();
+      MapProject mapProject = mappingService.getMapProject(projectId);
+      mapProjectName = mapProject.getName(); // for error handling
+      MapUser mapUser = mappingService.getMapUser(userName);
+      mappingService.close();
+
+      // Report is NOT persisted
+      ReportService reportService = new ReportServiceJpa();
+      report =
+          reportService.generateReport(mapProject, mapUser,
+              reportDefinition.getName(), reportDefinition, new Date(), false);
+      
+      reportService.close();
+
+      return report;
+    } catch (Exception e) {
+
+      handleException(e, "trying to test a report", userName,
           mapProjectName, "");
       return null;
 
