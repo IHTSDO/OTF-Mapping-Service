@@ -24,31 +24,13 @@ import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 /**
  * Goal which removes a terminology from a database.
  * 
- * <pre>
- *     <plugin>
- *       <groupId>org.ihtsdo.otf.mapping</groupId>
- *       <artifactId>mapping-admin-mojo</artifactId>
- *       <version>${project.version}</version>
- *       <executions>
- *         <execution>
- *           <id>remove-snomed-treepos</id>
- *           <phase>package</phase>
- *           <goals>
- *             <goal>remove-snomed-treepos</goal>
- *           </goals>
- *           <configuration>
- *             <terminology>SNOMEDCT</terminology>
- *           </configuration>
- *         </execution>
- *       </executions>
- *     </plugin>
- * </pre>
+ * See admin/remover/pom.xml for a sample execution.
  * 
- * @goal remove-snomed-treepos
+ * @goal remove-treepos
  * 
  * @phase package
  */
-public class SnomedTreeposRemoverMojo extends AbstractMojo {
+public class TreeposRemoverMojo extends AbstractMojo {
 
   /**
    * Name of terminology to be removed.
@@ -58,11 +40,10 @@ public class SnomedTreeposRemoverMojo extends AbstractMojo {
   private String terminology;
 
   /**
-   * Instantiates a {@link SnomedTreeposRemoverMojo} from the specified
-   * parameters.
+   * Instantiates a {@link TreeposRemoverMojo} from the specified parameters.
    * 
    */
-  public SnomedTreeposRemoverMojo() {
+  public TreeposRemoverMojo() {
     // do nothing
   }
 
@@ -73,7 +54,8 @@ public class SnomedTreeposRemoverMojo extends AbstractMojo {
    */
   @Override
   public void execute() throws MojoFailureException {
-    getLog().info("Starting removing " + terminology + " treepos data ...");
+    getLog().info("Starting removing tree positions");
+    getLog().info("  terminology = " + terminology);
 
     try {
       MetadataServiceJpa metadataService = new MetadataServiceJpa();
@@ -85,12 +67,10 @@ public class SnomedTreeposRemoverMojo extends AbstractMojo {
       contentService.clearTreePositions(terminology, terminologyVersion);
       contentService.close();
 
-      getLog().info("Finished removing " + terminology + " treepos data ...");
-
+      getLog().info("Done...");
     } catch (Exception e) {
       e.printStackTrace();
       throw new MojoFailureException("Unexpected exception:", e);
     }
   }
-
 }

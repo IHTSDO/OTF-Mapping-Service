@@ -15,6 +15,14 @@
   <description>OTF RF2 Administrator Tools to Run Quality Assurance Checks</description>
   <packaging>pom</packaging>
 
+  <!-- The mojo properties -->
+  <properties>
+    <!-- The refset id -->
+    <refset.id></refset.id>
+    <!-- The mode for the QA map groups QA -->
+    <mode></mode>
+  </properties>
+
   <profiles>
 
     <!-- QA Workflow for project, specify -Drun.config=... -->
@@ -34,7 +42,7 @@
                   <goal>qa-workflow</goal>
                 </goals>
                 <configuration>
-                  <refSetId>${refset.id}</refSetId>
+                  <refsetId>${refset.id}</refsetId>
                 </configuration>
               </execution>
             </executions>
@@ -60,7 +68,7 @@
                   <goal>qa-map-groups</goal>
                 </goals>
                 <configuration>
-                  <refSetId>${refset.id}</refSetId>
+                  <refsetId>${refset.id}</refsetId>
                   <mode>${mode}</mode>
                 </configuration>
               </execution>
@@ -87,7 +95,7 @@
                   <goal>finish-specialist-editing</goal>
                 </goals>
                 <configuration>
-                  <refSetId>${refset.id}</refSetId>
+                  <refsetId>${refset.id}</refsetId>
                 </configuration>
               </execution>
             </executions>
@@ -95,7 +103,6 @@
         </plugins>
       </build>
     </profile>
-    
-    
+
   </profiles>
 </project>

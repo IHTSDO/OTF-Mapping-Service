@@ -14,34 +14,7 @@ import org.ihtsdo.otf.mapping.services.ReportService;
 /**
  * Loads unpublished complex maps.
  * 
- * Sample execution:
- * 
- * <pre>
- *     <profile>
- *       <id>Reports</id>
- *       <build>
- *         <plugins>
- *           <plugin>
- *             <groupId>org.ihtsdo.otf.mapping</groupId>
- *             <artifactId>mapping-admin-mojo</artifactId>
- *             <version>${project.version}</version>
- *             <executions>
- *               <execution>
- *                 <id>remove-reports</id>
- *                 <phase>package</phase>
- *                 <goals>
- *                   <goal>remove-reports</goal>
- *                 </goals>
- *                 <configuration>
- *                   <refSetId>${refset.id}</refSetId>
- *                 </configuration>
- *               </execution>
- *             </executions>
- *           </plugin>
- *         </plugins>
- *       </build>
- *     </profile> 
- * 
+ * See admin/loader/pom.xml for a sample execution.
  * 
  * @goal remove-reports
  * @phase package
@@ -50,9 +23,10 @@ public class ReportRemoverMojo extends AbstractMojo {
 
   /**
    * The refSet id
-   * @parameter refSetId
+   * @parameter refsetId
+   * @required
    */
-  private String refSetId = null;
+  private String refsetId = null;
 
   /**
    * Executes the plugin.
@@ -61,11 +35,8 @@ public class ReportRemoverMojo extends AbstractMojo {
    */
   @Override
   public void execute() throws MojoExecutionException {
-    getLog().info("Starting to remove reports - " + refSetId);
-
-    if (refSetId == null) {
-      throw new MojoExecutionException("You must specify a refSetId.");
-    }
+    getLog().info("Starting to remove reports");
+    getLog().info("  refsetId = " + refsetId);
 
     try {
 
@@ -74,7 +45,7 @@ public class ReportRemoverMojo extends AbstractMojo {
 
       for (MapProject mapProject : mappingService.getMapProjects()
           .getIterable()) {
-        for (String id : refSetId.split(",")) {
+        for (String id : refsetId.split(",")) {
           if (mapProject.getRefSetId().equals(id)) {
             mapProjects.add(mapProject);
           }
@@ -90,13 +61,13 @@ public class ReportRemoverMojo extends AbstractMojo {
         reportService.removeReportsForMapProject(mapProject);
       }
 
-      getLog().info("done ...");
       mappingService.close();
       reportService.close();
+      getLog().info("Done ...");
 
     } catch (Exception e) {
       e.printStackTrace();
-      throw new MojoExecutionException("Clearing workflow failed.", e);
+      throw new MojoExecutionException("Report remover failed.", e);
     }
 
   }

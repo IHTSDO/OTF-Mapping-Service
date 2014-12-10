@@ -77,6 +77,5 @@
     <module>import</module>
     <module>qa</module>
     <module>release</module>
-    <module>indexes</module>
   </modules>
 </project>
