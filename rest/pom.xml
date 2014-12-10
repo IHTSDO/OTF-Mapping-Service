@@ -20,8 +20,8 @@
     <packageName>${project.parent.artifactId}-rest</packageName>
 
     <!-- Specify the config artifact parameters -->
-    <config.groupId>org.ihtsdo.otf.term-server</config.groupId>
-    <config.artifactId>term-server-config-windows-dev</config.artifactId>
+    <config.groupId>org.ihtsdo.otf.mapping</config.groupId>
+    <config.artifactId>mapping-config-dev-windows</config.artifactId>
     <config.version>${project.version}</config.version>
   </properties>
 
@@ -173,14 +173,14 @@
                   <artifactId>${config.artifactId}</artifactId>
                   <version>${config.version}</version>
                   <type>zip</type>
-                  <outputDirectory>${project.build.directory}/config</outputDirectory>
+                  <outputDirectory>${project.build.directory}/config/resources</outputDirectory>
                 </artifactItem>
               </artifactItems>
             </configuration>
           </execution>
         </executions>
       </plugin>
-      
+
       <!-- Configure environment-specific build time information -->
       <!-- In particular, this is for base.url -->
       <plugin>
@@ -210,6 +210,11 @@
           <webResources>
             <resource>
               <directory>${project.build.directory}/config/resources</directory>
+              <!-- avoid unnecessary stuff -->
+              <excludes>
+                <exclude>bin/**</exclude>
+                <exclude>config*.properties</exclude>
+              </excludes>
             </resource>
             <resource>
               <directory>src/main/webapp</directory>

@@ -35,7 +35,6 @@ import org.ihtsdo.otf.mapping.helpers.FeedbackConversationListJpa;
 import org.ihtsdo.otf.mapping.helpers.FeedbackList;
 import org.ihtsdo.otf.mapping.helpers.FeedbackListJpa;
 import org.ihtsdo.otf.mapping.helpers.LocalException;
-import org.ihtsdo.otf.mapping.helpers.MapProjectList;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapUserList;
 import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
@@ -4153,114 +4152,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     feedbackConversationList.setFeedbackConversations(feedbackConversations);
 
     return feedbackConversationList;
-  }
-
-  @SuppressWarnings("unchecked")
-  @Override
-  public void fixErrorMessages() throws Exception {
-    List<FeedbackConversation> conversations = null;
-    // construct query
-    javax.persistence.Query query =
-        manager.createQuery("select m from FeedbackConversationJpa m");
-    // Try query
-    conversations = query.getResultList();
-
-    Long icd9cmProjectId = 0L;
-    MappingService mappingService = new MappingServiceJpa();
-    MapProjectList projects = mappingService.getMapProjects();
-    for (MapProject project : projects.getMapProjects()) {
-      if (project.getDestinationTerminology().equals("ICD9CM")
-          && project.getErrorMessages().size() == 0) {
-        icd9cmProjectId = project.getId();
-        Set<String> errorMessages = new HashSet<>();
-        errorMessages.add("Map Group is not relevant");
-        errorMessages.add("Map Group has been omitted");
-        errorMessages.add("Sequencing of Map Groups is incorrect");
-        errorMessages.add("Target code selection for a map record is in error");
-        errorMessages.add("Map parameter assignment is in error");
-        errorMessages.add("Map parameter missing or incomplete");
-        errorMessages.add("Other");
-
-        project.setErrorMessages(errorMessages);
-        mappingService.updateMapProject(project);
-
-      } else if (project.getErrorMessages().size() == 0) {
-        Set<String> errorMessages = new HashSet<>();
-        errorMessages.add("Map Group is not relevant");
-        errorMessages.add("Map Group has been omitted");
-        errorMessages.add("Sequencing of Map Groups is incorrect");
-        errorMessages.add("The number of map records per group is incorrect");
-        errorMessages.add("Target code selection for a map record is in error");
-        errorMessages.add("Map rule type assignment is in error");
-        errorMessages.add("Map target type assignment is in error");
-        errorMessages.add("Map advice missing or incomplete");
-        errorMessages.add("Map advice assignment is in error");
-        errorMessages.add("Mapping Personnel Handbook principle not followed");
-        errorMessages.add("Gender rule is not relevant");
-        errorMessages.add("Gender rule has been omitted");
-        errorMessages.add("Age rule is not relevant");
-        errorMessages.add("Age rule has been omitted");
-        errorMessages.add("Other");
-
-        project.setErrorMessages(errorMessages);
-        mappingService.updateMapProject(project);
-      }
-    }
-
-    for (FeedbackConversation conversation : conversations) {
-      for (Feedback feedback : conversation.getFeedbacks()) {
-        if (conversation.getMapProjectId().longValue() == icd9cmProjectId
-            && feedback.getMapError().equals(
-                "Map advice assignment is in error"))
-          feedback.setMapError("Map parameter missing or incomplete");
-        else if (feedback.getMapError().equals("Map Group  has been omitted"))
-          feedback.setMapError("Map Group has been omitted");
-        else if (feedback.getMapError().equals("None"))
-          feedback.setMapError("");
-      }
-      if (conversation.getUserName() == null
-          || conversation.getUserName().equals("")) {
-        MapRecord mapRecord =
-            mappingService.getMapRecord(conversation.getMapRecordId());
-        if (mapRecord == null) {
-          mapRecord =
-              mappingService
-                  .getMapRecordRevisions(conversation.getMapRecordId())
-                  .getMapRecords().get(0);
-        }
-        conversation.setUserName(mapRecord.getOwner().getUserName());
-      }
-      updateFeedbackConversation(conversation);
-    }
-
-    mappingService.close();
-  }
-
-  @SuppressWarnings("unchecked")
-  @Override
-  public void fixFeedbackErrorFlag() throws Exception {
-    List<FeedbackConversation> conversations = null;
-    // construct query
-    javax.persistence.Query query =
-        manager.createQuery("select m from FeedbackConversationJpa m");
-    // Try query
-    conversations = query.getResultList();
-
-    for (FeedbackConversation conversation : conversations) {
-      for (Feedback feedback : conversation.getFeedbacks()) {
-        if (feedback.getMapError() != null
-            && !feedback.getMapError().equals("")
-            && !feedback.getMapError().equals("None")) {
-          feedback.setIsError(true);
-        } else {
-          feedback.setIsError(false);
-        }
-      }
-
-      updateFeedbackConversation(conversation);
-
-    }
-
   }
 
   @Override
