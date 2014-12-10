@@ -148,12 +148,9 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
       Properties config = ConfigUtility.getConfigProperties();
 
       // Set the input directory
-      String coreInputDirString =
-          config.getProperty("loader." + terminology + ".input.data");
-      File coreInputDir = new File(coreInputDirString);
+      File coreInputDir = new File(inputDir);
       if (!coreInputDir.exists()) {
-        throw new MojoFailureException("Specified loader." + terminology
-            + ".input.data directory does not exist: " + coreInputDirString);
+        throw new MojoFailureException("Specified input dir");
       }
 
       // set the parameters for determining defaultPreferredNames
