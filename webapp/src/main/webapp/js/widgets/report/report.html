@@ -1,15 +1,15 @@
 <div
-	style="float: left; width: 40%; padding: 10px; border-right: thin solid #ddd;">
+	style="float: left; width: 40%; padding-top: 10px; border-right: thin solid #ddd;">
 
 	<form>
 		<table>
+          <tbody>
 			<tr>
-				<td style="padding: 5px;">Report Type:</td>
-				<td style="padding: 5px;"><select id="reportSearch"
+				<td style="width: 30%; padding: 5px;"><select id="reportSearch"
 					ng-options="definition as definition.name for definition in definitions |  filter: {qacheck:false}"
 					ng-change="getReports(1, selectedDefinition, queryReport)"
 					ng-model="selectedDefinition"></select>
-				<td style="padding: 5px">
+				<td style="width: 62%; padding: 5px">
 					<button class="btn btn-sm btn-primary"
 						ng-click="getReports(1, null, queryReport); selectedDefinition = null;">Reset</button>
 					<button ng-show="selectedDefinition != null"
@@ -17,6 +17,7 @@
 						class="btn btn-sm btn-primary">Generate</button>
 				</td>
 			</tr>
+          </tbody>
 		</table>
 	</form>
 
@@ -27,12 +28,13 @@
 
 	<div ng-show="nReports != 0">
 
-		<table class="table"">
+		<table class="table">
 
 			<thead>
 				<tr>
 					<th style="width: 70%; padding: 5px;">Name</th>
-					<th style="width: 30%; padding: 5px;">Date</th>
+					<th style="width: 25%; padding: 5px;">Date</th>
+                    <th style="width: 5%; padding: 5px;"></th>
 
 				</tr>
 
@@ -42,13 +44,17 @@
 
 				<tr ng-repeat="report in reports">
 
-
 					<td style="width: 70%; padding: 5px;"><a
 						ng-show="report.id != reportDisplayed.id"
 						ng-click="viewReport(report)">{{report.name}}</a> <span
 						ng-show="report.id == reportDisplayed.id">{{report.name}}</span></td>
-					<td style="width: 30%; padding: 5px;">{{report.timestamp |
+					<td style="width: 25%; padding: 5px;">{{report.timestamp |
 						date: 'MM/dd/yyyy'}}</td>
+                    <td style="width: 5%;"><a title="Delete Report"
+                        ng-click="deleteReport(report, page, selectedDefinition, queryReport)"
+                        ng-show="report.owner.id == currentUser.id">
+                      <i class="glyphicon glyphicon-trash"></i>
+                      </a></td>
 			</tbody>
 
 		</table>
@@ -111,8 +117,6 @@
 			</table>
 			
 			<button class="btn btn-sm btn-primary">Export</button>
-      <button ng-show="reportDisplayed.id == null"
-        class="btn btn-sm btn-primary">Save Report</button>
 		</div>
 
 
