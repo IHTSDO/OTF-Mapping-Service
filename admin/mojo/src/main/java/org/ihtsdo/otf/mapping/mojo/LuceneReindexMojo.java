@@ -26,27 +26,7 @@ import org.ihtsdo.otf.mapping.workflow.TrackingRecordJpa;
 /**
  * Goal which makes lucene indexes based on hibernate-search annotations.
  * 
- * Sample execution:
- * 
- * <pre>
- *     <plugin>
- *        <groupId>org.ihtsdo.otf.mapping</groupId>
- *        <artifactId>mapping-admin-mojo</artifactId>
- *        <version>${project.version}</version>
- *        <executions>
- *          <execution>
- *            <id>reindex</id>
- *            <phase>package</phase>
- *            <goals>
- *              <goal>reindex</goal>
- *            </goals>
- *            <configuration>
- *                 <indexedObjects>${indexedObjects}</indexedObjects>
- *               </configuration>
- *          </execution>
- *        </executions>
- *      </plugin>
- * </pre>
+ * See admin/lucene/pom.xml for a sample execution.
  * 
  * @goal reindex
  * 
@@ -61,7 +41,6 @@ public class LuceneReindexMojo extends AbstractMojo {
    * The specified objects to index
    * @parameter
    */
-
   private String indexedObjects;
 
   /**
@@ -78,6 +57,8 @@ public class LuceneReindexMojo extends AbstractMojo {
    */
   @Override
   public void execute() throws MojoFailureException {
+    getLog().info("Starting lucene reindexing");
+    getLog().info("  indexedObjects = " + indexedObjects);
 
     // set of objects to be re-indexed
     Set<String> objectsToReindex = new HashSet<>();
@@ -218,10 +199,10 @@ public class LuceneReindexMojo extends AbstractMojo {
       }
 
       // Cleanup
-      getLog().info("done ...");
       manager.close();
       factory.close();
 
+      getLog().info("done ...");
     } catch (Exception e) {
       e.printStackTrace();
       throw new MojoFailureException("Unexpected exception:", e);

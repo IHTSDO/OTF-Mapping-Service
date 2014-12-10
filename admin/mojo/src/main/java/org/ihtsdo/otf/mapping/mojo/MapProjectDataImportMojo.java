@@ -7,7 +7,6 @@ import java.io.FilenameFilter;
 import java.io.StringReader;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.xml.bind.JAXBContext;
@@ -31,29 +30,11 @@ import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.ReportService;
-import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 /**
  * Goal which imports project data from text files.
  * 
- * Sample execution:
- * 
- * <pre>
- *     <plugin>
- *       <groupId>org.ihtsdo.otf.mapping</groupId>
- *       <artifactId>mapping-admin-mojo</artifactId>
- *       <version>${project.version}</version>
- *       <executions>
- *         <execution>
- *           <id>import-project-data</id>
- *           <phase>package</phase>
- *           <goals>
- *             <goal>import-project-data</goal>
- *           </goals>
- *         </execution>
- *       </executions>
- *     </plugin>
- * </pre>
+ * See admin/import/pom.xml for a sample execution.
  * 
  * NOTE: run with -Dmini if using a mini data set as all scope concepts may not
  * exist
@@ -63,6 +44,19 @@ import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
  * @phase package
  */
 public class MapProjectDataImportMojo extends AbstractMojo {
+
+  /**
+   * The input dir
+   * @parameter
+   * @required
+   */
+  private String inputDir;
+
+  /**
+   * The mini flag
+   * @parameter
+   */
+  private String mini;
 
   /**
    * Instantiates a {@link MapProjectDataImportMojo} from the specified
@@ -82,19 +76,14 @@ public class MapProjectDataImportMojo extends AbstractMojo {
   @Override
   public void execute() throws MojoFailureException {
     getLog().info("Starting importing metadata ...");
+    getLog().info("  inputDir = " + inputDir);
+    getLog().info("  mini = " + mini);
     try {
 
-      Properties config = ConfigUtility.getConfigProperties();
-
-      // set the input directory
-      String inputDirString = config.getProperty("import.input.dir");
-      getLog().info("  inputDir = " + inputDirString);
-      getLog().info("  mini = " + System.getProperty("mini"));
-      File inputDir = new File(inputDirString);
-      if (!inputDir.exists()) {
+      File inputDirFile = new File(inputDir);
+      if (!inputDirFile.exists()) {
         throw new MojoFailureException(
-            "Specified import.input.dir directory does not exist: "
-                + inputDirString);
+            "Specified import.input.dir directory does not exist: " + inputDir);
       }
 
       // get all project .xml files
@@ -110,7 +99,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
           }
         }
       };
-      File[] projectFiles = inputDir.listFiles(projectFilter);
+      File[] projectFiles = inputDirFile.listFiles(projectFilter);
 
       // Open services
       ReportService reportService = new ReportServiceJpa();
@@ -367,7 +356,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
               contentService.getConcept(line.trim(),
                   project.getSourceTerminology(),
                   project.getSourceTerminologyVersion());
-          if (c == null && "true".equals(System.getProperty("mini"))) {
+          if (c == null && "true".equals(mini)) {
             // if it's mini, just ignore this
           } else if (c == null) {
             // if it's not mini, then throw an error
@@ -395,7 +384,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
               contentService.getConcept(line.trim(),
                   project.getSourceTerminology(),
                   project.getSourceTerminologyVersion());
-          if (c == null && "true".equals(System.getProperty("mini"))) {
+          if (c == null && "true".equals(mini)) {
             // if it's mini, just ignore this
           } else if (c == null) {
             // if it's not mini, then throw an error

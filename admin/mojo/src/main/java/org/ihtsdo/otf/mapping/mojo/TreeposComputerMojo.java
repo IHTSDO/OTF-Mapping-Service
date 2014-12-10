@@ -13,31 +13,13 @@ import org.ihtsdo.otf.mapping.services.ContentService;
 /**
  * Goal which loads an RF2 Snapshot of SNOMED CT data into a database.
  * 
- * <pre>
- *     <plugin>
- *       <groupId>org.ihtsdo.otf.mapping</groupId>
- *       <artifactId>mapping-admin-mojo</artifactId>
- *       <version>${project.version}</version>
- *       <executions>
- *         <execution>
- *           <id>compute-snomed-treepos</id>
- *           <phase>package</phase>
- *           <goals>
- *             <goal>compute-snomed-treepos</goal>
- *           </goals>
- *           <configuration>
- *             <terminology>SNOMEDCT</terminology>
- *           </configuration>
- *         </execution>
- *       </executions>
- *     </plugin>
- * </pre>
+ * See admin/remover/pom.xml for a sample execution.
  * 
- * @goal compute-snomed-treepos
+ * @goal compute-treepos
  * 
  * @phase package
  */
-public class SnomedTreeposComputerMojo extends AbstractMojo {
+public class TreeposComputerMojo extends AbstractMojo {
 
   /**
    * Name of terminology to be loaded.
@@ -47,11 +29,11 @@ public class SnomedTreeposComputerMojo extends AbstractMojo {
   private String terminology;
 
   /**
-   * Instantiates a {@link SnomedTreeposComputerMojo} from the specified
+   * Instantiates a {@link TreeposComputerMojo} from the specified
    * parameters.
    * 
    */
-  public SnomedTreeposComputerMojo() {
+  public TreeposComputerMojo() {
     // do nothing
   }
 
@@ -62,7 +44,8 @@ public class SnomedTreeposComputerMojo extends AbstractMojo {
    */
   @Override
   public void execute() throws MojoFailureException {
-    getLog().info("Starting computing of SNOMEDCT tree positions ...");
+    getLog().info("Starting computing tree positions");
+    getLog().info("  terminology = " + terminology);
 
     try {
 
@@ -104,8 +87,7 @@ public class SnomedTreeposComputerMojo extends AbstractMojo {
 
       contentService.close();
 
-      getLog().info("done ...");
-
+      getLog().info("Done ...");
     } catch (Exception e) {
       e.printStackTrace();
       throw new MojoFailureException("Unexpected exception:", e);
