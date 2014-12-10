@@ -271,6 +271,48 @@ public class ReportServiceRest extends RootServiceRest {
     }
 
   }
+  
+  /**
+   * Deletes the report.
+   *
+   * @param report the report
+   * @param authToken the auth token
+   */
+  @DELETE
+  @Path("/report/delete")
+  @ApiOperation(value = "Delete a report", notes = "Deletes a report based on a JSON or XML object", response = ReportDefinitionJpa.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public void removeReport(
+    @ApiParam(value = "The report to delete", required = true) ReportJpa report,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+    Logger.getLogger(MappingServiceRest.class).info(
+        "RESTful call (Report):  /report/delete");
+    String user = "";
+
+    try {
+      // authorize call
+      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+      user = securityService.getUsernameForToken(authToken);
+      if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
+        throw new WebApplicationException(
+            Response
+                .status(401)
+                .entity(
+                    "User does not have permissions to delete a report.")
+                .build());
+
+      // get the reports
+      ReportService reportService = new ReportServiceJpa();
+      reportService.removeReport(report.getId());
+      reportService.close();
+
+    } catch (Exception e) {
+      handleException(e, "trying to delete a report", user, "", "");
+    }
+
+  }
 
   /**
    * Returns the reports for map project.
