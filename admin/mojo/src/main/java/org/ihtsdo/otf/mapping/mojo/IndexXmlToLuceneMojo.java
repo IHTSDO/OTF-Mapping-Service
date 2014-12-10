@@ -51,6 +51,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * 
  * @goal convertToLucene
  */
+@SuppressWarnings("deprecation")
 public class IndexXmlToLuceneMojo extends AbstractMojo {
 
 	/** The writer. */

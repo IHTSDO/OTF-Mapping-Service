@@ -259,4 +259,13 @@ angular
               "browserWindow");
         myWindow.focus();
       };
+      
+      $scope.openIndexViewer = function() {
+        console.debug("page location is", window.location.href);
+        var currentUrl = window.location.href;
+        var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
+        var newUrl = baseUrl + "/index/viewer";
+        var myWindow = window.open(newUrl, "indexViewerWindow");
+        myWindow.focus();
+      };
     });

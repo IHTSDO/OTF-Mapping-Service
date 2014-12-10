@@ -14,7 +14,7 @@ angular
   .controller(
     'indexViewerCtrl',
     function($scope, $rootScope, $http, $location, $modal, $sce, $anchorScroll,
-      localStorageService) {
+      $templateCache, $compile, localStorageService) {
 
       // initialize as empty to indicate still initializing
       // database connection
@@ -69,8 +69,11 @@ angular
           for (var i = 0; i < data.searchResult.length; i++) {
             $scope.domains.push(data.searchResult[i].value);
           }
+          
+          $scope.domains = $scope.domains.sort();
           $scope.selectedDomain = $scope.domains[0];
           $scope.retrieveIndexPages($scope.domains[0]);
+          $scope.mainTermLabel = '';
         }).error(function(data, status, headers, config) {
           $rootScope.handleHttpError(data, status, headers, config);
         });
@@ -87,16 +90,19 @@ angular
           $scope.searchField = res[0];
           $scope.subSearchField = '';
           $scope.subSubSearchField = '';
+          $scope.mainTermLabel = '';
         } else if (res.length == 2){
           $scope.performAggregatedSearch(res[0], res[1].trim(), 'undefined');
           $scope.searchField = res[0];
           $scope.subSearchField = res[1];
           $scope.subSubSearchField = '';
+          $scope.mainTermLabel = '';
         } else {
           $scope.performAggregatedSearch(res[0], res[1].trim(), res[2].trim());
           $scope.searchField = res[0];
           $scope.subSearchField = res[1];
           $scope.subSubSearchField = res[2];
+          $scope.mainTermLabel = '';
         }
       };
       
@@ -189,10 +195,28 @@ angular
           for (var i = 0; i < data.searchResult.length; i++) {
             $scope.indexPages.push(data.searchResult[i].value);
           }
+          $scope.indexPages = $scope.indexPages.sort();
           
           $scope.selectedDomain = domain;
           $scope.selectedPage = $scope.indexPages[0];
           $scope.updateUrl($scope.indexPages[0]);
+          $scope.mainTermLabel = '';
+          
+        // cache all index pages now so they will be available to ng-include when needed
+        for (var i = 0; i <  $scope.indexPages.length; i++) {
+            var url = $scope.focusProject.destinationTerminology + "/"
+              + $scope.focusProject.destinationTerminologyVersion + "/html/" + 
+              $scope.selectedDomain + "/" + $scope.indexPages[i] + ".html"
+
+              $rootScope.glassPane++;
+              $http.get(url, {
+                cache: $templateCache
+              }).then(function(result) {
+                console.log(result);
+                $templateCache.put(url, result); 
+                $rootScope.glassPane--;
+              });       
+          }
           
         }).error(function(data, status, headers, config) {
           $rootScope.handleHttpError(data, status, headers, config);
@@ -293,8 +317,7 @@ angular
         
         $anchorScroll();
         
-        $rootScope.glassPane--;
-        
+        $rootScope.glassPane--;      
       });
       
       $scope.set_style = function (indexTab) {

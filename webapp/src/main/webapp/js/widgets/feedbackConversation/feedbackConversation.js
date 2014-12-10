@@ -108,7 +108,6 @@ angular
             initializeReturnRecipients($scope.conversation);
 
             $scope.record = null;
-            
 
             // load record to be displayed; try to find active record first
             $http(
@@ -124,14 +123,17 @@ angular
               }).success(
               function(data) {
                 
+                $rootScope.glassPane--;
+                
                 $scope.record = data;
-                console.debug("Record:");
-                console.debug($scope.record);
+
                 setTitle();
 
                 // get the conflict records if they exist
                 var originIds = $scope.record.originIds;
                 if (originIds != null && originIds.length > 0) {
+                  
+                  $rootScope.glassPane++;
                   $http(
                     {
                       url : root_mapping + "record/id/" + originIds[0]
@@ -145,10 +147,13 @@ angular
                     }).success(
                     function(data) {
                       
+                      $rootScope.glassPane--;
+                      
                       $scope.record1 = data;
-                      console.debug("Record1:");
-                      console.debug($scope.record1);
+
+                      
                       if (originIds != null && originIds.length == 2) {
+                        $rootScope.glassPane++;
                         $http(
                           {
                             url : root_mapping + "record/id/" + originIds[1]
@@ -162,8 +167,7 @@ angular
                           }).success(function(data) {
                           $rootScope.glassPane--;
                           $scope.record2 = data;
-                          console.debug("Record2:");
-                          console.debug($scope.record2);
+
                           setDisplayRecords();
                         }).error(
                           function(data, status, headers, config) {
@@ -317,6 +321,15 @@ angular
 
       $scope.openConceptBrowser = function() {
         window.open($scope.getBrowserUrl(), "browserWindow");
+      };
+      
+      $scope.openIndexViewer = function() {
+        console.debug("page location is", window.location.href);
+        var currentUrl = window.location.href;
+        var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
+        var newUrl = baseUrl + "/index/viewer";
+        var myWindow = window.open(newUrl, "indexViewerWindow");
+        myWindow.focus();
       };
 
       // redirects to the record editing or conflict editing page
