@@ -83,7 +83,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
       File inputDirFile = new File(inputDir);
       if (!inputDirFile.exists()) {
         throw new MojoFailureException(
-            "Specified import.input.dir directory does not exist: " + inputDir);
+            "Specified input dir does not exist");
       }
 
       // get all project .xml files
