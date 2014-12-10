@@ -66,6 +66,13 @@ import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
   /**
+   * The input directory
+   * @parameter
+   * @required
+   */
+  private String inputDir;
+
+  /**
    * Name of terminology to be loaded.
    * 
    * @parameter
@@ -73,11 +80,11 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
    */
   private String terminology;
 
+  /** The delta dir. */
+  private File deltaDir;
+
   /** The terminology version. */
   private String terminologyVersion;
-
-  /** The input directory. */
-  private File deltaDir;
 
   /** the defaultPreferredNames type id. */
   private Long dpnTypeId = 900000000000003001L;
@@ -322,12 +329,9 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     mappingService.beginTransaction();
 
     // set the delta file directory=
-    deltaDir =
-        new File(config.getProperty("loader." + terminology + ".delta.data"));
+    deltaDir = new File(inputDir);
     if (!deltaDir.exists()) {
-      throw new MojoFailureException("Specified loader." + terminology
-          + ".input.delta.data directory does not exist: "
-          + deltaDir.getAbsolutePath());
+      throw new MojoFailureException("Specified input dir");
     }
 
     // get the first file for determining
@@ -366,11 +370,9 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     if (prop != null) {
       dpnrefsetId = Long.valueOf(prop);
     }
-    prop = config
-        .getProperty("loader.defaultPreferredNames.acceptabilityId");
+    prop = config.getProperty("loader.defaultPreferredNames.acceptabilityId");
     if (prop != null) {
-    dpnAcceptabilityId =
-        Long.valueOf(prop);
+      dpnAcceptabilityId = Long.valueOf(prop);
     }
 
     // output relevant properties/settings to console

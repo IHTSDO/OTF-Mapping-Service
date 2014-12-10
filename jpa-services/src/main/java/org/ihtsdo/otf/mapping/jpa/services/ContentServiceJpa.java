@@ -19,6 +19,7 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
 
 import org.apache.log4j.Logger;
+import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.analysis.PerFieldAnalyzerWrapper;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -110,13 +111,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
   private static Set<String> treePositionFieldNames;
   
   /** Query cache */
-  private Map<String, TopDocs> resultsCache = new HashMap<String, TopDocs>();
+  private Map<String, TopDocs> resultsCache = new HashMap<>();
 
   /** The concept field names. */
   private static Set<String> conceptFieldNames;
 
   /** Track main level label by first component of link */
-  private Map<String, String> linkToLabelMap = new HashMap<String, String>();
+  private Map<String, String> linkToLabelMap = new HashMap<>();
 
   
   /**
@@ -229,7 +230,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       Concept c = (Concept) query.getSingleResult();
       return c;
     } catch (NoResultException e) {
-      Logger.getLogger(ContentServiceJpa.class).info(
+      Logger.getLogger(ContentServiceJpa.class).debug(
           "Concept query for terminologyId = " + terminologyId
               + ", terminology = " + terminology + ", terminologyVersion = "
               + terminologyVersion + " returned no results!");
@@ -264,7 +265,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       return conceptList;
     } catch (NoResultException e) {
       e.printStackTrace();
-      Logger.getLogger(ContentServiceJpa.class).info(
+      Logger.getLogger(ContentServiceJpa.class).debug(
           "Concept query terminology = " + terminology
               + ", terminologyVersion = " + terminologyVersion
               + " returned no results!");
@@ -536,14 +537,14 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       Long relationshipId = (Long) query.getSingleResult();
       return relationshipId;
     } catch (NoResultException e) {
-      Logger.getLogger(ContentServiceJpa.class).info(
+      Logger.getLogger(ContentServiceJpa.class).debug(
           "Could not find relationship id for" + terminologyId
               + " for terminology " + terminology + " and version "
               + terminologyVersion);
       return null;
     } catch (Exception e) {
       e.printStackTrace();
-      Logger.getLogger(ContentServiceJpa.class).info(
+      Logger.getLogger(ContentServiceJpa.class).debug(
           "Unexpected exception retrieving relationship id for" + terminologyId
               + " for terminology " + terminology + " and version "
               + terminologyVersion);
@@ -573,7 +574,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       return c;
     } catch (Exception e) {
       e.printStackTrace();
-      Logger.getLogger(ContentServiceJpa.class).info(
+      Logger.getLogger(ContentServiceJpa.class).debug(
           "Relationship query for terminologyId = " + terminologyId
               + ", terminology = " + terminology + ", terminologyVersion = "
               + terminologyVersion + " threw an exception!");
@@ -2863,9 +2864,9 @@ public SearchResultList findIndexViewerEntries(String terminology,
 
   SearchResultList searchResultList = new SearchResultListJpa();
   
-  List<String> mainSearchResults = new ArrayList<String>();
-  List<String> subSearchResults = new ArrayList<String>();
-  List<String> subSubSearchResults = new ArrayList<String>();
+  List<String> mainSearchResults = new ArrayList<>();
+  List<String> subSearchResults = new ArrayList<>();
+  List<String> subSubSearchResults = new ArrayList<>();
   
   Properties config = ConfigUtility.getConfigProperties();
   
@@ -2937,16 +2938,19 @@ public SearchResultList findIndexViewerEntries(String terminology,
 }
 
 /**
- * Performs the search
- * 
+ * Performs the search.
+ *
+ * @param terminology the terminology
+ * @param terminologyVersion the terminology version
+ * @param domain the domain
  * @param searchStr the search string
  * @param startLevel the start level
  * @param endLevel the end level
  * @param subSearchAnchor the sub search anchor
+ * @param requireHasChild the require has child
  * @return the results
  * @throws Exception the exception
  */
-@SuppressWarnings("deprecation")
 public List<String> performSearch(String terminology,
     String terminologyVersion, String domain, String searchStr, int startLevel,
     int endLevel, String subSearchAnchor, boolean requireHasChild)
@@ -2956,7 +2960,7 @@ public List<String> performSearch(String terminology,
     String indexBaseDir = config.getProperty("hibernate.search.default.indexBase");
     String indexesDir = indexBaseDir + "/" + terminology + "/" + terminologyVersion + "/" + domain;
     
-    List<String> searchResults = new ArrayList<String>();
+    List<String> searchResults = new ArrayList<>();
     // configure
     File selectedDomainDir = new File(indexesDir);
     String query = searchStr + " " + getLevelConstraint(startLevel, endLevel);
@@ -2978,12 +2982,14 @@ public List<String> performSearch(String terminology,
     // Prep searcher
     IndexSearcher searcher = new IndexSearcher(reader);
     String defaultField = "title";
+    Map<String, Analyzer> fieldAnalyzers = new HashMap<>();
+    fieldAnalyzers.put("code", new KeywordAnalyzer());
     PerFieldAnalyzerWrapper analyzer =
-            new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_30));
-    analyzer.addAnalyzer("code", new KeywordAnalyzer());
+        new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_36),
+            fieldAnalyzers);
 
     QueryParser parser =
-            new QueryParser(Version.LUCENE_30, defaultField, analyzer);
+            new QueryParser(Version.LUCENE_36, defaultField, analyzer);
 
     // Prep query
     parser.setAllowLeadingWildcard(true);
@@ -3024,6 +3030,9 @@ public List<String> performSearch(String terminology,
             searchResults.add(link);
 
     }
+    analyzer.close();
+    reader.close();
+    dir.close();
     searcher.close();
     return searchResults;
 }
