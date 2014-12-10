@@ -18,10 +18,11 @@
   <properties>
     <execFinalName>exec-${project.build.finalName}.jar</execFinalName>
     <packageName>${project.parent.artifactId}-rest</packageName>
-    <!-- Specify default build.config - references config project -->
-    <!-- This requires some images to be in c:/data/images -->
-    <!-- Used -->
-    <build.config>${basedir}/../config/src/main/resources/config.properties.dev</build.config>
+
+    <!-- Specify the config artifact parameters -->
+    <config.groupId>org.ihtsdo.otf.term-server</config.groupId>
+    <config.artifactId>term-server-config-windows-dev</config.artifactId>
+    <config.version>${project.version}</config.version>
   </properties>
 
   <dependencies>
@@ -155,59 +156,46 @@
 
     <plugins>
 
-      <!-- Configure environment-specific build time information through a build.config 
-        file settings -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>unpack</id>
+            <phase>initialize</phase>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>${config.groupId}</groupId>
+                  <artifactId>${config.artifactId}</artifactId>
+                  <version>${config.version}</version>
+                  <type>zip</type>
+                  <outputDirectory>${project.build.directory}/config</outputDirectory>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      
+      <!-- Configure environment-specific build time information -->
+      <!-- In particular, this is for base.url -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>properties-maven-plugin</artifactId>
         <executions>
           <execution>
-            <phase>initialize</phase>
+            <phase>generate-sources</phase>
             <goals>
               <goal>read-project-properties</goal>
             </goals>
             <configuration>
               <files>
-                <file>${build.config}</file>
+                <file>${project.build.directory}/config/resources/config.properties</file>
               </files>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <!-- Copy files -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <executions>
-
-          <!-- Copy the favicon file -->
-          <execution>
-            <id>copy-favicon</id>
-            <phase>process-sources</phase>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <configuration>
-              <target name="copy favicon">
-                <copy file="${deploy.favicon}" overwrite="true"
-                  tofile="${project.build.directory}/custom/images/favicon.png" />
-              </target>
-            </configuration>
-          </execution>
-
-          <!-- Copy the logo file -->
-          <execution>
-            <id>copy-logo</id>
-            <phase>process-sources</phase>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <configuration>
-              <target name="copy logo">
-                <copy file="${deploy.favicon}" overwrite="true"
-                  tofile="${project.build.directory}/custom/images/logo.png" />
-              </target>
             </configuration>
           </execution>
         </executions>
@@ -221,7 +209,7 @@
           <filteringDeploymentDescriptors>true</filteringDeploymentDescriptors>
           <webResources>
             <resource>
-              <directory>${project.build.directory}/custom</directory>
+              <directory>${project.build.directory}/config/resources</directory>
             </resource>
             <resource>
               <directory>src/main/webapp</directory>
