@@ -69,6 +69,7 @@ angular
           for (var i = 0; i < data.searchResult.length; i++) {
             $scope.domains.push(data.searchResult[i].value);
           }
+          
           $scope.domains = $scope.domains.sort();
           $scope.selectedDomain = $scope.domains[0];
           $scope.retrieveIndexPages($scope.domains[0]);
