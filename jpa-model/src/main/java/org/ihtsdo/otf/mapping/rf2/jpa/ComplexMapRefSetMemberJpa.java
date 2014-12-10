@@ -214,48 +214,36 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
     this.mapRelationId = mapRelationId;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public String toString() {
-    return this.getId()
-        + ","
-        + this.getTerminology()
-        + ","
-        + this.getTerminologyId()
-        + ","
-        + this.getTerminologyVersion()
-        + ","
-        + this.getEffectiveTime()
-        + ","
-        + this.isActive()
-        + ","
-        +
-
-        (this.getConcept() == null ? null : this.getConcept()
-            .getTerminologyId()) + "," + Integer.toString(this.getMapGroup())
-        + "," + Integer.toString(this.getMapPriority()) + ","
-        + this.getMapRule() + "," + this.getMapAdvice() + ","
-        + this.getMapTarget() + "," + this.getMapRelationId() + "," +
-
-        Integer.toString(this.getMapBlock()) + "," + this.getMapBlockRule()
-        + "," + this.getMapBlockAdvice();
-  }
-
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = super.hashCode();
-    result = prime * result + ((mapAdvice == null) ? 0 : mapAdvice.hashCode());
-    result = prime * result + mapGroup;
-    result = prime * result + mapPriority;
-    result =
-        prime * result
-            + ((mapRelationId == null) ? 0 : mapRelationId.hashCode());
-    result = prime * result + ((mapRule == null) ? 0 : mapRule.hashCode());
-    result = prime * result + ((mapTarget == null) ? 0 : mapTarget.hashCode());
-    return result;
+    return "ComplexMapRefSetMemberJpa [mapBlock="
+        + mapBlock
+        + ", "
+        + (mapBlockRule != null ? "mapBlockRule=" + mapBlockRule + ", " : "")
+        + (mapBlockAdvice != null ? "mapBlockAdvice=" + mapBlockAdvice + ", "
+            : "")
+        + "mapGroup="
+        + mapGroup
+        + ", mapPriority="
+        + mapPriority
+        + ", "
+        + (mapRule != null ? "mapRule=" + mapRule + ", " : "")
+        + (mapAdvice != null ? "mapAdvice=" + mapAdvice + ", " : "")
+        + (mapTarget != null ? "mapTarget=" + mapTarget + ", " : "")
+        + (mapRelationId != null ? "mapRelationId=" + mapRelationId + ", " : "")
+        + (getConceptId() != null ? "getConceptId()=" + getConceptId() + ", "
+            : "")
+        + (getRefSetId() != null ? "getRefSetId()=" + getRefSetId() + ", " : "")
+        + "isActive()="
+        + isActive()
+        + ", "
+        + (getModuleId() != null ? "getModuleId()=" + getModuleId() + ", " : "")
+        + (getTerminologyVersion() != null ? "getTerminologyVersion()="
+            + getTerminologyVersion() + ", " : "")
+        + (getTerminology() != null ? "getTerminology()=" + getTerminology()
+            + ", " : "")
+        + (getTerminologyId() != null ? "getTerminologyId()="
+            + getTerminologyId() : "") + "]";
   }
 
   @Override
@@ -271,6 +259,18 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
       if (other.mapAdvice != null)
         return false;
     } else if (!mapAdvice.equals(other.mapAdvice))
+      return false;
+    if (mapBlock != other.mapBlock)
+      return false;
+    if (mapBlockAdvice == null) {
+      if (other.mapBlockAdvice != null)
+        return false;
+    } else if (!mapBlockAdvice.equals(other.mapBlockAdvice))
+      return false;
+    if (mapBlockRule == null) {
+      if (other.mapBlockRule != null)
+        return false;
+    } else if (!mapBlockRule.equals(other.mapBlockRule))
       return false;
     if (mapGroup != other.mapGroup)
       return false;
@@ -294,4 +294,26 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
     return true;
   }
 
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = super.hashCode();
+    result = prime * result + ((mapAdvice == null) ? 0 : mapAdvice.hashCode());
+    result = prime * result + mapBlock;
+    result =
+        prime * result
+            + ((mapBlockAdvice == null) ? 0 : mapBlockAdvice.hashCode());
+    result =
+        prime * result + ((mapBlockRule == null) ? 0 : mapBlockRule.hashCode());
+    result = prime * result + mapGroup;
+    result = prime * result + mapPriority;
+    result =
+        prime * result
+            + ((mapRelationId == null) ? 0 : mapRelationId.hashCode());
+    result = prime * result + ((mapRule == null) ? 0 : mapRule.hashCode());
+    result = prime * result + ((mapTarget == null) ? 0 : mapTarget.hashCode());
+    return result;
+  }
+
+  
 }

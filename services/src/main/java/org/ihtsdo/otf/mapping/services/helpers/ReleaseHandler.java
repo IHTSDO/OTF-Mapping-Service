@@ -8,6 +8,8 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 // TODO: Auto-generated Javadoc
 /**
  * Generically represents a handler for performing a release.
+ *
+ * @author ${author}
  */
 public interface ReleaseHandler {
 
@@ -19,7 +21,7 @@ public interface ReleaseHandler {
    * @param outputDirName the output dir name
    * @param effectiveTime the effective time
    * @param moduleId the module id
-   * @throws Exception
+   * @throws Exception the exception
    */
   public void processRelease(MapProject mapProject, String outputDirName,
     String effectiveTime, String moduleId) throws Exception;
@@ -32,7 +34,7 @@ public interface ReleaseHandler {
    * @param outputDirName the output dir name
    * @param effectiveTime the effective time
    * @param moduleId the module id
-   * @throws Exception
+   * @throws Exception the exception
    */
   public void processReleaseSnapshot(MapProject mapProject,
     String outputDirName, String effectiveTime, String moduleId)
@@ -46,7 +48,7 @@ public interface ReleaseHandler {
    * @param outputDirName the output dir name
    * @param effectiveTime the effective time
    * @param moduleId the module id
-   * @throws Exception
+   * @throws Exception the exception
    */
   public void processReleaseDelta(MapProject mapProject, String outputDirName,
     String effectiveTime, String moduleId) throws Exception;
@@ -94,13 +96,15 @@ public interface ReleaseHandler {
     String effectiveTime, String moduleId) throws Exception;
 
   /**
-   * Perform begin release qa checks.
+   * Perform checks and record modification prior to release.
    *
    * @param mapProject the map project
    * @param removeRecords the remove records
    * @throws Exception the exception
    */
- void performBeginReleaseQAChecks(MapProject mapProject, boolean removeRecords)
+  void beginRelease(MapProject mapProject, boolean removeRecords)
     throws Exception;
+
+  void close() throws Exception;
 
 }
