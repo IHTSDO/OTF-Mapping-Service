@@ -96,18 +96,18 @@ public class MapEntryJpa implements MapEntry {
   }
 
   /**
-   * Constructor using fields
-   * 
-   * @param id
-   * @param mapRecord
-   * @param mapAdvices
-   * @param targetId
-   * @param targetName
-   * @param rule
-   * @param mapPriority
-   * @param mapRelation
-   * @param mapBlock
-   * @param mapGroup
+   * Constructor using fields.
+   *
+   * @param id the id
+   * @param mapRecord the map record
+   * @param mapAdvices the map advices
+   * @param targetId the target id
+   * @param targetName the target name
+   * @param rule the rule
+   * @param mapPriority the map priority
+   * @param mapRelation the map relation
+   * @param mapBlock the map block
+   * @param mapGroup the map group
    */
   public MapEntryJpa(Long id, MapRecord mapRecord, Set<MapAdvice> mapAdvices,
       String targetId, String targetName, String rule, int mapPriority,
