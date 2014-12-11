@@ -55,7 +55,7 @@ public class MapUserPreferencesJpa implements MapUserPreferences {
   @Column(nullable = false)
   private Long mapProjectId;
 
-  /** The map of name->model dashboards. */
+  /** The map of name to model dashboards. */
   @ElementCollection(fetch = FetchType.EAGER)
   @MapKeyColumn(name = "dashboardModels_KEY")
   @Column(name = "dashboardModels", length = 4000)
