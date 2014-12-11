@@ -57,8 +57,7 @@ public class MapProjectDataExportMojo extends AbstractMojo {
       File outputDirFile = new File(outputDir);
       if (!outputDirFile.exists()) {
         throw new MojoFailureException(
-            "Specified export.output.dir directory does not exist: "
-                + outputDir);
+            "Specified output directory does not exist");
       }
 
       JAXBContext jaxbContext = null;

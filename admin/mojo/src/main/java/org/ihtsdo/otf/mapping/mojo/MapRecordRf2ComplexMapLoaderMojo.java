@@ -57,7 +57,7 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
     try {
 
       if (inputFile == null || !new File(inputFile).exists()) {
-        throw new MojoFailureException("Specified input file");
+        throw new MojoFailureException("Specified input file missing");
       }
 
       // sort input file
