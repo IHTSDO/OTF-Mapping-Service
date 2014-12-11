@@ -141,6 +141,11 @@ public abstract class RootServiceJpa implements RootService {
     tx.commit();
     manager.clear();
   }
+  
+  @Override
+  public void clear() throws Exception {
+    manager.clear();
+  }
 
   @Override
   public void close() throws Exception {

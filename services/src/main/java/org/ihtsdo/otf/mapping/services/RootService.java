@@ -61,4 +61,10 @@ public interface RootService {
    */
   public void close() throws Exception;
 
+  /**
+   * Clears all service resources
+   * @throws Exception
+   */
+  public void clear() throws Exception;
+
 }
