@@ -36,7 +36,7 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
 /**
- * REST implementation for content service
+ * REST implementation for content service.
  */
 @Path("/content")
 @Api(value = "/content", description = "Operations to retrieve RF2 content for a terminology.")
@@ -50,19 +50,20 @@ public class ContentServiceRest extends RootServiceRest {
 
   /**
    * Instantiates an empty {@link ContentServiceRest}.
-   * @throws Exception
+   *
+   * @throws Exception the exception
    */
   public ContentServiceRest() throws Exception {
     securityService = new SecurityServiceJpa();
   }
 
   /**
-   * Returns the concept for id, terminology, and terminology version
-   * 
+   * Returns the concept for id, terminology, and terminology version.
+   *
    * @param terminologyId the terminology id
    * @param terminology the concept terminology
    * @param terminologyVersion the terminology version
-   * @param authToken
+   * @param authToken the auth token
    * @return the concept
    */
   @GET
@@ -117,10 +118,10 @@ public class ContentServiceRest extends RootServiceRest {
   /**
    * Returns the concept for id, terminology. Looks in the latest version of the
    * terminology.
-   * 
+   *
    * @param terminologyId the id
    * @param terminology the concept terminology
-   * @param authToken
+   * @param authToken the auth token
    * @return the concept
    */
   @GET
@@ -168,9 +169,9 @@ public class ContentServiceRest extends RootServiceRest {
 
   /**
    * Returns the concept for search string.
-   * 
+   *
    * @param searchString the lucene search string
-   * @param authToken
+   * @param authToken the auth token
    * @return the concept for id
    */
   @GET
@@ -209,12 +210,12 @@ public class ContentServiceRest extends RootServiceRest {
 
   /**
    * Returns the descendants of a concept as mapped by relationships and inverse
-   * relationships
-   * 
+   * relationships.
+   *
    * @param terminologyId the terminology id
    * @param terminology the terminology
    * @param terminologyVersion the terminology version
-   * @param authToken
+   * @param authToken the auth token
    * @return the search result list
    */
   @GET
@@ -261,12 +262,12 @@ public class ContentServiceRest extends RootServiceRest {
   }
 
   /**
-   * Returns the immediate children of a concept given terminology information
-   * 
+   * Returns the immediate children of a concept given terminology information.
+   *
    * @param id the terminology id
    * @param terminology the terminology
    * @param terminologyVersion the terminology version
-   * @param authToken
+   * @param authToken the auth token
    * @return the search result list
    */
   @GET
@@ -432,6 +433,14 @@ public class ContentServiceRest extends RootServiceRest {
     }
   }
   
+  /**
+   * Returns the index viewer indexes.
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @param authToken the auth token
+   * @return the index viewer indexes
+   */
   @GET
   @Path("/indexViewer/{terminology}/{terminologyVersion}")
   @ApiOperation(value = "Return the indexes available for given terminology and version.", notes = "Returns the indexes available for the given terminology and version.", response = SearchResultList.class)
@@ -468,6 +477,15 @@ public class ContentServiceRest extends RootServiceRest {
     }
   }
 
+  /**
+   * Returns the index viewer pages for index.
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @param index the index
+   * @param authToken the auth token
+   * @return the index viewer pages for index
+   */
   @GET
   @Path("/indexViewer/{terminology}/{terminologyVersion}/{index}")
   @ApiOperation(value = "Return the index page names available for given terminology, version and domain.", notes = "Returns the pages available for the given terminology, version and domain.", response = SearchResultList.class)
@@ -516,6 +534,7 @@ public class ContentServiceRest extends RootServiceRest {
    * @param searchField the search field
    * @param subSearchField the sub search field
    * @param subSubSearchField the sub sub search field
+   * @param allFlag the all flag
    * @param authToken the auth token
    * @return the search result list
    */
