@@ -226,9 +226,9 @@ public interface ReportService extends RootService {
 
   /**
    * Removes the report definition.
-   * 
+   *
    * @param id the id
-   * @throws Exception
+   * @throws Exception the exception
    */
   public void removeReportDefinition(Long id) throws Exception;
 
