@@ -17,10 +17,10 @@
 
   <properties>
     <packageName>${project.parent.artifactId}-webapp</packageName>
-    <!-- Specify default build.config - references config project -->
-    <!-- This requires some images to be in c:/data/images -->
-    <!-- Used -->
-    <build.config>${basedir}/../config/src/main/resources/config.properties.dev</build.config>
+    <!-- Specify the config artifact parameters -->
+    <config.groupId>org.ihtsdo.otf.mapping</config.groupId>
+    <config.artifactId>mapping-config-dev-windows</config.artifactId>
+    <config.version>${project.version}</config.version>
   </properties>
 
   <!-- Declare Project Dependency Versions -->
@@ -49,79 +49,68 @@
 
     <plugins>
 
-      <!-- Configure environment-specific build time information through a build.config 
-        file settings -->
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>properties-maven-plugin</artifactId>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
         <executions>
           <execution>
+            <id>unpack</id>
             <phase>initialize</phase>
             <goals>
-              <goal>read-project-properties</goal>
+              <goal>unpack</goal>
             </goals>
             <configuration>
-              <files>
-                <file>${build.config}</file>
-              </files>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>${config.groupId}</groupId>
+                  <artifactId>${config.artifactId}</artifactId>
+                  <version>${config.version}</version>
+                  <type>zip</type>
+                  <outputDirectory>${project.build.directory}/config/resources</outputDirectory>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+          <execution>
+            <id>unpack-index-viewer-data</id>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <!-- These are set by the properties in the read-project-properties 
+                    call. They can be manually overridden with -D as desired. -->
+                  <groupId>${index.viewer.groupId}</groupId>
+                  <artifactId>${index.viewer.artifactId}</artifactId>
+                  <version>${index.viewer.version}</version>
+                  <type>zip</type>
+                  <outputDirectory>${project.build.directory}/config/resources</outputDirectory>
+                </artifactItem>
+              </artifactItems>
             </configuration>
           </execution>
         </executions>
       </plugin>
 
-      <!-- Copy files -->
+      <!-- Configure environment-specific build time information -->
+      <!-- In particular, this is for base.url -->
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>properties-maven-plugin</artifactId>
         <executions>
-
-          <!-- Copy the favicon file -->
           <execution>
-            <id>copy-favicon</id>
-            <phase>process-sources</phase>
+            <phase>generate-sources</phase>
             <goals>
-              <goal>run</goal>
+              <goal>read-project-properties</goal>
             </goals>
             <configuration>
-              <target name="copy favicon">
-                <copy file="${deploy.favicon}" overwrite="true"
-                  tofile="${project.build.directory}/custom/img/favicon.png" />
-              </target>
+              <files>
+                <file>${project.build.directory}/config/resources/config.properties</file>
+              </files>
             </configuration>
           </execution>
-
-          <!-- Copy the logo file -->
-          <execution>
-            <id>copy-logo</id>
-            <phase>process-sources</phase>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <configuration>
-              <target name="copy logo">
-                <copy file="${deploy.favicon}" overwrite="true"
-                  tofile="${project.build.directory}/img/images/logo.png" />
-              </target>
-            </configuration>
-          </execution>
-          
-          <!-- Copy index files -->
-          <execution>
-            <id>copy-indexes</id>
-            <phase>process-sources</phase>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <configuration>
-              <target name="copy indexes">
-                <copy overwrite="true"
-                  todir="${project.build.directory}/indexViewerData" >
-                  <fileset dir="${index.viewer.data}" includes="**/*html" />
-                </copy>
-              </target>
-            </configuration>
-          </execution>
-          
         </executions>
       </plugin>
 
@@ -132,8 +121,13 @@
         <configuration>
           <webResources>
             <resource>
-              <directory>${project.build.directory}/custom</directory>
-            </resource>
+              <directory>${project.build.directory}/config/resources</directory>
+              <!-- avoid unnecessary stuff -->
+              <excludes>
+                <exclude>bin/**</exclude>
+                <exclude>config*.properties</exclude>
+              </excludes>
+          </resource>
             <resource>
               <directory>src/main/webapp</directory>
               <filtering>true</filtering>
@@ -151,9 +145,6 @@
                 <exclude>partials/footer.html</exclude>
                 <exclude>partials/header.html</exclude>
               </excludes>
-            </resource>
-            <resource>
-              <directory>${project.build.directory}/indexViewerData</directory>
             </resource>
           </webResources>
         </configuration>

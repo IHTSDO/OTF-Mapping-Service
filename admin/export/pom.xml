@@ -15,19 +15,18 @@
   <description>OTF Administrator Tool to Export</description>
   <packaging>pom</packaging>
 
+  <properties>
+    <!-- the output directory -->
+    <output.dir></output.dir>
+  </properties>
+
   <profiles>
     <!-- Activated by run.config setting -->
     <profile>
-      <id>run</id>
-      <activation>
-        <property>
-          <name>run.config</name>
-        </property>
-      </activation>
+      <id>MapProject</id>
       <build>
         <plugins>
-
-          <!-- Execute the mojo -->
+          <!-- Export map project data, specify -Drun.config=... -DoutputDir=... -->
           <plugin>
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
@@ -39,6 +38,9 @@
                 <goals>
                   <goal>export-project-data</goal>
                 </goals>
+                <configuration>
+                  <outputDir>${output.dir}</outputDir>
+                </configuration>
               </execution>
             </executions>
           </plugin>

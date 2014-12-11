@@ -19,27 +19,7 @@ import org.ihtsdo.otf.mapping.services.helpers.OtfErrorHandler;
 /**
  * Admin tool to create historical reporting data on a daily basis
  * 
- * <pre>
- *     <plugin>
- *       <groupId>org.ihtsdo.otf.mapping</groupId>
- *       <artifactId>mapping-admin-mojo</artifactId>
- *       <version>${project.version}</version>
- *       <executions>
- *         <execution>
- *           <id>generate-daily-reports</id>
- *           <phase>package</phase>
- *           <goals>
- *             <goal>generate-daily-reports</goal>
- *           </goals>
- *           <configuration>
- *             <startDate>${date.start}</startDate>
- *             <endDate>${date.end}</endDate>
- *             <refSetId>${refset.id}</refSetId
- *           </configuration>
- *         </execution>
- *       </executions>
- *     </plugin>
- * </pre>
+ * See admin/loader/pom.xml for a sample execution.
  * 
  * @goal generate-daily-reports
  * 
@@ -53,7 +33,7 @@ public class ReportGenerateDailyMojo extends AbstractMojo {
    * @parameter
    * @required
    */
-  private String refSetId = null;
+  private String refsetId = null;
 
   /**
    * Start date
@@ -87,6 +67,11 @@ public class ReportGenerateDailyMojo extends AbstractMojo {
    */
   @Override
   public void execute() throws MojoFailureException {
+    getLog().info("Starting generation of daily reports");
+    getLog().info("  refsetId = " + refsetId);
+    getLog().info("  startDate = " + startDate);
+    getLog().info("  endDate = " + endDate);
+
 
     ReportService reportService = null;
     MapUser mapUser = null;
@@ -95,13 +80,11 @@ public class ReportGenerateDailyMojo extends AbstractMojo {
 
       reportService = new ReportServiceJpa();
 
-      getLog().info("Starting generation of daily reports ...");
-
-      if (refSetId == null)
+      if (refsetId == null)
         throw new MojoFailureException(
             "You must specify at least one ref set id");
       else
-        getLog().info("RefSetId(s): " + refSetId);
+        getLog().info("refsetId(s): " + refsetId);
 
       if (startDate == null)
         throw new MojoFailureException("You must specify a start date");
@@ -124,7 +107,7 @@ public class ReportGenerateDailyMojo extends AbstractMojo {
 
       MappingService mappingService = new MappingServiceJpa();
 
-      String refsetIds[] = refSetId.split(",");
+      String refsetIds[] = refsetId.split(",");
       List<MapProject> mapProjects = new ArrayList<>();
 
       // retrieve the map project objects
@@ -143,7 +126,7 @@ public class ReportGenerateDailyMojo extends AbstractMojo {
       }
       reportService.close();
 
-      getLog().info("done ...");
+      getLog().info("Done ...");
 
     } catch (Exception e) {
 

@@ -41,29 +41,10 @@ import org.ihtsdo.otf.mapping.services.helpers.FileSorter;
 
 import com.google.common.io.Files;
 
-// TODO: Auto-generated Javadoc
 /**
  * Goal which loads an RF2 Snapshot of SNOMED CT data into a database.
  * 
- * <pre>
- *     <plugin>
- *       <groupId>org.ihtsdo.otf.mapping</groupId>
- *       <artifactId>mapping-admin-mojo</artifactId>
- *       <version>${project.version}</version>
- *       <executions>
- *         <execution>
- *           <id>load-rf2-snapshot</id>
- *           <phase>package</phase>
- *           <goals>
- *             <goal>load-rf2-snapshot</goal>
- *           </goals>
- *           <configuration>
- *             <terminology>SNOMEDCT</terminology>
- *           </configuration>
- *         </execution>
- *       </executions>
- *     </plugin>
- * </pre>
+ * See admin/loader/pom.xml for a sample execution.
  * 
  * @goal load-rf2-snapshot
  * 
@@ -71,6 +52,12 @@ import com.google.common.io.Files;
  */
 public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
+  /**
+   * The input directory
+   * @parameter
+   * @required
+   */
+  private String inputDir;
   /**
    * Name of terminology to be loaded.
    * @parameter
@@ -81,14 +68,14 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
   /** The version. */
   private String version = null;
 
-  /** the defaultPreferredNames values. */
-  private Long dpnTypeId;
+  /** the defaultPreferredNames type id. */
+  private Long dpnTypeId = 900000000000003001L;
 
   /** The dpn ref set id. */
-  private Long dpnRefSetId;
+  private Long dpnrefsetId = 900000000000509007L;
 
   /** The dpn acceptability id. */
-  private Long dpnAcceptabilityId;
+  private Long dpnAcceptabilityId = 900000000000548007L;
 
   /** The date format. */
   private final SimpleDateFormat dt = new SimpleDateFormat("yyyymmdd");
@@ -148,7 +135,9 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
    */
   @Override
   public void execute() throws MojoFailureException {
-    getLog().info("Starting loading RF2 data ...");
+    getLog().info("Starting loading RF2 data");
+    getLog().info("  inputDir = " + inputDir);
+    getLog().info("  terminology = " + terminology);
 
     try {
 
@@ -159,24 +148,27 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
       Properties config = ConfigUtility.getConfigProperties();
 
       // Set the input directory
-      String coreInputDirString =
-          config.getProperty("loader." + terminology + ".input.data");
-      File coreInputDir = new File(coreInputDirString);
+      File coreInputDir = new File(inputDir);
       if (!coreInputDir.exists()) {
-        throw new MojoFailureException("Specified loader." + terminology
-            + ".input.data directory does not exist: " + coreInputDirString);
+        throw new MojoFailureException("Specified input dir missing");
       }
 
-      // Set the parameters for determining defaultPreferredNames
-      dpnTypeId =
-          Long.valueOf(config
-              .getProperty("loader.defaultPreferredNames.typeId"));
-      dpnRefSetId =
-          Long.valueOf(config
-              .getProperty("loader.defaultPreferredNames.refSetId"));
+      // set the parameters for determining defaultPreferredNames
+      String prop = config.getProperty("loader.defaultPreferredNames.typeId");
+      if (prop != null) {
+        dpnTypeId = Long.valueOf(prop);
+      }
+
+      prop = config.getProperty("loader.defaultPreferredNames.refsetId");
+      if (prop != null) {
+        dpnrefsetId = Long.valueOf(prop);
+      }
+      prop = config
+          .getProperty("loader.defaultPreferredNames.acceptabilityId");
+      if (prop != null) {
       dpnAcceptabilityId =
-          Long.valueOf(config
-              .getProperty("loader.defaultPreferredNames.acceptabilityId"));
+          Long.valueOf(prop);
+      }
 
       //
       // Determine version
@@ -203,7 +195,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
       // output relevant properties/settings to console
       getLog().info("  Default preferred name settings:");
       getLog().info("    typeId = " + dpnTypeId);
-      getLog().info("    refSetId = " + dpnRefSetId);
+      getLog().info("    refsetId = " + dpnrefsetId);
       getLog().info("    acceptabilityId = " + dpnAcceptabilityId);
       getLog().info(
           "  Objects committed in blocks of " + Integer.toString(commitCt));
@@ -1181,7 +1173,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
         // Check if this language refset and description form the
         // defaultPreferredName
         if (description.isActive() && description.getTypeId().equals(dpnTypeId)
-            && new Long(language.getRefSetId()).equals(dpnRefSetId)
+            && new Long(language.getRefSetId()).equals(dpnrefsetId)
             && language.isActive()
             && language.getAcceptabilityId().equals(dpnAcceptabilityId)) {
 
