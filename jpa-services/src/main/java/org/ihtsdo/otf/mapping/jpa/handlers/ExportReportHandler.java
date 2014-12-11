@@ -20,11 +20,21 @@ import org.ihtsdo.otf.mapping.reports.ReportResultItem;
 
 public class ExportReportHandler {
 
+	/**
+	 * Instantiates an empty {@link ExportReportHandler}.
+	 */
 	public ExportReportHandler() {
 		
 	}
 	
-  public InputStream exportReport(Report report, String file) throws Exception {
+  /**
+   * Export report.
+   *
+   * @param report the report
+   * @return the input stream
+   * @throws Exception the exception
+   */
+  public InputStream exportReport(Report report) throws Exception {
     
   	// Create workbook
     Workbook wb = new HSSFWorkbook();
@@ -41,6 +51,13 @@ public class ExportReportHandler {
 
   }
 
+  /**
+   * Handle export report.
+   *
+   * @param report the report
+   * @param wb the wb
+   * @throws Exception the exception
+   */
   private void handleExportReport(Report report, Workbook wb)
     throws Exception {
   	Logger.getLogger(ReportServiceJpa.class).info(

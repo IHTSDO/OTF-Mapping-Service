@@ -708,12 +708,18 @@ public class ReportServiceRest extends RootServiceRest {
     }
   }
 
+  /**
+   * Export report.
+   *
+   * @param reportId the report id
+   * @param authToken the auth token
+   * @return the input stream
+   */
   @GET
   @Path("/report/export/{reportId}")
   @ApiOperation(value = "Exports a report", notes = "Exports a report given a report id", response = ReportJpa.class)
   @Produces("application/vnd.ms-excel")
   public InputStream exportReport(
-    @ApiParam(value = "The export destination file", required = true) String file,
     @ApiParam(value = "Report id", required = true) @PathParam("reportId") Long reportId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
@@ -736,7 +742,7 @@ public class ReportServiceRest extends RootServiceRest {
       Report report = reportService.getReport(reportId); 
       
       ExportReportHandler handler = new ExportReportHandler();
-      InputStream is = handler.exportReport(report, file);
+      InputStream is = handler.exportReport(report);
       
       reportService.close();
       return is;
