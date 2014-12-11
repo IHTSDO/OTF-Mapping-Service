@@ -21,6 +21,7 @@
     <skipTests>true</skipTests>
 
     <!-- Set maven plugin versions -->
+    <maven.javadoc.skip>true</maven.javadoc.skip>
     <maven.compiler.plugin.version>3.0</maven.compiler.plugin.version>
     <maven.resources.plugin.version>2.6</maven.resources.plugin.version>
     <maven.surefire.plugin.version>2.16</maven.surefire.plugin.version>
@@ -220,14 +221,14 @@
         <artifactId>javax.mail</artifactId>
         <version>${javax.mail.version}</version>
       </dependency>
-      
+
       <!-- XML DOM library -->
       <dependency>
         <groupId>xom</groupId>
         <artifactId>xom</artifactId>
         <version>${xom.version}</version>
       </dependency>
-      
+
     </dependencies>
   </dependencyManagement>
 
@@ -289,7 +290,7 @@
           <artifactId>build-helper-maven-plugin</artifactId>
           <version>1.9.1</version>
         </plugin>
-        
+
         <!-- For building zip files -->
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
