@@ -898,8 +898,15 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // /////////////////////////////////////////////////////
 
     // set of map relations for human readable file
-    List<MapRelation> mapRelations =
-        mappingService.getMapRelations().getMapRelations();
+    Set<MapRelation> mapRelations = mapProject.getMapRelations();
+
+    Logger.getLogger(ReleaseHandlerJpa.class).info(
+        "Retrieved map relations for human readable file:");
+
+    for (MapRelation mr : mapRelations) {
+      Logger.getLogger(ReleaseHandler.class).info(
+          "  " + mr.getTerminologyId() + "\t" + mr.getName());
+    }
 
     Comparator<String> comparator = new Comparator<String>() {
 
@@ -997,22 +1004,25 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       for (ComplexMapRefSetMember c : complexMapRefSetMembersToWrite.values()) {
 
         if (c.isActive() == true) {
-
+          
+   
           // get the map relation for the human readable file
           MapRelation mapRelation = null;
-          if (mapProject.getMapRefsetPattern().equals(
-              MapRefsetPattern.ExtendedMap)) {
-            for (MapRelation mr : mapRelations) {
-              if (mr.getTerminologyId().equals(c.getMapRelationId()))
-                mapRelation = mr;
+
+          for (MapRelation mr : mapRelations) {
+             if (mr.getTerminologyId().equals(c.getMapRelationId().toString())) {
+              mapRelation = mr;
             }
           }
 
           // get target concept
-          Concept targetConcept =
-              contentService.getConcept(c.getMapTarget(),
-                  mapProject.getDestinationTerminology(),
-                  mapProject.getDestinationTerminologyVersion());
+          Concept targetConcept = null;
+          if (c.getMapTarget() != null && !c.getMapTarget().isEmpty()) {
+            targetConcept =
+                contentService.getConcept(c.getMapTarget(),
+                    mapProject.getDestinationTerminology(),
+                    mapProject.getDestinationTerminologyVersion());
+          }
 
           humanReadableWriter.write(this
               .getHumanReadableTextforComplexMapRefSetMember(c, targetConcept,
@@ -1698,7 +1708,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   private String getHumanReadableTextforComplexMapRefSetMember(
     ComplexMapRefSetMember complexMapRefSetMember, Concept targetConcept,
     MapRelation mapRelation) throws Exception {
-
+    
     String entryLine = "";
 
     // switch line on map relation style
