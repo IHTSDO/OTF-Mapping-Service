@@ -1,8 +1,9 @@
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.io.File;
-import java.util.Comparator;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.maven.plugin.AbstractMojo;
@@ -11,8 +12,8 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.handlers.ReleaseHandlerJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
+import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.services.MappingService;
-import org.ihtsdo.otf.mapping.services.helpers.FileSorter;
 import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
 
 /**
@@ -90,12 +91,6 @@ public class ReleaseProcessingMojo extends AbstractMojo {
    * @parameter moduleId
    */
   private String moduleId = null;
-  
-  /**
-   * The update records.
-   * @parameter updateRecords
-   */
-  private boolean updateRecords = false;
 
 
   @Override
@@ -127,6 +122,16 @@ public class ReleaseProcessingMojo extends AbstractMojo {
 
       MappingService mappingService = new MappingServiceJpa();
       Set<MapProject> mapProjects = new HashSet<>();
+      
+      /////////////////////
+      // Test Parameters //
+      /////////////////////
+      
+      String testConcepts[] = {}; //{"4412009"};
+      
+      /////////////////////
+      // Get Projects    //
+      /////////////////////
 
       for (MapProject mapProject : mappingService.getMapProjects()
           .getIterable()) {
@@ -148,16 +153,23 @@ public class ReleaseProcessingMojo extends AbstractMojo {
         if (!outputDirName.endsWith("/"))
           outputDirName += "/";
         
-        getLog().info(
-            "  Map project refset pattern is " + mapProject.getMapRefsetPattern().toString());
-        
-        getLog().info(
-            "  Map project is " + (mapProject.isRuleBased() ? "" : "not ") + "rule-based");
-
-        // Instantiate release handler and for now, run everything as a delta +
-        // snapshot release
+        // if test run, get map records, otherwise call ful release
         ReleaseHandler releaseHandler = new ReleaseHandlerJpa();
-        releaseHandler.processReleaseDelta(mapProject, outputDirName, effectiveTime, moduleId);
+        if (testConcepts.length == 0) {
+       
+  
+          // run delta  
+          releaseHandler.processReleaseDelta(mapProject, outputDirName, effectiveTime, moduleId);
+        } else {
+          
+          List<MapRecord> mapRecords = new ArrayList<>();
+          for (String terminologyId : testConcepts) {
+            mapRecords.addAll(mappingService.getMapRecordsForProjectAndConcept(mapProject.getId(), terminologyId).getMapRecords());
+          }
+       
+          // call release handler with specific records
+          releaseHandler.processReleaseDelta(mapProject, mapRecords, outputDirName, effectiveTime, moduleId);
+        }
       }
 
       getLog().info("done ...");
