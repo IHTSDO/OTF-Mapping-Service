@@ -90,7 +90,7 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
 /**
- * The Mapping Services REST package
+ * The Mapping Services REST package.
  */
 @Path("/mapping")
 @Api(value = "/mapping", description = "Operations supporting map objects.")
@@ -99,12 +99,13 @@ import com.wordnik.swagger.annotations.ApiParam;
 })
 public class MappingServiceRest extends RootServiceRest {
 
+  /**  The security service. */
   private SecurityService securityService;
 
   /**
    * Instantiates an empty {@link MappingServiceRest}.
-   * 
-   * @throws Exception
+   *
+   * @throws Exception the exception
    */
   public MappingServiceRest() throws Exception {
     securityService = new SecurityServiceJpa();
@@ -115,10 +116,9 @@ public class MappingServiceRest extends RootServiceRest {
   // ///////////////////////////////////////////////////
 
   /**
-   * Returns all map projects in either JSON or XML format
-   * 
-   * @param authToken
-   * 
+   * Returns all map projects in either JSON or XML format.
+   *
+   * @param authToken the auth token
    * @return the map projects
    */
   @GET
@@ -188,10 +188,10 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   /**
-   * Returns the project for a given id (auto-generated) in JSON format
-   * 
+   * Returns the project for a given id (auto-generated) in JSON format.
+   *
    * @param mapProjectId the mapProjectId
-   * @param authToken
+   * @param authToken the auth token
    * @return the mapProject
    */
   @GET
@@ -240,10 +240,10 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   /**
-   * Adds a map project
-   * 
+   * Adds a map project.
+   *
    * @param mapProject the map project to be added
-   * @param authToken
+   * @param authToken the auth token
    * @return returns the added map project object
    */
   @PUT
@@ -286,10 +286,10 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   /**
-   * Updates a map project
-   * 
+   * Updates a map project.
+   *
    * @param mapProject the map project to be added
-   * @param authToken
+   * @param authToken the auth token
    */
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
@@ -343,9 +343,9 @@ public class MappingServiceRest extends RootServiceRest {
 
   /**
    * Removes a map project.
-   * 
-   * @param mapProject
-   * @param authToken
+   *
+   * @param mapProject the map project
+   * @param authToken the auth token
    */
   @DELETE
   @Path("/project/delete")
@@ -380,10 +380,10 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   /**
-   * Returns all map projects for a lucene query
-   * 
+   * Returns all map projects for a lucene query.
+   *
    * @param query the string query
-   * @param authToken
+   * @param authToken the auth token
    * @return the map projects
    */
   @GET
@@ -421,10 +421,10 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   /**
-   * Returns all map projects for a map user
-   * 
+   * Returns all map projects for a map user.
+   *
    * @param mapUserName the map user name
-   * @param authToken
+   * @param authToken the auth token
    * @return the map projects
    */
   @GET
@@ -490,10 +490,9 @@ public class MappingServiceRest extends RootServiceRest {
   // ///////////////////////////////////////////////////
 
   /**
-   * Returns all map leads in either JSON or XML format
-   * 
-   * @param authToken
-   * 
+   * Returns all map leads in either JSON or XML format.
+   *
+   * @param authToken the auth token
    * @return the map leads
    */
   @GET
@@ -849,11 +848,10 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   /**
-   * Returns the user for a given id (auto-generated) in JSON format
-   * 
-   * @param mapUserName
-   * @param authToken
-   * 
+   * Returns the user for a given id (auto-generated) in JSON format.
+   *
+   * @param mapUserName the map user name
+   * @param authToken the auth token
    * @return the mapUser
    */
   @GET
@@ -889,10 +887,10 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   /**
-   * Adds a map user
-   * 
+   * Adds a map user.
+   *
    * @param mapUser the map user
-   * @param authToken
+   * @param authToken the auth token
    * @return Response the response
    */
   @PUT
@@ -930,10 +928,10 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   /**
-   * Updates a map user
-   * 
+   * Updates a map user.
+   *
    * @param mapUser the map user to be added
-   * @param authToken
+   * @param authToken the auth token
    */
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
@@ -965,10 +963,10 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   /**
-   * Removes a map user
-   * 
-   * @param mapUser
-   * @param authToken
+   * Removes a map user.
+   *
+   * @param mapUser the map user
+   * @param authToken the auth token
    */
   @DELETE
   @Path("/user/delete")
@@ -1002,10 +1000,9 @@ public class MappingServiceRest extends RootServiceRest {
   // SCRUD functions: Map Advice
   // ///////////////////////////////////////////////////
   /**
-   * Returns all map advices in either JSON or XML format
-   * 
-   * @param authToken
-   * 
+   * Returns all map advices in either JSON or XML format.
+   *
+   * @param authToken the auth token
    * @return the map advices
    */
   @GET
@@ -1051,10 +1048,10 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   /**
-   * Adds a map advice
-   * 
+   * Adds a map advice.
+   *
    * @param mapAdvice the map advice
-   * @param authToken
+   * @param authToken the auth token
    * @return Response the response
    */
   @PUT
@@ -1092,10 +1089,10 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   /**
-   * Updates a map advice
-   * 
+   * Updates a map advice.
+   *
    * @param mapAdvice the map advice to be added
-   * @param authToken
+   * @param authToken the auth token
    */
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
@@ -1128,10 +1125,10 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   /**
-   * Removes a map advice
-   * 
-   * @param mapAdvice
-   * @param authToken
+   * Removes a map advice.
+   *
+   * @param mapAdvice the map advice
+   * @param authToken the auth token
    */
   @DELETE
   @Path("/advice/delete")
@@ -1169,10 +1166,9 @@ public class MappingServiceRest extends RootServiceRest {
   // SCRUD functions: Map AgeRange
   // ///////////////////////////////////////////////////
   /**
-   * Returns all map age ranges in either JSON or XML format
-   * 
-   * @param authToken
-   * 
+   * Returns all map age ranges in either JSON or XML format.
+   *
+   * @param authToken the auth token
    * @return the map age ranges
    */
   @GET
@@ -1219,10 +1215,10 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   /**
-   * Adds a map age range
-   * 
+   * Adds a map age range.
+   *
    * @param mapAgeRange the map ageRange
-   * @param authToken
+   * @param authToken the auth token
    * @return Response the response
    */
   @PUT
@@ -1261,10 +1257,10 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   /**
-   * Updates a map age range
-   * 
+   * Updates a map age range.
+   *
    * @param mapAgeRange the map ageRange to be added
-   * @param authToken
+   * @param authToken the auth token
    */
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
@@ -1297,10 +1293,10 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   /**
-   * Removes a map age range
-   * 
-   * @param mapAgeRange
-   * @param authToken
+   * Removes a map age range.
+   *
+   * @param mapAgeRange the map age range
+   * @param authToken the auth token
    */
   @DELETE
   @Path("/ageRange/delete")
@@ -1337,10 +1333,9 @@ public class MappingServiceRest extends RootServiceRest {
   // ///////////////////////////////////////////////////
 
   /**
-   * Returns all map relations in either JSON or XML format
-   * 
-   * @param authToken
-   * 
+   * Returns all map relations in either JSON or XML format.
+   *
+   * @param authToken the auth token
    * @return the map relations
    */
   @GET
@@ -1385,10 +1380,10 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   /**
-   * Adds a map relation
-   * 
+   * Adds a map relation.
+   *
    * @param mapRelation the map relation
-   * @param authToken
+   * @param authToken the auth token
    * @return Response the response
    */
   @PUT
@@ -1427,10 +1422,10 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   /**
-   * Updates a map relation
-   * 
+   * Updates a map relation.
+   *
    * @param mapRelation the map relation to be added
-   * @param authToken
+   * @param authToken the auth token
    */
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
@@ -1463,10 +1458,10 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   /**
-   * Removes a map relation
-   * 
-   * @param mapRelation
-   * @param authToken
+   * Removes a map relation.
+   *
+   * @param mapRelation the map relation
+   * @param authToken the auth token
    */
   @DELETE
   @Path("/relation/delete")
@@ -1506,10 +1501,9 @@ public class MappingServiceRest extends RootServiceRest {
   // ///////////////////////////////////////////////////
 
   /**
-   * Returns all map principles in either JSON or XML format
-   * 
-   * @param authToken
-   * 
+   * Returns all map principles in either JSON or XML format.
+   *
+   * @param authToken the auth token
    * @return the map principles
    */
   @GET
@@ -1555,9 +1549,9 @@ public class MappingServiceRest extends RootServiceRest {
 
   /**
    * Returns the map principle for id.
-   * 
+   *
    * @param mapPrincipleId the map principle id
-   * @param authToken
+   * @param authToken the auth token
    * @return the map principle for id
    */
   @GET
@@ -1599,10 +1593,10 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   /**
-   * Adds a map user principle object
-   * 
+   * Adds a map user principle object.
+   *
    * @param mapPrinciple the map user principle object to be added
-   * @param authToken
+   * @param authToken the auth token
    * @return result the newly created map user principle object
    */
   @PUT
@@ -1644,10 +1638,10 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   /**
-   * Updates a map principle
-   * 
-   * @param mapPrinciple
-   * @param authToken
+   * Updates a map principle.
+   *
+   * @param mapPrinciple the map principle
+   * @param authToken the auth token
    */
   @POST
   @Consumes({
@@ -1689,10 +1683,10 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   /**
-   * Removes a set of map user preferences
-   * 
-   * @param principle
-   * @param authToken
+   * Removes a set of map user preferences.
+   *
+   * @param principle the principle
+   * @param authToken the auth token
    */
   @DELETE
   @Path("/principle/delete")
@@ -1735,10 +1729,10 @@ public class MappingServiceRest extends RootServiceRest {
   // ///////////////////////////////////////////////////
 
   /**
-   * Gets a map user preferences object for a specified user
-   * 
-   * @param username
-   * @param authToken
+   * Gets a map user preferences object for a specified user.
+   *
+   * @param username the username
+   * @param authToken the auth token
    * @return result the newly created map user preferences object
    */
   @GET
@@ -1780,10 +1774,10 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   /**
-   * Adds a map user preferences object
-   * 
+   * Adds a map user preferences object.
+   *
    * @param mapUserPreferences the map user preferences object to be added
-   * @param authToken
+   * @param authToken the auth token
    * @return result the newly created map user preferences object
    */
   @PUT
@@ -1831,9 +1825,9 @@ public class MappingServiceRest extends RootServiceRest {
 
   /**
    * Updates a map user preferences object.
-   * 
+   *
    * @param mapUserPreferences the map user preferences
-   * @param authToken
+   * @param authToken the auth token
    */
   @POST
   @Path("/userPreferences/update")
@@ -1876,11 +1870,11 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   /**
-   * Removes a set of map user preferences
-   * 
+   * Removes a set of map user preferences.
+   *
    * @param mapUserPreferences the id of the map user preferences object to be
    *          deleted
-   * @param authToken
+   * @param authToken the auth token
    */
   @DELETE
   @Path("/userPreferences/remove")
@@ -1926,10 +1920,10 @@ public class MappingServiceRest extends RootServiceRest {
   // ///////////////////////////////////////////////////
 
   /**
-   * Returns the record for a given id (auto-generated) in JSON format
-   * 
+   * Returns the record for a given id (auto-generated) in JSON format.
+   *
    * @param mapRecordId the mapRecordId
-   * @param authToken
+   * @param authToken the auth token
    * @return the mapRecord
    */
   @GET
@@ -1981,10 +1975,10 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   /**
-   * Adds a map record
-   * 
+   * Adds a map record.
+   *
    * @param mapRecord the map record to be added
-   * @param authToken
+   * @param authToken the auth token
    * @return Response the response
    */
   @PUT
@@ -2028,10 +2022,10 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   /**
-   * Updates a map record
-   * 
+   * Updates a map record.
+   *
    * @param mapRecord the map record to be added
-   * @param authToken
+   * @param authToken the auth token
    */
   @POST
   @Path("/record/update")
@@ -2072,10 +2066,10 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   /**
-   * Removes a map record given the object
-   * 
+   * Removes a map record given the object.
+   *
    * @param mapRecord the map record to delete
-   * @param authToken
+   * @param authToken the auth token
    * @return Response the response
    */
   @DELETE
@@ -2114,11 +2108,11 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   /**
-   * Removes a set of map records for a project and a set of terminology ids
+   * Removes a set of map records for a project and a set of terminology ids.
+   *
    * @param terminologyIds the terminology ids
    * @param projectId the project id
-   * 
-   * @param authToken
+   * @param authToken the auth token
    * @return Response the response
    */
   @DELETE
@@ -2243,9 +2237,9 @@ public class MappingServiceRest extends RootServiceRest {
    * Returns the records for a given concept id. We don't need to know
    * terminology or version here because we can get it from the corresponding
    * map project.
-   * 
+   *
    * @param conceptId the concept id
-   * @param authToken
+   * @param authToken the auth token
    * @return the mapRecords
    */
   @GET
@@ -2442,14 +2436,13 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   /**
-   * 
    * Returns delimited page of Published or Ready For Publication MapRecords
-   * given a paging/filtering/sorting parameters object
-   * 
+   * given a paging/filtering/sorting parameters object.
+   *
    * @param mapProjectId the map project id
    * @param pfsParameter the JSON object containing the paging/filtering/sorting
    *          parameters
-   * @param authToken
+   * @param authToken the auth token
    * @return the list of map records
    */
   @POST
@@ -2515,12 +2508,12 @@ public class MappingServiceRest extends RootServiceRest {
 
   /**
    * Returns delimited page of Published or Ready For Publication MapRecords
-   * given a paging/filtering/sorting parameters object
-   * 
+   * given a paging/filtering/sorting parameters object.
+   *
    * @param mapProjectId the map project id
    * @param pfsParameter the JSON object containing the paging/filtering/sorting
    *          parameters
-   * @param authToken
+   * @param authToken the auth token
    * @return the list of map records
    */
   @POST
@@ -2589,9 +2582,9 @@ public class MappingServiceRest extends RootServiceRest {
    * NOTE: currently not called, but we are going to want to call this to do
    * history-related stuff thus it is anticipating the future dev and should be
    * kept.
-   * 
+   *
    * @param mapRecordId the map record id
-   * @param authToken
+   * @param authToken the auth token
    * @return the map record revisions
    */
   @GET
@@ -2716,10 +2709,10 @@ public class MappingServiceRest extends RootServiceRest {
   // /////////////////////////////////////////
 
   /**
-   * Computes a map relation (if any) for a map entry's current state
-   * 
+   * Computes a map relation (if any) for a map entry's current state.
+   *
    * @param mapEntry the map entry
-   * @param authToken
+   * @param authToken the auth token
    * @return Response the response
    */
   @POST
@@ -2786,10 +2779,10 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   /**
-   * Computes a map advice (if any) for a map entry's current state
-   * 
+   * Computes a map advice (if any) for a map entry's current state.
+   *
    * @param mapEntry the map entry
-   * @param authToken
+   * @param authToken the auth token
    * @return Response the response
    */
   @POST
@@ -2854,11 +2847,11 @@ public class MappingServiceRest extends RootServiceRest {
   // Role Management Services
   // ///////////////////////////////////////////////
   /**
-   * Gets a map user's role for a given map project
-   * 
-   * @param username
-   * @param mapProjectId
-   * @param authToken
+   * Gets a map user's role for a given map project.
+   *
+   * @param username the username
+   * @param mapProjectId the map project id
+   * @param authToken the auth token
    * @return result the role
    */
   @GET
@@ -2955,13 +2948,13 @@ public class MappingServiceRest extends RootServiceRest {
   // /////////////////////////////////////////////////////
   /**
    * Gets tree positions for concept.
-   * 
+   *
    * @param terminologyId the terminology id
    * @param terminology the terminology
    * @param terminologyVersion the terminology version
    * @param mapProjectId the contextual project of this tree, used for
    *          determining valid codes
-   * @param authToken
+   * @param authToken the auth token
    * @return the search result list
    */
   @GET
@@ -3023,12 +3016,12 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   /**
-   * Gets the root-level tree positions for a given terminology and version
-   * 
+   * Gets the root-level tree positions for a given terminology and version.
+   *
    * @param terminology the terminology
    * @param terminologyVersion the terminology version
    * @param mapProjectId the map project id
-   * @param authToken
+   * @param authToken the auth token
    * @return the search result list
    */
   @GET
@@ -3086,12 +3079,12 @@ public class MappingServiceRest extends RootServiceRest {
 
   /**
    * Gets tree positions for concept query.
-   * 
+   *
    * @param terminology the terminology
    * @param terminologyVersion the terminology version
    * @param query the query
    * @param mapProjectId the map project id
-   * @param authToken
+   * @param authToken the auth token
    * @return the root-level trees corresponding to the query
    */
   @GET
@@ -3158,11 +3151,11 @@ public class MappingServiceRest extends RootServiceRest {
   /**
    * Returns records recently edited for a project and user. Used by editedList
    * widget.
-   * 
+   *
    * @param mapProjectId the map project id
    * @param username the user name
    * @param pfsParameter the pfs parameter
-   * @param authToken
+   * @param authToken the auth token
    * @return the recently edited map records
    */
   @POST
@@ -3212,11 +3205,11 @@ public class MappingServiceRest extends RootServiceRest {
   /**
    * Returns the map records that when compared lead to the specified conflict
    * record.
-   * 
-   * @param mapRecordId
-   * @param authToken
+   *
+   * @param mapRecordId the map record id
+   * @param authToken the auth token
    * @return map records in conflict for a given conflict lead record
-   * @throws Exception
+   * @throws Exception the exception
    */
   @GET
   @Path("/record/id/{id:[0-9][0-9]*}/conflictOrigins")
@@ -3271,9 +3264,9 @@ public class MappingServiceRest extends RootServiceRest {
 
   /**
    * Validates a map record.
-   * 
+   *
    * @param mapRecord the map record to be validated
-   * @param authToken
+   * @param authToken the auth token
    * @return Response the response
    */
   @POST
@@ -3325,11 +3318,11 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   /**
-   * Compare map records and return differences
-   * 
+   * Compare map records and return differences.
+   *
    * @param mapRecordId1 the map record id1
    * @param mapRecordId2 the map record id2
-   * @param authToken
+   * @param authToken the auth token
    * @return the validation result
    */
   @GET
@@ -3528,9 +3521,9 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   /**
-   * Returns all map projects metadata
-   * 
-   * @param authToken
+   * Returns all map projects metadata.
+   *
+   * @param authToken the auth token
    * @return the map projects metadata
    */
   @GET

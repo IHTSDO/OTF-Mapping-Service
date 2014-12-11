@@ -20,6 +20,8 @@ import com.wordnik.swagger.annotations.ApiParam;
 
 /**
  * Security service for authentication.
+ *
+ * @author ${author}
  */
 @Path("/security")
 @Api(value = "/security", description = "Operations supporting application authentication and authorization.")
@@ -71,8 +73,7 @@ public class SecurityServiceRest extends RootServiceRest {
   /**
    * Authenticate.
    *
-   * @param username the username
-   * @return the string
+   * @param userName the user name
    */
   @POST
   @Path("/logout/user/id/{userName}")
