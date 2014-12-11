@@ -26,14 +26,12 @@
 
     <!-- Activated by run.config setting -->
     <profile>
-      <id>run</id>
+      <id>Updated</id>
       <activation>
         <property>
           <name>run.config</name>
         </property>
       </activation>
-
-
       <build>
         <plugins>
 
