@@ -380,7 +380,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           new BufferedWriter(new FileWriter(deltaMachineReadableFileName));
 
     }
-    
+
     // human readable file is always written
     humanReadableWriter =
         new BufferedWriter(new FileWriter(humanReadableFileName));
@@ -420,7 +420,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             .write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\tmapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId\r\n");
         deltaMachineReadableWriter.flush();
       }
-     
+
     }
 
     // /////////////////////////////////////////////////////
@@ -995,7 +995,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
       // write the computed complex map ref sets to file
       for (ComplexMapRefSetMember c : complexMapRefSetMembersToWrite.values()) {
-        
+
         if (c.isActive() == true) {
 
           // get the map relation for the human readable file
@@ -1007,20 +1007,20 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
                 mapRelation = mr;
             }
           }
-  
+
           // get target concept
           Concept targetConcept =
               contentService.getConcept(c.getMapTarget(),
                   mapProject.getDestinationTerminology(),
                   mapProject.getDestinationTerminologyVersion());
-  
+
           humanReadableWriter.write(this
               .getHumanReadableTextforComplexMapRefSetMember(c, targetConcept,
                   mapRelation));
         }
 
       }
-      
+
       humanReadableWriter.close();
     }
 
@@ -1772,7 +1772,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
                   : complexMapRefSetMember.getMapTarget())
               + "\t"
               + (targetConcept != null ? targetConcept
-                  .getDefaultPreferredName() : "") + "\t" + "447561005";
+                  .getDefaultPreferredName() : "")
+              + "\t"
+              + complexMapRefSetMember.getMapRelationId()
+              + "\t"
+              + (mapRelation != null ? mapRelation.getName()
+                  : "FAILED MAP RELATION");
     }
 
     entryLine += "\r\n";
@@ -1841,7 +1846,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               + complexMapRefSetMember.getMapAdvice()
               + "\t"
               + (complexMapRefSetMember.getMapTarget() == null ? ""
-                  : complexMapRefSetMember.getMapTarget()) + "\t" + "447561005";
+                  : complexMapRefSetMember.getMapTarget())
+              + "\t"
+              + complexMapRefSetMember.getMapRelationId();
     }
 
     entryLine += "\r\n";
