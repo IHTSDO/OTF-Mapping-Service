@@ -1243,6 +1243,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     for (ReportResult reportResult : valueMap.values()) {
       report.addResult(reportResult);
     }
+    
     resultSet.close();
     return report;
 
