@@ -150,7 +150,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
       // Set the input directory
       File coreInputDir = new File(inputDir);
       if (!coreInputDir.exists()) {
-        throw new MojoFailureException("Specified input dir");
+        throw new MojoFailureException("Specified input dir missing");
       }
 
       // set the parameters for determining defaultPreferredNames
