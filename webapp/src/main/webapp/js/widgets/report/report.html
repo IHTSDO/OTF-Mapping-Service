@@ -53,7 +53,7 @@
                     <td style="width: 5%;"><a title="Delete Report"
                         ng-click="deleteReport(report, page, selectedDefinition, queryReport)"
                         ng-show="report.owner.id == currentUser.id">
-                      <i class="glyphicon glyphicon-trash"></i>
+                      <i class="glyphicon glyphicon-remove"></i>
                       </a></td>
 			</tbody>
 
@@ -116,7 +116,8 @@
 				</tbody>
 			</table>
 			
-			<button class="btn btn-sm btn-primary">Export</button>
+			<button class="btn btn-sm btn-primary" 
+              ng-click="exportReport(reportDisplayed)">Export</button> 
 		</div>
 
 
