@@ -144,7 +144,7 @@ angular
               "Content-Type" : "application/json"
             }
           }).success(function(data) {
-          $rootScope.glassPane--;
+          $rootScope.glassPane = 0;
           $scope.results = data.searchResult;
 
           $scope.nResults = data.totalCount;
@@ -168,7 +168,7 @@ angular
           }
 
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          $rootScope.glassPane = 0;
           $scope.results = null;
           $rootScope.handleHttpError(data, status, headers, config);
         });
@@ -208,13 +208,11 @@ angular
               + $scope.focusProject.destinationTerminologyVersion + "/html/" + 
               $scope.selectedDomain + "/" + $scope.indexPages[i] + ".html"
 
-              $rootScope.glassPane++;
               $http.get(url, {
                 cache: $templateCache
               }).then(function(result) {
                 console.log(result);
-                $templateCache.put(url, result); 
-                $rootScope.glassPane--;
+                $templateCache.put(url, result);
               });       
           }
           
@@ -305,8 +303,15 @@ angular
         $scope.lastArrow = b;
       };
       
-      $scope.$on('$locationChangeStart', function(ev) {
-        ev.preventDefault();
+      $scope.$on('$locationChangeStart', function(ev, newUrl, oldUrl) {
+    	// prevent reloading because it messes up the scrolling
+    	if (newUrl.indexOf("Help") == -1) {
+          ev.preventDefault();
+      	// if the Help page, allow the default reloading response
+    	} else {
+    	  $rootScope.glassPane++;
+    	}
+    	
       });
       
       // called when ng-include completes loading an html page
@@ -317,7 +322,7 @@ angular
         
         $anchorScroll();
         
-        $rootScope.glassPane--;      
+        $rootScope.glassPane = 0;      
       });
       
       $scope.set_style = function (indexTab) {
