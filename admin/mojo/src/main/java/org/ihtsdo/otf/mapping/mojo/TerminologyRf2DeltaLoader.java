@@ -66,6 +66,13 @@ import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
   /**
+   * The input directory
+   * @parameter
+   * @required
+   */
+  private String inputDir;
+
+  /**
    * Name of terminology to be loaded.
    * 
    * @parameter
@@ -73,20 +80,20 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
    */
   private String terminology;
 
+  /** The delta dir. */
+  private File deltaDir;
+
   /** The terminology version. */
   private String terminologyVersion;
 
-  /** The input directory. */
-  private File deltaDir;
-
   /** the defaultPreferredNames type id. */
-  private Long dpnTypeId;
+  private Long dpnTypeId = 900000000000003001L;
 
   /** The dpn ref set id. */
-  private Long dpnRefSetId;
+  private Long dpnrefsetId = 900000000000509007L;
 
   /** The dpn acceptability id. */
-  private Long dpnAcceptabilityId;
+  private Long dpnAcceptabilityId = 900000000000548007L;
 
   /** The concept reader. */
   private BufferedReader conceptReader;
@@ -322,12 +329,9 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     mappingService.beginTransaction();
 
     // set the delta file directory=
-    deltaDir =
-        new File(config.getProperty("loader." + terminology + ".delta.data"));
+    deltaDir = new File(inputDir);
     if (!deltaDir.exists()) {
-      throw new MojoFailureException("Specified loader." + terminology
-          + ".input.delta.data directory does not exist: "
-          + deltaDir.getAbsolutePath());
+      throw new MojoFailureException("Specified input dir");
     }
 
     // get the first file for determining
@@ -357,20 +361,25 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     }
 
     // set the parameters for determining defaultPreferredNames
-    dpnTypeId =
-        Long.valueOf(config.getProperty("loader.defaultPreferredNames.typeId"));
-    dpnRefSetId =
-        Long.valueOf(config
-            .getProperty("loader.defaultPreferredNames.refSetId"));
-    dpnAcceptabilityId =
-        Long.valueOf(config
-            .getProperty("loader.defaultPreferredNames.acceptabilityId"));
+    String prop = config.getProperty("loader.defaultPreferredNames.typeId");
+    if (prop != null) {
+      dpnTypeId = Long.valueOf(prop);
+    }
+
+    prop = config.getProperty("loader.defaultPreferredNames.refsetId");
+    if (prop != null) {
+      dpnrefsetId = Long.valueOf(prop);
+    }
+    prop = config.getProperty("loader.defaultPreferredNames.acceptabilityId");
+    if (prop != null) {
+      dpnAcceptabilityId = Long.valueOf(prop);
+    }
 
     // output relevant properties/settings to console
     getLog().info("Terminology Version: " + terminologyVersion);
     getLog().info("Default preferred name settings:");
     getLog().info("  typeId:          " + dpnTypeId);
-    getLog().info("  refSetId:        " + dpnRefSetId);
+    getLog().info("  refsetId:        " + dpnrefsetId);
     getLog().info("  acceptabilityId: " + dpnAcceptabilityId);
 
     // Open files
@@ -998,12 +1007,12 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
               .getLanguageRefSetMembers()) {
             getLog().info(
                 "    Checking language " + language.getTerminologyId()
-                    + ", active = " + language.isActive() + ", refSetId = "
+                    + ", active = " + language.isActive() + ", refsetId = "
                     + language.getRefSetId() + ", acceptabilityId = "
                     + language.getAcceptabilityId());
 
             // If prefrred and has correct refset
-            if (new Long(language.getRefSetId()).equals(dpnRefSetId)
+            if (new Long(language.getRefSetId()).equals(dpnrefsetId)
                 && language.isActive()
                 && language.getAcceptabilityId().equals(dpnAcceptabilityId)) {
               getLog().info("      MATCH FOUND: " + description.getTerm());

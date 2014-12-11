@@ -2,6 +2,8 @@ package org.ihtsdo.otf.mapping.services.helpers;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
@@ -157,9 +159,10 @@ public class OtfErrorHandler {
     m_text.append("ID: " + recordId).append("\n\n");
 
     m_text.append("MESSAGE: " + e.getMessage()).append("\n\n");
-    for (StackTraceElement element : e.getStackTrace()) {
-      m_text.append("  ").append(element).append("\n");
-    }
+    StringWriter out = new StringWriter();
+    PrintWriter pw = new PrintWriter(out);
+    e.printStackTrace(pw);
+    m_text.append(out.getBuffer());
 
     try {
       SMTPAuthenticator auth = new SMTPAuthenticator();
