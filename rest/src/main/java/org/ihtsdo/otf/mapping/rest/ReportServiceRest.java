@@ -235,7 +235,6 @@ public class ReportServiceRest extends RootServiceRest {
   /**
    * Update reports.
    *
-   * @param mapProjectId the map project id
    * @param report the report
    * @param authToken the auth token
    */

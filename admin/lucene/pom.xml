@@ -53,9 +53,6 @@
       </build>
     </profile>
 
-
-
-
     <!-- Convert ASC files to XML -->
     <!-- This is the first step for generating application-usable data from index 
       files -->
