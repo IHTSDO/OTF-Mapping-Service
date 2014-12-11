@@ -672,7 +672,7 @@ public interface ContentService extends RootService {
    *
    * @param tp the tp
    * @return the tree position with descendants
-   * @throws Exception
+   * @throws Exception the exception
    */
   public TreePosition getTreePositionWithDescendants(TreePosition tp)
     throws Exception;
@@ -705,7 +705,7 @@ public interface ContentService extends RootService {
    * @param terminology the terminology
    * @param terminologyVersion the terminology version
    * @return the index viewer indexes
-   * @throws Exception 
+   * @throws Exception the exception
    */
   public SearchResultList getIndexViewerIndexes(String terminology,
 		String terminologyVersion) throws Exception;
@@ -717,7 +717,7 @@ public interface ContentService extends RootService {
    * @param terminologyVersion the terminology version
    * @param index the index
    * @return the index viewer pages for index
-   * @throws Exception 
+   * @throws Exception the exception
    */
   public SearchResultList getIndexViewerPagesForIndex(
 		  String terminology, String terminologyVersion, String index) throws Exception;
