@@ -80,7 +80,7 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
 
   /**
    * sets the mapBlockRule
-   * @paran the mapBlockRule
+   * @param the mapBlockRule
    */
   @Override
   public void setMapBlockRule(String mapBlockRule) {
