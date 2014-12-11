@@ -1341,8 +1341,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
       }
 
       if (mapRecord == null) {
-        // TODO Return this to throw a new exception once all the DMO
-        // ERRORS have been
+       
         throw new Exception(
             "Failed to retrieve assigned conflicts:  no map record found for user "
                 + mapUser.getUserName() + " and concept "
@@ -1476,7 +1475,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
         if (mr.getOwner().equals(mapUser)) {
 
-          // TODO See MAP-617
           // check for the case where REVIEW work is both specialist
           // and
           // lead level for same user
@@ -1664,7 +1662,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
         if (mr.getOwner().equals(mapUser)) {
 
-          // TODO See MAP-617
           // check for the case where QA work is both specialist
           // and
           // lead level for same user
