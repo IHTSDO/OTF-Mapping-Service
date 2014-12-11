@@ -15,6 +15,7 @@
   <description>OTF RF2 Administrator Tool to Load RF2 data</description>
   <packaging>pom</packaging>
 
+  <!-- Available mojo parameters -->
   <properties>
     <!-- The refset id -->
     <refset.id></refset.id>
@@ -88,7 +89,7 @@
       </build>
     </profile>
 
-    <!-- Load SNOMED tree positions -Drun.config=.. must also be specified. -->
+    <!-- Load tree positions -Drun.config=.. must also be specified. -->
     <profile>
       <id>Treepos</id>
       <build>

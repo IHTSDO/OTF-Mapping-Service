@@ -93,6 +93,7 @@ public class QaDatabase extends AbstractMojo {
 
         for (String key : errors.keySet()) {
           msg.append("  CHECK: ").append(key).append("\r\n");
+          msg.append("  QUERY: ").append(queries.getProperty(key)).append("\r\n");
           for (String result : errors.get(key)) {
             msg.append("    " + result).append("\r\n");
           }
