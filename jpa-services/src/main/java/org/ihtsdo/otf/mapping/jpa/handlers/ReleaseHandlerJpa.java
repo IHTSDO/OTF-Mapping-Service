@@ -380,7 +380,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           new BufferedWriter(new FileWriter(deltaMachineReadableFileName));
 
     }
-    
+
     // human readable file is always written
     humanReadableWriter =
         new BufferedWriter(new FileWriter(humanReadableFileName));
@@ -420,7 +420,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             .write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\tmapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId\r\n");
         deltaMachineReadableWriter.flush();
       }
-     
+
     }
 
     // /////////////////////////////////////////////////////
@@ -898,8 +898,15 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // /////////////////////////////////////////////////////
 
     // set of map relations for human readable file
-    List<MapRelation> mapRelations =
-        mappingService.getMapRelations().getMapRelations();
+    Set<MapRelation> mapRelations = mapProject.getMapRelations();
+
+    Logger.getLogger(ReleaseHandlerJpa.class).info(
+        "Retrieved map relations for human readable file:");
+
+    for (MapRelation mr : mapRelations) {
+      Logger.getLogger(ReleaseHandler.class).info(
+          "  " + mr.getTerminologyId() + "\t" + mr.getName());
+    }
 
     Comparator<String> comparator = new Comparator<String>() {
 
@@ -995,32 +1002,35 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
       // write the computed complex map ref sets to file
       for (ComplexMapRefSetMember c : complexMapRefSetMembersToWrite.values()) {
-        
-        if (c.isActive() == true) {
 
+        if (c.isActive() == true) {
+          
+   
           // get the map relation for the human readable file
           MapRelation mapRelation = null;
-          if (mapProject.getMapRefsetPattern().equals(
-              MapRefsetPattern.ExtendedMap)) {
-            for (MapRelation mr : mapRelations) {
-              if (mr.getTerminologyId().equals(c.getMapRelationId()))
-                mapRelation = mr;
+
+          for (MapRelation mr : mapRelations) {
+             if (mr.getTerminologyId().equals(c.getMapRelationId().toString())) {
+              mapRelation = mr;
             }
           }
-  
+
           // get target concept
-          Concept targetConcept =
-              contentService.getConcept(c.getMapTarget(),
-                  mapProject.getDestinationTerminology(),
-                  mapProject.getDestinationTerminologyVersion());
-  
+          Concept targetConcept = null;
+          if (c.getMapTarget() != null && !c.getMapTarget().isEmpty()) {
+            targetConcept =
+                contentService.getConcept(c.getMapTarget(),
+                    mapProject.getDestinationTerminology(),
+                    mapProject.getDestinationTerminologyVersion());
+          }
+
           humanReadableWriter.write(this
               .getHumanReadableTextforComplexMapRefSetMember(c, targetConcept,
                   mapRelation));
         }
 
       }
-      
+
       humanReadableWriter.close();
     }
 
@@ -1698,7 +1708,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   private String getHumanReadableTextforComplexMapRefSetMember(
     ComplexMapRefSetMember complexMapRefSetMember, Concept targetConcept,
     MapRelation mapRelation) throws Exception {
-
+    
     String entryLine = "";
 
     // switch line on map relation style
@@ -1772,7 +1782,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
                   : complexMapRefSetMember.getMapTarget())
               + "\t"
               + (targetConcept != null ? targetConcept
-                  .getDefaultPreferredName() : "") + "\t" + "447561005";
+                  .getDefaultPreferredName() : "")
+              + "\t"
+              + complexMapRefSetMember.getMapRelationId()
+              + "\t"
+              + (mapRelation != null ? mapRelation.getName()
+                  : "FAILED MAP RELATION");
     }
 
     entryLine += "\r\n";
@@ -1841,7 +1856,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               + complexMapRefSetMember.getMapAdvice()
               + "\t"
               + (complexMapRefSetMember.getMapTarget() == null ? ""
-                  : complexMapRefSetMember.getMapTarget()) + "\t" + "447561005";
+                  : complexMapRefSetMember.getMapTarget())
+              + "\t"
+              + complexMapRefSetMember.getMapRelationId();
     }
 
     entryLine += "\r\n";
