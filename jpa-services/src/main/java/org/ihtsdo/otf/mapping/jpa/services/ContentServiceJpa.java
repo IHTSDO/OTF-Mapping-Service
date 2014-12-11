@@ -2123,9 +2123,9 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
    * relationship terminology id starts with the description terminology id,
    * this is something to render (5) ... update this later
    * 
-   * Data Structure: TreePosition->DescriptionGroups: each description group is
+   * Data Structure: TreePosition to DescriptionGroups: each description group is
    * a description type, e.g. Inclusion, Exclusion, etc.
-   * DescriptionGroups->Description: each description is a concept preferred
+   * DescriptionGroups to Description: each description is a concept preferred
    * name and a set of referenced concepts ReferencedConcept: each referenced
    * concept is a display name and the terminology id of an existing concept to
    * link to
