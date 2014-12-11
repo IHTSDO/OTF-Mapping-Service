@@ -8,6 +8,7 @@
       <directory>src/main/resources</directory>
       <outputDirectory>/</outputDirectory>
       <useDefaultExcludes>true</useDefaultExcludes>
+      <fileMode>0755</fileMode>
     </fileSet>
   </fileSets>
   <includeBaseDirectory>false</includeBaseDirectory>
