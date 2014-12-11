@@ -529,12 +529,16 @@ public class MapEntryJpa implements MapEntry {
     // + me.getMapRelation().getName());
 
     // targets must be equal
-    if (!this.targetId.equals(me.getTargetId()))
+    if (this.targetId == null && me.getTargetId() != null)
+      return false;
+    else if (!this.targetId.equals(me.getTargetId()))
       return false;
 
     // System.out.println("  Targets equal");
 
     // rules must be identical
+    if (this.rule == null && me.getRule() != null)
+      return false;
     if (!this.rule.equals(me.getRule()))
       return false;
 
