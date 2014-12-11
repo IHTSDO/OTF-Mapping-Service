@@ -286,17 +286,19 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    */
   private void processReleaseHelper(List<MapRecord> mapRecordsToPublish,
     String outputDirName) throws Exception {
-    
-    System.out.println(mapProject.isRuleBased());
+
+    // System.out.println(mapProject.isRuleBased());
 
     Logger.getLogger(ReleaseHandlerJpa.class).info(
         "Processing publication release for project " + mapProject.getName());
-    
+
     Logger.getLogger(ReleaseHandlerJpa.class).info(
-        "  Map project refset pattern is " + mapProject.getMapRefsetPattern().toString());
-    
+        "  Map project refset pattern is "
+            + mapProject.getMapRefsetPattern().toString());
+
     Logger.getLogger(ReleaseHandlerJpa.class).info(
-        "  Map project is " + (mapProject.isRuleBased() ? "" : "not ") + " rule-based");
+        "  Map project is " + (mapProject.isRuleBased() ? "" : "not ")
+            + " rule-based");
 
     Logger.getLogger(ReleaseHandlerJpa.class).info(
         " " + mapRecordsToPublish.size() + " records selected for publication");
@@ -333,12 +335,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     // declare the file names and file writers
     String snapshotMachineReadableFileName = null;
-    String snapshotHumanReadableFileName = null;
     String deltaMachineReadableFileName = null;
+    String humanReadableFileName = null;
 
     BufferedWriter snapshotMachineReadableWriter = null;
-    BufferedWriter snapshotHumanReadableWriter = null;
     BufferedWriter deltaMachineReadableWriter = null;
+    BufferedWriter humanReadableWriter = null;
 
     // /////////////////////////////////////////////////////
     // Create file names, instantiate writers, write headers
@@ -348,7 +350,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             + mapProject.getMapRefsetPattern() + "Snapshot_INT_"
             + effectiveTime + ".txt";
 
-    snapshotHumanReadableFileName =
+    humanReadableFileName =
         outputDirName + "/tls_" + mapProject.getDestinationTerminology()
             + "HumanReadableMap_INT_"
             + mapProject.getSourceTerminologyVersion() + "_" + effectiveTime
@@ -356,19 +358,15 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     deltaMachineReadableFileName =
         outputDirName + "/der2_" + mapProject.getDestinationTerminology()
-            + mapProject.getMapRefsetPattern() + "Delta_INT_" + effectiveTime
+            + mapProject.getMapRefsetPattern() + "Full_INT_" + effectiveTime
             + ".txt";
 
     if (writeSnapshot == true) {
       Logger.getLogger(ReleaseHandlerJpa.class).info(
           "  Machine-readable release file:  "
               + snapshotMachineReadableFileName);
-      Logger.getLogger(ReleaseHandlerJpa.class).info(
-          "  Human-readable release file:    " + snapshotHumanReadableFileName);
 
-      // instantiate file writers
-      snapshotHumanReadableWriter =
-          new BufferedWriter(new FileWriter(snapshotHumanReadableFileName));
+      // instantiate file writer
       snapshotMachineReadableWriter =
           new BufferedWriter(new FileWriter(snapshotMachineReadableFileName));
     }
@@ -377,10 +375,15 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       Logger.getLogger(ReleaseHandlerJpa.class).info(
           "  Delta release file:             " + deltaMachineReadableFileName);
 
+      // instantiate file writer
       deltaMachineReadableWriter =
           new BufferedWriter(new FileWriter(deltaMachineReadableFileName));
 
     }
+    
+    // human readable file is always written
+    humanReadableWriter =
+        new BufferedWriter(new FileWriter(humanReadableFileName));
 
     // Write header based on relation style
     if (mapProject.getMapRefsetPattern().equals(MapRefsetPattern.ExtendedMap)) {
@@ -389,10 +392,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             .write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\tmapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId\tmapCategoryId\r\n");
         snapshotMachineReadableWriter.flush();
       }
-      if (snapshotHumanReadableWriter != null) {
-        snapshotHumanReadableWriter
-            .write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\tmapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId\tmapCategoryId\treferencedComponentName\tmapTargetName\tmapCategoryName\r\n");
-        snapshotHumanReadableWriter.flush();
+      if (humanReadableWriter != null) {
+        humanReadableWriter
+            .write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\treferencedComponentName\tmapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tmapTargetName\tcorrelationId\tmapCategoryId\tmapCategoryName\r\n");
+        humanReadableWriter.flush();
       }
       if (deltaMachineReadableWriter != null) {
         deltaMachineReadableWriter
@@ -407,16 +410,17 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             .write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\tmapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId\r\n");
         snapshotMachineReadableWriter.flush();
       }
-      if (snapshotHumanReadableWriter != null) {
-        snapshotHumanReadableWriter
-            .write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\tmapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId\treferencedComponentName\tmapTargetName\tmapCategoryName\r\n");
-        snapshotHumanReadableWriter.flush();
+      if (humanReadableWriter != null) {
+        humanReadableWriter
+            .write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\treferencedComponentName\tmapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tmapTargetName\tcorrelationId\r\n");
+        humanReadableWriter.flush();
       }
       if (deltaMachineReadableWriter != null) {
         deltaMachineReadableWriter
             .write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\tmapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId\r\n");
         deltaMachineReadableWriter.flush();
       }
+     
     }
 
     // /////////////////////////////////////////////////////
@@ -433,6 +437,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     // put all map records into the map record map
     for (MapRecord mr : mapRecordsToPublish) {
+      if (mr == null)
+        throw new Exception("Null record found in published list");
       mapRecordMap.put(mr.getConceptId(), mr);
     }
 
@@ -509,14 +515,62 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       Map<Integer, List<MapEntry>> entriesByGroup = new HashMap<>();
 
       // /////////////////////////////////////////////////////
+      // Check for short-normal form no-write operation
+      // If all parents have same code/advice present,
+      // do not write
+      // /////////////////////////////////////////////////////
+      /*
+       * boolean entriesDuplicated = true;
+       * 
+       * // cycle over all tree positions for this concept for (TreePosition tp
+       * : treePositions.getTreePositions()) {
+       * 
+       * // // System.out.println("Checking ancestor path: " + //
+       * tp.getAncestorPath());
+       * 
+       * String[] pathComponents = tp.getAncestorPath().split("~");
+       * 
+       * // // System.out.println(pathComponents[pathComponents.length-1]);
+       * MapRecord parentRecord =
+       * this.getMapRecordForTerminologyId(pathComponents[pathComponents.length
+       * - 1]);
+       * 
+       * // if parent record is null if (parentRecord == null) { // record error
+       * conceptErrors.put(tp.getTerminologyId(),
+       * "Failed to retrieve parent concept " +
+       * pathComponents[pathComponents.length - 1]);
+       * 
+       * // force exit by treating as short-form (i.e. do not process
+       * entriesDuplicated = true; break;
+       * 
+       * } else { // if number of entries is different, automatically fails
+       * short-form // check if (mapRecord.getMapEntries().size() !=
+       * parentRecord.getMapEntries() .size()) { entriesDuplicated = false; }
+       * 
+       * // otherwise, check if all record entries are present on this parent
+       * for (MapEntry childEntry : mapRecord.getMapEntries()) {
+       * 
+       * // check all parent entries for target and advice for (MapEntry
+       * parentEntry : parentRecord.getMapEntries()) { if
+       * (!childEntry.getTargetId().equals(parentEntry.getTargetId()) ||
+       * !childEntry.getMapAdvices().equals( parentEntry.getMapAdvices())) {
+       * entriesDuplicated = false; } } } }
+       * 
+       * // if failed test, break loop if (entriesDuplicated == false) break; }
+       * 
+       * // if entries duplicated on all parents, skip to next record if
+       * (entriesDuplicated == false) {
+       * 
+       * conceptErrors .put(mapRecord.getConceptId(),
+       * "Skipped due to short-form"); continue; }
+       */
+
+      // /////////////////////////////////////////////////////
       // Check for up-propagation
       // /////////////////////////////////////////////////////
       if (mapProject.isPropagatedFlag() == true
           && mapRecord.getCountDescendantConcepts() < mapProject
               .getPropagationDescendantThreshold()) {
-
-        Logger.getLogger(ReleaseHandlerJpa.class).info(
-            "    Record is up-propagated.");
 
         // /////////////////////////////////////////////////////
         // Get the tree positions for this concept
@@ -526,8 +580,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         try {
           // get all tree positions for this concept
           treePositions =
-              contentService.getTreePositions(mapRecord.getConceptId(),
-                  mapProject.getSourceTerminology(),
+              contentService.getTreePositionsWithDescendants(
+                  mapRecord.getConceptId(), mapProject.getSourceTerminology(),
                   mapProject.getSourceTerminologyVersion());
         } catch (Exception e) {
           conceptErrors.put(mapRecord.getConceptId(),
@@ -535,50 +589,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           continue;
         }
 
-        // /////////////////////////////////////////////////////
-        // Check for short-normal form no-write operation
-        // If all parents have same code/advice present,
-        // do not write
-        // /////////////////////////////////////////////////////
-
-        boolean entriesDuplicated = true;
-
-        // cycle over all tree positions for this concept
-        for (TreePosition tp : treePositions.getTreePositions()) {
-
-          String[] pathComponents = tp.getAncestorPath().split("~");
-          MapRecord parentRecord =
-              this.getMapRecordForTerminologyId(pathComponents[pathComponents.length - 2]);
-
-          // if number of entries is different, automatically fails short-form
-          // check
-          if (mapRecord.getMapEntries().size() != parentRecord.getMapEntries()
-              .size()) {
-            entriesDuplicated = false;
-          }
-
-          // otherwise, check if all record entries are present on this parent
-          for (MapEntry childEntry : mapRecord.getMapEntries()) {
-
-            // check all parent entries for target and advice
-            for (MapEntry parentEntry : parentRecord.getMapEntries()) {
-              if (!childEntry.getTargetId().equals(parentEntry.getTargetId())
-                  || !childEntry.getMapAdvices().equals(
-                      parentEntry.getMapAdvices())) {
-                entriesDuplicated = false;
-              }
-            }
-          }
-
-          // if failed test, break loop
-          if (entriesDuplicated == false)
-            break;
-        }
-
-        // if entries duplicated on all parents, skip to next record
-        if (entriesDuplicated == false)
-          continue;
-
+        /*
+         * Logger.getLogger(ReleaseHandlerJpa.class).info(
+         * "    Record is up-propagated.");
+         */
         // /////////////////////////////////////////////////////
         // Get descendant concepts
         // /////////////////////////////////////////////////////
@@ -600,37 +614,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         List<TreePosition> treePositionDescendantList =
             getSortedTreePositionDescendantList(treePosition);
 
-        System.out.println("*** Descendant list has "
-            + treePositionDescendantList.size() + " elements");
-
-        // /////////////////////////////////////////////////////
-        // Construct retrieval maps and check for errors
-        // /////////////////////////////////////////////////////
-
-        // construct a map of ancestor path + terminologyId to map
-        // records, used to easily retrieve parent records for
-        // descendants of
-        // up-propagated records
-        // key: A~B~C~D, value: map record for concept D
-        Map<String, MapRecord> treePositionToMapRecordMap = new HashMap<>();
-
-        // cycle over all descendants of this position
-        // and add all required records to the map
-        // for use later
-        for (TreePosition tp : treePositionDescendantList) {
-
-          // retrieve map record from cache, or retrieve from database
-          // and add to cache
-          MapRecord mr =
-              this.getMapRecordForTerminologyId(tp.getTerminologyId());
-
-          // if record found, add record to TreePosition->MapRecord
-          // map
-          if (mr != null) {
-            treePositionToMapRecordMap.put(
-                tp.getAncestorPath() + "~" + tp.getTerminologyId(), mr);
-          }
-        }
+        /*
+         * System.out.println("*** Descendant list has " +
+         * treePositionDescendantList.size() + " elements");
+         */
 
         // /////////////////////////////////////////////////////
         // Process up-propagated entries
@@ -643,8 +630,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
           // get the parent map record for this tree position
           // used to check if entries are duplicated on parent
-          MapRecord mrParent =
-              treePositionToMapRecordMap.get(tp.getAncestorPath());
+          String parent =
+              tp.getAncestorPath().substring(
+                  tp.getAncestorPath().lastIndexOf("~") + 1);
+          MapRecord mrParent = this.getMapRecordForTerminologyId(parent);
 
           // skip the root level record, these entries are added
           // below, after the up-propagated entries
@@ -653,19 +642,20 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             // get the map record corresponding to this specific
             // ancestor path + concept Id
             MapRecord mr =
-                treePositionToMapRecordMap.get(tp.getAncestorPath() + "~"
-                    + tp.getTerminologyId());
+                this.getMapRecordForTerminologyId(tp.getTerminologyId());
 
             if (mr != null) {
 
-              Logger.getLogger(ReleaseHandlerJpa.class).info(
-                  "     Adding entries from map record " + mr.getId() + ", "
-                      + mr.getConceptId() + ", " + mr.getConceptName());
-
+              /*
+               * Logger.getLogger(ReleaseHandlerJpa.class).info(
+               * "     Adding entries from map record " + mr.getId() + ", " +
+               * mr.getConceptId() + ", " + mr.getConceptName());
+               */
               // if no parent, continue, but log error
               if (mrParent == null) {
                 Logger.getLogger(ReleaseHandlerJpa.class).warn(
-                    "Could not retrieve parent map record!");
+                    "Could not retrieve parent map record for concept "
+                        + mr.getConceptId());
                 mrParent = new MapRecordJpa(); // only here
                 // during
                 // testing
@@ -729,9 +719,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
                   // set the propagated rule for this entry
                   if (mapProject.isRuleBased()) {
                     newEntry = setPropagatedRuleForMapEntry(newEntry);
-
-                    System.out
-                        .println("Propagated rule: " + newEntry.getRule());
                   }
 
                   // recalculate the map relation
@@ -892,80 +879,85 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       }
 
       // increment the total record count
-      if (++nRecords % Math.floor(mapRecordsToPublish.size() / 10) == 0) {
+      if (++nRecords % Math.floor(mapRecordsToPublish.size() / 1000) == 0) {
         Logger.getLogger(ReleaseHandlerJpa.class).info(
             "  " + nRecords + " processed, " + nEntries + " maps created");
+
       }
+
+      contentService.clear();
 
     }
 
     Logger.getLogger(ReleaseHandlerJpa.class).info(
         "Number of maps marked for writing: "
             + complexMapRefSetMembersToWrite.size());
-    
-    
+
     // /////////////////////////////////////////////////////
     // Prepare for file write
     // /////////////////////////////////////////////////////
-    
+
     // set of map relations for human readable file
     List<MapRelation> mapRelations =
         mappingService.getMapRelations().getMapRelations();
 
-    Comparator comparator = 
-        new Comparator<String>() {
+    Comparator<String> comparator = new Comparator<String>() {
 
-          @Override
-          public int compare(String o1, String o2) {
-            String[] fields1 = o1.split("\t");
-            String[] fields2 = o2.split("\t");
-            System.out.println(fields1.length + " - " + fields2.length);
-            long i = fields1[4].compareTo(fields2[4]);
+      @Override
+      public int compare(String o1, String o2) {
+        String[] fields1 = o1.split("\t");
+        String[] fields2 = o2.split("\t");
+
+        // check for header (begins with id)
+        if (fields1[0].equals("id"))
+          return -1;
+        if (fields2[0].equals("id"))
+          return 1;
+
+        long i = fields1[4].compareTo(fields2[4]);
+        if (i != 0) {
+          return (int) i;
+        } else {
+          i = (Long.parseLong(fields1[5]) - Long.parseLong(fields2[5]));
+          if (i != 0) {
+            return (int) i;
+          } else {
+            i = Long.parseLong(fields1[6]) - Long.parseLong(fields2[6]);
             if (i != 0) {
               return (int) i;
             } else {
-              i = (Long.parseLong(fields1[5]) - Long.parseLong(fields2[5]));
+              i = Long.parseLong(fields1[7]) - Long.parseLong(fields2[7]);
               if (i != 0) {
                 return (int) i;
               } else {
-                i = Long.parseLong(fields1[6]) - Long.parseLong(fields2[6]);
+                i =
+                    (fields1[0] + fields1[1] + fields1[2] + fields1[3])
+                        .compareTo(fields1[0] + fields1[1] + fields1[2]
+                            + fields1[3]);
                 if (i != 0) {
                   return (int) i;
                 } else {
-                  i = Long.parseLong(fields1[7]) - Long.parseLong(fields2[7]);
+                  i = fields1[8].compareTo(fields2[8]);
                   if (i != 0) {
                     return (int) i;
                   } else {
-                    i =
-                        (fields1[0] + fields1[1] + fields1[2] + fields1[3])
-                            .compareTo(fields1[0] + fields1[1] + fields1[2]
-                                + fields1[3]);
+                    i = fields1[9].compareTo(fields2[9]);
                     if (i != 0) {
                       return (int) i;
                     } else {
-                      i = fields1[8].compareTo(fields2[8]);
+                      i = fields1[10].compareTo(fields2[10]);
                       if (i != 0) {
                         return (int) i;
                       } else {
-                        i = fields1[9].compareTo(fields2[9]);
+                        i = fields1[11].compareTo(fields2[11]);
                         if (i != 0) {
                           return (int) i;
                         } else {
-                          i = fields1[10].compareTo(fields2[10]);
+                          i = fields1[12].compareTo(fields2[12]);
                           if (i != 0) {
                             return (int) i;
                           } else {
-                            i = fields1[11].compareTo(fields2[11]);
-                            if (i != 0) {
-                              return (int) i;
-                            } else {
-                              i = fields1[12].compareTo(fields2[12]);
-                              if (i != 0) {
-                                return (int) i;
-                              } else {
-                                return 0;
-                              }
-                            }
+                            return 0;
                           }
                         }
                       }
@@ -975,8 +967,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               }
             }
           }
-        };
-
+        }
+      }
+    };
 
     // declare maps in use for computation
     Map<String, ComplexMapRefSetMember> complexMapRefSetMembersPreviouslyActive =
@@ -993,7 +986,43 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         "Number of previously-published, active complex maps: "
             + complexMapRefSetMembersPreviouslyActive.size());
 
-   
+    // /////////////////////////////////////////////////////
+    // Write the human-readable file
+    // /////////////////////////////////////////////////////
+
+    // TODO Parameterize or otherwise handle this
+    if (true) {
+
+      // write the computed complex map ref sets to file
+      for (ComplexMapRefSetMember c : complexMapRefSetMembersToWrite.values()) {
+        
+        if (c.isActive() == true) {
+
+          // get the map relation for the human readable file
+          MapRelation mapRelation = null;
+          if (mapProject.getMapRefsetPattern().equals(
+              MapRefsetPattern.ExtendedMap)) {
+            for (MapRelation mr : mapRelations) {
+              if (mr.getTerminologyId().equals(c.getMapRelationId()))
+                mapRelation = mr;
+            }
+          }
+  
+          // get target concept
+          Concept targetConcept =
+              contentService.getConcept(c.getMapTarget(),
+                  mapProject.getDestinationTerminology(),
+                  mapProject.getDestinationTerminologyVersion());
+  
+          humanReadableWriter.write(this
+              .getHumanReadableTextforComplexMapRefSetMember(c, targetConcept,
+                  mapRelation));
+        }
+
+      }
+      
+      humanReadableWriter.close();
+    }
 
     // /////////////////////////////////////////////////////
     // Write the delta files
@@ -1010,9 +1039,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       // - if present AND unchanged, remove from temp map
       // Write the values of the temp map
       tempMap = new HashMap<>(complexMapRefSetMembersToWrite);
-      
+
       Logger.getLogger(ReleaseHandlerJpa.class).info(
-          "  Computing maps created or changed this cycle from " + tempMap.size() + " maps marked for writing...");
+          "  Computing maps created or changed this cycle from "
+              + tempMap.size() + " maps marked for writing...");
 
       int nModified = 0;
       int nUnchanged = 0;
@@ -1039,7 +1069,11 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       }
 
       Logger.getLogger(ReleaseHandlerJpa.class).info("  Computation results:");
-      Logger.getLogger(ReleaseHandlerJpa.class).info("    New       : " + (complexMapRefSetMembersToWrite.size() - nModified - nUnchanged));
+      Logger
+          .getLogger(ReleaseHandlerJpa.class)
+          .info(
+              "    New       : "
+                  + (complexMapRefSetMembersToWrite.size() - nModified - nUnchanged));
       Logger.getLogger(ReleaseHandlerJpa.class).info(
           "    Modified  : " + nModified);
       Logger.getLogger(ReleaseHandlerJpa.class).info(
@@ -1048,14 +1082,18 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       // write new or modified maps to file
       for (ComplexMapRefSetMember c : tempMap.values()) {
 
+        // write to files
         deltaMachineReadableWriter.write(this
             .getMachineReadableTextforComplexMapRefSetMember(c));
+
       }
 
       Logger.getLogger(ReleaseHandlerJpa.class).info("  Writing complete.");
 
       Logger.getLogger(ReleaseHandlerJpa.class).info(
-          "  Computing maps inactivated this cycle from " + complexMapRefSetMembersPreviouslyActive.size() + " existing maps...");
+          "  Computing maps inactivated this cycle from "
+              + complexMapRefSetMembersPreviouslyActive.size()
+              + " existing maps...");
 
       // case 2: previously active no longer present
       // Copy previously active map of uuids to write into temp map
@@ -1082,17 +1120,18 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         c.setActive(false);
         deltaMachineReadableWriter.write(this
             .getMachineReadableTextforComplexMapRefSetMember(c));
+
       }
 
       Logger.getLogger(ReleaseHandlerJpa.class).info("  Writing complete.");
-      
+
       deltaMachineReadableWriter.flush();
       deltaMachineReadableWriter.close();
 
       Logger.getLogger(ReleaseHandlerJpa.class).info("  Sorting delta file...");
 
       // sort the file
-      FileSorter.sortFile(deltaMachineReadableFileName, deltaMachineReadableFileName + ".sorted", comparator);
+      FileSorter.sortFile(deltaMachineReadableFileName, comparator);
 
       Logger.getLogger(ReleaseHandlerJpa.class).info("  Sorting complete.");
     }
@@ -1298,7 +1337,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // set parameters from the map entry
     complexMapRefSetMember.setMapGroup(mapEntry.getMapGroup());
     complexMapRefSetMember.setMapPriority(mapEntry.getMapPriority());
-    complexMapRefSetMember.setMapRule(mapProject.isRuleBased() ? mapEntry.getRule() : "");
+    complexMapRefSetMember.setMapRule(mapProject.isRuleBased() ? mapEntry
+        .getRule() : "");
     complexMapRefSetMember.setMapRelationId(new Long(mapEntry.getMapRelation()
         .getTerminologyId()));
     complexMapRefSetMember.setMapTarget(mapEntry.getTargetId());
@@ -1362,10 +1402,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     // set the rule
     mapEntry.setRule(rule);
-
-    Logger.getLogger(ReleaseHandlerJpa.class)
-        .info("       Set rule to " + rule);
-
+    /*
+     * Logger.getLogger(ReleaseHandlerJpa.class) .info("       Set rule to " +
+     * rule);
+     */
     return mapEntry;
   }
 
@@ -1382,14 +1422,14 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // Construct advice only if using Extended Map pattern
     if (mapProject.getMapRefsetPattern().equals(MapRefsetPattern.ExtendedMap)) {
 
-      System.out.println("Constructing human-readable advice for:  "
-          + mapEntry.getRule());
+      // System.out.println("Constructing human-readable advice for:  "
+      // + mapEntry.getRule());
 
       String[] comparatorComponents; // used for parsing age rules
 
       // if map target is blank
       if (mapEntry.getTargetId() == null || mapEntry.getTargetId() == "") {
-        System.out.println("  Use map relation");
+        // System.out.println("  Use map relation");
         advice = mapEntry.getMapRelation().getName();
       }
 
@@ -1499,7 +1539,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         advice = "IF " + targetName + " CHOOSE " + mapEntry.getTargetId();
       }
 
-      System.out.println("   Human-readable advice: " + advice);
+      // System.out.println("   Human-readable advice: " + advice);
     }
 
     return advice;
@@ -1691,11 +1731,14 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
                   : complexMapRefSetMember.getMapTarget())
               + "\t"
               + (targetConcept != null ? targetConcept
-                  .getDefaultPreferredName() : "") + "\t" + "447561005"
+                  .getDefaultPreferredName() : "")
+              + "\t"
+              + "447561005"
               + "\t"
               + complexMapRefSetMember.getMapRelationId()
               + "\t"
-              + (mapRelation != null ? mapRelation.getName() : "");
+              + (mapRelation != null ? mapRelation.getName()
+                  : "FAILED MAP RELATION");
 
       // ComplexMap style is identical to ExtendedMap
       // with the exception of the terminating map relation terminology id
