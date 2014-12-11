@@ -65,8 +65,12 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
    */
   private String terminology;
 
-  /** The version. */
-  private String version = null;
+  /**
+   * Name of terminology to be loaded.
+   * @parameter
+   * @required
+   */
+  private String version;
 
   /** the defaultPreferredNames type id. */
   private Long dpnTypeId = 900000000000003001L;
@@ -173,24 +177,9 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
       //
       // Determine version
       //
-      File coreConceptInputFile = null;
-      File coreTerminologyInputDir = new File(coreInputDir, "/Terminology/");
-      for (File f : coreTerminologyInputDir.listFiles()) {
-        if (f.getName().contains("sct2_Concept_")) {
-          if (coreConceptInputFile != null)
-            throw new MojoFailureException("Multiple Concept Files!");
-          coreConceptInputFile = f;
-        }
-      }
-      if (coreConceptInputFile != null) {
-        int index = coreConceptInputFile.getName().indexOf(".txt");
-        version = coreConceptInputFile.getName().substring(index - 8, index);
-        getLog().info("  terminology = " + terminology);
-        getLog().info("  version = " + version);
-      } else {
-        throw new MojoFailureException(
-            "Could not find concept file to determine version");
-      }
+
+      getLog().info("  terminology = " + terminology);
+      getLog().info("  version = " + version);
 
       // output relevant properties/settings to console
       getLog().info("  Default preferred name settings:");
@@ -914,34 +903,6 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     in2.close();
     return outFile;
   }
-
-  /**
-   * Returns the concept. Terminology/version are not needed because we're just
-   * loading a single terminology.
-   *
-   * @param terminologyId the terminology id
-   * @param contentService the content service
-   * @return the concept
-   * @throws Exception the exception private Concept getConcept(String
-   *           terminologyId) throws Exception {
-   * 
-   *           if (conceptCache.containsKey(terminologyId)) { return
-   *           conceptCache.get(terminologyId); } else { throw new
-   *           IOException("Unable to find concept " + terminologyId); }
-   * 
-   *           // EVERY concept should be in the cache // try { // Concept c =
-   *           // contentService.getConcept(terminologyId, terminology, //
-   *           terminologyVersion); // conceptCache.put(terminologyId +
-   *           terminology + terminologyVersion, c); // return c; // } catch
-   *           (NoResultException e) { // // Log and return null if there are no
-   *           releases // getLog().debug( //
-   *           "Concept query for terminologyId = " + terminologyId // +
-   *           ", terminology = " + terminology + ", terminologyVersion = " // +
-   *           terminologyVersion + " returned no results!"); // return null; //
-   *           }
-   * 
-   *           }
-   */
 
   /**
    * Closes all sorted temporary files.
