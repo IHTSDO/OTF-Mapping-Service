@@ -115,9 +115,7 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
       // Open file and begin parsing
       File file = new File(inputDir, inputFile);
       if (!file.exists()) {
-        throw new MojoFailureException(
-            "Specified index.viewer.ICD10.xml directory does not exist: "
-                + inputFile);
+        throw new MojoFailureException("Specified input file does not exist");
       }
 
       InputStream inputStream = checkForUtf8BOM(new FileInputStream(file));
