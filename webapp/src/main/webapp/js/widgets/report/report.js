@@ -264,9 +264,6 @@ angular
         });
       };
 
-      $scope.exportReport = function(report) {
-        alert("Export function still in development");
-      };
 
       $scope.addReportDefinition = function() {
 
@@ -315,6 +312,26 @@ angular
                     $scope.recordError = "Error deleting map report from application.";
                     $rootScope.handleHttpError(data, status, headers,
                         config);
+            });
+        };
+        
+        $scope.exportReport = function(report) {
+            $http({
+                url : root_reporting + "report/export/"
+                + report.id ,
+                dataType : "json",
+                method : "GET",
+                headers : {
+                  "Content-Type" : "application/json"
+                },
+                responseType: 'arraybuffer'
+            }).success(function(data) {
+              $scope.definitionMsg = "Successfully exported report";
+              var blob = new Blob([data], {type: "application/vnd.ms-excel"});
+              var objectUrl = URL.createObjectURL(blob);
+              window.open(objectUrl);
+            }).error(function(data, status, headers, config) {
+              $rootScope.handleHttpError(data, status, headers, config);
             });
         };
 
