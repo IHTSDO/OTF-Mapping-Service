@@ -27,6 +27,8 @@
     <input.dir></input.dir>
     <!-- The terminology -->
     <terminology></terminology>
+    <!-- The terminology version -->
+    <version>latest</version>
     <!-- The start date -->
     <date.start></date.start>
     <!-- The end date -->
@@ -54,6 +56,7 @@
                 <configuration>
                   <inputDir>${input.dir}</inputDir>
                   <terminology>${terminology}</terminology>
+                  <version>${version}</version>
                 </configuration>
               </execution>
             </executions>
