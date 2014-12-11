@@ -86,10 +86,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   /** The map project */
   private MapProject mapProject = null;
 
-  /** Map of terminology id -> error messages */
+  /** Map of terminology id to error messages */
   Map<String, String> conceptErrors = new HashMap<>();
 
-  /** Map of terminology id -> map record */
+  /** Map of terminology id to map record */
   Map<String, MapRecord> mapRecordMap = new HashMap<>();
 
   /**

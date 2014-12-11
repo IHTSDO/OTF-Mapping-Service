@@ -8,6 +8,8 @@ import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 
 /**
  * Concrete implementation of {@link ComplexMapRefSetMember}.
+ *
+ * @author ${author}
  */
 @Entity
 @Table(name = "complex_map_refset_members")
@@ -15,44 +17,45 @@ import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
     implements ComplexMapRefSetMember {
 
-  /** The map block */
+  /**  The map block. */
   @Column(nullable = false)
   private int mapBlock;
 
-  /** the map block rule */
+  /**  the map block rule. */
   @Column(nullable = true)
   private String mapBlockRule;
 
-  /** the map block advice */
+  /**  the map block advice. */
   @Column(nullable = true)
   private String mapBlockAdvice;
 
-  /** The map group */
+  /**  The map group. */
   @Column(nullable = false)
   private int mapGroup;
 
-  /** The map priority */
+  /**  The map priority. */
   @Column(nullable = false)
   private int mapPriority;
 
-  /** the map rule */
+  /**  the map rule. */
   @Column(nullable = true)
   private String mapRule;
 
-  /** the map advice */
+  /**  the map advice. */
   @Column(nullable = true, length = 500)
   private String mapAdvice;
 
-  /** the map target */
+  /**  the map target. */
   @Column(nullable = true)
   private String mapTarget;
 
-  /** the correlation id */
+  /**  the correlation id. */
   @Column(nullable = false)
   private Long mapRelationId;
 
   /**
-   * returns the mapBlock
+   * returns the mapBlock.
+   *
    * @return the mapBlock
    */
   @Override
@@ -61,7 +64,8 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
   }
 
   /**
-   * sets the mapBlock
+   * sets the mapBlock.
+   *
    * @param mapBlock the mapBlock
    */
   @Override
@@ -70,7 +74,8 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
   }
 
   /**
-   * returns the mapBlockRule
+   * returns the mapBlockRule.
+   *
    * @return the mapBlockRule
    */
   @Override
@@ -78,9 +83,8 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
     return this.mapBlockRule;
   }
 
-  /**
-   * sets the mapBlockRule
-   * @paran the mapBlockRule
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember#setMapBlockRule(java.lang.String)
    */
   @Override
   public void setMapBlockRule(String mapBlockRule) {
@@ -88,7 +92,8 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
   }
 
   /**
-   * returns the mapBlockAdvice
+   * returns the mapBlockAdvice.
+   *
    * @return the mapBlockAdvice
    */
   @Override
@@ -97,7 +102,8 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
   }
 
   /**
-   * sets the mapBlockAdvice
+   * sets the mapBlockAdvice.
+   *
    * @param mapBlockAdvice the mapBlockAdvice
    */
   @Override
@@ -106,7 +112,8 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
   }
 
   /**
-   * returns the map group
+   * returns the map group.
+   *
    * @return the map group
    */
   @Override
@@ -115,7 +122,8 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
   }
 
   /**
-   * sets the map group
+   * sets the map group.
+   *
    * @param mapGroup the map group
    */
   @Override
@@ -124,7 +132,8 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
   }
 
   /**
-   * returns the map priority
+   * returns the map priority.
+   *
    * @return the map priority
    */
   @Override
@@ -133,7 +142,8 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
   }
 
   /**
-   * sets the map priority
+   * sets the map priority.
+   *
    * @param mapPriority the map priority
    */
   @Override
@@ -142,7 +152,8 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
   }
 
   /**
-   * returns the map rule
+   * returns the map rule.
+   *
    * @return the map rule
    */
   @Override
@@ -151,7 +162,8 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
   }
 
   /**
-   * sets the map rule
+   * sets the map rule.
+   *
    * @param mapRule the map rule
    */
   @Override
@@ -160,7 +172,8 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
   }
 
   /**
-   * returns the map advice
+   * returns the map advice.
+   *
    * @return mapAdvice the map advice
    */
   @Override
@@ -169,7 +182,8 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
   }
 
   /**
-   * sets the map advice
+   * sets the map advice.
+   *
    * @param mapAdvice the map advice
    */
   @Override
@@ -179,7 +193,8 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
   }
 
   /**
-   * returns the map target
+   * returns the map target.
+   *
    * @return the map target
    */
   @Override
@@ -188,7 +203,8 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
   }
 
   /**
-   * sets the map target
+   * sets the map target.
+   *
    * @param mapTarget the map target
    */
   @Override
@@ -197,7 +213,8 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
   }
 
   /**
-   * returns the correlation id
+   * returns the correlation id.
+   *
    * @return the correlation id
    */
   @Override
@@ -206,7 +223,8 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
   }
 
   /**
-   * sets the correlation id
+   * sets the correlation id.
+   *
    * @param mapRelationId the correlation id
    */
   @Override
@@ -214,6 +232,9 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
     this.mapRelationId = mapRelationId;
   }
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rf2.jpa.AbstractComponent#toString()
+   */
   @Override
   public String toString() {
     return "ComplexMapRefSetMemberJpa [mapBlock="
@@ -246,6 +267,9 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
             + getTerminologyId() : "") + "]";
   }
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rf2.jpa.AbstractConceptRefSetMember#equals(java.lang.Object)
+   */
   @Override
   public boolean equals(Object obj) {
     if (this == obj)
@@ -294,6 +318,9 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
     return true;
   }
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rf2.jpa.AbstractConceptRefSetMember#hashCode()
+   */
   @Override
   public int hashCode() {
     final int prime = 31;

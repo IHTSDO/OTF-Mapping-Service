@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 import org.apache.maven.plugin.AbstractMojo;
@@ -22,34 +21,23 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.services.MappingService;
-import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 /**
  * Loads map notes.
  * 
- * Sample execution:
- * 
- * <pre>
- *     <plugin>
- *       <groupId>org.ihtsdo.otf.mapping</groupId>
- *       <artifactId>mapping-admin-mojo</artifactId>
- *       <version>${project.version}</version>
- *       <executions>
- *         <execution>
- *           <id>load-map-notes</id>
- *           <phase>package</phase>
- *           <goals>
- *             <goal>load-map-notes</goal>
- *           </goals>
- *         </execution>
- *       </executions>
- *     </plugin>
- * </pre>
+ * See admin/loader/pom.xml for a sample execution.
  * 
  * @goal load-map-notes
  * @phase package
  */
 public class MapNoteRf2LoaderMojo extends AbstractMojo {
+
+  /**
+   * The input file of RF2 notes
+   * @parameter
+   * @required
+   */
+  private String inputFile;
 
   /** The commit count. */
   private final static int commitCt = 2000;
@@ -61,18 +49,16 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
    */
   @Override
   public void execute() throws MojoExecutionException {
-    getLog().info("Start loading map notes data ...");
+    getLog().info("Start loading map notes data");
+    getLog().info("  inputFile = " + inputFile);
 
     BufferedReader mapNoteReader = null;
     try {
-
-      Properties config = ConfigUtility.getConfigProperties();
 
       // Set date format for parsing "effectiveTime"
       final SimpleDateFormat dt = new SimpleDateFormat("yyyymmdd");
 
       // set the input directory
-      String inputFile = config.getProperty("loader.mapnotes.input.data");
       if (!new File(inputFile).exists()) {
         throw new MojoFailureException(
             "Specified loader.mapnotes.input.data directory does not exist: "
@@ -95,7 +81,7 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
       for (MapProject mapProject : mapProjects) {
         Map<String, Set<MapRecord>> mapRecordsMap = new HashMap<>();
         // TODO: factor this out so we only read map records for
-        // refSetIds that have notes associated with them.
+        // refsetIds that have notes associated with them.
         for (MapRecord mapRecord : mappingService.getMapRecordsForMapProject(
             mapProject.getId()).getMapRecords()) {
           if (!mapRecordsMap.containsKey(mapRecord.getConceptId())) {
@@ -117,7 +103,7 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
       while ((line = mapNoteReader.readLine()) != null) {
 
         // parse fields and create object
-        // id effectiveTime active moduleId refSetId referencedComponentId
+        // id effectiveTime active moduleId refsetId referencedComponentId
         // fullySpecifiedName annotation
         line = line.replace("\r", "");
         String fields[] = line.split("\t");

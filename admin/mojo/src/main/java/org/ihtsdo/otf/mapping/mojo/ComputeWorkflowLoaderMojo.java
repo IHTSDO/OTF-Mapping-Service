@@ -20,35 +20,9 @@ import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 /**
  * Loads unpublished complex maps.
  * 
- * Sample execution:
+ * See admin/loader/pom.xml for a sample execution.
  * 
- * <pre>
- *     <profile>
- *       <id>ComputeWorkflow</id>
- *       <build>
- *         <plugins>
- *           <plugin>
- *             <groupId>org.ihtsdo.otf.mapping</groupId>
- *             <artifactId>mapping-admin-mojo</artifactId>
- *             <version>${project.version}</version>
- *             <executions>
- *               <execution>
- *                 <id>compute-workflow</id>
- *                 <phase>package</phase>
- *                 <goals>
- *                   <goal>compute-workflow</goal>
- *                 </goals>
- *                 <configuration>
- *                   <refSetId>${refset.id}</refSetId>
- *                   <sendNotification>${send.notification}</sendNotification>
- *                 </configuration>
- *               </execution>
- *             </executions>
- *           </plugin>
- *         </plugins>
- *       </build>
- *     </profile>
- * </pre>
+ * Notification recipients are indicated in the config file.
  * 
  * @goal compute-workflow
  * @phase package
@@ -57,9 +31,9 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
 
   /**
    * The refSet id.
-   * @parameter refSetId
+   * @parameter refsetId
    * */
-  private String refSetId = null;
+  private String refsetId = null;
 
   /**
    * The send notification.
@@ -74,8 +48,9 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
    */
   @Override
   public void execute() throws MojoExecutionException {
-    getLog().info(
-        "Starting compute workflow - " + refSetId + " - " + sendNotification);
+    getLog().info("Starting compute workflow");
+    getLog().info("  refsetId = " + refsetId);
+    getLog().info("  sendNotification = " + sendNotification);
 
     Properties config;
     try {
@@ -87,8 +62,8 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
         config.getProperty("send.notification.recipients");
     String notificationMessage = "";
 
-    if (refSetId == null) {
-      throw new MojoExecutionException("You must specify a refSetId.");
+    if (refsetId == null) {
+      throw new MojoExecutionException("You must specify a refsetId.");
     }
     
     // if no notification parameter specified, assume false
@@ -119,7 +94,7 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
 
       for (MapProject mapProject : mappingService.getMapProjects()
           .getIterable()) {
-        for (String id : refSetId.split(",")) {
+        for (String id : refsetId.split(",")) {
           if (mapProject.getRefSetId().equals(id)) {
             mapProjects.add(mapProject);
           }

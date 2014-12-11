@@ -48,7 +48,7 @@
                   <goal>release</goal>
                 </goals>
                 <configuration>
-                  <refSetId>${refset.id}</refSetId>
+                  <refsetId>${refset.id}</refsetId>
                   <outputDirName>${output.dir}</outputDirName>
                   <!-- e.g. 20150131 -->
                   <effectiveTime>${time}</effectiveTime>
@@ -77,7 +77,7 @@
                   <goal>begin-release</goal>
                 </goals>
                 <configuration>
-                  <refSetId>${refset.id}</refSetId>
+                  <refsetId>${refset.id}</refsetId>
                   <removeRecords>${remove.records}</removeRecords>
                 </configuration>
               </execution>
@@ -103,7 +103,7 @@
                   <goal>finish-release</goal>
                 </goals>
                 <configuration>
-                  <refSetId>${refset.id}</refSetId>
+                  <refsetId>${refset.id}</refsetId>
                 </configuration>
               </execution>
             </executions>
