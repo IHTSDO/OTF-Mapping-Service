@@ -95,7 +95,7 @@ public class ReleaseProcessingMojo extends AbstractMojo {
       // Test Parameters //
       /////////////////////
       
-      String testConcepts[] = {}; //{"4412009"};
+      String testConcepts[] = {"707130003"}; //{"4412009"};
       
       /////////////////////
       // Get Projects    //
@@ -113,9 +113,7 @@ public class ReleaseProcessingMojo extends AbstractMojo {
       
       for (MapProject mapProject : mapProjects) {
  
-        getLog().info(
-            "Processing release for " + mapProject.getName() + ", "
-                + mapProject.getId());
+       
 
         // ensure output directory name has a terminating /
         if (!outputDirName.endsWith("/"))
@@ -124,11 +122,17 @@ public class ReleaseProcessingMojo extends AbstractMojo {
         // if test run, get map records, otherwise call ful release
         ReleaseHandler releaseHandler = new ReleaseHandlerJpa();
         if (testConcepts.length == 0) {
-       
+          getLog().info(
+              "Processing release (all records) " + mapProject.getName() + ", "
+                  + mapProject.getId());
   
           // run delta  
           releaseHandler.processReleaseDelta(mapProject, outputDirName, effectiveTime, moduleId);
         } else {
+          
+          getLog().info(
+              "Processing release (test records) " + mapProject.getName() + ", "
+                  + mapProject.getId());
           
           List<MapRecord> mapRecords = new ArrayList<>();
           for (String terminologyId : testConcepts) {
