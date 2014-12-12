@@ -272,6 +272,7 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
    */
   @Override
   public boolean equals(Object obj) {
+    int i = 0;
     if (this == obj)
       return true;
     if (!super.equals(obj))
@@ -283,18 +284,6 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
       if (other.mapAdvice != null)
         return false;
     } else if (!mapAdvice.equals(other.mapAdvice))
-      return false;
-    if (mapBlock != other.mapBlock)
-      return false;
-    if (mapBlockAdvice == null) {
-      if (other.mapBlockAdvice != null)
-        return false;
-    } else if (!mapBlockAdvice.equals(other.mapBlockAdvice))
-      return false;
-    if (mapBlockRule == null) {
-      if (other.mapBlockRule != null)
-        return false;
-    } else if (!mapBlockRule.equals(other.mapBlockRule))
       return false;
     if (mapGroup != other.mapGroup)
       return false;
