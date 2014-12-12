@@ -962,17 +962,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         "Retrieved map relations for human readable file:");
 
     // replace map relation ALL CAPS name with actual concept name from
-    Map<String, MapRelation> mapRelations = new HashMap<>();
-    for (MapRelation mr : mapProject.getMapRelations()) {
-      Concept c =
-          contentService.getConcept(mr.getTerminologyId(),
-              mapProject.getSourceTerminology(),
-              mapProject.getSourceTerminologyVersion());
-      mr.setName(c.getDefaultPreferredName());
-      mapRelations.put(mr.getTerminologyId(), mr);
-      Logger.getLogger(ReleaseHandler.class).info(
-          "  " + mr.getTerminologyId() + "\t" + mr.getName());
-    }
+    Set<MapRelation> mapRelations = mapProject.getMapRelations();
 
     Comparator<String> comparator = new Comparator<String>() {
 
@@ -1072,7 +1062,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         if (c.isActive() == true) {
 
           // get the map relation name for the human readable file
-          MapRelation mapRelation = mapRelations.get(c.getMapRelationId());
+          MapRelation mapRelation = null;
+          for (MapRelation mr : mapProject.getMapRelations()) {
+            if (mr.getTerminologyId().equals(c.getMapRelationId().toString())) {
+              mapRelation = mr;
+            }
+          }
 
           // get target concept, if not null
           Concept targetConcept = null;
