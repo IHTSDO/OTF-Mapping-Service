@@ -267,12 +267,8 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
             + getTerminologyId() : "") + "]";
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rf2.jpa.AbstractConceptRefSetMember#equals(java.lang.Object)
-   */
   @Override
   public boolean equals(Object obj) {
-    int i = 0;
     if (this == obj)
       return true;
     if (!super.equals(obj))
@@ -307,20 +303,11 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
     return true;
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rf2.jpa.AbstractConceptRefSetMember#hashCode()
-   */
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = super.hashCode();
     result = prime * result + ((mapAdvice == null) ? 0 : mapAdvice.hashCode());
-    result = prime * result + mapBlock;
-    result =
-        prime * result
-            + ((mapBlockAdvice == null) ? 0 : mapBlockAdvice.hashCode());
-    result =
-        prime * result + ((mapBlockRule == null) ? 0 : mapBlockRule.hashCode());
     result = prime * result + mapGroup;
     result = prime * result + mapPriority;
     result =
