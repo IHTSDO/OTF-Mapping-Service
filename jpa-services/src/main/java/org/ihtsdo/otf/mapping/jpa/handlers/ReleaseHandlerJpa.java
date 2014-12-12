@@ -1532,8 +1532,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       rule += " AND " + mapEntry.getRule();
     }
 
-    System.out.println(rule);
-
     // set the rule
     mapEntry.setRule(rule);
     /*
