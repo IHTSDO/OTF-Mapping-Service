@@ -14,34 +14,7 @@ import org.ihtsdo.otf.mapping.services.WorkflowService;
 /**
  * Loads unpublished complex maps.
  * 
- * Sample execution:
- * 
- * <pre>
- *     <profile>
- *       <id>ClearWorkflow</id>
- *       <build>
- *         <plugins>
- *           <plugin>
- *             <groupId>org.ihtsdo.otf.mapping</groupId>
- *             <artifactId>mapping-admin-mojo</artifactId>
- *             <version>${project.version}</version>
- *             <executions>
- *               <execution>
- *                 <id>clear-workflow</id>
- *                 <phase>package</phase>
- *                 <goals>
- *                   <goal>clear-workflow</goal>
- *                 </goals>
- *                 <configuration>
- *                   <refSetId>${refset.id}</refSetId>
- *                 </configuration>
- *               </execution>
- *             </executions>
- *           </plugin>
- *         </plugins>
- *       </build>
- *     </profile> 
- * 
+ * See admin/loader/pom.xml for a sample execution.
  * 
  * @goal clear-workflow
  * @phase package
@@ -50,9 +23,10 @@ public class ClearWorkflowRemoverMojo extends AbstractMojo {
 
   /**
    * The refSet id
-   * @parameter refSetId
+   * @parameter refsetId
+   * @required
    */
-  private String refSetId = null;
+  private String refsetId = null;
 
   /**
    * Executes the plugin.
@@ -61,10 +35,10 @@ public class ClearWorkflowRemoverMojo extends AbstractMojo {
    */
   @Override
   public void execute() throws MojoExecutionException {
-    getLog().info("Starting clear workflow - " + refSetId);
+    getLog().info("Starting clear workflow - " + refsetId);
 
-    if (refSetId == null) {
-      throw new MojoExecutionException("You must specify a refSetId.");
+    if (refsetId == null) {
+      throw new MojoExecutionException("You must specify a refsetId.");
     }
 
     try {
@@ -74,7 +48,7 @@ public class ClearWorkflowRemoverMojo extends AbstractMojo {
 
       for (MapProject mapProject : mappingService.getMapProjects()
           .getIterable()) {
-        for (String id : refSetId.split(",")) {
+        for (String id : refsetId.split(",")) {
           if (mapProject.getRefSetId().equals(id)) {
             mapProjects.add(mapProject);
           }

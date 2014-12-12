@@ -18,12 +18,13 @@ import nu.xom.Serializer;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 /**
  * Converts ICD10 ASC file to ICD10CM-style XML.
  * 
- * @goal convertToXml
+ * See admin/indexes/pom.xml for a sample execution.
+ * 
+ * @goal convert-to-xml
  */
 public class AscToXmlMojo extends AbstractMojo {
 
@@ -33,6 +34,14 @@ public class AscToXmlMojo extends AbstractMojo {
    * @parameter
    */
   private String inputFile;
+
+  /**
+   * The index viewer data direcotry.
+   *
+   * @parameter
+   * @required
+   */
+  private String inputDir;
 
   /**
    * The terminology.
@@ -62,10 +71,10 @@ public class AscToXmlMojo extends AbstractMojo {
    */
   Properties headerProperties;
 
-  /** the pending note value */
+  /** the pending note value. */
   private String pendingNote = null;
 
-  /** Column count */
+  /** Column count. */
   private int colCt = 0;
 
   /**
@@ -75,16 +84,21 @@ public class AscToXmlMojo extends AbstractMojo {
    */
   @Override
   public void execute() throws MojoExecutionException {
-
+    getLog().info("Starting conversion of ASC to XML");
+    getLog().info("  inputDir = " + inputDir);
+    getLog().info("  inputFile = " + inputFile);
+    getLog().info("  terminology = " + terminology);
+    getLog().info("  terminologyVersion = " + terminologyVersion);
+    getLog().info("  documentTitle = " + documentTitle);
+    getLog().info("  headerProperties = " + headerProperties);
+    
+    
     BufferedReader reader = null;
     String outputDir = "";
 
     try {
 
-      Properties config = ConfigUtility.getConfigProperties();
-
       // set the input directory
-      String inputDir = config.getProperty("index.viewer.data");
       String baseDir = inputDir + "/" + terminology + "/" + terminologyVersion;
       inputDir = baseDir + "/asc";
       outputDir = baseDir + "/xml";
@@ -198,6 +212,7 @@ public class AscToXmlMojo extends AbstractMojo {
       outputStream.close();
       reader.close();
 
+      getLog().info("Done...");
     } catch (Exception e) {
       if (reader != null)
         try {
@@ -213,11 +228,12 @@ public class AscToXmlMojo extends AbstractMojo {
 
   /**
    * Create XML dom structure for this entry in the index file.
-   * 
+   *
    * @param root the root
-   * @param parent the parent
+   * @param initialParent the initial parent
    * @param lastLine the last line
    * @return the element
+   * @throws Exception the exception
    */
   public Element writeToXml(Element root, Element initialParent, String lastLine)
     throws Exception {
@@ -394,7 +410,8 @@ public class AscToXmlMojo extends AbstractMojo {
 
   /**
    * Write XML for table headers.
-   * @param root the root element
+   *
+   * @param parent the parent
    * @param headers the header list
    */
   private void writeHeadersToXml(Element parent, String headers) {
@@ -411,7 +428,8 @@ public class AscToXmlMojo extends AbstractMojo {
   }
 
   /**
-   * Write XML for table end
+   * Write XML for table end.
+   *
    * @param parent the parent element
    */
   private void writeTableEndToXml(Element parent) {
@@ -420,11 +438,14 @@ public class AscToXmlMojo extends AbstractMojo {
   }
 
   /**
-   * Write a table entry to XML
+   * Write a table entry to XML.
+   *
    * @param root the root element
-   * @param parent the parent element
-   * @param lastLine
-   * @return
+   * @param initParent the init parent
+   * @param lastLine the last line
+   * @param writeHeader the write header
+   * @return the element
+   * @throws Exception the exception
    */
   public Element writeTableEntryToXml(Element root, Element initParent,
     String lastLine, boolean writeHeader) throws Exception {
