@@ -1513,10 +1513,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     MapRecord mapRecord = mapEntry.getMapRecord();
     
     String dpnWithoutClassifier = defaultPreferredNames.get(mapRecord.getConceptId());
-    
-    // if classifier (e.g. (disorder)) present, remove it and any trailing spaces
-    if (dpnWithoutClassifier.lastIndexOf("(") != -1)
-      dpnWithoutClassifier = dpnWithoutClassifier.substring(0, dpnWithoutClassifier.lastIndexOf("(")).trim();
 
     
     // construct propagated rule based on concept id and name
@@ -1670,8 +1666,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         String[] ifaComponents = mapEntry.getRule().toUpperCase().split("\\|");
 
         // remove any (disorder), etc.
-        String targetName = ifaComponents[1].trim(); // .replace("[(.*)]",
-        // "");
+        String targetName = ifaComponents[1].trim(); 
+        
+        // if classifier (e.g. (disorder)) present, remove it and any trailing spaces
+        if (targetName.lastIndexOf("(") != -1)
+          targetName = targetName.substring(0, targetName.lastIndexOf("(")).trim();
+        
 
         advice = "IF " + targetName + " CHOOSE " + mapEntry.getTargetId();
       }
