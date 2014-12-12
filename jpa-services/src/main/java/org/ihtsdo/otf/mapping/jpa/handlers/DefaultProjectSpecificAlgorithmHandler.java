@@ -2355,5 +2355,16 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     return mapRecord.getCountDescendantConcepts() < mapProject
         .getPropagationDescendantThreshold();
   }
+  
+  @Override
+  public Set<String> getDependentModules() {
+    return new HashSet<>();
+  }
+
+  @Override
+  public String getModuleDependencyRefSetId() {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
 }
