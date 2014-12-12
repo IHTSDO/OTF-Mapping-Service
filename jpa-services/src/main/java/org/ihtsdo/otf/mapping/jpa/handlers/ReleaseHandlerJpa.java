@@ -1512,9 +1512,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     MapRecord mapRecord = mapEntry.getMapRecord();
     
-    String dpnWithoutClassifier = defaultPreferredNames.get(mapRecord.getConceptId());
-
-    
     // construct propagated rule based on concept id and name
     // e.g. for TRUE rule
     // IFA 104831000119109 | Drug induced central sleep apnea
@@ -1525,13 +1522,17 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // (observable entity) | <= 28.0 days
     // (disorder)
     String rule =
-        "IFA " + mapRecord.getConceptId() + " | " + dpnWithoutClassifier
+        "IFA " + mapRecord.getConceptId() + " | " + defaultPreferredNames.get(mapRecord.getConceptId())
             + " |";
+    
+   
 
     // if an age or gender rule, append the existing rule
     if (!mapEntry.getRule().contains("TRUE")) {
       rule += " AND " + mapEntry.getRule();
     }
+    
+    System.out.println(rule);
 
     // set the rule
     mapEntry.setRule(rule);
