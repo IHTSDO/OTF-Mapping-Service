@@ -451,26 +451,25 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // /////////////////////////////////////////////////////
     // Create file names, instantiate writers, write headers
     // /////////////////////////////////////////////////////
+    String camelCaseName =  mapProject.getDestinationTerminology().substring(0,1) +
+        mapProject.getDestinationTerminology().substring(1).toLowerCase();
+    String pattern = (mapProject.getMapRefsetPattern() == MapRefsetPattern.ComplexMap ?
+        "iissscRefset_" : "iisssccRefset_");
     snapshotMachineReadableFileName =
         outputDirName
-            + "/der2_"
-            + mapProject.getDestinationTerminology().substring(0, 1)
-                .toUpperCase()
-            + mapProject.getDestinationTerminology().substring(1).toLowerCase()
+            + "/der2_" + pattern 
             + mapProject.getMapRefsetPattern() + "Snapshot_INT_"
             + effectiveTime + ".txt";
 
     humanReadableFileName =
         outputDirName
             + "/tls_"
-            + mapProject.getDestinationTerminology().substring(0, 1)
-                .toUpperCase()
-            + mapProject.getDestinationTerminology().substring(1).toLowerCase()
-            + "HumanReadableMap_INT_" + "_" + effectiveTime + ".tsv";
+            + camelCaseName
+            + "HumanReadableMap_INT_" + effectiveTime + ".tsv";
 
     deltaMachineReadableFileName =
-        outputDirName + "/der2_" + mapProject.getDestinationTerminology()
-            + mapProject.getMapRefsetPattern() + "Full_INT_" + effectiveTime
+        outputDirName + "/der2_" + pattern
+            + mapProject.getMapRefsetPattern() + "Delta_INT_" + effectiveTime
             + ".txt";
 
     if (writeSnapshot == true) {
