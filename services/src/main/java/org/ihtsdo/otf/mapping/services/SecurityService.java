@@ -1,6 +1,5 @@
 package org.ihtsdo.otf.mapping.services;
 
-import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 
 /**
@@ -8,7 +7,8 @@ import org.ihtsdo.otf.mapping.helpers.MapUserRole;
  * details of the security implementation (e.g. service URL, technology, etc).
  * The solution is to build a layer around security WITHIN our own service layer
  * where we can inject any security solution we want into the background.
- * 
+ *
+ * @author ${author}
  */
 public interface SecurityService extends RootService {
 
@@ -56,8 +56,7 @@ public interface SecurityService extends RootService {
    * Logout.
    *
    * @param authToken the auth token
-   * @throws LocalException 
-   * @throws Exception 
+   * @throws Exception the exception
    */
   public void logout(String authToken) throws Exception;
 }

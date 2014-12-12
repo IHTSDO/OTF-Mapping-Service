@@ -1,8 +1,10 @@
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
@@ -110,7 +112,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
   }
 
   /**
-   * Computes the map relation for the SNOMEDCT->ICD10 map project. Based solely
+   * Computes the map relation for the SNOMEDCT to ICD10 map project. Based solely
    * on whether an entry has a TRUE rule or not. No advices are computed for
    * this project.
    * @throws Exception
@@ -119,7 +121,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
   public MapRelation computeMapRelation(MapRecord mapRecord, MapEntry mapEntry)
     throws Exception {
 
-    System.out.println("Computing map relation");
+    
     // if entry has no target
     if (mapEntry.getTargetId() == null || mapEntry.getTargetId().isEmpty()) {
 
@@ -147,7 +149,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       return null;
     }
 
-    System.out.println("Entry has target with rule " + mapEntry.getRule());
+    
 
     // if entry has a gender rule
     if (mapEntry.getRule().contains("MALE")) {
@@ -174,8 +176,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       // if the entry has a non-gender, non-age IFA
     } else if (mapEntry.getRule().startsWith("IFA")) {
 
-      System.out.println("Entry has IFA rule");
-
+   
       // retrieve the relations by terminology id
       // 447639009 - Map of source concept is context dependent
       for (MapRelation relation : mapProject.getMapRelations()) {
@@ -186,8 +187,6 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
       // using contains here to capture TRUE and OTHERWISE TRUE
     } else if (mapEntry.getRule().contains("TRUE")) {
-
-      System.out.println("Entry has TRUE rule");
 
       // retrieve the relations by terminology id
       for (MapRelation relation : mapProject.getMapRelations()) {
@@ -213,35 +212,6 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
     throws Exception {
 
     List<MapAdvice> advices = new ArrayList<>(mapEntry.getMapAdvices());
-
-    // TODO Check if this needs to be re-added
-
-    /*
-     * For any mapRelation value other than 447637006, Find the allowed project
-     * advice that matches (on string, case-insensitive) and return that value.
-     * Throw an exception if no corresponding advice is found.
-     */
-    /*
-     * if (mapEntry.getMapRelation() != null &&
-     * !mapEntry.getMapRelation().getTerminologyId().equals("447637006")) {
-     * boolean adviceFound = false;
-     * 
-     * // System.out.println("Checking advices for mapProject, " +
-     * mapProject.getMapAdvices().size() + " advices found");
-     * 
-     * for (MapAdvice advice : mapProject.getMapAdvices()) { if (advice.getName
-     * ().toUpperCase().equals(mapEntry.getMapRelation().getName
-     * ().toUpperCase())) { advices.add(advice); adviceFound = true;
-     * 
-     * // System.out.println("Found advice: " + advice.toString()); } } if
-     * (!adviceFound) throw new Exception ("Advice was not found in mapProject "
-     * + mapProject.getName() + " that matches mapRelation " +
-     * mapEntry.getMapRelation().getName() + ":" +
-     * mapEntry.getMapRelation().getTerminologyId()); }
-     */
-
-    // ALSO, if the descendant count for the concept of the map record > 10,
-    // also add 'DESCENDANTS NOT EXHAUSTIVELY MAPPED' advice.
 
     // get hierarchical rel
     MetadataService metadataService = new MetadataServiceJpa();
@@ -448,4 +418,22 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
   }
 
+  @Override
+  public Set<String> getDependentModules() {
+    
+    Set<String> moduleDependencies = new HashSet<>();
+    
+    moduleDependencies.add("900000000000012004");
+    moduleDependencies.add("900000000000207008");
+    
+    System.out.println("NUMBER OF DEPENDENCIES: " + moduleDependencies.size());
+    
+    return moduleDependencies;
+    
+  }
+  
+  @Override
+  public String getModuleDependencyRefSetId() {
+    return "900000000000534007";
+  }
 }

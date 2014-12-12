@@ -73,7 +73,7 @@ public interface MapAgeRange {
   /**
    * Gets the lower inclusive.
    * 
-   * @return true, if this bound is inclusive (>=)
+   * @return true, if this bound is inclusive (&gt;=)
    */
   public boolean getLowerInclusive();
 
@@ -115,7 +115,7 @@ public interface MapAgeRange {
   /**
    * Gets the upper inclusive.
    * 
-   * @return true, if this bound is inclusive (<=)
+   * @return true, if this bound is inclusive (&lt;=)
    */
   public boolean getUpperInclusive();
 
@@ -123,7 +123,7 @@ public interface MapAgeRange {
    * Sets the upper inclusive.
    * 
    * @param inclusive the upper inclusive, true if this bound is inclusive (i.e.
-   *          <=)
+   *          &lt;=)
    */
   public void setUpperInclusive(boolean inclusive);
 
