@@ -2121,6 +2121,7 @@ angular
                   return;
 
                 var obj = {
+                  "id" : definition.objectId,
                   "name" : definition.name,
                   "roleRequired" : definition.roleRequired,
                   "resultType" : definition.resultType,
