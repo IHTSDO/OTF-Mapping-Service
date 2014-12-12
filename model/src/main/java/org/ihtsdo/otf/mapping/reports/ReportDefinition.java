@@ -164,4 +164,11 @@ public interface ReportDefinition {
    */
   public void setDiffReportDefinitionName(String diffReportDefinitionName);
 
+	/**
+	 * Returns the object id.
+	 *
+	 * @return the object id
+	 */
+	public String getObjectId();
+
 }
