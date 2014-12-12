@@ -1012,8 +1012,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     MapRecordListJpa mapRecordList = new MapRecordListJpa();
     // mapRecordList.setTotalCount(editedRecords.size());
 
-    // only add one copy
-    // TODO Decide whether or not to requery to get a full page of 10
+    // only add one copy -- note this results in uneven page sizes
     List<MapRecord> uniqueRecords = new ArrayList<>();
     for (MapRecord mapRecord : editedRecords) {
       boolean recordExists = false;

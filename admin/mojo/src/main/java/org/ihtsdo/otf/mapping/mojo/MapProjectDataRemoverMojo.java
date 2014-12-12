@@ -34,25 +34,9 @@ import org.ihtsdo.otf.mapping.services.ReportService;
 /**
  * Goal which removes all map projects and associated data from the database.
  * 
- * <pre>
- *     <plugin>
- *       <groupId>org.ihtsdo.otf.mapping</groupId>
- *       <artifactId>mapping-admin-mojo</artifactId>
- *       <version>${project.version}</version>
- *       <executions>
- *         <execution>
- *           <id>remove-map-projects</id>
- *           <phase>package</phase>
- *           <goals>
- *             <goal>remove-map-projects</goal>
- *           </goals>
- *         </execution>
- *       </executions>
- *     </plugin>
- * </pre>
+ * See admin/remover/pom.xml for a sample execution.
  * 
  * @goal remove-map-projects
- * 
  * @phase package
  */
 public class MapProjectDataRemoverMojo extends AbstractMojo {
@@ -73,7 +57,7 @@ public class MapProjectDataRemoverMojo extends AbstractMojo {
    */
   @Override
   public void execute() throws MojoFailureException {
-    getLog().info("Starting removing map project data ...");
+    getLog().info("Starting removing map project data");
 
     try {
 
@@ -136,10 +120,9 @@ public class MapProjectDataRemoverMojo extends AbstractMojo {
         reportService.removeReportDefinition(def.getId());
       }
 
-      getLog().info("done ...");
-
       mappingService.close();
       reportService.close();
+      getLog().info("done ...");
     } catch (Exception e) {
       e.printStackTrace();
       throw new MojoFailureException("Unexpected exception:", e);

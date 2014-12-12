@@ -15,12 +15,31 @@
   <description>OTF RF2 Administrator Tool to Load RF2 data</description>
   <packaging>pom</packaging>
 
+  <!-- Available mojo parameters -->
+  <properties>
+    <!-- The refset id -->
+    <refset.id></refset.id>
+    <!-- A flag some tools use to indicate that notification should be sent -->
+    <send.notification></send.notification>
+    <!-- The input dir -->
+    <input.dir></input.dir>
+    <!-- The input file -->
+    <input.dir></input.dir>
+    <!-- The terminology -->
+    <terminology></terminology>
+    <!-- The terminology version -->
+    <version>latest</version>
+    <!-- The start date -->
+    <date.start></date.start>
+    <!-- The end date -->
+    <date.end></date.end>
+  </properties>
 
   <profiles>
 
-    <!-- Load SNOMED -Drun.config=.. must also be specified. -->
+    <!-- Load RF2 -Drun.config=.. must also be specified. -->
     <profile>
-      <id>SNOMEDCT</id>
+      <id>RF2-snapshot</id>
       <build>
         <plugins>
           <plugin>
@@ -35,7 +54,9 @@
                   <goal>load-rf2-snapshot</goal>
                 </goals>
                 <configuration>
-                  <terminology>SNOMEDCT</terminology>
+                  <inputDir>${input.dir}</inputDir>
+                  <terminology>${terminology}</terminology>
+                  <version>${version}</version>
                 </configuration>
               </execution>
             </executions>
@@ -46,7 +67,7 @@
 
     <!-- Load SNOMED delta -Drun.config=.. must also be specified. -->
     <profile>
-      <id>SNOMEDCTDelta</id>
+      <id>RF2-delta</id>
       <build>
         <plugins>
           <plugin>
@@ -61,7 +82,8 @@
                   <goal>load-rf2-delta</goal>
                 </goals>
                 <configuration>
-                  <terminology>SNOMEDCT</terminology>
+                  <inputDir>${input.dir}</inputDir>
+                  <terminology>${terminology}</terminology>
                 </configuration>
               </execution>
             </executions>
@@ -70,9 +92,9 @@
       </build>
     </profile>
 
-    <!-- Load SNOMED tree positions -Drun.config=.. must also be specified. -->
+    <!-- Load tree positions -Drun.config=.. must also be specified. -->
     <profile>
-      <id>SNOMEDCT-treepos</id>
+      <id>Treepos</id>
       <build>
         <plugins>
           <plugin>
@@ -81,13 +103,13 @@
             <version>${project.version}</version>
             <executions>
               <execution>
-                <id>compute-snomed-treepos</id>
+                <id>compute-treepos</id>
                 <phase>package</phase>
                 <goals>
-                  <goal>compute-snomed-treepos</goal>
+                  <goal>compute-treepos</goal>
                 </goals>
                 <configuration>
-                  <terminology>SNOMEDCT</terminology>
+                  <terminology>${terminology}</terminology>
                 </configuration>
               </execution>
             </executions>
@@ -96,35 +118,9 @@
       </build>
     </profile>
 
-    <!-- Load ICD10 -Drun.config=.. must also be specified. -->
+    <!-- Load ClaML -Drun.config=.. must also be specified. -->
     <profile>
-      <id>ICD10</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.ihtsdo.otf.mapping</groupId>
-            <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
-            <executions>
-              <execution>
-                <id>load-claml</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>load-claml</goal>
-                </goals>
-                <configuration>
-                  <terminology>ICD10</terminology>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
-    <!-- Load ICD9CM -Drun.config=.. must also be specified. -->
-    <profile>
-      <id>ICD9CM</id>
+      <id>ClaML</id>
       <build>
         <plugins>
           <plugin>
@@ -139,33 +135,8 @@
                   <goal>load-claml</goal>
                 </goals>
                 <configuration>
-                  <terminology>ICD9CM</terminology>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
-    <!-- Load ICPC -Drun.config=.. must also be specified. -->
-    <profile>
-      <id>ICPC</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.ihtsdo.otf.mapping</groupId>
-            <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
-            <executions>
-              <execution>
-                <id>load-claml</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>load-claml</goal>
-                </goals>
-                <configuration>
-                  <terminology>ICPC</terminology>
+                  <inputFile>${input.file}</inputFile>
+                  <terminology>${terminology}</terminology>
                 </configuration>
               </execution>
             </executions>
@@ -190,6 +161,9 @@
                 <goals>
                   <goal>load-rf2-complex-map</goal>
                 </goals>
+                <configuration>
+                  <inputFile>${input.file}</inputFile>
+                </configuration>
               </execution>
             </executions>
           </plugin>
@@ -214,6 +188,9 @@
                 <goals>
                   <goal>load-rf2-complex-map-sample</goal>
                 </goals>
+                <configuration>
+                  <inputFile>${input.file}</inputFile>
+                </configuration>
               </execution>
             </executions>
           </plugin>
@@ -239,7 +216,7 @@
                   <goal>create-map-records-from-complex-map</goal>
                 </goals>
                 <configuration>
-                  <refSetId>${refset.id}</refSetId>
+                  <refsetId>${refset.id}</refsetId>
                 </configuration>
               </execution>
             </executions>
@@ -248,7 +225,7 @@
       </build>
     </profile>
 
-    <!-- Load map notes from RF2 -Drun.config=.. must also be specified. -->
+    <!-- Load map notes from RF2, specify -Drun.config=... -DinputFile=... -->
     <profile>
       <id>MapNotes</id>
       <build>
@@ -265,6 +242,7 @@
                   <goal>load-map-notes</goal>
                 </goals>
                 <configuration>
+                  <inputFile>${input.file}</inputFile>
                 </configuration>
               </execution>
             </executions>
@@ -290,62 +268,13 @@
                   <goal>compute-workflow</goal>
                 </goals>
                 <configuration>
-                  <refSetId>${refset.id}</refSetId>
+                  <refsetId>${refset.id}</refsetId>
                   <sendNotification>${send.notification}</sendNotification>
                 </configuration>
               </execution>
             </executions>
           </plugin>
 
-        </plugins>
-      </build>
-    </profile>
-
-    <!-- Fix the error flag in feedback objects -Drun.config=.. must also be specified. -->
-    <!-- This is a single-use admin tool, TODO: remove when not needed -->
-    <profile>
-      <id>FixFeedbackErrorFlag</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.ihtsdo.otf.mapping</groupId>
-            <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
-            <executions>
-              <execution>
-                <id>fix-feedback-error-flag</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>fix-feedback-error-flag</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
-    <!-- Fix the error messages in feedback objects -Drun.config=.. must also be 
-      specified. -->
-    <!-- This is a single-use admin tool, TODO: remove when not needed -->
-    <profile>
-      <id>FixErrorMessages</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.ihtsdo.otf.mapping</groupId>
-            <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
-            <executions>
-              <execution>
-                <id>fix-error-messages</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>fix-error-messages</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
         </plugins>
       </build>
     </profile>
@@ -370,7 +299,7 @@
                 <configuration>
                   <startDate>${date.start}</startDate>
                   <endDate>${date.end}</endDate>
-                  <refSetId>${refset.id}</refSetId>
+                  <refsetId>${refset.id}</refsetId>
                 </configuration>
               </execution>
             </executions>
@@ -379,186 +308,5 @@
       </build>
     </profile>
 
-
-  <!-- Convert ASC files to XML -->
-<!--   <profile>
-    <id>ConvertAscToXml</id>
-    <build>
-      <plugins>
-        <plugin>
-          <groupId>org.ihtsdo.otf.mapping</groupId>
-          <artifactId>mapping-admin-mojo</artifactId>
-          <version>${project.version}</version>
-          <executions>
-            <execution>
-              <id>execution1</id>
-              <phase>compile</phase>
-              <configuration>
-                <inputFile>TEIL1.ASC</inputFile>
-                <terminology>ICD10</terminology>
-                <terminologyVersion>2010</terminologyVersion>
-                <documentTitle>Alphabetical index to diseases and nature of
-                  injury</documentTitle>
-                <headerProperties>
-                  <property>
-                    <name>A</name>
-                    <value>;Complication of abortion, current episode (O03-O06)
-                      -
-                      complete or unspecified;Complication of abortion, current
-                      episode (O03-O06) - incomplete;Complication of pregnancy
-                      with abortive outcome, subsequent episode (O08)</value>
-                  </property>
-                  <property>
-                    <name>N</name>
-                    <value>;Malignant Primary;Malignant Secondary;Malignant In
-                      Situ;Benign;Uncertain or unknown behavior</value>
-                  </property>
-                </headerProperties>
-              </configuration>
-              <goals>
-                <goal>convertToXml</goal>
-              </goals>
-            </execution>
-            <execution>
-              <id>execution2</id>
-              <phase>compile</phase>
-              <configuration>
-                <inputFile>TEIL2.ASC</inputFile>
-                <terminology>ICD10</terminology>
-                <terminologyVersion>2010</terminologyVersion>
-                <documentTitle>External causes of injury</documentTitle>
-                <headerProperties />
-              </configuration>
-              <goals>
-                <goal>convertToXml</goal>
-              </goals>
-            </execution>
-            <execution>
-              <id>execution3</id>
-              <phase>compile</phase>
-              <configuration>
-                <inputFile>TEIL3.ASC</inputFile>
-                <terminology>ICD10</terminology>
-                <terminologyVersion>2010</terminologyVersion>
-                <documentTitle>Table of drugs and chemicals</documentTitle>
-                <headerProperties>
-                  <property>
-                    <name>C</name>
-                    <value>Substance;Poisoning Chapter XIX;Poisoning Accidental;
-                      Poisoning Intentional self-harm; Poisoning Undetermined
-                      intent;Adverse effect in theraputic use</value>
-                  </property>
-                </headerProperties>
-              </configuration>
-              <goals>
-                <goal>convertToXml</goal>
-              </goals>
-            </execution>
-          </executions>
-        </plugin>
-      </plugins>
-    </build>
-  </profile>
-
-  Convert index files to HTML and lucene indexes and package
-  <profile>
-    <id>ConvertXmlToHtmlAndLucene</id>
-    <build>
-      <plugins>
-        Apply mojo to unpacked .xml files
-        <plugin>
-          <groupId>org.ihtsdo.otf.mapping</groupId>
-          <artifactId>mapping-admin-mojo</artifactId>
-          <version>${project.version}</version>
-          <executions>
-            Generate HTML for TEIL1 data
-            <execution>
-              <id>execution1</id>
-              <phase>compile</phase>
-              <configuration>
-                <inputFile>ICD10_TEIL1.ASC.xml</inputFile>
-                <domain>TEIL1</domain>
-                <terminology>ICD10</terminology>
-                <terminologyVersion>2010</terminologyVersion>
-              </configuration>
-              <goals>
-                <goal>convertToHtml</goal>
-              </goals>
-            </execution>
-            Generate HTML for TEIL2 data
-            <execution>
-              <id>execution1b</id>
-              <phase>compile</phase>
-              <configuration>
-                <inputFile>ICD10_TEIL2.ASC.xml</inputFile>
-                <domain>TEIL2</domain>
-                <terminology>ICD10</terminology>
-                <terminologyVersion>2010</terminologyVersion>
-              </configuration>
-              <goals>
-                <goal>convertToHtml</goal>
-              </goals>
-            </execution>
-            Generate HTML for TEIL3 data
-            <execution>
-              <id>execution1c</id>
-              <phase>compile</phase>
-              <configuration>
-                <inputFile>ICD10_TEIL3.ASC.xml</inputFile>
-                <domain>TEIL3</domain>
-                <terminology>ICD10</terminology>
-                <terminologyVersion>2010</terminologyVersion>
-              </configuration>
-              <goals>
-                <goal>convertToHtml</goal>
-              </goals>
-            </execution>
-            Generate Lucene indexes for TEIL1 data
-            <execution>
-              <id>execution2a</id>
-              <phase>compile</phase>
-              <configuration>
-                <inputFile>ICD10_TEIL1.ASC.xml</inputFile>
-                <domain>TEIL1</domain>
-                <terminology>ICD10</terminology>
-                <terminologyVersion>2010</terminologyVersion>
-              </configuration>
-              <goals>
-                <goal>convertToLucene</goal>
-              </goals>
-            </execution>
-            Generate Lucene indexes for TEIL2 data
-            <execution>
-              <id>execution2b</id>
-              <phase>compile</phase>
-              <configuration>
-                <inputFile>ICD10_TEIL2.ASC.xml</inputFile>
-                <domain>TEIL2</domain>
-                <terminology>ICD10</terminology>
-                <terminologyVersion>2010</terminologyVersion>
-              </configuration>
-              <goals>
-                <goal>convertToLucene</goal>
-              </goals>
-            </execution>
-            Generate Lucene indexes for TEIL3 data
-            <execution>
-              <id>execution2c</id>
-              <phase>compile</phase>
-              <configuration>
-                <inputFile>ICD10_TEIL3.ASC.xml</inputFile>
-                <domain>TEIL3</domain>
-                <terminology>ICD10</terminology>
-                <terminologyVersion>2010</terminologyVersion>
-              </configuration>
-              <goals>
-                <goal>convertToLucene</goal>
-              </goals>
-            </execution>
-          </executions>
-        </plugin>
-      </plugins>
-    </build>
-  </profile>   -->  
   </profiles>
 </project>

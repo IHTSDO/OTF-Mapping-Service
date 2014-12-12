@@ -93,7 +93,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
    * @param mapRecord the map record
    * @param mapEntry the map entry
    * @return computed map relation
-   * @throws Exception
+   * @throws Exception the exception
    */
   @Override
   public MapRelation computeMapRelation(MapRecord mapRecord, MapEntry mapEntry)
@@ -464,7 +464,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
    * Helper function to sort a records entries into entry lists binned by group.
    * 
    * @param mapRecord the map record
-   * @return a map of group->entry list
+   * @return a map of group to entry list
    */
   @SuppressWarnings("static-method")
   public Map<Integer, List<MapEntry>> getEntryGroups(MapRecord mapRecord) {
@@ -896,7 +896,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
    * Assign a new map record from existing record, performing any necessary
    * workflow actions based on workflow status
    * 
-   * - READY_FOR_PUBLICATION, PUBLICATION -> FIX_ERROR_PATH: Create a new record
+   * - READY_FOR_PUBLICATION, PUBLICATION to FIX_ERROR_PATH: Create a new record
    * with origin ids set to the existing record (and its antecedents) - Add the
    * record to the tracking record - Return the tracking record.
    * 
@@ -2354,6 +2354,17 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     // count is less than 11
     return mapRecord.getCountDescendantConcepts() < mapProject
         .getPropagationDescendantThreshold();
+  }
+  
+  @Override
+  public Set<String> getDependentModules() {
+    return new HashSet<>();
+  }
+
+  @Override
+  public String getModuleDependencyRefSetId() {
+    // TODO Auto-generated method stub
+    return null;
   }
 
 }
