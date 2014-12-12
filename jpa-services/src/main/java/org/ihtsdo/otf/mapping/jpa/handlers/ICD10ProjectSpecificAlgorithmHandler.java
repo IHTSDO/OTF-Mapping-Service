@@ -1,8 +1,10 @@
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
@@ -416,4 +418,22 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
   }
 
+  @Override
+  public Set<String> getDependentModules() {
+    
+    Set<String> moduleDependencies = new HashSet<>();
+    
+    moduleDependencies.add("900000000000012004");
+    moduleDependencies.add("900000000000207008");
+    
+    System.out.println("NUMBER OF DEPENDENCIES: " + moduleDependencies.size());
+    
+    return moduleDependencies;
+    
+  }
+  
+  @Override
+  public String getModuleDependencyRefSetId() {
+    return "900000000000534007";
+  }
 }
