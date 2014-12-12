@@ -887,7 +887,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope,
             class : 'col-md-12',
             widgets : [ {
               type : "report",
-              title : "Project Reports"
+              title : "Reports"
             } ]
           } ]
         }, {
@@ -948,7 +948,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope,
             widgets : [ {
               type : "report",
               config : {},
-              title : "Project Reports"
+              title : "Reports"
             } ]
           } ]
         

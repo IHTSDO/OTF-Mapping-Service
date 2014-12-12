@@ -123,7 +123,7 @@ angular
           $scope.reports = null;
           $rootScope.handleHttpError(data, status, headers, config);
         });
-      }
+      };
 
       $scope.viewReport = function(report) {
         initializeCollapsed(report); // set the collapses
@@ -222,7 +222,7 @@ angular
           $rootScope.handleHttpError(data, status, headers, config);
           return null;
         });
-      }
+      };
 
       var initializeCollapsed = function(report) {
         for (var i = 0; i < report.results.length; i++) {

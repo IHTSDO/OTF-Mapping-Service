@@ -2011,7 +2011,7 @@ angular
                   diffReportDefinition, frequency, query) {
 
                 // initial report is null
-                var QACheckReportError = "";
+                var testReportError = "";
 
                 // check all parameters
                 if (name == null || name === '')
@@ -2110,27 +2110,27 @@ angular
                 console.debug($scope.testReportSuccess);
               };
 
-              $scope.updateReportDefinition = function(name, roleRequired,
-                  resultType, queryType, diffReport, timePeriod,
-                  diffReportDefinition, frequency, query) {
+              $scope.updateReportDefinition = function(definition) {
 
+            	  
                 // if validation returns an error, simply return
-                if ($scope.validateReportDefinition(name, roleRequired,
-                    resultType, queryType, diffReport, timePeriod,
-                    diffReportDefinition, frequency, query) != true)
+                if ($scope.validateReportDefinition(definition.name, definition.roleRequired,
+                    definition.resultType, definition.queryType, definition.diffReport, 
+                    definition.timePeriod, definition.diffReportDefinitionName, definition.frequency, 
+                    definition.query) != true)
                   return;
 
                 var obj = {
-                  "name" : name,
-                  "roleRequired" : roleRequired,
-                  "resultType" : resultType,
-                  "queryType" : queryType,
-                  "frequency" : frequency,
-                  "diffReport" : diffReport,
-                  "timePeriod" : timePeriod,
-                  "diffReportDefinitionName" : diffReportDefinition,
+                  "name" : definition.name,
+                  "roleRequired" : definition.roleRequired,
+                  "resultType" : definition.resultType,
+                  "queryType" : definition.queryType,
+                  "frequency" : definition.frequency,
+                  "diffReport" : definition.diffReport,
+                  "timePeriod" : definition.timePeriod,
+                  "diffReportDefinitionName" : definition.diffReportDefinitionName,
                   "qaCheck" : "false",
-                  "query" : query
+                  "query" : definition.query
                 };
 
                 $http({
@@ -2146,7 +2146,7 @@ angular
                         function(data) {
                           console.debug("success to updateReportDefinition");
                           removeComponentFromArray(editingPerformed,
-                              reportDefinition);
+                              definition);
                         })
                     .error(
                         function(data, status, headers, config) {
