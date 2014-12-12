@@ -95,7 +95,7 @@ public class ReleaseProcessingMojo extends AbstractMojo {
       // Test Parameters //
       /////////////////////
       
-      String testConcepts[] = {"707130003"}; //{"4412009"};
+      String testConcepts[] = {}; //{"4412009"};
       
       /////////////////////
       // Get Projects    //
