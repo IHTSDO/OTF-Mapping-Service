@@ -671,10 +671,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
        * !childEntry.getMapAdvices().equals( parentEntry.getMapAdvices())) {
        * entriesDuplicated = false; } } } }
        * 
-       * // if failed test, break loop if (entriesDuplicated == false) break; }
+       * // if failed test, break loop if (!entriesDuplicated) break; }
        * 
        * // if entries duplicated on all parents, skip to next record if
-       * (entriesDuplicated == false) {
+       * (!entriesDuplicated) {
        * 
        * conceptErrors .put(mapRecord.getConceptId(),
        * "Skipped due to short-form"); continue; }
@@ -683,7 +683,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       // /////////////////////////////////////////////////////
       // Check for up-propagation
       // /////////////////////////////////////////////////////
-      if (mapProject.isPropagatedFlag() == true
+      if (mapProject.isPropagatedFlag()
           && contentService.getDescendantConceptsCount(
               mapRecord.getConceptId(), mapProject.getSourceTerminology(),
               mapProject.getSourceTerminologyVersion()) < mapProject
@@ -893,7 +893,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
         // if not the first entry and contains TRUE rule, set to
         // OTHERWISE TRUE
-        if (mapProject.isRuleBased() == true && newEntry.getMapPriority() > 1
+        if (mapProject.isRuleBased() && newEntry.getMapPriority() > 1
             && newEntry.getRule().equals("TRUE"))
           newEntry.setRule("OTHERWISE TRUE");
 
@@ -1114,7 +1114,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       // write the computed complex map ref sets to file
       for (ComplexMapRefSetMember c : complexMapRefSetMembersToWrite.values()) {
 
-        if (c.isActive() == true) {
+        if (c.isActive()) {
 
           // get the map relation name for the human readable file
           MapRelation mapRelation = null;
@@ -1147,7 +1147,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // Write the delta files
     // /////////////////////////////////////////////////////
 
-    if (writeDelta == true) {
+    if (writeDelta) {
 
       Logger.getLogger(ReleaseHandlerJpa.class).info("Writing delta...");
 
@@ -1259,7 +1259,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // Write the snapshot files if indicated
     // /////////////////////////////////////////////////////
     /*
-     * if (writeSnapshot == true) {
+     * if (writeSnapshot) {
      * 
      * // Case 1: Current & active -- the records in database for
      * (ComplexMapRefSetMember c : complexMapRefSetMembersToWrite.values()) {
@@ -1333,7 +1333,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         "  Total records in release      : " + nRecords);
     Logger.getLogger(ReleaseHandlerJpa.class).info(
         "  Total records with errors     : " + conceptErrors.keySet().size());
-    if (mapProject.isPropagatedFlag() == true) {
+    if (mapProject.isPropagatedFlag()) {
       Logger.getLogger(ReleaseHandlerJpa.class).info(
           "  Total records up-propagated : " + nRecordsPropagated);
     }
@@ -1850,7 +1850,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               + "\t"
               + effectiveTime
               + "\t"
-              + (complexMapRefSetMember.isActive() == true ? "1" : "0")
+              + (complexMapRefSetMember.isActive() ? "1" : "0")
               + "\t"
               + moduleId
               + "\t"
@@ -1891,7 +1891,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               + "\t"
               + effectiveTime
               + "\t"
-              + (complexMapRefSetMember.isActive() == true ? "1" : "0")
+              + (complexMapRefSetMember.isActive() ? "1" : "0")
               + "\t"
               + moduleId
               + "\t"
@@ -1940,7 +1940,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               + "\t"
               + effectiveTime
               + "\t"
-              + (complexMapRefSetMember.isActive() == true ? "1" : "0")
+              + (complexMapRefSetMember.isActive() ? "1" : "0")
               + "\t"
               + moduleId
               + "\t"
@@ -1952,7 +1952,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               + "\t"
               + complexMapRefSetMember.getMapPriority()
               + "\t"
-              + (mapProject.isRuleBased() == true ? complexMapRefSetMember
+              + (mapProject.isRuleBased() ? complexMapRefSetMember
                   .getMapRule() : "")
               + "\t"
               + complexMapRefSetMember.getMapAdvice()
@@ -1971,7 +1971,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               + "\t"
               + effectiveTime
               + "\t"
-              + (complexMapRefSetMember.isActive() == true ? "1" : "0")
+              + (complexMapRefSetMember.isActive() ? "1" : "0")
               + "\t"
               + moduleId
               + "\t"
@@ -2052,7 +2052,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         "  Map project: " + mapProject.getName());
     Logger.getLogger(ReleaseHandlerJpa.class).info(
         "  "
-            + (removeRecords == true ? "Removing out-of-scope records"
+            + (removeRecords ? "Removing out-of-scope records"
                 : "Not removing out-of-scope records"));
 
     // instantiate required services
@@ -2169,7 +2169,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
         // construct message based on whether record is to be removed
         String reportMsg =
-            removeRecords == true ? "Removed record for concept not in scope"
+            removeRecords ? "Removed record for concept not in scope"
                 : "Concept not in scope";
 
         // separate error-type by previously-published or this-cycle-edited
@@ -2179,7 +2179,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           resultMessages.add(reportMsg + " - edited this cycle");
 
         // remove record if flag set
-        if (removeRecords == true)
+        if (removeRecords)
           mappingService.removeMapRecord(mapRecord.getId());
 
       }
