@@ -3,38 +3,41 @@ package org.ihtsdo.otf.mapping.helpers;
 import org.ihtsdo.otf.mapping.reports.ReportDefinition;
 
 /**
- * An enum for {@link ReportDefinition} fequencies.
-y */
+ * An enum for {@link ReportDefinition} fequencies. y
+ */
 public enum ReportFrequency {
 
-/**  The monday. */
-MONDAY, 
+  /** The daily. */
+  DAILY,
 
-/**  The tuesday. */
-TUESDAY,
+  /** The monday. */
+  MONDAY,
 
-/**  The wednesday. */
-WEDNESDAY,
+  /** The tuesday. */
+  TUESDAY,
 
-/**  The thursday. */
-THURSDAY,
+  /** The wednesday. */
+  WEDNESDAY,
 
-/**  The friday. */
-FRIDAY,
+  /** The thursday. */
+  THURSDAY,
 
-/**  The saturday. */
-SATURDAY,
+  /** The friday. */
+  FRIDAY,
 
-/**  The sunday. */
-SUNDAY,
+  /** The saturday. */
+  SATURDAY,
 
-/**  The first of month. */
-FIRST_OF_MONTH,
+  /** The sunday. */
+  SUNDAY,
 
-/**  The mid month. */
-MID_MONTH,
+  /** The first of month. */
+  FIRST_OF_MONTH,
 
-/**  The last of month. */
-LAST_OF_MONTH
+  /** The mid month. */
+  MID_MONTH,
+
+  /** The last of month. */
+  LAST_OF_MONTH
 
 }
