@@ -846,7 +846,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
         // if not the first entry and contains TRUE rule, set to
         // OTHERWISE TRUE
-        if (mapProject.isRuleBased() && newEntry.getMapPriority() > 1
+        if (mapProject.isRuleBased() && existingEntries.size() == 0
             && newEntry.getRule().equals("TRUE"))
           newEntry.setRule("OTHERWISE TRUE");
 
