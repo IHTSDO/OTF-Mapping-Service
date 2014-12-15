@@ -267,9 +267,6 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
             + getTerminologyId() : "") + "]";
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rf2.jpa.AbstractConceptRefSetMember#equals(java.lang.Object)
-   */
   @Override
   public boolean equals(Object obj) {
     if (this == obj)
@@ -283,18 +280,6 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
       if (other.mapAdvice != null)
         return false;
     } else if (!mapAdvice.equals(other.mapAdvice))
-      return false;
-    if (mapBlock != other.mapBlock)
-      return false;
-    if (mapBlockAdvice == null) {
-      if (other.mapBlockAdvice != null)
-        return false;
-    } else if (!mapBlockAdvice.equals(other.mapBlockAdvice))
-      return false;
-    if (mapBlockRule == null) {
-      if (other.mapBlockRule != null)
-        return false;
-    } else if (!mapBlockRule.equals(other.mapBlockRule))
       return false;
     if (mapGroup != other.mapGroup)
       return false;
@@ -318,20 +303,11 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
     return true;
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rf2.jpa.AbstractConceptRefSetMember#hashCode()
-   */
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = super.hashCode();
     result = prime * result + ((mapAdvice == null) ? 0 : mapAdvice.hashCode());
-    result = prime * result + mapBlock;
-    result =
-        prime * result
-            + ((mapBlockAdvice == null) ? 0 : mapBlockAdvice.hashCode());
-    result =
-        prime * result + ((mapBlockRule == null) ? 0 : mapBlockRule.hashCode());
     result = prime * result + mapGroup;
     result = prime * result + mapPriority;
     result =
