@@ -43,7 +43,7 @@ endif
 
 echo "    Remove map project data ...`/bin/date`"
 cd $MAPPING_CODE/admin/remover
-mvn -PMapProjectData -Drun.config=$MAPPING_CONFIG install >&! mvn.log
+mvn -PMapProject -Drun.config=$MAPPING_CONFIG install >&! mvn.log
 if ($status != 0) then
     echo "ERROR removing map record data"
     cat mvn.log
