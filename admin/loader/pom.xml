@@ -33,6 +33,10 @@
     <date.start></date.start>
     <!-- The end date -->
     <date.end></date.end>
+    <!-- the sampling rate -->
+    <sampling.rate></sampling.rate>
+    <!-- The map user -->
+    <map.user></map.user>
   </properties>
 
   <profiles>
@@ -190,6 +194,8 @@
                 </goals>
                 <configuration>
                   <inputFile>${input.file}</inputFile>
+                  <user>${map.user}</user>
+                  <samplingRate>${sampling.rate}</samplingRate>
                 </configuration>
               </execution>
             </executions>
