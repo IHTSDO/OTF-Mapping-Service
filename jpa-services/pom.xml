@@ -101,5 +101,10 @@
       <artifactId>junit</artifactId>
     </dependency>
     
+    <!--  Apache POI library -->
+    <dependency>
+      <groupId>org.apache.poi</groupId>
+      <artifactId>poi</artifactId>
+    </dependency>
   </dependencies>
 </project>

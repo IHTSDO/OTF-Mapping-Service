@@ -8,7 +8,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.envers.Audited;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
@@ -96,6 +98,17 @@ public class ReportDefinitionJpa implements ReportDefinition {
     this.id = id;
   }
 
+  /**
+   * Returns the id in string form.
+   * 
+   * @return the id in string form
+   */
+  @XmlID
+  @Override
+  public String getObjectId() {
+    return id.toString();
+  }
+  
   /**
    * Gets the report name.
    * 
