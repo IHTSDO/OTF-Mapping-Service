@@ -683,7 +683,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         // NOTE: This list will contain the top-level/root map record
         List<TreePosition> treePositionDescendantList =
             getSortedTreePositionDescendantList(treePosition);
-      
+
         // /////////////////////////////////////////////////////
         // Process up-propagated entries
         // /////////////////////////////////////////////////////
@@ -697,7 +697,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         for (TreePosition tp : treePositionDescendantList) {
 
           if (!descendantsProcessed.contains(tp.getTerminologyId())) {
-            
+
             // add this descendant to the processed list
             descendantsProcessed.add(tp.getTerminologyId());
 
@@ -956,8 +956,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               || c_release.getMapTarget().isEmpty()) {
             nNcEntries++;
           }
-          
-     
 
           nEntries++;
 
@@ -1022,10 +1020,11 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       // max number of entries for a concept
       updateStatisticMax("Maximum entries for a concept (without propagation)",
           mapRecord.getMapEntries().size());
-      
+
       int nEntriesTotal = 0;
       for (int grp : entriesByGroup.keySet()) {
-        updateStatisticMax("Maximum entries in any group", entriesByGroup.get(grp).size());
+        updateStatisticMax("Maximum entries in any group",
+            entriesByGroup.get(grp).size());
         nEntriesTotal += entriesByGroup.get(grp).size();
       }
       updateStatisticMax("Maximum entries for a concept (with propagation)",
@@ -1168,7 +1167,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     }
 
     humanReadableWriter.close();
-
 
     // /////////////////////////////////////////////////////
     // Write the delta files
@@ -1370,7 +1368,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           "  " + terminologyId + ": " + conceptErrors.get(terminologyId));
     }
 
-    
     // /////////////////////////////////////////////////////
     // Clean up
     // /////////////////////////////////////////////////////
@@ -1511,9 +1508,14 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         && !mapEntry.getTargetId().isEmpty()) {
 
       // if not a gender rule, add the advice
-      if (!mapEntry.getRule().toUpperCase().contains("| Male (finding) |")
-          && !mapEntry.getRule().toUpperCase().contains("| Female (finding) |")) {
+      if (!mapEntry.getRule().contains("| Male (finding) |")
+          && !mapEntry.getRule().contains("| Female (finding) |")) {
         sortedAdvices.add("MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT");
+
+        // if a gender rule, add the advice
+      } else if (mapEntry.getRule().contains("| Male (finding) |")
+          || mapEntry.getRule().contains("| Female (finding) |")) {
+        sortedAdvices.add("MAP IS CONTEXT DEPENDENT FOR GENDER");
       }
     }
 
