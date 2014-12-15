@@ -28,7 +28,7 @@ pause
 
 echo     Run updatedb with hibernate.hbm2ddl.auto = create ...%date% %time%
 cd %MAPPING_CODE%/admin/updatedb
-call mvn -Drun.config=%MAPPING_CONFIG% -Dhibernate.hbm2ddl.auto=create install 1> mvn.log
+call mvn -Drun.config=%MAPPING_CONFIG% -PUpdatedb -Dhibernate.hbm2ddl.auto=create install 1> mvn.log
 IF %ERRORLEVEL% NEQ 0 (set error=1
 goto trailer)
 del /Q mvn.log
