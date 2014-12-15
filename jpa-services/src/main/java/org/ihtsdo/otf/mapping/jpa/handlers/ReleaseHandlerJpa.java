@@ -1421,8 +1421,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @return
    */
   private String constructUuidKeyString(ComplexMapRefSetMember c) {
-    return c.getRefSetId() + "_" + c.getConcept().getTerminologyId() + "_"
-        + c.getMapGroup() + "_" + c.getMapRule() + "_" + c.getMapTarget();
+    return c.getRefSetId() + c.getConcept().getTerminologyId()
+        + c.getMapGroup() + c.getMapRule() + c.getMapTarget();
   }
 
   /**
