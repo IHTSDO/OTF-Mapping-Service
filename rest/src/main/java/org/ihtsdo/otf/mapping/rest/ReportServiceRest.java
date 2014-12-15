@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.rest;
 
+import java.io.InputStream;
 import java.util.Date;
 
 import javax.ws.rs.DELETE;
@@ -21,6 +22,7 @@ import org.ihtsdo.otf.mapping.helpers.ReportList;
 import org.ihtsdo.otf.mapping.helpers.ReportListJpa;
 import org.ihtsdo.otf.mapping.helpers.ReportResultItemList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
+import org.ihtsdo.otf.mapping.jpa.handlers.ExportReportHandler;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ReportServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
@@ -308,7 +310,7 @@ public class ReportServiceRest extends RootServiceRest {
       reportService.close();
 
     } catch (Exception e) {
-      handleException(e, "trying to delete a report", user, "", "");
+      handleException(e, "trying to delete a report", user, "", report.getId().toString());
     }
 
   }
@@ -702,6 +704,54 @@ public class ReportServiceRest extends RootServiceRest {
     } catch (Exception e) {
       handleException(e, "trying to get qa labels", user, "", "");
       return null;
+    }
+  }
+
+  /**
+   * Export report.
+   *
+   * @param reportId the report id
+   * @param authToken the auth token
+   * @return the input stream
+   */
+  @GET
+  @Path("/report/export/{reportId}")
+  @ApiOperation(value = "Exports a report", notes = "Exports a report given a report id", response = ReportJpa.class)
+  @Produces("application/vnd.ms-excel")
+  public InputStream exportReport(
+    @ApiParam(value = "Report id", required = true) @PathParam("reportId") Long reportId,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+    Logger.getLogger(MappingServiceRest.class).info(
+        "RESTful call (Report):  /report/export/" + reportId);
+
+    try {
+      // authorize call
+      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+        throw new WebApplicationException(
+            Response
+                .status(401)
+                .entity(
+                    "User does not have permissions to export report.")
+                .build());
+
+
+      ReportService reportService = new ReportServiceJpa();
+      Report report = reportService.getReport(reportId); 
+      
+      ExportReportHandler handler = new ExportReportHandler();
+      InputStream is = handler.exportReport(report);
+      
+      reportService.close();
+      return is;
+      
+    } catch (Exception e) {
+
+      handleException(e, "trying to export a report", "",
+          "", reportId.toString());
+      return null;
+
     }
   }
 

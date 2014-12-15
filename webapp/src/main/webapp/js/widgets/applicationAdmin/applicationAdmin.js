@@ -76,6 +76,8 @@ angular
               $scope.testReportError = null; // error returned
               // for report not
               // passing test
+              $scope.testQACheckSuccess = false;
+              $scope.testQACheckError = null;
               $scope.definitionQueryTypes = [ 'SQL', 'HQL', 'LUCENE' ];
               $scope.definitionResultTypes = [ 'CONCEPT', 'MAP_RECORD' ];
               $scope.definitionRoles = [ 'VIEWER', 'SPECIALIST', 'LEAD',
@@ -2108,27 +2110,28 @@ angular
                 console.debug($scope.testReportSuccess);
               };
 
-              $scope.updateReportDefinition = function(name, roleRequired,
-                  resultType, queryType, diffReport, timePeriod,
-                  diffReportDefinition, frequency, query) {
+              $scope.updateReportDefinition = function(definition) {
 
+            	  
                 // if validation returns an error, simply return
-                if ($scope.validateReportDefinition(name, roleRequired,
-                    resultType, queryType, diffReport, timePeriod,
-                    diffReportDefinition, frequency, query) != true)
+                if ($scope.validateReportDefinition(definition.name, definition.roleRequired,
+                    definition.resultType, definition.queryType, definition.diffReport, 
+                    definition.timePeriod, definition.diffReportDefinitionName, definition.frequency, 
+                    definition.query) != true)
                   return;
 
                 var obj = {
-                  "name" : name,
-                  "roleRequired" : roleRequired,
-                  "resultType" : resultType,
-                  "queryType" : queryType,
-                  "frequency" : frequency,
-                  "diffReport" : diffReport,
-                  "timePeriod" : timePeriod,
-                  "diffReportDefinitionName" : diffReportDefinition,
+                  "id" : definition.objectId,
+                  "name" : definition.name,
+                  "roleRequired" : definition.roleRequired,
+                  "resultType" : definition.resultType,
+                  "queryType" : definition.queryType,
+                  "frequency" : definition.frequency,
+                  "diffReport" : definition.diffReport,
+                  "timePeriod" : definition.timePeriod,
+                  "diffReportDefinitionName" : definition.diffReportDefinitionName,
                   "qaCheck" : "false",
-                  "query" : query
+                  "query" : definition.query
                 };
 
                 $http({
@@ -2144,7 +2147,7 @@ angular
                         function(data) {
                           console.debug("success to updateReportDefinition");
                           removeComponentFromArray(editingPerformed,
-                              reportDefinition);
+                              definition);
                         })
                     .error(
                         function(data, status, headers, config) {
@@ -2298,7 +2301,7 @@ angular
                   return;
 
                 $http({
-                  url : root_reporting + "qaCheckDefinition/delete",
+                  url : root_reporting + "definition/delete",
                   dataType : "json",
                   data : qaCheckDefinition,
                   method : "DELETE",
@@ -2380,6 +2383,90 @@ angular
                         });
               };
 
+              $scope.validateQACheckDefinition = function(name, roleRequired,
+                      resultType, queryType, query) {
+
+                    // initial report is null
+                    var testQACheckError = "";
+
+                    // check all parameters
+                    if (name == null || name === '')
+                      testQACheckError += "You must specify a qa check name.\n";
+                    if (roleRequired == null)
+                      testQACheckError += "You must specify the required role.\n";
+                    if (resultType == null)
+                      testQACheckError += "You must specify the result type.\n";
+                    if (queryType == null)
+                      testQACheckError += 'You must specify the query type\n';
+
+
+                    if (testQACheckError != '')
+                      window.alert(testQACheckError);
+
+                    return testQACheckError === '';
+
+                  };
+
+                  // function to allow a user to test whether qa check
+                  // successfully runs before
+                  // officially adding it
+                  $scope.testQACheckDefinition = function(name, roleRequired,
+                      resultType, queryType, query) {
+
+                    console.debug("Testing qa check definition");
+
+                    // if validation returns an error, simply return
+                    if ($scope.validateQACheckDefinition(name, roleRequired,
+                        resultType, queryType, query) != true)
+                      return;
+
+                    $rootScope.glassPane++;
+
+                    var qaCheck = true;
+                    var obj = {
+                            "name" : name,
+                            "roleRequired" : roleRequired,
+                            "resultType" : resultType,
+                            "queryType" : queryType,
+                            "diffReport" : "false",
+                            "qaCheck" : qaCheck,
+                            "timePeriod" : null,
+                            "query" : query
+                          };
+
+                    $http(
+                        {
+                          url : root_reporting + "report/test/project/id/"
+                              + $scope.focusProject.id + "/user/id/"
+                              + $scope.currentUser.userName,
+                          dataType : "json",
+                          data : obj,
+                          method : "POST",
+                          headers : {
+                            "Content-Type" : "application/json"
+                          }
+                        }).success(function(data) {
+                      $rootScope.glassPane--;
+                      $scope.testQACheckSuccess = true;
+                      $scope.testQACheckError = null;
+
+                      console.debug("Success", $scope.testQACheckSuccess);
+
+                      // NOTE: Do not handle this
+                      // as normal http error
+                      // instead set a local error
+                      // variable
+                    }).error(function(data, status, headers, config) {
+                      $rootScope.glassPane--;
+                      $scope.testQACheckSuccess = false;
+                      $scope.testQACheckError = data.replace(/"/g, '');
+
+                      console.debug("Error", $scope.testQACheckSuccess);
+                    });
+
+                    console.debug($scope.testQACheckSuccess);
+                  };
+                  
               $scope.updateQACheckDefinition = function(qaCheckDefinition) {
 
                 console.debug("in updateQACheckDefinition");
@@ -2470,19 +2557,20 @@ angular
                   resultType, queryType, query) {
 
                 console.debug("in submitNewQACheckDefinition");
+                var qaCheck = true;
                 var obj = {
                   "name" : name,
                   "roleRequired" : roleRequired,
                   "resultType" : resultType,
                   "queryType" : queryType,
                   "diffReport" : "false",
-                  "qaCheck" : "true",
+                  "qacheck" : qaCheck,
                   "timePeriod" : null,
                   "query" : query
                 };
 
                 $http({
-                  url : root_reporting + "qaCheckDefinition/add",
+                  url : root_reporting + "definition/add",
                   dataType : "json",
                   data : obj,
                   method : "POST",
