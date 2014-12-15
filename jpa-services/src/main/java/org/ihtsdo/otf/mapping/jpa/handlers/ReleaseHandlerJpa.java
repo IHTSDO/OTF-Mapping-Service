@@ -411,14 +411,14 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       Logger.getLogger(ReleaseHandlerJpa.class).info(
           "  Module dependencies found: " + moduleDependencies.size());
       moduleDependencyFileName =
-          outputDirName + "/der2_ssRefset_ModuleDependencySnapshot_INT_"
+          outputDirName + "/der2_ssRefset_ModuleDependencyDelta_INT_"
               + effectiveTime + ".txt";
 
       moduleDependencyWriter =
           new BufferedWriter(new FileWriter(moduleDependencyFileName));
 
       moduleDependencyWriter
-          .write("id   effectiveTime   active  moduleId    refsetId    referencedComponentId   sourceEffectiveTime targetEffectiveTime"
+          .write("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tsourceEffectiveTime\ttargetEffectiveTime"
               + "\r\n");
 
       for (String module : moduleDependencies) {
