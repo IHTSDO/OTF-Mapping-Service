@@ -377,8 +377,6 @@ angular
         };
 
         $scope.getPagedReportDefinitions = function(page, filter) {
-          console.debug("Getting pagedproject definitions",
-            $scope.focusProject.reportDefinition);
           $scope.reportDefinitionFilter = filter;
           $scope.pagedReportDefinition = $scope.sortByKey(
             $scope.focusProject.reportDefinition, 'id').filter(
@@ -387,7 +385,7 @@ angular
           $scope.pagedReportDefinition = $scope.pagedReportDefinition.slice(
             (page - 1) * $scope.pageSize, page * $scope.pageSize);
 
-          console.debug($scope.pagedPrinciple);
+          console.debug("pagedReportDefinition", $scope.pagedReportDefinition);
         };
 
         $scope.getPagedScopeConcepts = function(page) {
