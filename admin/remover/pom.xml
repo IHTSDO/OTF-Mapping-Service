@@ -82,7 +82,7 @@
 
     <!-- Remove map project data, specify -Drun.config... -->
     <profile>
-      <id>MapProjectData</id>
+      <id>MapProject</id>
       <build>
         <plugins>
           <plugin>
