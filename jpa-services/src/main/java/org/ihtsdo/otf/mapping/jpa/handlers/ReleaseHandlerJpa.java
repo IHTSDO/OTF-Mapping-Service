@@ -1511,8 +1511,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         && !mapEntry.getTargetId().isEmpty()) {
 
       // if not a gender rule, add the advice
-      if (!mapEntry.getRule().toUpperCase().contains("| Male (finding) |")
-          && !mapEntry.getRule().toUpperCase().contains("| Female (finding) |")) {
+      if (!mapEntry.getRule().startsWith("IFA") &&
+          !mapEntry.getRule().contains("| Male (finding) |")
+          && !mapEntry.getRule().contains("| Female (finding) |")) {
         sortedAdvices.add("MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT");
       }
     }

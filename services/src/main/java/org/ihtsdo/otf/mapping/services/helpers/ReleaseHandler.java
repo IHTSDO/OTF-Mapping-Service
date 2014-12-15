@@ -105,6 +105,11 @@ public interface ReleaseHandler {
   void beginRelease(MapProject mapProject, boolean removeRecords)
     throws Exception;
 
+  /**
+   * Close.
+   *
+   * @throws Exception the exception
+   */
   void close() throws Exception;
 
 }

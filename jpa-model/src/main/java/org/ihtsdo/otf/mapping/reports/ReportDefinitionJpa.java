@@ -10,10 +10,10 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.envers.Audited;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
+import org.ihtsdo.otf.mapping.helpers.ReportFrequency;
 import org.ihtsdo.otf.mapping.helpers.ReportQueryType;
 import org.ihtsdo.otf.mapping.helpers.ReportResultType;
 import org.ihtsdo.otf.mapping.helpers.ReportTimePeriod;
@@ -56,7 +56,7 @@ public class ReportDefinitionJpa implements ReportDefinition {
 
   /** The frequency with which the report is run */
   @Enumerated(EnumType.STRING)
-  private ReportTimePeriod frequency;
+  private ReportFrequency frequency;
 
   /** The result type. */
   @Enumerated(EnumType.STRING)
@@ -329,7 +329,7 @@ public class ReportDefinitionJpa implements ReportDefinition {
    * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#getFrequency()
    */
   @Override
-  public ReportTimePeriod getFrequency() {
+  public ReportFrequency getFrequency() {
     return this.frequency;
   }
 
@@ -341,7 +341,7 @@ public class ReportDefinitionJpa implements ReportDefinition {
    * .otf.mapping.helpers.ReportTimePeriod)
    */
   @Override
-  public void setFrequency(ReportTimePeriod timePeriod) {
+  public void setFrequency(ReportFrequency timePeriod) {
     this.frequency = timePeriod;
   }
 
