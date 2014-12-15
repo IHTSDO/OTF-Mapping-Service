@@ -16,7 +16,7 @@ public class WorkflowStatusCombination {
    * The workflow statuses and count for each one E.g. CONFLICT_DETECTED,
    * CONFLICTED_DETECTED -> (CONFLICT_DETECTED, 2) .
    */
-  Map<WorkflowStatus, Integer> workflowStatuses = new HashMap<>();
+  private Map<WorkflowStatus, Integer> workflowStatuses = new HashMap<>();
 
   /**
    * Instantiates an empty {@link WorkflowStatusCombination}.
@@ -55,6 +55,36 @@ public class WorkflowStatusCombination {
         workflowStatuses.get(workflowStatus) == null ? 1 : workflowStatuses
             .get(workflowStatus) + 1);
 
+  }
+  
+  
+
+  /**
+   * Returns the workflow statuses.
+   *
+   * @return the workflow statuses
+   */
+  public Map<WorkflowStatus, Integer> getWorkflowStatuses() {
+    return workflowStatuses;
+  }
+
+  /**
+   * Sets the workflow statuses.
+   *
+   * @param workflowStatuses the workflow statuses
+   */
+  public void setWorkflowStatuses(Map<WorkflowStatus, Integer> workflowStatuses) {
+    this.workflowStatuses = workflowStatuses;
+  }
+
+  
+  /**
+   * Indicates whether or not the workflow combination represents an empty state
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public boolean isEmpty() {
+    return this.workflowStatuses.isEmpty();
   }
 
   /* (non-Javadoc)
