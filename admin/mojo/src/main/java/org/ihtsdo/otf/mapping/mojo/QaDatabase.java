@@ -75,7 +75,7 @@ public class QaDatabase extends AbstractMojo {
           for (Object[] array : objects) {
             StringBuilder sb = new StringBuilder();
             for (Object o : array) {
-              sb.append(o.toString()).append(",");
+              sb.append((o != null ? o.toString() : "null")).append(",");
             }
             results.add(sb.toString().replace(",$", ""));
           }
