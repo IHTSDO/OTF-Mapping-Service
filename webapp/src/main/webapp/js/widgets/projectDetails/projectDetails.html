@@ -459,11 +459,12 @@
     tooltip="List of the report definitions for this project."> Report
     Definitions </span>
 </h5>
+
 </accordion-heading> <pagination ng-show="focusProject.reportDefinition.length > pageSize"
   direction-links="false" boundary-links="true"
-  total-items="pagedDefinitionCount" items-per-page="pageSize"
+  total-items="pagedReportDefinitionCount" items-per-page="pageSize"
   page="pageDefinition"
-  on-select-page="getPagedReportDefinitions(page, definitionFilter)"></pagination>
+  on-select-page="getPagedReportDefinitions(page, reportDefinitionFilter)"></pagination>
 <form>
   <input type="text" ng-model="reportDefinitionFilter"
     ng-change="getPagedReportDefinitions(1, reportDefinitionFilter)"> <input

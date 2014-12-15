@@ -20,3 +20,5 @@ CREATE INDEX x_map_entries_AUD_3 on map_entries_AUD (mapRecord_id);
 -- NOTE: this works with MySQL but may not work for other environments.
 CREATE INDEX x_tree_positions_1 on tree_positions (ancestorPath(255));
 
+
+
