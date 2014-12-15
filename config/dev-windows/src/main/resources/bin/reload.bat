@@ -47,7 +47,7 @@ del /Q mvn.log
 
 echo     Remove Map Project Data ...%date% %time%
 cd %MAPPING_CODE%/admin/remover
-call mvn -PMapProjectData -Drun.config=%MAPPING_CONFIG% install 1> mvn.log
+call mvn -PMapProject -Drun.config=%MAPPING_CONFIG% install 1> mvn.log
 IF %ERRORLEVEL% NEQ 0 (set error=1
 goto trailer)
 del /Q mvn.log
