@@ -629,56 +629,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       // this is the object containing entries to write
       Map<Integer, List<MapEntry>> entriesByGroup = new HashMap<>();
 
-      // /////////////////////////////////////////////////////
-      // Check for short-normal form no-write operation
-      // If all parents have same code/advice present,
-      // do not write
-      // /////////////////////////////////////////////////////
-      /*
-       * boolean entriesDuplicated = true;
-       * 
-       * // cycle over all tree positions for this concept for (TreePosition tp
-       * : treePositions.getTreePositions()) {
-       * 
-       * // // System.out.println("Checking ancestor path: " + //
-       * tp.getAncestorPath());
-       * 
-       * String[] pathComponents = tp.getAncestorPath().split("~");
-       * 
-       * // // System.out.println(pathComponents[pathComponents.length-1]);
-       * MapRecord parentRecord =
-       * this.getMapRecordForTerminologyId(pathComponents[pathComponents.length
-       * - 1]);
-       * 
-       * // if parent record is null if (parentRecord == null) { // record error
-       * conceptErrors.put(tp.getTerminologyId(),
-       * "Failed to retrieve parent concept " +
-       * pathComponents[pathComponents.length - 1]);
-       * 
-       * // force exit by treating as short-form (i.e. do not process
-       * entriesDuplicated = true; break;
-       * 
-       * } else { // if number of entries is different, automatically fails
-       * short-form // check if (mapRecord.getMapEntries().size() !=
-       * parentRecord.getMapEntries() .size()) { entriesDuplicated = false; }
-       * 
-       * // otherwise, check if all record entries are present on this parent
-       * for (MapEntry childEntry : mapRecord.getMapEntries()) {
-       * 
-       * // check all parent entries for target and advice for (MapEntry
-       * parentEntry : parentRecord.getMapEntries()) { if
-       * (!childEntry.getTargetId().equals(parentEntry.getTargetId()) ||
-       * !childEntry.getMapAdvices().equals( parentEntry.getMapAdvices())) {
-       * entriesDuplicated = false; } } } }
-       * 
-       * // if failed test, break loop if (entriesDuplicated == false) break; }
-       * 
-       * // if entries duplicated on all parents, skip to next record if
-       * (entriesDuplicated == false) {
-       * 
-       * conceptErrors .put(mapRecord.getConceptId(),
-       * "Skipped due to short-form"); continue; }
-       */
 
       // /////////////////////////////////////////////////////
       // Check for up-propagation
