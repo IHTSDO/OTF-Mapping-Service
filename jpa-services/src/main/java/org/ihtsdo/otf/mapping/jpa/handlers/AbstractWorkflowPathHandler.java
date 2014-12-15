@@ -1,6 +1,5 @@
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -18,11 +17,8 @@ import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class AbstractWorkflowPathHandler.
- * 
- * @author ${author}
+ * Abstract implementation of {@link WorkflowPathHandler}.
  */
 public abstract class AbstractWorkflowPathHandler implements
     WorkflowPathHandler {
