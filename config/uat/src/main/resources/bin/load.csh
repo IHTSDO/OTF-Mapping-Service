@@ -22,7 +22,7 @@ echo "------------------------------------------------"
 
 echo "    Run updatedb with hibernate.hbm2ddl.auto = create ...`/bin/date`"
 cd $MAPPING_CODE/admin/updatedb
-mvn -Drun.config=$MAPPING_CONFIG -Dhibernate.hbm2ddl.auto=create install >&! mvn.log
+mvn -Drun.config=$MAPPING_CONFIG -PUpdatedb -Dhibernate.hbm2ddl.auto=create install >&! mvn.log
 if ($status != 0) then
     echo "ERROR running updatedb"
     cat mvn.log
