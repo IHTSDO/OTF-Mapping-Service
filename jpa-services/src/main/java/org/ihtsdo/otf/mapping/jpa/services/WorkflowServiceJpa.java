@@ -4020,9 +4020,20 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     MappingService mappingService = new MappingServiceJpa();
     MapProject mapProject = mappingService.getMapProject(mapProjectId);
     mappingService.close();
+    
+    // remove from the query the viewed parameter, if it exists
+    // viewed will be handled later because it is on the Feedback object, 
+    // not the FeedbackConversation object
+    String modifiedQuery = "";
+    if (query.contains(" AND viewed:false"))
+    	modifiedQuery = query.replace(" AND viewed:false", "");
+    else if (query.contains(" AND viewed:true"))
+    	modifiedQuery = query.replace(" AND viewed:true", "");
+    else
+    	modifiedQuery = query;
 
     // construct basic query
-    String full_query = constructMapProjectIdQuery(mapProject.getId(), query);
+    String full_query = constructMapProjectIdQuery(mapProject.getId(), modifiedQuery);
 
     full_query +=
         " AND terminology:" + mapProject.getDestinationTerminology()
@@ -4030,27 +4041,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
             + mapProject.getDestinationTerminologyVersion() + " AND "
             + "( feedbacks.sender.userName:" + userName + " OR "
             + "feedbacks.recipients.userName:" + userName + ")";
-
-    // add terms based on query restriction
-    if (pfsParameter != null) {
-      switch (pfsParameter.getQueryRestriction()) {
-        case "DISCREPANCY_REVIEW_FEEDBACK":
-          full_query += " AND title:Discrepancy Review Feedback";
-          break;
-        case "ERROR_FEEDBACK":
-          full_query += " AND title:Error Feedback";
-          break;
-        case "GROUP_FEEDBACK":
-          full_query += " AND title:Group Feedback";
-          break;
-        case "FEEDBACK":
-          full_query +=
-              " AND title:Feedback NOT title:Discrepancy NOT title:Error NOT title:Group";
-          break;
-        default:
-          break;
-      }
-    }
 
     Logger.getLogger(MappingServiceJpa.class).info(full_query);
 
@@ -4098,12 +4088,56 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     // get the results
     int totalCount = ftquery.getResultSize();
 
-    if (pfsParameter != null) {
+    
+    if (pfsParameter != null && !query.contains("viewed")) {
       ftquery.setFirstResult(pfsParameter.getStartIndex());
       ftquery.setMaxResults(pfsParameter.getMaxResults());
     }
+    
     List<FeedbackConversation> feedbackConversations = ftquery.getResultList();
 
+    if (pfsParameter != null && query.contains("viewed")) {
+    	List<FeedbackConversation> conversationsToKeep = new ArrayList<>();
+    	for (FeedbackConversation fc : feedbackConversations) {
+    		if (query.contains("viewed:false")) {
+    			for (Feedback feedback : fc.getFeedbacks()) {
+            Set<MapUser> alreadyViewedBy = feedback.getViewedBy();
+            boolean found = false;
+            for (MapUser user : alreadyViewedBy) {
+              if (user.getUserName().equals(userName))
+                found = true;
+            }
+            if (!found)
+            	conversationsToKeep.add(fc);
+          }
+    		}
+    		if (query.contains("viewed:true")) {
+          boolean found = false;
+    			for (Feedback feedback : fc.getFeedbacks()) {
+            Set<MapUser> alreadyViewedBy = feedback.getViewedBy();
+            for (MapUser user : alreadyViewedBy) {
+              if (user.getUserName().equals(userName)) {
+              	found = true;
+              	break;
+              }
+            }
+            if (!found)
+            	break;
+          } 
+    			if (found)
+          	conversationsToKeep.add(fc);
+    		}
+    	}
+    	totalCount = conversationsToKeep.size();
+    	feedbackConversations.clear();
+    	for (int i = pfsParameter.getStartIndex(); 
+    			i < pfsParameter.getStartIndex() + pfsParameter.getMaxResults() &&
+    			i < conversationsToKeep.size(); i++) {
+    	  feedbackConversations.add(conversationsToKeep.get(i));
+    	}
+    	
+    }
+    
     Logger.getLogger(this.getClass()).debug(
         Integer.toString(feedbackConversations.size())
             + " feedbackConversations retrieved");
