@@ -1,6 +1,7 @@
 package org.ihtsdo.otf.mapping.reports;
 
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
+import org.ihtsdo.otf.mapping.helpers.ReportFrequency;
 import org.ihtsdo.otf.mapping.helpers.ReportQueryType;
 import org.ihtsdo.otf.mapping.helpers.ReportResultType;
 import org.ihtsdo.otf.mapping.helpers.ReportTimePeriod;
@@ -113,14 +114,14 @@ public interface ReportDefinition {
    *
    * @return the frequency
    */
-  public ReportTimePeriod getFrequency();
+  public ReportFrequency getFrequency();
 
   /**
    * Sets the frequency.
    *
    * @param timePeriod the new frequency
    */
-  public void setFrequency(ReportTimePeriod timePeriod);
+  public void setFrequency(ReportFrequency timePeriod);
 
   /**
    * Checks if is diff report.
