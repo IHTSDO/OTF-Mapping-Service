@@ -19,11 +19,8 @@ import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class AbstractWorkflowPathHandler.
- * 
- * @author ${author}
+ * Abstract implementation of {@link WorkflowPathHandler}.
  */
 public abstract class AbstractWorkflowPathHandler implements
     WorkflowPathHandler {
