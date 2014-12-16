@@ -18,6 +18,9 @@ import org.ihtsdo.otf.mapping.reports.Report;
 import org.ihtsdo.otf.mapping.reports.ReportResult;
 import org.ihtsdo.otf.mapping.reports.ReportResultItem;
 
+/**
+ * A handler for exporting a {@link Report}.
+ */
 public class ExportReportHandler {
 
 	/**
