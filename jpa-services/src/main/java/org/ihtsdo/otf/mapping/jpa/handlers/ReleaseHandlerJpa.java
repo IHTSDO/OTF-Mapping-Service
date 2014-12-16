@@ -1351,6 +1351,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     // check for context dependent advice
     if (mapEntry.getRule().startsWith("IFA")
+        && mapEntry.getTargetId() != null
         && !mapEntry.getTargetId().isEmpty()) {
 
       // if not a gender rule, add the advice
