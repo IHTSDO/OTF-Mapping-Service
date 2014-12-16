@@ -26,7 +26,7 @@
 
     <!-- Activated by run.config setting -->
     <profile>
-      <id>Updated</id>
+      <id>Updatedb</id>
       <activation>
         <property>
           <name>run.config</name>
