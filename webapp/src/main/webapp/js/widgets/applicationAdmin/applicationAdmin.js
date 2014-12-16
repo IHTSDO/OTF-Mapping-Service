@@ -83,7 +83,11 @@ angular
               $scope.definitionRoles = [ 'VIEWER', 'SPECIALIST', 'LEAD',
                   'ADMIN' ];
               $scope.definitionTimePeriods = [ 'DAILY', 'WEEKLY', 'MONTHLY',
-                  'ANNUALLY' ];
+                                               'ANNUALLY' ];
+              $scope.definitionFrequencies = [ 'MONDAY', 'TUESDAY', 'WEDNESDAY',
+                                               'THURSDAY', 'FRIDAY', 'SATURDAY',
+                                               'SUNDAY', 'FIRST_OF_MONTH',
+                                               'MID_MONTH', 'LAST_OF_MONTH'];              
 
               $scope.newHandler;
 
