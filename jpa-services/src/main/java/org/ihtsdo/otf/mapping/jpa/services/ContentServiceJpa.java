@@ -1878,6 +1878,35 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     return treePositionsWithDescendants;
   }
 
+  /**
+   * Returns the any tree positions with descendants.
+   *
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @return the any tree positions with descendants
+   * @throws Exception the exception
+   */
+  @Override
+  public TreePosition getAnyTreePositionWithDescendants(String terminologyId,
+    String terminology, String terminologyVersion) throws Exception {
+    // get tree positions for concept (may be multiple)
+    @SuppressWarnings("unchecked")
+    List<TreePosition> treePositions =
+        manager
+            .createQuery(
+                "select tp from TreePositionJpa tp where terminologyVersion = :terminologyVersion and terminology = :terminology and terminologyId = :terminologyId")
+            .setParameter("terminology", terminology)
+            .setParameter("terminologyVersion", terminologyVersion)
+            .setParameter("terminologyId", terminologyId).setMaxResults(1)
+            .getResultList();
+    // for each tree position
+    for (TreePosition treePosition : treePositions) {
+      return getTreePositionWithDescendants(treePosition);
+    }
+    return null;
+  }
+
   /*
    * (non-Javadoc)
    * 
@@ -2791,7 +2820,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     SearchResultList searchResultList = new SearchResultListJpa();
 
     // Local directory
-    String dataDir = ConfigUtility.getConfigProperties().getProperty("index.viewer.data");
+    String dataDir =
+        ConfigUtility.getConfigProperties().getProperty("index.viewer.data");
     for (File termDir : new File(dataDir).listFiles()) {
       // Find terminology directory
       if (termDir.getName().equals(terminology)) {
@@ -2833,7 +2863,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     SearchResultList searchResultList = new SearchResultListJpa();
 
     // Local directory
-    String dataDir = ConfigUtility.getConfigProperties().getProperty("index.viewer.data");
+    String dataDir =
+        ConfigUtility.getConfigProperties().getProperty("index.viewer.data");
 
     for (File termDir : new File(dataDir).listFiles()) {
       // Find terminology directory
@@ -2848,7 +2879,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
                   // find domain directory
                   if (domainDir.getName().equals(index)) {
                     Logger.getLogger(ContentServiceJpa.class).info(
-                    "  Pages for index domain found: " + domainDir.getName());
+                        "  Pages for index domain found: "
+                            + domainDir.getName());
                     // find pages
                     for (File pageFile : domainDir.listFiles()) {
                       SearchResult searchResult = new SearchResultJpa();
@@ -2997,7 +3029,12 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     Logger.getLogger(this.getClass()).info("  searchStr = " + searchStr);
 
     Properties config = ConfigUtility.getConfigProperties();
-    String indexesDir = terminology + "/" + terminologyVersion + "/" + domain;
+    String prop = config.getProperty("index.viewer.data");
+    if (prop == null) {
+      return new ArrayList<>();
+    }
+    String indexesDir =
+        prop + "/" + terminology + "/" + terminologyVersion + "/" + domain;
 
     List<String> searchResults = new ArrayList<>();
     // configure
