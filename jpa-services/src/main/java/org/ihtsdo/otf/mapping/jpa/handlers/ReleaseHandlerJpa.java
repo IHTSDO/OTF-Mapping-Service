@@ -346,7 +346,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     if (writeDelta == true) {
       Logger.getLogger(getClass()).info(
-          "  Delta release file:             " + deltaMachineReadableFileName);
+          "  Delta release file = " + deltaMachineReadableFileName);
 
       // instantiate file writer
       deltaMachineReadableWriter =
@@ -490,35 +490,26 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         // Get the tree positions for this concept
         // /////////////////////////////////////////////////////
 
-        TreePositionList treePositions;
+        TreePosition treePosition = null;
         try {
-          // get all tree positions for this concept
-          treePositions =
-              contentService.getTreePositionsWithDescendants(
+          // get any tree position for this concept
+          treePosition =
+              contentService.getAnyTreePositionWithDescendants(
                   mapRecord.getConceptId(), mapProject.getSourceTerminology(),
                   mapProject.getSourceTerminologyVersion());
         } catch (Exception e) {
-          conceptErrors.put(mapRecord.getConceptId(),
-              "Could not retrieve tree positions");
+          conceptErrors.put(
+              mapRecord.getConceptId(),
+              "Could not retrieve any tree position");
           continue;
         }
-        /*
-         * Logger.getLogger(getClass()).info( "    Record is up-propagated.");
-         */
-        // /////////////////////////////////////////////////////
-        // Get descendant concepts
-        // /////////////////////////////////////////////////////
 
         // check if tree positions were successfully retrieved
-        if (treePositions.getCount() == 0) {
+        if (treePosition == null) {
           conceptErrors.put(mapRecord.getConceptId(),
               "Could not retrieve tree positions");
           continue;
         }
-
-        // use the first tree position in the list
-        TreePosition treePosition =
-            treePositions.getIterable().iterator().next();
 
         // get a list of tree positions sorted by position in hiearchy
         // (deepest-first)
@@ -698,7 +689,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
         // if not the first entry and contains TRUE rule, set to
         // OTHERWISE TRUE
-        if (mapProject.isRuleBased() && existingEntries.size() > 1
+        if (mapProject.isRuleBased() && existingEntries.size() > 0
             && newEntry.getRule().equals("TRUE"))
           newEntry.setRule("OTHERWISE TRUE");
 
@@ -1351,8 +1342,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     }
 
     // check for context dependent advice
-    if (mapEntry.getRule().startsWith("IFA") 
-        && mapEntry.getTargetId() != null
+    if (mapEntry.getRule().startsWith("IFA") && mapEntry.getTargetId() != null
         && !mapEntry.getTargetId().isEmpty()) {
 
       // if not a gender rule, add the advice

@@ -84,7 +84,8 @@ public class MapRecordJpa implements MapRecord {
   private Long id;
 
   /** The owner. */
-  @ManyToOne(targetEntity = MapUserJpa.class)
+  @ManyToOne(targetEntity = MapUserJpa.class, fetch = FetchType.EAGER)
+  @JoinColumn(nullable = false)
   private MapUser owner;
 
   /** The timestamp. */
@@ -92,7 +93,8 @@ public class MapRecordJpa implements MapRecord {
   private Long timestamp = (new Date()).getTime();
 
   /** The user last modifying this record. */
-  @ManyToOne(targetEntity = MapUserJpa.class)
+  @ManyToOne(targetEntity = MapUserJpa.class, fetch = FetchType.EAGER)
+  @JoinColumn(nullable = false)
   private MapUser lastModifiedBy;
 
   /** The time at which the last user modified this record. */

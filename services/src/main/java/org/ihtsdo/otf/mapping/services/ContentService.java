@@ -513,6 +513,18 @@ public interface ContentService extends RootService {
     String terminology, String terminologyVersion) throws Exception;
 
   /**
+   * Returns the any tree position with descendants.
+   *
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @return the any tree position with descendants
+   * @throws Exception the exception
+   */
+  public TreePosition getAnyTreePositionWithDescendants(String terminologyId,
+    String terminology, String terminologyVersion) throws Exception;
+
+  /**
    * Gets the root tree positions for a given terminology.
    * 
    * @param terminology the terminology
