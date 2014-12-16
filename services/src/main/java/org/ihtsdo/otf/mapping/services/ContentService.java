@@ -700,26 +700,26 @@ public interface ContentService extends RootService {
     String refSetId) throws Exception;
 
   /**
-   * Gets the index viewer indexes.
+   * Gets the index domains for the specified terminology.
    *
    * @param terminology the terminology
    * @param terminologyVersion the terminology version
-   * @return the index viewer indexes
+   * @return the index domains
    * @throws Exception the exception
    */
-  public SearchResultList getIndexViewerIndexes(String terminology,
+  public SearchResultList getIndexDomains(String terminology,
 		String terminologyVersion) throws Exception;
   
   /**
-   * Gets the index viewer pages for index.
+   * Gets the index pages for index.
    *
    * @param terminology the terminology
    * @param terminologyVersion the terminology version
    * @param index the index
-   * @return the index viewer pages for index
+   * @return the index pages for index
    * @throws Exception the exception
    */
-  public SearchResultList getIndexViewerPagesForIndex(
+  public SearchResultList getIndexPagesForIndex(
 		  String terminology, String terminologyVersion, String index) throws Exception;
 
   /**
@@ -736,7 +736,7 @@ public interface ContentService extends RootService {
    * @throws Exception the exception
    */
 
-  public SearchResultList findIndexViewerEntries(String terminology,
+  public SearchResultList findIndexEntries(String terminology,
     String terminologyVersion, String domain, String searchField,
     String subSearchField, String subSubSearchField, boolean allFlag) throws Exception;
 
