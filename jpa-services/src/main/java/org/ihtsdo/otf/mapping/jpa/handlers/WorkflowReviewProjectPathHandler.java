@@ -21,9 +21,9 @@ public class WorkflowReviewProjectPathHandler extends
 
     // empty workflow is allowed for this path
     setEmptyWorkflowAllowed(true);
-    
-    // initial state:  tracking record, no map records
-    // final state:  no tracking record, one map record ready for publication
+
+    // initial state: tracking record, no map records
+    // final state: no tracking record, one map record ready for publication
 
     // add states representing specialist-level work
     addWorkflowCombination(new WorkflowStatusCombination(
@@ -69,6 +69,12 @@ public class WorkflowReviewProjectPathHandler extends
         mappingService.getMapUserRoleForMapProject(mapUser.getUserName(),
             trackingRecord.getMapProjectId());
 
+    // automatically add error if not specialist or above
+    if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
+      result.addError("User is not a specialist or above");
+      return result;
+    }
+
     // switch on requested action
     switch (action) {
       case ASSIGN_FROM_SCRATCH:
@@ -80,8 +86,7 @@ public class WorkflowReviewProjectPathHandler extends
         break;
       case FINISH_EDITING:
         if (assignedRecord == null) {
-          result
-          .addError("Cannot retrieve assigned record");
+          result.addError("Cannot retrieve assigned record");
         }
         break;
       case PUBLISH:
@@ -89,8 +94,7 @@ public class WorkflowReviewProjectPathHandler extends
         if (!role.hasPrivilegesOf(MapUserRole.LEAD)) {
           result.addError("User is not a lead");
         } else if (assignedRecord == null) {
-          result
-              .addError("Cannot retrieve assigned record");
+          result.addError("Cannot retrieve assigned record");
 
           // check if workflow status is a lead REVIEW_* record
         } else if (!assignedRecord.getWorkflowStatus().equals(
@@ -105,14 +109,19 @@ public class WorkflowReviewProjectPathHandler extends
         break;
       case SAVE_FOR_LATER:
         if (assignedRecord == null) {
-          result
-              .addError("Cannot retrieve assigned record");
+          result.addError("Cannot retrieve assigned record");
         }
         break;
       case UNASSIGN:
         if (assignedRecord == null) {
+          result.addError("Cannot retrieve assigned record");
+        } else if (records.getCount() == 2
+            && (assignedRecord.getWorkflowStatus().equals(WorkflowStatus.NEW)
+                || assignedRecord.getWorkflowStatus().equals(
+                    WorkflowStatus.EDITING_IN_PROGRESS) || assignedRecord
+                .getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED))) {
           result
-              .addError("Cannot retrieve assigned record");
+              .addError("Cannot unassign specialist-level work once a lead has begun review");
         }
       default:
         result.addError("Illegal operation requested for workflow path");
@@ -122,5 +131,4 @@ public class WorkflowReviewProjectPathHandler extends
 
     return result;
   }
-
 }
