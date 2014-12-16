@@ -256,6 +256,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     //
     // Compute default preferred names
     //
+    Logger.getLogger(getClass()).info("  Compute default preferred names");
     computeDefaultPreferredNames();
 
     // declare the file names and file writers
@@ -275,7 +276,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // If indicated, write module dependency file
     // /////////////////////////////////////////////////////
 
-    Logger.getLogger(getClass()).info("  Handling module dependencies");
+    Logger.getLogger(getClass()).info("  Handle module dependencies");
 
     Set<String> moduleDependencies = algorithmHandler.getDependentModules();
     if (moduleDependencies.size() > 0) {
@@ -1350,7 +1351,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     }
 
     // check for context dependent advice
-    if (mapEntry.getRule().startsWith("IFA")
+    if (mapEntry.getRule().startsWith("IFA") 
+        && mapEntry.getTargetId() != null
         && !mapEntry.getTargetId().isEmpty()) {
 
       // if not a gender rule, add the advice
