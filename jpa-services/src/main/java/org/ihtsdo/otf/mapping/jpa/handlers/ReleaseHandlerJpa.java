@@ -174,10 +174,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // instantiate services
     mappingService = new MappingServiceJpa();
     contentService = new ContentServiceJpa();
-    // initialize report stats
-    for (Stats stat : Stats.values()) {
-      reportStatistics.put(stat.getValue(), new Integer(0));
-    }
+
   }
 
   /*
@@ -2217,8 +2214,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @param stat the stat
    */
   private void updateStat(String stat) {
+    if (!reportStatistics.containsKey(stat)) {
+      reportStatistics.put(stat,new Integer(0));
+    }
     reportStatistics.put(stat, reportStatistics.get(stat) + 1);
-
   }
 
   /**
