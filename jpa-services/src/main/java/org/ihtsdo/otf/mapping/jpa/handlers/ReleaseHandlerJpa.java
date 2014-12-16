@@ -67,7 +67,6 @@ import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
  */
 public class ReleaseHandlerJpa implements ReleaseHandler {
 
-  // class-global services
   /** The mapping service. */
   private MappingService mappingService;
 
@@ -80,14 +79,23 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   /** The module id. */
   private String moduleId;
 
+  /** The output dir. */
+  private String outputDir;
+
   /** THe flags for writing snapshot and delta. */
   private boolean writeSnapshot = false;
 
   /** The write delta. */
   private boolean writeDelta = false;
 
+  /** The output dir name. */
+  private boolean outputDirName;
+
   /** The map project. */
   private MapProject mapProject = null;
+
+  /** The map records. */
+  private List<MapRecord> mapRecords;
 
   /** Map of terminology id to error messages. */
   Map<String, String> conceptErrors = new HashMap<>();
@@ -95,21 +103,64 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   /** Map of terminology id to map record. */
   Map<String, MapRecord> mapRecordMap = new HashMap<>();
 
-  /** the defaultPreferredNames type id. */
-  private String dpnTypeId = null;
-
-  /** The dpn ref set id. */
-  private String dpnRefSetId = null;
-
-  /** The dpn acceptability id. */
-  private String dpnAcceptabilityId = null;
-
   /** The default preferred names set (terminologyId -> dpn). */
   private Map<String, String> defaultPreferredNames = new HashMap<>();
 
-  /* report string/ct set */
+  /** The scope concepts. */
+  private Map<String, Concept> conceptCache = new HashMap<>();
+
   /** The report statistics. */
-  Map<String, Integer> reportStatistics = new HashMap<>();
+  private Map<String, Integer> reportStatistics = new HashMap<>();
+
+  /**
+   * The Enum for statistics reporting.
+   */
+  private enum Stats {
+
+    /** The active entries. */
+    ACTIVE_ENTRIES("Active entries "),
+    /** The concepts mapped. */
+    CONCEPTS_MAPPED("Concepts mapped "),
+    /** The complex maps. */
+    COMPLEX_MAPS("Concepts with complex maps "),
+    /** The multiple groups. */
+    MULTIPLE_GROUPS("Concepts with multiple groups "),
+    /** The always map. */
+    ALWAYS_MAP("Concepts that always yield a target code "),
+    /** The sometimes map. */
+    SOMETIMES_MAP("Concepts that at least sometimes yield a target code"),
+    /** The never map. */
+    NEVER_MAP("Concepts that could not be mapped "),
+    /** The max entries. */
+    MAX_ENTRIES("Max number of map entries for a concept"),
+    /** The new concepts. */
+    NEW_CONCEPTS("New concepts mapped this release "),
+    /** The retired concepts. */
+    RETIRED_CONCEPTS("Concepts mapped retired this release "),
+    /** The changed concepts. */
+    CHANGED_CONCEPTS("Concept mappings changed this release ");
+
+    /** The value. */
+    private String value;
+
+    /**
+     * Instantiates a {@link Stats} from the specified parameters.
+     *
+     * @param value the value
+     */
+    private Stats(String value) {
+      this.value = value;
+    }
+
+    /**
+     * Returns the value.
+     *
+     * @return the value
+     */
+    public String getValue() {
+      return value;
+    }
+  }
 
   /**
    * Instantiates an empty {@link ReleaseHandlerJpa}.
@@ -121,6 +172,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // instantiate services
     mappingService = new MappingServiceJpa();
     contentService = new ContentServiceJpa();
+    // initialize report stats
+    for (Stats stat : Stats.values()) {
+      reportStatistics.put(stat.getValue(), new Integer(0));
+    }
   }
 
   /*
@@ -143,156 +198,18 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    */
 
   @Override
-  public void processRelease(MapProject mapProject, String outputDirName,
-    String effectiveTime, String moduleId) throws Exception {
-
-    this.mapProject = mapProject;
-    this.effectiveTime = effectiveTime;
-    this.moduleId = moduleId;
-    this.writeSnapshot = true;
-    this.writeDelta = true;
+  public void processRelease() throws Exception {
 
     // get all map records for this project
-    MapRecordList mapRecordList =
-        mappingService
-            .getPublishedAndReadyForPublicationMapRecordsForMapProject(
-                mapProject.getId(), null);
-
+    if (mapRecords == null || mapRecords.isEmpty()) {
+      MapRecordList mapRecordList =
+          mappingService
+              .getPublishedAndReadyForPublicationMapRecordsForMapProject(
+                  mapProject.getId(), null);
+      mapRecords = mapRecordList.getMapRecords();
+    }
     // process the release
-    processReleaseHelper(mapRecordList.getMapRecords(), outputDirName);
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler#processReleaseSnapshot
-   * (org.ihtsdo.otf.mapping.model.MapProject, java.lang.String,
-   * java.lang.String, java.lang.String)
-   */
-  @Override
-  public void processReleaseSnapshot(MapProject mapProject,
-    String outputDirName, String effectiveTime, String moduleId)
-    throws Exception {
-
-    // set the global variables
-    this.mapProject = mapProject;
-    this.effectiveTime = effectiveTime;
-    this.moduleId = moduleId;
-    this.writeSnapshot = true;
-    this.writeDelta = false;
-
-    // get all map records for this project
-    MapRecordList mapRecordList =
-        mappingService
-            .getPublishedAndReadyForPublicationMapRecordsForMapProject(
-                mapProject.getId(), null);
-
-    // process the release
-    processReleaseHelper(mapRecordList.getMapRecords(), outputDirName);
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler#processReleaseDelta
-   * (org.ihtsdo.otf.mapping.model.MapProject, java.lang.String,
-   * java.lang.String, java.lang.String)
-   */
-  @Override
-  public void processReleaseDelta(MapProject mapProject, String outputDirName,
-    String effectiveTime, String moduleId) throws Exception {
-
-    // set the global variables
-    this.mapProject = mapProject;
-    this.effectiveTime = effectiveTime;
-    this.moduleId = moduleId;
-    this.writeSnapshot = false;
-    this.writeDelta = true;
-
-    // get all map records for this project
-    MapRecordList mapRecordList =
-        mappingService
-            .getPublishedAndReadyForPublicationMapRecordsForMapProject(
-                mapProject.getId(), null);
-
-    // process the release
-    processReleaseHelper(mapRecordList.getMapRecords(), outputDirName);
-
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler#processRelease
-   * (org.ihtsdo.otf.mapping.model.MapProject, java.util.Set, java.lang.String,
-   * java.lang.String, java.lang.String)
-   */
-  @Override
-  public void processRelease(MapProject mapProject,
-    List<MapRecord> mapRecordsToPublish, String outputDirName,
-    String effectiveTime, String moduleId) throws Exception {
-
-    // set the global variables
-    this.mapProject = mapProject;
-    this.effectiveTime = effectiveTime;
-    this.moduleId = moduleId;
-    this.writeSnapshot = true;
-    this.writeDelta = true;
-
-    // process the release
-    processReleaseHelper(mapRecordsToPublish, outputDirName);
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler#processReleaseSnapshot
-   * (org.ihtsdo.otf.mapping.model.MapProject, java.util.Set, java.lang.String,
-   * java.lang.String, java.lang.String)
-   */
-  @Override
-  public void processReleaseSnapshot(MapProject mapProject,
-    List<MapRecord> mapRecordsToPublish, String outputDirName,
-    String effectiveTime, String moduleId) throws Exception {
-
-    // set the global variables
-    this.mapProject = mapProject;
-    this.effectiveTime = effectiveTime;
-    this.moduleId = moduleId;
-    this.writeSnapshot = true;
-    this.writeDelta = false;
-
-    // process the release
-    processReleaseHelper(mapRecordsToPublish, outputDirName);
-
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler#processReleaseDelta
-   * (org.ihtsdo.otf.mapping.model.MapProject, java.util.Set, java.lang.String,
-   * java.lang.String, java.lang.String)
-   */
-  @Override
-  public void processReleaseDelta(MapProject mapProject,
-    List<MapRecord> mapRecordsToPublish, String outputDirName,
-    String effectiveTime, String moduleId) throws Exception {
-
-    // set the global variables
-    this.mapProject = mapProject;
-    this.effectiveTime = effectiveTime;
-    this.moduleId = moduleId;
-    this.writeSnapshot = false;
-    this.writeDelta = true;
-
-    // process the release
-    processReleaseHelper(mapRecordsToPublish, outputDirName);
-
+    processReleaseHelper();
   }
 
   /**
@@ -300,26 +217,20 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * 
    * Called by each of the specific functions above.
    *
-   * @param mapRecordsToPublish the map records to publish
-   * @param outputDirName the output dir name
    * @throws Exception the exception
    */
   @SuppressWarnings("resource")
-  private void processReleaseHelper(List<MapRecord> mapRecordsToPublish,
-    String outputDirName) throws Exception {
+  private void processReleaseHelper() throws Exception {
 
     Logger.getLogger(this.getClass()).info("Processing publication release");
     Logger.getLogger(this.getClass()).info(
         "  project = " + mapProject.getName());
-
     Logger.getLogger(this.getClass()).info(
         "  pattern = " + mapProject.getMapRefsetPattern().toString());
-
     Logger.getLogger(this.getClass()).info(
         "  rule-based = " + mapProject.isRuleBased());
-
     Logger.getLogger(this.getClass()).info(
-        "  record count = " + mapRecordsToPublish.size());
+        "  record count = " + mapRecords.size());
 
     // check that either/both snapshot and delta files have been specified
     if (!writeSnapshot && !writeDelta) {
@@ -347,40 +258,13 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     }
 
     // check output directory exists
-    File outputDir = new File(outputDirName);
-    if (!outputDir.isDirectory())
+    File outputDirFile = new File(outputDir);
+    if (!outputDirFile.isDirectory())
       throw new Exception("Output file directory (" + outputDirName
           + ") could not be found.");
 
-    // get the config properties for default preferred name variables
-    // set the dpn variables and instantiate the concept dpn map
-    Properties properties = ConfigUtility.getConfigProperties();
-    dpnTypeId = properties.getProperty("loader.defaultPreferredNames.typeId");
-    dpnRefSetId =
-        properties.getProperty("loader.defaultPreferredNames.refSetId");
-    dpnAcceptabilityId =
-        properties.getProperty("loader.defaultPreferredNames.acceptabilityId");
-    Logger
-        .getLogger(this.getClass())
-        .info(
-            "  Retrieving concepts for records and computing default preferred names");
-    Logger.getLogger(this.getClass()).info("    dpnTypeId = " + dpnTypeId);
-    Logger.getLogger(this.getClass()).info("    dpnRefSetId = " + dpnRefSetId);
-    Logger.getLogger(this.getClass()).info(
-        "    dpnAccetabilityId = " + dpnAcceptabilityId);
-
-    // Compute preferred names
-    Map<String, Concept> scopeConcepts = new HashMap<>();
-    for (MapRecord mapRecord : mapRecordsToPublish) {
-      Concept concept =
-          contentService.getConcept(mapRecord.getConceptId(),
-              mapProject.getSourceTerminology(),
-              mapProject.getSourceTerminologyVersion());
-
-      scopeConcepts.put(concept.getTerminologyId(), concept);
-      defaultPreferredNames.put(concept.getTerminologyId(),
-          computeDefaultPreferredName(concept));
-    }
+    // Compute default preferred names
+    computeDefaultPreferredNames();
 
     // declare the file names and file writers
     String snapshotMachineReadableFileName = null;
@@ -534,19 +418,16 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         new HashMap<>();
 
     // put all map records into the map record map
-    for (MapRecord mr : mapRecordsToPublish) {
+    for (MapRecord mr : mapRecords) {
       if (mr == null)
         throw new Exception("Null record found in published list");
       mapRecordMap.put(mr.getConceptId(), mr);
     }
 
-    int nEntries = 0;
-    int nRecords = 0;
-
     // create a list from the set
     Logger.getLogger(this.getClass()).info("  Sorting records");
 
-    Collections.sort(mapRecordsToPublish, new Comparator<MapRecord>() {
+    Collections.sort(mapRecords, new Comparator<MapRecord>() {
 
       @Override
       public int compare(MapRecord o1, MapRecord o2) {
@@ -613,15 +494,11 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     }
 
     // cycle over the map records marked for publishing
-    for (MapRecord mapRecord : mapRecordsToPublish) {
+    for (MapRecord mapRecord : mapRecords) {
 
-      // get the source concept for this record
-
-      /*
-       * Logger.getLogger(this.getClass()).info( "   Processing map record " +
-       * mapRecord.getId() + ", " + mapRecord.getConceptId() + ", " +
-       * mapRecord.getConceptName());
-       */
+      boolean anyNc = false;
+      boolean allNc = true;
+      
       // instantiate map of entries by group
       // this is the object containing entries to write
       Map<Integer, List<MapEntry>> entriesByGroup = new HashMap<>();
@@ -782,7 +659,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
                     // use the map relation
                     // MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT | 447639009
-                    newEntry.setMapRelation(ifaRuleRelation);
+                    // except where target code is NC
+                    if (newEntry.getTargetId() == null || newEntry.getTargetId().isEmpty()) {
+                      newEntry.setMapRelation(me.getMapRelation());
+                    } else {
+                      newEntry.setMapRelation(ifaRuleRelation);
+                    }
 
                     // add to the list
                     existingEntries.add(newEntry);
@@ -835,6 +717,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         newEntry.setTargetId(me.getTargetId());
         newEntry.setTargetName(me.getTargetName());
 
+        if (me.getTargetId() == null || me.getTargetId().isEmpty()) {
+          anyNc = true;
+        } else {
+          allNc = false;
+        }
+        
         // if not the first entry and contains TRUE rule, set to
         // OTHERWISE TRUE
         if (mapProject.isRuleBased() && existingEntries.size() > 1
@@ -890,7 +778,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
             // add the entry and replace in the entries-by-group map
             existingEntries.add(newEntry);
-            entriesByGroup.put(mapGroup, existingEntries);
+            //entriesByGroup.put(mapGroup, existingEntries);
 
           }
         }
@@ -900,11 +788,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       // Convert the record to complex map ref set members
       // /////////////////////////////////////////////////////
 
-      // report variables
-      int nNcEntries = 0;
-
       // get the concept
-      Concept concept = scopeConcepts.get(mapRecord.getConceptId());
+      Concept concept = conceptCache.get(mapRecord.getConceptId());
 
       // cycle over groups and entries in sequence
       for (int mapGroup : entriesByGroup.keySet()) {
@@ -927,8 +812,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
           // if existing found, re-use uuid, otherwise generate new
           if (existingMember == null) {
-            member
-                .setTerminologyId(this.getReleaseUuid(uuidStr).toString());
+            member.setTerminologyId(this.getReleaseUuid(uuidStr).toString());
           } else {
             member.setTerminologyId(existingMember.getTerminologyId());
           }
@@ -937,48 +821,18 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           member.setMapPriority(mapPriority++);
 
           // add this entry to the list of members to write
-          complexMapRefSetMembersToWrite.put(member.getTerminologyId(),
-              member);
+          complexMapRefSetMembersToWrite.put(member.getTerminologyId(), member);
 
-          // report calculations
-          if (member.getMapTarget() == null
-              || member.getMapTarget().isEmpty()) {
-            nNcEntries++;
-          }
-
-          nEntries++;
 
         }
       }
 
-      // increment the total record count
-      if (++nRecords % Math.floor(mapRecordsToPublish.size() / 10) == 0) {
-        Logger.getLogger(this.getClass()).info(
-            "  " + nRecords + " processed, " + nEntries + " maps created");
-
-      }
-
-      /*
-       * Total number of active map entries Total number of concepts tally by
-       * semantic tag (e.g. "finding") Number of concepts with complex maps
-       * (e.g. more than one entry) Number of concepts with multiple groups
-       * Number of concepts that always yield a target code (e.g. no blank/null
-       * targetIds for entries in the record) Number of map records that at
-       * least sometimes yield a target code (e.g. at least one entry has a
-       * non-null/empty targetId) Number of concepts that could not be mapped
-       * (e.g. only NC codes) Max number of map entries for a concept. Delta
-       * report Number of new concepts mapped (e.g. concepts for active entries
-       * in this release not in prior release) Number of concept map records
-       * retired (e.g. concepts for active entries in the previous release not
-       * in this release) Number of map records changed (e.g. concepts for
-       * active entries that are in both releases and in the delta).
-       */
 
       // total concepts mapped
-      updateStatisticCount("Concepts (Total)");
+      updateStat(Stats.CONCEPTS_MAPPED.getValue());
 
       // total concepts mapped, by semantic tag (finding, disorder....)
-      String dpn = computeDefaultPreferredName(concept);
+      String dpn = defaultPreferredNames.get(concept.getTerminologyId());
       String semanticTag;
       if (dpn.endsWith(")")) {
         semanticTag =
@@ -987,37 +841,33 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       } else {
         semanticTag = "(No semantic tag)";
       }
-      updateStatisticCount("Concepts with semantic tag " + semanticTag);
+      updateStat(Stats.CONCEPTS_MAPPED.getValue() + semanticTag);
 
       // concepts with complex maps (more than one entry)
       if (mapRecord.getMapEntries().size() > 1)
-        updateStatisticCount("Concepts with complex maps");
+        updateStat(Stats.COMPLEX_MAPS.getValue());
 
       // concepts with multiple groups
       if (entriesByGroup.keySet().size() > 1)
-        updateStatisticCount("Concepts with multiple groups");
+        updateStat(Stats.MULTIPLE_GROUPS.getValue());
 
       // statistics based on not mappable entries
-      if (nNcEntries == 0) {
-        updateStatisticCount("Concepts that always yield a target code");
-      } else if (nNcEntries == entriesByGroup.values().size()) {
-        updateStatisticCount("Concepts that never yield a target code");
+      if (!anyNc) {
+        updateStat(Stats.ALWAYS_MAP.getValue());
+      } else if (allNc) {
+        updateStat(Stats.NEVER_MAP.getValue());
       } else {
-        updateStatisticCount("Concepts that sometimes yield a target code");
+        updateStat(Stats.SOMETIMES_MAP.getValue());
       }
 
       // max number of entries for a concept
-      updateStatisticMax("Maximum entries for a concept (without propagation)",
-          mapRecord.getMapEntries().size());
-
       int nEntriesTotal = 0;
       for (int grp : entriesByGroup.keySet()) {
-        updateStatisticMax("Maximum entries in any group",
-            entriesByGroup.get(grp).size());
         nEntriesTotal += entriesByGroup.get(grp).size();
       }
-      updateStatisticMax("Maximum entries for a concept (with propagation)",
+      updateStatisticMax(Stats.MAX_ENTRIES.getValue(),
           nEntriesTotal);
+
 
       // clear the service -- memory management
       contentService.clear();
@@ -1203,11 +1053,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       }
 
       // add to report statistics
-      updateStatisticMax("Delta: Concepts newly mapped", conceptsNew.size());
-      updateStatisticMax("Delta: Concepts previously mapped and modified",
+      updateStatisticMax(Stats.NEW_CONCEPTS.getValue(), conceptsNew.size());
+      updateStatisticMax(Stats.CHANGED_CONCEPTS.getValue(),
           conceptsModified.size());
-      updateStatisticMax("Delta: Concepts previously mapped and unchanged",
-          conceptsUnchanged.size());
 
       // write new or modified maps to file
       for (ComplexMapRefSetMember c : tempMap.values()) {
@@ -1220,10 +1068,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
       Logger.getLogger(this.getClass()).info("  Writing complete.");
 
-      Logger.getLogger(this.getClass()).info(
-          "  Computing maps inactivated this cycle from "
-              + complexMapRefSetMembersPreviouslyActive.size()
-              + " existing maps...");
+      updateStatisticMax(Stats.RETIRED_CONCEPTS.getValue(),
+          complexMapRefSetMembersPreviouslyActive.size());
 
       // case 2: previously active no longer present
       // Copy previously active map of uuids to write into temp map
@@ -1507,6 +1353,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         sortedAdvices.add("MAP IS CONTEXT DEPENDENT FOR GENDER");
       }
     }
+    
 
     String mapAdviceStr = getHumanReadableMapAdvice(mapEntry);
 
@@ -1801,7 +1648,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   /**
    * Gets the release uuid.
    *
-   * @param c the c
+   * @param hash the hash
    * @return the release uuid
    * @throws NoSuchAlgorithmException the no such algorithm exception
    * @throws UnsupportedEncodingException the unsupported encoding exception
@@ -2038,13 +1885,51 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   }
 
   /**
+   * Compute default preferred names.
+   *
+   * @throws Exception the exception
+   */
+  private void computeDefaultPreferredNames() throws Exception {
+
+    // get the config properties for default preferred name variables
+    // set the dpn variables and instantiate the concept dpn map
+    Properties properties = ConfigUtility.getConfigProperties();
+
+    String dpnTypeId =
+        properties.getProperty("loader.defaultPreferredNames.typeId");
+    String dpnRefSetId =
+        properties.getProperty("loader.defaultPreferredNames.refSetId");
+    String dpnAcceptabilityId =
+        properties.getProperty("loader.defaultPreferredNames.acceptabilityId");
+
+    // Compute preferred names
+    for (MapRecord mapRecord : mapRecords) {
+      Concept concept =
+          contentService.getConcept(mapRecord.getConceptId(),
+              mapProject.getSourceTerminology(),
+              mapProject.getSourceTerminologyVersion());
+
+      conceptCache.put(concept.getTerminologyId(), concept);
+      defaultPreferredNames.put(
+          concept.getTerminologyId(),
+          computeDefaultPreferredName(concept, dpnTypeId, dpnRefSetId,
+              dpnAcceptabilityId));
+    }
+
+  }
+
+  /**
    * Helper function to access/add to dpn set.
    *
    * @param concept the concept
+   * @param dpnTypeId the dpn type id
+   * @param dpnRefSetId the dpn ref set id
+   * @param dpnAcceptabilityId the dpn acceptability id
    * @return the string
    * @throws Exception the exception
    */
-  private String computeDefaultPreferredName(Concept concept) throws Exception {
+  private String computeDefaultPreferredName(Concept concept, String dpnTypeId,
+    String dpnRefSetId, String dpnAcceptabilityId) throws Exception {
 
     if (defaultPreferredNames.containsKey(concept.getTerminologyId())) {
       return defaultPreferredNames.get(concept.getTerminologyId());
@@ -2337,14 +2222,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    *
    * @param statistic the statistic
    */
-  private void updateStatisticCount(String statistic) {
+  private void updateStat(String stat) {
+    reportStatistics.put(stat, reportStatistics.get(stat) + 1);
 
-    // if contains key, increment, otherwise add key with value of 1
-    if (reportStatistics.containsKey(statistic)) {
-      reportStatistics.put(statistic, reportStatistics.get(statistic) + 1);
-    } else {
-      reportStatistics.put(statistic, 1);
-    }
   }
 
   /**
@@ -2363,5 +2243,87 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       reportStatistics.put(statistic, Math.max(stat, value));
     }
 
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler#setEffectiveTime
+   * (java.lang.String)
+   */
+  @Override
+  public void setEffectiveTime(String effectiveTime) {
+    this.effectiveTime = effectiveTime;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler#setModuleId(java
+   * .lang.String)
+   */
+  @Override
+  public void setModuleId(String moduleId) {
+    this.moduleId = moduleId;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler#setOutputDir(java
+   * .lang.String)
+   */
+  @Override
+  public void setOutputDir(String outputDir) {
+    this.outputDir = outputDir;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler#setWriteSnapshot
+   * (boolean)
+   */
+  @Override
+  public void setWriteSnapshot(boolean writeSnapshot) {
+    this.writeSnapshot = writeSnapshot;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler#setWriteDelta(boolean
+   * )
+   */
+  @Override
+  public void setWriteDelta(boolean writeDelta) {
+    this.writeDelta = writeDelta;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler#setMapProject(org
+   * .ihtsdo.otf.mapping.model.MapProject)
+   */
+  @Override
+  public void setMapProject(MapProject mapProject) {
+    this.mapProject = mapProject;
+  }
+
+  /**
+   * Sets the map project.
+   *
+   * @param mapRecords the map project
+   */
+  @Override
+  public void setMapRecords(List<MapRecord> mapRecords) {
+    this.mapRecords = mapRecords;
   }
 }

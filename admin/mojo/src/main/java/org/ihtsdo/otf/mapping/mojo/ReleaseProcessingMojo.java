@@ -60,11 +60,12 @@ public class ReleaseProcessingMojo extends AbstractMojo {
    */
   private String moduleId = null;
 
-
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
-    getLog().info("Processing release for ref set ids: " + refsetId);
+    getLog().info("Processing release");
+    getLog().info("  refset.id = " + refsetId);
 
+    // Check preconditions
     if (refsetId == null) {
       throw new MojoExecutionException("You must specify a refsetId.");
     }
@@ -84,39 +85,25 @@ public class ReleaseProcessingMojo extends AbstractMojo {
 
     if (moduleId == null)
       throw new MojoExecutionException("You must specify a module id");
-    
 
     try {
 
       MappingService mappingService = new MappingServiceJpa();
       Set<MapProject> mapProjects = new HashSet<>();
-      
-      /////////////////////
-      // Test Parameters //
-      /////////////////////
-      
-      String testConcepts[] = {}; 
-      
-      /*{"771000119108", 
-          "741000119101", 
-          "140131000119102", 
-          "711000119100", 
-          "140101000119109", 
-          "751000119104", 
-          "71421000119105", 
-          "140111000119107", 
-          "140121000119100", 
-          "731000119105", 
-          "721000119107"}; 
-      */
-      
-      
-      //{"4412009"};
-      
-      /////////////////////
-      // Get Projects    //
-      /////////////////////
 
+      // ///////////////////
+      // Test Parameters //
+      // ///////////////////
+
+      String testConcepts[] = {};
+
+      /*
+       * {"771000119108", "741000119101", "140131000119102", "711000119100",
+       * "140101000119109", "751000119104", "71421000119105", "140111000119107",
+       * "140121000119100", "731000119105", "721000119107"};
+       */
+
+      // Get Projects
       for (MapProject mapProject : mappingService.getMapProjects()
           .getIterable()) {
         for (String id : refsetId.split(",")) {
@@ -125,39 +112,29 @@ public class ReleaseProcessingMojo extends AbstractMojo {
           }
         }
       }
-    
-      
-      for (MapProject mapProject : mapProjects) {
- 
-       
 
-        // ensure output directory name has a terminating /
-        if (!outputDirName.endsWith("/"))
-          outputDirName += "/";
-        
-        // if test run, get map records, otherwise call ful release
+      // Iterate through map projects
+      for (MapProject mapProject : mapProjects) {
+
+        // Create and configure release handler
         ReleaseHandler releaseHandler = new ReleaseHandlerJpa();
-        if (testConcepts.length == 0) {
-          getLog().info(
-              "Processing release (all records) " + mapProject.getName() + ", "
-                  + mapProject.getId());
-  
-          // run delta  
-          releaseHandler.processReleaseDelta(mapProject, outputDirName, effectiveTime, moduleId);
-        } else {
-          
-          getLog().info(
-              "Processing release (test records) " + mapProject.getName() + ", "
-                  + mapProject.getId());
-          
+        releaseHandler.setMapProject(mapProject);
+        releaseHandler.setEffectiveTime(effectiveTime);
+        releaseHandler.setModuleId(moduleId);
+        releaseHandler.setMapProject(mapProject);
+        releaseHandler.setWriteDelta(true);
+        releaseHandler.setWriteSnapshot(false);
+        releaseHandler.setOutputDir(outputDirName);
+        if (testConcepts.length > 0) {
           List<MapRecord> mapRecords = new ArrayList<>();
           for (String terminologyId : testConcepts) {
-            mapRecords.addAll(mappingService.getMapRecordsForProjectAndConcept(mapProject.getId(), terminologyId).getMapRecords());
+            mapRecords.addAll(mappingService.getMapRecordsForProjectAndConcept(
+                mapProject.getId(), terminologyId).getMapRecords());
           }
-       
-          // call release handler with specific records
-          releaseHandler.processReleaseDelta(mapProject, mapRecords, outputDirName, effectiveTime, moduleId);
+          releaseHandler.setMapRecords(mapRecords);
         }
+        // call release handler with specific records
+        releaseHandler.processRelease();
       }
 
       getLog().info("done ...");
