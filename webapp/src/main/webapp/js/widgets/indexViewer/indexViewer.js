@@ -253,7 +253,7 @@ angular
       $scope.updateUrl = function(pageName) {
         $scope.selectedPage = pageName;
 
-        $scope.tUrl = $scope.focusProject.destinationTerminology + "/"
+        $scope.tUrl = "indexViewerData/" + $scope.focusProject.destinationTerminology + "/"
           + $scope.focusProject.destinationTerminologyVersion + "/html/"
           + $scope.selectedDomain + "/" + pageName + ".html";
 
