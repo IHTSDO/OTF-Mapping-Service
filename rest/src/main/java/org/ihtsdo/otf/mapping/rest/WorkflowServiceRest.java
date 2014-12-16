@@ -2261,6 +2261,15 @@ public class WorkflowServiceRest extends RootServiceRest {
     }
   }
 
+  /**
+   * Assign batch to fix error path.
+   *
+   * @param mapProjectId the map project id
+   * @param terminologyIds the terminology ids
+   * @param userName the user name
+   * @param authToken the auth token
+   * @return the validation result
+   */
   @POST
   @Path("/assign/fixErrorPath/project/id/{projectId}/user/id/{userName}")
   @ApiOperation(value = "Assign concepts to fix error path", notes = "Assigns publication-ready map records to the Fix Error Workflow Path given a list of concept ids", response = ValidationResult.class)
