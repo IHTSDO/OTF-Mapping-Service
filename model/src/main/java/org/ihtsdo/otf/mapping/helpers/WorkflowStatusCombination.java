@@ -8,7 +8,6 @@ import java.util.Map;
 /**
  * The Class WorkflowStatusCombination.
  *
- * @author ${author}
  */
 public class WorkflowStatusCombination {
 
