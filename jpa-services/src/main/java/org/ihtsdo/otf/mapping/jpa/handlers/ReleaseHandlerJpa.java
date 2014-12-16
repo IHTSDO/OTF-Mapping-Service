@@ -1137,22 +1137,37 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       String entryLine = null;
       if (mapProject.getMapRefsetPattern().equals(MapRefsetPattern.ExtendedMap)) {
         entryLine =
-            member.getTerminologyId()  + "\t"
-                + effectiveTime + "\t"
-                + (member.isActive() ? "1" : "0") + "\t"
-                + moduleId + "\t"
-                + member.getRefSetId() + "\t"
-                + member.getConcept().getTerminologyId() + "\t"
-                + member.getConcept().getDefaultPreferredName() + "\t"
-                + member.getMapGroup() + "\t"
-                + member.getMapPriority() + "\t"
-                + (mapProject.isRuleBased() ? member.getMapRule() : "") + "\t"
-                + member.getMapAdvice() + "\t"
-                + (member.getMapTarget() == null ? "" : member.getMapTarget()) + "\t"
+            member.getTerminologyId()
+                + "\t"
+                + effectiveTime
+                + "\t"
+                + (member.isActive() ? "1" : "0")
+                + "\t"
+                + moduleId
+                + "\t"
+                + member.getRefSetId()
+                + "\t"
+                + member.getConcept().getTerminologyId()
+                + "\t"
+                + member.getConcept().getDefaultPreferredName()
+                + "\t"
+                + member.getMapGroup()
+                + "\t"
+                + member.getMapPriority()
+                + "\t"
+                + (mapProject.isRuleBased() ? member.getMapRule() : "")
+                + "\t"
+                + member.getMapAdvice()
+                + "\t"
+                + (member.getMapTarget() == null ? "" : member.getMapTarget())
+                + "\t"
                 + (targetConcept != null ? targetConcept
-                    .getDefaultPreferredName() : "") + "\t"
-                + "447561005" + "\t" // fixed value for Extended map
-                + member.getMapRelationId()+ "\t"
+                    .getDefaultPreferredName() : "")
+                + "\t"
+                + "447561005"
+                + "\t" // fixed value for Extended map
+                + member.getMapRelationId()
+                + "\t"
                 + (mapRelation != null ? mapRelation.getName()
                     : "FAILED MAP RELATION");
 
@@ -1183,7 +1198,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
                 + "\t"
                 + member.getMapAdvice()
                 + "\t"
-                + (member.getMapTarget() == null ? "" : member.getMapTarget())
+                + member.getMapTarget()
                 + "\t"
                 + (targetConcept != null ? targetConcept
                     .getDefaultPreferredName() : "")
@@ -1274,8 +1289,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    */
   private String getHash(ComplexMapRefSetMember c) {
     return c.getRefSetId() + c.getConcept().getTerminologyId()
-        + c.getMapGroup() + c.getMapRule()
-        + (c.getMapTarget() == null ? "" : c.getMapTarget());
+        + c.getMapGroup() + c.getMapRule() + c.getMapTarget();
   }
 
   /**
@@ -1314,7 +1328,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         .getRule() : "");
     complexMapRefSetMember.setMapRelationId(new Long(mapEntry.getMapRelation()
         .getTerminologyId()));
-    complexMapRefSetMember.setMapTarget(mapEntry.getTargetId());
+    complexMapRefSetMember.setMapTarget(mapEntry.getTargetId() == null ? ""
+        : mapEntry.getTargetId());
 
     /**
      * Set the map advice from the advices on the entry.
@@ -1335,7 +1350,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     }
 
     // check for context dependent advice
-    if (mapEntry.getRule().startsWith("IFA") && mapEntry.getTargetId() != null
+    if (mapEntry.getRule().startsWith("IFA")
         && !mapEntry.getTargetId().isEmpty()) {
 
       // if not a gender rule, add the advice
@@ -1702,106 +1717,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   }
 
   /**
-   * Returns the human readable textfor complex map ref set member.
-   *
-   * @param complexMapRefSetMember the complex map ref set member
-   * @param targetConcept the target concept
-   * @param mapRelation the map relation
-   * @return the human readable textfor complex map ref set member
-   * @throws Exception the exception
-   */
-  private String getHumanReadableTextforComplexMapRefSetMember(
-    ComplexMapRefSetMember complexMapRefSetMember, Concept targetConcept,
-    MapRelation mapRelation) throws Exception {
-
-    String entryLine = "";
-
-    // switch line on map relation style
-    if (mapProject.getMapRefsetPattern().equals(MapRefsetPattern.ExtendedMap)) {
-      entryLine =
-          complexMapRefSetMember.getTerminologyId() // the UUID
-              + "\t"
-              + effectiveTime
-              + "\t"
-              + (complexMapRefSetMember.isActive() ? "1" : "0")
-              + "\t"
-              + moduleId
-              + "\t"
-              + complexMapRefSetMember.getRefSetId()
-              + "\t"
-              + complexMapRefSetMember.getConcept().getTerminologyId()
-              + "\t"
-              + complexMapRefSetMember.getConcept().getDefaultPreferredName()
-              + "\t"
-              + complexMapRefSetMember.getMapGroup()
-              + "\t"
-              + complexMapRefSetMember.getMapPriority()
-              + "\t"
-              + (mapProject.isRuleBased() ? complexMapRefSetMember.getMapRule()
-                  : "")
-              + "\t"
-              + complexMapRefSetMember.getMapAdvice()
-              + "\t"
-              + (complexMapRefSetMember.getMapTarget() == null ? ""
-                  : complexMapRefSetMember.getMapTarget())
-              + "\t"
-              + (targetConcept != null ? targetConcept
-                  .getDefaultPreferredName() : "")
-              + "\t"
-              + "447561005"
-              + "\t"
-              + complexMapRefSetMember.getMapRelationId()
-              + "\t"
-              + (mapRelation != null ? mapRelation.getName()
-                  : "FAILED MAP RELATION");
-
-      // ComplexMap style is identical to ExtendedMap
-      // with the exception of the terminating map relation terminology id
-    } else if (mapProject.getMapRefsetPattern().equals(
-        MapRefsetPattern.ComplexMap)) {
-      entryLine =
-          complexMapRefSetMember.getTerminologyId() // the UUID
-              + "\t"
-              + effectiveTime
-              + "\t"
-              + (complexMapRefSetMember.isActive() ? "1" : "0")
-              + "\t"
-              + moduleId
-              + "\t"
-              + complexMapRefSetMember.getRefSetId()
-              + "\t"
-              + complexMapRefSetMember.getConcept().getTerminologyId()
-              + "\t"
-              + complexMapRefSetMember.getConcept().getDefaultPreferredName()
-              + "\t"
-              + complexMapRefSetMember.getMapGroup()
-              + "\t"
-              + complexMapRefSetMember.getMapPriority()
-              + "\t"
-              + (mapProject.isRuleBased() ? complexMapRefSetMember.getMapRule()
-                  : "")
-              + "\t"
-              + complexMapRefSetMember.getMapAdvice()
-              + "\t"
-              + (complexMapRefSetMember.getMapTarget() == null ? ""
-                  : complexMapRefSetMember.getMapTarget())
-              + "\t"
-              + (targetConcept != null ? targetConcept
-                  .getDefaultPreferredName() : "")
-              + "\t"
-              + complexMapRefSetMember.getMapRelationId()
-              + "\t"
-              + (mapRelation != null ? mapRelation.getName()
-                  : "FAILED MAP RELATION");
-    }
-
-    entryLine += "\r\n";
-
-    return entryLine;
-
-  }
-
-  /**
    * Returns the machine readable textfor complex map ref set member.
    *
    * @param complexMapRefSetMember the complex map ref set member
@@ -1833,12 +1748,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               + complexMapRefSetMember.getMapPriority()
               + "\t"
               + (mapProject.isRuleBased() ? complexMapRefSetMember.getMapRule()
-                  : "")
+                  : "") + "\t" + complexMapRefSetMember.getMapAdvice()
               + "\t"
-              + complexMapRefSetMember.getMapAdvice()
-              + "\t"
-              + (complexMapRefSetMember.getMapTarget() == null ? ""
-                  : complexMapRefSetMember.getMapTarget()) + "\t"
+              + complexMapRefSetMember.getMapTarget() + "\t"
               + "447561005"
               + "\t" + complexMapRefSetMember.getMapRelationId();
 
@@ -1848,14 +1760,11 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         MapRefsetPattern.ComplexMap)) {
       entryLine =
           complexMapRefSetMember.getTerminologyId() // the UUID
-              + "\t"
-              + effectiveTime
+              + "\t" + effectiveTime
               + "\t"
               + (complexMapRefSetMember.isActive() ? "1" : "0")
               + "\t"
-              + moduleId
-              + "\t"
-              + complexMapRefSetMember.getRefSetId()
+              + moduleId + "\t" + complexMapRefSetMember.getRefSetId()
               + "\t"
               + complexMapRefSetMember.getConcept().getTerminologyId()
               + "\t"
@@ -1867,8 +1776,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               + "\t"
               + complexMapRefSetMember.getMapAdvice()
               + "\t"
-              + (complexMapRefSetMember.getMapTarget() == null ? ""
-                  : complexMapRefSetMember.getMapTarget())
+              + complexMapRefSetMember.getMapTarget()
               + "\t"
               + complexMapRefSetMember.getMapRelationId();
     }
@@ -2215,7 +2123,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    */
   private void updateStat(String stat) {
     if (!reportStatistics.containsKey(stat)) {
-      reportStatistics.put(stat,new Integer(0));
+      reportStatistics.put(stat, new Integer(0));
     }
     reportStatistics.put(stat, reportStatistics.get(stat) + 1);
   }
