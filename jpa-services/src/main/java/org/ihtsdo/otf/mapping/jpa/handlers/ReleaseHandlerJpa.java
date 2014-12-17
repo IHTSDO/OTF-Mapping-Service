@@ -323,26 +323,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // /////////////////////////////////////////////////////
 
     Logger.getLogger(getClass()).info("  Processing release");
-
-    // Prep MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT | 447639009
-    MapRelation ifaRuleRelation = null;
-    for (MapRelation rel : mappingService.getMapRelations().getMapRelations()) {
-      if (rel.getTerminologyId().equals("447639009")) {
-        ifaRuleRelation = rel;
-        break;
-      }
-    }
-    if (ifaRuleRelation == null) {
-      throw new Exception(
-          "Unable to find map relation for MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT "
-              + "| 447639009");
-    }
-
     // cycle over the map records marked for publishing
     for (MapRecord mapRecord : mapRecords) {
-
-      boolean anyNc = false;
-      boolean allNc = true;
 
       // instantiate map of entries by group
       // this is the object containing entries to write
@@ -357,166 +339,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               mapProject.getSourceTerminologyVersion()) < mapProject
               .getPropagationDescendantThreshold()) {
 
-        // /////////////////////////////////////////////////////
-        // Get the tree positions for this concept
-        // /////////////////////////////////////////////////////
-
-        TreePosition treePosition = null;
-        try {
-          // get any tree position for this concept
-          treePosition =
-              contentService.getAnyTreePositionWithDescendants(
-                  mapRecord.getConceptId(), mapProject.getSourceTerminology(),
-                  mapProject.getSourceTerminologyVersion());
-        } catch (Exception e) {
-          conceptErrors.put(mapRecord.getConceptId(),
-              "Could not retrieve any tree position");
+        // Handle up propagation for this record
+        if (!handleUpPropagation(mapRecord, entriesByGroup)) {
+          // handle cases that cannot be up propagated
           continue;
-        }
-
-        // check if tree positions were successfully retrieved
-        if (treePosition == null) {
-          conceptErrors.put(mapRecord.getConceptId(),
-              "Could not retrieve tree positions");
-          continue;
-        }
-
-        // get a list of tree positions sorted by position in hiearchy
-        // (deepest-first)
-        // NOTE: This list will contain the top-level/root map record
-        List<TreePosition> treePositionDescendantList =
-            getSortedTreePositionDescendantList(treePosition);
-
-        // /////////////////////////////////////////////////////
-        // Process up-propagated entries
-        // /////////////////////////////////////////////////////
-
-        // set of already processed concepts (may be multiple routes)
-        Set<String> descendantsProcessed = new HashSet<>();
-
-        // cycle over the tree positions again and add entries
-        // note that the tree positions are in reverse order of
-        // hierarchy depth
-        for (TreePosition tp : treePositionDescendantList) {
-
-          if (!descendantsProcessed.contains(tp.getTerminologyId())) {
-
-            // add this descendant to the processed list
-            descendantsProcessed.add(tp.getTerminologyId());
-
-            // get the parent map record for this tree position
-            // used to check if entries are duplicated on parent
-            String parent =
-                tp.getAncestorPath().substring(
-                    tp.getAncestorPath().lastIndexOf("~") + 1);
-            MapRecord mrParent = getMapRecordForTerminologyId(parent);
-
-            // skip the root level record, these entries are added
-            // below, after the up-propagated entries
-            if (!tp.getTerminologyId().equals(mapRecord.getConceptId())) {
-
-              // get the map record corresponding to this specific
-              // ancestor path + concept Id
-              MapRecord mr =
-                  getMapRecordForTerminologyId(tp.getTerminologyId());
-
-              if (mr != null) {
-
-                /*
-                 * Logger.getLogger(getClass()).info(
-                 * "     Adding entries from map record " + mr.getId() + ", " +
-                 * mr.getConceptId() + ", " + mr.getConceptName());
-                 */
-
-                // if no parent, continue, but log error
-                if (mrParent == null) {
-
-                  mrParent = new MapRecordJpa(); // create a blank for
-                                                 // comparison
-                  conceptErrors.put(tp.getTerminologyId(),
-                      "Could not retrieve parent record along ancestor path "
-                          + tp.getAncestorPath());
-                }
-
-                // cycle over the entries
-                for (MapEntry me : mr.getMapEntries()) {
-
-                  // get the current list of entries for this
-                  // group
-                  List<MapEntry> existingEntries =
-                      entriesByGroup.get(me.getMapGroup());
-
-                  if (existingEntries == null)
-                    existingEntries = new ArrayList<>();
-
-                  // flag for whether this entry is a duplicate of
-                  // an
-                  // existing or parent entry
-                  boolean isDuplicateEntry = false;
-
-                  // compare to the entries on the parent record
-                  // (this
-                  // produces short-form)
-                  // NOTE: This uses unmodified rules,
-                  for (MapEntry parentEntry : mrParent.getMapEntries()) {
-
-                    if (parentEntry.getMapGroup() == me.getMapGroup()
-                        && parentEntry.isEquivalent(me))
-                      isDuplicateEntry = true;
-                  }
-
-                  // if not a duplicate entry, add it to the map
-                  if (!isDuplicateEntry) {
-
-                    // create new map entry to prevent
-                    // hibernate-managed entity modification
-                    // TODO This probably could be handled by
-                    // the
-                    // entry copy routines
-                    // for testing purposes, doing this
-                    // explicitly
-                    MapEntry newEntry = new MapEntryJpa();
-                    newEntry.setMapAdvices(me.getMapAdvices());
-                    newEntry.setMapGroup(me.getMapGroup());
-                    newEntry.setMapBlock(me.getMapBlock());
-                    newEntry.setMapRecord(mr);
-                    newEntry.setRule(me.getRule()); // no-op for
-                    // non-rule-based
-                    // projects
-                    newEntry.setTargetId(me.getTargetId());
-                    newEntry.setTargetName(me.getTargetName());
-
-                    // set the propagated rule for this entry
-                    if (mapProject.isRuleBased()) {
-                      newEntry = setPropagatedRuleForMapEntry(newEntry);
-                    }
-
-                    // use the map relation
-                    // MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT | 447639009
-                    // except where target code is NC
-                    if (newEntry.getTargetId() == null
-                        || newEntry.getTargetId().isEmpty()) {
-                      newEntry.setMapRelation(me.getMapRelation());
-                    } else {
-                      newEntry.setMapRelation(ifaRuleRelation);
-                    }
-
-                    // add to the list
-                    existingEntries.add(newEntry);
-
-                    // replace existing list with modified list
-                    // entriesByGroup.put(newEntry.getMapGroup(),
-                    // existingEntries);
-
-                  }
-                }
-              } else {
-                conceptErrors
-                    .put(tp.getTerminologyId(),
-                        "No record exists for descendant concept, cannot up-propagate");
-              }
-            }
-          }
         }
 
       }
@@ -524,19 +350,11 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       // /////////////////////////////////////////////////////
       // Add the original (non-propagated) entries
       // /////////////////////////////////////////////////////
-
-      /*
-       * Logger.getLogger(getClass()).info( "     Adding original entries");
-       */
+      Logger.getLogger(getClass()).debug("     Adding original entries");
       for (MapEntry me : mapRecord.getMapEntries()) {
-
-        /*
-         * Logger.getLogger(getClass()).info( "       Adding entry " +
-         * me.getId());
-         */
+        Logger.getLogger(getClass()).debug("       Adding entry " + me.getId());
 
         List<MapEntry> existingEntries = entriesByGroup.get(me.getMapGroup());
-
         if (existingEntries == null)
           existingEntries = new ArrayList<>();
 
@@ -551,12 +369,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         newEntry.setRule(mapProject.isRuleBased() ? me.getRule() : "");
         newEntry.setTargetId(me.getTargetId());
         newEntry.setTargetName(me.getTargetName());
-
-        if (me.getTargetId() == null || me.getTargetId().isEmpty()) {
-          anyNc = true;
-        } else {
-          allNc = false;
-        }
 
         // if not the first entry and contains TRUE rule, set to
         // OTHERWISE TRUE
@@ -697,7 +509,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     // Write snapshot file
     if (writeSnapshot) {
-      writeActiveSnapshotFile(activeMembers);
+      writeActiveSnapshotFile(new ArrayList<>(
+          complexMapRefSetMembersToWrite.values()));
     }
 
     // Write delta file
@@ -723,6 +536,187 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // close the services
     contentService.close();
     mappingService.close();
+  }
+
+  /**
+   * Handle up propagation.
+   *
+   * @param mapRecord the map record
+   * @param entriesByGroup the entries by group
+   * @throws Exception
+   */
+  private boolean handleUpPropagation(MapRecord mapRecord,
+    Map<Integer, List<MapEntry>> entriesByGroup) throws Exception {
+
+    // Prep MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT | 447639009
+    MapRelation ifaRuleRelation = null;
+    for (MapRelation rel : mappingService.getMapRelations().getMapRelations()) {
+      if (rel.getTerminologyId().equals("447639009")) {
+        ifaRuleRelation = rel;
+        break;
+      }
+    }
+    if (ifaRuleRelation == null) {
+      throw new Exception(
+          "Unable to find map relation for MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT "
+              + "| 447639009");
+    }
+
+    // /////////////////////////////////////////////////////
+    // Get the tree positions for this concept
+    // /////////////////////////////////////////////////////
+
+    TreePosition treePosition = null;
+    try {
+      // get any tree position for this concept
+      treePosition =
+          contentService.getAnyTreePositionWithDescendants(
+              mapRecord.getConceptId(), mapProject.getSourceTerminology(),
+              mapProject.getSourceTerminologyVersion());
+    } catch (Exception e) {
+      conceptErrors.put(mapRecord.getConceptId(),
+          "Could not retrieve any tree position");
+      return false;
+    }
+
+    // check if tree positions were successfully retrieved
+    if (treePosition == null) {
+      conceptErrors.put(mapRecord.getConceptId(),
+          "Could not retrieve tree positions");
+      return false;
+    }
+
+    // get a list of tree positions sorted by position in hierarchy
+    // (deepest-first)
+    // NOTE: This list will contain the top-level/root map record
+    List<TreePosition> treePositionDescendantList =
+        getSortedTreePositionDescendantList(treePosition);
+
+    // /////////////////////////////////////////////////////
+    // Process up-propagated entries
+    // /////////////////////////////////////////////////////
+
+    // set of already processed concepts (may be multiple routes)
+    Set<String> descendantsProcessed = new HashSet<>();
+
+    // cycle over the tree positions again and add entries
+    // note that the tree positions are in reverse order of
+    // hierarchy depth
+    for (TreePosition tp : treePositionDescendantList) {
+
+      // avoid re-rendering nodes already rendered
+      if (!descendantsProcessed.contains(tp.getTerminologyId())) {
+
+        // add this descendant to the processed list
+        descendantsProcessed.add(tp.getTerminologyId());
+
+        // get the parent map record for this tree position
+        // used to check if entries are duplicated on parent
+        String parent =
+            tp.getAncestorPath().substring(
+                tp.getAncestorPath().lastIndexOf("~") + 1);
+        // TODO: this really should be parent(s) (e.g. via the "concept" object)
+        MapRecord mrParent = getMapRecordForTerminologyId(parent);
+
+        // skip the root level record, these entries are added
+        // below, after the up-propagated entries
+        if (!tp.getTerminologyId().equals(mapRecord.getConceptId())) {
+
+          // get the map record corresponding to this specific
+          // ancestor path + concept Id
+          MapRecord mr = getMapRecordForTerminologyId(tp.getTerminologyId());
+
+          if (mr != null) {
+
+            Logger.getLogger(getClass()).debug(
+                "     Adding entries from map record " + mr.getId() + ", "
+                    + mr.getConceptId() + ", " + mr.getConceptName());
+
+            // if no parent, continue, but log error
+            if (mrParent == null) {
+
+              mrParent = new MapRecordJpa(); // create a blank for
+                                             // comparison
+              conceptErrors.put(
+                  tp.getTerminologyId(),
+                  "Could not retrieve parent record along ancestor path "
+                      + tp.getAncestorPath());
+            }
+
+            // cycle over the entries
+            for (MapEntry me : mr.getMapEntries()) {
+
+              // get the current list of entries for this group
+              List<MapEntry> existingEntries =
+                  entriesByGroup.get(me.getMapGroup());
+
+              if (existingEntries == null) {
+                existingEntries = new ArrayList<>();
+              }
+
+              // flag for whether this entry is a duplicate of
+              // an existing or parent entry
+              boolean isDuplicateEntry = true;
+
+              // compare to the entries on the parent record
+              // (this produces short-form)
+              // NOTE: This uses unmodified rules
+              for (MapEntry parentEntry : mrParent.getMapEntries()) {
+                if (parentEntry.getMapGroup() == me.getMapGroup()
+                    && !parentEntry.isEquivalent(me)) {
+                  isDuplicateEntry = false;
+                  break;
+                }
+              }
+
+              // if not a duplicate entry, add it to the map
+              if (!isDuplicateEntry) {
+
+                // create new map entry to prevent
+                // hibernate-managed entity modification (leave id unset)
+                MapEntry newEntry = new MapEntryJpa();
+                newEntry.setMapAdvices(me.getMapAdvices());
+                newEntry.setMapGroup(me.getMapGroup());
+                newEntry.setMapBlock(me.getMapBlock());
+                newEntry.setMapRecord(mr);
+                newEntry.setRule(me.getRule()); // no-op for
+                // non-rule-based
+                // projects
+                newEntry.setTargetId(me.getTargetId());
+                newEntry.setTargetName(me.getTargetName());
+
+                // set the propagated rule for this entry
+                if (mapProject.isRuleBased()) {
+                  newEntry = setPropagatedRuleForMapEntry(newEntry);
+                }
+
+                // use the map relation
+                // MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT | 447639009
+                // except where target code is NC
+                if (newEntry.getTargetId() == null
+                    || newEntry.getTargetId().isEmpty()) {
+                  newEntry.setMapRelation(me.getMapRelation());
+                } else {
+                  newEntry.setMapRelation(ifaRuleRelation);
+                }
+
+                // add to the list
+                existingEntries.add(newEntry);
+
+                // replace existing list with modified list - unnecessary
+                // entriesByGroup.put(newEntry.getMapGroup(),
+                // existingEntries);
+
+              }
+            }
+          } else {
+            conceptErrors.put(tp.getTerminologyId(),
+                "No record exists for descendant concept, cannot up-propagate");
+          }
+        }
+      }
+    }
+    return true;
   }
 
   /**
@@ -870,8 +864,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       }
 
     }
-
-    updateStatMax("Concepts inactivated", tempMap.size());
 
     // set active to false and write inactivated complex maps
     for (ComplexMapRefSetMember c : tempMap.values()) {
@@ -1076,8 +1068,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     }
 
     // Write entries
-    Map<String, Integer> conceptsMapped = new HashMap<>();
-
+    List<String> lines = new ArrayList<>();
     for (ComplexMapRefSetMember member : members) {
 
       // get the map relation name for the human readable file
@@ -1174,10 +1165,15 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       }
 
       entryLine += "\r\n";
-
-      humanReadableWriter.write(entryLine);
+      lines.add(entryLine);
     }
-
+    // Sort lines
+    Collections.sort(lines, ConfigUtility.TSV_COMPARATOR);
+    // Write file
+    for (String line : lines) {
+      humanReadableWriter.write(line);
+    }
+    
     // Close
     humanReadableWriter.flush();
     humanReadableWriter.close();
@@ -1612,7 +1608,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
                   : "") + "\t" + complexMapRefSetMember.getMapAdvice()
               + "\t"
               + complexMapRefSetMember.getMapTarget() + "\t"
-              + "447561005"
+              + "447561005" // TODO: make algorithm specific
               + "\t" + complexMapRefSetMember.getMapRelationId();
 
       // ComplexMap style is identical to ExtendedMap
@@ -1975,18 +1971,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       item.setResultType(ReportResultType.CONCEPT);
       reportResult.addReportResultItem(item);
     }
-  }
-
-  /**
-   * Update statistic count.
-   *
-   * @param stat the stat
-   */
-  private void updateStat(String stat) {
-    if (!reportStatistics.containsKey(stat)) {
-      reportStatistics.put(stat, new Integer(0));
-    }
-    reportStatistics.put(stat, reportStatistics.get(stat) + 1);
   }
 
   /**
