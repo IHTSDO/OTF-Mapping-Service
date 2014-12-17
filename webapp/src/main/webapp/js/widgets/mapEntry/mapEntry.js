@@ -40,6 +40,11 @@ angular
 								sortByKey($scope.allowableAdvices, 'detail');
 								$scope.allowableMapRelations = getAllowableRelations(
 										parameters.entry, parameters.project.mapRelation);
+								
+								// set the rule to null if a non-rule-based project
+								// added to catch any badly constructed rules from other widgets
+								if ($scope.project.ruleBased == false)
+									$scope.entry.rule = null;
 
 								// compute relation and advice IFF a target or entry has
 								// been set
