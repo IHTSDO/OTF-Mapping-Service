@@ -35,376 +35,551 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
-
-
 /**
- * REST implementation for content service
+ * REST implementation for content service.
  */
 @Path("/content")
-@Api(value = "/content", description = "Operations to retrieve RF2 content.")
-@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+@Api(value = "/content", description = "Operations to retrieve RF2 content for a terminology.")
+@Produces({
+    MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+})
 public class ContentServiceRest extends RootServiceRest {
 
-	/** The security service. */
-	private SecurityService securityService;
+  /** The security service. */
+  private SecurityService securityService;
 
-	/**
-	 * Instantiates an empty {@link ContentServiceRest}.
-	 */
-	public ContentServiceRest() throws Exception {
-		securityService = new SecurityServiceJpa();
-	}
+  /**
+   * Instantiates an empty {@link ContentServiceRest}.
+   *
+   * @throws Exception the exception
+   */
+  public ContentServiceRest() throws Exception {
+    securityService = new SecurityServiceJpa();
+  }
 
-	/**
-	 * Returns the concept for id, terminology, and terminology version
-	 * 
-	 * @param terminologyId
-	 *            the terminology id
-	 * @param terminology
-	 *            the concept terminology
-	 * @param terminologyVersion
-	 *            the terminology version
-	 * @param authToken 
-	 * @return the concept
-	 */
-	@GET
-	@Path("/concept/id/{terminology}/{version}/{terminologyId}")
-	@ApiOperation(value = "Get concept by id, version, and terminology", notes = "Returns a concept in either xml json given a concept id, terminology, and terminology version.", response = Concept.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public Concept getConcept(
-			@ApiParam(value = "Concept terminology id", required = true) @PathParam("terminologyId") String terminologyId,
-			@ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
-			@ApiParam(value = "Concept terminology version", required = true) @PathParam("version") String terminologyVersion,
-			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+  /**
+   * Returns the concept for id, terminology, and terminology version.
+   *
+   * @param terminologyId the terminology id
+   * @param terminology the concept terminology
+   * @param terminologyVersion the terminology version
+   * @param authToken the auth token
+   * @return the concept
+   */
+  @GET
+  @Path("/concept/id/{terminology}/{terminolgoyVersion}/{terminologyId}")
+  @ApiOperation(value = "Get concept by id, terminology, and version", notes = "Gets the concept for the specified parameters.", response = Concept.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public Concept getConcept(
+    @ApiParam(value = "Concept terminology id, e.g. 22298006", required = true) @PathParam("terminologyId") String terminologyId,
+    @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
+    @ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminolgoyVersion") String terminologyVersion,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
-		Logger.getLogger(ContentServiceRest.class).info(
-				"RESTful call (Content): /concept/" + terminology + "/"
-						+ terminologyVersion + "/id/" + terminologyId);
+    Logger.getLogger(ContentServiceRest.class).info(
+        "RESTful call (Content): /concept/" + terminology + "/"
+            + terminologyVersion + "/id/" + terminologyId);
 
-		try {
-			// authorize call
-			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
-			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
-				throw new WebApplicationException(Response.status(401).entity(
-						"User does not have permissions to retrieve the concept.").build());
-			
-  		
-			ContentService contentService = new ContentServiceJpa();
-			Concept c = contentService.getConcept(terminologyId, terminology,
-					terminologyVersion);
+    try {
+      // authorize call
+      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+        throw new WebApplicationException(Response.status(401)
+            .entity("User does not have permissions to retrieve the concept.")
+            .build());
 
-			if (c != null) {
-				// Make sure to read descriptions and relationships (prevents
-				// serialization error)
-				for (Description d : c.getDescriptions()) {
-					d.getLanguageRefSetMembers();
-				}
-				for (Relationship r : c.getRelationships()) {
-					r.getDestinationConcept();
-				}
-			}
+      ContentService contentService = new ContentServiceJpa();
+      Concept c =
+          contentService.getConcept(terminologyId, terminology,
+              terminologyVersion);
 
-			contentService.close();
-			return c;
-		} catch (Exception e) { 
-			handleException(e, "trying to retrieve a concept");
-			return null;
-		}
+      if (c != null) {
+        // Make sure to read descriptions and relationships (prevents
+        // serialization error)
+        for (Description d : c.getDescriptions()) {
+          d.getLanguageRefSetMembers();
+        }
+        for (Relationship r : c.getRelationships()) {
+          r.getDestinationConcept();
+        }
+      }
 
-	}
+      contentService.close();
+      return c;
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve a concept");
+      return null;
+    }
 
+  }
 
-	/**
-	 * Returns the concept for id, terminology. Looks in the latest version of
-	 * the terminology.
-	 * 
-	 * @param terminologyId
-	 *            the id
-	 * @param terminology
-	 *            the concept terminology
-	 * @param authToken 
-	 * @return the concept
-	 */
-	@GET
-	@Path("/concept/id/{terminology}/{terminologyId}")
-	@ApiOperation(value = "Get the latest version of a concept", notes = "Returns a concept given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public Concept getConcept(
-			@ApiParam(value = "Concept terminologyId", required = true) @PathParam("terminologyId") String terminologyId,
-			@ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
-			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+  /**
+   * Returns the concept for id, terminology. Looks in the latest version of the
+   * terminology.
+   *
+   * @param terminologyId the id
+   * @param terminology the concept terminology
+   * @param authToken the auth token
+   * @return the concept
+   */
+  @GET
+  @Path("/concept/id/{terminology}/{terminologyId}")
+  @ApiOperation(value = "Get the concept for the latest version of an id and terminology.", notes = "Gets the concept for the specified parameters.", response = Concept.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public Concept getConcept(
+    @ApiParam(value = "Concept terminology id, e.g. 22298006", required = true) @PathParam("terminologyId") String terminologyId,
+    @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
-		Logger.getLogger(ContentServiceRest.class).info(
-				"RESTful call (Content): /concept/" + terminology + "/id/"
-						+ terminologyId);
+    Logger.getLogger(ContentServiceRest.class).info(
+        "RESTful call (Content): /concept/" + terminology + "/id/"
+            + terminologyId);
 
-		try {
-			// authorize call
-			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
-			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
-				throw new WebApplicationException(Response.status(401).entity(
-						"User does not have permissions to retrieve the latest version concept.").build());
-			
-  		
-			ContentService contentService = new ContentServiceJpa();
-			MetadataService metadataService = new MetadataServiceJpa();
-			String version = metadataService.getLatestVersion(terminology);
-			Concept c = contentService.getConcept(terminologyId, terminology,
-					version);
-			c.getDescriptions();
-			c.getRelationships();
-			metadataService.close();
-			contentService.close();
-			return c;
+    try {
+      // authorize call
+      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+        throw new WebApplicationException(
+            Response
+                .status(401)
+                .entity(
+                    "User does not have permissions to retrieve the latest version concept.")
+                .build());
 
-		} catch (Exception e) {
-			handleException(e, "trying to retrieve the latest version concept");
-			return null;
-		}
-	}
+      ContentService contentService = new ContentServiceJpa();
+      MetadataService metadataService = new MetadataServiceJpa();
+      String version = metadataService.getLatestVersion(terminology);
+      Concept c =
+          contentService.getConcept(terminologyId, terminology, version);
+      c.getDescriptions();
+      c.getRelationships();
+      metadataService.close();
+      contentService.close();
+      return c;
 
-	/**
-	 * Returns the concept for search string.
-	 * 
-	 * @param searchString
-	 *            the lucene search string
-	 * @param authToken 
-	 * @return the concept for id
-	 */
-	@GET
-	@Path("/concept/query/{string}")
-	@ApiOperation(value = "Find concepts by search query", notes = "Returns a list of concepts that are related to given lucene search query.", response = String.class)
-	public SearchResultList findConceptsForQuery(
-			@ApiParam(value = "query as lucene search string", required = true) @PathParam("string") String searchString,
-			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
-			
-		Logger.getLogger(ContentServiceRest.class).info(
-				"RESTful call (Content): /concept/query/" + searchString);
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve the latest version concept");
+      return null;
+    }
+  }
 
-		try {
-			// authorize call
-			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
-			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
-				throw new WebApplicationException(Response.status(401).entity(
-						"User does not have permissions to find the concepts by query.").build());
-			
-  		
-			ContentService contentService = new ContentServiceJpa();
-			SearchResultList sr =
-					contentService.findConceptsForQuery(searchString,
-							new PfsParameterJpa());
-			contentService.close();
-			return sr;
+  /**
+   * Returns the concept for search string.
+   *
+   * @param searchString the lucene search string
+   * @param authToken the auth token
+   * @return the concept for id
+   */
+  @GET
+  @Path("/concept/query/{string}")
+  @ApiOperation(value = "Find concepts matching a search query.", notes = "Gets a list of search results that match the lucene query.", response = String.class)
+  public SearchResultList findConceptsForQuery(
+    @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @PathParam("string") String searchString,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
-		} catch (Exception e) {
-			handleException(e, "trying to find the concepts by query");
-			return null;
-		}
-	}
+    Logger.getLogger(ContentServiceRest.class).info(
+        "RESTful call (Content): /concept/query/" + searchString);
 
-	/**
-	 * Returns the descendants of a concept as mapped by relationships and
-	 * inverse relationships
-	 * 
-	 * @param terminologyId
-	 *            the terminology id
-	 * @param terminology
-	 *            the terminology
-	 * @param terminologyVersion
-	 *            the terminology version
-	 * @param authToken 
-	 * @return the search result list
-	 */
-	@GET
-	@Path("/concept/id/{terminology}/{version}/{terminologyId}/descendants")
-	@ApiOperation(value = "Find a concept's descendants", notes = "Returns a list of a concept's descendants given a concept id, terminology, and terminology version.", response = Concept.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public SearchResultList findDescendantConcepts(
-			@ApiParam(value = "Concept terminology id", required = true) @PathParam("terminologyId") String terminologyId,
-			@ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
-			@ApiParam(value = "Concept terminology version", required = true) @PathParam("version") String terminologyVersion,
-			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+    try {
+      // authorize call
+      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+        throw new WebApplicationException(
+            Response
+                .status(401)
+                .entity(
+                    "User does not have permissions to find the concepts by query.")
+                .build());
 
-		Logger.getLogger(ContentServiceRest.class).info(
-				"RESTful call (Content): /concept/" + terminology + "/"
-						+ terminologyVersion + "/id/" + terminologyId
-						+ "/descendants");
+      ContentService contentService = new ContentServiceJpa();
+      SearchResultList sr =
+          contentService.findConceptsForQuery(searchString,
+              new PfsParameterJpa());
+      contentService.close();
+      return sr;
 
-		try {
-			// authorize call
-			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
-			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
-				throw new WebApplicationException(Response.status(401).entity(
-						"User does not have permissions to find the descendant concepts.").build());
-			
-  		
-			ContentService contentService = new ContentServiceJpa();
+    } catch (Exception e) {
+      handleException(e, "trying to find the concepts by query");
+      return null;
+    }
+  }
 
-			// want all descendants, do not use PFS parameter
-			SearchResultList results = contentService.findDescendantConcepts(
-					terminologyId, terminology, terminologyVersion, null);
+  /**
+   * Returns the descendants of a concept as mapped by relationships and inverse
+   * relationships.
+   *
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @param authToken the auth token
+   * @return the search result list
+   */
+  @GET
+  @Path("/concept/id/{terminology}/{terminologyVersion}/{terminologyId}/descendants")
+  @ApiOperation(value = "Find concept descendants.", notes = "Gets a list of search results for each descendant concept.", response = Concept.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public SearchResultList findDescendantConcepts(
+    @ApiParam(value = "Concept terminology id, e.g. 22298006", required = true) @PathParam("terminologyId") String terminologyId,
+    @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
+    @ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
-			contentService.close();
-			return results;
+    Logger.getLogger(ContentServiceRest.class).info(
+        "RESTful call (Content): /concept/" + terminology + "/"
+            + terminologyVersion + "/id/" + terminologyId + "/descendants");
 
-		} catch (Exception e) {
-			handleException(e, "trying to find descendant concepts");
-			return null;
-		}
-	}
+    try {
+      // authorize call
+      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+        throw new WebApplicationException(
+            Response
+                .status(401)
+                .entity(
+                    "User does not have permissions to find the descendant concepts.")
+                .build());
 
-	/**
-	 * Returns the immediate children of a concept given terminology information
-	 * 
-	 * @param id
-	 *            the terminology id
-	 * @param terminology
-	 *            the terminology
-	 * @param terminologyVersion
-	 *            the terminology version
-	 * @param authToken 
-	 * @return the search result list
-	 */
-	@GET
-	@Path("/concept/id/{terminology}/{version}/{id}/children")
-	@ApiOperation(value = "Find a concept's immediate children", notes = "Returns a concept's children in either xml json given a concept id, terminology, and terminology version.", response = Concept.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public SearchResultList findChildConcepts(
-			@ApiParam(value = "ID of concept to fetch descendants for", required = true) @PathParam("id") Long id,
-			@ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
-			@ApiParam(value = "Concept terminology version", required = true) @PathParam("version") String terminologyVersion,
-			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+      ContentService contentService = new ContentServiceJpa();
 
-		Logger.getLogger(ContentServiceRest.class).info(
-				"RESTful call (Content): /concept/" + terminology + "/"
-						+ terminologyVersion + "/id/" + id.toString()
-						+ "/descendants");
+      // want all descendants, do not use PFS parameter
+      SearchResultList results =
+          contentService.findDescendantConcepts(terminologyId, terminology,
+              terminologyVersion, null);
 
-		try {
-			// authorize call
-			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
-			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
-				throw new WebApplicationException(Response.status(401).entity(
-						"User does not have permissions to find the child concepts.").build());
-			
-  		
-			ContentService contentService = new ContentServiceJpa();
-			MetadataService metadataService = new MetadataServiceJpa();
+      contentService.close();
+      return results;
 
-			String isaId = "";
-			Map<String, String> relTypesMap = metadataService
-					.getHierarchicalRelationshipTypes(terminology,
-							terminologyVersion);
-			for (Map.Entry<String, String> entry : relTypesMap.entrySet()) {
-				if (entry.getValue().toLowerCase().startsWith("is"))
-					isaId = entry.getKey();
-			}
+    } catch (Exception e) {
+      handleException(e, "trying to find descendant concepts");
+      return null;
+    }
+  }
 
-			SearchResultList results = new SearchResultListJpa();
+  /**
+   * Returns the immediate children of a concept given terminology information.
+   *
+   * @param id the terminology id
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @param authToken the auth token
+   * @return the search result list
+   */
+  @GET
+  @Path("/concept/id/{terminology}/{terminologyVersion}/{terminologyId}/children")
+  @ApiOperation(value = "Find concept children.", notes = "Gets a list of search results for each child concept.", response = Concept.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public SearchResultList findChildConcepts(
+    @ApiParam(value = "Concept terminology id, e.g. 22298006", required = true) @PathParam("terminologyId") String id,
+    @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
+    @ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
-			// get the concept and add it as first element of concept list
-			Concept concept = contentService.getConcept(id.toString(),
-					terminology, terminologyVersion);
+    Logger.getLogger(ContentServiceRest.class).info(
+        "RESTful call (Content): /concept/" + terminology + "/"
+            + terminologyVersion + "/id/" + id.toString() + "/descendants");
 
-			// if no concept, return empty list
-			if (concept == null) {
-				return results;
-			}
+    try {
+      // authorize call
+      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+        throw new WebApplicationException(Response
+            .status(401)
+            .entity(
+                "User does not have permissions to find the child concepts.")
+            .build());
 
-			// cycle over relationships
-			for (Relationship rel : concept.getInverseRelationships()) {
+      ContentService contentService = new ContentServiceJpa();
+      MetadataService metadataService = new MetadataServiceJpa();
 
-				if (rel.isActive() && rel.getTypeId().equals(new Long(isaId))
-						&& rel.getSourceConcept().isActive()) {
+      String isaId = "";
+      Map<String, String> relTypesMap =
+          metadataService.getHierarchicalRelationshipTypes(terminology,
+              terminologyVersion);
+      for (Map.Entry<String, String> entry : relTypesMap.entrySet()) {
+        if (entry.getValue().toLowerCase().startsWith("is"))
+          isaId = entry.getKey();
+      }
 
-					Concept c = rel.getSourceConcept();
+      SearchResultList results = new SearchResultListJpa();
 
-					SearchResult sr = new SearchResultJpa();
-					sr.setId(c.getId());
-					sr.setTerminologyId(c.getTerminologyId());
-					sr.setTerminology(c.getTerminology());
-					sr.setTerminologyVersion(c.getTerminologyVersion());
-					sr.setValue(c.getDefaultPreferredName());
+      // get the concept and add it as first element of concept list
+      Concept concept =
+          contentService.getConcept(id.toString(), terminology,
+              terminologyVersion);
 
-					// add search result to list
-					results.addSearchResult(sr);
-				}
-			}
+      // if no concept, return empty list
+      if (concept == null) {
+        return results;
+      }
 
-			metadataService.close();
-			contentService.close();
-			return results;
+      // cycle over relationships
+      for (Relationship rel : concept.getInverseRelationships()) {
 
-		} catch (Exception e) {
-			handleException(e, "trying to find the child concepts");
-			return null;
-		}
-	}
-	
-	@POST
-	@Path("/terminology/id/{terminology}/{version}/delta")
-	@ApiOperation(value = "Returns a list of the most recently edited concepts", notes = "For a given terminology and version, returns the set of concepts last modified in the database", response = Concept.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public SearchResultList findDeltaConceptsForTerminology(
-			@ApiParam(value = "Terminology", required = true) @PathParam("terminology") String terminology,
-			@ApiParam(value = "Terminology version", required = true) @PathParam("version") String terminologyVersion,
-			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken,
-			@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter) {
-		
-		Logger.getLogger(ContentServiceRest.class).info(
-				"RESTful call (Content): /terminology/id/" + terminology + "/"
-						+ terminologyVersion
-						+ "/delta");
+        if (rel.isActive() && rel.getTypeId().equals(new Long(isaId))
+            && rel.getSourceConcept().isActive()) {
 
-		try {
-			// authorize call
-			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
-			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
-				throw new WebApplicationException(Response.status(401).entity(
-						"User does not have permissions to find the child concepts.").build());
-			
-			ContentService contentService = new ContentServiceJpa();
-			
-			ConceptList conceptList = contentService.getConceptsModifiedSinceDate(terminology, null, pfsParameter);
-			SearchResultList results = new SearchResultListJpa();
+          Concept c = rel.getSourceConcept();
 
-			for (Concept c : conceptList.getConcepts()) {
-				
-				// first pass check to see if this is a new concept or a modified concept
-				// this will erroneously report NEW concept if all of the descriptions, relationships, and language ref set members were modified
-				boolean modifiedConcept = false;
-				for (Description d : c.getDescriptions()) {
-					
-					if (!d.getEffectiveTime().equals(c.getEffectiveTime())) modifiedConcept = true;
-					for (LanguageRefSetMember l : d.getLanguageRefSetMembers()) {
-						if (!l.getEffectiveTime().equals(c.getEffectiveTime())) modifiedConcept = true;
-					}
-				}
-				
-				for (Relationship r : c.getRelationships()) {
-					if (!r.getEffectiveTime().equals(c.getEffectiveTime())) modifiedConcept = true;
-				}
-				
-				
-				SearchResult result = new SearchResultJpa();
-				result.setId(c.getId());
-				result.setTerminologyVersion(modifiedConcept == true ? "Modified" : "New");
-				result.setTerminologyId(c.getTerminologyId());
-				result.setValue(c.getDefaultPreferredName());
-				results.addSearchResult(result);
+          SearchResult sr = new SearchResultJpa();
+          sr.setId(c.getId());
+          sr.setTerminologyId(c.getTerminologyId());
+          sr.setTerminology(c.getTerminology());
+          sr.setTerminologyVersion(c.getTerminologyVersion());
+          sr.setValue(c.getDefaultPreferredName());
 
-			}
-			
-			results.setTotalCount(conceptList.getTotalCount());
-			
-			return results;
-		} catch (Exception e) {
-			handleException(e, "trying to retrieve concepts changed in last delta");
-			return null;
-		}
-	}
-			
-			
+          // add search result to list
+          results.addSearchResult(sr);
+        }
+      }
 
+      metadataService.close();
+      contentService.close();
+      return results;
+
+    } catch (Exception e) {
+      handleException(e, "trying to find the child concepts");
+      return null;
+    }
+  }
+
+  /**
+   * Find delta concepts for terminology.
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @param authToken the auth token
+   * @param pfsParameter the pfs parameter
+   * @return the search result list
+   */
+  @POST
+  @Path("/terminology/id/{terminology}/{terminologyVersion}/delta")
+  @ApiOperation(value = "Gets the most recently edited concepts", notes = "Gets a list of search results for concepts changed since the last delta run.", response = Concept.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public SearchResultList findDeltaConceptsForTerminology(
+    @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
+    @ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken,
+    @ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter) {
+
+    Logger.getLogger(ContentServiceRest.class).info(
+        "RESTful call (Content): /terminology/id/" + terminology + "/"
+            + terminologyVersion + "/delta");
+
+    try {
+      // authorize call
+      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+        throw new WebApplicationException(Response
+            .status(401)
+            .entity(
+                "User does not have permissions to find the child concepts.")
+            .build());
+
+      ContentService contentService = new ContentServiceJpa();
+
+      ConceptList conceptList =
+          contentService.getConceptsModifiedSinceDate(terminology, null,
+              pfsParameter);
+      SearchResultList results = new SearchResultListJpa();
+
+      for (Concept c : conceptList.getConcepts()) {
+
+        // first pass check to see if this is a new concept or a modified
+        // concept
+        // this will erroneously report NEW concept if all of the descriptions,
+        // relationships, and language ref set members were modified
+        boolean modifiedConcept = false;
+        for (Description d : c.getDescriptions()) {
+
+          if (!d.getEffectiveTime().equals(c.getEffectiveTime()))
+            modifiedConcept = true;
+          for (LanguageRefSetMember l : d.getLanguageRefSetMembers()) {
+            if (!l.getEffectiveTime().equals(c.getEffectiveTime()))
+              modifiedConcept = true;
+          }
+        }
+
+        for (Relationship r : c.getRelationships()) {
+          if (!r.getEffectiveTime().equals(c.getEffectiveTime()))
+            modifiedConcept = true;
+        }
+
+        SearchResult result = new SearchResultJpa();
+        result.setId(c.getId());
+        result.setTerminologyVersion(modifiedConcept == true ? "Modified"
+            : "New");
+        result.setTerminologyId(c.getTerminologyId());
+        result.setValue(c.getDefaultPreferredName());
+        results.addSearchResult(result);
+
+      }
+
+      results.setTotalCount(conceptList.getTotalCount());
+
+      return results;
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve concepts changed in last delta");
+      return null;
+    }
+  }
+  
+  /**
+   * Returns the index viewer indexes.
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @param authToken the auth token
+   * @return the index viewer indexes
+   */
+  @GET
+  @Path("/index/{terminology}/{terminologyVersion}")
+  @ApiOperation(value = "Get the index domains available for given terminology and version.", notes = "Gets the index domains available for the given terminology and version.", response = SearchResultList.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public SearchResultList getIndexDomains(
+	@ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
+	@ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+    Logger.getLogger(ContentServiceRest.class).info(
+        "RESTful call (Content): /index/" + terminology + "/" + terminologyVersion);
+
+    try {
+      // authorize call
+      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+        throw new WebApplicationException(
+            Response
+                .status(401)
+                .entity(
+                    "User does not have permissions to retrieve the indexes to be viewed.")
+                .build());
+
+      ContentService contentService = new ContentServiceJpa();
+      SearchResultList searchResultList = contentService.getIndexDomains(terminology, terminologyVersion);
+      contentService.close();
+      return searchResultList;
+
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve the indexes to be viewed");
+      return null;
+    }
+  }
+
+  /**
+   * Returns the index viewer pages for index.
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @param index the index
+   * @param authToken the auth token
+   * @return the index viewer pages for index
+   */
+  @GET
+  @Path("/index/{terminology}/{terminologyVersion}/{index}")
+  @ApiOperation(value = "Return the index page names available for given terminology, version and domain.", notes = "Returns the pages available for the given terminology, version and domain.", response = SearchResultList.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public SearchResultList getIndexViewerPagesForIndex(
+	@ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
+	@ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
+	@ApiParam(value = "Name of index or domain", required = true) @PathParam("index") String index,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+    Logger.getLogger(ContentServiceRest.class).info(
+        "RESTful call (Content): /index/" + terminology + "/" + terminologyVersion + "/" +
+      index);
+
+    try {
+      // authorize call
+      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+        throw new WebApplicationException(
+            Response
+                .status(401)
+                .entity(
+                    "User does not have permissions to retrieve the page names for the given index.")
+                .build());
+    
+      ContentService contentService = new ContentServiceJpa();
+      SearchResultList searchResultList = contentService.getIndexPagesForIndex(terminology, terminologyVersion, index);
+      
+      contentService.close();
+      return searchResultList;
+
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve the page names for the given index");
+      return null;
+    }
+  }
+  
+  /**
+   * Find index viewer search result entries.
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @param domain the domain
+   * @param searchField the search field
+   * @param subSearchField the sub search field
+   * @param subSubSearchField the sub sub search field
+   * @param allFlag the all flag
+   * @param authToken the auth token
+   * @return the search result list
+   */
+  @GET  
+  @Path("/index/{terminology}/{terminologyVersion}/{domain}/search/{searchField}/subSearch/{subSearchField}/subSubSearch/{subSubSearchField}/{allFlag}")
+  @ApiOperation(value = "Peform the search given the search terms.", notes = "Performs the search given the search terms in the given terminology.", response = SearchResultList.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public SearchResultList findIndexViewerEntries(
+    @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
+    @ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
+    @ApiParam(value = "Domain/Index within terminology", required = true) @PathParam("domain") String domain,
+    @ApiParam(value = "First level search field", required = true) @PathParam("searchField") String searchField,
+    @ApiParam(value = "Second level search field to refine search", required = true) @PathParam("subSearchField") String subSearchField,
+    @ApiParam(value = "Third level search field to refine search", required = true) @PathParam("subSubSearchField") String subSubSearchField,
+    @ApiParam(value = "If all levels should be searched, e.g. true", required = true) @PathParam("allFlag") boolean allFlag,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+    Logger.getLogger(ContentServiceRest.class).info(
+        "RESTful call (Content): /index/" + terminology + "/" + terminologyVersion +
+        "/" + domain + "/" + searchField + "/" + subSearchField + "/" + subSubSearchField + "/" + allFlag);
+
+    try {
+      // authorize call
+      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+        throw new WebApplicationException(
+            Response
+                .status(401)
+                .entity(
+                    "User does not have permissions to perform a search of the indexes.")
+                .build());
+
+      ContentService contentService = new ContentServiceJpa();
+      SearchResultList searchResultList = contentService.findIndexEntries(terminology, 
+          terminologyVersion, domain, searchField, subSearchField, subSubSearchField, allFlag);
+      searchResultList.setTotalCount(searchResultList.getCount());
+      contentService.close();
+      return searchResultList;
+
+    } catch (Exception e) {
+      handleException(e, "trying to perform a search of the indexes");
+      return null;
+    }
+  }
 
 }

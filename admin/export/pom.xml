@@ -5,28 +5,28 @@
   <!-- Module Metadata -->
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
-    <artifactId>otf-mapping-service</artifactId>
+    <artifactId>mapping-parent</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <relativePath>../../parent</relativePath>
   </parent>
 
   <artifactId>mapping-admin-export</artifactId>
-  <name>OTF Admin Export Metadata</name>
-  <description>OTF Administrator Tool to Export Metadata</description>
+  <name>OTF Admin Export</name>
+  <description>OTF Administrator Tool to Export</description>
   <packaging>pom</packaging>
 
+  <properties>
+    <!-- the output directory -->
+    <output.dir></output.dir>
+  </properties>
+
   <profiles>
+    <!-- Activated by run.config setting -->
     <profile>
-      <id>run</id>
-      <activation>
-        <property>
-          <name>run.config</name>
-        </property>
-      </activation>
+      <id>MapProject</id>
       <build>
         <plugins>
-
-          <!-- Execute the mojo -->
+          <!-- Export map project data, specify -Drun.config=... -DoutputDir=... -->
           <plugin>
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
@@ -38,6 +38,9 @@
                 <goals>
                   <goal>export-project-data</goal>
                 </goals>
+                <configuration>
+                  <outputDir>${output.dir}</outputDir>
+                </configuration>
               </execution>
             </executions>
           </plugin>

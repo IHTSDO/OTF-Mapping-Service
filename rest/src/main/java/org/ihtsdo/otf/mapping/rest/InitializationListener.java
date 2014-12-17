@@ -15,7 +15,7 @@ import com.sun.jersey.api.model.AbstractResourceModelListener;
  * The listener interface for receiving initialization events. The class that is
  * interested in processing a initialization event implements this interface,
  * and the object created with that class is registered with a component using
- * the component's <code>addInitializationListener<code> method. When
+ * the component's addInitializationListener() method. When
  * the initialization event occurs, that object's appropriate
  * method is invoked.
  */
@@ -63,8 +63,8 @@ public class InitializationListener implements AbstractResourceModelListener {
 
         // For now, the timer is not doing anything
 
-      } catch (Exception e) { 
-      	e.printStackTrace();
+      } catch (Exception e) {
+        e.printStackTrace();
         Logger.getLogger(this.getClass()).error(
             "Error running the process to compute list of finished records.");
       }

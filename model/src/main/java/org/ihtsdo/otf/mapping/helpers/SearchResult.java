@@ -57,4 +57,18 @@ public interface SearchResult {
    */
   public void setValue(String value);
 
+  /**
+   * Returns the value2.
+   *
+   * @return the value2
+   */
+  public String getValue2();
+
+  /**
+   * Sets the value2.
+   *
+   * @param value2 the value2
+   */
+  public void setValue2(String value2);
+
 }

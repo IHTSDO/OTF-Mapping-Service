@@ -16,177 +16,187 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
  * The Class ICD10ProjectSpecificAlgorithmHandler.
  */
 public class ICD9CMProjectSpecificAlgorithmHandler extends
-		DefaultProjectSpecificAlgorithmHandler {
+    DefaultProjectSpecificAlgorithmHandler {
 
-	/** The isa type id. */
-	private String isaTypeId = null;
+  /** The isa type id. */
+  private String isaTypeId = null;
 
-	/**
-	 * For ICD9, a target code is valid if: - Concept exists - Concept is a leaf
-	 * node (i.e. no children)
-	 * 
-	 * @param mapRecord
-	 * @return the validation result
-	 * @throws Exception
-	 */
-	@Override
-	public ValidationResult validateTargetCodes(MapRecord mapRecord)
-			throws Exception {
-		
-		System.out.println("Validating target codes");
+  /**
+   * For ICD9, a target code is valid if: - Concept exists - Concept is a leaf
+   * node (i.e. no children)
+   * 
+   * @param mapRecord
+   * @return the validation result
+   * @throws Exception
+   */
+  @Override
+  public ValidationResult validateTargetCodes(MapRecord mapRecord)
+    throws Exception {
 
-		ValidationResult validationResult = new ValidationResultJpa();
-		ContentService contentService = new ContentServiceJpa();
-		
-		// first check if there is a SNOMED CT SOURCE CODE NOT MAPPABLE TO TARGET CODING SCHEME relation present
-		// if present, there should be only one map entry
-		for (MapEntry mapEntry : mapRecord.getMapEntries()) {
-			if (mapEntry.getMapRelation() != null) {
-				System.out.println("Found map relation: " + mapEntry.getMapRelation().toString());
-				if (mapEntry.getMapRelation().getTerminologyId().equals("447556008")) {
-					// if more than one entry is present, add an error
-					if (mapRecord.getMapEntries().size() > 1) {
-						validationResult.addError("Cannot assign NOT MAPPABLE map relation to an entry when other entries are present");
-						return validationResult;
-					// otherwise, this record is fine
-					} else return validationResult;
-				}
-			}
-		}
+    // System.out.println("Validating target codes");
 
-		// otherwise, validate the target codes
-		for (MapEntry mapEntry : mapRecord.getMapEntries()) {
+    ValidationResult validationResult = new ValidationResultJpa();
+    ContentService contentService = new ContentServiceJpa();
 
-			// get concept
-			Concept concept = contentService.getConcept(
-					mapEntry.getTargetId(),
-					mapProject.getDestinationTerminology(),
-					mapProject.getDestinationTerminologyVersion());
+    // first check if there is a SNOMED CT SOURCE CODE NOT MAPPABLE TO
+    // TARGET CODING SCHEME relation present
+    // if present, there should be only one map entry
+    for (MapEntry mapEntry : mapRecord.getMapEntries()) {
+      if (mapEntry.getMapRelation() != null) {
 
-			// verify that concept exists
-			if (concept == null) {
-				validationResult.addError("Target code "
-						+ mapEntry.getTargetId()
-						+ " not found in database!"
-						+ " Entry:"
-						+ (mapProject.isGroupStructure() ? " group "
-								+ Integer.toString(mapEntry.getMapGroup())
-								+ "," : "") + " map priority "
-						+ Integer.toString(mapEntry.getMapPriority()));
+        if (mapEntry.getMapRelation().getTerminologyId().equals("447556008")) {
+          // if more than one entry is present, add an error
+          if (mapRecord.getMapEntries().size() > 1) {
+            validationResult
+                .addError("Cannot assign NOT MAPPABLE map relation to an entry when other entries are present");
+            return validationResult;
+            // otherwise, this record is fine
+          } else
+            return validationResult;
+        }
+      }
+    }
 
-				// if concept exists, verify that it is a leaf node (no
-				// children)
-			} else {
-				if (!isTargetCodeValid(mapEntry.getTargetId())) {
+    // otherwise, validate the target codes
+    for (MapEntry mapEntry : mapRecord.getMapEntries()) {
 
-					validationResult.addError("Target "
-							+ mapEntry.getTargetId()
-							+ " is not a leaf node!"
-							+ " Entry:"
-							+ (mapProject.isGroupStructure() ? " group "
-									+ Integer.toString(mapEntry
-											.getMapGroup()) + "," : "")
-							+ " map priority "
-							+ Integer.toString(mapEntry.getMapPriority()));
+      // add an error if neither relation nor target are set
+      if (mapEntry.getMapRelation() == null
+          && (mapEntry.getTargetId() == null || mapEntry.getTargetId().equals(
+              ""))) {
 
-				}
-			}
-		}
-		
+        validationResult
+            .addError("A relation indicating the reason must be selected when no target is assigned.");
 
-		contentService.close();
-		return validationResult;
+      } else {
+        // get concept
+        Concept concept =
+            contentService.getConcept(mapEntry.getTargetId(),
+                mapProject.getDestinationTerminology(),
+                mapProject.getDestinationTerminologyVersion());
 
-	}
+        // verify that concept exists
+        if (concept == null) {
+          validationResult.addError("Target code "
+              + mapEntry.getTargetId()
+              + " not found in database!"
+              + " Entry:"
+              + (mapProject.isGroupStructure() ? " group "
+                  + Integer.toString(mapEntry.getMapGroup()) + "," : "")
+              + " map priority " + Integer.toString(mapEntry.getMapPriority()));
 
-	@Override
-	public MapRelation computeMapRelation(MapRecord mapRecord, MapEntry mapEntry) {
+          // if concept exists, verify that it is a leaf node (no
+          // children)
+        } else {
+          if (!isTargetCodeValid(mapEntry.getTargetId())) {
 
-		// if null code
-		if (mapEntry.getTargetId() == null || mapEntry.getTargetId().equals("")) {
+            validationResult.addError("Target "
+                + mapEntry.getTargetId()
+                + " is not a leaf node!"
+                + " Entry:"
+                + (mapProject.isGroupStructure() ? " group "
+                    + Integer.toString(mapEntry.getMapGroup()) + "," : "")
+                + " map priority "
+                + Integer.toString(mapEntry.getMapPriority()));
 
-			// retrieve the cannot match relation
-			for (MapRelation relation : mapProject.getMapRelations()) {
-				if (relation.getTerminologyId().equals("447556008"))
-					return relation;
-			}
+          }
+        }
+      }
+    }
 
-			// if cannot match relation not found, return null
-			return null;
+    contentService.close();
+    return validationResult;
 
-			// otherwise, assign match relation if no relation specified
-		} else {
+  }
 
-			// if a relation is specified and is not the cannot match relation,
-			// return
-			// unchanged
-			if (mapEntry.getMapRelation() != null
-					&& !mapEntry.getMapRelation().getTerminologyId()
-							.equals("447556008")) {
+  @Override
+  public MapRelation computeMapRelation(MapRecord mapRecord, MapEntry mapEntry) {
 
-				return mapEntry.getMapRelation();
+    // if null code
+    if (mapEntry.getTargetId() == null || mapEntry.getTargetId().equals("")) {
 
-				// otherwise return exact match relation
-			} else {
+      // retrieve the cannot match relation
+      for (MapRelation relation : mapProject.getMapRelations()) {
+        if (relation.getTerminologyId().equals("447556008"))
+          return relation;
+      }
 
-				for (MapRelation relation : mapProject.getMapRelations()) {
-					if (relation.getTerminologyId().equals("447557004")) {
-						return relation;
-					}
-				}
+      // if cannot match relation not found, return null
+      return null;
 
-				// if relation not found, return null
-				return null;
-			}
+      // otherwise, assign match relation if no relation specified
+    } else {
 
-		}
-	}
+      // if a relation is specified and is not the cannot match relation,
+      // return
+      // unchanged
+      if (mapEntry.getMapRelation() != null
+          && !mapEntry.getMapRelation().getTerminologyId().equals("447556008")) {
 
-	@Override
-	public boolean isTargetCodeValid(String terminologyId) throws Exception {
+        return mapEntry.getMapRelation();
 
-		ContentService contentService = new ContentServiceJpa();
+        // otherwise return exact match relation
+      } else {
 
-		// get concept
-		Concept concept = contentService.getConcept(terminologyId,
-				mapProject.getDestinationTerminology(),
-				mapProject.getDestinationTerminologyVersion());
+        for (MapRelation relation : mapProject.getMapRelations()) {
+          if (relation.getTerminologyId().equals("447557004")) {
+            return relation;
+          }
+        }
 
-		// lazy initialize the isa type id
-		lazyInitIsaTypeId();
+        // if relation not found, return null
+        return null;
+      }
 
-		// verify that concept exists
-		if (concept == null) {
-			contentService.close();
-			return false;
+    }
+  }
 
-			// if concept exists, verify that it is a leaf node (no children)
-		} else if (GraphHelper.getChildConcepts(concept, isaTypeId).size() != 0) {
-			contentService.close();
-			return false;
+  @Override
+  public boolean isTargetCodeValid(String terminologyId) throws Exception {
 
-		}
+    ContentService contentService = new ContentServiceJpa();
 
-		// otherwise, return true
-		contentService.close();
-		return true;
-	}
+    // get concept
+    Concept concept =
+        contentService.getConcept(terminologyId,
+            mapProject.getDestinationTerminology(),
+            mapProject.getDestinationTerminologyVersion());
 
-	/**
-	 * Lazy initializes the isa type id.
-	 * 
-	 * @throws Exception
-	 *             the exception
-	 */
-	private void lazyInitIsaTypeId() throws Exception {
-		if (isaTypeId == null) {
-			MetadataService metadataService = new MetadataServiceJpa();
-			isaTypeId = metadataService
-					.getHierarchicalRelationshipTypes("ICD9CM",
-							metadataService.getLatestVersion("ICD9CM"))
-					.keySet().iterator().next();
-			metadataService.close();
-		}
-	}
+    // lazy initialize the isa type id
+    lazyInitIsaTypeId();
+
+    // verify that concept exists
+    if (concept == null) {
+      contentService.close();
+      return false;
+
+      // if concept exists, verify that it is a leaf node (no children)
+    } else if (GraphHelper.getChildConcepts(concept, isaTypeId).size() != 0) {
+      contentService.close();
+      return false;
+
+    }
+
+    // otherwise, return true
+    contentService.close();
+    return true;
+  }
+
+  /**
+   * Lazy initializes the isa type id.
+   * 
+   * @throws Exception the exception
+   */
+  private void lazyInitIsaTypeId() throws Exception {
+    if (isaTypeId == null) {
+      MetadataService metadataService = new MetadataServiceJpa();
+      isaTypeId =
+          metadataService
+              .getHierarchicalRelationshipTypes("ICD9CM",
+                  metadataService.getLatestVersion("ICD9CM")).keySet()
+              .iterator().next();
+      metadataService.close();
+    }
+  }
 
 }
