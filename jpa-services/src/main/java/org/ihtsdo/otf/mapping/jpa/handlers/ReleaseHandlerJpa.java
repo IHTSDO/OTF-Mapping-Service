@@ -2145,12 +2145,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       String[] fields1 = o1.split("\t");
       String[] fields2 = o2.split("\t");
 
-      // check for header (begins with id)
-      if (fields1[0].equals("id"))
-        return -1;
-      if (fields2[0].equals("id"))
-        return 1;
-
       long i = fields1[4].compareTo(fields2[4]);
       if (i != 0) {
         return (int) i;
@@ -2194,7 +2188,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
                         if (i != 0) {
                           return (int) i;
                         } else {
-                          return 0;
+                          return -1;
                         }
                       }
                     }

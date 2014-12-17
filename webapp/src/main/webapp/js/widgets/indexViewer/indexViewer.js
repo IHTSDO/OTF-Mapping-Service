@@ -56,6 +56,7 @@ angular
 
       $scope.go = function() {
 
+        $rootScope.glassPane++;
         $http(
           {
             url : root_content + "index/"
@@ -76,7 +77,9 @@ angular
           $scope.selectedDomain = $scope.domains[0];
           $scope.retrieveIndexPages($scope.domains[0]);
           $scope.mainTermLabel = '';
+          $rootScope.glassPane--;
         }).error(function(data, status, headers, config) {
+          $rootScope.glassPane--;
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
@@ -137,6 +140,7 @@ angular
           + subSearchField + "/subSubSearch/" + subSubSearchField + "/"
           + $scope.allCheckBox;
 
+        $rootScope.glassPane++;
         $http({
           url : url,
           dataType : "json",
@@ -169,8 +173,11 @@ angular
               } else {
                 window.alert("No Matching Search Results.");
               }
+              $rootScope.glassPane--;
 
-            }).error(function(data, status, headers, config) {
+            })
+            .error(function(data, status, headers, config) {
+              $rootScope.glassPane--;
             $scope.results = null;
             $rootScope.handleHttpError(data, status, headers, config);
           });
@@ -178,8 +185,8 @@ angular
 
       // returns the set of titles of html pages for the given domain
       $scope.retrieveIndexPages = function(domain) {
-        $rootScope.glassPane++;
         console.debug('retrieveIndexPages', domain);
+        $rootScope.glassPane++;
         $http(
           {
             url : root_content + "index/"
@@ -193,7 +200,6 @@ angular
             }
           }).success(
           function(data) {
-            $rootScope.glassPane--;
             console.debug("Success in getting viewable pages for index.");
             $scope.indexPages = [];
             for (var i = 0; i < data.searchResult.length; i++) {
@@ -205,6 +211,7 @@ angular
             $scope.selectedPage = $scope.indexPages[0];
             $scope.updateUrl($scope.indexPages[0]);
             $scope.mainTermLabel = '';
+            $rootScope.glassPane--;
 
             // cache all index pages now so they will be available to ng-include
             // when needed
@@ -232,7 +239,6 @@ angular
 
       // scrolling to the given eID on the correct html page
       $scope.goToElement = function(eID) {
-        $rootScope.glassPane++;
 
         // if needing to switch to different html page
         if (eID.charAt(0) != $scope.selectedPage) {
@@ -249,7 +255,6 @@ angular
           $location.hash(eID);
           $anchorScroll();
         }
-        $rootScope.glassPane--;
 
       };
 
@@ -322,8 +327,6 @@ angular
         if (newUrl.indexOf("Help") == -1) {
           ev.preventDefault();
           // if the Help page, allow the default reloading response
-        } else {
-          $rootScope.glassPane++;
         }
 
       });
@@ -335,7 +338,6 @@ angular
         $location.hash($scope.eID);
 
         $anchorScroll();
-        $rootScope.glassPane--;
 
       });
 
