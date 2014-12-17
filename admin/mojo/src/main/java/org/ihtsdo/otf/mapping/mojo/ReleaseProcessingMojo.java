@@ -123,7 +123,7 @@ public class ReleaseProcessingMojo extends AbstractMojo {
         releaseHandler.setModuleId(moduleId);
         releaseHandler.setMapProject(mapProject);
         releaseHandler.setWriteDelta(true);
-        releaseHandler.setWriteSnapshot(false);
+        releaseHandler.setWriteSnapshot(true);
         releaseHandler.setOutputDir(outputDirName);
         if (testConcepts.length > 0) {
           List<MapRecord> mapRecords = new ArrayList<>();
