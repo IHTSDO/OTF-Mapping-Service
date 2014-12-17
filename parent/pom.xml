@@ -16,6 +16,7 @@
 
   <properties>
     <!-- Set default maven settings -->
+    <releaseVersion>${project.version}</releaseVersion>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <skipTests>true</skipTests>
@@ -57,22 +58,22 @@
       <dependency>
         <groupId>org.ihtsdo.otf.mapping</groupId>
         <artifactId>mapping-model</artifactId>
-        <version>${project.version}</version>
+        <version>${releaseVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.ihtsdo.otf.mapping</groupId>
         <artifactId>mapping-jpa-model</artifactId>
-        <version>${project.version}</version>
+        <version>${releaseVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.ihtsdo.otf.mapping</groupId>
         <artifactId>mapping-services</artifactId>
-        <version>${project.version}</version>
+        <version>${releaseVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.ihtsdo.otf.mapping</groupId>
         <artifactId>mapping-jpa-services</artifactId>
-        <version>${project.version}</version>
+        <version>${releaseVersion}</version>
       </dependency>
 
       <!-- JPA dependencies -->
@@ -230,13 +231,13 @@
         <version>${xom.version}</version>
       </dependency>
 
-      <!--  Apache POI library -->
+      <!-- Apache POI library -->
       <dependency>
         <groupId>org.apache.poi</groupId>
         <artifactId>poi</artifactId>
         <version>${apache.poi}</version>
       </dependency>
-      
+
     </dependencies>
   </dependencyManagement>
 
@@ -246,8 +247,15 @@
     <!-- Plugins -->
     <pluginManagement>
       <plugins>
-
-        <!-- Maven plugins -->
+      
+      <!-- Project plugins -->
+        <plugin>
+          <groupId>org.ihtsdo.otf.mapping</groupId>
+          <artifactId>mapping-admin-mojo</artifactId>
+          <version>${releaseVersion}</version>
+        </plugin>
+        
+        <!-- Maven plugins -->        
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-antrun-plugin</artifactId>

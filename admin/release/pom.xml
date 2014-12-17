@@ -39,7 +39,6 @@
           <plugin>
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
             <executions>
               <execution>
                 <id>release</id>
@@ -68,7 +67,6 @@
           <plugin>
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
             <executions>
               <execution>
                 <id>begin-release</id>
@@ -94,7 +92,6 @@
           <plugin>
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
             <executions>
               <execution>
                 <id>finish-release</id>
