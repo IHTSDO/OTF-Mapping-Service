@@ -46,6 +46,10 @@
     </dependency>
     <dependency>
       <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-c3p0</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate</groupId>
       <artifactId>hibernate-search</artifactId>
     </dependency>
     <dependency>
@@ -97,5 +101,10 @@
       <artifactId>junit</artifactId>
     </dependency>
     
+    <!--  Apache POI library -->
+    <dependency>
+      <groupId>org.apache.poi</groupId>
+      <artifactId>poi</artifactId>
+    </dependency>
   </dependencies>
 </project>

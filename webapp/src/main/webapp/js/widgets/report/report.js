@@ -108,6 +108,8 @@ angular
           function(data) {
             $rootScope.glassPane--;
             $scope.reports = data.report;
+            
+            console.debug("Reports fetched: ", data.report);
 
             // set paging parameters
             $scope.nReports = data.totalCount;
@@ -121,7 +123,7 @@ angular
           $scope.reports = null;
           $rootScope.handleHttpError(data, status, headers, config);
         });
-      }
+      };
 
       $scope.viewReport = function(report) {
         initializeCollapsed(report); // set the collapses
@@ -183,6 +185,8 @@ angular
       $scope.getResultItems = function(reportResult, page) {
 
         $rootScope.glassPane++;
+        
+        console.debug("Getting report result items", reportResult, page);
 
         // construct a PFS object
         var pfsParameterObj = {
@@ -218,21 +222,6 @@ angular
           $rootScope.handleHttpError(data, status, headers, config);
           return null;
         });
-      }
-
-      $scope.getItemUrl = function(reportResultItem) {
-
-        console.debug("Getting item url", reportResultItem)
-
-        switch (reportResultItem.resultType) {
-        case 'CONCEPT':
-          return '/record/conceptId/' + resultType.itemId;
-        case 'MAP_RECORD':
-          return '/record/conceptId/' + resultType.itemId;
-        default:
-          return null;
-
-        }
       };
 
       var initializeCollapsed = function(report) {
@@ -245,65 +234,7 @@ angular
         }
       };
 
-      $scope.saveDefinition = function(definition) {
-
-        $rootScope.glassPane++;
-        console.debug("Definition", definition);
-        // add or update based on whether definition has a
-        // hibernate id
-        $http(
-          {
-            url : root_reporting + "definition/"
-              + (definition.id != null ? "update" : "add"),
-            method : "POST",
-            dataType : "json",
-            data : definition,
-            headers : {
-              "Content-Type" : "application/json"
-            }
-          }).success(
-          function(data) {
-            $rootScope.glassPane--;
-            $scope.definitionMsg = "Successfully saved definition";
-
-            // if new report, and selected to
-            // add to project, update project
-            if ($scope.isAddingDefinition == true
-              && $scope.addDefinitionToProject == true) {
-
-              console.debug("Also adding to project");
-              $rootScope.glassPane++;
-
-              // add this definition to
-              // locally cached project
-              $scope.focusProject.reportDefinition.push(definition);
-
-              // update the project
-              $http({
-                url : root_mapping + "project/update",
-                method : "POST",
-                dataType : "json",
-                data : $scope.focusProject,
-                headers : {
-                  "Content-Type" : "application/json"
-                }
-              }).success(function(data) {
-                $rootScope.glassPane--;
-                $scope.definitionMsg = "Successfully updated project";
-              }).error(function(data, status, headers, config) {
-                $rootScope.glassPane--;
-                $rootScope.handleHttpError(data, status, headers, config);
-              });
-            }
-
-            $scope.isAddingDefinition = false;
-          }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
-          $rootScope.handleHttpError(data, status, headers, config);
-        });
-      };
-
-      // @Path("/report/generate/project/id/{projectId}/user/id/{userName}")
+    
 
       $scope.generateNewReport = function(reportDefinition) {
         $rootScope.glassPane++;
@@ -324,7 +255,8 @@ angular
             }
           }).success(function(data) {
           $rootScope.glassPane--;
-          $scope.reportDisplayed = data;
+          $scope.viewReport(data);
+          $scope.getReports(1, null, null);
           $scope.definitionMsg = "Successfully saved definition";
         }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
@@ -332,34 +264,6 @@ angular
         });
       };
 
-      $scope.saveNewReport = function(report) {
-        $rootScope.glassPane++;
-
-        // obtain the record
-        $http(
-          {
-            url : root_reporting + "report/add/project/id/"
-              + $scope.focusProject.id,
-            method : "POST",
-            dataType : "json",
-            data : report,
-            headers : {
-              "Content-Type" : "application/json"
-            }
-          }).success(function(data) {
-          $rootScope.glassPane--;
-          $scope.reportDisplayed = data;
-          $scope.definitionMsg = "Successfully saved report";
-        }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
-          $rootScope.handleHttpError(data, status, headers, config);
-        });
-
-      };
-
-      $scope.exportReport = function(report) {
-        alert("Export function still in development");
-      };
 
       $scope.addReportDefinition = function() {
 
@@ -380,5 +284,55 @@ angular
         $scope.isAddingDefinition = true;
 
       };
+
+      
+      $scope.deleteReport = function(report, page, selectedDefinition, queryReport) {
+          console.debug("in delete Report from reports");
+
+          if (confirm("Are you sure that you want to delete a report?") == false)
+            return;
+
+          $http({
+            url : root_reporting + "report/delete",
+            dataType : "json",
+            data : report,
+            method : "DELETE",
+            headers : {
+              "Content-Type" : "application/json"
+            }
+          })
+            .success(
+               function(data) {
+                    console
+                        .debug("success to delete report from application");
+                    $scope.getReports(page, selectedDefinition, queryReport);
+            })
+            .error(
+               function(data, status, headers, config) {
+                    $scope.recordError = "Error deleting map report from application.";
+                    $rootScope.handleHttpError(data, status, headers,
+                        config);
+            });
+        };
+        
+        $scope.exportReport = function(report) {
+            $http({
+                url : root_reporting + "report/export/"
+                + report.id ,
+                dataType : "json",
+                method : "GET",
+                headers : {
+                  "Content-Type" : "application/json"
+                },
+                responseType: 'arraybuffer'
+            }).success(function(data) {
+              $scope.definitionMsg = "Successfully exported report";
+              var blob = new Blob([data], {type: "application/vnd.ms-excel"});
+              var objectUrl = URL.createObjectURL(blob);
+              window.open(objectUrl);
+            }).error(function(data, status, headers, config) {
+              $rootScope.handleHttpError(data, status, headers, config);
+            });
+        };
 
     });

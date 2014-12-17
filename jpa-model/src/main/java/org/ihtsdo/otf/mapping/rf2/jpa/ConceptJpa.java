@@ -58,23 +58,23 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   private Set<Relationship> relationships = null;
 
   /** The inverse relationships. */
-  @OneToMany(mappedBy = "destinationConcept", orphanRemoval = true, targetEntity = RelationshipJpa.class)
+  @OneToMany(mappedBy = "destinationConcept", targetEntity = RelationshipJpa.class)
   private Set<Relationship> inverseRelationships = null;
 
   /** The simple RefSet members. */
-  @OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = SimpleRefSetMemberJpa.class)
+  @OneToMany(mappedBy = "concept", targetEntity = SimpleRefSetMemberJpa.class)
   private Set<SimpleRefSetMember> simpleRefSetMembers = null;
 
   /** The simpleMap RefSet members. */
-  @OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = SimpleMapRefSetMemberJpa.class)
+  @OneToMany(mappedBy = "concept", targetEntity = SimpleMapRefSetMemberJpa.class)
   private Set<SimpleMapRefSetMember> simpleMapRefSetMembers = null;
 
   /** The complexMap RefSet members. */
-  @OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = ComplexMapRefSetMemberJpa.class)
+  @OneToMany(mappedBy = "concept", targetEntity = ComplexMapRefSetMemberJpa.class)
   private Set<ComplexMapRefSetMember> complexMapRefSetMembers = null;
 
   /** The attributeValue RefSet members. */
-  @OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = AttributeValueRefSetMemberJpa.class)
+  @OneToMany(mappedBy = "concept", targetEntity = AttributeValueRefSetMemberJpa.class)
   private Set<AttributeValueRefSetMember> attributeValueRefSetMembers = null;
 
   /** The default preferred name. */

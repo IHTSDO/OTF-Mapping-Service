@@ -1,7 +1,7 @@
 
 <form>
   <input ng-model="query"> <input type="submit" value="Search"
-    ng-click="retrieveFeedback(1, feedbackType, query)"> <input
+    ng-click="retrieveFeedback(1, feedbackType, reviewedType, resolvedType, query)"> <input
     type="submit" value="Reset" ng-click="resetSearch()">
   &nbsp&nbsp{{nRecords}} results, page {{recordPage}} of {{numRecordPages}}
 </form>
@@ -9,21 +9,31 @@
 <pagination total-items="nRecords" page="recordPage" max-size="recordsPerPage"
   class="pagination-sm" boundary-links="true" rotate="true"
   num-pages="numRecordPages"
-  on-select-page="retrieveFeedback(page, feedbackType)"></pagination>
+  on-select-page="retrieveFeedback(page, feedbackType, reviewedType, resolvedType, query)"></pagination>
 
 <form>
-  <input type="radio" ng-model="feedbackType" value="ALL"
-    ng-change="retrieveFeedback(1, feedbackType, query)">All</input> <input
-    type="radio" ng-model="feedbackType" value="FEEDBACK"
-    ng-change="retrieveFeedback(1, feedbackType, query)">Feedback</input> <input
-    type="radio" ng-model="feedbackType" value="GROUP_FEEDBACK"
-    ng-change="retrieveFeedback(1, feedbackType, query)">Group Feedback</input>
-  <input type="radio" ng-model="feedbackType" value="ERROR_FEEDBACK"
-    ng-change="retrieveFeedback(1, feedbackType, query)">Error Feedback</input>
-  <input type="radio" ng-model="feedbackType"
-    value="DISCREPANCY_REVIEW_FEEDBACK"
-    ng-change="retrieveFeedback(1, feedbackType, query)">Discrepancy
-  Feedback</input>
+  
+  <select tooltip-placement="top" tooltip="Feedback Type"
+        ng-init="feedbackType"
+        ng-model="feedbackType"
+        ng-change="retrieveFeedback(1, feedbackType, reviewedType, resolvedType, query)"
+        ng-options="item as item for item in feedbackTypes">
+      </select> 
+      
+      <select tooltip-placement="top" tooltip="Viewed Status"
+        ng-init="reviewedType"
+        ng-model="reviewedType"
+        ng-change="retrieveFeedback(1, feedbackType, reviewedType, resolvedType, query)"
+        ng-options="item as item for item in reviewedTypes">
+      </select> 
+      
+     <select tooltip-placement="top" tooltip="Resolved Status"
+        ng-init="resolvedType"
+        ng-model="resolvedType"
+        ng-change="retrieveFeedback(1, feedbackType, reviewedType, resolvedType, query)"
+        ng-options="item as item for item in resolvedTypes">
+      </select>       
+      
 </form>
 
 <div ng-show="feedbackConversations.length > 0">
@@ -89,5 +99,7 @@
   </table>
 
 </div>
-
+<div class="alert alert-warning" style="margin-top:10px;" ng-show="feedbackConversations.length == 0">
+      No matching feedback results.</div> 
+ 
 

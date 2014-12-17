@@ -11,16 +11,31 @@ import javax.mail.internet.MimeMessage;
 
 import org.apache.log4j.Logger;
 
+/**
+ * Email handler.
+ */
 public class OtfEmailHandler {
 
   Properties config = null;
 
   // on instantiation, initialize config properties
+  /**
+   * Instantiates an empty {@link OtfEmailHandler}.
+   *
+   * @throws Exception the exception
+   */
   public OtfEmailHandler() throws Exception {
     config = ConfigUtility.getConfigProperties();
   }
 
   // basic email format, with specified users
+  /**
+   * Send simple email.
+   *
+   * @param recipients the recipients
+   * @param subject the subject
+   * @param message the message
+   */
   public void sendSimpleEmail(String recipients, String subject, String message) {
 
     Logger.getLogger(OtfEmailHandler.class).info("Sending email...");
@@ -50,6 +65,12 @@ public class OtfEmailHandler {
   }
 
   // helper function to send simple email to recipients specified in config file
+  /**
+   * Send simple email.
+   *
+   * @param subject the subject
+   * @param message the message
+   */
   public void sendSimpleEmail(String subject, String message) {
 
     String recipients = config.getProperty("mail.smtp.to");

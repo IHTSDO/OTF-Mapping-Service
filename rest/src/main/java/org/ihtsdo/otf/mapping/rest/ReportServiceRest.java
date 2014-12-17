@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.rest;
 
+import java.io.InputStream;
 import java.util.Date;
 
 import javax.ws.rs.DELETE;
@@ -21,6 +22,7 @@ import org.ihtsdo.otf.mapping.helpers.ReportList;
 import org.ihtsdo.otf.mapping.helpers.ReportListJpa;
 import org.ihtsdo.otf.mapping.helpers.ReportResultItemList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
+import org.ihtsdo.otf.mapping.jpa.handlers.ExportReportHandler;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ReportServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
@@ -235,29 +237,26 @@ public class ReportServiceRest extends RootServiceRest {
   /**
    * Update reports.
    *
-   * @param mapProjectId the map project id
    * @param report the report
    * @param authToken the auth token
    */
   @POST
-  @Path("/report/add/project/id/{projectId}")
+  @Path("/report/add")
   @ApiOperation(value = "Adds a report", notes = "Adds a report", response = Response.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public void updateReports(
-    @ApiParam(value = "Project to add report to", required = true) @PathParam("projectId") Long mapProjectId,
     @ApiParam(value = "Report report to update", required = true) ReportJpa report,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
     Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Report):  /report/add/project/id/"
-            + mapProjectId.toString());
+        "RESTful call (Report):  /report/add");
     String user = "";
 
     try {
       // authorize call
       MapUserRole role =
-          securityService.getMapProjectRoleForToken(authToken, mapProjectId);
+          securityService.getMapProjectRoleForToken(authToken, report.getMapProjectId());
       user = securityService.getUsernameForToken(authToken);
       if (!role.hasPrivilegesOf(MapUserRole.LEAD))
         throw new WebApplicationException(Response.status(401)
@@ -270,6 +269,48 @@ public class ReportServiceRest extends RootServiceRest {
 
     } catch (Exception e) {
       handleException(e, "trying to add a report", user, "", "");
+    }
+
+  }
+  
+  /**
+   * Deletes the report.
+   *
+   * @param report the report
+   * @param authToken the auth token
+   */
+  @DELETE
+  @Path("/report/delete")
+  @ApiOperation(value = "Delete a report", notes = "Deletes a report based on a JSON or XML object", response = ReportDefinitionJpa.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public void removeReport(
+    @ApiParam(value = "The report to delete", required = true) ReportJpa report,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+    Logger.getLogger(MappingServiceRest.class).info(
+        "RESTful call (Report):  /report/delete");
+    String user = "";
+
+    try {
+      // authorize call
+      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+      user = securityService.getUsernameForToken(authToken);
+      if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
+        throw new WebApplicationException(
+            Response
+                .status(401)
+                .entity(
+                    "User does not have permissions to delete a report.")
+                .build());
+
+      // get the reports
+      ReportService reportService = new ReportServiceJpa();
+      reportService.removeReport(report.getId());
+      reportService.close();
+
+    } catch (Exception e) {
+      handleException(e, "trying to delete a report", user, "", report.getId().toString());
     }
 
   }
@@ -320,16 +361,10 @@ public class ReportServiceRest extends RootServiceRest {
       ReportService reportService = new ReportServiceJpa();
       ReportList reportList =
           reportService.getReportsForMapProject(mapProject, pfsParameter);
-
-      // remove qa checks
-      ReportList finalReportList = new ReportListJpa();
-      for (Report report : reportList.getReports()) {
-        if (!report.getReportDefinition().isQACheck())
-          finalReportList.addReport(report);
-      }
+      
       reportService.close();
 
-      return finalReportList;
+      return reportList;
     } catch (Exception e) {
       handleException(e, "trying to retrieve all reports", user, projectName,
           "");
@@ -449,13 +484,78 @@ public class ReportServiceRest extends RootServiceRest {
       report =
           reportService.generateReport(mapProject, mapUser,
               reportDefinition.getName(), reportDefinition, new Date(), false);
-      report = reportService.addReport(report);
+      
+      reportService.addReport(report);
       reportService.close();
 
       return report;
     } catch (Exception e) {
 
       handleException(e, "trying to generate a report", userName,
+          mapProjectName, "");
+      return null;
+
+    }
+  }
+
+  /**
+   * Tests the generation of a report.
+   * @param reportDefinition the report definition
+   *
+   * @param projectId the project id
+   * @param userName the user name
+   * @param authToken the auth token
+   * @return the report
+   */
+  @POST
+  @Path("/report/test/project/id/{projectId}/user/id/{userName}")
+  @ApiOperation(value = "Tests a report", notes = "Generates a report given a definition, indicates if the generation was successful or not.", response = ReportJpa.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public Report testReport(
+    @ApiParam(value = "The report definition", required = true) ReportDefinitionJpa reportDefinition,
+    @ApiParam(value = "Map project id", required = true) @PathParam("projectId") Long projectId,
+    @ApiParam(value = "User generating report", required = true) @PathParam("userName") String userName,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+    Logger.getLogger(MappingServiceRest.class).info(
+        "RESTful call (Report):  /report/test/project/id/" + projectId
+            + "/user/id/" + userName + " with report definition "
+            + reportDefinition.getName());
+
+    String mapProjectName = "(not retrieved)";
+
+    Report report = null;
+
+    try {
+      // authorize call
+      MapUserRole role =
+          securityService.getMapProjectRoleForToken(authToken, projectId);
+      if (!role.hasPrivilegesOf(MapUserRole.LEAD))
+        throw new WebApplicationException(Response.status(401)
+            .entity("User does not have permissions to test  reports.")
+            .build());
+
+      // get the required objects
+      MappingService mappingService = new MappingServiceJpa();
+      MapProject mapProject = mappingService.getMapProject(projectId);
+      mapProjectName = mapProject.getName(); // for error handling
+      MapUser mapUser = mappingService.getMapUser(userName);
+      mappingService.close();
+
+      // Report is NOT persisted
+      ReportService reportService = new ReportServiceJpa();
+      report =
+          reportService.generateReport(mapProject, mapUser,
+              reportDefinition.getName(), reportDefinition, new Date(), false);
+      
+      reportService.close();
+
+      return report;
+    } catch (Exception e) {
+
+      handleException(e, "trying to test a report", userName,
           mapProjectName, "");
       return null;
 
@@ -569,6 +669,12 @@ public class ReportServiceRest extends RootServiceRest {
     }
   }
 
+  /**
+   * Returns the QA labels.
+   *
+   * @param authToken the auth token
+   * @return the QA labels
+   */
   @GET
   @Path("/qaLabel/qaLabels")
   @ApiOperation(value = "Gets all qa labels", notes = "Returns all qa labels in JSON or XML format", response = ReportDefinitionJpa.class)
@@ -598,6 +704,54 @@ public class ReportServiceRest extends RootServiceRest {
     } catch (Exception e) {
       handleException(e, "trying to get qa labels", user, "", "");
       return null;
+    }
+  }
+
+  /**
+   * Export report.
+   *
+   * @param reportId the report id
+   * @param authToken the auth token
+   * @return the input stream
+   */
+  @GET
+  @Path("/report/export/{reportId}")
+  @ApiOperation(value = "Exports a report", notes = "Exports a report given a report id", response = ReportJpa.class)
+  @Produces("application/vnd.ms-excel")
+  public InputStream exportReport(
+    @ApiParam(value = "Report id", required = true) @PathParam("reportId") Long reportId,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+    Logger.getLogger(MappingServiceRest.class).info(
+        "RESTful call (Report):  /report/export/" + reportId);
+
+    try {
+      // authorize call
+      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+        throw new WebApplicationException(
+            Response
+                .status(401)
+                .entity(
+                    "User does not have permissions to export report.")
+                .build());
+
+
+      ReportService reportService = new ReportServiceJpa();
+      Report report = reportService.getReport(reportId); 
+      
+      ExportReportHandler handler = new ExportReportHandler();
+      InputStream is = handler.exportReport(report);
+      
+      reportService.close();
+      return is;
+      
+    } catch (Exception e) {
+
+      handleException(e, "trying to export a report", "",
+          "", reportId.toString());
+      return null;
+
     }
   }
 

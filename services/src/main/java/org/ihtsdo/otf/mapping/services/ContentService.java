@@ -448,6 +448,18 @@ public interface ContentService extends RootService {
     throws Exception;
 
   /**
+   * Returns the descendant concepts count.
+   *
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @return the descendant concepts count
+   * @throws Exception the exception
+   */
+  public int getDescendantConceptsCount(String terminologyId,
+    String terminology, String terminologyVersion) throws Exception;
+
+  /**
    * Clear tree positions.
    * 
    * @param terminology the terminology
@@ -498,6 +510,18 @@ public interface ContentService extends RootService {
    * @throws Exception the exception
    */
   public TreePositionList getTreePositionsWithDescendants(String terminologyId,
+    String terminology, String terminologyVersion) throws Exception;
+
+  /**
+   * Returns the any tree position with descendants.
+   *
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @return the any tree position with descendants
+   * @throws Exception the exception
+   */
+  public TreePosition getAnyTreePositionWithDescendants(String terminologyId,
     String terminology, String terminologyVersion) throws Exception;
 
   /**
@@ -660,7 +684,7 @@ public interface ContentService extends RootService {
    *
    * @param tp the tp
    * @return the tree position with descendants
-   * @throws Exception
+   * @throws Exception the exception
    */
   public TreePosition getTreePositionWithDescendants(TreePosition tp)
     throws Exception;
@@ -678,12 +702,54 @@ public interface ContentService extends RootService {
     String terminology, String terminologyVersion) throws Exception;
 
   /**
-   * Returns all complex map ref set members for a given refset id
-   * @param refSetId
-   * @return
-   * @throws Exception
+   * Returns all complex map ref set members for a given refset id.
+   *
+   * @param refSetId the ref set id
+   * @return the complex map ref set members for ref set id
+   * @throws Exception the exception
    */
   public ComplexMapRefSetMemberList getComplexMapRefSetMembersForRefSetId(
     String refSetId) throws Exception;
+
+  /**
+   * Gets the index domains for the specified terminology.
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @return the index domains
+   * @throws Exception the exception
+   */
+  public SearchResultList getIndexDomains(String terminology,
+		String terminologyVersion) throws Exception;
+  
+  /**
+   * Gets the index pages for index.
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @param index the index
+   * @return the index pages for index
+   * @throws Exception the exception
+   */
+  public SearchResultList getIndexPagesForIndex(
+		  String terminology, String terminologyVersion, String index) throws Exception;
+
+  /**
+   * Perform aggregated search.
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @param domain the domain
+   * @param searchField the search field
+   * @param subSearchField the sub search field
+   * @param subSubSearchField the sub sub search field
+   * @param allFlag TODO
+   * @return the search result list
+   * @throws Exception the exception
+   */
+
+  public SearchResultList findIndexEntries(String terminology,
+    String terminologyVersion, String domain, String searchField,
+    String subSearchField, String subSubSearchField, boolean allFlag) throws Exception;
 
 }
