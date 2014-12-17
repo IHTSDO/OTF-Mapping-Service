@@ -113,8 +113,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
   /**
    * The Enum for statistics reporting.
-   *
-   * @author ${author}
    */
   private enum Stats {
 
@@ -259,11 +257,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     computeDefaultPreferredNames();
 
     // declare the file names and file writers
-    String snapshotMachineReadableFileName = null;
     String deltaMachineReadableFileName = null;
     String moduleDependencyFileName = null;
 
-    BufferedWriter snapshotMachineReadableWriter = null;
     BufferedWriter deltaMachineReadableWriter = null;
     BufferedWriter moduleDependencyWriter = null;
 
@@ -322,23 +318,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     String pattern =
         (mapProject.getMapRefsetPattern() == MapRefsetPattern.ComplexMap
             ? "iissscRefset_" : "iisssccRefset_");
-    snapshotMachineReadableFileName =
-        outputDir + "/der2_" + pattern + mapProject.getMapRefsetPattern()
-            + "Snapshot_INT_" + effectiveTime + ".txt";
 
     deltaMachineReadableFileName =
         outputDir + "/der2_" + pattern + mapProject.getMapRefsetPattern()
             + "Delta_INT_" + effectiveTime + ".txt";
-
-    if (writeSnapshot == true) {
-      Logger.getLogger(getClass()).info(
-          "  Machine-readable release file:  "
-              + snapshotMachineReadableFileName);
-
-      // instantiate file writer
-      snapshotMachineReadableWriter =
-          new BufferedWriter(new FileWriter(snapshotMachineReadableFileName));
-    }
 
     if (writeDelta == true) {
       Logger.getLogger(getClass()).info(
@@ -351,12 +334,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     }
 
     // Write headers (subject to pattern)
+
     if (mapProject.getMapRefsetPattern().equals(MapRefsetPattern.ExtendedMap)) {
-      if (snapshotMachineReadableWriter != null) {
-        snapshotMachineReadableWriter
-            .write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\tmapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId\tmapCategoryId\r\n");
-        snapshotMachineReadableWriter.flush();
-      }
 
       if (deltaMachineReadableWriter != null) {
         deltaMachineReadableWriter
@@ -366,11 +345,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     } else if (mapProject.getMapRefsetPattern().equals(
         MapRefsetPattern.ComplexMap)) {
-      if (snapshotMachineReadableWriter != null) {
-        snapshotMachineReadableWriter
-            .write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\tmapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId\r\n");
-        snapshotMachineReadableWriter.flush();
-      }
+
       if (deltaMachineReadableWriter != null) {
         deltaMachineReadableWriter
             .write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\tmapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId\r\n");
@@ -494,8 +469,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
                   mapRecord.getConceptId(), mapProject.getSourceTerminology(),
                   mapProject.getSourceTerminologyVersion());
         } catch (Exception e) {
-          conceptErrors.put(
-              mapRecord.getConceptId(),
+          conceptErrors.put(mapRecord.getConceptId(),
               "Could not retrieve any tree position");
           continue;
         }
@@ -631,7 +605,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
                     existingEntries.add(newEntry);
 
                     // replace existing list with modified list
-                    //entriesByGroup.put(newEntry.getMapGroup(), existingEntries);
+                    // entriesByGroup.put(newEntry.getMapGroup(),
+                    // existingEntries);
 
                   }
                 }
@@ -861,7 +836,14 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         activeMembers.add(c);
       }
     }
+
+    // Write human readable file
     writeHumanReadableFile(activeMembers);
+
+    // Write snapshot file
+    if (writeSnapshot) {
+      writeActiveSnapshot(activeMembers);
+    }
 
     // /////////////////////////////////////////////////////
     // Write the delta files
@@ -917,11 +899,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
       // write new or modified maps to file
       for (ComplexMapRefSetMember c : tempMap.values()) {
-
-        // write to files
-        deltaMachineReadableWriter.write(this
-            .getMachineReadableTextforComplexMapRefSetMember(c));
-
+        deltaMachineReadableWriter.write(getOutputLine(c));
       }
 
       Logger.getLogger(getClass()).info("  Writing complete.");
@@ -950,8 +928,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       // set active to false and write inactivated complex maps
       for (ComplexMapRefSetMember c : tempMap.values()) {
         c.setActive(false);
-        deltaMachineReadableWriter.write(this
-            .getMachineReadableTextforComplexMapRefSetMember(c));
+        deltaMachineReadableWriter.write(this.getOutputLine(c));
 
       }
 
@@ -976,78 +953,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
       statsWriter.close();
 
-      /*
-       * Logger.getLogger(getClass()).info("  Sorting delta file..." );
-       * 
-       * // sort the file FileSorter.sortFile(deltaMachineReadableFileName,
-       * comparator);
-       * 
-       * Logger.getLogger(getClass()).info("  Sorting complete.");
-       */
     }
-
-    // /////////////////////////////////////////////////////
-    // Write the snapshot files if indicated
-    // /////////////////////////////////////////////////////
-    /*
-     * if (writeSnapshot) {
-     * 
-     * // Case 1: Current & active -- the records in database for
-     * (ComplexMapRefSetMember c : complexMapRefSetMembersToWrite.values()) {
-     * 
-     * // human readable file requires target concept name Concept concept =
-     * null; if (!c.getMapTarget().isEmpty()) { concept =
-     * contentService.getConcept(c.getMapTarget(),
-     * mapProject.getDestinationTerminology(),
-     * mapProject.getDestinationTerminologyVersion()); }
-     * 
-     * // human readable file requires map relation name MapRelation mapRelation
-     * = null; for (MapRelation mr : mapRelations) { if
-     * (mr.getTerminologyId().equals(c.getMapRelationId())) { mapRelation = mr;
-     * } }
-     * 
-     * // write to machine and human-readable files
-     * snapshotMachineReadableWriter.write(this
-     * .getMachineReadableTextforComplexMapRefSetMember(c));
-     * snapshotHumanReadableWriter.write(this
-     * .getHumanReadableTextforComplexMapRefSetMember(c, concept, mapRelation));
-     * 
-     * }
-     * 
-     * // Case 2: Previously existing, but not in current records tempSet = new
-     * HashSet<>(complexMapRefSetMemberMap.values());
-     * tempSet.removeAll(complexMapRefSetMembersToWrite.values());
-     * 
-     * // write the members for (ComplexMapRefSetMember c : tempSet) {
-     * deltaMachineReadableWriter.write(this
-     * .getMachineReadableTextforComplexMapRefSetMember(c));
-     * 
-     * // human readable file requires target concept name Concept concept =
-     * null; if (!c.getMapTarget().isEmpty()) { concept =
-     * contentService.getConcept(c.getMapTarget(),
-     * mapProject.getDestinationTerminology(),
-     * mapProject.getDestinationTerminologyVersion()); }
-     * 
-     * // this is clunky, result of rewrite from storing map enries MapRelation
-     * mapRelation = null; for (MapRelation mr : mapRelations) { if
-     * (mr.getTerminologyId().equals(c.getMapRelationId())) { mapRelation = mr;
-     * } }
-     * 
-     * // write to machine and human-readable files
-     * snapshotMachineReadableWriter.write(this
-     * .getMachineReadableTextforComplexMapRefSetMember(c));
-     * snapshotHumanReadableWriter.write(this
-     * .getHumanReadableTextforComplexMapRefSetMember(c, concept, mapRelation));
-     * }
-     * 
-     * // sort the files FileSorter.sortFile(snapshotMachineReadableFileName,
-     * comparator); FileSorter.sortFile(snapshotHumanReadableFileName,
-     * comparator); }
-     */
-
-    // /////////////////////////////////////////////////////
-    // Output errors and run statistics
-    // /////////////////////////////////////////////////////
 
     // write the errors
     Logger.getLogger(getClass()).info(
@@ -1064,6 +970,59 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // close the services
     contentService.close();
     mappingService.close();
+  }
+
+  /**
+   * Write human readable file.
+   * @throws Exception
+   */
+  private void writeActiveSnapshot(List<ComplexMapRefSetMember> members)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info("Writing snapshot...");
+    String pattern =
+        (mapProject.getMapRefsetPattern() == MapRefsetPattern.ComplexMap
+            ? "iissscRefset_" : "iisssccRefset_");
+    String snapshotFile = null;
+    BufferedWriter snapshotWriter = null;
+    snapshotFile =
+        outputDir + "/der2_" + pattern + mapProject.getMapRefsetPattern()
+            + "Snapshot_INT_" + effectiveTime + ".txt";
+
+    // write headers
+    Logger.getLogger(getClass()).info(
+        "  Machine-readable release file:  " + snapshotFile);
+
+    snapshotWriter = new BufferedWriter(new FileWriter(snapshotFile));
+    snapshotWriter
+        .write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\t"
+            + "mapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId");
+    if (mapProject.getMapRefsetPattern().equals(MapRefsetPattern.ExtendedMap)) {
+      snapshotWriter.write("\tmapCategoryId");
+    }
+    snapshotWriter.write("\r\n");
+
+    // Write members
+    List<String> lines = new ArrayList<>();
+    for (ComplexMapRefSetMember member : members) {
+      // collect lines
+      lines.add(getOutputLine(member));
+    }
+
+    // Sort lines
+    Collections.sort(lines, COMPARATOR);
+
+    // Write lines
+    for (String line : lines) {
+      snapshotWriter.write(line);
+    }
+
+    Logger.getLogger(getClass()).info("  Writing complete.");
+
+    // Close
+    snapshotWriter.flush();
+    snapshotWriter.close();
+
   }
 
   /**
@@ -1710,8 +1669,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @return the machine readable textfor complex map ref set member
    * @throws Exception the exception
    */
-  private String getMachineReadableTextforComplexMapRefSetMember(
-    ComplexMapRefSetMember complexMapRefSetMember) throws Exception {
+  private String getOutputLine(ComplexMapRefSetMember complexMapRefSetMember)
+    throws Exception {
 
     String entryLine = "";
 
