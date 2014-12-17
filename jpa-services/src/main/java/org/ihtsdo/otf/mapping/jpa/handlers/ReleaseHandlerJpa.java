@@ -2163,8 +2163,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             } else {
               i =
                   (fields1[0] + fields1[1] + fields1[2] + fields1[3])
-                      .compareTo(fields1[0] + fields1[1] + fields1[2]
-                          + fields1[3]);
+                      .compareTo(fields2[0] + fields2[1] + fields2[2]
+                          + fields2[3]);
               if (i != 0) {
                 return (int) i;
               } else {
@@ -2183,13 +2183,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
                       i = fields1[11].compareTo(fields2[11]);
                       if (i != 0) {
                         return (int) i;
-                      } else {
-                        i = fields1[12].compareTo(fields2[12]);
-                        if (i != 0) {
-                          return (int) i;
-                        } else {
-                          return -1;
-                        }
+                      }
+                      // leave out 13th field so it works for complex map too.
+                      else {
+                        return -1;
                       }
                     }
                   }
