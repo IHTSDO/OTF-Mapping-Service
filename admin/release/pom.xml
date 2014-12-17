@@ -48,7 +48,7 @@
                   <goal>release</goal>
                 </goals>
                 <configuration>
-                  <refSetId>${refset.id}</refSetId>
+                  <refsetId>${refset.id}</refsetId>
                   <outputDirName>${output.dir}</outputDirName>
                   <!-- e.g. 20150131 -->
                   <effectiveTime>${time}</effectiveTime>
@@ -60,6 +60,58 @@
         </plugins>
       </build>
     </profile>
+    
+    <profile>
+      <id>BeginRelease</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <version>${project.version}</version>
+            <executions>
+              <execution>
+                <id>begin-release</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>begin-release</goal>
+                </goals>
+                <configuration>
+                  <refsetId>${refset.id}</refsetId>
+                  <removeRecords>${remove.records}</removeRecords>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    
+       <profile>
+      <id>FinishRelease</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <version>${project.version}</version>
+            <executions>
+              <execution>
+                <id>finish-release</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>finish-release</goal>
+                </goals>
+                <configuration>
+                  <refsetId>${refset.id}</refsetId>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    
 
   </profiles>
 </project>

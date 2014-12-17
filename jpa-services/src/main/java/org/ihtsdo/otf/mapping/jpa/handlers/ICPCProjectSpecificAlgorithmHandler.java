@@ -70,7 +70,7 @@ public class ICPCProjectSpecificAlgorithmHandler extends
   }
 
   /**
-   * Computes the map relation for the SNOMEDCT->ICD10 map project. Based solely
+   * Computes the map relation for the SNOMEDCT to ICD10 map project. Based solely
    * on whether an entry has a TRUE rule or not. No advices are computed for
    * this project.
    * @throws Exception

@@ -20,6 +20,8 @@ import com.wordnik.swagger.annotations.ApiParam;
 
 /**
  * Security service for authentication.
+ *
+ * @author ${author}
  */
 @Path("/security")
 @Api(value = "/security", description = "Operations supporting application authentication and authorization.")
@@ -64,6 +66,37 @@ public class SecurityServiceRest extends RootServiceRest {
           "General exception thrown");
       handleException(e, "Unexpected error trying to authenticate a map user");
       return null;
+    }
+
+  }
+
+  /**
+   * Authenticate.
+   *
+   * @param userName the user name
+   */
+  @POST
+  @Path("/logout/user/id/{userName}")
+  @ApiOperation(value = "Log out.", notes = "Logs a map user out of the tool.", response = Response.class)
+  public void logout(
+    @ApiParam(value = "Username", required = true) @PathParam("userName") String userName) {
+
+    Logger.getLogger(SecurityServiceRest.class).info(
+        "RESTful call (Logout) : /logout/user/id/"
+            + userName);
+    try {
+      SecurityService securityService = new SecurityServiceJpa();
+      securityService.logout(userName);
+      securityService.close();
+    } catch (LocalException e) {
+      Logger.getLogger(SecurityServiceRest.class).error(
+          "Local exception thrown");
+      throw new WebApplicationException(Response.status(401)
+          .entity(e.getMessage()).build());
+    } catch (Exception e) {
+      Logger.getLogger(SecurityServiceRest.class).error(
+          "General exception thrown");
+      handleException(e, "Unexpected error trying to authenticate a map user");
     }
 
   }

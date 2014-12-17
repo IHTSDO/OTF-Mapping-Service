@@ -36,26 +36,8 @@ import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 /**
  * Goal which removes a terminology from a database.
  * 
- * <pre>
- *     <plugin>
- *       <groupId>org.ihtsdo.otf.mapping</groupId>
- *       <artifactId>mapping-admin-mojo</artifactId>
- *       <version>${project.version}</version>
- *       <executions>
- *         <execution>
- *           <id>remove-terminology</id>
- *           <phase>package</phase>
- *           <goals>
- *             <goal>remove-terminology</goal>
- *           </goals>
- *           <configuration>
- *             <terminology>SNOMEDCT</terminology>
- *           </configuration>
- *         </execution>
- *       </executions>
- *     </plugin>
- * </pre>
- * 
+ * See admin/remover/pom.xml for a sample execution.
+ *  
  * @goal remove-terminology
  * 
  * @phase package
@@ -85,7 +67,9 @@ public class TerminologyRemoverMojo extends AbstractMojo {
    */
   @Override
   public void execute() throws MojoFailureException {
-    getLog().info("Starting removing " + terminology + " data ...");
+    getLog().info("Starting removing terminology");
+    getLog().info("  terminology = " + terminology);
+    
 
     try {
       Properties config = ConfigUtility.getConfigProperties();
@@ -177,7 +161,7 @@ public class TerminologyRemoverMojo extends AbstractMojo {
         }
         contentService.close();
 
-        getLog().info("done ...");
+        getLog().info("Done ...");
 
       } catch (Exception e) {
         tx.rollback();

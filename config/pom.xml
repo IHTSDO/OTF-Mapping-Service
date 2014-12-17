@@ -11,34 +11,16 @@
   </parent>
 
   <artifactId>mapping-config</artifactId>
+  <packaging>pom</packaging>
   <name>OTF RF2 Configuration</name>
   <description>OTF RF2 configuration resources</description>
 
-  <build>
-    <plugins>
-
-      <!-- Assemble resources into mapping-config*.zip -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>zip-filter-properties</id>
-            <configuration>
-              <appendAssemblyId>false</appendAssemblyId>
-              <descriptors>
-                <descriptor>src/main/assembly/config.xml</descriptor>
-              </descriptors>
-            </configuration>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <phase>package</phase>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
-
-
+  <!-- Specific config modules -->
+  <modules>
+    <module>dev-windows</module>
+    <module>uat</module>
+    <module>prod</module>
+    <module>empty</module>
+  </modules>
 </project>
+

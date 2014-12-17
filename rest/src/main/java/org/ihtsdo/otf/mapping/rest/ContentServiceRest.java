@@ -36,7 +36,7 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
 /**
- * REST implementation for content service
+ * REST implementation for content service.
  */
 @Path("/content")
 @Api(value = "/content", description = "Operations to retrieve RF2 content for a terminology.")
@@ -50,19 +50,20 @@ public class ContentServiceRest extends RootServiceRest {
 
   /**
    * Instantiates an empty {@link ContentServiceRest}.
-   * @throws Exception
+   *
+   * @throws Exception the exception
    */
   public ContentServiceRest() throws Exception {
     securityService = new SecurityServiceJpa();
   }
 
   /**
-   * Returns the concept for id, terminology, and terminology version
-   * 
+   * Returns the concept for id, terminology, and terminology version.
+   *
    * @param terminologyId the terminology id
    * @param terminology the concept terminology
    * @param terminologyVersion the terminology version
-   * @param authToken
+   * @param authToken the auth token
    * @return the concept
    */
   @GET
@@ -117,10 +118,10 @@ public class ContentServiceRest extends RootServiceRest {
   /**
    * Returns the concept for id, terminology. Looks in the latest version of the
    * terminology.
-   * 
+   *
    * @param terminologyId the id
    * @param terminology the concept terminology
-   * @param authToken
+   * @param authToken the auth token
    * @return the concept
    */
   @GET
@@ -168,9 +169,9 @@ public class ContentServiceRest extends RootServiceRest {
 
   /**
    * Returns the concept for search string.
-   * 
+   *
    * @param searchString the lucene search string
-   * @param authToken
+   * @param authToken the auth token
    * @return the concept for id
    */
   @GET
@@ -209,12 +210,12 @@ public class ContentServiceRest extends RootServiceRest {
 
   /**
    * Returns the descendants of a concept as mapped by relationships and inverse
-   * relationships
-   * 
+   * relationships.
+   *
    * @param terminologyId the terminology id
    * @param terminology the terminology
    * @param terminologyVersion the terminology version
-   * @param authToken
+   * @param authToken the auth token
    * @return the search result list
    */
   @GET
@@ -261,12 +262,12 @@ public class ContentServiceRest extends RootServiceRest {
   }
 
   /**
-   * Returns the immediate children of a concept given terminology information
-   * 
+   * Returns the immediate children of a concept given terminology information.
+   *
    * @param id the terminology id
    * @param terminology the terminology
    * @param terminologyVersion the terminology version
-   * @param authToken
+   * @param authToken the auth token
    * @return the search result list
    */
   @GET
@@ -428,6 +429,155 @@ public class ContentServiceRest extends RootServiceRest {
       return results;
     } catch (Exception e) {
       handleException(e, "trying to retrieve concepts changed in last delta");
+      return null;
+    }
+  }
+  
+  /**
+   * Returns the index viewer indexes.
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @param authToken the auth token
+   * @return the index viewer indexes
+   */
+  @GET
+  @Path("/index/{terminology}/{terminologyVersion}")
+  @ApiOperation(value = "Get the index domains available for given terminology and version.", notes = "Gets the index domains available for the given terminology and version.", response = SearchResultList.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public SearchResultList getIndexDomains(
+	@ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
+	@ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+    Logger.getLogger(ContentServiceRest.class).info(
+        "RESTful call (Content): /index/" + terminology + "/" + terminologyVersion);
+
+    try {
+      // authorize call
+      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+        throw new WebApplicationException(
+            Response
+                .status(401)
+                .entity(
+                    "User does not have permissions to retrieve the indexes to be viewed.")
+                .build());
+
+      ContentService contentService = new ContentServiceJpa();
+      SearchResultList searchResultList = contentService.getIndexDomains(terminology, terminologyVersion);
+      contentService.close();
+      return searchResultList;
+
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve the indexes to be viewed");
+      return null;
+    }
+  }
+
+  /**
+   * Returns the index viewer pages for index.
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @param index the index
+   * @param authToken the auth token
+   * @return the index viewer pages for index
+   */
+  @GET
+  @Path("/index/{terminology}/{terminologyVersion}/{index}")
+  @ApiOperation(value = "Return the index page names available for given terminology, version and domain.", notes = "Returns the pages available for the given terminology, version and domain.", response = SearchResultList.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public SearchResultList getIndexViewerPagesForIndex(
+	@ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
+	@ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
+	@ApiParam(value = "Name of index or domain", required = true) @PathParam("index") String index,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+    Logger.getLogger(ContentServiceRest.class).info(
+        "RESTful call (Content): /index/" + terminology + "/" + terminologyVersion + "/" +
+      index);
+
+    try {
+      // authorize call
+      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+        throw new WebApplicationException(
+            Response
+                .status(401)
+                .entity(
+                    "User does not have permissions to retrieve the page names for the given index.")
+                .build());
+    
+      ContentService contentService = new ContentServiceJpa();
+      SearchResultList searchResultList = contentService.getIndexPagesForIndex(terminology, terminologyVersion, index);
+      
+      contentService.close();
+      return searchResultList;
+
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve the page names for the given index");
+      return null;
+    }
+  }
+  
+  /**
+   * Find index viewer search result entries.
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @param domain the domain
+   * @param searchField the search field
+   * @param subSearchField the sub search field
+   * @param subSubSearchField the sub sub search field
+   * @param allFlag the all flag
+   * @param authToken the auth token
+   * @return the search result list
+   */
+  @GET  
+  @Path("/index/{terminology}/{terminologyVersion}/{domain}/search/{searchField}/subSearch/{subSearchField}/subSubSearch/{subSubSearchField}/{allFlag}")
+  @ApiOperation(value = "Peform the search given the search terms.", notes = "Performs the search given the search terms in the given terminology.", response = SearchResultList.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public SearchResultList findIndexViewerEntries(
+    @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
+    @ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
+    @ApiParam(value = "Domain/Index within terminology", required = true) @PathParam("domain") String domain,
+    @ApiParam(value = "First level search field", required = true) @PathParam("searchField") String searchField,
+    @ApiParam(value = "Second level search field to refine search", required = true) @PathParam("subSearchField") String subSearchField,
+    @ApiParam(value = "Third level search field to refine search", required = true) @PathParam("subSubSearchField") String subSubSearchField,
+    @ApiParam(value = "If all levels should be searched, e.g. true", required = true) @PathParam("allFlag") boolean allFlag,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+    Logger.getLogger(ContentServiceRest.class).info(
+        "RESTful call (Content): /index/" + terminology + "/" + terminologyVersion +
+        "/" + domain + "/" + searchField + "/" + subSearchField + "/" + subSubSearchField + "/" + allFlag);
+
+    try {
+      // authorize call
+      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+        throw new WebApplicationException(
+            Response
+                .status(401)
+                .entity(
+                    "User does not have permissions to perform a search of the indexes.")
+                .build());
+
+      ContentService contentService = new ContentServiceJpa();
+      SearchResultList searchResultList = contentService.findIndexEntries(terminology, 
+          terminologyVersion, domain, searchField, subSearchField, subSubSearchField, allFlag);
+      searchResultList.setTotalCount(searchResultList.getCount());
+      contentService.close();
+      return searchResultList;
+
+    } catch (Exception e) {
+      handleException(e, "trying to perform a search of the indexes");
       return null;
     }
   }
