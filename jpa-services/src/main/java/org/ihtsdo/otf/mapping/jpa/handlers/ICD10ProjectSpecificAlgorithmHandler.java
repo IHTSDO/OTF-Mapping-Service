@@ -422,12 +422,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
   public Set<String> getDependentModules() {
     
     Set<String> moduleDependencies = new HashSet<>();
-    
     moduleDependencies.add("900000000000012004");
     moduleDependencies.add("900000000000207008");
-    
-    System.out.println("NUMBER OF DEPENDENCIES: " + moduleDependencies.size());
-    
     return moduleDependencies;
     
   }
