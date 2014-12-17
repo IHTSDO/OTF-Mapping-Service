@@ -519,7 +519,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
           // add this entry to the list of members to write
           if (activeMembersMap.containsKey(member.getTerminologyId())) {
-            throw new Exception("Duplicate id found" + member);
+            Logger.getLogger(getClass()).error(
+                activeMembersMap.get(member.getTerminologyId()).toString());
+            Logger.getLogger(getClass()).error(member.toString());
+            throw new Exception("Duplicate id found");
           }
           activeMembersMap.put(member.getTerminologyId(), member);
         }
