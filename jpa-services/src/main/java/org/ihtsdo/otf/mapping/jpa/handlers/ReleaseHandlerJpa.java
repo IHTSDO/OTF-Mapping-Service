@@ -675,7 +675,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
               // flag for whether this entry is a duplicate of
               // an existing or parent entry
-              boolean isDuplicateEntry = true;
+              // for blank parent entries, assume false.
+              boolean isDuplicateEntry = mrParent.getMapEntries().size() > 0;
 
               // compare to the entries on the parent record
               // (this produces short-form)
