@@ -28,6 +28,7 @@ import org.ihtsdo.otf.mapping.helpers.ReportQueryType;
 import org.ihtsdo.otf.mapping.helpers.ReportResultType;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
+import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
@@ -243,7 +244,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     }
     if (!metadataService.getModules(mapProject.getSourceTerminology(),
         mapProject.getSourceTerminologyVersion()).containsKey(moduleId)) {
-      throw new Exception("Module id is not a valid module id");
+      throw new Exception("Module id is not a valid module id " +
+        moduleId);
     }
 
     // Refset id
@@ -252,7 +254,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         mapProject.getSourceTerminologyVersion()).containsKey(
         mapProject.getRefSetId())) {
       throw new Exception(
-          "Map project refset id is not a valid complex map refset id");
+          "Map project refset id is not a valid complex map refset id "
+          + mapProject.getRefSetId());
     }
 
     // check output directory exists
@@ -524,6 +527,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             Logger.getLogger(getClass()).error(member.toString());
             throw new Exception("Duplicate id found");
           }
+
+          final ValidationResult result = qaMember(member);
+          if (!result.isValid()) {
+            throw new Exception("Invalid member for "
+                + member.getConcept().getTerminologyId() + " - " + result);
+          }
           activeMembersMap.put(member.getTerminologyId(), member);
         }
       }
@@ -577,6 +586,42 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // close the services
     contentService.close();
     mappingService.close();
+  }
+
+  /**
+   * Some last minute QA checks.
+   *
+   * @param member the member
+   * @return the validation result
+   */
+  private ValidationResult qaMember(ComplexMapRefSetMember member) {
+    ValidationResult result = new ValidationResultJpa();
+
+    // mapTarget is not null when mapCategory is 447637006 or 447639009
+    // 447637006|Map source concept is properly classified
+    // 447639009|Map of source concept is context dependent (also applies to
+    // gender)
+    if (member.getMapTarget().isEmpty()
+        && member.getMapRelationId().equals("447637006")) {
+      result.addError("Map has empty target with map category 447637006");
+    }
+    if (member.getMapTarget().isEmpty()
+        && member.getMapRelationId().equals("447639009")) {
+      result.addError("Map has empty target with map category 447639009");
+    }
+
+    // mapTarget is null when mapCategory is not 447637006 or 447639009
+    if (!member.getMapTarget().isEmpty()
+        && !member.getMapRelationId().equals("447637006")
+        && !member.getMapRelationId().equals("447639009")) {
+      result
+          .addError("Map has non-empty target without map category 447639009 or 447637006");
+    }
+
+    
+    
+    return result;
+
   }
 
   /**
@@ -1022,6 +1067,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * Write human readable file.
    * @throws Exception
    */
+  @SuppressWarnings("resource")
   private void writeActiveSnapshotFile(
     Map<String, ComplexMapRefSetMember> members) throws Exception {
 
@@ -1041,7 +1087,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     writer = new BufferedWriter(new FileWriter(filename));
     writer
-        .write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\t"
+        .write("id\teffeccdzyztiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\t"
             + "mapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId");
     if (mapProject.getMapRefsetPattern().equals(MapRefsetPattern.ExtendedMap)) {
       writer.write("\tmapCategoryId");
