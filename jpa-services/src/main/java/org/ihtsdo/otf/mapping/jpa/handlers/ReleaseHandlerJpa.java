@@ -828,11 +828,14 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // case 1: currently active now modified
     // Copy current map of uuids to write into temp map
     // For each previously active uuid:
-    // - check temp map for this uuid
+    // - check temp map for this uuidz
     // - if present AND unchanged, remove from temp map
     // Write the values of the temp map
-    tempMap = new HashMap<>(activeMembers);
-
+    tempMap = new HashMap<>();
+    for (ComplexMapRefSetMember c : activeMembers) {
+    	tempMap.put(c.getTerminologyId(),c);
+    }
+   
     Logger.getLogger(getClass()).info(
         "  Computing maps created or changed this cycle from " + tempMap.size()
             + " maps marked for writing...");
@@ -879,9 +882,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     tempMap = new HashMap<>(previousActiveMembers);
 
-    for (String uuid : activeMembers.keySet()) {
-      if (tempMap.containsKey(uuid)) {
-        tempMap.remove(uuid);
+    for (ComplexMapRefSetMember c : activeMembers) {
+      if (tempMap.containsKey(c.getTerminologyId())) {
+        tempMap.remove(c.getTerminologyId());
       }
 
     }
