@@ -1377,7 +1377,7 @@ angular
               "mapRecordId" : $scope.record.id,
               "targetId" : null,
               "targetName" : null,
-              "rule" : "TRUE",
+              "rule" : ($scope.project.ruleBased == true ? "TRUE" : null),
               "mapPriority" : group.entry.length + 1,
               "mapRelation" : null,
               "mapBlock" : "",
