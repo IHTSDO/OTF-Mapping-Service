@@ -1,11 +1,14 @@
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
+import org.ihtsdo.otf.mapping.helpers.WorkflowState;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatusCombination;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
@@ -17,6 +20,7 @@ import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 public class WorkflowReviewProjectPathHandler extends
     AbstractWorkflowPathHandler {
 
+  // constructor defines the tracking record states that exist for this workflow
   public WorkflowReviewProjectPathHandler() {
 
     // empty workflow is allowed for this path
@@ -25,21 +29,30 @@ public class WorkflowReviewProjectPathHandler extends
     // initial state: tracking record, no map records
     // final state: no tracking record, one map record ready for publication
 
+    // state: SPECIALIST_WORK
+    WorkflowState state = new WorkflowState("Specialist Work");
+
     // add states representing specialist-level work
-    addWorkflowCombination(new WorkflowStatusCombination(
-        Arrays.asList(WorkflowStatus.NEW)));
-    addWorkflowCombination(new WorkflowStatusCombination(
-        Arrays.asList(WorkflowStatus.EDITING_IN_PROGRESS)));
-    addWorkflowCombination(new WorkflowStatusCombination(
-        Arrays.asList(WorkflowStatus.REVIEW_NEEDED)));
+    state.addWorkflowCombination(new WorkflowStatusCombination(Arrays
+        .asList(WorkflowStatus.NEW)));
+    state.addWorkflowCombination(new WorkflowStatusCombination(Arrays
+        .asList(WorkflowStatus.EDITING_IN_PROGRESS)));
+    state.addWorkflowCombination(new WorkflowStatusCombination(Arrays
+        .asList(WorkflowStatus.REVIEW_NEEDED)));
+
+    workflowStates.add(state);
 
     // add states representing lead-level work
-    addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
+    state = new WorkflowState("Lead Work");
+
+    state.addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
         WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_NEW)));
-    addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
+    state.addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
         WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_IN_PROGRESS)));
-    addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
+    state.addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
         WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_RESOLVED)));
+
+    workflowStates.add(state);
   }
 
   @Override
@@ -73,6 +86,38 @@ public class WorkflowReviewProjectPathHandler extends
     if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
       result.addError("User is not a specialist or above");
       return result;
+    }
+
+    /*
+     * // add states representing specialist-level work
+     * addWorkflowCombination(new WorkflowStatusCombination(
+     * Arrays.asList(WorkflowStatus.NEW))); addWorkflowCombination(new
+     * WorkflowStatusCombination(
+     * Arrays.asList(WorkflowStatus.EDITING_IN_PROGRESS)));
+     * addWorkflowCombination(new WorkflowStatusCombination(
+     * Arrays.asList(WorkflowStatus.REVIEW_NEEDED)));
+     * 
+     * // add states representing lead-level work addWorkflowCombination(new
+     * WorkflowStatusCombination(Arrays.asList( WorkflowStatus.REVIEW_NEEDED,
+     * WorkflowStatus.REVIEW_NEW))); addWorkflowCombination(new
+     * WorkflowStatusCombination(Arrays.asList( WorkflowStatus.REVIEW_NEEDED,
+     * WorkflowStatus.REVIEW_IN_PROGRESS))); addWorkflowCombination(new
+     * WorkflowStatusCombination(Arrays.asList( WorkflowStatus.REVIEW_NEEDED,
+     * WorkflowStatus.REVIEW_RESOLVED)));
+     */
+
+    WorkflowStatusCombination workflowCombination =
+        this.getWorkflowCombinationForTrackingRecord(trackingRecord);
+    WorkflowState workflowState =
+        this.getWorkflowStateForWorkflowCombination(workflowCombination);
+
+    switch (workflowState.getWorkflowStateName()) {
+      case "Specialist Work":
+        break;
+      case "Lead Work":
+        break;
+      default:
+        break;
     }
 
     // switch on requested action
