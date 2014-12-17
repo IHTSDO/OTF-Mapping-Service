@@ -344,6 +344,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     int ct = 0;
     Map<String, ComplexMapRefSetMember> activeMembersMap = new HashMap<>();
     for (MapRecord mapRecord : mapRecords) {
+      Logger.getLogger(getClass()).info(
+          "    Processing record for " + mapRecord.getConceptId());
+
       ct++;
 
       if (ct % 5000 == 0) {
@@ -527,16 +530,16 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             throw new Exception("Duplicate id found");
           }
 
-//          ValidationResult result = null;
-//          if (mapProject.isRuleBased()) {
-//            result = qaRulesMember(member);
-//          } else {
-//            result = qaMember(member);
-//          }
-//          if (result != null && !result.isValid()) {
-//            throw new Exception("Invalid member for "
-//                + member.getConcept().getTerminologyId() + " - " + result);
-//          }
+          // ValidationResult result = null;
+          // if (mapProject.isRuleBased()) {
+          // result = qaRulesMember(member);
+          // } else {
+          // result = qaMember(member);
+          // }
+          // if (result != null && !result.isValid()) {
+          // throw new Exception("Invalid member for "
+          // + member.getConcept().getTerminologyId() + " - " + result);
+          // }
           activeMembersMap.put(member.getTerminologyId(), member);
         }
       }
@@ -679,7 +682,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     return result;
 
   }
-  
 
   /**
    * Some last minute QA checks.
@@ -767,7 +769,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     return result;
 
-  }  
+  }
 
   /**
    * Handle up propagation.
@@ -833,17 +835,18 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         // add this descendant to the processed list
         descendantsProcessed.add(tp.getTerminologyId());
 
-        // get the parent map record for this tree position
-        // used to check if entries are duplicated on parent
-        String parent =
-            tp.getAncestorPath().substring(
-                tp.getAncestorPath().lastIndexOf("~") + 1);
-        // TODO: this really should be parent(s) (e.g. via the "concept" object)
-        MapRecord mrParent = getMapRecordForTerminologyId(parent);
-
         // skip the root level record, these entries are added
         // below, after the up-propagated entries
         if (!tp.getTerminologyId().equals(mapRecord.getConceptId())) {
+
+          // get the parent map record for this tree position
+          // used to check if entries are duplicated on parent
+          String parent =
+              tp.getAncestorPath().substring(
+                  tp.getAncestorPath().lastIndexOf("~") + 1);
+          // TODO: this really should be parent(s) (e.g. via the "concept"
+          // object)
+          MapRecord mrParent = getMapRecordForTerminologyId(parent);
 
           // get the map record corresponding to this specific
           // ancestor path + concept Id
