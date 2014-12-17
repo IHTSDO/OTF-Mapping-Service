@@ -244,8 +244,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     }
     if (!metadataService.getModules(mapProject.getSourceTerminology(),
         mapProject.getSourceTerminologyVersion()).containsKey(moduleId)) {
-      throw new Exception("Module id is not a valid module id " +
-        moduleId);
+      throw new Exception("Module id is not a valid module id " + moduleId);
     }
 
     // Refset id
@@ -255,7 +254,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         mapProject.getRefSetId())) {
       throw new Exception(
           "Map project refset id is not a valid complex map refset id "
-          + mapProject.getRefSetId());
+              + mapProject.getRefSetId());
     }
 
     // check output directory exists
@@ -528,11 +527,16 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             throw new Exception("Duplicate id found");
           }
 
-          final ValidationResult result = qaMember(member);
-          if (!result.isValid()) {
-            throw new Exception("Invalid member for "
-                + member.getConcept().getTerminologyId() + " - " + result);
-          }
+//          ValidationResult result = null;
+//          if (mapProject.isRuleBased()) {
+//            result = qaRulesMember(member);
+//          } else {
+//            result = qaMember(member);
+//          }
+//          if (result != null && !result.isValid()) {
+//            throw new Exception("Invalid member for "
+//                + member.getConcept().getTerminologyId() + " - " + result);
+//          }
           activeMembersMap.put(member.getTerminologyId(), member);
         }
       }
@@ -618,11 +622,152 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           .addError("Map has non-empty target without map category 447639009 or 447637006");
     }
 
-    
-    
+    // IFA rules with mapTargets have 447639009 mapCategory
+    if (member.getMapRule().startsWith("IFA")
+        && !member.getMapRelationId().equals("447639009")) {
+      result.addError("IFA map has category other than 447639009");
+    }
+
+    // Verify higher map groups do not have only NC nodes ...Wed Dec 17 00:41:28
+    // PST 2014
+
+    // Verify TRUE rules do not appear before IFA rules ... Wed Dec 17 00:41:32
+    // PST 2014
+
+    // Verify the last entry in a mapGroup is either TRUE or OTHERWISE TRUE
+    // ...Wed Dec 17 00:41:32 PST 2014
+
+    // Verify IFA rules refer to valid conceptId ...Wed Dec 17 00:41:32 PST 2014
+
+    // Verify AGE rules do not end with <= 0 ...Wed Dec 17 00:41:36 PST 2014
+    // Verify each mapRule has valid syntax ...Wed Dec 17 00:41:36 PST 2014
+    // Verify mapAdvice is restricted to the defined list ...Wed Dec 17 00:41:48
+    // PST 2014
+    // Verify multiple map advice is properly handled ...Wed Dec 17 00:41:48 PST
+    // 2014
+    // Verify mapAdvice is not duplicated ...Wed Dec 17 00:41:49 PST 2014
+    // Verify NC has valid map advice ...Wed Dec 17 00:41:50 PST 2014
+    // Verify AWH has valid map advice ...Wed Dec 17 00:41:50 PST 2014
+    // Verify ACT has valid map advice ...Wed Dec 17 00:41:51 PST 2014
+    // Verify OS map category is not used ...Wed Dec 17 00:41:51 PST 2014
+    // Verify HLC concepts must not have explicit concept exclusion rules ...Wed
+    // Dec 17 00:41:51 PST 2014
+    // Verify advice MAP IS CONTEXT DEPENDENT FOR GENDER should only apply to
+    // gender rules ...Wed Dec 17 00:41:58 PST 2014
+    // Verify advice MAP IS CONTEXT DEPENDENT FOR GENDER is not used in
+    // conjunction with CD advice ...Wed Dec 17 00:41:58 PST 2014
+    // Verify map advice is sorted ...Wed Dec 17 00:41:58 PST 2014
+    // Verify referencedComponentId in iissscc or c RefSet files ...Wed Dec 17
+    // 00:41:59 PST 2014
+    // Verify refSetId ss RefSet file is module id ...Wed Dec 17 00:41:59 PST
+    // 2014
+    // Verify moduleId ss RefSet file is moduleId of map file ...Wed Dec 17
+    // 00:41:59 PST 2014
+    // Verify referencedComponentId are the core and metadata concept ids ...Wed
+    // Dec 17 00:41:59 PST 2014
+    // Verify sourceEffectiveTime matches the version of the data ...Wed Dec 17
+    // 00:41:59 PST 2014
+    // Verify targetEffectiveTime matches the version of the core data ...Wed
+    // Dec 17 00:41:59 PST 2014
+    // Verify all referencedComponentId are Clinical Finding, Event, or
+    // Situation ...Wed Dec 17 00:41:59 PST 2014
+
+    // Group QA
+    // Groups are consecutive starting with 1
+    // Priorities within a group are consecutive and starting with 1
+
     return result;
 
   }
+  
+
+  /**
+   * Some last minute QA checks.
+   *
+   * @param member the member
+   * @return the validation result
+   */
+  private ValidationResult qaRulesMember(ComplexMapRefSetMember member) {
+    ValidationResult result = qaMember(member);
+
+    // mapTarget is not null when mapCategory is 447637006 or 447639009
+    // 447637006|Map source concept is properly classified
+    // 447639009|Map of source concept is context dependent (also applies to
+    // gender)
+    if (member.getMapTarget().isEmpty()
+        && member.getMapRelationId().equals("447637006")) {
+      result.addError("Map has empty target with map category 447637006");
+    }
+    if (member.getMapTarget().isEmpty()
+        && member.getMapRelationId().equals("447639009")) {
+      result.addError("Map has empty target with map category 447639009");
+    }
+
+    // mapTarget is null when mapCategory is not 447637006 or 447639009
+    if (!member.getMapTarget().isEmpty()
+        && !member.getMapRelationId().equals("447637006")
+        && !member.getMapRelationId().equals("447639009")) {
+      result
+          .addError("Map has non-empty target without map category 447639009 or 447637006");
+    }
+
+    // IFA rules with mapTargets have 447639009 mapCategory
+    if (member.getMapRule().startsWith("IFA")
+        && !member.getMapRelationId().equals("447639009")) {
+      result.addError("IFA map has category other than 447639009");
+    }
+
+    // Verify higher map groups do not have only NC nodes ...Wed Dec 17 00:41:28
+    // PST 2014
+
+    // Verify TRUE rules do not appear before IFA rules ... Wed Dec 17 00:41:32
+    // PST 2014
+
+    // Verify the last entry in a mapGroup is either TRUE or OTHERWISE TRUE
+    // ...Wed Dec 17 00:41:32 PST 2014
+
+    // Verify IFA rules refer to valid conceptId ...Wed Dec 17 00:41:32 PST 2014
+
+    // Verify AGE rules do not end with <= 0 ...Wed Dec 17 00:41:36 PST 2014
+    // Verify each mapRule has valid syntax ...Wed Dec 17 00:41:36 PST 2014
+    // Verify mapAdvice is restricted to the defined list ...Wed Dec 17 00:41:48
+    // PST 2014
+    // Verify multiple map advice is properly handled ...Wed Dec 17 00:41:48 PST
+    // 2014
+    // Verify mapAdvice is not duplicated ...Wed Dec 17 00:41:49 PST 2014
+    // Verify NC has valid map advice ...Wed Dec 17 00:41:50 PST 2014
+    // Verify AWH has valid map advice ...Wed Dec 17 00:41:50 PST 2014
+    // Verify ACT has valid map advice ...Wed Dec 17 00:41:51 PST 2014
+    // Verify OS map category is not used ...Wed Dec 17 00:41:51 PST 2014
+    // Verify HLC concepts must not have explicit concept exclusion rules ...Wed
+    // Dec 17 00:41:51 PST 2014
+    // Verify advice MAP IS CONTEXT DEPENDENT FOR GENDER should only apply to
+    // gender rules ...Wed Dec 17 00:41:58 PST 2014
+    // Verify advice MAP IS CONTEXT DEPENDENT FOR GENDER is not used in
+    // conjunction with CD advice ...Wed Dec 17 00:41:58 PST 2014
+    // Verify map advice is sorted ...Wed Dec 17 00:41:58 PST 2014
+    // Verify referencedComponentId in iissscc or c RefSet files ...Wed Dec 17
+    // 00:41:59 PST 2014
+    // Verify refSetId ss RefSet file is module id ...Wed Dec 17 00:41:59 PST
+    // 2014
+    // Verify moduleId ss RefSet file is moduleId of map file ...Wed Dec 17
+    // 00:41:59 PST 2014
+    // Verify referencedComponentId are the core and metadata concept ids ...Wed
+    // Dec 17 00:41:59 PST 2014
+    // Verify sourceEffectiveTime matches the version of the data ...Wed Dec 17
+    // 00:41:59 PST 2014
+    // Verify targetEffectiveTime matches the version of the core data ...Wed
+    // Dec 17 00:41:59 PST 2014
+    // Verify all referencedComponentId are Clinical Finding, Event, or
+    // Situation ...Wed Dec 17 00:41:59 PST 2014
+
+    // Group QA
+    // Groups are consecutive starting with 1
+    // Priorities within a group are consecutive and starting with 1
+
+    return result;
+
+  }  
 
   /**
    * Handle up propagation.
