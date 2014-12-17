@@ -1,35 +1,45 @@
 <div class="modal-body">
 
-<h4>Viewing Record {{index}} of {{records.length}}</h4>
-<button class="btn btn-sm btn-primary pull-right" ng-click="done()">Done</button>
-<button class="btn btn-sm btn-primary" ng-click="finishCurrentRecord()" ng-show="validationResult != null && validationResult.errors.length == 0 && currentRecord.isFinished == false">{{actionText}}</button>
-<button ng-show="records.length > 1" class="btn btn-sm btn-warning" ng-click="selectNextRecord()">Skip</button>
-
-	
-	<div ng-show="currentRecord.isFinished == true" style="color:green">Record saved and {{actionText}}ed.</div>
-	
-	
-	<div ng-show="validationResult.errors.length > 0">
-	<hr>
-	<span style="color:red">Cannot finish due to errors:</span>
-	<ul>
-		<li ng-repeat="error in validationResult.errors">{{error}}</li>
-	</ul>
-	</div>
-	
-	<div ng-show="validationResult.warnings.length > 0">
-	<hr>
-	<span style="color:orange">Warnings:</span>
-	<ul>
-		<li ng-repeat="warning in validationResult.warnings">{{warning}}</li>
-	</ul>
-	</div>
+  <h4>Viewing Record {{index}} of {{records.length}}</h4>
+  <button class="btn btn-sm btn-primary pull-right" ng-click="done()">Done</button>
+  <button class="btn btn-sm btn-primary" ng-click="finishCurrentRecord()"
+    ng-show="validationResult != null && validationResult.errors.length == 0 && currentRecord.isFinished == false">{{actionText}}</button>
+  <button ng-show="records.length > 1" class="btn btn-sm btn-warning"
+    ng-click="selectNextRecord()">Skip</button>
 
 
+  <div ng-show="currentRecord.isFinished == true" style="color: green">Record
+    saved and {{actionText}}ed.</div>
 
-<hr>
+
+  <div ng-show="validationResult.errors.length > 0">
+    <hr>
+    <span style="color: red">Cannot finish due to errors:</span>
+    <ul>
+      <li ng-repeat="error in validationResult.errors">{{error}}</li>
+    </ul>
+  </div>
+
+  <div ng-show="validationResult.warnings.length > 0">
+    <hr>
+    <span style="color: orange">Warnings:</span>
+    <ul>
+      <li ng-repeat="warning in validationResult.warnings">{{warning}}</li>
+    </ul>
+  </div>
 
 
-<div otf-map-record-narrow record="currentRecord" project="project" show-title="true"></div>
 
+  <hr>
+
+
+  <div otf-map-record-narrow record="currentRecord" project="project"
+    show-title="true"></div>
+  <div ng-show="records.length > 1"> 
+   <hr>
+   
+   <button class="btn btn-sm btn-primary" ng-click="finishAllRecords()">{{actionText}} All Records</button>
+   <div class="alert alert-success" ng-show="recordsFinished > 0">Records {{actionText}}ed: {{recordsFinished}}</div>
+   <div class="alert alert-warning" ng-show="recordsNotFinished > 0">Records not {{actionText}}ed: {{recordsNotFinished}}</div>
+</div> 
 </div>

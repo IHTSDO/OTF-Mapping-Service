@@ -9,8 +9,8 @@ import org.ihtsdo.otf.mapping.model.FeedbackConversation;
  *
  * @author ${author}
  */
-public interface FeedbackConversationList extends ResultList<FeedbackConversation> {
-
+public interface FeedbackConversationList extends
+    ResultList<FeedbackConversation> {
 
   /**
    * Adds the feedbackConversation.
@@ -19,13 +19,13 @@ public interface FeedbackConversationList extends ResultList<FeedbackConversatio
    */
   public void addFeedbackConversation(FeedbackConversation FeedbackConversation);
 
-
   /**
    * Removes the feedbackConversation.
    *
    * @param FeedbackConversation the feedbackConversation
    */
-  public void removeFeedbackConversation(FeedbackConversation FeedbackConversation);
+  public void removeFeedbackConversation(
+    FeedbackConversation FeedbackConversation);
 
   /**
    * Sets the feedbackConversations.

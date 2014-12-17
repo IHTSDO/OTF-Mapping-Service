@@ -5,24 +5,28 @@
   <!-- Module Metadata -->
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
-    <artifactId>otf-mapping-service</artifactId>
+    <artifactId>mapping-parent</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <relativePath>../../parent</relativePath>
   </parent>
 
   <artifactId>mapping-admin-import</artifactId>
-  <name>OTF Admin Import Metadata</name>
-  <description>OTF Administrator Tool to Import Metadata</description>
+  <name>OTF Admin Import</name>
+  <description>OTF Administrator Tool to Import</description>
   <packaging>pom</packaging>
 
+  <!-- the mojo configuration properties -->
+  <properties>
+    <!-- The input dir -->
+    <input.dir></input.dir>
+    <!-- the mini flag -->
+    <mini>false</mini>
+  </properties>
+
   <profiles>
+    <!-- Activated by run.config setting -->
     <profile>
-      <id>run</id>
-      <activation>
-        <property>
-          <name>run.config</name>
-        </property>
-      </activation>
+      <id>MapProject</id>
       <build>
         <plugins>
           <!-- Execute the mojo -->
@@ -37,6 +41,10 @@
                 <goals>
                   <goal>import-project-data</goal>
                 </goals>
+                <configuration>
+                  <inputDir>${input.dir}</inputDir>
+                  <mini>${mini}</mini>
+                </configuration>
               </execution>
             </executions>
           </plugin>

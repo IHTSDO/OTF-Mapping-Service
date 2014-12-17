@@ -168,4 +168,12 @@ public interface MapEntry {
    */
   public void setMapRelation(MapRelation mapRelation);
 
+  /**
+   * Checks if entry is functionally equivalent to another entry, based on: -
+   * targetId - rule - relation - advice
+   * @param me the map entry
+   * @return true, if is equivalent
+   */
+  public boolean isEquivalent(MapEntry me);
+
 }
