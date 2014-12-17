@@ -366,6 +366,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           continue;
         }
 
+      } else {
+        Logger.getLogger(getClass()).debug(
+            "  DO NOT up propagate " + mapRecord.getConceptId());
+
       }
 
       // /////////////////////////////////////////////////////
@@ -446,7 +450,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
             // add the entry and replace in the entries-by-group map
             existingEntries.add(newEntry);
-            // entriesByGroup.put(mapGroup, existingEntries);
+            entriesByGroup.put(mapGroup, existingEntries);
 
           }
         }
@@ -723,8 +727,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
                 existingEntries.add(newEntry);
 
                 // replace existing list with modified list - unnecessary
-                // entriesByGroup.put(newEntry.getMapGroup(),
-                // existingEntries);
+                entriesByGroup.put(newEntry.getMapGroup(), existingEntries);
 
               } else {
 
