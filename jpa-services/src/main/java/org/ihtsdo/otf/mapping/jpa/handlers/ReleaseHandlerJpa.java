@@ -283,7 +283,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     Logger.getLogger(ReleaseHandler.class).info("  Retrieving maps");
 
     // retrieve the complex map ref set members for this project's refset id
-    ComplexMapRefSetMemberList refSetMembers =
+    ComplexMapRefSetMemberList prevMemberList =
         contentService.getComplexMapRefSetMembersForRefSetId(mapProject
             .getRefSetId());
 
@@ -291,30 +291,28 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // this is used for comparison purposes later
     // after record processing, the remaining ref set members
     // represent those entries that are now inactive
-    Map<String, ComplexMapRefSetMember> complexMapRefSetMemberMap =
-        new HashMap<>();
-    List<ComplexMapRefSetMember> activeMembers = new ArrayList<>();
-    
-    for (ComplexMapRefSetMember c : refSetMembers.getComplexMapRefSetMembers()) {
-      complexMapRefSetMemberMap.put(getHash(c), c);
+    Map<String, ComplexMapRefSetMember> prevMembersHashMap =
+        new HashMap<>();    
+    for (ComplexMapRefSetMember c : prevMemberList.getComplexMapRefSetMembers()) {
+      prevMembersHashMap.put(getHash(c), c);
     }
 
     // output size of each collection
     Logger.getLogger(getClass()).info(
         "    Cached distinct UUID-quintuples = "
-            + complexMapRefSetMemberMap.keySet().size());
+            + prevMembersHashMap.keySet().size());
     Logger.getLogger(getClass()).info(
         "    Existing complex ref set members for project = "
-            + refSetMembers.getCount());
+            + prevMemberList.getCount());
 
     // if sizes do not match, output warning
-    if (complexMapRefSetMemberMap.keySet().size() != refSetMembers.getCount()) {
+    if (prevMembersHashMap.keySet().size() != prevMemberList.getCount()) {
       throw new Exception(
           "UUID-quintuples count does not match refset member count");
     }
 
     // clear the ref set members list (no longer used)
-    refSetMembers = null;
+    prevMemberList = null;
 
     // /////////////////////////////////////////////////////
     // Perform the release
@@ -323,6 +321,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     Logger.getLogger(getClass()).info("  Processing release");
     // cycle over the map records marked for publishing
     int ct = 0;
+    Map<String, ComplexMapRefSetMember> activeMembersMap = new HashMap<>();
     for (MapRecord mapRecord : mapRecords) {
       ct++;
 
@@ -478,22 +477,25 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
           // attempt to retrieve any existing complex map ref set
           // member
-          ComplexMapRefSetMember existingMember =
-              complexMapRefSetMemberMap.get(uuidStr);
+          ComplexMapRefSetMember prevMember =
+              prevMembersHashMap.get(uuidStr);
 
           // if existing found, re-use uuid, otherwise generate new
-          if (existingMember == null) {
+          if (prevMember == null) {
             member.setTerminologyId(ConfigUtility.getReleaseUuid(uuidStr)
                 .toString());
           } else {
-            member.setTerminologyId(existingMember.getTerminologyId());
+            member.setTerminologyId(prevMember.getTerminologyId());
           }
 
           // assign and increment map priority
           member.setMapPriority(mapPriority++);
 
           // add this entry to the list of members to write
-          activeMembers.add(member);
+          if (activeMembersMap.containsKey(member.getTerminologyId())) {
+            throw new Exception("Duplicate id found" + member);
+          }
+          activeMembersMap.put(member.getTerminologyId(), member);
         }
       }
 
@@ -507,30 +509,30 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // /////////////////////////////////////////////////////
 
     // declare maps in use for computation
-    Map<String, ComplexMapRefSetMember> previousActiveMembers = new HashMap<>();
+    Map<String, ComplexMapRefSetMember> prevActiveMembersMap = new HashMap<>();
 
     // First, construct set of previously active complex map ref set members
-    for (ComplexMapRefSetMember c : complexMapRefSetMemberMap.values()) {
-      if (c.isActive())
-        previousActiveMembers.put(c.getTerminologyId(), c);
+    for (ComplexMapRefSetMember member : prevMembersHashMap.values()) {
+      if (member.isActive())
+        prevActiveMembersMap.put(member.getTerminologyId(), member);
     }
 
     // Write human readable file
-    writeHumanReadableFile(activeMembers);
+    writeHumanReadableFile(activeMembersMap);
 
     // Write snapshot file
     if (writeSnapshot) {
-      writeActiveSnapshotFile(new ArrayList<>(
-          activeMembers));
+      writeActiveSnapshotFile(new HashMap<>(
+          activeMembersMap));
     }
 
     // Write delta file
     if (writeDelta) {
-      writeDeltaFile(activeMembers, previousActiveMembers);
+      writeDeltaFile(activeMembersMap, prevActiveMembersMap);
     }
 
     // Write statistics
-    writeStatsFile(activeMembers, previousActiveMembers);
+    writeStatsFile(activeMembersMap, prevActiveMembersMap);
 
     // write the errors
     Logger.getLogger(getClass()).info(
@@ -801,9 +803,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @throws IOException
    */
   private void writeDeltaFile(
-    List<ComplexMapRefSetMember> activeMembers,
-    Map<String, ComplexMapRefSetMember> previousActiveMembers) throws Exception {
-    Map<String, ComplexMapRefSetMember> tempMap = new HashMap<>();
+    Map<String,ComplexMapRefSetMember> activeMembers,
+    Map<String,ComplexMapRefSetMember> previousActiveMembers) throws Exception {
 
     // Open file and writer
     String filename = null;
@@ -825,46 +826,41 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     }
     writer.write("\r\n");
 
-    // case 1: currently active now modified
-    // Copy current map of uuids to write into temp map
-    // For each previously active uuid:
-    // - check temp map for this uuid
-    // - if present AND unchanged, remove from temp map
-    // Write the values of the temp map
-    tempMap = new HashMap<>(activeMembers);
+    // Compute retired, new, and changed..  discard unchanged for delta
+    Map<String, ComplexMapRefSetMember> tmpActiveMembers = new HashMap<>(activeMembers);
 
     Logger.getLogger(getClass()).info(
-        "  Computing maps created or changed this cycle from " + tempMap.size()
-            + " maps marked for writing...");
+        "  Computing delta entries");
 
     Set<String> conceptsNew = new HashSet<>();
     Set<String> conceptsModified = new HashSet<>();
     Set<String> conceptsUnchanged = new HashSet<>();
 
-    // cycle over all previously active
-    for (ComplexMapRefSetMember c : previousActiveMembers.values()) {
+    // cycle over all previously active members
+    for (ComplexMapRefSetMember member : previousActiveMembers.values()) {
 
       // if set to write contains this previously active uuid
-      if (tempMap.containsKey(c.getTerminologyId())) {
+      if (tmpActiveMembers.containsKey(member.getTerminologyId())) {
 
         // if this previously active member is present (equality check) in the
         // set to be written
-        if (c.equals(tempMap.get(c.getTerminologyId()))) {
+        if (member.equals(tmpActiveMembers.get(member.getTerminologyId()))) {
 
           // remove this concept from the set to be written -- unchanged
-          tempMap.remove(c.getTerminologyId());
+          tmpActiveMembers.remove(member.getTerminologyId());
 
-          conceptsUnchanged.add(c.getConcept().getTerminologyId());
+          conceptsUnchanged.add(member.getConcept().getTerminologyId());
         } else {
-          conceptsModified.add(c.getConcept().getTerminologyId());
+          conceptsModified.add(member.getConcept().getTerminologyId());
         }
       } else {
-        conceptsNew.add(c.getConcept().getTerminologyId());
+        conceptsNew.add(member.getConcept().getTerminologyId());
       }
     }
 
     // write new or modified maps to file
-    for (ComplexMapRefSetMember c : tempMap.values()) {
+    // no sorting needed here
+    for (ComplexMapRefSetMember c : tmpActiveMembers.values()) {
       writer.write(getOutputLine(c));
     }
 
@@ -877,17 +873,17 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // - if present, remove from temp map
     // Inactivate all remaining uuids in the temp map
 
-    tempMap = new HashMap<>(previousActiveMembers);
+    tmpActiveMembers = new HashMap<>(previousActiveMembers);
 
     for (String uuid : activeMembers.keySet()) {
-      if (tempMap.containsKey(uuid)) {
-        tempMap.remove(uuid);
+      if (tmpActiveMembers.containsKey(uuid)) {
+        tmpActiveMembers.remove(uuid);
       }
 
     }
 
     // set active to false and write inactivated complex maps
-    for (ComplexMapRefSetMember c : tempMap.values()) {
+    for (ComplexMapRefSetMember c : tmpActiveMembers.values()) {
       c.setActive(false);
       writer.write(this.getOutputLine(c));
 
@@ -906,7 +902,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @throws IOException Signals that an I/O exception has occurred.
    */
   private void writeStatsFile(
-    List<ComplexMapRefSetMember> activeMembers,
+    Map<String, ComplexMapRefSetMember> activeMembers,
     Map<String, ComplexMapRefSetMember> previousActiveMembers) throws Exception {
 
     // Gather stats
@@ -917,7 +913,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     Set<String> alwaysNc = new HashSet<>();
     Set<String> neverNc = new HashSet<>();
     Set<String> sometimesMap = new HashSet<>();
-    for (ComplexMapRefSetMember member : activeMembers) {
+    for (ComplexMapRefSetMember member : activeMembers.values()) {
       String key = member.getConcept().getTerminologyId();
       alwaysNc.add(key);
       neverNc.add(key);
@@ -928,7 +924,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       entryCount.put(key, maxCt);
       updateStatMax(Stats.MAX_ENTRIES.getValue(), maxCt);
     }
-    for (ComplexMapRefSetMember member : activeMembers) {
+    for (ComplexMapRefSetMember member : activeMembers.values()) {
       String key = member.getConcept().getTerminologyId();
       activeConcepts.add(key);
       if (member.getMapPriority() > 1) {
@@ -978,7 +974,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     updateStatMax(Stats.NEW_CONCEPTS.getValue(), ct);
 
     Set<String> changedConcepts = new HashSet<>();
-    for (ComplexMapRefSetMember member : activeMembers) {
+    for (ComplexMapRefSetMember member : activeMembers.values()) {
       String key = member.getConcept().getTerminologyId();
       ComplexMapRefSetMember member2 = previousActiveMembers.get(key);
       if (member2 != null && !member.equals(member2)) {
@@ -1002,7 +998,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * Write human readable file.
    * @throws Exception
    */
-  private void writeActiveSnapshotFile(List<ComplexMapRefSetMember> members)
+  private void writeActiveSnapshotFile(Map<String, ComplexMapRefSetMember> members)
     throws Exception {
 
     Logger.getLogger(getClass()).info("Writing snapshot...");
@@ -1030,7 +1026,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     // Write members
     List<String> lines = new ArrayList<>();
-    for (ComplexMapRefSetMember member : members) {
+    for (ComplexMapRefSetMember member : members.values()) {
       // collect lines
       lines.add(getOutputLine(member));
     }
@@ -1054,7 +1050,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * Write human readable file.
    * @throws Exception
    */
-  private void writeHumanReadableFile(List<ComplexMapRefSetMember> members)
+  private void writeHumanReadableFile(Map<String, ComplexMapRefSetMember> members)
     throws Exception {
 
     // Open file and writer
@@ -1087,7 +1083,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     // Write entries
     List<String> lines = new ArrayList<>();
-    for (ComplexMapRefSetMember member : members) {
+    for (ComplexMapRefSetMember member : members.values()) {
 
       // get the map relation name for the human readable file
       MapRelation mapRelation = null;

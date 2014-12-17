@@ -33,7 +33,6 @@
           <plugin>
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
             <executions>
               <execution>
                 <id>qa-workflow</id>
@@ -59,7 +58,6 @@
           <plugin>
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
             <executions>
               <execution>
                 <id>qa-map-groups</id>
@@ -86,7 +84,6 @@
           <plugin>
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
             <executions>
               <execution>
                 <id>finish-specialist-editing</id>
@@ -112,7 +109,6 @@
           <plugin>
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
             <executions>
               <execution>
                 <id>qa-database</id>
