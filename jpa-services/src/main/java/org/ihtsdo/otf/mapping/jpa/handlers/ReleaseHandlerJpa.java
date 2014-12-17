@@ -663,6 +663,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             }
 
             // cycle over the entries
+            // TODO: this should actually compare entire groups and not just entries
+            // to account for embedded age/gender rules.  Otherwise a partial group could
+            // be explicitly rendered and the logic would be wrong
+            //
+            // Thus if all the entries for a group match the parent, then none
+            // need to be rendered, otherwise all do.          
             for (MapEntry me : mr.getMapEntries()) {
 
               // get the current list of entries for this group
@@ -675,16 +681,17 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
               // flag for whether this entry is a duplicate of
               // an existing or parent entry
-              // for blank parent entries, assume false.
-              boolean isDuplicateEntry = mrParent.getMapEntries().size() > 0;
+              boolean isDuplicateEntry = false;
 
-              // compare to the entries on the parent record
+              // compare to the entries on the parent record to the current entry
+              // If a match is found, this entry is duplicated and does not
+              // need an explicit entry
               // (this produces short-form)
               // NOTE: This uses unmodified rules
               for (MapEntry parentEntry : mrParent.getMapEntries()) {
                 if (parentEntry.getMapGroup() == me.getMapGroup()
-                    && !parentEntry.isEquivalent(me)) {
-                  isDuplicateEntry = false;
+                    && parentEntry.isEquivalent(me)) {
+                  isDuplicateEntry = true;
                   break;
                 }
               }
@@ -918,24 +925,23 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     // Gather stats
     Set<String> activeConcepts = new HashSet<>();
+    Map<String, Integer> entryCount = new HashMap<>();
     Set<String> multipleEntryConcepts = new HashSet<>();
     Set<String> multipleGroupConcepts = new HashSet<>();
     Set<String> alwaysNc = new HashSet<>();
     Set<String> neverNc = new HashSet<>();
     Set<String> sometimesMap = new HashSet<>();
     String prevConcept = null;
-    int maxCt = 1;
     for (ComplexMapRefSetMember member : activeMembers.values()) {
       String key = member.getConcept().getTerminologyId();
       alwaysNc.add(key);
       neverNc.add(key);
-      if (prevConcept != null && key.equals(prevConcept)) {
-        maxCt++;
+      if (!entryCount.containsKey(key)) {
+        entryCount.put(key, new Integer(0));
       }
-      if (prevConcept != null && !key.equals(prevConcept)) {
-        updateStatMax(Stats.MAX_ENTRIES.getValue(), maxCt);
-        maxCt = 1;
-      }
+      int maxCt = entryCount.get(key).intValue() + 1;
+      entryCount.put(key, maxCt);
+      updateStatMax(Stats.MAX_ENTRIES.getValue(), maxCt);
       prevConcept = key;
     }
     for (ComplexMapRefSetMember member : activeMembers.values()) {
