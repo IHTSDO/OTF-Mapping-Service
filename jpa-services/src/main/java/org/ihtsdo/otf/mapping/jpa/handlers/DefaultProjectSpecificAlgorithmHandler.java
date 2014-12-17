@@ -738,8 +738,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements
       }
       for (int d = 0; d < entries1.size(); d++) {
         for (int f = 0; f < entries2.size(); f++) {
-          if (!entries1.get(d).getRule().equals("TRUE")
-              && !entries2.get(f).getRule().equals("TRUE")
+          
+          // TODO previously on checked if rules were not TRUE on each entry
+          // however, this would compare any non-TRUE rule to every other non-TRUE rule
+          // and possibly report erroneous results
+          // changed to compare target ids -- is this sufficient?
+          if (isTargetIdsEqual(entries1.get(d), entries2.get(f))
               && !isRulesEqual(entries1.get(d), entries2.get(f)))
 
             validationResult.addError("Map Rule is Different: "
@@ -762,6 +766,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
    */
   @SuppressWarnings("static-method")
   public boolean isRulesEqual(MapEntry entry1, MapEntry entry2) {
+
     // check null comparisons first
     if (entry1.getRule() == null && entry2.getRule() != null)
       return false;
