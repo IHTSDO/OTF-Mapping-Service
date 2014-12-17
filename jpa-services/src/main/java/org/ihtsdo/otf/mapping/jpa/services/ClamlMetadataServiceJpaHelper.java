@@ -320,7 +320,7 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     String terminology, String version) throws NumberFormatException, Exception {
     Map<String, String> map = new HashMap<>();
 
-    // find all active descendants of 106237007
+    // find all active descendants of isa
     ContentService contentService = new ContentServiceJpa();
     Concept isaRel =
         contentService.getConcept(getIsaRelationshipType(terminology, version)
@@ -475,5 +475,10 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     }
     contentService.close();
     return map;
+  }
+
+  @Override
+  public void initializeFieldNames() throws Exception {
+    // no need
   }
 }

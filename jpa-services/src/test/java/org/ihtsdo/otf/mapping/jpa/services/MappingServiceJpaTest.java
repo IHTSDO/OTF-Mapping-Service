@@ -1,8 +1,6 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,8 +15,10 @@ import javax.persistence.Persistence;
 import org.apache.log4j.Logger;
 import org.hibernate.envers.AuditReader;
 import org.ihtsdo.otf.mapping.helpers.MapProjectList;
+import org.ihtsdo.otf.mapping.helpers.MapRefsetPattern;
 import org.ihtsdo.otf.mapping.helpers.MapUserList;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
+import org.ihtsdo.otf.mapping.helpers.RelationStyle;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
@@ -27,6 +27,7 @@ import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapUser;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -52,7 +53,7 @@ public class MappingServiceJpaTest {
   /**
    * Creates db tables, load test objects and create indexes to prepare for test
    * cases.
-   * @throws Exception 
+   * @throws Exception
    */
   @BeforeClass
   public static void init() throws Exception {
@@ -67,9 +68,10 @@ public class MappingServiceJpaTest {
 
   /**
    * Cleanup database
-   * @throws Exception 
-   * @throws FileNotFoundException 
+   * @throws Exception
+   * @throws FileNotFoundException
    */
+  @SuppressWarnings("static-method")
   @After
   public void cleanup() throws Exception {
 
@@ -77,14 +79,9 @@ public class MappingServiceJpaTest {
         "Cleaning up MappingServiceJpaTest");
 
     // create new database connection
-    String configFileName = System.getProperty("run.config.test");
-    Logger.getLogger(this.getClass()).info("  run.config.test = " + configFileName);
-    Properties config = new Properties();
-    FileReader in = new FileReader(new File(configFileName)); 
-    config.load(in);
-    in.close();
-    Logger.getLogger(this.getClass()).info("  properties = " + config);
-    factory = Persistence.createEntityManagerFactory("MappingServiceDS", config);
+    Properties config = ConfigUtility.getTestConfigProperties();
+    factory =
+        Persistence.createEntityManagerFactory("MappingServiceDS", config);
     manager = factory.createEntityManager();
     EntityTransaction tx = manager.getTransaction();
 
@@ -425,11 +422,11 @@ public class MappingServiceJpaTest {
     mapProject.setDestinationTerminologyVersion("2010");
     mapProject.setGroupStructure(true);
     mapProject.setPublished(true);
-    mapProject.setMapRelationStyle("mapRelationStyle1");
+    mapProject.setMapRelationStyle(RelationStyle.MAP_CATEGORY_STYLE);
     mapProject.setMapPrincipleSourceDocument("mapPrincipleSourceDocument1");
     mapProject.setMapPrincipleSourceDocumentName("mapPrincipleSourceDocument1");
     mapProject.setRuleBased(true);
-    mapProject.setMapRefsetPattern("mapRefsetPattern1");
+    mapProject.setMapRefsetPattern(MapRefsetPattern.ComplexMap);
     mapProject
         .setProjectSpecificAlgorithmHandlerClass("projectSpecificAlgorithmHandlerClass1");
     mapProject.addMapLead(leads.get(0));
@@ -455,11 +452,11 @@ public class MappingServiceJpaTest {
     mapProject.setDestinationTerminologyVersion("2013");
     mapProject.setGroupStructure(true);
     mapProject.setPublished(true);
-    mapProject.setMapRelationStyle("mapRelationStyle2");
+    mapProject.setMapRelationStyle(RelationStyle.MAP_CATEGORY_STYLE);
     mapProject.setMapPrincipleSourceDocument("mapPrincipleSourceDocument2");
     mapProject.setMapPrincipleSourceDocumentName("mapPrincipleSourceDocument2");
     mapProject.setRuleBased(true);
-    mapProject.setMapRefsetPattern("mapRefsetPattern2");
+    mapProject.setMapRefsetPattern(MapRefsetPattern.ComplexMap);
     mapProject
         .setProjectSpecificAlgorithmHandlerClass("projectSpecificAlgorithmHandlerClass1");
     mapProject.addMapLead(leads.get(0));
@@ -483,11 +480,11 @@ public class MappingServiceJpaTest {
     mapProject.setDestinationTerminologyVersion("2");
     mapProject.setGroupStructure(false);
     mapProject.setPublished(false);
-    mapProject.setMapRelationStyle("mapRelationStyle3");
+    mapProject.setMapRelationStyle(RelationStyle.MAP_CATEGORY_STYLE);
     mapProject.setMapPrincipleSourceDocument("mapPrincipleSourceDocument3");
     mapProject.setMapPrincipleSourceDocumentName("mapPrincipleSourceDocument3");
     mapProject.setRuleBased(true);
-    mapProject.setMapRefsetPattern("mapRefsetPattern1");
+    mapProject.setMapRefsetPattern(MapRefsetPattern.ComplexMap);
     mapProject
         .setProjectSpecificAlgorithmHandlerClass("projectSpecificAlgorithmHandlerClass3");
     mapProject.addMapLead(leads.get(2));

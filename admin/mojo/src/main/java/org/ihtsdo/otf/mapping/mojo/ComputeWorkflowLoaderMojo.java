@@ -1,6 +1,9 @@
 package org.ihtsdo.otf.mapping.mojo;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.maven.plugin.AbstractMojo;
@@ -10,38 +13,16 @@ import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
+import org.ihtsdo.otf.mapping.services.helpers.OtfEmailHandler;
+import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
 /**
  * Loads unpublished complex maps.
  * 
- * Sample execution:
+ * See admin/loader/pom.xml for a sample execution.
  * 
- * <pre>
- *     <profile>
- *       <id>ComputeWorkflow</id>
- *       <build>
- *         <plugins>
- *           <plugin>
- *             <groupId>org.ihtsdo.otf.mapping</groupId>
- *             <artifactId>mapping-admin-mojo</artifactId>
- *             <version>${project.version}</version>
- *             <executions>
- *               <execution>
- *                 <id>compute-workflow</id>
- *                 <phase>package</phase>
- *                 <goals>
- *                   <goal>compute-workflow</goal>
- *                 </goals>
- *                 <configuration>
- *                   <refSetId>${refset.id}</refSetId>
- *                 </configuration>
- *               </execution>
- *             </executions>
- *           </plugin>
- *         </plugins>
- *       </build>
- *     </profile> 
- * </pre>
+ * Notification recipients are indicated in the config file.
  * 
  * @goal compute-workflow
  * @phase package
@@ -49,10 +30,16 @@ import org.ihtsdo.otf.mapping.services.WorkflowService;
 public class ComputeWorkflowLoaderMojo extends AbstractMojo {
 
   /**
-   * The refSet id
-   * @parameter refSetId
+   * The refSet id.
+   * @parameter refsetId
+   * */
+  private String refsetId = null;
+
+  /**
+   * The send notification.
+   * @parameter sendNotification
    */
-  private String refSetId = null;
+  private boolean sendNotification = false;
 
   /**
    * Executes the plugin.
@@ -61,10 +48,43 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
    */
   @Override
   public void execute() throws MojoExecutionException {
-    getLog().info("Starting compute workflow - " + refSetId);
+    getLog().info("Starting compute workflow");
+    getLog().info("  refsetId = " + refsetId);
+    getLog().info("  sendNotification = " + sendNotification);
 
-    if (refSetId == null) {
-      throw new MojoExecutionException("You must specify a refSetId.");
+    Properties config;
+    try {
+      config = ConfigUtility.getConfigProperties();
+    } catch (Exception e1) {
+      throw new MojoExecutionException("Failed to retrieve config properties");
+    }
+    String notificationRecipients =
+        config.getProperty("send.notification.recipients");
+    String notificationMessage = "";
+
+    if (refsetId == null) {
+      throw new MojoExecutionException("You must specify a refsetId.");
+    }
+    
+    // if no notification parameter specified, assume false
+   /* if (sendNotification == null)
+    	sendNotification = false;*/
+
+    if (sendNotification == false) {
+      getLog().info(
+          "No notifications will be sent as a result of workflow computation.");
+    }
+
+    if (sendNotification == true
+        && config.getProperty("send.notification.recipients") == null) {
+      throw new MojoExecutionException(
+          "Email notification was requested, but no recipients were specified.");
+    } else {
+      getLog().info(
+          "Request to send notification email to recipients: "
+              + notificationRecipients);
+      notificationMessage +=
+          "Hello,\n\nWorkflow for the mapping tool has been recomputed.  Changes to the pool of available work are indicated below for each project\n\n";
     }
 
     try {
@@ -74,25 +94,91 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
 
       for (MapProject mapProject : mappingService.getMapProjects()
           .getIterable()) {
-        for (String id : refSetId.split(",")) {
+        for (String id : refsetId.split(",")) {
           if (mapProject.getRefSetId().equals(id)) {
             mapProjects.add(mapProject);
           }
         }
       }
 
-      // Compute workflow
+      // Get the current workflow and extract concepts for comparison
+
       WorkflowService workflowService = new WorkflowServiceJpa();
+
+      // Compute workflow
       for (MapProject mapProject : mapProjects) {
+
+        // construct a map of terminology id -> concept name
+        // used to determine change in workflow status after recomputation
+        Map<String, String> previousWorkflowConcepts = new HashMap<>();
+        int conceptsAdded = 0;
+        int conceptsRemoved = 0;
+
+        // add all current concepts with a tracking record to set
+        for (TrackingRecord tr : workflowService
+            .getTrackingRecordsForMapProject(mapProject).getIterable()) {
+          previousWorkflowConcepts.put(tr.getTerminologyId(),
+              tr.getDefaultPreferredName());
+        }
+
+        // recompute workflow
         getLog().info(
             "Computing workflow for " + mapProject.getName() + ", "
                 + mapProject.getId());
         workflowService.computeWorkflow(mapProject);
+
+        getLog().info(
+            "Comparing new workflow to previous workflow for "
+                + mapProject.getName() + ", " + mapProject.getId());
+
+        // cycle over new workflow and compare to previously stored values
+        for (TrackingRecord tr : workflowService
+            .getTrackingRecordsForMapProject(mapProject).getIterable()) {
+
+          if (!previousWorkflowConcepts.containsKey(tr.getTerminologyId())) {
+            getLog().info(
+                "  New concept:  " + tr.getTerminologyId() + ", "
+                    + tr.getDefaultPreferredName());
+            previousWorkflowConcepts.remove(tr.getTerminologyId());
+            conceptsAdded++;
+          }
+        }
+
+        // cycle over remaining concepts in old workflow, which were removed by
+        // computing new workflow
+        for (String terminologyId : previousWorkflowConcepts.keySet()) {
+          getLog().info(
+              "  Removed concept:  " + terminologyId + ", "
+                  + previousWorkflowConcepts.get(terminologyId));
+          conceptsRemoved++;
+        }
+
+        getLog().info(
+            "Workflow summary: " + conceptsAdded + " concepts added, "
+                + conceptsRemoved + " concepts removed");
+
+        notificationMessage +=
+            "Project: " + mapProject.getName() + "\n" + "\tConcepts Added:   "
+                + conceptsAdded + "\tConcepts Removed: " + conceptsRemoved
+                + "\n\n";
+
       }
+
+      notificationMessage +=
+          "Key:"
+              + "\t'Concepts Added' refers to new concepts that were added via the drip feed/delta loader\n"
+              + "\t'Concepts Removed' refers to concepts with unfinished editing that were removed from scope, i.e. are no longer referred to in the drip feed";
 
       getLog().info("done ...");
       mappingService.close();
       workflowService.close();
+
+      // if notification requested, send email
+      if (sendNotification == true) {
+        OtfEmailHandler emailHandler = new OtfEmailHandler();
+        emailHandler.sendSimpleEmail(notificationRecipients,
+            "[OTF-Mapping-Tool] Drip feed results", notificationMessage);
+      }
 
     } catch (Exception e) {
       e.printStackTrace();

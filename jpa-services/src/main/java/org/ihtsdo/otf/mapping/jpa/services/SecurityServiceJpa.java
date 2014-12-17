@@ -1,7 +1,5 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
-import java.io.File;
-import java.io.FileReader;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,6 +18,7 @@ import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.jersey.api.client.Client;
@@ -29,10 +28,9 @@ import com.sun.jersey.api.representation.Form;
 
 /**
  * Reference implementation of the {@link SecurityService}.
- * 
- * @author ${author}
  */
-public class SecurityServiceJpa extends RootServiceJpa implements SecurityService {
+public class SecurityServiceJpa extends RootServiceJpa implements
+    SecurityService {
 
   /** The token username map. */
   private static Map<String, String> tokenUsernameMap = new HashMap<>();
@@ -40,38 +38,46 @@ public class SecurityServiceJpa extends RootServiceJpa implements SecurityServic
   /** The token login time map. */
   private static Map<String, Date> tokenLoginMap = new HashMap<>();
 
+  /** The config. */
+  private static Properties config = null;
+
   /**
    * Instantiates an empty {@link SecurityServiceJpa}.
+   * 
+   * @throws Exception
    */
   public SecurityServiceJpa() throws Exception {
     super();
+  }
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.services.RootService#initializeFieldNames()
+   */
+  @Override
+  public void initializeFieldNames() throws Exception {
+    // no need
   }
 
   @SuppressWarnings("unchecked")
   @Override
   public String authenticate(String username, String password) throws Exception {
     if (username == null)
-      throw new LocalException(
-          "Invalid username: null");
+      throw new LocalException("Invalid username: null");
     if (password == null)
-      throw new LocalException(
-          "Invalid password: null");
+      throw new LocalException("Invalid password: null");
 
     // read ihtsdo security url and active status from config file
-    String configFileName = System.getProperty("run.config");
-    Logger.getLogger(this.getClass()).info("  run.config = " + configFileName);
-
-    Properties config = new Properties();
-    FileReader in = new FileReader(new File(configFileName));
-    config.load(in);
+    if (config == null) {
+      config = ConfigUtility.getConfigProperties();
+    }
     String ihtsdoSecurityUrl = config.getProperty("ihtsdo.security.url");
     boolean ihtsdoSecurityActivated =
         new Boolean(config.getProperty("ihtsdo.security.activated"));
-    in.close();
 
     // if ihtsdo security is off, use username as token
     if (!ihtsdoSecurityActivated || username.equals("guest")) {
       tokenUsernameMap.put(username, username);
+      tokenLoginMap.put(username, new Date());
       MappingService mappingService = new MappingServiceJpa();
       mappingService.getMapUser(username);
       return username;
@@ -92,12 +98,10 @@ public class SecurityServiceJpa extends RootServiceJpa implements SecurityServic
 
     String resultString = "";
     if (response.getClientResponseStatus().getFamily() == Family.SUCCESSFUL) {
-      Logger.getLogger(this.getClass())
-          .info("Success! " + response.getStatus());
       resultString = response.getEntity(String.class);
-      Logger.getLogger(this.getClass()).info(resultString);
     } else {
-    	// TODO Differentiate error messages with NO RESPONE and Authentication Failed (Check text)
+      // TODO Differentiate error messages with NO RESPONE and
+      // Authentication Failed (Check text)
       Logger.getLogger(this.getClass()).info("ERROR! " + response.getStatus());
       resultString = response.getEntity(String.class);
       Logger.getLogger(this.getClass()).info(resultString);
@@ -116,8 +120,7 @@ public class SecurityServiceJpa extends RootServiceJpa implements SecurityServic
 
     // converting json to Map
     byte[] mapData = resultString.getBytes();
-    Map<String, HashMap<String, String>> jsonMap =
-        new HashMap<>();
+    Map<String, HashMap<String, String>> jsonMap = new HashMap<>();
 
     // parse username from json object
     ObjectMapper objectMapper = new ObjectMapper();
@@ -175,6 +178,23 @@ public class SecurityServiceJpa extends RootServiceJpa implements SecurityServic
     return token;
   }
 
+  @Override
+  public void logout(String userName) throws Exception {
+    // read ihtsdo security url and active status from config file
+    if (config == null) {
+      config = ConfigUtility.getConfigProperties();
+    }
+
+    if (userName == null || userName.isEmpty())
+      throw new LocalException("No user specified for logout",
+          "401");
+
+    // remove this user name from the security service maps
+    tokenUsernameMap.remove(userName);
+    tokenLoginMap.remove(userName);
+
+  }
+  
   /*
    * (non-Javadoc)
    * 
@@ -184,17 +204,54 @@ public class SecurityServiceJpa extends RootServiceJpa implements SecurityServic
    */
   @Override
   public String getUsernameForToken(String authToken) throws Exception {
+
+    // read ihtsdo security url and active status from config file
+    if (config == null) {
+      config = ConfigUtility.getConfigProperties();
+    }
+
     if (authToken == null)
-      throw new LocalException(
-          "Attempt to access a service without an authorization token, the user is likely not logged in.");
+      throw new LocalException("You must be logged in to view that page.",
+          "401");
     String parsedToken = authToken.replace("\"", "");
+
+    // see if this user has previously been logged in
     if (tokenUsernameMap.containsKey(parsedToken)) {
+
+      // get user name
       String username = tokenUsernameMap.get(parsedToken);
-      Logger.getLogger(this.getClass()).info(
-          "User = " + username + " Token = " + parsedToken);
+
+      // get last activity
+      Date lastActivity = tokenLoginMap.get(parsedToken);
+
+      String timeout = config.getProperty("ihtsdo.security.timeout");
+
+      // if the timeout parameter has been set
+      if (timeout != null && !timeout.isEmpty()) {
+
+        // check timeout against current time minus time of last activity
+        if ((new Date()).getTime() - lastActivity.getTime() > Long.valueOf(timeout)) {
+
+          Logger.getLogger(SecurityServiceJpa.class).info(
+              "Timeout expired for user " + username + ".  Last login at "
+                  + lastActivity.toString() + " ("
+                  + (new Date().getTime() - lastActivity.getTime())
+                  + " ms difference)");
+
+          throw new LocalException(
+              "Your session has expired.  Please log in again.", "401");
+        }
+      }
+
+      tokenLoginMap.put(parsedToken, new Date());
+
       return username;
+
+      // throw exception, this user has attempted to view a page without
+      // being logged in
     } else
-      throw new LocalException("AuthToken does not have a valid username.");
+      throw new LocalException("You must be logged in to view that page.",
+          "401");
   }
 
   /*
@@ -208,8 +265,8 @@ public class SecurityServiceJpa extends RootServiceJpa implements SecurityServic
   public MapUserRole getMapProjectRoleForToken(String authToken,
     Long mapProjectId) throws Exception {
     if (authToken == null)
-      throw new LocalException(
-          "Attempt to access a service without an authorization token, the user is likely not logged in.");
+      throw new LocalException("You must be logged in to view that page.",
+          "401");
     if (mapProjectId == null)
       throw new Exception("Unexpected null map project id");
 
@@ -235,8 +292,8 @@ public class SecurityServiceJpa extends RootServiceJpa implements SecurityServic
     throws Exception {
 
     if (authToken == null)
-      throw new LocalException(
-          "Attempt to access a service without an authorization token, the user is likely not logged in.");
+      throw new LocalException("You must be logged in to view that page.",
+          "401");
     String parsedToken = authToken.replace("\"", "");
 
     String username = getUsernameForToken(parsedToken);

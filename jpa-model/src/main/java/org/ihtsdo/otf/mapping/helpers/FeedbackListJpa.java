@@ -28,18 +28,15 @@ public class FeedbackListJpa extends AbstractResultList<Feedback> implements
     // do nothing
   }
 
-
   @Override
   public void addFeedback(Feedback feedback) {
     feedbacks.add(feedback);
   }
 
-
   @Override
   public void removeFeedback(Feedback feedback) {
     feedbacks.remove(feedback);
   }
-
 
   @Override
   public void setFeedbacks(List<Feedback> feedbacks) {
@@ -48,13 +45,11 @@ public class FeedbackListJpa extends AbstractResultList<Feedback> implements
 
   }
 
- 
   @Override
   @XmlElement(type = FeedbackJpa.class, name = "feedback")
   public List<Feedback> getFeedbacks() {
     return feedbacks;
   }
-
 
   @Override
   @XmlElement(name = "count")
@@ -62,18 +57,15 @@ public class FeedbackListJpa extends AbstractResultList<Feedback> implements
     return feedbacks.size();
   }
 
- 
   @Override
   public void sortBy(Comparator<Feedback> comparator) {
     Collections.sort(feedbacks, comparator);
   }
 
-
   @Override
   public boolean contains(Feedback element) {
     return feedbacks.contains(element);
   }
-
 
   @Override
   public Iterable<Feedback> getIterable() {

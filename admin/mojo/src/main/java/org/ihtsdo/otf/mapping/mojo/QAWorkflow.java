@@ -14,34 +14,7 @@ import org.ihtsdo.otf.mapping.services.WorkflowService;
 /**
  * Loads unpublished complex maps.
  * 
- * Sample execution:
- * 
- * <pre>
- *     <profile>
- *       <id>Workflow</id>
- *       <build>
- *         <plugins>
- *           <plugin>
- *             <groupId>org.ihtsdo.otf.mapping</groupId>
- *             <artifactId>mapping-admin-mojo</artifactId>
- *             <version>${project.version}</version>
- *             <executions>
- *               <execution>
- *                 <id>qa-workflow</id>
- *                 <phase>package</phase>
- *                 <goals>
- *                   <goal>qa-workflow</goal>
- *                 </goals>
- *                 <configuration>
- *                   <refSetId>${refset.id}</refSetId>
- *                 </configuration>
- *               </execution>
- *             </executions>
- *           </plugin>
- *         </plugins>
- *       </build>
- *     </profile> 
- * </pre>
+ * See admin/qa/pom.xml for a sample execution.
  * 
  * @goal qa-workflow
  * @phase package
@@ -50,9 +23,10 @@ public class QAWorkflow extends AbstractMojo {
 
   /**
    * The refSet id
-   * @parameter refSetId
+   * @parameter refsetId
+   * @required
    */
-  private String refSetId = null;
+  private String refsetId = null;
 
   /**
    * Executes the plugin.
@@ -61,11 +35,8 @@ public class QAWorkflow extends AbstractMojo {
    */
   @Override
   public void execute() throws MojoExecutionException {
-    getLog().info("Starting workflow quality assurance checks - " + refSetId);
-
-    if (refSetId == null) {
-      throw new MojoExecutionException("You must specify a refSetId.");
-    }
+    getLog().info("Starting workflow quality assurance checks");
+    getLog().info("  refsetId = " + refsetId);
 
     try {
 
@@ -74,7 +45,7 @@ public class QAWorkflow extends AbstractMojo {
 
       for (MapProject mapProject : mappingService.getMapProjects()
           .getIterable()) {
-        for (String id : refSetId.split(",")) {
+        for (String id : refsetId.split(",")) {
           if (mapProject.getRefSetId().equals(id)) {
             mapProjects.add(mapProject);
           }
@@ -90,10 +61,9 @@ public class QAWorkflow extends AbstractMojo {
         workflowService.computeWorkflowStatusErrors(mapProject);
       }
 
-      getLog().info("done ...");
       mappingService.close();
       workflowService.close();
-
+      getLog().info("Done ...");
     } catch (Exception e) {
       e.printStackTrace();
       throw new MojoExecutionException("Performing workflow QA failed.", e);

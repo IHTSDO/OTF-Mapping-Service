@@ -22,7 +22,7 @@
 <script type="text/javascript">
     $(function () {
       window.swaggerUi = new SwaggerUi({
-      url: "/mapping-rest/api-docs",
+      url: "${base.url}/api-docs",
       dom_id: "swagger-ui-container",
       supportedSubmitMethods: ['get', 'post', 'put', 'delete'],
       onComplete: function(swaggerApi, swaggerUi){
@@ -57,7 +57,7 @@
 <body>
   <div id='header'>
     <div class="swagger-ui-wrap">
-      <img style="background-color: white;" class="pull-left"
+      <img style="background-color: white; height: 50px" class="pull-left"
         src="images/logo.png"> <b style="margin-bottom: 35px;"> IHTSDO
         Mapping Service API</b>
     </div>
