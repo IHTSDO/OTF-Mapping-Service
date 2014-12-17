@@ -133,3 +133,4 @@ mapProjectAppDirectives.directive('droppable', function() {
     }, false);
   } };
 });
+

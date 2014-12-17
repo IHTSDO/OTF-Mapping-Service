@@ -22,34 +22,7 @@ import org.ihtsdo.otf.mapping.services.WorkflowService;
  * advancement was not properly being executed. Only valid for projects of
  * workflow type CONFLICT_PROJECT
  * 
- * Sample execution:
- * 
- * <pre>
- *     <profile>
- *       <id>FinishSpecialistEditing</id>
- *       <build>
- *         <plugins>
- *           <plugin>
- *             <groupId>org.ihtsdo.otf.mapping</groupId>
- *             <artifactId>mapping-admin-mojo</artifactId>
- *             <version>${project.version}</version>
- *             <executions>
- *               <execution>
- *                 <id>finish-specialist-editing</id>
- *                 <phase>package</phase>
- *                 <goals>
- *                   <goal>finish-specialist-editing</goal>
- *                 </goals>
- *                 <configuration>
- *                   <refSetId>${refset.id}</refSetId>
- *                 </configuration>
- *               </execution>
- *             </executions>
- *           </plugin>
- *         </plugins>
- *       </build>
- *     </profile>
- * </pre>
+ * See admin/loader/pom.xml for a sample execution.
  * 
  * @goal finish-specialist-editing
  * @phase package
@@ -57,10 +30,11 @@ import org.ihtsdo.otf.mapping.services.WorkflowService;
 public class WorkflowFinishSpecialistEditingMojo extends AbstractMojo {
 
   /**
-   * The refSet id
-   * @parameter refSetId
+   * The refset id
+   * @parameter
+   * @required
    */
-  private String refSetId = null;
+  private String refsetId = null;
 
   /**
    * Executes the plugin.
@@ -70,11 +44,11 @@ public class WorkflowFinishSpecialistEditingMojo extends AbstractMojo {
   @Override
   public void execute() throws MojoExecutionException {
     getLog().info(
-        "Forcing workflow finish actions on errant tracking records - "
-            + refSetId);
+        "Forcing workflow finish actions on errant tracking records");
+    getLog().info("  refsetId = " + refsetId);
 
-    if (refSetId == null) {
-      throw new MojoExecutionException("You must specify a refSetId.");
+    if (refsetId == null) {
+      throw new MojoExecutionException("You must specify a refsetId.");
     }
 
     try {
@@ -84,7 +58,7 @@ public class WorkflowFinishSpecialistEditingMojo extends AbstractMojo {
 
       for (MapProject mapProject : mappingService.getMapProjects()
           .getIterable()) {
-        for (String id : refSetId.split(",")) {
+        for (String id : refsetId.split(",")) {
           if (mapProject.getRefSetId().equals(id)) {
             mapProjects.add(mapProject);
           }
@@ -107,9 +81,9 @@ public class WorkflowFinishSpecialistEditingMojo extends AbstractMojo {
         }
       }
 
-      getLog().info("done ...");
       mappingService.close();
       workflowService.close();
+      getLog().info("Done ...");
 
     } catch (Exception e) {
       e.printStackTrace();

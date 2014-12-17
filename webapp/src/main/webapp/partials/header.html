@@ -14,13 +14,13 @@
           <!--  Username and logout tool -->
           <p class="navbar-text" ng-show="currentUser.name != null">
             {{currentUser.name}} ({{currentRole}}) &nbsp; <a
-              ng-show="currentUser.name != null" title="Log out"
-              href="index.html#/"><i class="glyphicon glyphicon-log-out"></i></a>
+              ng-show="currentUser.name != null && page != 'indexViewerDashboard'" title="Log out"
+              ng-click="logout()"><i class="glyphicon glyphicon-log-out"></i></a>
           </p>
         </li>
         <li>
           <!-- Focus Project tool -->
-          <div class="navbar-text dropdown" ng-show="currentUser.name != null">
+          <div class="navbar-text dropdown" ng-show="currentUser.name != null && page != 'indexViewerDashboard'">
 
             <div class="dropdown-toggle" style="cursor: pointer;">
               Project: {{focusProject.name}} &nbsp <a
@@ -41,16 +41,17 @@
 
             <!-- Dashboard tool (by role) -->
 
-            <a ng-show="currentRole === 'Viewer'" title="Dashboard"
+
+            <a ng-show="currentRole === 'Viewer' && page != 'indexViewerDashboard'" title="Dashboard"
               href="index.html#/viewer/dash"><i
               class="glyphicon glyphicon-stats"></i></a> <a
-              ng-show="currentRole === 'Specialist'" title="Dashboard"
+              ng-show="currentRole === 'Specialist' && page != 'indexViewerDashboard'" title="Dashboard"
               href="index.html#/specialist/dash"><i
               class="glyphicon glyphicon-stats"></i></a> <a
-              ng-show="currentRole === 'Lead'" title="Dashboard"
+              ng-show="currentRole === 'Lead' && page != 'indexViewerDashboard'" title="Dashboard"
               href="index.html#/lead/dash"><i
               class="glyphicon glyphicon-stats"></i></a> <a
-              ng-show="currentRole === 'Administrator'" title="Dashboard"
+              ng-show="currentRole === 'Administrator' && page != 'indexViewerDashboard'" title="Dashboard"
               href="index.html#/admin/dash"><i
               class="glyphicon glyphicon-stats"></i></a> &nbsp;
 

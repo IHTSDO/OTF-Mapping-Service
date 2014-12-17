@@ -934,7 +934,7 @@
       <tr>
         <td>Report Definition Frequency</td>
         <td><select ng-model="newReportDefinitionFrequency"
-          ng-options="timePeriod as timePeriod for timePeriod in definitionTimePeriods"></select>
+          ng-options="timePeriod as timePeriod for timePeriod in definitionFrequencies"></select>
         </td>
       </tr>
       <tr>
@@ -1148,12 +1148,42 @@
         <td>QA Check Definition Query</td>
         <td><textarea ng-model="newQACheckDefinitionQuery"></textarea></td>
       </tr>
+      
+     <tr>
+        <td>
+          <div
+            ng-show="testQACheckSuccess == true">
+            <button class="btn btn-sm btn-primary"
+              ng-click="submitNewQACheckDefinition(newQACheckDefinitionName, newQACheckDefinitionRoleRequired, newQACheckDefinitionResultType, newQACheckDefinitionQueryType, newQACheckDefinitionQuery)">Submit</button>
+          </div>
 
-      <tr>
-        <td><button class="btn btn-sm btn-primary"
-            ng-click="submitNewQACheckDefinition(newQACheckDefinitionName, newQACheckDefinitionRoleRequired, newQACheckDefinitionResultType, newQACheckDefinitionQueryType, newQACheckDefinitionQuery)">Submit</button></td>
-        <td></td>
+          <div
+            ng-show="testQACheckSuccess == false">
+            <button class="btn btn-sm btn-primary"
+              ng-click="testQACheckDefinition(newQACheckDefinitionName, newQACheckDefinitionRoleRequired, newQACheckDefinitionResultType, newQACheckDefinitionQueryType, newQACheckDefinitionQuery)">Test
+              Report</button>
+          </div>
+
+        </td>
+
+        <td>
+          <div class="border-error alert-error"
+            ng-show="testQACheckError != null">
+            <div class="alert alert-danger alert-error">
+              {{testQACheckError}}
+              <div style="display: inline; float: right; width: 3%;">
+                <i class="glyphicon glyphicon-remove"
+                  ng-click="testQACheckError = null"></i>
+              </div>
+            </div>
+          </div>
+          <div ng-show="testQACheckSuccess == true" class="alert alert-warning ">Test
+            qa check generated successfully, but you must click Submit to add the
+            definition.</div>
+
+        </td>
       </tr>
+      
     </tbody>
   </table>
 </form>

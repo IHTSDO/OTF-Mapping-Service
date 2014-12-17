@@ -17,7 +17,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
 
@@ -40,7 +39,6 @@ import org.ihtsdo.otf.mapping.rf2.jpa.RelationshipJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.SimpleRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
-import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -49,27 +47,8 @@ import org.xml.sax.helpers.DefaultHandler;
 /**
  * Converts claml data to RF2 objects.
  * 
- * Sample execution:
+ * See admin/loader/pom.xml for a sample execution.
  * 
- * <pre>
- *     <plugin>
- *       <groupId>org.ihtsdo.otf.mapping</groupId>
- *       <artifactId>mapping-admin-mojo</artifactId>
- *       <version>${project.version}</version>
- *       <executions>
- *         <execution>
- *           <id>load-claml</id>
- *           <phase>package</phase>
- *           <goals>
- *             <goal>load-claml</goal>
- *           </goals>
- *           <configuration>
- *             <terminology>ICD10</terminology>
- *           </configuration>
- *         </execution>
- *       </executions>
- *     </plugin>
- * </pre>
  * @goal load-claml
  * @phase package
  */
@@ -77,6 +56,13 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 
   /** The date format. */
   final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyymmdd");
+
+  /**
+   * The input file
+   * @parameter
+   * @required
+   */
+  String inputFile;
 
   /**
    * Name of terminology to be loaded.
@@ -123,26 +109,22 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
    */
   @Override
   public void execute() throws MojoExecutionException {
-    getLog().info("Starting loading " + terminology + " data ...");
+    getLog().info("Starting loading Claml terminology");
+    getLog().info("  inputFile = inputFile");
+    getLog().info("  terminology = " + terminology);
 
     FileInputStream fis = null;
     InputStream inputStream = null;
     Reader reader = null;
     try {
 
-      Properties config = ConfigUtility.getConfigProperties();
       contentService = new ContentServiceJpa();
       contentService.setTransactionPerOperation(false);
       contentService.beginTransaction();
 
-      // set the input directory
-      String inputFile =
-          config.getProperty("loader." + terminology + ".input.data");
       if (!new File(inputFile).exists()) {
-        throw new MojoFailureException("Specified loader." + terminology
-            + ".input.data directory does not exist: " + inputFile);
+        throw new MojoFailureException("Specified input file does not exist");
       }
-      getLog().info("inputFile: " + inputFile);
 
       // open input file and get effective time and version
       findVersion(inputFile);
@@ -191,7 +173,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       }
       contentService.close();
 
-      getLog().info("done ...");
+      getLog().info("Done ...");
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -199,17 +181,23 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
           "Conversion of Claml to RF2 objects failed", e);
     } finally {
       try {
-        fis.close();
+        if (fis != null) {
+          fis.close();
+        }
       } catch (IOException e) {
         // do nothing
       }
       try {
-        inputStream.close();
+        if (inputStream != null) {
+          inputStream.close();
+        }
       } catch (IOException e) {
         // do nothing
       }
       try {
-        reader.close();
+        if (reader != null) {
+          reader.close();
+        }
       } catch (IOException e) {
         // do nothing
       }

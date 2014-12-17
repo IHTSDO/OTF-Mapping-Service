@@ -206,4 +206,18 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @return true, if is propagated record for release processing
    */
   public boolean isUpPropagatedRecordForReleaseProcessing(MapRecord mapRecord);
+
+  /**
+   * Returns the dependent modules.
+   *
+   * @return the dependent modules
+   */
+  public Set<String> getDependentModules();
+
+  /**
+   * Returns the module dependency ref set id.
+   *
+   * @return the module dependency ref set id
+   */
+  public String getModuleDependencyRefSetId();
 }

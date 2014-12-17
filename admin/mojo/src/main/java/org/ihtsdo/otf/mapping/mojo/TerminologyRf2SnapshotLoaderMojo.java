@@ -16,7 +16,6 @@ import java.util.Properties;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
-import org.ihtsdo.otf.mapping.helpers.FileSorter;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.rf2.AttributeValueRefSetMember;
@@ -38,32 +37,14 @@ import org.ihtsdo.otf.mapping.rf2.jpa.SimpleRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
+import org.ihtsdo.otf.mapping.services.helpers.FileSorter;
 
 import com.google.common.io.Files;
 
-// TODO: Auto-generated Javadoc
 /**
  * Goal which loads an RF2 Snapshot of SNOMED CT data into a database.
  * 
- * <pre>
- *     <plugin>
- *       <groupId>org.ihtsdo.otf.mapping</groupId>
- *       <artifactId>mapping-admin-mojo</artifactId>
- *       <version>${project.version}</version>
- *       <executions>
- *         <execution>
- *           <id>load-rf2-snapshot</id>
- *           <phase>package</phase>
- *           <goals>
- *             <goal>load-rf2-snapshot</goal>
- *           </goals>
- *           <configuration>
- *             <terminology>SNOMEDCT</terminology>
- *           </configuration>
- *         </execution>
- *       </executions>
- *     </plugin>
- * </pre>
+ * See admin/loader/pom.xml for a sample execution.
  * 
  * @goal load-rf2-snapshot
  * 
@@ -72,23 +53,33 @@ import com.google.common.io.Files;
 public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
   /**
+   * The input directory
+   * @parameter
+   * @required
+   */
+  private String inputDir;
+  /**
    * Name of terminology to be loaded.
    * @parameter
    * @required
    */
   private String terminology;
 
-  /** The version. */
-  private String version = null;
+  /**
+   * Name of terminology to be loaded.
+   * @parameter
+   * @required
+   */
+  private String version;
 
-  /** the defaultPreferredNames values. */
-  private Long dpnTypeId;
+  /** the defaultPreferredNames type id. */
+  private Long dpnTypeId = 900000000000003001L;
 
   /** The dpn ref set id. */
-  private Long dpnRefSetId;
+  private Long dpnrefsetId = 900000000000509007L;
 
   /** The dpn acceptability id. */
-  private Long dpnAcceptabilityId;
+  private Long dpnAcceptabilityId = 900000000000548007L;
 
   /** The date format. */
   private final SimpleDateFormat dt = new SimpleDateFormat("yyyymmdd");
@@ -148,7 +139,9 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
    */
   @Override
   public void execute() throws MojoFailureException {
-    getLog().info("Starting loading RF2 data ...");
+    getLog().info("Starting loading RF2 data");
+    getLog().info("  inputDir = " + inputDir);
+    getLog().info("  terminology = " + terminology);
 
     try {
 
@@ -159,51 +152,39 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
       Properties config = ConfigUtility.getConfigProperties();
 
       // Set the input directory
-      String coreInputDirString =
-          config.getProperty("loader." + terminology + ".input.data");
-      File coreInputDir = new File(coreInputDirString);
+      File coreInputDir = new File(inputDir);
       if (!coreInputDir.exists()) {
-        throw new MojoFailureException("Specified loader." + terminology
-            + ".input.data directory does not exist: " + coreInputDirString);
+        throw new MojoFailureException("Specified input dir missing");
       }
 
-      // Set the parameters for determining defaultPreferredNames
-      dpnTypeId =
-          Long.valueOf(config
-              .getProperty("loader.defaultPreferredNames.typeId"));
-      dpnRefSetId =
-          Long.valueOf(config
-              .getProperty("loader.defaultPreferredNames.refSetId"));
+      // set the parameters for determining defaultPreferredNames
+      String prop = config.getProperty("loader.defaultPreferredNames.typeId");
+      if (prop != null) {
+        dpnTypeId = Long.valueOf(prop);
+      }
+
+      prop = config.getProperty("loader.defaultPreferredNames.refsetId");
+      if (prop != null) {
+        dpnrefsetId = Long.valueOf(prop);
+      }
+      prop = config
+          .getProperty("loader.defaultPreferredNames.acceptabilityId");
+      if (prop != null) {
       dpnAcceptabilityId =
-          Long.valueOf(config
-              .getProperty("loader.defaultPreferredNames.acceptabilityId"));
+          Long.valueOf(prop);
+      }
 
       //
       // Determine version
       //
-      File coreConceptInputFile = null;
-      File coreTerminologyInputDir = new File(coreInputDir, "/Terminology/");
-      for (File f : coreTerminologyInputDir.listFiles()) {
-        if (f.getName().contains("sct2_Concept_")) {
-          if (coreConceptInputFile != null)
-            throw new MojoFailureException("Multiple Concept Files!");
-          coreConceptInputFile = f;
-        }
-      }
-      if (coreConceptInputFile != null) {
-        int index = coreConceptInputFile.getName().indexOf(".txt");
-        version = coreConceptInputFile.getName().substring(index - 8, index);
-        getLog().info("  terminology = " + terminology);
-        getLog().info("  version = " + version);
-      } else {
-        throw new MojoFailureException(
-            "Could not find concept file to determine version");
-      }
+
+      getLog().info("  terminology = " + terminology);
+      getLog().info("  version = " + version);
 
       // output relevant properties/settings to console
       getLog().info("  Default preferred name settings:");
       getLog().info("    typeId = " + dpnTypeId);
-      getLog().info("    refSetId = " + dpnRefSetId);
+      getLog().info("    refsetId = " + dpnrefsetId);
       getLog().info("    acceptabilityId = " + dpnAcceptabilityId);
       getLog().info(
           "  Objects committed in blocks of " + Integer.toString(commitCt));
@@ -924,34 +905,6 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
   }
 
   /**
-   * Returns the concept. Terminology/version are not needed because we're just
-   * loading a single terminology.
-   *
-   * @param terminologyId the terminology id
-   * @param contentService the content service
-   * @return the concept
-   * @throws Exception the exception private Concept getConcept(String
-   *           terminologyId) throws Exception {
-   * 
-   *           if (conceptCache.containsKey(terminologyId)) { return
-   *           conceptCache.get(terminologyId); } else { throw new
-   *           IOException("Unable to find concept " + terminologyId); }
-   * 
-   *           // EVERY concept should be in the cache // try { // Concept c =
-   *           // contentService.getConcept(terminologyId, terminology, //
-   *           terminologyVersion); // conceptCache.put(terminologyId +
-   *           terminology + terminologyVersion, c); // return c; // } catch
-   *           (NoResultException e) { // // Log and return null if there are no
-   *           releases // getLog().debug( //
-   *           "Concept query for terminologyId = " + terminologyId // +
-   *           ", terminology = " + terminology + ", terminologyVersion = " // +
-   *           terminologyVersion + " returned no results!"); // return null; //
-   *           }
-   * 
-   *           }
-   */
-
-  /**
    * Closes all sorted temporary files.
    * 
    * @throws Exception if something goes wrong
@@ -1181,7 +1134,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
         // Check if this language refset and description form the
         // defaultPreferredName
         if (description.isActive() && description.getTypeId().equals(dpnTypeId)
-            && new Long(language.getRefSetId()).equals(dpnRefSetId)
+            && new Long(language.getRefSetId()).equals(dpnrefsetId)
             && language.isActive()
             && language.getAcceptabilityId().equals(dpnAcceptabilityId)) {
 

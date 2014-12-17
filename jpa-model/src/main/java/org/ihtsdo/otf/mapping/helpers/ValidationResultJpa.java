@@ -122,7 +122,7 @@ public class ValidationResultJpa implements ValidationResult {
   @Override
   public void addErrors(Set<String> errorSet) {
     if (this.errors != null) {
-      this.errors.addAll(errors);
+      this.errors.addAll(errorSet);
     } else {
       this.errors = new HashSet<>(errorSet);
     }

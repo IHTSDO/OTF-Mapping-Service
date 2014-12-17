@@ -15,12 +15,22 @@
   <description>OTF Administrator Tool to Remove Terminology data</description>
   <packaging>pom</packaging>
 
+  <!-- Properties used in mojos -->
+  <properties>
+    <!-- The terminology -->
+    <terminology></terminology>
+    <!-- refset id -->
+    <refset.id></refset.id>
+    <!-- map advice name -->
+    <map.advice.name></map.advice.name>
+  </properties>
+
 
   <profiles>
 
-    <!-- Remove SNOMED, specify -Drun.config... -->
+    <!-- Remove terminology, specify -Drun.config... -Dterminology=... -->
     <profile>
-      <id>SNOMEDCT</id>
+      <id>Terminology</id>
       <build>
         <plugins>
           <plugin>
@@ -35,7 +45,7 @@
                   <goal>remove-terminology</goal>
                 </goals>
                 <configuration>
-                  <terminology>SNOMEDCT</terminology>
+                  <terminology>${terminology}</terminology>
                 </configuration>
               </execution>
             </executions>
@@ -46,7 +56,7 @@
 
     <!-- Remove SNOMED tree positions, specify -Drun.config... -->
     <profile>
-      <id>SNOMEDCT-treepos</id>
+      <id>Treepos</id>
       <build>
         <plugins>
           <plugin>
@@ -55,91 +65,13 @@
             <version>${project.version}</version>
             <executions>
               <execution>
-                <id>remove-snomed-treepos</id>
+                <id>remove-treepos</id>
                 <phase>package</phase>
                 <goals>
-                  <goal>remove-snomed-treepos</goal>
+                  <goal>remove-treepos</goal>
                 </goals>
                 <configuration>
-                  <terminology>SNOMEDCT</terminology>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
-    <!-- Remove ICD10, specify -Drun.config... -->
-    <profile>
-      <id>ICD10</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.ihtsdo.otf.mapping</groupId>
-            <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
-            <executions>
-              <execution>
-                <id>remove-terminology</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>remove-terminology</goal>
-                </goals>
-                <configuration>
-                  <terminology>ICD10</terminology>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
-    <!-- Remove ICD9CM, specify -Drun.config... -->
-    <profile>
-      <id>ICD9CM</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.ihtsdo.otf.mapping</groupId>
-            <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
-            <executions>
-              <execution>
-                <id>remove-terminology</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>remove-terminology</goal>
-                </goals>
-                <configuration>
-                  <terminology>ICD9CM</terminology>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
-    <!-- Remove ICPC, specify -Drun.config... -->
-    <profile>
-      <id>ICPC</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.ihtsdo.otf.mapping</groupId>
-            <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
-            <executions>
-              <execution>
-                <id>remove-terminology</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>remove-terminology</goal>
-                </goals>
-                <configuration>
-                  <terminology>ICPC</terminology>
+                  <terminology>${terminology}</terminology>
                 </configuration>
               </execution>
             </executions>
@@ -150,7 +82,7 @@
 
     <!-- Remove map project data, specify -Drun.config... -->
     <profile>
-      <id>MapProjectData</id>
+      <id>MapProject</id>
       <build>
         <plugins>
           <plugin>
@@ -188,7 +120,7 @@
                   <goal>remove-map-notes</goal>
                 </goals>
                 <configuration>
-                  <refSetId>${refset.id}</refSetId>
+                  <refsetId>${refset.id}</refsetId>
                 </configuration>
               </execution>
             </executions>
@@ -214,7 +146,7 @@
                   <goal>remove-map-records</goal>
                 </goals>
                 <configuration>
-                  <refSetId>${refset.id}</refSetId>
+                  <refsetId>${refset.id}</refsetId>
                 </configuration>
               </execution>
             </executions>
@@ -240,7 +172,7 @@
                   <goal>clear-workflow</goal>
                 </goals>
                 <configuration>
-                  <refSetId>${refset.id}</refSetId>
+                  <refsetId>${refset.id}</refsetId>
                 </configuration>
               </execution>
             </executions>
@@ -266,7 +198,7 @@
                   <goal>remove-map-advice</goal>
                 </goals>
                 <configuration>
-                  <mapAdviceName>${mapAdvice.name}</mapAdviceName>
+                  <mapAdviceName>${map.advice.name}</mapAdviceName>
                 </configuration>
               </execution>
             </executions>
@@ -292,7 +224,7 @@
                   <goal>remove-reports</goal>
                 </goals>
                 <configuration>
-                  <refSetId>${refset.id}</refSetId>
+                  <refsetId>${refset.id}</refsetId>
                 </configuration>
               </execution>
             </executions>
