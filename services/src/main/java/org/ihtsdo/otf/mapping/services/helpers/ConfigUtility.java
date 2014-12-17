@@ -48,7 +48,8 @@ public class ConfigUtility {
    *
    * @throws Exception the exception
    */
-  public synchronized static Properties getTestConfigProperties() throws Exception {
+  public synchronized static Properties getTestConfigProperties()
+    throws Exception {
     if (testConfig == null) {
       String configFileName = System.getProperty("run.config.test");
       Logger.getLogger(ConfigUtility.class.getName()).info(
@@ -96,7 +97,6 @@ public class ConfigUtility {
     }
     throw new Exception("Handler is not assignable from " + type.getName());
   }
-  
 
   /**
    * Returns the raw bytes.
@@ -148,8 +148,8 @@ public class ConfigUtility {
    * @throws NoSuchAlgorithmException the no such algorithm exception
    * @throws UnsupportedEncodingException the unsupported encoding exception
    */
-  public static UUID getReleaseUuid(String hash) throws NoSuchAlgorithmException,
-    UnsupportedEncodingException {
+  public static UUID getReleaseUuid(String hash)
+    throws NoSuchAlgorithmException, UnsupportedEncodingException {
     return getUuidForString(hash);
   }
 
@@ -161,8 +161,8 @@ public class ConfigUtility {
    * @throws NoSuchAlgorithmException the no such algorithm exception
    * @throws UnsupportedEncodingException the unsupported encoding exception
    */
-  public static UUID getUuidForString(String name) throws NoSuchAlgorithmException,
-    UnsupportedEncodingException {
+  public static UUID getUuidForString(String name)
+    throws NoSuchAlgorithmException, UnsupportedEncodingException {
 
     MessageDigest sha1Algorithm = MessageDigest.getInstance("SHA-1");
 
@@ -201,9 +201,73 @@ public class ConfigUtility {
 
   }
 
-  
   /** The comparator. */
-  public static Comparator<String> COMPLEX_MAP_COMPARATOR = new Comparator<String>() {
+  public static Comparator<String> COMPLEX_MAP_COMPARATOR =
+      new Comparator<String>() {
+
+        @Override
+        public int compare(String o1, String o2) {
+          String[] fields1 = o1.split("\t");
+          String[] fields2 = o2.split("\t");
+
+          
+          int i = fields1[4].compareTo(fields2[4]);
+          if (i != 0) {
+            return i;
+          } else {
+            i = fields1[5].compareTo(fields2[5]);
+            if (i != 0) {
+              return i;
+            } else {
+              i = Integer.parseInt(fields1[6]) - Integer.parseInt(fields2[6]);
+              if (i != 0) {
+                return i;
+              } else {
+                i = Integer.parseInt(fields1[7]) - Integer.parseInt(fields2[7]);
+                if (i != 0) {
+                  return i;
+                } else {
+                  i =
+                      (fields1[0] + fields1[1] + fields1[2] + fields1[3])
+                          .compareTo(fields2[0] + fields2[1] + fields2[2]
+                              + fields2[3]);
+                  if (i != 0) {
+                    return i;
+                  } else {
+                    i = fields1[8].compareTo(fields2[8]);
+                    if (i != 0) {
+                      return i;
+                    } else {
+                      i = fields1[9].compareTo(fields2[9]);
+                      if (i != 0) {
+                        return i;
+                      } else {
+                        i = fields1[10].compareTo(fields2[10]);
+                        if (i != 0) {
+                          return i;
+                        } else {
+                          i = fields1[11].compareTo(fields2[11]);
+                          if (i != 0) {
+                            return i;
+                          }
+                          // leave out 13th field so it works for complex map
+                          // too.
+                          else {
+                            return 0;
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      };
+
+  /** The comparator. */
+  public static Comparator<String> TSV_COMPARATOR = new Comparator<String>() {
 
     @Override
     public int compare(String o1, String o2) {
@@ -218,11 +282,11 @@ public class ConfigUtility {
         if (i != 0) {
           return i;
         } else {
-          i = Integer.parseInt(fields1[6]) - Integer.parseInt(fields2[6]);
+          i = Integer.parseInt(fields1[7]) - Integer.parseInt(fields2[7]);
           if (i != 0) {
             return i;
           } else {
-            i = Integer.parseInt(fields1[7]) - Integer.parseInt(fields2[7]);
+            i = Integer.parseInt(fields1[8]) - Integer.parseInt(fields2[8]);
             if (i != 0) {
               return i;
             } else {
@@ -233,29 +297,7 @@ public class ConfigUtility {
               if (i != 0) {
                 return i;
               } else {
-                i = fields1[8].compareTo(fields2[8]);
-                if (i != 0) {
-                  return i;
-                } else {
-                  i = fields1[9].compareTo(fields2[9]);
-                  if (i != 0) {
-                    return i;
-                  } else {
-                    i = fields1[10].compareTo(fields2[10]);
-                    if (i != 0) {
-                      return i;
-                    } else {
-                      i = fields1[11].compareTo(fields2[11]);
-                      if (i != 0) {
-                        return i;
-                      }
-                      // leave out 13th field so it works for complex map too.
-                      else {
-                        return -1;
-                      }
-                    }
-                  }
-                }
+                return 0;
               }
             }
           }
