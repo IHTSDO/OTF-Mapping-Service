@@ -1498,13 +1498,14 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
     javax.persistence.Query query =
         manager
-            .createQuery("select distinct tp.descendantCount from TreePositionJpa tp "
+            .createQuery("select tp.descendantCount from TreePositionJpa tp "
                 + "where tp.terminologyId = :terminologyId "
                 + "and tp.terminology = :terminology "
                 + "and tp.terminologyVersion = :terminologyVersion");
     query.setParameter("terminologyId", terminologyId);
     query.setParameter("terminology", terminology);
     query.setParameter("terminologyVersion", terminologyVersion);
+    query.setMaxResults(1);
 
     @SuppressWarnings("unchecked")
     List<Object> results = query.getResultList();
@@ -3034,7 +3035,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       return new ArrayList<>();
     }
     String indexesDir =
-        prop + "/" + terminology + "/" + terminologyVersion + "/" + domain;
+        prop + "/" + terminology + "/" + terminologyVersion + "/lucene/" + domain;
 
     List<String> searchResults = new ArrayList<>();
     // configure
