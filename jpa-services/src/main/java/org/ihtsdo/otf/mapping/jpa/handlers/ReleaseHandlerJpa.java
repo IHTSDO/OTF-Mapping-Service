@@ -324,7 +324,13 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     Logger.getLogger(getClass()).info("  Processing release");
     // cycle over the map records marked for publishing
+    int ct = 0;
     for (MapRecord mapRecord : mapRecords) {
+      ct++;
+
+      if (ct % 5000 == 0) {
+        Logger.getLogger(getClass()).info("    count = " + ct);
+      }
 
       // instantiate map of entries by group
       // this is the object containing entries to write
@@ -339,8 +345,23 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               mapProject.getSourceTerminologyVersion()) < mapProject
               .getPropagationDescendantThreshold()) {
 
+        // Prep MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT | 447639009
+        MapRelation ifaRuleRelation = null;
+        for (MapRelation rel : mappingService.getMapRelations()
+            .getMapRelations()) {
+          if (rel.getTerminologyId().equals("447639009")) {
+            ifaRuleRelation = rel;
+            break;
+          }
+        }
+        if (ifaRuleRelation == null) {
+          throw new Exception(
+              "Unable to find map relation for MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT "
+                  + "| 447639009");
+        }
+
         // Handle up propagation for this record
-        if (!handleUpPropagation(mapRecord, entriesByGroup)) {
+        if (!handleUpPropagation(mapRecord, entriesByGroup, ifaRuleRelation)) {
           // handle cases that cannot be up propagated
           continue;
         }
@@ -546,21 +567,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @throws Exception
    */
   private boolean handleUpPropagation(MapRecord mapRecord,
-    Map<Integer, List<MapEntry>> entriesByGroup) throws Exception {
-
-    // Prep MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT | 447639009
-    MapRelation ifaRuleRelation = null;
-    for (MapRelation rel : mappingService.getMapRelations().getMapRelations()) {
-      if (rel.getTerminologyId().equals("447639009")) {
-        ifaRuleRelation = rel;
-        break;
-      }
-    }
-    if (ifaRuleRelation == null) {
-      throw new Exception(
-          "Unable to find map relation for MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT "
-              + "| 447639009");
-    }
+    Map<Integer, List<MapEntry>> entriesByGroup, MapRelation ifaRuleRelation)
+    throws Exception {
 
     // /////////////////////////////////////////////////////
     // Get the tree positions for this concept
@@ -573,6 +581,11 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           contentService.getAnyTreePositionWithDescendants(
               mapRecord.getConceptId(), mapProject.getSourceTerminology(),
               mapProject.getSourceTerminologyVersion());
+      if (treePosition != null) {
+        Logger.getLogger(getClass()).debug(
+            "  Tree position: " + treePosition.getAncestorPath() + " - "
+                + mapRecord.getConceptId());
+      }
     } catch (Exception e) {
       conceptErrors.put(mapRecord.getConceptId(),
           "Could not retrieve any tree position");
@@ -606,6 +619,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
       // avoid re-rendering nodes already rendered
       if (!descendantsProcessed.contains(tp.getTerminologyId())) {
+        Logger.getLogger(getClass()).debug(
+            "  Processing descendant " + tp.getTerminologyId());
 
         // add this descendant to the processed list
         descendantsProcessed.add(tp.getTerminologyId());
@@ -672,6 +687,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               // if not a duplicate entry, add it to the map
               if (!isDuplicateEntry) {
 
+                Logger.getLogger(getClass()).debug(
+                    "  Entry is not a duplicate of parent");
+                Logger.getLogger(getClass()).debug("    entry = " + me);
+
                 // create new map entry to prevent
                 // hibernate-managed entity modification (leave id unset)
                 MapEntry newEntry = new MapEntryJpa();
@@ -707,6 +726,11 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
                 // entriesByGroup.put(newEntry.getMapGroup(),
                 // existingEntries);
 
+              } else {
+
+                Logger.getLogger(getClass()).debug(
+                    "  Entry IS DUPLICATE of parent, do not write");
+                Logger.getLogger(getClass()).debug("    entry = " + me);
               }
             }
           } else {
@@ -1173,7 +1197,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     for (String line : lines) {
       humanReadableWriter.write(line);
     }
-    
+
     // Close
     humanReadableWriter.flush();
     humanReadableWriter.close();
@@ -1607,8 +1631,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               + (mapProject.isRuleBased() ? complexMapRefSetMember.getMapRule()
                   : "") + "\t" + complexMapRefSetMember.getMapAdvice()
               + "\t"
-              + complexMapRefSetMember.getMapTarget() + "\t"
-              + "447561005" // TODO: make algorithm specific
+              + complexMapRefSetMember.getMapTarget() + "\t" + "447561005" // TODO:
+                                                                           // make
+                                                                           // algorithm
+                                                                           // specific
               + "\t" + complexMapRefSetMember.getMapRelationId();
 
       // ComplexMap style is identical to ExtendedMap
@@ -1663,7 +1689,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         properties.getProperty("loader.defaultPreferredNames.acceptabilityId");
 
     // Compute preferred names
+    int ct = 0;
     for (MapRecord mapRecord : mapRecords) {
+      ct++;
       Concept concept =
           contentService.getConcept(mapRecord.getConceptId(),
               mapProject.getSourceTerminology(),
@@ -1674,6 +1702,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           concept.getTerminologyId(),
           computeDefaultPreferredName(concept, dpnTypeId, dpnRefSetId,
               dpnAcceptabilityId));
+      if (ct % 5000 == 0) {
+        Logger.getLogger(getClass()).info("    count = " + ct);
+      }
     }
 
   }
