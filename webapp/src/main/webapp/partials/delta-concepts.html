@@ -1,54 +1,55 @@
 <div class="modal-header">
-	<h3>{{terminology}} Delta: Concept Report</h3>
+  <h3>{{terminology}} Delta: Concept Report</h3>
 </div>
 <div class="border-error alert-error" ng-show="deltaError == true">
-	<h4 class="alert alert-danger alert-error">Error retrieving
-		concepts modified by delta</h4>
+  <h4 class="alert alert-danger alert-error">Error retrieving concepts
+    modified by delta</h4>
 </div>
 
 <table style="margin-top: 10px; margin-left: 15px; margin-right: 15px">
-	<tr>
-		<td style="padding: 5px";>Filter concepts:</td>
-		<td style="padding: 5px;">
-			<form>
-				<input id="conceptSearch" ng-model="queryConcepts">
-				<button class="btn btn-sm btn-primary"
-					ng-click="getConcepts(1, queryConcepts)">Search</button>
-				<button class="btn btn-sm btn-primary"
-					ng-click="getConcepts(1, null); queryConcepts = null">Reset</button>
-			</form>
-		</td>
-	</tr>
-	<tr>
-		<td><td style="padding: 5px;">{{nConcepts}} matching concepts.</td>
-	</tr>
-	<tr>
-		<td style="padding: 5px;" colspan=2><pagination
-				ng-show="nConcepts > pageSize" total-items="nConcepts" page="page"
-				class="pagination-sm" max-size="5" boundary-links="true"
-				rotate="true" num-pages="numConceptPages"
-				on-select-page="getConcepts(page, queryConcepts)"></pagination></td>
-	</tr>
+  <tr>
+    <td style="padding: 5px";>Filter concepts:</td>
+    <td style="padding: 5px;">
+      <form>
+        <input id="conceptSearch" ng-model="queryConcepts">
+        <button class="btn btn-sm btn-primary"
+          ng-click="getConcepts(1, queryConcepts)">Search</button>
+        <button class="btn btn-sm btn-primary"
+          ng-click="getConcepts(1, null); queryConcepts = null">Reset</button>
+      </form>
+    </td>
+  </tr>
+  <tr>
+    <td>
+    <td style="padding: 5px;">{{nConcepts}} matching concepts.</td>
+  </tr>
+  <tr>
+    <td style="padding: 5px;" colspan=2><pagination
+        ng-show="nConcepts > pageSize" total-items="nConcepts" page="page"
+        class="pagination-sm" max-size="5" boundary-links="true" rotate="true"
+        num-pages="numConceptPages"
+        on-select-page="getConcepts(page, queryConcepts)"></pagination></td>
+  </tr>
 </table>
 
 <table class="table" style="margin-left: 15px; margin-right: 35px;">
-	<thead>
-		<tr>
-			<th style="padding: 5px">Id</th>
-			<th style="padding: 5px">Name</th>
-			<th style="padding: 5px">Note</th>
-			<th style="padding: 5px">a</th>
-		</tr>
-	</thead>
-	<tbody>
-		<tr ng-repeat="concept in concepts">
-			<td style="padding: 5px">{{concept.terminologyId}}</td>
-			<td style="padding: 5px">{{concept.value}}</td>
-			<td style="padding: 5px">{{concept.terminologyVersion}}</td>
-			<!--  used to hold concept new/modified status -->
-	</tbody>
+  <thead>
+    <tr>
+      <th style="padding: 5px">Id</th>
+      <th style="padding: 5px">Name</th>
+      <th style="padding: 5px">Note</th>
+      <th style="padding: 5px">a</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr ng-repeat="concept in concepts">
+      <td style="padding: 5px">{{concept.terminologyId}}</td>
+      <td style="padding: 5px">{{concept.value}}</td>
+      <td style="padding: 5px">{{concept.terminologyVersion}}</td>
+      <!--  used to hold concept new/modified status -->
+  </tbody>
 </table>
 
 <div class="modal-footer">
-	<button class="btn btn-warning" ng-click="close()">Close</button>
+  <button class="btn btn-warning" ng-click="close()">Close</button>
 </div>

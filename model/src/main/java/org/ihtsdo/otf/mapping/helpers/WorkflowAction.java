@@ -22,10 +22,13 @@ public enum WorkflowAction {
 
   /** The finish editing. */
   FINISH_EDITING,
-  
+
   /** The publish */
   PUBLISH,
-  
+
   /** Cancel work */
-  CANCEL;
+  CANCEL,
+
+  /** Create qa record */
+  CREATE_QA_RECORD;
 }
