@@ -261,9 +261,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           algorithmHandler.getModuleDependencyRefSetId());
     }
 
-    // /////////////////////////////////////////////////////
+    //
     // Prepare data
-    // /////////////////////////////////////////////////////
+    //
 
     // instantiate the set of complex map ref set members to write
     Map<String, ComplexMapRefSetMember> complexMapRefSetMembersToWrite =
@@ -276,22 +276,18 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       mapRecordMap.put(mr.getConceptId(), mr);
     }
 
-    // create a list from the set
+    // create a list from the set and sort by concept id
     Logger.getLogger(getClass()).info("  Sorting records");
-
     Collections.sort(mapRecords, new Comparator<MapRecord>() {
-
       @Override
       public int compare(MapRecord o1, MapRecord o2) {
         Long conceptId1 = Long.parseLong(o1.getConceptId());
         Long conceptId2 = Long.parseLong(o2.getConceptId());
-
         return conceptId1.compareTo(conceptId2);
-
       }
     });
 
-    Logger.getLogger(ReleaseHandler.class).info("  Retrieving existing maps");
+    Logger.getLogger(ReleaseHandler.class).info("  Retrieving maps");
 
     // retrieve the complex map ref set members for this project's refset id
     ComplexMapRefSetMemberList refSetMembers =
