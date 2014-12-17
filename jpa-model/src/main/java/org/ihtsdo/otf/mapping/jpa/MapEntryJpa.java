@@ -526,11 +526,11 @@ public class MapEntryJpa implements MapEntry {
       return false;
 
     // targets must be equal
-    if (this.targetId == null || this.targetId.isEmpty()) {
-      if (me != null && me.getTargetId() != null && !me.getTargetId().isEmpty())
-        return false;
-    } else if (me != null && !me.getTargetId().isEmpty() && !this.targetId.equals(me.getTargetId()))
+    final String id1 = this.targetId == null ? "" : this.targetId;
+    final String id2 = me.getTargetId() == null ? "" : me.getTargetId();
+    if (!id1.equals(id2)) {
       return false;
+    }
 
     // rules must be identical
     if (this.rule == null && me.getRule() != null)

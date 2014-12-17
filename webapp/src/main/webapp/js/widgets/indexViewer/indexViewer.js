@@ -178,6 +178,7 @@ angular
 
       // returns the set of titles of html pages for the given domain
       $scope.retrieveIndexPages = function(domain) {
+        $rootScope.glassPane++;
         console.debug('retrieveIndexPages', domain);
         $http(
           {
@@ -192,6 +193,7 @@ angular
             }
           }).success(
           function(data) {
+            $rootScope.glassPane--;
             console.debug("Success in getting viewable pages for index.");
             $scope.indexPages = [];
             for (var i = 0; i < data.searchResult.length; i++) {
@@ -223,12 +225,14 @@ angular
             }
 
           }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
             $rootScope.handleHttpError(data, status, headers, config);
         });
       };
 
       // scrolling to the given eID on the correct html page
       $scope.goToElement = function(eID) {
+        $rootScope.glassPane++;
 
         // if needing to switch to different html page
         if (eID.charAt(0) != $scope.selectedPage) {
@@ -245,36 +249,32 @@ angular
           $location.hash(eID);
           $anchorScroll();
         }
+        $rootScope.glassPane--;
 
       };
 
       // updates the url to switch to display a new html page in the index
       // viewer
       $scope.updateUrl = function(pageName) {
-        $rootScope.glassPane++;
         
         $scope.selectedPage = pageName;
 
         $scope.tUrl = "indexViewerData/" + $scope.focusProject.destinationTerminology + "/"
           + $scope.focusProject.destinationTerminologyVersion + "/html/"
           + $scope.selectedDomain + "/" + pageName + ".html";
-        $rootScope.glassPane++;
 
       };
 
       $scope.goFirstResult = function() {
-        $rootScope.glassPane++;
         console.debug('goFirstResult called', $scope.searchResultsIndex);
         $scope.goToElement($scope.results[0].value);
         $scope.searchResultsLabel = "1 of " + $scope.nResults;
         $scope.mainTermLabel = $scope.results[0].value2;
         $scope.setBackwardButtonsDisplayed(false);
         $scope.setForwardButtonsDisplayed(true);
-        $rootScope.glassPane--;
       };
 
       $scope.goPreviousResult = function() {
-        $rootScope.glassPane++;
         console.debug('goPreviousResult called', $scope.searchResultsIndex);
         $scope.searchResultsLabel = $scope.searchResultsIndex + " of "
           + $scope.nResults;
@@ -284,11 +284,9 @@ angular
         if ($scope.searchResultsIndex == 0)
           $scope.setBackwardButtonsDisplayed(false);
         $scope.setForwardButtonsDisplayed(true);
-        $rootScope.glassPane--;
       };
 
       $scope.goNextResult = function() {
-        $rootScope.glassPane++;
         console.debug('goNextResult called', $scope.searchResultsIndex);
         $scope.searchResultsIndex++;
         $scope.searchResultsLabel = ($scope.searchResultsIndex + 1) + " of "
@@ -298,18 +296,15 @@ angular
         if ($scope.results.length == $scope.searchResultsIndex + 1)
           $scope.setForwardButtonsDisplayed(false);
         $scope.setBackwardButtonsDisplayed(true);
-        $rootScope.glassPane--;
       };
 
       $scope.goLastResult = function() {
-        $rootScope.glassPane++;
         console.debug('goLastResult called', $scope.searchResultsIndex);
         $scope.goToElement($scope.results[$scope.results.length - 1].value);
         $scope.searchResultsLabel = $scope.nResults + " of " + $scope.nResults;
         $scope.mainTermLabel = $scope.results[$scope.results.length - 1].value2;
         $scope.setForwardButtonsDisplayed(false);
         $scope.setBackwardButtonsDisplayed(true);
-        $rootScope.glassPane--;
       };
 
       $scope.setBackwardButtonsDisplayed = function(b) {
@@ -327,7 +322,9 @@ angular
         if (newUrl.indexOf("Help") == -1) {
           ev.preventDefault();
           // if the Help page, allow the default reloading response
-        } 
+        } else {
+          $rootScope.glassPane++;
+        }
 
       });
 
@@ -338,6 +335,7 @@ angular
         $location.hash($scope.eID);
 
         $anchorScroll();
+        $rootScope.glassPane--;
 
       });
 
