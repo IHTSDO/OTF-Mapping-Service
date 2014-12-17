@@ -18,7 +18,7 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
 
   public WorkflowFixErrorPathHandler() {
 
-    // empty workflow is not permitted
+   /* // empty workflow is not permitted
     this.setEmptyWorkflowAllowed(false);
 
     // workflow states representing a record marked for revision and the
@@ -40,7 +40,7 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
         WorkflowStatus.REVIEW_IN_PROGRESS)));
     addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
         WorkflowStatus.REVISION, WorkflowStatus.REVIEW_NEEDED,
-        WorkflowStatus.REVIEW_RESOLVED)));
+        WorkflowStatus.REVIEW_RESOLVED)));*/
   }
 
   @Override

@@ -10,6 +10,7 @@ import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
+import org.ihtsdo.otf.mapping.helpers.WorkflowState;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatusCombination;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
@@ -27,9 +28,8 @@ public abstract class AbstractWorkflowPathHandler implements
 
   /** The workflow path */
   private WorkflowPath workflowPath = null;
-
-  /** The workflow combinations. */
-  private Set<WorkflowStatusCombination> workflowCombinations = new HashSet<>();
+  
+  Set<WorkflowState> workflowStates = new HashSet<>();
 
   /** Whether an empty workflow state is allowed. Default: true. */
   boolean emptyWorkflowAllowed = true;
@@ -52,37 +52,7 @@ public abstract class AbstractWorkflowPathHandler implements
     this.emptyWorkflowAllowed = emptyWorkflowAllowed;
   }
 
-  /**
-   * Returns the workflow combinations.
-   * 
-   * @return the workflow combinations
-   */
-  public Set<WorkflowStatusCombination> getWorkflowCombinations() {
-    return workflowCombinations;
-  }
-
-  /**
-   * Sets the workflow combinations.
-   * 
-   * @param workflowCombinations the workflow combinations
-   */
-  public void setWorkflowCombinations(
-    Set<WorkflowStatusCombination> workflowCombinations) {
-    this.workflowCombinations = workflowCombinations;
-  }
-
-  /**
-   * Adds the workflow combination.
-   * 
-   * @param workflowCombination the workflow combination
-   */
-  public void addWorkflowCombination(
-    WorkflowStatusCombination workflowCombination) {
-    if (this.workflowCombinations == null)
-      workflowCombinations = new HashSet<>();
-    this.workflowCombinations.add(workflowCombination);
-  }
-
+  
   /*
    * (non-Javadoc)
    * 
@@ -106,7 +76,7 @@ public abstract class AbstractWorkflowPathHandler implements
       }
 
       // otherwise, check whether this combination is allowed
-    } else if (!workflowCombinations.contains(workflowCombination)) {
+    } else if (this.isWorkflowCombinationInWorkflowStates(workflowCombination)) {
       result
           .addError("Tracking record has invalid combination of reported workflow statuses for "
               + trackingRecord.getWorkflowPath());
@@ -232,6 +202,26 @@ public abstract class AbstractWorkflowPathHandler implements
       }
     }
     return assignedRecord;
+  }
+  
+  public boolean isWorkflowCombinationInWorkflowStates(WorkflowStatusCombination workflowCombination) {
+    
+    for (WorkflowState state : workflowStates) {
+      if (state.contains(workflowCombination))
+        return true;
+    }
+    
+    return false;
+    
+  }
+  
+  public WorkflowState getWorkflowStateForWorkflowCombination(WorkflowStatusCombination workflowCombination) {
+    for (WorkflowState state : workflowStates) {
+      if (state.contains(workflowCombination))
+        return state;
+    }
+    
+    return null;
   }
 
 }
