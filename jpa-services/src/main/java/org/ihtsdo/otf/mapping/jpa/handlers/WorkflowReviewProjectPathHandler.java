@@ -62,7 +62,7 @@ public class WorkflowReviewProjectPathHandler extends
 
     // first validate the tracking record itself
     ValidationResult result =
-        super.validateTrackingRecordForActionAndUser(trackingRecord, action,
+        super.validateTrackingRecord(trackingRecord, action,
             mapUser);
 
     // if failed first check, return
