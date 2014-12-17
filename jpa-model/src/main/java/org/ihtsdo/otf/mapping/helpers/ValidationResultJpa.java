@@ -204,5 +204,13 @@ public class ValidationResultJpa implements ValidationResult {
     this.warnings.addAll(validationResult.getWarnings());
 
   }
+  
+  /* (non-Javadoc)
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    return "ERRORS: " + errors + ", WARNINGS: " + warnings;
+  }
 
 }
