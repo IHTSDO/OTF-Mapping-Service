@@ -194,6 +194,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     // can happen if â€œallowable map adviceâ€� changes without updating map
     // entries)
     validationResult.merge(checkMapRecordAdvices(mapRecord, entryGroups));
+    
+    // Validation Check: all entries are non-null (empty entries are empty strings)
+    validationResult.merge(checkMapRecordForNullTargetIds(mapRecord));
 
     return validationResult;
   }
@@ -201,6 +204,18 @@ public class DefaultProjectSpecificAlgorithmHandler implements
   // ////////////////////
   // HELPER FUNCTIONS //
   // ////////////////////
+  
+  public ValidationResult checkMapRecordForNullTargetIds(MapRecord mapRecord) {
+    ValidationResult validationResult = new ValidationResultJpa();
+    
+    for (MapEntry me : mapRecord.getMapEntries()) {
+      if (me.getTargetId() == null)
+        validationResult.addError("Map entry at group " + me.getMapGroup() + ", priority " + me.getMapPriority() + " has no target (valid or empty) selected.");
+    }
+    
+    return validationResult;
+  }
+  
 
   /**
    * Check map record group structure.
@@ -222,7 +237,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     for (int i = 1; i < mapGroups.size(); i++) {
       if (!mapGroups.contains(i)) {
         validationResult.addWarning("Group " + i
-            + " is empty -- this will be fixed in QA at a later stage");
+            + " is empty");
       }
     }
 
