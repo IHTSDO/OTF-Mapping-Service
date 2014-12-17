@@ -262,10 +262,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // Prepare data
     //
 
-    // instantiate the set of complex map ref set members to write
-    Map<String, ComplexMapRefSetMember> complexMapRefSetMembersToWrite =
-        new HashMap<>();
-
     // put all map records into the map record map
     for (MapRecord mr : mapRecords) {
       if (mr == null)
@@ -297,6 +293,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // represent those entries that are now inactive
     Map<String, ComplexMapRefSetMember> complexMapRefSetMemberMap =
         new HashMap<>();
+    List<ComplexMapRefSetMember> activeMembers = new ArrayList<>();
+    
     for (ComplexMapRefSetMember c : refSetMembers.getComplexMapRefSetMembers()) {
       complexMapRefSetMemberMap.put(getHash(c), c);
     }
@@ -464,6 +462,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       Concept concept = conceptCache.get(mapRecord.getConceptId());
 
       // cycle over groups and entries in sequence
+      // Collect active only entries
       for (int mapGroup : entriesByGroup.keySet()) {
 
         int mapPriority = 1;
@@ -494,8 +493,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           member.setMapPriority(mapPriority++);
 
           // add this entry to the list of members to write
-          complexMapRefSetMembersToWrite.put(member.getTerminologyId(), member);
-
+          activeMembers.add(member);
         }
       }
 
@@ -517,34 +515,22 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         previousActiveMembers.put(c.getTerminologyId(), c);
     }
 
-    // Collect active only entries
-    List<ComplexMapRefSetMember> activeMembers = new ArrayList<>();
-    for (ComplexMapRefSetMember c : complexMapRefSetMembersToWrite.values()) {
-      // Only write active entries
-      if (c.isActive()) {
-        activeMembers.add(c);
-      }
-    }
-    // expect the two sets above to actually be the same
-    Logger.getLogger(getClass()).error(
-        " members to write contains inactive entries");
-
     // Write human readable file
     writeHumanReadableFile(activeMembers);
 
     // Write snapshot file
     if (writeSnapshot) {
       writeActiveSnapshotFile(new ArrayList<>(
-          complexMapRefSetMembersToWrite.values()));
+          activeMembers));
     }
 
     // Write delta file
     if (writeDelta) {
-      writeDeltaFile(complexMapRefSetMembersToWrite, previousActiveMembers);
+      writeDeltaFile(activeMembers, previousActiveMembers);
     }
 
     // Write statistics
-    writeStatsFile(complexMapRefSetMembersToWrite, previousActiveMembers);
+    writeStatsFile(activeMembers, previousActiveMembers);
 
     // write the errors
     Logger.getLogger(getClass()).info(
@@ -815,7 +801,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @throws IOException
    */
   private void writeDeltaFile(
-    Map<String, ComplexMapRefSetMember> activeMembers,
+    List<ComplexMapRefSetMember> activeMembers,
     Map<String, ComplexMapRefSetMember> previousActiveMembers) throws Exception {
     Map<String, ComplexMapRefSetMember> tempMap = new HashMap<>();
 
@@ -920,7 +906,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @throws IOException Signals that an I/O exception has occurred.
    */
   private void writeStatsFile(
-    Map<String, ComplexMapRefSetMember> activeMembers,
+    List<ComplexMapRefSetMember> activeMembers,
     Map<String, ComplexMapRefSetMember> previousActiveMembers) throws Exception {
 
     // Gather stats
@@ -931,8 +917,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     Set<String> alwaysNc = new HashSet<>();
     Set<String> neverNc = new HashSet<>();
     Set<String> sometimesMap = new HashSet<>();
-    String prevConcept = null;
-    for (ComplexMapRefSetMember member : activeMembers.values()) {
+    for (ComplexMapRefSetMember member : activeMembers) {
       String key = member.getConcept().getTerminologyId();
       alwaysNc.add(key);
       neverNc.add(key);
@@ -942,9 +927,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       int maxCt = entryCount.get(key).intValue() + 1;
       entryCount.put(key, maxCt);
       updateStatMax(Stats.MAX_ENTRIES.getValue(), maxCt);
-      prevConcept = key;
     }
-    for (ComplexMapRefSetMember member : activeMembers.values()) {
+    for (ComplexMapRefSetMember member : activeMembers) {
       String key = member.getConcept().getTerminologyId();
       activeConcepts.add(key);
       if (member.getMapPriority() > 1) {
@@ -994,7 +978,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     updateStatMax(Stats.NEW_CONCEPTS.getValue(), ct);
 
     Set<String> changedConcepts = new HashSet<>();
-    for (ComplexMapRefSetMember member : activeMembers.values()) {
+    for (ComplexMapRefSetMember member : activeMembers) {
       String key = member.getConcept().getTerminologyId();
       ComplexMapRefSetMember member2 = previousActiveMembers.get(key);
       if (member2 != null && !member.equals(member2)) {
