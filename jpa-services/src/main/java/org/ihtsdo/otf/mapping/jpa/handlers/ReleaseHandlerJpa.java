@@ -108,6 +108,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   /** The scope concepts. */
   private Map<String, Concept> conceptCache = new HashMap<>();
 
+  private boolean testModeFlag = false;
+
   /** The report statistics. */
   private Map<String, Integer> reportStatistics = new HashMap<>();
 
@@ -164,15 +166,16 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   /**
    * Instantiates an empty {@link ReleaseHandlerJpa}.
    *
+   * @param testModeFlag the test mode flag
    * @throws Exception the exception
    */
-  public ReleaseHandlerJpa() throws Exception {
+  public ReleaseHandlerJpa(boolean testModeFlag) throws Exception {
 
     // instantiate services
     mappingService = new MappingServiceJpa();
     contentService = new ContentServiceJpa();
     metadataService = new MetadataServiceJpa();
-
+    this.testModeFlag = testModeFlag;
   }
 
   /*
@@ -1911,10 +1914,15 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               mapProject.getSourceTerminologyVersion());
 
       conceptCache.put(concept.getTerminologyId(), concept);
-      defaultPreferredNames.put(
-          concept.getTerminologyId(),
-          computeDefaultPreferredName(concept, dpnTypeId, dpnRefSetId,
-              dpnAcceptabilityId));
+      if (testModeFlag) {
+        defaultPreferredNames.put(concept.getTerminologyId(),
+            concept.getDefaultPreferredName());
+      } else {
+        defaultPreferredNames.put(
+            concept.getTerminologyId(),
+            computeDefaultPreferredName(concept, dpnTypeId, dpnRefSetId,
+                dpnAcceptabilityId));
+      }
       if (ct % 5000 == 0) {
         Logger.getLogger(getClass()).info("    count = " + ct);
       }

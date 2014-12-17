@@ -35,6 +35,12 @@ public class ReleaseBeginMojo extends AbstractMojo {
   private boolean removeRecords = false;
 
   /**
+   * Flag indicating test mode
+   * @parameter
+   */
+  private boolean testModeFlag = false;
+
+  /**
    * Executes the plugin.
    * 
    * @throws MojoExecutionException the mojo execution exception
@@ -63,7 +69,7 @@ public class ReleaseBeginMojo extends AbstractMojo {
       }
 
       // Perform the QA checks
-      ReleaseHandler releaseHandler = new ReleaseHandlerJpa();
+      ReleaseHandler releaseHandler = new ReleaseHandlerJpa(testModeFlag);
       for (MapProject mapProject : mapProjects) {
         getLog().info(
             "Performing release QA for " + mapProject.getName() + ", "
