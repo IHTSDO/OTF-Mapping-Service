@@ -61,11 +61,8 @@ import org.ihtsdo.otf.mapping.services.ReportService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
 
-// TODO: Auto-generated Javadoc
 /**
  * JPA enabled implementation of {@link ReleaseHandler}.
- *
- * @author ${author}
  */
 public class ReleaseHandlerJpa implements ReleaseHandler {
 
@@ -192,8 +189,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * (org.ihtsdo.otf.mapping.model.MapProject, java.lang.String,
    * java.lang.String, java.util.Set, java.lang.String, java.lang.String)
    */
-
-  @SuppressWarnings("resource")
   @Override
   public void processRelease() throws Exception {
 
@@ -206,8 +201,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       mapRecords = mapRecordList.getMapRecords();
     }
 
-    // Process the release
-
+    // Log config
     Logger.getLogger(getClass()).info("Processing publication release");
     Logger.getLogger(getClass()).info("  project = " + mapProject.getName());
     Logger.getLogger(getClass()).info(
@@ -256,102 +250,15 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     Logger.getLogger(getClass()).info("  Compute default preferred names");
     computeDefaultPreferredNames();
 
-    // declare the file names and file writers
-    String deltaMachineReadableFileName = null;
-    String moduleDependencyFileName = null;
-
-    BufferedWriter deltaMachineReadableWriter = null;
-    BufferedWriter moduleDependencyWriter = null;
-
     // instantiate the project specific handler
     ProjectSpecificAlgorithmHandler algorithmHandler =
         mappingService.getProjectSpecificAlgorithmHandler(mapProject);
 
-    // /////////////////////////////////////////////////////
-    // If indicated, write module dependency file
-    // /////////////////////////////////////////////////////
-
-    Logger.getLogger(getClass()).info("  Handle module dependencies");
-
+    // Write module dependency file
     Set<String> moduleDependencies = algorithmHandler.getDependentModules();
     if (moduleDependencies.size() > 0) {
-      Logger.getLogger(getClass()).info(
-          "    count = " + moduleDependencies.size());
-      moduleDependencyFileName =
-          outputDir + "/der2_ssRefset_ModuleDependencyDelta_INT_"
-              + effectiveTime + ".txt";
-      moduleDependencyWriter =
-          new BufferedWriter(new FileWriter(moduleDependencyFileName));
-      moduleDependencyWriter
-          .write("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tsourceEffectiveTime\ttargetEffectiveTime"
-              + "\r\n");
-      for (String module : moduleDependencies) {
-        String moduleStr =
-            getUuidForString(
-                moduleId + algorithmHandler.getModuleDependencyRefSetId()
-                    + module).toString()
-                + "\t"
-                + effectiveTime
-                + "\t"
-                + "1"
-                + "\t"
-                + moduleId
-                + "\t"
-                + "900000000000534007" // TODO: get from metadata service
-                + "\t"
-                + module
-                + "\t"
-                + effectiveTime
-                + "\t"
-                + effectiveTime
-                + "\r\n";
-        moduleDependencyWriter.write(moduleStr);
-      }
-
-      moduleDependencyWriter.flush();
-      moduleDependencyWriter.close();
-    } else {
-      Logger.getLogger(getClass()).info("    count = 0");
-    }
-
-    // Create file names, instantiate writers, write headers
-    String pattern =
-        (mapProject.getMapRefsetPattern() == MapRefsetPattern.ComplexMap
-            ? "iissscRefset_" : "iisssccRefset_");
-
-    deltaMachineReadableFileName =
-        outputDir + "/der2_" + pattern + mapProject.getMapRefsetPattern()
-            + "Delta_INT_" + effectiveTime + ".txt";
-
-    if (writeDelta == true) {
-      Logger.getLogger(getClass()).info(
-          "  Delta release file = " + deltaMachineReadableFileName);
-
-      // instantiate file writer
-      deltaMachineReadableWriter =
-          new BufferedWriter(new FileWriter(deltaMachineReadableFileName));
-
-    }
-
-    // Write headers (subject to pattern)
-
-    if (mapProject.getMapRefsetPattern().equals(MapRefsetPattern.ExtendedMap)) {
-
-      if (deltaMachineReadableWriter != null) {
-        deltaMachineReadableWriter
-            .write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\tmapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId\tmapCategoryId\r\n");
-        deltaMachineReadableWriter.flush();
-      }
-
-    } else if (mapProject.getMapRefsetPattern().equals(
-        MapRefsetPattern.ComplexMap)) {
-
-      if (deltaMachineReadableWriter != null) {
-        deltaMachineReadableWriter
-            .write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\tmapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId\r\n");
-        deltaMachineReadableWriter.flush();
-      }
-
+      writeModuleDependencyFile(moduleDependencies,
+          algorithmHandler.getModuleDependencyRefSetId());
     }
 
     // /////////////////////////////////////////////////////
@@ -805,30 +712,20 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     }
 
-    Logger.getLogger(getClass()).info(
-        "Number of maps marked for writing: "
-            + complexMapRefSetMembersToWrite.size());
-
     // /////////////////////////////////////////////////////
     // Prepare for file write
     // /////////////////////////////////////////////////////
 
     // declare maps in use for computation
-    Map<String, ComplexMapRefSetMember> complexMapRefSetMembersPreviouslyActive =
-        new HashMap<>();
-    Map<String, ComplexMapRefSetMember> tempMap = new HashMap<>();
+    Map<String, ComplexMapRefSetMember> previousActiveMembers = new HashMap<>();
 
     // First, construct set of previously active complex map ref set members
     for (ComplexMapRefSetMember c : complexMapRefSetMemberMap.values()) {
       if (c.isActive())
-        complexMapRefSetMembersPreviouslyActive.put(c.getTerminologyId(), c);
+        previousActiveMembers.put(c.getTerminologyId(), c);
     }
 
-    Logger.getLogger(getClass()).info(
-        "Number of previously-published, active complex maps: "
-            + complexMapRefSetMembersPreviouslyActive.size());
-
-    // Write human readable file
+    // Collect active only entries
     List<ComplexMapRefSetMember> activeMembers = new ArrayList<>();
     for (ComplexMapRefSetMember c : complexMapRefSetMembersToWrite.values()) {
       // Only write active entries
@@ -836,123 +733,21 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         activeMembers.add(c);
       }
     }
+    // expect the two sets above to actually be the same
+    Logger.getLogger(getClass()).error(
+        " members to write contains inactive entries");
 
     // Write human readable file
     writeHumanReadableFile(activeMembers);
 
     // Write snapshot file
     if (writeSnapshot) {
-      writeActiveSnapshot(activeMembers);
+      writeActiveSnapshotFile(activeMembers);
     }
 
-    // /////////////////////////////////////////////////////
-    // Write the delta files
-    // /////////////////////////////////////////////////////
-
+    // Write delta file
     if (writeDelta) {
-
-      Logger.getLogger(getClass()).info("Writing delta...");
-
-      // case 1: currently active now modified
-      // Copy current map of uuids to write into temp map
-      // For each previously active uuid:
-      // - check temp map for this uuid
-      // - if present AND unchanged, remove from temp map
-      // Write the values of the temp map
-      tempMap = new HashMap<>(complexMapRefSetMembersToWrite);
-
-      Logger.getLogger(getClass()).info(
-          "  Computing maps created or changed this cycle from "
-              + tempMap.size() + " maps marked for writing...");
-
-      Set<String> conceptsNew = new HashSet<>();
-      Set<String> conceptsModified = new HashSet<>();
-      Set<String> conceptsUnchanged = new HashSet<>();
-
-      // cycle over all previously active
-      for (ComplexMapRefSetMember c : complexMapRefSetMembersPreviouslyActive
-          .values()) {
-
-        // if set to write contains this previously active uuid
-        if (tempMap.containsKey(c.getTerminologyId())) {
-
-          // if this previously active member is present (equality check) in the
-          // set to be written
-          if (c.equals(tempMap.get(c.getTerminologyId()))) {
-
-            // remove this concept from the set to be written -- unchanged
-            tempMap.remove(c.getTerminologyId());
-
-            conceptsUnchanged.add(c.getConcept().getTerminologyId());
-          } else {
-            conceptsModified.add(c.getConcept().getTerminologyId());
-          }
-        } else {
-          conceptsNew.add(c.getConcept().getTerminologyId());
-        }
-      }
-
-      // add to report statistics
-      updateStatisticMax(Stats.NEW_CONCEPTS.getValue(), conceptsNew.size());
-      updateStatisticMax(Stats.CHANGED_CONCEPTS.getValue(),
-          conceptsModified.size());
-
-      // write new or modified maps to file
-      for (ComplexMapRefSetMember c : tempMap.values()) {
-        deltaMachineReadableWriter.write(getOutputLine(c));
-      }
-
-      Logger.getLogger(getClass()).info("  Writing complete.");
-
-      updateStatisticMax(Stats.RETIRED_CONCEPTS.getValue(),
-          complexMapRefSetMembersPreviouslyActive.size());
-
-      // case 2: previously active no longer present
-      // Copy previously active map of uuids to write into temp map
-      // For each uuid in current write set
-      // - check temp map for this uuid
-      // - if present, remove from temp map
-      // Inactivate all remaining uuids in the temp map
-
-      tempMap = new HashMap<>(complexMapRefSetMembersPreviouslyActive);
-
-      for (String uuid : complexMapRefSetMembersToWrite.keySet()) {
-        if (tempMap.containsKey(uuid)) {
-          tempMap.remove(uuid);
-        }
-
-      }
-
-      updateStatisticMax("Concepts inactivated", tempMap.size());
-
-      // set active to false and write inactivated complex maps
-      for (ComplexMapRefSetMember c : tempMap.values()) {
-        c.setActive(false);
-        deltaMachineReadableWriter.write(this.getOutputLine(c));
-
-      }
-
-      Logger.getLogger(getClass()).info("  Writing complete.");
-
-      deltaMachineReadableWriter.flush();
-      deltaMachineReadableWriter.close();
-
-      BufferedWriter statsWriter =
-          new BufferedWriter(new FileWriter(outputDir + "/stats_" + pattern
-              + mapProject.getMapRefsetPattern() + "Snapshot_INT_"
-              + effectiveTime + ".txt"));
-
-      List<String> statistics = new ArrayList<>(reportStatistics.keySet());
-
-      Collections.sort(statistics);
-
-      for (String statistic : statistics) {
-        statsWriter.write(statistic + "\t" + reportStatistics.get(statistic)
-            + "\r\n");
-      }
-
-      statsWriter.close();
-
+      writeDeltaFile(complexMapRefSetMembersToWrite, previousActiveMembers);
     }
 
     // write the errors
@@ -973,34 +768,206 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   }
 
   /**
+   * Write module dependency file.
+   *
+   * @param moduleDependencies the module dependencies
+   * @param refSetId the ref set id
+   * @throws IOException
+   * @throws NoSuchAlgorithmException
+   */
+  private void writeModuleDependencyFile(Set<String> moduleDependencies,
+    String refSetId) throws Exception {
+    Logger.getLogger(getClass()).info("  Write module dependency file");
+    Logger.getLogger(getClass()).info(
+        "    count = " + moduleDependencies.size());
+    // Open file
+    String filename = null;
+    BufferedWriter writer = null;
+    filename =
+        outputDir + "/der2_ssRefset_ModuleDependencyDelta_INT_" + effectiveTime
+            + ".txt";
+    writer = new BufferedWriter(new FileWriter(filename));
+
+    // Write header
+    writer
+        .write("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tsourceEffectiveTime\ttargetEffectiveTime"
+            + "\r\n");
+
+    // Write lines
+    for (String module : moduleDependencies) {
+      String moduleStr =
+          getUuidForString(moduleId + refSetId + module).toString() + "\t"
+              + effectiveTime + "\t" + "1" + "\t" + moduleId + "\t" + refSetId
+              + "\t" + module + "\t" + effectiveTime + "\t" + effectiveTime
+              + "\r\n";
+      writer.write(moduleStr);
+    }
+
+    // Close
+    writer.flush();
+    writer.close();
+  }
+
+  /**
+   * Write delta.
+   *
+   * @param activeMembers the active members
+   * @param previousActiveMembers the previous active members
+   * @throws IOException
+   */
+  private void writeDeltaFile(
+    Map<String, ComplexMapRefSetMember> activeMembers,
+    Map<String, ComplexMapRefSetMember> previousActiveMembers) throws Exception {
+    Map<String, ComplexMapRefSetMember> tempMap = new HashMap<>();
+
+    // Open file and writer
+    String filename = null;
+    BufferedWriter writer = null;
+    String pattern =
+        (mapProject.getMapRefsetPattern() == MapRefsetPattern.ComplexMap
+            ? "iissscRefset_" : "iisssccRefset_");
+    filename =
+        outputDir + "/der2_" + pattern + mapProject.getMapRefsetPattern()
+            + "Delta_INT_" + effectiveTime + ".txt";
+
+    // Write headers (subject to pattern)
+    writer = new BufferedWriter(new FileWriter(filename));
+    writer
+        .write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\t"
+            + "mapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId");
+    if (mapProject.getMapRefsetPattern().equals(MapRefsetPattern.ExtendedMap)) {
+      writer.write("\tmapCategoryId");
+    }
+    writer.write("\r\n");
+
+    // case 1: currently active now modified
+    // Copy current map of uuids to write into temp map
+    // For each previously active uuid:
+    // - check temp map for this uuid
+    // - if present AND unchanged, remove from temp map
+    // Write the values of the temp map
+    tempMap = new HashMap<>(activeMembers);
+
+    Logger.getLogger(getClass()).info(
+        "  Computing maps created or changed this cycle from " + tempMap.size()
+            + " maps marked for writing...");
+
+    Set<String> conceptsNew = new HashSet<>();
+    Set<String> conceptsModified = new HashSet<>();
+    Set<String> conceptsUnchanged = new HashSet<>();
+
+    // cycle over all previously active
+    for (ComplexMapRefSetMember c : previousActiveMembers.values()) {
+
+      // if set to write contains this previously active uuid
+      if (tempMap.containsKey(c.getTerminologyId())) {
+
+        // if this previously active member is present (equality check) in the
+        // set to be written
+        if (c.equals(tempMap.get(c.getTerminologyId()))) {
+
+          // remove this concept from the set to be written -- unchanged
+          tempMap.remove(c.getTerminologyId());
+
+          conceptsUnchanged.add(c.getConcept().getTerminologyId());
+        } else {
+          conceptsModified.add(c.getConcept().getTerminologyId());
+        }
+      } else {
+        conceptsNew.add(c.getConcept().getTerminologyId());
+      }
+    }
+
+    // add to report statistics
+    updateStatisticMax(Stats.NEW_CONCEPTS.getValue(), conceptsNew.size());
+    updateStatisticMax(Stats.CHANGED_CONCEPTS.getValue(),
+        conceptsModified.size());
+
+    // write new or modified maps to file
+    for (ComplexMapRefSetMember c : tempMap.values()) {
+      writer.write(getOutputLine(c));
+    }
+
+    Logger.getLogger(getClass()).info("  Writing complete.");
+
+    updateStatisticMax(Stats.RETIRED_CONCEPTS.getValue(),
+        previousActiveMembers.size());
+
+    // case 2: previously active no longer present
+    // Copy previously active map of uuids to write into temp map
+    // For each uuid in current write set
+    // - check temp map for this uuid
+    // - if present, remove from temp map
+    // Inactivate all remaining uuids in the temp map
+
+    tempMap = new HashMap<>(previousActiveMembers);
+
+    for (String uuid : activeMembers.keySet()) {
+      if (tempMap.containsKey(uuid)) {
+        tempMap.remove(uuid);
+      }
+
+    }
+
+    updateStatisticMax("Concepts inactivated", tempMap.size());
+
+    // set active to false and write inactivated complex maps
+    for (ComplexMapRefSetMember c : tempMap.values()) {
+      c.setActive(false);
+      writer.write(this.getOutputLine(c));
+
+    }
+
+    Logger.getLogger(getClass()).info("  Writing complete.");
+
+    writer.flush();
+    writer.close();
+
+    BufferedWriter statsWriter =
+        new BufferedWriter(new FileWriter(outputDir + "/stats.txt"));
+
+    List<String> statistics = new ArrayList<>(reportStatistics.keySet());
+
+    Collections.sort(statistics);
+
+    for (String statistic : statistics) {
+      statsWriter.write(statistic + "\t" + reportStatistics.get(statistic)
+          + "\r\n");
+    }
+
+    statsWriter.close();
+
+  }
+
+  /**
    * Write human readable file.
    * @throws Exception
    */
-  private void writeActiveSnapshot(List<ComplexMapRefSetMember> members)
+  private void writeActiveSnapshotFile(List<ComplexMapRefSetMember> members)
     throws Exception {
 
     Logger.getLogger(getClass()).info("Writing snapshot...");
     String pattern =
         (mapProject.getMapRefsetPattern() == MapRefsetPattern.ComplexMap
             ? "iissscRefset_" : "iisssccRefset_");
-    String snapshotFile = null;
-    BufferedWriter snapshotWriter = null;
-    snapshotFile =
+    String filename = null;
+    BufferedWriter writer = null;
+    filename =
         outputDir + "/der2_" + pattern + mapProject.getMapRefsetPattern()
             + "Snapshot_INT_" + effectiveTime + ".txt";
 
     // write headers
     Logger.getLogger(getClass()).info(
-        "  Machine-readable release file:  " + snapshotFile);
+        "  Machine-readable release file:  " + filename);
 
-    snapshotWriter = new BufferedWriter(new FileWriter(snapshotFile));
-    snapshotWriter
+    writer = new BufferedWriter(new FileWriter(filename));
+    writer
         .write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\t"
             + "mapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId");
     if (mapProject.getMapRefsetPattern().equals(MapRefsetPattern.ExtendedMap)) {
-      snapshotWriter.write("\tmapCategoryId");
+      writer.write("\tmapCategoryId");
     }
-    snapshotWriter.write("\r\n");
+    writer.write("\r\n");
 
     // Write members
     List<String> lines = new ArrayList<>();
@@ -1014,14 +981,14 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     // Write lines
     for (String line : lines) {
-      snapshotWriter.write(line);
+      writer.write(line);
     }
 
     Logger.getLogger(getClass()).info("  Writing complete.");
 
     // Close
-    snapshotWriter.flush();
-    snapshotWriter.close();
+    writer.flush();
+    writer.close();
 
   }
 
