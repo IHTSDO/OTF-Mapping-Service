@@ -15,12 +15,35 @@
   <description>OTF RF2 Administrator Tool to Load RF2 data</description>
   <packaging>pom</packaging>
 
+  <!-- Available mojo parameters -->
+  <properties>
+    <!-- The refset id -->
+    <refset.id></refset.id>
+    <!-- A flag some tools use to indicate that notification should be sent -->
+    <send.notification></send.notification>
+    <!-- The input dir -->
+    <input.dir></input.dir>
+    <!-- The input file -->
+    <input.dir></input.dir>
+    <!-- The terminology -->
+    <terminology></terminology>
+    <!-- The terminology version -->
+    <version>latest</version>
+    <!-- The start date -->
+    <date.start></date.start>
+    <!-- The end date -->
+    <date.end></date.end>
+    <!-- the sampling rate -->
+    <sampling.rate></sampling.rate>
+    <!-- The map user -->
+    <map.user></map.user>
+  </properties>
 
   <profiles>
 
-    <!-- Load SNOMED -Drun.config=.. must also be specified. -->
+    <!-- Load RF2 -Drun.config=.. must also be specified. -->
     <profile>
-      <id>SNOMEDCT</id>
+      <id>RF2-snapshot</id>
       <build>
         <plugins>
           <plugin>
@@ -35,7 +58,37 @@
                   <goal>load-rf2-snapshot</goal>
                 </goals>
                 <configuration>
-                  <terminology>SNOMEDCT</terminology>
+                  <inputDir>${input.dir}</inputDir>
+                  <terminology>${terminology}</terminology>
+                  <version>${version}</version>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- Load RF2 -Drun.config=.. must also be specified. -->
+    <profile>
+      <id>RF2-snapshot-map</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <version>${project.version}</version>
+            <executions>
+              <execution>
+                <id>load-rf2-snapshot-map</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>load-rf2-snapshot-map</goal>
+                </goals>
+                <configuration>
+                  <inputDir>${input.dir}</inputDir>
+                  <terminology>${terminology}</terminology>
+                  <version>${version}</version>
                 </configuration>
               </execution>
             </executions>
@@ -46,7 +99,7 @@
 
     <!-- Load SNOMED delta -Drun.config=.. must also be specified. -->
     <profile>
-      <id>SNOMEDCTDelta</id>
+      <id>RF2-delta</id>
       <build>
         <plugins>
           <plugin>
@@ -61,7 +114,8 @@
                   <goal>load-rf2-delta</goal>
                 </goals>
                 <configuration>
-                  <terminology>SNOMEDCT</terminology>
+                  <inputDir>${input.dir}</inputDir>
+                  <terminology>${terminology}</terminology>
                 </configuration>
               </execution>
             </executions>
@@ -70,9 +124,9 @@
       </build>
     </profile>
 
-    <!-- Load SNOMED tree positions -Drun.config=.. must also be specified. -->
+    <!-- Load tree positions -Drun.config=.. must also be specified. -->
     <profile>
-      <id>SNOMEDCT-treepos</id>
+      <id>Treepos</id>
       <build>
         <plugins>
           <plugin>
@@ -81,13 +135,13 @@
             <version>${project.version}</version>
             <executions>
               <execution>
-                <id>compute-snomed-treepos</id>
+                <id>compute-treepos</id>
                 <phase>package</phase>
                 <goals>
-                  <goal>compute-snomed-treepos</goal>
+                  <goal>compute-treepos</goal>
                 </goals>
                 <configuration>
-                  <terminology>SNOMEDCT</terminology>
+                  <terminology>${terminology}</terminology>
                 </configuration>
               </execution>
             </executions>
@@ -96,35 +150,9 @@
       </build>
     </profile>
 
-    <!-- Load ICD10 -Drun.config=.. must also be specified. -->
+    <!-- Load ClaML -Drun.config=.. must also be specified. -->
     <profile>
-      <id>ICD10</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.ihtsdo.otf.mapping</groupId>
-            <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
-            <executions>
-              <execution>
-                <id>load-claml</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>load-claml</goal>
-                </goals>
-                <configuration>
-                  <terminology>ICD10</terminology>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
-    <!-- Load ICD9CM -Drun.config=.. must also be specified. -->
-    <profile>
-      <id>ICD9CM</id>
+      <id>ClaML</id>
       <build>
         <plugins>
           <plugin>
@@ -139,33 +167,8 @@
                   <goal>load-claml</goal>
                 </goals>
                 <configuration>
-                  <terminology>ICD9CM</terminology>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
-    <!-- Load ICPC -Drun.config=.. must also be specified. -->
-    <profile>
-      <id>ICPC</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.ihtsdo.otf.mapping</groupId>
-            <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
-            <executions>
-              <execution>
-                <id>load-claml</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>load-claml</goal>
-                </goals>
-                <configuration>
-                  <terminology>ICPC</terminology>
+                  <inputFile>${input.file}</inputFile>
+                  <terminology>${terminology}</terminology>
                 </configuration>
               </execution>
             </executions>
@@ -190,6 +193,9 @@
                 <goals>
                   <goal>load-rf2-complex-map</goal>
                 </goals>
+                <configuration>
+                  <inputFile>${input.file}</inputFile>
+                </configuration>
               </execution>
             </executions>
           </plugin>
@@ -214,6 +220,11 @@
                 <goals>
                   <goal>load-rf2-complex-map-sample</goal>
                 </goals>
+                <configuration>
+                  <inputFile>${input.file}</inputFile>
+                  <user>${map.user}</user>
+                  <samplingRate>${sampling.rate}</samplingRate>
+                </configuration>
               </execution>
             </executions>
           </plugin>
@@ -239,7 +250,7 @@
                   <goal>create-map-records-from-complex-map</goal>
                 </goals>
                 <configuration>
-                  <refSetId>${refset.id}</refSetId>
+                  <refsetId>${refset.id}</refsetId>
                 </configuration>
               </execution>
             </executions>
@@ -248,7 +259,7 @@
       </build>
     </profile>
 
-    <!-- Load map notes from RF2 -Drun.config=.. must also be specified. -->
+    <!-- Load map notes from RF2, specify -Drun.config=... -DinputFile=... -->
     <profile>
       <id>MapNotes</id>
       <build>
@@ -265,6 +276,7 @@
                   <goal>load-map-notes</goal>
                 </goals>
                 <configuration>
+                  <inputFile>${input.file}</inputFile>
                 </configuration>
               </execution>
             </executions>
@@ -290,62 +302,13 @@
                   <goal>compute-workflow</goal>
                 </goals>
                 <configuration>
-                  <refSetId>${refset.id}</refSetId>
+                  <refsetId>${refset.id}</refsetId>
                   <sendNotification>${send.notification}</sendNotification>
                 </configuration>
               </execution>
             </executions>
           </plugin>
 
-        </plugins>
-      </build>
-    </profile>
-
-    <!-- Fix the error flag in feedback objects -Drun.config=.. must also be specified. -->
-    <!-- This is a single-use admin tool, TODO: remove when not needed -->
-    <profile>
-      <id>FixFeedbackErrorFlag</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.ihtsdo.otf.mapping</groupId>
-            <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
-            <executions>
-              <execution>
-                <id>fix-feedback-error-flag</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>fix-feedback-error-flag</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
-    <!-- Fix the error messages in feedback objects -Drun.config=.. must also be 
-      specified. -->
-    <!-- This is a single-use admin tool, TODO: remove when not needed -->
-    <profile>
-      <id>FixErrorMessages</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.ihtsdo.otf.mapping</groupId>
-            <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
-            <executions>
-              <execution>
-                <id>fix-error-messages</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>fix-error-messages</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
         </plugins>
       </build>
     </profile>
@@ -370,7 +333,7 @@
                 <configuration>
                   <startDate>${date.start}</startDate>
                   <endDate>${date.end}</endDate>
-                  <refSetId>${refset.id}</refSetId>
+                  <refsetId>${refset.id}</refsetId>
                 </configuration>
               </execution>
             </executions>

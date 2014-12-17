@@ -50,6 +50,14 @@ public class SecurityServiceJpa extends RootServiceJpa implements
     super();
   }
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.services.RootService#initializeFieldNames()
+   */
+  @Override
+  public void initializeFieldNames() throws Exception {
+    // no need
+  }
+
   @SuppressWarnings("unchecked")
   @Override
   public String authenticate(String username, String password) throws Exception {
@@ -90,10 +98,7 @@ public class SecurityServiceJpa extends RootServiceJpa implements
 
     String resultString = "";
     if (response.getClientResponseStatus().getFamily() == Family.SUCCESSFUL) {
-      Logger.getLogger(this.getClass())
-          .info("Success! " + response.getStatus());
       resultString = response.getEntity(String.class);
-      Logger.getLogger(this.getClass()).info(resultString);
     } else {
       // TODO Differentiate error messages with NO RESPONE and
       // Authentication Failed (Check text)
@@ -173,6 +178,23 @@ public class SecurityServiceJpa extends RootServiceJpa implements
     return token;
   }
 
+  @Override
+  public void logout(String userName) throws Exception {
+    // read ihtsdo security url and active status from config file
+    if (config == null) {
+      config = ConfigUtility.getConfigProperties();
+    }
+
+    if (userName == null || userName.isEmpty())
+      throw new LocalException("No user specified for logout",
+          "401");
+
+    // remove this user name from the security service maps
+    tokenUsernameMap.remove(userName);
+    tokenLoginMap.remove(userName);
+
+  }
+  
   /*
    * (non-Javadoc)
    * 
@@ -202,17 +224,13 @@ public class SecurityServiceJpa extends RootServiceJpa implements
       // get last activity
       Date lastActivity = tokenLoginMap.get(parsedToken);
 
-      Logger.getLogger(this.getClass()).info(
-          "User = " + username + " Token = " + parsedToken
-              + " Last Activity = " + lastActivity.toString());
-
       String timeout = config.getProperty("ihtsdo.security.timeout");
 
       // if the timeout parameter has been set
       if (timeout != null && !timeout.isEmpty()) {
 
         // check timeout against current time minus time of last activity
-        if ((new Date()).getTime() - lastActivity.getTime() > new Long(timeout)) {
+        if ((new Date()).getTime() - lastActivity.getTime() > Long.valueOf(timeout)) {
 
           Logger.getLogger(SecurityServiceJpa.class).info(
               "Timeout expired for user " + username + ".  Last login at "

@@ -96,18 +96,18 @@ public class MapEntryJpa implements MapEntry {
   }
 
   /**
-   * Constructor using fields
+   * Constructor using fields.
    * 
-   * @param id
-   * @param mapRecord
-   * @param mapAdvices
-   * @param targetId
-   * @param targetName
-   * @param rule
-   * @param mapPriority
-   * @param mapRelation
-   * @param mapBlock
-   * @param mapGroup
+   * @param id the id
+   * @param mapRecord the map record
+   * @param mapAdvices the map advices
+   * @param targetId the target id
+   * @param targetName the target name
+   * @param rule the rule
+   * @param mapPriority the map priority
+   * @param mapRelation the map relation
+   * @param mapBlock the map block
+   * @param mapGroup the map group
    */
   public MapEntryJpa(Long id, MapRecord mapRecord, Set<MapAdvice> mapAdvices,
       String targetId, String targetName, String rule, int mapPriority,
@@ -520,25 +520,23 @@ public class MapEntryJpa implements MapEntry {
    */
   @Override
   public boolean isEquivalent(MapEntry me) {
-    // System.out.println("Comparing map entries");
-    // System.out.println("   Targets:  " + this.targetId + " <=>" +
-    // me.getTargetId());
-    // System.out.println("   Rules:    " + this.rule + "  <=> " +
-    // me.getRule());
-    // System.out.println("   Realtion: " + this.mapRelation.getName() + " <=> "
-    // + me.getMapRelation().getName());
+
+    // if comparison entry is null, return false
+    if (me == null)
+      return false;
 
     // targets must be equal
-    if (!this.targetId.equals(me.getTargetId()))
+    final String id1 = this.targetId == null ? "" : this.targetId;
+    final String id2 = me.getTargetId() == null ? "" : me.getTargetId();
+    if (!id1.equals(id2)) {
       return false;
-
-    // System.out.println("  Targets equal");
+    }
 
     // rules must be identical
+    if (this.rule == null && me.getRule() != null)
+      return false;
     if (!this.rule.equals(me.getRule()))
       return false;
-
-    // System.out.println("  Rules equal");
 
     // relation must be identical
     if (this.mapRelation != null) {
@@ -567,7 +565,8 @@ public class MapEntryJpa implements MapEntry {
       return false;
     } else if (this.mapAdvices != null && me.getMapAdvices() == null) {
       return false;
-    } else if (mapAdvices != null && mapAdvices.size() != me.getMapAdvices().size()) {
+    } else if (mapAdvices != null
+        && mapAdvices.size() != me.getMapAdvices().size()) {
       return false;
     } else if (mapAdvices != null) {
       for (MapAdvice ma : this.mapAdvices) {

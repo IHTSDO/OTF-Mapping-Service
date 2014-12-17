@@ -257,6 +257,26 @@ mapProjectAppDashboards
         };
       }
       ;
+      
+      $scope.logout = function() {
+
+        $rootScope.glassPane++;
+        $http({
+          url : root_security + "logout/user/id/" + $scope.currentUser.userName,
+          method : "POST",
+          headers : {
+            "Content-Type" : "text/plain"
+          // save userToken from authentication
+          }
+        }).success(function(data) {
+          $rootScope.glassPane--;
+          $location.path("/");
+        }).error(function(data, status, headers, config) {
+          $rootScope.glassPane--;
+          $location.path("/");
+          $rootScope.handleHttpError(data, status, headers, config);
+        });
+      }
 
       // function to change project from the header
       $scope.changeFocusProject = function(mapProject) {
@@ -513,6 +533,26 @@ mapProjectAppDashboards
         };
       }
       ;
+      
+      $scope.logout = function() {
+
+        $rootScope.glassPane++;
+        $http({
+          url : root_security + "logout/user/id/" + $scope.currentUser.userName,
+          method : "POST",
+          headers : {
+            "Content-Type" : "text/plain"
+          // save userToken from authentication
+          }
+        }).success(function(data) {
+          $rootScope.glassPane--;
+          $location.path("/");
+        }).error(function(data, status, headers, config) {
+          $rootScope.glassPane--;
+          $location.path("/");
+          $rootScope.handleHttpError(data, status, headers, config);
+        });
+      };
 
       // function to change project from the header
       $scope.changeFocusProject = function(mapProject) {
@@ -847,7 +887,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope,
             class : 'col-md-12',
             widgets : [ {
               type : "report",
-              title : "Project Reports"
+              title : "Reports"
             } ]
           } ]
         }, {
@@ -858,6 +898,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope,
               title : "QA Checks"
             } ]
           } ]
+
         } ]
       };
 
@@ -910,6 +951,15 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope,
               title : "Reports"
             } ]
           } ]
+        
+        }, {
+            columns : [ {
+              class : 'col-md-12',
+              widgets : [ {
+                type : "qaCheck",
+                title : "QA Checks"
+              } ]
+            } ]
         } ]
       };
 
@@ -948,6 +998,26 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope,
     });
 
   });
+  
+  $scope.logout = function() {
+
+    $rootScope.glassPane++;
+    $http({
+      url : root_security + "logout/user/id/" + $scope.currentUser.userName,
+      method : "POST",
+      headers : {
+        "Content-Type" : "text/plain"
+      // save userToken from authentication
+      }
+    }).success(function(data) {
+      $rootScope.glassPane--;
+      $location.path("/");
+    }).error(function(data, status, headers, config) {
+      $rootScope.glassPane--;
+      $location.path("/");
+      $rootScope.handleHttpError(data, status, headers, config);
+    });
+  };
 
   // function to change project from the header
   $scope.changeFocusProject = function(mapProject) {
@@ -1260,6 +1330,26 @@ mapProjectAppDashboards
 
         $scope.mapProjects = localStorageService.get('mapProjects');
       });
+      
+      $scope.logout = function() {
+
+        $rootScope.glassPane++;
+        $http({
+          url : root_security + "logout/user/id/" + $scope.currentUser.userName,
+          method : "POST",
+          headers : {
+            "Content-Type" : "text/plain"
+          // save userToken from authentication
+          }
+        }).success(function(data) {
+          $rootScope.glassPane--;
+          $location.path("/");
+        }).error(function(data, status, headers, config) {
+          $rootScope.glassPane--;
+          $location.path("/");
+          $rootScope.handleHttpError(data, status, headers, config);
+        });
+      };
 
       // function to change project from the header
       $scope.changeFocusProject = function(mapProject) {
@@ -1404,6 +1494,26 @@ mapProjectAppDashboards
         console.debug(model);
         $scope.model = model;
       });
+      
+      $scope.logout = function() {
+
+        $rootScope.glassPane++;
+        $http({
+          url : root_security + "logout/user/id/" + $scope.currentUser.userName,
+          method : "POST",
+          headers : {
+            "Content-Type" : "text/plain"
+          // save userToken from authentication
+          }
+        }).success(function(data) {
+          $rootScope.glassPane--;
+          $location.path("/");
+        }).error(function(data, status, headers, config) {
+          $rootScope.glassPane--;
+          $location.path("/");
+          $rootScope.handleHttpError(data, status, headers, config);
+        });
+      };
 
       // function to change project from the header
       $scope.changeFocusProject = function(mapProject) {
@@ -1544,6 +1654,26 @@ mapProjectAppDashboards.controller('ProjectRecordsDashboardCtrl',
       console.debug(model);
       $scope.model = model;
     });
+    
+    $scope.logout = function() {
+
+      $rootScope.glassPane++;
+      $http({
+        url : root_security + "logout/user/id/" + $scope.currentUser.userName,
+        method : "POST",
+        headers : {
+          "Content-Type" : "text/plain"
+        // save userToken from authentication
+        }
+      }).success(function(data) {
+        $rootScope.glassPane--;
+        $location.path("/");
+      }).error(function(data, status, headers, config) {
+        $rootScope.glassPane--;
+        $location.path("/");
+        $rootScope.handleHttpError(data, status, headers, config);
+      });
+    };
 
     // function to change project from the header
     $scope.changeFocusProject = function(mapProject) {
@@ -1657,6 +1787,147 @@ mapProjectAppDashboards.controller('RecordConceptDashboardCtrl',
 
     }
 
+    $scope.$on('adfDashboardChanged', function(event, name, model) {
+      console.debug('adfDashboardChanged in DashBoardCtrl');
+      console.debug(event);
+      console.debug(name);
+      console.debug(model);
+      $scope.model = model;
+    });
+    
+    $scope.logout = function() {
+
+      $rootScope.glassPane++;
+      $http({
+        url : root_security + "logout/user/id/" + $scope.currentUser.userName,
+        method : "POST",
+        headers : {
+          "Content-Type" : "text/plain"
+        // save userToken from authentication
+        }
+      }).success(function(data) {
+        $rootScope.glassPane--;
+        $location.path("/");
+      }).error(function(data, status, headers, config) {
+        $rootScope.glassPane--;
+        $location.path("/");
+        $rootScope.handleHttpError(data, status, headers, config);
+      });
+    };
+
+    // function to change project from the header
+    $scope.changeFocusProject = function(mapProject) {
+      $scope.focusProject = mapProject;
+      console.debug("changing project to " + $scope.focusProject.name);
+
+      // update and broadcast the new focus project
+      localStorageService.add('focusProject', $scope.focusProject);
+      $rootScope.$broadcast('localStorageModule.notification.setFocusProject',
+        {
+          key : 'focusProject',
+          focusProject : $scope.focusProject
+        });
+
+      // update the user preferences
+      $scope.preferences.lastMapProjectId = $scope.focusProject.id;
+      localStorageService.add('preferences', $scope.preferences);
+      $rootScope.$broadcast(
+        'localStorageModule.notification.setUserPreferences', {
+          key : 'userPreferences',
+          userPreferences : $scope.preferences
+        });
+
+    };
+
+    $scope.goToHelp = function() {
+      var path;
+      if ($scope.page != 'mainDashboard') {
+        path = "help/" + $scope.page + "Help.html";
+      } else {
+        path = "help/" + $scope.currentRole + "DashboardHelp.html";
+      }
+      console.debug("go to help page " + path);
+      // redirect page
+      $location.path(path);
+    };
+  });
+
+
+mapProjectAppDashboards.controller('IndexViewerDashboardCtrl',
+  function($rootScope, $scope, $http, $location, localStorageService) {
+
+    // On initialization, reset all values to null -- used to ensure watch
+    // functions work correctly
+    $scope.mapProjects = null;
+    $scope.currentUser = null;
+    $scope.currentRole = null;
+    $scope.preferences = null;
+    $scope.focusProject = null;
+    $rootScope.globalError = '';
+
+    // Used for Reload/Refresh purposes -- after setting to null, get the
+    // locally stored values
+    $scope.mapProjects = localStorageService.get('mapProjects');
+    $scope.currentUser = localStorageService.get('currentUser');
+    $scope.currentRole = localStorageService.get('currentRole');
+    $scope.preferences = localStorageService.get('preferences');
+    $scope.focusProject = localStorageService.get('focusProject');
+
+    $scope.page = 'indexViewerDashboard';
+
+    console.debug('in indexViewerDashboardCtrl');
+
+    // watch for preferences change
+    $scope.$on('localStorageModule.notification.setUserPreferences', function(
+      event, parameters) {
+      console.debug("dashboardCtrl:  Detected change in preferences");
+      if (parameters.userPreferences != null
+        && parameters.userPreferences != undefined) {
+        $http({
+          url : root_mapping + "userPreferences/update",
+          dataType : "json",
+          data : parameters.userPreferences,
+          method : "POST",
+          headers : {
+            "Content-Type" : "application/json"
+          }
+        }).success(function(data) {
+        }).error(function(data, status, headers, config) {
+          $rootScope.handleHttpError(data, status, headers, config);
+        });
+      }
+    });
+
+    // must instantiate a default dashboard on call
+    setModel();
+
+    // on successful user retrieval, construct the dashboard
+    $scope.$watch('currentRole', function() {
+      setModel();
+    });
+
+    function setModel() {
+
+      console.debug("Setting the dashboard based on role: "
+        + $scope.currentRole);
+
+      $scope.model = {
+
+        structure : "12/6-6/12",
+        rows : [ {
+          columns : [ {
+            class : 'col-md-12',
+            widgets : [ {
+              type : "indexViewer",
+              title : "Index Viewer"
+            } ]
+          } ]
+        } ]
+      };
+
+    }
+    
+    
     $scope.$on('adfDashboardChanged', function(event, name, model) {
       console.debug('adfDashboardChanged in DashBoardCtrl');
       console.debug(event);

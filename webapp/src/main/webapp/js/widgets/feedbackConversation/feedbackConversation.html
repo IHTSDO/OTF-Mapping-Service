@@ -1,6 +1,6 @@
 
-<span ng-show="record != null && record.mapEntry.length > 0">Record
-  owned by: {{record.owner.name}}
+<span ng-show="record != null && record.mapEntry.length > 0">Record owned
+  by: {{record.owner.name}}
   <div otf-map-record-wide record="record" project="focusProject"
     show-title="false"></div>
   <hr>
@@ -52,6 +52,7 @@
   View</button>
 <button class="btn btn-sm btn-primary" ng-click="openConceptBrowser()">SNOMED
   CT Browser</button>
+<button class="btn btn-sm btn-primary" ng-click="openIndexViewer()">Index Viewer</button>
 <button class="btn btn-sm btn-primary" ng-click="goEdit(record)"
   ng-show="displayEdit() == true">Edit record</button>
 <span ng-show="conversation.active == false" class="alert alert-warning"

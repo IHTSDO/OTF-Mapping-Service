@@ -9,7 +9,6 @@ import java.util.Set;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.jpa.handlers.ReleaseHandlerJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
@@ -20,39 +19,7 @@ import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
 /**
  * Loads unpublished complex maps.
  * 
- * Sample execution in pom.xml:
- * 
- * <pre>
- *     <profile>
- *       <id>Release</id>
- *       <build>
- *         <plugins>
- *           <plugin>
- *             <groupId>org.ihtsdo.otf.mapping</groupId>
- *             <artifactId>mapping-admin-mojo</artifactId>
- *             <version>${project.version}</version>
- *             <executions>
- *               <execution>
- *                 <id>release</id>
- *                 <phase>package</phase>
- *                 <goals>
- *                   <goal>release</goal>
- *                 </goals>
- *                 <configuration>
- *                   <refSetId>450993002</refSetId>
- *                   <outputDirName>/tmp</outputDirName>
- *                   <effectiveTime>20150131</effectiveTime>
- *                   <moduleId>900000000000207008</moduleId>
- *                 </configuration>
- *               </execution>
- *             </executions>
- *           </plugin>
- *         </plugins>
- *       </build>
- *     </profile>
- * </pre>
- *
- * Sample execution of a pom.xml with this configuration:
+ * See admin/release/pom.xml for a sample execution.
  * 
  * <pre>
  * % mvn -PRelease -Drun.config=/home/ihtsdo/config/config.properties \
@@ -68,9 +35,9 @@ public class ReleaseProcessingMojo extends AbstractMojo {
   /**
    * The refSet id
    * 
-   * @parameter refSetId
+   * @parameter refsetId
    */
-  private String refSetId = null;
+  private String refsetId = null;
 
   /**
    * The refSet id
@@ -95,13 +62,15 @@ public class ReleaseProcessingMojo extends AbstractMojo {
 
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
-    getLog().info("Processing release for ref set ids: " + refSetId);
+    getLog().info("Processing release");
+    getLog().info("  refset.id = " + refsetId);
 
-    if (refSetId == null) {
-      throw new MojoExecutionException("You must specify a refSetId.");
+    // Check preconditions
+    if (refsetId == null) {
+      throw new MojoExecutionException("You must specify a refsetId.");
     }
 
-    if (refSetId == null) {
+    if (refsetId == null) {
       throw new MojoExecutionException(
           "You must specify an output file directory.");
     }
@@ -122,72 +91,50 @@ public class ReleaseProcessingMojo extends AbstractMojo {
       MappingService mappingService = new MappingServiceJpa();
       Set<MapProject> mapProjects = new HashSet<>();
 
+      // ///////////////////
+      // Test Parameters //
+      // ///////////////////
+
+      String testConcepts[] = {};
+
+      /*
+       * {"771000119108", "741000119101", "140131000119102", "711000119100",
+       * "140101000119109", "751000119104", "71421000119105", "140111000119107",
+       * "140121000119100", "731000119105", "721000119107"};
+       */
+
+      // Get Projects
       for (MapProject mapProject : mappingService.getMapProjects()
           .getIterable()) {
-        for (String id : refSetId.split(",")) {
+        for (String id : refsetId.split(",")) {
           if (mapProject.getRefSetId().equals(id)) {
             mapProjects.add(mapProject);
           }
         }
       }
 
-      // Perform the release processing
+      // Iterate through map projects
       for (MapProject mapProject : mapProjects) {
 
-        // add check for scope concepts contained in the map record set
-
-        // FOR TESTING ONLY
-        List<MapRecord> mapRecords = new ArrayList<>();
-
-        boolean testRun = false;
-
-        if (!testRun) {
-
-          // RETRIEVE MAP RECORDS HERE
-          mapRecords.addAll(mappingService
-              .getPublishedAndReadyForPublicationMapRecordsForMapProject(
-                  mapProject.getId(), null).getMapRecords());
-        }
-
-        if (testRun) {
-
-          String conceptIds[] = {
-            "10000006"
-          };
-          //
-          // , "10001005",
-          // "1001000119102", "10041001", "10050004",
-          // "100581000119102", "10061007", "10065003", "10070005", "703619001"
-          // };
-          //
-
-          for (String conceptId : conceptIds) {
-            MapRecordList mrl =
-                mappingService.getMapRecordsForProjectAndConcept(
-                    mapProject.getId(), conceptId);
-
-            System.out.println("Retrieved " + mrl.getCount()
-                + " records for concept " + conceptId);
-            mapRecords.add(mrl.getMapRecords().get(0));
-          }
-
-        }
-
-        getLog().info(
-            "Processing release for " + mapProject.getName() + ", "
-                + mapProject.getId() + ", with " + mapRecords.size()
-                + " records to publish");
-
-        // ensure output directory name has a terminating /
-        if (!outputDirName.endsWith("/"))
-          outputDirName += "/";
-
-        // Instantiate release handler and for now, run everything as a delta +
-        // snapshot release
+        // Create and configure release handler
         ReleaseHandler releaseHandler = new ReleaseHandlerJpa();
-        releaseHandler.processRelease(mapProject, mapRecords, outputDirName,
-            effectiveTime, moduleId);
-
+        releaseHandler.setMapProject(mapProject);
+        releaseHandler.setEffectiveTime(effectiveTime);
+        releaseHandler.setModuleId(moduleId);
+        releaseHandler.setMapProject(mapProject);
+        releaseHandler.setWriteDelta(true);
+        releaseHandler.setWriteSnapshot(true);
+        releaseHandler.setOutputDir(outputDirName);
+        if (testConcepts.length > 0) {
+          List<MapRecord> mapRecords = new ArrayList<>();
+          for (String terminologyId : testConcepts) {
+            mapRecords.addAll(mappingService.getMapRecordsForProjectAndConcept(
+                mapProject.getId(), terminologyId).getMapRecords());
+          }
+          releaseHandler.setMapRecords(mapRecords);
+        }
+        // call release handler with specific records
+        releaseHandler.processRelease();
       }
 
       getLog().info("done ...");

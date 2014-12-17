@@ -30,6 +30,8 @@ import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
 /**
  * Services for interacting with mapping objects.
+ *
+ * @author ${author}
  */
 public interface MappingService extends RootService {
 
@@ -352,9 +354,9 @@ public interface MappingService extends RootService {
 
   /**
    * Creates the map records for map project.
-   * 
+   *
    * @param mapProjectId the map project id
-   * @param mapUser
+   * @param mapUser the map user
    * @param complexMapRefSetMembers the complex map ref set members
    * @param workflowStatus the workflow status
    * @throws Exception the exception
@@ -384,9 +386,9 @@ public interface MappingService extends RootService {
 
   /**
    * Find concepts in scope.
-   * 
+   *
    * @param mapProjectId the map project id
-   * @param pfsParameter
+   * @param pfsParameter the pfs parameter
    * @return the search result list
    * @throws Exception the exception
    */
@@ -395,9 +397,9 @@ public interface MappingService extends RootService {
 
   /**
    * Find unmapped concepts in scope.
-   * 
+   *
    * @param mapProjectId the map project id
-   * @param pfsParameter
+   * @param pfsParameter the pfs parameter
    * @return the search result list
    * @throws Exception the exception
    */
@@ -406,9 +408,9 @@ public interface MappingService extends RootService {
 
   /**
    * Find mapped concepts out of scope bounds.
-   * 
+   *
    * @param mapProjectId the map project id
-   * @param pfsParameter
+   * @param pfsParameter the pfs parameter
    * @return the search result list
    * @throws Exception the exception
    */
@@ -417,9 +419,9 @@ public interface MappingService extends RootService {
 
   /**
    * Find concepts excluded from scope.
-   * 
+   *
    * @param mapProjectId the map project id
-   * @param pfsParameter
+   * @param pfsParameter the pfs parameter
    * @return the search result list
    * @throws Exception the exception
    */
@@ -653,8 +655,8 @@ public interface MappingService extends RootService {
 
   /**
    * Computes any display notes for tree position, depending on project
-   * algorithm handler
-   * 
+   * algorithm handler.
+   *
    * @param treePositions the tree positions
    * @param mapProjectId the map project id
    * @return the tree position list
@@ -697,11 +699,11 @@ public interface MappingService extends RootService {
 
   /**
    * Gets the published map records for map project.
-   * 
+   *
    * @param mapProjectId the map project id
    * @param pfsParameter the pfs parameter
    * @return the published map records for map project
-   * @throws Exception
+   * @throws Exception the exception
    */
   public MapRecordList getPublishedMapRecordsForMapProject(Long mapProjectId,
     PfsParameter pfsParameter) throws Exception;
@@ -730,11 +732,10 @@ public interface MappingService extends RootService {
 
   /**
    * Creates the map records for map project.
-   * 
+   *
    * @param mapProjectId the map project id
-   * @param loaderUser
-   * @param complexMapRefSetMembers the complex map ref set members
    * @param mapUser the map user
+   * @param complexMapRefSetMembers the complex map ref set members
    * @param workflowStatus the workflow status
    * @param samplingRate the sampling rate
    * @throws Exception the exception
@@ -744,10 +745,10 @@ public interface MappingService extends RootService {
     WorkflowStatus workflowStatus, float samplingRate) throws Exception;
 
   /**
-   * Simple routine to removes a map advice from the environment
+   * Simple routine to removes a map advice from the environment.
    *
    * @param mapAdvice the map advice name
-   * @throws Exception
+   * @throws Exception the exception
    */
   public void removeMapAdviceFromEnvironment(MapAdvice mapAdvice)
     throws Exception;
