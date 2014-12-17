@@ -60,6 +60,15 @@ public class ReleaseProcessingMojo extends AbstractMojo {
    */
   private String moduleId = null;
 
+  /**
+   * Flag indicating test mode
+   * @parameter
+   */
+  private boolean testModeFlag = false;
+
+  /* (non-Javadoc)
+   * @see org.apache.maven.plugin.Mojo#execute()
+   */
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
     getLog().info("Processing release");
@@ -117,7 +126,7 @@ public class ReleaseProcessingMojo extends AbstractMojo {
       for (MapProject mapProject : mapProjects) {
 
         // Create and configure release handler
-        ReleaseHandler releaseHandler = new ReleaseHandlerJpa();
+        ReleaseHandler releaseHandler = new ReleaseHandlerJpa(testModeFlag);
         releaseHandler.setMapProject(mapProject);
         releaseHandler.setEffectiveTime(effectiveTime);
         releaseHandler.setModuleId(moduleId);
