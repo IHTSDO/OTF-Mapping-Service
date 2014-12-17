@@ -17,7 +17,12 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
     $scope.currentRole = null;
     $scope.focusProject = null;
     $scope.feedbackConversations = null;
+    
 
+    $scope.feedbackTypes = ['All Feedback', 'Feedback', 'Group Feedback', 'Error Feedback', 'Discrepancy Feedback'];
+    $scope.reviewedTypes = ['All', 'Viewed', 'Unviewed'];
+    $scope.resolvedTypes = ['All', 'Active', 'Resolved'];
+    
     // initialize as empty to indicate still initializing database connection
     $scope.currentUser = localStorageService.get('currentUser');
     $scope.currentUserToken = localStorageService.get('userToken');
@@ -35,7 +40,9 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
     $scope.mapUserViewed == null;
     $scope.searchPerformed = false; // initialize variable to track whether
     // search was performed
-    $scope.feedbackType = 'ALL';
+    $scope.feedbackType = 'All Feedback';
+    $scope.resolvedType = 'All';
+    $scope.reviewedType = 'All';
     $scope.recordIdOwnerMap = new Array();
 
     // pagination variables
@@ -58,29 +65,45 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
         $http.defaults.headers.common.Authorization = $scope.currentUserToken;
         $scope.mapUsers = $scope.focusProject.mapSpecialist
           .concat($scope.focusProject.mapLead);
-        $scope.retrieveFeedback(1, $scope.feedbackType);
+        $scope.retrieveFeedback(1, $scope.feedbackType, $scope.reviewedType, $scope.resolvedType, $scope.query);
       }
     });
 
-    $scope.retrieveFeedback = function(page, feedbackType, query) {
+    $scope.retrieveFeedback = function(page, feedbackType, reviewedType, resolvedType, query) {
 
       if ($scope.currentRole == 'Viewer')
         return;
 
+      $scope.feedbackType = feedbackType;
+      $scope.resolvedType = resolvedType;
+      $scope.reviewedType = reviewedType;
+      
       // add a check to ensure page is not null
       if (page == null)
         page = 1;
 
-      // add a check to prevent NPE due to threading issues
-      if (feedbackType == null)
-        feedbackType = 'ALL';
-
+      // construct full query based on all parameters
+      if (query == null || query == 'undefined' || query == '')
+	      query = "mapProjectId:" + $scope.focusProject.id;
+      else 
+    	  query = query + " AND mapProjectId:" + $scope.focusProject.id; 
+      
+      if (feedbackType == 'Feedback')
+    	  query = query + " AND title:Feedback NOT title:Discrepancy NOT title:Error NOT title:Group";
+      else if (feedbackType != null && feedbackType != 'undefined' && feedbackType != '' && feedbackType != 'All Feedback')
+    	  query = query + " AND title:\"" + feedbackType + "\"";
+      if (reviewedType != null && reviewedType != 'undefined' && reviewedType != '' && reviewedType != 'All')
+    	  query = query + " AND viewed:" + (reviewedType == 'Viewed' ? 'true' : 'false');
+      if (resolvedType != null && resolvedType != 'undefined' && resolvedType != '' && resolvedType != 'All')
+    	  query = query + " AND resolved:" + (resolvedType == 'Active' ? 'false' : 'true');
+      
+      
       // construct a paging/filtering/sorting object
       var pfsParameterObj = {
         "startIndex" : (page - 1) * $scope.recordsPerPage,
         "maxResults" : $scope.recordsPerPage,
         "sortField" : 'lastModified',
-        "queryRestriction" : feedbackType
+        "queryRestriction" : query
       };
 
       $rootScope.glassPane++;
@@ -135,7 +158,7 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
     $scope.markActive = function(conversation) {
       conversation.resolved = 'false';
       updateFeedbackConversation(conversation);
-    }
+    };
 
     $scope.markFeedbackResolved = function(conversation) {
       conversation.resolved = 'true';
@@ -178,6 +201,6 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
     // function to clear input box and return to initial view
     $scope.resetSearch = function() {
       $scope.query = null;
-      $scope.retrieveFeedback(1, $scope.feedbackType);
+      $scope.retrieveFeedback(1, 'All Feedback', 'All', 'All', '');
     };
   });
