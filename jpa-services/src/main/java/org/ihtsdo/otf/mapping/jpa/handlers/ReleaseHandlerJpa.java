@@ -7,8 +7,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.ComplexMapRefSetMemberList;
@@ -638,8 +635,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
           // convert this map entry into a complex map ref set member
           ComplexMapRefSetMember member =
-              convertMapEntryToComplexMapRefSetMemberMapEntry(mapEntry,
-                  mapRecord, mapProject, concept);
+              getComplexMapRefSetMemberForMapEntry(mapEntry, mapRecord,
+                  mapProject, concept);
 
           String uuidStr = getHash(member);
 
@@ -650,7 +647,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
           // if existing found, re-use uuid, otherwise generate new
           if (existingMember == null) {
-            member.setTerminologyId(getReleaseUuid(uuidStr).toString());
+            member.setTerminologyId(ConfigUtility.getReleaseUuid(uuidStr)
+                .toString());
           } else {
             member.setTerminologyId(existingMember.getTerminologyId());
           }
@@ -663,45 +661,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
         }
       }
-
-      // total concepts mapped
-      updateStat(Stats.CONCEPTS_MAPPED.getValue());
-
-      // total concepts mapped, by semantic tag (finding, disorder....)
-      String dpn = defaultPreferredNames.get(concept.getTerminologyId());
-      String semanticTag;
-      if (dpn.endsWith(")")) {
-        semanticTag =
-            dpn.lastIndexOf("(") == -1 ? "(Badly formed semantic tag)" : dpn
-                .substring(dpn.lastIndexOf("("));
-      } else {
-        semanticTag = "(No semantic tag)";
-      }
-      updateStat(Stats.CONCEPTS_MAPPED.getValue() + semanticTag);
-
-      // concepts with complex maps (more than one entry)
-      if (mapRecord.getMapEntries().size() > 1)
-        updateStat(Stats.COMPLEX_MAPS.getValue());
-
-      // concepts with multiple groups
-      if (entriesByGroup.keySet().size() > 1)
-        updateStat(Stats.MULTIPLE_GROUPS.getValue());
-
-      // statistics based on not mappable entries
-      if (!anyNc) {
-        updateStat(Stats.ALWAYS_MAP.getValue());
-      } else if (allNc) {
-        updateStat(Stats.NEVER_MAP.getValue());
-      } else {
-        updateStat(Stats.SOMETIMES_MAP.getValue());
-      }
-
-      // max number of entries for a concept
-      int nEntriesTotal = 0;
-      for (int grp : entriesByGroup.keySet()) {
-        nEntriesTotal += entriesByGroup.get(grp).size();
-      }
-      updateStatisticMax(Stats.MAX_ENTRIES.getValue(), nEntriesTotal);
 
       // clear the service -- memory management
       contentService.clear();
@@ -745,6 +704,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     if (writeDelta) {
       writeDeltaFile(complexMapRefSetMembersToWrite, previousActiveMembers);
     }
+
+    // Write statistics
+    writeStatsFile(complexMapRefSetMembersToWrite, previousActiveMembers);
 
     // write the errors
     Logger.getLogger(getClass()).info(
@@ -792,10 +754,22 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // Write lines
     for (String module : moduleDependencies) {
       String moduleStr =
-          getUuidForString(moduleId + refSetId + module).toString() + "\t"
-              + effectiveTime + "\t" + "1" + "\t" + moduleId + "\t" + refSetId
-              + "\t" + module + "\t" + effectiveTime + "\t" + effectiveTime
-              + "\r\n";
+          ConfigUtility.getUuidForString(moduleId + refSetId + module)
+              .toString()
+              + "\t"
+              + effectiveTime
+              + "\t"
+              + "1"
+              + "\t"
+              + moduleId
+              + "\t"
+              + refSetId
+              + "\t"
+              + module
+              + "\t"
+              + effectiveTime
+              + "\t"
+              + effectiveTime + "\r\n";
       writer.write(moduleStr);
     }
 
@@ -874,20 +848,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       }
     }
 
-    // add to report statistics
-    updateStatisticMax(Stats.NEW_CONCEPTS.getValue(), conceptsNew.size());
-    updateStatisticMax(Stats.CHANGED_CONCEPTS.getValue(),
-        conceptsModified.size());
-
     // write new or modified maps to file
     for (ComplexMapRefSetMember c : tempMap.values()) {
       writer.write(getOutputLine(c));
     }
 
     Logger.getLogger(getClass()).info("  Writing complete.");
-
-    updateStatisticMax(Stats.RETIRED_CONCEPTS.getValue(),
-        previousActiveMembers.size());
 
     // case 2: previously active no longer present
     // Copy previously active map of uuids to write into temp map
@@ -905,7 +871,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     }
 
-    updateStatisticMax("Concepts inactivated", tempMap.size());
+    updateStatMax("Concepts inactivated", tempMap.size());
 
     // set active to false and write inactivated complex maps
     for (ComplexMapRefSetMember c : tempMap.values()) {
@@ -919,20 +885,107 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     writer.flush();
     writer.close();
 
+  }
+
+  /**
+   * Write stats file.
+   *
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
+  private void writeStatsFile(
+    Map<String, ComplexMapRefSetMember> activeMembers,
+    Map<String, ComplexMapRefSetMember> previousActiveMembers) throws Exception {
+
+    // Gather stats
+    Set<String> activeConcepts = new HashSet<>();
+    Set<String> multipleEntryConcepts = new HashSet<>();
+    Set<String> multipleGroupConcepts = new HashSet<>();
+    Set<String> alwaysNc = new HashSet<>();
+    Set<String> neverNc = new HashSet<>();
+    Set<String> sometimesMap = new HashSet<>();
+    String prevConcept = null;
+    int maxCt = 1;
+    for (ComplexMapRefSetMember member : activeMembers.values()) {
+      String key = member.getConcept().getTerminologyId();
+      alwaysNc.add(key);
+      neverNc.add(key);
+      if (prevConcept != null && key.equals(prevConcept)) {
+        maxCt++;
+      }
+      if (prevConcept != null && !key.equals(prevConcept)) {
+        updateStatMax(Stats.MAX_ENTRIES.getValue(), maxCt);
+        maxCt = 1;
+      }
+      prevConcept = key;
+    }
+    for (ComplexMapRefSetMember member : activeMembers.values()) {
+      String key = member.getConcept().getTerminologyId();
+      activeConcepts.add(key);
+      if (member.getMapPriority() > 1) {
+        multipleEntryConcepts.add(key);
+      }
+      if (member.getMapGroup() > 1) {
+        multipleGroupConcepts.add(key);
+      }
+      if (member.getMapTarget() == null || member.getMapTarget().isEmpty()) {
+        neverNc.remove(key);
+      }
+      if (member.getMapTarget() != null && !member.getMapTarget().isEmpty()) {
+        alwaysNc.remove(key);
+        sometimesMap.add(key);
+      }
+    }
+    Set<String> previousActiveConcepts = new HashSet<>();
+    for (ComplexMapRefSetMember member : previousActiveMembers.values()) {
+      previousActiveConcepts.add(member.getConcept().getTerminologyId());
+    }
+
+    updateStatMax(Stats.ACTIVE_ENTRIES.getValue(), activeMembers.size());
+    updateStatMax(Stats.CONCEPTS_MAPPED.getValue(), activeConcepts.size());
+    updateStatMax(Stats.COMPLEX_MAPS.getValue(), multipleEntryConcepts.size());
+    updateStatMax(Stats.MULTIPLE_GROUPS.getValue(),
+        multipleGroupConcepts.size());
+    updateStatMax(Stats.ALWAYS_MAP.getValue(), neverNc.size());
+    updateStatMax(Stats.SOMETIMES_MAP.getValue(), sometimesMap.size());
+    updateStatMax(Stats.NEVER_MAP.getValue(), alwaysNc.size());
+
+    // Determine count of retired concepts - inactive minus active
+    int ct = 0;
+    for (String id : previousActiveConcepts) {
+      if (!activeConcepts.contains(id)) {
+        ct++;
+      }
+    }
+    updateStatMax(Stats.RETIRED_CONCEPTS.getValue(), ct);
+
+    // Determine count of new concepts - active minus inactive
+    ct = 0;
+    for (String id : activeConcepts) {
+      if (!previousActiveConcepts.contains(id)) {
+        ct++;
+      }
+    }
+    updateStatMax(Stats.NEW_CONCEPTS.getValue(), ct);
+
+    Set<String> changedConcepts = new HashSet<>();
+    for (ComplexMapRefSetMember member : activeMembers.values()) {
+      String key = member.getConcept().getTerminologyId();
+      ComplexMapRefSetMember member2 = previousActiveMembers.get(key);
+      if (member2 != null && !member.equals(member2)) {
+        changedConcepts.add(key);
+      }
+    }
+    updateStatMax(Stats.CHANGED_CONCEPTS.getValue(), changedConcepts.size());
+
     BufferedWriter statsWriter =
         new BufferedWriter(new FileWriter(outputDir + "/stats.txt"));
-
     List<String> statistics = new ArrayList<>(reportStatistics.keySet());
-
     Collections.sort(statistics);
-
     for (String statistic : statistics) {
       statsWriter.write(statistic + "\t" + reportStatistics.get(statistic)
           + "\r\n");
     }
-
     statsWriter.close();
-
   }
 
   /**
@@ -973,8 +1026,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     }
 
     // Sort lines
-    Collections.sort(lines, COMPARATOR);
-
+    Collections.sort(lines, ConfigUtility.COMPLEX_MAP_COMPARATOR);
     // Write lines
     for (String line : lines) {
       writer.write(line);
@@ -1024,7 +1076,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     }
 
     // Write entries
+    Map<String, Integer> conceptsMapped = new HashMap<>();
+
     for (ComplexMapRefSetMember member : members) {
+
       // get the map relation name for the human readable file
       MapRelation mapRelation = null;
       for (MapRelation mr : mapProject.getMapRelations()) {
@@ -1213,7 +1268,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @throws IOException Signals that an I/O exception has occurred.
    * @throws NoSuchAlgorithmException the no such algorithm exception
    */
-  private ComplexMapRefSetMember convertMapEntryToComplexMapRefSetMemberMapEntry(
+  private ComplexMapRefSetMember getComplexMapRefSetMemberForMapEntry(
     MapEntry mapEntry, MapRecord mapRecord, MapProject mapProject,
     Concept concept) throws IOException, NoSuchAlgorithmException {
 
@@ -1520,109 +1575,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         });
 
     return sortedTreePositionDescendantList;
-  }
-
-  /**
-   * Returns the raw bytes.
-   * 
-   * @param uid the uid
-   * @return the raw bytes
-   */
-  private byte[] getRawBytes(UUID uid) {
-    String id = uid.toString();
-    byte[] rawBytes = new byte[16];
-
-    for (int i = 0, j = 0; i < 36; ++j) {
-      // Need to bypass hyphens:
-      switch (i) {
-        case 8:
-        case 13:
-        case 18:
-        case 23:
-          ++i;
-          break;
-        default:
-          break;
-      }
-      char c = id.charAt(i);
-
-      if (c >= '0' && c <= '9') {
-        rawBytes[j] = (byte) ((c - '0') << 4);
-      } else if (c >= 'a' && c <= 'f') {
-        rawBytes[j] = (byte) ((c - 'a' + 10) << 4);
-      }
-
-      c = id.charAt(++i);
-
-      if (c >= '0' && c <= '9') {
-        rawBytes[j] |= (byte) (c - '0');
-      } else if (c >= 'a' && c <= 'f') {
-        rawBytes[j] |= (byte) (c - 'a' + 10);
-      }
-      ++i;
-    }
-    return rawBytes;
-  }
-
-  /**
-   * Gets the release uuid.
-   *
-   * @param hash the hash
-   * @return the release uuid
-   * @throws NoSuchAlgorithmException the no such algorithm exception
-   * @throws UnsupportedEncodingException the unsupported encoding exception
-   */
-  private UUID getReleaseUuid(String hash) throws NoSuchAlgorithmException,
-    UnsupportedEncodingException {
-    return getUuidForString(hash);
-  }
-
-  /**
-   * Returns the uuid for string.
-   *
-   * @param name the name
-   * @return the uuid for string
-   * @throws NoSuchAlgorithmException the no such algorithm exception
-   * @throws UnsupportedEncodingException the unsupported encoding exception
-   */
-  private UUID getUuidForString(String name) throws NoSuchAlgorithmException,
-    UnsupportedEncodingException {
-
-    MessageDigest sha1Algorithm = MessageDigest.getInstance("SHA-1");
-
-    String namespace = "00000000-0000-0000-0000-000000000000";
-    String encoding = "UTF-8";
-
-    UUID namespaceUUID = UUID.fromString(namespace);
-
-    // Generate the digest.
-    sha1Algorithm.reset();
-
-    // Generate the digest.
-    sha1Algorithm.reset();
-    if (namespace != null) {
-      sha1Algorithm.update(getRawBytes(namespaceUUID));
-    }
-
-    sha1Algorithm.update(name.getBytes(encoding));
-    byte[] sha1digest = sha1Algorithm.digest();
-
-    sha1digest[6] &= 0x0f; /* clear version */
-    sha1digest[6] |= 0x50; /* set to version 5 */
-    sha1digest[8] &= 0x3f; /* clear variant */
-    sha1digest[8] |= 0x80; /* set to IETF variant */
-
-    long msb = 0;
-    long lsb = 0;
-    for (int i = 0; i < 8; i++) {
-      msb = (msb << 8) | (sha1digest[i] & 0xff);
-    }
-    for (int i = 8; i < 16; i++) {
-      lsb = (lsb << 8) | (sha1digest[i] & 0xff);
-    }
-
-    return new UUID(msb, lsb);
-
   }
 
   /**
@@ -2043,7 +1995,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @param statistic the statistic
    * @param value the value
    */
-  private void updateStatisticMax(String statistic, int value) {
+  private void updateStatMax(String statistic, int value) {
 
     Integer stat = reportStatistics.get(statistic);
 
@@ -2137,65 +2089,4 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     this.mapRecords = mapRecords;
   }
 
-  /** The comparator. */
-  private static Comparator<String> COMPARATOR = new Comparator<String>() {
-
-    @Override
-    public int compare(String o1, String o2) {
-      String[] fields1 = o1.split("\t");
-      String[] fields2 = o2.split("\t");
-
-      long i = fields1[4].compareTo(fields2[4]);
-      if (i != 0) {
-        return (int) i;
-      } else {
-        i = (Long.parseLong(fields1[5]) - Long.parseLong(fields2[5]));
-        if (i != 0) {
-          return (int) i;
-        } else {
-          i = Long.parseLong(fields1[6]) - Long.parseLong(fields2[6]);
-          if (i != 0) {
-            return (int) i;
-          } else {
-            i = Long.parseLong(fields1[7]) - Long.parseLong(fields2[7]);
-            if (i != 0) {
-              return (int) i;
-            } else {
-              i =
-                  (fields1[0] + fields1[1] + fields1[2] + fields1[3])
-                      .compareTo(fields2[0] + fields2[1] + fields2[2]
-                          + fields2[3]);
-              if (i != 0) {
-                return (int) i;
-              } else {
-                i = fields1[8].compareTo(fields2[8]);
-                if (i != 0) {
-                  return (int) i;
-                } else {
-                  i = fields1[9].compareTo(fields2[9]);
-                  if (i != 0) {
-                    return (int) i;
-                  } else {
-                    i = fields1[10].compareTo(fields2[10]);
-                    if (i != 0) {
-                      return (int) i;
-                    } else {
-                      i = fields1[11].compareTo(fields2[11]);
-                      if (i != 0) {
-                        return (int) i;
-                      }
-                      // leave out 13th field so it works for complex map too.
-                      else {
-                        return -1;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  };
 }
