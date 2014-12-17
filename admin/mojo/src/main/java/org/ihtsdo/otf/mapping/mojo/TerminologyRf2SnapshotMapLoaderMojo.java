@@ -1,45 +1,21 @@
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
-import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
-import org.ihtsdo.otf.mapping.rf2.AttributeValueRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
-import org.ihtsdo.otf.mapping.rf2.Description;
-import org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember;
-import org.ihtsdo.otf.mapping.rf2.Relationship;
-import org.ihtsdo.otf.mapping.rf2.SimpleMapRefSetMember;
-import org.ihtsdo.otf.mapping.rf2.SimpleRefSetMember;
-import org.ihtsdo.otf.mapping.rf2.jpa.AttributeValueRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.ComplexMapRefSetMemberJpa;
-import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
-import org.ihtsdo.otf.mapping.rf2.jpa.DescriptionJpa;
-import org.ihtsdo.otf.mapping.rf2.jpa.LanguageRefSetMemberJpa;
-import org.ihtsdo.otf.mapping.rf2.jpa.RelationshipJpa;
-import org.ihtsdo.otf.mapping.rf2.jpa.SimpleMapRefSetMemberJpa;
-import org.ihtsdo.otf.mapping.rf2.jpa.SimpleRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
-import org.ihtsdo.otf.mapping.services.MetadataService;
-import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.ihtsdo.otf.mapping.services.helpers.FileSorter;
-
-import com.google.common.io.Files;
 
 /**
  * Goal which loads an RF2 Snapshot of SNOMED CT data into a database.
