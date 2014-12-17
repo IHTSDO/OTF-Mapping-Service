@@ -30,7 +30,6 @@ import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.ReportQueryType;
 import org.ihtsdo.otf.mapping.helpers.ReportResultType;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
-import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
@@ -320,9 +319,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     }
 
     // Create file names, instantiate writers, write headers
-    String camelCaseName =
-        mapProject.getDestinationTerminology().substring(0, 1)
-            + mapProject.getDestinationTerminology().substring(1).toLowerCase();
     String pattern =
         (mapProject.getMapRefsetPattern() == MapRefsetPattern.ComplexMap
             ? "iissscRefset_" : "iisssccRefset_");
@@ -635,7 +631,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
                     existingEntries.add(newEntry);
 
                     // replace existing list with modified list
-                    entriesByGroup.put(newEntry.getMapGroup(), existingEntries);
+                    //entriesByGroup.put(newEntry.getMapGroup(), existingEntries);
 
                   }
                 }
@@ -943,7 +939,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       tempMap = new HashMap<>(complexMapRefSetMembersPreviouslyActive);
 
       for (String uuid : complexMapRefSetMembersToWrite.keySet()) {
-
         if (tempMap.containsKey(uuid)) {
           tempMap.remove(uuid);
         }

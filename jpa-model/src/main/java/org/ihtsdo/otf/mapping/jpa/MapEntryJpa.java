@@ -525,30 +525,18 @@ public class MapEntryJpa implements MapEntry {
     if (me == null)
       return false;
 
-    // System.out.println("Comparing map entries");
-    // System.out.println("   Targets:  " + this.targetId + " <=>" +
-    // me.getTargetId());
-    // System.out.println("   Rules:    " + this.rule + "  <=> " +
-    // me.getRule());
-    // System.out.println("   Realtion: " + this.mapRelation.getName() + " <=> "
-    // + me.getMapRelation().getName());
-
     // targets must be equal
-    if (this.targetId == null) {
-      if (me != null && me.getTargetId() != null)
+    if (this.targetId == null || this.targetId.isEmpty()) {
+      if (me != null && me.getTargetId() != null && !me.getTargetId().isEmpty())
         return false;
-    } else if (me != null && !this.targetId.equals(me.getTargetId()))
+    } else if (me != null && !me.getTargetId().isEmpty() && !this.targetId.equals(me.getTargetId()))
       return false;
-
-    // System.out.println("  Targets equal");
 
     // rules must be identical
     if (this.rule == null && me.getRule() != null)
       return false;
     if (!this.rule.equals(me.getRule()))
       return false;
-
-    // System.out.println("  Rules equal");
 
     // relation must be identical
     if (this.mapRelation != null) {
