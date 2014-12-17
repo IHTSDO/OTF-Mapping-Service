@@ -442,18 +442,18 @@ public class ContentServiceRest extends RootServiceRest {
    * @return the index viewer indexes
    */
   @GET
-  @Path("/indexViewer/{terminology}/{terminologyVersion}")
-  @ApiOperation(value = "Return the indexes available for given terminology and version.", notes = "Returns the indexes available for the given terminology and version.", response = SearchResultList.class)
+  @Path("/index/{terminology}/{terminologyVersion}")
+  @ApiOperation(value = "Get the index domains available for given terminology and version.", notes = "Gets the index domains available for the given terminology and version.", response = SearchResultList.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public SearchResultList getIndexViewerIndexes(
+  public SearchResultList getIndexDomains(
 	@ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
 	@ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
     Logger.getLogger(ContentServiceRest.class).info(
-        "RESTful call (Content): /indexViewer/" + terminology + "/" + terminologyVersion);
+        "RESTful call (Content): /index/" + terminology + "/" + terminologyVersion);
 
     try {
       // authorize call
@@ -467,7 +467,7 @@ public class ContentServiceRest extends RootServiceRest {
                 .build());
 
       ContentService contentService = new ContentServiceJpa();
-      SearchResultList searchResultList = contentService.getIndexViewerIndexes(terminology, terminologyVersion);
+      SearchResultList searchResultList = contentService.getIndexDomains(terminology, terminologyVersion);
       contentService.close();
       return searchResultList;
 
@@ -487,7 +487,7 @@ public class ContentServiceRest extends RootServiceRest {
    * @return the index viewer pages for index
    */
   @GET
-  @Path("/indexViewer/{terminology}/{terminologyVersion}/{index}")
+  @Path("/index/{terminology}/{terminologyVersion}/{index}")
   @ApiOperation(value = "Return the index page names available for given terminology, version and domain.", notes = "Returns the pages available for the given terminology, version and domain.", response = SearchResultList.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
@@ -499,7 +499,7 @@ public class ContentServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
     Logger.getLogger(ContentServiceRest.class).info(
-        "RESTful call (Content): /indexViewer/" + terminology + "/" + terminologyVersion + "/" +
+        "RESTful call (Content): /index/" + terminology + "/" + terminologyVersion + "/" +
       index);
 
     try {
@@ -514,7 +514,7 @@ public class ContentServiceRest extends RootServiceRest {
                 .build());
     
       ContentService contentService = new ContentServiceJpa();
-      SearchResultList searchResultList = contentService.getIndexViewerPagesForIndex(terminology, terminologyVersion, index);
+      SearchResultList searchResultList = contentService.getIndexPagesForIndex(terminology, terminologyVersion, index);
       
       contentService.close();
       return searchResultList;
@@ -539,7 +539,7 @@ public class ContentServiceRest extends RootServiceRest {
    * @return the search result list
    */
   @GET  
-  @Path("/indexViewer/{terminology}/{terminologyVersion}/{domain}/search/{searchField}/subSearch/{subSearchField}/subSubSearch/{subSubSearchField}/{allFlag}")
+  @Path("/index/{terminology}/{terminologyVersion}/{domain}/search/{searchField}/subSearch/{subSearchField}/subSubSearch/{subSubSearchField}/{allFlag}")
   @ApiOperation(value = "Peform the search given the search terms.", notes = "Performs the search given the search terms in the given terminology.", response = SearchResultList.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
@@ -555,7 +555,7 @@ public class ContentServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
     Logger.getLogger(ContentServiceRest.class).info(
-        "RESTful call (Content): /indexViewer/" + terminology + "/" + terminologyVersion +
+        "RESTful call (Content): /index/" + terminology + "/" + terminologyVersion +
         "/" + domain + "/" + searchField + "/" + subSearchField + "/" + subSubSearchField + "/" + allFlag);
 
     try {
@@ -570,7 +570,7 @@ public class ContentServiceRest extends RootServiceRest {
                 .build());
 
       ContentService contentService = new ContentServiceJpa();
-      SearchResultList searchResultList = contentService.findIndexViewerEntries(terminology, 
+      SearchResultList searchResultList = contentService.findIndexEntries(terminology, 
           terminologyVersion, domain, searchField, subSearchField, subSubSearchField, allFlag);
       searchResultList.setTotalCount(searchResultList.getCount());
       contentService.close();

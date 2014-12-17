@@ -296,7 +296,7 @@ angular
       function setIndexViewerStatus() {       
         $http(
           {
-            url : root_content + "indexViewer/"
+            url : root_content + "index/"
               + $scope.project.destinationTerminology + "/"
               + $scope.project.destinationTerminologyVersion,
             dataType : "json",
