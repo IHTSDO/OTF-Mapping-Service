@@ -30,7 +30,6 @@
           <plugin>
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
             <executions>
               <execution>
                 <id>export-project-data</id>

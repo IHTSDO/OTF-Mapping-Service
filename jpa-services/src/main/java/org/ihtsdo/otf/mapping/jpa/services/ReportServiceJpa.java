@@ -1,9 +1,5 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.SQLSyntaxErrorException;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
@@ -11,7 +7,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
@@ -58,7 +53,6 @@ import org.ihtsdo.otf.mapping.reports.ReportResultItemJpa;
 import org.ihtsdo.otf.mapping.reports.ReportResultJpa;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.ReportService;
-import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 /**
  * JPA enabled implementation of {@link ReportService}.
@@ -1111,21 +1105,24 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     report.setTimestamp(date.getTime());
 
     // execute the query
-    ResultSet resultSet = null;
+    List<Object[]> results = null;
     switch (reportDefinition.getQueryType()) {
       case HQL:
+        results = executeQuery(report.getQuery(), false);
         break;
       case LUCENE:
+        // query map records index which returns map objects
+        // value = "", itemId = mapRecord.getId(), itemName=mapRecord.getConceptName()
         break;
       case SQL:
-        resultSet = this.executeSqlQuery(report.getQuery());
+        results = executeQuery(report.getQuery(), true);
         break;
       default:
         break;
 
     }
 
-    if (resultSet == null)
+    if (results == null)
       throw new Exception("Failed to retrieve results for query");
 
     Map<String, ReportResult> valueMap = new HashMap<>();
@@ -1133,32 +1130,32 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     // if a difference report
     if (reportDefinition.isDiffReport() == true) {
 
-      // get the ids corresponding to reports to be diffed
-
-      try {
-        resultSet.next();
-        report.setReport1Id(new Long(resultSet.getString("itemId")));
-        resultSet.next();
-        report.setReport2Id(new Long(resultSet.getString("itemId")));
-      } catch (SQLException e) {
-        resultSet.close();
-        throw new LocalException(
-            "Error retrieving reports for calculating difference report.  The required reports may not exist.");
+      if (results.size() != 2) {
+        throw new Exception("Diff query did not return exactly 2 results: "
+            + results.size());
       }
+      // get the ids corresponding to reports to be diffed
+      report.setReport1Id(new Long(results.get(0)[2].toString()));
+      report.setReport2Id(new Long(results.get(1)[2].toString()));
 
       // if either report id is null, cannot construct report, return null
       if (report.getReport1Id() == null || report.getReport2Id() == null) {
-        resultSet.close();
         return null;
       }
 
       // get the two reports
-      Report report1 = getReport(report.getReport1Id());
+      Report report1;
+      try {
+        report1 = getReport(report.getReport1Id());
+      } catch (Exception e) {
+        throw new LocalException(
+            "Could not retrieve first report for diff report", e);
+      }
+
       Report report2;
       try {
         report2 = getReport(report.getReport2Id());
       } catch (Exception e) {
-        resultSet.close();
         throw new LocalException(
             "Could not retrieve second report for diff report", e);
       }
@@ -1198,10 +1195,10 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
       // if a data-point report
     } else {
 
-      while (resultSet.next()) {
-        String value = resultSet.getString("value");
-        String itemName = resultSet.getString("itemName");
-        String itemId = resultSet.getString("itemId");
+      for (Object[] result : results) {
+        String value = result[0].toString();
+        String itemName = result[1].toString();
+        String itemId = result[2].toString();
 
         // get report result (create if necessary)
         ReportResult reportResult = valueMap.get(value);
@@ -1232,8 +1229,6 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     for (ReportResult reportResult : valueMap.values()) {
       report.addResult(reportResult);
     }
-
-    resultSet.close();
     return report;
 
   }
@@ -1298,13 +1293,15 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
   // /////////////////////////////////////////////////////
   /**
    * Execute sql query.
-   * 
+   *
    * @param query the query
+   * @param nativeFlag the native flag
    * @return the result set
    * @throws Exception the exception
    */
   @SuppressWarnings("resource")
-  private ResultSet executeSqlQuery(String query) throws Exception {
+  private List<Object[]> executeQuery(String query, boolean nativeFlag)
+    throws Exception {
 
     // check for sql query errors -- throw as local exception
     // this is used to propagate errors back to user when testing queries
@@ -1345,42 +1342,13 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
       throw new LocalException(
           "Report query must return column result with name of 'value'");
 
-    // get the database parameters
-    Properties config = ConfigUtility.getConfigProperties();
-
-    Properties connectionProps = new Properties();
-    connectionProps.put("user",
-        config.getProperty("javax.persistence.jdbc.user"));
-    connectionProps.put("password",
-        config.getProperty("javax.persistence.jdbc.password"));
-
-    ResultSet rs;
-
-    // attempt to execute the query
-    try (java.sql.Connection conn =
-        DriverManager.getConnection(
-            config.getProperty("javax.persistence.jdbc.url"), connectionProps)) {
-
-      // create the statement and execute the query
-      java.sql.Statement stmt = conn.createStatement();
-      rs = stmt.executeQuery(query);
-    } catch (SQLException e) {
-      // if a syntax error, throw local exception
-      // this is used to pass errors back for user query testing
-      if (e instanceof SQLSyntaxErrorException) {
-        throw new LocalException("Invalid SQL Syntax: " + e.getMessage(), e);
-
-        // if another error, throw normal exception
-      } else {
-        throw new Exception(e);
-      }
-
-      // if error not SQL Exception, throw error
-    } catch (Exception e) {
-      throw new Exception(e);
+    javax.persistence.Query jpaQuery = null;
+    if (nativeFlag) {
+      jpaQuery = manager.createNativeQuery(query);
+    } else {
+      jpaQuery = manager.createQuery(query);
     }
-
-    return rs;
+    return jpaQuery.getResultList();
   }
 
   /*
