@@ -1040,27 +1040,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     }
     writer.write("\r\n");
 
-
-    // Open file and writer
-    String filename = null;
-    BufferedWriter writer = null;
-    String pattern =
-        (mapProject.getMapRefsetPattern() == MapRefsetPattern.ComplexMap
-            ? "iissscRefset_" : "iisssccRefset_");
-    filename =
-        outputDir + "/der2_" + pattern + mapProject.getMapRefsetPattern()
-            + "Delta_INT_" + effectiveTime + ".txt";
-
-    // Write headers (subject to pattern)
-    writer = new BufferedWriter(new FileWriter(filename));
-    writer
-        .write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\t"
-            + "mapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId");
-    if (mapProject.getMapRefsetPattern().equals(MapRefsetPattern.ExtendedMap)) {
-      writer.write("\tmapCategoryId");
-    }
-    writer.write("\r\n");
-
     // Compute retired, new, and changed.. discard unchanged for delta
     Map<String, ComplexMapRefSetMember> tmpActiveMembers =
         new HashMap<>(activeMembers);
