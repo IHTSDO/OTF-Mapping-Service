@@ -14,4 +14,15 @@
   <name>OTF RF2 Model Interfaces</name>
   <description>Conceptual model for OTF RF2 data objects</description>
 
+  <dependencies>
+    <!-- Unit tests -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>cglib</groupId>
+      <artifactId>cglib</artifactId>
+    </dependency>
+  </dependencies>
 </project>
