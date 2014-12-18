@@ -503,7 +503,7 @@ public class MapEntryJpa implements MapEntry {
   @Override
   public String toString() {
     return "MapEntryJpa [id=" + id + ", mapRecord="
-        + mapRecord.getId().toString() + ", mapAdvices="
+        + (mapRecord == null ? "" : mapRecord.getId()) + ", mapAdvices="
         + (mapAdvices == null ? "null" : mapAdvices) + ", targetId=" + targetId
         + ", targetName=" + targetName + ", rule=" + rule + ", mapPriority="
         + mapPriority + ", mapRelation="
