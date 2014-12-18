@@ -19,6 +19,9 @@ import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
 public class WorkflowReviewProjectPathHandler extends
     AbstractWorkflowPathHandler {
+  
+  // TODO construct of Map<WorkflowState, Set<Action>> to validate the actions for a given state
+
 
   // constructor defines the tracking record states that exist for this workflow
   public WorkflowReviewProjectPathHandler() {
@@ -62,8 +65,7 @@ public class WorkflowReviewProjectPathHandler extends
 
     // first validate the tracking record itself
     ValidationResult result =
-        super.validateTrackingRecord(trackingRecord, action,
-            mapUser);
+        super.validateTrackingRecord(trackingRecord);
 
     // if failed first check, return
     if (!result.isValid())
