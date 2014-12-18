@@ -75,6 +75,11 @@
         <artifactId>mapping-jpa-services</artifactId>
         <version>${releaseVersion}</version>
       </dependency>
+      <dependency>
+        <groupId>org.ihtsdo.otf.mapping</groupId>
+        <artifactId>mapping-rest</artifactId>
+        <version>${releaseVersion}</version>
+      </dependency>
 
       <!-- JPA dependencies -->
       <dependency>
