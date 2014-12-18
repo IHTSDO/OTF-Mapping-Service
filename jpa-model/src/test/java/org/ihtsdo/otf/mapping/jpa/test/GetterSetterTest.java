@@ -8,8 +8,14 @@ import org.ihtsdo.otf.mapping.helpers.GetterSetterTester;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa;
 import org.ihtsdo.otf.mapping.jpa.FeedbackJpa;
-import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
-import org.ihtsdo.otf.mapping.rf2.jpa.DescriptionJpa;
+import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
+import org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa;
+import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
+import org.ihtsdo.otf.mapping.jpa.MapNoteJpa;
+import org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa;
+import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
+import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
+import org.ihtsdo.otf.mapping.jpa.MapUserPreferencesJpa;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -38,15 +44,39 @@ public class GetterSetterTest {
       Object[] objects =
           new Object[] {
             new FeedbackConversationJpa(),
-            new FeedbackJpa()
           };
 
       for (Object object : objects) {
         Logger.getLogger(this.getClass()).info(
             "  Testing " + object.getClass().getName());
         GetterSetterTester tester = new GetterSetterTester(object);
-        tester.exclude("objectId");
+        // this is a computation into feedbacks
+        tester.exclude("lastModified");
         tester.test();
+      }
+
+      objects =
+          new Object[] {
+            new FeedbackJpa(),
+            new MapAdviceJpa(),
+            new MapAgeRangeJpa(),
+            new MapEntryJpa(),
+            new MapNoteJpa(),
+            new MapPrincipleJpa(),
+            new MapRecordJpa(),
+            new MapUserJpa(),
+            new MapUserPreferencesJpa()
+          };
+
+      for (Object object : objects) {
+        Logger.getLogger(this.getClass()).info(
+            "  Testing " + object.getClass().getName());
+        GetterSetterTester tester = new GetterSetterTester(object);
+        tester.test();
+        // Verify toString works
+        //Logger.getLogger(this.getClass()).info(
+        //    "    object = " + object.toString());
+
       }
 
     } catch (Exception e) {
