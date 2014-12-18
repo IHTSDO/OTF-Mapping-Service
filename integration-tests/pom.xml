@@ -23,9 +23,10 @@
   <dependencies>
 
     <!-- inter-dependencies. -->
+
     <dependency>
       <groupId>org.ihtsdo.otf.mapping</groupId>
-      <artifactId>mapping-jpa-services</artifactId>
+      <artifactId>mapping-rest</artifactId>
     </dependency>
 
 
