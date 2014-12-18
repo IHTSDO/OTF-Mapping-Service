@@ -45,7 +45,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
     throws Exception {
 
     Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info(
-        "Validating target codes");
+        "Validating target codes for ICD10");
 
     ValidationResult validationResult = new ValidationResultJpa();
     ContentService contentService = new ContentServiceJpa();
@@ -76,6 +76,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
                       + Integer.toString(mapEntry.getMapGroup()) + "," : "")
                   + " map priority "
                   + Integer.toString(mapEntry.getMapPriority()));
+        } else {
 
           // second, verify concept exists
           Concept concept =
@@ -92,8 +93,9 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
                     + Integer.toString(mapEntry.getMapGroup()) + "," : "")
                 + " map  priority "
                 + Integer.toString(mapEntry.getMapPriority()));
-
           }
+
+          
         }
 
         // otherwise, check that relation is assignable to null target
