@@ -109,9 +109,6 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
   /** The tree position field names. */
   private static Set<String> treePositionFieldNames;
-  
-  /** Query cache */
-  private Map<String, TopDocs> resultsCache = new HashMap<>();
 
   /** The concept field names. */
   private static Set<String> conceptFieldNames;
@@ -119,7 +116,6 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
   /** Track main level label by first component of link */
   private Map<String, String> linkToLabelMap = new HashMap<>();
 
-  
   /**
    * Instantiates an empty {@link ContentServiceJpa}.
    * 
@@ -1497,18 +1493,19 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     String terminology, String terminologyVersion) throws Exception {
 
     Logger.getLogger(ContentServiceJpa.class).debug(
-        "getDescendantConceptsCount called: " + terminologyId + ", " + terminology
-            + ", " + terminologyVersion);
+        "getDescendantConceptsCount called: " + terminologyId + ", "
+            + terminology + ", " + terminologyVersion);
 
     javax.persistence.Query query =
         manager
-            .createQuery("select distinct tp.descendantCount from TreePositionJpa tp "
+            .createQuery("select tp.descendantCount from TreePositionJpa tp "
                 + "where tp.terminologyId = :terminologyId "
                 + "and tp.terminology = :terminology "
                 + "and tp.terminologyVersion = :terminologyVersion");
     query.setParameter("terminologyId", terminologyId);
     query.setParameter("terminology", terminology);
     query.setParameter("terminologyVersion", terminologyVersion);
+    query.setMaxResults(1);
 
     @SuppressWarnings("unchecked")
     List<Object> results = query.getResultList();
@@ -1882,6 +1879,35 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     return treePositionsWithDescendants;
   }
 
+  /**
+   * Returns the any tree positions with descendants.
+   *
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @return the any tree positions with descendants
+   * @throws Exception the exception
+   */
+  @Override
+  public TreePosition getAnyTreePositionWithDescendants(String terminologyId,
+    String terminology, String terminologyVersion) throws Exception {
+    // get tree positions for concept (may be multiple)
+    @SuppressWarnings("unchecked")
+    List<TreePosition> treePositions =
+        manager
+            .createQuery(
+                "select tp from TreePositionJpa tp where terminologyVersion = :terminologyVersion and terminology = :terminology and terminologyId = :terminologyId")
+            .setParameter("terminology", terminology)
+            .setParameter("terminologyVersion", terminologyVersion)
+            .setParameter("terminologyId", terminologyId).setMaxResults(1)
+            .getResultList();
+    // for each tree position
+    for (TreePosition treePosition : treePositions) {
+      return getTreePositionWithDescendants(treePosition);
+    }
+    return null;
+  }
+
   /*
    * (non-Javadoc)
    * 
@@ -2123,12 +2149,11 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
    * relationship terminology id starts with the description terminology id,
    * this is something to render (5) ... update this later
    * 
-   * Data Structure: TreePosition to DescriptionGroups: each description group is
-   * a description type, e.g. Inclusion, Exclusion, etc.
-   * DescriptionGroups to Description: each description is a concept preferred
-   * name and a set of referenced concepts ReferencedConcept: each referenced
-   * concept is a display name and the terminology id of an existing concept to
-   * link to
+   * Data Structure: TreePosition to DescriptionGroups: each description group
+   * is a description type, e.g. Inclusion, Exclusion, etc. DescriptionGroups to
+   * Description: each description is a concept preferred name and a set of
+   * referenced concepts ReferencedConcept: each referenced concept is a display
+   * name and the terminology id of an existing concept to link to
    * 
    * @param treePosition the tree position
    * @param descTypes the desc types
@@ -2782,29 +2807,38 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     return complexMapRefSetMemberList;
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.services.ContentService#getIndexViewerIndexes(java.lang.String, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.ContentService#getIndexDomains(java.lang
+   * .String, java.lang.String)
    */
   @Override
-  public SearchResultList getIndexViewerIndexes(String terminology,
+  public SearchResultList getIndexDomains(String terminology,
     String terminologyVersion) throws Exception {
 
     SearchResultList searchResultList = new SearchResultListJpa();
 
-    Properties config = ConfigUtility.getConfigProperties();
-
-    String dataDir = config.getProperty("index.viewer.data");
-
+    // Local directory
+    String dataDir =
+        ConfigUtility.getConfigProperties().getProperty("index.viewer.data");
     for (File termDir : new File(dataDir).listFiles()) {
+      // Find terminology directory
       if (termDir.getName().equals(terminology)) {
         for (File versionDir : termDir.listFiles()) {
+          // Find version directory
           if (versionDir.getName().equals(terminologyVersion)) {
             for (File typeDir : versionDir.listFiles()) {
+              // find html directory
               if (typeDir.getName().equals("html")) {
+                // find domain directories
                 for (File domainDir : typeDir.listFiles()) {
                   SearchResult searchResult = new SearchResultJpa();
                   searchResult.setValue(domainDir.getName());
                   searchResultList.addSearchResult(searchResult);
+                  Logger.getLogger(ContentServiceJpa.class).info(
+                      "  Index domain found: " + domainDir.getName());
                 }
               }
             }
@@ -2816,31 +2850,45 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     return searchResultList;
   }
 
-/* (non-Javadoc)
- * @see org.ihtsdo.otf.mapping.services.ContentService#getIndexViewerPagesForIndex(java.lang.String, java.lang.String, java.lang.String)
- */
-@Override
-public SearchResultList getIndexViewerPagesForIndex(String terminology,
-		String terminologyVersion, String index) throws Exception {
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.ContentService#getIndexViewerPagesForIndex
+   * (java.lang.String, java.lang.String, java.lang.String)
+   */
+  @Override
+  public SearchResultList getIndexPagesForIndex(String terminology,
+    String terminologyVersion, String index) throws Exception {
 
-  SearchResultList searchResultList = new SearchResultListJpa();
+    SearchResultList searchResultList = new SearchResultListJpa();
 
-  Properties config = ConfigUtility.getConfigProperties();
+    // Local directory
+    String dataDir =
+        ConfigUtility.getConfigProperties().getProperty("index.viewer.data");
 
-  String dataDir = config.getProperty("index.viewer.data");
-
-  for (File termDir : new File(dataDir).listFiles()) {
-    if (termDir.getName().equals(terminology)) {
-      for (File versionDir : termDir.listFiles()) {
-        if (versionDir.getName().equals(terminologyVersion)) {
-          for (File typeDir : versionDir.listFiles()) {
-            if (typeDir.getName().equals("html")) {
-              for (File domainDir : typeDir.listFiles()) {
-                if (domainDir.getName().equals(index)) {
-                  for (File pageFile : domainDir.listFiles()) {
-                    SearchResult searchResult = new SearchResultJpa();
-                    searchResult.setValue(pageFile.getName().substring(0, pageFile.getName().indexOf('.')));
-                    searchResultList.addSearchResult(searchResult);
+    for (File termDir : new File(dataDir).listFiles()) {
+      // Find terminology directory
+      if (termDir.getName().equals(terminology)) {
+        for (File versionDir : termDir.listFiles()) {
+          // find version directory
+          if (versionDir.getName().equals(terminologyVersion)) {
+            for (File typeDir : versionDir.listFiles()) {
+              // find html directory
+              if (typeDir.getName().equals("html")) {
+                for (File domainDir : typeDir.listFiles()) {
+                  // find domain directory
+                  if (domainDir.getName().equals(index)) {
+                    Logger.getLogger(ContentServiceJpa.class).info(
+                        "  Pages for index domain found: "
+                            + domainDir.getName());
+                    // find pages
+                    for (File pageFile : domainDir.listFiles()) {
+                      SearchResult searchResult = new SearchResultJpa();
+                      searchResult.setValue(pageFile.getName().substring(0,
+                          pageFile.getName().indexOf('.')));
+                      searchResultList.addSearchResult(searchResult);
+                    }
                   }
                 }
               }
@@ -2849,138 +2897,168 @@ public SearchResultList getIndexViewerPagesForIndex(String terminology,
         }
       }
     }
-  }
 
-  return searchResultList;
-}
-
-/* (non-Javadoc)
- * @see org.ihtsdo.otf.mapping.services.ContentService#performAggregatedSearch(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
- */
-@Override
-public SearchResultList findIndexViewerEntries(String terminology,
-  String terminologyVersion, String domain, String searchField, String subSearchField, String subSubSearchField, boolean allFlag) throws Exception {
-  clearResultsCache();
-
-  SearchResultList searchResultList = new SearchResultListJpa();
-  
-  List<String> mainSearchResults = new ArrayList<>();
-  List<String> subSearchResults = new ArrayList<>();
-  List<String> subSubSearchResults = new ArrayList<>();
-  
-  Properties config = ConfigUtility.getConfigProperties();
-  
-  if (allFlag) {
-    config.setProperty("index.viewer.searchStartLevel", "0");
-    config.setProperty("index.viewer.searchEndLevel", "9");
-    config.setProperty("index.viewer.subSearchStartLevel", "0");
-    config.setProperty("index.viewer.subSearchEndLevel", "9");
-    config.setProperty("index.viewer.subSubSearchStartLevel", "0");
-    config.setProperty("index.viewer.subSubSearchEndLevel", "9");
-  } else {
-    config.setProperty("index.viewer.searchStartLevel", "0");
-    config.setProperty("index.viewer.searchEndLevel", "0");
-    config.setProperty("index.viewer.subSearchStartLevel", "1");
-    config.setProperty("index.viewer.subSearchEndLevel", "1");
-    config.setProperty("index.viewer.subSubSearchStartLevel", "2");
-    config.setProperty("index.viewer.subSubSearchEndLevel", "2");    
-  }
-  
-  int startLevel = Integer.parseInt(config.getProperty("index.viewer.searchStartLevel"));
-  int endLevel = Integer.parseInt(config.getProperty("index.viewer.searchEndLevel"));
-  mainSearchResults =
-          performSearch(terminology, terminologyVersion, domain, searchField, startLevel, endLevel, null,
-                  (subSearchField != null && !subSearchField.equals("undefined") && !subSearchField.equals("")));
-
-  if ( subSearchField == null || subSearchField.equals("undefined") || subSearchField.equals("")) {
-    for (String result : mainSearchResults) {
-      SearchResult searchResult = new SearchResultJpa();
-      searchResult.setValue(result);
-      searchResult.setValue2(linkToLabelMap.get(result));
-      searchResultList.addSearchResult(searchResult);
-    }
     return searchResultList;
-  } else {
-      startLevel = Integer.parseInt(config.getProperty("index.viewer.subSearchStartLevel"));
-      endLevel = Integer.parseInt(config.getProperty("index.viewer.subSearchEndLevel"));
-      for (int i = 0; i < mainSearchResults.size(); i++) {
-          subSearchResults.addAll(performSearch(terminology, terminologyVersion, domain, subSearchField,
-                  startLevel, endLevel, mainSearchResults.get(i), false));
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.ContentService#performAggregatedSearch(
+   * java.lang.String, java.lang.String, java.lang.String, java.lang.String,
+   * java.lang.String)
+   */
+  @Override
+  public SearchResultList findIndexEntries(String terminology,
+    String terminologyVersion, String domain, String searchField,
+    String subSearchField, String subSubSearchField, boolean allFlag)
+    throws Exception {
+
+    SearchResultList searchResultList = new SearchResultListJpa();
+
+    List<String> mainSearchResults = new ArrayList<>();
+    List<String> subSearchResults = new ArrayList<>();
+    List<String> subSubSearchResults = new ArrayList<>();
+
+    Properties config = ConfigUtility.getConfigProperties();
+
+    if (allFlag) {
+      config.setProperty("index.viewer.searchStartLevel", "0");
+      config.setProperty("index.viewer.searchEndLevel", "9");
+      config.setProperty("index.viewer.subSearchStartLevel", "0");
+      config.setProperty("index.viewer.subSearchEndLevel", "9");
+      config.setProperty("index.viewer.subSubSearchStartLevel", "0");
+      config.setProperty("index.viewer.subSubSearchEndLevel", "9");
+    } else {
+      config.setProperty("index.viewer.searchStartLevel", "0");
+      config.setProperty("index.viewer.searchEndLevel", "0");
+      config.setProperty("index.viewer.subSearchStartLevel", "1");
+      config.setProperty("index.viewer.subSearchEndLevel", "1");
+      config.setProperty("index.viewer.subSubSearchStartLevel", "2");
+      config.setProperty("index.viewer.subSubSearchEndLevel", "2");
+    }
+
+    int startLevel =
+        Integer.parseInt(config.getProperty("index.viewer.searchStartLevel"));
+    int endLevel =
+        Integer.parseInt(config.getProperty("index.viewer.searchEndLevel"));
+    mainSearchResults =
+        performSearch(terminology, terminologyVersion, domain, searchField,
+            startLevel, endLevel, null, (subSearchField != null
+                && !subSearchField.equals("undefined") && !subSearchField
+                .equals("")));
+
+    if (subSearchField == null || subSearchField.equals("undefined")
+        || subSearchField.equals("")) {
+      for (String result : mainSearchResults) {
+        SearchResult searchResult = new SearchResultJpa();
+        searchResult.setValue(result);
+        searchResult.setValue2(linkToLabelMap.get(result));
+        searchResultList.addSearchResult(searchResult);
       }
-  }
-
-  if (subSubSearchField == null || subSubSearchField.equals("undefined") ||subSubSearchField.equals("")) {
-    for (String result : subSearchResults) {
-      SearchResult searchResult = new SearchResultJpa();
-      searchResult.setValue(result);
-      searchResult.setValue2(linkToLabelMap.get(result));
-      searchResultList.addSearchResult(searchResult);
-    }
-    return searchResultList;
-  } else {
+      return searchResultList;
+    } else {
       startLevel =
-              Integer.parseInt(config.getProperty("index.viewer.subSubSearchStartLevel"));
-      endLevel = Integer.parseInt(config.getProperty("index.viewer.subSubSearchEndLevel"));
-      for (int i = 0; i < subSearchResults.size(); i++) {
-          subSubSearchResults.addAll(performSearch(terminology, terminologyVersion, domain, subSubSearchField,
-                  startLevel, endLevel, subSearchResults.get(i), false));
+          Integer.parseInt(config
+              .getProperty("index.viewer.subSearchStartLevel"));
+      endLevel =
+          Integer
+              .parseInt(config.getProperty("index.viewer.subSearchEndLevel"));
+      for (int i = 0; i < mainSearchResults.size(); i++) {
+        subSearchResults.addAll(performSearch(terminology, terminologyVersion,
+            domain, subSearchField, startLevel, endLevel,
+            mainSearchResults.get(i), false));
       }
+    }
+
+    if (subSubSearchField == null || subSubSearchField.equals("undefined")
+        || subSubSearchField.equals("")) {
+      for (String result : subSearchResults) {
+        SearchResult searchResult = new SearchResultJpa();
+        searchResult.setValue(result);
+        searchResult.setValue2(linkToLabelMap.get(result));
+        searchResultList.addSearchResult(searchResult);
+      }
+      return searchResultList;
+    } else {
+      startLevel =
+          Integer.parseInt(config
+              .getProperty("index.viewer.subSubSearchStartLevel"));
+      endLevel =
+          Integer.parseInt(config
+              .getProperty("index.viewer.subSubSearchEndLevel"));
+      for (int i = 0; i < subSearchResults.size(); i++) {
+        subSubSearchResults.addAll(performSearch(terminology,
+            terminologyVersion, domain, subSubSearchField, startLevel,
+            endLevel, subSearchResults.get(i), false));
+      }
+    }
+
+    for (String result : subSubSearchResults) {
+      SearchResult searchResult = new SearchResultJpa();
+      searchResult.setValue(result);
+      searchResult.setValue2(linkToLabelMap.get(result));
+      searchResultList.addSearchResult(searchResult);
+    }
+    return searchResultList;
+
   }
 
-  for (String result : subSubSearchResults) {
-    SearchResult searchResult = new SearchResultJpa();
-    searchResult.setValue(result);
-    searchResult.setValue2(linkToLabelMap.get(result));
-    searchResultList.addSearchResult(searchResult);
-  }
-  return searchResultList;
-
-}
-
-/**
- * Performs the search.
- *
- * @param terminology the terminology
- * @param terminologyVersion the terminology version
- * @param domain the domain
- * @param searchStr the search string
- * @param startLevel the start level
- * @param endLevel the end level
- * @param subSearchAnchor the sub search anchor
- * @param requireHasChild the require has child
- * @return the results
- * @throws Exception the exception
- */
-@SuppressWarnings("resource")
-public List<String> performSearch(String terminology,
+  /**
+   * Performs the search.
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @param domain the domain
+   * @param searchStr the search string
+   * @param startLevel the start level
+   * @param endLevel the end level
+   * @param subSearchAnchor the sub search anchor
+   * @param requireHasChild the require has child
+   * @return the results
+   * @throws Exception the exception
+   */
+  @SuppressWarnings("resource")
+  private List<String> performSearch(String terminology,
     String terminologyVersion, String domain, String searchStr, int startLevel,
     int endLevel, String subSearchAnchor, boolean requireHasChild)
     throws Exception {
-  
+    Logger.getLogger(this.getClass()).info("Perform index search ");
+    Logger.getLogger(this.getClass()).info("  terminology = " + terminology);
+    Logger.getLogger(this.getClass()).info("  domain = " + domain);
+    Logger.getLogger(this.getClass()).info("  searchStr = " + searchStr);
+
     Properties config = ConfigUtility.getConfigProperties();
-    String indexBaseDir = config.getProperty("hibernate.search.default.indexBase");
-    String indexesDir = indexBaseDir + "/" + terminology + "/" + terminologyVersion + "/" + domain;
-    
+    String prop = config.getProperty("index.viewer.data");
+    if (prop == null) {
+      return new ArrayList<>();
+    }
+    String indexesDir =
+        prop + "/" + terminology + "/" + terminologyVersion + "/lucene/" + domain;
+
     List<String> searchResults = new ArrayList<>();
     // configure
     File selectedDomainDir = new File(indexesDir);
     String query = searchStr + " " + getLevelConstraint(startLevel, endLevel);
     if (requireHasChild)
-        query = query + " hasChild:true";
+      query = query + " hasChild:true";
     if (subSearchAnchor != null && subSearchAnchor.indexOf(".") == -1)
-        query = query + " topLink:" + subSearchAnchor;
+      query = query + " topLink:" + subSearchAnchor;
     if (subSearchAnchor != null && subSearchAnchor.indexOf(".") != -1)
-        query =
-                query + " topLink:"
-                        + subSearchAnchor.substring(0, subSearchAnchor.indexOf('.'));
-    
+      query =
+          query + " topLink:"
+              + subSearchAnchor.substring(0, subSearchAnchor.indexOf('.'));
+
     int maxHits = Integer.parseInt(config.getProperty("index.viewer.maxHits"));
 
     // Open index
+    Logger.getLogger(this.getClass()).info("  Open index reader");
     Directory dir = FSDirectory.open(selectedDomainDir);
     IndexReader reader = IndexReader.open(dir);
 
     // Prep searcher
+    Logger.getLogger(this.getClass()).info("  Prep searcher");
     IndexSearcher searcher = new IndexSearcher(reader);
     String defaultField = "title";
     Map<String, Analyzer> fieldAnalyzers = new HashMap<>();
@@ -2989,46 +3067,40 @@ public List<String> performSearch(String terminology,
         new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_36),
             fieldAnalyzers);
 
+    Logger.getLogger(this.getClass()).info("  Prep searcher");
     QueryParser parser =
-            new QueryParser(Version.LUCENE_36, defaultField, analyzer);
+        new QueryParser(Version.LUCENE_36, defaultField, analyzer);
 
     // Prep query
     parser.setAllowLeadingWildcard(true);
     parser.setDefaultOperator(Operator.AND);
     // System.out.println("QUERY: " + query);
     TopDocs hits = null;
-    if (resultsCache.containsKey(query)) {
-        hits = resultsCache.get(query);
-        // System.out.println(" cached = " + hits.scoreDocs.length);
-    } else {
-        Query q = parser.parse(query);
-        hits = searcher.search(q, maxHits);
-        resultsCache.put(query, hits);
-        // System.out.println(" added to cache = " + hits.scoreDocs.length);
-    }
+    Query q = parser.parse(query);
+    hits = searcher.search(q, maxHits);
 
     ScoreDoc[] scoreDocs = hits.scoreDocs;
     for (int n = 0; n < scoreDocs.length; ++n) {
-        final ScoreDoc sd = scoreDocs[n];
-        final Document d = searcher.doc(sd.doc);
-        final String link = d.get("link");
-        final String levelTag = d.get("level");
-        final String label = d.get("label");
-        int level = Integer.parseInt(levelTag);
+      final ScoreDoc sd = scoreDocs[n];
+      final Document d = searcher.doc(sd.doc);
+      final String link = d.get("link");
+      final String levelTag = d.get("level");
+      final String label = d.get("label");
+      int level = Integer.parseInt(levelTag);
 
-        String linkFirstComponent =
-                (link.indexOf(".") != -1) ? link.substring(0, link.indexOf("."))
-                        : link;
-        if (label != null)
-            linkToLabelMap.put(linkFirstComponent, label);
+      String linkFirstComponent =
+          (link.indexOf(".") != -1) ? link.substring(0, link.indexOf("."))
+              : link;
+      if (label != null)
+        linkToLabelMap.put(linkFirstComponent, label);
 
-        // If subSearchAnchor is specified, the link must start with it
-        if (subSearchAnchor != null && !link.startsWith(subSearchAnchor + "."))
-            continue;
+      // If subSearchAnchor is specified, the link must start with it
+      if (subSearchAnchor != null && !link.startsWith(subSearchAnchor + "."))
+        continue;
 
-        // If actual level is within desired range (inclusive), add match
-        else if (level >= startLevel && level <= endLevel)
-            searchResults.add(link);
+      // If actual level is within desired range (inclusive), add match
+      else if (level >= startLevel && level <= endLevel)
+        searchResults.add(link);
 
     }
     analyzer.close();
@@ -3036,21 +3108,21 @@ public List<String> performSearch(String terminology,
     dir.close();
     searcher.close();
     return searchResults;
-}
-
-private String getLevelConstraint(int s, int e) {
-  if (s == e) {
-      return "level:" + s;
-  } else {
-      return "level:[" + s + " TO " + e + "]";
   }
-}
 
-/**
- * Clears query cache.
- */
-public void clearResultsCache() {
-    resultsCache.clear();
-}
+  /**
+   * Returns the level constraint.
+   *
+   * @param s the s
+   * @param e the e
+   * @return the level constraint
+   */
+  private String getLevelConstraint(int s, int e) {
+    if (s == e) {
+      return "level:" + s;
+    } else {
+      return "level:[" + s + " TO " + e + "]";
+    }
+  }
 
 }

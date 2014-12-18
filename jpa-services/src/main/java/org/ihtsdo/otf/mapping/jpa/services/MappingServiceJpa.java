@@ -2463,16 +2463,28 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
           continue;
         }
 
-        // Skip concept exclusion rules in all cases
-        if (refSetMember.getMapRule().matches("IFA\\s\\d*\\s\\|.*\\s\\|")
-            && !(refSetMember.getMapAdvice()
-                .contains("MAP IS CONTEXT DEPENDENT FOR GENDER"))
-            && !(refSetMember.getMapRule()
-                .matches("IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>]"))) {
-          Logger.getLogger(MappingServiceJpa.class).debug(
-              "    Skipping refset member exclusion rule "
-                  + refSetMember.getTerminologyId());
-          continue;
+        // Skip concept exclusion rules
+        if (refSetMember.getMapRule().matches("IFA\\s\\d*\\s\\|.*\\s\\|")) {
+          if (refSetMember.getMapAdvice().contains(
+              "MAP IS CONTEXT DEPENDENT FOR GENDER")
+              && !refSetMember.getMapRule().matches("AND IFA")) {
+            // unless simple gender rule, then keep
+          } else if (refSetMember
+              .getMapRule()
+              .matches(
+                  "IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>].*AND IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>]")) {
+            // unless 2-part age rule, then keep
+          } else if (refSetMember.getMapRule().matches(
+              "IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>]")
+              && !refSetMember.getMapRule().matches("AND IFA")) {
+            // unless simple age rule without compund clause, then keep
+          } else {
+            // else skip
+            Logger.getLogger(MappingServiceJpa.class).debug(
+                "    Skipping refset member exclusion rule "
+                    + refSetMember.getTerminologyId());
+            continue;
+          }
         }
 
         // retrieve the concept
@@ -3390,7 +3402,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
   @Override
   public void checkMapGroupsForMapProject(MapProject mapProject,
     boolean updateRecords) throws Exception {
-    
+
     if (updateRecords == true) {
       this.setTransactionPerOperation(false);
       this.beginTransaction();
@@ -3474,7 +3486,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
           }
         }
       }
-      
+
       // if record latered and update flag set, updat ethe record
       if (mapRecordAltered == true && updateRecords == true) {
         this.handleMapRecordLazyInitialization(mr);
@@ -3485,7 +3497,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
         nMapRecordsAltered++;
       }
     }
-    
+
     if (updateRecords == true) {
       this.commit();
       this.beginTransaction();
@@ -3499,7 +3511,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
         "Entries removed : " + nMapEntriesRemoved);
 
     // ////////////////////////////////////////////
-    // Group Number Checking                     //
+    // Group Number Checking //
     // MUST come after high-level group checking //
     // ////////////////////////////////////////////
 
@@ -3622,7 +3634,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
         }
       }
     }
-    
+
     if (updateRecords == true) {
       this.commit();
     }
