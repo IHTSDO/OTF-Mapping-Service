@@ -209,6 +209,9 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
    */
   @Override
   public void setMapTarget(String mapTarget) {
+    if (mapTarget == null) {
+      throw new UnsupportedOperationException("Cannot set map target to null");
+    }
     this.mapTarget = mapTarget;
   }
 
