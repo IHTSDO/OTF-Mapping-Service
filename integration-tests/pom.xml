@@ -27,6 +27,7 @@
     <dependency>
       <groupId>org.ihtsdo.otf.mapping</groupId>
       <artifactId>mapping-rest</artifactId>
+      <classifier>classes</classifier>
     </dependency>
 
 

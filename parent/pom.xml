@@ -79,6 +79,7 @@
         <groupId>org.ihtsdo.otf.mapping</groupId>
         <artifactId>mapping-rest</artifactId>
         <version>${releaseVersion}</version>
+        <classifier>classes</classifier>
       </dependency>
 
       <!-- JPA dependencies -->
