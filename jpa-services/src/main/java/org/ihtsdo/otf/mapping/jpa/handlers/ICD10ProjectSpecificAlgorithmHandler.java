@@ -9,6 +9,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceListJpa;
+import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
@@ -19,6 +20,7 @@ import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
+import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.SimpleRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
@@ -26,19 +28,34 @@ import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 
 /**
- * The Class ICD10ProjectSpecificAlgorithmHandler.
+ * The {@link ProjectSpecificAlgorithmHandler} for ICD10 projects.
  */
 public class ICD10ProjectSpecificAlgorithmHandler extends
     DefaultProjectSpecificAlgorithmHandler {
+
+  /** The qa prev group. */
+  private int qaPrevGroup = 0;
+
+  /** The qa prev priority. */
+  private int qaPrevPriority = 0;
+
+  /** The qa prev concept. */
+  private String qaPrevConcept = null;
+
+  /** The qa only nc. */
+  private boolean qaOnlyNc = true;
+
+  /** The qa true rule in group. */
+  private boolean qaTrueRuleInGroup = false;
 
   /**
    * For ICD10, a target code is valid if: - Concept exists - Concept has at
    * least 3 characters - The second character is a number (e.g. XVII is
    * invalid, but B10 is) - Concept does not contain a dash (-) character
-   * 
-   * @param mapRecord
+   *
+   * @param mapRecord the map record
    * @return the validation result
-   * @throws Exception
+   * @throws Exception the exception
    */
   @Override
   public ValidationResult validateTargetCodes(MapRecord mapRecord)
@@ -61,7 +78,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
             .addError("A relation indicating the reason must be selected when no target is assigned.");
 
         // if a target is specified check it
-      } else if (mapEntry.getTargetId() != null && !mapEntry.getTargetId().equals("")) {
+      } else if (mapEntry.getTargetId() != null
+          && !mapEntry.getTargetId().equals("")) {
         
         Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info("  Checking id: " + mapEntry.getTargetId());
 
@@ -100,7 +118,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info("  Concept exists and is valid");
 
           
-        }
+          }
 
         // otherwise, check that relation is assignable to null target
       } else {
@@ -118,16 +136,19 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
   }
 
   /**
-   * Computes the map relation for the SNOMEDCT to ICD10 map project. Based solely
-   * on whether an entry has a TRUE rule or not. No advices are computed for
-   * this project.
-   * @throws Exception
+   * Computes the map relation for the SNOMEDCT to ICD10 map project. Based
+   * solely on whether an entry has a TRUE rule or not. No advices are computed
+   * for this project.
+   *
+   * @param mapRecord the map record
+   * @param mapEntry the map entry
+   * @return the map relation
+   * @throws Exception the exception
    */
   @Override
   public MapRelation computeMapRelation(MapRecord mapRecord, MapEntry mapEntry)
     throws Exception {
 
-    
     // if entry has no target
     if (mapEntry.getTargetId() == null || mapEntry.getTargetId().isEmpty()) {
 
@@ -155,8 +176,6 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       return null;
     }
 
-    
-
     // if entry has a gender rule
     if (mapEntry.getRule().contains("MALE")) {
 
@@ -182,7 +201,6 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       // if the entry has a non-gender, non-age IFA
     } else if (mapEntry.getRule().startsWith("IFA")) {
 
-   
       // retrieve the relations by terminology id
       // 447639009 - Map of source concept is context dependent
       for (MapRelation relation : mapProject.getMapRelations()) {
@@ -213,6 +231,14 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.jpa.handlers.DefaultProjectSpecificAlgorithmHandler
+   * #computeMapAdvice(org.ihtsdo.otf.mapping.model.MapRecord,
+   * org.ihtsdo.otf.mapping.model.MapEntry)
+   */
   @Override
   public MapAdviceList computeMapAdvice(MapRecord mapRecord, MapEntry mapEntry)
     throws Exception {
@@ -264,6 +290,13 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
     return mapAdviceList;
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.jpa.handlers.DefaultProjectSpecificAlgorithmHandler
+   * #isTargetCodeValid(java.lang.String)
+   */
   @Override
   public boolean isTargetCodeValid(String terminologyId) throws Exception {
 
@@ -326,6 +359,14 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
     return true;
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.jpa.handlers.DefaultProjectSpecificAlgorithmHandler
+   * #computeTargetTerminologyNotes
+   * (org.ihtsdo.otf.mapping.helpers.TreePositionList)
+   */
   @Override
   public void computeTargetTerminologyNotes(TreePositionList treePositionList)
     throws Exception {
@@ -424,18 +465,207 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.jpa.handlers.DefaultProjectSpecificAlgorithmHandler
+   * #getDependentModules()
+   */
   @Override
   public Set<String> getDependentModules() {
-    
+
     Set<String> moduleDependencies = new HashSet<>();
     moduleDependencies.add("900000000000012004");
     moduleDependencies.add("900000000000207008");
     return moduleDependencies;
-    
+
   }
-  
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.jpa.handlers.DefaultProjectSpecificAlgorithmHandler
+   * #getModuleDependencyRefSetId()
+   */
   @Override
   public String getModuleDependencyRefSetId() {
     return "900000000000534007";
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#
+   * validateForRelease(org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember)
+   */
+  @Override
+  public ValidationResult validateForRelease(ComplexMapRefSetMember member) {
+    ValidationResult result = super.validateForRelease(member);
+
+    // Verify mapTarget is not null when mapCategory is 447637006 or 447639009
+    // 447637006|Map source concept is properly classified
+    // 447639009|Map of source concept is context dependent (also applies to
+    // gender)
+    if (member.getMapTarget().isEmpty()
+        && member.getMapRelationId().equals(Long.valueOf("447637006"))) {
+      result.addError("Map has empty target with map category 447637006");
+    }
+    if (member.getMapTarget().isEmpty()
+        && member.getMapRelationId().equals(Long.valueOf("447639009"))) {
+      result.addError("Map has empty target with map category 447639009");
+    }
+
+    // Verify mapTarget is null when mapCategory is not 447637006 or 447639009
+    if (!member.getMapTarget().isEmpty()
+        && !member.getMapRelationId().equals(Long.valueOf("447637006"))
+        && !member.getMapRelationId().equals(Long.valueOf("447639009"))) {
+      result
+          .addError("Map has non-empty target without map category 447639009 or 447637006  - "
+              + member.getMapRelationId());
+    }
+
+    // Verify IFA rules with mapTargets have 447639009 mapCategory
+    if (member.getMapRule().startsWith("IFA")
+        && !member.getMapRelationId().equals(Long.valueOf("447639009"))) {
+      result.addError("IFA map has category other than 447639009 - "
+          + member.getMapRelationId());
+    }
+
+    // Verify higher map groups do not have only NC nodes
+    // check when group goes back to 1
+    if (member.getMapGroup() != qaPrevGroup && qaPrevGroup != 1) {
+      if (qaOnlyNc) {
+        result.addError("Higher map group has only NC nodes - " + qaPrevConcept
+            + ", " + qaPrevGroup);
+      }
+      // this starts true
+      qaOnlyNc = true;
+    }
+    if (member.getMapGroup() > 1 && !member.getMapTarget().isEmpty()) {
+      qaOnlyNc = false;
+    }
+
+    // Verify TRUE rules do not appear before IFA rules
+    if (member.getMapGroup() != qaPrevGroup) {
+      // reset flag when group changes
+      qaTrueRuleInGroup = false;
+    }
+    if (member.getMapRule().equals("TRUE")
+        || member.getMapRule().equals("OTHERWISE TRUE")) {
+      // mark finding a true rule
+      qaTrueRuleInGroup = true;
+    } else if (member.getMapRule().startsWith("IFA") && qaTrueRuleInGroup) {
+      // error if an "ifa" rule is found in the group while a true rule exists
+      result.addError("TRUE rule before end of group");
+    }
+
+    // Verify IFA rules refer to valid conceptId
+    // -- all concepts are looked up and fail if not found
+
+    // Verify AGE rules do not end with <= 0
+    // -- not possible given new age ranges - this had to do with cartographer
+
+    // Verify each mapRule has valid syntax - whew!
+    // Use MapRuleParser for this. Still having trouble
+    // creating an LR grammar for the rule that I can generate a parser for.
+    // TODO: using this: https://github.com/bqluan/abnf-parser-generator
+    // See maprule.abnf and MapRuleParser.java
+
+    // Verify mapAdvice is restricted to the defined list
+    // -- all map advices are controlled at project level now
+
+    // Verify mapAdvice is not duplicated ...Wed Dec 17 00:41:49 PST 2014
+    // -- advice is a set so it can't be duplicated
+
+    // Verify that for empty target codes the advice contains
+    // the reason for the null code (e.g. an advice that is
+    // allowable for a null target).
+    if (member.getMapTarget().isEmpty()) {
+      boolean found = false;
+      for (MapAdvice advice : mapProject.getMapAdvices()) {
+        if (member.getMapAdvice().contains(advice.getName())
+            && !advice.isAllowableForNullTarget()) {
+          result.addError("Empty target with advice not allowed.");
+        } else if (member.getMapAdvice().contains(advice.getName())
+            && advice.isAllowableForNullTarget() && found) {
+          result.addError("Empty target with too many advice values");
+        } else if (member.getMapAdvice().contains(advice.getName())
+            && advice.isAllowableForNullTarget() && !found) {
+          found = true;
+        }
+      }
+    }
+
+    // Verify HLC concepts must not have explicit concept exclusion rules ...Wed
+    // -- up propagation checks the threshold already - this is to
+    // expensive to double-check again here
+
+    // Verify advice MAP IS CONTEXT DEPENDENT FOR GENDER should only apply to
+    // gender rules
+    if (member.getMapAdvice().contains("MAP IS CONTEXT DEPENDENT FOR GENDER")
+        && !member.getMapRule().contains("| Male (finding) |")
+        && !member.getMapRule().contains("| Female (finding) |")) {
+      result.addError("GENDER advice without gender rule");
+    }
+    if (!member.getMapAdvice().contains("MAP IS CONTEXT DEPENDENT FOR GENDER")
+        && (member.getMapRule().contains("| Male (finding) |") || member
+            .getMapRule().contains("| Female (finding) |"))) {
+      result.addError("Gender rulel without GENDER advice");
+    }
+
+    // Verify advice MAP IS CONTEXT DEPENDENT FOR GENDER is not used in
+    // conjunction with CD advice ...Wed Dec 17 00:41:58 PST 2014
+    if (member.getMapAdvice().contains("MAP IS CONTEXT DEPENDENT FOR GENDER")
+        && member.getMapAdvice().contains(
+            " MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT")) {
+      result.addError("Gender rule contains invalid CONTEXT DEPENDENT advice");
+    }
+
+    // Verify map advice is sorted ...Wed Dec 17 00:41:58 PST 2014
+    // -- advice is sort uniqued when created:
+    // sortedAdvices = new ArrayList<>(new HashSet<>(sortedAdvices));
+    // Collections.sort(sortedAdvices);
+    // for (String advice : sortedAdvices) {
+    // mapAdviceStr += (mapAdviceStr.length() != 0 ? " | " : "") + advice;
+    // }
+
+    // Verify referencedComponentId in valid
+    // -- concepts are looked up when build occurs and reported then
+    
+    // Verify refSetId and module id are valid
+    // -- Verified by release mojo
+
+    // Verify moduleId ss RefSet file is moduleId of map file ...Wed Dec 17
+    if (member.getModuleId().equals(Long.valueOf("449080006"))) {
+      result.addError("Module id is wrong");
+    }
+    
+    // Verify all referencedComponentId are Clinical Finding, Event, or
+    // Situation
+    // -- scope is defined at project level and "begin release" verifies
+    // that all in scope concepts are mapped.
+
+    // Group QA
+    // Groups are consecutive starting with 1
+    if (member.getMapGroup() != qaPrevGroup && member.getMapGroup() != 1
+        && member.getMapGroup() != qaPrevGroup + 1) {
+      result.addError("Groups are not consecutive starting with 1");
+    }
+
+    // Priorities within a group are consecutive and starting with 1
+    if (member.getMapGroup() == qaPrevGroup
+        && member.getMapPriority() != qaPrevPriority + 1) {
+      result.addError("Priorities are not consecutive starting with 1 - "
+          + qaPrevGroup);
+
+    }
+
+    qaPrevGroup = member.getMapGroup();
+    qaPrevPriority = member.getMapPriority();
+    qaPrevConcept = member.getConcept().getTerminologyId();
+    return result;
+
   }
 }
