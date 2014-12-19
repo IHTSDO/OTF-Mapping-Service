@@ -822,6 +822,15 @@
             </tr>
             <tr>
               <td style="width: 40%;" tooltip-placement="top"
+                tooltip="Query frequency to calculate report results">Frequency</td>
+              <td style="width: 60%;"><select style="width: 100%;"
+                ng-model="definition.frequency"
+                ng-options="frequency as frequency for frequency in definitionFrequencies"
+                ng-change="setEditingPerformed(definition)" style="width: 100%;"></select>
+              </td>
+            </tr>
+            <tr>
+              <td style="width: 40%;" tooltip-placement="top"
                 tooltip="Whether this report is a difference report between two other reports">Diff
                 Report</td>
               <td style="width: 60%;"><select style="width: 100%;"
@@ -832,8 +841,8 @@
             </tr>
             <tr ng-show="definition.diffReport == true">
               <td style="width: 40%;" tooltip-placement="top"
-                tooltip="Time period this difference report operates over ">Diff
-                Report</td>
+                tooltip="Time period this difference report operates over ">Time
+                Period</td>
               <td style="width: 60%;"><select style="width: 100%;"
                 ng-model="definition.timePeriod"
                 ng-options="timePeriod as timePeriod for timePeriod in definitionTimePeriods"
@@ -842,8 +851,8 @@
             </tr>
             <tr ng-show="definition.diffReport == true">
               <td style="width: 40%;" tooltip-placement="top"
-                tooltip="Report used to calculate difference statistics">Diff
-                Report</td>
+                tooltip="Report used to calculate difference statistics">Definition
+                Name</td>
               <td style="width: 60%;"><select style="width: 100%;"
                 ng-model="definition.diffReportDefinitionName"
                 ng-options="name as name for name in getNonDiffReportDefinitionNames()"
