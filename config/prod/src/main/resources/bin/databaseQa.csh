@@ -17,7 +17,7 @@ echo "MAPPING_CONFIG = $MAPPING_CODE"
 # this will send mail on a failure
 echo "    Perform the QA ... '/bin/date'"
 cd $MAPPING_CODE/admin/qa
-mvn -PDatabase -Drun.config=$MAPPING_CONFIG install
+mvn install -PDatabase -Drun.config=$MAPPING_CONFIG | sed 's/^/    /'
 if ($status != 0) then
     echo "ERROR running the QA"
     cat mvn.log

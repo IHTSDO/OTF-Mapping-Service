@@ -27,6 +27,7 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
+import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
@@ -34,8 +35,6 @@ import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
 /**
  * Reference implementation of {@link ProjectSpecificAlgorithmHandler}.
- * 
- * @author ${author}
  */
 public class DefaultProjectSpecificAlgorithmHandler implements
     ProjectSpecificAlgorithmHandler {
@@ -2356,15 +2355,29 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         .getPropagationDescendantThreshold();
   }
   
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#getDependentModules()
+   */
   @Override
   public Set<String> getDependentModules() {
     return new HashSet<>();
   }
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#getModuleDependencyRefSetId()
+   */
   @Override
   public String getModuleDependencyRefSetId() {
-    // TODO Auto-generated method stub
     return null;
+  }
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#validateForRelease(org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember)
+   */
+  @Override
+  public ValidationResult validateForRelease(ComplexMapRefSetMember member) {
+    // do nothing
+    return new ValidationResultJpa();
   }
 
 }

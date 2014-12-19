@@ -28,7 +28,6 @@ import org.ihtsdo.otf.mapping.helpers.ReportQueryType;
 import org.ihtsdo.otf.mapping.helpers.ReportResultType;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
-import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
@@ -93,6 +92,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   /** The map project. */
   private MapProject mapProject = null;
 
+  /** The algo handler. */
+  private ProjectSpecificAlgorithmHandler algorithmHandler;
+
   /** The map records. */
   private List<MapRecord> mapRecords;
 
@@ -112,21 +114,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
   /** The report statistics. */
   private Map<String, Integer> reportStatistics = new HashMap<>();
-
-  /** The qa prev group. */
-  private int qaPrevGroup = 0;
-
-  /** The qa prev priority. */
-  private int qaPrevPriority = 0;
-
-  /** The qa prev concept. */
-  private String qaPrevConcept = null;
-
-  /** The qa only nc. */
-  private boolean qaOnlyNc = true;
-
-  /** The qa true rule in group. */
-  private boolean qaTrueRuleInGroup = false;
 
   /**
    * The Enum for statistics reporting.
@@ -191,6 +178,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     contentService = new ContentServiceJpa();
     metadataService = new MetadataServiceJpa();
     this.testModeFlag = testModeFlag;
+    // instantiate the algorithm handler
+    algorithmHandler =
+        mappingService.getProjectSpecificAlgorithmHandler(mapProject);
+
   }
 
   /*
@@ -549,11 +540,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           }
 
           ValidationResult result = null;
-          if (mapProject.isRuleBased()) {
-            result = qaRulesMember(member);
-          } else {
-            result = qaMember(member);
-          }
+          result = algorithmHandler.validateForRelease(member);
           if (result != null && !result.isValid()) {
             throw new Exception("Invalid member for "
                 + member.getConcept().getTerminologyId() + " - " + result);
@@ -613,145 +600,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     mappingService.close();
   }
 
-  /**
-   * Some last minute QA checks.
-   *
-   * @param member the member
-   * @return the validation result
-   */
-  private ValidationResult qaMember(ComplexMapRefSetMember member) {
-    ValidationResult result = new ValidationResultJpa();
-
-    return result;
-
-  }
-
-  /**
-   * Some last minute QA checks.
-   *
-   * @param member the member
-   * @return the validation result
-   */
-  private ValidationResult qaRulesMember(ComplexMapRefSetMember member) {
-    ValidationResult result = qaMember(member);
-
-    // Verify mapTarget is not null when mapCategory is 447637006 or 447639009
-    // 447637006|Map source concept is properly classified
-    // 447639009|Map of source concept is context dependent (also applies to
-    // gender)
-    if (member.getMapTarget().isEmpty()
-        && member.getMapRelationId().equals("447637006")) {
-      result.addError("Map has empty target with map category 447637006");
-    }
-    if (member.getMapTarget().isEmpty()
-        && member.getMapRelationId().equals("447639009")) {
-      result.addError("Map has empty target with map category 447639009");
-    }
-
-    // Verify mapTarget is null when mapCategory is not 447637006 or 447639009
-    if (!member.getMapTarget().isEmpty()
-        && !member.getMapRelationId().equals("447637006")
-        && !member.getMapRelationId().equals("447639009")) {
-      result
-          .addError("Map has non-empty target without map category 447639009 or 447637006  - "
-              + member.getMapRelationId());
-    }
-
-    // Verify IFA rules with mapTargets have 447639009 mapCategory
-    if (member.getMapRule().startsWith("IFA")
-        && !member.getMapRelationId().equals("447639009")) {
-      result.addError("IFA map has category other than 447639009 - "
-          + member.getMapRelationId());
-    }
-
-    // Verify higher map groups do not have only NC nodes
-    // check when group goes back to 1
-    if (member.getMapGroup() != qaPrevGroup && qaPrevGroup != 1) {
-      if (qaOnlyNc) {
-        result.addError("Higher map group has only NC nodes - " + qaPrevConcept
-            + ", " + qaPrevGroup);
-      }
-      qaOnlyNc = true;
-    }
-    if (member.getMapGroup() > 1 && !member.getMapTarget().isEmpty()) {
-      qaOnlyNc = false;
-    }
-
-    // Verify TRUE rules do not appear before IFA rules 
-    // reset when group changes
-    if (member.getMapGroup() != qaPrevGroup) {
-      qaTrueRuleInGroup = false;
-    }
-    if (member.getMapRule().equals("TRUE")
-        || member.getMapRule().equals("OTHERWISE TRUE")) {
-      qaTrueRuleInGroup = true;
-    }
-    if (member.getMapRule().startsWith("IFA") && qaTrueRuleInGroup) {
-      result.addError("TRUE rule before end of group");
-    }
-
-    // Verify IFA rules refer to valid conceptId
-    // -- all concepts are looked up and fail if not found
-
-    // Verify AGE rules do not end with <= 0 
-    // -- not possible given new age ranges - this had to do with cartographer rep
-    
-    // Verify each mapRule has valid syntax - whew!
-    
-    
-    
-    // Verify mapAdvice is restricted to the defined list ...Wed Dec 17 00:41:48
-    // PST 2014
-    // Verify multiple map advice is properly handled ...Wed Dec 17 00:41:48 PST
-    // 2014
-    // Verify mapAdvice is not duplicated ...Wed Dec 17 00:41:49 PST 2014
-    // Verify NC has valid map advice ...Wed Dec 17 00:41:50 PST 2014
-    // Verify AWH has valid map advice ...Wed Dec 17 00:41:50 PST 2014
-    // Verify ACT has valid map advice ...Wed Dec 17 00:41:51 PST 2014
-    // Verify OS map category is not used ...Wed Dec 17 00:41:51 PST 2014
-    // Verify HLC concepts must not have explicit concept exclusion rules ...Wed
-    // Dec 17 00:41:51 PST 2014
-    // Verify advice MAP IS CONTEXT DEPENDENT FOR GENDER should only apply to
-    // gender rules ...Wed Dec 17 00:41:58 PST 2014
-    // Verify advice MAP IS CONTEXT DEPENDENT FOR GENDER is not used in
-    // conjunction with CD advice ...Wed Dec 17 00:41:58 PST 2014
-    // Verify map advice is sorted ...Wed Dec 17 00:41:58 PST 2014
-    // Verify referencedComponentId in iissscc or c RefSet files ...Wed Dec 17
-    // 00:41:59 PST 2014
-    // Verify refSetId ss RefSet file is module id ...Wed Dec 17 00:41:59 PST
-    // 2014
-    // Verify moduleId ss RefSet file is moduleId of map file ...Wed Dec 17
-    // 00:41:59 PST 2014
-    // Verify referencedComponentId are the core and metadata concept ids ...Wed
-    // Dec 17 00:41:59 PST 2014
-    // Verify sourceEffectiveTime matches the version of the data ...Wed Dec 17
-    // 00:41:59 PST 2014
-    // Verify targetEffectiveTime matches the version of the core data ...Wed
-    // Dec 17 00:41:59 PST 2014
-    // Verify all referencedComponentId are Clinical Finding, Event, or
-    // Situation ...Wed Dec 17 00:41:59 PST 2014
-
-    // Group QA
-    // Groups are consecutive starting with 1
-    if (member.getMapGroup() != qaPrevGroup && member.getMapGroup() != 1
-        && member.getMapGroup() != qaPrevGroup + 1) {
-      result.addError("Groups are not consecutive starting with 1");
-    }
-
-    // Priorities within a group are consecutive and starting with 1
-    if (member.getMapGroup() == qaPrevGroup
-        && member.getMapPriority() != qaPrevPriority + 1) {
-      result.addError("Priorities are not consecutive starting with 1 - "
-          + qaPrevGroup);
-
-    }
-
-    qaPrevGroup = member.getMapGroup();
-    qaPrevPriority = member.getMapPriority();
-    qaPrevConcept = member.getConcept().getTerminologyId();
-    return result;
-
-  }
 
   /**
    * Handle up propagation.
@@ -1217,7 +1065,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     writer = new BufferedWriter(new FileWriter(filename));
     writer
-        .write("id\teffeccdzyztiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\t"
+        .write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\t"
             + "mapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId");
     if (mapProject.getMapRefsetPattern().equals(MapRefsetPattern.ExtendedMap)) {
       writer.write("\tmapCategoryId");
@@ -1549,7 +1397,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // sort unique advices and add them
     sortedAdvices = new ArrayList<>(new HashSet<>(sortedAdvices));
     Collections.sort(sortedAdvices);
-
     for (String advice : sortedAdvices) {
       mapAdviceStr += (mapAdviceStr.length() != 0 ? " | " : "") + advice;
     }
@@ -2003,10 +1850,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // set transaction per operation to false for report service
     // only committed at end
     reportService.setTransactionPerOperation(false);
-
-    // instantiate the algorithm handler
-    ProjectSpecificAlgorithmHandler algorithmHandler =
-        mappingService.getProjectSpecificAlgorithmHandler(mapProject);
 
     Logger.getLogger(getClass()).info("Creating report...");
 
