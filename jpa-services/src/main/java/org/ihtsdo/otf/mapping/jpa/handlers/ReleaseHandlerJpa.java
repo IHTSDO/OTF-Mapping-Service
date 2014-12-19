@@ -640,18 +640,18 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // 447639009|Map of source concept is context dependent (also applies to
     // gender)
     if (member.getMapTarget().isEmpty()
-        && member.getMapRelationId().equals("447637006")) {
+        && member.getMapRelationId().equals(new Long("447637006"))) {
       result.addError("Map has empty target with map category 447637006");
     }
     if (member.getMapTarget().isEmpty()
-        && member.getMapRelationId().equals("447639009")) {
+        && member.getMapRelationId().equals(new Long("447639009"))) {
       result.addError("Map has empty target with map category 447639009");
     }
 
     // Verify mapTarget is null when mapCategory is not 447637006 or 447639009
     if (!member.getMapTarget().isEmpty()
-        && !member.getMapRelationId().equals("447637006")
-        && !member.getMapRelationId().equals("447639009")) {
+        && !member.getMapRelationId().equals(new Long("447637006"))
+        && !member.getMapRelationId().equals(new Long("447639009"))) {
       result
           .addError("Map has non-empty target without map category 447639009 or 447637006  - "
               + member.getMapRelationId());
@@ -659,7 +659,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     // Verify IFA rules with mapTargets have 447639009 mapCategory
     if (member.getMapRule().startsWith("IFA")
-        && !member.getMapRelationId().equals("447639009")) {
+        && !member.getMapRelationId().equals(new Long("447639009"))) {
       result.addError("IFA map has category other than 447639009 - "
           + member.getMapRelationId());
     }
