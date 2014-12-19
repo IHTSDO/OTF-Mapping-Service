@@ -100,11 +100,35 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
     </dependency>
-    
-    <!--  Apache POI library -->
+
+    <!-- Apache POI library -->
     <dependency>
       <groupId>org.apache.poi</groupId>
       <artifactId>poi</artifactId>
     </dependency>
+
   </dependencies>
+
+  <build>
+    <plugins>
+<plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>javacc-maven-plugin</artifactId>
+        <version>2.6</version>
+        <executions>
+          <execution>
+            <id>javacc-step-1</id>
+            <goals>
+              <goal>javacc</goal>
+            </goals>
+            <configuration>
+              <includes>
+                <include>**/*.jj</include>
+              </includes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>
