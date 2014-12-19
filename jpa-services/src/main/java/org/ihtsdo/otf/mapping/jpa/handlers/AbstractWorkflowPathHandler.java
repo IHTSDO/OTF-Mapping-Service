@@ -1,16 +1,18 @@
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapRecordListJpa;
+import org.ihtsdo.otf.mapping.helpers.WorkflowPathState;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
-import org.ihtsdo.otf.mapping.helpers.WorkflowState;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatusCombination;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
@@ -20,19 +22,42 @@ import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
+// TODO: Auto-generated Javadoc
 /**
  * Abstract implementation of {@link WorkflowPathHandler}.
+ * 
+ * @author ${author}
  */
 public abstract class AbstractWorkflowPathHandler implements
     WorkflowPathHandler {
 
-  /** The workflow path */
+  /** The workflow path. */
   private WorkflowPath workflowPath = null;
-  
-  Set<WorkflowState> workflowStates = new HashSet<>();
+
+  /** The map of tracking record states to acceptable workflow actions. */
+  Map<WorkflowPathState, Set<WorkflowAction>> trackingRecordStateToActionMap =
+      new HashMap<>();
 
   /** Whether an empty workflow state is allowed. Default: true. */
   boolean emptyWorkflowAllowed = true;
+
+  /**
+   * Returns the workflow path.
+   * 
+   * @return the workflow path
+   */
+  public WorkflowPath getWorkflowPath() {
+    return workflowPath;
+  }
+
+  /**
+   * Sets the workflow path.
+   * 
+   * @param workflowPath the workflow path
+   */
+  public void setWorkflowPath(WorkflowPath workflowPath) {
+    this.workflowPath = workflowPath;
+  }
 
   /**
    * Indicates whether or not empty workflow allowed is the case.
@@ -49,10 +74,29 @@ public abstract class AbstractWorkflowPathHandler implements
    * @param emptyWorkflowAllowed the empty workflow allowed
    */
   public void setEmptyWorkflowAllowed(boolean emptyWorkflowAllowed) {
-    this.emptyWorkflowAllowed = emptyWorkflowAllowed;
+    emptyWorkflowAllowed = emptyWorkflowAllowed;
   }
 
-  
+  /**
+   * Returns the tracking record state to action map.
+   * 
+   * @return the tracking record state to action map
+   */
+  public Map<WorkflowPathState, Set<WorkflowAction>> getTrackingRecordStateToActionMap() {
+    return trackingRecordStateToActionMap;
+  }
+
+  /**
+   * Sets the tracking record state to action map.
+   * 
+   * @param trackingRecordStateToActionMap the tracking record state to action
+   *          map
+   */
+  public void setTrackingRecordStateToActionMap(
+    Map<WorkflowPathState, Set<WorkflowAction>> trackingRecordStateToActionMap) {
+    this.trackingRecordStateToActionMap = trackingRecordStateToActionMap;
+  }
+
   /*
    * (non-Javadoc)
    * 
@@ -66,17 +110,17 @@ public abstract class AbstractWorkflowPathHandler implements
     ValidationResult result = new ValidationResultJpa();
 
     WorkflowStatusCombination workflowCombination =
-        this.getWorkflowCombinationForTrackingRecord(trackingRecord);
+        getWorkflowCombinationForTrackingRecord(trackingRecord);
 
     // check for empty (allowed) combination
     if (workflowCombination.isEmpty()) {
-      if (this.emptyWorkflowAllowed == false) {
+      if (emptyWorkflowAllowed == false) {
         result
             .addError("Empty workflow combination not allowed for this workflow path");
       }
 
       // otherwise, check whether this combination is allowed
-    } else if (this.isWorkflowCombinationInWorkflowStates(workflowCombination)) {
+    } else if (!isWorkflowCombinationInTrackingRecordStates(workflowCombination)) {
       result
           .addError("Tracking record has invalid combination of reported workflow statuses for "
               + trackingRecord.getWorkflowPath());
@@ -87,13 +131,13 @@ public abstract class AbstractWorkflowPathHandler implements
       return result;
 
     // extract the user/workflow pairs
-    Set<String> userWorkflowPairs =
-        new HashSet<>(Arrays.asList(trackingRecord
-            .getUserAndWorkflowStatusPairs().split(" ")));
+    Set<String> userWorkflowPairs = new HashSet<>();
+    if (trackingRecord.getUserAndWorkflowStatusPairs() != null)
+      userWorkflowPairs.addAll(Arrays.asList(trackingRecord
+          .getUserAndWorkflowStatusPairs().split(" ")));
 
     // get the map records
-    MapRecordList mapRecords =
-        this.getMapRecordsForTrackingRecord(trackingRecord);
+    MapRecordList mapRecords = getMapRecordsForTrackingRecord(trackingRecord);
 
     // cycle over map records and verify each exists on the tracking record
     // pairs
@@ -148,9 +192,34 @@ public abstract class AbstractWorkflowPathHandler implements
     TrackingRecord trackingRecord, WorkflowAction action, MapUser mapUser)
     throws Exception {
 
-    // This must be overwritten by the individual handlers
-    return null;
+    ValidationResult result = new ValidationResultJpa();
+
+    // get the workflow state
+    WorkflowPathState state = getWorkflowStateForTrackingRecord(trackingRecord);
+    
+
+    // check if this action is legal for this workflow state
+    if (action.equals(WorkflowAction.CANCEL)) {
+      // CANCEL is valid for all workflow paths at all stages
+      // individual handlers must specify actions to be taken if this is used
+    } else if (trackingRecordStateToActionMap.containsKey(state)) {
+
+      // check that action is valid for this workflow path state
+      if (!trackingRecordStateToActionMap.get(state).contains(action)) {
+        result.addError("Action is not appropriate for tracking record");
+      }
+
+      // otherwise, the tracking record is in a bad workflow state
+    } else {
+      result.addError("Tracking record has bad workflow");
+    }
+
+    return result;
   }
+
+  // //////////////////////////////////////////////
+  // UTILITY FUNCTIONS
+  // //////////////////////////////////////////////
 
   /**
    * Returns the workflow combination for tracking record.
@@ -163,9 +232,12 @@ public abstract class AbstractWorkflowPathHandler implements
     WorkflowStatusCombination workflowCombination =
         new WorkflowStatusCombination();
 
-    for (String pair : tr.getUserAndWorkflowStatusPairs().split(" ")) {
-      workflowCombination.addWorkflowStatus(WorkflowStatus.valueOf(pair
-          .substring(0, pair.lastIndexOf("_"))));
+    if (tr.getUserAndWorkflowStatusPairs() != null) {
+
+      for (String pair : tr.getUserAndWorkflowStatusPairs().split(" ")) {
+        workflowCombination.addWorkflowStatus(WorkflowStatus.valueOf(pair
+            .substring(0, pair.lastIndexOf("_"))));
+      }
     }
 
     return workflowCombination;
@@ -189,6 +261,13 @@ public abstract class AbstractWorkflowPathHandler implements
     return mapRecords;
   }
 
+  /**
+   * Returns the current map record for user.
+   * 
+   * @param records the records
+   * @param mapUser the map user
+   * @return the current map record for user
+   */
   public MapRecord getCurrentMapRecordForUser(MapRecordList records,
     MapUser mapUser) {
     MapRecord assignedRecord = null;
@@ -203,25 +282,51 @@ public abstract class AbstractWorkflowPathHandler implements
     }
     return assignedRecord;
   }
-  
-  public boolean isWorkflowCombinationInWorkflowStates(WorkflowStatusCombination workflowCombination) {
-    
-    for (WorkflowState state : workflowStates) {
+
+  /**
+   * Indicates whether or not workflow combination in tracking record states is
+   * the case.
+   * 
+   * @param workflowCombination the workflow combination
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public boolean isWorkflowCombinationInTrackingRecordStates(
+    WorkflowStatusCombination workflowCombination) {
+
+    for (WorkflowPathState state : trackingRecordStateToActionMap.keySet()) {
       if (state.contains(workflowCombination))
         return true;
     }
-    
+
     return false;
-    
+
   }
-  
-  public WorkflowState getWorkflowStateForWorkflowCombination(WorkflowStatusCombination workflowCombination) {
-    for (WorkflowState state : workflowStates) {
+
+  /**
+   * Returns the workflow state for workflow combination.
+   * 
+   * @param workflowCombination the workflow combination
+   * @return the workflow state for workflow combination
+   */
+  public WorkflowPathState getWorkflowStateForWorkflowCombination(
+    WorkflowStatusCombination workflowCombination) {
+    for (WorkflowPathState state : trackingRecordStateToActionMap.keySet()) {
       if (state.contains(workflowCombination))
         return state;
     }
-    
+
     return null;
+  }
+
+  /**
+   * Returns the workflow state for tracking record.
+   * 
+   * @param trackingRecord the tracking record
+   * @return the workflow state for tracking record
+   */
+  public WorkflowPathState getWorkflowStateForTrackingRecord(
+    TrackingRecord trackingRecord) {
+    return getWorkflowStateForWorkflowCombination(getWorkflowCombinationForTrackingRecord(trackingRecord));
   }
 
 }

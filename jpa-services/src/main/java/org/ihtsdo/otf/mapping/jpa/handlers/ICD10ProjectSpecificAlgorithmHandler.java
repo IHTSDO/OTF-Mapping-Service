@@ -62,6 +62,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
         // if a target is specified check it
       } else if (mapEntry.getTargetId() != null && !mapEntry.getTargetId().equals("")) {
+        
+        Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info("  Checking id: " + mapEntry.getTargetId());
 
         // first, check terminology id based on above rules
         if (!mapEntry.getTargetId().equals("")
@@ -94,6 +96,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
                 + " map  priority "
                 + Integer.toString(mapEntry.getMapPriority()));
           }
+          
+          Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info("  Concept exists and is valid");
 
           
         }
