@@ -513,7 +513,7 @@ public class ReportServiceRest extends RootServiceRest {
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public Report testReport(
+  public Boolean testReport(
     @ApiParam(value = "The report definition", required = true) ReportDefinitionJpa reportDefinition,
     @ApiParam(value = "Map project id", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "User generating report", required = true) @PathParam("userName") String userName,
@@ -552,12 +552,12 @@ public class ReportServiceRest extends RootServiceRest {
       
       reportService.close();
 
-      return report;
+      return true;
     } catch (Exception e) {
 
       handleException(e, "trying to test a report", userName,
           mapProjectName, "");
-      return null;
+      return false;
 
     }
   }
