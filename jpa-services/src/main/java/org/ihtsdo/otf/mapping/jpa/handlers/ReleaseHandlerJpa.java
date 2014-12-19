@@ -549,10 +549,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         }
 
           ValidationResult result = null;
+          
+          // TODO:  Temporarily removed the qa checks
           if (mapProject.isRuleBased()) {
-            result = qaRulesMember(member);
+            // result = qaRulesMember(member);
           } else {
-            result = qaMember(member);
+            //result = qaMember(member);
           }
           if (result != null && !result.isValid()) {
             throw new Exception("Invalid member for "
