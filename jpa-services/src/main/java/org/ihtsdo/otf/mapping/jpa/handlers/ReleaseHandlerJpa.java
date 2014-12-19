@@ -178,9 +178,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     contentService = new ContentServiceJpa();
     metadataService = new MetadataServiceJpa();
     this.testModeFlag = testModeFlag;
-    // instantiate the algorithm handler
-    algorithmHandler =
-        mappingService.getProjectSpecificAlgorithmHandler(mapProject);
 
   }
 
@@ -2133,8 +2130,11 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * .ihtsdo.otf.mapping.model.MapProject)
    */
   @Override
-  public void setMapProject(MapProject mapProject) {
+  public void setMapProject(MapProject mapProject) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
     this.mapProject = mapProject;
+    // instantiate the algorithm handler
+    algorithmHandler =
+        mappingService.getProjectSpecificAlgorithmHandler(mapProject);
   }
 
   /**
