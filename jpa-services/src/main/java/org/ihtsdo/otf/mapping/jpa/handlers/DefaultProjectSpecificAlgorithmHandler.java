@@ -205,6 +205,13 @@ public class DefaultProjectSpecificAlgorithmHandler implements
   // HELPER FUNCTIONS //
   // ////////////////////
 
+  /**
+   * Check map record for null target ids.
+   *
+   * @param mapRecord the map record
+   * @return the validation result
+   */
+  @SuppressWarnings("static-method")
   public ValidationResult checkMapRecordForNullTargetIds(MapRecord mapRecord) {
     ValidationResult validationResult = new ValidationResultJpa();
 
@@ -759,7 +766,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements
    * @param entry2 the entry2
    * @return <code>true</code> if so, <code>false</code> otherwise
    */
-  @SuppressWarnings("static-method")
   public boolean isRulesEqual(MapEntry entry1, MapEntry entry2) {
     
     // if not rule based, automatically return true
