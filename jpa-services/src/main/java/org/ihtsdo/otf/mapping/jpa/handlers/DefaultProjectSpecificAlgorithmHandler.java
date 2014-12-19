@@ -27,6 +27,7 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
+import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
@@ -34,8 +35,6 @@ import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
 /**
  * Reference implementation of {@link ProjectSpecificAlgorithmHandler}.
- * 
- * @author ${author}
  */
 public class DefaultProjectSpecificAlgorithmHandler implements
     ProjectSpecificAlgorithmHandler {
@@ -206,6 +205,13 @@ public class DefaultProjectSpecificAlgorithmHandler implements
   // HELPER FUNCTIONS //
   // ////////////////////
 
+  /**
+   * Check map record for null target ids.
+   *
+   * @param mapRecord the map record
+   * @return the validation result
+   */
+  @SuppressWarnings("static-method")
   public ValidationResult checkMapRecordForNullTargetIds(MapRecord mapRecord) {
     ValidationResult validationResult = new ValidationResultJpa();
 
@@ -364,38 +370,38 @@ public class DefaultProjectSpecificAlgorithmHandler implements
       // otherwise check TRUE rules
     } else {
 
-      // cycle over the groups
-      for (Integer key : entryGroups.keySet()) {
+    // cycle over the groups
+    for (Integer key : entryGroups.keySet()) {
 
-        for (MapEntry mapEntry : entryGroups.get(key)) {
+      for (MapEntry mapEntry : entryGroups.get(key)) {
 
           Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
-              "    Checking entry "
-                  + Integer.toString(mapEntry.getMapPriority()));
-
-          // add message if TRUE rule found at non-terminating entry
-          if (mapEntry.getMapPriority() != entryGroups.get(key).size()
-              && mapEntry.getRule().equals("TRUE")) {
-            validationResult
-                .addError("Found non-terminating entry with TRUE rule."
-                    + " Entry:"
-                    + (mapProject.isGroupStructure() ? " group "
-                        + Integer.toString(mapEntry.getMapGroup()) + "," : "")
-                    + " map priority "
+                "    Checking entry "
                     + Integer.toString(mapEntry.getMapPriority()));
 
-            // add message if terminating entry rule is not TRUE
-          } else if (mapEntry.getMapPriority() == entryGroups.get(key).size()
-              && !mapEntry.getRule().equals("TRUE")) {
-            validationResult.addError("Terminating entry has non-TRUE rule."
-                + " Entry:"
-                + (mapProject.isGroupStructure() ? " group "
-                    + Integer.toString(mapEntry.getMapGroup()) + "," : "")
+        // add message if TRUE rule found at non-terminating entry
+        if (mapEntry.getMapPriority() != entryGroups.get(key).size()
+            && mapEntry.getRule().equals("TRUE")) {
+          validationResult
+              .addError("Found non-terminating entry with TRUE rule."
+                  + " Entry:"
+                  + (mapProject.isGroupStructure() ? " group "
+                      + Integer.toString(mapEntry.getMapGroup()) + "," : "")
+                  + " map priority "
+                  + Integer.toString(mapEntry.getMapPriority()));
+
+          // add message if terminating entry rule is not TRUE
+        } else if (mapEntry.getMapPriority() == entryGroups.get(key).size()
+            && !mapEntry.getRule().equals("TRUE")) {
+          validationResult.addError("Terminating entry has non-TRUE rule."
+              + " Entry:"
+              + (mapProject.isGroupStructure() ? " group "
+                  + Integer.toString(mapEntry.getMapGroup()) + "," : "")
                 + " map priority "
                 + Integer.toString(mapEntry.getMapPriority()));
-          }
         }
       }
+    }
     }
     for (String error : validationResult.getErrors()) {
       Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
@@ -760,7 +766,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements
    * @param entry2 the entry2
    * @return <code>true</code> if so, <code>false</code> otherwise
    */
-  @SuppressWarnings("static-method")
   public boolean isRulesEqual(MapEntry entry1, MapEntry entry2) {
     
     // if not rule based, automatically return true
@@ -2394,15 +2399,29 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         .getPropagationDescendantThreshold();
   }
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#getDependentModules()
+   */
   @Override
   public Set<String> getDependentModules() {
     return new HashSet<>();
   }
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#getModuleDependencyRefSetId()
+   */
   @Override
   public String getModuleDependencyRefSetId() {
-    // TODO Auto-generated method stub
     return null;
+  }
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#validateForRelease(org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember)
+   */
+  @Override
+  public ValidationResult validateForRelease(ComplexMapRefSetMember member) {
+    // do nothing
+    return new ValidationResultJpa();
   }
 
 }
