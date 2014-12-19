@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -48,6 +49,9 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
   /** The qa true rule in group. */
   private boolean qaTrueRuleInGroup = false;
 
+  /** The parser. */
+  private MapRuleParser parser = new MapRuleParser();
+
   /**
    * For ICD10, a target code is valid if: - Concept exists - Concept has at
    * least 3 characters - The second character is a number (e.g. XVII is
@@ -80,8 +84,9 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         // if a target is specified check it
       } else if (mapEntry.getTargetId() != null
           && !mapEntry.getTargetId().equals("")) {
-        
-        Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info("  Checking id: " + mapEntry.getTargetId());
+
+        Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info(
+            "  Checking id: " + mapEntry.getTargetId());
 
         // first, check terminology id based on above rules
         if (!mapEntry.getTargetId().equals("")
@@ -114,11 +119,11 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
                 + " map  priority "
                 + Integer.toString(mapEntry.getMapPriority()));
           }
-          
-          Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info("  Concept exists and is valid");
 
-          
-          }
+          Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info(
+              "  Concept exists and is valid");
+
+        }
 
         // otherwise, check that relation is assignable to null target
       } else {
@@ -501,7 +506,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
    * validateForRelease(org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember)
    */
   @Override
-  public ValidationResult validateForRelease(ComplexMapRefSetMember member) {
+  public ValidationResult validateForRelease(ComplexMapRefSetMember member) throws Exception {
     ValidationResult result = super.validateForRelease(member);
 
     // Verify mapTarget is not null when mapCategory is 447637006 or 447639009
@@ -567,7 +572,16 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
     // Verify AGE rules do not end with <= 0
     // -- not possible given new age ranges - this had to do with cartographer
 
-    // Verify each mapRule has valid syntax - whew!
+    // Verify each mapRule has valid syntax
+    // see maprule.abnf for grammar
+    for (String rule : member.getMapRule().split(" AND ")) {
+      boolean isMatch =
+          parser.parse(new ByteArrayInputStream(rule.getBytes()));
+      if (!isMatch) {
+        result.addError("Rule clause has incorrect grammar: " + rule);
+      }
+    }
+
     // Use MapRuleParser for this. Still having trouble
     // creating an LR grammar for the rule that I can generate a parser for.
     // TODO: using this: https://github.com/bqluan/abnf-parser-generator
@@ -633,7 +647,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
     // Verify referencedComponentId in valid
     // -- concepts are looked up when build occurs and reported then
-    
+
     // Verify refSetId and module id are valid
     // -- Verified by release mojo
 
@@ -641,7 +655,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
     if (member.getModuleId().equals(Long.valueOf("449080006"))) {
       result.addError("Module id is wrong");
     }
-    
+
     // Verify all referencedComponentId are Clinical Finding, Event, or
     // Situation
     // -- scope is defined at project level and "begin release" verifies
