@@ -171,7 +171,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
      */
 
     // Validation Check: verify correct positioning of TRUE rules
-    validationResult.merge(checkMapRecordTrueRules(mapRecord, entryGroups));
+    validationResult.merge(checkMapRecordRules(mapRecord, entryGroups));
 
     // Validation Check: very higher map groups do not have only NC nodes
     validationResult.merge(checkMapRecordNcNodes(mapRecord, entryGroups));
@@ -194,6 +194,10 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     // entries)
     validationResult.merge(checkMapRecordAdvices(mapRecord, entryGroups));
 
+    // Validation Check: all entries are non-null (empty entries are empty
+    // strings)
+    validationResult.merge(checkMapRecordForNullTargetIds(mapRecord));
+
     return validationResult;
   }
 
@@ -201,9 +205,22 @@ public class DefaultProjectSpecificAlgorithmHandler implements
   // HELPER FUNCTIONS //
   // ////////////////////
 
+  public ValidationResult checkMapRecordForNullTargetIds(MapRecord mapRecord) {
+    ValidationResult validationResult = new ValidationResultJpa();
+
+    for (MapEntry me : mapRecord.getMapEntries()) {
+      if (me.getTargetId() == null)
+        validationResult.addError("Map entry at group " + me.getMapGroup()
+            + ", priority " + me.getMapPriority()
+            + " has no target (valid or empty) selected.");
+    }
+
+    return validationResult;
+  }
+
   /**
    * Check map record group structure.
-   *
+   * 
    * @param mapRecord the map record
    * @param entryGroups the entry groups
    * @return the validation result
@@ -220,8 +237,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     // cycle over the expected group numbers
     for (int i = 1; i < mapGroups.size(); i++) {
       if (!mapGroups.contains(i)) {
-        validationResult.addWarning("Group " + i
-            + " is empty -- this will be fixed in QA at a later stage");
+        validationResult.addWarning("Group " + i + " is empty");
       }
     }
 
@@ -313,13 +329,14 @@ public class DefaultProjectSpecificAlgorithmHandler implements
   }
 
   /**
-   * Function to check proper use of TRUE rules.
+   * Function to check proper use of TRUE rules and presence of rules on
+   * non-rule based projects.
    * 
    * @param mapRecord the map record
    * @param entryGroups the binned entry lists by group
    * @return a list of errors detected
    */
-  public ValidationResult checkMapRecordTrueRules(MapRecord mapRecord,
+  public ValidationResult checkMapRecordRules(MapRecord mapRecord,
     Map<Integer, List<MapEntry>> entryGroups) {
 
     // Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
@@ -327,17 +344,31 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
     ValidationResult validationResult = new ValidationResultJpa();
 
-    // if not rule based, return empty validation result
-    if (!mapProject.isRuleBased())
-      return validationResult;
+    // if not rule based, check for rules present
+    if (!mapProject.isRuleBased()) {
+
+      for (MapEntry me : mapRecord.getMapEntries()) {
+        if (me.getRule() != null) {
+          validationResult
+              .addError("Rule found for non-rule based project at map group "
+                  + me.getMapGroup()
+                  + ", priority "
+                  + me.getMapPriority()
+                  + ", rule specified is "
+                  + (me.getRule().isEmpty() ? " empty, but not null" : me
+                      .getRule()));
+        }
+      }
+
+      // otherwise check TRUE rules
+    } else {
 
     // cycle over the groups
     for (Integer key : entryGroups.keySet()) {
 
       for (MapEntry mapEntry : entryGroups.get(key)) {
 
-        Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
-            .info(
+          Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
                 "    Checking entry "
                     + Integer.toString(mapEntry.getMapPriority()));
 
@@ -359,9 +390,11 @@ public class DefaultProjectSpecificAlgorithmHandler implements
               + " Entry:"
               + (mapProject.isGroupStructure() ? " group "
                   + Integer.toString(mapEntry.getMapGroup()) + "," : "")
-              + " map priority " + Integer.toString(mapEntry.getMapPriority()));
+                + " map priority "
+                + Integer.toString(mapEntry.getMapPriority()));
         }
       }
+    }
     }
     for (String error : validationResult.getErrors()) {
       Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
@@ -728,6 +761,11 @@ public class DefaultProjectSpecificAlgorithmHandler implements
    */
   @SuppressWarnings("static-method")
   public boolean isRulesEqual(MapEntry entry1, MapEntry entry2) {
+    
+    // if not rule based, automatically return true
+    if (mapProject.isRuleBased() == false)
+      return true;
+   
     // check null comparisons first
     if (entry1.getRule() == null && entry2.getRule() != null)
       return false;
@@ -779,7 +817,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
   /**
    * Prints the advice differences.
-   *
+   * 
    * @param validationResult the validation result
    * @param entry1 the entry1
    * @param entry2 the entry2
@@ -2212,7 +2250,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
   /**
    * Returns the current map record for user.
-   *
+   * 
    * @param mapRecords the map records
    * @param mapUser the map user
    * @return the current map record for user
@@ -2354,7 +2392,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     return mapRecord.getCountDescendantConcepts() < mapProject
         .getPropagationDescendantThreshold();
   }
-  
+
   /* (non-Javadoc)
    * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#getDependentModules()
    */
