@@ -62,7 +62,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
     throws Exception {
 
     Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info(
-        "Validating target codes");
+        "Validating target codes for ICD10");
 
     ValidationResult validationResult = new ValidationResultJpa();
     ContentService contentService = new ContentServiceJpa();
@@ -80,6 +80,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         // if a target is specified check it
       } else if (mapEntry.getTargetId() != null
           && !mapEntry.getTargetId().equals("")) {
+        
+        Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info("  Checking id: " + mapEntry.getTargetId());
 
         // first, check terminology id based on above rules
         if (!mapEntry.getTargetId().equals("")
@@ -94,6 +96,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
                       + Integer.toString(mapEntry.getMapGroup()) + "," : "")
                   + " map priority "
                   + Integer.toString(mapEntry.getMapPriority()));
+        } else {
 
           // second, verify concept exists
           Concept concept =
@@ -110,9 +113,12 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
                     + Integer.toString(mapEntry.getMapGroup()) + "," : "")
                 + " map  priority "
                 + Integer.toString(mapEntry.getMapPriority()));
-
           }
-        }
+          
+          Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info("  Concept exists and is valid");
+
+          
+          }
 
         // otherwise, check that relation is assignable to null target
       } else {
