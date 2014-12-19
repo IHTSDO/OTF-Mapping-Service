@@ -2094,7 +2094,8 @@ angular
                       }
                     }).success(function(data) {
                   $rootScope.glassPane--;
-                  $scope.testReportSuccess = true;
+
+                  $scope.testReportSuccess = data === 'true' ? true : false;
                   $scope.testReportError = null;
 
                   console.debug("Success", $scope.testReportSuccess);
