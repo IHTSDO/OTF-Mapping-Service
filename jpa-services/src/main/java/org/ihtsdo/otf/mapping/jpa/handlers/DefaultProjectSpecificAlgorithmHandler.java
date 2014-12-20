@@ -2419,7 +2419,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
    * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#validateForRelease(org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember)
    */
   @Override
-  public ValidationResult validateForRelease(ComplexMapRefSetMember member) {
+  public ValidationResult validateForRelease(ComplexMapRefSetMember member) throws Exception {
     // do nothing
     return new ValidationResultJpa();
   }

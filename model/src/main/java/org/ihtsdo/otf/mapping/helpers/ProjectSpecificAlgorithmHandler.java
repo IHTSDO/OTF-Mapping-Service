@@ -227,6 +227,7 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    *
    * @param member the member
    * @return the validation result
+   * @throws Exception the exception
    */
-  public ValidationResult validateForRelease(ComplexMapRefSetMember member);
+  public ValidationResult validateForRelease(ComplexMapRefSetMember member) throws Exception;
 }

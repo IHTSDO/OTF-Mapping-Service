@@ -77,8 +77,9 @@ public interface ReleaseHandler {
    * Sets the map project.
    *
    * @param mapProject the mapProject to set
+   * @throws Exception the exception
    */
-  public void setMapProject(MapProject mapProject);
+  public void setMapProject(MapProject mapProject) throws Exception;
 
   /**
    * Sets the map records.
