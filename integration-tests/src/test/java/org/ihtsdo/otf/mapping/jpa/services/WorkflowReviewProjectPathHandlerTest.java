@@ -62,7 +62,7 @@ public class WorkflowReviewProjectPathHandlerTest {
 
   @Test
   public void testStates() throws Exception {
-
+    
   }
 
   @Test
