@@ -332,7 +332,6 @@ public class GetterSetterTester {
    * @throws IllegalAccessException
    * @throws InvocationTargetException
    */
-  @SuppressWarnings("static-method")
   private Object makeEnum(Class<?> clazz1) throws SecurityException,
     NoSuchMethodException, IllegalArgumentException, IllegalAccessException,
     InvocationTargetException {

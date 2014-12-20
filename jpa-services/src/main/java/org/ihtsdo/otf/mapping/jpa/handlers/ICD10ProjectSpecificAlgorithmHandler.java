@@ -540,7 +540,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
     // Verify higher map groups do not have only NC nodes
     // check when group goes back to 1
-    if (member.getMapGroup() != qaPrevGroup && qaPrevGroup != 1) {
+    if (member.getMapGroup() != qaPrevGroup && qaPrevGroup > 1) {
       if (qaOnlyNc) {
         result.addError("Higher map group has only NC nodes - " + qaPrevConcept
             + ", " + qaPrevGroup);
@@ -653,7 +653,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
     // Verify moduleId ss RefSet file is moduleId of map file ...Wed Dec 17
     if (member.getModuleId().equals(Long.valueOf("449080006"))) {
-      result.addError("Module id is wrong");
+      result.addError("Module id is wrong - " + member.getModuleId());
     }
 
     // Verify all referencedComponentId are Clinical Finding, Event, or
