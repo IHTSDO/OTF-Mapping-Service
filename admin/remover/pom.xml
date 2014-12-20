@@ -199,7 +199,32 @@
         </plugins>
       </build>
     </profile>
-
+    
+    <!-- Remove a specific map advice, specify -Drun.config... -->
+    <profile>
+      <id>MapAdviceFifthCharacter</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>remove-map-advice-fifth-character</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>remove-map-advice-fifth-character</goal>
+                </goals>
+                <configuration>
+                  <refsetId>${refset.id}</refsetId>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  
     <!-- Remove all reports for a project, specify -Drun.config... -->
     <profile>
       <id>Reports</id>
