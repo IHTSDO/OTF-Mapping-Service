@@ -1299,7 +1299,9 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
    * @return the result set
    * @throws Exception the exception
    */
-  @SuppressWarnings("resource")
+  @SuppressWarnings({
+     "unchecked"
+  })
   private List<Object[]> executeQuery(String query, boolean nativeFlag)
     throws Exception {
 
