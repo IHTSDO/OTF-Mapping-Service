@@ -591,7 +591,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
     for (String rule : member.getMapRule().split("AND IFA")) {
       // replace IFA part of the rule
-      if (!rule.startsWith("IFA")) {
+      if (!rule.startsWith("IFA") && !rule.equals("TRUE") &&
+          !rule.equals("OTHERWISE TRUE")) {
         rule = "IFA" + rule;
       }        
       
