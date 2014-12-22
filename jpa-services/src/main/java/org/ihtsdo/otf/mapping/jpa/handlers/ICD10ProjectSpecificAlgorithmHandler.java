@@ -581,22 +581,22 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
     // Verify each mapRule has valid syntax.
     // It was difficult to create an LR(1) compliant grammar for the map rule
-    // so we settled for validating map rule clauses.  Thoug, because " AND " appears
+    // so we settled for validating map rule clauses.  Though, because " AND " appears
     // in SNOMED preferred names, we had to ignore those cases
     // see maprule.abnf for grammar
     // TODO: ideally this should use a better parser with a full implemenation
-//    if (!member.getConcept().getDefaultPreferredName().contains((" AND "))) {
-//      // NOTE, the logic above is a compromise because we are
-//      // validating only "clauses" of the map rule.  A full parser
-//      // would fix this
-//      for (String rule : member.getMapRule().split(" AND ")) {
-//        boolean isMatch =
-//            parser.parse(new ByteArrayInputStream(rule.getBytes()));
-//        if (!isMatch) {
-//          result.addError("Rule clause has incorrect grammar: " + rule);
-//        }
-//      }
-//    }
+    if (!member.getConcept().getDefaultPreferredName().toUpperCase().contains((" AND "))) {
+      // NOTE, the logic above is a compromise because we are
+      // validating only "clauses" of the map rule.  A full parser
+      // would fix this
+      for (String rule : member.getMapRule().split(" AND ")) {
+        boolean isMatch =
+            parser.parse(new ByteArrayInputStream(rule.getBytes()));
+        if (!isMatch) {
+          result.addError("Rule clause has incorrect grammar: " + rule);
+        }
+      }
+    }
 
     // Verify mapAdvice is restricted to the defined list
     // -- all map advices are controlled at project level now
