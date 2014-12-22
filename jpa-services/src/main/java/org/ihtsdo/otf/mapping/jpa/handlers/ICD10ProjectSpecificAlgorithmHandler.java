@@ -554,7 +554,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
     }
 
     // Verify TRUE rules do not appear before IFA rules
-    if (member.getMapGroup() != qaPrevGroup) {
+    if (member.getMapGroup() != qaPrevGroup || member.getMapGroup() == 1) {
       // reset flag when group changes
       qaTrueRuleInGroup = false;
     }
