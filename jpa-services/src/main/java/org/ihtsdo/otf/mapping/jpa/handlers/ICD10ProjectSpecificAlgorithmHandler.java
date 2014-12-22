@@ -39,7 +39,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
   // Ideally this would be encapsulated into a kind of parameter
   // object and passed locally rather than relying on class state.
   // these should NOT be used in the interactive application
-  
+
   /** The qa prev group. */
   private int qaPrevGroup = 0;
 
@@ -522,11 +522,13 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
     // gender)
     if (member.getMapTarget().isEmpty()
         && member.getMapRelationId().equals(Long.valueOf("447637006"))) {
-      result.addError("Map has empty target with map category 447637006 - " + member);
+      result.addError("Map has empty target with map category 447637006 - "
+          + member);
     }
     if (member.getMapTarget().isEmpty()
         && member.getMapRelationId().equals(Long.valueOf("447639009"))) {
-      result.addError("Map has empty target with map category 447639009 - " + member);
+      result.addError("Map has empty target with map category 447639009 - "
+          + member);
     }
 
     // Verify mapTarget is null when mapCategory is not 447637006 or 447639009
@@ -539,10 +541,10 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
     }
 
     // Verify IFA rules with mapTargets have 447639009 mapCategory
-    if (member.getMapRule().startsWith("IFA") && !member.getMapTarget().isEmpty()
+    if (member.getMapRule().startsWith("IFA")
+        && !member.getMapTarget().isEmpty()
         && !member.getMapRelationId().equals(Long.valueOf("447639009"))) {
-      result.addError("IFA map has category other than 447639009 - "
-          + member);
+      result.addError("IFA map has category other than 447639009 - " + member);
     }
 
     // Verify higher map groups do not have only NC nodes
@@ -581,20 +583,21 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
     // Verify each mapRule has valid syntax.
     // It was difficult to create an LR(1) compliant grammar for the map rule
-    // so we settled for validating map rule clauses.  Though, because " AND " appears
+    // so we settled for validating map rule clauses. Though, because " AND "
+    // appears
     // in SNOMED preferred names, we had to ignore those cases
     // see maprule.abnf for grammar
     // TODO: ideally this should use a better parser with a full implemenation
-    if (!member.getConcept().getDefaultPreferredName().toUpperCase().contains((" AND "))) {
-      // NOTE, the logic above is a compromise because we are
-      // validating only "clauses" of the map rule.  A full parser
-      // would fix this
-      for (String rule : member.getMapRule().split(" AND ")) {
-        boolean isMatch =
-            parser.parse(new ByteArrayInputStream(rule.getBytes()));
-        if (!isMatch) {
-          result.addError("Rule clause has incorrect grammar: " + rule);
-        }
+
+    for (String rule : member.getMapRule().split("AND IFA")) {
+      // replace IFA part of the rule
+      if (!rule.startsWith("IFA")) {
+        rule = "IFA" + rule;
+      }        
+      
+      boolean isMatch = parser.parse(new ByteArrayInputStream(rule.getBytes()));
+      if (!isMatch) {
+        result.addError("Rule clause has incorrect grammar: " + rule);
       }
     }
 
@@ -615,7 +618,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           result.addError("Empty target with advice not allowed - " + member);
         } else if (member.getMapAdvice().contains(advice.getName())
             && advice.isAllowableForNullTarget() && found) {
-          result.addError("Empty target with too many advice values - " + member);
+          result.addError("Empty target with too many advice values - "
+              + member);
         } else if (member.getMapAdvice().contains(advice.getName())
             && advice.isAllowableForNullTarget() && !found) {
           found = true;
@@ -645,7 +649,9 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
     if (member.getMapAdvice().contains("MAP IS CONTEXT DEPENDENT FOR GENDER")
         && member.getMapAdvice().contains(
             " MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT")) {
-      result.addError("Gender rule contains invalid CONTEXT DEPENDENT advice - " + member);
+      result
+          .addError("Gender rule contains invalid CONTEXT DEPENDENT advice - "
+              + member);
     }
 
     // Verify map advice is sorted ...Wed Dec 17 00:41:58 PST 2014
