@@ -506,7 +506,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
    * validateForRelease(org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember)
    */
   @Override
-  public ValidationResult validateForRelease(ComplexMapRefSetMember member) throws Exception {
+  public ValidationResult validateForRelease(ComplexMapRefSetMember member)
+    throws Exception {
     ValidationResult result = super.validateForRelease(member);
 
     // Verify mapTarget is not null when mapCategory is 447637006 or 447639009
@@ -515,11 +516,11 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
     // gender)
     if (member.getMapTarget().isEmpty()
         && member.getMapRelationId().equals(Long.valueOf("447637006"))) {
-      result.addError("Map has empty target with map category 447637006");
+      result.addError("Map has empty target with map category 447637006 - " + member);
     }
     if (member.getMapTarget().isEmpty()
         && member.getMapRelationId().equals(Long.valueOf("447639009"))) {
-      result.addError("Map has empty target with map category 447639009");
+      result.addError("Map has empty target with map category 447639009 - " + member);
     }
 
     // Verify mapTarget is null when mapCategory is not 447637006 or 447639009
@@ -535,7 +536,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
     if (member.getMapRule().startsWith("IFA")
         && !member.getMapRelationId().equals(Long.valueOf("447639009"))) {
       result.addError("IFA map has category other than 447639009 - "
-          + member.getMapRelationId());
+          + member);
     }
 
     // Verify higher map groups do not have only NC nodes
@@ -563,7 +564,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       qaTrueRuleInGroup = true;
     } else if (member.getMapRule().startsWith("IFA") && qaTrueRuleInGroup) {
       // error if an "ifa" rule is found in the group while a true rule exists
-      result.addError("TRUE rule before end of group");
+      result.addError("TRUE rule before end of group " + member);
     }
 
     // Verify IFA rules refer to valid conceptId
@@ -572,20 +573,24 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
     // Verify AGE rules do not end with <= 0
     // -- not possible given new age ranges - this had to do with cartographer
 
-    // Verify each mapRule has valid syntax
+    // Verify each mapRule has valid syntax.
+    // It was difficult to create an LR(1) compliant grammar for the map rule
+    // so we settled for validating map rule clauses.  Thoug, because " AND " appears
+    // in SNOMED preferred names, we had to ignore those cases
     // see maprule.abnf for grammar
-    for (String rule : member.getMapRule().split(" AND ")) {
-      boolean isMatch =
-          parser.parse(new ByteArrayInputStream(rule.getBytes()));
-      if (!isMatch) {
-        result.addError("Rule clause has incorrect grammar: " + rule);
-      }
-    }
-
-    // Use MapRuleParser for this. Still having trouble
-    // creating an LR grammar for the rule that I can generate a parser for.
-    // TODO: using this: https://github.com/bqluan/abnf-parser-generator
-    // See maprule.abnf and MapRuleParser.java
+    // TODO: ideally this should use a better parser with a full implemenation
+//    if (!member.getConcept().getDefaultPreferredName().contains((" AND "))) {
+//      // NOTE, the logic above is a compromise because we are
+//      // validating only "clauses" of the map rule.  A full parser
+//      // would fix this
+//      for (String rule : member.getMapRule().split(" AND ")) {
+//        boolean isMatch =
+//            parser.parse(new ByteArrayInputStream(rule.getBytes()));
+//        if (!isMatch) {
+//          result.addError("Rule clause has incorrect grammar: " + rule);
+//        }
+//      }
+//    }
 
     // Verify mapAdvice is restricted to the defined list
     // -- all map advices are controlled at project level now
@@ -601,10 +606,10 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       for (MapAdvice advice : mapProject.getMapAdvices()) {
         if (member.getMapAdvice().contains(advice.getName())
             && !advice.isAllowableForNullTarget()) {
-          result.addError("Empty target with advice not allowed.");
+          result.addError("Empty target with advice not allowed - " + member);
         } else if (member.getMapAdvice().contains(advice.getName())
             && advice.isAllowableForNullTarget() && found) {
-          result.addError("Empty target with too many advice values");
+          result.addError("Empty target with too many advice values - " + member);
         } else if (member.getMapAdvice().contains(advice.getName())
             && advice.isAllowableForNullTarget() && !found) {
           found = true;
@@ -621,12 +626,12 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
     if (member.getMapAdvice().contains("MAP IS CONTEXT DEPENDENT FOR GENDER")
         && !member.getMapRule().contains("| Male (finding) |")
         && !member.getMapRule().contains("| Female (finding) |")) {
-      result.addError("GENDER advice without gender rule");
+      result.addError("GENDER advice without gender rule - " + member);
     }
     if (!member.getMapAdvice().contains("MAP IS CONTEXT DEPENDENT FOR GENDER")
         && (member.getMapRule().contains("| Male (finding) |") || member
             .getMapRule().contains("| Female (finding) |"))) {
-      result.addError("Gender rulel without GENDER advice");
+      result.addError("Gender rulel without GENDER advice - " + member);
     }
 
     // Verify advice MAP IS CONTEXT DEPENDENT FOR GENDER is not used in
@@ -634,7 +639,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
     if (member.getMapAdvice().contains("MAP IS CONTEXT DEPENDENT FOR GENDER")
         && member.getMapAdvice().contains(
             " MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT")) {
-      result.addError("Gender rule contains invalid CONTEXT DEPENDENT advice");
+      result.addError("Gender rule contains invalid CONTEXT DEPENDENT advice - " + member);
     }
 
     // Verify map advice is sorted ...Wed Dec 17 00:41:58 PST 2014
@@ -652,8 +657,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
     // -- Verified by release mojo
 
     // Verify moduleId ss RefSet file is moduleId of map file ...Wed Dec 17
-    if (member.getModuleId().equals(Long.valueOf("449080006"))) {
-      result.addError("Module id is wrong - " + member.getModuleId());
+    if (!member.getModuleId().equals(Long.valueOf("449080006"))) {
+      result.addError("Module id is wrong - " + member);
     }
 
     // Verify all referencedComponentId are Clinical Finding, Event, or
@@ -665,14 +670,14 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
     // Groups are consecutive starting with 1
     if (member.getMapGroup() != qaPrevGroup && member.getMapGroup() != 1
         && member.getMapGroup() != qaPrevGroup + 1) {
-      result.addError("Groups are not consecutive starting with 1");
+      result.addError("Groups are not consecutive starting with 1 - " + member);
     }
 
     // Priorities within a group are consecutive and starting with 1
-    if (member.getMapGroup() == qaPrevGroup
+    if (member.getMapGroup() == qaPrevGroup && member.getMapPriority() != 1
         && member.getMapPriority() != qaPrevPriority + 1) {
       result.addError("Priorities are not consecutive starting with 1 - "
-          + qaPrevGroup);
+          + qaPrevGroup + ", " + member);
 
     }
 
