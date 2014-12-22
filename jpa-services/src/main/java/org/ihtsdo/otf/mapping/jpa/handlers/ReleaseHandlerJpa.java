@@ -534,16 +534,23 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
                 activeMembersMap.get(member.getTerminologyId()).toString());
             Logger.getLogger(getClass()).error(member.toString());
             throw new Exception("Duplicate id found");
-          }
+        }
 
           ValidationResult result = null;
           result = algorithmHandler.validateForRelease(member);
+          
+          // TODO:  Temporarily removed the qa checks
+          if (mapProject.isRuleBased()) {
+            // result = qaRulesMember(member);
+          } else {
+            //result = qaMember(member);
+          }
           if (result != null && !result.isValid()) {
             throw new Exception("Invalid member for "
                 + member.getConcept().getTerminologyId() + " - " + result);
           }
           activeMembersMap.put(member.getTerminologyId(), member);
-        }
+      }
       }
 
       // clear the service -- memory management
@@ -699,7 +706,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             // be explicitly rendered and the logic would be wrong
             //
             // Thus if all the entries for a group match the parent, then none
-            // need to be rendered, otherwise all do.
+            // need to be rendered, otherwise all do.          
             for (MapEntry me : mr.getMapEntries()) {
 
               // get the current list of entries for this group
@@ -873,7 +880,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // Compute retired, new, and changed.. discard unchanged for delta
     Map<String, ComplexMapRefSetMember> tmpActiveMembers =
         new HashMap<>(activeMembers);
-
+   
     Logger.getLogger(getClass()).info("  Computing delta entries");
 
     Set<String> conceptsNew = new HashSet<>();
