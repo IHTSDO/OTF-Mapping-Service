@@ -1025,12 +1025,17 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     updateStatMax(Stats.NEW_CONCEPTS.getValue(), ct);
 
     Set<String> changedConcepts = new HashSet<>();
-    for (ComplexMapRefSetMember member : activeMembers.values()) {
-      String key = member.getConcept().getTerminologyId();
+    boolean found = false;
+    for (String key : activeMembers.keySet()) {
+      ComplexMapRefSetMember member = activeMembers.get(key);
       ComplexMapRefSetMember member2 = previousActiveMembers.get(key);
       if (member2 != null && !member.equals(member2)) {
         changedConcepts.add(key);
+        found = true;
       }
+    }
+    if (!found) {
+      throw new Exception("no changed concepts found.");
     }
     updateStatMax(Stats.CHANGED_CONCEPTS.getValue(), changedConcepts.size());
 
