@@ -34,6 +34,12 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
 public class ICD10ProjectSpecificAlgorithmHandler extends
     DefaultProjectSpecificAlgorithmHandler {
 
+  // These state variables are maintained by sequential calls to
+  // validate complex map refset records during a release
+  // Ideally this would be encapsulated into a kind of parameter
+  // object and passed locally rather than relying on class state.
+  // these should NOT be used in the interactive application
+  
   /** The qa prev group. */
   private int qaPrevGroup = 0;
 
@@ -533,7 +539,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
     }
 
     // Verify IFA rules with mapTargets have 447639009 mapCategory
-    if (member.getMapRule().startsWith("IFA")
+    if (member.getMapRule().startsWith("IFA") && !member.getMapTarget().isEmpty()
         && !member.getMapRelationId().equals(Long.valueOf("447639009"))) {
       result.addError("IFA map has category other than 447639009 - "
           + member);
