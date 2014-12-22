@@ -1121,7 +1121,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @param currentActiveMembers the current active members
    * @throws Exception the exception
    */
-  @SuppressWarnings("resource")
   private void writeSnapshotFile(
     Map<String, ComplexMapRefSetMember> prevInactiveMembers,
     Map<String, ComplexMapRefSetMember> prevActiveMembers,
