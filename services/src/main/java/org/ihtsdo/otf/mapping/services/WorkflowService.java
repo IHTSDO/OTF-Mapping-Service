@@ -324,33 +324,7 @@ public interface WorkflowService extends RootService {
   @Override
   public void commit() throws Exception;
 
-  /**
-   * Generate random conflict data.
-   * 
-   * @param mapProject the map project
-   * @param numDesiredConflicts the num desired conflicts
-   * @throws Exception the exception
-   */
-  public void generateRandomConflictData(MapProject mapProject,
-    int numDesiredConflicts) throws Exception;
-
-  /**
-   * Generate mapper testing state.
-   *
-   * @param mapProject the map project
-   * @throws Exception the exception
-   */
-  public void generateMapperTestingStateKLININ(MapProject mapProject)
-    throws Exception;
-
-  /**
-   * Generate mapper testing state.
-   *
-   * @param mapProject the map project
-   * @throws Exception the exception
-   */
-  public void generateMapperTestingStateBHEKRE(MapProject mapProject)
-    throws Exception;
+  
 
   /**
    * Gets the tracking record for map project and concept.
