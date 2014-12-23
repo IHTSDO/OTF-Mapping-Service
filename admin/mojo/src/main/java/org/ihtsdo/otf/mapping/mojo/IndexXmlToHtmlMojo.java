@@ -82,7 +82,6 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
    * 
    * @throws MojoExecutionException the mojo execution exception
    */
-  @SuppressWarnings("resource")
   @Override
   public void execute() throws MojoExecutionException {
     getLog().info("Starting to convert index XML to HTML");
