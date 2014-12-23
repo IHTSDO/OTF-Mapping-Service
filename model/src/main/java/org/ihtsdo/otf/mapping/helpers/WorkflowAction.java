@@ -14,9 +14,6 @@ public enum WorkflowAction {
   /** The unassign. */
   UNASSIGN,
 
-  /** The start editing. */
-  START_EDITING,
-
   /** The save for later. */
   SAVE_FOR_LATER,
 

@@ -33,6 +33,7 @@ import org.ihtsdo.otf.mapping.helpers.ReportDefinitionList;
 import org.ihtsdo.otf.mapping.helpers.ReportDefinitionListJpa;
 import org.ihtsdo.otf.mapping.helpers.ReportList;
 import org.ihtsdo.otf.mapping.helpers.ReportListJpa;
+import org.ihtsdo.otf.mapping.helpers.ReportQueryType;
 import org.ihtsdo.otf.mapping.helpers.ReportResultItemList;
 import org.ihtsdo.otf.mapping.helpers.ReportResultItemListJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
@@ -900,16 +901,19 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
           Logger.getLogger(ReportServiceJpa.class).info(
               "    Generating report " + reportDefinition.getName());
 
-          Report report =
-              this.generateReport(mapProject, mapUser,
-                  reportDefinition.getName(), reportDefinition, localStartDate,
-                  true);
+          // Only generate reports for those that have queries
+          if (reportDefinition.getQueryType() != ReportQueryType.NONE) {
+            Report report =
+                this.generateReport(mapProject, mapUser,
+                    reportDefinition.getName(), reportDefinition,
+                    localStartDate, true);
 
-          Logger.getLogger(ReportServiceJpa.class).info(
-              "     Persisting report.");
+            Logger.getLogger(ReportServiceJpa.class).info(
+                "     Persisting report.");
 
-          // persist the report
-          report = this.addReport(report);
+            // persist the report
+            report = this.addReport(report);
+          }
         }
       }
 
@@ -1112,11 +1116,14 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
         break;
       case LUCENE:
         // query map records index which returns map objects
-        // value = "", itemId = mapRecord.getId(), itemName=mapRecord.getConceptName()
+        // value = "", itemId = mapRecord.getId(),
+        // itemName=mapRecord.getConceptName()
         break;
       case SQL:
         results = executeQuery(report.getQuery(), true);
         break;
+      case NONE:
+        return null;
       default:
         break;
 
@@ -1261,27 +1268,22 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
     ReportResult result = new ReportResultJpa();
 
-    // construct empty sets if null passed in
-    if (result1 == null)
-      result1 = new ReportResultJpa();
-
-    if (result2 == null)
-      result2 = new ReportResultJpa();
-
     // cycle over all result items in the first report
-    for (ReportResultItem item1 : result1.getReportResultItems()) {
+    if (result1 != null) {
+      for (ReportResultItem item1 : result1.getReportResultItems()) {
 
-      // if second result set does not contain this item, add it to result
-      // list
-      if (!result2.getReportResultItems().contains(item1)) {
+        // if second result set does not contain this item, add it to result
+        // list
+        if (result2 != null && !result2.getReportResultItems().contains(item1)) {
 
-        // construct a new item to ensure clean data structure
-        ReportResultItem newItem = new ReportResultItemJpa();
-        newItem.setItemId(item1.getItemId());
-        newItem.setItemName(item1.getItemName());
-        newItem.setReportResult(result);
-        newItem.setResultType(item1.getResultType());
-        result.addReportResultItem(newItem);
+          // construct a new item to ensure clean data structure
+          ReportResultItem newItem = new ReportResultItemJpa();
+          newItem.setItemId(item1.getItemId());
+          newItem.setItemName(item1.getItemName());
+          newItem.setReportResult(result);
+          newItem.setResultType(item1.getResultType());
+          result.addReportResultItem(newItem);
+        }
       }
     }
 
@@ -1299,7 +1301,9 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
    * @return the result set
    * @throws Exception the exception
    */
-  @SuppressWarnings("resource")
+  @SuppressWarnings({
+    "unchecked"
+  })
   private List<Object[]> executeQuery(String query, boolean nativeFlag)
     throws Exception {
 

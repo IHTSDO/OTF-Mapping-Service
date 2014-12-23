@@ -7,6 +7,7 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
+import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
@@ -220,4 +221,13 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @return the module dependency ref set id
    */
   public String getModuleDependencyRefSetId();
+  
+  /**
+   * Validate for release.
+   *
+   * @param member the member
+   * @return the validation result
+   * @throws Exception the exception
+   */
+  public ValidationResult validateForRelease(ComplexMapRefSetMember member) throws Exception;
 }
