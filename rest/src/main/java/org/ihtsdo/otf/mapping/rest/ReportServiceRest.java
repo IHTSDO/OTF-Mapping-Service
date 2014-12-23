@@ -406,7 +406,7 @@ public class ReportServiceRest extends RootServiceRest {
       MapUserRole role =
           securityService.getMapProjectRoleForToken(authToken, projectId);
       user = securityService.getUsernameForToken(authToken);
-      if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
         throw new WebApplicationException(Response.status(401)
             .entity("User does not have permissions to retrieve reports.")
             .build());
