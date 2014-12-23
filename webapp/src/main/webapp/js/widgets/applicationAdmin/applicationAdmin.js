@@ -141,10 +141,12 @@ angular
                     .success(
                         function(data) {
                           for (var i = 0; i < data.keyValuePairList.length; i++) {
-                            $scope.terminologyVersionPairs
-                                .push(data.keyValuePairList[i].keyValuePair[0].key
+                        	  for (var j = 0; j < data.keyValuePairList[i].keyValuePair.length; j++) {
+                                $scope.terminologyVersionPairs
+                                  .push(data.keyValuePairList[i].keyValuePair[j].key
                                     + " "
-                                    + data.keyValuePairList[i].keyValuePair[0].value);
+                                    + data.keyValuePairList[i].keyValuePair[j].value);
+                        	  }
                           }
                         }).error(
                         function(data, status, headers, config) {
@@ -2630,6 +2632,15 @@ angular
               };
 
               $scope.updateMapProject = function(project) {
+            	  
+            	// get source and version and dest and version
+            	var src = project.sourceTerminologyVersion.split(" ");
+                project.sourceTerminology = src[0];
+                project.sourceTerminologyVersion = src[1];
+                var res = project.destinationTerminologyVersion.split(" ");
+                project.destinationTerminology = res[0];
+                project.destinationTerminologyVersion = res[1];
+                  
                 $http({
                   url : root_mapping + "project/update",
                   dataType : "json",
