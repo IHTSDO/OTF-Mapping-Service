@@ -27,7 +27,7 @@
 
     <!-- Specify the moduleId to use for RF2 files -->
     <module.id></module.id>
-    
+
     <!-- Specify a test mode for the release if desired -->
     <test.mode.flag>false</test.mode.flag>
   </properties>
@@ -63,7 +63,7 @@
         </plugins>
       </build>
     </profile>
-    
+
     <profile>
       <id>BeginRelease</id>
       <build>
@@ -88,8 +88,8 @@
         </plugins>
       </build>
     </profile>
-    
-       <profile>
+
+    <profile>
       <id>FinishRelease</id>
       <build>
         <plugins>
@@ -114,7 +114,7 @@
         </plugins>
       </build>
     </profile>
-    
+
 
   </profiles>
 </project>
