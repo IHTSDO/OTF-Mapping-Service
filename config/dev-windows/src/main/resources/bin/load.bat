@@ -49,21 +49,21 @@ del /Q mvn.log
 
 echo     Load ICPC ...%date% %time%
 cd %MAPPING_CODE%/admin/loader
-call mvn install -PClaML -Drun.config=%MAPPING_CONFIG% -Dterminology=ICPC -Dinput.file=%MAPPING_DATA%/icpc-2.xml 1> mvn.log
+call mvn install -PClaML -Drun.config=%MAPPING_CONFIG% -Dterminology=ICPC -Dversion=2 -Dinput.file=%MAPPING_DATA%/icpc-2.xml 1> mvn.log
 IF %ERRORLEVEL% NEQ 0 (set error=1
 goto trailer)
 del /Q mvn.log
 
 echo     Load ICD10 ...%date% %time%
 cd %MAPPING_CODE%/admin/loader
-call mvn install -PClaML -Drun.config=%MAPPING_CONFIG% -Dterminology=ICD10 -Dinput.file=%MAPPING_DATA%/icd10-2010.xml 1> mvn.log
+call mvn install -PClaML -Drun.config=%MAPPING_CONFIG% -Dterminology=ICD10 -Dversion=2010-Dinput.file=%MAPPING_DATA%/icd10-2010.xml 1> mvn.log
 IF %ERRORLEVEL% NEQ 0 (set error=1
 goto trailer)
 del /Q mvn.log
 
 echo     Load ICD9CM ...%date% %time%
 cd %MAPPING_CODE%/admin/loader
-call mvn install -PClaML -Drun.config=%MAPPING_CONFIG% -Dterminology=ICD9CM -Dinput.file=%MAPPING_DATA%/icd9cm-2013.xml 1> mvn.log
+call mvn install -PClaML -Drun.config=%MAPPING_CONFIG% -Dterminology=ICD9CM -Dversion=2013 -Dinput.file=%MAPPING_DATA%/icd9cm-2013.xml 1> mvn.log
 IF %ERRORLEVEL% NEQ 0 (set error=1
 goto trailer)
 del /Q mvn.log
