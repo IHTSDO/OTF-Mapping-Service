@@ -244,7 +244,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     // cycle over the expected group numbers
     for (int i = 1; i < mapGroups.size(); i++) {
       if (!mapGroups.contains(i)) {
-        validationResult.addWarning("Group " + i + " is empty");
+        validationResult.addError("Group " + i + " is empty");
       }
     }
 
