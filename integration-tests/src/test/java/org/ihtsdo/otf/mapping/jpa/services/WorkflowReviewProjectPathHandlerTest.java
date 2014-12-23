@@ -35,9 +35,9 @@ public class WorkflowReviewProjectPathHandlerTest {
 
   private static WorkflowService workflowService;
 
-  private TrackingRecord trackingRecord;
+  private static TrackingRecord trackingRecord;
 
-  private static MapUser specialist;
+  private static MapUser specialist, specialist2;
 
   private static MapUser lead;
 
@@ -62,7 +62,86 @@ public class WorkflowReviewProjectPathHandlerTest {
 
   @Test
   public void testStates() throws Exception {
-    
+
+    WorkflowStatusCombination combination;
+    Set<WorkflowStatusCombination> allCombinations;
+    int nStatesFound = 0;
+    int nStatesTotal = 0;
+
+    // test empty state
+    if (handler.isEmptyWorkflowAllowed()) {
+      combination = new WorkflowStatusCombination();
+      if (handler.isWorkflowCombinationInTrackingRecordStates(combination)) {
+        nStatesFound++;
+      }
+      nStatesTotal++;
+    }
+
+    // test all one-record combination states
+    allCombinations = new HashSet<>();
+    for (WorkflowStatus status1 : WorkflowStatus.values()) {
+      combination = new WorkflowStatusCombination(Arrays.asList(status1));
+      allCombinations.add(combination);
+    }
+
+    nStatesTotal += allCombinations.size();
+
+    for (WorkflowStatusCombination c : allCombinations) {
+      if (handler.isWorkflowCombinationInTrackingRecordStates(c)) {
+        nStatesFound++;
+      }
+    }
+
+    // test all two-record combination states
+    allCombinations = new HashSet<>();
+    for (WorkflowStatus status1 : WorkflowStatus.values()) {
+      for (WorkflowStatus status2 : WorkflowStatus.values()) {
+        combination =
+            new WorkflowStatusCombination(Arrays.asList(status1, status2));
+
+        if (handler.isWorkflowCombinationInTrackingRecordStates(combination)) {
+          nStatesFound++;
+        }
+      }
+    }
+
+    nStatesTotal += allCombinations.size();
+
+    for (WorkflowStatusCombination c : allCombinations) {
+      if (handler.isWorkflowCombinationInTrackingRecordStates(c)) {
+        nStatesFound++;
+      }
+    }
+
+    // test all three-record combination states
+    allCombinations = new HashSet<>();
+    for (WorkflowStatus status1 : WorkflowStatus.values()) {
+      for (WorkflowStatus status2 : WorkflowStatus.values()) {
+        for (WorkflowStatus status3 : WorkflowStatus.values()) {
+          combination =
+              new WorkflowStatusCombination(Arrays.asList(status1, status2,
+                  status3));
+
+          if (handler.isWorkflowCombinationInTrackingRecordStates(combination)) {
+            nStatesFound++;
+          }
+        }
+      }
+    }
+
+    nStatesTotal += allCombinations.size();
+
+    for (WorkflowStatusCombination c : allCombinations) {
+      if (handler.isWorkflowCombinationInTrackingRecordStates(c)) {
+        nStatesFound++;
+      }
+    }
+
+    // finally assert whether the correct number of legal states was found
+    assertTrue("Correct number of states found (" + nStatesTotal + " checked)",
+        nStatesFound + (handler.isEmptyWorkflowAllowed() ? 1 : 0) == handler
+            .getTrackingRecordStateToActionMap().size());
+
   }
 
   @Test
@@ -143,9 +222,9 @@ public class WorkflowReviewProjectPathHandlerTest {
     legalCombinations.add(new WorkflowStatusCombination(Arrays
         .asList(WorkflowStatus.REVIEW_NEEDED)));
 
-    int legalCombinationsTested = 0;
-
     // test all single workflow states
+    Set<WorkflowStatusCombination> legalCombinationsFound = new HashSet<>();
+
     for (WorkflowStatus status : WorkflowStatus.values()) {
 
       // reset the managers
@@ -171,7 +250,8 @@ public class WorkflowReviewProjectPathHandlerTest {
       if (legalCombinations.contains(handler
           .getWorkflowCombinationForTrackingRecord(trackingRecord))) {
 
-        legalCombinationsTested++;
+        legalCombinationsFound.add(handler
+            .getWorkflowCombinationForTrackingRecord(trackingRecord));
 
         // validate tracking record
         assertTrue("Tracking Record valid",
@@ -221,7 +301,7 @@ public class WorkflowReviewProjectPathHandlerTest {
     }
 
     assertTrue("Checking legal status combinations evaluated",
-        legalCombinations.size() == legalCombinationsTested);
+        legalCombinations.size() == legalCombinationsFound.size());
 
   }
 
@@ -237,81 +317,83 @@ public class WorkflowReviewProjectPathHandlerTest {
     legalCombinations.add(new WorkflowStatusCombination(Arrays.asList(
         WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_IN_PROGRESS)));
 
-    Set<WorkflowStatusCombination> possibleCombinations = new HashSet<>();
+    Set<WorkflowStatusCombination> legalCombinationsFound = new HashSet<>();
     for (WorkflowStatus status1 : WorkflowStatus.values()) {
       for (WorkflowStatus status2 : WorkflowStatus.values()) {
-       
-      }
-    }
 
-    // test all single workflow states
-    for (WorkflowStatus status : WorkflowStatus.values()) {
+        // reset the managers
+        resetRecords();
 
-      // reset the managers
-      resetRecords();
+        // set up the records
+        MapRecord record = new MapRecordJpa();
+        record.setConceptId("1");
+        record.setConceptName("concept1");
+        record.setCountDescendantConcepts(0L);
+        record.setLastModified(Calendar.getInstance().getTimeInMillis());
+        record.setWorkflowStatus(status1);
+        record.setOwner(specialist);
+        record.setLastModifiedBy(specialist);
+        mappingService.addMapRecord(record);
+        
+        MapRecord record2 = new MapRecordJpa();
+        record2.setConceptId("1");
+        record2.setConceptName("concept1");
+        record2.setCountDescendantConcepts(0L);
+        record2.setLastModified(Calendar.getInstance().getTimeInMillis());
+        record2.setWorkflowStatus(status2);
+        record2.setOwner(specialist2);
+        record2.setLastModifiedBy(specialist2);
+        mappingService.addMapRecord(record);
 
-      // set up the records
-      MapRecord record = new MapRecordJpa();
-      record.setConceptId("1");
-      record.setConceptName("concept1");
-      record.setCountDescendantConcepts(0L);
-      record.setLastModified(Calendar.getInstance().getTimeInMillis());
-      record.setWorkflowStatus(WorkflowStatus.NEW);
-      record.setOwner(specialist);
-      record.setLastModifiedBy(specialist);
-      mappingService.addMapRecord(record);
+        // compute workflow
+        computeWorkflow(new HashSet<MapRecord>(Arrays.asList(record)));
 
-      // compute workflow
-      computeWorkflow(new HashSet<MapRecord>(Arrays.asList(record)));
+        if (legalCombinations.contains(handler.getWorkflowCombinationForTrackingRecord(trackingRecord))) {
 
-      if (legalCombinations.contains(new WorkflowStatusCombination(Arrays
-          .asList(status)))) {
+          // validate tracking record
+          assertTrue("Tracking Record valid",
+              handler.validateTrackingRecord(trackingRecord).isValid());
 
-        // validate tracking record
-        assertTrue("Tracking Record valid",
-            handler.validateTrackingRecord(trackingRecord).isValid());
+          // test all workflow actions for this state
+          ValidationResult result = testWorkflowActions();
 
-        // test all workflow actions for this state
-        ValidationResult result = testWorkflowActions();
+          for (WorkflowAction action : WorkflowAction.values()) {
+            switch (action) {
+              case ASSIGN_FROM_INITIAL_RECORD:
+                assertTrue(result.getErrors().contains(action.toString()));
+                break;
+              case ASSIGN_FROM_SCRATCH:
+                assertTrue(result.getErrors().contains(action.toString()));
+                break;
+              case CANCEL:
+                assertTrue(result.getMessages().contains(action.toString()));
+                break;
+              case CREATE_QA_RECORD:
+                assertTrue(result.getErrors().contains(action.toString()));
+                break;
+              case FINISH_EDITING:
+                assertTrue(result.getMessages().contains(action.toString()));
+                break;
+              case PUBLISH:
+                assertTrue(result.getErrors().contains(action.toString()));
+                break;
+              case SAVE_FOR_LATER:
+                assertTrue(result.getMessages().contains(action.toString()));
+                break;
+              case UNASSIGN:
+                assertTrue(result.getMessages().contains(action.toString()));
+                break;
 
-        System.out.println(result.getMessages());
-        System.out.println("-");
-        System.out.println(result.getErrors());
-
-        for (WorkflowAction action : WorkflowAction.values()) {
-          switch (action) {
-            case ASSIGN_FROM_INITIAL_RECORD:
-              assertTrue(result.getErrors().contains(action.toString()));
-              break;
-            case ASSIGN_FROM_SCRATCH:
-              assertTrue(result.getErrors().contains(action.toString()));
-              break;
-            case CANCEL:
-              assertTrue(result.getMessages().contains(action.toString()));
-              break;
-            case CREATE_QA_RECORD:
-              assertTrue(result.getErrors().contains(action.toString()));
-              break;
-            case FINISH_EDITING:
-              assertTrue(result.getMessages().contains(action.toString()));
-              break;
-            case PUBLISH:
-              assertTrue(result.getErrors().contains(action.toString()));
-              break;
-            case SAVE_FOR_LATER:
-              assertTrue(result.getMessages().contains(action.toString()));
-              break;
-            case UNASSIGN:
-              assertTrue(result.getMessages().contains(action.toString()));
-              break;
-
+            }
           }
+        } else {
+          assertTrue("Tracking Record should not be valid", handler
+              .validateTrackingRecord(trackingRecord).isValid());
         }
-      } else {
-        assertTrue("Tracking Record should not be valid", handler
-            .validateTrackingRecord(trackingRecord).isValid());
       }
     }
+    assertTrue("Checking legal status combinations evaluated",
+        legalCombinations.size() == legalCombinationsFound.size());
   }
 
   @Test
@@ -352,6 +434,12 @@ public class WorkflowReviewProjectPathHandlerTest {
     specialist.setApplicationRole(MapUserRole.SPECIALIST);
     specialist.setName("Specialist");
     specialist.setEmail("email");
+    
+    specialist2 = new MapUserJpa();
+    specialist2.setUserName("spec2");
+    specialist2.setApplicationRole(MapUserRole.SPECIALIST);
+    specialist2.setName("Specialist 2");
+    specialist2.setEmail("email");
 
     lead = new MapUserJpa();
     lead.setUserName("lead");
@@ -360,6 +448,7 @@ public class WorkflowReviewProjectPathHandlerTest {
     lead.setEmail("email");
 
     mappingService.addMapUser(specialist);
+    mappingService.addMapUser(specialist2);
     mappingService.addMapUser(lead);
   }
 

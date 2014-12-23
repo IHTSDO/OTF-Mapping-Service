@@ -22,11 +22,9 @@ import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
-// TODO: Auto-generated Javadoc
 /**
  * Abstract implementation of {@link WorkflowPathHandler}.
  * 
- * @author ${author}
  */
 public abstract class AbstractWorkflowPathHandler implements
     WorkflowPathHandler {
@@ -74,7 +72,7 @@ public abstract class AbstractWorkflowPathHandler implements
    * @param emptyWorkflowAllowed the empty workflow allowed
    */
   public void setEmptyWorkflowAllowed(boolean emptyWorkflowAllowed) {
-    emptyWorkflowAllowed = emptyWorkflowAllowed;
+    this.emptyWorkflowAllowed = emptyWorkflowAllowed;
   }
 
   /**

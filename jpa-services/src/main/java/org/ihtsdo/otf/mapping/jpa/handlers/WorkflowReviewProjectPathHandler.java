@@ -2,21 +2,12 @@ package org.ihtsdo.otf.mapping.jpa.handlers;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Set;
 
-import org.ihtsdo.otf.mapping.helpers.MapRecordList;
-import org.ihtsdo.otf.mapping.helpers.MapUserRole;
-import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
-import org.ihtsdo.otf.mapping.helpers.WorkflowPathState;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
+import org.ihtsdo.otf.mapping.helpers.WorkflowPathState;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatusCombination;
-import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
-import org.ihtsdo.otf.mapping.model.MapRecord;
-import org.ihtsdo.otf.mapping.model.MapUser;
-import org.ihtsdo.otf.mapping.services.MappingService;
-import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
 public class WorkflowReviewProjectPathHandler extends
     AbstractWorkflowPathHandler {
