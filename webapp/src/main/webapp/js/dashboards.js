@@ -6,7 +6,7 @@ var mapProjectAppDashboards = angular.module('mapProjectAppDashboards', [
 mapProjectAppDashboards
   .controller(
     'ResolveConflictsDashboardCtrl',
-    function($scope, $routeParams, $rootScope, $location, localStorageService) {
+    function($scope, $routeParams, $rootScope, $location, $http, localStorageService) {
 
       // model variable
       $scope.model = null;
