@@ -9,9 +9,9 @@ import org.ihtsdo.otf.mapping.helpers.WorkflowPathState;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatusCombination;
 
-public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
+public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
 
-  public WorkflowFixErrorPathHandler() {
+  public WorkflowQaPathHandler() {
 
     setWorkflowPath(WorkflowPath.FIX_ERROR_PATH);
 
@@ -21,36 +21,38 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
 
     // STATE: Initial state has no tracking record
 
-    // workflow states representing a record marked for qa and the original
-    // published record
-    state = new WorkflowPathState("QA_NEEDED");
+    // workflow states representing a record marked for revision and the
+    // specialist-level editing
+    state = new WorkflowPathState("Specialist Work ");
     state.addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
-        WorkflowStatus.REVISION, WorkflowStatus.QA_NEEDED)));
+        WorkflowStatus.REVISION, WorkflowStatus.NEW)));
+    state.addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
+        WorkflowStatus.REVISION, WorkflowStatus.EDITING_IN_PROGRESS)));
+    state.addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
+        WorkflowStatus.REVISION, WorkflowStatus.REVIEW_NEEDED)));
     trackingRecordStateToActionMap.put(
         state,
         new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING,
             WorkflowAction.SAVE_FOR_LATER, WorkflowAction.UNASSIGN)));
 
     // workflow states representing record marked for revision, specialist work,
-    // and lead QA (incomplete)
-    state = new WorkflowPathState("QA_NEW/QA_IN_PROGREss");
-    state.addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
-        WorkflowStatus.REVISION, WorkflowStatus.QA_NEEDED,
-        WorkflowStatus.QA_NEW)));
-    state.addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
-        WorkflowStatus.REVISION, WorkflowStatus.QA_NEEDED,
-        WorkflowStatus.QA_IN_PROGRESS)));
-    trackingRecordStateToActionMap.put(
-        state,
-        new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING,
-            WorkflowAction.SAVE_FOR_LATER, WorkflowAction.UNASSIGN)));
-
-    // workflow states representing record marked for revision, specialist work,
-    // and lead QA (complete)
-    state = new WorkflowPathState("QA_RESOLVED");
+    // and lead review
+    state = new WorkflowPathState("Lead Review Incomplete");
     state.addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
         WorkflowStatus.REVISION, WorkflowStatus.REVIEW_NEEDED,
-        WorkflowStatus.QA_RESOLVED)));
+        WorkflowStatus.REVIEW_NEW)));
+    state.addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
+        WorkflowStatus.REVISION, WorkflowStatus.REVIEW_NEEDED,
+        WorkflowStatus.REVIEW_IN_PROGRESS)));
+    trackingRecordStateToActionMap.put(
+        state,
+        new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING,
+            WorkflowAction.SAVE_FOR_LATER, WorkflowAction.UNASSIGN)));
+
+    state = new WorkflowPathState("Lead Review Complete");
+    state.addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
+        WorkflowStatus.REVISION, WorkflowStatus.REVIEW_NEEDED,
+        WorkflowStatus.REVIEW_RESOLVED)));
     trackingRecordStateToActionMap.put(
         state,
         new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING,

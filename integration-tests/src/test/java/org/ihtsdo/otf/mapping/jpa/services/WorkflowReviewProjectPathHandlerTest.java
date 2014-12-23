@@ -350,6 +350,8 @@ public class WorkflowReviewProjectPathHandlerTest {
 
         if (legalCombinations.contains(handler.getWorkflowCombinationForTrackingRecord(trackingRecord))) {
 
+          legalCombinationsFound.add(handler.getWorkflowCombinationForTrackingRecord(trackingRecord));
+          
           // validate tracking record
           assertTrue("Tracking Record valid",
               handler.validateTrackingRecord(trackingRecord).isValid());
