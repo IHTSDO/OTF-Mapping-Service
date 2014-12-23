@@ -104,8 +104,10 @@ public class ReleaseFinishMojo extends AbstractMojo {
       getLog().info("  terminology = " + mapProject.getSourceTerminology());
       getLog().info("  version = " + mapProject.getSourceTerminologyVersion());
 
+      // clear old map refset
+      clearMapRefSet(mapProject);
       // Load map refset
-      loadMapRefSets(mapProject);
+      loadMapRefSet(mapProject);
 
       getLog().info("Done...");
 
@@ -117,12 +119,31 @@ public class ReleaseFinishMojo extends AbstractMojo {
   }
 
   /**
+   * Clear complex map refsets for a map project
+   * 
+   * @throws Exception the exception
+   */
+  private void clearMapRefSet(MapProject mapProject) throws Exception {
+    // begin transaction
+    final ContentService contentService = new ContentServiceJpa();
+    contentService.setTransactionPerOperation(false);
+    contentService.beginTransaction();
+
+    for (ComplexMapRefSetMember member : contentService
+        .getComplexMapRefSetMembersForRefSetId(refsetId).getIterable()) {
+      contentService.removeComplexMapRefSetMember(member.getId());
+    }
+    contentService.commit();
+    contentService.close();
+  }
+
+  /**
    * Load map refset from file
    * 
    * @throws Exception the exception
    */
   @SuppressWarnings("resource")
-  private void loadMapRefSets(MapProject mapProject) throws Exception {
+  private void loadMapRefSet(MapProject mapProject) throws Exception {
 
     String line = "";
     objectCt = 0;
@@ -144,7 +165,7 @@ public class ReleaseFinishMojo extends AbstractMojo {
 
       line = line.replace("\r", "");
       final String fields[] = line.split("\t");
-      
+
       // skip header
       if (!fields[0].equals("id")) {
         final ComplexMapRefSetMember member = new ComplexMapRefSetMemberJpa();
@@ -174,7 +195,7 @@ public class ReleaseFinishMojo extends AbstractMojo {
 
         // ComplexMap unique attributes NOT set by file (mapBlock
         // elements) - set defaults
-        member.setMapBlock(0); 
+        member.setMapBlock(0);
         member.setMapBlockRule(null);
         member.setMapBlockAdvice(null);
 
@@ -190,12 +211,13 @@ public class ReleaseFinishMojo extends AbstractMojo {
         if (++objectCt % logCt == 0) {
           getLog().info("    count = " + objectCt);
         }
-        
+
         if (concept != null) {
           member.setConcept(concept);
           contentService.addComplexMapRefSetMember(member);
         } else {
-          throw new Exception("Member references non-existent concept - " + member);
+          throw new Exception("Member references non-existent concept - "
+              + member);
         }
 
       }

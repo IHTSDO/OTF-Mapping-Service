@@ -1,5 +1,8 @@
 #!/bin/csh -f
-
+#
+# Sample cron entry:
+# Minute     Hour     Day of Month     Month     Day of Week
+# 0      19      *       *       0       csh /home/ihtsdo/config/bin/loadDelta.csh > /home/ihtsdo/logs/loadDelta.log
 #
 # Configure
 # 

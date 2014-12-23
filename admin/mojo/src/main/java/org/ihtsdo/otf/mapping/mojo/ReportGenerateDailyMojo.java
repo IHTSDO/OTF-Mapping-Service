@@ -31,7 +31,6 @@ public class ReportGenerateDailyMojo extends AbstractMojo {
    * Name of terminology to be loaded.
    * 
    * @parameter
-   * @required
    */
   private String refsetId = null;
 
@@ -47,7 +46,6 @@ public class ReportGenerateDailyMojo extends AbstractMojo {
    * End date
    * 
    * @parameter
-   * 
    */
   private String endDate = null;
 
@@ -72,7 +70,6 @@ public class ReportGenerateDailyMojo extends AbstractMojo {
     getLog().info("  startDate = " + startDate);
     getLog().info("  endDate = " + endDate);
 
-
     ReportService reportService = null;
     MapUser mapUser = null;
     MapProject mapProject = null;
@@ -80,22 +77,9 @@ public class ReportGenerateDailyMojo extends AbstractMojo {
 
       reportService = new ReportServiceJpa();
 
-      if (refsetId == null)
-        throw new MojoFailureException(
-            "You must specify at least one ref set id");
-      else
-        getLog().info("refsetId(s): " + refsetId);
-
-      if (startDate == null)
+      if (startDate == null) {
         throw new MojoFailureException("You must specify a start date");
-      else
-        getLog().info("Start date: " + startDate);
-
-      if (endDate == null)
-        getLog().warn(
-            "No end date specified.  Reports will be computed through today");
-      else
-        getLog().info("End date:   " + endDate);
+      }
 
       // parse the dates
       DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
@@ -107,39 +91,44 @@ public class ReportGenerateDailyMojo extends AbstractMojo {
 
       MappingService mappingService = new MappingServiceJpa();
 
-      String refsetIds[] = refsetId.split(",");
+      // Determine map projects to generate reports for
       List<MapProject> mapProjects = new ArrayList<>();
+      if (refsetId != null) {
+        String refsetIds[] = refsetId.split(",");
 
-      // retrieve the map project objects
-      for (String id : refsetIds) {
-        mapProject = mappingService.getMapProjectForRefSetId(id);
-        mapProjects.add(mapProject);
+        // retrieve the map project objects
+        for (String id : refsetIds) {
+          mapProject = mappingService.getMapProjectForRefSetId(id);
+          mapProjects.add(mapProject);
+        }
+      } else {
+        mapProjects.addAll(mappingService.getMapProjects().getMapProjects());
       }
 
       // get the loader map user
       mapUser = mappingService.getMapUser("loader");
 
-      mappingService.close();
-
+      // Generate reports for all projects
       for (MapProject mp : mapProjects) {
+        getLog().info("  Generate reports for project " + mapProject.getName());
         reportService.generateReportsForDateRange(mp, mapUser, start, end);
       }
-      reportService.close();
 
+      // Cleanup and end
+      mappingService.close();
+      reportService.close();
       getLog().info("Done ...");
 
     } catch (Exception e) {
-
+      e.printStackTrace();
+      // Send email if something went wrong
       OtfErrorHandler errorHandler = new OtfErrorHandler();
-
       errorHandler.handleException(
           e,
           "Error generating reports",
           "admin mojo",
           mapProject == null ? "Project could not be retrieved" : mapProject
               .getName(), "");
-
-      e.printStackTrace();
       throw new MojoFailureException("Unexpected exception:", e);
     }
   }
