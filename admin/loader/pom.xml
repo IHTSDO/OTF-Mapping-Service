@@ -164,6 +164,7 @@
                 <configuration>
                   <inputFile>${input.file}</inputFile>
                   <terminology>${terminology}</terminology>
+                  <version>${version}</version>
                 </configuration>
               </execution>
             </executions>
