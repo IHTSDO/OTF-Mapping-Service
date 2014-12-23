@@ -78,13 +78,13 @@ angular
               // passing test
               $scope.testQACheckSuccess = false;
               $scope.testQACheckError = null;
-              $scope.definitionQueryTypes = [ 'SQL', 'HQL', 'LUCENE' ];
+              $scope.definitionQueryTypes = [ 'NONE', 'SQL', 'HQL', 'LUCENE' ];
               $scope.definitionResultTypes = [ 'CONCEPT', 'MAP_RECORD' ];
               $scope.definitionRoles = [ 'VIEWER', 'SPECIALIST', 'LEAD',
                   'ADMIN' ];
               $scope.definitionTimePeriods = [ 'DAILY', 'WEEKLY', 'MONTHLY',
                                                'ANNUALLY' ];
-              $scope.definitionFrequencies = [ 'MONDAY', 'TUESDAY', 'WEDNESDAY',
+              $scope.definitionFrequencies = [ 'DAILY', 'MONDAY', 'TUESDAY', 'WEDNESDAY',
                                                'THURSDAY', 'FRIDAY', 'SATURDAY',
                                                'SUNDAY', 'FIRST_OF_MONTH',
                                                'MID_MONTH', 'LAST_OF_MONTH'];              
