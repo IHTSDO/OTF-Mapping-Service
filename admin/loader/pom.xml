@@ -29,9 +29,9 @@
     <terminology></terminology>
     <!-- The terminology version -->
     <version>latest</version>
-    <!-- The start date -->
+    <!-- The start date as YYYYMMDD -->
     <date.start></date.start>
-    <!-- The end date -->
+    <!-- The end date as YYYYMMDD -->
     <date.end></date.end>
     <!-- the sampling rate -->
     <sampling.rate></sampling.rate>

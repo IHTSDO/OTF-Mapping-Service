@@ -28,7 +28,6 @@ import org.ihtsdo.otf.mapping.helpers.ReportQueryType;
 import org.ihtsdo.otf.mapping.helpers.ReportResultType;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
-import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
@@ -93,6 +92,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   /** The map project. */
   private MapProject mapProject = null;
 
+  /** The algo handler. */
+  private ProjectSpecificAlgorithmHandler algorithmHandler;
+
   /** The map records. */
   private List<MapRecord> mapRecords;
 
@@ -112,21 +114,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
   /** The report statistics. */
   private Map<String, Integer> reportStatistics = new HashMap<>();
-
-  /** The qa prev group. */
-  private int qaPrevGroup = 0;
-
-  /** The qa prev priority. */
-  private int qaPrevPriority = 0;
-
-  /** The qa prev concept. */
-  private String qaPrevConcept = null;
-
-  /** The qa only nc. */
-  private boolean qaOnlyNc = true;
-
-  /** The qa true rule in group. */
-  private boolean qaTrueRuleInGroup = false;
 
   /**
    * The Enum for statistics reporting.
@@ -191,6 +178,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     contentService = new ContentServiceJpa();
     metadataService = new MetadataServiceJpa();
     this.testModeFlag = testModeFlag;
+
   }
 
   /*
@@ -549,10 +537,13 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           }
 
           ValidationResult result = null;
+          result = algorithmHandler.validateForRelease(member);
+
+          // TODO: Temporarily removed the qa checks
           if (mapProject.isRuleBased()) {
-            result = qaRulesMember(member);
+            // result = qaRulesMember(member);
           } else {
-            result = qaMember(member);
+            // result = qaMember(member);
           }
           if (result != null && !result.isValid()) {
             throw new Exception("Invalid member for "
@@ -573,11 +564,16 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     // declare maps in use for computation
     Map<String, ComplexMapRefSetMember> prevActiveMembersMap = new HashMap<>();
+    Map<String, ComplexMapRefSetMember> prevInactiveMembersMap =
+        new HashMap<>();
 
     // First, construct set of previously active complex map ref set members
     for (ComplexMapRefSetMember member : prevMembersHashMap.values()) {
-      if (member.isActive())
+      if (member.isActive()) {
         prevActiveMembersMap.put(member.getTerminologyId(), member);
+      } else {
+        prevInactiveMembersMap.put(member.getTerminologyId(), member);
+      }
     }
 
     // Write human readable file
@@ -586,6 +582,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // Write snapshot file
     if (writeSnapshot) {
       writeActiveSnapshotFile(activeMembersMap);
+      writeSnapshotFile(prevInactiveMembersMap, prevActiveMembersMap,
+          activeMembersMap);
     }
 
     // Write delta file
@@ -611,146 +609,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // close the services
     contentService.close();
     mappingService.close();
-  }
-
-  /**
-   * Some last minute QA checks.
-   *
-   * @param member the member
-   * @return the validation result
-   */
-  private ValidationResult qaMember(ComplexMapRefSetMember member) {
-    ValidationResult result = new ValidationResultJpa();
-
-    return result;
-
-  }
-
-  /**
-   * Some last minute QA checks.
-   *
-   * @param member the member
-   * @return the validation result
-   */
-  private ValidationResult qaRulesMember(ComplexMapRefSetMember member) {
-    ValidationResult result = qaMember(member);
-
-    // Verify mapTarget is not null when mapCategory is 447637006 or 447639009
-    // 447637006|Map source concept is properly classified
-    // 447639009|Map of source concept is context dependent (also applies to
-    // gender)
-    if (member.getMapTarget().isEmpty()
-        && member.getMapRelationId().equals("447637006")) {
-      result.addError("Map has empty target with map category 447637006");
-    }
-    if (member.getMapTarget().isEmpty()
-        && member.getMapRelationId().equals("447639009")) {
-      result.addError("Map has empty target with map category 447639009");
-    }
-
-    // Verify mapTarget is null when mapCategory is not 447637006 or 447639009
-    if (!member.getMapTarget().isEmpty()
-        && !member.getMapRelationId().equals("447637006")
-        && !member.getMapRelationId().equals("447639009")) {
-      result
-          .addError("Map has non-empty target without map category 447639009 or 447637006  - "
-              + member.getMapRelationId());
-    }
-
-    // Verify IFA rules with mapTargets have 447639009 mapCategory
-    if (member.getMapRule().startsWith("IFA")
-        && !member.getMapRelationId().equals("447639009")) {
-      result.addError("IFA map has category other than 447639009 - "
-          + member.getMapRelationId());
-    }
-
-    // Verify higher map groups do not have only NC nodes
-    // check when group goes back to 1
-    if (member.getMapGroup() != qaPrevGroup && qaPrevGroup != 1) {
-      if (qaOnlyNc) {
-        result.addError("Higher map group has only NC nodes - " + qaPrevConcept
-            + ", " + qaPrevGroup);
-      }
-      qaOnlyNc = true;
-    }
-    if (member.getMapGroup() > 1 && !member.getMapTarget().isEmpty()) {
-      qaOnlyNc = false;
-    }
-
-    // Verify TRUE rules do not appear before IFA rules 
-    // reset when group changes
-    if (member.getMapGroup() != qaPrevGroup) {
-      qaTrueRuleInGroup = false;
-    }
-    if (member.getMapRule().equals("TRUE")
-        || member.getMapRule().equals("OTHERWISE TRUE")) {
-      qaTrueRuleInGroup = true;
-    }
-    if (member.getMapRule().startsWith("IFA") && qaTrueRuleInGroup) {
-      result.addError("TRUE rule before end of group");
-    }
-
-    // Verify IFA rules refer to valid conceptId
-    // -- all concepts are looked up and fail if not found
-
-    // Verify AGE rules do not end with <= 0 
-    // -- not possible given new age ranges - this had to do with cartographer rep
-    
-    // Verify each mapRule has valid syntax - whew!
-    
-    
-    
-    // Verify mapAdvice is restricted to the defined list ...Wed Dec 17 00:41:48
-    // PST 2014
-    // Verify multiple map advice is properly handled ...Wed Dec 17 00:41:48 PST
-    // 2014
-    // Verify mapAdvice is not duplicated ...Wed Dec 17 00:41:49 PST 2014
-    // Verify NC has valid map advice ...Wed Dec 17 00:41:50 PST 2014
-    // Verify AWH has valid map advice ...Wed Dec 17 00:41:50 PST 2014
-    // Verify ACT has valid map advice ...Wed Dec 17 00:41:51 PST 2014
-    // Verify OS map category is not used ...Wed Dec 17 00:41:51 PST 2014
-    // Verify HLC concepts must not have explicit concept exclusion rules ...Wed
-    // Dec 17 00:41:51 PST 2014
-    // Verify advice MAP IS CONTEXT DEPENDENT FOR GENDER should only apply to
-    // gender rules ...Wed Dec 17 00:41:58 PST 2014
-    // Verify advice MAP IS CONTEXT DEPENDENT FOR GENDER is not used in
-    // conjunction with CD advice ...Wed Dec 17 00:41:58 PST 2014
-    // Verify map advice is sorted ...Wed Dec 17 00:41:58 PST 2014
-    // Verify referencedComponentId in iissscc or c RefSet files ...Wed Dec 17
-    // 00:41:59 PST 2014
-    // Verify refSetId ss RefSet file is module id ...Wed Dec 17 00:41:59 PST
-    // 2014
-    // Verify moduleId ss RefSet file is moduleId of map file ...Wed Dec 17
-    // 00:41:59 PST 2014
-    // Verify referencedComponentId are the core and metadata concept ids ...Wed
-    // Dec 17 00:41:59 PST 2014
-    // Verify sourceEffectiveTime matches the version of the data ...Wed Dec 17
-    // 00:41:59 PST 2014
-    // Verify targetEffectiveTime matches the version of the core data ...Wed
-    // Dec 17 00:41:59 PST 2014
-    // Verify all referencedComponentId are Clinical Finding, Event, or
-    // Situation ...Wed Dec 17 00:41:59 PST 2014
-
-    // Group QA
-    // Groups are consecutive starting with 1
-    if (member.getMapGroup() != qaPrevGroup && member.getMapGroup() != 1
-        && member.getMapGroup() != qaPrevGroup + 1) {
-      result.addError("Groups are not consecutive starting with 1");
-    }
-
-    // Priorities within a group are consecutive and starting with 1
-    if (member.getMapGroup() == qaPrevGroup
-        && member.getMapPriority() != qaPrevPriority + 1) {
-      result.addError("Priorities are not consecutive starting with 1 - "
-          + qaPrevGroup);
-
-    }
-
-    qaPrevGroup = member.getMapGroup();
-    qaPrevPriority = member.getMapPriority();
-    qaPrevConcept = member.getConcept().getTerminologyId();
-    return result;
-
   }
 
   /**
@@ -998,12 +856,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * Write delta.
    *
    * @param activeMembers the active members
-   * @param previousActiveMembers the previous active members
+   * @param prevActiveMembers the previous active members
    * @throws IOException
    */
   private void writeDeltaFile(
     Map<String, ComplexMapRefSetMember> activeMembers,
-    Map<String, ComplexMapRefSetMember> previousActiveMembers) throws Exception {
+    Map<String, ComplexMapRefSetMember> prevActiveMembers) throws Exception {
 
     // Open file and writer
     String filename = null;
@@ -1014,6 +872,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     filename =
         outputDir + "/der2_" + pattern + mapProject.getMapRefsetPattern()
             + "Delta_INT_" + effectiveTime + ".txt";
+    Logger.getLogger(getClass()).info("  delta:  " + filename);
 
     // Write headers (subject to pattern)
     writer = new BufferedWriter(new FileWriter(filename));
@@ -1036,7 +895,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     Set<String> conceptsUnchanged = new HashSet<>();
 
     // cycle over all previously active members
-    for (ComplexMapRefSetMember member : previousActiveMembers.values()) {
+    for (ComplexMapRefSetMember member : prevActiveMembers.values()) {
 
       // if set to write contains this previously active uuid
       if (tmpActiveMembers.containsKey(member.getTerminologyId())) {
@@ -1072,7 +931,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // - if present, remove from temp map
     // Inactivate all remaining uuids in the temp map
 
-    tmpActiveMembers = new HashMap<>(previousActiveMembers);
+    tmpActiveMembers = new HashMap<>(prevActiveMembers);
 
     for (String uuid : activeMembers.keySet()) {
       if (tmpActiveMembers.containsKey(uuid)) {
@@ -1085,7 +944,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     for (ComplexMapRefSetMember c : tmpActiveMembers.values()) {
       c.setActive(false);
       writer.write(this.getOutputLine(c));
-
+      // restore active
+      c.setActive(true);
     }
 
     Logger.getLogger(getClass()).info("  Writing complete.");
@@ -1102,7 +962,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    */
   private void writeStatsFile(
     Map<String, ComplexMapRefSetMember> activeMembers,
-    Map<String, ComplexMapRefSetMember> previousActiveMembers) throws Exception {
+    Map<String, ComplexMapRefSetMember> prevActiveMembers) throws Exception {
 
     // Gather stats
     Set<String> activeConcepts = new HashSet<>();
@@ -1140,9 +1000,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         sometimesMap.add(key);
       }
     }
-    Set<String> previousActiveConcepts = new HashSet<>();
-    for (ComplexMapRefSetMember member : previousActiveMembers.values()) {
-      previousActiveConcepts.add(member.getConcept().getTerminologyId());
+    Set<String> prevActiveConcepts = new HashSet<>();
+    for (ComplexMapRefSetMember member : prevActiveMembers.values()) {
+      prevActiveConcepts.add(member.getConcept().getTerminologyId());
     }
 
     updateStatMax(Stats.ACTIVE_ENTRIES.getValue(), activeMembers.size());
@@ -1156,7 +1016,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     // Determine count of retired concepts - inactive minus active
     int ct = 0;
-    for (String id : previousActiveConcepts) {
+    for (String id : prevActiveConcepts) {
       if (!activeConcepts.contains(id)) {
         ct++;
       }
@@ -1166,19 +1026,24 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // Determine count of new concepts - active minus inactive
     ct = 0;
     for (String id : activeConcepts) {
-      if (!previousActiveConcepts.contains(id)) {
+      if (!prevActiveConcepts.contains(id)) {
         ct++;
       }
     }
     updateStatMax(Stats.NEW_CONCEPTS.getValue(), ct);
 
     Set<String> changedConcepts = new HashSet<>();
-    for (ComplexMapRefSetMember member : activeMembers.values()) {
-      String key = member.getConcept().getTerminologyId();
-      ComplexMapRefSetMember member2 = previousActiveMembers.get(key);
+    boolean found = false;
+    for (String key : activeMembers.keySet()) {
+      ComplexMapRefSetMember member = activeMembers.get(key);
+      ComplexMapRefSetMember member2 = prevActiveMembers.get(key);
       if (member2 != null && !member.equals(member2)) {
         changedConcepts.add(key);
+        found = true;
       }
+    }
+    if (!found) {
+      throw new Exception("no changed concepts found.");
     }
     updateStatMax(Stats.CHANGED_CONCEPTS.getValue(), changedConcepts.size());
 
@@ -1194,14 +1059,14 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   }
 
   /**
-   * Write human readable file.
+   * Write active snapshot file.
    * @throws Exception
    */
   @SuppressWarnings("resource")
   private void writeActiveSnapshotFile(
     Map<String, ComplexMapRefSetMember> members) throws Exception {
 
-    Logger.getLogger(getClass()).info("Writing snapshot...");
+    Logger.getLogger(getClass()).info("Writing active snapshot...");
     String pattern =
         (mapProject.getMapRefsetPattern() == MapRefsetPattern.ComplexMap
             ? "iissscRefset_" : "iisssccRefset_");
@@ -1209,15 +1074,14 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     BufferedWriter writer = null;
     filename =
         outputDir + "/der2_" + pattern + mapProject.getMapRefsetPattern()
-            + "Snapshot_INT_" + effectiveTime + ".txt";
+            + "ActiveSnapshot_INT_" + effectiveTime + ".txt";
 
     // write headers
-    Logger.getLogger(getClass()).info(
-        "  Machine-readable release file:  " + filename);
+    Logger.getLogger(getClass()).info("  active snapshot:  " + filename);
 
     writer = new BufferedWriter(new FileWriter(filename));
     writer
-        .write("id\teffeccdzyztiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\t"
+        .write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\t"
             + "mapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId");
     if (mapProject.getMapRefsetPattern().equals(MapRefsetPattern.ExtendedMap)) {
       writer.write("\tmapCategoryId");
@@ -1232,6 +1096,93 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       }
       // collect lines
       lines.add(getOutputLine(member));
+    }
+
+    // Sort lines
+    Collections.sort(lines, ConfigUtility.COMPLEX_MAP_COMPARATOR);
+    // Write lines
+    for (String line : lines) {
+      writer.write(line);
+    }
+
+    Logger.getLogger(getClass()).info("  Writing complete.");
+
+    // Close
+    writer.flush();
+    writer.close();
+
+  }
+
+  /**
+   * Write snapshot file
+   *
+   * @param prevInactiveMembers the prev inactive members
+   * @param prevActiveMembers the prev active members
+   * @param currentActiveMembers the current active members
+   * @throws Exception the exception
+   */
+  private void writeSnapshotFile(
+    Map<String, ComplexMapRefSetMember> prevInactiveMembers,
+    Map<String, ComplexMapRefSetMember> prevActiveMembers,
+    Map<String, ComplexMapRefSetMember> currentActiveMembers) throws Exception {
+
+    Logger.getLogger(getClass()).info("Writing snapshot...");
+    String pattern =
+        (mapProject.getMapRefsetPattern() == MapRefsetPattern.ComplexMap
+            ? "iissscRefset_" : "iisssccRefset_");
+    String filename = null;
+    BufferedWriter writer = null;
+    filename =
+        outputDir + "/der2_" + pattern + mapProject.getMapRefsetPattern()
+            + "Snapshot_INT_" + effectiveTime + ".txt";
+
+    // write headers
+    Logger.getLogger(getClass()).info("  snapshot file:  " + filename);
+
+    writer = new BufferedWriter(new FileWriter(filename));
+    writer
+        .write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\t"
+            + "mapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId");
+    if (mapProject.getMapRefsetPattern().equals(MapRefsetPattern.ExtendedMap)) {
+      writer.write("\tmapCategoryId");
+    }
+    writer.write("\r\n");
+
+    List<String> lines = new ArrayList<>();
+
+    // Write previously inactive members that are not active now
+    for (String key : prevInactiveMembers.keySet()) {
+      if (!currentActiveMembers.containsKey(key)) {
+        lines.add(getOutputLine(prevInactiveMembers.get(key)));
+      }
+    }
+    
+    // Write previous active members (changed, unchanged, or inactive)
+    for (String key : prevActiveMembers.keySet()) {
+      if (!currentActiveMembers.containsKey(key)) {
+        ComplexMapRefSetMember member = prevActiveMembers.get(key);
+        member.setActive(false);
+        lines.add(getOutputLine(member));
+        member.setActive(true);       
+      } else {
+        ComplexMapRefSetMember member = currentActiveMembers.get(key);
+        ComplexMapRefSetMember member2 = prevActiveMembers.get(key);
+        if (member.equals(member2)) {
+          // write with older effective time
+          lines.add(getOutputLine(member2));          
+        } else {
+          // write with newer effectie time
+          lines.add(getOutputLine(member));
+        }
+      }
+    }
+    
+    // Write new things (things that were not in old release)
+    for (String key : currentActiveMembers.keySet()) {
+      if (!prevActiveMembers.containsKey(key) &&
+          !prevInactiveMembers.containsKey(key)) {
+        lines.add(getOutputLine(currentActiveMembers.get(key)));
+      }
     }
 
     // Sort lines
@@ -1549,7 +1500,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // sort unique advices and add them
     sortedAdvices = new ArrayList<>(new HashSet<>(sortedAdvices));
     Collections.sort(sortedAdvices);
-
     for (String advice : sortedAdvices) {
       mapAdviceStr += (mapAdviceStr.length() != 0 ? " | " : "") + advice;
     }
@@ -2004,10 +1954,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // only committed at end
     reportService.setTransactionPerOperation(false);
 
-    // instantiate the algorithm handler
-    ProjectSpecificAlgorithmHandler algorithmHandler =
-        mappingService.getProjectSpecificAlgorithmHandler(mapProject);
-
     Logger.getLogger(getClass()).info("Creating report...");
 
     // get the report definition
@@ -2290,8 +2236,13 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * .ihtsdo.otf.mapping.model.MapProject)
    */
   @Override
-  public void setMapProject(MapProject mapProject) {
+  public void setMapProject(MapProject mapProject)
+    throws InstantiationException, IllegalAccessException,
+    ClassNotFoundException {
     this.mapProject = mapProject;
+    // instantiate the algorithm handler
+    algorithmHandler =
+        mappingService.getProjectSpecificAlgorithmHandler(mapProject);
   }
 
   /**
