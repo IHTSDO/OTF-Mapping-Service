@@ -1,0 +1,1 @@
+This directory contains some scripts from the legacy environment that may be useful to look at.
