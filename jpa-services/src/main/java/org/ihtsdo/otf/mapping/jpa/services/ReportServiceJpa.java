@@ -1204,8 +1204,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
       for (Object[] result : results) {
         String value = result[0].toString();
-        String itemName = result[1].toString();
-        String itemId = result[2].toString();
+        String itemId = result[1].toString();
+        String itemName = result[2].toString();
 
         // get report result (create if necessary)
         ReportResult reportResult = valueMap.get(value);
