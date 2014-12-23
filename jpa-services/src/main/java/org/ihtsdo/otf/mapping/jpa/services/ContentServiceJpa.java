@@ -1,6 +1,5 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
-import java.io.File;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,7 +10,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
@@ -19,25 +17,14 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
 
 import org.apache.log4j.Logger;
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.KeywordAnalyzer;
-import org.apache.lucene.analysis.PerFieldAnalyzerWrapper;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.document.Document;
 import org.apache.lucene.index.FieldInfo;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryParser.MultiFieldQueryParser;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
-import org.apache.lucene.queryParser.QueryParser.Operator;
-import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
-import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.ReaderUtil;
 import org.apache.lucene.util.Version;
 import org.hibernate.search.SearchFactory;
@@ -91,7 +78,6 @@ import org.ihtsdo.otf.mapping.rf2.jpa.SimpleRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
-import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 /**
  * The Content Services for the Jpa model.
@@ -1397,6 +1383,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     query.setParameter("terminologyId", terminologyId);
 
     // get the first tree position
+    query.setMaxResults(1);
     List<String> ancestorPaths = query.getResultList();
 
     // skip construction if no ancestor path was found
