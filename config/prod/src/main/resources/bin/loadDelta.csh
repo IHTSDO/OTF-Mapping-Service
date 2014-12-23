@@ -54,7 +54,8 @@ endif
 
 echo "    Load the delta ... '/bin/date'"
 cd $MAPPING_CODE/admin/loader
-mvn install -PRF2-delta -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT -Dinput.dir=/home/ihtsdo/.m2/repository/org/ihtsdo/intl/release/process/wb-release-process/1.18-SNAPSHOT/wb-release-process-1.18-SNAPSHOT-delta if ($status != 0) then
+mvn install -PRF2-delta -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT -Dinput.dir=/home/ihtsdo/.m2/repository/org/ihtsdo/intl/release/process/wb-release-process/1.18-SNAPSHOT/wb-release-process-1.18-SNAPSHOT-delta
+if ($status != 0) then
     echo "ERROR processing delta data"
     exit 1
 endif
