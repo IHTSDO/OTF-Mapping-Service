@@ -10,7 +10,7 @@ import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
 
 /**
  * Checks validity of a map project for release. If remove.records set to true,
- * remoes out of scope records
+ * removes out of scope records
  * 
  * See admin/release/pom.xml for a sample execution.
  * 
