@@ -526,8 +526,6 @@ public class ReportServiceRest extends RootServiceRest {
 
     String mapProjectName = "(not retrieved)";
 
-    Report report = null;
-
     try {
       // authorize call
       MapUserRole role =
@@ -546,8 +544,7 @@ public class ReportServiceRest extends RootServiceRest {
 
       // Report is NOT persisted
       ReportService reportService = new ReportServiceJpa();
-      report =
-          reportService.generateReport(mapProject, mapUser,
+      reportService.generateReport(mapProject, mapUser,
               reportDefinition.getName(), reportDefinition, new Date(), false);
       
       reportService.close();
