@@ -1,8 +1,5 @@
 package org.ihtsdo.otf.mapping.mojo;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.ihtsdo.otf.mapping.jpa.handlers.ReleaseHandlerJpa;
@@ -12,8 +9,8 @@ import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
 
 /**
- * Checks validity of a map project for release.
- * If remove.records set to true, remoes out of scope records
+ * Checks validity of a map project for release. If remove.records set to true,
+ * remoes out of scope records
  * 
  * See admin/release/pom.xml for a sample execution.
  * 
@@ -24,15 +21,9 @@ public class ReleaseBeginMojo extends AbstractMojo {
 
   /**
    * The refSet id.
-   * @parameter refsetId
+   * @parameter
    */
   private String refsetId = null;
-
-  /**
-   * The remove records.
-   * @parameter removeRecords
-   */
-  private boolean removeRecords = false;
 
   /**
    * Flag indicating test mode
@@ -47,41 +38,44 @@ public class ReleaseBeginMojo extends AbstractMojo {
    */
   @Override
   public void execute() throws MojoExecutionException {
-    getLog().info("Starting begin release QA checks - " + refsetId + ", " + removeRecords);
+    getLog().info("Begin RF2 release");
+    getLog().info("  refsetId = " + refsetId);
+    getLog().info("  testModeFlag = " + testModeFlag);
 
     if (refsetId == null) {
-      throw new MojoExecutionException("You must specify a refsetId.");
+      throw new MojoExecutionException("You must specify a ref set id");
     }
 
+    if (refsetId.contains(",")) {
+      throw new MojoExecutionException(
+          "You must specify only a single ref set id");
+    }
 
     try {
 
       MappingService mappingService = new MappingServiceJpa();
-      Set<MapProject> mapProjects = new HashSet<>();
+      MapProject mapProject = null;
 
-      for (MapProject mapProject : mappingService.getMapProjects()
-          .getIterable()) {
-        for (String id : refsetId.split(",")) {
-          if (mapProject.getRefSetId().equals(id)) {
-            mapProjects.add(mapProject);
-          }
+      for (MapProject project : mappingService.getMapProjects().getIterable()) {
+        if (project.getRefSetId().equals(refsetId)) {
+          mapProject = project;
+          break;
         }
       }
 
-      // Perform the QA checks
+      // Begin the release
       ReleaseHandler releaseHandler = new ReleaseHandlerJpa(testModeFlag);
-      for (MapProject mapProject : mapProjects) {
-        getLog().info(
-            "Performing release QA for " + mapProject.getName() + ", "
-                + mapProject.getId());
-        releaseHandler.beginRelease(mapProject, removeRecords);
-      }
+      getLog().info(
+          "  Handle project " + mapProject.getName() + ", "
+              + mapProject.getId());
+      releaseHandler.setMapProject(mapProject);
+      releaseHandler.beginRelease();
 
       getLog().info("done ...");
 
     } catch (Exception e) {
       e.printStackTrace();
-      throw new MojoExecutionException("Performing workflow QA failed.", e);
+      throw new MojoExecutionException("Performing begin release.", e);
     }
 
   }
