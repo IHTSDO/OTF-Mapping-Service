@@ -1082,10 +1082,10 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
   public void retireRemovedConcepts() throws Exception {
     int ct = 0;
     for (Concept concept : existingConceptCache.values()) {
-      concept = contentService.getConcept(concept.getId());
       if (concept.getEffectiveTime().after(dt.parse(version))
           && !deltaConceptIds.contains(concept.getTerminologyId())
           && concept.isActive()) {
+        concept = contentService.getConcept(concept.getId());
         // Because it's possible that a concept element changed and that
         // change was retracted, we need to double-check whether all of
         // the concept elements are also new. If so, proceed. It is possible
