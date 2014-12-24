@@ -732,6 +732,14 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
               contentService.getDescription(fields[5], terminology, version);
         }
 
+        if (description == null) {
+          // skip
+          getLog().info("SKIP LANG with desc " + fields[4]);
+          continue;
+          // throw new Exception("Could not find description " + fields[4]
+          // + " for language refset member " + fields[0]);          
+        }
+        
         // get the concept
         Concept concept = description.getConcept();
         // description should have concept (unless cached descriptions don't
