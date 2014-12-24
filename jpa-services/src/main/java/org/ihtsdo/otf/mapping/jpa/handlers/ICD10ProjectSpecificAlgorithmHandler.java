@@ -1,6 +1,5 @@
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
-import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -56,7 +55,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
   private boolean qaTrueRuleInGroup = false;
 
   /** The parser. */
-  private MapRuleParser parser = new MapRuleParser();
+//  private MapRuleParser parser = new MapRuleParser();
 
   /**
    * For ICD10, a target code is valid if: - Concept exists - Concept has at
@@ -589,18 +588,22 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
     // see maprule.abnf for grammar
     // TODO: ideally this should use a better parser with a full implemenation
 
-    for (String rule : member.getMapRule().split("AND IFA")) {
-      // replace IFA part of the rule
-      if (!rule.startsWith("IFA") && !rule.equals("TRUE") &&
-          !rule.equals("OTHERWISE TRUE")) {
-        rule = "IFA" + rule;
-      }        
-      
-      boolean isMatch = parser.parse(new ByteArrayInputStream(rule.getBytes()));
-      if (!isMatch) {
-        result.addError("Rule clause has incorrect grammar: " + rule);
-      }
-    }
+    // OK disabled because needs to accommodate UTF8 characters also
+//    for (String rule : member.getMapRule().split("AND IFA")) {
+//      // replace IFA part of the rule
+//      if (!rule.startsWith("IFA") && !rule.equals("TRUE") &&
+//          !rule.equals("OTHERWISE TRUE")) {
+//        rule = "IFA" + rule;
+//      }        
+//      // skip where there are embedded parens, the parser can't handle this
+//      if (rule.indexOf('(') != rule.lastIndexOf('(')) {
+//        continue;
+//      }
+//      boolean isMatch = parser.parse(new ByteArrayInputStream(rule.getBytes()));
+//      if (!isMatch) {
+//        result.addError("Rule clause has incorrect grammar: " + rule);
+//      }
+//    }
 
     // Verify mapAdvice is restricted to the defined list
     // -- all map advices are controlled at project level now

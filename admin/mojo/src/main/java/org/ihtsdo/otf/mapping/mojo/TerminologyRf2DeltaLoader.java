@@ -436,6 +436,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
       getLog().info("    Loading Concepts ...");
       startTime = System.nanoTime();
       loadConcepts(conceptReader);
+      contentService.commit();
+      contentService.beginTransaction();
       getLog().info(
           "      evaluated = " + Integer.toString(objectCt) + " (Ended at "
               + ft.format(new Date()) + ")");
@@ -446,6 +448,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
       getLog().info("    Loading Relationships ...");
       startTime = System.nanoTime();
       loadRelationships(relationshipReader);
+      contentService.commit();
+      contentService.beginTransaction();
       getLog().info(
           "      evaluated = " + Integer.toString(objectCt) + " (Ended at "
               + ft.format(new Date()) + ")");
@@ -456,6 +460,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
       getLog().info("    Loading Descriptions ...");
       startTime = System.nanoTime();
       loadDescriptions(descriptionReader);
+      contentService.commit();
+      contentService.beginTransaction();
       getLog().info(
           "      evaluated = " + Integer.toString(objectCt) + " (Ended at "
               + ft.format(new Date()) + ")");
@@ -466,6 +472,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
       getLog().info("    Loading Text Definitions...");
       startTime = System.nanoTime();
       loadDescriptions(textDefinitionReader);
+      contentService.commit();
+      contentService.beginTransaction();
       getLog().info(
           "      evaluated = " + Integer.toString(objectCt) + " (Ended at "
               + ft.format(new Date()) + ")");
@@ -476,6 +484,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
       getLog().info("    Loading Language Ref Sets...");
       startTime = System.nanoTime();
       loadLanguageRefSetMembers(languageReader);
+      contentService.commit();
+      contentService.beginTransaction();
       getLog().info(
           "      evaluated = " + Integer.toString(objectCt) + " (Ended at "
               + ft.format(new Date()) + ")");
@@ -594,7 +604,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
         if (conceptCache.containsKey(fields[4])) {
           concept = conceptCache.get(fields[4]);
         } else if (existingConceptCache.containsKey(fields[4])) {
-          concept = existingConceptCache.get(fields[4]);
+          concept = contentService.getConcept(existingConceptCache.get(fields[4]).getId());
         } else {
           // retrieve concept
           concept = contentService.getConcept(fields[4], terminology, version);
@@ -680,8 +690,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
           // skip
           getLog().info("SKIP DESC with concept " + fields[4]);
           continue;
-//          throw new Exception("Could not find concept " + fields[4]
-//              + " for Description " + fields[0]);
+          // throw new Exception("Could not find concept " + fields[4]
+          // + " for Description " + fields[0]);
         }
       }
     }
@@ -722,6 +732,14 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
               contentService.getDescription(fields[5], terminology, version);
         }
 
+        if (description == null) {
+          // skip
+          getLog().info("SKIP LANG with desc " + fields[4]);
+          continue;
+          // throw new Exception("Could not find description " + fields[4]
+          // + " for language refset member " + fields[0]);          
+        }
+        
         // get the concept
         Concept concept = description.getConcept();
         // description should have concept (unless cached descriptions don't
@@ -842,7 +860,9 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
         if (conceptCache.containsKey(fields[4])) {
           sourceConcept = conceptCache.get(fields[4]);
         } else if (existingConceptCache.containsKey(fields[4])) {
-          sourceConcept = existingConceptCache.get(fields[4]);
+          sourceConcept =
+              contentService.getConcept(existingConceptCache.get(fields[4])
+                  .getId());
         } else {
           sourceConcept =
               contentService.getConcept(fields[4], terminology, version);
@@ -851,15 +871,16 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
           // skip
           getLog().info("SKIP REL with source concept " + fields[4]);
           continue;
-//          throw new Exception("Relationship " + fields[0] + " source concept "
-//              + fields[4] + " cannot be found");
+          // throw new Exception("Relationship " + fields[0] +
+          // " source concept "
+          // + fields[4] + " cannot be found");
         }
 
         // Retrieve destination concept
         if (conceptCache.containsKey(fields[5])) {
           destinationConcept = conceptCache.get(fields[5]);
         } else if (existingConceptCache.containsKey(fields[5])) {
-          destinationConcept = existingConceptCache.get(fields[5]);
+          destinationConcept = contentService.getConcept(existingConceptCache.get(fields[5]).getId());
         } else {
           destinationConcept =
               contentService.getConcept(fields[5], terminology, version);
@@ -868,8 +889,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
           // skip
           getLog().info("SKIP REL with source concept " + fields[5]);
           continue;
-//          throw new Exception("Relationship " + fields[0]
-//              + " destination concept " + fields[5] + " cannot be found");
+          // throw new Exception("Relationship " + fields[0]
+          // + " destination concept " + fields[5] + " cannot be found");
         }
 
         // Cache concepts
@@ -940,6 +961,11 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
           if (relationship != null) {
             newRelationship.setEffectiveTime(relationship.getEffectiveTime());
           }
+        }
+        
+        if (objectCt % 2000 == 0) {
+          contentService.commit();
+          contentService.beginTransaction();
         }
       }
     }
@@ -1059,6 +1085,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
       if (concept.getEffectiveTime().after(dt.parse(version))
           && !deltaConceptIds.contains(concept.getTerminologyId())
           && concept.isActive()) {
+        concept = contentService.getConcept(concept.getId());
         // Because it's possible that a concept element changed and that
         // change was retracted, we need to double-check whether all of
         // the concept elements are also new. If so, proceed. It is possible
