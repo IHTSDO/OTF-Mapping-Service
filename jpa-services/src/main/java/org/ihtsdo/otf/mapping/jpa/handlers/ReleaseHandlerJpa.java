@@ -1056,8 +1056,11 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     }
     updateStatMax(Stats.CHANGED_CONCEPTS.getValue(), changedConcepts.size());
 
+    String camelCaseName =
+        mapProject.getDestinationTerminology().substring(0, 1)
+            + mapProject.getDestinationTerminology().substring(1).toLowerCase();
     BufferedWriter statsWriter =
-        new BufferedWriter(new FileWriter(outputDir + "/stats.txt"));
+        new BufferedWriter(new FileWriter(outputDir + "/" + camelCaseName + "stats.txt"));
     List<String> statistics = new ArrayList<>(reportStatistics.keySet());
     Collections.sort(statistics);
     for (String statistic : statistics) {

@@ -70,6 +70,36 @@
                   <queries>
 
                     <property>
+                      <name>Validate non-rule based projects have empty rules</name>
+                      <value>
+                        SELECT rule FROM map_entries 
+                        WHERE rule != '' AND mapRecord_id in 
+                          (SELECT id FROM map_records 
+                           WHERE mapProjectId in 
+                             (SELECT id FROM map_projects WHERE ruleBased = 0));
+                      </value>
+                    </property>
+
+                    <property>
+                      <name>Validate rule based projects never have empty rules</name>
+                      <value>
+                        SELECT rule FROM map_entries 
+                        WHERE rule = '' AND mapRecord_id in 
+                          (SELECT id FROM map_records 
+                           WHERE mapProjectId in 
+                             (SELECT id FROM map_projects WHERE ruleBased = 1));
+                      </value>
+                    </property>
+
+                    <property>
+                      <name>Validate map entry targetId is never null</name>
+                      <value>
+                        SELECT id FROM map_entries 
+                        WHERE targetId is null;
+                      </value>
+                    </property>
+
+                    <property>
                       <name>Validate concept default preferred names - SNOMEDCT</name>
                       <value>
                         SELECT terminologyId, defaultPreferredName
