@@ -546,12 +546,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           ValidationResult result = null;
           result = algorithmHandler.validateForRelease(member);
 
-          // TODO: Temporarily removed the qa checks
-          if (mapProject.isRuleBased()) {
-            // result = qaRulesMember(member);
-          } else {
-            // result = qaMember(member);
-          }
           if (result != null && !result.isValid()) {
             throw new Exception("Invalid member for "
                 + member.getConcept().getTerminologyId() + " - " + result);
@@ -582,6 +576,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         prevInactiveMembersMap.put(member.getTerminologyId(), member);
       }
     }
+    
+    Logger.getLogger(getClass()).info("  prev inactive members = " + prevInactiveMembersMap.size());
+    Logger.getLogger(getClass()).info("  prev active members = " + prevActiveMembersMap.size());
+    Logger.getLogger(getClass()).info("  active members = " + activeMembersMap.size());
 
     // Write human readable file
     writeHumanReadableFile(activeMembersMap);
@@ -898,9 +896,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     Logger.getLogger(getClass()).info("  Computing delta entries");
 
-    Set<String> conceptsNew = new HashSet<>();
-    Set<String> conceptsModified = new HashSet<>();
-    Set<String> conceptsUnchanged = new HashSet<>();
 
     // cycle over all previously active members
     for (ComplexMapRefSetMember member : prevActiveMembers.values()) {
@@ -915,19 +910,18 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           // remove this concept from the set to be written -- unchanged
           tmpActiveMembers.remove(member.getTerminologyId());
 
-          conceptsUnchanged.add(member.getConcept().getTerminologyId());
         } else {
-          conceptsModified.add(member.getConcept().getTerminologyId());
+          // do nothing -- modified, write it
         }
       } else {
-        conceptsNew.add(member.getConcept().getTerminologyId());
+        // do nothing -- new, write it
       }
     }
 
     // write new or modified maps to file
     // no sorting needed here
     for (ComplexMapRefSetMember c : tmpActiveMembers.values()) {
-      writer.write(getOutputLine(c));
+      writer.write(getOutputLine(c, false));
     }
 
     Logger.getLogger(getClass()).info("  Writing complete.");
@@ -951,7 +945,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // set active to false and write inactivated complex maps
     for (ComplexMapRefSetMember c : tmpActiveMembers.values()) {
       c.setActive(false);
-      writer.write(this.getOutputLine(c));
+      writer.write(this.getOutputLine(c, false));
       // restore active
       c.setActive(true);
     }
@@ -1107,7 +1101,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         throw new Exception("Unexpected inactive member " + member);
       }
       // collect lines
-      lines.add(getOutputLine(member));
+      lines.add(getOutputLine(member, false));
     }
 
     // Sort lines
@@ -1165,7 +1159,11 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // Write previously inactive members that are not active now
     for (String key : prevInactiveMembers.keySet()) {
       if (!currentActiveMembers.containsKey(key)) {
-        lines.add(getOutputLine(prevInactiveMembers.get(key)));
+        // write out previous inactive line
+        lines.add(getOutputLine(prevInactiveMembers.get(key), true));
+      } else {
+        // write out the current active line
+        lines.add(getOutputLine(currentActiveMembers.get(key), true));        
       }
     }
 
@@ -1174,17 +1172,17 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       if (!currentActiveMembers.containsKey(key)) {
         ComplexMapRefSetMember member = prevActiveMembers.get(key);
         member.setActive(false);
-        lines.add(getOutputLine(member));
+        lines.add(getOutputLine(member, true));
         member.setActive(true);
       } else {
         ComplexMapRefSetMember member = currentActiveMembers.get(key);
         ComplexMapRefSetMember member2 = prevActiveMembers.get(key);
         if (member.equals(member2)) {
           // write with older effective time
-          lines.add(getOutputLine(member2));
+          lines.add(getOutputLine(member2, true));
         } else {
-          // write with newer effectie time
-          lines.add(getOutputLine(member));
+          // write with newer effective time
+          lines.add(getOutputLine(member, true));
         }
       }
     }
@@ -1193,7 +1191,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     for (String key : currentActiveMembers.keySet()) {
       if (!prevActiveMembers.containsKey(key)
           && !prevInactiveMembers.containsKey(key)) {
-        lines.add(getOutputLine(currentActiveMembers.get(key)));
+        lines.add(getOutputLine(currentActiveMembers.get(key), true));
       }
     }
 
@@ -1759,66 +1757,67 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   /**
    * Returns the machine readable textfor complex map ref set member.
    *
-   * @param complexMapRefSetMember the complex map ref set member
+   * @param member the complex map ref set member
+   * @param trueEffectiveTimeFlag the true effective time flag
    * @return the machine readable textfor complex map ref set member
    * @throws Exception the exception
    */
-  private String getOutputLine(ComplexMapRefSetMember complexMapRefSetMember)
-    throws Exception {
+  private String getOutputLine(ComplexMapRefSetMember member,
+    boolean trueEffectiveTimeFlag) throws Exception {
 
     String entryLine = "";
 
     // switch line on map relation style
     if (mapProject.getMapRefsetPattern().equals(MapRefsetPattern.ExtendedMap)) {
       entryLine =
-          complexMapRefSetMember.getTerminologyId() // the UUID
+          member.getTerminologyId() // the UUID
               + "\t"
-              + effectiveTime
+              + (trueEffectiveTimeFlag ? member.getEffectiveTime() :effectiveTime)
               + "\t"
-              + (complexMapRefSetMember.isActive() ? "1" : "0")
+              + (member.isActive() ? "1" : "0")
               + "\t"
               + moduleId
               + "\t"
-              + complexMapRefSetMember.getRefSetId()
+              + member.getRefSetId()
               + "\t"
-              + complexMapRefSetMember.getConcept().getTerminologyId()
+              + member.getConcept().getTerminologyId()
               + "\t"
-              + complexMapRefSetMember.getMapGroup()
+              + member.getMapGroup()
               + "\t"
-              + complexMapRefSetMember.getMapPriority()
+              + member.getMapPriority()
               + "\t"
-              + (mapProject.isRuleBased() ? complexMapRefSetMember.getMapRule()
-                  : "") + "\t" + complexMapRefSetMember.getMapAdvice()
+              + (mapProject.isRuleBased() ? member.getMapRule()
+                  : "") + "\t" + member.getMapAdvice()
               + "\t"
-              + complexMapRefSetMember.getMapTarget() + "\t"
+              + member.getMapTarget() + "\t"
               + "447561005"
-              + "\t" + complexMapRefSetMember.getMapRelationId();
+              + "\t" + member.getMapRelationId();
 
       // ComplexMap style is identical to ExtendedMap
       // with the exception of the terminating map relation terminology id
     } else if (mapProject.getMapRefsetPattern().equals(
         MapRefsetPattern.ComplexMap)) {
       entryLine =
-          complexMapRefSetMember.getTerminologyId() // the UUID
+          member.getTerminologyId() // the UUID
               + "\t" + effectiveTime
               + "\t"
-              + (complexMapRefSetMember.isActive() ? "1" : "0")
+              + (member.isActive() ? "1" : "0")
               + "\t"
-              + moduleId + "\t" + complexMapRefSetMember.getRefSetId()
+              + moduleId + "\t" + member.getRefSetId()
               + "\t"
-              + complexMapRefSetMember.getConcept().getTerminologyId()
+              + member.getConcept().getTerminologyId()
               + "\t"
-              + complexMapRefSetMember.getMapGroup()
+              + member.getMapGroup()
               + "\t"
-              + complexMapRefSetMember.getMapPriority()
+              + member.getMapPriority()
               + "\t"
-              + complexMapRefSetMember.getMapRule()
+              + member.getMapRule()
               + "\t"
-              + complexMapRefSetMember.getMapAdvice()
+              + member.getMapAdvice()
               + "\t"
-              + complexMapRefSetMember.getMapTarget()
+              + member.getMapTarget()
               + "\t"
-              + complexMapRefSetMember.getMapRelationId();
+              + member.getMapRelationId();
     }
 
     entryLine += "\r\n";
