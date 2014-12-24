@@ -954,6 +954,11 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
             newRelationship.setEffectiveTime(relationship.getEffectiveTime());
           }
         }
+        
+        if (objectCt % 2000 == 0) {
+          contentService.commit();
+          contentService.beginTransaction();
+        }
       }
     }
 

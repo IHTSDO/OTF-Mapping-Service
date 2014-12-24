@@ -1790,7 +1790,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               + (mapProject.isRuleBased() ? complexMapRefSetMember.getMapRule()
                   : "") + "\t" + complexMapRefSetMember.getMapAdvice()
               + "\t"
-              + complexMapRefSetMember.getMapTarget() + "\t" + "447561005" 
+              + complexMapRefSetMember.getMapTarget() + "\t"
+              + "447561005"
               + "\t" + complexMapRefSetMember.getMapRelationId();
 
       // ComplexMap style is identical to ExtendedMap
@@ -2010,6 +2011,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // NOTE: Report Result names are constructed from error lists assigned
     // Each individual result is stored as a Report Result Item
     Logger.getLogger(getClass()).info("  Validate records");
+    boolean errorFlag = false;
     while (mapRecordsToProcess.size() != 0) {
 
       // extract the concept and remove it from list
@@ -2030,7 +2032,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           WorkflowStatus.READY_FOR_PUBLICATION)
           && !mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)) {
         resultMessages.add("Not marked ready for publication");
-
+        errorFlag = true;
         // if record is ready for publication
       } else {
         // CHECK: Map record (must be ready for publication) passes project
@@ -2038,6 +2040,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         ValidationResult result = algorithmHandler.validateRecord(mapRecord);
         if (!result.isValid()) {
           Logger.getLogger(getClass()).debug("    FAILED");
+          errorFlag = true;
           resultMessages.add("Failed validation check");
         } else {
           resultMessages.add("Ready for publication");
@@ -2083,13 +2086,21 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
       addReportError(report, mapProject, terminologyId,
           c.getDefaultPreferredName(), "In-scope concept has no map record");
+      errorFlag = true;
     }
 
     Logger.getLogger(getClass()).info("  Adding Release QA Report");
-    Logger.getLogger(getClass()).info("    Log into the application to see the report results");
+    Logger.getLogger(getClass()).info(
+        "    Log into the application to see the report results");
 
     // commit the report
-    reportService.commit();
+    // TODO: need a way to override the errors if we want to proceed with a
+    // release anyway
+    if (errorFlag) {
+      reportService.rollback();
+    } else {
+      reportService.commit();
+    }
 
     Logger.getLogger(getClass()).info("Done.");
 
