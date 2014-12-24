@@ -11,6 +11,7 @@ import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
+import org.ihtsdo.otf.mapping.services.helpers.OtfEmailHandler;
 
 /**
  * Loads unpublished complex maps.
@@ -63,9 +64,20 @@ public class QAWorkflow extends AbstractMojo {
         getLog().info(
             "Checking workflow for " + mapProject.getName() + ", "
                 + mapProject.getId());
-        ValidationResult result = workflowService.computeWorkflowStatusErrors(mapProject);
-      
-        System.out.println(result.toString());
+        ValidationResult result =
+            workflowService.computeWorkflowStatusErrors(mapProject);
+
+        // TODO hardcoded while testing in prod environment
+        if (!result.isValid()) {
+          OtfEmailHandler emailHandler = new OtfEmailHandler();
+          String message = "";
+          for (String error : result.getErrors()) {
+            message += error + "\n";
+          }
+          emailHandler.sendSimpleEmail("pgranvold@westcoastinformatics.com",
+              mapProject.getName() + " Workflow Errors", message);
+        }
+
       }
 
       mappingService.close();
