@@ -644,16 +644,7 @@ public class MappingServiceJpaTest {
       Logger.getLogger(MappingServiceJpaTest.class).info(
           "Specialist update successful");
     }
-    // TODO Reenable for audit testing
-
-    /*
-     * if (reader.getRevisions(MapSpecialist.class, specialist_old).size() !=
-     * revNumbers.size() + 1) { fail(
-     * "Failed to update revision table:  number of revisions has not increased by 1"
-     * ); }
-     */
-
-    // TODO Determine desired audit results for project
+    
 
   }
 
