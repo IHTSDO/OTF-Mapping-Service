@@ -595,7 +595,10 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           !rule.equals("OTHERWISE TRUE")) {
         rule = "IFA" + rule;
       }        
-      
+      // skip where there are embedded parens, the parser can't handle this
+      if (rule.indexOf('(') != rule.lastIndexOf('(')) {
+        continue;
+      }
       boolean isMatch = parser.parse(new ByteArrayInputStream(rule.getBytes()));
       if (!isMatch) {
         result.addError("Rule clause has incorrect grammar: " + rule);
