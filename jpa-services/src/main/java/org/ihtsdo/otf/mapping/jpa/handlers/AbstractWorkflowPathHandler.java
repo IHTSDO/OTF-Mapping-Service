@@ -22,11 +22,9 @@ import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
-// TODO: Auto-generated Javadoc
 /**
  * Abstract implementation of {@link WorkflowPathHandler}.
  * 
- * @author ${author}
  */
 public abstract class AbstractWorkflowPathHandler implements
     WorkflowPathHandler {
@@ -74,7 +72,7 @@ public abstract class AbstractWorkflowPathHandler implements
    * @param emptyWorkflowAllowed the empty workflow allowed
    */
   public void setEmptyWorkflowAllowed(boolean emptyWorkflowAllowed) {
-    emptyWorkflowAllowed = emptyWorkflowAllowed;
+    this.emptyWorkflowAllowed = emptyWorkflowAllowed;
   }
 
   /**
@@ -95,6 +93,19 @@ public abstract class AbstractWorkflowPathHandler implements
   public void setTrackingRecordStateToActionMap(
     Map<WorkflowPathState, Set<WorkflowAction>> trackingRecordStateToActionMap) {
     this.trackingRecordStateToActionMap = trackingRecordStateToActionMap;
+  }
+  
+  /**
+   * Helper function to return all combinations legal for this workflow.
+   *
+   * @return the workflow status combinations
+   */
+  public Set<WorkflowStatusCombination> getWorkflowStatusCombinations() {
+    Set<WorkflowStatusCombination> combinations = new HashSet<>();
+    for (WorkflowPathState state : this.trackingRecordStateToActionMap.keySet()) {
+      combinations.addAll(state.getWorkflowCombinations());
+    }
+    return combinations;
   }
 
   /*
@@ -123,7 +134,7 @@ public abstract class AbstractWorkflowPathHandler implements
     } else if (!isWorkflowCombinationInTrackingRecordStates(workflowCombination)) {
       result
           .addError("Tracking record has invalid combination of reported workflow statuses for "
-              + trackingRecord.getWorkflowPath());
+              + trackingRecord.getWorkflowPath() + ": " + workflowCombination.toString());
     }
 
     // if invalid, return now
@@ -197,7 +208,6 @@ public abstract class AbstractWorkflowPathHandler implements
     // get the workflow state
     WorkflowPathState state = getWorkflowStateForTrackingRecord(trackingRecord);
     
-
     // check if this action is legal for this workflow state
     if (action.equals(WorkflowAction.CANCEL)) {
       // CANCEL is valid for all workflow paths at all stages
@@ -231,6 +241,10 @@ public abstract class AbstractWorkflowPathHandler implements
     TrackingRecord tr) {
     WorkflowStatusCombination workflowCombination =
         new WorkflowStatusCombination();
+    
+    if (tr == null) {
+      return workflowCombination;
+    }
 
     if (tr.getUserAndWorkflowStatusPairs() != null) {
 
@@ -328,5 +342,18 @@ public abstract class AbstractWorkflowPathHandler implements
     TrackingRecord trackingRecord) {
     return getWorkflowStateForWorkflowCombination(getWorkflowCombinationForTrackingRecord(trackingRecord));
   }
-
+  
+  /**
+   * Returns the workflow state for a given workflow combination.
+   *
+   * @param combination the combination
+   * @return the workflow path state for workflow status combination
+   */
+  public WorkflowPathState getWorkflowPathStateForWorkflowStatusCombination(WorkflowStatusCombination combination) {
+    for (WorkflowPathState state : trackingRecordStateToActionMap.keySet()) {
+      if (state.contains(combination))
+        return state;
+    }
+    return null;
+  }
 }

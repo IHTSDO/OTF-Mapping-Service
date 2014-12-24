@@ -512,7 +512,7 @@ public class ContentServiceRest extends RootServiceRest {
                 .entity(
                     "User does not have permissions to retrieve the page names for the given index.")
                 .build());
-    
+   
       IndexViewerHandler indexViewerHandler = new IndexViewerHandler();
       SearchResultList searchResultList = indexViewerHandler.getIndexPagesForIndex(terminology, terminologyVersion, index);
 
@@ -573,6 +573,7 @@ public class ContentServiceRest extends RootServiceRest {
           terminologyVersion, domain, searchField, subSearchField, subSubSearchField, allFlag);
       searchResultList.setTotalCount(searchResultList.getCount());
       return searchResultList;
+
 
     } catch (Exception e) {
       handleException(e, "trying to perform a search of the indexes");

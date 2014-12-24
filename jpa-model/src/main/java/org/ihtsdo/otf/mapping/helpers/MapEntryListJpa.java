@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
 import org.ihtsdo.otf.mapping.model.MapEntry;
@@ -59,7 +60,7 @@ public class MapEntryListJpa extends AbstractResultList<MapEntry> implements
    * org.ihtsdo.otf.mapping.helpers.MapEntryList#setmapEntrys(java.util.List)
    */
   @Override
-  public void setmapEntrys(List<MapEntry> mapEntrys) {
+  public void setMapEntrys(List<MapEntry> mapEntrys) {
     this.mapEntrys = new ArrayList<>();
     this.mapEntrys.addAll(mapEntrys);
 
@@ -113,6 +114,7 @@ public class MapEntryListJpa extends AbstractResultList<MapEntry> implements
    * @see org.ihtsdo.otf.mapping.helpers.ResultList#getIterable()
    */
   @Override
+  @XmlTransient
   public Iterable<MapEntry> getIterable() {
     return mapEntrys;
   }

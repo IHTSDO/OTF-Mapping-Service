@@ -681,9 +681,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     if (mapRecord != null)
       handleMapRecordLazyInitialization(mapRecord);
 
-    Logger.getLogger(this.getClass()).debug(
-        "Returning record_id... "
-            + ((mapRecord != null) ? mapRecord.getId().toString() : "null"));
     return mapRecord;
   }
 

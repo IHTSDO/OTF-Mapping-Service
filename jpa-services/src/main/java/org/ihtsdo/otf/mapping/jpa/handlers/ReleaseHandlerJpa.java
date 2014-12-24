@@ -1790,10 +1790,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               + (mapProject.isRuleBased() ? complexMapRefSetMember.getMapRule()
                   : "") + "\t" + complexMapRefSetMember.getMapAdvice()
               + "\t"
-              + complexMapRefSetMember.getMapTarget() + "\t" + "447561005" // TODO:
-                                                                           // make
-                                                                           // algorithm
-                                                                           // specific
+              + complexMapRefSetMember.getMapTarget() + "\t" + "447561005" 
               + "\t" + complexMapRefSetMember.getMapRelationId();
 
       // ComplexMap style is identical to ExtendedMap

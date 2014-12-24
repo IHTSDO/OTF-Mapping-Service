@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.ihtsdo.otf.mapping.reports.ReportResult;
 import org.ihtsdo.otf.mapping.reports.ReportResultJpa;
@@ -115,6 +116,7 @@ public class ReportResultListJpa extends AbstractResultList<ReportResult>
    * @see org.ihtsdo.otf.mapping.helpers.ResultList#getIterable()
    */
   @Override
+  @XmlTransient
   public Iterable<ReportResult> getIterable() {
     return reports;
   }
