@@ -1576,8 +1576,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     contentService.close();
 
     // get those excluded from scope
-    SearchResultList excludedResultList =
-        findConceptsExcludedFromScope(mapProjectId, pfsParameter);
+    // Get as set so next step is easily run.
+    Set<SearchResult> excludedResultList =
+        new HashSet<>(findConceptsExcludedFromScope(mapProjectId, pfsParameter)
+            .getSearchResults());
 
     // remove those excluded from scope
     SearchResultList finalConceptsInScope = new SearchResultListJpa();

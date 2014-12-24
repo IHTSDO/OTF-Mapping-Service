@@ -71,6 +71,14 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
    */
   String terminology;
 
+  /**
+   * Terminology version
+   * @parameter
+   * @required
+   */
+  String version;
+
+
   // NOTE: default visibility is used instead of private
   // so that the inner class parser does not require
   // the use of synthetic accessors
@@ -112,6 +120,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
     getLog().info("Starting loading Claml terminology");
     getLog().info("  inputFile = inputFile");
     getLog().info("  terminology = " + terminology);
+    getLog().info("  version = " + version);
 
     FileInputStream fis = null;
     InputStream inputStream = null;
@@ -1374,6 +1383,8 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       }
     }
     br.close();
+    // Override terminology version with parameter
+    terminologyVersion = version;
     getLog().info("terminologyVersion: " + terminologyVersion);
     getLog().info("effectiveTime: " + effectiveTime);
   }
