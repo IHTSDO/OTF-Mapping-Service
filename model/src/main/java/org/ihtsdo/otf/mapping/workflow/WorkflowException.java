@@ -2,7 +2,6 @@ package org.ihtsdo.otf.mapping.workflow;
 
 import java.util.Set;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Interface WorkflowException.
  */

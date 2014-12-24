@@ -1,10 +1,11 @@
 package org.ihtsdo.otf.mapping.mojo;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
@@ -24,7 +25,7 @@ public class QAWorkflow extends AbstractMojo {
   /**
    * The refSet id
    * @parameter refsetId
-   * @required
+   * 
    */
   private String refsetId = null;
 
@@ -41,13 +42,17 @@ public class QAWorkflow extends AbstractMojo {
     try {
 
       MappingService mappingService = new MappingServiceJpa();
-      Set<MapProject> mapProjects = new HashSet<>();
+      List<MapProject> mapProjects = new ArrayList<>();
 
-      for (MapProject mapProject : mappingService.getMapProjects()
-          .getIterable()) {
-        for (String id : refsetId.split(",")) {
-          if (mapProject.getRefSetId().equals(id)) {
-            mapProjects.add(mapProject);
+      if (refsetId == null) {
+        mapProjects = mappingService.getMapProjects().getMapProjects();
+      } else {
+        for (MapProject mapProject : mappingService.getMapProjects()
+            .getIterable()) {
+          for (String id : refsetId.split(",")) {
+            if (mapProject.getRefSetId().equals(id)) {
+              mapProjects.add(mapProject);
+            }
           }
         }
       }
@@ -58,7 +63,9 @@ public class QAWorkflow extends AbstractMojo {
         getLog().info(
             "Checking workflow for " + mapProject.getName() + ", "
                 + mapProject.getId());
-        workflowService.computeWorkflowStatusErrors(mapProject);
+        ValidationResult result = workflowService.computeWorkflowStatusErrors(mapProject);
+      
+        System.out.println(result.toString());
       }
 
       mappingService.close();
