@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.helpers;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,6 +84,20 @@ public class WorkflowStatusCombination {
    */
   public boolean isEmpty() {
     return this.workflowStatuses.isEmpty();
+  }
+  
+  /**
+   * Function to return all workflow statuses as a list (duplicate values permitted)
+   * @return
+   */
+  public List<WorkflowStatus> getWorkflowStatusesAsList() {
+    List<WorkflowStatus> statuses = new ArrayList<>();
+    for (WorkflowStatus status : workflowStatuses.keySet()) {
+      for (int i = 0; i < workflowStatuses.get(status); i++) {
+        statuses.add(status);
+      }
+    }
+    return statuses;
   }
 
   /* (non-Javadoc)

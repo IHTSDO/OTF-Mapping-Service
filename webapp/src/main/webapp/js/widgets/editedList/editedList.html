@@ -1,36 +1,75 @@
 <form>
-  <input type="text" id="editQueryInput" ng-model="queryTerms">
-  <button type="submit" style:"padding-top:10px;" class="btn btn-sm btn-primary"
-    ng-click="retrieveEditedWork(editedRecordsPage, queryTerms)">Search</button>
-  <button type="submit" style:"padding-top:10px;" class="btn btn-sm btn-primary"
-    ng-click="clearSearch(); queryTerms = ''">Reset</button>
-  <img src="img/warning.png" tooltip-placement="top"
-    tooltip="You may search by concept id or terms in the concept's name (e.g. closed fracture, 704020004, ...). Only exact phrases will match, e.g. 'phalanx thumb' will not match the phrase 'phalanx of thumb'.  AND/OR/NOT operators are not supported."></img>
+	<input type="text" id="editQueryInput" ng-model="queryTerms">
+	<button type="submit"
+		style:"padding-top:10px;" class="btn btn-sm btn-primary"
+		ng-click="retrieveEditedWork(editedRecordsPage, queryTerms)">Search</button>
+	<button type="submit"
+		style:"padding-top:10px;" class="btn btn-sm btn-primary"
+		ng-click="clearSearch(); queryTerms = ''">Reset</button>
+	<a><i class="glyphicon glyphicon-info-sign" tooltip-placement="top"
+		tooltip="You may search by concept id or terms in the concept's name (e.g. closed fracture, 704020004, ...). Only exact phrases will match, e.g. 'phalanx thumb' will not match the phrase 'phalanx of thumb'.  AND/OR/NOT operators are not supported."></i></a>
 
 </form>
 <br>
 
-<div ng-show="searchPerformed == false" class="alert alert-warning" disabled>
-  Enter search terms, or leave blank to search all edited work.</div>
+<div ng-show="searchPerformed == false" class="alert alert-warning"
+	disabled>Enter search terms, or leave blank to search all edited
+	work.</div>
 
 <div ng-show="editedRecords.length == 0 && searchPerformed == true"
-  style="width: 30%; padding: 10px;" class="alert alert-warning" disabled>
-  No concepts found.</div>
+	style="width: 30%; padding: 10px;" class="alert alert-in" disabled>
+	No concepts found.</div>
 </div>
 
-<ul class="pager">
-  <li class="previous" ng-show="editedRecordsPage > 1"
-    ng-click="retrieveEditedWork(editedRecordsPage-1)"><a>&larr; Newer</a></li>
-  <li class="next" ng-click="retrieveEditedWork(editedRecordsPage+1)"><a>Older
-      &rarr;</a></li>
+
+
+<table class="table" ng-show="editedRecords.length > 0">
+
+	<thead>
+		<th>Date Edited</th>
+		<th>Concept Id</th>
+		<th>Concept Name</th>
+
+	<tr ng-repeat="record in editedRecords">
+		<td style="width: 10%">{{record.lastModified | date:
+			'MM/dd/yyyy'}}</td>
+		<td style="width: 10%"'><a href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}</a></td>
+		<td style="width: 80%"> <a ng-click="record.isCollapsed = !record.isCollapsed">
+								[<i
+								ng-class="{'glyphicon-minus': !record.isCollapsed, 'glyphicon-plus': record.isCollapsed}"></i>]
+	</a>{{record.conceptName}}
+		<div collapse="record.isCollapsed == true">
+		<hr>
+	<div otf-map-record-wide record="record" project="focusProject"
+		show-title="false"></div>
+	
+</div></td>
+	</tr>
+</table>
+
+
+<ul class="pager" ng-show="searchPerformed == true">
+	<li class="previous" ng-show="editedRecordsPage > 1"
+		ng-click="retrieveEditedWork(editedRecordsPage-1)"><a>&larr;
+			Newer</a></li>
+	<li class="next" ng-click="retrieveEditedWork(editedRecordsPage+1)"><a>Older
+			&rarr;</a></li>
 </ul>
 
+
+</div>
+
+
+
+
+
+
 <accordion close-others="false"> <accordion-group
-  ng-repeat="record in editedRecords"> <accordion-heading>{{record.lastModified
+	ng-repeat="record in editedRecords"> <accordion-heading>{{record.lastModified
 | date: 'MM/dd/yyyy'}}: {{record.conceptName}} ({{record.conceptId}})</accordion-heading> <a
-  href="#/record/conceptId/{{record.conceptId}}">View Current Records</a>
+	href="#/record/conceptId/{{record.conceptId}}">View Current Records</a>
 
 <div otf-map-record-wide record="record" project="focusProject"
-  show-title="false"></div>
+	show-title="false"></div>
 </accordion-group> </accordion>
 </div>
