@@ -3,9 +3,6 @@
 <tabset> <tab heading="{{tabs[0].title}}" active="tabs[0].active"
   select="setTab(0)">
 
-
-
-
 <table style="margin-top: 10px; margin-bottom: 10px;">
   <tbody>
     <tr ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
@@ -39,9 +36,7 @@
             ng-click="retrieveAvailableWork(1, queryAvailable, assignedMapUser); isConceptListOpen = true">Search</button>
           <button class="btn btn-sm btn-primary"
             ng-click="retrieveAvailableWork(1, 'null', assignedMapUser); queryAvailable = null; isConceptListOpen = false">Reset</button>
-          <img src="img/warning.png" tooltip-placement="top"
-            tooltip="After testing is complete, searching available concepts will only be available to Map Leads."></img>
-        </form>
+          </form>
       </td>
     </tr>
 
@@ -49,12 +44,6 @@
 </table>
 <div style="color: red;" ng-show="error != null">{{error}}</div>
 
-<!-- <accordion> <accordion-group is-open="isConceptListOpen">
-<accordion-heading> Concepts Available for Assignment
-<i class="pull-right glyphicon"
-  ng-class="{'glyphicon-chevron-down': isConceptListOpen == true, 'glyphicon-chevron-right': isConceptListOpen != true}"></i>
-
-</accordion-heading>  --> <!--  do not display any controls if no available concepts and the query is null -->
 <div style="padding: 10px;" ng-show="nAvailableWork == 0">
   <p></p>
   <div class="alert alert-warning" disabled>No concepts found.</div>
