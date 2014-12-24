@@ -1383,6 +1383,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     query.setParameter("terminologyId", terminologyId);
 
     // get the first tree position
+    query.setMaxResults(1);
     List<String> ancestorPaths = query.getResultList();
 
     // skip construction if no ancestor path was found
