@@ -346,7 +346,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     if (!mapProject.isRuleBased()) {
 
       for (MapEntry me : mapRecord.getMapEntries()) {
-        if (me.getRule() != null && me.getRule().isEmpty()) {
+        if (me.getRule() != null && !me.getRule().isEmpty()) {
           validationResult
               .addError("Rule found for non-rule based project at map group "
                   + me.getMapGroup() + ", priority " + me.getMapPriority()
