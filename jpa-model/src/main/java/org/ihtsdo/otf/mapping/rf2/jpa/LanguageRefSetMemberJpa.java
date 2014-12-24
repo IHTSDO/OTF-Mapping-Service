@@ -7,7 +7,6 @@ import javax.persistence.UniqueConstraint;
 
 import org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember;
 
-// TODO: Auto-generated Javadoc
 /**
  * JPA enabled implementation of {@link LanguageRefSetMember}.
  */

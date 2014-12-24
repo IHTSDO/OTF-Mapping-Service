@@ -27,7 +27,7 @@ public interface MapEntryList extends ResultList<MapEntry> {
    * 
    * @param mapEntrys the new map entrys
    */
-  public void setmapEntrys(List<MapEntry> mapEntrys);
+  public void setMapEntrys(List<MapEntry> mapEntrys);
 
   /**
    * Gets the map entrys.
