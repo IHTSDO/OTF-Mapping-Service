@@ -677,8 +677,11 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
         // Major error if there is a delta description with a
         // non-existent concept
         else {
-          throw new Exception("Could not find concept " + fields[4]
-              + " for Description " + fields[0]);
+          // skip
+          getLog().info("SKIP DESC with concept " + fields[4]);
+          continue;
+//          throw new Exception("Could not find concept " + fields[4]
+//              + " for Description " + fields[0]);
         }
       }
     }
@@ -845,8 +848,11 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
               contentService.getConcept(fields[4], terminology, version);
         }
         if (sourceConcept == null) {
-          throw new Exception("Relationship " + fields[0] + " source concept "
-              + fields[4] + " cannot be found");
+          // skip
+          getLog().info("SKIP REL with source concept " + fields[4]);
+          continue;
+//          throw new Exception("Relationship " + fields[0] + " source concept "
+//              + fields[4] + " cannot be found");
         }
 
         // Retrieve destination concept
@@ -859,8 +865,11 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
               contentService.getConcept(fields[5], terminology, version);
         }
         if (destinationConcept == null) {
-          throw new Exception("Relationship " + fields[0]
-              + " destination concept " + fields[5] + " cannot be found");
+          // skip
+          getLog().info("SKIP REL with source concept " + fields[5]);
+          continue;
+//          throw new Exception("Relationship " + fields[0]
+//              + " destination concept " + fields[5] + " cannot be found");
         }
 
         // Cache concepts
