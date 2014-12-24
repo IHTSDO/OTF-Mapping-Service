@@ -99,7 +99,6 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
   /** The concept field names. */
   private static Set<String> conceptFieldNames;
 
-
   /**
    * Instantiates an empty {@link ContentServiceJpa}.
    * 
@@ -1514,55 +1513,29 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
   public void clearTreePositions(String terminology, String terminologyVersion)
     throws Exception {
 
-    Logger.getLogger(this.getClass()).info(
-        "Removing tree positions via object-management for " + terminology
-            + ", " + terminologyVersion);
-
-    // if currently in transaction-per-operation mode, temporarily set to
-    // false
-    boolean currentTransactionStrategy = getTransactionPerOperation();
     if (getTransactionPerOperation()) {
-      this.setTransactionPerOperation(false);
+
+      // remove simple ref set member
+      tx.begin();
+
+      javax.persistence.Query query =
+          manager
+              .createQuery("DELETE From TreePositionJpa c where terminology = :terminology");
+      query.setParameter("terminology", terminology);
+      int deleteRecords = query.executeUpdate();
+      Logger.getLogger(getClass()).info(
+          "    treepos records deleted: " + deleteRecords);
+      tx.commit();
+
+    } else {
+      javax.persistence.Query query =
+          manager
+              .createQuery("DELETE From TreePositionJpa c where terminology = :terminology");
+      query.setParameter("terminology", terminology);
+      int deleteRecords = query.executeUpdate();
+      Logger.getLogger(getClass()).info(
+          "    treepos records deleted: " + deleteRecords);
     }
-
-    int results = 0; // progress tracker
-    int commitSize = 5000; // retrieval/delete batch size
-
-    javax.persistence.Query query =
-        manager
-            .createQuery("select tp from TreePositionJpa tp where terminology = :terminology and terminologyVersion = :terminologyVersion");
-    query.setParameter("terminology", terminology);
-    query.setParameter("terminologyVersion", terminologyVersion);
-
-    query.setFirstResult(0);
-    query.setMaxResults(commitSize);
-
-    boolean resultsFound = true;
-
-    while (resultsFound) {
-
-      List<TreePosition> treePositions = query.getResultList();
-
-      if (treePositions.size() == 0)
-        resultsFound = false;
-
-      this.beginTransaction();
-      for (TreePosition tp : treePositions) {
-        this.removeTreePosition(tp.getId());
-      }
-      this.commit();
-
-      results += commitSize;
-
-      Logger.getLogger(this.getClass()).info(
-          "  " + results + " tree positions deleted");
-    }
-
-    Logger.getLogger(this.getClass()).info(
-        "Finished:  deleted " + results + " tree positions");
-
-    // set the transaction strategy based on status starting this routine
-    setTransactionPerOperation(currentTransactionStrategy);
 
   }
 
@@ -2791,7 +2764,5 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
         .setComplexMapRefSetMembers(complexMapRefSetMembers);
     return complexMapRefSetMemberList;
   }
-
-
 
 }
