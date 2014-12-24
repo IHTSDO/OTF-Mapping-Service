@@ -436,6 +436,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
       getLog().info("    Loading Concepts ...");
       startTime = System.nanoTime();
       loadConcepts(conceptReader);
+      contentService.commit();
+      contentService.beginTransaction();
       getLog().info(
           "      evaluated = " + Integer.toString(objectCt) + " (Ended at "
               + ft.format(new Date()) + ")");
@@ -446,6 +448,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
       getLog().info("    Loading Relationships ...");
       startTime = System.nanoTime();
       loadRelationships(relationshipReader);
+      contentService.commit();
+      contentService.beginTransaction();
       getLog().info(
           "      evaluated = " + Integer.toString(objectCt) + " (Ended at "
               + ft.format(new Date()) + ")");
@@ -456,6 +460,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
       getLog().info("    Loading Descriptions ...");
       startTime = System.nanoTime();
       loadDescriptions(descriptionReader);
+      contentService.commit();
+      contentService.beginTransaction();
       getLog().info(
           "      evaluated = " + Integer.toString(objectCt) + " (Ended at "
               + ft.format(new Date()) + ")");
@@ -466,6 +472,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
       getLog().info("    Loading Text Definitions...");
       startTime = System.nanoTime();
       loadDescriptions(textDefinitionReader);
+      contentService.commit();
+      contentService.beginTransaction();
       getLog().info(
           "      evaluated = " + Integer.toString(objectCt) + " (Ended at "
               + ft.format(new Date()) + ")");
@@ -476,6 +484,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
       getLog().info("    Loading Language Ref Sets...");
       startTime = System.nanoTime();
       loadLanguageRefSetMembers(languageReader);
+      contentService.commit();
+      contentService.beginTransaction();
       getLog().info(
           "      evaluated = " + Integer.toString(objectCt) + " (Ended at "
               + ft.format(new Date()) + ")");
