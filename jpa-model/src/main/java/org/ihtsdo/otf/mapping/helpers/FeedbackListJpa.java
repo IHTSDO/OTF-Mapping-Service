@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.ihtsdo.otf.mapping.jpa.FeedbackJpa;
 import org.ihtsdo.otf.mapping.model.Feedback;
@@ -68,6 +69,7 @@ public class FeedbackListJpa extends AbstractResultList<Feedback> implements
   }
 
   @Override
+  @XmlTransient
   public Iterable<Feedback> getIterable() {
     return feedbacks;
   }

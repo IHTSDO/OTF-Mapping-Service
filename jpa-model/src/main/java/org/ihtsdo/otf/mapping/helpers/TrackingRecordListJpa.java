@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlTransient;
+
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
 /**
@@ -115,6 +117,7 @@ public class TrackingRecordListJpa extends AbstractResultList<TrackingRecord>
    * @see org.ihtsdo.otf.mapping.helpers.ResultList#getIterable()
    */
   @Override
+  @XmlTransient
   public Iterable<TrackingRecord> getIterable() {
     return trackingRecords;
   }

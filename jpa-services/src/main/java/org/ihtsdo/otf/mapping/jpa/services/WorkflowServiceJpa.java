@@ -47,12 +47,18 @@ import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.helpers.TrackingRecordList;
 import org.ihtsdo.otf.mapping.helpers.TrackingRecordListJpa;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
+import org.ihtsdo.otf.mapping.helpers.ValidationResult;
+import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.helpers.WorkflowType;
 import org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
+import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowFixErrorPathHandler;
+import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowNonLegacyPathHandler;
+import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowQaPathHandler;
+import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowReviewProjectPathHandler;
 import org.ihtsdo.otf.mapping.model.Feedback;
 import org.ihtsdo.otf.mapping.model.FeedbackConversation;
 import org.ihtsdo.otf.mapping.model.MapProject;
@@ -2618,8 +2624,10 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
  
 
   @Override
-  public void computeWorkflowStatusErrors(MapProject mapProject)
+  public ValidationResult computeWorkflowStatusErrors(MapProject mapProject)
     throws Exception {
+    
+    ValidationResult result = new ValidationResultJpa();
 
     // instantiate the mapping service
     MappingService mappingService = new MappingServiceJpa();
@@ -2627,332 +2635,71 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     Logger.getLogger(WorkflowServiceJpa.class).info(
         "Retrieving tracking records for project " + mapProject.getId() + ", "
             + mapProject.getName());
+    
+    // instantiate a copy of all workflow handlers
+    WorkflowNonLegacyPathHandler nonLegacyHandler = new WorkflowNonLegacyPathHandler();
+    WorkflowFixErrorPathHandler fixErrorHandler = new WorkflowFixErrorPathHandler();
+    WorkflowQaPathHandler qaHandler = new WorkflowQaPathHandler();
+    WorkflowReviewProjectPathHandler reviewHandler = new WorkflowReviewProjectPathHandler();
 
     // get all the tracking records for this project
     TrackingRecordList trackingRecords =
         this.getTrackingRecordsForMapProject(mapProject);
+    
+    // construct a set of terminology ids for which a tracking record exists
+    Set<String> terminologyIdsWithTrackingRecord = new HashSet<>();
 
+    // first check all the tracking records for valid state
+    for (TrackingRecord trackingRecord : trackingRecords.getTrackingRecords()) {
+      switch (trackingRecord.getWorkflowPath()) {
+        case CONSENSUS_PATH:
+          break;
+        case DRIP_FEED_REVIEW_PATH:
+          break;
+        case FIX_ERROR_PATH:
+          result.merge(fixErrorHandler.validateTrackingRecord(trackingRecord));
+          break;
+        case LEGACY_PATH:
+          break;
+        case NON_LEGACY_PATH:
+          result.merge(nonLegacyHandler.validateTrackingRecord(trackingRecord));
+          break;
+        case QA_PATH:
+          result.merge(qaHandler.validateTrackingRecord(trackingRecord));
+          break;
+        case REVIEW_PROJECT_PATH:
+          result.merge(reviewHandler.validateTrackingRecord(trackingRecord));
+          break;
+        default:
+          break;
+        
+        
+      }
+      
+      // add this tracking record id to the set
+      terminologyIdsWithTrackingRecord.add(trackingRecord.getTerminologyId());
+    }
+    
     Logger.getLogger(WorkflowServiceJpa.class).info(
-        "  " + trackingRecords.getCount() + " retrieved");
-
-    // set the reporting interval based on number of tracking records
-    int nObjects = 0;
-    int nMessageInterval = (int) Math.floor(trackingRecords.getCount() / 10);
-
-    // instantiate the error map
-    Map<TrackingRecord, List<String>> trackingRecordsInError = new HashMap<>();
-
-    // cycle over tracking records and ensure valid combination of records
-    for (TrackingRecord tr : trackingRecords.getIterable()) {
-
-      // initialize the error list for this tracking record
-      List<String> errors = new ArrayList<>();
-
-      // try to retrieve the map records for this tracking record
-      Set<MapRecord> mapRecords = new HashSet<>();
-      try {
-        mapRecords = this.getMapRecordsForTrackingRecord(tr);
-
-        // if an error, figure out which records are causing the problem
-      } catch (Exception e1) {
-
-        for (Long id : tr.getMapRecordIds()) {
-          MapRecord mr = null;
-          try {
-            mr = mappingService.getMapRecord(id);
-          } catch (Exception e2) {
-            errors.add("Could not retrieve map record " + id);
-          }
-          if (mr == null) {
-            throw new Exception("Unexpected null map record");
-          }
-
-          // check that the workflow status on record matches that on
-          // tracking record
-          if (!tr.getUserAndWorkflowStatusPairs().contains(
-              mr.getWorkflowStatus().toString() + "_"
-                  + mr.getOwner().getUserName()))
-            errors.add("Workflow mismatch found for user "
-                + mr.getOwner().getUserName()
-                + ":  record has workflow status "
-                + mr.getWorkflowStatus().toString()
-                + " while tracking record has user/workflow pairs "
-                + tr.getUserAndWorkflowStatusPairs());
+        "  Checking map records for " + mapProject.getId() + ", "
+            + mapProject.getName());
+    
+    // second, check all records for non-publication ready content without tracking record
+    for (MapRecord mapRecord : mappingService.getMapRecordsForMapProject(mapProject.getId()).getMapRecords()) {
+      
+      // if not publication ready
+      if (!mapRecord.getWorkflowStatus().equals(WorkflowStatus.READY_FOR_PUBLICATION) &&
+          !mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)) {
+        
+        // if no tracking record found for this concept
+        if (terminologyIdsWithTrackingRecord.contains(mapRecord.getConceptId())) {
+          result.addError("Map Record " + mapRecord.getId() + ": " + mapRecord.getWorkflowStatus() + " but no tracking record exists (Concept "  + mapRecord.getConceptId() + mapRecord.getConceptName());
         }
-
       }
-
-      // if no problems with retrieving records
-      if (errors.size() == 0) {
-
-        // count variables
-        int nConflictDetectedRecords;
-        @SuppressWarnings("unused")
-        int nRecordsInEditing;
-
-        switch (tr.getWorkflowPath()) {
-          case CONSENSUS_PATH:
-            break;
-          case DRIP_FEED_REVIEW_PATH:
-            break;
-          case FIX_ERROR_PATH:
-
-            // Must contain:
-            // (1) REVISION
-            // (2) NEW, EDITING_IN_PROGRESS, EDITING_DONE, or
-            // REVIEW_NEEDED
-            //
-            // May contain
-            // (3) REVIEW_NEW, REVIEW_IN_PROGRESS -- This requires
-            // existence
-            // of an edited record (#2)
-
-            boolean revisionRecordFound = false;
-            boolean editingRecordFound = false;
-            boolean reviewRecordFound = false;
-
-            for (MapRecord mr : mapRecords) {
-              // check for original record in error
-              if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION))
-                revisionRecordFound = true;
-
-              // check for lead review of a fixed error
-              else if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW)
-                  || mr.getWorkflowStatus().equals(
-                      WorkflowStatus.REVIEW_IN_PROGRESS)
-                  || mr.getWorkflowStatus().equals(
-                      WorkflowStatus.REVIEW_RESOLVED))
-                reviewRecordFound = true;
-
-              // check for specialist record
-              else if (mr.getWorkflowStatus().equals(WorkflowStatus.NEW)
-                  || mr.getWorkflowStatus().equals(
-                      WorkflowStatus.EDITING_IN_PROGRESS)
-                  || mr.getWorkflowStatus().equals(WorkflowStatus.EDITING_DONE)
-                  || mr.getWorkflowStatus()
-                      .equals(WorkflowStatus.REVIEW_NEEDED))
-                editingRecordFound = true;
-              else {
-                errors.add("FIX_ERROR_PATH, found unexpected status "
-                    + mr.getWorkflowStatus() + " on map record " + mr.getId());
-              }
-            }
-
-            // revision record must exist
-            if (!revisionRecordFound) {
-              errors.add("FIX_ERROR_PATH, but no REVISION record");
-            }
-
-            // specialist editing record must exist
-            if (!editingRecordFound) {
-              errors
-                  .add("FIX_ERROR_PATH, but no specialist-level record found");
-            }
-
-            // lead record may or may not exist
-            if (!reviewRecordFound) {
-              // do nothing, not required
-              // any aberrant records will be reported above
-            }
-
-            break;
-          case LEGACY_PATH:
-            break;
-          case NON_LEGACY_PATH:
-
-            // switch on number of records in this tracking record
-            switch (mapRecords.size()) {
-
-            // a tracking record with zero records is by default not in
-            // error (no work has been performed)
-              case 0:
-                // do nothing
-                break;
-
-              // if a tracking record has 1 record, must be NEW,
-              // EDITING_IN_PROGRESS, or EDITING_DONE
-              case 1:
-                for (MapRecord mr : mapRecords) {
-                  if (!mr.getWorkflowStatus().equals(WorkflowStatus.NEW)
-                      && !mr.getWorkflowStatus().equals(
-                          WorkflowStatus.EDITING_IN_PROGRESS)
-                      && !mr.getWorkflowStatus().equals(
-                          WorkflowStatus.EDITING_DONE)) {
-                    errors
-                        .add("NON_LEGACY_PATH, one map record, but map record "
-                            + mr.getId() + " has invalid state "
-                            + mr.getWorkflowStatus());
-                  }
-                }
-                break;
-              // if a tracking record has 2 records, must both be
-              // specialist level records at or below CONFLICT_DETECTED
-              case 2:
-                nConflictDetectedRecords = 0;
-                nRecordsInEditing = 0;
-
-                for (MapRecord mr : mapRecords) {
-
-                  if (mr.getWorkflowStatus().equals(
-                      WorkflowStatus.CONFLICT_DETECTED)) {
-                    nConflictDetectedRecords++;
-                  } else if (mr.getWorkflowStatus().compareTo(
-                      WorkflowStatus.CONFLICT_DETECTED) < 0) {
-                    nRecordsInEditing++;
-                  } else {
-                    errors
-                        .add("NON_LEGACY_PATH, two map records, but map record "
-                            + mr.getId()
-                            + " has invalid state "
-                            + mr.getWorkflowStatus());
-                  }
-
-                }
-                break;
-              // if a tracking record has 3 records, two must be
-              // CONFLICT_DETECTED and the third must be CONFLICT_NEW or
-              // CONFLICT_IN_PROGRESS
-              case 3:
-                nConflictDetectedRecords = 0;
-                boolean leadRecordFound = false;
-
-                for (MapRecord mr : mapRecords) {
-                  if (mr.getWorkflowStatus().equals(
-                      WorkflowStatus.CONFLICT_DETECTED)) {
-                    nConflictDetectedRecords++;
-                  } else if (mr.getWorkflowStatus().equals(
-                      WorkflowStatus.CONFLICT_NEW)
-                      || mr.getWorkflowStatus().equals(
-                          WorkflowStatus.CONFLICT_IN_PROGRESS)
-                      || mr.getWorkflowStatus().equals(
-                          WorkflowStatus.CONFLICT_RESOLVED)) {
-                    leadRecordFound = true;
-                  } else {
-                    errors
-                        .add("NON_LEGACY_PATH, three records, expected conflict resolution status, but map record "
-                            + mr.getId()
-                            + " has invalid state "
-                            + mr.getWorkflowStatus());
-                  }
-                }
-
-                if (!leadRecordFound) {
-                  errors
-                      .add("NON_LEGACY_PATH, three records, expected conflict resolution status, but could not find lead's resolution record");
-                }
-
-                if (nConflictDetectedRecords != 2) {
-                  errors
-                      .add("NON_LEGACY_PATH, three records, expected two CONFLICT_DETECTED records, but found "
-                          + nConflictDetectedRecords);
-                }
-                break;
-              default:
-                errors.add("NON_LEGACY_PATH, unexpected number of records: "
-                    + tr.getMapRecordIds().size());
-                for (MapRecord mr : mapRecords) {
-                  errors.add("  " + mr.getId() + ", " + mr.getWorkflowStatus());
-                }
-                break;
-            }
-
-            break;
-          case QA_PATH:
-            break;
-          case REVIEW_PROJECT_PATH:
-
-            // switch on number of records
-            switch (mapRecords.size()) {
-              case 0:
-                break;
-              case 1:
-                MapRecord editingRecord = mapRecords.iterator().next();
-
-                // record MUST be NEW, EDITING_IN_PROGRESS, or
-                // REVIEW_NEEDED
-                if (!editingRecord.getWorkflowStatus().equals(
-                    WorkflowStatus.NEW)
-                    && !editingRecord.getWorkflowStatus().equals(
-                        WorkflowStatus.EDITING_IN_PROGRESS)
-                    && !editingRecord.getWorkflowStatus().equals(
-                        WorkflowStatus.REVIEW_NEEDED)) {
-
-                  errors.add("REVIEW_PROJECT_PATH, one record, but map record "
-                      + editingRecord.getId()
-                      + " is not a specialist record and has state "
-                      + editingRecord.getWorkflowStatus());
-
-                }
-                break;
-              case 2:
-                // MUST have:
-                // - REVIEW_NEEDED
-                // - REVIEW_NEW or REVIEW_IN_PROGRESS or REVIEW_RESOLVED
-                boolean specialistRecordFound = false;
-                boolean leadRecordFound = false;
-
-                for (MapRecord mr : mapRecords) {
-                  if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW)
-                      || mr.getWorkflowStatus().equals(
-                          WorkflowStatus.REVIEW_IN_PROGRESS)
-                      || mr.getWorkflowStatus().equals(
-                          WorkflowStatus.REVIEW_RESOLVED)) {
-                    leadRecordFound = true;
-                  } else if (mr.getWorkflowStatus().equals(
-                      WorkflowStatus.REVIEW_NEEDED)) {
-                    specialistRecordFound = true;
-                  } else {
-                    errors
-                        .add("REVIEW_PROJECT_PATH, two records, but map record "
-                            + mr.getId()
-                            + " has invalid state "
-                            + mr.getWorkflowStatus());
-                  }
-                }
-
-                if (!specialistRecordFound)
-                  errors
-                      .add("REVIEW_PROJECT_PATH, two records, but could not find the specialist's record requiring review");
-
-                if (!leadRecordFound)
-                  errors
-                      .add("REVIEW_PROJECT_PATH, two records, but could not find the lead's review resolution record");
-
-                break;
-              default:
-                errors
-                    .add("REVIEW_PROJECT_PATH, but unexpected number of records:  "
-                        + mapRecords.size());
-                break;
-            }
-            break;
-          default:
-            break;
-        }
-
-        // if errors were found, put them in the map
-        if (errors.size() > 0) {
-          trackingRecordsInError.put(tr, errors);
-        }
-
-        if (++nObjects % nMessageInterval == 0) {
-          Logger.getLogger(WorkflowServiceJpa.class).info(
-              "  " + nObjects + " tracking records processed, "
-                  + trackingRecordsInError.size() + " in error");
-        }
-
-      }
+      
     }
-
-    // output the errors
-    for (TrackingRecord tr : trackingRecordsInError.keySet()) {
-      Logger.getLogger(WorkflowServiceJpa.class).info(
-          "Concept " + tr.getTerminologyId() + " on path "
-              + tr.getWorkflowPath());
-      for (String s : trackingRecordsInError.get(tr)) {
-        Logger.getLogger(WorkflowServiceJpa.class).info("  " + s);
-      }
-    }
+    
+    return result;
 
   }
 
