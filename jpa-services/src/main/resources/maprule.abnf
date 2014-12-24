@@ -11,4 +11,4 @@ Numeric = 1*(DIGIT/".")
 TimePeriod = "day"/"days"/"year"/"years"
 DIGIT = %x30-39
 CHAR = %x01-27/%x2A-7B/%x7D-7F
-ALPHA = %x41-5A/%x61-7A
+ALPHA = %x41-5A/%x61-7A/" "
