@@ -10,6 +10,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -121,6 +122,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
   /** The report statistics. */
   private Map<String, Integer> reportStatistics = new HashMap<>();
+
+  final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
 
   /**
    * The Enum for statistics reporting.
@@ -576,10 +579,13 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         prevInactiveMembersMap.put(member.getTerminologyId(), member);
       }
     }
-    
-    Logger.getLogger(getClass()).info("  prev inactive members = " + prevInactiveMembersMap.size());
-    Logger.getLogger(getClass()).info("  prev active members = " + prevActiveMembersMap.size());
-    Logger.getLogger(getClass()).info("  active members = " + activeMembersMap.size());
+
+    Logger.getLogger(getClass()).info(
+        "  prev inactive members = " + prevInactiveMembersMap.size());
+    Logger.getLogger(getClass()).info(
+        "  prev active members = " + prevActiveMembersMap.size());
+    Logger.getLogger(getClass()).info(
+        "  active members = " + activeMembersMap.size());
 
     // Write human readable file
     writeHumanReadableFile(activeMembersMap);
@@ -896,7 +902,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     Logger.getLogger(getClass()).info("  Computing delta entries");
 
-
     // cycle over all previously active members
     for (ComplexMapRefSetMember member : prevActiveMembers.values()) {
 
@@ -1163,7 +1168,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         lines.add(getOutputLine(prevInactiveMembers.get(key), true));
       } else {
         // write out the current active line
-        lines.add(getOutputLine(currentActiveMembers.get(key), true));        
+        lines.add(getOutputLine(currentActiveMembers.get(key), true));
       }
     }
 
@@ -1445,10 +1450,11 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @return the complex map ref set member
    * @throws IOException Signals that an I/O exception has occurred.
    * @throws NoSuchAlgorithmException the no such algorithm exception
+   * @throws ParseException 
    */
   private ComplexMapRefSetMember getComplexMapRefSetMemberForMapEntry(
     MapEntry mapEntry, MapRecord mapRecord, MapProject mapProject,
-    Concept concept) throws IOException, NoSuchAlgorithmException {
+    Concept concept) throws IOException, NoSuchAlgorithmException, ParseException {
 
     ComplexMapRefSetMember complexMapRefSetMember =
         new ComplexMapRefSetMemberJpa();
@@ -1459,6 +1465,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     complexMapRefSetMember.setRefSetId(mapProject.getRefSetId());
     complexMapRefSetMember.setModuleId(new Long(moduleId));
     complexMapRefSetMember.setActive(true);
+    complexMapRefSetMember.setEffectiveTime(dateFormat.parse(effectiveTime));
     complexMapRefSetMember.setTerminology(mapProject.getSourceTerminology());
     complexMapRefSetMember.setTerminologyVersion(mapProject
         .getSourceTerminologyVersion());
@@ -1772,26 +1779,22 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       entryLine =
           member.getTerminologyId() // the UUID
               + "\t"
-              + (trueEffectiveTimeFlag ? member.getEffectiveTime() :effectiveTime)
+              + (trueEffectiveTimeFlag ? dateFormat.format(member
+                  .getEffectiveTime()) : effectiveTime)
               + "\t"
-              + (member.isActive() ? "1" : "0")
-              + "\t"
-              + moduleId
+              + (member.isActive() ? "1" : "0") + "\t" + moduleId
               + "\t"
               + member.getRefSetId()
               + "\t"
               + member.getConcept().getTerminologyId()
               + "\t"
-              + member.getMapGroup()
+              + member.getMapGroup() + "\t" + member.getMapPriority()
               + "\t"
-              + member.getMapPriority()
+              + (mapProject.isRuleBased() ? member.getMapRule() : "")
               + "\t"
-              + (mapProject.isRuleBased() ? member.getMapRule()
-                  : "") + "\t" + member.getMapAdvice()
+              + member.getMapAdvice() + "\t" + member.getMapTarget()
               + "\t"
-              + member.getMapTarget() + "\t"
-              + "447561005"
-              + "\t" + member.getMapRelationId();
+              + "447561005" + "\t" + member.getMapRelationId();
 
       // ComplexMap style is identical to ExtendedMap
       // with the exception of the terminating map relation terminology id
@@ -1799,25 +1802,21 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         MapRefsetPattern.ComplexMap)) {
       entryLine =
           member.getTerminologyId() // the UUID
-              + "\t" + effectiveTime
               + "\t"
-              + (member.isActive() ? "1" : "0")
+              + (trueEffectiveTimeFlag ? dateFormat.format(member
+                  .getEffectiveTime()) : effectiveTime)
               + "\t"
-              + moduleId + "\t" + member.getRefSetId()
+              + (member.isActive() ? "1" : "0") + "\t" + moduleId
+              + "\t"
+              + member.getRefSetId()
               + "\t"
               + member.getConcept().getTerminologyId()
               + "\t"
-              + member.getMapGroup()
+              + member.getMapGroup() + "\t" + member.getMapPriority()
               + "\t"
-              + member.getMapPriority()
+              + member.getMapRule() + "\t" + member.getMapAdvice()
               + "\t"
-              + member.getMapRule()
-              + "\t"
-              + member.getMapAdvice()
-              + "\t"
-              + member.getMapTarget()
-              + "\t"
-              + member.getMapRelationId();
+              + member.getMapTarget() + "\t" + member.getMapRelationId();
     }
 
     entryLine += "\r\n";
@@ -2163,6 +2162,28 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   @Override
   public void finishRelease() throws Exception {
 
+    if (mapRecords == null || mapRecords.isEmpty()) {
+      MapRecordList mapRecordList =
+          mappingService
+              .getPublishedAndReadyForPublicationMapRecordsForMapProject(
+                  mapProject.getId(), null);
+      mapRecords = mapRecordList.getMapRecords();
+      mappingService.setTransactionPerOperation(false);
+      mappingService.beginTransaction();
+      for (MapRecord record : mapRecords) {
+        if (record.getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION) {
+          Logger.getLogger(getClass()).debug(
+              "  Update record to PUBLISHED for " + record.getConceptId() + " "
+                  + record.getConceptName());
+          if (!testModeFlag) {
+            record.setWorkflowStatus(WorkflowStatus.PUBLISHED);
+            mappingService.updateMapRecord(record);
+          }
+        }
+      }
+      mappingService.commit();
+    }
+
     // clear old map refset
     Logger.getLogger(getClass()).info("  Clear map refset");
     clearMapRefSet();
@@ -2187,7 +2208,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         .getComplexMapRefSetMembersForRefSetId(mapProject.getRefSetId())
         .getIterable()) {
       Logger.getLogger(getClass()).debug("    Remove member - " + member);
-      contentService.removeComplexMapRefSetMember(member.getId());
+      if (!testModeFlag) {
+        contentService.removeComplexMapRefSetMember(member.getId());
+      }
     }
     contentService.commit();
     contentService.close();
@@ -2216,7 +2239,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     BufferedReader reader = new BufferedReader(new FileReader(f));
 
-    final SimpleDateFormat dt = new SimpleDateFormat("yyyyMMdd");
     final String terminology = mapProject.getSourceTerminology();
     final String version = mapProject.getSourceTerminologyVersion();
     while ((line = reader.readLine()) != null) {
@@ -2229,7 +2251,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         final ComplexMapRefSetMember member = new ComplexMapRefSetMemberJpa();
 
         member.setTerminologyId(fields[0]);
-        member.setEffectiveTime(dt.parse(fields[1]));
+        member.setEffectiveTime(dateFormat.parse(fields[1]));
         member.setActive(fields[2].equals("1") ? true : false);
         member.setModuleId(Long.valueOf(fields[3]));
         member.setRefSetId(fields[4]);
@@ -2271,9 +2293,11 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         }
 
         if (concept != null) {
-          member.setConcept(concept);
           Logger.getLogger(getClass()).debug("    Add member - " + member);
-          contentService.addComplexMapRefSetMember(member);
+          if (!testModeFlag) {
+            member.setConcept(concept);
+            contentService.addComplexMapRefSetMember(member);
+          }
         } else {
           throw new Exception("Member references non-existent concept - "
               + member);
