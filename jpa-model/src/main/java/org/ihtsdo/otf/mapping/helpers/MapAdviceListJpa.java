@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
@@ -110,6 +111,7 @@ public class MapAdviceListJpa extends AbstractResultList<MapAdvice> implements
    * @see org.ihtsdo.otf.mapping.helpers.ResultList#getIterable()
    */
   @Override
+  @XmlTransient
   public Iterable<MapAdvice> getIterable() {
     return mapAdvices;
   }

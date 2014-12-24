@@ -8,6 +8,7 @@ import org.ihtsdo.otf.mapping.helpers.MapUserList;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.TrackingRecordList;
+import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.model.Feedback;
@@ -340,9 +341,10 @@ public interface WorkflowService extends RootService {
    * QA check: Check that workflow state for all current records is valid.
    *
    * @param mapProject the map project
+   * @return 
    * @throws Exception the exception
    */
-  public void computeWorkflowStatusErrors(MapProject mapProject)
+  public ValidationResult computeWorkflowStatusErrors(MapProject mapProject)
     throws Exception;
 
   /**

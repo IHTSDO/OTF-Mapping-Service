@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
@@ -112,6 +113,7 @@ public class ConceptListJpa extends AbstractResultList<Concept> implements
    * @see org.ihtsdo.otf.mapping.helpers.ResultList#getIterable()
    */
   @Override
+  @XmlTransient
   public Iterable<Concept> getIterable() {
     return concepts;
   }

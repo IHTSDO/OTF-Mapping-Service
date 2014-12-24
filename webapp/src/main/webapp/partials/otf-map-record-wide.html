@@ -20,7 +20,7 @@
   For Lead Review</div>
 <div ng-show="record.mapEntry.length == 0">No map entries available.</div>
 <div ng-show="record.mapEntry.length > 0">Map Entries</div>
-<div style="padding: 0px; border-bottom: thin solid grey;">
+<div style="padding: 0px;">
   <div style="padding: 0px;"
     ng-repeat="entry in record.mapEntry | orderBy:['mapGroup', 'mapPriority']">
     <!-- Group/Priority, Target Id, Target Name -->

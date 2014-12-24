@@ -21,7 +21,7 @@ public class WorkflowReviewProjectPathHandler extends
     // empty workflow is allowed for this path
     setEmptyWorkflowAllowed(true);
 
-    // declare state variable for constructoin
+    // declare state variable for construction
     WorkflowPathState state;
 
     // initial STATE: tracking record exists, no map records
@@ -32,21 +32,29 @@ public class WorkflowReviewProjectPathHandler extends
 
     // STATE: Specialist level work
     // permissible actions: SAVE_FOR_LATER, FINISH_EDITING, UNASSIGN
-    state = new WorkflowPathState("Unfinished Specialist Work");
+    state = new WorkflowPathState("REVIEW_NEW/REVIEW_IN_PROGRESS");
     state.addWorkflowCombination(new WorkflowStatusCombination(Arrays
         .asList(WorkflowStatus.NEW)));
     state.addWorkflowCombination(new WorkflowStatusCombination(Arrays
         .asList(WorkflowStatus.EDITING_IN_PROGRESS)));
+    trackingRecordStateToActionMap.put(
+        state,
+        new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING,
+            WorkflowAction.SAVE_FOR_LATER, WorkflowAction.UNASSIGN)));
+    
+    // STATE: Specialist level work (complete)
+    // permissible actions: SAVE_FOR_LATER, FINISH_EDITING, UNASSIGN, ASSIGN_FROM_SCRATCH
+    state = new WorkflowPathState("REVIEW_NEEDED");
     state.addWorkflowCombination(new WorkflowStatusCombination(Arrays
         .asList(WorkflowStatus.REVIEW_NEEDED)));
     trackingRecordStateToActionMap.put(
         state,
         new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING,
-            WorkflowAction.SAVE_FOR_LATER, WorkflowAction.UNASSIGN)));
+            WorkflowAction.SAVE_FOR_LATER, WorkflowAction.UNASSIGN, WorkflowAction.ASSIGN_FROM_SCRATCH)));
 
     // STATE: Lead work
     // permissible actions: SAVE_FOR_LATER, FINISH_EDITING, UNASSIGN
-    state = new WorkflowPathState("Unfinished lead Work");
+    state = new WorkflowPathState("REVIEW_NEW/REVIEW_IN_PROGRESS");
     state.addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
         WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_NEW)));
     state.addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
@@ -58,6 +66,7 @@ public class WorkflowReviewProjectPathHandler extends
 
     // STATE: Finished lead work
     // permissible actions: SAVE_FOR_LATER, FINISH_EDITING, PUBLISH, UNASSIGN
+    state = new WorkflowPathState("REVIEW_RESOLVED");
     state.addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
         WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_RESOLVED)));
     trackingRecordStateToActionMap.put(

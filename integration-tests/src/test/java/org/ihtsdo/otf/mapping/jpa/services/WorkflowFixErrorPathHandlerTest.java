@@ -12,6 +12,7 @@ import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
+import org.ihtsdo.otf.mapping.helpers.WorkflowPathState;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatusCombination;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
@@ -44,6 +45,9 @@ public class WorkflowFixErrorPathHandlerTest {
   @BeforeClass
   public static void init() throws Exception {
 
+    Logger.getLogger(WorkflowFixErrorPathHandlerTest.class).info(
+        "Initializing...");
+
     // instantiate handler
     handler = new WorkflowFixErrorPathHandler();
 
@@ -63,58 +67,57 @@ public class WorkflowFixErrorPathHandlerTest {
   @Test
   public void testStates() throws Exception {
 
+    Logger.getLogger(WorkflowFixErrorPathHandlerTest.class).info(
+        "Testing all possible combinations against legal states...");
+
     WorkflowStatusCombination combination;
-    Set<WorkflowStatusCombination> allCombinations;
-    int nStatesFound = 0;
-    int nStatesTotal = 0;
+    Set<WorkflowStatusCombination> allCombinations = new HashSet<>();
+    Set<WorkflowStatusCombination> combinationsFound = new HashSet<>();
 
     // test empty state
+    combination = new WorkflowStatusCombination();
     if (handler.isEmptyWorkflowAllowed()) {
-      combination = new WorkflowStatusCombination();
-      if (handler.isWorkflowCombinationInTrackingRecordStates(combination)) {
-        nStatesFound++;
-      }
-      nStatesTotal++;
+      assertTrue("Empty workflow permitted",
+          handler.isWorkflowCombinationInTrackingRecordStates(combination));
+    } else {
+      assertTrue("Empty workflow not permitted",
+          !handler.isWorkflowCombinationInTrackingRecordStates(combination));
     }
 
+    Logger.getLogger(WorkflowFixErrorPathHandlerTest.class).info(
+        "  Empty state tested.");
+
     // test all one-record combination states
-    allCombinations = new HashSet<>();
     for (WorkflowStatus status1 : WorkflowStatus.values()) {
       combination = new WorkflowStatusCombination(Arrays.asList(status1));
       allCombinations.add(combination);
-    }
 
-    nStatesTotal += allCombinations.size();
-
-    for (WorkflowStatusCombination c : allCombinations) {
-      if (handler.isWorkflowCombinationInTrackingRecordStates(c)) {
-        nStatesFound++;
+      if (handler.isWorkflowCombinationInTrackingRecordStates(combination)) {
+        combinationsFound.add(combination);
       }
     }
 
+    Logger.getLogger(WorkflowFixErrorPathHandlerTest.class).info(
+        "  Single-record states tested.");
+
     // test all two-record combination states
-    allCombinations = new HashSet<>();
     for (WorkflowStatus status1 : WorkflowStatus.values()) {
       for (WorkflowStatus status2 : WorkflowStatus.values()) {
         combination =
             new WorkflowStatusCombination(Arrays.asList(status1, status2));
 
+        allCombinations.add(combination);
+
         if (handler.isWorkflowCombinationInTrackingRecordStates(combination)) {
-          nStatesFound++;
+          combinationsFound.add(combination);
         }
       }
     }
 
-    nStatesTotal += allCombinations.size();
-
-    for (WorkflowStatusCombination c : allCombinations) {
-      if (handler.isWorkflowCombinationInTrackingRecordStates(c)) {
-        nStatesFound++;
-      }
-    }
+    Logger.getLogger(WorkflowFixErrorPathHandlerTest.class).info(
+        "  Double-record states tested.");
 
     // test all three-record combination states
-    allCombinations = new HashSet<>();
     for (WorkflowStatus status1 : WorkflowStatus.values()) {
       for (WorkflowStatus status2 : WorkflowStatus.values()) {
         for (WorkflowStatus status3 : WorkflowStatus.values()) {
@@ -122,25 +125,32 @@ public class WorkflowFixErrorPathHandlerTest {
               new WorkflowStatusCombination(Arrays.asList(status1, status2,
                   status3));
 
+          allCombinations.add(combination);
+
           if (handler.isWorkflowCombinationInTrackingRecordStates(combination)) {
-            nStatesFound++;
+            combinationsFound.add(combination);
           }
         }
       }
     }
 
-    nStatesTotal += allCombinations.size();
-
-    for (WorkflowStatusCombination c : allCombinations) {
-      if (handler.isWorkflowCombinationInTrackingRecordStates(c)) {
-        nStatesFound++;
-      }
-    }
+    Logger.getLogger(WorkflowFixErrorPathHandlerTest.class).info(
+        "  Triple-record states tested.");
 
     // finally assert whether the correct number of legal states was found
-    assertTrue("Correct number of states found (" + nStatesTotal + " checked)",
-        nStatesFound + (handler.isEmptyWorkflowAllowed() ? 1 : 0) == handler
-            .getTrackingRecordStateToActionMap().size());
+    assertTrue("Correct number of states found (" + allCombinations.size()
+        + " checked, " + combinationsFound.size() + " valid states found, "
+        + handler.getWorkflowStatusCombinations().size() + " expected)",
+        combinationsFound.size() == handler.getWorkflowStatusCombinations()
+            .size());
+
+  }
+
+  @Test
+  public void testInitialState() throws Exception {
+
+    Logger.getLogger(WorkflowFixErrorPathHandlerTest.class).info(
+        "Fix Error Path does not have an initial state...");
 
   }
 
@@ -156,11 +166,20 @@ public class WorkflowFixErrorPathHandlerTest {
     legalCombinations.add(new WorkflowStatusCombination(Arrays.asList(
         WorkflowStatus.REVISION, WorkflowStatus.EDITING_IN_PROGRESS)));
 
-    // test all paired workflow states
+    // get the state corresponding to the first legal workflow status
+    // combination
+    WorkflowPathState state =
+        handler
+            .getWorkflowPathStateForWorkflowStatusCombination(legalCombinations
+                .iterator().next());
+
+    // test all triple workflow states
     Set<WorkflowStatusCombination> legalCombinationsFound = new HashSet<>();
 
     for (WorkflowStatus status1 : WorkflowStatus.values()) {
       for (WorkflowStatus status2 : WorkflowStatus.values()) {
+
+        Logger.getLogger("  Testing " + status1 + " " + status2);
 
         // reset the managers
         resetRecords();
@@ -236,32 +255,46 @@ public class WorkflowFixErrorPathHandlerTest {
 
           // otherwise, assert that tracking record evaluates as invalid
         } else {
-          assertTrue("Tracking Record should not be valid", !handler
-              .validateTrackingRecord(trackingRecord).isValid());
+          // assert true that
+          // workflow path state does not contain this combination OR
+          assertTrue("State does not contain this combination",
+              !state.contains(handler
+                  .getWorkflowCombinationForTrackingRecord(trackingRecord)));
+
         }
       }
+
     }
 
-    assertTrue("Checking legal status combinations evaluated",
+    assertTrue("Checking legal status combinations evaluated ("
+        + legalCombinations.size() + ")",
         legalCombinations.size() == legalCombinationsFound.size());
 
   }
 
   @Test
-  public void testSpecialisCompleteStates() throws Exception {
+  public void testSpecialistCompleteStates() throws Exception {
 
     Logger.getLogger(WorkflowFixErrorPathHandlerTest.class).info(
-        "Testing specialist new/editing states...");
+        "Testing specialist editing complete state...");
 
     Set<WorkflowStatusCombination> legalCombinations = new HashSet<>();
     legalCombinations.add(new WorkflowStatusCombination(Arrays.asList(
         WorkflowStatus.REVISION, WorkflowStatus.REVIEW_NEEDED)));
 
-    // test all paired workflow states
+    // get the state corresponding to the first legal workflow status
+    // combination
+    WorkflowPathState state =
+        handler
+            .getWorkflowPathStateForWorkflowStatusCombination(legalCombinations
+                .iterator().next());
+
+    // test all single workflow states
     Set<WorkflowStatusCombination> legalCombinationsFound = new HashSet<>();
 
     for (WorkflowStatus status1 : WorkflowStatus.values()) {
       for (WorkflowStatus status2 : WorkflowStatus.values()) {
+        Logger.getLogger("  Testing " + status1 + " " + status2);
 
         // reset the managers
         resetRecords();
@@ -337,22 +370,26 @@ public class WorkflowFixErrorPathHandlerTest {
 
           // otherwise, assert that tracking record evaluates as invalid
         } else {
-          assertTrue("Tracking Record should not be valid", !handler
-              .validateTrackingRecord(trackingRecord).isValid());
+          // assert true that
+          // workflow path state does not contain this combination OR
+          assertTrue("State does not contain this combination",
+              !state.contains(handler
+                  .getWorkflowCombinationForTrackingRecord(trackingRecord)));
         }
       }
     }
 
-    assertTrue("Checking legal status combinations evaluated",
+    assertTrue("Checking legal status combinations evaluated ("
+        + legalCombinations.size() + ")",
         legalCombinations.size() == legalCombinationsFound.size());
 
   }
 
   @Test
-  public void testLeadIncompleteStates() throws Exception {
+  public void testLeadIncompleteState() throws Exception {
 
     Logger.getLogger(WorkflowFixErrorPathHandlerTest.class).info(
-        "Testing lead review in progress states...");
+        "Testing lead incomplete states...");
 
     Set<WorkflowStatusCombination> legalCombinations = new HashSet<>();
     legalCombinations.add(new WorkflowStatusCombination(Arrays.asList(
@@ -362,9 +399,14 @@ public class WorkflowFixErrorPathHandlerTest {
         WorkflowStatus.REVISION, WorkflowStatus.REVIEW_NEEDED,
         WorkflowStatus.REVIEW_IN_PROGRESS)));
 
-    // test all paired workflow states
-    Set<WorkflowStatusCombination> legalCombinationsFound = new HashSet<>();
+    // get the state corresponding to the first legal workflow status
+    // combination
+    WorkflowPathState state =
+        handler
+            .getWorkflowPathStateForWorkflowStatusCombination(legalCombinations
+                .iterator().next());
 
+    Set<WorkflowStatusCombination> legalCombinationsFound = new HashSet<>();
     for (WorkflowStatus status1 : WorkflowStatus.values()) {
       for (WorkflowStatus status2 : WorkflowStatus.values()) {
         for (WorkflowStatus status3 : WorkflowStatus.values()) {
@@ -383,6 +425,7 @@ public class WorkflowFixErrorPathHandlerTest {
           record.setLastModifiedBy(specialist);
           mappingService.addMapRecord(record);
 
+          // set up the records
           MapRecord record2 = new MapRecordJpa();
           record2.setConceptId("1");
           record2.setConceptName("concept1");
@@ -404,11 +447,9 @@ public class WorkflowFixErrorPathHandlerTest {
           mappingService.addMapRecord(record3);
 
           // compute workflow
-          computeWorkflow(new HashSet<MapRecord>(Arrays.asList(record, record2)));
+          computeWorkflow(new HashSet<MapRecord>(Arrays.asList(record, record2,
+              record3)));
 
-          // if this tracking record's computed combination is in the legal
-          // combination set
-          // proceed with action testing
           if (legalCombinations.contains(handler
               .getWorkflowCombinationForTrackingRecord(trackingRecord))) {
 
@@ -448,40 +489,47 @@ public class WorkflowFixErrorPathHandlerTest {
                 case UNASSIGN:
                   assertTrue(result.getMessages().contains(action.toString()));
                   break;
+
               }
             }
-
-            // otherwise, assert that tracking record evaluates as invalid
           } else {
-            assertTrue("Tracking Record should not be valid", !handler
-                .validateTrackingRecord(trackingRecord).isValid());
+            // assert true that
+            // workflow path state does not contain this combination OR
+            assertTrue("State does not contain this combination",
+                !state.contains(handler
+                    .getWorkflowCombinationForTrackingRecord(trackingRecord)));
+
           }
         }
       }
     }
-
-    assertTrue("Checking legal status combinations evaluated",
+    assertTrue("Checking legal status combinations evaluated ("
+        + legalCombinations.size() + ")",
         legalCombinations.size() == legalCombinationsFound.size());
-
   }
 
   @Test
-  public void testLeadCompleteStates() throws Exception {
-
+  public void testLeadCompleteState() throws Exception {
     Logger.getLogger(WorkflowFixErrorPathHandlerTest.class).info(
-        "Testing second specialist new/editing states...");
+        "Testing lead complete state...");
 
     Set<WorkflowStatusCombination> legalCombinations = new HashSet<>();
     legalCombinations.add(new WorkflowStatusCombination(Arrays.asList(
         WorkflowStatus.REVISION, WorkflowStatus.REVIEW_NEEDED,
         WorkflowStatus.REVIEW_RESOLVED)));
 
-    // test all paired workflow states
-    Set<WorkflowStatusCombination> legalCombinationsFound = new HashSet<>();
+    // get the state corresponding to the first legal workflow status
+    // combination
+    WorkflowPathState state =
+        handler
+            .getWorkflowPathStateForWorkflowStatusCombination(legalCombinations
+                .iterator().next());
 
+    Set<WorkflowStatusCombination> legalCombinationsFound = new HashSet<>();
     for (WorkflowStatus status1 : WorkflowStatus.values()) {
       for (WorkflowStatus status2 : WorkflowStatus.values()) {
         for (WorkflowStatus status3 : WorkflowStatus.values()) {
+
           // reset the managers
           resetRecords();
 
@@ -496,6 +544,7 @@ public class WorkflowFixErrorPathHandlerTest {
           record.setLastModifiedBy(specialist);
           mappingService.addMapRecord(record);
 
+          // set up the record2s
           MapRecord record2 = new MapRecordJpa();
           record2.setConceptId("1");
           record2.setConceptName("concept1");
@@ -503,7 +552,7 @@ public class WorkflowFixErrorPathHandlerTest {
           record2.setLastModified(Calendar.getInstance().getTimeInMillis());
           record2.setWorkflowStatus(status2);
           record2.setOwner(specialist2);
-          record2.setLastModifiedBy(specialist2);
+          record2.setLastModifiedBy(specialist);
           mappingService.addMapRecord(record2);
 
           MapRecord record3 = new MapRecordJpa();
@@ -517,11 +566,9 @@ public class WorkflowFixErrorPathHandlerTest {
           mappingService.addMapRecord(record3);
 
           // compute workflow
-          computeWorkflow(new HashSet<MapRecord>(Arrays.asList(record, record2)));
+          computeWorkflow(new HashSet<MapRecord>(Arrays.asList(record, record2,
+              record3)));
 
-          // if this tracking record's computed combination is in the legal
-          // combination set
-          // proceed with action testing
           if (legalCombinations.contains(handler
               .getWorkflowCombinationForTrackingRecord(trackingRecord))) {
 
@@ -561,21 +608,23 @@ public class WorkflowFixErrorPathHandlerTest {
                 case UNASSIGN:
                   assertTrue(result.getMessages().contains(action.toString()));
                   break;
+
               }
             }
-
-            // otherwise, assert that tracking record evaluates as invalid
           } else {
-            assertTrue("Tracking Record should not be valid", !handler
-                .validateTrackingRecord(trackingRecord).isValid());
+            // assert true that
+            // workflow path state does not contain this combination OR
+            assertTrue("State does not contain this combination",
+                !state.contains(handler
+                    .getWorkflowCombinationForTrackingRecord(trackingRecord)));
+
           }
         }
       }
     }
-
-    assertTrue("Checking legal status combinations evaluated",
+    assertTrue("Checking legal status combinations evaluated ("
+        + legalCombinations.size() + ")",
         legalCombinations.size() == legalCombinationsFound.size());
-
   }
 
   @AfterClass
@@ -624,7 +673,7 @@ public class WorkflowFixErrorPathHandlerTest {
     lead.setEmail("email");
 
     mappingService.addMapUser(specialist);
-    mappingService.addMapUser(specialist);
+    mappingService.addMapUser(specialist2);
     mappingService.addMapUser(lead);
   }
 
@@ -636,8 +685,10 @@ public class WorkflowFixErrorPathHandlerTest {
 
   private void computeWorkflow(Set<MapRecord> mapRecords) throws Exception {
     trackingRecord = new TrackingRecordJpa();
+    trackingRecord.setWorkflowPath(handler.getWorkflowPath());
 
     for (MapRecord mr : mapRecords) {
+
       trackingRecord.addMapRecordId(mr.getId());
       trackingRecord.addAssignedUserName(mr.getOwner().getUserName());
       trackingRecord.addUserAndWorkflowStatusPair(mr.getOwner().getUserName(),
