@@ -27,15 +27,15 @@
         ng-model="project.name" ng-change="setEditingPerformed(project)"
         style="margin-bottom: 5px; width: 100%;"></input> <select
         tooltip-placement="top" tooltip="Source Terminology and Version"
-        ng-init="sourceVersion = getSourceVersion(project)"
-        ng-model="sourceVersion"
+        ng-init="project.sourceTerminologyVersion = getSourceVersion(project)"
+        ng-model="project.sourceTerminologyVersion"
         ng-options="item for item in terminologyVersionPairs"
         ng-change="setEditingPerformed(project)"
         style="margin-bottom: 5px; width: 100%;">
       </select> <select tooltip-placement="top"
         tooltip="Destination Terminology and Version"
-        ng-init="destinationVersion = getDestinationVersion(project)"
-        ng-model="destinationVersion"
+        ng-init="project.destinationTerminologyVersion = getDestinationVersion(project)"
+        ng-model="project.destinationTerminologyVersion"
         ng-options="item for item in terminologyVersionPairs"
         ng-change="setEditingPerformed(project)"
         style="margin-bottom: 5px; width: 100%;">
