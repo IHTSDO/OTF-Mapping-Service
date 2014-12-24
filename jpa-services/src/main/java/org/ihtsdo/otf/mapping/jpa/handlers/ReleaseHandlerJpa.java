@@ -1048,7 +1048,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       ComplexMapRefSetMember member = activeMembers.get(key);
       ComplexMapRefSetMember member2 = prevActiveMembers.get(key);
       if (member2 != null && !member.equals(member2)) {
-        changedConcepts.add(key);
+        changedConcepts.add(member.getConcept().getId().toString());
         found = true;
       }
     }
