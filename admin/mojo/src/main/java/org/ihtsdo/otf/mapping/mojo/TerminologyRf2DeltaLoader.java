@@ -604,7 +604,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
         if (conceptCache.containsKey(fields[4])) {
           concept = conceptCache.get(fields[4]);
         } else if (existingConceptCache.containsKey(fields[4])) {
-          concept = existingConceptCache.get(fields[4]);
+          concept = contentService.getConcept(existingConceptCache.get(fields[4]).getId());
         } else {
           // retrieve concept
           concept = contentService.getConcept(fields[4], terminology, version);
@@ -732,6 +732,14 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
               contentService.getDescription(fields[5], terminology, version);
         }
 
+        if (description == null) {
+          // skip
+          getLog().info("SKIP LANG with desc " + fields[4]);
+          continue;
+          // throw new Exception("Could not find description " + fields[4]
+          // + " for language refset member " + fields[0]);          
+        }
+        
         // get the concept
         Concept concept = description.getConcept();
         // description should have concept (unless cached descriptions don't
@@ -1077,6 +1085,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
       if (concept.getEffectiveTime().after(dt.parse(version))
           && !deltaConceptIds.contains(concept.getTerminologyId())
           && concept.isActive()) {
+        concept = contentService.getConcept(concept.getId());
         // Because it's possible that a concept element changed and that
         // change was retracted, we need to double-check whether all of
         // the concept elements are also new. If so, proceed. It is possible
