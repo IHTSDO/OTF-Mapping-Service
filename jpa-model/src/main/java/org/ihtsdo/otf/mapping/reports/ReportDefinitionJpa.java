@@ -56,6 +56,7 @@ public class ReportDefinitionJpa implements ReportDefinition {
 
   /** The frequency with which the report is run */
   @Enumerated(EnumType.STRING)
+	@Column(nullable = false)
   private ReportFrequency frequency;
 
   /** The result type. */
