@@ -1508,7 +1508,6 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
    * org.ihtsdo.otf.mapping.services.ContentService#clearTreePositions(java.
    * lang.String, java.lang.String)
    */
-  @SuppressWarnings("unchecked")
   @Override
   public void clearTreePositions(String terminology, String terminologyVersion)
     throws Exception {
