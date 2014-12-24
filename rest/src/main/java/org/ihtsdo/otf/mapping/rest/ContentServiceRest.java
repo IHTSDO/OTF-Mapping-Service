@@ -20,6 +20,7 @@ import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
+import org.ihtsdo.otf.mapping.jpa.handlers.IndexViewerHandler;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
@@ -466,11 +467,9 @@ public class ContentServiceRest extends RootServiceRest {
                     "User does not have permissions to retrieve the indexes to be viewed.")
                 .build());
 
-      /*IndexViewerHandler indexViewerHandler = new IndexViewerHandler();
+      IndexViewerHandler indexViewerHandler = new IndexViewerHandler();
       SearchResultList searchResultList = indexViewerHandler.getIndexDomains(terminology, terminologyVersion);
-      return searchResultList;*/
-      
-      return null;
+      return searchResultList;
 
     } catch (Exception e) {
       handleException(e, "trying to retrieve the indexes to be viewed");
@@ -513,12 +512,11 @@ public class ContentServiceRest extends RootServiceRest {
                 .entity(
                     "User does not have permissions to retrieve the page names for the given index.")
                 .build());
-   /* 
+   
       IndexViewerHandler indexViewerHandler = new IndexViewerHandler();
       SearchResultList searchResultList = indexViewerHandler.getIndexPagesForIndex(terminology, terminologyVersion, index);
 
-      return searchResultList;*/
-      return null;
+      return searchResultList;
 
     } catch (Exception e) {
       handleException(e, "trying to retrieve the page names for the given index");
@@ -569,14 +567,13 @@ public class ContentServiceRest extends RootServiceRest {
                 .entity(
                     "User does not have permissions to perform a search of the indexes.")
                 .build());
-/*
+
       IndexViewerHandler indexViewerHandler = new IndexViewerHandler();
       SearchResultList searchResultList = indexViewerHandler.findIndexEntries(terminology, 
           terminologyVersion, domain, searchField, subSearchField, subSubSearchField, allFlag);
       searchResultList.setTotalCount(searchResultList.getCount());
-      return searchResultList;*/
-      
-      return null;
+      return searchResultList;
+
 
     } catch (Exception e) {
       handleException(e, "trying to perform a search of the indexes");
