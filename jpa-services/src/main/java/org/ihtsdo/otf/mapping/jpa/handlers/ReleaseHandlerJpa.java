@@ -356,7 +356,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // /////////////////////////////////////////////////////
 
     // Prep map relation to use for up propagated records
-    MapRelation ifaRuleRelation = algorithmHandler.getDefaultUpPropagatedMapRelation();
+    MapRelation ifaRuleRelation =
+        algorithmHandler.getDefaultUpPropagatedMapRelation();
     if (ifaRuleRelation == null) {
       throw new Exception(
           "Unable to find default map relation for up propagated records");
@@ -388,7 +389,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               mapRecord.getConceptId(), mapProject.getSourceTerminology(),
               mapProject.getSourceTerminologyVersion()) < mapProject
               .getPropagationDescendantThreshold()) {
-
 
         // Handle up propagation for this record
         if (!handleUpPropagation(mapRecord, entriesByGroup, ifaRuleRelation)) {
@@ -2185,12 +2185,15 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       mappingService.commit();
     }
 
-    // clear old map refset
-    Logger.getLogger(getClass()).info("  Clear map refset");
-    clearMapRefSet();
-    // Load map refset
-    Logger.getLogger(getClass()).info("  Load map refset");
-    loadMapRefSet();
+    // skip if in test mode
+    if (!testModeFlag) {
+      // clear old map refset
+      Logger.getLogger(getClass()).info("  Clear map refset");
+      clearMapRefSet();
+      // Load map refset
+      Logger.getLogger(getClass()).info("  Load map refset");
+      loadMapRefSet();
+    }
 
   }
 
