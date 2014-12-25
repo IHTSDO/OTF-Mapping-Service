@@ -1514,6 +1514,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
   }
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#publish(org.ihtsdo.otf.mapping.workflow.TrackingRecord, java.util.Set, org.ihtsdo.otf.mapping.model.MapUser)
+   */
   @Override
   public Set<MapRecord> publish(TrackingRecord trackingRecord,
     Set<MapRecord> mapRecords, MapUser mapUser) throws Exception {
@@ -2377,15 +2380,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     // DO NOTHING -- Override in project specific handlers if necessary
   }
 
-  @Override
-  public boolean isUpPropagatedRecordForReleaseProcessing(MapRecord mapRecord) {
-
-    // for ICD10 project, a map record is up-propagated if the descendant
-    // count is less than 11
-    return mapRecord.getCountDescendantConcepts() < mapProject
-        .getPropagationDescendantThreshold();
-  }
-
   /*
    * (non-Javadoc)
    * 
@@ -2419,6 +2413,15 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     throws Exception {
     // do nothing
     return new ValidationResultJpa();
+  }
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#getDefaultUpPropagatedMapRelation()
+   */
+  @Override
+  public MapRelation getDefaultUpPropagatedMapRelation() throws Exception {
+    // does not apply
+    return null;
   }
 
 }
