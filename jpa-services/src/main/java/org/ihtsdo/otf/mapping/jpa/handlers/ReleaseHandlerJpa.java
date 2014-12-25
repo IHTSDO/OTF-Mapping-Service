@@ -355,6 +355,13 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // Perform the release
     // /////////////////////////////////////////////////////
 
+    // Prep map relation to use for up propagated records
+    MapRelation ifaRuleRelation = algorithmHandler.getDefaultUpPropagatedMapRelation();
+    if (ifaRuleRelation == null) {
+      throw new Exception(
+          "Unable to find default map relation for up propagated records");
+    }
+
     Logger.getLogger(getClass()).info("  Processing release");
     // cycle over the map records marked for publishing
     int ct = 0;
@@ -382,20 +389,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               mapProject.getSourceTerminologyVersion()) < mapProject
               .getPropagationDescendantThreshold()) {
 
-        // Prep MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT | 447639009
-        MapRelation ifaRuleRelation = null;
-        for (MapRelation rel : mappingService.getMapRelations()
-            .getMapRelations()) {
-          if (rel.getTerminologyId().equals("447639009")) {
-            ifaRuleRelation = rel;
-            break;
-          }
-        }
-        if (ifaRuleRelation == null) {
-          throw new Exception(
-              "Unable to find map relation for MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT "
-                  + "| 447639009");
-        }
 
         // Handle up propagation for this record
         if (!handleUpPropagation(mapRecord, entriesByGroup, ifaRuleRelation)) {

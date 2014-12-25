@@ -201,14 +201,6 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
     Set<MapRecord> mapRecords, MapUser mapUser) throws Exception;
 
   /**
-   * Checks if is propagated record for release processing.
-   * @param mapRecord the map record to check
-   *
-   * @return true, if is propagated record for release processing
-   */
-  public boolean isUpPropagatedRecordForReleaseProcessing(MapRecord mapRecord);
-
-  /**
    * Returns the dependent modules.
    *
    * @return the dependent modules
@@ -230,4 +222,12 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @throws Exception the exception
    */
   public ValidationResult validateForRelease(ComplexMapRefSetMember member) throws Exception;
+
+  /**
+   * Returns the default up propagated map relation.
+   *
+   * @return the default up propagated map relation
+   * @throws Exception the exception
+   */
+  public MapRelation getDefaultUpPropagatedMapRelation() throws Exception;
 }
