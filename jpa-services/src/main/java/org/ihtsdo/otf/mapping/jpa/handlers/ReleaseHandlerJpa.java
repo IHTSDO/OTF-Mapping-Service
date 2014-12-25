@@ -1060,7 +1060,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         mapProject.getDestinationTerminology().substring(0, 1)
             + mapProject.getDestinationTerminology().substring(1).toLowerCase();
     BufferedWriter statsWriter =
-        new BufferedWriter(new FileWriter(outputDir + "/" + camelCaseName + "stats.txt"));
+        new BufferedWriter(new FileWriter(outputDir + "/" + camelCaseName
+            + "stats.txt"));
     List<String> statistics = new ArrayList<>(reportStatistics.keySet());
     Collections.sort(statistics);
     for (String statistic : statistics) {
@@ -1453,11 +1454,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @return the complex map ref set member
    * @throws IOException Signals that an I/O exception has occurred.
    * @throws NoSuchAlgorithmException the no such algorithm exception
-   * @throws ParseException 
+   * @throws ParseException
    */
   private ComplexMapRefSetMember getComplexMapRefSetMemberForMapEntry(
     MapEntry mapEntry, MapRecord mapRecord, MapProject mapProject,
-    Concept concept) throws IOException, NoSuchAlgorithmException, ParseException {
+    Concept concept) throws IOException, NoSuchAlgorithmException,
+    ParseException {
 
     ComplexMapRefSetMember complexMapRefSetMember =
         new ComplexMapRefSetMemberJpa();
@@ -2098,10 +2100,13 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // TODO: need a way to override the errors if we want to proceed with a
     // release anyway
     if (errorFlag) {
-      reportService.rollback();
+      mappingService.rollback();
     } else {
-      reportService.commit();
+      mappingService.commit();
     }
+
+    // Commit the new report either way
+    reportService.commit();
 
     Logger.getLogger(getClass()).info("Done.");
 
