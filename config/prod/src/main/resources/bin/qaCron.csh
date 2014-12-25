@@ -14,8 +14,8 @@ echo "------------------------------------------------"
 echo "Starting ...`/bin/date`"
 echo "------------------------------------------------"
 echo "MAPPING_CODE = $MAPPING_CODE"
-echo "MAPPING_DATA = $MAPPING_CODE"
-echo "MAPPING_CONFIG = $MAPPING_CODE"
+echo "MAPPING_DATA = $MAPPING_DATA"
+echo "MAPPING_CONFIG = $MAPPING_CONFIG"
 
 # this will send mail on a failure
 echo "    Perform the database QA ... '/bin/date'"
