@@ -350,7 +350,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
           validationResult
               .addError("Rule found for non-rule based project at map group "
                   + me.getMapGroup() + ", priority " + me.getMapPriority()
-                  + ", rule specified is " + me.getRule());
+                  + ", rule specified is " + me.getRule() + ".");
         }
       }
 
