@@ -2693,7 +2693,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         
         // if no tracking record found for this concept
         if (!terminologyIdsWithTrackingRecord.contains(mapRecord.getConceptId())) {
-          result.addError("Map Record " + mapRecord.getId() + ": " + mapRecord.getWorkflowStatus() + " but no tracking record exists (Concept "  + mapRecord.getConceptId() + mapRecord.getConceptName());
+          result.addError("Map Record " + mapRecord.getId() + ": " + mapRecord.getWorkflowStatus() + " but no tracking record exists (Concept "  + mapRecord.getConceptId() + " " + mapRecord.getConceptName());
         }
       }
       
