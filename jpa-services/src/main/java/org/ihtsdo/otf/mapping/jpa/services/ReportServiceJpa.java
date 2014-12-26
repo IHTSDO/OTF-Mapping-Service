@@ -904,10 +904,13 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
           // Only generate reports for those that have queries
           if (reportDefinition.getQueryType() != ReportQueryType.NONE) {
             Report report =
-                this.generateReport(mapProject, mapUser,
+                generateReport(mapProject, mapUser,
                     reportDefinition.getName(), reportDefinition,
                     localStartDate, true);
-
+            //  If report not generated (e.g. a diff report)
+            if (report != null) {
+              addReport(report);
+            }
             Logger.getLogger(ReportServiceJpa.class).info(
                 "     Persisting report.");
 
@@ -1106,7 +1109,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     // executed query)
     report.setQueryType(reportDefinition.getQueryType());
     report.setResultType(reportDefinition.getResultType());
-    report.setTimestamp(date.getTime());
+    report.setTimestamp(cal.getTimeInMillis());
 
     // execute the query
     List<Object[]> results = null;
@@ -1138,8 +1141,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     if (reportDefinition.isDiffReport() == true) {
 
       if (results.size() != 2) {
-        throw new Exception("Diff query did not return exactly 2 results: "
-            + results.size());
+        // Only zero or one reports are available.
+        return null;
       }
       // get the ids corresponding to reports to be diffed
       report.setReport1Id(new Long(results.get(0)[2].toString()));
