@@ -30,9 +30,9 @@
     <!-- The terminology version -->
     <version>latest</version>
     <!-- The start date as YYYYMMDD -->
-    <date.start></date.start>
+    <start.date></start.date>
     <!-- The end date as YYYYMMDD -->
-    <date.end></date.end>
+    <end.date></end.date>
     <!-- the sampling rate -->
     <sampling.rate></sampling.rate>
     <!-- The map user -->
@@ -321,8 +321,8 @@
                   <goal>generate-daily-reports</goal>
                 </goals>
                 <configuration>
-                  <startDate>${date.start}</startDate>
-                  <endDate>${date.end}</endDate>
+                  <startDate>${start.date}</startDate>
+                  <endDate>${end.date}</endDate>
                   <refsetId>${refset.id}</refsetId>
                 </configuration>
               </execution>
