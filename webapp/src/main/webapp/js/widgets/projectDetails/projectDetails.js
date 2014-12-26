@@ -95,6 +95,7 @@ angular
 
         $scope.editModeEnabled = false;
         $scope.reportDefinitions = new Array();
+        $scope.qaCheckDefinitions = new Array();
 
         $scope.allowableMapTypes = [ {
           displayName : 'Extended Map',
@@ -267,19 +268,18 @@ angular
             }
           }).success(
             function(data) {
-              $scope.qaCheckDefinitions = data.reportDefinition;
-              for (var i = 0; i < $scope.qaCheckDefinitions.length; i++) {
-                $scope.reportDefinitions.push($scope.qaCheckDefinitions[i]);
+              for (var i = 0; i < data.reportDefinition.length; i++) {
+                    $scope.qaCheckDefinitions.push(data.reportDefinition[i]);
               }
-              localStorageService.add('reportDefinitions',
-                $scope.reportDefinitions);
+              localStorageService.add('qaCheckDefinitions',
+                data.reportDefinition);
               $rootScope.$broadcast(
-                'localStorageModule.notification.setMapRelations', {
-                  key : 'reportDefinitions',
-                  reportDefinitions : $scope.reportDefinitions
+                'localStorageModule.notification.setQACheckDefinitions', {
+                  key : 'qaCheckDefinitions',
+                  qaCheckDefinitions : $scope.qaCheckDefinitions
                 });
-              $scope.allowableReportDefinitions = localStorageService
-                .get('reportDefinitions');
+              $scope.allowableQACheckDefinitions = localStorageService
+                .get('qaCheckDefinitions');
             }).error(function(data, status, headers, config) {
             $rootScope.handleHttpError(data, status, headers, config);
           });
@@ -315,6 +315,14 @@ angular
           $scope.getPagedScopeConcepts(1);
           $scope.getPagedScopeExcludedConcepts(1);
           $scope.getPagedReportDefinitions(1);
+          // need to initialize selected qa check definitions since they are persisted in the
+          // report definition array
+          $scope.focusProject.qaCheckDefinition = new Array();
+          for (var i = 0; i < $scope.focusProject.reportDefinition.length; i++) {
+        	  if ($scope.focusProject.reportDefinition[i].qacheck == true)
+        		  $scope.focusProject.qaCheckDefinition.push($scope.focusProject.reportDefinition[i]);
+          }
+          $scope.getPagedQACheckDefinitions(1);
           $scope.orderProp = 'id';
         };
 
@@ -387,6 +395,18 @@ angular
 
           console.debug("pagedReportDefinition", $scope.pagedReportDefinition);
         };
+        
+        $scope.getPagedQACheckDefinitions = function(page, filter) {
+            $scope.qaCheckDefinitionFilter = filter;
+            $scope.pagedQACheckDefinition = $scope.sortByKey(
+            		$scope.focusProject.qaCheckDefinition, 'id').filter(
+              containsQACheckDefinitionFilter);
+            $scope.pagedQACheckDefinitionCount = $scope.pagedQACheckDefinition.length;
+            $scope.pagedQACheckDefinition = $scope.pagedQACheckDefinition.slice(
+              (page - 1) * $scope.pageSize, page * $scope.pageSize);
+
+            console.debug("pagedQACheckDefinition", $scope.pagedQACheckDefinition);
+          };
 
         $scope.getPagedScopeConcepts = function(page) {
           console.debug("Called paged scope concept for page " + page);
@@ -483,6 +503,11 @@ angular
           $scope.reportDefinitionFilter = "";
           $scope.getPagedReportDefinitions(1);
         };
+        
+        $scope.resetQACheckDefinitionFilter = function() {
+            $scope.qaCheckDefinitionFilter = "";
+            $scope.getPagedQACheckDefinitions(1);
+          };
 
         $scope.resetScopeExcludedConceptFilter = function() {
           $scope.scopeExcludedConceptFilter = "";
@@ -627,6 +652,28 @@ angular
           return false;
         }
         ;
+        
+        function containsQACheckDefinitionFilter(element) {
+
+            console.debug("Checking qa check definition: ",
+              $scope.qaCheckDefinitionFilter);
+
+            // check if qaCheckDefinition filter is empty
+            if ($scope.qaCheckDefinitionFilter === ""
+              || $scope.qaCheckDefinitionFilter == null)
+              return true;
+
+            // otherwise check if upper-case
+            // qaCheckDefinition filter
+            // matches upper-case element name or detail
+            if (element.name.toString().toUpperCase().indexOf(
+              $scope.qaCheckDefinitionFilter.toString().toUpperCase()) != -1)
+              return true;
+
+            // otherwise return false
+            return false;
+          }
+          ;
 
         // helper function to sort a JSON array by field
 
@@ -1096,11 +1143,30 @@ angular
           $scope.resetReportDefinitionFilter();
           $scope.updateMapProject();
         };
+        
+        $scope.deleteQACheckDefinition = function(qaCheckDefinition) {
+            console.debug("in deleteQACheckDefinition");
+            for (var j = 0; j < $scope.focusProject.qaCheckDefinition.length; j++) {
+              if (qaCheckDefinition.name === $scope.focusProject.qaCheckDefinition[j].name) {
+                $scope.focusProject.qaCheckDefinition.splice(j, 1);
+              }
+            }
+            // update and broadcast the updated focus
+            // project
+            localStorageService.set('focusProject', $scope.focusProject);
+            $rootScope.$broadcast(
+              'localStorageModule.notification.setFocusProject', {
+                key : 'focusProject',
+                focusProject : $scope.focusProject
+              });
+            $scope.resetQACheckDefinitionFilter();
+            $scope.updateMapProject();
+          };
 
         $scope.addReportDefinition = function(reportDefinition) {
           console.debug("in addReportDefinition", reportDefinition);
           $scope.focusProject.reportDefinition.push(reportDefinition);
-          console.debug($scope.focusProject.reportDefinitions)
+          console.debug($scope.focusProject.reportDefinition);
           // update and broadcast the updated focus
           // project
           localStorageService.set('focusProject', $scope.focusProject);
@@ -1112,6 +1178,22 @@ angular
           $scope.resetReportDefinitionFilter();
           $scope.updateMapProject();
         };
+        
+        $scope.addQACheckDefinition = function(qaCheckDefinition) {
+            console.debug("in addQACheckDefinition", qaCheckDefinition);
+            $scope.focusProject.qaCheckDefinition.push(qaCheckDefinition);
+            console.debug($scope.focusProject.qaCheckDefinition);
+            // update and broadcast the updated focus
+            // project
+            localStorageService.set('focusProject', $scope.focusProject);
+            $rootScope.$broadcast(
+              'localStorageModule.notification.setFocusProject', {
+                key : 'focusProject',
+                focusProject : $scope.focusProject
+              });
+            $scope.resetQACheckDefinitionFilter();
+            $scope.updateMapProject();
+          };
 
         $scope.deletePrinciple = function(principle) {
           console.debug("in deletePrinciple");
@@ -1490,6 +1572,16 @@ angular
         };
 
         $scope.updateMapProject = function() {
+        	
+          for (var k = 0; k < $scope.focusProject.reportDefinition.length; k++) {
+          	  if ($scope.focusProject.reportDefinition[k].qacheck == true) {
+                    $scope.focusProject.reportDefinition.splice(k, 1);
+          	  }
+          }
+          for (var j = 0; j < $scope.focusProject.qaCheckDefinition.length; j++) {
+          	  $scope.focusProject.reportDefinition.push($scope.focusProject.qaCheckDefinition[j]);
+          }
+        	
           $http({
             url : root_mapping + "project/update",
             dataType : "json",
@@ -1501,6 +1593,7 @@ angular
           }).success(
             function(data) {
               console.debug("success to updateMapProject");
+              
               localStorageService.set('focusProject', $scope.focusProject);
               $rootScope.$broadcast(
                 'localStorageModule.notification.setFocusProject', {
