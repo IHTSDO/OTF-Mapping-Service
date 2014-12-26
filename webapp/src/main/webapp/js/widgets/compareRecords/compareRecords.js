@@ -676,9 +676,9 @@ angular
           // create feedback conversation
           var feedbackConversation = {
             "lastModified" : new Date(),
-            "terminology" : $scope.project.destinationTerminology,
+            "terminology" : $scope.project.sourceTerminology,
             "terminologyId" : recordInError.conceptId,
-            "terminologyVersion" : $scope.project.destinationTerminologyVersion,
+            "terminologyVersion" : $scope.project.sourceTerminologyVersion,
             "isResolved" : "false",
             "isDiscrepancyReview" : "false",
             "mapRecordId" : recordInError.id,
@@ -795,9 +795,9 @@ angular
           // create feedback conversation
           var feedbackConversation = {
             "lastModified" : new Date(),
-            "terminology" : $scope.project.destinationTerminology,
+            "terminology" : $scope.project.sourceTerminology,
             "terminologyId" : $scope.leadRecord.conceptId,
-            "terminologyVersion" : $scope.project.destinationTerminologyVersion,
+            "terminologyVersion" : $scope.project.sourceTerminologyVersion,
             "isResolved" : "false",
             "isDiscrepancyReview" : $scope.indicateDiscrepancyReview,
             "mapRecordId" : $scope.leadRecord.id,
