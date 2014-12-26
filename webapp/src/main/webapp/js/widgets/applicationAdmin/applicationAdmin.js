@@ -2041,7 +2041,7 @@ angular
                     testReportError += "You must specify the report definition from which the difference report is calculated\n";
 
                 } else if (diffReport == false) {
-                  if (query == null || query === '')
+                  if (queryType != 'NONE' && (query == null || query === ''))
                     testReportError += "You must specify a query\n";
                 }
 
