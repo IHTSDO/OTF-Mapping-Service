@@ -70,12 +70,19 @@ public class QAWorkflow extends AbstractMojo {
         // TODO hardcoded while testing in prod environment
         if (!result.isValid()) {
           OtfEmailHandler emailHandler = new OtfEmailHandler();
-          String message = "";
+          StringBuffer message = new StringBuffer();
+
+          message.append(
+              "Errors were detected in the workflow for project: "
+                  + mapProject.getName()).append("\n\n");
+
           for (String error : result.getErrors()) {
-            message += error + "\n";
+            message.append(error).append("\n");
           }
+          
+          message.append("\n");
           emailHandler.sendSimpleEmail("***REMOVED***",
-              mapProject.getName() + " Workflow Errors", message);
+              mapProject.getName() + " Workflow Errors", message.toString());
         }
 
       }

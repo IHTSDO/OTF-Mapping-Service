@@ -20,7 +20,7 @@ import org.ihtsdo.otf.mapping.services.ContentService;
 public class ClamlMetadataHelper {
 
   /** The date format. */
-  private final SimpleDateFormat dt = new SimpleDateFormat("yyyymmdd");
+  private final SimpleDateFormat dt = new SimpleDateFormat("yyyyMMdd");
 
   /** The effective time. */
   private String effectiveTime;

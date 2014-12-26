@@ -107,7 +107,7 @@ public class MapAdviceInvalidFifthCharacterRemoverMojo extends AbstractMojo {
         getLog().info(nRemoved + " fifth character advices removed from project.");
       }
      
-        
+      mappingService.commit();
       mappingService.close();
 
       getLog().info("Done ...");
