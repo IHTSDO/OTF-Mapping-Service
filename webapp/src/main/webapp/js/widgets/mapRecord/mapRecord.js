@@ -1121,9 +1121,9 @@ angular
               // create feedback conversation
               var feedbackConversation = {
                 "lastModified" : new Date(),
-                "terminology" : $scope.project.destinationTerminology,
+                "terminology" : $scope.project.sourceTerminology,
                 "terminologyId" : record.conceptId,
-                "terminologyVersion" : $scope.project.destinationTerminologyVersion,
+                "terminologyVersion" : $scope.project.sourceTerminologyVersion,
                 "isResolved" : "false",
                 "isDiscrepancyReview" : "false",
                 "mapRecordId" : record.id,
