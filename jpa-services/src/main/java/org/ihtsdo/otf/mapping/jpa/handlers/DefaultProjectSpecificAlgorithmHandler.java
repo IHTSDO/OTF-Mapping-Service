@@ -346,11 +346,11 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     if (!mapProject.isRuleBased()) {
 
       for (MapEntry me : mapRecord.getMapEntries()) {
-        if (me.getRule() != null && me.getRule().isEmpty()) {
+        if (me.getRule() != null && !me.getRule().isEmpty()) {
           validationResult
               .addError("Rule found for non-rule based project at map group "
                   + me.getMapGroup() + ", priority " + me.getMapPriority()
-                  + ", rule specified is " + me.getRule());
+                  + ", rule specified is " + me.getRule() + ".");
         }
       }
 
@@ -1498,7 +1498,19 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         // delete the lead's record, no other action required
         if (reviewRecord != null) {
           newRecords.remove(reviewRecord);
+        // Case 2: The concept is removed from QA, and unassigned from the qa user
+        } else if (editingRecord != null) {
+          
+          // clear the record set
+          newRecords.clear();
+          
+          // get the previously published version of the revision record
+          revisionRecord = getPreviouslyPublishedVersionOfMapRecord(revisionRecord);
+          
+          // add the previously published version to the map records set
+          newRecords.add(revisionRecord);
         } else {
+          
           throw new Exception(
               "Unexpected error attempt to unassign a QA record.  Contact an administrator.");
         }
@@ -1514,6 +1526,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
   }
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#publish(org.ihtsdo.otf.mapping.workflow.TrackingRecord, java.util.Set, org.ihtsdo.otf.mapping.model.MapUser)
+   */
   @Override
   public Set<MapRecord> publish(TrackingRecord trackingRecord,
     Set<MapRecord> mapRecords, MapUser mapUser) throws Exception {
@@ -2377,15 +2392,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     // DO NOTHING -- Override in project specific handlers if necessary
   }
 
-  @Override
-  public boolean isUpPropagatedRecordForReleaseProcessing(MapRecord mapRecord) {
-
-    // for ICD10 project, a map record is up-propagated if the descendant
-    // count is less than 11
-    return mapRecord.getCountDescendantConcepts() < mapProject
-        .getPropagationDescendantThreshold();
-  }
-
   /*
    * (non-Javadoc)
    * 
@@ -2419,6 +2425,15 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     throws Exception {
     // do nothing
     return new ValidationResultJpa();
+  }
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#getDefaultUpPropagatedMapRelation()
+   */
+  @Override
+  public MapRelation getDefaultUpPropagatedMapRelation() throws Exception {
+    // does not apply
+    return null;
   }
 
 }

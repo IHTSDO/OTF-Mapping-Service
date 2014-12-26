@@ -56,7 +56,7 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
     try {
 
       // Set date format for parsing "effectiveTime"
-      final SimpleDateFormat dt = new SimpleDateFormat("yyyymmdd");
+      final SimpleDateFormat dt = new SimpleDateFormat("yyyyMMdd");
 
       // set the input directory
       if (!new File(inputFile).exists()) {

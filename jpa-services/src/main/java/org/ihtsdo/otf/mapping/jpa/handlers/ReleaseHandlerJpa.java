@@ -355,6 +355,14 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // Perform the release
     // /////////////////////////////////////////////////////
 
+    // Prep map relation to use for up propagated records
+    MapRelation ifaRuleRelation =
+        algorithmHandler.getDefaultUpPropagatedMapRelation();
+    if (ifaRuleRelation == null) {
+      throw new Exception(
+          "Unable to find default map relation for up propagated records");
+    }
+
     Logger.getLogger(getClass()).info("  Processing release");
     // cycle over the map records marked for publishing
     int ct = 0;
@@ -381,21 +389,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               mapRecord.getConceptId(), mapProject.getSourceTerminology(),
               mapProject.getSourceTerminologyVersion()) < mapProject
               .getPropagationDescendantThreshold()) {
-
-        // Prep MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT | 447639009
-        MapRelation ifaRuleRelation = null;
-        for (MapRelation rel : mappingService.getMapRelations()
-            .getMapRelations()) {
-          if (rel.getTerminologyId().equals("447639009")) {
-            ifaRuleRelation = rel;
-            break;
-          }
-        }
-        if (ifaRuleRelation == null) {
-          throw new Exception(
-              "Unable to find map relation for MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT "
-                  + "| 447639009");
-        }
 
         // Handle up propagation for this record
         if (!handleUpPropagation(mapRecord, entriesByGroup, ifaRuleRelation)) {
@@ -1056,8 +1049,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     }
     updateStatMax(Stats.CHANGED_CONCEPTS.getValue(), changedConcepts.size());
 
+    String camelCaseName =
+        mapProject.getDestinationTerminology().substring(0, 1)
+            + mapProject.getDestinationTerminology().substring(1).toLowerCase();
     BufferedWriter statsWriter =
-        new BufferedWriter(new FileWriter(outputDir + "/stats.txt"));
+        new BufferedWriter(new FileWriter(outputDir + "/" + camelCaseName
+            + "stats.txt"));
     List<String> statistics = new ArrayList<>(reportStatistics.keySet());
     Collections.sort(statistics);
     for (String statistic : statistics) {
@@ -1450,11 +1447,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @return the complex map ref set member
    * @throws IOException Signals that an I/O exception has occurred.
    * @throws NoSuchAlgorithmException the no such algorithm exception
-   * @throws ParseException 
+   * @throws ParseException
    */
   private ComplexMapRefSetMember getComplexMapRefSetMemberForMapEntry(
     MapEntry mapEntry, MapRecord mapRecord, MapProject mapProject,
-    Concept concept) throws IOException, NoSuchAlgorithmException, ParseException {
+    Concept concept) throws IOException, NoSuchAlgorithmException,
+    ParseException {
 
     ComplexMapRefSetMember complexMapRefSetMember =
         new ComplexMapRefSetMemberJpa();
@@ -2095,10 +2093,13 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // TODO: need a way to override the errors if we want to proceed with a
     // release anyway
     if (errorFlag) {
-      reportService.rollback();
+      mappingService.rollback();
     } else {
-      reportService.commit();
+      mappingService.commit();
     }
+
+    // Commit the new report either way
+    reportService.commit();
 
     Logger.getLogger(getClass()).info("Done.");
 
@@ -2184,12 +2185,15 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       mappingService.commit();
     }
 
-    // clear old map refset
-    Logger.getLogger(getClass()).info("  Clear map refset");
-    clearMapRefSet();
-    // Load map refset
-    Logger.getLogger(getClass()).info("  Load map refset");
-    loadMapRefSet();
+    // skip if in test mode
+    if (!testModeFlag) {
+      // clear old map refset
+      Logger.getLogger(getClass()).info("  Clear map refset");
+      clearMapRefSet();
+      // Load map refset
+      Logger.getLogger(getClass()).info("  Load map refset");
+      loadMapRefSet();
+    }
 
   }
 
