@@ -55,7 +55,7 @@ import org.xml.sax.helpers.DefaultHandler;
 public class TerminologyClamlLoaderMojo extends AbstractMojo {
 
   /** The date format. */
-  final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyymmdd");
+  final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
 
   /**
    * The input file
