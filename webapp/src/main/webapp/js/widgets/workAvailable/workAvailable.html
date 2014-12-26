@@ -275,12 +275,12 @@
 
     <tr>
       <td style="padding: 5px;">Filter by label:</td>
-      <td style="padding: 5px;"><select ng-model="selected"
-        ng-click="retrieveAvailableQAWork(1, selected, null);"
+      <td style="padding: 5px;"><select ng-model="selectedQaLabel"
+        ng-change="retrieveAvailableQAWork(1, selectedQaLabel, null);"
         ng-options="lbl for lbl in labelNames">
       </select>
         <button class="btn btn-sm btn-primary"
-          ng-click="retrieveAvailableQAWork(1, 'null', 'null'); selected = null;">Reset</button>
+          ng-click="retrieveAvailableQAWork(1, 'null', 'null'); selectedQaLabel = null;">Reset</button>
       </td>
     </tr>
 
@@ -299,7 +299,7 @@
     total-items="nAvailableQAWork" page="availableQAWorkPage" max-size="5"
     class="pagination-sm" boundary-links="true" rotate="true"
     num-pages="numAvailableQAWorkPages"
-    on-select-page="retrieveAvailableQAWork(page, queryAvailable, assignedMapUser)"></pagination>
+    on-select-page="retrieveAvailableQAWork(page, selectedQaLabel, assignedMapUser)"></pagination>
 
   <table class="table" ng-show="nAvailableQAWork > 0">
 
@@ -307,8 +307,12 @@
       <tr>
         <th style="width: 3%; padding: 5px;"></th>
         <th style="width: 17%; padding: 5px;">Id</th>
-        <th style="width: 77%; padding: 5px;">Preferred Name</th>
+        <th style="width: 72%; padding: 5px;">Preferred Name</th>
         <th style="width: 3%; padding: 5px;"></th>
+        <th style="width: 3%; padding: 5px;"><a title="Remove all displayed work from QA"
+          ng-click="removeAllQaWork(selectedQaLabel, assignedMapUser)"><i
+            class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i></a>
+        </th>
       </tr>
 
     </thead>
@@ -319,17 +323,20 @@
 
         <td style="width: 3%; padding: 5px;"><a title="Claim"
           ng-show="currentRole == 'Specialist'"
-          ng-click="assignWork(concept, currentUser, queryAvailable, 'qa', availableQAWorkPage)"><i
+          ng-click="assignWork(concept, currentUser, selectedQaLabel, 'qa', availableQAWorkPage)"><i
             class="glyphicon glyphicon-import"></i></a> <a title="Assign"
           ng-show="currentRole === 'Lead' || currentRole === 'Administrator'"
-          ng-click="assignWork(concept, assignedMapUser, queryAvailable, 'qa', availableQAWorkPage)"><i
+          ng-click="assignWork(concept, assignedMapUser, selectedQaLabel, 'qa', availableQAWorkPage)"><i
             class="glyphicon glyphicon-import"></i></a></td>
         <td style="width: 17%; padding: 5px;">{{concept.terminologyId}}</td>
-        <td style="width: 77%; padding: 5px;">{{concept.name}}</td>
+        <td style="width: 72%; padding: 5px;">{{concept.name}}</td>
         <td style="width: 3%; padding: 5px;"><a title="Labels"
           ng-show="concept.labels.length > 0" tooltip-placement="top"
           tooltip="{{concept.labels}}" style="float: right; margin-right: 5px;"><i
             class="glyphicon glyphicon-tasks"></i></a></td>
+        <td style="width: 3%; padding: 5px;"><a title="Remove from QA"
+          ng-click="removeQaWork(concept.terminologyId, selectedQaLabel, availableQaWorkPage)"><i
+            class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i></a></td>
     </tbody>
 
   </table>
