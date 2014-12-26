@@ -810,6 +810,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         " AND NOT (userAndWorkflowStatusPairs:QA_NEW_*"
             + " OR userAndWorkflowStatusPairs:QA_IN_PROGRESS_*"
             + " OR userAndWorkflowStatusPairs:QA_RESOLVED_*" + ")";
+    
 
     System.out.println("FindAvailableQAWork query: " + full_query);
 
@@ -826,8 +827,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         fullTextEntityManager.createFullTextQuery(luceneQuery,
             TrackingRecordJpa.class);
 
-    availableQAWork.setTotalCount(ftquery.getResultSize());
-
+  
     List<TrackingRecord> allResults = ftquery.getResultList();
     List<TrackingRecord> results = new ArrayList<>();
 
@@ -851,6 +851,10 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         }
       }
     }
+    
+    // set the total count matching this label
+    availableQAWork.setTotalCount(results.size());
+
 
     // apply paging, and sorting if appropriate
     if (pfsParameter != null
@@ -889,9 +893,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     int startIndex = 0;
     int toIndex = results.size();
     if (pfsParameter != null) {
-      startIndex = pfsParameter.getStartIndex();
+      startIndex = pfsParameter.getStartIndex() == -1 ? 0 : pfsParameter.getStartIndex();
       toIndex =
-          Math.min(results.size(), startIndex + pfsParameter.getMaxResults());
+          pfsParameter.getMaxResults() == -1 ? results.size() : Math.min(results.size(), startIndex + pfsParameter.getMaxResults());
     }
 
     for (TrackingRecord tr : results.subList(startIndex, toIndex)) {
