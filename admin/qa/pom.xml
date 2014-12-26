@@ -50,6 +50,28 @@
       </build>
     </profile>
 
+    <!-- Fix particular map records without recourse to service methods -->
+    <profile>
+      <id>FixInvalidTargets</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>fix-invalid-targets</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>fix-invalid-targets</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
     <!-- Database QA, specify -Drun.config=... -->
     <profile>
       <id>Database</id>
@@ -72,29 +94,29 @@
                     <property>
                       <name>Validate non-rule based projects have empty rules</name>
                       <value>
-                        SELECT mapRecord_id, id, rule FROM map_entries 
-                        WHERE rule != '' AND mapRecord_id in 
-                          (SELECT id FROM map_records 
-                           WHERE mapProjectId in 
-                             (SELECT id FROM map_projects WHERE ruleBased = 0));
+                        SELECT mapRecord_id, id, rule FROM map_entries
+                        WHERE rule != '' AND mapRecord_id in
+                        (SELECT id FROM map_records
+                        WHERE mapProjectId in
+                        (SELECT id FROM map_projects WHERE ruleBased = 0));
                       </value>
                     </property>
 
                     <property>
                       <name>Validate rule based projects never have empty rules</name>
                       <value>
-                        SELECT mapRecord_id, id, rule FROM map_entries 
-                        WHERE rule = '' AND mapRecord_id in 
-                          (SELECT id FROM map_records 
-                           WHERE mapProjectId in 
-                             (SELECT id FROM map_projects WHERE ruleBased = 1));
+                        SELECT mapRecord_id, id, rule FROM map_entries
+                        WHERE rule = '' AND mapRecord_id in
+                        (SELECT id FROM map_records
+                        WHERE mapProjectId in
+                        (SELECT id FROM map_projects WHERE ruleBased = 1));
                       </value>
                     </property>
 
                     <property>
                       <name>Validate map entry targetId is never null</name>
                       <value>
-                        SELECT mapRecord_id, id FROM map_entries 
+                        SELECT mapRecord_id, id FROM map_entries
                         WHERE targetId is null;
                       </value>
                     </property>
@@ -103,16 +125,22 @@
                       <name>Validate concept default preferred names - SNOMEDCT</name>
                       <value>
                         SELECT terminologyId, defaultPreferredName
-                        FROM concepts a
+                        FROM
+                        concepts a
                         WHERE terminology = 'SNOMEDCT' AND NOT EXISTS
                         (SELECT * FROM descriptions b, language_refset_members c
                         WHERE a.id = b.concept_id
-                        AND b.active = 1 AND c.active = 1
+                        AND b.active = 1 AND c.active =
+                        1
                         AND b.id = c.description_id
-                        AND b.typeId='900000000000003001'
-                        AND c.refSetId = '900000000000509007'
-                        AND c.acceptabilityId = '900000000000548007'
-                        AND a.defaultPreferredName = b.term);
+                        AND
+                        b.typeId='900000000000003001'
+                        AND c.refSetId =
+                        '900000000000509007'
+                        AND c.acceptabilityId =
+                        '900000000000548007'
+                        AND a.defaultPreferredName =
+                        b.term);
                       </value>
                     </property>
 
@@ -121,7 +149,8 @@
                         SNOMEDCT</name>
                       <value>
                         SELECT terminologyId, defaultPreferredName
-                        FROM concepts a
+                        FROM
+                        concepts a
                         WHERE terminology != 'SNOMEDCT' AND NOT EXISTS
                         (SELECT * FROM descriptions b
                         WHERE a.id = b.concept_id
@@ -133,13 +162,18 @@
                       <name>Validate active concepts have tree positions</name>
                       <value>
                         SELECT terminologyId, defaultPreferredName
-                        FROM concepts a
-                        WHERE active = 1 AND terminology='SNOMEDCT' AND
+                        FROM
+                        concepts a
+                        WHERE active = 1 AND terminology='SNOMEDCT'
+                        AND
                         NOT EXISTS
                         (SELECT * FROM tree_positions b
-                        WHERE a.terminologyId = b.terminologyId
-                        AND a.terminology = b.terminology
-                        AND a.terminologyVersion = b.terminologyVersion);
+                        WHERE
+                        a.terminologyId = b.terminologyId
+                        AND a.terminology =
+                        b.terminology
+                        AND a.terminologyVersion =
+                        b.terminologyVersion);
                       </value>
                     </property>
 
@@ -147,11 +181,13 @@
                       <name>Validate map project source terminology exists</name>
                       <value>
                         SELECT a.id, a.name, a.sourceTerminology
-                        FROM map_projects a
+                        FROM
+                        map_projects a
                         WHERE NOT EXISTS
                         (SELECT * FROM concepts b
                         WHERE a.sourceTerminology = b.terminology
-                        AND a.sourceTerminologyVersion = b.terminologyVersion);
+                        AND
+                        a.sourceTerminologyVersion = b.terminologyVersion);
                       </value>
                     </property>
 
@@ -159,23 +195,30 @@
                       <name>Validate map project destination terminology exists</name>
                       <value>
                         SELECT a.id, a.name, a.destinationTerminology
-                        FROM map_projects a
+                        FROM
+                        map_projects a
                         WHERE NOT EXISTS
                         (SELECT * FROM concepts b
                         WHERE a.destinationTerminology = b.terminology
-                        AND a.destinationTerminologyVersion = b.terminologyVersion);
+                        AND
+                        a.destinationTerminologyVersion = b.terminologyVersion);
                       </value>
                     </property>
 
+                    <!-- This check has a temporary exception for project 10 because 
+                      it does not have a real refset id -->
                     <property>
-                      <name>Map project refSetId/refSetName exist in concepts</name>
+                      <name>Map project refSetId exists in concepts</name>
                       <value>
                         SELECT a.id, a.name, refSetId, refSetName
-                        FROM map_projects a
-                        WHERE NOT EXISTS
-                        (SELECT * FROM concepts b
+                        FROM
+                        map_projects a
+                        WHERE a.id !=10 AND NOT EXISTS
+                        (SELECT *
+                        FROM concepts b
                         WHERE a.refSetId = b.terminologyId
-                        AND a.refSetName = b.defaultPreferredName);
+                        AND a.sourceTerminology = b.terminology
+                        AND a.sourceTerminologyVersion = b.terminologyVersion);
                       </value>
                     </property>
 
@@ -183,11 +226,14 @@
                       <name>Map project scope concepts should exist</name>
                       <value>
                         SELECT a.id, a.name
-                        FROM map_projects a, map_projects_scope_concepts b
+                        FROM map_projects a,
+                        map_projects_scope_concepts b
                         WHERE a.id = b.id
-                        AND NOT EXISTS
+                        AND NOT
+                        EXISTS
                         (SELECT * FROM concepts c
-                        WHERE b.scopeConcepts = c.terminologyId
+                        WHERE b.scopeConcepts =
+                        c.terminologyId
                         AND a.sourceTerminology = c.terminology
                         AND a.sourceTerminologyVersion = c.terminologyVersion);
                       </value>
@@ -198,13 +244,17 @@
                       <name>Map project scope excluded concepts should exist</name>
                       <value>
                         SELECT a.id, a.name
-                        FROM map_projects a, map_projects_scope_excluded_concepts b
+                        FROM map_projects a,
+                        map_projects_scope_excluded_concepts b
                         WHERE a.id = b.id
                         AND NOT EXISTS
                         (SELECT * FROM concepts c
-                        WHERE b.scopeExcludedConcepts = c.terminologyId
-                        AND a.sourceTerminology = c.terminology
-                        AND a.sourceTerminologyVersion = c.terminologyVersion);
+                        WHERE
+                        b.scopeExcludedConcepts = c.terminologyId
+                        AND
+                        a.sourceTerminology = c.terminology
+                        AND
+                        a.sourceTerminologyVersion = c.terminologyVersion);
                       </value>
                     </property>
 
@@ -212,11 +262,13 @@
                       <name>Every map record should have a valid concept</name>
                       <value>
                         SELECT b.id, a.conceptId
-                        FROM map_records a, map_projects b
+                        FROM map_records a,
+                        map_projects b
                         WHERE mapProjectId = b.id
                         AND NOT EXISTS
                         (SELECT * FROM concepts c
-                        WHERE a.conceptId = c.terminologyId
+                        WHERE a.conceptId =
+                        c.terminologyId
                         AND b.sourceTerminology = c.terminology
                         AND b.sourceTerminologyVersion = c.terminologyVersion);
                       </value>
@@ -226,16 +278,21 @@
                       <name>Every map entry should have a valid targetId (if not
                         null or empty)</name>
                       <value>
-                        SELECT c.id, a.targetId
-                        FROM map_entries a, map_records b, map_projects c
-                        WHERE a.mapRecord_id = b.id
+                        SELECT b.conceptId, c.id, a.targetId
+                        FROM
+                        map_entries a, map_records b, map_projects c
+                        WHERE
+                        a.mapRecord_id = b.id
                         AND b.mapProjectId = c.id
-                        AND targetId != ''
+                        AND
+                        targetId != ''
                         AND NOT EXISTS
                         (SELECT * FROM concepts d
                         WHERE a.targetId = d.terminologyId
-                        AND c.destinationTerminology = d.terminology
-                        AND c.destinationTerminologyVersion = d.terminologyVersion);
+                        AND
+                        c.destinationTerminology = d.terminology
+                        AND
+                        c.destinationTerminologyVersion = d.terminologyVersion);
                       </value>
                     </property>
 
@@ -243,25 +300,34 @@
                       <name>Every feedback should belong to a legitimate project</name>
                       <value>
                         SELECT terminologyId, mapProjectId
-                        FROM feedback_conversations
-                        WHERE mapProjectId NOT IN (SELECT id FROM map_projects);
+                        FROM
+                        feedback_conversations
+                        WHERE mapProjectId NOT IN (SELECT
+                        id FROM map_projects);
                       </value>
                     </property>
 
                     <property>
                       <name>Every feedback should belong to a legitimate record</name>
                       <value>
-                        SELECT terminologyId, mapProjectId, mapRecordId, terminology,
+                        SELECT terminologyId, mapProjectId, mapRecordId,
+                        terminology,
                         terminologyVersion
-                        FROM feedback_conversations a
+                        FROM
+                        feedback_conversations a
                         WHERE NOT EXISTS
-                        (SELECT * FROM map_records_AUD b, map_projects c
-                        WHERE a.terminologyId = b.conceptId
+                        (SELECT * FROM
+                        map_records_AUD b, map_projects c
+                        WHERE a.terminologyId =
+                        b.conceptId
                         AND a.terminology = c.sourceTerminology
-                        AND a.terminologyVersion = c.sourceTerminologyVersion
-                        AND a.mapRecordId = b.id
+                        AND
+                        a.terminologyVersion = c.sourceTerminologyVersion
+                        AND
+                        a.mapRecordId = b.id
                         AND b.mapProjectId = c.id
-                        AND a.mapProjectId = b.mapProjectId);
+                        AND
+                        a.mapProjectId = b.mapProjectId);
                       </value>
                     </property>
 
@@ -269,8 +335,10 @@
                       <name>A map record should have only a single feedback
                         conversation</name>
                       <value>
-                        SELECT mapProjectId, mapRecordId FROM feedback_conversations
-                        GROUP BY mapProjectId, mapRecordId HAVING count(*)>1;
+                        SELECT mapProjectId, mapRecordId FROM
+                        feedback_conversations
+                        GROUP BY mapProjectId, mapRecordId
+                        HAVING count(*)>1;
                       </value>
                     </property>
 
@@ -278,8 +346,10 @@
                       <name>No orphaned report definitions</name>
                       <value>
                         SELECT id, name FROM report_definitions a
-                        WHERE NOT EXISTS
-                        (SELECT * FROM map_projects_report_definitions b WHERE a.id =
+                        WHERE NOT
+                        EXISTS
+                        (SELECT * FROM map_projects_report_definitions b
+                        WHERE a.id =
                         b.reportDefinitions_id);
                       </value>
                     </property>
@@ -288,9 +358,11 @@
                       <name>Map record origins should exist</name>
                       <value>
                         SELECT * FROM map_records_origin_ids a
-                        WHERE NOT EXISTS
+                        WHERE NOT
+                        EXISTS
                         (SELECT * FROM map_records_AUD b
-                        WHERE a.originIds = b.id);
+                        WHERE a.originIds
+                        = b.id);
                       </value>
                     </property>
 
@@ -300,7 +372,8 @@
                       <value>
                         SELECT id, name FROM map_advices a
                         WHERE NOT EXISTS
-                        (SELECT * FROM map_projects_map_advices b WHERE a.id = b.mapAdvices_id);
+                        (SELECT * FROM map_projects_map_advices b WHERE a.id =
+                        b.mapAdvices_id);
                       </value>
                     </property>
 
@@ -308,8 +381,10 @@
                       <name>No orphaned principles</name>
                       <value>
                         SELECT id, name FROM map_principles a
-                        WHERE NOT EXISTS
-                        (SELECT * FROM map_projects_map_principles b WHERE a.id =
+                        WHERE NOT
+                        EXISTS
+                        (SELECT * FROM map_projects_map_principles b WHERE
+                        a.id =
                         b.mapPrinciples_id);
                       </value>
                     </property>
@@ -318,8 +393,10 @@
                       <name>No orphaned relations</name>
                       <value>
                         SELECT id, name FROM map_relations a
-                        WHERE NOT EXISTS
-                        (SELECT * FROM map_projects_map_relations b WHERE a.id =
+                        WHERE NOT
+                        EXISTS
+                        (SELECT * FROM map_projects_map_relations b WHERE
+                        a.id =
                         b.mapRelations_id);
                       </value>
                     </property>
@@ -328,8 +405,10 @@
                       <name>No orphaned preset age ranges</name>
                       <value>
                         SELECT id, name FROM map_age_ranges a
-                        WHERE NOT EXISTS
-                        (SELECT * FROM map_projects_map_age_ranges b WHERE a.id =
+                        WHERE NOT
+                        EXISTS
+                        (SELECT * FROM map_projects_map_age_ranges b WHERE
+                        a.id =
                         b.presetAgeRanges_id);
                       </value>
                     </property>
@@ -338,14 +417,19 @@
                       <name>No orphaned users</name>
                       <value>
                         SELECT id, userName FROM map_users a
-                        WHERE NOT EXISTS
-                        (SELECT * FROM map_projects_map_specialists b WHERE a.id = b.map_users_id
+                        WHERE applicationRole != 'VIEWER' and NOT
+                        EXISTS
+                        (SELECT * FROM map_projects_map_specialists b
+                        WHERE a.id = b.map_users_id
                         UNION
-                        SELECT * FROM map_projects_map_leads b WHERE a.id = b.map_users_id
+                        SELECT * FROM
+                        map_projects_map_leads b WHERE a.id = b.map_users_id
                         UNION
-                        SELECT * FROM map_projects_map_administrators b WHERE a.id =
+                        SELECT * FROM map_projects_map_administrators b
+                        WHERE a.id =
                         b.map_users_id)
-                        AND userName NOT IN ('default','guest','legacy','loader','qa');
+                        AND userName NOT IN
+                        ('default','guest','legacy','loader','qa');
                       </value>
                     </property>
 
@@ -354,7 +438,8 @@
                       <value>
                         SELECT * FROM workflow_exceptions a
                         WHERE NOT EXISTS
-                        (SELECT * FROM map_projects b WHERE b.id = a.mapProjectId);
+                        (SELECT * FROM map_projects b WHERE b.id =
+                        a.mapProjectId);
                       </value>
                     </property>
 
@@ -363,10 +448,13 @@
                         not have tracking records</name>
                       <value>
                         SELECT mapProjectId, id, workflowStatus
-                        FROM map_records a
-                        WHERE workflowStatus in ('PUBLISHED', 'READY_FOR_PUBLICATION')
+                        FROM
+                        map_records a
+                        WHERE workflowStatus in ('PUBLISHED',
+                        'READY_FOR_PUBLICATION')
                         AND EXISTS
-                        (SELECT * FROM tracking_records b
+                        (SELECT * FROM
+                        tracking_records b
                         WHERE a.mapProjectId = b.mapProjectId
                         AND a.conceptId = b.terminologyId);
                       </value>
@@ -377,10 +465,13 @@
                         records always have a tracking record</name>
                       <value>
                         SELECT mapProjectId, id, workflowStatus
-                        FROM map_records a
-                        WHERE workflowStatus not in ('PUBLISHED', 'READY_FOR_PUBLICATION')
-                        AND EXISTS
-                        (SELECT * FROM tracking_records b
+                        FROM
+                        map_records a
+                        WHERE workflowStatus not in ('PUBLISHED',
+                        'READY_FOR_PUBLICATION')
+                        AND NOT EXISTS
+                        (SELECT * FROM
+                        tracking_records b
                         WHERE a.mapProjectId = b.mapProjectId
                         AND a.conceptId = b.terminologyId);
                       </value>
@@ -390,9 +481,11 @@
                       <name>Map entries with null instead of blank target code</name>
                       <value>
                         SELECT b.conceptId, b.mapProjectId
-                        FROM map_entries a, map_records b
+                        FROM map_entries
+                        a, map_records b
                         WHERE a.mapRecord_id = b.id
-                        AND targetId is null;
+                        AND targetId
+                        is null;
                       </value>
                     </property>
 
@@ -400,12 +493,16 @@
                       <name>Null target has only acceptable map relations</name>
                       <value>
                         SELECT d.id, c.conceptId, b.name
-                        FROM map_entries a, map_relations b, map_records c, map_projects d
-                        WHERE a.mapRelation_id = b.id
+                        FROM map_entries a,
+                        map_relations b, map_records c, map_projects d
+                        WHERE
+                        a.mapRelation_id = b.id
                         AND a.mapRecord_id = c.id
-                        AND c.mapProjectId = d.id
+                        AND
+                        c.mapProjectId = d.id
                         AND a. targetId = ''
-                        AND isAllowableForNullTarget != 1;
+                        AND
+                        isAllowableForNullTarget != 1;
                       </value>
                     </property>
 
@@ -413,11 +510,15 @@
                       <name>Non null target has only acceptable map relations</name>
                       <value>
                         SELECT d.id, c.conceptId, b.name
-                        FROM map_entries a, map_relations b, map_records c, map_projects d
-                        WHERE a.mapRelation_id = b.id
+                        FROM map_entries a,
+                        map_relations b, map_records c, map_projects d
+                        WHERE
+                        a.mapRelation_id = b.id
                         AND a.mapRecord_id = c.id
-                        AND c.mapProjectId = d.id
-                        AND a. targetId != '' AND a.targetId IS NOT null
+                        AND
+                        c.mapProjectId = d.id
+                        AND a. targetId != '' AND
+                        a.targetId IS NOT null
                         AND isAllowableForNullTarget != 0;
                       </value>
                     </property>
@@ -426,14 +527,19 @@
                       <name>Null target has only acceptable map advices</name>
                       <value>
                         SELECT e.id, d.conceptId, b.name
-                        FROM map_entries a, map_advices b, map_entries_map_advices c,
-                        map_records d, map_projects e
+                        FROM map_entries a,
+                        map_advices b, map_entries_map_advices c,
+                        map_records d,
+                        map_projects e
                         WHERE a.id = c.map_entries_id
-                        AND b.id = c.mapAdvices_id
+                        AND b.id =
+                        c.mapAdvices_id
                         AND a.mapRecord_id = d.id
-                        AND d.mapProjectId = e.id
+                        AND
+                        d.mapProjectId = e.id
                         AND a. targetId = ''
-                        AND b.isAllowableForNullTarget != 1;
+                        AND
+                        b.isAllowableForNullTarget != 1;
                       </value>
                     </property>
 
@@ -441,13 +547,18 @@
                       <name>Non null target has only acceptable map advices</name>
                       <value>
                         SELECT e.id, d.conceptId, b.name
-                        FROM map_entries a, map_advices b, map_entries_map_advices c,
-                        map_records d, map_projects e
+                        FROM map_entries a,
+                        map_advices b, map_entries_map_advices c,
+                        map_records d,
+                        map_projects e
                         WHERE a.id = c.map_entries_id
-                        AND b.id = c.mapAdvices_id
+                        AND b.id =
+                        c.mapAdvices_id
                         AND a.mapRecord_id = d.id
-                        AND d.mapProjectId = e.id
-                        AND a.targetId != '' AND a.targetId IS NOT NULL
+                        AND
+                        d.mapProjectId = e.id
+                        AND a.targetId != '' AND a.targetId
+                        IS NOT NULL
                         AND b.isAllowableForNullTarget != 0;
                       </value>
                     </property>
