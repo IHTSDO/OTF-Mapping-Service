@@ -3492,7 +3492,7 @@ public class MappingServiceRest extends RootServiceRest {
       MapProject mapProject =
           mappingService.getMapProject(new Long(mapProjectId));
       mappingService.close();
-      SimpleDateFormat dt = new SimpleDateFormat("yyyymmdd");
+      SimpleDateFormat dt = new SimpleDateFormat("yyyyMMdd");
       String date = dt.format(new Date());
 
       String extension = "";
