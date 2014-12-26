@@ -82,7 +82,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
   private Long dpnAcceptabilityId = 900000000000548007L;
 
   /** The date format. */
-  private final SimpleDateFormat dt = new SimpleDateFormat("yyyymmdd");
+  private final SimpleDateFormat dt = new SimpleDateFormat("yyyyMMdd");
 
   /** The concepts by concept. */
   private BufferedReader conceptsByConcept;
