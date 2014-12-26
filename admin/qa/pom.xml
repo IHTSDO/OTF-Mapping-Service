@@ -122,14 +122,14 @@
                     </property>
 
                     <property>
-                      <name>Validate concept default preferred names - SNOMEDCT</name>
+                      <name>Validate active concept default preferred names - SNOMEDCT</name>
                       <value>
                         SELECT terminologyId, defaultPreferredName
                         FROM
                         concepts a
                         WHERE terminology = 'SNOMEDCT' AND NOT EXISTS
                         (SELECT * FROM descriptions b, language_refset_members c
-                        WHERE a.id = b.concept_id
+                        WHERE a.id = b.concept_id AND a.active = 1
                         AND b.active = 1 AND c.active =
                         1
                         AND b.id = c.description_id
@@ -413,6 +413,7 @@
                       </value>
                     </property>
 
+  <!-- Interesting but not a requirement
                     <property>
                       <name>No orphaned users</name>
                       <value>
@@ -432,7 +433,7 @@
                         ('default','guest','legacy','loader','qa');
                       </value>
                     </property>
-
+ -->
                     <property>
                       <name>Workflow exceptions have valid projects</name>
                       <value>
