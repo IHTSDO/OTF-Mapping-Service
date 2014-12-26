@@ -119,6 +119,11 @@ public abstract class AbstractWorkflowPathHandler implements
     throws Exception {
 
     ValidationResult result = new ValidationResultJpa();
+    
+    if (trackingRecord == null) {
+      result.addWarning("Result generated for null tracking record");
+      return result;
+    }
 
     WorkflowStatusCombination workflowCombination =
         getWorkflowCombinationForTrackingRecord(trackingRecord);
@@ -199,32 +204,11 @@ public abstract class AbstractWorkflowPathHandler implements
    * org.ihtsdo.otf.mapping.model.MapUser)
    */
   @Override
-  public ValidationResult validateTrackingRecordForActionAndUser(
+  public ValidationResult validateTrackingRecordForAction(
     TrackingRecord trackingRecord, WorkflowAction action, MapUser mapUser)
     throws Exception {
 
-    ValidationResult result = new ValidationResultJpa();
-
-    // get the workflow state
-    WorkflowPathState state = getWorkflowStateForTrackingRecord(trackingRecord);
-    
-    // check if this action is legal for this workflow state
-    if (action.equals(WorkflowAction.CANCEL)) {
-      // CANCEL is valid for all workflow paths at all stages
-      // individual handlers must specify actions to be taken if this is used
-    } else if (trackingRecordStateToActionMap.containsKey(state)) {
-
-      // check that action is valid for this workflow path state
-      if (!trackingRecordStateToActionMap.get(state).contains(action)) {
-        result.addError("Action is not appropriate for tracking record");
-      }
-
-      // otherwise, the tracking record is in a bad workflow state
-    } else {
-      result.addError("Tracking record has bad workflow");
-    }
-
-    return result;
+   return null;
   }
 
   // //////////////////////////////////////////////
@@ -266,8 +250,13 @@ public abstract class AbstractWorkflowPathHandler implements
    */
   public MapRecordList getMapRecordsForTrackingRecord(TrackingRecord tr)
     throws Exception {
-    MappingService mappingService = new MappingServiceJpa();
     MapRecordList mapRecords = new MapRecordListJpa();
+    
+    if (tr == null)
+      return mapRecords;
+    
+    MappingService mappingService = new MappingServiceJpa();
+    
     for (Long id : tr.getMapRecordIds()) {
       mapRecords.addMapRecord(mappingService.getMapRecord(id));
     }

@@ -3,61 +3,182 @@ package org.ihtsdo.otf.mapping.jpa.handlers;
 import java.util.Arrays;
 import java.util.HashSet;
 
+import org.ihtsdo.otf.mapping.helpers.MapRecordList;
+import org.ihtsdo.otf.mapping.helpers.MapUserRole;
+import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPathState;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatusCombination;
+import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
+import org.ihtsdo.otf.mapping.model.MapRecord;
+import org.ihtsdo.otf.mapping.model.MapUser;
+import org.ihtsdo.otf.mapping.services.MappingService;
+import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
 public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
 
+  // The workflow path states defining the QA Path Workflow
+  private static WorkflowPathState qaNeededState, editingState, finishedState;
+
   public WorkflowQaPathHandler() {
 
-    setWorkflowPath(WorkflowPath.FIX_ERROR_PATH);
+    setWorkflowPath(WorkflowPath.QA_PATH);
 
     setEmptyWorkflowAllowed(false);
 
-    WorkflowPathState state;
-
     // STATE: Initial state has no tracking record
+    // Only valid action is CREATE_QA_RECORD
 
     // workflow states representing a record marked for qa and the original
     // published record
-    state = new WorkflowPathState("QA_NEEDED");
-    state.addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
-        WorkflowStatus.REVISION, WorkflowStatus.QA_NEEDED)));
-    trackingRecordStateToActionMap.put(
-        state,
-        new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING,
-            WorkflowAction.SAVE_FOR_LATER, WorkflowAction.UNASSIGN)));
+    qaNeededState = new WorkflowPathState("QA_NEEDED");
+    qaNeededState.addWorkflowCombination(new WorkflowStatusCombination(Arrays
+        .asList(WorkflowStatus.REVISION, WorkflowStatus.QA_NEEDED)));
+    trackingRecordStateToActionMap.put(qaNeededState,
+        new HashSet<>(Arrays.asList(WorkflowAction.ASSIGN_FROM_SCRATCH)));
 
     // workflow states representing record marked for revision, specialist work,
     // and lead QA (incomplete)
-    state = new WorkflowPathState("QA_NEW/QA_IN_PROGREss");
-    state.addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
-        WorkflowStatus.REVISION, WorkflowStatus.QA_NEEDED,
-        WorkflowStatus.QA_NEW)));
-    state.addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
-        WorkflowStatus.REVISION, WorkflowStatus.QA_NEEDED,
-        WorkflowStatus.QA_IN_PROGRESS)));
+    editingState = new WorkflowPathState("QA_NEW/QA_IN_PROGREss");
+    editingState.addWorkflowCombination(new WorkflowStatusCombination(Arrays
+        .asList(WorkflowStatus.REVISION, WorkflowStatus.QA_NEEDED,
+            WorkflowStatus.QA_NEW)));
+    editingState.addWorkflowCombination(new WorkflowStatusCombination(Arrays
+        .asList(WorkflowStatus.REVISION, WorkflowStatus.QA_NEEDED,
+            WorkflowStatus.QA_IN_PROGRESS)));
     trackingRecordStateToActionMap.put(
-        state,
+        editingState,
         new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING,
             WorkflowAction.SAVE_FOR_LATER, WorkflowAction.UNASSIGN)));
 
-    // workflow states representing record marked for revision, specialist work,
+    // workflow finishedStates representing record marked for revision,
+    // specialist work,
     // and lead QA (complete)
-    state = new WorkflowPathState("QA_RESOLVED");
-    state.addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
-        WorkflowStatus.REVISION, WorkflowStatus.REVIEW_NEEDED,
-        WorkflowStatus.QA_RESOLVED)));
+    finishedState = new WorkflowPathState("QA_RESOLVED");
+    finishedState.addWorkflowCombination(new WorkflowStatusCombination(Arrays
+        .asList(WorkflowStatus.REVISION, WorkflowStatus.REVIEW_NEEDED,
+            WorkflowStatus.QA_RESOLVED)));
     trackingRecordStateToActionMap.put(
-        state,
+        finishedState,
         new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING,
             WorkflowAction.PUBLISH, WorkflowAction.SAVE_FOR_LATER,
             WorkflowAction.UNASSIGN)));
-    
-    // final state:  no tracking record, one READY_FOR_PUBLICATION record
+
+    // final state: no tracking record, one READY_FOR_PUBLICATION record
+  }
+
+  @Override
+  public ValidationResult validateTrackingRecordForActionAndUser(
+    TrackingRecord tr, WorkflowAction action, MapUser user) throws Exception {
+
+    // first, validate the tracking record itself
+    ValidationResult result = validateTrackingRecord(tr);
+    if (result.isValid()) {
+      result
+          .addError("Could not validate action for user due to workflow errors.");
+      return result;
+    }
+
+    // second, check for CANCEL action -- always valid for this path for any
+    // state or user (no-op)
+    if (action.equals(WorkflowAction.CANCEL)) {
+      return result;
+    }
+
+    // third, get the user role for this map project
+    MappingService mappingService = new MappingServiceJpa();
+    MapUserRole userRole =
+        mappingService.getMapUserRoleForMapProject(user.getUserName(),
+            tr.getMapProjectId());
+    mappingService.close();
+
+    // fourth, get the map records and workflow path state from the tracking
+    // record
+    MapRecordList mapRecords = getMapRecordsForTrackingRecord(tr);
+    MapRecord currentRecord = getCurrentMapRecordForUser(mapRecords, user);
+    WorkflowPathState state = this.getWorkflowStateForTrackingRecord(tr);
+
+    // /////////////////////////////////
+    // Switch on workflow path state //
+    // /////////////////////////////////
+
+    // Record requirement : No record
+    // Permissible action : ASSIGN_FROM_SCRATCH
+    // Minimum role : Specialist
+    if (tr == null) {
+      
+    }
+    else if (state.equals(qaNeededState)) {
+
+      // check record
+      if (currentRecord != null) {
+        result.addError("User record does not meet requirements");
+      }
+
+      // check role
+      if (!userRole.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
+        result.addError("User does not have required role");
+      }
+
+      // check action
+      if (action.equals(WorkflowAction.ASSIGN_FROM_SCRATCH)) {
+        result.addError("Action is not permitted.");
+      }
+
+      // STATE: Specialist level work
+      // Record requirement : NEW, EDITING_IN_PROGRESS
+      // Permissible actions: SAVE_FOR_LATER, FINISH_EDITING, UNASSIGN
+      // Minimum role : Specialist
+    } else if (state.equals(editingState)) {
+
+      // check record
+      if (currentRecord == null) {
+        result.addError("User must have a record");
+      } else if (!currentRecord.getWorkflowStatus().equals(
+          WorkflowStatus.REVIEW_NEW)
+          && !currentRecord.getWorkflowStatus().equals(
+              WorkflowStatus.REVIEW_IN_PROGRESS)) {
+        result.addError("User's record does not meet requirements");
+      }
+
+      // check role
+      if (!userRole.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
+        result.addError("User does not have required role");
+      }
+
+      // check action
+      if (!action.equals(WorkflowAction.SAVE_FOR_LATER)
+          && !action.equals(WorkflowAction.FINISH_EDITING)
+          && !action.equals(WorkflowAction.UNASSIGN)) {
+        result.addError("Action is not permitted.");
+      }
+
+    } else if (state.equals(finishedState)) {
+      // check record
+      if (currentRecord == null) {
+        result.addError("User must have a record");
+      } else if (!currentRecord.getWorkflowStatus().equals(
+          WorkflowStatus.REVIEW_RESOLVED)) {
+        result.addError("User's record does meet requirements");
+      }
+
+      // check role
+      if (!userRole.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
+        result.addError("User does not have required role");
+      }
+
+      // check action
+      if (!action.equals(WorkflowAction.SAVE_FOR_LATER)
+          && !action.equals(WorkflowAction.FINISH_EDITING)
+          && !action.equals(WorkflowAction.UNASSIGN)
+          && !action.equals(WorkflowAction.PUBLISH)) {
+        result.addError("Action is not permitted.");
+      }
+    }
+
+    return result;
   }
 
 }
