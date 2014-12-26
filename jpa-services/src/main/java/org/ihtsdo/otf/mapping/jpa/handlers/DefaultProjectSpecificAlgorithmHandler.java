@@ -1498,7 +1498,19 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         // delete the lead's record, no other action required
         if (reviewRecord != null) {
           newRecords.remove(reviewRecord);
+        // Case 2: The concept is removed from QA, and unassigned from the qa user
+        } else if (editingRecord != null) {
+          
+          // clear the record set
+          newRecords.clear();
+          
+          // get the previously published version of the revision record
+          revisionRecord = getPreviouslyPublishedVersionOfMapRecord(revisionRecord);
+          
+          // add the previously published version to the map records set
+          newRecords.add(revisionRecord);
         } else {
+          
           throw new Exception(
               "Unexpected error attempt to unassign a QA record.  Contact an administrator.");
         }
