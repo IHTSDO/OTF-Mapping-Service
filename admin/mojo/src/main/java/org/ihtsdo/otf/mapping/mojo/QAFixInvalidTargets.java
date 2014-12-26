@@ -166,7 +166,7 @@ public class QAFixInvalidTargets extends AbstractMojo {
 
       }
 
-      //mappingService.commit();
+      mappingService.commit();
       mappingService.close();
       getLog().info("Done ...");
 
