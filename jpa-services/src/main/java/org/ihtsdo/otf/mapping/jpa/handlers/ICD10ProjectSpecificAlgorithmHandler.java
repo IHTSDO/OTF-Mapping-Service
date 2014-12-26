@@ -15,6 +15,7 @@ import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
@@ -25,6 +26,7 @@ import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.SimpleRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 import org.ihtsdo.otf.mapping.services.ContentService;
+import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 
 /**
@@ -54,8 +56,14 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
   /** The qa true rule in group. */
   private boolean qaTrueRuleInGroup = false;
 
-  /** The parser. */
-//  private MapRuleParser parser = new MapRuleParser();
+  /**
+   *  The parser.
+   *
+   * @param mapRecord the map record
+   * @return the validation result
+   * @throws Exception the exception
+   */
+  // private MapRuleParser parser = new MapRuleParser();
 
   /**
    * For ICD10, a target code is valid if: - Concept exists - Concept has at
@@ -589,21 +597,22 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
     // TODO: ideally this should use a better parser with a full implemenation
 
     // OK disabled because needs to accommodate UTF8 characters also
-//    for (String rule : member.getMapRule().split("AND IFA")) {
-//      // replace IFA part of the rule
-//      if (!rule.startsWith("IFA") && !rule.equals("TRUE") &&
-//          !rule.equals("OTHERWISE TRUE")) {
-//        rule = "IFA" + rule;
-//      }        
-//      // skip where there are embedded parens, the parser can't handle this
-//      if (rule.indexOf('(') != rule.lastIndexOf('(')) {
-//        continue;
-//      }
-//      boolean isMatch = parser.parse(new ByteArrayInputStream(rule.getBytes()));
-//      if (!isMatch) {
-//        result.addError("Rule clause has incorrect grammar: " + rule);
-//      }
-//    }
+    // for (String rule : member.getMapRule().split("AND IFA")) {
+    // // replace IFA part of the rule
+    // if (!rule.startsWith("IFA") && !rule.equals("TRUE") &&
+    // !rule.equals("OTHERWISE TRUE")) {
+    // rule = "IFA" + rule;
+    // }
+    // // skip where there are embedded parens, the parser can't handle this
+    // if (rule.indexOf('(') != rule.lastIndexOf('(')) {
+    // continue;
+    // }
+    // boolean isMatch = parser.parse(new
+    // ByteArrayInputStream(rule.getBytes()));
+    // if (!isMatch) {
+    // result.addError("Rule clause has incorrect grammar: " + rule);
+    // }
+    // }
 
     // Verify mapAdvice is restricted to the defined list
     // -- all map advices are controlled at project level now
@@ -703,4 +712,21 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
     return result;
 
   }
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.jpa.handlers.DefaultProjectSpecificAlgorithmHandler#getDefaultUpPropagatedMapRelation()
+   */
+  @Override
+  public MapRelation getDefaultUpPropagatedMapRelation() throws Exception {
+    MappingService mappingService = new MappingServiceJpa();
+    for (MapRelation rel : mappingService.getMapRelations().getMapRelations()) {
+      if (rel.getTerminologyId().equals("447639009")) {
+        mappingService.close();
+        return rel;
+      }
+    }
+    mappingService.close();
+    return null;
+  }
+
 }

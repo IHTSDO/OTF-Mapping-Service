@@ -2,7 +2,7 @@
 #
 # Sample cron configuration - run daily
 # Minute Hour Day-of-Month Month Day of Week Command
-# 0 0 * * * csh /home/ihtsdo/config/bin/qaCron.csh > /home/ihtsdo/logs/qaCron.log
+# 0 0 * * * csh /home/ihtsdo/config/bin/dailyReports.csh > /home/ihtsdo/logs/dailyReports.log
 #
 # Configure
 #
@@ -17,26 +17,29 @@ echo "MAPPING_CODE = $MAPPING_CODE"
 echo "MAPPING_DATA = $MAPPING_DATA"
 echo "MAPPING_CONFIG = $MAPPING_CONFIG"
 
-# this will send mail on a failure
-echo "    Perform the database QA ... '/bin/date'"
-cd $MAPPING_CODE/admin/qa
-mvn install -PDatabase -Drun.config=$MAPPING_CONFIG | sed 's/^/    /'
+echo "Taking down the server"
+service tomcat7 stop
 if ($status != 0) then
-    echo "ERROR running the database QA"
+	echo "ERROR stopping server"
+	exit 1
+endif
+
+# this will send mail on a failure
+echo "    Generate daily reports ... '/bin/date'"
+# start today
+set today = `/bin/date +%Y%m%d`
+# no end date, all refsets
+cd $MAPPING_CODE/admin/loader
+mvn install -PGenerateDailyReports -Drun.config=$MAPPING_CONFIG -Dstart.date=$today | sed 's/^/    /'
+
+if ($status != 0) then
+    echo "ERROR generating daily reports"
     cat mvn.log
     exit 1
 endif
 
-# this will send mail on a failure
-# refset.id parameter left out - all refsets
-echo "    Perform the workflow QA ... '/bin/date'"
-cd $MAPPING_CODE/admin/qa
-mvn install -PWorkflow -Drun.config=$MAPPING_CONFIG | sed 's/^/    /'
-if ($status != 0) then
-    echo "ERROR running the workflow QA"
-    cat mvn.log
-    exit 1
-endif
+echo "    Restarting tomcat7 server ...`/bin/date`"
+service tomcat7 start
 
 echo "------------------------------------------------"
 echo "Finished ...`/bin/date`"
