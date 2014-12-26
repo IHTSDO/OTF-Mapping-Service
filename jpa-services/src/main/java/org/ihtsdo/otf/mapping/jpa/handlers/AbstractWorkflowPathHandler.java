@@ -204,10 +204,11 @@ public abstract class AbstractWorkflowPathHandler implements
    * org.ihtsdo.otf.mapping.model.MapUser)
    */
   @Override
-  public ValidationResult validateTrackingRecordForAction(
+  public ValidationResult validateTrackingRecordForActionAndUser(
     TrackingRecord trackingRecord, WorkflowAction action, MapUser mapUser)
     throws Exception {
 
+    // NOTE:  This function MUST be overwritten in 
    return null;
   }
 
