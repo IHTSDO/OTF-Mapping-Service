@@ -103,6 +103,7 @@ public class ReportGenerateDailyMojo extends AbstractMojo {
         }
       } else {
         for (MapProject project : mappingService.getMapProjects().getIterable()) {
+          project.getName();
           mapProjects.add(project);
         }
       }
@@ -112,7 +113,7 @@ public class ReportGenerateDailyMojo extends AbstractMojo {
 
       // Generate reports for all projects
       for (MapProject mp : mapProjects) {
-        getLog().info("  Generate reports for project " + mapProject.getName());
+        getLog().info("  Generate reports for project " + mapProject);
         reportService.generateReportsForDateRange(mp, mapUser, start, end);
       }
 
