@@ -385,7 +385,7 @@ public class MapProjectJpa implements MapProject {
   @XmlID
   @Override
   public String getObjectId() {
-    return id.toString();
+    return id.toString()s;
   }
 
   /**
