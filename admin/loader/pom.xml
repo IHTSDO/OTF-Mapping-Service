@@ -68,33 +68,6 @@
       </build>
     </profile>
 
-    <!-- Load RF2 -Drun.config=.. must also be specified. -->
-    <profile>
-      <id>RF2-snapshot-map</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.ihtsdo.otf.mapping</groupId>
-            <artifactId>mapping-admin-mojo</artifactId>
-            <executions>
-              <execution>
-                <id>load-rf2-snapshot-map</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>load-rf2-snapshot-map</goal>
-                </goals>
-                <configuration>
-                  <inputDir>${input.dir}</inputDir>
-                  <terminology>${terminology}</terminology>
-                  <version>${version}</version>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
     <!-- Load SNOMED delta -Drun.config=.. must also be specified. -->
     <profile>
       <id>RF2-delta</id>
