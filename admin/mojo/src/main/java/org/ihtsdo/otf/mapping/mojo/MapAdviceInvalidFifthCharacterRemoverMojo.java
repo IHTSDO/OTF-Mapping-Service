@@ -51,6 +51,7 @@ public class MapAdviceInvalidFifthCharacterRemoverMojo extends AbstractMojo {
 
       MappingService mappingService = new MappingServiceJpa();
       mappingService.setTransactionPerOperation(false);
+      mappingService.beginTransaction();
       MapAdvice mapAdvice = null;
       for (MapAdvice ma : mappingService.getMapAdvices().getIterable()) {
         if (ma.getName().equals(mapAdviceName))
