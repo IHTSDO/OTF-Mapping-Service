@@ -2173,7 +2173,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       mappingService.beginTransaction();
       for (MapRecord record : mapRecords) {
         if (record.getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION) {
-          Logger.getLogger(getClass()).debug(
+          Logger.getLogger(getClass()).info(
               "  Update record to PUBLISHED for " + record.getConceptId() + " "
                   + record.getConceptName());
           if (!testModeFlag) {
