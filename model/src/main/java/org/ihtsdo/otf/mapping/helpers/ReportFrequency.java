@@ -38,6 +38,9 @@ public enum ReportFrequency {
   MID_MONTH,
 
   /** The last of month. */
-  LAST_OF_MONTH
+  LAST_OF_MONTH, 
+  
+  /**  On demand. */
+  ON_DEMAND
 
 }
