@@ -102,7 +102,9 @@ public class ReportGenerateDailyMojo extends AbstractMojo {
           mapProjects.add(mapProject);
         }
       } else {
-        mapProjects.addAll(mappingService.getMapProjects().getMapProjects());
+        for (MapProject project : mappingService.getMapProjects().getMapProjects()) {
+          mapProjects.add(project);
+        }
       }
 
       // get the loader map user
