@@ -114,7 +114,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
             .getIndexedClassNames();
     for (String indexClass : indexedClassNames) {
       if (indexClass.indexOf("TrackingRecordJpa") != -1) {
-        Logger.getLogger(ContentServiceJpa.class).info("FOUND TrackingRecordJpa index");
+        Logger.getLogger(ContentServiceJpa.class).info(
+            "FOUND TrackingRecordJpa index");
         IndexReader indexReader = indexReaderAccessor.open(indexClass);
         try {
           for (FieldInfo info : ReaderUtil.getMergedFieldInfos(indexReader)) {
@@ -268,11 +269,13 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     MapProject mapProject) throws Exception {
 
     TrackingRecordListJpa trackingRecordList = new TrackingRecordListJpa();
-    trackingRecordList
-        .setTrackingRecords(manager
+    javax.persistence.Query query =
+        manager
             .createQuery(
                 "select tr from TrackingRecordJpa tr where mapProjectId = :mapProjectId")
-            .setParameter("mapProjectId", mapProject.getId()).getResultList());
+            .setParameter("mapProjectId", mapProject.getId());
+
+    trackingRecordList.setTrackingRecords(query.getResultList());
 
     return trackingRecordList;
   }
@@ -810,7 +813,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         " AND NOT (userAndWorkflowStatusPairs:QA_NEW_*"
             + " OR userAndWorkflowStatusPairs:QA_IN_PROGRESS_*"
             + " OR userAndWorkflowStatusPairs:QA_RESOLVED_*" + ")";
-    
 
     System.out.println("FindAvailableQAWork query: " + full_query);
 
@@ -827,7 +829,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         fullTextEntityManager.createFullTextQuery(luceneQuery,
             TrackingRecordJpa.class);
 
-  
     List<TrackingRecord> allResults = ftquery.getResultList();
     List<TrackingRecord> results = new ArrayList<>();
 
@@ -851,10 +852,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         }
       }
     }
-    
+
     // set the total count matching this label
     availableQAWork.setTotalCount(results.size());
-
 
     // apply paging, and sorting if appropriate
     if (pfsParameter != null
@@ -893,9 +893,11 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     int startIndex = 0;
     int toIndex = results.size();
     if (pfsParameter != null) {
-      startIndex = pfsParameter.getStartIndex() == -1 ? 0 : pfsParameter.getStartIndex();
+      startIndex =
+          pfsParameter.getStartIndex() == -1 ? 0 : pfsParameter.getStartIndex();
       toIndex =
-          pfsParameter.getMaxResults() == -1 ? results.size() : Math.min(results.size(), startIndex + pfsParameter.getMaxResults());
+          pfsParameter.getMaxResults() == -1 ? results.size() : Math.min(
+              results.size(), startIndex + pfsParameter.getMaxResults());
     }
 
     for (TrackingRecord tr : results.subList(startIndex, toIndex)) {
@@ -950,7 +952,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
     // must have a REVIEW_NEEDED tag with any user
     full_query += " AND userAndWorkflowStatusPairs:REVIEW_NEEDED_*";
-    				
+
     // there must not be an already claimed review record
     full_query +=
         " AND NOT (userAndWorkflowStatusPairs:REVIEW_NEW_*"
@@ -1343,7 +1345,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
       }
 
       if (mapRecord == null) {
-       
+
         throw new Exception(
             "Failed to retrieve assigned conflicts:  no map record found for user "
                 + mapUser.getUserName() + " and concept "
@@ -1816,6 +1818,48 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     } catch (NoResultException e) {
       trackingRecord = null;
     }
+
+    // switch on workflow path
+    ValidationResult result = null;
+    switch (trackingRecord.getWorkflowPath()) {
+      case CONSENSUS_PATH:
+        break;
+      case DRIP_FEED_REVIEW_PATH:
+        break;
+      case FIX_ERROR_PATH:
+        result =
+            (new WorkflowFixErrorPathHandler())
+                .validateTrackingRecordForActionAndUser(trackingRecord,
+                    workflowAction, mapUser);
+        break;
+      case LEGACY_PATH:
+        break;
+      case NON_LEGACY_PATH:
+        result =
+            (new WorkflowNonLegacyPathHandler())
+                .validateTrackingRecordForActionAndUser(trackingRecord,
+                    workflowAction, mapUser);
+        break;
+      case QA_PATH:
+        result =
+            (new WorkflowQaPathHandler())
+                .validateTrackingRecordForActionAndUser(trackingRecord,
+                    workflowAction, mapUser);
+        break;
+      case REVIEW_PROJECT_PATH:
+        result =
+            (new WorkflowReviewProjectPathHandler())
+                .validateTrackingRecordForActionAndUser(trackingRecord,
+                    workflowAction, mapUser);
+        break;
+      default:
+        break;
+
+    }
+
+    if (!result.isValid())
+      Logger.getLogger(WorkflowServiceJpa.class).info(result.toString());
+
     Set<MapRecord> mapRecords = getMapRecordsForTrackingRecord(trackingRecord);
 
     // if the record passed in updates an existing record, replace it in the
@@ -2103,9 +2147,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
       trackingRecord.addUserAndWorkflowStatusPair(mr.getOwner().getUserName(),
           mr.getWorkflowStatus().toString());
     }
-    
-    Logger.getLogger(WorkflowServiceJpa.class).info("Revised tracking record: " + trackingRecord.toString());
-    
+
+    Logger.getLogger(WorkflowServiceJpa.class).info(
+        "Revised tracking record: " + trackingRecord.toString());
 
     // if the tracking record is ready for removal, delete it
     if ((getWorkflowStatusForTrackingRecord(trackingRecord).equals(
@@ -2113,17 +2157,20 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         trackingRecord).equals(WorkflowStatus.PUBLISHED))
         && trackingRecord.getMapRecordIds().size() == 1) {
 
-      Logger.getLogger(WorkflowServiceJpa.class).info("  Publication ready, removing tracking record.");
+      Logger.getLogger(WorkflowServiceJpa.class).info(
+          "  Publication ready, removing tracking record.");
       removeTrackingRecord(trackingRecord.getId());
 
       // else add the tracking record if new
     } else if (trackingRecord.getId() == null) {
-      Logger.getLogger(WorkflowServiceJpa.class).info("  New workflow concept, adding tracking record.");
+      Logger.getLogger(WorkflowServiceJpa.class).info(
+          "  New workflow concept, adding tracking record.");
       addTrackingRecord(trackingRecord);
 
       // otherwise update the tracking record
     } else {
-      Logger.getLogger(WorkflowServiceJpa.class).info("  Still in workflow, updating tracking record.");
+      Logger.getLogger(WorkflowServiceJpa.class).info(
+          "  Still in workflow, updating tracking record.");
       updateTrackingRecord(trackingRecord);
     }
 
@@ -2510,7 +2557,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
   }
 
-
   // //////////////////////////
   // Utility functions
   // //////////////////////////
@@ -2625,12 +2671,10 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     return workflowStatus;
   }
 
- 
-
   @Override
   public ValidationResult computeWorkflowStatusErrors(MapProject mapProject)
     throws Exception {
-    
+
     ValidationResult result = new ValidationResultJpa();
 
     // instantiate the mapping service
@@ -2639,17 +2683,20 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     Logger.getLogger(WorkflowServiceJpa.class).info(
         "Retrieving tracking records for project " + mapProject.getId() + ", "
             + mapProject.getName());
-    
+
     // instantiate a copy of all workflow handlers
-    WorkflowNonLegacyPathHandler nonLegacyHandler = new WorkflowNonLegacyPathHandler();
-    WorkflowFixErrorPathHandler fixErrorHandler = new WorkflowFixErrorPathHandler();
+    WorkflowNonLegacyPathHandler nonLegacyHandler =
+        new WorkflowNonLegacyPathHandler();
+    WorkflowFixErrorPathHandler fixErrorHandler =
+        new WorkflowFixErrorPathHandler();
     WorkflowQaPathHandler qaHandler = new WorkflowQaPathHandler();
-    WorkflowReviewProjectPathHandler reviewHandler = new WorkflowReviewProjectPathHandler();
+    WorkflowReviewProjectPathHandler reviewHandler =
+        new WorkflowReviewProjectPathHandler();
 
     // get all the tracking records for this project
     TrackingRecordList trackingRecords =
         this.getTrackingRecordsForMapProject(mapProject);
-    
+
     // construct a set of terminology ids for which a tracking record exists
     Set<String> terminologyIdsWithTrackingRecord = new HashSet<>();
 
@@ -2676,33 +2723,39 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
           break;
         default:
           break;
-        
-        
+
       }
-      
+
       // add this tracking record id to the set
       terminologyIdsWithTrackingRecord.add(trackingRecord.getTerminologyId());
     }
-    
+
     Logger.getLogger(WorkflowServiceJpa.class).info(
         "  Checking map records for " + mapProject.getId() + ", "
             + mapProject.getName());
-    
-    // second, check all records for non-publication ready content without tracking record
-    for (MapRecord mapRecord : mappingService.getMapRecordsForMapProject(mapProject.getId()).getMapRecords()) {
-      
+
+    // second, check all records for non-publication ready content without
+    // tracking record
+    for (MapRecord mapRecord : mappingService.getMapRecordsForMapProject(
+        mapProject.getId()).getMapRecords()) {
+
       // if not publication ready
-      if (!mapRecord.getWorkflowStatus().equals(WorkflowStatus.READY_FOR_PUBLICATION) &&
-          !mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)) {
-        
+      if (!mapRecord.getWorkflowStatus().equals(
+          WorkflowStatus.READY_FOR_PUBLICATION)
+          && !mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)) {
+
         // if no tracking record found for this concept
-        if (!terminologyIdsWithTrackingRecord.contains(mapRecord.getConceptId())) {
-          result.addError("Map Record " + mapRecord.getId() + ": " + mapRecord.getWorkflowStatus() + " but no tracking record exists (Concept "  + mapRecord.getConceptId() + " " + mapRecord.getConceptName());
+        if (!terminologyIdsWithTrackingRecord
+            .contains(mapRecord.getConceptId())) {
+          result.addError("Map Record " + mapRecord.getId() + ": "
+              + mapRecord.getWorkflowStatus()
+              + " but no tracking record exists (Concept "
+              + mapRecord.getConceptId() + " " + mapRecord.getConceptName());
         }
       }
-      
+
     }
-    
+
     return result;
 
   }
@@ -2933,20 +2986,21 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     MappingService mappingService = new MappingServiceJpa();
     MapProject mapProject = mappingService.getMapProject(mapProjectId);
     mappingService.close();
-    
+
     // remove from the query the viewed parameter, if it exists
-    // viewed will be handled later because it is on the Feedback object, 
+    // viewed will be handled later because it is on the Feedback object,
     // not the FeedbackConversation object
     String modifiedQuery = "";
     if (query.contains(" AND viewed:false"))
-    	modifiedQuery = query.replace(" AND viewed:false", "");
+      modifiedQuery = query.replace(" AND viewed:false", "");
     else if (query.contains(" AND viewed:true"))
-    	modifiedQuery = query.replace(" AND viewed:true", "");
+      modifiedQuery = query.replace(" AND viewed:true", "");
     else
-    	modifiedQuery = query;
+      modifiedQuery = query;
 
     // construct basic query
-    String full_query = constructMapProjectIdQuery(mapProject.getId(), modifiedQuery);
+    String full_query =
+        constructMapProjectIdQuery(mapProject.getId(), modifiedQuery);
 
     full_query +=
         " AND terminology:" + mapProject.getDestinationTerminology()
@@ -3001,19 +3055,18 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     // get the results
     int totalCount = ftquery.getResultSize();
 
-    
     if (pfsParameter != null && !query.contains("viewed")) {
       ftquery.setFirstResult(pfsParameter.getStartIndex());
       ftquery.setMaxResults(pfsParameter.getMaxResults());
     }
-    
+
     List<FeedbackConversation> feedbackConversations = ftquery.getResultList();
 
     if (pfsParameter != null && query.contains("viewed")) {
-    	List<FeedbackConversation> conversationsToKeep = new ArrayList<>();
-    	for (FeedbackConversation fc : feedbackConversations) {
-    		if (query.contains("viewed:false")) {
-    			for (Feedback feedback : fc.getFeedbacks()) {
+      List<FeedbackConversation> conversationsToKeep = new ArrayList<>();
+      for (FeedbackConversation fc : feedbackConversations) {
+        if (query.contains("viewed:false")) {
+          for (Feedback feedback : fc.getFeedbacks()) {
             Set<MapUser> alreadyViewedBy = feedback.getViewedBy();
             boolean found = false;
             for (MapUser user : alreadyViewedBy) {
@@ -3021,36 +3074,36 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
                 found = true;
             }
             if (!found)
-            	conversationsToKeep.add(fc);
+              conversationsToKeep.add(fc);
           }
-    		}
-    		if (query.contains("viewed:true")) {
+        }
+        if (query.contains("viewed:true")) {
           boolean found = false;
-    			for (Feedback feedback : fc.getFeedbacks()) {
+          for (Feedback feedback : fc.getFeedbacks()) {
             Set<MapUser> alreadyViewedBy = feedback.getViewedBy();
             for (MapUser user : alreadyViewedBy) {
               if (user.getUserName().equals(userName)) {
-              	found = true;
-              	break;
+                found = true;
+                break;
               }
             }
             if (!found)
-            	break;
-          } 
-    			if (found)
-          	conversationsToKeep.add(fc);
-    		}
-    	}
-    	totalCount = conversationsToKeep.size();
-    	feedbackConversations.clear();
-    	for (int i = pfsParameter.getStartIndex(); 
-    			i < pfsParameter.getStartIndex() + pfsParameter.getMaxResults() &&
-    			i < conversationsToKeep.size(); i++) {
-    	  feedbackConversations.add(conversationsToKeep.get(i));
-    	}
-    	
+              break;
+          }
+          if (found)
+            conversationsToKeep.add(fc);
+        }
+      }
+      totalCount = conversationsToKeep.size();
+      feedbackConversations.clear();
+      for (int i = pfsParameter.getStartIndex(); i < pfsParameter
+          .getStartIndex() + pfsParameter.getMaxResults()
+          && i < conversationsToKeep.size(); i++) {
+        feedbackConversations.add(conversationsToKeep.get(i));
+      }
+
     }
-    
+
     Logger.getLogger(this.getClass()).debug(
         Integer.toString(feedbackConversations.size())
             + " feedbackConversations retrieved");

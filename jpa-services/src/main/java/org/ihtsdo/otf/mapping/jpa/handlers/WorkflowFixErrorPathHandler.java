@@ -93,7 +93,7 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
 
     // first, validate the tracking record itself
     ValidationResult result = validateTrackingRecord(tr);
-    if (result.isValid()) {
+    if (!result.isValid()) {
       result
           .addError("Could not validate action for user due to workflow errors.");
       return result;

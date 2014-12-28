@@ -3704,6 +3704,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       if (adviceRemoved == true)
         updateMapProject(mp);
     }
+    
+    removeMapAdvice(mapAdvice.getId());
 
     Logger.getLogger(MappingServiceJpa.class).info(
         "  " + nAdviceRemoved + " instances removed from map projects");
