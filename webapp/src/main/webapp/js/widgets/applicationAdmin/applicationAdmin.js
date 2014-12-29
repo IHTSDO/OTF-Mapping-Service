@@ -87,7 +87,7 @@ angular
               $scope.definitionFrequencies = [ 'DAILY', 'MONDAY', 'TUESDAY', 'WEDNESDAY',
                                                'THURSDAY', 'FRIDAY', 'SATURDAY',
                                                'SUNDAY', 'FIRST_OF_MONTH',
-                                               'MID_MONTH', 'LAST_OF_MONTH'];              
+                                               'MID_MONTH', 'LAST_OF_MONTH', 'ON_DEMAND'];              
 
               $scope.newHandler;
 
