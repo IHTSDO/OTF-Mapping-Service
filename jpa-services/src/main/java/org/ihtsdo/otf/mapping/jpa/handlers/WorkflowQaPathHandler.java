@@ -37,11 +37,11 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
     qaNeededState.addWorkflowCombination(new WorkflowStatusCombination(Arrays
         .asList(WorkflowStatus.REVISION, WorkflowStatus.QA_NEEDED)));
     trackingRecordStateToActionMap.put(qaNeededState,
-        new HashSet<>(Arrays.asList(WorkflowAction.ASSIGN_FROM_SCRATCH)));
+        new HashSet<>(Arrays.asList(WorkflowAction.ASSIGN_FROM_SCRATCH, WorkflowAction.UNASSIGN)));
 
     // workflow states representing record marked for revision, specialist work,
     // and lead QA (incomplete)
-    editingState = new WorkflowPathState("QA_NEW/QA_IN_PROGREss");
+    editingState = new WorkflowPathState("QA_NEW/QA_IN_PROGRESS");
     editingState.addWorkflowCombination(new WorkflowStatusCombination(Arrays
         .asList(WorkflowStatus.REVISION, WorkflowStatus.QA_NEEDED,
             WorkflowStatus.QA_NEW)));
@@ -58,7 +58,7 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
     // and lead QA (complete)
     finishedState = new WorkflowPathState("QA_RESOLVED");
     finishedState.addWorkflowCombination(new WorkflowStatusCombination(Arrays
-        .asList(WorkflowStatus.REVISION, WorkflowStatus.REVIEW_NEEDED,
+        .asList(WorkflowStatus.REVISION, WorkflowStatus.QA_NEEDED,
             WorkflowStatus.QA_RESOLVED)));
     trackingRecordStateToActionMap.put(
         finishedState,
@@ -75,9 +75,11 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
 
     // first, validate the tracking record itself
     ValidationResult result = validateTrackingRecord(tr);
-    if (result.isValid()) {
+    if (!result.isValid()) {
       result
           .addError("Could not validate action for user due to workflow errors.");
+      System.out.println("  " + tr.getUserAndWorkflowStatusPairs() + " - " + action + " - " + user);
+      System.out.println("  " + this.getWorkflowCombinationForTrackingRecord(tr).toString());
       return result;
     }
 
@@ -104,27 +106,30 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
     // Switch on workflow path state //
     // /////////////////////////////////
 
-    // Record requirement : No record
-    // Permissible action : ASSIGN_FROM_SCRATCH
-    // Minimum role : Specialist
-    if (tr == null) {
-      
-    }
-    else if (state.equals(qaNeededState)) {
+    if (state.equals(qaNeededState)) {
 
-      // check record
-      if (currentRecord != null) {
-        result.addError("User record does not meet requirements");
-      }
+      // check record -- null means none assigned
+      if (currentRecord == null) {
 
-      // check role
-      if (!userRole.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
-        result.addError("User does not have required role");
-      }
-
-      // check action
-      if (action.equals(WorkflowAction.ASSIGN_FROM_SCRATCH)) {
-        result.addError("Action is not permitted.");
+        // check role
+        if (!userRole.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
+          result.addError("User does not have required role");
+        }
+  
+        // check action
+        if (!action.equals(WorkflowAction.ASSIGN_FROM_SCRATCH)) {
+          result.addError("Action is not permitted.");
+        }
+      } else {
+        
+        // check role
+        // qa user does not have role requirements for unassign
+        
+        // check action
+        if (!action.equals(WorkflowAction.UNASSIGN)) {
+          result.addError("Action is not permitted.");
+        }
+        
       }
 
       // STATE: Specialist level work
@@ -137,9 +142,9 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
       if (currentRecord == null) {
         result.addError("User must have a record");
       } else if (!currentRecord.getWorkflowStatus().equals(
-          WorkflowStatus.REVIEW_NEW)
+          WorkflowStatus.QA_NEW)
           && !currentRecord.getWorkflowStatus().equals(
-              WorkflowStatus.REVIEW_IN_PROGRESS)) {
+              WorkflowStatus.QA_IN_PROGRESS)) {
         result.addError("User's record does not meet requirements");
       }
 
@@ -160,7 +165,7 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
       if (currentRecord == null) {
         result.addError("User must have a record");
       } else if (!currentRecord.getWorkflowStatus().equals(
-          WorkflowStatus.REVIEW_RESOLVED)) {
+          WorkflowStatus.QA_RESOLVED)) {
         result.addError("User's record does meet requirements");
       }
 
