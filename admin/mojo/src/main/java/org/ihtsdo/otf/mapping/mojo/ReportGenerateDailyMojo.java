@@ -99,10 +99,17 @@ public class ReportGenerateDailyMojo extends AbstractMojo {
         // retrieve the map project objects
         for (String id : refsetIds) {
           mapProject = mappingService.getMapProjectForRefSetId(id);
+          getLog().info(
+              "  Found project " + mapProject.getId() + " "
+                  + mapProject.getName());
           mapProjects.add(mapProject);
         }
       } else {
-        for (MapProject project : mappingService.getMapProjects().getMapProjects()) {
+        for (MapProject project : mappingService.getMapProjects()
+            .getMapProjects()) {
+          getLog().info(
+              "  Found project " + project.getId() + " "
+                  + project.getName());
           mapProjects.add(project);
         }
       }

@@ -1,7 +1,7 @@
 package org.ihtsdo.otf.mapping.helpers;
 
 /**
- * The Enum WorkflowStatus.
+ * Enum for workflow status values.  Comprehensive for all workflow paths.
  */
 
 public enum WorkflowStatus {

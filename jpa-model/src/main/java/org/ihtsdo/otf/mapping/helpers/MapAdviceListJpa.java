@@ -14,8 +14,6 @@ import org.ihtsdo.otf.mapping.model.MapAdvice;
 
 /**
  * JAXB enabled implementation of {@link MapAdviceList}.
- * 
- * @author ${author}
  */
 @XmlRootElement(name = "mapAdviceList")
 public class MapAdviceListJpa extends AbstractResultList<MapAdvice> implements

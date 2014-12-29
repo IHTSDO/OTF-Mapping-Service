@@ -30,8 +30,6 @@ import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
 /**
  * Services for interacting with mapping objects.
- *
- * @author ${author}
  */
 public interface MappingService extends RootService {
 
