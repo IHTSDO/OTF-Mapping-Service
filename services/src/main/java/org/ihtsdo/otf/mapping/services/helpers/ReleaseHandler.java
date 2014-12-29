@@ -7,8 +7,6 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 
 /**
  * Generically represents a handler for performing a release.
- *
- * @author ${author}
  */
 public interface ReleaseHandler {
 

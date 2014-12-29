@@ -5,7 +5,7 @@ import java.util.List;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 
 /**
- * Represents a sortable list of {@link ComplexMapRefSetMember}
+ * Represents a sortable list of {@link ComplexMapRefSetMember}.
  */
 public interface ComplexMapRefSetMemberList extends
     ResultList<ComplexMapRefSetMember> {

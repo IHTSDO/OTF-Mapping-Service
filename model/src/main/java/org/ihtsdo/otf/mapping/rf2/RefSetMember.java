@@ -1,7 +1,7 @@
 package org.ihtsdo.otf.mapping.rf2;
 
 /**
- * Represents a reference set member
+ * Generically represents a reference set member
  */
 public interface RefSetMember extends Component {
 
