@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The Class WorkflowStatusCombination.
- *
+ * Represents a collection of workflow status values that is allowed for a
+ * {@link WorkflowPathState}.
  */
 public class WorkflowStatusCombination {
 
@@ -23,9 +23,10 @@ public class WorkflowStatusCombination {
   public WorkflowStatusCombination() {
 
   }
-  
+
   /**
-   * Instantiates a {@link WorkflowStatusCombination} from the specified parameters.
+   * Instantiates a {@link WorkflowStatusCombination} from the specified
+   * parameters.
    *
    * @param workflowStatuses the workflow statuses
    */
@@ -34,8 +35,6 @@ public class WorkflowStatusCombination {
       addWorkflowStatus(w);
     }
   }
-
- 
 
   /**
    * Adds the workflow status.
@@ -55,8 +54,6 @@ public class WorkflowStatusCombination {
             .get(workflowStatus) + 1);
 
   }
-  
-  
 
   /**
    * Returns the workflow statuses.
@@ -76,7 +73,6 @@ public class WorkflowStatusCombination {
     this.workflowStatuses = workflowStatuses;
   }
 
-  
   /**
    * Indicates whether or not the workflow combination represents an empty state
    *
@@ -85,9 +81,10 @@ public class WorkflowStatusCombination {
   public boolean isEmpty() {
     return this.workflowStatuses.isEmpty();
   }
-  
+
   /**
-   * Function to return all workflow statuses as a list (duplicate values permitted).
+   * Function to return all workflow statuses as a list (duplicate values
+   * permitted).
    *
    * @return the workflow statuses as list
    */
@@ -101,7 +98,9 @@ public class WorkflowStatusCombination {
     return statuses;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#hashCode()
    */
   @Override
@@ -114,7 +113,9 @@ public class WorkflowStatusCombination {
     return result;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#equals(java.lang.Object)
    */
   @Override
@@ -134,7 +135,9 @@ public class WorkflowStatusCombination {
     return true;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
@@ -142,6 +145,5 @@ public class WorkflowStatusCombination {
     return "WorkflowStatusCombination [workflowStatuses=" + workflowStatuses
         + "]";
   }
-  
-  
+
 }

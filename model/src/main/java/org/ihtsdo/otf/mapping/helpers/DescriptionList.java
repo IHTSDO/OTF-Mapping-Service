@@ -5,7 +5,7 @@ import java.util.List;
 import org.ihtsdo.otf.mapping.rf2.Description;
 
 /**
- * Represents a sortable list of {@link Description}
+ * Represents a sortable list of {@link Description}.
  */
 public interface DescriptionList extends ResultList<Description> {
 

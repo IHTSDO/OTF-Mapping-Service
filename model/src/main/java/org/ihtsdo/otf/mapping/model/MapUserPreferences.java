@@ -3,7 +3,8 @@ package org.ihtsdo.otf.mapping.model;
 import java.util.Map;
 
 /**
- * Represents map user preferences.
+ * Generically represents a user's preferences within the application.
+ * This can be greatly expanded to cover other aspects of application state.
  */
 public interface MapUserPreferences {
 

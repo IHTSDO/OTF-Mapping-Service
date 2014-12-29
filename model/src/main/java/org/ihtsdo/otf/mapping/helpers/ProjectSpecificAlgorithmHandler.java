@@ -12,7 +12,8 @@ import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
 /**
- * The Interface ProjectSpecificAlgorithmHandler.
+ * Represents a collection of project specific algorithms that can override
+ * defaults.
  */
 public interface ProjectSpecificAlgorithmHandler extends Configurable {
 
@@ -213,7 +214,7 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @return the module dependency ref set id
    */
   public String getModuleDependencyRefSetId();
-  
+
   /**
    * Validate for release.
    *
@@ -221,7 +222,8 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @return the validation result
    * @throws Exception the exception
    */
-  public ValidationResult validateForRelease(ComplexMapRefSetMember member) throws Exception;
+  public ValidationResult validateForRelease(ComplexMapRefSetMember member)
+    throws Exception;
 
   /**
    * Returns the default up propagated map relation.

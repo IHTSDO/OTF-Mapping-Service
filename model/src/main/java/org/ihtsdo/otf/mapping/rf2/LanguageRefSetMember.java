@@ -1,7 +1,7 @@
 package org.ihtsdo.otf.mapping.rf2;
 
 /**
- * Represents a language reference set member
+ * Generically represents a language reference set member
  */
 public interface LanguageRefSetMember extends DescriptionRefSetMember {
 
