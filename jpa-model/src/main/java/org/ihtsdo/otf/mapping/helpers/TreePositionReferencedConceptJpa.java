@@ -2,8 +2,6 @@ package org.ihtsdo.otf.mapping.helpers;
 
 /**
  * A tree position with concept info.
- *
- * @author ${author}
  */
 public class TreePositionReferencedConceptJpa implements
     TreePositionReferencedConcept {
