@@ -4,8 +4,8 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Generically represents a conversation regarding feedback from leads to
- * specialists.
+ * Generically represents a conversation regarding {@link Feedback} between
+ * users.
  */
 public interface FeedbackConversation {
 
