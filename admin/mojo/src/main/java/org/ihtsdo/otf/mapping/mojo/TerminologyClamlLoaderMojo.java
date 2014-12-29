@@ -236,8 +236,6 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 
   /**
    * The SAX parser handler.
-   * 
-   * @author ${author}
    */
   class LocalHandler extends DefaultHandler {
 
