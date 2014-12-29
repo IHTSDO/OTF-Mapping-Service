@@ -7,9 +7,7 @@ import javax.persistence.Table;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 
 /**
- * Concrete implementation of {@link ComplexMapRefSetMember}.
- *
- * @author ${author}
+ * JPA enabled implementation of {@link ComplexMapRefSetMember}.
  */
 @Entity
 @Table(name = "complex_map_refset_members")

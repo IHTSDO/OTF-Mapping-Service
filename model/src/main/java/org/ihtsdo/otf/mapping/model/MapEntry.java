@@ -3,7 +3,7 @@ package org.ihtsdo.otf.mapping.model;
 import java.util.Set;
 
 /**
- * The Interface MapEntry.
+ * Generically represents an entry in a {@link MapRecord}.
  */
 public interface MapEntry {
 

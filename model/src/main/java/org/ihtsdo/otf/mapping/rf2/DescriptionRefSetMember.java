@@ -1,7 +1,7 @@
 package org.ihtsdo.otf.mapping.rf2;
 
 /**
- * Represents a reference set member with associated Description
+ * Generically represents a reference set member with associated Description
  */
 public interface DescriptionRefSetMember extends RefSetMember {
 

@@ -37,13 +37,11 @@ import org.junit.After;
 import org.junit.Test;
 
 /**
- * The Class MapRecordJpaTest.
+ * A JUnit test class for {@link MapRecord}.
  * 
  * Provides test cases 1. confirm MapRecord data load returns expected data 2.
  * confirms indexed fields are indexed 3. confirms MapRecord is audited and
  * changes are logged in audit table
- * 
- * @author ${author}
  */
 public class MapRecordJpaTest {
 
