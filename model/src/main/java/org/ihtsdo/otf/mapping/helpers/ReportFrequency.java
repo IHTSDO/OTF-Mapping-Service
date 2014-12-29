@@ -3,7 +3,7 @@ package org.ihtsdo.otf.mapping.helpers;
 import org.ihtsdo.otf.mapping.reports.ReportDefinition;
 
 /**
- * An enum for {@link ReportDefinition} fequencies. y
+ * Enum for {@link ReportDefinition} fequencies.
  */
 public enum ReportFrequency {
 

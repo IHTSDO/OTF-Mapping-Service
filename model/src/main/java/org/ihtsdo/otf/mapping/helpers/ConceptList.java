@@ -5,7 +5,7 @@ import java.util.List;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 
 /**
- * Represents a sortable list of {@link Concept}
+ * Represents a sortable list of {@link Concept}.
  */
 public interface ConceptList extends ResultList<Concept> {
 

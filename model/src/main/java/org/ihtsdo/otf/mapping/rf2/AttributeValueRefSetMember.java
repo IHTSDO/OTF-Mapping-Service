@@ -1,7 +1,7 @@
 package org.ihtsdo.otf.mapping.rf2;
 
 /**
- * Represents an attribute value reference set
+ * Generically represents an attribute value reference set
  */
 public interface AttributeValueRefSetMember extends ConceptRefSetMember {
 
