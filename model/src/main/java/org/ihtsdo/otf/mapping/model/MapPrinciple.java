@@ -1,9 +1,7 @@
 package org.ihtsdo.otf.mapping.model;
 
 /**
- * The interface object for MapPrinciple
- * @author Patrick
- * 
+ * Generically represents a map principle from a mapping handbook/guidebook.
  */
 public interface MapPrinciple {
 

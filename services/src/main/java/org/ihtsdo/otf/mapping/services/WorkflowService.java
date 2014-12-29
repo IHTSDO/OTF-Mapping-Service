@@ -341,7 +341,7 @@ public interface WorkflowService extends RootService {
    * QA check: Check that workflow state for all current records is valid.
    *
    * @param mapProject the map project
-   * @return 
+   * @return the validation result
    * @throws Exception the exception
    */
   public ValidationResult computeWorkflowStatusErrors(MapProject mapProject)

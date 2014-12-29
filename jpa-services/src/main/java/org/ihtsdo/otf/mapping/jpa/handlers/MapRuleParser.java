@@ -16,8 +16,6 @@ import java.util.Stack;
 
 /**
  * Parser for map rule clauses.
- *
- * @author ${author}
  */
 public class MapRuleParser {
   
@@ -111,9 +109,7 @@ public class MapRuleParser {
   }
 
   /**
-   * The Class Action.
-   *
-   * @author ${author}
+   * Represents a parser action.
    */
   private class Action {
       
@@ -163,9 +159,7 @@ public class MapRuleParser {
   }
 
   /**
-   * The Enum ActionType.
-   *
-   * @author ${author}
+   * The action type enum.
    */
   private enum ActionType {
       
@@ -181,8 +175,6 @@ public class MapRuleParser {
 
   /**
    * The Class Dfa.
-   *
-   * @author ${author}
    */
   private class Dfa {
       
@@ -261,8 +253,6 @@ public class MapRuleParser {
 
   /**
    * The Class CompressedMatrix.
-   *
-   * @author ${author}
    * @param <T> the
    */
   private class CompressedMatrix<T> {

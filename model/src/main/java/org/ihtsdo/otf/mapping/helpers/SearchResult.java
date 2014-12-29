@@ -1,9 +1,7 @@
 package org.ihtsdo.otf.mapping.helpers;
 
 /**
- * Generic object to contain search results
- * @author Patrick
- * 
+ * Generically represents a search result.
  */
 public interface SearchResult {
 
