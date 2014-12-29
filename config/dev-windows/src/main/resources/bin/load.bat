@@ -56,7 +56,7 @@ del /Q mvn.log
 
 echo     Load ICD10 ...%date% %time%
 cd %MAPPING_CODE%/admin/loader
-call mvn install -PClaML -Drun.config=%MAPPING_CONFIG% -Dterminology=ICD10 -Dversion=2010-Dinput.file=%MAPPING_DATA%/icd10-2010.xml 1> mvn.log
+call mvn install -PClaML -Drun.config=%MAPPING_CONFIG% -Dterminology=ICD10 -Dversion=2010 -Dinput.file=%MAPPING_DATA%/icd10-2010.xml 1> mvn.log
 IF %ERRORLEVEL% NEQ 0 (set error=1
 goto trailer)
 del /Q mvn.log
