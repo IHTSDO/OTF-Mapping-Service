@@ -87,8 +87,9 @@ public class WorkflowStatusCombination {
   }
   
   /**
-   * Function to return all workflow statuses as a list (duplicate values permitted)
-   * @return
+   * Function to return all workflow statuses as a list (duplicate values permitted).
+   *
+   * @return the workflow statuses as list
    */
   public List<WorkflowStatus> getWorkflowStatusesAsList() {
     List<WorkflowStatus> statuses = new ArrayList<>();

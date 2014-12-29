@@ -4,9 +4,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * The Class WorkflowPathState.
- *
- * @author ${author}
+ * Represents a combination of workflow states with allowed workflow status
+ * combinations and allowed actions.
  */
 public class WorkflowPathState {
 
