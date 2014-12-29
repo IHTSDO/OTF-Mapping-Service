@@ -14,8 +14,6 @@ import org.ihtsdo.otf.mapping.model.MapAgeRange;
 
 /**
  * JAXB enabled implementation of {@link MapAgeRangeList}.
- * 
- * @author ${author}
  */
 @XmlRootElement(name = "mapAgeRangeList")
 public class MapAgeRangeListJpa extends AbstractResultList<MapAgeRange>
