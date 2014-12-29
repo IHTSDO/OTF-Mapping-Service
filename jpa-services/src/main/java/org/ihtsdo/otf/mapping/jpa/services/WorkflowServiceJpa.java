@@ -2947,9 +2947,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
             .createQuery(
                 "select m from FeedbackConversationJpa m where terminology = :terminology and"
                     + " terminologyVersion = :terminologyVersion and terminologyId = :terminologyId")
-            .setParameter("terminology", mapProject.getDestinationTerminology())
+            .setParameter("terminology", mapProject.getSourceTerminology())
             .setParameter("terminologyVersion",
-                mapProject.getDestinationTerminologyVersion())
+                mapProject.getSourceTerminologyVersion())
             .setParameter("terminologyId", terminologyId);
 
     List<FeedbackConversation> feedbackConversations = query.getResultList();
@@ -3003,9 +3003,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         constructMapProjectIdQuery(mapProject.getId(), modifiedQuery);
 
     full_query +=
-        " AND terminology:" + mapProject.getDestinationTerminology()
+        " AND terminology:" + mapProject.getSourceTerminology()
             + " AND terminologyVersion:"
-            + mapProject.getDestinationTerminologyVersion() + " AND "
+            + mapProject.getSourceTerminologyVersion() + " AND "
             + "( feedbacks.sender.userName:" + userName + " OR "
             + "feedbacks.recipients.userName:" + userName + ")";
 
