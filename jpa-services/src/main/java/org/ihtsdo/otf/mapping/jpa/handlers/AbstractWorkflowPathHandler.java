@@ -94,10 +94,10 @@ public abstract class AbstractWorkflowPathHandler implements
     Map<WorkflowPathState, Set<WorkflowAction>> trackingRecordStateToActionMap) {
     this.trackingRecordStateToActionMap = trackingRecordStateToActionMap;
   }
-  
+
   /**
    * Helper function to return all combinations legal for this workflow.
-   *
+   * 
    * @return the workflow status combinations
    */
   public Set<WorkflowStatusCombination> getWorkflowStatusCombinations() {
@@ -119,7 +119,7 @@ public abstract class AbstractWorkflowPathHandler implements
     throws Exception {
 
     ValidationResult result = new ValidationResultJpa();
-    
+
     if (trackingRecord == null) {
       result.addWarning("Result generated for null tracking record");
       return result;
@@ -139,7 +139,9 @@ public abstract class AbstractWorkflowPathHandler implements
     } else if (!isWorkflowCombinationInTrackingRecordStates(workflowCombination)) {
       result
           .addError("Tracking record has invalid combination of reported workflow statuses for "
-              + trackingRecord.getWorkflowPath() + ": " + workflowCombination.toString());
+              + trackingRecord.getUserAndWorkflowStatusPairs()
+              + ": "
+              + workflowCombination.toString());
     }
 
     // if invalid, return now
@@ -208,8 +210,8 @@ public abstract class AbstractWorkflowPathHandler implements
     TrackingRecord trackingRecord, WorkflowAction action, MapUser mapUser)
     throws Exception {
 
-    // NOTE:  This function MUST be overwritten in 
-   return null;
+    // NOTE: This function MUST be overwritten in
+    return null;
   }
 
   // //////////////////////////////////////////////
@@ -226,7 +228,7 @@ public abstract class AbstractWorkflowPathHandler implements
     TrackingRecord tr) {
     WorkflowStatusCombination workflowCombination =
         new WorkflowStatusCombination();
-    
+
     if (tr == null) {
       return workflowCombination;
     }
@@ -234,6 +236,7 @@ public abstract class AbstractWorkflowPathHandler implements
     if (tr.getUserAndWorkflowStatusPairs() != null) {
 
       for (String pair : tr.getUserAndWorkflowStatusPairs().split(" ")) {
+
         workflowCombination.addWorkflowStatus(WorkflowStatus.valueOf(pair
             .substring(0, pair.lastIndexOf("_"))));
       }
@@ -252,12 +255,12 @@ public abstract class AbstractWorkflowPathHandler implements
   public MapRecordList getMapRecordsForTrackingRecord(TrackingRecord tr)
     throws Exception {
     MapRecordList mapRecords = new MapRecordListJpa();
-    
+
     if (tr == null)
       return mapRecords;
-    
+
     MappingService mappingService = new MappingServiceJpa();
-    
+
     for (Long id : tr.getMapRecordIds()) {
       mapRecords.addMapRecord(mappingService.getMapRecord(id));
     }
@@ -332,14 +335,15 @@ public abstract class AbstractWorkflowPathHandler implements
     TrackingRecord trackingRecord) {
     return getWorkflowStateForWorkflowCombination(getWorkflowCombinationForTrackingRecord(trackingRecord));
   }
-  
+
   /**
    * Returns the workflow state for a given workflow combination.
-   *
+   * 
    * @param combination the combination
    * @return the workflow path state for workflow status combination
    */
-  public WorkflowPathState getWorkflowPathStateForWorkflowStatusCombination(WorkflowStatusCombination combination) {
+  public WorkflowPathState getWorkflowPathStateForWorkflowStatusCombination(
+    WorkflowStatusCombination combination) {
     for (WorkflowPathState state : trackingRecordStateToActionMap.keySet()) {
       if (state.contains(combination))
         return state;

@@ -101,17 +101,19 @@ public class WorkflowReviewProjectPathHandler extends
 
     // first, validate the tracking record itself
     ValidationResult result = validateTrackingRecord(tr);
-    if (result.isValid()) {
+    if (!result.isValid()) {
       result
-          .addError("Could not validate action for user due to workflow errors.");
+          .addError("Could not validate action for user due to workflow errors.");   
       return result;
     }
-
+    
+  
     // second, check for CANCEL action -- always valid for this path for any
     // state or user (no-op)
     if (action.equals(WorkflowAction.CANCEL)) {
-      return result;
+       return result;
     }
+    
 
     // third, get the user role for this map project
     MappingService mappingService = new MappingServiceJpa();
@@ -119,13 +121,13 @@ public class WorkflowReviewProjectPathHandler extends
         mappingService.getMapUserRoleForMapProject(user.getUserName(),
             tr.getMapProjectId());
     mappingService.close();
-
+    
     // fourth, get the map records and workflow path state from the tracking
     // record
     MapRecordList mapRecords = getMapRecordsForTrackingRecord(tr);
     MapRecord currentRecord = getCurrentMapRecordForUser(mapRecords, user);
     WorkflowPathState state = this.getWorkflowStateForTrackingRecord(tr);
-
+    
     // /////////////////////////////////
     // Switch on workflow path state //
     // /////////////////////////////////
@@ -134,7 +136,7 @@ public class WorkflowReviewProjectPathHandler extends
     // Permissible action : ASSIGN_FROM_SCRATCH
     // Minimum role : Specialist
     if (state.equals(initialState)) {
-
+  
       // check record
       if (currentRecord != null) {
         result.addError("User record does not meet requirements");
@@ -146,7 +148,7 @@ public class WorkflowReviewProjectPathHandler extends
       }
 
       // check action
-      if (action.equals(WorkflowAction.ASSIGN_FROM_SCRATCH)) {
+      if (!action.equals(WorkflowAction.ASSIGN_FROM_SCRATCH)) {
         result.addError("Action is not permitted.");
       }
 
@@ -281,6 +283,8 @@ public class WorkflowReviewProjectPathHandler extends
           && !action.equals(WorkflowAction.PUBLISH)) {
         result.addError("Action is not permitted.");
       }
+    } else  {
+      result.addError("Could not determine workflow state for tracking record");
     }
 
     return result;
