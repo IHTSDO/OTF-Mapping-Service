@@ -72,7 +72,6 @@ public class ReportGenerateDailyMojo extends AbstractMojo {
 
     ReportService reportService = null;
     MapUser mapUser = null;
-    MapProject mapProject = null;
     try {
 
       reportService = new ReportServiceJpa();
@@ -119,7 +118,7 @@ public class ReportGenerateDailyMojo extends AbstractMojo {
 
       // Generate reports for all projects
       for (MapProject mp : mapProjects) {
-        getLog().info("  Generate reports for project " + mapProject.getName());
+        getLog().info("  Generate reports for project " + mp.getName());
         reportService.generateReportsForDateRange(mp, mapUser, start, end);
       }
 
