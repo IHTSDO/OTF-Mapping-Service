@@ -1,8 +1,8 @@
 package org.ihtsdo.otf.mapping.helpers;
 
 /**
- * Enumerated types of queries for report. Determines type of handler to be
- * used.
+ * Enum of query types for report. Determines type of handler to be used. NONE
+ * is used for "diff" reports.
  */
 public enum ReportQueryType {
 
@@ -13,8 +13,8 @@ public enum ReportQueryType {
   HQL,
 
   /** SQL type. */
-  SQL, 
-  
+  SQL,
+
   /** No query used, no query type */
   NONE
 }

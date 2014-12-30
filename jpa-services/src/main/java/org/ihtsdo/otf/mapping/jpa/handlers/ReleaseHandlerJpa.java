@@ -127,8 +127,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
   /**
    * The Enum for statistics reporting.
-   *
-   * @author ${author}
    */
   private enum Stats {
 

@@ -3,7 +3,7 @@ package org.ihtsdo.otf.mapping.model;
 import java.util.Date;
 
 /**
- * Represents a map note.
+ * Generically represents a map note.
  */
 public interface MapNote {
 

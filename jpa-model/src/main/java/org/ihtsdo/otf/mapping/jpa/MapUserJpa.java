@@ -21,9 +21,7 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * The Class MapUserJpa.
- * 
- * @author ${author}
+ * A JPA-enabled implementation of {@link MapUser}.
  */
 @Entity
 @Table(name = "map_users")
