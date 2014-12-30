@@ -102,7 +102,8 @@ public class QaDatabase extends AbstractMojo {
             msg.append("    " + result).append("\r\n");
           }
           if (errors.get(key).size() > 9) {
-            msg.append("    ... " + errors.get(key).size() + " items failed check.\r\n");
+            msg.append("    ... ");
+            // the true count is not known because setMaxResults(10) is used.
           }
         }
 
