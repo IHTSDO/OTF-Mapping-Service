@@ -1,8 +1,7 @@
 package org.ihtsdo.otf.mapping.helpers;
 
 /**
- * The Enum RelationSytle specifying what type of relation style a map project
- * uses.
+ * Enum representingfwhat type of relation style a map project uses.
  */
 public enum RelationStyle {
 

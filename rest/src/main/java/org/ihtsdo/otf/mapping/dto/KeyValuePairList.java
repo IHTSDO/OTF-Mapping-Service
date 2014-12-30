@@ -8,8 +8,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Container for key value pairs (e.g., id, name metadata tuples).
- * 
- * @author ${author}
  */
 @XmlRootElement(name = "keyValuePairList")
 public class KeyValuePairList {
