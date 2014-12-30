@@ -29,8 +29,6 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
 
     setEmptyWorkflowAllowed(false);
 
-    WorkflowPathState state;
-
     // STATE: Initial state has no tracking record
 
     // workflow states representing a record marked for revision and the

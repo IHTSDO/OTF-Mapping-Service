@@ -804,6 +804,52 @@ angular
             });
           $scope.updateMapProject();
         };
+        
+        $scope.deleteAdministrator = function(administrator) {
+          console.debug("in deleteAdministrator");
+          for (var j = 0; j < $scope.focusProject.mapAdministrator.length; j++) {
+            if (administrator.userName === $scope.focusProject.mapAdministrator[j].userName) {
+              $scope.focusProject.mapAdministrator.splice(j, 1);
+            }
+          }
+          // update and broadcast the updated focus
+          // project
+          localStorageService.set('focusProject', $scope.focusProject);
+          $rootScope.$broadcast(
+            'localStorageModule.notification.setFocusProject', {
+              key : 'focusProject',
+              focusProject : $scope.focusProject
+            });
+        };
+        
+        $scope.addAdministrator = function(user) {
+          console.debug("in addAdministrator");
+          for (var i = 0; i < $scope.focusProject.mapLead.length; i++) {
+            if ($scope.focusProject.mapLead[i].name == user.name) {
+              confirm("User "
+                + user.name
+                + " is already a Map Lead.\nUser cannot have more than one role.");
+              return;
+            }
+          }
+          for (var i = 0; i < $scope.focusProject.mapSpecialist.length; i++) {
+            if ($scope.focusProject.mapSpecialist[i].name == user.name) {
+              confirm("User "
+                + user.name
+                + " is already a Map Specialist.\nUser cannot have more than one role.");
+              return;
+            }
+          }
+          $scope.focusProject.mapAdministrator.push(user);
+          // update and broadcast the updated focus
+          // project
+          localStorageService.set('focusProject', $scope.focusProject);
+          $rootScope.$broadcast(
+            'localStorageModule.notification.setFocusProject', {
+              key : 'focusProject',
+              focusProject : $scope.focusProject
+            });
+        };
 
         $scope.deleteLead = function(lead) {
           console.debug("in deleteLead");
@@ -824,6 +870,14 @@ angular
 
         $scope.addLead = function(user) {
           console.debug("in addLead");
+          for (var i = 0; i < $scope.focusProject.mapAdministrator.length; i++) {
+            if ($scope.focusProject.mapAdministrator[i].name == user.name) {
+              confirm("User "
+                + user.name
+                + " is already a Map Administrator.\nUser cannot have more than one role.");
+              return;
+            }
+          }
           for (var i = 0; i < $scope.focusProject.mapSpecialist.length; i++) {
             if ($scope.focusProject.mapSpecialist[i].name == user.name) {
               confirm("User "
@@ -867,6 +921,14 @@ angular
               confirm("User "
                 + user.name
                 + " is already a Map Lead.\nUser cannot have more than one role.");
+              return;
+            }
+          }
+          for (var i = 0; i < $scope.focusProject.mapAdministrator.length; i++) {
+            if ($scope.focusProject.mapAdministrator[i].name == user.name) {
+              confirm("User "
+                + user.name
+                + " is already a Map Administrator.\nUser cannot have more than one role.");
               return;
             }
           }
