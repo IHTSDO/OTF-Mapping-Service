@@ -100,7 +100,56 @@
   </tbody>
 </table>
 <p></p>
-</accordion-group> <accordion-group
+</accordion-group> 
+<accordion-group
+  ng-show="focusProject.mapAdministrator.length > 0 || editModeEnabled == true">
+<accordion-heading>
+<h5>
+  <span tooltip-placement="right"
+    tooltip="List of the map administrators for this project."> Map Administrators </span>
+</h5>
+</accordion-heading>
+<table width="100%" class="table pure-table">
+  <thead>
+    <tr>
+      <th style="width: 30%;">User</th>
+      <th style="width: 20%;">User Name</th>
+      <th style="width: 47%;">Email</th>
+      <th style="width: 3%;"></th>
+    </tr>
+  </thead>
+  <tbody ng-repeat="administrator in focusProject.mapAdministrator"
+    style="border: 2px solid #ccc;">
+    <tr>
+      <td>{{administrator.name}}</td>
+      <td>{{administrator.userName}}</td>
+      <td ng-show="isEmailViewable(administrator.email) == true">{{administrator.email}}</td>
+      <td ng-show="isEmailViewable(administrator.email) == false">Private email</td>
+      <td ng-show="editModeEnabled == true"><i
+        class="glyphicon glyphicon-remove" ng-click="deleteAdministrator(administrator)"></i></td>
+      <td ng-show="editModeEnabled == false"></td>
+    </tr>
+  </tbody>
+</table>
+
+<table ng-show="editModeEnabled == true" width="50%" class="table pure-table">
+  <thead>
+    <tr>
+      <th style="width: 97%;">Add Map Administrator</th>
+      <th style="width: 3%;"></th>
+    </tr>
+  </thead>
+  <tbody ng-repeat="mapUser in mapUsers | elementFilter:focusProject.mapAdministrator">
+    <tr>
+      <td>{{mapUser.name}}</td>
+      <td><i class="glyphicon glyphicon-plus" ng-click="addAdministrator(mapUser)"></i></td>
+    </tr>
+  </tbody>
+</table>
+
+</accordion-group> 
+
+<accordion-group
   ng-show="focusProject.mapLead.length > 0 || editModeEnabled == true">
 <accordion-heading>
 <h5>
