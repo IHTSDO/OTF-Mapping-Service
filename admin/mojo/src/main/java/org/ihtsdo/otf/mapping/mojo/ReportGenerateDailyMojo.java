@@ -72,7 +72,6 @@ public class ReportGenerateDailyMojo extends AbstractMojo {
 
     ReportService reportService = null;
     MapUser mapUser = null;
-    MapProject mapProject = null;
     try {
 
       reportService = new ReportServiceJpa();
@@ -98,7 +97,7 @@ public class ReportGenerateDailyMojo extends AbstractMojo {
 
         // retrieve the map project objects
         for (String id : refsetIds) {
-          mapProject = mappingService.getMapProjectForRefSetId(id);
+          MapProject mapProject = mappingService.getMapProjectForRefSetId(id);
           getLog().info(
               "  Found project " + mapProject.getId() + " "
                   + mapProject.getName());
@@ -108,8 +107,7 @@ public class ReportGenerateDailyMojo extends AbstractMojo {
         for (MapProject project : mappingService.getMapProjects()
             .getMapProjects()) {
           getLog().info(
-              "  Found project " + project.getId() + " "
-                  + project.getName());
+              "  Found project " + project.getId() + " " + project.getName());
           mapProjects.add(project);
         }
       }
@@ -119,7 +117,7 @@ public class ReportGenerateDailyMojo extends AbstractMojo {
 
       // Generate reports for all projects
       for (MapProject mp : mapProjects) {
-        getLog().info("  Generate reports for project " + mapProject.getName());
+        getLog().info("  Generate reports for project " + mp.getName());
         reportService.generateReportsForDateRange(mp, mapUser, start, end);
       }
 
@@ -132,12 +130,8 @@ public class ReportGenerateDailyMojo extends AbstractMojo {
       e.printStackTrace();
       // Send email if something went wrong
       OtfErrorHandler errorHandler = new OtfErrorHandler();
-      errorHandler.handleException(
-          e,
-          "Error generating reports",
-          "admin mojo",
-          mapProject == null ? "Project could not be retrieved" : mapProject
-              .getName(), "");
+      errorHandler.handleException(e, "Error generating reports", "admin mojo",
+          refsetId == null ? "Project could not be retrieved" : refsetId, "");
       throw new MojoFailureException("Unexpected exception:", e);
     }
   }

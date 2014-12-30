@@ -101,6 +101,9 @@ public class QaDatabase extends AbstractMojo {
           for (String result : errors.get(key)) {
             msg.append("    " + result).append("\r\n");
           }
+          if (errors.get(key).size() > 9) {
+            msg.append("    ... ");
+            // the true count is not known because setMaxResults(10) is used.
         }
 
         OtfEmailHandler emailHandler = new OtfEmailHandler();

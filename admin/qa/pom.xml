@@ -74,9 +74,11 @@
                       <value>
                         SELECT mapRecord_id, id, rule FROM map_entries
                         WHERE rule != '' AND mapRecord_id in
-                        (SELECT id FROM map_records
+                        (SELECT id FROM
+                        map_records
                         WHERE mapProjectId in
-                        (SELECT id FROM map_projects WHERE ruleBased = 0));
+                        (SELECT id FROM
+                        map_projects WHERE ruleBased = 0));
                       </value>
                     </property>
 
@@ -85,9 +87,11 @@
                       <value>
                         SELECT mapRecord_id, id, rule FROM map_entries
                         WHERE rule = '' AND mapRecord_id in
-                        (SELECT id FROM map_records
+                        (SELECT id FROM
+                        map_records
                         WHERE mapProjectId in
-                        (SELECT id FROM map_projects WHERE ruleBased = 1));
+                        (SELECT id FROM
+                        map_projects WHERE ruleBased = 1));
                       </value>
                     </property>
 
@@ -95,19 +99,23 @@
                       <name>Validate map entry targetId is never null</name>
                       <value>
                         SELECT mapRecord_id, id FROM map_entries
-                        WHERE targetId is null;
+                        WHERE
+                        targetId is null;
                       </value>
                     </property>
 
                     <property>
-                      <name>Validate active concept default preferred names - SNOMEDCT</name>
+                      <name>Validate active concept default preferred names -
+                        SNOMEDCT</name>
                       <value>
                         SELECT terminologyId, defaultPreferredName
                         FROM
                         concepts a
-                        WHERE terminology = 'SNOMEDCT' AND NOT EXISTS
+                        WHERE a.active = 1 AND terminology =
+                        'SNOMEDCT' AND NOT EXISTS
                         (SELECT * FROM descriptions b, language_refset_members c
-                        WHERE a.id = b.concept_id AND a.active = 1
+                        WHERE a.id =
+                        b.concept_id
                         AND b.active = 1 AND c.active =
                         1
                         AND b.id = c.description_id
@@ -195,8 +203,10 @@
                         (SELECT *
                         FROM concepts b
                         WHERE a.refSetId = b.terminologyId
-                        AND a.sourceTerminology = b.terminology
-                        AND a.sourceTerminologyVersion = b.terminologyVersion);
+                        AND
+                        a.sourceTerminology = b.terminology
+                        AND
+                        a.sourceTerminologyVersion = b.terminologyVersion);
                       </value>
                     </property>
 
@@ -391,27 +401,12 @@
                       </value>
                     </property>
 
-  <!-- Interesting but not a requirement
-                    <property>
-                      <name>No orphaned users</name>
-                      <value>
-                        SELECT id, userName FROM map_users a
-                        WHERE applicationRole != 'VIEWER' and NOT
-                        EXISTS
-                        (SELECT * FROM map_projects_map_specialists b
-                        WHERE a.id = b.map_users_id
-                        UNION
-                        SELECT * FROM
-                        map_projects_map_leads b WHERE a.id = b.map_users_id
-                        UNION
-                        SELECT * FROM map_projects_map_administrators b
-                        WHERE a.id =
-                        b.map_users_id)
-                        AND userName NOT IN
-                        ('default','guest','legacy','loader','qa');
-                      </value>
-                    </property>
- -->
+                    <!-- Interesting but not a requirement <property> <name>No orphaned 
+                      users</name> <value> SELECT id, userName FROM map_users a WHERE applicationRole != 
+                      'VIEWER' and NOT EXISTS (SELECT * FROM map_projects_map_specialists b WHERE a.id 
+                      = b.map_users_id UNION SELECT * FROM map_projects_map_leads b WHERE a.id = b.map_users_id 
+                      UNION SELECT * FROM map_projects_map_administrators b WHERE a.id = b.map_users_id) 
+                      AND userName NOT IN ('default','guest','legacy','loader','qa'); </value> </property> -->
                     <property>
                       <name>Workflow exceptions have valid projects</name>
                       <value>
@@ -453,18 +448,6 @@
                         tracking_records b
                         WHERE a.mapProjectId = b.mapProjectId
                         AND a.conceptId = b.terminologyId);
-                      </value>
-                    </property>
-
-                    <property>
-                      <name>Map entries with null instead of blank target code</name>
-                      <value>
-                        SELECT b.conceptId, b.mapProjectId
-                        FROM map_entries
-                        a, map_records b
-                        WHERE a.mapRecord_id = b.id
-                        AND targetId
-                        is null;
                       </value>
                     </property>
 
