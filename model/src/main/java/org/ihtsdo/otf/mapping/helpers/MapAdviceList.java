@@ -5,7 +5,7 @@ import java.util.List;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 
 /**
- * Represents a sortable list of {@link MapAdvice}
+ * Represents a sortable list of {@link MapAdvice}.
  */
 public interface MapAdviceList extends ResultList<MapAdvice> {
 

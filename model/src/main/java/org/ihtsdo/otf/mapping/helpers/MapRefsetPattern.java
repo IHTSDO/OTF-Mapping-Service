@@ -1,8 +1,7 @@
 package org.ihtsdo.otf.mapping.helpers;
 
 /**
- * The Enum MapRefsetPattern specifying what map refset pattern a map project
- * uses.
+ * Enum specifying what map refset pattern a map project uses.
  */
 public enum MapRefsetPattern {
 

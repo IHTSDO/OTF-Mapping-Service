@@ -45,9 +45,7 @@ public class InitializationListener implements AbstractResourceModelListener {
   }
 
   /**
-   * The Class ComputeCompareFinishedRecordsTask.
-   * 
-   * @author ${author}
+   * The task to run.
    */
   class ComputeCompareFinishedRecordsTask extends TimerTask {
 

@@ -1,9 +1,7 @@
 package org.ihtsdo.otf.mapping.model;
 
 /**
- * The interface for a preset age range used to construct rules for MapEntry.
- * 
- * @author Patrick
+ * Generically represents an age range for a map rule.
  */
 public interface MapAgeRange {
 

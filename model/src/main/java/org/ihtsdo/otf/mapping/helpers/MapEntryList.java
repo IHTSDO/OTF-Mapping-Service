@@ -5,7 +5,7 @@ import java.util.List;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 
 /**
- * Represents a sortable list of {@link MapEntry}
+ * Represents a sortable list of {@link MapEntry}.
  */
 public interface MapEntryList extends ResultList<MapEntry> {
   /**

@@ -1,7 +1,7 @@
 package org.ihtsdo.otf.mapping.rf2;
 
 /**
- * Represents a complex map reference set member
+ * Generically represents a complex map reference set member
  */
 public interface ComplexMapRefSetMember extends ConceptRefSetMember {
 
