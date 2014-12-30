@@ -40,7 +40,7 @@ public class CreateMapAdministratorMojo extends AbstractMojo {
    */
   @Override
   public void execute() throws MojoExecutionException {
-    getLog().info("Start creating a blank project");
+    getLog().info("Start creating an admin user");
     getLog().info("  mapUser = " + mapUser);
 
     if (mapUser == null)
@@ -54,7 +54,7 @@ public class CreateMapAdministratorMojo extends AbstractMojo {
       MapUser newAdmin = null;
       try {
         newAdmin = mappingService.getMapUser(mapUser);
-        
+
         // set the application role to ADMINISTRATOR and update user
         newAdmin.setApplicationRole(MapUserRole.ADMINISTRATOR);
         mappingService.updateMapUser(newAdmin);
@@ -68,66 +68,41 @@ public class CreateMapAdministratorMojo extends AbstractMojo {
         mappingService.addMapUser(newAdmin);
       }
 
-      // create a new project
-      String projectName = "Blank Project";
-
       MapProjectList mapProjects = mappingService.getMapProjects();
 
-      boolean projectExists = false;
-      do {
+      if (mapProjects.getCount() == 0) {
 
-        for (MapProject mapProject : mapProjects.getMapProjects()) {
-          if (mapProject.getName().equals(projectName))
-            projectExists = true;
-        }
-        
-        if (projectExists == true) {
+        // create a blank project
+        MapProject project = new MapProjectJpa();
+        project.setDestinationTerminology("");
+        project.setDestinationTerminologyVersion("");
+        project.setGroupStructure(false);
+        project.setMapRefsetPattern(MapRefsetPattern.SimpleMap);
+        project.setMapRelationStyle(RelationStyle.MAP_CATEGORY_STYLE);
+        project.setName("Blank Project");
+        project.setPropagatedFlag(false);
+        project.setPropagationDescendantThreshold(0);
+        project.setPublic(false);
+        project.setPublished(false);
+        project.setRefSetId("");
+        project.setRefSetName("");
+        project.setRuleBased(false);
+        project.setSourceTerminology("");
+        project.setSourceTerminologyVersion("");
+        project.setWorkflowType(WorkflowType.CONFLICT_PROJECT);
 
-          // if project name ends in character, increment it
-          if (Character.isDigit(projectName.charAt(projectName.length() - 1))) {
-  
-            projectName =
-                projectName.substring(0, projectName.length() - 2)
-                    + (Integer
-                        .valueOf(projectName.charAt(projectName.length() - 1)) + 1);
-  
-            // else add a differentiating number
-          } else {
-            projectName += " 2";
-          }
-        }
+        // add user as administrator and add project
+        project.addMapAdministrator(newAdmin);
+        mappingService.addMapProject(project);
 
-      } while (projectExists == true);
-
-      // create the project
-      MapProject project = new MapProjectJpa();
-      project.setDestinationTerminology("");
-      project.setDestinationTerminologyVersion("");
-      project.setGroupStructure(false);
-      project.setMapRefsetPattern(MapRefsetPattern.SimpleMap);
-      project.setMapRelationStyle(RelationStyle.MAP_CATEGORY_STYLE);
-      project.setName(projectName);
-      project.setPropagatedFlag(false);
-      project.setPropagationDescendantThreshold(0);
-      project.setPublic(false);
-      project.setPublished(false);
-      project.setRefSetId("");
-      project.setRefSetName("");
-      project.setRuleBased(false);
-      project.setSourceTerminology("");
-      project.setSourceTerminologyVersion("");
-      project.setWorkflowType(WorkflowType.CONFLICT_PROJECT);
-
-      // add user as administrator and add project
-      project.addMapAdministrator(newAdmin);
-      mappingService.addMapProject(project);
-
-      mappingService.close();
+        mappingService.close();
+      }
 
     } catch (Exception e) {
       e.printStackTrace();
       throw new MojoExecutionException("Creation of blank map project failed",
           e);
     }
+
   }
 }

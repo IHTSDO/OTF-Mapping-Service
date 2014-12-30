@@ -846,7 +846,7 @@ angular
                * dashboard"); $location.path($scope.role + "/dash");
                */
             }
-          }
+          };
 
           $scope.saveMapRecord = function(returnBack) {
 
@@ -1003,13 +1003,13 @@ angular
             $scope.noteInput = "HELLO HELLO";
             $scope.noteEditMode = true;
             $scope.noteEditId = mapNote.localId;
-          }
+          };
 
           $scope.cancelEditRecordNote = function() {
             $scope.noteInput = '';
             $scope.noteEditMode = false;
             $scope.noteEditId = null;
-          }
+          };
 
           $scope.saveEditRecordNote = function(record, note) {
 
@@ -1729,7 +1729,10 @@ angular
         var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
         var newUrl = baseUrl + "/index/viewer";
         var myWindow = window.open(newUrl, "indexViewerWindow");
+
+        myWindow.document.title = 'testing';
         myWindow.focus();
       };
 
+      
     });
