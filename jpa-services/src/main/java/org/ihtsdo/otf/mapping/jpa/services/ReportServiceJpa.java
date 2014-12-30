@@ -979,6 +979,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
     switch (reportDefinition.getFrequency()) {
       case DAILY:
+      case ON_DEMAND:
         return true;
       case MONDAY:
         return (cal.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY);
