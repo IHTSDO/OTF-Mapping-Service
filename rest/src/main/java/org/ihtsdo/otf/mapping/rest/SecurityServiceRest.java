@@ -20,8 +20,6 @@ import com.wordnik.swagger.annotations.ApiParam;
 
 /**
  * Security service for authentication.
- *
- * @author ${author}
  */
 @Path("/security")
 @Api(value = "/security", description = "Operations supporting application authentication and authorization.")

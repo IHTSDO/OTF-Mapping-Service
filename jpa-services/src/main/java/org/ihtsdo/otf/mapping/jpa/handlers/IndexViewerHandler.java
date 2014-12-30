@@ -31,22 +31,20 @@ import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 /**
- * A handler for index viewer calls
+ * A handler for index viewer calls.
  */
 public class IndexViewerHandler {
 
-
-  /** Track main level label by first component of link */
+  /** Track main level label by first component of link. */
   private Map<String, String> linkToLabelMap = new HashMap<>();
-  
-	/**
-	 * Instantiates an empty {@link IndexViewerHandler}.
-	 */
-	public IndexViewerHandler() {
-		
-	}
-	
-	
+
+  /**
+   * Instantiates an empty {@link IndexViewerHandler}.
+   */
+  public IndexViewerHandler() {
+
+  }
+
   /*
    * (non-Javadoc)
    * 
@@ -54,6 +52,19 @@ public class IndexViewerHandler {
    * org.ihtsdo.otf.mapping.services.ContentService#performAggregatedSearch(
    * java.lang.String, java.lang.String, java.lang.String, java.lang.String,
    * java.lang.String)
+   */
+  /**
+   * Find index entries.
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @param domain the domain
+   * @param searchField the search field
+   * @param subSearchField the sub search field
+   * @param subSubSearchField the sub sub search field
+   * @param allFlag the all flag
+   * @return the search result list
+   * @throws Exception the exception
    */
   public SearchResultList findIndexEntries(String terminology,
     String terminologyVersion, String domain, String searchField,
@@ -164,6 +175,7 @@ public class IndexViewerHandler {
    * @return the results
    * @throws Exception the exception
    */
+  @SuppressWarnings("resource")
   private List<String> performSearch(String terminology,
     String terminologyVersion, String domain, String searchStr, int startLevel,
     int endLevel, String subSearchAnchor, boolean requireHasChild)
@@ -179,7 +191,8 @@ public class IndexViewerHandler {
       return new ArrayList<>();
     }
     String indexesDir =
-        prop + "/" + terminology + "/" + terminologyVersion + "/lucene/" + domain;
+        prop + "/" + terminology + "/" + terminologyVersion + "/lucene/"
+            + domain;
 
     List<String> searchResults = new ArrayList<>();
     // configure
@@ -276,6 +289,15 @@ public class IndexViewerHandler {
    * org.ihtsdo.otf.mapping.services.ContentService#getIndexDomains(java.lang
    * .String, java.lang.String)
    */
+  /**
+   * Returns the index domains.
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @return the index domains
+   * @throws Exception the exception
+   */
+  @SuppressWarnings("static-method")
   public SearchResultList getIndexDomains(String terminology,
     String terminologyVersion) throws Exception {
 
@@ -318,6 +340,16 @@ public class IndexViewerHandler {
    * org.ihtsdo.otf.mapping.services.ContentService#getIndexViewerPagesForIndex
    * (java.lang.String, java.lang.String, java.lang.String)
    */
+  /**
+   * Returns the index pages for index.
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @param index the index
+   * @return the index pages for index
+   * @throws Exception the exception
+   */
+  @SuppressWarnings("static-method")
   public SearchResultList getIndexPagesForIndex(String terminology,
     String terminologyVersion, String index) throws Exception {
 
@@ -360,6 +392,5 @@ public class IndexViewerHandler {
 
     return searchResultList;
   }
-
 
 }

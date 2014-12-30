@@ -58,6 +58,9 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
         new WorkflowPathState("Second Specialist Work");
     secondSpecialistEditingState
         .addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
+            WorkflowStatus.NEW, WorkflowStatus.NEW)));
+    secondSpecialistEditingState
+        .addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
             WorkflowStatus.NEW, WorkflowStatus.EDITING_IN_PROGRESS)));
     secondSpecialistEditingState
         .addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
@@ -66,6 +69,9 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
         .addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
             WorkflowStatus.EDITING_IN_PROGRESS,
             WorkflowStatus.EDITING_IN_PROGRESS)));
+    secondSpecialistEditingState
+        .addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
+            WorkflowStatus.EDITING_IN_PROGRESS, WorkflowStatus.EDITING_DONE)));
     trackingRecordStateToActionMap.put(
         secondSpecialistEditingState,
         new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING,
@@ -100,11 +106,7 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
     leadFinishedState = new WorkflowPathState("Lead Conflict Review Complete");
     leadFinishedState.addWorkflowCombination(new WorkflowStatusCombination(
         Arrays.asList(WorkflowStatus.CONFLICT_DETECTED,
-            WorkflowStatus.CONFLICT_DETECTED, WorkflowStatus.CONFLICT_NEW)));
-    leadFinishedState.addWorkflowCombination(new WorkflowStatusCombination(
-        Arrays.asList(WorkflowStatus.CONFLICT_DETECTED,
-            WorkflowStatus.CONFLICT_DETECTED,
-            WorkflowStatus.CONFLICT_IN_PROGRESS)));
+            WorkflowStatus.CONFLICT_DETECTED, WorkflowStatus.CONFLICT_RESOLVED)));
     trackingRecordStateToActionMap.put(
         leadFinishedState,
         new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING,
@@ -119,6 +121,9 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
   public ValidationResult validateTrackingRecordForActionAndUser(
     TrackingRecord tr, WorkflowAction action, MapUser user) throws Exception {
 
+    System.out.println("TrackingRecord " + tr.getUserAndWorkflowStatusPairs());
+    System.out.println("  User/action  " + user.getUserName() + "/" + action);
+
     // throw exception if action or user are undefined
     if (action == null)
       throw new Exception("Action cannot be null.");
@@ -128,9 +133,10 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
 
     // first, validate the tracking record itself
     ValidationResult result = validateTrackingRecord(tr);
-    if (result.isValid()) {
+    if (!result.isValid()) {
       result
           .addError("Could not validate action for user due to workflow errors.");
+      System.out.println("  " + result.toString());
       return result;
     }
 
@@ -163,13 +169,15 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
     // Minimum role : Specialist
     if (state.equals(initialState)) {
 
+      System.out.println("initial");
+
       // check record
       if (currentRecord != null) {
         result.addError("User's record does not meet requirements");
       }
 
       // check role
-      if (userRole.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
+      if (!userRole.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
         result.addError("User does not meet required role");
       }
 
@@ -185,8 +193,17 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
     // Minimum role : Specialist
     else if (state.equals(firstSpecialistEditingState)) {
 
-      // if no record for this user, only valid action is assign
+      System.out.println("firstspecialist");
+
+      // check role
+      if (!userRole.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
+        result.addError("User does not have required role");
+      }
+
+      // check record
       if (currentRecord == null) {
+
+        System.out.println("No record");
 
         // check action
         if (!action.equals(WorkflowAction.ASSIGN_FROM_SCRATCH)) {
@@ -194,12 +211,19 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
         }
 
         // if a record is already owned by user
-      } else if (!currentRecord.getWorkflowStatus().equals(WorkflowStatus.NEW)
-          && !currentRecord.getWorkflowStatus().equals(
-              WorkflowStatus.EDITING_IN_PROGRESS)
-          && !currentRecord.getWorkflowStatus().equals(
-              WorkflowStatus.EDITING_DONE)) {
-        result.addError("User's record does not meet requirements");
+      } else {
+
+        // check record status
+        if (!currentRecord.getWorkflowStatus().equals(WorkflowStatus.NEW)
+            && !currentRecord.getWorkflowStatus().equals(
+                WorkflowStatus.EDITING_IN_PROGRESS)
+            && !currentRecord.getWorkflowStatus().equals(
+                WorkflowStatus.EDITING_DONE)) {
+
+          System.out.println("  Matches");
+
+          result.addError("User's record does not meet requirements");
+        }
 
         // check action
         if (!action.equals(WorkflowAction.SAVE_FOR_LATER)
@@ -207,11 +231,7 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
             && !action.equals(WorkflowAction.UNASSIGN)) {
           result.addError("Action is not permitted.");
         }
-      }
 
-      // check role
-      if (!userRole.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
-        result.addError("User does not have required role");
       }
 
       // STATE: Second specialist has begun editing, but both specialists are
@@ -221,6 +241,8 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
       // Minimum role : Specialist
 
     } else if (state.equals(secondSpecialistEditingState)) {
+
+      System.out.println("Second specialist");
 
       // check record
       if (currentRecord == null) {
@@ -258,6 +280,8 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
       // Minimum role : Specialist
     } else if (state.equals(conflictDetectedState)) {
 
+      System.out.println("Conflict detected");
+
       // case 1: Lead claiming conflict for review
       if (currentRecord == null) {
 
@@ -274,8 +298,7 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
         // Case 2: Specialist modifying record
       } else {
         if (!currentRecord.getWorkflowStatus().equals(
-
-        WorkflowStatus.CONFLICT_DETECTED)) {
+            WorkflowStatus.CONFLICT_DETECTED)) {
           result.addError("User's record does meet requirements");
         }
 
@@ -302,6 +325,8 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
       // Permissible actions: SAVE_FOR_LATER, FINISH_EDITING, UNASSIGN,
       // Minimum role : Lead
     } else if (state.equals(leadEditingState)) {
+
+      System.out.println("Lead editing");
 
       // check record
       if (currentRecord == null) {
@@ -330,6 +355,8 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
       // Permissible actions: SAVE_FOR_LATER, FINISH_EDITING, UNASSIGN, PUBLISHF
       // Minimum role : Lead
     } else if (state.equals(leadFinishedState)) {
+
+      System.out.println("Lead finished");
       // check record
       if (currentRecord == null) {
         result.addError("User must have a record");
@@ -350,6 +377,8 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
           && !action.equals(WorkflowAction.PUBLISH)) {
         result.addError("Action is not permitted.");
       }
+    } else {
+      result.addError("Invalid state/could not determine state");
     }
 
     return result;

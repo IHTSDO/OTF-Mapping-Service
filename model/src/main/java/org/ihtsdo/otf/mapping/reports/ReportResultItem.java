@@ -3,7 +3,7 @@ package org.ihtsdo.otf.mapping.reports;
 import org.ihtsdo.otf.mapping.helpers.ReportResultType;
 
 /**
- * The Interface ReportResultItem.
+ * Generically represents an item within a {@link ReportResult}.
  */
 public interface ReportResultItem {
 

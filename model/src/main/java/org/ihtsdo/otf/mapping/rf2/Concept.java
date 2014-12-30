@@ -3,7 +3,7 @@ package org.ihtsdo.otf.mapping.rf2;
 import java.util.Set;
 
 /**
- * Represents a concept in a terminology.
+ * Generically represents a concept in a terminology.
  */
 public interface Concept extends Component {
 

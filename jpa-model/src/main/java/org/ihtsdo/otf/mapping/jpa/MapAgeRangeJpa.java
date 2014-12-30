@@ -14,9 +14,7 @@ import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * Represents an age range.
- * 
- * @author ${author}
+ * A JPA enabled {@link MapAgeRange}.
  */
 @Entity
 @Table(name = "map_age_ranges")

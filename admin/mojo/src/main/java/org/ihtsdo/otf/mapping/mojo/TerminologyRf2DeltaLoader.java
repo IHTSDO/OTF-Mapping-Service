@@ -291,7 +291,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
       // Clean up resources
       contentService.close();
 
-      // Compute default preferred names: TODO: why not do this pre commit?
+      // Compute default preferred names
       contentService = new ContentServiceJpa();
       contentService.setTransactionPerOperation(false);
       contentService.beginTransaction();
@@ -625,8 +625,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
                 contentService.getDescription(fields[0], terminology, version);
           }
 
-          // TODO: either remove this, make it an exception, or treat it as a
-          // normaml case
+          // verify description is found
           if (description == null && existingDescriptionIds.contains(fields[0])) {
             throw new Exception(
                 "** Description "
