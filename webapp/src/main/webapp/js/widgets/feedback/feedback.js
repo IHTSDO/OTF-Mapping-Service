@@ -19,7 +19,7 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
     $scope.feedbackConversations = null;
     
 
-    $scope.feedbackTypes = ['All Feedback', 'Feedback', 'Group Feedback', 'Error Feedback', 'Discrepancy Feedback'];
+    $scope.feedbackTypes = ['All Feedback', 'Feedback', 'Group Feedback', 'Error Feedback', 'Discrepancy Feedback', 'Viewer Feedback'];
     $scope.reviewedTypes = ['All', 'Viewed', 'Unviewed'];
     $scope.resolvedTypes = ['All', 'Active', 'Resolved'];
     
@@ -70,9 +70,6 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
     });
 
     $scope.retrieveFeedback = function(page, feedbackType, reviewedType, resolvedType, query) {
-
-      if ($scope.currentRole == 'Viewer')
-        return;
 
       $scope.feedbackType = feedbackType;
       $scope.resolvedType = resolvedType;
