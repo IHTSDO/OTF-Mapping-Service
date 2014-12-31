@@ -20,7 +20,6 @@ import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowNonLegacyPathHandler;
-import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowReviewProjectPathHandler;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -34,24 +33,40 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+/**
+ * Unit test for workflow path states on "non legacy path".
+ */
 public class WorkflowPathStatesNonLegacyPathTest {
 
+  /**  The handler. */
   private static WorkflowNonLegacyPathHandler handler;
 
+  /**  The content service. */
   private static ContentService contentService;
 
+  /**  The mapping service. */
   private static MappingService mappingService;
 
+  /**  The workflow service. */
   private static WorkflowService workflowService;
 
+  /**  The tracking record. */
   private static TrackingRecord trackingRecord;
 
+  /**  The lead. */
   private static MapUser specialist, specialist2, lead;
 
+  /**  The map project. */
   private static MapProject mapProject;
 
+  /**  The concept. */
   private static Concept concept;
 
+  /**
+   * Inits the.
+   *
+   * @throws Exception the exception
+   */
   @BeforeClass
   public static void init() throws Exception {
 
@@ -135,6 +150,11 @@ public class WorkflowPathStatesNonLegacyPathTest {
 
   }
 
+  /**
+   * Test legal workflow combinations.
+   *
+   * @throws Exception the exception
+   */
   @Test
   public void testLegalWorkflowCombinations() throws Exception {
 
@@ -169,6 +189,11 @@ public class WorkflowPathStatesNonLegacyPathTest {
 
   }
 
+  /**
+   * Test illegal workflow status combinations.
+   *
+   * @throws Exception the exception
+   */
   @Test
   public void testIllegalWorkflowStatusCombinations() throws Exception {
 
@@ -238,6 +263,11 @@ public class WorkflowPathStatesNonLegacyPathTest {
 
   }
 
+  /**
+   * Cleanup.
+   *
+   * @throws Exception the exception
+   */
   @AfterClass
   public static void cleanup() throws Exception {
 
@@ -256,6 +286,11 @@ public class WorkflowPathStatesNonLegacyPathTest {
 
   // helper function to clear persistence environment
   // and reinstantiate empty tracking record and map users
+  /**
+   * Reset records.
+   *
+   * @throws Exception the exception
+   */
   private static void resetRecords() throws Exception {
 
     // remove tracking records
@@ -268,7 +303,13 @@ public class WorkflowPathStatesNonLegacyPathTest {
       mappingService.removeMapRecord(mapRecord.getId());
   }
 
-  /** Construct and return a map record for a user and status */
+  /**
+   *  Construct and return a map record for a user and status.
+   *
+   * @param user the user
+   * @param status the status
+   * @return the map record
+   */
   private MapRecord createRecord(MapUser user, WorkflowStatus status) {
     MapRecord record = new MapRecordJpa();
 
@@ -284,7 +325,12 @@ public class WorkflowPathStatesNonLegacyPathTest {
     return record;
   }
 
-  /** Computes the tracking record based on map records */
+  /**
+   *  Computes the tracking record based on map records.
+   *
+   * @param combination the combination
+   * @throws Exception the exception
+   */
   private void getTrackingRecord(WorkflowStatusCombination combination)
     throws Exception {
     System.out.println("Computing tracking record for combination: "

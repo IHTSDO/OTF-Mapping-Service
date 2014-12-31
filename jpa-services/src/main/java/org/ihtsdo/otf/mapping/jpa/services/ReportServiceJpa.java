@@ -196,7 +196,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
             .getResultList();
     // if a parse exception, throw a local exception
 
-    Logger.getLogger(this.getClass()).debug(
+    Logger.getLogger(getClass()).debug(
         Integer.toString(reports.size()) + " reports retrieved");
 
     for (Report report : reports) {
@@ -846,7 +846,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     List<Report> reports = query.getResultList();
 
     for (Report report : reports)
-      this.handleReportLazyInitialization(report);
+      handleReportLazyInitialization(report);
 
     reportList.setReports(reports);
 
@@ -868,7 +868,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     Calendar cal = Calendar.getInstance();
 
     // get all report definitions
-    ReportDefinitionList reportDefinitions = this.getReportDefinitions();
+    ReportDefinitionList reportDefinitions = getReportDefinitions();
 
     // separate report definitions into daily and diff sets
     // note that this is necessary as diff reports require
@@ -878,7 +878,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
     // sort the report definitions into daily and diff sets
     for (ReportDefinition reportDefinition : reportDefinitions.getIterable()) {
-      if (reportDefinition.isDiffReport() == true)
+      if (reportDefinition.isDiffReport())
         diffReportDefinitions.add(reportDefinition);
       else
         dailyReportDefinitions.add(reportDefinition);
@@ -915,7 +915,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
                 "     Persisting report.");
 
             // persist the report
-            report = this.addReport(report);
+            report = addReport(report);
           }
         }
       }
@@ -925,7 +925,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
       // (i.e. calculated above)
       for (ReportDefinition reportDefinition : diffReportDefinitions) {
 
-        if (isDateToRunReport(reportDefinition, localStartDate) == true) {
+        if (isDateToRunReport(reportDefinition, localStartDate)) {
 
           Logger.getLogger(getClass()).info(
               "    Generating report " + reportDefinition.getName());
@@ -933,7 +933,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
           try {
 
             report =
-                this.generateReport(mapProject, mapUser,
+                generateReport(mapProject, mapUser,
                     reportDefinition.getName(), reportDefinition,
                     localStartDate, true);
 
@@ -942,7 +942,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
                   "     Persisting report " + report.toString());
 
               // persist the report
-              report = this.addReport(report);
+              report = addReport(report);
             } else {
               Logger.getLogger(ReportService.class).warn("    Skipping report");
             }
@@ -1022,7 +1022,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     Date date = new Date();
 
     // call date range report generation with start and end date as today
-    this.generateReportsForDateRange(mapProject, mapUser, date, date);
+    generateReportsForDateRange(mapProject, mapUser, date, date);
 
   }
 
@@ -1056,7 +1056,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
     // if a diff report, need to construct a query based on specified report
     // definition
-    if (reportDefinition.isDiffReport() == true) {
+    if (reportDefinition.isDiffReport()) {
 
       query =
           "select 'Report' value, name itemName, id itemId "
@@ -1183,11 +1183,11 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
         // check if an result with this value exists
         ReportResult result2 =
-            this.getReportResultForValue(report2, result1.getValue());
+            getReportResultForValue(report2, result1.getValue());
 
         // find items in first not in second -- these are NEW
         ReportResult resultNew =
-            this.getReportResultItemsNotInResult(result1, result2);
+            getReportResultItemsNotInResult(result1, result2);
 
         resultNew.setDateValue("");
         resultNew.setName(result1.getName());
@@ -1198,7 +1198,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
         // find items in second not in first -- these are REMOVED
         ReportResult resultRemoved =
-            this.getReportResultItemsNotInResult(result2, result1);
+            getReportResultItemsNotInResult(result2, result1);
 
         if (resultRemoved.getCt() > 0) {
           resultRemoved.setDateValue("");
@@ -1386,7 +1386,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
     for (Report report : reports.getReports()) {
 
-      this.removeReport(report.getId());
+      removeReport(report.getId());
     }
 
   }
