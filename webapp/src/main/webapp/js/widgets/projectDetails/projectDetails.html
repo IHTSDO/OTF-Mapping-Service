@@ -100,7 +100,56 @@
   </tbody>
 </table>
 <p></p>
-</accordion-group> <accordion-group
+</accordion-group> 
+<accordion-group
+  ng-show="focusProject.mapAdministrator.length > 0 || editModeEnabled == true">
+<accordion-heading>
+<h5>
+  <span tooltip-placement="right"
+    tooltip="List of the map administrators for this project."> Map Administrators </span>
+</h5>
+</accordion-heading>
+<table width="100%" class="table pure-table">
+  <thead>
+    <tr>
+      <th style="width: 30%;">User</th>
+      <th style="width: 20%;">User Name</th>
+      <th style="width: 47%;">Email</th>
+      <th style="width: 3%;"></th>
+    </tr>
+  </thead>
+  <tbody ng-repeat="administrator in focusProject.mapAdministrator"
+    style="border: 2px solid #ccc;">
+    <tr>
+      <td>{{administrator.name}}</td>
+      <td>{{administrator.userName}}</td>
+      <td ng-show="isEmailViewable(administrator.email) == true">{{administrator.email}}</td>
+      <td ng-show="isEmailViewable(administrator.email) == false">Private email</td>
+      <td ng-show="editModeEnabled == true"><i
+        class="glyphicon glyphicon-remove" ng-click="deleteAdministrator(administrator)"></i></td>
+      <td ng-show="editModeEnabled == false"></td>
+    </tr>
+  </tbody>
+</table>
+
+<table ng-show="editModeEnabled == true" width="50%" class="table pure-table">
+  <thead>
+    <tr>
+      <th style="width: 97%;">Add Map Administrator</th>
+      <th style="width: 3%;"></th>
+    </tr>
+  </thead>
+  <tbody ng-repeat="mapUser in mapUsers | elementFilter:focusProject.mapAdministrator">
+    <tr>
+      <td>{{mapUser.name}}</td>
+      <td><i class="glyphicon glyphicon-plus" ng-click="addAdministrator(mapUser)"></i></td>
+    </tr>
+  </tbody>
+</table>
+
+</accordion-group> 
+
+<accordion-group
   ng-show="focusProject.mapLead.length > 0 || editModeEnabled == true">
 <accordion-heading>
 <h5>
@@ -477,7 +526,6 @@
   <thead>
     <tr>
       <th><div tooltip-placement="top" tooltip="Name of report definition">Name</div>
-      </td>
       <th><div tooltip-placement="top"
           tooltip="Required role to view results of this report definition">Required
           Role</div></th>
@@ -530,37 +578,35 @@
 </h5>
 </accordion-heading> <pagination ng-show="focusProject.reportDefinition.length > pageSize"
   direction-links="false" boundary-links="true"
-  total-items="pagedDefinitionCount" items-per-page="pageSize"
-  page="pageDefinition"
-  on-select-page="getPagedReportDefinitions(page, definitionFilter)"></pagination>
+  total-items="pagedQACheckDefinitionCount" items-per-page="pageSize"
+  page="pagedQACheckDefinition"
+  on-select-page="getPagedQACheckDefinitions(page, qaCheckDefinitionFilter)"></pagination>
 <form>
-  <input type="text" ng-model="definitionFilter"
-    ng-change="getPagedReportDefinitions(1, definitionFilter)"> <input
+  <input type="text" ng-model="qaCheckDefinitionFilter"
+    ng-change="getPagedQACheckDefinitions(1, qaCheckDefinitionFilter)"> <input
     type="submit" value="Reset Filter"
-    ng-click="resetReportDefinitionFilter(); definitionFilter = '';">
+    ng-click="resetQACheckDefinitionFilter(); qaCheckDefinitionFilter = '';">
 </form>
 
 
 <table width="100%" class="table pure-table">
   <thead>
     <tr>
-      <th><div tooltip-placement="top" tooltip="Name of report definition">Name</div>
-      </td>
+      <th><div tooltip-placement="top" tooltip="Name of qa check definition">Name</div>
       <th><div tooltip-placement="top"
-          tooltip="Required role to view results of this report definition">Required
+          tooltip="Required role to view results of this qa check definition">Required
           Role</div></th>
-
     </tr>
   </thead>
   <tbody
-    ng-repeat="definition in pagedReportDefinition | orderBy: 'name' | filter: {qacheck:true}"
+    ng-repeat="definition in pagedQACheckDefinition | orderBy: 'name'"
     style="border: 2px solid #ccc;">
     <tr>
       <td>{{definition.name}}</td>
       <td>{{definition.roleRequired}}</td>
       <td ng-show="editModeEnabled == true"><i
         class="glyphicon glyphicon-remove"
-        ng-click="deleteReportDefinition(definition)"></i></td>
+        ng-click="deleteQACheckDefinition(definition)"></i></td>
       <td ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
     </tr>
 
@@ -575,11 +621,11 @@
     </tr>
   </thead>
   <tbody
-    ng-repeat="definition in allowableReportDefinitions | elementFilter:focusProject.reportDefinition | filter: {qacheck:true}">
+    ng-repeat="definition in allowableQACheckDefinitions | elementFilter:focusProject.qaCheckDefinition">
     <tr>
       <td>{{definition.name}}</td>
       <td><i class="glyphicon glyphicon-plus"
-        ng-click="addReportDefinition(definition)"></i></td>
+        ng-click="addQACheckDefinition(definition)"></i></td>
     </tr>
   </tbody>
 </table>

@@ -11,10 +11,12 @@ import javax.persistence.Query;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.ihtsdo.otf.mapping.services.helpers.OtfEmailHandler;
+import org.ihtsdo.otf.mapping.services.helpers.OtfErrorHandler;
 
 /**
  * QA Check for Properly Numbered Map Groups
@@ -40,10 +42,11 @@ public class QaDatabase extends AbstractMojo {
    * Executes the plugin.
    * 
    * @throws MojoExecutionException the mojo execution exception
+   * @throws MojoFailureException
    */
   @SuppressWarnings("unchecked")
   @Override
-  public void execute() throws MojoExecutionException {
+  public void execute() throws MojoExecutionException, MojoFailureException {
     getLog().info("Starting database QA");
 
     try {
@@ -93,24 +96,26 @@ public class QaDatabase extends AbstractMojo {
 
         for (String key : errors.keySet()) {
           msg.append("  CHECK: ").append(key).append("\r\n");
-          msg.append("  QUERY: ").append(queries.getProperty(key)).append("\r\n");
+          msg.append("  QUERY: ").append(queries.getProperty(key))
+              .append("\r\n");
           for (String result : errors.get(key)) {
             msg.append("    " + result).append("\r\n");
           }
           if (errors.get(key).size() > 9) {
-            msg.append("    ...\r\n");
+            msg.append("    ... ");
+            // the true count is not known because setMaxResults(10) is used.
           }
-        }
 
-        OtfEmailHandler emailHandler = new OtfEmailHandler();
-        String notificationRecipients =
-            ConfigUtility.getConfigProperties().getProperty(
-                "send.notification.recipients");
-        if (notificationRecipients != null) {
-          emailHandler.sendSimpleEmail(notificationRecipients,
-              "[OTF-Mapping-Tool] Database QA Results", msg.toString());
+          OtfEmailHandler emailHandler = new OtfEmailHandler();
+          String notificationRecipients =
+              ConfigUtility.getConfigProperties().getProperty(
+                  "send.notification.recipients");
+          if (notificationRecipients != null) {
+            emailHandler.sendSimpleEmail(notificationRecipients,
+                "[OTF-Mapping-Tool] Database QA Results", msg.toString());
+          }
+          getLog().info(msg.toString());
         }
-        getLog().info(msg.toString());
       } else {
         getLog().info("  NO errors");
       }
@@ -121,7 +126,12 @@ public class QaDatabase extends AbstractMojo {
 
     } catch (Exception e) {
       e.printStackTrace();
-      throw new MojoExecutionException("Performing map group QA failed.", e);
+      // Send email if something went wrong
+      OtfErrorHandler errorHandler = new OtfErrorHandler();
+      errorHandler.handleException(e, "Error running QA Checks", "admin mojo",
+          "", "");
+
+      throw new MojoFailureException("Unexpected exception:", e);
     }
 
   }

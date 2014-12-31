@@ -1,7 +1,7 @@
 package org.ihtsdo.otf.mapping.helpers;
 
 /**
- * The Enum UserRole.
+ * Enum for available user application and project roles.
  *
  */
 public enum MapUserRole {

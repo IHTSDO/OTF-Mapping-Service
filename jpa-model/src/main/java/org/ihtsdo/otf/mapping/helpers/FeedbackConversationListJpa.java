@@ -7,9 +7,11 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa;
 import org.ihtsdo.otf.mapping.model.FeedbackConversation;
+
 
 /**
  * JAXB enabled implementation of {@link FeedbackConversationList}.
@@ -71,6 +73,7 @@ public class FeedbackConversationListJpa extends
   }
 
   @Override
+  @XmlTransient
   public Iterable<FeedbackConversation> getIterable() {
     return feedbackConversations;
   }

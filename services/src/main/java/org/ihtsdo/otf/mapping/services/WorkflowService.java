@@ -8,6 +8,7 @@ import org.ihtsdo.otf.mapping.helpers.MapUserList;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.TrackingRecordList;
+import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.model.Feedback;
@@ -324,33 +325,7 @@ public interface WorkflowService extends RootService {
   @Override
   public void commit() throws Exception;
 
-  /**
-   * Generate random conflict data.
-   * 
-   * @param mapProject the map project
-   * @param numDesiredConflicts the num desired conflicts
-   * @throws Exception the exception
-   */
-  public void generateRandomConflictData(MapProject mapProject,
-    int numDesiredConflicts) throws Exception;
-
-  /**
-   * Generate mapper testing state.
-   *
-   * @param mapProject the map project
-   * @throws Exception the exception
-   */
-  public void generateMapperTestingStateKLININ(MapProject mapProject)
-    throws Exception;
-
-  /**
-   * Generate mapper testing state.
-   *
-   * @param mapProject the map project
-   * @throws Exception the exception
-   */
-  public void generateMapperTestingStateBHEKRE(MapProject mapProject)
-    throws Exception;
+  
 
   /**
    * Gets the tracking record for map project and concept.
@@ -366,9 +341,10 @@ public interface WorkflowService extends RootService {
    * QA check: Check that workflow state for all current records is valid.
    *
    * @param mapProject the map project
+   * @return the validation result
    * @throws Exception the exception
    */
-  public void computeWorkflowStatusErrors(MapProject mapProject)
+  public ValidationResult computeWorkflowStatusErrors(MapProject mapProject)
     throws Exception;
 
   /**

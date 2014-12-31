@@ -20,6 +20,7 @@ import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.ReportDefinitionList;
 import org.ihtsdo.otf.mapping.helpers.ReportList;
 import org.ihtsdo.otf.mapping.helpers.ReportListJpa;
+import org.ihtsdo.otf.mapping.helpers.ReportQueryType;
 import org.ihtsdo.otf.mapping.helpers.ReportResultItemList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.jpa.handlers.ExportReportHandler;
@@ -256,7 +257,8 @@ public class ReportServiceRest extends RootServiceRest {
     try {
       // authorize call
       MapUserRole role =
-          securityService.getMapProjectRoleForToken(authToken, report.getMapProjectId());
+          securityService.getMapProjectRoleForToken(authToken,
+              report.getMapProjectId());
       user = securityService.getUsernameForToken(authToken);
       if (!role.hasPrivilegesOf(MapUserRole.LEAD))
         throw new WebApplicationException(Response.status(401)
@@ -272,7 +274,7 @@ public class ReportServiceRest extends RootServiceRest {
     }
 
   }
-  
+
   /**
    * Deletes the report.
    *
@@ -297,12 +299,9 @@ public class ReportServiceRest extends RootServiceRest {
       MapUserRole role = securityService.getApplicationRoleForToken(authToken);
       user = securityService.getUsernameForToken(authToken);
       if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
-        throw new WebApplicationException(
-            Response
-                .status(401)
-                .entity(
-                    "User does not have permissions to delete a report.")
-                .build());
+        throw new WebApplicationException(Response.status(401)
+            .entity("User does not have permissions to delete a report.")
+            .build());
 
       // get the reports
       ReportService reportService = new ReportServiceJpa();
@@ -310,7 +309,8 @@ public class ReportServiceRest extends RootServiceRest {
       reportService.close();
 
     } catch (Exception e) {
-      handleException(e, "trying to delete a report", user, "", report.getId().toString());
+      handleException(e, "trying to delete a report", user, "", report.getId()
+          .toString());
     }
 
   }
@@ -361,7 +361,7 @@ public class ReportServiceRest extends RootServiceRest {
       ReportService reportService = new ReportServiceJpa();
       ReportList reportList =
           reportService.getReportsForMapProject(mapProject, pfsParameter);
-      
+
       reportService.close();
 
       return reportList;
@@ -406,7 +406,7 @@ public class ReportServiceRest extends RootServiceRest {
       MapUserRole role =
           securityService.getMapProjectRoleForToken(authToken, projectId);
       user = securityService.getUsernameForToken(authToken);
-      if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
         throw new WebApplicationException(Response.status(401)
             .entity("User does not have permissions to retrieve reports.")
             .build());
@@ -480,13 +480,22 @@ public class ReportServiceRest extends RootServiceRest {
       MapUser mapUser = mappingService.getMapUser(userName);
       mappingService.close();
 
-      ReportService reportService = new ReportServiceJpa();
-      report =
-          reportService.generateReport(mapProject, mapUser,
-              reportDefinition.getName(), reportDefinition, new Date(), false);
-      
-      reportService.addReport(report);
-      reportService.close();
+      // Only generate reports that have a query type
+      if (reportDefinition.getQueryType() != ReportQueryType.NONE) {
+        ReportService reportService = new ReportServiceJpa();
+        report =
+            reportService
+                .generateReport(mapProject, mapUser,
+                    reportDefinition.getName(), reportDefinition, new Date(),
+                    false);
+
+        reportService.addReport(report);
+        reportService.close();
+      }
+      // Otherwise, return an empty report
+      else {
+        return new ReportJpa();
+      }
 
       return report;
     } catch (Exception e) {
@@ -513,7 +522,7 @@ public class ReportServiceRest extends RootServiceRest {
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public Report testReport(
+  public Boolean testReport(
     @ApiParam(value = "The report definition", required = true) ReportDefinitionJpa reportDefinition,
     @ApiParam(value = "Map project id", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "User generating report", required = true) @PathParam("userName") String userName,
@@ -525,17 +534,13 @@ public class ReportServiceRest extends RootServiceRest {
             + reportDefinition.getName());
 
     String mapProjectName = "(not retrieved)";
-
-    Report report = null;
-
     try {
       // authorize call
       MapUserRole role =
           securityService.getMapProjectRoleForToken(authToken, projectId);
       if (!role.hasPrivilegesOf(MapUserRole.LEAD))
         throw new WebApplicationException(Response.status(401)
-            .entity("User does not have permissions to test  reports.")
-            .build());
+            .entity("User does not have permissions to test  reports.").build());
 
       // get the required objects
       MappingService mappingService = new MappingServiceJpa();
@@ -545,19 +550,22 @@ public class ReportServiceRest extends RootServiceRest {
       mappingService.close();
 
       // Report is NOT persisted
-      ReportService reportService = new ReportServiceJpa();
-      report =
-          reportService.generateReport(mapProject, mapUser,
-              reportDefinition.getName(), reportDefinition, new Date(), false);
-      
-      reportService.close();
+      // Only generate reports that have a query type
+      if (reportDefinition.getQueryType() != ReportQueryType.NONE) {
+        ReportService reportService = new ReportServiceJpa();
+        // test call, return value not important
+        reportService.generateReport(mapProject, mapUser,
+            reportDefinition.getName(), reportDefinition, new Date(), false);
 
-      return report;
+        reportService.close();
+      }
+      // If no exception, we are good.
+      return true;
     } catch (Exception e) {
 
-      handleException(e, "trying to test a report", userName,
-          mapProjectName, "");
-      return null;
+      handleException(e, "trying to test a report", userName, mapProjectName,
+          "");
+      return false;
 
     }
   }
@@ -729,27 +737,22 @@ public class ReportServiceRest extends RootServiceRest {
       // authorize call
       MapUserRole role = securityService.getApplicationRoleForToken(authToken);
       if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
-        throw new WebApplicationException(
-            Response
-                .status(401)
-                .entity(
-                    "User does not have permissions to export report.")
-                .build());
-
+        throw new WebApplicationException(Response.status(401)
+            .entity("User does not have permissions to export report.").build());
 
       ReportService reportService = new ReportServiceJpa();
-      Report report = reportService.getReport(reportId); 
-      
+      Report report = reportService.getReport(reportId);
+
       ExportReportHandler handler = new ExportReportHandler();
       InputStream is = handler.exportReport(report);
-      
+
       reportService.close();
       return is;
-      
+
     } catch (Exception e) {
 
-      handleException(e, "trying to export a report", "",
-          "", reportId.toString());
+      handleException(e, "trying to export a report", "", "",
+          reportId.toString());
       return null;
 
     }

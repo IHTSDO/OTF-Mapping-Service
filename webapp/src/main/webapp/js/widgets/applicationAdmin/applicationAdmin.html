@@ -27,15 +27,15 @@
         ng-model="project.name" ng-change="setEditingPerformed(project)"
         style="margin-bottom: 5px; width: 100%;"></input> <select
         tooltip-placement="top" tooltip="Source Terminology and Version"
-        ng-init="sourceVersion = getSourceVersion(project)"
-        ng-model="sourceVersion"
+        ng-init="project.sourceTerminologyVersion = getSourceVersion(project)"
+        ng-model="project.sourceTerminologyVersion"
         ng-options="item for item in terminologyVersionPairs"
         ng-change="setEditingPerformed(project)"
         style="margin-bottom: 5px; width: 100%;">
       </select> <select tooltip-placement="top"
         tooltip="Destination Terminology and Version"
-        ng-init="destinationVersion = getDestinationVersion(project)"
-        ng-model="destinationVersion"
+        ng-init="project.destinationTerminologyVersion = getDestinationVersion(project)"
+        ng-model="project.destinationTerminologyVersion"
         ng-options="item for item in terminologyVersionPairs"
         ng-change="setEditingPerformed(project)"
         style="margin-bottom: 5px; width: 100%;">
@@ -163,7 +163,7 @@
   <div style="margin-top: 15px;">
     <b>Create New Map Project</b>
   </div>
-  <hr>
+  
   <table class="table pure-table">
     <thead>
       <tr>
@@ -295,7 +295,108 @@
   </table>
 </form>
 
-</accordion-group> <accordion-group ng-show="mapAdvices.length > 0 "> <accordion-heading>
+</accordion-group>
+
+<accordion-group ng-show="mapUsers.length > 0 "> <accordion-heading>
+<h5>
+  <span tooltip-placement="right" tooltip="List of the map users."> Map
+    Users </span>
+</h5>
+</accordion-heading> <pagination direction-links="false" boundary-links="true"
+  total-items="pagedUserCount" items-per-page="pageSize" page="pageUser"
+  on-select-page="getPagedUsers(page, userFilter)"></pagination>
+<form>
+  <input id="userSearch" type="text" ng-model="userFilter"
+    ng-change="getPagedUsers(1, userFilter)"> <input type="submit"
+    value="Reset Filter" ng-click="resetUserFilter()">
+</form>
+
+<table width="100%" class="table pure-table" style="margin-bottom: 5px;">
+  <thead>
+    <tr>
+      <th style="width: 15%;">User Name</th>
+      <th style="width: 30%;">Full Name</th>
+      <th style="width: 30%;">Email</th>
+      <th style="width: 7%;"><div tooltip-placement="top"
+          tooltip="Indicates the administrative permissions this user has for the Mapping Tool Application (i.e. access to this page)">Application Role</div>
+      </th>
+      <th style="width: 3%;"></th>
+      <th style="width: 3%;"></th>
+    </tr>
+  </thead>
+  <tbody ng-repeat="user in pagedUser | orderBy: 'name'"
+    style="border: 2px solid #ccc;">
+
+    <tr>
+      <td><input ng-model="user.userName"
+        ng-change="setEditingPerformed(user)" style="width: 100%;"></input></td>
+      <td><input ng-model="user.name"
+        ng-change="setEditingPerformed(user)" style="width: 100%;"></input></td>
+      <td><input ng-model="user.email"
+        ng-change="setEditingPerformed(user)"
+        style="width:100%;">
+      </input></td>
+      <td><select ng-model="user.applicationRole"
+        ng-change="setEditingPerformed(user)"
+        ng-options="item for item in userApplicationRoles">
+      </select></td>
+
+      <td><button class="btn btn-sm btn-primary"
+          ng-click="updateUser(user)"
+          ng-show="isComponentChanged(user) == true">Save</button></td>
+      <td><div tooltip-placement="top" tooltip="Delete user">
+          <i class="glyphicon glyphicon-remove" ng-click="deleteUser(user)"></i>
+        </div></td>
+    </tr>
+
+  </tbody>
+</table>
+<button class="btn btn-sm btn-primary" ng-click="revertUnsavedUsers()"
+  ng-show="userInEditingPerformed() == true">Revert Unsaved</button>
+
+<form>
+  <div style="margin-top: 15px;">
+    <b>Create New Map User</b>
+  </div>
+  <table class="table pure-table">
+    <thead>
+      <tr>
+        <th style="width: 25%;"></th>
+        <th style="width: 75%;"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>User System Name</td>
+        <td><input id="newUserName" type="text" ng-model="newUserName"></td>
+      </tr>
+      <tr>
+        <td>User's Full Name</td>
+        <td><input id="newUserFullName" type="text"
+          ng-model="newUserFullName"></td>
+      </tr>
+      <tr>
+        <td>User's Email</td>
+        <td><input id="newUserEmail" type="text"
+          ng-model="newUserEmail"></td>
+      </tr>
+      <tr>
+        <td>User's Application Role</td>
+        <td><select ng-model="newUserApplicationRole"
+          ng-options="item for item in userApplicationRoles">
+        </select></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <button class="btn btn-sm btn-primary"
+    ng-click="submitNewMapUser(newUserName, newUserFullName, newUserEmail, newUserApplicationRole); 
+          newUserName = ''; newUserFullName = ''; newUserEmail = ''; newUserApplicationRole = null; ">Submit</button>
+</form>
+
+</accordion-group> 
+
+ <accordion-group ng-show="mapAdvices.length > 0 "> <accordion-heading>
 <h5>
   <span tooltip-placement="right" tooltip="List of the map advices."> Map
     Advices </span>
@@ -358,7 +459,7 @@
   <div style="margin-top: 15px;">
     <b>Create New Map Advice</b>
   </div>
-  <hr>
+  
   <table class="table pure-table">
     <thead>
       <tr>
@@ -466,7 +567,7 @@
   <div style="margin-top: 15px;">
     <b>Create New Map Relation</b>
   </div>
-  <hr>
+  
   <table class="table pure-table">
     <thead>
       <tr>
@@ -570,7 +671,7 @@
   <div style="margin-top: 15px;">
     <b>Create New Map Principle</b>
   </div>
-  <hr>
+  
   <table class="table pure-table" style="margin-bottom: 5px;">
     <thead>
       <tr>
@@ -609,7 +710,7 @@
     </tbody>
   </table>
 </form>
-<!-- <div style="margin-top:15px;"><b>Upload Map Principle Handbook</b></div><hr>                 
+<!-- <div style="margin-top:15px;"><b>Upload Map Principle Handbook</b></div>                 
       <div>
         <input type="file" ng-file-select="onFileSelect($files)">
       </div>       --> </accordion-group> <accordion-group ng-show="mapAgeRanges.length > 0">
@@ -679,7 +780,7 @@
   <div style="margin-top: 15px;">
     <b>Create New Map Age Range</b>
   </div>
-  <hr>
+  
   <table class="table pure-table">
     <thead>
       <tr>
@@ -822,6 +923,15 @@
             </tr>
             <tr>
               <td style="width: 40%;" tooltip-placement="top"
+                tooltip="Query frequency to calculate report results">Frequency</td>
+              <td style="width: 60%;"><select style="width: 100%;"
+                ng-model="definition.frequency"
+                ng-options="frequency as frequency for frequency in definitionFrequencies"
+                ng-change="setEditingPerformed(definition)" style="width: 100%;"></select>
+              </td>
+            </tr>
+            <tr>
+              <td style="width: 40%;" tooltip-placement="top"
                 tooltip="Whether this report is a difference report between two other reports">Diff
                 Report</td>
               <td style="width: 60%;"><select style="width: 100%;"
@@ -832,8 +942,8 @@
             </tr>
             <tr ng-show="definition.diffReport == true">
               <td style="width: 40%;" tooltip-placement="top"
-                tooltip="Time period this difference report operates over ">Diff
-                Report</td>
+                tooltip="Time period this difference report operates over ">Time
+                Period</td>
               <td style="width: 60%;"><select style="width: 100%;"
                 ng-model="definition.timePeriod"
                 ng-options="timePeriod as timePeriod for timePeriod in definitionTimePeriods"
@@ -842,8 +952,8 @@
             </tr>
             <tr ng-show="definition.diffReport == true">
               <td style="width: 40%;" tooltip-placement="top"
-                tooltip="Report used to calculate difference statistics">Diff
-                Report</td>
+                tooltip="Report used to calculate difference statistics">Definition
+                Name</td>
               <td style="width: 60%;"><select style="width: 100%;"
                 ng-model="definition.diffReportDefinitionName"
                 ng-options="name as name for name in getNonDiffReportDefinitionNames()"
@@ -1112,7 +1222,7 @@
   <div style="margin-top: 15px;">
     <b>Create New QA Check Definition</b>
   </div>
-  <hr>
+  
   <table class="table pure-table">
     <thead>
       <tr>

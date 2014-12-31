@@ -3,7 +3,7 @@ package org.ihtsdo.otf.mapping.helpers;
 import org.ihtsdo.otf.mapping.reports.ReportDefinition;
 
 /**
- * An enum for {@link ReportDefinition} fequencies. y
+ * Enum for {@link ReportDefinition} fequencies.
  */
 public enum ReportFrequency {
 
@@ -38,6 +38,9 @@ public enum ReportFrequency {
   MID_MONTH,
 
   /** The last of month. */
-  LAST_OF_MONTH
+  LAST_OF_MONTH, 
+  
+  /**  On demand. */
+  ON_DEMAND
 
 }

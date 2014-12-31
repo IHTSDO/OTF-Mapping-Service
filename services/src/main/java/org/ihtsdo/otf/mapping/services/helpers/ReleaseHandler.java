@@ -7,8 +7,6 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 
 /**
  * Generically represents a handler for performing a release.
- *
- * @author ${author}
  */
 public interface ReleaseHandler {
 
@@ -23,20 +21,23 @@ public interface ReleaseHandler {
   /**
    * Perform checks and record modification prior to release.
    *
-   * @param mapProject the map project
-   * @param removeRecords the remove records
    * @throws Exception the exception
    */
-  void beginRelease(MapProject mapProject, boolean removeRecords)
-    throws Exception;
+  public void beginRelease() throws Exception;
+
+  /**
+   * Finish release.
+   *
+   * @throws Exception the exception
+   */
+  public void finishRelease() throws Exception;
 
   /**
    * Close.
    *
    * @throws Exception the exception
    */
-  void close() throws Exception;
-  
+  public void close() throws Exception;
 
   /**
    * Sets the effective time.
@@ -77,8 +78,9 @@ public interface ReleaseHandler {
    * Sets the map project.
    *
    * @param mapProject the mapProject to set
+   * @throws Exception the exception
    */
-  public void setMapProject(MapProject mapProject);
+  public void setMapProject(MapProject mapProject) throws Exception;
 
   /**
    * Sets the map records.
@@ -87,4 +89,10 @@ public interface ReleaseHandler {
    */
   public void setMapRecords(List<MapRecord> mapRecords);
 
+  /**
+   * Sets the input file.
+   *
+   * @param inputFile the input file
+   */
+  public void setInputFile(String inputFile);
 }

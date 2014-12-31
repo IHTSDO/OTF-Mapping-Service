@@ -2,9 +2,7 @@ package org.ihtsdo.otf.mapping.mojo;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -35,50 +33,70 @@ public class ReleaseProcessingMojo extends AbstractMojo {
   /**
    * The refSet id
    * 
-   * @parameter refsetId
+   * @parameter
    */
   private String refsetId = null;
 
   /**
    * The refSet id
    * 
-   * @parameter outputDirName
+   * @parameter
    */
-  private String outputDirName = null;
+  private String outputDir = null;
 
   /**
    * The effective time of release
    * 
-   * @parameter effectiveTime
+   * @parameter
    */
   private String effectiveTime = null;
 
   /**
    * The module id.
    * 
-   * @parameter moduleId
+   * @parameter
    */
   private String moduleId = null;
 
+  /**
+   * Flag indicating test mode
+   * @parameter
+   */
+  private boolean testModeFlag = false;
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.apache.maven.plugin.Mojo#execute()
+   */
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
-    getLog().info("Processing release");
-    getLog().info("  refset.id = " + refsetId);
+    getLog().info("Processing RF2 release");
+    getLog().info("  refsetId = " + refsetId);
+    getLog().info("  outputDir = " + outputDir);
+    getLog().info("  effectiveTime = " + effectiveTime);
+    getLog().info("  moduleId = " + moduleId);
+    getLog().info("  testModeFlag = " + testModeFlag);
 
     // Check preconditions
     if (refsetId == null) {
       throw new MojoExecutionException("You must specify a refsetId.");
     }
 
-    if (refsetId == null) {
+    if (refsetId.contains(",")) {
+      throw new MojoExecutionException(
+          "You must specify only a single ref set id");
+    }
+
+    if (outputDir == null) {
       throw new MojoExecutionException(
           "You must specify an output file directory.");
     }
 
-    File outputDir = new File(outputDirName);
-    if (!outputDir.isDirectory())
-      throw new MojoExecutionException("Output file directory ("
-          + outputDirName + ") could not be found.");
+    File outputDirFile = new File(outputDir);
+    if (!outputDirFile.isDirectory())
+      throw new MojoExecutionException("Output file directory (" + outputDir
+          + ") could not be found.");
 
     if (effectiveTime == null)
       throw new MojoExecutionException("You must specify a release time");
@@ -89,7 +107,7 @@ public class ReleaseProcessingMojo extends AbstractMojo {
     try {
 
       MappingService mappingService = new MappingServiceJpa();
-      Set<MapProject> mapProjects = new HashSet<>();
+      MapProject mapProject = null;
 
       // ///////////////////
       // Test Parameters //
@@ -104,38 +122,35 @@ public class ReleaseProcessingMojo extends AbstractMojo {
        */
 
       // Get Projects
-      for (MapProject mapProject : mappingService.getMapProjects()
-          .getIterable()) {
-        for (String id : refsetId.split(",")) {
-          if (mapProject.getRefSetId().equals(id)) {
-            mapProjects.add(mapProject);
-          }
+      for (MapProject project : mappingService.getMapProjects().getIterable()) {
+        if (project.getRefSetId().equals(refsetId)) {
+          mapProject = project;
+          break;
         }
       }
 
-      // Iterate through map projects
-      for (MapProject mapProject : mapProjects) {
-
-        // Create and configure release handler
-        ReleaseHandler releaseHandler = new ReleaseHandlerJpa();
-        releaseHandler.setMapProject(mapProject);
-        releaseHandler.setEffectiveTime(effectiveTime);
-        releaseHandler.setModuleId(moduleId);
-        releaseHandler.setMapProject(mapProject);
-        releaseHandler.setWriteDelta(true);
-        releaseHandler.setWriteSnapshot(true);
-        releaseHandler.setOutputDir(outputDirName);
-        if (testConcepts.length > 0) {
-          List<MapRecord> mapRecords = new ArrayList<>();
-          for (String terminologyId : testConcepts) {
-            mapRecords.addAll(mappingService.getMapRecordsForProjectAndConcept(
-                mapProject.getId(), terminologyId).getMapRecords());
-          }
-          releaseHandler.setMapRecords(mapRecords);
+      // Create and configure release handler
+      ReleaseHandler releaseHandler = new ReleaseHandlerJpa(testModeFlag);
+      releaseHandler.setMapProject(mapProject);
+      releaseHandler.setEffectiveTime(effectiveTime);
+      releaseHandler.setModuleId(moduleId);
+      releaseHandler.setMapProject(mapProject);
+      releaseHandler.setWriteDelta(true);
+      releaseHandler.setWriteSnapshot(true);
+      releaseHandler.setOutputDir(outputDir);
+      if (testConcepts.length > 0) {
+        List<MapRecord> mapRecords = new ArrayList<>();
+        for (String terminologyId : testConcepts) {
+          mapRecords.addAll(mappingService.getMapRecordsForProjectAndConcept(
+              mapProject.getId(), terminologyId).getMapRecords());
         }
-        // call release handler with specific records
-        releaseHandler.processRelease();
+        releaseHandler.setMapRecords(mapRecords);
       }
+      // call release handler with specific records
+      getLog().info(
+          "  Handle project " + mapProject.getName() + ", "
+              + mapProject.getId());
+      releaseHandler.processRelease();
 
       getLog().info("done ...");
       mappingService.close();

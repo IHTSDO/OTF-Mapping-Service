@@ -51,6 +51,13 @@ public interface RootService {
   public void commit() throws Exception;
 
   /**
+   * Rollback.
+   *
+   * @throws Exception the exception
+   */
+  public void rollback() throws Exception;
+
+  /**
    * Begin transaction.
    *
    * @throws Exception the exception
