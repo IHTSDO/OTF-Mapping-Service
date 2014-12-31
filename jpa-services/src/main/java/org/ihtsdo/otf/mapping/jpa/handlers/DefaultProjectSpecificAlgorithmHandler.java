@@ -2248,7 +2248,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
         break;
       default:
-        // do nothing
+        // re-retrieve the records for this tracking record and return those
+        newRecords.clear();
+        MappingService mappingService = new MappingServiceJpa();
+        for (Long id : trackingRecord.getMapRecordIds()) {
+          newRecords.add(mappingService.getMapRecord(id));
+        }
         break;
     }
 

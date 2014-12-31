@@ -2,6 +2,7 @@ package org.ihtsdo.otf.mapping.mojo;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -11,6 +12,7 @@ import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.ihtsdo.otf.mapping.services.helpers.OtfEmailHandler;
 
 /**
@@ -81,7 +83,18 @@ public class QAWorkflow extends AbstractMojo {
           }
           
           message.append("\n");
-          emailHandler.sendSimpleEmail("***REMOVED***",
+          
+          
+          Properties config;
+          try {
+            config = ConfigUtility.getConfigProperties();
+          } catch (Exception e1) {
+            throw new MojoExecutionException("Failed to retrieve config properties");
+          }
+          String notificationRecipients =
+              config.getProperty("send.notification.recipients");
+          
+          emailHandler.sendSimpleEmail(notificationRecipients,
               mapProject.getName() + " Workflow Errors", message.toString());
         }
 
