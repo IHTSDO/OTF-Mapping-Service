@@ -201,32 +201,7 @@ public interface MapProject {
    */
   public void removeMapLead(MapUser mapLead);
 
-  /**
-   * Returns the map administrators.
-   * 
-   * @return the map administrators
-   */
-  public Set<MapUser> getMapAdministrators();
 
-  /**
-   * Sets the map administrators.
-   * @param mapAdministrators the map administrators
-   */
-  public void setMapAdministrators(Set<MapUser> mapAdministrators);
-
-  /**
-   * Adds the map administrator.
-   * 
-   * @param mapAdministrator a map administrator
-   */
-  public void addMapAdministrator(MapUser mapAdministrator);
-
-  /**
-   * Removes the map administrator.
-   * 
-   * @param mapAdministrator the map administrator
-   */
-  public void removeMapAdministrator(MapUser mapAdministrator);
 
   /**
    * Returns the map specialists.

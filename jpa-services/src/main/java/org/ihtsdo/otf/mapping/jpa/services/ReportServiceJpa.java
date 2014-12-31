@@ -904,15 +904,13 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
           // Only generate reports for those that have queries
           if (reportDefinition.getQueryType() != ReportQueryType.NONE) {
             Report report =
-                generateReport(mapProject, mapUser,
-                    reportDefinition.getName(), reportDefinition,
-                    localStartDate, true);
-            //  If report not generated (e.g. a diff report)
+                generateReport(mapProject, mapUser, reportDefinition.getName(),
+                    reportDefinition, localStartDate, true);
+            // If report not generated (e.g. a diff report)
             if (report != null) {
               addReport(report);
             }
-            Logger.getLogger(getClass()).info(
-                "     Persisting report.");
+            Logger.getLogger(getClass()).info("     Persisting report.");
 
             // persist the report
             report = addReport(report);
@@ -1119,7 +1117,11 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     List<Object[]> results = null;
     switch (reportDefinition.getQueryType()) {
       case HQL:
-        results = executeQuery(report.getQuery(), false);
+        try {
+          results = executeQuery(report.getQuery(), false);  
+        } catch (java.lang.IllegalArgumentException e) {
+          throw new LocalException("Error executing HQL query: " + e.getMessage());
+        }
         break;
       case LUCENE:
         // query map records index which returns map objects
@@ -1127,7 +1129,13 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
         // itemName=mapRecord.getConceptName()
         break;
       case SQL:
-        results = executeQuery(report.getQuery(), true);
+        try {
+          results = executeQuery(report.getQuery(), true);
+        } catch (javax.persistence.PersistenceException e) {     
+          throw new LocalException("Error executing SQL query:  " + e.getMessage());
+        } catch (java.lang.IllegalArgumentException e) {
+          throw new LocalException("Error executing SQL query, possible invalid parameters (valid parameters are :MAP_PROJECT_ID:, :TIMESTAMP:):  " + e.getMessage());
+        }
         break;
       case NONE:
         return null;
@@ -1145,16 +1153,17 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     if (reportDefinition.isDiffReport()) {
 
       if (results.size() != 2) {
-        throw new Exception("Diff reqport query has unexpected number of results");
+        throw new Exception(
+            "Diff reqport query has unexpected number of results");
       }
 
       // get the ids corresponding to reports to be diffed
       report.setReport1Id(new Long(results.get(0)[2].toString()));
       report.setReport2Id(new Long(results.get(1)[2].toString()));
       Logger.getLogger(getClass()).info(
-          "    report id 1 = " + report.getReport1Id());  
+          "    report id 1 = " + report.getReport1Id());
       Logger.getLogger(getClass()).info(
-          "    report id 2 = " + report.getReport2Id());  
+          "    report id 2 = " + report.getReport2Id());
 
       // if either report id is null, cannot construct report, return null
       if (report.getReport1Id() == null || report.getReport2Id() == null) {
@@ -1306,7 +1315,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
   // /////////////////////////////////////////////////////
   /**
    * Execute sql query.
-   *
+   * 
    * @param query the query
    * @param nativeFlag the native flag
    * @return the result set
@@ -1342,6 +1351,10 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     }
 
     // check for proper format for insertion into reports
+    
+    if (query.toUpperCase().indexOf("FROM") == -1)
+      throw new LocalException("Report query must contain the term FROM");
+    
     String selectSubStr =
         query.substring(0, query.toUpperCase().indexOf("FROM"));
 

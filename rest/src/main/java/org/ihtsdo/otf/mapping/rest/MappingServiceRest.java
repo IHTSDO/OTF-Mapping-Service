@@ -227,7 +227,6 @@ public class MappingServiceRest extends RootServiceRest {
       mapProject.getScopeExcludedConcepts().size();
       mapProject.getMapAdvices().size();
       mapProject.getMapRelations().size();
-      mapProject.getMapAdministrators().size();
       mapProject.getMapLeads().size();
       mapProject.getMapSpecialists().size();
       mapProject.getMapPrinciples().size();
@@ -469,7 +468,6 @@ public class MappingServiceRest extends RootServiceRest {
         mapProject.getScopeExcludedConcepts().size();
         mapProject.getMapAdvices().size();
         mapProject.getMapRelations().size();
-        mapProject.getMapAdministrators().size();
         mapProject.getMapLeads().size();
         mapProject.getMapSpecialists().size();
         mapProject.getMapPrinciples().size();
