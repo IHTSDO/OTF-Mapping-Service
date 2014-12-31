@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
@@ -24,6 +25,7 @@ import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.util.ReaderUtil;
 import org.apache.lucene.util.Version;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.hibernate.CacheMode;
 import org.hibernate.search.SearchFactory;
 import org.hibernate.search.indexes.IndexReaderAccessor;
@@ -70,6 +72,7 @@ import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecordJpa;
 import org.ihtsdo.otf.mapping.workflow.WorkflowException;
@@ -1857,8 +1860,25 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
     }
 
-    if (!result.isValid())
+    if (!result.isValid()) {
+      
       Logger.getLogger(WorkflowServiceJpa.class).info(result.toString());
+      
+      Properties config;
+      try {
+        config = ConfigUtility.getConfigProperties();
+      } catch (Exception e1) {
+        Logger.getLogger(WorkflowServiceJpa.class).info(result.toString());
+      }
+      String notificationRecipients =
+          config.getProperty("send.notification.recipients");
+      
+      OtfEmailHandler emailHandler = new OtfEmailHandler();
+      emailHandler.sendSimpleEmail(notificationRecipients,
+          mapProject.getName() + " Workflow Errors", message.toString());
+      
+    }
+      
 
     Set<MapRecord> mapRecords = getMapRecordsForTrackingRecord(trackingRecord);
 

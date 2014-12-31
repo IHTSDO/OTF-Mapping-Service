@@ -2055,7 +2055,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
         // remove record if flag set
         if (!testModeFlag) {
-          Logger.getLogger(getClass()).debug("    REMOVE out of scope records");
+          Logger.getLogger(getClass()).debug("    REMOVE out of scope record " + mapRecord.getId());
           mappingService.removeMapRecord(mapRecord.getId());
         }
       }
@@ -2092,6 +2092,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // release anyway
     if (errorFlag) {
       mappingService.rollback();
+      throw new Exception("The validation had errors, please see the log");
     } else {
       mappingService.commit();
     }

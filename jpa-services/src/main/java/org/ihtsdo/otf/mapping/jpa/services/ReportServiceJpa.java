@@ -1091,6 +1091,9 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
       query =
           query
               .replaceAll(":TIMESTAMP2:", Long.toString(cal.getTimeInMillis()));
+
+      // Force an SQL type because we are actually constructing a query.
+      reportDefinition.setQueryType(ReportQueryType.SQL);
     }
 
     // replace the map project id and timestamp parameters
