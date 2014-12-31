@@ -1789,6 +1789,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * @param workflowAction the workflow action
    * @throws Exception the exception
    */
+  @SuppressWarnings("unused")
   @Override
   public void processWorkflowAction(MapProject mapProject, Concept concept,
     MapUser mapUser, MapRecord mapRecord, WorkflowAction workflowAction)
@@ -1815,7 +1816,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     // NOTE: Exception handling deliberate, since tracking record may or may
     // not exist
     // depending on workflow path
-    TrackingRecord trackingRecord;
+    TrackingRecord trackingRecord = null;
     try {
       trackingRecord = getTrackingRecord(mapProject, concept);
     } catch (NoResultException e) {
