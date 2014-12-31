@@ -27,6 +27,9 @@
 
     <!-- Specify the moduleId to use for RF2 files -->
     <module.id></module.id>
+
+    <!-- Specify a test mode for the release if desired -->
+    <test.mode.flag>false</test.mode.flag>
   </properties>
 
   <profiles>
@@ -39,7 +42,6 @@
           <plugin>
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
             <executions>
               <execution>
                 <id>release</id>
@@ -49,10 +51,11 @@
                 </goals>
                 <configuration>
                   <refsetId>${refset.id}</refsetId>
-                  <outputDirName>${output.dir}</outputDirName>
+                  <outputDir>${output.dir}</outputDir>
                   <!-- e.g. 20150131 -->
                   <effectiveTime>${time}</effectiveTime>
                   <moduleId>${module.id}</moduleId>
+                  <testModeFlag>${test.mode.flag}</testModeFlag>
                 </configuration>
               </execution>
             </executions>
@@ -60,7 +63,7 @@
         </plugins>
       </build>
     </profile>
-    
+
     <profile>
       <id>BeginRelease</id>
       <build>
@@ -68,7 +71,6 @@
           <plugin>
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
             <executions>
               <execution>
                 <id>begin-release</id>
@@ -78,7 +80,7 @@
                 </goals>
                 <configuration>
                   <refsetId>${refset.id}</refsetId>
-                  <removeRecords>${remove.records}</removeRecords>
+                  <testModeFlag>${test.mode.flag}</testModeFlag>
                 </configuration>
               </execution>
             </executions>
@@ -86,15 +88,14 @@
         </plugins>
       </build>
     </profile>
-    
-       <profile>
+
+    <profile>
       <id>FinishRelease</id>
       <build>
         <plugins>
           <plugin>
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
             <executions>
               <execution>
                 <id>finish-release</id>
@@ -104,6 +105,8 @@
                 </goals>
                 <configuration>
                   <refsetId>${refset.id}</refsetId>
+                  <inputFile>${input.file}</inputFile>
+                  <testModeFlag>${test.mode.flag}</testModeFlag>
                 </configuration>
               </execution>
             </executions>
@@ -111,7 +114,7 @@
         </plugins>
       </build>
     </profile>
-    
+
 
   </profiles>
 </project>

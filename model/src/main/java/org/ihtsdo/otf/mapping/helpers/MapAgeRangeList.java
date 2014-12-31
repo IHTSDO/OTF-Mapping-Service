@@ -5,7 +5,7 @@ import java.util.List;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 
 /**
- * Represents a sortable list of {@link MapAgeRange}
+ * Represents a sortable list of {@link MapAgeRange}.
  */
 public interface MapAgeRangeList extends ResultList<MapAgeRange> {
 

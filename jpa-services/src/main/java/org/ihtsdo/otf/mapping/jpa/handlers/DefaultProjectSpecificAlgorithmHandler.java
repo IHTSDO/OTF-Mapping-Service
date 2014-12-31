@@ -27,6 +27,7 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
+import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
@@ -34,8 +35,6 @@ import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
 /**
  * Reference implementation of {@link ProjectSpecificAlgorithmHandler}.
- * 
- * @author ${author}
  */
 public class DefaultProjectSpecificAlgorithmHandler implements
     ProjectSpecificAlgorithmHandler {
@@ -172,7 +171,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
      */
 
     // Validation Check: verify correct positioning of TRUE rules
-    validationResult.merge(checkMapRecordTrueRules(mapRecord, entryGroups));
+    validationResult.merge(checkMapRecordRules(mapRecord, entryGroups));
 
     // Validation Check: very higher map groups do not have only NC nodes
     validationResult.merge(checkMapRecordNcNodes(mapRecord, entryGroups));
@@ -195,6 +194,10 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     // entries)
     validationResult.merge(checkMapRecordAdvices(mapRecord, entryGroups));
 
+    // Validation Check: all entries are non-null (empty entries are empty
+    // strings)
+    validationResult.merge(checkMapRecordForNullTargetIds(mapRecord));
+
     return validationResult;
   }
 
@@ -203,8 +206,28 @@ public class DefaultProjectSpecificAlgorithmHandler implements
   // ////////////////////
 
   /**
+   * Check map record for null target ids.
+   * 
+   * @param mapRecord the map record
+   * @return the validation result
+   */
+  @SuppressWarnings("static-method")
+  public ValidationResult checkMapRecordForNullTargetIds(MapRecord mapRecord) {
+    ValidationResult validationResult = new ValidationResultJpa();
+
+    for (MapEntry me : mapRecord.getMapEntries()) {
+      if (me.getTargetId() == null)
+        validationResult.addError("Map entry at group " + me.getMapGroup()
+            + ", priority " + me.getMapPriority()
+            + " has no target (valid or empty) selected.");
+    }
+
+    return validationResult;
+  }
+
+  /**
    * Check map record group structure.
-   *
+   * 
    * @param mapRecord the map record
    * @param entryGroups the entry groups
    * @return the validation result
@@ -221,8 +244,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     // cycle over the expected group numbers
     for (int i = 1; i < mapGroups.size(); i++) {
       if (!mapGroups.contains(i)) {
-        validationResult.addWarning("Group " + i
-            + " is empty -- this will be fixed in QA at a later stage");
+        validationResult.addError("Group " + i + " is empty");
       }
     }
 
@@ -257,51 +279,42 @@ public class DefaultProjectSpecificAlgorithmHandler implements
       // relations
       for (int j = i + 1; j < entries.size(); j++) {
 
-        // check if both targets are null OR if targets equal
-        boolean targetIdsNull =
-            entries.get(i).getTargetId() == null
-                && entries.get(j).getTargetId() == null;
-        boolean targetIdsEqual = false;
-        if (!targetIdsNull) {
-          targetIdsEqual =
-              entries.get(i).getTargetId().equals(entries.get(j).getTargetId());
+        // if first entry target null
+        if (entries.get(i).getTargetId() == null) {
+
+          // if both null, check relations
+          if (entries.get(j).getTargetId() == null) {
+
+            if (entries.get(i).getMapRelation() != null
+                && entries.get(j).getMapRelation() != null
+                && entries.get(i).getMapRelation()
+                    .equals(entries.get(j).getMapRelation())) {
+              validationResult
+                  .addError("Duplicate entries (null target code, same map relation) found: "
+                      + "Group "
+                      + Integer.toString(entries.get(i).getMapGroup())
+                      + ", priority "
+                      + entries.get(i).getMapPriority()
+                      + " and "
+                      + "Group "
+                      + Integer.toString(entries.get(j).getMapGroup())
+                      + ", priority " + entries.get(j).getMapPriority());
+            }
+
+          }
+        } else {
+
+          // check if second entry's target identical to this one
+          if (entries.get(i).getTargetId().equals(entries.get(j).getTargetId())) {
+            validationResult
+                .addError("Duplicate entries (same target code) found: "
+                    + "Group " + Integer.toString(entries.get(i).getMapGroup())
+                    + ", priority " + Integer.toString(i) + " and " + "Group "
+                    + Integer.toString(entries.get(j).getMapGroup())
+                    + ", priority " + Integer.toString(j));
+          }
         }
 
-        // default: relations are not equal
-        boolean mapRelationsNull =
-            entries.get(i).getMapRelation() == null
-                && entries.get(j).getMapRelation() == null;
-        boolean mapRelationsEqual = false;
-        if (!mapRelationsNull) {
-          if (entries.get(i).getMapRelation()
-              .equals(entries.get(j).getMapRelation()))
-            mapRelationsEqual = true;
-        }
-
-        // if target ids are the same, add error
-        if (!targetIdsNull && targetIdsEqual) {
-
-          validationResult
-              .addError("Duplicate entries (same target code) found: "
-                  + "Group " + Integer.toString(entries.get(i).getMapGroup())
-                  + ", priority " + Integer.toString(i) + " and " + "Group "
-                  + Integer.toString(entries.get(j).getMapGroup())
-                  + ", priority " + Integer.toString(j));
-        }
-
-        // if target ids are null and map relations are equal, add error
-        if (targetIdsNull && mapRelationsEqual) {
-          validationResult
-              .addError("Duplicate entries (null target code, same map relation) found: "
-                  + "Group "
-                  + Integer.toString(entries.get(i).getMapGroup())
-                  + ", priority "
-                  + entries.get(i).getMapPriority()
-                  + " and "
-                  + "Group "
-                  + Integer.toString(entries.get(j).getMapGroup())
-                  + ", priority " + entries.get(j).getMapPriority());
-        }
       }
     }
 
@@ -314,13 +327,14 @@ public class DefaultProjectSpecificAlgorithmHandler implements
   }
 
   /**
-   * Function to check proper use of TRUE rules.
+   * Function to check proper use of TRUE rules and presence of rules on
+   * non-rule based projects.
    * 
    * @param mapRecord the map record
    * @param entryGroups the binned entry lists by group
    * @return a list of errors detected
    */
-  public ValidationResult checkMapRecordTrueRules(MapRecord mapRecord,
+  public ValidationResult checkMapRecordRules(MapRecord mapRecord,
     Map<Integer, List<MapEntry>> entryGroups) {
 
     // Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
@@ -328,39 +342,51 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
     ValidationResult validationResult = new ValidationResultJpa();
 
-    // if not rule based, return empty validation result
-    if (!mapProject.isRuleBased())
-      return validationResult;
+    // if not rule based, check for rules present
+    if (!mapProject.isRuleBased()) {
 
-    // cycle over the groups
-    for (Integer key : entryGroups.keySet()) {
-
-      for (MapEntry mapEntry : entryGroups.get(key)) {
-
-        Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
-            .info(
-                "    Checking entry "
-                    + Integer.toString(mapEntry.getMapPriority()));
-
-        // add message if TRUE rule found at non-terminating entry
-        if (mapEntry.getMapPriority() != entryGroups.get(key).size()
-            && mapEntry.getRule().equals("TRUE")) {
+      for (MapEntry me : mapRecord.getMapEntries()) {
+        if (me.getRule() != null && !me.getRule().isEmpty()) {
           validationResult
-              .addError("Found non-terminating entry with TRUE rule."
-                  + " Entry:"
-                  + (mapProject.isGroupStructure() ? " group "
-                      + Integer.toString(mapEntry.getMapGroup()) + "," : "")
-                  + " map priority "
+              .addError("Rule found for non-rule based project at map group "
+                  + me.getMapGroup() + ", priority " + me.getMapPriority()
+                  + ", rule specified is " + me.getRule() + ".");
+        }
+      }
+
+      // otherwise check TRUE rules
+    } else {
+
+      // cycle over the groups
+      for (Integer key : entryGroups.keySet()) {
+
+        for (MapEntry mapEntry : entryGroups.get(key)) {
+
+          Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
+              "    Checking entry "
                   + Integer.toString(mapEntry.getMapPriority()));
 
-          // add message if terminating entry rule is not TRUE
-        } else if (mapEntry.getMapPriority() == entryGroups.get(key).size()
-            && !mapEntry.getRule().equals("TRUE")) {
-          validationResult.addError("Terminating entry has non-TRUE rule."
-              + " Entry:"
-              + (mapProject.isGroupStructure() ? " group "
-                  + Integer.toString(mapEntry.getMapGroup()) + "," : "")
-              + " map priority " + Integer.toString(mapEntry.getMapPriority()));
+          // add message if TRUE rule found at non-terminating entry
+          if (mapEntry.getMapPriority() != entryGroups.get(key).size()
+              && mapEntry.getRule().equals("TRUE")) {
+            validationResult
+                .addError("Found non-terminating entry with TRUE rule."
+                    + " Entry:"
+                    + (mapProject.isGroupStructure() ? " group "
+                        + Integer.toString(mapEntry.getMapGroup()) + "," : "")
+                    + " map priority "
+                    + Integer.toString(mapEntry.getMapPriority()));
+
+            // add message if terminating entry rule is not TRUE
+          } else if (mapEntry.getMapPriority() == entryGroups.get(key).size()
+              && !mapEntry.getRule().equals("TRUE")) {
+            validationResult.addError("Terminating entry has non-TRUE rule."
+                + " Entry:"
+                + (mapProject.isGroupStructure() ? " group "
+                    + Integer.toString(mapEntry.getMapGroup()) + "," : "")
+                + " map priority "
+                + Integer.toString(mapEntry.getMapPriority()));
+          }
         }
       }
     }
@@ -727,8 +753,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements
    * @param entry2 the entry2
    * @return <code>true</code> if so, <code>false</code> otherwise
    */
-  @SuppressWarnings("static-method")
   public boolean isRulesEqual(MapEntry entry1, MapEntry entry2) {
+
+    // if not rule based, automatically return true
+    if (mapProject.isRuleBased() == false)
+      return true;
+
     // check null comparisons first
     if (entry1.getRule() == null && entry2.getRule() != null)
       return false;
@@ -780,7 +810,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
   /**
    * Prints the advice differences.
-   *
+   * 
    * @param validationResult the validation result
    * @param entry1 the entry1
    * @param entry2 the entry2
@@ -1468,7 +1498,19 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         // delete the lead's record, no other action required
         if (reviewRecord != null) {
           newRecords.remove(reviewRecord);
+        // Case 2: The concept is removed from QA, and unassigned from the qa user
+        } else if (editingRecord != null) {
+          
+          // clear the record set
+          newRecords.clear();
+          
+          // get the previously published version of the revision record
+          revisionRecord = getPreviouslyPublishedVersionOfMapRecord(revisionRecord);
+          
+          // add the previously published version to the map records set
+          newRecords.add(revisionRecord);
         } else {
+          
           throw new Exception(
               "Unexpected error attempt to unassign a QA record.  Contact an administrator.");
         }
@@ -1484,6 +1526,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
   }
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#publish(org.ihtsdo.otf.mapping.workflow.TrackingRecord, java.util.Set, org.ihtsdo.otf.mapping.model.MapUser)
+   */
   @Override
   public Set<MapRecord> publish(TrackingRecord trackingRecord,
     Set<MapRecord> mapRecords, MapUser mapUser) throws Exception {
@@ -2203,7 +2248,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
         break;
       default:
-        // do nothing
+        // re-retrieve the records for this tracking record and return those
+        newRecords.clear();
+        MappingService mappingService = new MappingServiceJpa();
+        for (Long id : trackingRecord.getMapRecordIds()) {
+          newRecords.add(mappingService.getMapRecord(id));
+        }
         break;
     }
 
@@ -2213,7 +2263,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
   /**
    * Returns the current map record for user.
-   *
+   * 
    * @param mapRecords the map records
    * @param mapUser the map user
    * @return the current map record for user
@@ -2347,23 +2397,47 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     // DO NOTHING -- Override in project specific handlers if necessary
   }
 
-  @Override
-  public boolean isUpPropagatedRecordForReleaseProcessing(MapRecord mapRecord) {
-
-    // for ICD10 project, a map record is up-propagated if the descendant
-    // count is less than 11
-    return mapRecord.getCountDescendantConcepts() < mapProject
-        .getPropagationDescendantThreshold();
-  }
-  
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#
+   * getDependentModules()
+   */
   @Override
   public Set<String> getDependentModules() {
     return new HashSet<>();
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#
+   * getModuleDependencyRefSetId()
+   */
   @Override
   public String getModuleDependencyRefSetId() {
-    // TODO Auto-generated method stub
+    return null;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#
+   * validateForRelease(org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember)
+   */
+  @Override
+  public ValidationResult validateForRelease(ComplexMapRefSetMember member)
+    throws Exception {
+    // do nothing
+    return new ValidationResultJpa();
+  }
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#getDefaultUpPropagatedMapRelation()
+   */
+  @Override
+  public MapRelation getDefaultUpPropagatedMapRelation() throws Exception {
+    // does not apply
     return null;
   }
 

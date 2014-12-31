@@ -32,7 +32,7 @@
             <configuration>
               <fileset>
                 <directory>src/main/resources</directory>
-                <outputDirectory>${project.build.directory}/mapping-admin-${project.version}.zip</outputDirectory>
+                <outputDirectory>${project.build.directory}/mapping-admin-${releaseVersion}.zip</outputDirectory>
               </fileset>
             </configuration>
           </execution>
@@ -53,7 +53,7 @@
             <configuration>
               <artifacts>
                 <artifact>
-                  <file>${project.build.directory}/mapping-admin-${project.version}.zip</file>
+                  <file>${project.build.directory}/mapping-admin-${releaseVersion}.zip</file>
                   <type>zip</type>
                 </artifact>
               </artifacts>

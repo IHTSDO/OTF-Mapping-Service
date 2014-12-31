@@ -16,9 +16,9 @@
 
   <properties>
     <!-- Set default maven settings -->
+    <releaseVersion>${project.version}</releaseVersion>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <skipTests>true</skipTests>
 
     <!-- Set maven plugin versions -->
     <maven.javadoc.skip>true</maven.javadoc.skip>
@@ -45,6 +45,7 @@
     <jackson-2.version>2.3.0</jackson-2.version>
     <swagger.version>1.3.0</swagger.version>
     <junit.version>4.11</junit.version>
+    <cglib.version>2.2.2</cglib.version>
     <javax.mail.version>1.5.2</javax.mail.version>
     <xom.version>1.2.5</xom.version>
     <apache.poi>3.10-FINAL</apache.poi>
@@ -57,22 +58,28 @@
       <dependency>
         <groupId>org.ihtsdo.otf.mapping</groupId>
         <artifactId>mapping-model</artifactId>
-        <version>${project.version}</version>
+        <version>${releaseVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.ihtsdo.otf.mapping</groupId>
         <artifactId>mapping-jpa-model</artifactId>
-        <version>${project.version}</version>
+        <version>${releaseVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.ihtsdo.otf.mapping</groupId>
         <artifactId>mapping-services</artifactId>
-        <version>${project.version}</version>
+        <version>${releaseVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.ihtsdo.otf.mapping</groupId>
         <artifactId>mapping-jpa-services</artifactId>
-        <version>${project.version}</version>
+        <version>${releaseVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ihtsdo.otf.mapping</groupId>
+        <artifactId>mapping-rest</artifactId>
+        <version>${releaseVersion}</version>
+        <classifier>classes</classifier>
       </dependency>
 
       <!-- JPA dependencies -->
@@ -215,7 +222,12 @@
         <artifactId>junit</artifactId>
         <version>${junit.version}</version>
       </dependency>
-
+      <dependency>
+        <groupId>cglib</groupId>
+        <artifactId>cglib</artifactId>
+        <version>${cglib.version}</version>
+      </dependency>
+      
       <!-- Sending email -->
       <dependency>
         <groupId>com.sun.mail</groupId>
@@ -230,13 +242,13 @@
         <version>${xom.version}</version>
       </dependency>
 
-      <!--  Apache POI library -->
+      <!-- Apache POI library -->
       <dependency>
         <groupId>org.apache.poi</groupId>
         <artifactId>poi</artifactId>
         <version>${apache.poi}</version>
       </dependency>
-      
+
     </dependencies>
   </dependencyManagement>
 
@@ -246,6 +258,13 @@
     <!-- Plugins -->
     <pluginManagement>
       <plugins>
+
+        <!-- Project plugins -->
+        <plugin>
+          <groupId>org.ihtsdo.otf.mapping</groupId>
+          <artifactId>mapping-admin-mojo</artifactId>
+          <version>${releaseVersion}</version>
+        </plugin>
 
         <!-- Maven plugins -->
         <plugin>
@@ -275,7 +294,9 @@
           <artifactId>maven-surefire-plugin</artifactId>
           <version>${maven.surefire.plugin.version}</version>
           <configuration>
-            <skipTests>${skipTests}</skipTests>
+            <includes>
+              <include>**/*Test.java</include>
+            </includes>
           </configuration>
         </plugin>
 

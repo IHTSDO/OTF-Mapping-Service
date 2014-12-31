@@ -122,6 +122,8 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements
     Set<Concept> descendants =
         getDescendantConcepts(contentService, "447250001", terminology,
             version, isaRelationshipType);
+    descendants.addAll(getDescendantConcepts(contentService, "609331003",
+        terminology, version, isaRelationshipType));
 
     for (Concept descendant : descendants) {
       if (descendant.isActive()) {

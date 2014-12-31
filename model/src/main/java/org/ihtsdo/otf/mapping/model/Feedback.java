@@ -4,7 +4,8 @@ import java.util.Date;
 import java.util.Set;
 
 /**
- * Represents a single communication within a Feedback conversation.
+ * Generically represents a single communication within a
+ * {@link FeedbackConversation}.
  */
 public interface Feedback {
 

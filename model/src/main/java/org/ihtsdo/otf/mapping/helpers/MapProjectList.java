@@ -5,7 +5,7 @@ import java.util.List;
 import org.ihtsdo.otf.mapping.model.MapProject;
 
 /**
- * Represents a sortable list of {@link MapProject}
+ * Represents a sortable list of {@link MapProject}.
  */
 public interface MapProjectList extends ResultList<MapProject> {
 

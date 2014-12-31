@@ -5,8 +5,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * The search result for the Jpa package.
- *
- * @author Patrick
  */
 @XmlRootElement(name = "searchResult")
 public class SearchResultJpa implements SearchResult {

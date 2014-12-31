@@ -6,7 +6,7 @@ var mapProjectAppDashboards = angular.module('mapProjectAppDashboards', [
 mapProjectAppDashboards
   .controller(
     'ResolveConflictsDashboardCtrl',
-    function($scope, $routeParams, $rootScope, $location, localStorageService) {
+    function($scope, $routeParams, $rootScope, $location, $http, localStorageService) {
 
       // model variable
       $scope.model = null;
@@ -760,9 +760,9 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope,
     $scope.page = 'mainDashboard';
 
     /**
-     * Viewer has the following widgets: - MapProject
+     * Viewer with user 'guest' has the following widgets: - MapProject
      */
-    if (!$scope.currentRole || $scope.currentRole === 'Viewer') {
+    if (!$scope.currentRole || ($scope.currentRole === 'Viewer' && $scope.currentUser.userName === 'guest')) {
       $scope.defaultModel = {
 
         structure : "12/6-6/12",
@@ -777,6 +777,32 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope,
           } ]
         } ]
       };
+      /**
+       * Viewer (non-guest) has the following widgets: - MapProject
+       */
+    }  else if (!$scope.currentRole || $scope.currentRole === 'Viewer') {
+        $scope.defaultModel = {
+
+          structure : "12/6-6/12",
+          rows : [ {
+            columns : [ {
+              class : 'col-md-12',
+              widgets : [ {
+                type : "mapProject",
+                config : {},
+                title : "Map Project"
+              } ]
+            } ]
+          }, {
+              columns : [ {
+                class : 'col-md-12',
+                widgets : [ {
+                  type : "feedback",
+                  title : "Feedback"
+                } ]
+              } ]
+          } ]
+        };
       /**
        * Specialist has the following widgets: - MapProject - WorkAvailable -
        * AssignedList - EditedList

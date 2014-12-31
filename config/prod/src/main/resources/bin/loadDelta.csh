@@ -1,5 +1,8 @@
 #!/bin/csh -f
-
+#
+# Sample cron entry:
+# Minute     Hour     Day of Month     Month     Day of Week
+# 0      19      *       *       0       csh /home/ihtsdo/config/bin/loadDelta.csh > /home/ihtsdo/logs/loadDelta.log
 #
 # Configure
 # 
@@ -51,7 +54,7 @@ endif
 
 echo "    Load the delta ... '/bin/date'"
 cd $MAPPING_CODE/admin/loader
-mvn -PRF2-delta -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT -Dinput.file=~/.m2/repository/org/ihtsdo/intl/release/process/wb-release-process/1.18-SNAPSHOT/wb-release-process-1.18-SNAPSHOT-delta install
+mvn install -PRF2-delta -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT -Dinput.dir=/home/ihtsdo/.m2/repository/org/ihtsdo/intl/release/process/wb-release-process/1.18-SNAPSHOT/wb-release-process-1.18-SNAPSHOT-delta
 if ($status != 0) then
     echo "ERROR processing delta data"
     exit 1
@@ -59,7 +62,7 @@ endif
 
 echo "    Remove SNOMEDCT tree positions ... '/bin/date'"
 cd $MAPPING_CODE/admin/remover
-mvn -PTreepos -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT install
+mvn install -PTreepos -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT 
 if ($status != 0) then
     echo "ERROR removing tree positions"
     exit 1
@@ -67,7 +70,7 @@ endif
 
 echo "    Generate SNOMEDCT tree positions ... 'bin/date'"
 cd $MAPPING_CODE/admin/loader
-mvn -PTreepos -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT install
+mvn install -PTreepos -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT
 if ($status != 0) then
     echo "ERROR computing tree positions"
     exit 1
@@ -75,7 +78,7 @@ endif
 
 echo "    Compute workflow ...`/bin/date`"
 cd $MAPPING_CODE/admin/loader
-mvn -PComputeWorkflow -Drun.config=$MAPPING_CONFIG -Drefset.id=447563008,447562003,450993002 install -Dsend.notification=true
+mvn install -PComputeWorkflow -Drun.config=$MAPPING_CONFIG -Drefset.id=447563008,447562003,450993002 -Dsend.notification=true
 if ($status != 0) then
     echo "ERROR computing workflow"
     exit 1

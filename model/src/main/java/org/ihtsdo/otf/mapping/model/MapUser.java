@@ -3,8 +3,7 @@ package org.ihtsdo.otf.mapping.model;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 
 /**
- * The interface for MapUser
- * 
+ * Generically represents an application user.
  */
 public interface MapUser {
   /**

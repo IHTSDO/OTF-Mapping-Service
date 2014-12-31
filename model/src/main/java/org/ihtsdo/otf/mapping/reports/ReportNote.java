@@ -3,7 +3,7 @@ package org.ihtsdo.otf.mapping.reports;
 import java.util.Date;
 
 /**
- * The Interface ReportNote.
+ * Generically represents a report note.
  */
 public interface ReportNote {
 

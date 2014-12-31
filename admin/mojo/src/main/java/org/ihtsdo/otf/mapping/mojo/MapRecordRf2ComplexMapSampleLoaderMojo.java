@@ -233,7 +233,7 @@ public class MapRecordRf2ComplexMapSampleLoaderMojo extends AbstractMojo {
           new ArrayList<ComplexMapRefSetMember>());
     }
 
-    final SimpleDateFormat dt = new SimpleDateFormat("yyyymmdd");
+    final SimpleDateFormat dt = new SimpleDateFormat("yyyyMMdd");
     while ((line = complexMapReader.readLine()) != null) {
       line = line.replace("\r", "");
       String fields[] = line.split("\t");

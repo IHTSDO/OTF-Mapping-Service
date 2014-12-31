@@ -1,24 +1,18 @@
 #!/bin/csh -f
 
 #
-# Check OTF_CODE_HOME
-#
-if ($?MAPPING_CODE == 0) then
-	echo "ERROR: MAPPING_CODE must be set"
-	exit 1
-endif
-
-#
-# Check MAPPING_CONFIG
-#
-if ($?MAPPING_CONFIG == 0) then
-	echo "ERROR: MAPPING_CONFIG must be set"
-	exit 1
-endif
+# Configure
+# 
+set MAPPING_CODE=/home/ihtsdo/code
+set MAPPING_CONFIG=/home/ihtsdo/config/config.properties
+set MAPPING_DATA=/home/ihtsdo/data
 
 echo "------------------------------------------------"
 echo "Starting ...`/bin/date`"
 echo "------------------------------------------------"
+echo "MAPPING_CODE = $MAPPING_CODE"
+echo "MAPPING_DATA = $MAPPING_CODE"
+echo "MAPPING_CONFIG = $MAPPING_CODE"
 
 echo "Taking down the server"
 service tomcat7 stop
@@ -28,7 +22,7 @@ if ($status != 0) then
 endif
 
 echo "    Delete current wb-release-process-1.18-SNAPSHOT-delta file ...`/bin/date`"
-cd /home/ihtsdo/.m2/repository/org/ihtsdo/intl/release/process/wb-release-process/1.18-SNAPSHOT
+cd ~/.m2/repository/org/ihtsdo/intl/release/process/wb-release-process/1.18-SNAPSHOT
 rm -fr wb-release-process-1.18-SNAPSHOT-delta
 if ($status != 0) then
     echo "ERROR retrieving latest delta data"
@@ -37,7 +31,7 @@ endif
 
 
 echo "    Obtain latest release ...`/bin/date`"
-cd /home/ihtsdo/data
+cd $MAPPING_DATA
 mvn org.apache.maven.plugins:maven-dependency-plugin:2.4:get \
   -DgroupId=org.ihtsdo.intl.release.process -DartifactId=wb-release-process \
   -Dclassifier=delta -Dversion=1.18-SNAPSHOT -Dpackaging=zip \
@@ -48,7 +42,7 @@ if ($status != 0) then
 endif
 
 echo "    Unzip delta files into wb-release-process-1.18-SNAPSHOT-delta ... '/bin/date'"
-cd /home/ihtsdo/.m2/repository/org/ihtsdo/intl/release/process/wb-release-process/1.18-SNAPSHOT
+cd ~/.m2/repository/org/ihtsdo/intl/release/process/wb-release-process/1.18-SNAPSHOT
 unzip wb-release-process-1.18-SNAPSHOT-delta.zip -d wb-release-process-1.18-SNAPSHOT-delta
 if ($status != 0) then
     echo "ERROR unzipping delta data"
@@ -57,7 +51,7 @@ endif
 
 echo "    Load the delta ... '/bin/date'"
 cd $MAPPING_CODE/admin/loader
-mvn install -PSNOMEDCTDelta -Drun.config=$MAPPING_CONFIG
+mvn install -PRF2-delta -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT -Dinput.dir=/home/ihtsdo/.m2/repository/org/ihtsdo/intl/release/process/wb-release-process/1.18-SNAPSHOT/wb-release-process-1.18-SNAPSHOT-delta
 if ($status != 0) then
     echo "ERROR processing delta data"
     exit 1
@@ -65,7 +59,7 @@ endif
 
 echo "    Remove SNOMEDCT tree positions ... '/bin/date'"
 cd $MAPPING_CODE/admin/remover
-mvn install -PSNOMEDCT-treepos -Drun.config=$MAPPING_CONFIG
+mvn install -PTreepos -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT 
 if ($status != 0) then
     echo "ERROR removing tree positions"
     exit 1
@@ -73,7 +67,7 @@ endif
 
 echo "    Generate SNOMEDCT tree positions ... 'bin/date'"
 cd $MAPPING_CODE/admin/loader
-mvn install -PSNOMEDCT-treepos -Drun.config=$MAPPING_CONFIG
+mvn install -PTreepos -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT
 if ($status != 0) then
     echo "ERROR computing tree positions"
     exit 1
@@ -81,7 +75,7 @@ endif
 
 echo "    Compute workflow ...`/bin/date`"
 cd $MAPPING_CODE/admin/loader
-mvn -PComputeWorkflow -Drun.config=$MAPPING_CONFIG -Drefset.id=447563008,447562003,450993002 install -Dsend.notification=true
+mvn install -PComputeWorkflow -Drun.config=$MAPPING_CONFIG -Drefset.id=447563008,447562003,450993002 -Dsend.notification=true
 if ($status != 0) then
     echo "ERROR computing workflow"
     exit 1
