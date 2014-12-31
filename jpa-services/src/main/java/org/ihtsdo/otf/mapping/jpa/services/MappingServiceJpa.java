@@ -2975,14 +2975,17 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     MapProject mapProject = getMapProject(mapProjectId);
 
     // check which collection this user belongs to for this project
-    if (mapProject.getMapAdministrators().contains(mapUser)) {
-      return MapUserRole.ADMINISTRATOR;
-    } else if (mapProject.getMapLeads().contains(mapUser)) {
+    if (mapProject.getMapLeads().contains(mapUser)) {
       return MapUserRole.LEAD;
     } else if (mapProject.getMapSpecialists().contains(mapUser)) {
       return MapUserRole.SPECIALIST;
     }
 
+    // check for application administrator
+    if (mapUser.getApplicationRole().equals(MapUserRole.ADMINISTRATOR)) {
+      return MapUserRole.ADMINISTRATOR;
+    }
+    
     // return role NONE if user is not on role lists and project is private
     if (!mapProject.isPublic())
       return MapUserRole.NONE;
@@ -3338,14 +3341,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
             + " has more than one role.");
       else
         userToRoleMap.put(user, "specialist");
-    }
-    for (MapUser user : mapProject.getMapAdministrators()) {
-      // if user is already in map, throw exception
-      if (userToRoleMap.containsKey(user))
-        throw new IllegalStateException("Error: User " + user.getName()
-            + " has more than one role.");
-      else
-        userToRoleMap.put(user, "administrator");
     }
 
   }
