@@ -1729,8 +1729,6 @@ angular
         var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
         var newUrl = baseUrl + "/index/viewer";
         var myWindow = window.open(newUrl, "indexViewerWindow");
-
-        myWindow.document.title = 'testing';
         myWindow.focus();
       };
 
