@@ -1,7 +1,7 @@
 package org.ihtsdo.otf.mapping.helpers;
 
 /**
- * The Enum ReportResultType.
+ * Enum for report result types.
  */
 public enum ReportResultType {
 

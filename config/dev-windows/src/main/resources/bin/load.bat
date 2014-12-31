@@ -28,77 +28,77 @@ pause
 
 echo     Run updatedb with hibernate.hbm2ddl.auto = create ...%date% %time%
 cd %MAPPING_CODE%/admin/updatedb
-call mvn -Drun.config=%MAPPING_CONFIG% -PUpdatedb -Dhibernate.hbm2ddl.auto=create install 1> mvn.log
+call mvn install -Drun.config=%MAPPING_CONFIG% -PUpdatedb -Dhibernate.hbm2ddl.auto=create 1> mvn.log
 IF %ERRORLEVEL% NEQ 0 (set error=1
 goto trailer)
 del /Q mvn.log
 
 echo     Clear indexes ...%date% %time%
 cd %MAPPING_CODE%/admin/lucene
-call mvn -Drun.config=%MAPPING_CONFIG% install 1> mvn.log
+call mvn install -Drun.config=%MAPPING_CONFIG% 1> mvn.log
 IF %ERRORLEVEL% NEQ 0 (set error=1
 goto trailer)
 del /Q mvn.log
 
 echo     Load SNOMEDCT ...%date% %time%
 cd %MAPPING_CODE%/admin/loader
-call mvn -PRF2-snapshot -Drun.config=%MAPPING_CONFIG% -Dterminology=SNOMEDCT -Dinput.dir=%MAPPING_DATA%/snomedct-20140731-mini install 1> mvn.log
+call mvn install -PRF2-snapshot -Drun.config=%MAPPING_CONFIG% -Dterminology=SNOMEDCT -Dinput.dir=%MAPPING_DATA%/snomedct-20140731-mini 1> mvn.log
 IF %ERRORLEVEL% NEQ 0 (set error=1
 goto trailer)
 del /Q mvn.log
 
 echo     Load ICPC ...%date% %time%
 cd %MAPPING_CODE%/admin/loader
-call mvn -PClaML -Drun.config=%MAPPING_CONFIG% -Dterminology=ICPC -Dinput.file=%MAPPING_DATA%/icpc-2.xml install 1> mvn.log
+call mvn install -PClaML -Drun.config=%MAPPING_CONFIG% -Dterminology=ICPC -Dversion=2 -Dinput.file=%MAPPING_DATA%/icpc-2.xml 1> mvn.log
 IF %ERRORLEVEL% NEQ 0 (set error=1
 goto trailer)
 del /Q mvn.log
 
 echo     Load ICD10 ...%date% %time%
 cd %MAPPING_CODE%/admin/loader
-call mvn -PClaML -Drun.config=%MAPPING_CONFIG% -Dterminology=ICD10 -Dinput.file=%MAPPING_DATA%/icd10-2010.xml install 1> mvn.log
+call mvn install -PClaML -Drun.config=%MAPPING_CONFIG% -Dterminology=ICD10 -Dversion=2010 -Dinput.file=%MAPPING_DATA%/icd10-2010.xml 1> mvn.log
 IF %ERRORLEVEL% NEQ 0 (set error=1
 goto trailer)
 del /Q mvn.log
 
 echo     Load ICD9CM ...%date% %time%
 cd %MAPPING_CODE%/admin/loader
-call mvn -PClaML -Drun.config=%MAPPING_CONFIG% -Dterminology=ICD9CM -Dinput.file=%MAPPING_DATA%/icd9cm-2013.xml install 1> mvn.log
+call mvn install -PClaML -Drun.config=%MAPPING_CONFIG% -Dterminology=ICD9CM -Dversion=2013 -Dinput.file=%MAPPING_DATA%/icd9cm-2013.xml 1> mvn.log
 IF %ERRORLEVEL% NEQ 0 (set error=1
 goto trailer)
 del /Q mvn.log
 
 echo     Import project data ...%date% %time%
 cd %MAPPING_CODE%/admin/import
-call mvn -PMapProject -Drun.config=%MAPPING_CONFIG% install -Dinput.dir=%MAPPING_DATA%/ihtsdo-project-data -Dmini=true  1> mvn.log
+call mvn install -PMapProject -Drun.config=%MAPPING_CONFIG% -Dinput.dir=%MAPPING_DATA%/ihtsdo-project-data -Dmini=true  1> mvn.log
 IF %ERRORLEVEL% NEQ 0 (set error=1
 goto trailer)
 del /Q mvn.log
 
 echo     Create ICD10 and ICD9CM map records ...%date% %time%
 cd %MAPPING_CODE%/admin/loader
-call mvn -PCreateMapRecords -Drun.config=%MAPPING_CONFIG% -Drefset.id=447562003,447563008 install 1> mvn.log
+call mvn install -PCreateMapRecords -Drun.config=%MAPPING_CONFIG% -Drefset.id=447562003,447563008 1> mvn.log
 IF %ERRORLEVEL% NEQ 0 (set error=1
 goto trailer)
 del /Q mvn.log
 
 echo     Load ICPC maps from file ...%date% %time%
 cd %MAPPING_CODE%/admin/loader
-call mvn -PMapRecords -Drun.config=%MAPPING_CONFIG% -Dinput.file=%MAPPING_DATA%/der2_iisssccRefset_ExtendedMapSnapshotMini_INT_20140131.txt install 1> mvn.log
+call mvn install -PMapRecords -Drun.config=%MAPPING_CONFIG% -Dinput.file=%MAPPING_DATA%/der2_iisssccRefset_ExtendedMapSnapshotMini_INT_20140131.txt 1> mvn.log
 IF %ERRORLEVEL% NEQ 0 (set error=1
 goto trailer)
 del /Q mvn.log
 
 echo     Load map notes from file ...%date% %time%
 cd %MAPPING_CODE%/admin/loader
-call mvn -PMapNotes -Drun.config=%MAPPING_CONFIG% -Dinput.file=%MAPPING_DATA%/der2_sRefset_MapNotesSnapshotMini_INT_20140131.txt install 1> mvn.log
+call mvn install -PMapNotes -Drun.config=%MAPPING_CONFIG% -Dinput.file=%MAPPING_DATA%/der2_sRefset_MapNotesSnapshotMini_INT_20140131.txt 1> mvn.log
 IF %ERRORLEVEL% NEQ 0 (set error=1
 goto trailer)
 del /Q mvn.log
 
 echo     Compute workflow ...%date% %time%
 cd %MAPPING_CODE%/admin/loader
-call mvn -PComputeWorkflow -Drun.config=%MAPPING_CONFIG% -Drefset.id=447563008,447562003 install 1> mvn.log
+call mvn install -PComputeWorkflow -Drun.config=%MAPPING_CONFIG% -Drefset.id=447563008,447562003 1> mvn.log
 IF %ERRORLEVEL% NEQ 0 (set error=1
 goto trailer)
 del /Q mvn.log

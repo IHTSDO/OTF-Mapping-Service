@@ -18,9 +18,7 @@ import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * The Map Principle Object for the Jpa Domain
- * @author Patrick
- * 
+ * A JPA enabled implementation of {@link MapPrinciple}.
  */
 @Entity
 @Table(name = "map_principles")

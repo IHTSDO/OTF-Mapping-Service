@@ -20,7 +20,7 @@
     <!-- Specify the config artifact parameters -->
     <config.groupId>org.ihtsdo.otf.mapping</config.groupId>
     <config.artifactId>mapping-config-dev-windows</config.artifactId>
-    <config.version>${project.version}</config.version>
+    <config.version>${releaseVersion}</config.version>
   </properties>
 
   <!-- Declare Project Dependency Versions -->
@@ -162,7 +162,7 @@
               <goal>jdeb</goal>
             </goals>
             <configuration>
-              <deb>${project.build.directory}/${packageName}-${project.version}-all.deb</deb>
+              <deb>${project.build.directory}/${packageName}-${releaseVersion}-all.deb</deb>
               <classifier>all</classifier>
               <controlDir>${basedir}/src/deb/control</controlDir>
               <snapshotExpand>true</snapshotExpand>

@@ -3,7 +3,7 @@ package org.ihtsdo.otf.mapping.reports;
 import java.util.List;
 
 /**
- * Generically represents a result in a report
+ * Generically represents a result in a report.
  */
 public interface ReportResult {
 

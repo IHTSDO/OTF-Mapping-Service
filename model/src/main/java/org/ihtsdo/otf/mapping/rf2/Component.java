@@ -3,7 +3,7 @@ package org.ihtsdo.otf.mapping.rf2;
 import java.util.Date;
 
 /**
- * Represents a terminology component.
+ * Generically represents a terminology component.
  */
 public interface Component {
 

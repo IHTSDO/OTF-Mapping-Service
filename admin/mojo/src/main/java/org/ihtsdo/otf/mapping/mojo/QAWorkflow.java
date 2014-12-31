@@ -1,15 +1,19 @@
 package org.ihtsdo.otf.mapping.mojo;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
+import org.ihtsdo.otf.mapping.services.helpers.OtfEmailHandler;
 
 /**
  * Loads unpublished complex maps.
@@ -24,7 +28,7 @@ public class QAWorkflow extends AbstractMojo {
   /**
    * The refSet id
    * @parameter refsetId
-   * @required
+   * 
    */
   private String refsetId = null;
 
@@ -41,13 +45,17 @@ public class QAWorkflow extends AbstractMojo {
     try {
 
       MappingService mappingService = new MappingServiceJpa();
-      Set<MapProject> mapProjects = new HashSet<>();
+      List<MapProject> mapProjects = new ArrayList<>();
 
-      for (MapProject mapProject : mappingService.getMapProjects()
-          .getIterable()) {
-        for (String id : refsetId.split(",")) {
-          if (mapProject.getRefSetId().equals(id)) {
-            mapProjects.add(mapProject);
+      if (refsetId == null) {
+        mapProjects = mappingService.getMapProjects().getMapProjects();
+      } else {
+        for (MapProject mapProject : mappingService.getMapProjects()
+            .getIterable()) {
+          for (String id : refsetId.split(",")) {
+            if (mapProject.getRefSetId().equals(id)) {
+              mapProjects.add(mapProject);
+            }
           }
         }
       }
@@ -58,7 +66,38 @@ public class QAWorkflow extends AbstractMojo {
         getLog().info(
             "Checking workflow for " + mapProject.getName() + ", "
                 + mapProject.getId());
-        workflowService.computeWorkflowStatusErrors(mapProject);
+        ValidationResult result =
+            workflowService.computeWorkflowStatusErrors(mapProject);
+
+        // TODO hardcoded while testing in prod environment
+        if (!result.isValid()) {
+          OtfEmailHandler emailHandler = new OtfEmailHandler();
+          StringBuffer message = new StringBuffer();
+
+          message.append(
+              "Errors were detected in the workflow for project: "
+                  + mapProject.getName()).append("\n\n");
+
+          for (String error : result.getErrors()) {
+            message.append(error).append("\n");
+          }
+          
+          message.append("\n");
+          
+          
+          Properties config;
+          try {
+            config = ConfigUtility.getConfigProperties();
+          } catch (Exception e1) {
+            throw new MojoExecutionException("Failed to retrieve config properties");
+          }
+          String notificationRecipients =
+              config.getProperty("send.notification.recipients");
+          
+          emailHandler.sendSimpleEmail(notificationRecipients,
+              mapProject.getName() + " Workflow Errors", message.toString());
+        }
+
       }
 
       mappingService.close();

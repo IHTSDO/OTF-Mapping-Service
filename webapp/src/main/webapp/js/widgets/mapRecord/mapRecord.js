@@ -846,7 +846,7 @@ angular
                * dashboard"); $location.path($scope.role + "/dash");
                */
             }
-          }
+          };
 
           $scope.saveMapRecord = function(returnBack) {
 
@@ -1003,13 +1003,13 @@ angular
             $scope.noteInput = "HELLO HELLO";
             $scope.noteEditMode = true;
             $scope.noteEditId = mapNote.localId;
-          }
+          };
 
           $scope.cancelEditRecordNote = function() {
             $scope.noteInput = '';
             $scope.noteEditMode = false;
             $scope.noteEditId = null;
-          }
+          };
 
           $scope.saveEditRecordNote = function(record, note) {
 
@@ -1121,9 +1121,9 @@ angular
               // create feedback conversation
               var feedbackConversation = {
                 "lastModified" : new Date(),
-                "terminology" : $scope.project.destinationTerminology,
+                "terminology" : $scope.project.sourceTerminology,
                 "terminologyId" : record.conceptId,
-                "terminologyVersion" : $scope.project.destinationTerminologyVersion,
+                "terminologyVersion" : $scope.project.sourceTerminologyVersion,
                 "isResolved" : "false",
                 "isDiscrepancyReview" : "false",
                 "mapRecordId" : record.id,
@@ -1377,7 +1377,7 @@ angular
               "mapRecordId" : $scope.record.id,
               "targetId" : null,
               "targetName" : null,
-              "rule" : "TRUE",
+              "rule" : ($scope.project.ruleBased == true ? "TRUE" : null),
               "mapPriority" : group.entry.length + 1,
               "mapRelation" : null,
               "mapBlock" : "",
@@ -1732,4 +1732,5 @@ angular
         myWindow.focus();
       };
 
+      
     });

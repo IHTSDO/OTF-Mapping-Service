@@ -2,9 +2,8 @@ package org.ihtsdo.otf.mapping.workflow;
 
 import java.util.Set;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Interface WorkflowException.
+ * Generically represents an exception to a normal workflow path transition.
  */
 public interface WorkflowException {
 

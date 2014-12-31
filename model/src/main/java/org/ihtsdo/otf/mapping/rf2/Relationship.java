@@ -1,7 +1,7 @@
 package org.ihtsdo.otf.mapping.rf2;
 
 /**
- * Represents a relationship between two concepts.
+ * Generically represents a relationship between two concepts.
  */
 public interface Relationship extends Component {
 

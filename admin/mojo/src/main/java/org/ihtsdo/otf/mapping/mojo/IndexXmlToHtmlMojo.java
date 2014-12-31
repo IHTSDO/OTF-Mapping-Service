@@ -82,7 +82,6 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
    * 
    * @throws MojoExecutionException the mojo execution exception
    */
-  @SuppressWarnings("resource")
   @Override
   public void execute() throws MojoExecutionException {
     getLog().info("Starting to convert index XML to HTML");
@@ -118,11 +117,13 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
         throw new MojoFailureException("Specified input file does not exist");
       }
 
+      @SuppressWarnings("resource")
       InputStream inputStream = checkForUtf8BOM(new FileInputStream(file));
       Reader reader = new InputStreamReader(inputStream, "UTF-8");
       InputSource is = new InputSource(reader);
       is.setEncoding("UTF-8");
       saxParser.parse(is, handler);
+      reader.close();
       getLog().info("Done...");
 
     } catch (Exception e) {
