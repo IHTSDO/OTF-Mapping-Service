@@ -2591,7 +2591,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
         Logger.getLogger(this.getClass()).debug("      Create map entry");
         MapEntry mapEntry = new MapEntryJpa();
-        mapEntry.setTargetId(refSetMember.getMapTarget());
+        mapEntry.setTargetId(refSetMember.getMapTarget() == null ? "" : refSetMember.getMapTarget());
         mapEntry.setTargetName(targetName);
         mapEntry.setMapRecord(mapRecord);
         mapEntry.setMapRelation(mapRelationIdMap.get(refSetMember
