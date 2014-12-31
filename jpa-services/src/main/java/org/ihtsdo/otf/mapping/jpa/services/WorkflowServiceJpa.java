@@ -25,7 +25,6 @@ import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.util.ReaderUtil;
 import org.apache.lucene.util.Version;
-import org.apache.maven.plugin.MojoExecutionException;
 import org.hibernate.CacheMode;
 import org.hibernate.search.SearchFactory;
 import org.hibernate.search.indexes.IndexReaderAccessor;
@@ -73,6 +72,7 @@ import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
+import org.ihtsdo.otf.mapping.services.helpers.OtfEmailHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecordJpa;
 import org.ihtsdo.otf.mapping.workflow.WorkflowException;
@@ -1861,24 +1861,31 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     }
 
     if (!result.isValid()) {
-      
+
       Logger.getLogger(WorkflowServiceJpa.class).info(result.toString());
-      
-      Properties config;
-      try {
-        config = ConfigUtility.getConfigProperties();
-      } catch (Exception e1) {
-        Logger.getLogger(WorkflowServiceJpa.class).info(result.toString());
-      }
+
+      Properties config  = ConfigUtility.getConfigProperties();
+
       String notificationRecipients =
           config.getProperty("send.notification.recipients");
-      
+
+      StringBuffer message = new StringBuffer();
+
+      message.append(
+          "Errors were detected in the workflow for project: "
+              + mapProject.getName() + " and concept " + concept.getTerminologyId()).append("\n\n");
+
+      for (String error : result.getErrors()) {
+        message.append(error).append("\n");
+      }
+
+      message.append("\n");
+
       OtfEmailHandler emailHandler = new OtfEmailHandler();
-      emailHandler.sendSimpleEmail(notificationRecipients,
-          mapProject.getName() + " Workflow Errors", message.toString());
-      
+      emailHandler.sendSimpleEmail(notificationRecipients, mapProject.getName()
+          + " Workflow Error Alert, Concept " + concept.getTerminologyId(), message.toString());
+
     }
-      
 
     Set<MapRecord> mapRecords = getMapRecordsForTrackingRecord(trackingRecord);
 
