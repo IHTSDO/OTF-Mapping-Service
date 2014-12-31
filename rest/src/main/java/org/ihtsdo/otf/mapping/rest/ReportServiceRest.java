@@ -1,6 +1,7 @@
 package org.ihtsdo.otf.mapping.rest;
 
 import java.io.InputStream;
+import java.util.Comparator;
 import java.util.Date;
 
 import javax.ws.rs.DELETE;
@@ -22,6 +23,7 @@ import org.ihtsdo.otf.mapping.helpers.ReportList;
 import org.ihtsdo.otf.mapping.helpers.ReportListJpa;
 import org.ihtsdo.otf.mapping.helpers.ReportQueryType;
 import org.ihtsdo.otf.mapping.helpers.ReportResultItemList;
+import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.jpa.handlers.ExportReportHandler;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
@@ -98,7 +100,16 @@ public class ReportServiceRest extends RootServiceRest {
       ReportService reportService = new ReportServiceJpa();
       ReportDefinitionList definitionList =
           reportService.getReportDefinitions();
+      
       reportService.close();
+      
+      // sort by name
+      definitionList.sortBy(new Comparator<ReportDefinition>() {
+        @Override
+        public int compare(ReportDefinition o1, ReportDefinition o2) {
+          return o1.getName().compareTo(o2.getName());
+        }
+      });
 
       return definitionList;
     } catch (Exception e) {
@@ -669,6 +680,14 @@ public class ReportServiceRest extends RootServiceRest {
       ReportDefinitionList definitionList =
           qaCheckService.getQACheckDefinitions();
       qaCheckService.close();
+      
+      // sort results
+      definitionList.sortBy(new Comparator<ReportDefinition>() {
+        @Override
+        public int compare(ReportDefinition o1, ReportDefinition o2) {
+          return o1.getName().compareTo(o2.getName());
+        }
+      });
 
       return definitionList;
     } catch (Exception e) {
