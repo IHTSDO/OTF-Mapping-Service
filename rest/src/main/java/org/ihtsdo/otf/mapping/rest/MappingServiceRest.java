@@ -99,7 +99,7 @@ import com.wordnik.swagger.annotations.ApiParam;
 })
 public class MappingServiceRest extends RootServiceRest {
 
-  /**  The security service. */
+  /** The security service. */
   private SecurityService securityService;
 
   /**
@@ -155,13 +155,15 @@ public class MappingServiceRest extends RootServiceRest {
         // if this user has a role of VIEWER or above for this project (i.e. is
         // not NONE)
         if (!securityService.getMapProjectRoleForToken(authToken,
-            mapProject.getId()).equals(MapUserRole.NONE) || mapProject.isPublic() == true) {
-          
-        	// do not serialize the scope concepts or excludes (retrieval optimization)
-        	mapProject.setScopeConcepts(null);
-        	mapProject.setScopeExcludedConcepts(null);
-        	
-        	mapProjects.addMapProject(mapProject);
+            mapProject.getId()).equals(MapUserRole.NONE)
+            || mapProject.isPublic() == true) {
+
+          // do not serialize the scope concepts or excludes (retrieval
+          // optimization)
+          mapProject.setScopeConcepts(null);
+          mapProject.setScopeExcludedConcepts(null);
+
+          mapProjects.addMapProject(mapProject);
         }
 
       }
@@ -323,14 +325,18 @@ public class MappingServiceRest extends RootServiceRest {
             .build());
 
       MappingService mappingService = new MappingServiceJpa();
-      
-      // scope includes and excludes are transient, and must be added to project before update from webapp
-      MapProject mapProjectFromDatabase = mappingService.getMapProject(mapProject.getId());
-      
-      // set the scope concepts and excludes to the contents of the database prior to update
+
+      // scope includes and excludes are transient, and must be added to project
+      // before update from webapp
+      MapProject mapProjectFromDatabase =
+          mappingService.getMapProject(mapProject.getId());
+
+      // set the scope concepts and excludes to the contents of the database
+      // prior to update
       mapProject.setScopeConcepts(mapProjectFromDatabase.getScopeConcepts());
-      mapProject.setScopeExcludedConcepts(mapProjectFromDatabase.getScopeExcludedConcepts());
-      
+      mapProject.setScopeExcludedConcepts(mapProjectFromDatabase
+          .getScopeExcludedConcepts());
+
       // update the project and close the service
       mappingService.updateMapProject(mapProject);
       mappingService.close();
@@ -1937,8 +1943,8 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
     Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /record/id/" + (mapRecordId == null ? ""
-            : mapRecordId.toString()));
+        "RESTful call (Mapping): /record/id/"
+            + (mapRecordId == null ? "" : mapRecordId.toString()));
 
     String user = "";
     MapRecord mapRecord = null;
@@ -2748,12 +2754,14 @@ public class MappingServiceRest extends RootServiceRest {
       MapUserRole role =
           securityService.getMapProjectRoleForToken(authToken,
               mapRecord.getMapProjectId());
-      if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+      if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
+        mappingService.close();
         throw new WebApplicationException(Response
             .status(401)
             .entity(
                 "User does not have permissions to compute the map relation.")
             .build());
+      }
 
       // System.out.println(mapRecord.toString());
       if (mapRecord.getMapProjectId() == null) {
@@ -2818,13 +2826,15 @@ public class MappingServiceRest extends RootServiceRest {
           securityService.getMapProjectRoleForToken(authToken,
               mapRecord.getMapProjectId());
       user = securityService.getUsernameForToken(authToken);
-      if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+      if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
+        mappingService.close();
         throw new WebApplicationException(
             Response
                 .status(401)
                 .entity(
                     "User does not have permissions to compute the map advice.")
                 .build());
+      }
 
       ProjectSpecificAlgorithmHandler algorithmHandler =
           mappingService.getProjectSpecificAlgorithmHandler(mappingService
@@ -3482,7 +3492,7 @@ public class MappingServiceRest extends RootServiceRest {
       MapProject mapProject =
           mappingService.getMapProject(new Long(mapProjectId));
       mappingService.close();
-      SimpleDateFormat dt = new SimpleDateFormat("yyyymmdd");
+      SimpleDateFormat dt = new SimpleDateFormat("yyyyMMdd");
       String date = dt.format(new Date());
 
       String extension = "";

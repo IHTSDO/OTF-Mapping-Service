@@ -4,8 +4,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Container for key value pairs.
- * 
- * @author ${author}
  */
 @XmlRootElement(name = "keyValuePair")
 public class KeyValuePair {

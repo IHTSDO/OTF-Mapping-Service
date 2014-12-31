@@ -1,7 +1,7 @@
 package org.ihtsdo.otf.mapping.helpers;
 
 /**
- * Represents something Configurable.
+ * Generically represents something configurable by a properties object.
  */
 public interface Configurable {
   // empty for now

@@ -35,7 +35,7 @@ angular
   })
   .controller(
     'projectRecordsCtrl',
-    function($scope, $rootScope, $http, $routeParams, $location,
+    function($scope, $rootScope, $http, $routeParams, $location, $modal,
       localStorageService, $sce) {
 
       $scope.page = 'records';
@@ -59,6 +59,8 @@ angular
 
       // for collapse directive
       $scope.isCollapsed = true;
+
+      $scope.conversation = null;
 
       // watch for changes to focus project
       $scope.$on('localStorageModule.notification.setFocusProject', function(
@@ -417,4 +419,200 @@ angular
         else
           return false;
       };
+
+      $scope.openViewerFeedbackModal = function(lrecord, currentUser) {
+
+        console.debug("openViewerFeedbackModal with ", lrecord, currentUser);
+
+        var modalInstance = $modal
+          .open({
+            templateUrl : 'js/widgets/projectRecords/projectRecordsViewerFeedback.html',
+            controller : ViewerFeedbackModalCtrl,
+            resolve : {
+              record : function() {
+                return lrecord;
+              },
+              currentUser : function() {
+                return currentUser;
+              }
+            }
+          });
+
+        modalInstance.result.then(function(result) {
+          console.debug("Unassigning batch work for user " + mapUser.userName
+            + ", with parameters: ", result);
+
+        });
+
+      };
+
+      var ViewerFeedbackModalCtrl = function($scope, $modalInstance, record) {
+
+        console.debug("Entered modal control", record);
+
+        $scope.record = record;
+        $scope.project = localStorageService.get('focusProject');
+        $scope.currentUser = localStorageService.get('currentUser');
+        $scope.returnRecipients = $scope.project.mapLead;
+        $scope.feedbackInput = '';
+
+        $scope.sendFeedback = function(record, feedbackMessage, name, email) {
+          console.debug("Adding feedback", record);
+
+          if (feedbackMessage == null || feedbackMessage == undefined
+            || feedbackMessage === '') {
+            window.alert("The feedback field cannot be blank. ");
+            return;
+          }
+
+          if ($scope.currentUser.userName === 'guest'
+            && (name == null || name == undefined || name === ''
+              || email == null || email == undefined || email === '')) {
+            window.alert("Name and email must be provided.");
+            return;
+          }
+
+          if ($scope.currentUser.userName === 'guest'
+            && validateEmail(email) == false) {
+            window.alert("Invalied email address provided.");
+            return;
+          }
+
+          if ($scope.currentUser.userName === 'guest') {
+            feedbackMessage = name + "<br>" + email + "<br>" + feedbackMessage;
+          }
+
+          // add code to get any current feedback
+          // conversations
+          $http({
+            url : root_workflow + "conversation/id/" + record.id,
+            dataType : "json",
+            method : "GET",
+            headers : {
+              "Content-Type" : "application/json"
+            }
+          }).success(function(data) {
+            $scope.conversation = data;
+
+            // if the conversation hasn't yet been started
+            if ($scope.conversation == null || $scope.conversation == "") {
+
+              // create first feedback item to go into the
+              // feedback conversation
+              var feedback = {
+                "message" : feedbackMessage,
+                "mapError" : "",
+                "timestamp" : new Date(),
+                "sender" : $scope.currentUser,
+                "recipients" : $scope.returnRecipients,
+                "isError" : "false",
+                "feedbackConversation" : $scope.conversation,
+                "viewedBy" : [ $scope.currentUser ]
+              };
+
+              var feedbacks = new Array();
+              feedbacks.push(feedback);
+
+              // create feedback conversation
+              var feedbackConversation = {
+                "lastModified" : new Date(),
+                "terminology" : $scope.project.sourceTerminology,
+                "terminologyId" : record.conceptId,
+                "terminologyVersion" : $scope.project.sourceTerminologyVersion,
+                "isResolved" : "false",
+                "isDiscrepancyReview" : "false",
+                "mapRecordId" : record.id,
+                "feedback" : feedbacks,
+                "defaultPreferredName" : record.conceptName,
+                "title" : "Viewer Feedback",
+                "mapProjectId" : $scope.project.id,
+                "userName" : record.owner.userName
+              };
+
+              $http({
+                url : root_workflow + "conversation/add",
+                dataType : "json",
+                data : feedbackConversation,
+                method : "PUT",
+                headers : {
+                  "Content-Type" : "application/json"
+                }
+              }).success(function(data) {
+                console.debug("success to addFeedbackConversation.");
+                $scope.conversation = feedbackConversation;
+                $modalInstance.close();
+              }).error(function(data, status, headers, config) {
+                $modalInstance.close();
+                $scope.recordError = "Error adding new feedback conversation.";
+                $rootScope.handleHttpError(data, status, headers, config);
+              });
+
+            } else { // already started a conversation
+
+              // create feedback msg to be added to the
+              // conversation
+              var feedback = {
+                "message" : feedbackMessage,
+                "mapError" : "",
+                "timestamp" : new Date(),
+                "sender" : $scope.currentUser,
+                "recipients" : $scope.returnRecipients,
+                "isError" : "false",
+                "viewedBy" : [ $scope.currentUser ]
+              };
+
+              $scope.conversation.feedback.push(feedback);
+
+              $http({
+                url : root_workflow + "conversation/update",
+                dataType : "json",
+                data : $scope.conversation,
+                method : "POST",
+                headers : {
+                  "Content-Type" : "application/json"
+                }
+              }).success(function(data) {
+                console.debug("success to update Feedback conversation.");
+                $modalInstance.close();
+              }).error(function(data, status, headers, config) {
+                $scope.recordError = "Error updating feedback conversation.";
+                $modalInstance.close();
+                $rootScope.handleHttpError(data, status, headers, config);
+              });
+            }
+          }).error(function(data, status, headers, config) {
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        };
+
+        $scope.cancel = function() {
+          $modalInstance.dismiss('cancel');
+        };
+
+        function validateEmail(email) {
+          var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+          return re.test(email);
+        }
+
+        $scope.tinymceOptions = {
+
+          menubar : false,
+          statusbar : false,
+          plugins : "autolink autoresize link image charmap searchreplace lists paste",
+          toolbar : "undo redo | styleselect lists | bold italic underline strikethrough | charmap link image",
+
+          setup : function(ed) {
+
+            // added to fake two-way binding from the html
+            // element
+            // noteInput is not accessible from this javascript
+            // for some reason
+            ed.on('keyup', function(e) {
+              $scope.tinymceContent = ed.getContent();
+              $scope.$apply();
+            });
+          }
+        };
+      };
+
     });
