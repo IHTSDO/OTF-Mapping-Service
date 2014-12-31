@@ -62,7 +62,7 @@ angular
 							var previousPrinciplePage = 1;
 							var previousRelationPage = 1;
 							var previousReportDefinitionPage = 1;
-							var previousQACheckDefinitionPage = 1;
+							var previousQaDefinitionPage = 1;
 
 							$scope.allowableMapTypes = new Array();
 							$scope.allowableMapRelationStyles = new Array();
@@ -77,12 +77,21 @@ angular
 							$scope.testReportError = null; // error returned
 							// for report not
 							// passing test
-							$scope.testQACheckSuccess = false;
-							$scope.testQACheckError = null;
+							$scope.testQaSuccess = false;
+							$scope.testQaError = null;
+
+							// instantiate the new report definition with default
+							// success/error flags
+							$scope.newDefinition = {
+								'testReportSuccess' : false,
+								'testReportError' : null
+							};
+
+							// enumerate the report definition field pick lists
 							$scope.definitionQueryTypes = [ 'NONE', 'SQL', 'HQL', 'LUCENE' ];
 							$scope.definitionResultTypes = [ 'CONCEPT', 'MAP_RECORD' ];
 							$scope.definitionRoles = [ 'VIEWER', 'SPECIALIST', 'LEAD',
-									'ADMIN' ];
+									'ADMINISTRATOR' ];
 							$scope.definitionTimePeriods = [ 'DAILY', 'WEEKLY', 'MONTHLY',
 									'ANNUALLY' ];
 							$scope.definitionFrequencies = [ 'DAILY', 'MONDAY', 'TUESDAY',
@@ -324,27 +333,22 @@ angular
 											headers : {
 												"Content-Type" : "application/json"
 											}
-										})
-										.success(
-												function(data) {
-													$scope.qaCheckDefinitions = data.reportDefinition;
-													localStorageService.add('qaCheckDefinitions',
-															data.reportDefinition);
-													$rootScope
-															.$broadcast(
-																	'localStorageModule.notification.setQACheckDefinitions',
-																	{
-																		key : 'qaCheckDefinitions',
-																		qaCheckDefinitions : data.qaCheckDefinitions
-																	});
-													$scope.allowableQACheckDefinitions = localStorageService
-															.get('qaCheckDefinitions');
-													$scope.getPagedQACheckDefinitions(1, "");
-												}).error(
-												function(data, status, headers, config) {
-													$rootScope.handleHttpError(data, status, headers,
-															config);
-												});
+										}).success(
+										function(data) {
+											$scope.qaCheckDefinitions = data.reportDefinition;
+											localStorageService.add('qaCheckDefinitions',
+													data.reportDefinition);
+											$rootScope.$broadcast(
+													'localStorageModule.notification.setQaDefinitions', {
+														key : 'qaCheckDefinitions',
+														qaCheckDefinitions : data.qaCheckDefinitions
+													});
+											$scope.allowableQaDefinitions = localStorageService
+													.get('qaCheckDefinitions');
+											$scope.getPagedQaDefinitions(1, "");
+										}).error(function(data, status, headers, config) {
+									$rootScope.handleHttpError(data, status, headers, config);
+								});
 
 								// set pagination variables
 								$scope.pageSize = 5;
@@ -454,22 +458,22 @@ angular
 								previousReportDefinitionPage = page;
 							};
 
-							$scope.getPagedQACheckDefinitions = function(page, filter) {
-								console.debug('getPagedQACheckDefinitions', filter);
+							$scope.getPagedQaDefinitions = function(page, filter) {
+								console.debug('getPagedQaDefinitions', filter);
 								if ($scope.qaCheckDefinitionInEditingPerformed() == true) {
 									if (confirm("You have unsaved changes.\n\n Are you sure that you want to switch pages?") == false) {
-										$scope.pageQACheckDefinition = previousQACheckDefinitionPage;
+										$scope.pageQaDefinition = previousQaDefinitionPage;
 										return;
 									}
 								}
 								$scope.qaCheckDefinitionFilter = filter;
-								$scope.pagedQACheckDefinition = $scope.sortByKey(
+								$scope.pagedQaDefinition = $scope.sortByKey(
 										$scope.qaCheckDefinitions, 'id').filter(
-										containsQACheckDefinitionFilter);
-								$scope.pagedQACheckDefinitionCount = $scope.pagedQACheckDefinition.length;
-								$scope.pagedQACheckDefinition = $scope.pagedQACheckDefinition
-										.slice((page - 1) * $scope.pageSize, page * $scope.pageSize);
-								previousQACheckDefinitionPage = page;
+										containsQaDefinitionFilter);
+								$scope.pagedQaDefinitionCount = $scope.pagedQaDefinition.length;
+								$scope.pagedQaDefinition = $scope.pagedQaDefinition.slice(
+										(page - 1) * $scope.pageSize, page * $scope.pageSize);
+								previousQaDefinitionPage = page;
 							};
 
 							// functions to reset the filter and retrieve
@@ -499,9 +503,9 @@ angular
 								$scope.getPagedReportDefinitions(1);
 							};
 
-							$scope.resetQACheckDefinitionFilter = function() {
+							$scope.resetQaDefinitionFilter = function() {
 								$scope.qaCheckDefinitionFilter = "";
-								$scope.getPagedQACheckDefinitions(1);
+								$scope.getPagedQaDefinitions(1);
 							};
 
 							// element-specific functions for filtering
@@ -575,7 +579,7 @@ angular
 							}
 							;
 
-							function containsQACheckDefinitionFilter(element) {
+							function containsQaDefinitionFilter(element) {
 
 								// check if advice filter is empty
 								if ($scope.qaCheckDefinitionFilter === ""
@@ -1013,7 +1017,7 @@ angular
 							};
 
 							// reverts qaCheckDefinition to last saved state
-							$scope.revertUnsavedQACheckDefinitions = function() {
+							$scope.revertUnsavedQaDefinitions = function() {
 
 								// clear qaCheckDefinition from editingPerformed
 								for (var i = editingPerformed.length; i--;) {
@@ -1031,27 +1035,22 @@ angular
 											headers : {
 												"Content-Type" : "application/json"
 											}
-										})
-										.success(
-												function(data) {
-													$scope.qaCheckDefinitions = data.reportDefinition;
-													localStorageService.add('qaCheckDefinitions',
-															data.qaCheckDefinition);
-													$rootScope
-															.$broadcast(
-																	'localStorageModule.notification.setQACheckDefinitions',
-																	{
-																		key : 'qaCheckDefinitions',
-																		qaCheckDefinitions : data.qaCheckDefinitions
-																	});
-													$scope.allowableMapQACheckDefinitions = localStorageService
-															.get('qaCheckDefinitions');
-													$scope.getPagedQACheckDefinitions(1, "");
-												}).error(
-												function(data, status, headers, config) {
-													$rootScope.handleHttpError(data, status, headers,
-															config);
-												});
+										}).success(
+										function(data) {
+											$scope.qaCheckDefinitions = data.reportDefinition;
+											localStorageService.add('qaCheckDefinitions',
+													data.qaCheckDefinition);
+											$rootScope.$broadcast(
+													'localStorageModule.notification.setQaDefinitions', {
+														key : 'qaCheckDefinitions',
+														qaCheckDefinitions : data.qaCheckDefinitions
+													});
+											$scope.allowableMapQaDefinitions = localStorageService
+													.get('qaCheckDefinitions');
+											$scope.getPagedQaDefinitions(1, "");
+										}).error(function(data, status, headers, config) {
+									$rootScope.handleHttpError(data, status, headers, config);
+								});
 							};
 
 							// indicates if any unsaved project
@@ -1463,7 +1462,7 @@ angular
 									"email" : mapUserEmail,
 									"applicationRole" : mapUserApplicationRole
 								};
-								
+
 								$rootScope.glassPane++;
 
 								$http({
@@ -2307,36 +2306,35 @@ angular
 												});
 							};
 
-							$scope.validateReportDefinition = function(name, roleRequired,
-									resultType, queryType, diffReport, timePeriod,
-									diffReportDefinition, frequency, query) {
+							$scope.validateReportDefinition = function(definition) {
 
 								// initial report is null
 								var testReportError = "";
 
 								// check all parameters
-								if (name == null || name === '')
+								if (definition.name == null || definition.name === '')
 									testReportError += "You must specify a report name.\n";
-								if (roleRequired == null)
+								if (definition.roleRequired == null)
 									testReportError += "You must specify the required role.\n";
-								if (resultType == null)
+								if (definition.resultType == null)
 									testReportError += "You must specify the result type.\n";
-								if (queryType == null)
-									testReportError += 'You must specify the query type\n';
-								if (frequency == null)
+								if (definition.frequency == null)
 									testReportError += 'You must specify the report frequency\n';
 
 								// check diff report parameters
-								if (diffReport == null) {
+								if (definition.diffReport == null) {
 									testReportError += "You must specify whether this report is a difference report\n";
-								} else if (diffReport == true) {
-									if (timePeriod == null)
+								} else if (definition.diffReport == true) {
+									if (definition.timePeriod == null)
 										testReportError += "You must specify the time period over which the difference report is calculated\n";
-									if (diffReportDefinition == null)
+									if (definition.diffReportDefinition == null)
 										testReportError += "You must specify the report definition from which the difference report is calculated\n";
 
-								} else if (diffReport == false) {
-									if (queryType != 'NONE' && (query == null || query === ''))
+								} else if (definition.diffReport == false) {
+									if (definition.queryType == null)
+										testReportError += 'You must specify the query type\n';
+									if (definition.queryType != 'NONE'
+											&& (definition.query == null || definition.query === ''))
 										testReportError += "You must specify a query\n";
 								}
 
@@ -2348,35 +2346,27 @@ angular
 
 							};
 
-							// function to allow a user to test whether report
-							// successfully runs before
-							// officially adding it
-							$scope.testReportDefinition = function(name, roleRequired,
-									resultType, queryType, diffReport, timePeriod,
-									diffReportDefinition, frequency, query) {
+							// helper function to set the new report definition test success
+							// variable to false
+							$scope.setTestReportSuccess = function(flag) {
+								$scope.testReportSuccess = flag;
+							};
+
+							/**
+							 * Function to test a report definition
+							 */
+							$scope.testReportDefinition = function(definition) {
 
 								console.debug("Testing report definition");
 
+								definition.testReportSuccess = false;
+								definition.testReportErrors = null;
+
 								// if validation returns an error, simply return
-								if ($scope.validateReportDefinition(name, roleRequired,
-										resultType, queryType, diffReport, timePeriod,
-										diffReportDefinition, frequency, query) != true)
+								if ($scope.validateReportDefinition(definition) != true)
 									return;
 
 								$rootScope.glassPane++;
-
-								var obj = {
-									"name" : name,
-									"roleRequired" : roleRequired,
-									"resultType" : resultType,
-									"queryType" : queryType,
-									"frequency" : frequency,
-									"diffReport" : diffReport,
-									"timePeriod" : timePeriod,
-									"diffReportDefinitionName" : diffReportDefinition,
-									"qaCheck" : "false",
-									"query" : query
-								};
 
 								$http(
 										{
@@ -2384,43 +2374,42 @@ angular
 													+ $scope.focusProject.id + "/user/id/"
 													+ $scope.currentUser.userName,
 											dataType : "json",
-											data : obj,
+											data : definition,
 											method : "POST",
 											headers : {
 												"Content-Type" : "application/json"
 											}
-										}).success(function(data) {
+										}).success(
+										function(data) {
+											$rootScope.glassPane--;
+
+											definition.testReportSuccess = data === 'true' ? true
+													: false;
+											definition.testReportError = null;
+
+											console.debug("Success", $scope.testReportSuccess);
+
+											// NOTE: Do not handle this
+											// as normal http error
+											// instead set a local error
+											// variable
+										}).error(function(data, status, headers, config) {
 									$rootScope.glassPane--;
+									definition.testReportSuccess = false;
+									definition.testReportError = data.replace(/"/g, '');
 
-									$scope.testReportSuccess = data === 'true' ? true : false;
-									$scope.testReportError = null;
-
-									console.debug("Success", $scope.testReportSuccess);
-
-									// NOTE: Do not handle this
-									// as normal http error
-									// instead set a local error
-									// variable
-								}).error(function(data, status, headers, config) {
-									$rootScope.glassPane--;
-									$scope.testReportSuccess = false;
-									$scope.testReportError = data.replace(/"/g, '');
-
-									console.debug("Error", $scope.testReportSuccess);
 								});
 
-								console.debug($scope.testReportSuccess);
 							};
 
 							$scope.updateReportDefinition = function(definition) {
 
 								// if validation returns an error, simply return
-								if ($scope.validateReportDefinition(definition.name,
-										definition.roleRequired, definition.resultType,
-										definition.queryType, definition.diffReport,
-										definition.timePeriod, definition.diffReportDefinitionName,
-										definition.frequency, definition.query) != true)
+								if ($scope.validateReportDefinition(definition) != true)
 									return;
+
+								definition.testReportSuccess = null;
+								definition.testReportErrors = null;
 
 								var obj = {
 									"id" : definition.objectId,
@@ -2435,6 +2424,8 @@ angular
 									"qaCheck" : "false",
 									"query" : definition.query
 								};
+
+								$rootScope.glassPane++;
 
 								$http({
 									url : root_reporting + "definition/update",
@@ -2510,52 +2501,41 @@ angular
 																	function(data, status, headers, config) {
 																		$rootScope.handleHttpError(data, status,
 																				headers, config);
-																	});
+																	}).then(function() {
+																$rootScope.glassPane--;
+															})
 
 												});
 							};
 
-							$scope.submitNewReportDefinition = function(name, roleRequired,
-									resultType, queryType, diffReport, timePeriod,
-									diffReportDefinition, frequency, query) {
+							$scope.submitNewReportDefinition = function(definition) {
 
 								// if validation returns an error, simply return
-								if ($scope.validateReportDefinition(name, roleRequired,
-										resultType, queryType, diffReport, timePeriod,
-										diffReportDefinition, frequency, query) != true)
+								if ($scope.validateReportDefinition(definition) != true)
 									return;
 
 								console.debug("in submitNewReportDefinition");
-								var obj = {
-									"name" : name,
-									"roleRequired" : roleRequired,
-									"resultType" : resultType,
-									"queryType" : queryType,
-									"frequency" : frequency,
-									"diffReport" : diffReport,
-									"timePeriod" : timePeriod,
-									"diffReportDefinitionName" : diffReportDefinition,
-									"qaCheck" : "false",
-									"query" : query
-								};
+
+								$rootScope.glassPane++;
 
 								$http({
 									url : root_reporting + "definition/add",
 									dataType : "json",
-									data : obj,
+									data : definition,
 									method : "POST",
 									headers : {
 										"Content-Type" : "application/json"
 									}
 								})
 										.success(function(data) {
-											$scope.testReportSuccess = false;
-											$scope.testReportError = null;
+											definition.testReportSuccess = null;
+											definition.testReportError = null;
 											console.debug("success to addReportDefinition");
 										})
 										.error(
 												function(data, status, headers, config) {
-													$scope.recordError = "Error adding new map reportDefinition.";
+													definition.testReportSuccess = null;
+													definition.testReportError = null;
 													$rootScope.handleHttpError(data, status, headers,
 															config);
 												})
@@ -2589,13 +2569,15 @@ angular
 																	function(data, status, headers, config) {
 																		$rootScope.handleHttpError(data, status,
 																				headers, config);
-																	});
+																	}).then(function() {
+																$rootScope.glassPane--;
+															})
 
 												});
 							};
 
-							$scope.deleteQACheckDefinition = function(qaCheckDefinition) {
-								console.debug("in deleteQACheckDefinition from application");
+							$scope.deleteQaDefinition = function(qaCheckDefinition) {
+								console.debug("in deleteQaDefinition from application");
 
 								if (confirm("Are you sure that you want to delete a map qaCheckDefinition?") == false)
 									return;
@@ -2612,7 +2594,7 @@ angular
 										.success(
 												function(data) {
 													console
-															.debug("success to deleteQACheckDefinition from application");
+															.debug("success to deleteQaDefinition from application");
 												})
 										.error(
 												function(data, status, headers, config) {
@@ -2635,7 +2617,7 @@ angular
 															.success(
 																	function(data) {
 																		$scope.qaCheckDefinitions = data.reportDefinition;
-																		$scope.resetQACheckDefinitionFilter();
+																		$scope.resetQaDefinitionFilter();
 																		for (var j = 0; j < $scope.focusProject.qaCheckDefinition.length; j++) {
 																			if (qaCheckDefinition.id === $scope.focusProject.qaCheckDefinition[j].id) {
 																				$scope.focusProject.qaCheckDefinition[j] = qaCheckDefinition;
@@ -2646,12 +2628,12 @@ angular
 																				data.qaCheckDefinition);
 																		$rootScope
 																				.$broadcast(
-																						'localStorageModule.notification.setQACheckDefinitions',
+																						'localStorageModule.notification.setQaDefinitions',
 																						{
 																							key : 'reportDefinitions',
 																							qaCheckDefinitions : data.qaCheckDefinitions
 																						});
-																		$scope.allowableQACheckDefinitions = localStorageService
+																		$scope.allowableQaDefinitions = localStorageService
 																				.get('qaCheckDefinitions');
 
 																		// update
@@ -2683,55 +2665,23 @@ angular
 												});
 							};
 
-							$scope.validateQACheckDefinition = function(name, roleRequired,
-									resultType, queryType, query) {
-
-								// initial report is null
-								var testQACheckError = "";
-
-								// check all parameters
-								if (name == null || name === '')
-									testQACheckError += "You must specify a qa check name.\n";
-								if (roleRequired == null)
-									testQACheckError += "You must specify the required role.\n";
-								if (resultType == null)
-									testQACheckError += "You must specify the result type.\n";
-								if (queryType == null)
-									testQACheckError += 'You must specify the query type\n';
-
-								if (testQACheckError != '')
-									window.alert(testQACheckError);
-
-								return testQACheckError === '';
-
-							};
-
 							// function to allow a user to test whether qa check
 							// successfully runs before
 							// officially adding it
-							$scope.testQACheckDefinition = function(name, roleRequired,
-									resultType, queryType, query) {
+							$scope.testQaDefinition = function(definition) {
 
 								console.debug("Testing qa check definition");
 
+								// set the unused fields for qa definition
+								definition.diffReport = false;
+								definition.timePeriod = null;
+								definition.frequency = 'ON_DEMAND';
+
 								// if validation returns an error, simply return
-								if ($scope.validateQACheckDefinition(name, roleRequired,
-										resultType, queryType, query) != true)
+								if ($scope.validateReportDefinition(definition) != true)
 									return;
 
 								$rootScope.glassPane++;
-
-								var qaCheck = true;
-								var obj = {
-									"name" : name,
-									"roleRequired" : roleRequired,
-									"resultType" : resultType,
-									"queryType" : queryType,
-									"diffReport" : "false",
-									"qaCheck" : qaCheck,
-									"timePeriod" : null,
-									"query" : query
-								};
 
 								$http(
 										{
@@ -2739,17 +2689,15 @@ angular
 													+ $scope.focusProject.id + "/user/id/"
 													+ $scope.currentUser.userName,
 											dataType : "json",
-											data : obj,
+											data : definition,
 											method : "POST",
 											headers : {
 												"Content-Type" : "application/json"
 											}
 										}).success(function(data) {
 									$rootScope.glassPane--;
-									$scope.testQACheckSuccess = true;
-									$scope.testQACheckError = null;
-
-									console.debug("Success", $scope.testQACheckSuccess);
+									definition.testQaSuccess = true;
+									definition.testQaError = null;
 
 									// NOTE: Do not handle this
 									// as normal http error
@@ -2757,22 +2705,31 @@ angular
 									// variable
 								}).error(function(data, status, headers, config) {
 									$rootScope.glassPane--;
-									$scope.testQACheckSuccess = false;
-									$scope.testQACheckError = data.replace(/"/g, '');
-
-									console.debug("Error", $scope.testQACheckSuccess);
+									definition.testQaSuccess = false;
+									definition.testQaError = data.replace(/"/g, '');
 								});
 
-								console.debug($scope.testQACheckSuccess);
 							};
 
-							$scope.updateQACheckDefinition = function(qaCheckDefinition) {
+							$scope.updateQaDefinition = function(definition) {
 
-								console.debug("in updateQACheckDefinition");
+								// set the unused fields for qa definition
+								definition.diffReport = false;
+								definition.timePeriod = null;
+								definition.frequency = 'ON_DEMAND';
+
+								// if validation returns an error, simply return
+								if ($scope.validateReportDefinition(definition) != true)
+									return;
+
+								console.debug("in updateQaDefinition");
+
+								$rootScope.glassPane++;
+
 								$http({
 									url : root_reporting + "definition/update",
 									dataType : "json",
-									data : qaCheckDefinition,
+									data : definition,
 									method : "POST",
 									headers : {
 										"Content-Type" : "application/json"
@@ -2780,7 +2737,7 @@ angular
 								})
 										.success(
 												function(data) {
-													console.debug("success to updateQACheckDefinition");
+													console.debug("success to updateQaDefinition");
 													removeComponentFromArray(editingPerformed,
 															qaCheckDefinition);
 												})
@@ -2803,11 +2760,13 @@ angular
 																}
 															})
 															.success(
+
 																	function(data) {
+																		$rootScope.glassPane--;
 																		$scope.qaCheckDefinitions = data.reportDefinition;
 																		for (var j = 0; j < $scope.focusProject.qaCheckDefinition.length; j++) {
 																			if (qaCheckDefinition.id === $scope.focusProject.qaCheckDefinition[j].id) {
-																				$scope.focusProject.qaCheckDefinition[j] = qaCheckDefinition;
+																				$scope.focusProject.qaCheckDefinition[j] = definition;
 																			}
 																		}
 																		localStorageService.add(
@@ -2815,12 +2774,12 @@ angular
 																				data.qaCheckDefinition);
 																		$rootScope
 																				.$broadcast(
-																						'localStorageModule.notification.setQACheckDefinitions',
+																						'localStorageModule.notification.setQaDefinitions',
 																						{
 																							key : 'qaCheckDefinitions',
 																							qaCheckDefinitions : data.qaCheckDefinitions
 																						});
-																		$scope.allowableQACheckDefinitions = localStorageService
+																		$scope.allowableQaDefinitions = localStorageService
 																				.get('qaCheckDefinitions');
 
 																		// update
@@ -2844,7 +2803,9 @@ angular
 																				.updateMapProject($scope.focusProject);
 
 																	}).error(
+
 																	function(data, status, headers, config) {
+																		$rootScope.glassPane--;
 																		$rootScope.handleHttpError(data, status,
 																				headers, config);
 																	});
@@ -2852,33 +2813,30 @@ angular
 												});
 							};
 
-							$scope.submitNewQACheckDefinition = function(name, roleRequired,
-									resultType, queryType, query) {
+							$scope.submitNewQaDefinition = function(definition) {
 
-								console.debug("in submitNewQACheckDefinition");
-								var qaCheck = true;
-								var obj = {
-									"name" : name,
-									"roleRequired" : roleRequired,
-									"resultType" : resultType,
-									"queryType" : queryType,
-									"diffReport" : "false",
-									"qacheck" : qaCheck,
-									"timePeriod" : null,
-									"query" : query
-								};
+								console.debug("in submitNewQaDefinition");
+
+								// set the unused fields for qa definition
+								definition.diffReport = false;
+								definition.timePeriod = null;
+								definition.frequency = 'ON_DEMAND';
+
+								// if validation returns an error, simply return
+								if ($scope.validateReportDefinition(definition) != true)
+									return;
 
 								$http({
 									url : root_reporting + "definition/add",
 									dataType : "json",
-									data : obj,
+									data : definition,
 									method : "POST",
 									headers : {
 										"Content-Type" : "application/json"
 									}
 								})
 										.success(function(data) {
-											console.debug("success to addQACheckDefinition");
+											console.debug("success to addQaDefinition");
 										})
 										.error(
 												function(data, status, headers, config) {
@@ -2901,18 +2859,18 @@ angular
 															.success(
 																	function(data) {
 																		$scope.qaCheckDefinitions = data.reportDefinition;
-																		$scope.resetQACheckDefinitionFilter();
+																		$scope.resetQaDefinitionFilter();
 																		localStorageService.add(
 																				'qaCheckDefinitions',
 																				data.qaCheckDefinition);
 																		$rootScope
 																				.$broadcast(
-																						'localStorageModule.notification.setQACheckDefinitions',
+																						'localStorageModule.notification.setQaDefinitions',
 																						{
 																							key : 'qaCheckDefinitions',
 																							qaCheckDefinitions : data.qaCheckDefinitions
 																						});
-																		$scope.allowableQACheckDefinitions = localStorageService
+																		$scope.allowableQaDefinitions = localStorageService
 																				.get('qaCheckDefinitions');
 																	}).error(
 																	function(data, status, headers, config) {
@@ -2923,8 +2881,12 @@ angular
 												});
 							};
 
-							$scope.updateMapProject = function(project) {
-
+							/**
+							 * Helper function to update map project from the list of existing
+							 * projects. Required as terminology/version are rendered as
+							 * single strings instead of individual fields
+							 */
+							$scope.updateMapProjectFromList = function(project) {
 								// get source and version and dest and version
 								var src = project.sourceTerminologyVersion.split(" ");
 								project.sourceTerminology = src[0];
@@ -2932,6 +2894,15 @@ angular
 								var res = project.destinationTerminologyVersion.split(" ");
 								project.destinationTerminology = res[0];
 								project.destinationTerminologyVersion = res[1];
+
+								$scope.updateMapProject(project);
+							};
+
+							/**
+							 * Function to update a map project via REST call and update the
+							 * cached projects
+							 */
+							$scope.updateMapProject = function(project) {
 
 								$http({
 									url : root_mapping + "project/update",
@@ -2946,11 +2917,6 @@ angular
 												function(data) {
 													console.debug("success to updateMapProject");
 													removeComponentFromArray(editingPerformed, project);
-													// localStorageService.set('focusProject',
-													// project);
-													// $rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key:
-													// 'focusProject',
-													// focusProject: project});
 
 													// retrieve updated projects
 													// and broadcast
@@ -2999,7 +2965,7 @@ angular
 
 							$scope.deleteMapProject = function(project) {
 
-								if (confirm("ARE YOU ABSOLUTELY SURE?\n\n  Deleting a project requires recomputing workflow and rerunning indexes, and may cause workflow problems for other projects.") == false)
+								if (confirm("ARE YOU ABSOLUTELY SURE?\n\n  Deleting a project is final and cannot be undone.") == false)
 									return;
 
 								$rootScope.glassPane++;
