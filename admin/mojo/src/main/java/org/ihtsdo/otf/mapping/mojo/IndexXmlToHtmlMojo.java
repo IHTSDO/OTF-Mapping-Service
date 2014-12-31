@@ -117,7 +117,6 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
         throw new MojoFailureException("Specified input file does not exist");
       }
 
-      @SuppressWarnings("resource")
       InputStream inputStream = checkForUtf8BOM(new FileInputStream(file));
       Reader reader = new InputStreamReader(inputStream, "UTF-8");
       InputSource is = new InputSource(reader);
