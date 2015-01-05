@@ -29,8 +29,14 @@ public class TreeposComputerMojo extends AbstractMojo {
   private String terminology;
 
   /**
-   * Instantiates a {@link TreeposComputerMojo} from the specified
-   * parameters.
+   * The terminology version.
+   * @parameter
+   * @required
+   */
+  private String terminologyVersion;
+
+  /**
+   * Instantiates a {@link TreeposComputerMojo} from the specified parameters.
    * 
    */
   public TreeposComputerMojo() {
@@ -46,19 +52,16 @@ public class TreeposComputerMojo extends AbstractMojo {
   public void execute() throws MojoFailureException {
     getLog().info("Starting computing tree positions");
     getLog().info("  terminology = " + terminology);
+    getLog().info("  terminologyVersion = " + terminologyVersion);
 
     try {
 
-      // Get terminology version
-      MetadataServiceJpa metadataService = new MetadataServiceJpa();
-      String version =
-          metadataService.getTerminologyLatestVersions().get(terminology);
-
       // creating tree positions
       // first get isaRelType from metadata
+      MetadataServiceJpa metadataService = new MetadataServiceJpa();
       Map<String, String> hierRelTypeMap =
-          metadataService
-              .getHierarchicalRelationshipTypes(terminology, version);
+          metadataService.getHierarchicalRelationshipTypes(terminology,
+              terminologyVersion);
       String isaRelType = hierRelTypeMap.keySet().iterator().next().toString();
       metadataService.close();
 
@@ -71,7 +74,9 @@ public class TreeposComputerMojo extends AbstractMojo {
       String rootId = null;
       OUTER: while (true) {
         getLog().info("  Walk up tree from " + conceptId);
-        Concept c = contentService.getConcept(conceptId, terminology, version);
+        Concept c =
+            contentService.getConcept(conceptId, terminology,
+                terminologyVersion);
         for (Relationship r : c.getRelationships()) {
           if (r.isActive() && r.getTypeId().equals(Long.valueOf(isaRelType))) {
             conceptId = r.getDestinationConcept().getTerminologyId();
@@ -82,8 +87,8 @@ public class TreeposComputerMojo extends AbstractMojo {
         break;
       }
       getLog().info("  Compute tree from rootId " + conceptId);
-      contentService.computeTreePositions(terminology, version, isaRelType,
-          rootId);
+      contentService.computeTreePositions(terminology, terminologyVersion,
+          isaRelType, rootId);
 
       contentService.close();
 

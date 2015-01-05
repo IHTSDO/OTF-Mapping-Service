@@ -17,6 +17,9 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
+/**
+ * Workflow path handler for "review project path".
+ */
 public class WorkflowReviewProjectPathHandler extends
     AbstractWorkflowPathHandler {
 
@@ -24,7 +27,9 @@ public class WorkflowReviewProjectPathHandler extends
   private static WorkflowPathState initialState, specialistEditingState,
       specialistFinishedState, leadEditingState, leadFinishedState;
 
-  // constructor defines the tracking record states that exist for this workflow
+  /**
+   * Instantiates an empty {@link WorkflowReviewProjectPathHandler}.
+   */
   public WorkflowReviewProjectPathHandler() {
 
     // set the workflow path
