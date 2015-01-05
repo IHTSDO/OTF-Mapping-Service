@@ -30,33 +30,50 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+/**
+ * Unit test for workflow actions on non legacy path.
+ */
 public class WorkflowActionNonLegacyPathTest {
 
   // the content
+  /**  The concept. */
   private static Concept concept;
 
   // the mapping objects
+  /**  The lead. */
   private static MapUser viewer, specialist, specialist2, lead;
 
+  /**  The lead record. */
   private static MapRecord specRecord, specRecord2, leadRecord;
 
+  /**  The map project. */
   private static MapProject mapProject;
 
   // the tracking record
+  /**  The tracking record. */
   private static TrackingRecord trackingRecord;
 
   // the services
+  /**  The content service. */
   private static ContentService contentService;
 
+  /**  The mapping service. */
   private static MappingService mappingService;
 
+  /**  The workflow service. */
   private static WorkflowService workflowService;
 
   // the workflow handler
+  /**  The handler. */
   private static WorkflowNonLegacyPathHandler handler;
 
   // TODO Make sure to test a few bad workflow states
 
+  /**
+   * Inits the.
+   *
+   * @throws Exception the exception
+   */
   @BeforeClass
   public static void init() throws Exception {
 
@@ -152,6 +169,11 @@ public class WorkflowActionNonLegacyPathTest {
 
   }
 
+  /**
+   * Test initial state.
+   *
+   * @throws Exception the exception
+   */
   @Test
   public void testInitialState() throws Exception {
 
@@ -191,6 +213,8 @@ public class WorkflowActionNonLegacyPathTest {
         case UNASSIGN:
           assertTrue(result.getErrors().contains(action.toString()));
           break;
+        default:
+          break;
 
       }
     }
@@ -224,6 +248,8 @@ public class WorkflowActionNonLegacyPathTest {
           break;
         case UNASSIGN:
           assertTrue(result.getErrors().contains(action.toString()));
+          break;
+        default:
           break;
 
       }
@@ -259,6 +285,8 @@ public class WorkflowActionNonLegacyPathTest {
         case UNASSIGN:
           assertTrue(result.getErrors().contains(action.toString()));
           break;
+        default:
+          break;
 
       }
     }
@@ -293,12 +321,19 @@ public class WorkflowActionNonLegacyPathTest {
         case UNASSIGN:
           assertTrue(result.getErrors().contains(action.toString()));
           break;
+        default:
+          break;
 
       }
     }
 
   }
 
+  /**
+   * Test first specialist editing state.
+   *
+   * @throws Exception the exception
+   */
   @Test
   public void testFirstSpecialistEditingState() throws Exception {
 
@@ -349,6 +384,8 @@ public class WorkflowActionNonLegacyPathTest {
           case UNASSIGN:
             assertTrue(result.getErrors().contains(action.toString()));
             break;
+          default:
+            break;
 
         }
       }
@@ -383,6 +420,8 @@ public class WorkflowActionNonLegacyPathTest {
           case UNASSIGN:
             assertTrue(result.getMessages().contains(action.toString()));
             break;
+          default:
+            break;
 
         }
       }
@@ -416,6 +455,8 @@ public class WorkflowActionNonLegacyPathTest {
             break;
           case UNASSIGN:
             assertTrue(result.getErrors().contains(action.toString()));
+            break;
+          default:
             break;
 
         }
@@ -452,6 +493,8 @@ public class WorkflowActionNonLegacyPathTest {
           case UNASSIGN:
             assertTrue(result.getErrors().contains(action.toString()));
             break;
+          default:
+            break;
 
         }
       }
@@ -460,6 +503,11 @@ public class WorkflowActionNonLegacyPathTest {
 
   }
 
+  /**
+   * Test second specialist editing state.
+   *
+   * @throws Exception the exception
+   */
   @Test
   public void testSecondSpecialistEditingState() throws Exception {
 
@@ -516,6 +564,8 @@ public class WorkflowActionNonLegacyPathTest {
             case UNASSIGN:
               assertTrue(result.getErrors().contains(action.toString()));
               break;
+            default:
+              break;
 
           }
         }
@@ -549,6 +599,8 @@ public class WorkflowActionNonLegacyPathTest {
               break;
             case UNASSIGN:
               assertTrue(result.getMessages().contains(action.toString()));
+              break;
+            default:
               break;
 
           }
@@ -584,6 +636,8 @@ public class WorkflowActionNonLegacyPathTest {
             case UNASSIGN:
               assertTrue(result.getMessages().contains(action.toString()));
               break;
+            default:
+              break;
 
           }
         }
@@ -618,6 +672,8 @@ public class WorkflowActionNonLegacyPathTest {
             case UNASSIGN:
               assertTrue(result.getErrors().contains(action.toString()));
               break;
+            default:
+              break;
 
           }
         }
@@ -626,6 +682,11 @@ public class WorkflowActionNonLegacyPathTest {
 
   }
 
+  /**
+   * Test conflict detected state.
+   *
+   * @throws Exception the exception
+   */
   @Test
   public void testConflictDetectedState() throws Exception {
 
@@ -676,6 +737,8 @@ public class WorkflowActionNonLegacyPathTest {
         case UNASSIGN:
           assertTrue(result.getErrors().contains(action.toString()));
           break;
+        default:
+          break;
 
       }
     }
@@ -710,6 +773,8 @@ public class WorkflowActionNonLegacyPathTest {
           break;
         case UNASSIGN:
           assertTrue(result.getMessages().contains(action.toString()));
+          break;
+        default:
           break;
 
       }
@@ -746,6 +811,8 @@ public class WorkflowActionNonLegacyPathTest {
         case UNASSIGN:
           assertTrue(result.getMessages().contains(action.toString()));
           break;
+        default:
+          break;
 
       }
     }
@@ -780,12 +847,19 @@ public class WorkflowActionNonLegacyPathTest {
         case UNASSIGN:
           assertTrue(result.getErrors().contains(action.toString()));
           break;
+        default:
+          break;
 
       }
     }
 
   }
 
+  /**
+   * Test lead editing state.
+   *
+   * @throws Exception the exception
+   */
   @Test
   public void testLeadEditingState() throws Exception {
 
@@ -842,6 +916,8 @@ public class WorkflowActionNonLegacyPathTest {
           case UNASSIGN:
             assertTrue(result.getErrors().contains(action.toString()));
             break;
+          default:
+            break;
 
         }
       }
@@ -876,6 +952,8 @@ public class WorkflowActionNonLegacyPathTest {
           case UNASSIGN:
             assertTrue(result.getErrors().contains(action.toString()));
             break;
+          default:
+            break;
 
         }
       }
@@ -909,6 +987,8 @@ public class WorkflowActionNonLegacyPathTest {
             break;
           case UNASSIGN:
             assertTrue(result.getErrors().contains(action.toString()));
+            break;
+          default:
             break;
 
         }
@@ -945,6 +1025,8 @@ public class WorkflowActionNonLegacyPathTest {
           case UNASSIGN:
             assertTrue(result.getMessages().contains(action.toString()));
             break;
+          default:
+            break;
 
         }
       }
@@ -952,6 +1034,11 @@ public class WorkflowActionNonLegacyPathTest {
 
   }
 
+  /**
+   * Test lead finished state.
+   *
+   * @throws Exception the exception
+   */
   @Test
   public void testLeadFinishedState() throws Exception {
 
@@ -1005,6 +1092,8 @@ public class WorkflowActionNonLegacyPathTest {
         case UNASSIGN:
           assertTrue(result.getErrors().contains(action.toString()));
           break;
+        default:
+          break;
 
       }
     }
@@ -1039,6 +1128,8 @@ public class WorkflowActionNonLegacyPathTest {
         case UNASSIGN:
           assertTrue(result.getErrors().contains(action.toString()));
           break;
+        default:
+          break;
 
       }
     }
@@ -1072,6 +1163,8 @@ public class WorkflowActionNonLegacyPathTest {
           break;
         case UNASSIGN:
           assertTrue(result.getErrors().contains(action.toString()));
+          break;
+        default:
           break;
 
       }
@@ -1108,11 +1201,18 @@ public class WorkflowActionNonLegacyPathTest {
         case UNASSIGN:
           assertTrue(result.getMessages().contains(action.toString()));
           break;
+        default:
+          break;
 
       }
     }
   }
 
+  /**
+   * Cleanup.
+   *
+   * @throws Exception the exception
+   */
   @AfterClass
   public static void cleanup() throws Exception {
 
@@ -1139,6 +1239,11 @@ public class WorkflowActionNonLegacyPathTest {
 
   }
 
+  /**
+   * Returns the tracking record.
+   *
+   * @throws Exception the exception
+   */
   private void getTrackingRecord() throws Exception {
     System.out.println("Getting tracking record for project "
         + mapProject.getId() + " and concept " + concept.getTerminologyId());
@@ -1147,6 +1252,11 @@ public class WorkflowActionNonLegacyPathTest {
     trackingRecord = workflowService.getTrackingRecord(mapProject, concept);
   }
 
+  /**
+   * Clear map records.
+   *
+   * @throws Exception the exception
+   */
   private void clearMapRecords() throws Exception {
     System.out.println("Clearing map records.");
     for (MapRecord mr : mappingService.getMapRecords().getIterable()) {
@@ -1158,6 +1268,13 @@ public class WorkflowActionNonLegacyPathTest {
     Thread.sleep(1000);
   }
 
+  /**
+   * Test all actions for user.
+   *
+   * @param user the user
+   * @return the validation result
+   * @throws Exception the exception
+   */
   private ValidationResult testAllActionsForUser(MapUser user) throws Exception {
     ValidationResult result = new ValidationResultJpa();
 
@@ -1174,6 +1291,13 @@ public class WorkflowActionNonLegacyPathTest {
     return result;
   }
 
+  /**
+   * Creates the record.
+   *
+   * @param user the user
+   * @param status the status
+   * @return the map record
+   */
   private MapRecord createRecord(MapUser user, WorkflowStatus status) {
     MapRecord record = new MapRecordJpa();
 
