@@ -2332,7 +2332,7 @@ angular
 								} else if (definition.diffReport == true) {
 									if (definition.timePeriod == null)
 										testReportError += "You must specify the time period over which the difference report is calculated\n";
-									if (definition.diffReportDefinition == null)
+									if (definition.diffReportDefinitionName == null)
 										testReportError += "You must specify the report definition from which the difference report is calculated\n";
 
 								} else if (definition.diffReport == false) {
