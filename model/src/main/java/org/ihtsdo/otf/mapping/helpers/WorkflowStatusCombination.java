@@ -90,15 +90,9 @@ public class WorkflowStatusCombination {
   }
 
   /**
-   * Function to return all workflow statuses as a list (duplicate values
-<<<<<<< HEAD
-   * permitted)
-   * @return
-=======
-   * permitted).
+   * Function to return all workflow statuses as a list (duplicate values.
    *
    * @return the workflow statuses as list
->>>>>>> e1eeda452226fa58e6ba3bde608683ad62254578
    */
   public List<WorkflowStatus> getWorkflowStatusesAsList() {
     List<WorkflowStatus> statuses = new ArrayList<>();
