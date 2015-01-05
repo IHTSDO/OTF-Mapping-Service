@@ -1,6 +1,7 @@
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -1498,19 +1499,21 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         // delete the lead's record, no other action required
         if (reviewRecord != null) {
           newRecords.remove(reviewRecord);
-        // Case 2: The concept is removed from QA, and unassigned from the qa user
+          // Case 2: The concept is removed from QA, and unassigned from the qa
+          // user
         } else if (editingRecord != null) {
-          
+
           // clear the record set
           newRecords.clear();
-          
+
           // get the previously published version of the revision record
-          revisionRecord = getPreviouslyPublishedVersionOfMapRecord(revisionRecord);
-          
+          revisionRecord =
+              getPreviouslyPublishedVersionOfMapRecord(revisionRecord);
+
           // add the previously published version to the map records set
           newRecords.add(revisionRecord);
         } else {
-          
+
           throw new Exception(
               "Unexpected error attempt to unassign a QA record.  Contact an administrator.");
         }
@@ -1526,8 +1529,13 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#publish(org.ihtsdo.otf.mapping.workflow.TrackingRecord, java.util.Set, org.ihtsdo.otf.mapping.model.MapUser)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#publish(
+   * org.ihtsdo.otf.mapping.workflow.TrackingRecord, java.util.Set,
+   * org.ihtsdo.otf.mapping.model.MapUser)
    */
   @Override
   public Set<MapRecord> publish(TrackingRecord trackingRecord,
@@ -2152,6 +2160,21 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     if (mapRecord == null)
       throw new Exception("saveForLater:  Record for user could not be found");
 
+    // check for blank entries and remove them
+    // "blank" is defined as a null target id and a null map relation id
+    Set<MapEntry> entriesToRemove = new HashSet<>();
+    for (MapEntry mapEntry : mapRecord.getMapEntries()) {
+      if (mapEntry.getTargetId() == null && mapEntry.getMapRelation() == null) {
+
+        Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
+            "Removing empty map entry");
+        entriesToRemove.add(mapEntry);
+      }
+    }
+    for (MapEntry mapEntry : entriesToRemove) {
+      mapRecord.removeMapEntry(mapEntry);
+    }
+
     switch (trackingRecord.getWorkflowPath()) {
       case CONSENSUS_PATH:
         break;
@@ -2185,6 +2208,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         break;
 
     }
+
     return newRecords;
   }
 
@@ -2249,6 +2273,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         break;
       default:
         // re-retrieve the records for this tracking record and return those
+        // used to ensure no spurious alterations from serialization are saved
+        // and therefore reflected in the audit trail
         newRecords.clear();
         MappingService mappingService = new MappingServiceJpa();
         for (Long id : trackingRecord.getMapRecordIds()) {
@@ -2432,8 +2458,11 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     return new ValidationResultJpa();
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#getDefaultUpPropagatedMapRelation()
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#
+   * getDefaultUpPropagatedMapRelation()
    */
   @Override
   public MapRelation getDefaultUpPropagatedMapRelation() throws Exception {
