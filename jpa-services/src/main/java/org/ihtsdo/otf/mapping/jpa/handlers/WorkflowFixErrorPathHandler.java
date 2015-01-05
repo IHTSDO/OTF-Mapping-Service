@@ -17,12 +17,19 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
+/**
+ * Workflow path handler for "fix error path"
+ */
 public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
 
   // The workflow states defining the Fix Error workflow path
+  /**  The lead finished state. */
   private static WorkflowPathState specialistEditingState,
       specialistFinishedState, leadEditingState, leadFinishedState;
 
+  /**
+   * Instantiates an empty {@link WorkflowFixErrorPathHandler}.
+   */
   public WorkflowFixErrorPathHandler() {
 
     setWorkflowPath(WorkflowPath.FIX_ERROR_PATH);
@@ -77,6 +84,9 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
             WorkflowAction.UNASSIGN)));
   }
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.jpa.handlers.AbstractWorkflowPathHandler#validateTrackingRecordForActionAndUser(org.ihtsdo.otf.mapping.workflow.TrackingRecord, org.ihtsdo.otf.mapping.helpers.WorkflowAction, org.ihtsdo.otf.mapping.model.MapUser)
+   */
   @SuppressWarnings("unused")
   @Override
   public ValidationResult validateTrackingRecordForActionAndUser(
