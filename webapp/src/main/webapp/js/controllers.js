@@ -16,15 +16,7 @@ var root_reporting = root_url + "reporting/";
 
 mapProjectAppControllers
     .run(function($rootScope, $http, localStorageService, $location) {
-
-      // global variable to display a glass pane (if non-zero) preventing user
-      // interaction
-      $rootScope.glassPane = 0;
-
-      // global variable, contains user-viewable error text displayed one very
-      // page if not empty
-      $rootScope.globalError = '';
-
+    	
       // global function to handle any type of error. Currently only
       // specifically
       // implemented for authorizatoin failures.
@@ -34,12 +26,27 @@ mapProjectAppControllers
           $location.path("/");
         }
         window.scrollTo(0, 0);
-      }
+      };
 
       // global function to reset the global error
       $rootScope.resetGlobalError = function() {
         $rootScope.globalError = '';
       };
+      
+      // global variable to display a glass pane (if non-zero) preventing user
+      // interaction
+      $rootScope.glassPane = 0;
+
+      // global variable, contains user-viewable error text displayed one very
+      // page if not empty
+      $rootScope.resetGlobalError();
+
+    	// check if local storage service can be accessed
+    	if (localStorageService.isSupported() == false) {
+    		$rootScope.globalError = "It appears your browser's security settings will prevent the tool from functioning correctly.  Check that cookies are enabled and/or that your browser allows setting local data, then reload this page.";
+    	} else {
+    		console.debug("LocalStorageService reports success");    	
+  		}
 
       // variable to indicate whether the current page is "dirty"
       // i.e. leaving this page might cause data to be lost
