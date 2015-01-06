@@ -1111,7 +1111,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     // executed query)
     report.setQueryType(reportDefinition.getQueryType());
     report.setResultType(reportDefinition.getResultType());
-    report.setTimestamp(cal.getTimeInMillis());
+    report.setTimestamp(date.getTime());
 
     // execute the query
     List<Object[]> results = null;
@@ -1153,7 +1153,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     if (reportDefinition.isDiffReport()) {
 
       if (results.size() != 2) {
-        throw new Exception(
+        throw new LocalException(
             "Diff reqport query has unexpected number of results");
       }
 

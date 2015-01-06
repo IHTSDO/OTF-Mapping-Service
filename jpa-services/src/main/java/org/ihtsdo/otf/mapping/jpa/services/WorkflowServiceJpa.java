@@ -1789,7 +1789,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * @param workflowAction the workflow action
    * @throws Exception the exception
    */
-  @SuppressWarnings("unused")
   @Override
   public void processWorkflowAction(MapProject mapProject, Concept concept,
     MapUser mapUser, MapRecord mapRecord, WorkflowAction workflowAction)
