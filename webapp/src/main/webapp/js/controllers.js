@@ -495,7 +495,7 @@ mapProjectAppControllers
                                               });
                                     }).error(
                                     function(data, status, headers, config) {
-                                      $rootScope.glassPane--;
+                                     
                                       $rootScope.handleHttpError(data, status,
                                           headers, config);
                                     });
