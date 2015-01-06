@@ -19,6 +19,8 @@
   <properties>
     <!-- The terminology -->
     <terminology></terminology>
+    <!-- The terminology version, default "latest" -->
+    <version>latest</version>
     <!-- refset id -->
     <refset.id></refset.id>
     <!-- map advice name -->
@@ -45,6 +47,7 @@
                 </goals>
                 <configuration>
                   <terminology>${terminology}</terminology>
+                  <terminologyVersion>${version}</terminologyVersion>
                 </configuration>
               </execution>
             </executions>
@@ -70,6 +73,7 @@
                 </goals>
                 <configuration>
                   <terminology>${terminology}</terminology>
+                  <terminologyVersion>${version}</terminologyVersion>
                 </configuration>
               </execution>
             </executions>
