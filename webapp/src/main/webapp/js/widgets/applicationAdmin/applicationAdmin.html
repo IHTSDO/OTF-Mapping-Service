@@ -1276,7 +1276,7 @@
 						<td style="width: 60%;"><select style="width: 100%;"
 							ng-model="definition.queryType"
 							ng-options="queryType as queryType for queryType in definitionQueryTypes"
-							ng-change="setEditingPerformed(definition); definition.testQaSuccess = false;"
+							ng-change="setEditingPerformed(definition); definition.testQaSuccess = false; definition.testQaError = null"
 							style="width: 100%;"></select></td>
 					</tr>
 					</tbody>
@@ -1296,7 +1296,7 @@
 							<td style="height: 100%;">
 								<div style="height: 100%;">
 									<textarea
-										ng-show="definition.diffReport == false && definition.queryType != 'NONE'"
+										ng-show="definition.queryType != 'NONE'"
 										style="overflow: auto; width: 100%; min-height: 170px"
 										tooltip-placement="top"
 										tooltip="Query executed to retrieve report results"
@@ -1304,11 +1304,11 @@
 										ng-change="setEditingPerformed(definition); definition.testQaSuccess = false"></textarea>
 
 									<div ng-show="definition.queryType === 'NONE'"
-										class="alert alert-error">QA Check must have a query
-										type</div>
+										class="alert alert-danger">QA Check cannot have query
+										type of NONE.</div>
 
 									<div class="alert alert-warning"
-										ng-show="definition.testQaSuccess == false && definition.testQaError == null">
+										ng-show="definition.queryType != 'NONE' && definition.testQaSuccess == false && definition.testQaError == null">
 										<i class="glyphicon glyphicon-exclamation-sign"></i> You must
 										test this modified QA check before updating it.
 									</div>
@@ -1340,7 +1340,7 @@
 
 				<button class="btn btn-sm btn-primary"
 					ng-click="testQaDefinition(definition)"
-					ng-show="isComponentChanged(definition) == true && definition.testQaSuccess == false">Test</button></td>
+					ng-show="isComponentChanged(definition) == true && definition.testQaSuccess == false && definition.queryType != 'NONE'">Test</button></td>
 
 			<td><div tooltip-placement="top"
 					tooltip="Delete qa check definition">
@@ -1355,7 +1355,7 @@
 	ng-show="qaCheckDefinitionInEditingPerformed() == true">Revert
 	Unsaved</button>
 
-<form name="reportDefinitionForm">
+<form name="qaDefinitionForm">
 	<div style="margin-top: 15px;">
 		<b>Create New QA Check</b>
 	</div>
@@ -1379,12 +1379,12 @@
 						</thead>
 						<tbody>
 							<tr tooltip-placement="top"
-								tooltip="Name of report newQaDefinition">
+								tooltip="Name of qa check">
 								<td style="width: 40%;">Name</td>
 								<td style="width: 60%;"><input style="width: 100%;"
 									ng-model="newQaDefinition.name"></td>
 							</tr>
-							
+
 							<tr tooltip-placement="top"
 								tooltip="Project role required to view report results">
 								<td style="width: 40%;">Role Required</td>
@@ -1401,22 +1401,19 @@
 									ng-options="resultType as resultType for resultType in definitionResultTypes"
 									style="width: 100%;"></select></td>
 							</tr>
-							<tr tooltip-placement="top"
-							
 
-							<!--  Non-diff-report parameters -->
-							<tr ng-show="newQaDefinition.diffReport == false"
-								tooltip-placement="top"
+							<tr tooltip-placement="top"
 								tooltip="Query type/engine used to retrieve report results">
 								<td style="width: 40%;">Query Type</td>
 								<td style="width: 60%;"><select style="width: 100%;"
 									ng-model="newQaDefinition.queryType"
-									ng-change="newQaDefinition.testReportSuccess = false"
+									ng-change="newQaDefinition.testReportSuccess = false; alert(newQaDefinition)"
 									ng-options="queryType as queryType for queryType in definitionQueryTypes"></select></td>
 							</tr>
 
 						</tbody>
 					</table>
+
 				</td>
 				<td style="width: 60%;">
 					<table style="width: 100%; height: 100%;" class="table pure-table">
@@ -1432,18 +1429,12 @@
 								<td style="height: 100%;">
 									<div style="height: 100%;">
 										<textarea
-											ng-show="newQaDefinition.diffReport == false && newQaDefinition.queryType != 'NONE'"
 											style="overflow: auto; width: 100%; min-height: 170px"
 											tooltip-placement="top"
 											tooltip="Query executed to retrieve report results"
 											ng-model="newQaDefinition.query"
 											ng-change="newQaDefinition.testReportSuccess = false"></textarea>
-										<div ng-show="newQaDefinition.diffReport == true"
-											class="alert alert-warning">Query is not specified for
-											difference reports.</div>
-										<div ng-show="newQaDefinition.queryType === 'NONE'"
-											class="alert alert-warning">Query is not specified when
-											query type is NONE.</div>
+										
 									</div>
 
 								</td>
@@ -1458,36 +1449,46 @@
 					<!-- show submit button only if diff report OR the query has passed test
 						 Note that width is formally set due to ng-disabled resizing disabled buttons -->
 					<button
-						ng-disabled="newQaDefinition.testReportSuccess != true && newQaDefinition.diffReport == false"
+						ng-disabled="newQaDefinition.testQaSuccess != true"
 						class="btn btn-sm btn-primary" style="width: 59px"
-						ng-click="submitNewReportDefinition(newQaDefinition)">Submit</button>
+						ng-click="submitNewQaDefinition(newQaDefinition)">Submit</button>
 
-					<button ng-disabled="newQaDefinition.testReportSuccess == true"
-						ng-show="newQaDefinition.diffReport == false"
+					<button ng-disabled="newQaDefinition.testQaSuccess == true"
+						
 						class="btn btn-sm btn-primary" style="width: 40px"
-						ng-click="testReportDefinition(newQaDefinition)">Test</button>
+						ng-click="testQaDefinition(newQaDefinition)">Test</button>
 
 
 				</td>
 
 				<td>
-					<div class="border-error alert-error"
-						ng-show="newQaDefinition.testReportError != null">
-						<div class="alert alert-danger alert-error">
-							{{newQaDefinition.testReportError}}</div>
-					</div>
-					<div ng-show="newQaDefinition.testReportSuccess == true"
-						class="alert alert-success ">Query successfully passed
-						checks. Click Submit to add the report definition.</div>
-					<div class="alert alert-warning"
-						ng-show="newQaDefinition.testReportSuccess == false && newQaDefinition.testReportError == null && newQaDefinition.diffReport == false">You
-						must test this query before submitting it.</div>
-					</div>
+					<div ng-show="newQaDefinition.queryType === 'NONE'"
+						class="alert alert-danger">QA Check cannot have query type of
+						NONE.</div>
 
+					<div class="alert alert-warning"
+						ng-show="newQaDefinition.testQaSuccess == false && newQaDefinition.testQaError == null">
+						<i class="glyphicon glyphicon-exclamation-sign"></i> You must test
+						this modified QA check before updating it.
+					</div>
+					<div class="alert alert-success"
+						ng-show="newQaDefinition.testQaSuccess == true">
+						<i class="glyphicon glyphicon-exclamation-sign"></i> QA check
+						successfully passed test. Click Save to update the report
+						newQaDefinition, or continue modifications.
+					</div>
+					<div class="alert alert-danger"
+						ng-show="newQaDefinition.testQaError != null">
+
+						<i class="glyphicon glyphicon-exclamation-sign"></i>
+						{{newQaDefinition.testQaError}}
+
+					</div>
 				</td>
 			</tr>
 		</tbody>
 	</table>
+						QA CHECK: {{newQaDefinition}}
 </form>
 
 </accordion-group></accordion>
