@@ -48,6 +48,7 @@ public class ReportDefinitionJpa implements ReportDefinition {
   private boolean isDiffReport = false;
 
   /** The is qa check. */
+  @Column(nullable = false)
   private boolean isQACheck = false;
 
   /** The time period (in days) for diff and rate reports */
