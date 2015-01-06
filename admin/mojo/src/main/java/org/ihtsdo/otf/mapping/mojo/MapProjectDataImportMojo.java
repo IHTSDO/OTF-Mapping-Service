@@ -179,7 +179,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
         // Add users
         Set<MapUser> leads = project.getMapLeads();
         Set<MapUser> specialists = project.getMapSpecialists();
-        Set<MapUser> admins = project.getMapAdministrators();
+    
         List<MapUser> currentUsers = mappingService.getMapUsers().getMapUsers();
         for (MapUser user : leads) {
           if (!currentUsers.contains(user)) {
@@ -199,15 +199,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
             getLog().info("  User already exists " + user.getName());
           }
         }
-        for (MapUser user : admins) {
-          if (!currentUsers.contains(user)) {
-            getLog().info("  Adding user " + user.getName());
-            user.setId(null);
-            mappingService.addMapUser(user);
-          } else {
-            getLog().info("  User already exists " + user.getName());
-          }
-        }
+       
 
         // Add report definitions if they don't already exist
         Set<ReportDefinition> reportDefinitions =
@@ -233,7 +225,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
         // clear copied project of all collections
         bareProject.setMapSpecialists(new HashSet<MapUser>());
         bareProject.setMapLeads(new HashSet<MapUser>());
-        bareProject.setMapAdministrators(new HashSet<MapUser>());
+    
 
         bareProject.setMapAdvices(new HashSet<MapAdvice>());
         bareProject.setMapPrinciples(new HashSet<MapPrinciple>());
@@ -268,16 +260,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
         getLog().info("      count = " + bareProject.getMapLeads().size());
         mappingService.updateMapProject(bareProject);
 
-        // attach administrators
-        getLog().info("    Attach administrators");
-        for (MapUser administrator : project.getMapAdministrators()) {
-          MapUser user = mappingService.getMapUser(administrator.getUserName());
-          bareProject.addMapAdministrator(user);
-        }
-        getLog().info(
-            "      count = " + bareProject.getMapAdministrators().size());
-        mappingService.updateMapProject(bareProject);
-
+      
         // attach advices
         getLog().info("    Attach advices");
         for (MapAdvice advice : project.getMapAdvices()) {

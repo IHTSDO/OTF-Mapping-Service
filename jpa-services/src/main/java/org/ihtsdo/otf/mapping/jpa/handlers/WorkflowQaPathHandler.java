@@ -17,11 +17,18 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
+/**
+ * Workflow path handler for "qa path".
+ */
 public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
 
   // The workflow path states defining the QA Path Workflow
+  /**  The finished state. */
   private static WorkflowPathState qaNeededState, editingState, finishedState;
 
+  /**
+   * Instantiates an empty {@link WorkflowQaPathHandler}.
+   */
   public WorkflowQaPathHandler() {
 
     setWorkflowPath(WorkflowPath.QA_PATH);
@@ -69,6 +76,9 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
     // final state: no tracking record, one READY_FOR_PUBLICATION record
   }
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.jpa.handlers.AbstractWorkflowPathHandler#validateTrackingRecordForActionAndUser(org.ihtsdo.otf.mapping.workflow.TrackingRecord, org.ihtsdo.otf.mapping.helpers.WorkflowAction, org.ihtsdo.otf.mapping.model.MapUser)
+   */
   @Override
   public ValidationResult validateTrackingRecordForActionAndUser(
     TrackingRecord tr, WorkflowAction action, MapUser user) throws Exception {

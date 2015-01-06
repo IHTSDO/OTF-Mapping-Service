@@ -91,8 +91,7 @@ public class CreateMapAdministratorMojo extends AbstractMojo {
         project.setSourceTerminologyVersion("");
         project.setWorkflowType(WorkflowType.CONFLICT_PROJECT);
 
-        // add user as administrator and add project
-        project.addMapAdministrator(newAdmin);
+        // add project
         mappingService.addMapProject(project);
 
         mappingService.close();

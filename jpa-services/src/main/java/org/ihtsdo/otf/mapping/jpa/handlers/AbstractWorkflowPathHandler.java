@@ -224,6 +224,7 @@ public abstract class AbstractWorkflowPathHandler implements
    * @param tr the tr
    * @return the workflow combination for tracking record
    */
+  @SuppressWarnings("static-method")
   public WorkflowStatusCombination getWorkflowCombinationForTrackingRecord(
     TrackingRecord tr) {
     WorkflowStatusCombination workflowCombination =
@@ -252,6 +253,7 @@ public abstract class AbstractWorkflowPathHandler implements
    * @return the map records for tracking record
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   public MapRecordList getMapRecordsForTrackingRecord(TrackingRecord tr)
     throws Exception {
     MapRecordList mapRecords = new MapRecordListJpa();
@@ -275,6 +277,7 @@ public abstract class AbstractWorkflowPathHandler implements
    * @param mapUser the map user
    * @return the current map record for user
    */
+  @SuppressWarnings("static-method")
   public MapRecord getCurrentMapRecordForUser(MapRecordList records,
     MapUser mapUser) {
     MapRecord assignedRecord = null;

@@ -17,13 +17,20 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
+/**
+ * Workflow path handler for "non legacy path".
+ */
 public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
 
   // The workflow path states defining the Non Legacy Path
+  /**  The lead finished state. */
   private static WorkflowPathState initialState, firstSpecialistEditingState,
       secondSpecialistEditingState, conflictDetectedState, leadEditingState,
       leadFinishedState;
 
+  /**
+   * Instantiates an empty {@link WorkflowNonLegacyPathHandler}.
+   */
   public WorkflowNonLegacyPathHandler() {
 
     setWorkflowPath(WorkflowPath.NON_LEGACY_PATH);
@@ -116,6 +123,9 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
     // Terminal State: No tracking record
   }
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.jpa.handlers.AbstractWorkflowPathHandler#validateTrackingRecordForActionAndUser(org.ihtsdo.otf.mapping.workflow.TrackingRecord, org.ihtsdo.otf.mapping.helpers.WorkflowAction, org.ihtsdo.otf.mapping.model.MapUser)
+   */
   @SuppressWarnings("unused")
   @Override
   public ValidationResult validateTrackingRecordForActionAndUser(
