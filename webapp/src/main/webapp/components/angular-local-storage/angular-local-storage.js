@@ -262,7 +262,8 @@ angularLocalStorage.service('localStorageService', [
       add: addToCookies, //DEPRECATED
       get: getFromCookies,
       remove: removeFromCookies,
-      clearAll: clearAllFromCookies
+      clearAll: clearAllFromCookies,
+      isSupported: browserSupportsLocalStorage // ADDED BY PG, 20150106
     }
   };
 
