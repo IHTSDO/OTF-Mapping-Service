@@ -1652,9 +1652,14 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     int startIndex = 0;
     int toIndex = results.size();
     if (pfsParameter != null) {
-      startIndex = pfsParameter.getStartIndex();
-      toIndex =
-          Math.min(results.size(), startIndex + pfsParameter.getMaxResults());
+      if (pfsParameter.getStartIndex() != -1) {
+        startIndex = pfsParameter.getStartIndex();
+      }
+
+      if (pfsParameter.getMaxResults() != -1) {
+        toIndex =
+            Math.min(results.size(), startIndex + pfsParameter.getMaxResults());
+      }
     }
 
     for (TrackingRecord tr : results.subList(startIndex, toIndex)) {
@@ -1832,9 +1837,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
           break;
         case FIX_ERROR_PATH:
           result =
-          (new WorkflowFixErrorPathHandler())
-              .validateTrackingRecordForActionAndUser(trackingRecord,
-                  workflowAction, mapUser);
+              (new WorkflowFixErrorPathHandler())
+                  .validateTrackingRecordForActionAndUser(trackingRecord,
+                      workflowAction, mapUser);
           break;
         case LEGACY_PATH:
           break;
