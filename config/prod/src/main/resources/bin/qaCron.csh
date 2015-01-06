@@ -23,7 +23,6 @@ cd $MAPPING_CODE/admin/qa
 mvn install -PDatabase -Drun.config=$MAPPING_CONFIG | sed 's/^/    /'
 if ($status != 0) then
     echo "ERROR running the database QA"
-    cat mvn.log
     exit 1
 endif
 
@@ -34,7 +33,6 @@ cd $MAPPING_CODE/admin/qa
 mvn install -PWorkflow -Drun.config=$MAPPING_CONFIG | sed 's/^/    /'
 if ($status != 0) then
     echo "ERROR running the workflow QA"
-    cat mvn.log
     exit 1
 endif
 

@@ -1,335 +1,334 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-	<!-- Module Metadata -->
-	<parent>
-		<groupId>org.ihtsdo.otf.mapping</groupId>
-		<artifactId>mapping-parent</artifactId>
-		<version>1.0.0-SNAPSHOT</version>
-		<relativePath>../../parent</relativePath>
-	</parent>
+  <!-- Module Metadata -->
+  <parent>
+    <groupId>org.ihtsdo.otf.mapping</groupId>
+    <artifactId>mapping-parent</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <relativePath>../../parent</relativePath>
+  </parent>
 
-	<artifactId>mapping-admin-loader</artifactId>
-	<name>OTF RF2 Admin RF2 Loader</name>
-	<description>OTF RF2 Administrator Tool to Load RF2 data</description>
-	<packaging>pom</packaging>
+  <artifactId>mapping-admin-loader</artifactId>
+  <name>OTF RF2 Admin RF2 Loader</name>
+  <description>OTF RF2 Administrator Tool to Load RF2 data</description>
+  <packaging>pom</packaging>
 
-	<!-- Available mojo parameters -->
-	<properties>
-		<!-- The refset id -->
-		<refset.id></refset.id>
-		<!-- A flag some tools use to indicate that notification should be sent -->
-		<send.notification></send.notification>
-		<!-- The input dir -->
-		<input.dir></input.dir>
-		<!-- The input file -->
-		<input.dir></input.dir>
-		<!-- The terminology -->
-		<terminology></terminology>
-		<!-- The terminology version -->
-		<version>latest</version>
-		<!-- The start date as YYYYMMDD -->
-		<start.date></start.date>
-		<!-- The end date as YYYYMMDD -->
-		<end.date></end.date>
-		<!-- the sampling rate -->
-		<sampling.rate></sampling.rate>
-		<!-- The map user -->
-		<map.user></map.user>
-	</properties>
+  <!-- Available mojo parameters -->
+  <properties>
+    <!-- The refset id -->
+    <refset.id></refset.id>
+    <!-- A flag some tools use to indicate that notification should be sent -->
+    <send.notification></send.notification>
+    <!-- The input dir -->
+    <input.dir></input.dir>
+    <!-- The input file -->
+    <input.dir></input.dir>
+    <!-- The terminology -->
+    <terminology></terminology>
+    <!-- The terminology version -->
+    <version>latest</version>
+    <!-- The start date as YYYYMMDD -->
+    <start.date></start.date>
+    <!-- The end date as YYYYMMDD -->
+    <end.date></end.date>
+    <!-- the sampling rate -->
+    <sampling.rate></sampling.rate>
+    <!-- The map user -->
+    <map.user></map.user>
+  </properties>
 
-	<profiles>
+  <profiles>
 
-		<profile>
-			<id>CreateMapAdmin</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.ihtsdo.otf.mapping</groupId>
-						<artifactId>mapping-admin-mojo</artifactId>
-						<executions>
-							<execution>
-								<id>new-project</id>
-								<phase>package</phase>
-								<goals>
-									<goal>create-new-project</goal>
-								</goals>
-								<configuration>
-									<mapUser>${map.user}</mapUser>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
+    <profile>
+      <id>CreateMapAdmin</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>new-project</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>create-new-project</goal>
+                </goals>
+                <configuration>
+                  <mapUser>${map.user}</mapUser>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
 
-		<!-- Load RF2 -Drun.config=.. must also be specified. -->
-		<profile>
-			<id>RF2-snapshot</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.ihtsdo.otf.mapping</groupId>
-						<artifactId>mapping-admin-mojo</artifactId>
-						<executions>
-							<execution>
-								<id>load-rf2-snapshot</id>
-								<phase>package</phase>
-								<goals>
-									<goal>load-rf2-snapshot</goal>
-								</goals>
-								<configuration>
-									<inputDir>${input.dir}</inputDir>
-									<terminology>${terminology}</terminology>
-									<version>${version}</version>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
+    <!-- Load RF2 -Drun.config=.. must also be specified. -->
+    <profile>
+      <id>RF2-snapshot</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>load-rf2-snapshot</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>load-rf2-snapshot</goal>
+                </goals>
+                <configuration>
+                  <inputDir>${input.dir}</inputDir>
+                  <terminology>${terminology}</terminology>
+                  <version>${version}</version>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
 
-		<!-- Load SNOMED delta -Drun.config=.. must also be specified. -->
-		<profile>
-			<id>RF2-delta</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.ihtsdo.otf.mapping</groupId>
-						<artifactId>mapping-admin-mojo</artifactId>
-						<executions>
-							<execution>
-								<id>load-rf2-delta</id>
-								<phase>package</phase>
-								<goals>
-									<goal>load-rf2-delta</goal>
-								</goals>
-								<configuration>
-									<inputDir>${input.dir}</inputDir>
-									<terminology>${terminology}</terminology>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
+    <!-- Load SNOMED delta -Drun.config=.. must also be specified. -->
+    <profile>
+      <id>RF2-delta</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>load-rf2-delta</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>load-rf2-delta</goal>
+                </goals>
+                <configuration>
+                  <inputDir>${input.dir}</inputDir>
+                  <terminology>${terminology}</terminology>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
 
-		<!-- Load tree positions -Drun.config=.. must also be specified. -->
-		<profile>
-			<id>Treepos</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.ihtsdo.otf.mapping</groupId>
-						<artifactId>mapping-admin-mojo</artifactId>
-						<executions>
-							<execution>
-								<id>compute-treepos</id>
-								<phase>package</phase>
-								<goals>
-									<goal>compute-treepos</goal>
-								</goals>
-								<configuration>
-									<terminology>${terminology}</terminology>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
+    <!-- Load tree positions -Drun.config=.. must also be specified. -->
+    <profile>
+      <id>Treepos</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>compute-treepos</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>compute-treepos</goal>
+                </goals>
+                <configuration>
+                  <terminology>${terminology}</terminology>
+                  <terminologyVersion>${version}</terminologyVersion>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
 
-		<!-- Load ClaML -Drun.config=.. must also be specified. -->
-		<profile>
-			<id>ClaML</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.ihtsdo.otf.mapping</groupId>
-						<artifactId>mapping-admin-mojo</artifactId>
-						<executions>
-							<execution>
-								<id>load-claml</id>
-								<phase>package</phase>
-								<goals>
-									<goal>load-claml</goal>
-								</goals>
-								<configuration>
-									<inputFile>${input.file}</inputFile>
-									<terminology>${terminology}</terminology>
-									<version>${version}</version>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
+    <!-- Load ClaML -Drun.config=.. must also be specified. -->
+    <profile>
+      <id>ClaML</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>load-claml</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>load-claml</goal>
+                </goals>
+                <configuration>
+                  <inputFile>${input.file}</inputFile>
+                  <terminology>${terminology}</terminology>
+                  <version>${version}</version>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
 
-		<!-- Load map records from RF2 -Drun.config=.. must also be specified. -->
-		<profile>
-			<id>MapRecords</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.ihtsdo.otf.mapping</groupId>
-						<artifactId>mapping-admin-mojo</artifactId>
-						<executions>
-							<execution>
-								<id>load-rf2-complex-map</id>
-								<phase>package</phase>
-								<goals>
-									<goal>load-rf2-complex-map</goal>
-								</goals>
-								<configuration>
-									<inputFile>${input.file}</inputFile>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
+    <!-- Load map records from RF2 -Drun.config=.. must also be specified. -->
+    <profile>
+      <id>MapRecords</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>load-rf2-complex-map</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>load-rf2-complex-map</goal>
+                </goals>
+                <configuration>
+                  <inputFile>${input.file}</inputFile>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
 
-		<!-- Load a sample of map records from RF2 -Drun.config=.. must also be 
-			specified. -->
-		<!-- Used only for "Unmapped SNOMED to ICD10" project, TODO: remove this 
-			after -->
-		<profile>
-			<id>MapRecordsSample</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.ihtsdo.otf.mapping</groupId>
-						<artifactId>mapping-admin-mojo</artifactId>
-						<executions>
-							<execution>
-								<id>load-rf2-complex-map-sample</id>
-								<phase>package</phase>
-								<goals>
-									<goal>load-rf2-complex-map-sample</goal>
-								</goals>
-								<configuration>
-									<inputFile>${input.file}</inputFile>
-									<user>${map.user}</user>
-									<samplingRate>${sampling.rate}</samplingRate>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
+    <!-- Load a sample of map records from RF2 -Drun.config=.. must also be specified. -->
+    <!-- Used only for "Unmapped SNOMED to ICD10" project, TODO: remove this after -->
+    <profile>
+      <id>MapRecordsSample</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>load-rf2-complex-map-sample</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>load-rf2-complex-map-sample</goal>
+                </goals>
+                <configuration>
+                  <inputFile>${input.file}</inputFile>
+                  <user>${map.user}</user>
+                  <samplingRate>${sampling.rate}</samplingRate>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
 
-		<!-- Create map records from loaded terminology -Drun.config=.. must also 
-			be specified. -->
-		<profile>
-			<id>CreateMapRecords</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.ihtsdo.otf.mapping</groupId>
-						<artifactId>mapping-admin-mojo</artifactId>
-						<executions>
-							<execution>
-								<id>create-map-records-from-complex-map</id>
-								<phase>package</phase>
-								<goals>
-									<goal>create-map-records-from-complex-map</goal>
-								</goals>
-								<configuration>
-									<refsetId>${refset.id}</refsetId>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
+    <!-- Create map records from loaded terminology -Drun.config=.. must also be 
+      specified. -->
+    <profile>
+      <id>CreateMapRecords</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>create-map-records-from-complex-map</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>create-map-records-from-complex-map</goal>
+                </goals>
+                <configuration>
+                  <refsetId>${refset.id}</refsetId>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
 
-		<!-- Load map notes from RF2, specify -Drun.config=... -DinputFile=... -->
-		<profile>
-			<id>MapNotes</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.ihtsdo.otf.mapping</groupId>
-						<artifactId>mapping-admin-mojo</artifactId>
-						<executions>
-							<execution>
-								<id>load-map-notes</id>
-								<phase>package</phase>
-								<goals>
-									<goal>load-map-notes</goal>
-								</goals>
-								<configuration>
-									<inputFile>${input.file}</inputFile>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
+    <!-- Load map notes from RF2, specify -Drun.config=... -DinputFile=... -->
+    <profile>
+      <id>MapNotes</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>load-map-notes</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>load-map-notes</goal>
+                </goals>
+                <configuration>
+                  <inputFile>${input.file}</inputFile>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
 
-		<!-- Compute workflow for a map project -Drun.config=.. must also be specified. -->
-		<profile>
-			<id>ComputeWorkflow</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.ihtsdo.otf.mapping</groupId>
-						<artifactId>mapping-admin-mojo</artifactId>
-						<executions>
-							<execution>
-								<id>compute-workflow</id>
-								<phase>package</phase>
-								<goals>
-									<goal>compute-workflow</goal>
-								</goals>
-								<configuration>
-									<refsetId>${refset.id}</refsetId>
-									<sendNotification>${send.notification}</sendNotification>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
+    <!-- Compute workflow for a map project -Drun.config=.. must also be specified. -->
+    <profile>
+      <id>ComputeWorkflow</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>compute-workflow</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>compute-workflow</goal>
+                </goals>
+                <configuration>
+                  <refsetId>${refset.id}</refsetId>
+                  <sendNotification>${send.notification}</sendNotification>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
 
-				</plugins>
-			</build>
-		</profile>
+        </plugins>
+      </build>
+    </profile>
 
-		<!-- Generate daily reports -Drun.config=.. must also be specified. -->
-		<!-- Typically, this is called from a cron job or CI server -->
-		<profile>
-			<id>GenerateDailyReports</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.ihtsdo.otf.mapping</groupId>
-						<artifactId>mapping-admin-mojo</artifactId>
-						<executions>
-							<execution>
-								<id>generate-daily-reports</id>
-								<phase>package</phase>
-								<goals>
-									<goal>generate-daily-reports</goal>
-								</goals>
-								<configuration>
-									<startDate>${start.date}</startDate>
-									<endDate>${end.date}</endDate>
-									<refsetId>${refset.id}</refsetId>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
+    <!-- Generate daily reports -Drun.config=.. must also be specified. -->
+    <!-- Typically, this is called from a cron job or CI server -->
+    <profile>
+      <id>GenerateDailyReports</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>generate-daily-reports</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>generate-daily-reports</goal>
+                </goals>
+                <configuration>
+                  <startDate>${start.date}</startDate>
+                  <endDate>${end.date}</endDate>
+                  <refsetId>${refset.id}</refsetId>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
 
-	</profiles>
+  </profiles>
 </project>

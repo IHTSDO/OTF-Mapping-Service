@@ -34,7 +34,8 @@ mvn install -PGenerateDailyReports -Drun.config=$MAPPING_CONFIG -Dstart.date=$to
 
 if ($status != 0) then
     echo "ERROR generating daily reports"
-    cat mvn.log
+    echo "    Restarting tomcat7 server ...`/bin/date`"
+    service tomcat7 start
     exit 1
 endif
 
