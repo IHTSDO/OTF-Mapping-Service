@@ -87,6 +87,11 @@ angular
 								'testReportError' : null
 							};
 
+							$scope.newQaDefinition = {
+								'testQaSuccess' : false,
+								'testQaError' : null
+							};
+
 							// enumerate the report definition field pick lists
 							$scope.definitionQueryTypes = [ 'NONE', 'SQL', 'HQL', 'LUCENE' ];
 							$scope.definitionResultTypes = [ 'CONCEPT', 'MAP_RECORD' ];
@@ -2327,7 +2332,7 @@ angular
 								} else if (definition.diffReport == true) {
 									if (definition.timePeriod == null)
 										testReportError += "You must specify the time period over which the difference report is calculated\n";
-									if (definition.diffReportDefinition == null)
+									if (definition.diffReportDefinitionName == null)
 										testReportError += "You must specify the report definition from which the difference report is calculated\n";
 
 								} else if (definition.diffReport == false) {
@@ -2722,6 +2727,9 @@ angular
 								if ($scope.validateReportDefinition(definition) != true)
 									return;
 
+								definition.testQaSuccess = null;
+								definition.testQaErrors = null;
+
 								console.debug("in updateQaDefinition");
 
 								$rootScope.glassPane++;
@@ -2735,12 +2743,10 @@ angular
 										"Content-Type" : "application/json"
 									}
 								})
-										.success(
-												function(data) {
-													console.debug("success to updateQaDefinition");
-													removeComponentFromArray(editingPerformed,
-															qaCheckDefinition);
-												})
+										.success(function(data) {
+											console.debug("success to updateQaDefinition");
+											removeComponentFromArray(editingPerformed, definition);
+										})
 										.error(
 												function(data, status, headers, config) {
 													$scope.recordError = "Error updating map qaCheckDefinition.";
@@ -2764,14 +2770,14 @@ angular
 																	function(data) {
 																		$rootScope.glassPane--;
 																		$scope.qaCheckDefinitions = data.reportDefinition;
-																		for (var j = 0; j < $scope.focusProject.qaCheckDefinition.length; j++) {
-																			if (qaCheckDefinition.id === $scope.focusProject.qaCheckDefinition[j].id) {
-																				$scope.focusProject.qaCheckDefinition[j] = definition;
+																		for (var j = 0; j < $scope.focusProject.reportDefinition.length; j++) {
+																			if (definition.id === $scope.focusProject.reportDefinition[j].id) {
+																				$scope.focusProject.reportDefinition[j] = definition;
 																			}
 																		}
 																		localStorageService.add(
 																				'qaCheckDefinitions',
-																				data.qaCheckDefinition);
+																				data.reportDefinition);
 																		$rootScope
 																				.$broadcast(
 																						'localStorageModule.notification.setQaDefinitions',
@@ -2821,6 +2827,7 @@ angular
 								definition.diffReport = false;
 								definition.timePeriod = null;
 								definition.frequency = 'ON_DEMAND';
+								definition.qacheck = true;
 
 								// if validation returns an error, simply return
 								if ($scope.validateReportDefinition(definition) != true)
