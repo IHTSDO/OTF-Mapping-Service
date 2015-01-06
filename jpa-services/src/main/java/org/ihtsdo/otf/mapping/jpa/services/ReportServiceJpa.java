@@ -1127,7 +1127,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     // executed query)
     report.setQueryType(reportDefinition.getQueryType());
     report.setResultType(reportDefinition.getResultType());
-    report.setTimestamp(cal.getTimeInMillis());
+    report.setTimestamp(date.getTime());
 
     // execute the query
     List<Object[]> results = null;
