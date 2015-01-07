@@ -652,6 +652,16 @@ angular
 								return false;
 							}
 							;
+							
+							function reportDefinitionUsedInProjects(definition) {
+							  for (var i = 0; i < $scope.mapProjects.length; i++) {
+							    for (var j = 0; j < $scope.mapProjects[i].reportDefinition.length; j++) {
+							      if ($scope.mapProjects[i].reportDefinition[j].id == definition.id)
+							        return true;
+							    }
+							  }
+							  return false;
+							}
 
 							function initializeMapProjectMetadata() {
 								if ($scope.mapProjectMetadata != null) {
@@ -2229,6 +2239,12 @@ angular
 
 								if (confirm("Are you sure that you want to delete a map report definition?") == false)
 									return;
+								
+								if (reportDefinitionUsedInProjects(reportDefinition) == true &&
+								  confirm("This report definition is active in at least one project.\nAre you" +
+								  		" still sure that you want to delete a map report definition? \nAll reports" +
+								  		" with this report definition type will be deleted as well!") == false)
+								  return;
 								
 								$rootScope.glassPane++;
 
