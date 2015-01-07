@@ -63,7 +63,7 @@
 
         <th style="width: 75%; padding: 5px;">Preferred Name</th>
         <th style="width: 3%; padding: 5px;"><a title="Return All Work"
-          ng-click="openUnassignModal(currentUser, 'concepts')"><i
+          ng-click="unassignAllWork(currentUser, 'concept', assignedWorkType, queryAssigned)"><i
             class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i></a>
         </th>
 
@@ -218,7 +218,7 @@
         <th style="width: 75%; padding: 5px;">Preferred Name</th>
         <th style="width: 3%; padding: 5px;"><a
           title="Return All Conflicts"
-          ng-click="openUnassignModal(currentUser, 'conflicts')"><i
+          ng-click="unassignAllWork(currentUser, 'conflict', assignedConflictType, queryConflict)"><i
             class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i></a>
         </th>
 
@@ -352,7 +352,7 @@
         </a></th>
         <th style="width: 80%; padding: 5px;">Preferred Name</th>
         <th style="width: 3%; padding: 5px;"><a title="Return All Work"
-          ng-click="openUnassignModal(currentUser, 'review')"><i
+          ng-click="unassignAllWork(currentUser, 'review', assignedReviewWorkType, queryReviewWork)"><i
             class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i>
         </a></th>
 
@@ -476,7 +476,7 @@
       <th style="width: 60%; padding: 5px;">Preferred Name</th>
       <th style="width: 25%; padding: 5px;">Last Modified</th>
       <th style="width: 3%; padding: 5px;"><a title="Return All Work"
-        ng-click="openUnassignModal(mapUserViewed, 'concepts')"><i
+        ng-click="unassignAllWork(mapUserViewed, 'concept', assignedWorkForUserType, queryAssignedForUser)"><i
           class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i>
       </a></th>
 
@@ -512,25 +512,14 @@
   <tr>
     <td style="padding: 5px;">Filter by label:</td>
     <td style="padding: 5px;"><select ng-model="selected"
-      ng-click="retrieveAssignedQAWork(1, selected, assignedQAWorkType);"
+      ng-change="retrieveAssignedQAWork(1, selected, assignedQAWorkType);"
       ng-options="lbl for lbl in labelNames">
     </select>
       <button class="btn btn-sm btn-primary"
         ng-click="retrieveAssignedQAWork(1, 'null', assignedQAWorkType); selected = null;">Reset</button>
     </td>
   </tr>
-  <!-- <tr>
-    <td style="padding: 5px";>Filter concepts:</td>
-    <td style="padding: 5px;">
-      <form>
-        <input id="reviewSearch" ng-model="queryReviewWork">
-        <button class="btn btn-sm btn-primary"
-          ng-click="retrieveAssignedQAWork(1, queryReviewWork, assignedReviewWorkType)">Search</button>
-        <button class="btn btn-sm btn-primary"
-          ng-click="retrieveAssignedQAWork(1, 'null', assignedReviewWorkType); queryReviewWork = null">Reset</button>
-      </form>
-    </td>
-  </tr> -->
+  
   <tr>
     <td></td>
     <td>
@@ -582,7 +571,7 @@
         <th style="width: 77%; padding: 5px;">Preferred Name</th>
         <th style="width: 3%; padding: 5px;"></th>
         <th style="width: 3%; padding: 5px;"><a title="Return All Work"
-          ng-click="openUnassignModal(currentUser, 'review')"><i
+            ng-click="unassignAllWork(currentUser, 'qa', assignedQAWorkType, queryQAWork)"><i
             class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i>
         </a></th>
 
