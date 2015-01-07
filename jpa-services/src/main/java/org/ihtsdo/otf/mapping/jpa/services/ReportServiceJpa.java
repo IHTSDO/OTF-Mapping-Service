@@ -612,9 +612,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
   public ReportDefinitionList getReportDefinitionsForRole(MapUserRole role) {
     ReportDefinitionList definitionList = new ReportDefinitionListJpa();
 
-    // System.out.println("Getting report definitions for role: "
-    // + role.toString());
-
+   
     // get all definitions
     List<ReportDefinition> definitions =
         manager.createQuery(
@@ -868,22 +866,26 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     Calendar cal = Calendar.getInstance();
 
     // get all report definitions
-    ReportDefinitionList reportDefinitions = getReportDefinitions();
-
+    Set<ReportDefinition> reportDefinitions = mapProject.getReportDefinitions();
+   
     // separate report definitions into daily and diff sets
     // note that this is necessary as diff reports require
     // a daily report to be present prior to calculation
-    Set<ReportDefinition> dailyReportDefinitions = new HashSet<>();
+    Set<ReportDefinition> nonDiffReportDefinitions = new HashSet<>();
     Set<ReportDefinition> diffReportDefinitions = new HashSet<>();
 
     // sort the report definitions into daily and diff sets
-    for (ReportDefinition reportDefinition : reportDefinitions.getIterable()) {
+    for (ReportDefinition reportDefinition : reportDefinitions) {
+      
+      
+      // if diff report, add to diff set
       if (reportDefinition.isDiffReport())
         diffReportDefinitions.add(reportDefinition);
-      else
-        dailyReportDefinitions.add(reportDefinition);
-    }
-
+      // otherwise, if not a qa check, add to the normal reports
+      else if (!reportDefinition.isQACheck())
+        nonDiffReportDefinitions.add(reportDefinition);
+     }
+    
     // cycle over dates until end date is passed
     Date localStartDate = startDate;
     while (localStartDate.compareTo(endDate) <= 0) {
@@ -895,25 +897,25 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
       // first, do the non-diff reports
       // note that these must be calculated prior to diff reports
-      for (ReportDefinition reportDefinition : dailyReportDefinitions) {
+      for (ReportDefinition reportDefinition : nonDiffReportDefinitions) {
 
         if (isDateToRunReport(reportDefinition, localStartDate)) {
-          Logger.getLogger(getClass()).info(
-              "    Generating report " + reportDefinition.getName());
+          
 
           // Only generate reports for those that have queries
           if (reportDefinition.getQueryType() != ReportQueryType.NONE) {
+            Logger.getLogger(getClass()).info(
+                "    Generating report " + reportDefinition.getName());
+            
             Report report =
                 generateReport(mapProject, mapUser, reportDefinition.getName(),
                     reportDefinition, localStartDate, true);
-            // If report not generated (e.g. a diff report)
+            
+            // If generateReport returns a non-null result (no errors), add
             if (report != null) {
+              Logger.getLogger(getClass()).info("     Persisting report.");
               addReport(report);
-            }
-            Logger.getLogger(getClass()).info("     Persisting report.");
-
-            // persist the report
-            report = addReport(report);
+            }    
           }
         }
       }
@@ -1055,17 +1057,29 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     // if a diff report, need to construct a query based on specified report
     // definition
     if (reportDefinition.isDiffReport()) {
-
+      
       query =
+          // most recent report before or on specified date
           "select 'Report' value, name itemName, id itemId "
               + "from reports where name = '"
               + reportDefinition.getDiffReportDefinitionName()
               + "' "
-              + "and (timestamp = "
-              + "(select max(timestamp) from reports "
-              + "where timestamp <= :TIMESTAMP:) OR timestamp = "
-              + "(select max(timestamp) from reports where timestamp <= :TIMESTAMP2:)) "
-              + "order by timestamp desc;";
+              + "and mapProjectId = :MAP_PROJECT_ID: "
+              + "and timestamp = "
+              + "(select max(timestamp) from reports where timestamp < :TIMESTAMP:) "
+              + "limit 1 "
+              
+              // union with most recent report before or on specified date less interval
+              // note:  surround with parantheses to correctly apply LIMIT
+              + "UNION " + 
+              "(select 'Report' value, name itemName, id itemId "
+              + "from reports where name = '"
+              + reportDefinition.getDiffReportDefinitionName()
+              + "' "
+              + "and mapProjectId = :MAP_PROJECT_ID: "
+              + "and timestamp = "
+              + "(select max(timestamp) from reports where timestamp <= :TIMESTAMP2:) "
+              + "limit 1)";
 
       // modify date by appropriate increment
       switch (reportDefinition.getTimePeriod()) {
@@ -1086,6 +1100,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
       }
 
       // replace the second timestamp with the modified date
+      // only used for diff report
       query =
           query
               .replaceAll(":TIMESTAMP2:", Long.toString(cal.getTimeInMillis()));
@@ -1097,13 +1112,14 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     // replace the map project id and timestamp parameters
     query = query.replaceAll(":MAP_PROJECT_ID:", mapProject.getId().toString());
     query = query.replaceAll(":TIMESTAMP:", Long.toString(date.getTime()));
-
+  
     // instantiate the report
     Report report = new ReportJpa();
     report.setReportDefinition(reportDefinition);
     report.setActive(true);
 
     report.setAutoGenerated(autoGenerated);
+    report.setDiffReport(reportDefinition.isDiffReport());
     report.setMapProjectId(mapProject.getId());
     report.setName(name);
     report.setOwner(owner);
@@ -1153,8 +1169,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     if (reportDefinition.isDiffReport()) {
 
       if (results.size() != 2) {
-        throw new LocalException(
-            "Diff reqport query has unexpected number of results");
+        throw new LocalException("Could not construct diff report for query, unexpected number of results (expected 2, found " + results.size() + ") from query " + query);
       }
 
       // get the ids corresponding to reports to be diffed
@@ -1167,7 +1182,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
       // if either report id is null, cannot construct report, return null
       if (report.getReport1Id() == null || report.getReport2Id() == null) {
-        return null;
+        throw new LocalException("Could not construct diff report for query, a null report was returned from query " + query); 
       }
 
       // get the two reports
@@ -1176,7 +1191,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
         report1 = getReport(report.getReport1Id());
       } catch (Exception e) {
         throw new LocalException(
-            "Could not retrieve first report for diff report", e);
+            "Could not retrieve first report for diff report with id " + report.getReport1Id(), e);
       }
 
       Report report2;
@@ -1184,7 +1199,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
         report2 = getReport(report.getReport2Id());
       } catch (Exception e) {
         throw new LocalException(
-            "Could not retrieve second report for diff report", e);
+            "Could not retrieve second report for diff report with id " + report.getReport2Id(), e);
       }
 
       // cycle over results in first report
@@ -1221,7 +1236,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
       // if a data-point report
     } else {
-
+      
       for (Object[] result : results) {
         String value = result[0].toString();
         String itemId = result[1].toString();
@@ -1446,9 +1461,6 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
   @Override
   public ReportDefinitionList getQACheckDefinitionsForRole(MapUserRole role) {
     ReportDefinitionList definitionList = new ReportDefinitionListJpa();
-
-    // System.out.println("Getting report definitions for role: "
-    // + role.toString());
 
     // get all definitions
     List<ReportDefinition> definitions =
