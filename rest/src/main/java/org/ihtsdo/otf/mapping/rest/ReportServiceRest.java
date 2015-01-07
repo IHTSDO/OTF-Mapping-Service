@@ -3,6 +3,8 @@ package org.ihtsdo.otf.mapping.rest;
 import java.io.InputStream;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -234,8 +236,34 @@ public class ReportServiceRest extends RootServiceRest {
                     "User does not have permissions to delete a report definition.")
                 .build());
 
-      // get the reports
+      // if definition is connected to any projects, remove from projects
+      MappingService mappingService = new MappingServiceJpa();
+      for (MapProject mp : mappingService.getMapProjects().getMapProjects()) {
+        Set<ReportDefinition> defsToRemove = new HashSet<>();
+      	for (ReportDefinition def : mp.getReportDefinitions()) {
+      		if (def.getId() == reportDefinition.getId()) {
+      			defsToRemove.add(def);
+      		}
+      	}
+      	for (ReportDefinition remove : defsToRemove) {
+      		mp.removeReportDefinition(remove);
+      	}
+      	mappingService.updateMapProject(mp);
+      }
+      mappingService.close();
+      
+      // remove all reports from all projects with given definition
       ReportService reportService = new ReportServiceJpa();
+      Set<Report> reportsToRemove = new HashSet<>();
+      for (Report report : reportService.getReports().getReports()) {
+      	if (report.getReportDefinition().getId() == reportDefinition.getId())
+      		reportsToRemove.add(report);
+      }
+      for (Report report : reportsToRemove) {
+      	reportService.removeReport(report.getId());
+      }
+      
+      // remove report definition
       reportService.removeReportDefinition(reportDefinition.getId());
       reportService.close();
 
