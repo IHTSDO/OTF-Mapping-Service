@@ -2227,8 +2227,10 @@ angular
 							$scope.deleteReportDefinition = function(reportDefinition) {
 								console.debug("in deleteReportDefinition from application");
 
-								if (confirm("Are you sure that you want to delete a map reportDefinition?") == false)
+								if (confirm("Are you sure that you want to delete a map report definition?") == false)
 									return;
+								
+								$rootScope.glassPane++;
 
 								$http({
 									url : root_reporting + "definition/delete",
@@ -2243,12 +2245,14 @@ angular
 												function(data) {
 													console
 															.debug("success to deleteReportDefinition from application");
+													$rootScope.glassPane--;
 												})
 										.error(
 												function(data, status, headers, config) {
 													$scope.recordError = "Error deleting map reportDefinition from application.";
 													$rootScope.handleHttpError(data, status, headers,
 															config);
+													$rootScope.glassPane--;
 												})
 										.then(
 												function(data) {
@@ -2584,8 +2588,10 @@ angular
 							$scope.deleteQaDefinition = function(qaCheckDefinition) {
 								console.debug("in deleteQaDefinition from application");
 
-								if (confirm("Are you sure that you want to delete a map qaCheckDefinition?") == false)
+								if (confirm("Are you sure that you want to delete a map QA Check Definition?") == false)
 									return;
+								
+								$rootScope.glassPane++;
 
 								$http({
 									url : root_reporting + "definition/delete",
@@ -2598,6 +2604,8 @@ angular
 								})
 										.success(
 												function(data) {
+												  $rootScope.glassPane--;
+
 													console
 															.debug("success to deleteQaDefinition from application");
 												})
@@ -2606,6 +2614,8 @@ angular
 													$scope.recordError = "Error deleting map qaCheckDefinition from application.";
 													$rootScope.handleHttpError(data, status, headers,
 															config);
+													$rootScope.glassPane--;
+
 												})
 										.then(
 												function(data) {
