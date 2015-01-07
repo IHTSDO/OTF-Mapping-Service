@@ -2533,14 +2533,16 @@ angular
 									}
 								})
 										.success(function(data) {
+											$scope.newReportAdded = true;
 											definition.testReportSuccess = null;
 											definition.testReportError = null;
 											console.debug("success to addReportDefinition");
 										})
 										.error(
 												function(data, status, headers, config) {
+													$scope.newReportAdded = false;
 													definition.testReportSuccess = null;
-													definition.testReportError = null;
+													definition.testReportError = "Error adding report";
 													$rootScope.handleHttpError(data, status, headers,
 															config);
 												})
