@@ -1073,14 +1073,16 @@
 								tooltip="Query frequency to calculate report results">
 								<td style="width: 40%;">Frequency</td>
 								<td style="width: 60%;"><select style="width: 100%;"
+									ng-change="newReportAdded = false"
 									ng-model="newDefinition.frequency"
-									ng-options="frequency as frequency for frequency in definitionFrequencies""></select></td>
+									ng-options="frequency as frequency for frequency in definitionFrequencies"></select></td>
 							</tr>
 							<tr tooltip-placement="top"
 								tooltip="Project role required to view report results">
 								<td style="width: 40%;">Role Required</td>
 								<td style="width: 60%;"><select style="width: 100%;"
 									ng-model="newDefinition.roleRequired"
+									ng-change="newReportAdded = false"
 									ng-options="role as role for role in definitionRoles"
 									style="width: 100%; padding:5px;"></select></td>
 							</tr>
@@ -1089,6 +1091,7 @@
 								<td style="width: 40%;">Result Type</td>
 								<td style="width: 60%;"><select style="width: 100%;"
 									ng-model="newDefinition.resultType"
+									ng-change="newReportAdded = false"
 									ng-options="resultType as resultType for resultType in definitionResultTypes"
 									style="width: 100%;"></select></td>
 							</tr>
@@ -1098,7 +1101,7 @@
 								<td style="width: 60%;"><select style="width: 100%;"
 									ng-model="newDefinition.diffReport"
 									ng-options="item for item in [true, false]"
-									ng-change="newDefinition.testReportSuccess = false"></select></td>
+									ng-change="newDefinition.testReportSuccess = false"; newReportAdded = false"></select></td>
 							</tr>
 
 							<!--  Non-diff-report parameters -->
@@ -1108,7 +1111,7 @@
 								<td style="width: 40%;">Query Type</td>
 								<td style="width: 60%;"><select style="width: 100%;"
 									ng-model="newDefinition.queryType"
-									ng-change="newDefinition.testReportSuccess = false"
+									ng-change="newDefinition.testReportSuccess = false; newReportAdded = false"
 									ng-options="queryType as queryType for queryType in definitionQueryTypes"></select></td>
 							</tr>
 
@@ -1127,6 +1130,7 @@
 								<td style="width: 40%;">Diff Report Base Definition
 								<td style="width: 60%;"><select style="width: 100%;"
 									ng-model="newDefinition.diffReportDefinitionName"
+									ng-change="newReportAdded = false"
 									ng-options="name as name for name in getNonDiffReportDefinitionNames()"></select></td>
 							</tr>
 						</tbody>
@@ -1151,7 +1155,7 @@
 											tooltip-placement="top"
 											tooltip="Query executed to retrieve report results"
 											ng-model="newDefinition.query"
-											ng-change="newDefinition.testReportSuccess = false"></textarea>
+											ng-change="newDefinition.testReportSuccess = false; newReportAdded = false"></textarea>
 										<div ng-show="newDefinition.diffReport == true"
 											class="alert alert-warning">Query is not specified for
 											difference reports.</div>
@@ -1174,7 +1178,7 @@
 					<button
 						ng-disabled="newDefinition.testReportSuccess != true && newDefinition.diffReport == false"
 						class="btn btn-sm btn-primary" style="width: 59px"
-						ng-click="submitNewReportDefinition(newDefinition)">Submit</button>
+						ng-click="submitNewReportDefinition(newDefinition); newDefinition = null;">Submit</button>
 
 					<button ng-disabled="newDefinition.testReportSuccess == true"
 						ng-show="newDefinition.diffReport == false"
@@ -1185,6 +1189,9 @@
 				</td>
 
 				<td>
+					<div class="alert alert-success" ng-show="newReportAdded == true">
+						Report definition succcessfully added.
+					</div>
 					<div class="border-error alert-error"
 						ng-show="newDefinition.testReportError != null">
 						<div class="alert alert-danger alert-error">
