@@ -56,6 +56,7 @@ angular
 
 							$scope.terminologyVersionPairs = new Array();
 							$scope.mapProjectMetadataPairs = new Array();
+
 							var editingPerformed = new Array();
 							var previousUserPage = 1;
 							var previousAdvicePage = 1;
@@ -695,17 +696,16 @@ angular
 									// if a number
 									if (!isNaN(parseInt(a[key]))) {
 
-										x = a[key]; 
+										x = a[key];
 										y = b[key];
-										
-										
+
 									} else {
-										
+
 										x = new String(a[key]).toUpperCase();
 										y = new String(b[key]).toUpperCase();
 
 									}
-									console.debug(x, y, x < y);
+							
 									if (x < y)
 										return -1;
 									if (x > y)
@@ -997,6 +997,54 @@ angular
 								}
 								return false;
 							};
+
+							// reverts an unsaved Report or QA Check definition
+							// 1) Removes from edited list
+							// 2) Replaces scope object with REST-retrieved object
+							$scope.revertUnsavedReportDefinition = function(definition) {
+								// get last saved state of reportDefinitions
+								$http({
+									url : root_reporting + "definition/id/" + definition.id,
+									dataType : "json",
+									method : "GET",
+									headers : {
+										"Content-Type" : "application/json"
+									}
+								}).success(
+										function(data) {
+
+											// remove this definition from the editing performed
+											// array
+											for (var i = editingPerformed.length; i--;) {
+												if (editingPerformed[i].id == definition.id
+														&& editingPerformed[i].name == definition.name) {
+													editingPerformed.splice(i, 1);
+												}
+												;
+											}
+
+											// replace this definition with the new data
+											if (data.qacheck == false) {
+												for (var i = 0; i < $scope.pagedReportDefinition.length; i++) {
+													if ($scope.pagedReportDefinition[i].id == data.id) {
+														console.debug("Reverting definition:", $scope.pagedReportDefinition[i], data);
+														$scope.pagedReportDefinition[i] = data;
+													}
+												}
+											} else {
+												for (var i = 0; i < $scope.pagedQaDefinition.length; i++) {
+													if ($scope.pagedQaDefinition[i].id == data.id) {
+														console.debug("Reverting definition:", $scope.pagedQaDefinition[i], data);
+														$scope.pagedQaDefinition[i] = data;
+													}
+												}
+											}
+										
+											
+										}).error(function(data, status, headers, config) {
+									$rootScope.handleHttpError(data, status, headers, config);
+								});
+							}
 
 							// reverts reportDefinition to last saved state
 							$scope.revertUnsavedReportDefinitions = function() {
@@ -2437,26 +2485,12 @@ angular
 								definition.testReportSuccess = null;
 								definition.testReportErrors = null;
 
-								var obj = {
-									"id" : definition.objectId,
-									"name" : definition.name,
-									"roleRequired" : definition.roleRequired,
-									"resultType" : definition.resultType,
-									"queryType" : definition.queryType,
-									"frequency" : definition.frequency,
-									"diffReport" : definition.diffReport,
-									"timePeriod" : definition.timePeriod,
-									"diffReportDefinitionName" : definition.diffReportDefinitionName,
-									"qaCheck" : "false",
-									"query" : definition.query
-								};
-
 								$rootScope.glassPane++;
 
 								$http({
 									url : root_reporting + "definition/update",
 									dataType : "json",
-									data : obj,
+									data : definition,
 									method : "POST",
 									headers : {
 										"Content-Type" : "application/json"
@@ -2554,7 +2588,7 @@ angular
 									}
 								})
 										.success(function(data) {
-											
+
 											$scope.newReportAdded = true;
 
 											console.debug("success to addReportDefinition");
@@ -2872,9 +2906,9 @@ angular
 									}
 								})
 										.success(function(data) {
-											
+
 											$scope.newQaReportAdded = true;
-											
+
 											console.debug("success to addQaDefinition");
 										})
 										.error(
