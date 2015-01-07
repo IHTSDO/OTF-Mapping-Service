@@ -1660,15 +1660,15 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         // - 1 record marked CONFLICT_RESOLVED
         // - 2 records marked CONFLICT_DETECTED
 
-        // if two map records, must be two EDITING_DONE records
+        // if two map records, must be two EDITING_DONE or CONFLICT_DETECTED records
         // with publish called by finishEditing
         if (mapRecords.size() == 2) {
 
-          // check assumption: records are both marked EDITING_DONE
+          // check assumption: records are both marked EDITING_DONE or CONFLICT_DETECTED
           for (MapRecord mr : mapRecords) {
-            if (!mr.getWorkflowStatus().equals(WorkflowStatus.EDITING_DONE))
+            if (!mr.getWorkflowStatus().equals(WorkflowStatus.EDITING_DONE) && !mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED))
               throw new Exception(
-                  "Publish called, expected two matching specialist records marked EDITING_DONE, but found record with status "
+                  "Publish called, expected two matching specialist records marked EDITING_DONE or CONFLICT_DETECTED, but found record with status "
                       + mr.getWorkflowStatus().toString());
           }
 
