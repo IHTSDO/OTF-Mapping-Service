@@ -204,6 +204,12 @@ public class SecurityServiceJpa extends RootServiceJpa implements
    */
   @Override
   public String getUsernameForToken(String authToken) throws Exception {
+    
+    // if this authToken consists only of the string "false", then most likely
+    // browser security settings are not properly configured
+    if (authToken.equals("false")) {
+      throw new LocalException("Could not authenticate requests.  This is most likely to the Tool not being able to access your local cache.  Check that cookies are enabled in your browser and try again.");
+    }
 
     // read ihtsdo security url and active status from config file
     if (config == null) {
