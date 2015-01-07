@@ -455,7 +455,7 @@ angular
 								}
 								$scope.reportDefinitionFilter = filter;
 								$scope.pagedReportDefinition = $scope.sortByKey(
-										$scope.reportDefinitions, 'id').filter(
+										$scope.reportDefinitions, 'name').filter(
 										containsReportDefinitionFilter);
 								$scope.pagedReportDefinitionCount = $scope.pagedReportDefinition.length;
 								$scope.pagedReportDefinition = $scope.pagedReportDefinition
@@ -701,9 +701,26 @@ angular
 							// helper function to sort a JSON array by field
 							$scope.sortByKey = function sortById(array, key) {
 								return array.sort(function(a, b) {
-									var x = a[key];
-									var y = b[key];
-									return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+									var x, y;
+									// if a number
+									if (!isNaN(parseInt(a[key]))) {
+
+										x = a[key]; 
+										y = b[key];
+										
+										
+									} else {
+										
+										x = new String(a[key]).toUpperCase();
+										y = new String(b[key]).toUpperCase();
+
+									}
+									console.debug(x, y, x < y);
+									if (x < y)
+										return -1;
+									if (x > y)
+										return 1;
+									return 0;
 								});
 							};
 
@@ -2239,7 +2256,7 @@ angular
 
 								if (confirm("Are you sure that you want to delete a map report definition?") == false)
 									return;
-								
+
 								if (reportDefinitionUsedInProjects(reportDefinition) == true &&
 								  confirm("This report definition is active in at least one project.\nAre you" +
 								  		" still sure that you want to delete a map report definition? \nAll reports" +
@@ -2553,14 +2570,16 @@ angular
 									}
 								})
 										.success(function(data) {
-											definition.testReportSuccess = null;
-											definition.testReportError = null;
+											
+											$scope.newReportAdded = true;
+
 											console.debug("success to addReportDefinition");
 										})
 										.error(
 												function(data, status, headers, config) {
+													$scope.newReportAdded = false;
 													definition.testReportSuccess = null;
-													definition.testReportError = null;
+													definition.testReportError = "Error adding report";
 													$rootScope.handleHttpError(data, status, headers,
 															config);
 												})
@@ -2606,7 +2625,7 @@ angular
 
 								if (confirm("Are you sure that you want to delete a map QA Check Definition?") == false)
 									return;
-								
+
 								$rootScope.glassPane++;
 
 								$http({
@@ -2620,7 +2639,7 @@ angular
 								})
 										.success(
 												function(data) {
-												  $rootScope.glassPane--;
+													$rootScope.glassPane--;
 
 													console
 															.debug("success to deleteQaDefinition from application");
@@ -2869,11 +2888,15 @@ angular
 									}
 								})
 										.success(function(data) {
+											
+											$scope.newQaReportAdded = true;
+											
 											console.debug("success to addQaDefinition");
 										})
 										.error(
 												function(data, status, headers, config) {
-													$scope.recordError = "Error adding new map qa check Definition.";
+													$scope.testQaSuccess = false;
+													$scope.testQaError = "Error adding new map qa check Definition.";
 													$rootScope.handleHttpError(data, status, headers,
 															config);
 												})
