@@ -3358,6 +3358,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     mapRecord.getMapPrinciples().size();
     mapRecord.getOriginIds().size();
     mapRecord.getLabels().size();
+    mapRecord.getReasonsForConflict().size();
     for (MapEntry mapEntry : mapRecord.getMapEntries()) {
       if (mapEntry.getMapRelation() != null)
         mapEntry.getMapRelation().getName();
