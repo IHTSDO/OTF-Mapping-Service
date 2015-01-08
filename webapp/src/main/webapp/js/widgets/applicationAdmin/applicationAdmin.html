@@ -1,7 +1,6 @@
 
 <accordion close-others="false"> <accordion-group
-	is-open="true"> <accordion-group
-	ng-show="mapProjects.length > 0 "> <accordion-heading>
+	is-open="true"> <accordion-group> <accordion-heading>
 <h5>
 	<span tooltip-placement="right" tooltip="List of the map projects.">
 		Map Projects </span>
@@ -156,9 +155,10 @@
 
 	</tbody>
 </table>
-<button class="btn btn-sm btn-primary"
+<button class="btn btn-sm btn-warning"
 	ng-click="revertUnsavedProjects()"
-	ng-show="projectInEditingPerformed() == true">Revert Unsaved</button>
+	ng-show="projectInEditingPerformed() == true">Cancel Unsaved
+	Edits</button>
 
 
 <form>
@@ -298,7 +298,7 @@
 	</table>
 </form>
 
-</accordion-group> <accordion-group ng-show="mapUsers.length > 0 "> <accordion-heading>
+</accordion-group> <accordion-group> <accordion-heading>
 <h5>
 	<span tooltip-placement="right" tooltip="List of the map users.">
 		Map Users </span>
@@ -351,8 +351,9 @@
 
 	</tbody>
 </table>
-<button class="btn btn-sm btn-primary" ng-click="revertUnsavedUsers()"
-	ng-show="userInEditingPerformed() == true">Revert Unsaved</button>
+<button class="btn btn-sm btn-warning" ng-click="revertUnsavedUsers()"
+	ng-show="userInEditingPerformed() == true">Cancel Unsaved
+	Edits</button>
 
 <form>
 	<div style="margin-top: 15px;">
@@ -394,7 +395,7 @@
           newUserName = ''; newUserFullName = ''; newUserEmail = ''; newUserApplicationRole = null; ">Submit</button>
 </form>
 
-</accordion-group> <accordion-group ng-show="mapAdvices.length > 0 "> <accordion-heading>
+</accordion-group> <accordion-group> <accordion-heading>
 <h5>
 	<span tooltip-placement="right" tooltip="List of the map advices.">
 		Map Advices </span>
@@ -451,8 +452,9 @@
 
 	</tbody>
 </table>
-<button class="btn btn-sm btn-primary" ng-click="revertUnsavedAdvices()"
-	ng-show="adviceInEditingPerformed() == true">Revert Unsaved</button>
+<button class="btn btn-sm btn-warning" ng-click="revertUnsavedAdvices()"
+	ng-show="adviceInEditingPerformed() == true">Cancel Unsaved
+	Edits</button>
 
 <form>
 	<div style="margin-top: 15px;">
@@ -497,7 +499,7 @@
           newAdviceName = ''; newAdviceDetail = ''; newAllowableForNullTarget = false; newIsComputed = false; ">Submit</button>
 </form>
 
-</accordion-group> <accordion-group ng-show="mapRelations.length > 0"> <accordion-heading>
+</accordion-group> <accordion-group> <accordion-heading>
 <h5>
 	<span tooltip-placement="right"
 		tooltip="List of the map relations for the application."> Map
@@ -560,9 +562,10 @@
 
 	</tbody>
 </table>
-<button class="btn btn-sm btn-primary"
+<button class="btn btn-sm btn-warning"
 	ng-click="revertUnsavedRelations()"
-	ng-show="relationInEditingPerformed() == true">Revert Unsaved</button>
+	ng-show="relationInEditingPerformed() == true">Cancel Unsaved
+	Edits</button>
 
 
 <form>
@@ -616,8 +619,7 @@
 		</tbody>
 	</table>
 </form>
-</accordion-group> <accordion-group ng-show="mapPrinciples.length > 0">
-<accordion-heading>
+</accordion-group> <accordion-group> <accordion-heading>
 <h5>
 	<span tooltip-placement="right"
 		tooltip="List of the map principles in this application."> Map
@@ -668,9 +670,10 @@
 		</tr>
 	</tbody>
 </table>
-<button class="btn btn-sm btn-primary"
+<button class="btn btn-sm btn-warning"
 	ng-click="revertUnsavedPrinciples()"
-	ng-show="principleInEditingPerformed() == true">Revert Unsaved</button>
+	ng-show="principleInEditingPerformed() == true">Cancel Unsaved
+	Edits</button>
 
 <form>
 	<div style="margin-top: 15px;">
@@ -718,8 +721,7 @@
 <!-- <div style="margin-top:15px;"><b>Upload Map Principle Handbook</b></div>                 
       <div>
         <input type="file" ng-file-select="onFileSelect($files)">
-      </div>       --> </accordion-group> <accordion-group
-	ng-show="mapAgeRanges.length > 0"> <accordion-heading>
+      </div>       --> </accordion-group> <accordion-group> <accordion-heading>
 <h5>
 	<span tooltip-placement="right"
 		tooltip="List of the preset age ranges used for rule construction in this application">
@@ -776,9 +778,10 @@
 		</tr>
 	</tbody>
 </table>
-<button class="btn btn-sm btn-primary"
+<button class="btn btn-sm btn-warning"
 	ng-click="revertUnsavedAgeRanges()"
-	ng-show="ageRangeInEditingPerformed() == true">Revert Unsaved</button>
+	ng-show="ageRangeInEditingPerformed() == true">Cancel Unsaved
+	Edits</button>
 
 
 
@@ -973,7 +976,6 @@
 					<thead>
 						<tr>
 							<th style="width: 100%;">Query</th>
-
 						</tr>
 					</thead>
 					<tbody style="widgth: 100%; height: 100%;">
@@ -982,7 +984,7 @@
 								<div style="height: 100%;">
 									<textarea
 										ng-show="definition.diffReport == false && definition.queryType != 'NONE'"
-										style="overflow: auto; width: 100%; min-height: 170px"
+										style="overflow: auto; width: 100%; min-height: 98px"
 										tooltip-placement="top"
 										tooltip="Query executed to retrieve report results"
 										ng-model="definition.query"
@@ -1016,15 +1018,38 @@
 							</td>
 						</tr>
 					</tbody>
+
+					<thead style="">
+						<tr>
+							<th style="border-top: 0px">Description (optional)</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td><textarea style="overflow: auto; width: 100%;"
+									tooltip-placement="top"
+									tooltip="Description and details regarding QA check"
+									ng-model="definition.description"
+									ng-change="setEditingPerformed(definition);">
+											</textarea></td>
+						</tr>
+					</tbody>
 				</table>
 			</td>
 			<td>
 				<button class="btn btn-sm btn-primary"
 					ng-click="updateReportDefinition(definition)"
 					ng-show="isComponentChanged(definition) == true && definition.testReportSuccess != false">Save</button>
+
 				<button class="btn btn-sm btn-primary"
 					ng-click="testReportDefinition(definition)"
 					ng-show="isComponentChanged(definition) == true && definition.testReportSuccess == false">Test</button>
+
+				<div ng-show="isComponentChanged(definition) == true"
+					style="padding-top: 10px;">
+					<button class="btn btn-sm btn-warning"
+						ng-click="revertUnsavedReportDefinition(definition)">Cancel</button>
+				</div>
 			</td>
 
 			<td><div tooltip-placement="top"
@@ -1039,6 +1064,14 @@
 	ng-click="revertUnsavedReportDefinitions()"
 	ng-show="reportDefinitionInEditingPerformed() == true">Revert
 	Unsaved</button>
+	
+	<!--  second pagination controls for convenience -->
+	<pagination ng-show="reportDefinitions.length > pageSize"
+	direction-links="false" boundary-links="true"
+	total-items="pagedReportDefinitionCount" items-per-page="pageSize"
+	page="pageReportDefinition"
+	on-select-page="getPagedReportDefinitions(page, reportDefinitionFilter)"></pagination>
+	
 
 <form name="reportDefinitionForm">
 	<div style="margin-top: 15px;">
@@ -1112,7 +1145,7 @@
 								<td style="width: 40%;">Query Type</td>
 								<td style="width: 60%;"><select style="width: 100%;"
 									ng-model="newDefinition.queryType"
-									ng-change="newDefinition.testReportSuccess = false; newReportAdded = false"
+									ng-change="newDefinition.testReportSuccess = false; newReportAdded = false;"
 									ng-options="queryType as queryType for queryType in definitionQueryTypes"></select></td>
 							</tr>
 
@@ -1169,6 +1202,21 @@
 							</tr>
 						</tbody>
 					</table>
+					<table class="table">
+						<thead>
+							<th>Description (optional)</th>
+						</thead>
+						<tbody>
+							<tr>
+								<td><textarea style="overflow: auto; width: 100%;"
+										tooltip-placement="top"
+										tooltip="Description and details regarding report"
+										ng-model="newDefinition.description"
+										ng-change="newReportAdded = false;">
+											</textarea></td>
+							</tr>
+						</tbody>
+					</table>
 				</td>
 
 			</tr>
@@ -1207,6 +1255,7 @@
 
 				</td>
 			</tr>
+
 		</tbody>
 	</table>
 </form>
@@ -1303,7 +1352,7 @@
 							<td style="height: 100%;">
 								<div style="height: 100%;">
 									<textarea ng-show="definition.queryType != 'NONE'"
-										style="overflow: auto; width: 100%; min-height: 170px"
+										style="overflow: auto; width: 100%; min-height: 98px"
 										tooltip-placement="top"
 										tooltip="Query executed to retrieve report results"
 										ng-model="definition.query"
@@ -1337,6 +1386,21 @@
 							</td>
 						</tr>
 					</tbody>
+					<thead style="">
+						<tr>
+							<th style="border-top: 0px">Description (optional)</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td><textarea style="overflow: auto; width: 100%;"
+									tooltip-placement="top"
+									tooltip="Description and details regarding report"
+									ng-model="definition.description"
+									ng-change="setEditingPerformed(definition);">
+											</textarea></td>
+						</tr>
+					</tbody>
 				</table>
 			</td>
 
@@ -1346,7 +1410,12 @@
 
 				<button class="btn btn-sm btn-primary"
 					ng-click="testQaDefinition(definition)"
-					ng-show="isComponentChanged(definition) == true && definition.testQaSuccess == false && definition.queryType != 'NONE'">Test</button></td>
+					ng-show="isComponentChanged(definition) == true && definition.testQaSuccess == false && definition.queryType != 'NONE'">Test</button>
+				<div ng-show="isComponentChanged(definition) == true"
+					style="padding-top: 10px;">
+					<button class="btn btn-sm btn-warning"
+						ng-click="revertUnsavedReportDefinition(definition)">Cancel</button>
+				</div></td>
 
 			<td><div tooltip-placement="top"
 					tooltip="Delete qa check definition">
@@ -1360,6 +1429,14 @@
 	ng-click="revertUnsavedQaDefinitions()"
 	ng-show="qaCheckDefinitionInEditingPerformed() == true">Revert
 	Unsaved</button>
+	
+	<!--  second pagination controls for convenience -->
+	<pagination ng-show="qaCheckDefinitions.length > pageSize"
+	direction-links="false" boundary-links="true"
+	total-items="pagedQaDefinitionCount" items-per-page="pageSize"
+	page="pageQaDefinition"
+	on-select-page="getPagedQaDefinitions(page, qaCheckDefinitionFilter)"></pagination>
+	
 
 <form name="qaDefinitionForm">
 	<div style="margin-top: 15px;">
@@ -1446,6 +1523,21 @@
 									</div>
 
 								</td>
+							</tr>
+						</tbody>
+					</table>
+					<table class="table">
+						<thead>
+							<th>Description (optional)</th>
+						</thead>
+						<tbody>
+							<tr>
+								<td><textarea style="overflow: auto; width: 100%;"
+										tooltip-placement="top"
+										tooltip="Description and details regarding report"
+										ng-model="newQaDefinition.description"
+										ng-change="newQaReportAdded = false;">
+											</textarea></td>
 							</tr>
 						</tbody>
 					</table>
