@@ -61,20 +61,10 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
     String notificationRecipients =
         config.getProperty("send.notification.recipients");
     String notificationMessage = "";
-
-    if (refsetId == null) {
-      throw new MojoExecutionException("You must specify a refsetId.");
-    }
-    
-    // if no notification parameter specified, assume false
-   /* if (sendNotification == null)
-    	sendNotification = false;*/
-
     if (sendNotification == false) {
       getLog().info(
           "No notifications will be sent as a result of workflow computation.");
     }
-
     if (sendNotification == true
         && config.getProperty("send.notification.recipients") == null) {
       throw new MojoExecutionException(
@@ -92,11 +82,16 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
       MappingService mappingService = new MappingServiceJpa();
       Set<MapProject> mapProjects = new HashSet<>();
 
-      for (MapProject mapProject : mappingService.getMapProjects()
-          .getIterable()) {
-        for (String id : refsetId.split(",")) {
-          if (mapProject.getRefSetId().equals(id)) {
-            mapProjects.add(mapProject);
+      // For empty refsetid, compute all
+      if (refsetId == null || refsetId.isEmpty()) {
+        mapProjects.addAll(mappingService.getMapProjects().getMapProjects());
+      } else {
+        for (MapProject mapProject : mappingService.getMapProjects()
+            .getIterable()) {
+          for (String id : refsetId.split(",")) {
+            if (mapProject.getRefSetId().equals(id)) {
+              mapProjects.add(mapProject);
+            }
           }
         }
       }
