@@ -661,7 +661,7 @@ angular
 							    }
 							  }
 							  return false;
-							}
+							};
 
 							function initializeMapProjectMetadata() {
 								if ($scope.mapProjectMetadata != null) {
