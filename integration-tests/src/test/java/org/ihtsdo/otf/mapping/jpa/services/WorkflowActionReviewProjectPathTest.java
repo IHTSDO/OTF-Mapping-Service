@@ -66,8 +66,6 @@ public class WorkflowActionReviewProjectPathTest {
   // the workflow handler
   /**  The handler. */
   private static WorkflowReviewProjectPathHandler handler;
-
-  // TODO Make sure to test a few bad workflow states
   
   /**
    * Inits the.
