@@ -143,7 +143,33 @@
         </plugins>
       </build>
     </profile>
-
+    
+    <!-- Compute default preferred names -Drun.config=.. must also be specified. -->
+    <profile>
+      <id>DefaultPreferredNames</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>compute-default-preferred-names</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>compute-default-preferred-names</goal>
+                </goals>
+                <configuration>
+                  <terminology>${terminology}</terminology>
+                  <terminologyVersion>${version}</terminologyVersion>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    
     <!-- Load ClaML -Drun.config=.. must also be specified. -->
     <profile>
       <id>ClaML</id>
