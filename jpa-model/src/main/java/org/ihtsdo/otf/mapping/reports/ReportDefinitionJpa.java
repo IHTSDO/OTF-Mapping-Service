@@ -42,6 +42,10 @@ public class ReportDefinitionJpa implements ReportDefinition {
   /** The report type name. */
   @Column(nullable = false)
   private String name;
+  
+  /** The report description */
+  @Column(length = 4000, nullable = true)
+  private String description;
 
   /** The is diff report. */
   @Column(nullable = false)
@@ -130,6 +134,18 @@ public class ReportDefinitionJpa implements ReportDefinition {
   public void setName(String name) {
     this.name = name;
   }
+  
+
+  @Override
+  public String getDescription() {
+    return this.description;
+  }
+
+  @Override
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
 
   /*
    * (non-Javadoc)
