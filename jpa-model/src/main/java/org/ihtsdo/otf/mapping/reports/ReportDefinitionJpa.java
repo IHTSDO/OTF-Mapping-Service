@@ -22,6 +22,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * JPA enabled implementation of {@link ReportDefinition}.
+ *
+ * @author ${author}
  */
 @Entity
 @Audited
@@ -43,7 +45,7 @@ public class ReportDefinitionJpa implements ReportDefinition {
   @Column(nullable = false)
   private String name;
   
-  /** The report description */
+  /**  The report description. */
   @Column(length = 4000, nullable = true)
   private String description;
 
@@ -55,11 +57,11 @@ public class ReportDefinitionJpa implements ReportDefinition {
   @Column(nullable = false)
   private boolean isQACheck = false;
 
-  /** The time period (in days) for diff and rate reports */
+  /**  The time period (in days) for diff and rate reports. */
   @Enumerated(EnumType.STRING)
   private ReportTimePeriod timePeriod;
 
-  /** The frequency with which the report is run */
+  /**  The frequency with which the report is run. */
   @Enumerated(EnumType.STRING)
 	@Column(nullable = false)
   private ReportFrequency frequency;
@@ -80,7 +82,7 @@ public class ReportDefinitionJpa implements ReportDefinition {
   @Enumerated(EnumType.STRING)
   private MapUserRole roleRequired;
 
-  /** The report definition used for constructing diff reports (if applicable) */
+  /**  The report definition used for constructing diff reports (if applicable). */
   @Column(nullable = true)
   private String diffReportDefinitionName;
   
@@ -155,11 +157,17 @@ public class ReportDefinitionJpa implements ReportDefinition {
   }
   
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#getDescription()
+   */
   @Override
   public String getDescription() {
     return this.description;
   }
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#setDescription(java.lang.String)
+   */
   @Override
   public void setDescription(String description) {
     this.description = description;
@@ -350,6 +358,9 @@ public class ReportDefinitionJpa implements ReportDefinition {
     this.isQACheck = isQACheck;
   }
 
+  /* (non-Javadoc)
+   * @see java.lang.Object#toString()
+   */
   @Override
   public String toString() {
     return "ReportDefinitionJpa [id=" + id + ", name=" + name
@@ -382,16 +393,25 @@ public class ReportDefinitionJpa implements ReportDefinition {
     this.frequency = timePeriod;
   }
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#getDiffReportDefinitionName()
+   */
   @Override
   public String getDiffReportDefinitionName() {
     return diffReportDefinitionName;
   }
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#setDiffReportDefinitionName(java.lang.String)
+   */
   @Override
   public void setDiffReportDefinitionName(String diffReportDefinitionName) {
     this.diffReportDefinitionName = diffReportDefinitionName;
   }
 
+  /* (non-Javadoc)
+   * @see java.lang.Object#hashCode()
+   */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -416,6 +436,9 @@ public class ReportDefinitionJpa implements ReportDefinition {
     return result;
   }
 
+  /* (non-Javadoc)
+   * @see java.lang.Object#equals(java.lang.Object)
+   */
   @Override
   public boolean equals(Object obj) {
     if (this == obj)
