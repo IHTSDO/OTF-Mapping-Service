@@ -67,7 +67,6 @@ public class WorkflowActionNonLegacyPathTest {
   /**  The handler. */
   private static WorkflowNonLegacyPathHandler handler;
 
-  // TODO Make sure to test a few bad workflow states
 
   /**
    * Inits the.

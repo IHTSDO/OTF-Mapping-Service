@@ -69,7 +69,6 @@ public class QAWorkflow extends AbstractMojo {
         ValidationResult result =
             workflowService.computeWorkflowStatusErrors(mapProject);
 
-        // TODO hardcoded while testing in prod environment
         if (!result.isValid()) {
           OtfEmailHandler emailHandler = new OtfEmailHandler();
           StringBuffer message = new StringBuffer();

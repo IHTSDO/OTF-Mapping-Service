@@ -83,6 +83,25 @@ public class ReportDefinitionJpa implements ReportDefinition {
   /** The report definition used for constructing diff reports (if applicable) */
   @Column(nullable = true)
   private String diffReportDefinitionName;
+  
+  /** Default constructor */
+  public ReportDefinitionJpa() {}
+
+  /** Copy constructor */
+  public ReportDefinitionJpa(ReportDefinition reportDefinition) {
+    super();
+    this.name = reportDefinition.getName();
+    this.description = reportDefinition.getDescription();
+    this.isDiffReport = reportDefinition.isDiffReport();
+    this.isQACheck = reportDefinition.isQACheck();
+    this.timePeriod = reportDefinition.getTimePeriod();
+    this.frequency = reportDefinition.getFrequency();
+    this.resultType = reportDefinition.getResultType();
+    this.queryType = reportDefinition.getQueryType();
+    this.query = reportDefinition.getQuery();
+    this.roleRequired = reportDefinition.getRoleRequired();
+    this.diffReportDefinitionName = reportDefinition.getDiffReportDefinitionName();
+  }
 
   /**
    * Gets the id.
