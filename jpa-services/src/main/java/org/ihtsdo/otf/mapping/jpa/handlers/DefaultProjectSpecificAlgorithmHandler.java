@@ -530,6 +530,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
           .addError("Invalid comparison, map project ids do not match ("
               + record1.getMapProjectId() + ", " + record2.getMapProjectId()
               + ").");
+      validationResult
+      .addConciseError("Invalid comparison - map project ids do not match");
       return validationResult;
     }
 
@@ -538,6 +540,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
       validationResult
           .addError("Invalid comparison, map record concept ids do not match ("
               + record1.getConceptId() + ", " + record2.getConceptId() + ").");
+      validationResult
+              .addConciseError("Invalid comparison - map record concept ids do not match");
       return validationResult;
     }
 
@@ -563,13 +567,17 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     if (principles1.size() != principles2.size()) {
       validationResult
           .addError("Map Principle Assignment is Different: Number of Principles is Different");
+      validationResult
+          .addConciseError("Map Principle Assignment is Different");
     } else {
       for (int i = 0; i < principles1.size(); i++) {
         if (!principles1.get(i).getPrincipleId()
-            .equals(principles2.get(i).getPrincipleId()))
+            .equals(principles2.get(i).getPrincipleId())) {
           validationResult.addError("Map Principle Assignment is Different: "
               + principles1.get(i).getName() + " vs. "
               + principles2.get(i).getName());
+          validationResult.addConciseError("Map Principle Assignment is Different");
+        }
       }
     }
 
@@ -577,30 +585,42 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     if (record1.isFlagForMapLeadReview()) {
       validationResult
           .addError("Mapping Specialist #1 requests MAP LEAD REVIEW.");
+      validationResult
+          .addConciseError("Mapping Specialist requests MAP LEAD REVIEW");
     }
     if (record2.isFlagForMapLeadReview()) {
       validationResult
           .addError("Mapping Specialist #2 requests MAP LEAD REVIEW.");
+      validationResult
+          .addConciseError("Mapping Specialist requests MAP LEAD REVIEW");
     }
 
     // check consensus review flag
     if (record1.isFlagForConsensusReview()) {
       validationResult
           .addError("Mapping Specialist #1 requests CONSENSUS REVIEW.");
+      validationResult
+          .addConciseError("Mapping Specialist requests CONSENSUS REVIEW");
     }
     if (record2.isFlagForConsensusReview()) {
       validationResult
           .addError("Mapping Specialist #2 requests CONSENSUS REVIEW.");
+      validationResult
+          .addConciseError("Mapping Specialist requests CONSENSUS REVIEW");
     }
 
     // check editorial review flag
     if (record1.isFlagForEditorialReview()) {
       validationResult
           .addError("Mapping Specialist #1 requests EDITORIAL REVIEW.");
+      validationResult
+          .addConciseError("Mapping Specialist requests EDITORIAL REVIEW");
     }
     if (record2.isFlagForEditorialReview()) {
       validationResult
           .addError("Mapping Specialist #2 requests EDITORIAL REVIEW.");
+      validationResult
+          .addConciseError("Mapping Specialist requests EDITORIAL REVIEW");
     }
 
     // compare mapEntries
@@ -634,6 +654,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     if (groupToMapEntryList1.keySet().size() != groupToMapEntryList2.keySet()
         .size()) {
       validationResult.addError("Number of Map Groups is Different");
+      validationResult.addConciseError("Number of Map Groups is Different");
     }
 
     // for each group
@@ -645,12 +666,15 @@ public class DefaultProjectSpecificAlgorithmHandler implements
       // error if different numbers of entries
       if (entries1 == null) {
         validationResult.addError("Number of Map Entries is Different");
+        validationResult.addConciseError("Number of Map Entries is Different");
         continue;
       } else if (entries2 == null) {
         validationResult.addError("Number of Map Entries is Different");
+        validationResult.addConciseError("Number of Map Entries is Different");
         continue;
       } else if (entries1.size() != entries2.size()) {
         validationResult.addError("Number of Map Entries is Different");
+        validationResult.addConciseError("Number of Map Entries is Different");
       }
 
       // create string lists for entry comparison
@@ -691,7 +715,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         for (int f = 0; f < entries2.size(); f++) {
           if (isRulesEqual(entries1.get(d), entries2.get(f))
               && isTargetIdsEqual(entries1.get(d), entries2.get(f))
-              && !isMapRelationsEqual(entries1.get(d), entries2.get(f)))
+              && !isMapRelationsEqual(entries1.get(d), entries2.get(f))) {
 
             validationResult.addError("Map Relation is Different: "
                 + (entries1.get(d).getMapRelation() == null
@@ -701,6 +725,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
                 + (entries2.get(f).getMapRelation() == null
                     ? "No relation specified" : entries2.get(f)
                         .getMapRelation().getName()));
+
+            validationResult.addConciseError("Map Relation is Different");
+          }
         }
       }
       for (int d = 0; d < entries1.size(); d++) {
@@ -717,7 +744,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
       for (int d = 0; d < entries1.size(); d++) {
         for (int f = 0; f < entries2.size(); f++) {
           if (isRulesEqual(entries1.get(d), entries2.get(f))
-              && !isTargetIdsEqual(entries1.get(d), entries2.get(f)))
+              && !isTargetIdsEqual(entries1.get(d), entries2.get(f))) {
 
             validationResult.addError("Target Code is Different: "
                 + (entries1.get(d).getTargetId() == null
@@ -727,17 +754,21 @@ public class DefaultProjectSpecificAlgorithmHandler implements
                 + (entries2.get(f).getTargetId() == null
                     || entries2.get(f).getTargetId().equals("") ? "No target"
                     : entries2.get(f).getTargetId()));
+            validationResult.addConciseError("Target Code is Different");
+          }
         }
       }
       for (int d = 0; d < entries1.size(); d++) {
         for (int f = 0; f < entries2.size(); f++) {
           if (!entries1.get(d).getRule().equals("TRUE")
               && !entries2.get(f).getRule().equals("TRUE")
-              && !isRulesEqual(entries1.get(d), entries2.get(f)))
+              && !isRulesEqual(entries1.get(d), entries2.get(f))) {
 
             validationResult.addError("Map Rule is Different: "
                 + entries1.get(d).getRule() + " vs. "
                 + entries2.get(f).getRule());
+            validationResult.addConciseError("Map Rule is Different");
+          }
         }
       }
 
@@ -1122,6 +1153,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements
             WorkflowStatus.CONFLICT_DETECTED)) {
 
           mapRecord.setWorkflowStatus(WorkflowStatus.CONFLICT_NEW);
+          
+          MapRecord mapRecord1 = (MapRecord) mapRecords.toArray()[0];
+          MapRecord mapRecord2 = (MapRecord) mapRecords.toArray()[1];
+          ValidationResult validationResult =
+              compareMapRecords(mapRecord1, mapRecord2);
+          mapRecord.setReasonsForConflict(validationResult.getConciseErrors());
 
           // get the origin ids from the tracking record
           for (MapRecord mr : newRecords) {
@@ -1550,6 +1587,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
     // clear any labels before publication
     mapRecord.setLabels(new HashSet<String>());
+    // clear any reasonsForConflicts before publication
+    mapRecord.setReasonsForConflict(new HashSet<String>());
 
     switch (trackingRecord.getWorkflowPath()) {
       case CONSENSUS_PATH:
