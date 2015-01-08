@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.jpa;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -16,6 +17,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlID;
@@ -43,8 +46,11 @@ import org.ihtsdo.otf.mapping.reports.ReportDefinitionJpa;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+// TODO: Auto-generated Javadoc
 /**
  * JPA enabled implementation of {@link MapProject}.
+ *
+ * @author ${author}
  */
 @Entity
 @Table(name = "map_projects")
@@ -89,6 +95,14 @@ public class MapProjectJpa implements MapProject {
 
   /** The ref set name. */
   private String refSetName;
+
+  /**  The editing cycle begin date. */
+  @Temporal(TemporalType.TIMESTAMP)
+  private Date editingCycleBeginDate;
+
+  /**  The latest publication date. */
+  @Temporal(TemporalType.TIMESTAMP)
+  private Date latestPublicationDate;
 
   /** The source terminology. */
   @Column(nullable = false)
@@ -258,6 +272,8 @@ public class MapProjectJpa implements MapProject {
     this.propagationDescendantThreshold =
         project.getPropagationDescendantThreshold();
     this.workflowType = project.getWorkflowType();
+    this.latestPublicationDate = project.getLatestPublicationDate();
+    this.editingCycleBeginDate = project.getEditingCycleBeginDate();
   }
 
   /**
@@ -611,6 +627,44 @@ public class MapProjectJpa implements MapProject {
 
   }
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.model.MapProject#getEditingCycleBeginDate()
+   */
+  @Override
+  public Date getEditingCycleBeginDate() {
+    if (editingCycleBeginDate == null) {
+      return new Date(0);
+    }
+    return editingCycleBeginDate;
+  }
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.model.MapProject#setEditingCycleBeginDate(java.util.Date)
+   */
+  @Override
+  public void setEditingCycleBeginDate(Date editingCycleBeginDate) {
+    this.editingCycleBeginDate = editingCycleBeginDate;
+  }
+  
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.model.MapProject#getLatestPublicationDate()
+   */
+  @Override
+  public Date getLatestPublicationDate() {
+    if (latestPublicationDate == null) {
+      return new Date(0);
+    }
+    return latestPublicationDate;
+  }
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.model.MapProject#setLatestPublicationDate(java.util.Date)
+   */
+  @Override
+  public void setLatestPublicationDate(Date latestPublicationDate) {
+    this.latestPublicationDate = latestPublicationDate;
+  }
+  
   /*
    * (non-Javadoc)
    * 
@@ -1085,6 +1139,9 @@ public class MapProjectJpa implements MapProject {
         projectSpecificAlgorithmHandlerClass;
   }
 
+  /* (non-Javadoc)
+   * @see java.lang.Object#toString()
+   */
   @Override
   public String toString() {
     return "MapProjectJpa [id=" + id + ", name=" + name + ", isPublic="
@@ -1114,6 +1171,9 @@ public class MapProjectJpa implements MapProject {
         + propagationDescendantThreshold + "]";
   }
 
+  /* (non-Javadoc)
+   * @see java.lang.Object#hashCode()
+   */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -1151,6 +1211,9 @@ public class MapProjectJpa implements MapProject {
     return result;
   }
 
+  /* (non-Javadoc)
+   * @see java.lang.Object#equals(java.lang.Object)
+   */
   @Override
   public boolean equals(Object obj) {
     if (this == obj)

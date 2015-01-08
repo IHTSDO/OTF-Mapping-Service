@@ -52,7 +52,7 @@ angular
   .filter('elementFilter', function() {
     return function(elementList, elementsToCheck) {
       var out = [];
-      if (elementList == undefined)
+      if (elementList == undefined || elementsToCheck == undefined)
         return out;
       for (var i = 0; i < elementList.length; i++) {
         var found = false;
