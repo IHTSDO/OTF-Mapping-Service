@@ -21,6 +21,7 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.ReportDefinitionList;
+import org.ihtsdo.otf.mapping.helpers.ReportDefinitionListJpa;
 import org.ihtsdo.otf.mapping.helpers.ReportList;
 import org.ihtsdo.otf.mapping.helpers.ReportListJpa;
 import org.ihtsdo.otf.mapping.helpers.ReportQueryType;
@@ -60,7 +61,7 @@ public class ReportServiceRest extends RootServiceRest {
 
   /**
    * Instantiates an empty {@link WorkflowServiceRest}.
-   *
+   * 
    * @throws Exception the exception
    */
   public ReportServiceRest() throws Exception {
@@ -69,13 +70,13 @@ public class ReportServiceRest extends RootServiceRest {
 
   /**
    * Returns the report definitions.
-   *
+   * 
    * @param authToken the auth token
    * @return the report definition
    */
   @GET
   @Path("/definition/definitions")
-  @ApiOperation(value = "Gets all report definitions", notes = "Returns all report definitions in JSON or XML format", response = ReportDefinitionJpa.class)
+  @ApiOperation(value = "Gets all report definitions", notes = "Returns all report definitions in JSON or XML format", response = ReportDefinitionListJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
@@ -101,14 +102,15 @@ public class ReportServiceRest extends RootServiceRest {
       ReportService reportService = new ReportServiceJpa();
       ReportDefinitionList definitionList =
           reportService.getReportDefinitions();
-      
+
       reportService.close();
-      
+
       // sort by name
       definitionList.sortBy(new Comparator<ReportDefinition>() {
         @Override
         public int compare(ReportDefinition o1, ReportDefinition o2) {
-          return o1.getName().toLowerCase().compareTo(o2.getName().toLowerCase());
+          return o1.getName().toLowerCase()
+              .compareTo(o2.getName().toLowerCase());
         }
       });
 
@@ -120,8 +122,52 @@ public class ReportServiceRest extends RootServiceRest {
   }
 
   /**
+   * Returns the report definitions.
+   * 
+   * @param authToken the auth token
+   * @return the report definition
+   */
+  @GET
+  @Path("/definition/id/{id}")
+  @ApiOperation(value = "Gets a report definitions", notes = "Returns a report definition by id in JSON or XML format", response = ReportDefinitionJpa.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public ReportDefinition getReportDefinition(
+    @ApiParam(value = "Report definition id", required = true) @PathParam("id") Long id,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+    Logger.getLogger(MappingServiceRest.class).info(
+        "RESTful call (Report):  /definition/id/" + id);
+    String user = "";
+
+    try {
+      // authorize call
+      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+      user = securityService.getUsernameForToken(authToken);
+      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+        throw new WebApplicationException(
+            Response
+                .status(401)
+                .entity(
+                    "User does not have permissions to get report definitions.")
+                .build());
+
+      // get the reports
+      ReportService reportService = new ReportServiceJpa();
+      ReportDefinition definition = reportService.getReportDefinition(id);
+
+      reportService.close();
+
+      return definition;
+    } catch (Exception e) {
+      handleException(e, "trying to get report definition", user, "", "");
+      return null;
+    }
+  }
+
+  /**
    * Adds the report definitions.
-   *
+   * 
    * @param reportDefinition the report definition
    * @param authToken the auth token
    * @return the report definition
@@ -166,7 +212,7 @@ public class ReportServiceRest extends RootServiceRest {
 
   /**
    * Update report definitions.
-   *
+   * 
    * @param definition the definition
    * @param authToken the auth token
    */
@@ -207,7 +253,7 @@ public class ReportServiceRest extends RootServiceRest {
 
   /**
    * Deletes the report definitions.
-   *
+   * 
    * @param reportDefinition the report definition
    * @param authToken the auth token
    */
@@ -240,29 +286,29 @@ public class ReportServiceRest extends RootServiceRest {
       MappingService mappingService = new MappingServiceJpa();
       for (MapProject mp : mappingService.getMapProjects().getMapProjects()) {
         Set<ReportDefinition> defsToRemove = new HashSet<>();
-      	for (ReportDefinition def : mp.getReportDefinitions()) {
-      		if (def.getId() == reportDefinition.getId()) {
-      			defsToRemove.add(def);
-      		}
-      	}
-      	for (ReportDefinition remove : defsToRemove) {
-      		mp.removeReportDefinition(remove);
-      	}
-      	mappingService.updateMapProject(mp);
+        for (ReportDefinition def : mp.getReportDefinitions()) {
+          if (def.getId() == reportDefinition.getId()) {
+            defsToRemove.add(def);
+          }
+        }
+        for (ReportDefinition remove : defsToRemove) {
+          mp.removeReportDefinition(remove);
+        }
+        mappingService.updateMapProject(mp);
       }
       mappingService.close();
-      
+
       // remove all reports from all projects with given definition
       ReportService reportService = new ReportServiceJpa();
       Set<Report> reportsToRemove = new HashSet<>();
       for (Report report : reportService.getReports().getReports()) {
-      	if (report.getReportDefinition().getId() == reportDefinition.getId())
-      		reportsToRemove.add(report);
+        if (report.getReportDefinition().getId() == reportDefinition.getId())
+          reportsToRemove.add(report);
       }
       for (Report report : reportsToRemove) {
-      	reportService.removeReport(report.getId());
+        reportService.removeReport(report.getId());
       }
-      
+
       // remove report definition
       reportService.removeReportDefinition(reportDefinition.getId());
       reportService.close();
@@ -275,7 +321,7 @@ public class ReportServiceRest extends RootServiceRest {
 
   /**
    * Update reports.
-   *
+   * 
    * @param report the report
    * @param authToken the auth token
    */
@@ -315,7 +361,7 @@ public class ReportServiceRest extends RootServiceRest {
 
   /**
    * Deletes the report.
-   *
+   * 
    * @param report the report
    * @param authToken the auth token
    */
@@ -355,7 +401,7 @@ public class ReportServiceRest extends RootServiceRest {
 
   /**
    * Returns the reports for map project.
-   *
+   * 
    * @param projectId the project id
    * @param pfsParameter the pfs parameter
    * @param authToken the auth token
@@ -413,7 +459,7 @@ public class ReportServiceRest extends RootServiceRest {
 
   /**
    * Returns the reports for map project and report type.
-   *
+   * 
    * @param projectId the project id
    * @param definitionId the definition id
    * @param pfsParameter the pfs parameter
@@ -475,7 +521,7 @@ public class ReportServiceRest extends RootServiceRest {
   /**
    * Generate report.
    * @param reportDefinition the report definition
-   *
+   * 
    * @param projectId the project id
    * @param userName the user name
    * @param authToken the auth token
@@ -548,7 +594,7 @@ public class ReportServiceRest extends RootServiceRest {
   /**
    * Tests the generation of a report.
    * @param reportDefinition the report definition
-   *
+   * 
    * @param projectId the project id
    * @param userName the user name
    * @param authToken the auth token
@@ -610,7 +656,7 @@ public class ReportServiceRest extends RootServiceRest {
 
   /**
    * Returns the report results.
-   *
+   * 
    * @param pfsParameter the pfs parameter
    * @param reportResultId the report result id
    * @param authToken the auth token
@@ -675,7 +721,7 @@ public class ReportServiceRest extends RootServiceRest {
 
   /**
    * Returns the qaCheck definitions.
-   *
+   * 
    * @param authToken the auth token
    * @return the qaCheck definition
    */
@@ -707,7 +753,7 @@ public class ReportServiceRest extends RootServiceRest {
       ReportDefinitionList definitionList =
           qaCheckService.getQACheckDefinitions();
       qaCheckService.close();
-      
+
       // sort results
       definitionList.sortBy(new Comparator<ReportDefinition>() {
         @Override
@@ -725,7 +771,7 @@ public class ReportServiceRest extends RootServiceRest {
 
   /**
    * Returns the QA labels.
-   *
+   * 
    * @param authToken the auth token
    * @return the QA labels
    */
@@ -763,7 +809,7 @@ public class ReportServiceRest extends RootServiceRest {
 
   /**
    * Export report.
-   *
+   * 
    * @param reportId the report id
    * @param authToken the auth token
    * @return the input stream
