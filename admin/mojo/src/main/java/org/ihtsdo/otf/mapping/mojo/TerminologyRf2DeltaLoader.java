@@ -1034,16 +1034,16 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
           }
         }
 
-        // Pref name not found
-        if (!dpnFound) {
-          dpnNotFoundCt++;
-          getLog().warn(
-              "Could not find defaultPreferredName for concept "
-                  + concept.getTerminologyId());
-          concept.setDefaultPreferredName("[Could not be determined]");
-        } else {
-          dpnFoundCt++;
-        }
+      }
+      // Pref name not found
+      if (!dpnFound) {
+        dpnNotFoundCt++;
+        getLog().warn(
+            "Could not find defaultPreferredName for concept "
+                + concept.getTerminologyId());
+        concept.setDefaultPreferredName("[Could not be determined]");
+      } else {
+        dpnFoundCt++;
       }
     }
 
