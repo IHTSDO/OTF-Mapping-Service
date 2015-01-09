@@ -551,7 +551,7 @@ public class ReportServiceRest extends RootServiceRest {
       user = securityService.getUsernameForToken(authToken);
       if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
         throw new WebApplicationException(Response.status(401)
-            .entity("User does not have permissions to retrieve reports.")
+            .entity("User does not have permissions to retrieve most recent report.")
             .build());
 
       MappingService mappingService = new MappingServiceJpa();
@@ -575,7 +575,7 @@ public class ReportServiceRest extends RootServiceRest {
       }
       return latestReport;
     } catch (Exception e) {
-      handleException(e, "trying to retrieve all reports", user, projectName,
+      handleException(e, "trying to retrieve most recent report", user, projectName,
           "");
       return null;
     }
