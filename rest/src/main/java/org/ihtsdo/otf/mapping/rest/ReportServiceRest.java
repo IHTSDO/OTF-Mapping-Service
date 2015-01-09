@@ -519,6 +519,71 @@ public class ReportServiceRest extends RootServiceRest {
   }
 
   /**
+   * Returns the most recent report for map project and report type.
+   * 
+   * @param projectId the project id
+   * @param definitionId the definition id
+   * @param authToken the auth token
+   * @return the reports for map project and report type
+   */
+  @GET
+  @Path("/report/reports/latest/project/id/{projectId}/definition/id/{definitionId}")
+  @ApiOperation(value = "Get most recent report for a definition", notes = "Returns most recent report for a definition in either JSON or XML format", response = ReportJpa.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public Report getLatestReportForMapProjectAndReportType(
+    @ApiParam(value = "Map project id", required = true) @PathParam("projectId") Long projectId,
+    @ApiParam(value = "Report definition", required = true) @PathParam("definitionId") Long definitionId,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+    Logger.getLogger(MappingServiceRest.class).info(
+        "RESTful call (Report):  /report/reports/latest/project/id/"
+            + projectId.toString() + "/definition/id/"
+            + definitionId.toString());
+    String user = "";
+    String projectName = "";
+
+    try {
+      // authorize call
+      MapUserRole role =
+          securityService.getMapProjectRoleForToken(authToken, projectId);
+      user = securityService.getUsernameForToken(authToken);
+      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+        throw new WebApplicationException(Response.status(401)
+            .entity("User does not have permissions to retrieve reports.")
+            .build());
+
+      MappingService mappingService = new MappingServiceJpa();
+      MapProject mapProject = mappingService.getMapProject(projectId);
+      projectName = mapProject.getName();
+      mappingService.close();
+
+      // get the reports
+      ReportService reportService = new ReportServiceJpa();
+      ReportDefinition reportDefinition =
+          reportService.getReportDefinition(definitionId);
+      ReportList reportList =
+          reportService.getReportsForMapProjectAndReportDefinition(mapProject,
+              reportDefinition, null);
+      reportService.close();
+
+      Report latestReport = null;
+      for (Report rpt : reportList.getReports()) {
+      	if (latestReport == null || rpt.getTimestamp() > latestReport.getTimestamp())
+      		latestReport = rpt;
+      }
+      return latestReport;
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve all reports", user, projectName,
+          "");
+      return null;
+    }
+
+  }
+  
+  
+  /**
    * Generate report.
    * @param reportDefinition the report definition
    * 
