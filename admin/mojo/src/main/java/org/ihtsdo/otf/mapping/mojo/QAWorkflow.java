@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
@@ -26,9 +27,9 @@ import org.ihtsdo.otf.mapping.services.helpers.OtfEmailHandler;
 public class QAWorkflow extends AbstractMojo {
 
   /**
-   * The refSet id
+   * The refSet id.
+   *
    * @parameter refsetId
-   * 
    */
   private String refsetId = null;
 
@@ -69,7 +70,6 @@ public class QAWorkflow extends AbstractMojo {
         ValidationResult result =
             workflowService.computeWorkflowStatusErrors(mapProject);
 
-        // TODO hardcoded while testing in prod environment
         if (!result.isValid()) {
           OtfEmailHandler emailHandler = new OtfEmailHandler();
           StringBuffer message = new StringBuffer();
@@ -81,19 +81,20 @@ public class QAWorkflow extends AbstractMojo {
           for (String error : result.getErrors()) {
             message.append(error).append("\n");
           }
-          
+
           message.append("\n");
-          
-          
+
           Properties config;
           try {
             config = ConfigUtility.getConfigProperties();
           } catch (Exception e1) {
-            throw new MojoExecutionException("Failed to retrieve config properties");
+            throw new MojoExecutionException(
+                "Failed to retrieve config properties");
           }
           String notificationRecipients =
               config.getProperty("send.notification.recipients");
-          
+
+          Logger.getLogger(getClass()).info("MESSAGE = " + message);
           emailHandler.sendSimpleEmail(notificationRecipients,
               mapProject.getName() + " Workflow Errors", message.toString());
         }

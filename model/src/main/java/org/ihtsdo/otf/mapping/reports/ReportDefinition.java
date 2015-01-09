@@ -6,7 +6,6 @@ import org.ihtsdo.otf.mapping.helpers.ReportQueryType;
 import org.ihtsdo.otf.mapping.helpers.ReportResultType;
 import org.ihtsdo.otf.mapping.helpers.ReportTimePeriod;
 
-// TODO: Auto-generated Javadoc
 /**
  * Generically represents a report definition.
  * 

@@ -39,25 +39,7 @@ import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 /**
  * Goal which loads an RF2 Delta of SNOMED CT data
  * 
- * <pre>
- * 		<plugin> 
- * 			<groupId>org.ihtsdo.otf.mapping</groupId>
- * 			<artifactId>mapping-admin-mojo</artifactId>
- * 			<version>${project.version}</version> 
- * 			<executions> 
- * 				<execution>
- * 					<id>load-rf2-delta</id> 
- * 					<phase>package</phase> 
- * 					<goals>
- * 						<goal>load-rf2-delta</goal> 
- * 			 		</goals> 
- * 					<configuration>
- * 						<terminology>SNOMEDCT</terminology> 
- * 					</configuration> 
- * 				</execution>
- * 			</executions>
- * 		 </plugin>
- * </pre>
+ * See admin/loader/pom.xml for a sample execution.
  * 
  * @goal load-rf2-delta
  * 

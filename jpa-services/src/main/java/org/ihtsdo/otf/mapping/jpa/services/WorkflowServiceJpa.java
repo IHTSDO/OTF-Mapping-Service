@@ -3318,11 +3318,5 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
             "  Concept not successfully modified " + tr.getTerminologyId());
       }
     }
-
-    // do a general check on workflow status to ensure no issues
-    // TODO This qa check should really catch this particular situation, but
-    // does not as of 10/14/2014
-    this.computeWorkflowStatusErrors(mapProject);
-
   }
 }
