@@ -67,7 +67,6 @@ public class WorkflowActionQaPathTest {
   /**  The handler. */
   private static WorkflowQaPathHandler handler;
 
-  // TODO Make sure to test a few bad workflow states
 
   /**
    * Inits the.

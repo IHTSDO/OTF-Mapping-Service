@@ -434,6 +434,15 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     return null;
   }
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.services.MetadataService#getPreviousVersion(java.lang.String)
+   */
+  @Override
+  public String getPreviousVersion(String terminology) {
+    // no-op - this is just helper class
+    return null;
+  }
+
   /*
    * (non-Javadoc)
    * 

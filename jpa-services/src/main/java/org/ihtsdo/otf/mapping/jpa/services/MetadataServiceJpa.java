@@ -395,7 +395,7 @@ public class MetadataServiceJpa extends RootServiceJpa implements
   public List<String> getVersions(String terminology) throws Exception {
     javax.persistence.Query query =
         manager
-            .createQuery("SELECT distinct c.terminologyVersion from ConceptJpa c where terminology = :terminology");
+            .createQuery("SELECT distinct c.terminologyVersion from ConceptJpa c where terminology = :terminology order by 1");
 
     query.setParameter("terminology", terminology);
     @SuppressWarnings("unchecked")
@@ -423,7 +423,23 @@ public class MetadataServiceJpa extends RootServiceJpa implements
     return version;
 
   }
-
+  
+  /**
+   * Returns the previous version.
+   *
+   * @param terminology the terminology
+   * @return the previous version
+   * @throws Exception the exception
+   */
+  @Override
+  public String getPreviousVersion(String terminology) throws Exception {
+    List<String> versions = getVersions(terminology);
+    if (versions.size()<2) {
+      return null;
+    }
+    return versions.get(versions.size()-2);
+  }
+  
   /*
    * (non-Javadoc)
    * 

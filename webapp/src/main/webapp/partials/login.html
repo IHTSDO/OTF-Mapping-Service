@@ -11,7 +11,7 @@
           type="text" placeholder="Username" /><br> <input
           style="margin-top: 5px;" id="passwordField" type="password"
           placeholder="Password" ng-model="password" /><br>
-        <button style="margin-top: 10px;" type="submit"
+        <button style="margin-top: 10px;" id ="userLoginButton" type="submit"
           ng-click="go('/viewer/dash')">Login</button>
       </form>
     </div>
@@ -19,7 +19,7 @@
 
     <div id="content-right">
       <strong>View Maps as a Guest</strong><br>
-      <button style="margin-top: 10px;" type="submit"
+      <button style="margin-top: 10px;" type="submit" id ="guestLoginButton"
         ng-click="goGuest('/project/records')">View Maps</button>
     </div>
 
