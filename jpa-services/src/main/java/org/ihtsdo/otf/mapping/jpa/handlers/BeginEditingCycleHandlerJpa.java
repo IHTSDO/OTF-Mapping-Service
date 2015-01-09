@@ -63,6 +63,7 @@ public class BeginEditingCycleHandlerJpa implements BeginEditingCycleHandler {
     mappingService.updateMapProject(mapProject);
     mappingService.close();
     
+    // Consider removing all report result items as well
   }
 
 }
