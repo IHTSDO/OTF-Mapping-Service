@@ -30,6 +30,7 @@
 
     <!-- Specify a test mode for the release if desired -->
     <test.mode.flag>false</test.mode.flag>
+    
   </properties>
 
   <profiles>
