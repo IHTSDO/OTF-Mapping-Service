@@ -452,6 +452,8 @@ public class ReportServiceRest extends RootServiceRest {
       // clear report result items
       for (Report report : reportList.getReports()) {
         for (ReportResult result : report.getResults()) {
+          // trigger setting of ct
+          result.getCt();
           result.setReportResultItems(null);
         }
       }
@@ -518,6 +520,8 @@ public class ReportServiceRest extends RootServiceRest {
       // clear report result items
       for (Report report : reportList.getReports()) {
         for (ReportResult result : report.getResults()) {
+          // trigger setting of ct
+          result.getCt();
           result.setReportResultItems(null);
         }
       }
