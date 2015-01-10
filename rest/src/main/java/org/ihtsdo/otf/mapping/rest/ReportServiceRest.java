@@ -26,7 +26,6 @@ import org.ihtsdo.otf.mapping.helpers.ReportList;
 import org.ihtsdo.otf.mapping.helpers.ReportListJpa;
 import org.ihtsdo.otf.mapping.helpers.ReportQueryType;
 import org.ihtsdo.otf.mapping.helpers.ReportResultItemList;
-import org.ihtsdo.otf.mapping.helpers.ReportResultItemListJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.jpa.handlers.ExportReportHandler;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
@@ -450,6 +449,12 @@ public class ReportServiceRest extends RootServiceRest {
 
       reportService.close();
 
+      // clear report result items
+      for (Report report : reportList.getReports()) {
+        for (ReportResult result : report.getResults()) {
+          result.setReportResultItems(null);
+        }
+      }
       return reportList;
     } catch (Exception e) {
       handleException(e, "trying to retrieve all reports", user, projectName,
@@ -474,7 +479,7 @@ public class ReportServiceRest extends RootServiceRest {
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public ReportList getReportsForMapProjectAndReportType(
+  public ReportList getReportsForMapProjectAndReportDefinition(
     @ApiParam(value = "Map project id", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Report definition", required = true) @PathParam("definitionId") Long definitionId,
     @ApiParam(value = "Paging/filtering/sorting object", required = true) PfsParameterJpa pfsParameter,
@@ -510,6 +515,12 @@ public class ReportServiceRest extends RootServiceRest {
           reportService.getReportsForMapProjectAndReportDefinition(mapProject,
               reportDefinition, pfsParameter);
       reportService.close();
+      // clear report result items
+      for (Report report : reportList.getReports()) {
+        for (ReportResult result : report.getResults()) {
+          result.setReportResultItems(null);
+        }
+      }
 
       return reportList;
     } catch (Exception e) {
@@ -530,8 +541,7 @@ public class ReportServiceRest extends RootServiceRest {
    */
   @GET
   @Path("/report/reports/latest/project/id/{projectId}/definition/id/{definitionId}/items")
-  @ApiOperation(value = "Get latest report for a project and definition", 
-  notes = "Gets the latest result items for the specified definition and project", response = ReportJpa.class)
+  @ApiOperation(value = "Get latest report for a project and definition", notes = "Gets the latest result items for the specified definition and project", response = ReportJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
