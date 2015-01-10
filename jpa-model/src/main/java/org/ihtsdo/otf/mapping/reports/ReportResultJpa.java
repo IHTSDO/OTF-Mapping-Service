@@ -260,7 +260,6 @@ public class ReportResultJpa implements ReportResult {
 	 * @return the report result items
 	 */
 	@Override
-	@XmlTransient
 	public List<ReportResultItem> getReportResultItems() {
 		return reportResultItems;
 	}
