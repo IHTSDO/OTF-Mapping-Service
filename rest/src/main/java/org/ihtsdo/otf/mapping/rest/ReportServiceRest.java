@@ -26,6 +26,7 @@ import org.ihtsdo.otf.mapping.helpers.ReportList;
 import org.ihtsdo.otf.mapping.helpers.ReportListJpa;
 import org.ihtsdo.otf.mapping.helpers.ReportQueryType;
 import org.ihtsdo.otf.mapping.helpers.ReportResultItemList;
+import org.ihtsdo.otf.mapping.helpers.ReportResultItemListJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.jpa.handlers.ExportReportHandler;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
@@ -76,7 +77,7 @@ public class ReportServiceRest extends RootServiceRest {
    */
   @GET
   @Path("/definition/definitions")
-  @ApiOperation(value = "Gets all report definitions", notes = "Returns all report definitions in JSON or XML format", response = ReportDefinitionListJpa.class)
+  @ApiOperation(value = "Get all report definitions", notes = "Gets all report definitions.", response = ReportDefinitionListJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
@@ -123,13 +124,14 @@ public class ReportServiceRest extends RootServiceRest {
 
   /**
    * Returns the report definitions.
-   * 
+   *
+   * @param id the id
    * @param authToken the auth token
    * @return the report definition
    */
   @GET
   @Path("/definition/id/{id}")
-  @ApiOperation(value = "Gets a report definitions", notes = "Returns a report definition by id in JSON or XML format", response = ReportDefinitionJpa.class)
+  @ApiOperation(value = "Get a report definition", notes = "Gets the report definition for the specified id.", response = ReportDefinitionJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
@@ -174,7 +176,7 @@ public class ReportServiceRest extends RootServiceRest {
    */
   @POST
   @Path("/definition/add")
-  @ApiOperation(value = "Add a report definition", notes = "Adds a report definition based on a JSON or XML object", response = ReportDefinitionJpa.class)
+  @ApiOperation(value = "Add a report definition", notes = "Adds the specified report definition.", response = ReportDefinitionJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
@@ -218,7 +220,7 @@ public class ReportServiceRest extends RootServiceRest {
    */
   @POST
   @Path("/definition/update")
-  @ApiOperation(value = "Updates a report definition", notes = "Updates the attached report definition", response = Response.class)
+  @ApiOperation(value = "Update a report definition", notes = "Updates the specified report definition.", response = Response.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
@@ -259,7 +261,7 @@ public class ReportServiceRest extends RootServiceRest {
    */
   @DELETE
   @Path("/definition/delete")
-  @ApiOperation(value = "Delete a report definition", notes = "Deletes a report definition based on a JSON or XML object", response = ReportDefinitionJpa.class)
+  @ApiOperation(value = "Delete a report definition", notes = "Deletes the specified report definition.", response = ReportDefinitionJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
@@ -327,11 +329,11 @@ public class ReportServiceRest extends RootServiceRest {
    */
   @POST
   @Path("/report/add")
-  @ApiOperation(value = "Adds a report", notes = "Adds a report", response = Response.class)
+  @ApiOperation(value = "Updates a report", notes = "Updates the specified report", response = Response.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public void updateReports(
+  public void updateReport(
     @ApiParam(value = "Report report to update", required = true) ReportJpa report,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
     Logger.getLogger(MappingServiceRest.class).info(
@@ -367,7 +369,7 @@ public class ReportServiceRest extends RootServiceRest {
    */
   @DELETE
   @Path("/report/delete")
-  @ApiOperation(value = "Delete a report", notes = "Deletes a report based on a JSON or XML object", response = ReportDefinitionJpa.class)
+  @ApiOperation(value = "Delete a report", notes = "Deletes the specified report.", response = ReportDefinitionJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
@@ -409,7 +411,7 @@ public class ReportServiceRest extends RootServiceRest {
    */
   @POST
   @Path("/report/reports/project/id/{projectId}")
-  @ApiOperation(value = "Get all reports for a project", notes = "Returns all reports for a project in either JSON or XML format", response = ReportListJpa.class)
+  @ApiOperation(value = "Get all reports for a project", notes = "Gets all reports for the specified project.", response = ReportListJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
@@ -468,7 +470,7 @@ public class ReportServiceRest extends RootServiceRest {
    */
   @POST
   @Path("/report/reports/project/id/{projectId}/definition/id/{definitionId}")
-  @ApiOperation(value = "Get all reports for a definition", notes = "Returns all reports for a definition in either JSON or XML format", response = ReportListJpa.class)
+  @ApiOperation(value = "Get all reports for a definition and map project", notes = "Gets all reports for the specified project and definition.", response = ReportListJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
@@ -527,12 +529,13 @@ public class ReportServiceRest extends RootServiceRest {
    * @return the reports for map project and report type
    */
   @GET
-  @Path("/report/reports/latest/project/id/{projectId}/definition/id/{definitionId}")
-  @ApiOperation(value = "Get most recent report for a definition", notes = "Returns most recent report for a definition in either JSON or XML format", response = ReportJpa.class)
+  @Path("/report/reports/latest/project/id/{projectId}/definition/id/{definitionId}/items")
+  @ApiOperation(value = "Get latest report for a project and definition", 
+  notes = "Gets the latest result items for the specified definition and project", response = ReportJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public Report getLatestReportForMapProjectAndReportType(
+  public Report getLatestReport(
     @ApiParam(value = "Map project id", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Report definition", required = true) @PathParam("definitionId") Long definitionId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
@@ -540,7 +543,7 @@ public class ReportServiceRest extends RootServiceRest {
     Logger.getLogger(MappingServiceRest.class).info(
         "RESTful call (Report):  /report/reports/latest/project/id/"
             + projectId.toString() + "/definition/id/"
-            + definitionId.toString());
+            + definitionId.toString() + "/items");
     String user = "";
     String projectName = "";
 
@@ -550,9 +553,12 @@ public class ReportServiceRest extends RootServiceRest {
           securityService.getMapProjectRoleForToken(authToken, projectId);
       user = securityService.getUsernameForToken(authToken);
       if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
-        throw new WebApplicationException(Response.status(401)
-            .entity("User does not have permissions to retrieve most recent report.")
-            .build());
+        throw new WebApplicationException(
+            Response
+                .status(401)
+                .entity(
+                    "User does not have permissions to retrieve most recent report.")
+                .build());
 
       MappingService mappingService = new MappingServiceJpa();
       MapProject mapProject = mappingService.getMapProject(projectId);
@@ -570,19 +576,26 @@ public class ReportServiceRest extends RootServiceRest {
 
       Report latestReport = null;
       for (Report rpt : reportList.getReports()) {
-      	if (latestReport == null || rpt.getTimestamp() > latestReport.getTimestamp())
-      		latestReport = rpt;
+        if (latestReport == null
+            || rpt.getTimestamp() > latestReport.getTimestamp())
+          latestReport = rpt;
+      }
+      if (latestReport == null) {
+        return null;
+      }
+      // lazy initialize items
+      for (ReportResult result : latestReport.getResults()) {
+        result.getReportResultItems().size();
       }
       return latestReport;
     } catch (Exception e) {
-      handleException(e, "trying to retrieve most recent report", user, projectName,
-          "");
+      handleException(e, "trying to retrieve most recent report", user,
+          projectName, "");
       return null;
     }
 
   }
-  
-  
+
   /**
    * Generate report.
    * @param reportDefinition the report definition
@@ -594,7 +607,7 @@ public class ReportServiceRest extends RootServiceRest {
    */
   @POST
   @Path("/report/generate/project/id/{projectId}/user/id/{userName}")
-  @ApiOperation(value = "Generate a report", notes = "Generates and returns a report given a definition, in either JSON or XML format", response = ReportJpa.class)
+  @ApiOperation(value = "Generate a report", notes = "Generates and returns a report for the specified report definition and project", response = ReportJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
@@ -667,7 +680,7 @@ public class ReportServiceRest extends RootServiceRest {
    */
   @POST
   @Path("/report/test/project/id/{projectId}/user/id/{userName}")
-  @ApiOperation(value = "Tests a report", notes = "Generates a report given a definition, indicates if the generation was successful or not.", response = ReportJpa.class)
+  @ApiOperation(value = "Tests a report", notes = "Tests generation of the specified report definition.", response = ReportJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
@@ -720,7 +733,7 @@ public class ReportServiceRest extends RootServiceRest {
   }
 
   /**
-   * Returns the report results.
+   * Returns the report result items.
    * 
    * @param pfsParameter the pfs parameter
    * @param reportResultId the report result id
@@ -729,11 +742,11 @@ public class ReportServiceRest extends RootServiceRest {
    */
   @POST
   @Path("/reportResult/id/{reportResultId}/items")
-  @ApiOperation(value = "Gets report result items", notes = "Returns paged report result items in either JSON or XML format", response = ReportJpa.class)
+  @ApiOperation(value = "Gets report result items", notes = "Gets paged report result items for the report result id", response = ReportJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public ReportResultItemList getReportResults(
+  public ReportResultItemList getReportResultItems(
     @ApiParam(value = "The paging/filtering/sorting object", required = true) PfsParameterJpa pfsParameter,
     @ApiParam(value = "Report id", required = true) @PathParam("reportResultId") Long reportResultId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
@@ -792,7 +805,7 @@ public class ReportServiceRest extends RootServiceRest {
    */
   @GET
   @Path("/qaCheckDefinition/qaCheckDefinitions")
-  @ApiOperation(value = "Gets all qaCheck definitions", notes = "Returns all qaCheck definitions in JSON or XML format", response = ReportDefinitionJpa.class)
+  @ApiOperation(value = "Gets all qa check definitions", notes = "Gets all qa check definitions.", response = ReportDefinitionJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
@@ -829,7 +842,7 @@ public class ReportServiceRest extends RootServiceRest {
 
       return definitionList;
     } catch (Exception e) {
-      handleException(e, "trying to get qaCheck definitions", user, "", "");
+      handleException(e, "trying to get qa check definitions", user, "", "");
       return null;
     }
   }
@@ -842,7 +855,7 @@ public class ReportServiceRest extends RootServiceRest {
    */
   @GET
   @Path("/qaLabel/qaLabels")
-  @ApiOperation(value = "Gets all qa labels", notes = "Returns all qa labels in JSON or XML format", response = ReportDefinitionJpa.class)
+  @ApiOperation(value = "Gets all qa labels", notes = "Gets all qa labels.", response = ReportDefinitionJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
@@ -881,7 +894,7 @@ public class ReportServiceRest extends RootServiceRest {
    */
   @GET
   @Path("/report/export/{reportId}")
-  @ApiOperation(value = "Exports a report", notes = "Exports a report given a report id", response = ReportJpa.class)
+  @ApiOperation(value = "Exports a report", notes = "Exports a report the specified id.", response = ReportJpa.class)
   @Produces("application/vnd.ms-excel")
   public InputStream exportReport(
     @ApiParam(value = "Report id", required = true) @PathParam("reportId") Long reportId,
