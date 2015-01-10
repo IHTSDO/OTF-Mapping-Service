@@ -7,6 +7,8 @@ import java.util.TimerTask;
 import javax.ws.rs.ext.Provider;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
+import org.ihtsdo.otf.mapping.services.SecurityService;
 
 import com.sun.jersey.api.model.AbstractResourceModelContext;
 import com.sun.jersey.api.model.AbstractResourceModelListener;
@@ -57,6 +59,9 @@ public class InitializationListener implements AbstractResourceModelListener {
     @Override
     public void run() {
       try {
+        SecurityService service = new SecurityServiceJpa();
+        service.authenticate("guest","guest");
+        service.close();
         timer.cancel(); // Terminate the timer thread
 
         // For now, the timer is not doing anything
