@@ -9,9 +9,9 @@
       <form>
         <input id="assignedSearch" ng-model="queryAssigned">
         <button class="btn btn-sm btn-primary"
-          ng-click="retrieveAssignedWork(1, queryAssigned)">Search</button>
+          ng-click="retrieveAssignedWork(1, queryAssigned, assignedWorkType)">Search</button>
         <button class="btn btn-sm btn-primary"
-          ng-click="retrieveAssignedWork(1, 'null'); queryAssigned = null">Reset</button>
+          ng-click="retrieveAssignedWork(1, 'null', assignedWorkType); queryAssigned = null">Reset</button>
       </form>
     </td>
   </tr>
@@ -127,7 +127,7 @@
 
 
         <td style="width: 3%; padding: 5px;"><a title="Return"
-          ng-click="unassignWork(result, currentUser)"><i
+          ng-click="unassignWork(result, currentUser, 'concept')"><i
             class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i></a></td>
       </tr>
     </tbody>
@@ -511,8 +511,8 @@
 <table style="margin-top: 10px; margin-bottom: 10px;">
   <tr>
     <td style="padding: 5px;">Filter by label:</td>
-    <td style="padding: 5px;"><select ng-model="selected"
-      ng-change="retrieveAssignedQAWork(1, selected, assignedQAWorkType);"
+    <td style="padding: 5px;"><select ng-model="queryQaWork"
+      ng-change="retrieveAssignedQAWork(1, 	queryQaWork, assignedQAWorkType);"
       ng-options="lbl for lbl in labelNames">
     </select>
       <button class="btn btn-sm btn-primary"
