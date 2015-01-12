@@ -6,17 +6,6 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
-import org.ihtsdo.otf.mapping.helpers.MapRefsetPattern;
-import org.ihtsdo.otf.mapping.helpers.MapUserRole;
-import org.ihtsdo.otf.mapping.helpers.RelationStyle;
-import org.ihtsdo.otf.mapping.helpers.WorkflowType;
-import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
-import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
-import org.ihtsdo.otf.mapping.jpa.handlers.DefaultProjectSpecificAlgorithmHandler;
-import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
-import org.ihtsdo.otf.mapping.model.MapProject;
-import org.ihtsdo.otf.mapping.model.MapUser;
-import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;

@@ -218,30 +218,12 @@ angular
 												// set the tab
 												$scope.setTab(0);
 
-												// if reset requested, set the pfs variables
-												if (reset == true) {
-
-													$scope.assignedWorkQuery = '';
-													$scope.assignedWorkPage = 1;
-													$scope.assignedWorkType = 'NEW';
-
-												}
-
 												// retrieve the work
 												$scope.retrieveAssignedWork($scope.assignedWorkPage,
 														$scope.assignedWorkQuery, $scope.assignedWorkType);
 											} else if (parameters.assignType === 'qa') {
 												// set the tab
 												$scope.setTab(4);
-
-												// if reset requested, set the pfs variables
-												if (reset == true) {
-
-													$scope.assignedQaWorkQuery = '';
-													$scope.assignedQaWorkPage = 1;
-													$scope.assignedQaWorkType = 'NEW';
-
-												}
 
 												// retrieve the work
 												$scope.retrieveAssignedQAWork(
