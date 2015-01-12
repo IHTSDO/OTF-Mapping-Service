@@ -44,7 +44,7 @@ if ($status != 0) then
     exit 1
 endif
 
-echo "    Unzip delta files into wb-release-process-1.20-SNAPSHOT-delta ... '/bin/date'"
+echo "    Unzip delta files into wb-release-process-1.20-SNAPSHOT-delta ... `/bin/date`"
 cd ~/.m2/repository/org/ihtsdo/intl/release/process/wb-release-process/1.20-SNAPSHOT
 unzip wb-release-process-1.20-SNAPSHOT-delta.zip -d wb-release-process-1.20-SNAPSHOT-delta
 if ($status != 0) then
@@ -62,15 +62,15 @@ endif
 
 echo "    Remove SNOMEDCT tree positions ... `/bin/date`"
 cd $MAPPING_CODE/admin/remover
-mvn install -PTreepos -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT | sed 's/^/      /'
+mvn install -PTreepos -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT -Dversion=latest | sed 's/^/      /'
 if ($status != 0) then
     echo "ERROR removing tree positions"
     exit 1
 endif
 
-echo "    Generate SNOMEDCT tree positions ... 'bin/date'"
+echo "    Generate SNOMEDCT tree positions ... `/bin/date`"
 cd $MAPPING_CODE/admin/loader
-mvn install -PTreepos -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT | sed 's/^/      /'
+mvn install -PTreepos -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT -Dversion=latest | sed 's/^/      /'
 if ($status != 0) then
     echo "ERROR computing tree positions"
     exit 1
