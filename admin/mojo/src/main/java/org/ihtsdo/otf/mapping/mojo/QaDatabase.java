@@ -106,16 +106,18 @@ public class QaDatabase extends AbstractMojo {
             // the true count is not known because setMaxResults(10) is used.
           }
 
-          OtfEmailHandler emailHandler = new OtfEmailHandler();
-          String notificationRecipients =
-              ConfigUtility.getConfigProperties().getProperty(
-                  "send.notification.recipients");
-          if (notificationRecipients != null) {
-            emailHandler.sendSimpleEmail(notificationRecipients,
-                "[OTF-Mapping-Tool] Database QA Results", msg.toString());
-          }
-          getLog().info(msg.toString());
         }
+
+        OtfEmailHandler emailHandler = new OtfEmailHandler();
+        String notificationRecipients =
+            ConfigUtility.getConfigProperties().getProperty(
+                "send.notification.recipients");
+        if (notificationRecipients != null) {
+          emailHandler.sendSimpleEmail(notificationRecipients,
+              "[OTF-Mapping-Tool] Database QA Results", msg.toString());
+        }
+        getLog().info(msg.toString());
+        
       } else {
         getLog().info("  NO errors");
       }
