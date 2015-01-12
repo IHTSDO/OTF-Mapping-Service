@@ -1817,6 +1817,10 @@ public class WorkflowServiceRest extends RootServiceRest {
                 .build());
 
       WorkflowService workflowService = new WorkflowServiceJpa();
+      
+      Logger.getLogger(WorkflowServiceRest.class).info(
+          "RESTful call (Workflow): /conversation/update feedback msg: " + conversation.getFeedbacks().get(0));
+
       workflowService.addFeedbackConversation(conversation);
       workflowService.close();
 
@@ -1967,6 +1971,12 @@ public class WorkflowServiceRest extends RootServiceRest {
 
       WorkflowService workflowService = new WorkflowServiceJpa();
       workflowService.updateFeedbackConversation(feedbackConversation);
+      
+      // add debug
+      int ct = feedbackConversation.getFeedbacks().size();
+      Logger.getLogger(WorkflowServiceRest.class).info(
+          "RESTful call (Workflow): /conversation/update feedback msg: " + feedbackConversation.getFeedbacks().get(ct - 1));
+      
       workflowService.close();
     } catch (Exception e) {
       handleException(e, "update the feedback conversation");

@@ -115,11 +115,14 @@ public class ReportJpa implements Report {
    * Instantiates a new report jpa.
    */
   public ReportJpa() {
-
+    // do nothing
   }
   
-  
-
+  /**
+   * Instantiates a {@link ReportJpa} from the specified parameters.
+   *
+   * @param report the report
+   */
   public ReportJpa(Report report) {
     this.name = report.getName();
     this.active = report.isActive();
