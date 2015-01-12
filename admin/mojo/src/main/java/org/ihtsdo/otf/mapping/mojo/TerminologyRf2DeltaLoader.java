@@ -479,7 +479,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     // Remove concepts in the DB that were created by prior
     // deltas that no longer exist in the delta
     getLog().info("    Retire non-existent concepts..");
-    retireRemovedConcepts();
+//    retireRemovedConcepts();
   }
 
   /**
@@ -1073,7 +1073,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     try {
       rf2Version = dt.parse(version);
     } catch (Exception e) {
-      // version is an unparseable value, figure out from mapprojects
+      // version is an unparseable value, figure out from map projects
       MappingService service = new MappingServiceJpa();
       Date version = null;
       for (MapProject project : service.getMapProjects().getMapProjects()) {
