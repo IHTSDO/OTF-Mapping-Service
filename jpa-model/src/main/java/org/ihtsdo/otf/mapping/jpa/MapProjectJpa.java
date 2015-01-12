@@ -98,10 +98,12 @@ public class MapProjectJpa implements MapProject {
 
   /**  The editing cycle begin date. */
   @Temporal(TemporalType.TIMESTAMP)
+  @Column(nullable = true)
   private Date editingCycleBeginDate;
 
   /**  The latest publication date. */
   @Temporal(TemporalType.TIMESTAMP)
+  @Column(nullable = true)
   private Date latestPublicationDate;
 
   /** The source terminology. */
