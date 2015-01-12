@@ -52,15 +52,15 @@ if ($status != 0) then
     exit 1
 endif
 
-echo "    Load the delta ... '/bin/date'"
+echo "    Load the delta ... `/bin/date`"
 cd $MAPPING_CODE/admin/loader
-mvn install -PRF2-delta -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT -Dinput.dir=/home/ihtsdo/.m2/repository/org/ihtsdo/intl/release/process/wb-release-process/1.20-SNAPSHOT/wb-release-process-1.20-SNAPSHOT-delta | sed 's/^/      /'
+mvn install -PRF2-delta -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT -Dinput.dir=/home/ihtsdo/.m2/repository/org/ihtsdo/intl/release/process/wb-release-process/1.20-SNAPSHOT/wb-release-process-1.20-SNAPSHOT-delta/destination/Delta | sed 's/^/      /'
 if ($status != 0) then
     echo "ERROR processing delta data"
     exit 1
 endif
 
-echo "    Remove SNOMEDCT tree positions ... '/bin/date'"
+echo "    Remove SNOMEDCT tree positions ... `/bin/date`"
 cd $MAPPING_CODE/admin/remover
 mvn install -PTreepos -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT | sed 's/^/      /'
 if ($status != 0) then
