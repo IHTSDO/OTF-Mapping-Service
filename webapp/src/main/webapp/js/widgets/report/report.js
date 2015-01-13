@@ -335,9 +335,7 @@ angular
               var a         = document.createElement('a');
               a.href        = fileURL; 
               a.target      = "_blank";
-              a.download    = report.name + "."
-                 (new Date().toISOString().slice(0,10).replace(/-/g,"")) 
-                 + ".xls";
+              a.download    = getReportFileName(report);
               document.body.appendChild(a);
               $rootScope.glassPane--;
               a.click();                       
@@ -347,4 +345,8 @@ angular
             });
         };
 
+        var getReportFileName = function(report) {
+          var date = new Date().toISOString().slice(0,10).replace(/-/g,"");
+          return report.name + "." + date + ".xls";
+        };
     });
