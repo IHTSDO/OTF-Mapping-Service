@@ -12,7 +12,10 @@
     ng-click="performAggregatedSearch(searchField, subSearchField, subSubSearchField);">Go</button>
   <button class="btn btn-sm btn-primary"
     ng-click="searchField = null; 
-              subSearchField = null; subSubSearchField = null;">Reset</button>
+              subSearchField = null; subSubSearchField = null; 
+              mainTermLabel = ''; searchResultsLabel = '';
+              firstArrow = false; previousArrow = false;
+              nextArrow = false; lastArrow = false;">Reset</button>
 </form>
 
 
