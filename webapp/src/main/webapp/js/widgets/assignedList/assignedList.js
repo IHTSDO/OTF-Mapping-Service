@@ -147,8 +147,7 @@ angular
 										// Expect:
 										// - assignUser: String, IHTSDO username (e.g. dmo, kli)
 										// - assignType: String, either 'concept' or 'conflict' or
-										// 'review'
-										// or 'qa'
+										// 'review' or 'qa'
 										if ($scope.currentRole === 'Lead') {
 
 											// if user name matches current user's user name, reload
@@ -170,7 +169,7 @@ angular
 													$scope.setTab(1);
 
 													// retrieve the work
-													$scope.retrieveAssignedConflict(
+													$scope.retrieveAssignedConflicts(
 															$scope.assignedConflictPage,
 															$scope.queryConflict,
 															$scope.assignedConflictType);
@@ -186,6 +185,15 @@ angular
 															$scope.assignedReviewWorkPage,
 															$scope.queryReviewWork,
 															$scope.assignedReviewWorkType);
+													
+												} else if (parameters.assignType === 'conceptByUser') {
+
+														// set the tab
+														$scope.setTab(3);
+
+														// retrieve the work
+														$scope.retrieveAssignedWorkForUser($scope.assignedWorkForUserPage, $scope.mapUserViewed.userName,
+																$scope.queryAssignedForUser, $scope.assignedWorkForUserType);
 
 													// QA Work
 												} else if (parameters.assignType === 'qa') {
