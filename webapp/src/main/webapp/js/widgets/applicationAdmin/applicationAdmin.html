@@ -1227,12 +1227,12 @@
 					<button
 						ng-disabled="newDefinition.testReportSuccess != true && newDefinition.diffReport == false"
 						class="btn btn-sm btn-primary" style="width: 59px"
-						ng-click="submitNewReportDefinition(newDefinition); newDefinition = null;">Submit</button>
+						ng-click="submitNewReportDefinition(newDefinition); newDefinition = {};">Submit</button>
 
 					<button ng-disabled="newDefinition.testReportSuccess == true"
 						ng-show="newDefinition.diffReport == false"
 						class="btn btn-sm btn-primary" style="width: 41px"
-						ng-click="testReportDefinition(newDefinition)">Test</button>
+						ng-click="testReportDefinition(newDefinition); newReportAdded = false;">Test</button>
 
 
 				</td>
@@ -1550,7 +1550,7 @@
 						 Note that width is formally set due to ng-disabled resizing disabled buttons -->
 					<button ng-disabled="newQaDefinition.testQaSuccess != true"
 						class="btn btn-sm btn-primary" style="width: 59px"
-						ng-click="submitNewQaDefinition(newQaDefinition); newQaDefinition = null;">Submit</button>
+						ng-click="submitNewQaDefinition(newQaDefinition); newQaDefinition = {};">Submit</button>
 
 					<button ng-disabled="newQaDefinition.testQaSuccess == true"
 						class="btn btn-sm btn-primary" style="width: 40px"
