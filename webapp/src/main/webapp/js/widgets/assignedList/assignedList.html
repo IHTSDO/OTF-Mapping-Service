@@ -265,7 +265,7 @@
 
         <td style="width: 80%; padding: 5px;">{{result.value}}</td>
         <td style="width: 3%; padding: 5px;"><a title="Return"
-          ng-click="unassignWork(result, currentUser)"><i
+          ng-click="unassignWork(result, currentUser, 'conflict')"><i
             class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i></a></td>
       </tr>
     </tbody>
@@ -399,7 +399,7 @@
 
         <td style="width: 80%; padding: 5px;">{{result.value}}</td>
         <td style="width: 3%; padding: 5px;"><a title="Return"
-          ng-click="unassignWork(result, currentUser)"><i
+          ng-click="unassignWork(result, currentUser, 'review')"><i
             class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i></a></td>
       </tr>
     </tbody>
@@ -496,7 +496,7 @@
       <td style="width: 25%; padding: 5px;">{{result.terminology |
         date:'MM-dd-yyyy HH:mm'}}</td>
       <td style="width: 3%; padding: 5px;"><a title="Return"
-        ng-click="unassignWork(result, mapUserViewed)"><i
+        ng-click="unassignWork(result, mapUserViewed, 'conceptsByUser')"><i
           class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i></a></td>
     </tr>
 
@@ -621,7 +621,7 @@
           tooltip="{{result.labels}}" style="float: right; margin-right: 5px;"><i
             class="glyphicon glyphicon-tasks"></i></a></td>
         <td style="width: 3%; padding: 5px;"><a title="Return"
-          ng-click="unassignWork(result, currentUser)"><i
+          ng-click="unassignWork(result, currentUser, 'qa')"><i
             class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i></a></td>
       </tr>
     </tbody>
