@@ -52,7 +52,8 @@
   View</button>
 <button class="btn btn-sm btn-primary" ng-click="openConceptBrowser()">SNOMED
   CT Browser</button>
-<button class="btn btn-sm btn-primary" ng-click="openIndexViewer()">Index Viewer</button>
+<button class="btn btn-sm btn-primary" ng-show="indexViewerExists == true" 
+  ng-click="openIndexViewer()">Index Viewer</button>
 <button class="btn btn-sm btn-primary" ng-click="goEdit(record)"
   ng-show="displayEdit() == true">Edit record</button>
 <span ng-show="conversation.active == false" class="alert alert-warning"
