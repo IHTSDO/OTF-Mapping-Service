@@ -531,7 +531,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
               + record1.getMapProjectId() + ", " + record2.getMapProjectId()
               + ").");
       validationResult
-      .addConciseError("Invalid comparison - map project ids do not match");
+          .addConciseError("Invalid comparison - map project ids do not match");
       return validationResult;
     }
 
@@ -541,7 +541,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
           .addError("Invalid comparison, map record concept ids do not match ("
               + record1.getConceptId() + ", " + record2.getConceptId() + ").");
       validationResult
-              .addConciseError("Invalid comparison - map record concept ids do not match");
+          .addConciseError("Invalid comparison - map record concept ids do not match");
       return validationResult;
     }
 
@@ -567,8 +567,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     if (principles1.size() != principles2.size()) {
       validationResult
           .addError("Map principle assignment is different: Number of principles is different");
-      validationResult
-          .addConciseError("Map principle assignment is different");
+      validationResult.addConciseError("Map principle assignment is different");
     } else {
       for (int i = 0; i < principles1.size(); i++) {
         if (!principles1.get(i).getPrincipleId()
@@ -576,7 +575,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
           validationResult.addError("Map principle assignment is different: "
               + principles1.get(i).getName() + " vs. "
               + principles2.get(i).getName());
-          validationResult.addConciseError("Map principle assignment is different");
+          validationResult
+              .addConciseError("Map principle assignment is different");
         }
       }
     }
@@ -741,6 +741,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
                 entries2.get(f));
         }
       }
+
+      // check that any rule/target pairs are not different
+      // for non-rule based projects, this will compare a single entry in each group
       for (int d = 0; d < entries1.size(); d++) {
         for (int f = 0; f < entries2.size(); f++) {
           if (isRulesEqual(entries1.get(d), entries2.get(f))
@@ -758,16 +761,21 @@ public class DefaultProjectSpecificAlgorithmHandler implements
           }
         }
       }
-      for (int d = 0; d < entries1.size(); d++) {
-        for (int f = 0; f < entries2.size(); f++) {
-          if (!entries1.get(d).getRule().equals("TRUE")
-              && !entries2.get(f).getRule().equals("TRUE")
-              && !isRulesEqual(entries1.get(d), entries2.get(f))) {
 
-            validationResult.addError("Map rule is different: "
-                + entries1.get(d).getRule() + " vs. "
-                + entries2.get(f).getRule());
-            validationResult.addConciseError("Map rule is different");
+      // only check TRUE rules if project is rule based
+      if (mapProject.isRuleBased()) {
+
+        for (int d = 0; d < entries1.size(); d++) {
+          for (int f = 0; f < entries2.size(); f++) {
+            if (!entries1.get(d).getRule().equals("TRUE")
+                && !entries2.get(f).getRule().equals("TRUE")
+                && !isRulesEqual(entries1.get(d), entries2.get(f))) {
+
+              validationResult.addError("Map rule is different: "
+                  + entries1.get(d).getRule() + " vs. "
+                  + entries2.get(f).getRule());
+              validationResult.addConciseError("Map rule is different");
+            }
           }
         }
       }
@@ -1153,7 +1161,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
             WorkflowStatus.CONFLICT_DETECTED)) {
 
           mapRecord.setWorkflowStatus(WorkflowStatus.CONFLICT_NEW);
-          
+
           MapRecord mapRecord1 = (MapRecord) mapRecords.toArray()[0];
           MapRecord mapRecord2 = (MapRecord) mapRecords.toArray()[1];
           ValidationResult validationResult =
@@ -1699,13 +1707,17 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         // - 1 record marked CONFLICT_RESOLVED
         // - 2 records marked CONFLICT_DETECTED
 
-        // if two map records, must be two EDITING_DONE or CONFLICT_DETECTED records
+        // if two map records, must be two EDITING_DONE or CONFLICT_DETECTED
+        // records
         // with publish called by finishEditing
         if (mapRecords.size() == 2) {
 
-          // check assumption: records are both marked EDITING_DONE or CONFLICT_DETECTED
+          // check assumption: records are both marked EDITING_DONE or
+          // CONFLICT_DETECTED
           for (MapRecord mr : mapRecords) {
-            if (!mr.getWorkflowStatus().equals(WorkflowStatus.EDITING_DONE) && !mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED))
+            if (!mr.getWorkflowStatus().equals(WorkflowStatus.EDITING_DONE)
+                && !mr.getWorkflowStatus().equals(
+                    WorkflowStatus.CONFLICT_DETECTED))
               throw new Exception(
                   "Publish called, expected two matching specialist records marked EDITING_DONE or CONFLICT_DETECTED, but found record with status "
                       + mr.getWorkflowStatus().toString());
