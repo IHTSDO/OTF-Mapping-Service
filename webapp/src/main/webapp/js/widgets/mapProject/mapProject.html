@@ -12,7 +12,8 @@
     class="btn btn-sm btn-primary" ng-click="openConceptBrowser()">SNOMEDCT
     Browser</button>
 
-  <button class="btn btn-sm btn-primary" ng-click="openIndexViewer()">Index Viewer</button>
+  <button class="btn btn-sm btn-primary" ng-show="indexViewerExists == true" 
+    ng-click="openIndexViewer()">Index Viewer</button>
   <span ng-show="currentRole === 'Administrator'">
     <button class="btn btn-sm btn-primary" ng-click="computeWorkflow()">Compute
       Workflow</button>
