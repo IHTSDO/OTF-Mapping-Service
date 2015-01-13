@@ -2183,6 +2183,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       }
       // Set latest publication date to now.
       mapProject.setLatestPublicationDate(new Date());
+      mapProject.setPublic(true);
       mappingService.updateMapProject(mapProject);
       mappingService.commit();
     }

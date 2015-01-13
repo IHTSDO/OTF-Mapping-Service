@@ -1519,7 +1519,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
           manager
               .createQuery("DELETE From TreePositionJpa c where terminology = :terminology and terminologyVersion = :terminologyVersion");
       query.setParameter("terminology", terminology);
-      query.setParameter("terminologyVersion", terminology);
+      query.setParameter("terminologyVersion", terminologyVersion);
       int deleteRecords = query.executeUpdate();
       Logger.getLogger(getClass()).info(
           "    treepos records deleted: " + deleteRecords);
@@ -1530,7 +1530,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
           manager
               .createQuery("DELETE From TreePositionJpa c where terminology = :terminology and terminologyVersion = :terminologyVersion");
       query.setParameter("terminology", terminology);
-      query.setParameter("terminologyVersion", terminology);
+      query.setParameter("terminologyVersion", terminologyVersion);
       int deleteRecords = query.executeUpdate();
       Logger.getLogger(getClass()).info(
           "    treepos records deleted: " + deleteRecords);

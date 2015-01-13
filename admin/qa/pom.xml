@@ -118,6 +118,15 @@
                     </property>
 
                     <property>
+                      <name>Validate map entry targetName is "No target" when targetId is blank</name>
+                      <value>
+                        SELECT mapRecord_id, id FROM map_entries
+                        WHERE
+                        targetId = '' and targetName != 'No target';
+                      </value>
+                    </property>
+
+                    <property>
                       <name>Validate active concept default preferred names -
                         SNOMEDCT</name>
                       <value>
@@ -278,8 +287,7 @@
                     </property>
 
                     <property>
-                      <name>Every map entry should have a valid targetId (if not
-                        null or empty)</name>
+                      <name>Every map entry should have a valid targetId (if not empty)</name>
                       <value>
                         SELECT b.conceptId, c.id, a.targetId
                         FROM
@@ -467,7 +475,7 @@
                     </property>
 
                     <property>
-                      <name>Null target has only acceptable map relations</name>
+                      <name>Empty target has only acceptable map relations</name>
                       <value>
                         SELECT d.id, c.conceptId, b.name
                         FROM map_entries a,
@@ -484,7 +492,7 @@
                     </property>
 
                     <property>
-                      <name>Non null target has only acceptable map relations</name>
+                      <name>Non empty target has only acceptable map relations</name>
                       <value>
                         SELECT d.id, c.conceptId, b.name
                         FROM map_entries a,
@@ -501,7 +509,7 @@
                     </property>
 
                     <property>
-                      <name>Null target has only acceptable map advices</name>
+                      <name>Empty target has only acceptable map advices</name>
                       <value>
                         SELECT e.id, d.conceptId, b.name
                         FROM map_entries a,
@@ -521,7 +529,7 @@
                     </property>
 
                     <property>
-                      <name>Non null target has only acceptable map advices</name>
+                      <name>Non empty target has only acceptable map advices</name>
                       <value>
                         SELECT e.id, d.conceptId, b.name
                         FROM map_entries a,

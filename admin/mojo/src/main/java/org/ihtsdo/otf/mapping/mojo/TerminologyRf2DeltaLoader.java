@@ -976,9 +976,10 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     int dpnSkippedCt = 0;
 
     getLog().info("Checking database against calculated modifications");
+    Date rf2Version = determineVersion();
     ConceptList modifiedConcepts =
         contentService.getConceptsModifiedSinceDate(terminology,
-            deltaLoaderStartDate, null);
+            rf2Version, null);
     getLog().info(
         "Computing default preferred names for " + modifiedConcepts.getCount()
             + " concepts");
@@ -1069,33 +1070,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     // Determine the editing start date for this terminology
     // NOTE, if a value like "latest" is used, then we have to determine
     // from map projects, otherwise version itself can be used
-    Date rf2Version = null;
-    try {
-      rf2Version = dt.parse(version);
-    } catch (Exception e) {
-      // version is an unparseable value, figure out from map projects
-      MappingService service = new MappingServiceJpa();
-      Date version = null;
-      for (MapProject project : service.getMapProjects().getMapProjects()) {
-        // check for matching source terminology
-        if (project.getSourceTerminology().equals(terminology)
-            && project.getSourceTerminologyVersion().equals(version)) {
-          if (rf2Version == null
-              || project.getEditingCycleBeginDate().before(rf2Version)) {
-            rf2Version = project.getEditingCycleBeginDate();
-          }
-        }
-        // check for matching destination terminology
-        if (project.getDestinationTerminology().equals(terminology)
-            && project.getDestinationTerminologyVersion().equals(version)) {
-          if (rf2Version == null
-              || project.getEditingCycleBeginDate().before(rf2Version)) {
-            rf2Version = project.getEditingCycleBeginDate();
-          }
-        }
-      }
-      service.close();
-    }
+    Date rf2Version = determineVersion();
 
     // Now remove retired concepts 
     // These are concepts created after rf2Version that are no longer in 
@@ -1143,6 +1118,44 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     getLog().info("      retired =  " + ct);
   }
 
+  /**
+   * Determine previous release version.
+   *
+   * @return the date
+   * @throws Exception the exception
+   */
+  private Date determineVersion() throws Exception {
+    Date rf2Version = null;
+    try {
+      rf2Version = dt.parse(version);
+    } catch (Exception e) {
+      // version is an unparseable value, figure out from map projects
+      MappingService service = new MappingServiceJpa();
+      for (MapProject project : service.getMapProjects().getMapProjects()) {
+        // check for matching source terminology
+        if (project.getSourceTerminology().equals(terminology)
+            && project.getSourceTerminologyVersion().equals(version)) {
+          if (rf2Version == null
+              || project.getEditingCycleBeginDate().before(rf2Version)) {
+            rf2Version = project.getEditingCycleBeginDate();
+          }
+        }
+        // check for matching destination terminology
+        if (project.getDestinationTerminology().equals(terminology)
+            && project.getDestinationTerminologyVersion().equals(version)) {
+          if (rf2Version == null
+              || project.getEditingCycleBeginDate().before(rf2Version)) {
+            rf2Version = project.getEditingCycleBeginDate();
+          }
+        }
+      }
+      service.close();
+    }
+    getLog().info("  calculated version = " + rf2Version);
+    return rf2Version;
+  }
+  
+  
   // helper function to update and store concept
   // as well as putting all descendant objects in the cache
   // for easy retrieval
