@@ -2578,6 +2578,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
           }
           Logger.getLogger(this.getClass()).debug(
               "      Setting target name " + targetName);
+        } else {
+          targetName = "No target";
         }
 
         // Set map relation id as well from the cache
