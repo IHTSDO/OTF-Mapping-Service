@@ -75,8 +75,8 @@ angular
           // groups tree for dynamic sorting/repositioning
           $scope.groupsTree = [];
       
-      // flag indicating if index viewer is available for dest terminology
-      $scope.indexViewerExists = false;
+          // flag indicating if index viewer is available for dest terminology
+          $scope.indexViewerExists = false;
 
           // options for angular-ui-tree
           $scope.options = {
@@ -292,6 +292,7 @@ angular
           }
           ;
 
+          
           
       function setIndexViewerStatus() {       
         $http(
