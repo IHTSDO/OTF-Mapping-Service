@@ -62,6 +62,7 @@ public class TreeposRemoverMojo extends AbstractMojo {
   public void execute() throws MojoFailureException {
     getLog().info("Starting removing tree positions");
     getLog().info("  terminology = " + terminology);
+    getLog().info("  terminologyVersion = " + terminologyVersion);
 
     try {
 
