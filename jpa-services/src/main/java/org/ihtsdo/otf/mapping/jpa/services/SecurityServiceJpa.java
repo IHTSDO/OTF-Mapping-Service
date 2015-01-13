@@ -202,6 +202,7 @@ public class SecurityServiceJpa extends RootServiceJpa implements
    * org.ihtsdo.otf.mapping.services.SecurityService#getUsernameForToken(java
    * .lang.String)
    */
+  @SuppressWarnings("unused")
   @Override
   public String getUsernameForToken(String authToken) throws Exception {
     

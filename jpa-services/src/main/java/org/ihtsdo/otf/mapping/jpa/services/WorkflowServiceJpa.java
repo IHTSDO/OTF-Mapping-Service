@@ -1589,7 +1589,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         fullTextEntityManager.createFullTextQuery(luceneQuery,
             TrackingRecordJpa.class);
 
-    assignedReviewWork.setTotalCount(ftquery.getResultSize());
 
     List<TrackingRecord> allResults = ftquery.getResultList();
     List<TrackingRecord> results = new ArrayList<>();
@@ -1614,6 +1613,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         }
       }
     }
+    
+
+    assignedReviewWork.setTotalCount(results.size());
 
     // apply paging, and sorting if appropriate
     if (pfsParameter != null
