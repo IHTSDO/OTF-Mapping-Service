@@ -680,7 +680,7 @@ angular
             "terminologyId" : recordInError.conceptId,
             "terminologyVersion" : $scope.project.sourceTerminologyVersion,
             "isResolved" : "false",
-            "isDiscrepancyReview" : "false",
+            "discrepancyReview" : "false",
             "mapRecordId" : recordInError.id,
             "feedback" : feedbacks,
             "defaultPreferredName" : $scope.concept.defaultPreferredName,
@@ -799,7 +799,7 @@ angular
             "terminologyId" : $scope.leadRecord.conceptId,
             "terminologyVersion" : $scope.project.sourceTerminologyVersion,
             "isResolved" : "false",
-            "isDiscrepancyReview" : $scope.indicateDiscrepancyReview,
+            "discrepancyReview" : $scope.indicateDiscrepancyReview,
             "mapRecordId" : $scope.leadRecord.id,
             "feedback" : feedbacks,
             "defaultPreferredName" : $scope.concept.defaultPreferredName,
@@ -1069,7 +1069,7 @@ angular
       };
 
       $scope.getTitle = function(group, errMsg) {
-        if ($scope.indicateDiscrepancyReview == true)
+        if (group == true && $scope.indicateDiscrepancyReview == true)
           return "Discrepancy Review Feedback";
         else if (group == true)
           return "Group Feedback";

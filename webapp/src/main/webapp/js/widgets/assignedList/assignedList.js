@@ -72,22 +72,6 @@ angular
 					// whether
 					// search was performed
 
-					// initial work types for each tab
-					$scope.assignedWorkType = 'NEW'; // initialize variable to track
-					// which
-					// type of work has been requested
-					$scope.assignedConflictType = 'CONFLICT_NEW'; // initialize variable
-					// to
-					// track which type of
-					// conflict has been
-					// requested
-					$scope.assignedReviewWorkType = 'REVIEW_NEW';
-					$scope.assignedWorkForUserType = 'ALL'; // initialize variable to
-					// track
-					// which type of work (for another
-					// user) has been requested
-					$scope.assignedQAWorkType = 'QA_NEW';
-
 					// function to change tab
 					$scope.setTab = function(tabNumber) {
 						if (tabNumber == null)
@@ -112,6 +96,23 @@ angular
 					$scope.itemsPerPage = 10;
 					$scope.assignedWorkPage = 1;
 					$scope.assignedConflictsPage = 1;
+					$scope.assignedReviewWorkPage = 1;
+					$scope.assignedQaWorkPage = 1;
+					$scope.assignedWorkForUserPage = 1;
+
+					// query variables
+					$scope.queryAssigned = null;
+					$scope.queryConflict = null;
+					$scope.queryReviewWork = null;
+					$scope.queryQaWork = null;
+					$scope.queryAssignedForUser = null;
+
+					// work type filter variables
+					$scope.assignedWorkType = 'NEW'; // initialize variable to track
+					$scope.assignedConflictType = 'CONFLICT_NEW'; // initialize variable
+					$scope.assignedReviewWorkType = 'REVIEW_NEW';
+					$scope.assignedWorkForUserType = 'ALL'; // initialize variable to
+					$scope.assignedQAWorkType = 'QA_NEW';
 
 					// watch for project change
 					$scope
@@ -139,9 +140,8 @@ angular
 							.$on(
 									'workAvailableWidget.notification.assignWork',
 									function(event, parameters) {
-										console.debug('assignedlist: assignWork notification');
-										console.debug(parameters);
-										console.debug($scope.currentRole);
+										console.debug('assignedlist: assignWork notification',
+												parameters, $scope.currentRole);
 
 										// perform action based on notification parameters
 										// Expect:
@@ -156,45 +156,81 @@ angular
 											if (parameters.assignUser.userName === $scope.currentUser.userName) {
 
 												if (parameters.assignType === 'concept') {
-													$scope.retrieveAssignedWork($scope.assignedWorkPage,
-															null, 'NEW');
+
+													// set the tab
 													$scope.setTab(0);
-													$scope.assignedWorkType = 'NEW';
+
+													// retrieve the work
+													$scope.retrieveAssignedWork($scope.assignedWorkPage,
+															$scope.queryAssigned, $scope.assignedWorkType);
+
+													// Conflicts
 												} else if (parameters.assignType === 'conflict') {
-													$scope.retrieveAssignedConflicts(
-															$scope.assignedConflictsPage, null,
-															'CONFLICT_NEW');
+													// set the tab
 													$scope.setTab(1);
-													$scope.assignedConflictType = 'CONFLICT_NEW';
+
+													// retrieve the work
+													$scope.retrieveAssignedConflict(
+															$scope.assignedConflictPage,
+															$scope.queryConflict,
+															$scope.assignedConflictType);
+
+													// Review Work
 												} else if (parameters.assignType === 'review') {
-													$scope
-															.retrieveAssignedReviewWork(
-																	$scope.assignedReviewWorkPage, null,
-																	'REVIEW_NEW');
+													// set the tab
 													$scope.setTab(2);
-													$scope.assignedReviewWorkType = 'REVIEW_NEW';
+													;
+
+													// retrieve the work
+													$scope.retrieveAssignedReviewWork(
+															$scope.assignedReviewWorkPage,
+															$scope.queryReviewWork,
+															$scope.assignedReviewWorkType);
+
+													// QA Work
 												} else if (parameters.assignType === 'qa') {
-													$scope.retrieveAssignedQAWork(
-															$scope.assignedQAWorkPage, null, 'QA_NEW');
+													// set the tab
 													$scope.setTab(4);
-													$scope.assignedQAWorkType = 'QA_NEW';
+
+													// retrieve the work
+													$scope.retrieveAssignedQAWork(
+															$scope.assignedQaWorkPage,
+															$scope.queryQaWork,
+															$scope.assignedQaWorkType);
 												}
 											} else {
+
+												// set the tab
+												$scope.setTab(4);
+
 												$scope.retrieveAssignedWorkForUser(
 														$scope.assignedWorkForUserPage,
 														parameters.assignUser.userName, 'NEW');
-												$scope.setTab(3);
 												$scope.mapUserViewed = parameters.assignUser;
 												$scope.assignedWorkForUserType = 'NEW';
 											}
 
+											// SPECIALIST TABS
 										} else {
-											// reload current assigned concepts, saving page
-											// information
-											$scope.retrieveAssignedWork($scope.assignedWorkPage,
-													null, 'NEW');
-											$scope.setTab(0);
-											$scope.assignedWorkType = 'NEW';
+
+											if (parameters.assignType === 'concept') {
+
+												// set the tab
+												$scope.setTab(0);
+
+												// retrieve the work
+												$scope.retrieveAssignedWork($scope.assignedWorkPage,
+														$scope.assignedWorkQuery, $scope.assignedWorkType);
+											} else if (parameters.assignType === 'qa') {
+												// set the tab
+												$scope.setTab(4);
+
+												// retrieve the work
+												$scope.retrieveAssignedQAWork(
+														$scope.assignedQaWorkPage,
+														$scope.assignedQaWorkQuery,
+														$scope.assignedQaWorkType);
+											}
 										}
 									});
 
@@ -240,6 +276,11 @@ angular
 						console.debug('Retrieving Assigned Conflicts: ', page, query,
 								assignedConflictType);
 
+						// hard set the conflict PFS scope variables
+						$scope.assignedConflictsPage = page;
+						$scope.assignedConflictsType = assignedConflictType;
+						$scope.queryConflict = query;
+
 						// ensure query is set to null if not specified
 						if (query == undefined)
 							query == null;
@@ -278,8 +319,6 @@ angular
 
 									$scope.assignedConflictsPage = page;
 									$scope.assignedConflicts = data.searchResult;
-									console.debug('Assigned Conflicts:');
-									console.debug($scope.assignedConflicts);
 
 									// set pagination
 									$scope.nAssignedConflicts = data.totalCount;
@@ -300,6 +339,13 @@ angular
 
 						console.debug('Retrieving Assigned Concepts: ', page, query,
 								assignedWorkType);
+
+						// set the scope variables
+						// this is necessary due to some frustrating non-functional two-way
+						// binding
+						$scope.assignedWorkPage = page;
+						$scope.queryAssigned = query;
+						$scope.assignedWorkType = assignedWorkType;
 
 						// ensure query is set to null if undefined
 						if (query == undefined)
@@ -340,7 +386,6 @@ angular
 
 									$scope.assignedWorkPage = page;
 									$scope.assignedRecords = data.searchResult;
-									console.debug($scope.assignedRecords);
 
 									// set pagination
 									$scope.numAssignedRecordPages = Math.ceil(data.totalCount
@@ -350,9 +395,6 @@ angular
 									// set title
 									$scope.tabs[0].title = "Concepts (" + $scope.nAssignedRecords
 											+ ")";
-									console.debug($scope.nAssignedRecords);
-									console.debug(data.totalCount);
-									console.debug($scope.assignedWorkTitle);
 
 								}).error(function(data, status, headers, config) {
 							$rootScope.glassPane--;
@@ -389,6 +431,11 @@ angular
 
 						console.debug('Retrieving Assigned QA Work: ', page, query,
 								assignedWorkType);
+
+						// hard set the PFS variables
+						$scope.assignedQaWorkPage = page;
+						$scope.assignedQaWorkType = assignedWorkType;
+						$scope.queryQaWork = query;
 
 						// ensure query is set to null if undefined
 						if (query == undefined)
@@ -429,7 +476,6 @@ angular
 
 									$scope.assignedQAWorkPage = page;
 									$scope.assignedQAWork = data.searchResult;
-									console.debug($scope.assignedQAWork);
 
 									// set pagination
 									$scope.numAssignedRecordPages = Math.ceil(data.totalCount
@@ -438,9 +484,6 @@ angular
 
 									// set title
 									$scope.tabs[4].title = "QA (" + $scope.nAssignedQAWork + ")";
-									console.debug($scope.nAssignedQAWork);
-									console.debug(data.totalCount);
-									console.debug($scope.assignedQAWorkTitle);
 
 									// set labels
 									for (var i = 0; i < $scope.assignedQAWork.length; i++) {
@@ -462,6 +505,11 @@ angular
 
 						console.debug('Retrieving Assigned Review Work: ', page, query,
 								assignedWorkType);
+
+						// hard set the PFS variables
+						$scope.assignedReviewWorkPage = page;
+						$scope.assignedReviewWorkType = assignedWorkType;
+						$scope.queryReviewWork = query;
 
 						// ensure query is set to null if undefined
 						if (query == undefined)
@@ -502,7 +550,6 @@ angular
 
 									$scope.assignedReviewWorkPage = page;
 									$scope.assignedReviewWork = data.searchResult;
-									console.debug($scope.assignedReviewWork);
 
 									// set pagination
 									$scope.numAssignedRecordPages = Math.ceil(data.totalCount
@@ -512,9 +559,6 @@ angular
 									// set title
 									$scope.tabs[2].title = "Review ("
 											+ $scope.nAssignedReviewWork + ")";
-									console.debug($scope.nAssignedReviewWork);
-									console.debug(data.totalCount);
-									console.debug($scope.assignedReviewWorkTitle);
 
 								}).error(function(data, status, headers, config) {
 							$rootScope.glassPane--;
@@ -525,8 +569,12 @@ angular
 					$scope.retrieveAssignedWorkForUser = function(page, mapUserName,
 							query, assignedWorkType) {
 
-						console.debug("retrieveAssignedWorkForUser:");
-						console.debug($scope.mapUserViewed);
+						console.debug("retrieveAssignedWorkForUser:", $scope.mapUserViewed);
+
+						// hard set the PFS variables
+						$scope.assignedWorkForUserPage = page;
+						$scope.assignedWorkForUserType = assignedWorkType;
+						$scope.queryWorkForUser = query;
 
 						// ensure query is set to null if undefined
 						if (query == undefined)
@@ -556,9 +604,6 @@ angular
 							return;
 						}
 
-						console.debug('Retrieving Assigned Concepts for user '
-								+ mapUserName + ': page ' + page);
-
 						// construct a paging/filtering/sorting object
 						var pfsParameterObj = {
 							"startIndex" : page == -1 ? -1 : (page - 1) * $scope.itemsPerPage,
@@ -586,7 +631,6 @@ angular
 
 									$scope.assignedWorkForUserPage = page;
 									$scope.assignedRecordsForUser = data.searchResult;
-									console.debug($scope.assignedRecordsForUser);
 
 									// set pagination
 									$scope.numAssignedRecordPagesForUser = Math
@@ -625,7 +669,7 @@ angular
 					};
 
 					// function to relinquish work (i.e. unassign the user)
-					$scope.unassignWork = function(record, mapUser) {
+					$scope.unassignWork = function(record, mapUser, workType) {
 						console.debug("unassignWork", record, record.terminologyVersion);
 
 						// show a confirmation dialog if requested
@@ -640,6 +684,7 @@ angular
 								return;
 						}
 
+						console.debug("query", $scope.queryAssigned)
 						$rootScope.glassPane++;
 
 						$http(
@@ -656,31 +701,22 @@ angular
 								.success(
 										function(data) {
 
-											if ($scope.ownTab == true) {
+											$rootScope.glassPane--;
 
+											// trigger reload of this type of work via broadcast
+											// notification
+											$rootScope.$broadcast(
+													'workAvailableWidget.notification.assignWork', {
+														assignUser : mapUser,
+														assignType : workType,
+														resetFilters : false
+													});
+
+											// if this user unassigned their own work, broadcast
+											// unassign
+											if (mapUser.userName === $scope.currentUser.userName)
 												$rootScope
 														.$broadcast('assignedListWidget.notification.unassignWork');
-
-												$scope.retrieveAssignedWork($scope.assignedWorkPage,
-														$scope.queryAssigned, $scope.assignedWorkType);
-												$scope.retrieveAssignedQAWork(
-														$scope.assignedQAWorkPage, $scope.queryQAWork, $scope.assignedQAWorkType);
-												if ($scope.currentRole === 'Lead'
-														|| $scope.currentRole === 'Administrator') {
-													$scope.retrieveAssignedConflicts(
-															$scope.assignedConflictsPage,
-															$scope.queryConflict, $scope.assignedConflictType);
-													$scope.retrieveAssignedReviewWork(
-															$scope.assignedReviewWorkPage,
-															$scope.queryReviewWork, $scope.assignedReviewWorkType);
-												}
-
-											} else {
-												$scope.retrieveAssignedWorkForUser(1, mapUser.userName,
-														$scope.queryAssignedForUser);
-											}
-
-											$rootScope.glassPane--;
 
 										}).error(function(data, status, headers, config) {
 									$rootScope.glassPane--;
@@ -697,14 +733,15 @@ angular
 					// Editing...
 					// query: any text filter currently applied
 					$scope.unassignAllWork = function(user, workType, workStatus, query) {
-						
+
 						if (confirm("Are you sure you want to return all displayed work?") == false)
 							return;
 
 						// get the full list of currently assigned work for this query and
 						// workType
 						$rootScope.glassPane++;
-						console.debug("Retrieving concepts to unassign", user, workType, workStatus, query);
+						console.debug("Retrieving concepts to unassign", user, workType,
+								workStatus, query);
 						var pfsParameterObj = {
 							"startIndex" : -1,
 							"maxResults" : -1,
@@ -742,16 +779,17 @@ angular
 										"Content-Type" : "application/json"
 									}
 								}).success(function(data) {
-									
-									console.debug("Unassign retrieval", data.searchResult);
-									
-									var terminologyIds = new Array();;
-									for (var i = 0; i < data.searchResult.length; i++) {
-										terminologyIds.push(data.searchResult[i].terminologyId);
-									}
-									unassignBatch(user, terminologyIds, workType);
-									
-									$rootScope.glassPane--;
+
+							console.debug("Unassign retrieval", data.searchResult);
+
+							var terminologyIds = new Array();
+							;
+							for (var i = 0; i < data.searchResult.length; i++) {
+								terminologyIds.push(data.searchResult[i].terminologyId);
+							}
+							unassignBatch(user, terminologyIds, workType);
+
+							$rootScope.glassPane--;
 
 						}).error(function(data, status, headers, config) {
 							$rootScope.glassPane--;
@@ -764,9 +802,11 @@ angular
 						$scope.ownTab = ownTab;
 					};
 
-					var unassignBatch = function(mapUser, terminologyIds, workType) {
+					var unassignBatch = function(mapUser, terminologyIds, workType,
+							workStatus) {
 
-						console.debug("unassignBatch", mapUser, terminologyIds, workType);
+						console.debug("unassignBatch", mapUser, terminologyIds, workType,
+								workStatus);
 
 						$rootScope.glassPane++;
 						$http(
@@ -797,7 +837,8 @@ angular
 											$rootScope.$broadcast(
 													'workAvailableWidget.notification.assignWork', {
 														assignUser : mapUser,
-														assignType : workType
+														assignType : workType,
+														assignWorkflowStatus : workStatus
 													});
 
 											// if this user unassigned their own work, broadcast
