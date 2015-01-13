@@ -179,7 +179,7 @@ public class ReportServiceRest extends RootServiceRest {
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public ReportDefinition addReportDefinitions(
+  public ReportDefinition addReportDefinition(
     @ApiParam(value = "The report definition to add", required = true) ReportDefinitionJpa reportDefinition,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
     Logger.getLogger(MappingServiceRest.class).info(
