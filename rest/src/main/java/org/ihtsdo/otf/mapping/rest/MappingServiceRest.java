@@ -3104,7 +3104,7 @@ public class MappingServiceRest extends RootServiceRest {
   public TreePositionList getTreePositionGraphsForQuery(
     @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
-    @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) @PathParam("query") String query,
+    @ApiParam(value = "Terminology browser query, e.g. 'cholera'", required = true) @PathParam("query") String query,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long mapProjectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
