@@ -1131,7 +1131,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     } catch (Exception e) {
       // version is an unparseable value, figure out from map projects
       MappingService service = new MappingServiceJpa();
-      Date version = null;
       for (MapProject project : service.getMapProjects().getMapProjects()) {
         // check for matching source terminology
         if (project.getSourceTerminology().equals(terminology)
