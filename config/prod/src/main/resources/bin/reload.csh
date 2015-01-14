@@ -25,7 +25,7 @@ endif
 
 echo "    Remove map notes ...`/bin/date`"
 cd $MAPPING_CODE/admin/remover
-mvn install -PMapNotes -Drefset.id=447562003,447563008,450993002 -Drun.config=$MAPPING_CONFIG >&! mvn.log
+mvn install -PMapNotes -Drun.config=$MAPPING_CONFIG -Drefset.id=447562003,447563008,450993002 >&! mvn.log
 if ($status != 0) then
     echo "ERROR removing map notes"
     cat mvn.log
@@ -34,7 +34,7 @@ endif
 
 echo "    Remove mapping records ...`/bin/date`"
 cd $MAPPING_CODE/admin/remover
-mvn install -PMapRecords -Drefset.id=447562003,447563008,450993002 -Drun.config=$MAPPING_CONFIG >&! mvn.log
+mvn install -PMapRecords -Drun.config=$MAPPING_CONFIG -Drefset.id=447562003,447563008,450993002 >&! mvn.log
 if ($status != 0) then
     echo "ERROR removing map records"
     cat mvn.log
@@ -52,7 +52,7 @@ endif
 
 echo "    Import project data ...`/bin/date`"
 cd $MAPPING_CODE/admin/import
-mvn install -PMapRecords -Drun.config=$MAPPING_CONFIG -DinputDir=$MAPPING_DATA/ihtsdo-project-data >&! mvn.log
+mvn install -PMapProject -Drun.config=$MAPPING_CONFIG -Dinput.dir=$MAPPING_DATA/ihtsdo-project-data >&! mvn.log
 if ($status != 0) then
     echo "ERROR importing project data"
     cat mvn.log
@@ -104,6 +104,32 @@ if ($status != 0) then
     exit 1
 endif
 
+echo "    Begin editing cycle for ICD10 ...`/bin/date`"
+cd $MAPPING_CODE/admin/release
+mvn install -PBeginEditingCycle -Drun.config=$MAPPING_CONFIG -Drefset.id=447562003 >&! mvn.log
+if ($status != 0) then
+    echo "ERROR beginning editing cycle for ICD10"
+    cat mvn.log
+    exit 1
+endif
+
+echo "    Begin editing cycle for ICD9CM ...`/bin/date`"
+cd $MAPPING_CODE/admin/release
+mvn install -PBeginEditingCycle -Drun.config=$MAPPING_CONFIG -Drefset.id=447563008 >&! mvn.log
+if ($status != 0) then
+    echo "ERROR beginning editing cycle for ICD9CM"
+    cat mvn.log
+    exit 1
+endif
+
+echo "    Begin editing cycle for ICD10 ...`/bin/date`"
+cd $MAPPING_CODE/admin/release
+mvn install -PBeginEditingCycle -Drun.config=$MAPPING_CONFIG -Drefset.id=450993002 >&! mvn.log
+if ($status != 0) then
+    echo "ERROR beginning editing cycle for ICD10"
+    cat mvn.log
+    exit 1
+endif
 
 echo "------------------------------------------------"
 echo "Finished ...`/bin/date`"
