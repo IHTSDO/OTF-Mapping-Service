@@ -69,7 +69,7 @@ public class TrackingRecordJpa implements TrackingRecord {
 
   /**
    * The workflow status. Pairs are constructed in the format
-   * workflowStatus~userName e.g. NEW~dmo, EDITING_DONE~kli
+   * workflowStatus_userName e.g. NEW_dmo, EDITING_DONE_kli
    */
   @Column(nullable = true)
   private String userAndWorkflowStatusPairs;
