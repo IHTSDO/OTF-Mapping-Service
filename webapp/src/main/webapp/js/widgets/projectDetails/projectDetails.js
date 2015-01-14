@@ -1765,6 +1765,7 @@ angular
               // successfully
               confirm("The mapping principle handbook file upload is complete.");
               $rootScope.glassPane--;
+             $scope.focusProject.mapPrincipleSourceDocument = data.substring(1, data.length -1);
             });
           }
         };

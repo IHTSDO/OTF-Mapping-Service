@@ -3692,7 +3692,7 @@ public class MappingServiceRest extends RootServiceRest {
           contentDispositionHeader
               .getFileName()
               .substring(0,
-                  contentDispositionHeader.getFileName().lastIndexOf(".") - 1)
+                  contentDispositionHeader.getFileName().lastIndexOf("."))
               .replaceAll(" ", "_");
       File file = new File(dir, mapProjectId + "_" + fileName + extension);
       File archiveFile =
@@ -3703,16 +3703,12 @@ public class MappingServiceRest extends RootServiceRest {
       saveFile(fileInputStream, file.getAbsolutePath());
       copyFile(file, archiveFile);
 
-      String output =
-          "File saved to server location : " + file.getAbsolutePath() + " and "
-              + archiveFile.getAbsolutePath();
-
       // update project
       mapProject.setMapPrincipleSourceDocument(mapProjectId + "_" + fileName
           + extension);
       updateMapProject((MapProjectJpa) mapProject, authToken);
 
-      return Response.status(200).entity(output).build();
+      return Response.status(200).entity(file.getName()).build();
     } catch (Exception e) {
       handleException(e, "trying to upload a file", user,
           mapProjectId.toString(), "");
