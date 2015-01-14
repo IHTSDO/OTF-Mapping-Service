@@ -35,7 +35,7 @@ del /Q mvn.log
 
 echo     Clear indexes ...%date% %time%
 cd %MAPPING_CODE%/admin/lucene
-call mvn install -Drun.config=%MAPPING_CONFIG% 1> mvn.log
+call mvn install -PReindex -Drun.config=%MAPPING_CONFIG% 1> mvn.log
 IF %ERRORLEVEL% NEQ 0 (set error=1
 goto trailer)
 del /Q mvn.log
@@ -98,7 +98,28 @@ del /Q mvn.log
 
 echo     Compute workflow ...%date% %time%
 cd %MAPPING_CODE%/admin/loader
-call mvn install -PComputeWorkflow -Drun.config=%MAPPING_CONFIG% -Drefset.id=447563008,447562003 1> mvn.log
+call mvn install -PComputeWorkflow -Drun.config=%MAPPING_CONFIG% -Drefset.id=447563008,447562003,450993002 1> mvn.log
+IF %ERRORLEVEL% NEQ 0 (set error=1
+goto trailer)
+del /Q mvn.log
+
+echo     Begin editing cycle for ICD10 ...%date% %time%
+cd %MAPPING_CODE%/admin/release
+call mvn install -PBeginEditingCycle -Drun.config=%MAPPING_CONFIG% -Drefset.id=447562003 1> mvn.log
+IF %ERRORLEVEL% NEQ 0 (set error=1
+goto trailer)
+del /Q mvn.log
+
+echo     Begin editing cycle for ICD9CM ...%date% %time%
+cd %MAPPING_CODE%/admin/release
+call mvn install -PBeginEditingCycle -Drun.config=%MAPPING_CONFIG% -Drefset.id=447563008 1> mvn.log
+IF %ERRORLEVEL% NEQ 0 (set error=1
+goto trailer)
+del /Q mvn.log
+
+echo     Begin editing cycle for ICPC ...%date% %time%
+cd %MAPPING_CODE%/admin/release
+call mvn install -PBeginEditingCycle -Drun.config=%MAPPING_CONFIG% -Drefset.id=450993002 1> mvn.log
 IF %ERRORLEVEL% NEQ 0 (set error=1
 goto trailer)
 del /Q mvn.log
