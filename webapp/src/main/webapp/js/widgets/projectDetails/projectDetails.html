@@ -1,1076 +1,1119 @@
 
 <h3>
-  {{focusProject.name}} &nbsp
-  <button class="btn btn-sm btn-primary" ng-click="goMapRecords()">Map
-    Records</button>
+	{{focusProject.name}} &nbsp
+	<button class="btn btn-sm btn-primary" ng-click="goMapRecords()">Map
+		Records</button>
 </h3>
 <p></p>
 
 <div ng-show="currentRole == 'Administrator' || currentRole == 'Lead'"
-  align="right">
-  <span style="font-size: 16px"> <a href=""
-    title="Reset to last saved settings" ng-show="editModeEnabled == true"
-    ng-click="resetModel()"> <i class="fa fa-undo"></i>
-  </a> &nbsp <a href=""
-    title="{{editMode ? 'disable edit mode' : 'enable edit mode'}}"
-    ng-click="toggleEditMode()"> <i class="fa fa-edit"></i>
-  </a>
-  </span>
+	align="right">
+	<span style="font-size: 16px"> <a href=""
+		title="Reset to last saved settings" ng-show="editModeEnabled == true"
+		ng-click="resetModel()"> <i class="fa fa-undo"></i>
+	</a> &nbsp <a href=""
+		title="{{editMode ? 'disable edit mode' : 'enable edit mode'}}"
+		ng-click="toggleEditMode()"> <i class="fa fa-edit"></i>
+	</a>
+	</span>
 </div>
 
-<accordion close-others="false"> <accordion-group is-open="true">
-<accordion-heading>
+<accordion close-others="false"> <accordion-group
+	is-open="true"> <accordion-heading>
 <h5>
-  <span tooltip-placement="right"
-    tooltip="List of the details for this project."> Map Project Details
-  </span>
+	<span tooltip-placement="right"
+		tooltip="List of the details for this project."> Map Project
+		Details </span>
 </h5>
 </accordion-heading>
 
 <p></p>
 <table class="table table-bordered" cellpadding=5>
-  <tbody>
-    <tr>
-      <td width="18%"><div tooltip-placement="right"
-          tooltip="Abbreviation and version information for the terminology this map project is mapping from.">
-          <b>Source Terminology</b>
-        </div></td>
-      <td width="82%">{{focusProject.sourceTerminology}},
-        {{focusProject.sourceTerminologyVersion}}</td>
-    </tr>
-    <tr>
-      <td width="18%"><div tooltip-placement="right"
-          tooltip="Abbreviation and version information for the terminology this map project is mapping to.">
-          <b>Destination Terminology</b>
-        </div></td>
-      <td width="82%">{{focusProject.destinationTerminology}},
-        {{focusProject.destinationTerminologyVersion}}</td>
-    </tr>
-    <tr>
-      <td width="18%"><div tooltip-placement="right"
-          tooltip="The RF2 metadata concept identifier and preferred name representing this map project.">
-          <b>Ref Set</b>
-        </div></td>
-      <td width="82%">{{focusProject.refSetName}},
-        {{focusProject.refSetId}}</td>
-    </tr>
-    <tr>
-      <td><div tooltip-placement="right"
-          tooltip="A true/false indicator of whether this mapping data has been published.">
-          <b>Published</b>
-        </div></td>
-      <td>{{focusProject.published}}</td>
-    </tr>
-    <tr>
-      <td><div tooltip-placement="right"
-          tooltip="A true/false indicator of whether this map project has multiple mappings for the same source concept.">
-          <b>Group Structure</b>
-        </div></td>
-      <td>{{focusProject.groupStructure}}</td>
-    </tr>
-    <tr>
-      <td><div tooltip-placement="right"
-          tooltip="A true/false indicator of whether this map project uses rules other than TRUE">
-          <b>Rule Based</b>
-        </div></td>
-      <td>{{focusProject.ruleBased}}</td>
-    </tr>
-    <tr>
-      <td><div tooltip-placement="right"
-          tooltip="The method by which this project uses the map relation (i.e. map record based, relationship based)">
-          <b>Relation Style</b>
-        </div></td>
-      <td>{{selectedMapRelationStyle.displayName}}</td>
-    </tr>
-    <tr>
-      <td><div tooltip-placement="right"
-          tooltip="The type of mapping this project uses (i.e. simple, complex, extended)">
-          <b>Map Type</b>
-        </div></td>
-      <td>{{selectedMapType.displayName}}</td>
-    </tr>
-    <tr>
-      <td><div tooltip-placement="right"
-          tooltip="The type of workflow this project uses (i.e. conflict, review)">
-          <b>Workflow Type</b>
-        </div></td>
-      <td>{{selectedWorkflowType.displayName}}</td>
+	<tbody>
+		<tr>
+			<td width="18%"><div tooltip-placement="right"
+					tooltip="Abbreviation and version information for the terminology this map project is mapping from.">
+					<b>Source Terminology</b>
+				</div></td>
+			<td width="82%">{{focusProject.sourceTerminology}},
+				{{focusProject.sourceTerminologyVersion}}</td>
+		</tr>
+		<tr>
+			<td width="18%"><div tooltip-placement="right"
+					tooltip="Abbreviation and version information for the terminology this map project is mapping to.">
+					<b>Destination Terminology</b>
+				</div></td>
+			<td width="82%">{{focusProject.destinationTerminology}},
+				{{focusProject.destinationTerminologyVersion}}</td>
+		</tr>
+		<tr>
+			<td width="18%"><div tooltip-placement="right"
+					tooltip="The RF2 metadata concept identifier and preferred name representing this map project.">
+					<b>Ref Set</b>
+				</div></td>
+			<td width="82%">{{focusProject.refSetName}},
+				{{focusProject.refSetId}}</td>
+		</tr>
+		<tr>
+			<td><div tooltip-placement="right"
+					tooltip="A true/false indicator of whether this mapping data has been published.">
+					<b>Published</b>
+				</div></td>
+			<td>{{focusProject.published}}</td>
+		</tr>
+		<tr>
+			<td><div tooltip-placement="right"
+					tooltip="A true/false indicator of whether this map project has multiple mappings for the same source concept.">
+					<b>Group Structure</b>
+				</div></td>
+			<td>{{focusProject.groupStructure}}</td>
+		</tr>
+		<tr>
+			<td><div tooltip-placement="right"
+					tooltip="A true/false indicator of whether this map project uses rules other than TRUE">
+					<b>Rule Based</b>
+				</div></td>
+			<td>{{focusProject.ruleBased}}</td>
+		</tr>
+		<tr>
+			<td><div tooltip-placement="right"
+					tooltip="The method by which this project uses the map relation (i.e. map record based, relationship based)">
+					<b>Relation Style</b>
+				</div></td>
+			<td>{{selectedMapRelationStyle.displayName}}</td>
+		</tr>
+		<tr>
+			<td><div tooltip-placement="right"
+					tooltip="The type of mapping this project uses (i.e. simple, complex, extended)">
+					<b>Map Type</b>
+				</div></td>
+			<td>{{selectedMapType.displayName}}</td>
+		</tr>
+		<tr>
+			<td><div tooltip-placement="right"
+					tooltip="The type of workflow this project uses (i.e. conflict, review)">
+					<b>Workflow Type</b>
+				</div></td>
+			<td>{{selectedWorkflowType.displayName}}</td>
 
-    </tr>
-  </tbody>
+		</tr>
+	</tbody>
 </table>
 <p></p>
-</accordion-group> 
-<accordion-group
-  ng-show="focusProject.mapAdministrator.length > 0 || editModeEnabled == true">
+</accordion-group> <accordion-group
+	ng-show="focusProject.mapAdministrator.length > 0 || editModeEnabled == true">
 <accordion-heading>
 <h5>
-  <span tooltip-placement="right"
-    tooltip="List of the map administrators for this project."> Map Administrators </span>
+	<span tooltip-placement="right"
+		tooltip="List of the map administrators for this project."> Map
+		Administrators </span>
 </h5>
 </accordion-heading>
 <table width="100%" class="table pure-table">
-  <thead>
-    <tr>
-      <th style="width: 30%;">User</th>
-      <th style="width: 20%;">User Name</th>
-      <th style="width: 47%;">Email</th>
-      <th style="width: 3%;"></th>
-    </tr>
-  </thead>
-  <tbody ng-repeat="administrator in focusProject.mapAdministrator"
-    style="border: 2px solid #ccc;">
-    <tr>
-      <td>{{administrator.name}}</td>
-      <td>{{administrator.userName}}</td>
-      <td ng-show="isEmailViewable(administrator.email) == true">{{administrator.email}}</td>
-      <td ng-show="isEmailViewable(administrator.email) == false">Private email</td>
-      <td ng-show="editModeEnabled == true"><i
-        class="glyphicon glyphicon-remove" ng-click="deleteAdministrator(administrator)"></i></td>
-      <td ng-show="editModeEnabled == false"></td>
-    </tr>
-  </tbody>
+	<thead>
+		<tr>
+			<th style="width: 30%;">User</th>
+			<th style="width: 20%;">User Name</th>
+			<th style="width: 47%;">Email</th>
+			<th style="width: 3%;"></th>
+		</tr>
+	</thead>
+	<tbody ng-repeat="administrator in focusProject.mapAdministrator"
+		style="border: 2px solid #ccc;">
+		<tr>
+			<td>{{administrator.name}}</td>
+			<td>{{administrator.userName}}</td>
+			<td ng-show="isEmailViewable(administrator.email) == true">{{administrator.email}}</td>
+			<td ng-show="isEmailViewable(administrator.email) == false">Private
+				email</td>
+			<td ng-show="editModeEnabled == true"><i
+				class="glyphicon glyphicon-remove"
+				ng-click="deleteAdministrator(administrator)"></i></td>
+			<td ng-show="editModeEnabled == false"></td>
+		</tr>
+	</tbody>
 </table>
 
-<table ng-show="editModeEnabled == true" width="50%" class="table pure-table">
-  <thead>
-    <tr>
-      <th style="width: 97%;">Add Map Administrator</th>
-      <th style="width: 3%;"></th>
-    </tr>
-  </thead>
-  <tbody ng-repeat="mapUser in mapUsers | elementFilter:focusProject.mapAdministrator">
-    <tr>
-      <td>{{mapUser.name}}</td>
-      <td><i class="glyphicon glyphicon-plus" ng-click="addAdministrator(mapUser)"></i></td>
-    </tr>
-  </tbody>
-</table>
-
-</accordion-group> 
-
-<accordion-group
-  ng-show="focusProject.mapLead.length > 0 || editModeEnabled == true">
-<accordion-heading>
-<h5>
-  <span tooltip-placement="right"
-    tooltip="List of the map leads for this project."> Map Leads </span>
-</h5>
-</accordion-heading>
-<table width="100%" class="table pure-table">
-  <thead>
-    <tr>
-      <th style="width: 30%;">User</th>
-      <th style="width: 20%;">User Name</th>
-      <th style="width: 47%;">Email</th>
-      <th style="width: 3%;"></th>
-    </tr>
-  </thead>
-  <tbody ng-repeat="lead in focusProject.mapLead"
-    style="border: 2px solid #ccc;">
-    <tr>
-      <td>{{lead.name}}</td>
-      <td>{{lead.userName}}</td>
-      <td ng-show="isEmailViewable(lead.email) == true">{{lead.email}}</td>
-      <td ng-show="isEmailViewable(lead.email) == false">Private email</td>
-      <td ng-show="editModeEnabled == true"><i
-        class="glyphicon glyphicon-remove" ng-click="deleteLead(lead)"></i></td>
-      <td ng-show="editModeEnabled == false"></td>
-    </tr>
-  </tbody>
-</table>
-
-<table ng-show="editModeEnabled == true" width="50%" class="table pure-table">
-  <thead>
-    <tr>
-      <th style="width: 97%;">Add Map Lead</th>
-      <th style="width: 3%;"></th>
-    </tr>
-  </thead>
-  <tbody ng-repeat="mapUser in mapUsers | elementFilter:focusProject.mapLead">
-    <tr>
-      <td>{{mapUser.name}}</td>
-      <td><i class="glyphicon glyphicon-plus" ng-click="addLead(mapUser)"></i></td>
-    </tr>
-  </tbody>
+<table ng-show="editModeEnabled == true" width="50%"
+	class="table pure-table">
+	<thead>
+		<tr>
+			<th style="width: 97%;">Add Map Administrator</th>
+			<th style="width: 3%;"></th>
+		</tr>
+	</thead>
+	<tbody
+		ng-repeat="mapUser in mapUsers | elementFilter:focusProject.mapAdministrator">
+		<tr>
+			<td>{{mapUser.name}}</td>
+			<td><i class="glyphicon glyphicon-plus"
+				ng-click="addAdministrator(mapUser)"></i></td>
+		</tr>
+	</tbody>
 </table>
 
 </accordion-group> <accordion-group
-  ng-show="focusProject.mapSpecialist.length > 0 || editModeEnabled == true">
+	ng-show="focusProject.mapLead.length > 0 || editModeEnabled == true">
 <accordion-heading>
 <h5>
-  <span tooltip-placement="right"
-    tooltip="List of the map specialists for this project."> Map
-    Specialists </span>
+	<span tooltip-placement="right"
+		tooltip="List of the map leads for this project."> Map Leads </span>
 </h5>
 </accordion-heading>
 <table width="100%" class="table pure-table">
-  <thead>
-    <tr>
-      <th style="width: 30%;">User</th>
-      <th style="width: 20%;">User Name</th>
-      <th style="width: 47%;">Email</th>
-      <th style="width: 3%;"></th>
-    </tr>
-  </thead>
-  <tbody ng-repeat="specialist in focusProject.mapSpecialist"
-    style="border: 2px solid #ccc;">
-    <tr>
-      <td>{{specialist.name}}</td>
-      <td>{{specialist.userName}}</td>
-      <td ng-show="isEmailViewable(specialist.email) == true">{{specialist.email}}</td>
-      <td ng-show="isEmailViewable(specialist.email) == false">Private
-        email</td>
-      <td ng-show="editModeEnabled == true"><i
-        class="glyphicon glyphicon-remove"
-        ng-click="deleteSpecialist(specialist)"></i></td>
-      <td ng-show="editModeEnabled == false"></td>
-    </tr>
-  </tbody>
+	<thead>
+		<tr>
+			<th style="width: 30%;">User</th>
+			<th style="width: 20%;">User Name</th>
+			<th style="width: 47%;">Email</th>
+			<th style="width: 3%;"></th>
+		</tr>
+	</thead>
+	<tbody ng-repeat="lead in focusProject.mapLead"
+		style="border: 2px solid #ccc;">
+		<tr>
+			<td>{{lead.name}}</td>
+			<td>{{lead.userName}}</td>
+			<td ng-show="isEmailViewable(lead.email) == true">{{lead.email}}</td>
+			<td ng-show="isEmailViewable(lead.email) == false">Private email</td>
+			<td ng-show="editModeEnabled == true"><i
+				class="glyphicon glyphicon-remove" ng-click="deleteLead(lead)"></i></td>
+			<td ng-show="editModeEnabled == false"></td>
+		</tr>
+	</tbody>
 </table>
 
-<table ng-show="editModeEnabled == true" width="50%" class="table pure-table">
-  <thead>
-    <tr>
-      <th style="width: 97%;">Add Map Specialist</th>
-      <th style="width: 3%;"></th>
-    </tr>
-  </thead>
-  <tbody
-    ng-repeat="mapUser in mapUsers | elementFilter:focusProject.mapSpecialist">
-    <tr>
-      <td>{{mapUser.name}}</td>
-      <td><i class="glyphicon glyphicon-plus"
-        ng-click="addSpecialist(mapUser)"></i></td>
-    </tr>
-  </tbody>
+<table ng-show="editModeEnabled == true" width="50%"
+	class="table pure-table">
+	<thead>
+		<tr>
+			<th style="width: 97%;">Add Map Lead</th>
+			<th style="width: 3%;"></th>
+		</tr>
+	</thead>
+	<tbody
+		ng-repeat="mapUser in mapUsers | elementFilter:focusProject.mapLead">
+		<tr>
+			<td>{{mapUser.name}}</td>
+			<td><i class="glyphicon glyphicon-plus"
+				ng-click="addLead(mapUser)"></i></td>
+		</tr>
+	</tbody>
+</table>
+
+</accordion-group> <accordion-group
+	ng-show="focusProject.mapSpecialist.length > 0 || editModeEnabled == true">
+<accordion-heading>
+<h5>
+	<span tooltip-placement="right"
+		tooltip="List of the map specialists for this project."> Map
+		Specialists </span>
+</h5>
+</accordion-heading>
+<table width="100%" class="table pure-table">
+	<thead>
+		<tr>
+			<th style="width: 30%;">User</th>
+			<th style="width: 20%;">User Name</th>
+			<th style="width: 47%;">Email</th>
+			<th style="width: 3%;"></th>
+		</tr>
+	</thead>
+	<tbody ng-repeat="specialist in focusProject.mapSpecialist"
+		style="border: 2px solid #ccc;">
+		<tr>
+			<td>{{specialist.name}}</td>
+			<td>{{specialist.userName}}</td>
+			<td ng-show="isEmailViewable(specialist.email) == true">{{specialist.email}}</td>
+			<td ng-show="isEmailViewable(specialist.email) == false">Private
+				email</td>
+			<td ng-show="editModeEnabled == true"><i
+				class="glyphicon glyphicon-remove"
+				ng-click="deleteSpecialist(specialist)"></i></td>
+			<td ng-show="editModeEnabled == false"></td>
+		</tr>
+	</tbody>
+</table>
+
+<table ng-show="editModeEnabled == true" width="50%"
+	class="table pure-table">
+	<thead>
+		<tr>
+			<th style="width: 97%;">Add Map Specialist</th>
+			<th style="width: 3%;"></th>
+		</tr>
+	</thead>
+	<tbody
+		ng-repeat="mapUser in mapUsers | elementFilter:focusProject.mapSpecialist">
+		<tr>
+			<td>{{mapUser.name}}</td>
+			<td><i class="glyphicon glyphicon-plus"
+				ng-click="addSpecialist(mapUser)"></i></td>
+		</tr>
+	</tbody>
 </table>
 </accordion-group> <accordion-group ng-show="focusProject.mapAdministrators.length > 0">
 <accordion-heading>
 <h5>
-  <span tooltip-placement="right"
-    tooltip="List of the map administrators for this project."> Map
-    Administrators </span>
+	<span tooltip-placement="right"
+		tooltip="List of the map administrators for this project."> Map
+		Administrators </span>
 </h5>
 </accordion-heading>
 <table width="100%" class="table pure-table">
-  <thead>
-    <tr>
-      <th style="width: 30%;">User</th>
-      <th style="width: 20%;">User Name</th>
-      <th style="width: 50%;">Email</th>
-    </tr>
-  </thead>
-  <tbody ng-repeat="admin in focusProject.mapAdministrators"
-    style="border: 2px solid #ccc;">
-    <tr>
-      <td>{{admin.name}}</td>
-      <td>{{admin.userName}}</td>
-      <td ng-show="isEmailViewable(admin.email) == true">{{admin.email}}</td>
-      <td ng-show="isEmailViewable(admin.email) == false">Private email</td>
-    </tr>
-  </tbody>
+	<thead>
+		<tr>
+			<th style="width: 30%;">User</th>
+			<th style="width: 20%;">User Name</th>
+			<th style="width: 50%;">Email</th>
+		</tr>
+	</thead>
+	<tbody ng-repeat="admin in focusProject.mapAdministrators"
+		style="border: 2px solid #ccc;">
+		<tr>
+			<td>{{admin.name}}</td>
+			<td>{{admin.userName}}</td>
+			<td ng-show="isEmailViewable(admin.email) == true">{{admin.email}}</td>
+			<td ng-show="isEmailViewable(admin.email) == false">Private
+				email</td>
+		</tr>
+	</tbody>
 </table>
 </accordion-group> <accordion-group
-  ng-show="focusProject.mapAdvice.length > 0 || editModeEnabled == true">
+	ng-show="focusProject.mapAdvice.length > 0 || editModeEnabled == true">
 <accordion-heading>
 <h5>
-  <span tooltip-placement="right"
-    tooltip="List of the map advice for this project."> Map Advices </span>
+	<span tooltip-placement="right"
+		tooltip="List of the map advice for this project."> Map Advices
+	</span>
 </h5>
 </accordion-heading> <pagination direction-links="false" boundary-links="true"
-  total-items="pagedAdviceCount" items-per-page="pageSize" page="pageAdvice"
-  on-select-page="getPagedAdvices(page, adviceFilter)"></pagination>
+	total-items="pagedAdviceCount" items-per-page="pageSize"
+	page="pageAdvice" on-select-page="getPagedAdvices(page, adviceFilter)"></pagination>
 <form>
-  <input id="adviceSearch" type="text" ng-model="adviceFilter"
-    ng-change="getPagedAdvices(1, adviceFilter)"> <input type="submit"
-    value="Reset Filter" ng-click="resetAdviceFilter()">
+	<input id="adviceSearch" type="text" ng-model="adviceFilter"
+		ng-change="getPagedAdvices(1, adviceFilter)"> <input
+		type="submit" value="Reset Filter" ng-click="resetAdviceFilter()">
 </form>
 
 <table width="100%" class="table pure-table">
-  <thead>
-    <tr>
-      <th style="width: 60%;">Advice</th>
-      <th style="width: 20%;"><div tooltip-placement="top"
-          tooltip="Whether this advice can be applied to entries with no target">Allowable
-          for Null Target</div>
-      </td>
-      <th style="width: 20%;"><div tooltip-placement="top"
-          tooltip="If true, this advice is applied automatically and cannot be assigned directly by the user">Computed</div>
-      </td>
-      </th>
-    </tr>
-  </thead>
-  <tbody ng-repeat="advice in pagedAdvice | orderBy: 'name'"
-    style="border: 2px solid #ccc;">
-    <tr ng-show="editModeEnabled == false">
-      <td>{{advice.name}}</td>
-      <td>{{advice.isAllowableForNullTarget}}</td>
-      <td>{{advice.isComputed}}</td>
-      <td></td>
-    </tr>
-    <tr ng-show="editModeEnabled == true">
-      <td>{{advice.name}}<!-- <input ng-model="advice.name" 
+	<thead>
+		<tr>
+			<th style="width: 60%;">Advice</th>
+			<th style="width: 20%;"><div tooltip-placement="top"
+					tooltip="Whether this advice can be applied to entries with no target">Allowable
+					for Null Target</div>
+			</td>
+			<th style="width: 20%;"><div tooltip-placement="top"
+					tooltip="If true, this advice is applied automatically and cannot be assigned directly by the user">Computed</div>
+			</td>
+			</th>
+		</tr>
+	</thead>
+	<tbody ng-repeat="advice in pagedAdvice | orderBy: 'name'"
+		style="border: 2px solid #ccc;">
+		<tr ng-show="editModeEnabled == false">
+			<td>{{advice.name}}</td>
+			<td>{{advice.isAllowableForNullTarget}}</td>
+			<td>{{advice.isComputed}}</td>
+			<td></td>
+		</tr>
+		<tr ng-show="editModeEnabled == true">
+			<td>{{advice.name}}<!-- <input ng-model="advice.name" 
                   style="width:100%;" ng-change="updateAdvice(advice)"></input> --></td>
-      <td>{{advice.isAllowableForNullTarget}}</td>
-      <td>{{advice.isComputed}}</td>
-      <td><i class="glyphicon glyphicon-remove"
-        ng-click="deleteAdvice(advice)"></i></td>
-    </tr>
+			<td>{{advice.isAllowableForNullTarget}}</td>
+			<td>{{advice.isComputed}}</td>
+			<td><i class="glyphicon glyphicon-remove"
+				ng-click="deleteAdvice(advice)"></i></td>
+		</tr>
 
-  </tbody>
+	</tbody>
 </table>
 
-<table ng-show="editModeEnabled == true" width="50%" class="table pure-table">
-  <thead>
-    <tr>
-      <th style="width: 97%;">Add Map Advice</th>
-      <th style="width: 3%;"></th>
-    </tr>
-  </thead>
-  <tbody
-    ng-repeat="advice in allowableMapAdvices | elementFilter:focusProject.mapAdvice">
-    <tr>
-      <td>{{advice.name}}</td>
-      <td><i class="glyphicon glyphicon-plus" ng-click="addAdvice(advice)"></i></td>
-    </tr>
-  </tbody>
+<table ng-show="editModeEnabled == true" width="50%"
+	class="table pure-table">
+	<thead>
+		<tr>
+			<th style="width: 97%;">Add Map Advice</th>
+			<th style="width: 3%;"></th>
+		</tr>
+	</thead>
+	<tbody
+		ng-repeat="advice in allowableMapAdvices | elementFilter:focusProject.mapAdvice">
+		<tr>
+			<td>{{advice.name}}</td>
+			<td><i class="glyphicon glyphicon-plus"
+				ng-click="addAdvice(advice)"></i></td>
+		</tr>
+	</tbody>
 </table>
 
 <form ng-show="editModeEnabled == true">
-  <div style="margin-top: 15px;">
-    <b>Create New Map Advice</b>
-  </div>
-  <hr>
-  <table class="table pure-table">
-    <thead>
-      <tr>
-        <th style="width: 25%;"></th>
-        <th style="width: 75%;"></th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Advice Name</td>
-        <td><input id="newAdviceName" type="text" ng-model="newAdviceName"></td>
-      </tr>
-      <tr>
-        <td>Advice Detail</td>
-        <td><input id="newAdviceDetail" type="text"
-          ng-model="newAdviceDetail"></td>
-      </tr>
-      <tr>
-        <td>Allowable for Null Target</td>
-        <td><select ng-model="newAllowableForNullTarget"
-          ng-options="item for item in [true, false]">
-        </select></td>
-      </tr>
-      <tr>
-        <td>Is Computed</td>
-        <td><select ng-model="newIsComputed"
-          ng-options="item for item in [true, false]">
-        </select></td>
-      </tr>
-    </tbody>
-  </table>
+	<div style="margin-top: 15px;">
+		<b>Create New Map Advice</b>
+	</div>
+	<hr>
+	<table class="table pure-table">
+		<thead>
+			<tr>
+				<th style="width: 25%;"></th>
+				<th style="width: 75%;"></th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>Advice Name</td>
+				<td><input id="newAdviceName" type="text"
+					ng-model="newAdviceName"></td>
+			</tr>
+			<tr>
+				<td>Advice Detail</td>
+				<td><input id="newAdviceDetail" type="text"
+					ng-model="newAdviceDetail"></td>
+			</tr>
+			<tr>
+				<td>Allowable for Null Target</td>
+				<td><select ng-model="newAllowableForNullTarget"
+					ng-options="item for item in [true, false]">
+				</select></td>
+			</tr>
+			<tr>
+				<td>Is Computed</td>
+				<td><select ng-model="newIsComputed"
+					ng-options="item for item in [true, false]">
+				</select></td>
+			</tr>
+		</tbody>
+	</table>
 
-  <button class="btn btn-sm btn-primary"
-    ng-click="submitNewMapAdvice(newAdviceName, newAdviceDetail, newAllowableForNullTarget, newIsComputed); 
+	<button class="btn btn-sm btn-primary"
+		ng-click="submitNewMapAdvice(newAdviceName, newAdviceDetail, newAllowableForNullTarget, newIsComputed); 
           newAdviceName = ''; newAdviceDetail = ''; newAllowableForNullTarget = false; newIsComputed = false; ">Submit</button>
 </form>
 
 </accordion-group> <accordion-group
-  ng-show="focusProject.mapRelation.length > 0 || editModeEnabled == true">
+	ng-show="focusProject.mapRelation.length > 0 || editModeEnabled == true">
 <accordion-heading>
 <h5>
-  <span tooltip-placement="right"
-    tooltip="List of the map relations for this project."> Map Relations
-  </span>
+	<span tooltip-placement="right"
+		tooltip="List of the map relations for this project."> Map
+		Relations </span>
 </h5>
 </accordion-heading> <pagination ng-show="focusProject.mapRelation.length > pageSize"
-  direction-links="false" boundary-links="true" total-items="pagedRelationCount"
-  items-per-page="pageSize" page="pageRelation"
-  on-select-page="getPagedRelations(page, relationFilter)"></pagination>
+	direction-links="false" boundary-links="true"
+	total-items="pagedRelationCount" items-per-page="pageSize"
+	page="pageRelation"
+	on-select-page="getPagedRelations(page, relationFilter)"></pagination>
 <form>
-  <input type="text" ng-model="relationFilter"
-    ng-change="getPagedRelations(1, relationFilter)"> <input
-    type="submit" value="Reset Filter" ng-click="resetRelationFilter()">
+	<input type="text" ng-model="relationFilter"
+		ng-change="getPagedRelations(1, relationFilter)"> <input
+		type="submit" value="Reset Filter" ng-click="resetRelationFilter()">
 </form>
 
 <table width="100%" class="table pure-table">
-  <thead>
-    <tr>
-      <th>Id</th>
-      <th><div tooltip-placement="top"
-          tooltip="Short code abbreviation for this relation, if applicable">Code</div>
-      </td>
-      <th><div tooltip-placement="top"
-          tooltip="The full name of this map relation">Name</div>
-      </td>
-      <th><div tooltip-placement="top"
-          tooltip="Whether this relation can be applied to entries with no target">Allowable
-          for Null Target</div>
-      </td>
-      <th><div tooltip-placement="top"
-          tooltip="If true, this relation is applied automatically and cannot be assigned directly by the user">Computed</div>
-      </td>
-    </tr>
-  </thead>
-  <tbody ng-repeat="relation in pagedRelation | orderBy: 'name'"
-    style="border: 2px solid #ccc;">
-    <tr>
-      <td>{{relation.terminologyId}}</td>
-      <td><span ng-show="relation.abbreviation != 'none'">{{relation.abbreviation}}</span></td>
-      <td>{{relation.name}}</td>
-      <td>{{relation.isAllowableForNullTarget}}</td>
-      <td>{{relation.isComputed}}</td>
-      <td ng-show="editModeEnabled == true"><i
-        class="glyphicon glyphicon-remove" ng-click="deleteRelation(relation)"></i></td>
-      <td ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
-    </tr>
+	<thead>
+		<tr>
+			<th>Id</th>
+			<th><div tooltip-placement="top"
+					tooltip="Short code abbreviation for this relation, if applicable">Code</div>
+			</td>
+			<th><div tooltip-placement="top"
+					tooltip="The full name of this map relation">Name</div>
+			</td>
+			<th><div tooltip-placement="top"
+					tooltip="Whether this relation can be applied to entries with no target">Allowable
+					for Null Target</div>
+			</td>
+			<th><div tooltip-placement="top"
+					tooltip="If true, this relation is applied automatically and cannot be assigned directly by the user">Computed</div>
+			</td>
+		</tr>
+	</thead>
+	<tbody ng-repeat="relation in pagedRelation | orderBy: 'name'"
+		style="border: 2px solid #ccc;">
+		<tr>
+			<td>{{relation.terminologyId}}</td>
+			<td><span ng-show="relation.abbreviation != 'none'">{{relation.abbreviation}}</span></td>
+			<td>{{relation.name}}</td>
+			<td>{{relation.isAllowableForNullTarget}}</td>
+			<td>{{relation.isComputed}}</td>
+			<td ng-show="editModeEnabled == true"><i
+				class="glyphicon glyphicon-remove"
+				ng-click="deleteRelation(relation)"></i></td>
+			<td ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
+		</tr>
 
-  </tbody>
+	</tbody>
 </table>
 
-<table ng-show="editModeEnabled == true" width="50%" class="table pure-table">
-  <thead>
-    <tr>
-      <th style="width: 97%;">Add Map Relation</th>
-      <th style="width: 3%;"></th>
-    </tr>
-  </thead>
-  <tbody
-    ng-repeat="relation in allowableMapRelations | elementFilter:focusProject.mapRelation">
-    <tr>
-      <td>{{relation.name}}</td>
-      <td><i class="glyphicon glyphicon-plus"
-        ng-click="addRelation(relation)"></i></td>
-    </tr>
-  </tbody>
+<table ng-show="editModeEnabled == true" width="50%"
+	class="table pure-table">
+	<thead>
+		<tr>
+			<th style="width: 97%;">Add Map Relation</th>
+			<th style="width: 3%;"></th>
+		</tr>
+	</thead>
+	<tbody
+		ng-repeat="relation in allowableMapRelations | elementFilter:focusProject.mapRelation">
+		<tr>
+			<td>{{relation.name}}</td>
+			<td><i class="glyphicon glyphicon-plus"
+				ng-click="addRelation(relation)"></i></td>
+		</tr>
+	</tbody>
 </table>
 
 <form ng-show="editModeEnabled == true">
-  <div style="margin-top: 15px;">
-    <b>Create New Map Relation</b>
-  </div>
-  <hr>
-  <table class="table pure-table">
-    <thead>
-      <tr>
-        <th style="width: 25%;"></th>
-        <th style="width: 75%;"></th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Relation Terminology Id</td>
-        <td><input id="newRelationTerminologyId" type="text"
-          ng-model="newRelationTerminologyId"></td>
-      </tr>
-      <tr>
-        <td>Relation Code</td>
-        <td><input id="newRelationAbbreviation" type="text"
-          ng-model="newRelationAbbreviation"></td>
-      </tr>
-      <tr>
-        <td>Relation Name</td>
-        <td><input id="newRelationName" type="text"
-          ng-model="newRelationName"></td>
-      </tr>
-      <tr>
-        <td>Allowable for Null Target</td>
-        <td><select ng-model="newRelationAllowableForNullTarget"
-          ng-options="item for item in [true, false]">
-        </select></td>
-      </tr>
-      <tr>
-        <td>Is Computed</td>
-        <td><select ng-model="newRelationIsComputed"
-          ng-options="item for item in [true, false]">
-        </select></td>
-      </tr>
-      <tr>
-        <td><button class="btn btn-sm btn-primary"
-            ng-click="submitNewMapRelation(newRelationName, newRelationAbbreviation, newRelationTerminologyId, 
+	<div style="margin-top: 15px;">
+		<b>Create New Map Relation</b>
+	</div>
+	<hr>
+	<table class="table pure-table">
+		<thead>
+			<tr>
+				<th style="width: 25%;"></th>
+				<th style="width: 75%;"></th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>Relation Terminology Id</td>
+				<td><input id="newRelationTerminologyId" type="text"
+					ng-model="newRelationTerminologyId"></td>
+			</tr>
+			<tr>
+				<td>Relation Code</td>
+				<td><input id="newRelationAbbreviation" type="text"
+					ng-model="newRelationAbbreviation"></td>
+			</tr>
+			<tr>
+				<td>Relation Name</td>
+				<td><input id="newRelationName" type="text"
+					ng-model="newRelationName"></td>
+			</tr>
+			<tr>
+				<td>Allowable for Null Target</td>
+				<td><select ng-model="newRelationAllowableForNullTarget"
+					ng-options="item for item in [true, false]">
+				</select></td>
+			</tr>
+			<tr>
+				<td>Is Computed</td>
+				<td><select ng-model="newRelationIsComputed"
+					ng-options="item for item in [true, false]">
+				</select></td>
+			</tr>
+			<tr>
+				<td><button class="btn btn-sm btn-primary"
+						ng-click="submitNewMapRelation(newRelationName, newRelationAbbreviation, newRelationTerminologyId, 
         newRelationAllowableForNullTarget, newRelationIsComputed); 
         newRelationName = ''; newRelationAbbreviation = ''; newRelationTerminologyId = '';
         newRelationAllowableForNullTarget = false; newRelationIsComputed = false;">Submit</button></td>
-        <td></td>
-      </tr>
-    </tbody>
-  </table>
+				<td></td>
+			</tr>
+		</tbody>
+	</table>
 </form>
 </accordion-group> <accordion-group
-  ng-show="true || focusProject.reportDefinition.length > 0 || editModeEnabled == true">
+	ng-show="true || focusProject.reportDefinition.length > 0 || editModeEnabled == true">
 <accordion-heading>
 <h5>
-  <span tooltip-placement="right"
-    tooltip="List of the report definitions for this project."> Report
-    Definitions </span>
+	<span tooltip-placement="right"
+		tooltip="List of the report definitions for this project.">
+		Report Definitions </span>
 </h5>
 
 </accordion-heading> <pagination ng-show="focusProject.reportDefinition.length > pageSize"
-  direction-links="false" boundary-links="true"
-  total-items="pagedReportDefinitionCount" items-per-page="pageSize"
-  page="pageDefinition"
-  on-select-page="getPagedReportDefinitions(page, reportDefinitionFilter)"></pagination>
+	direction-links="false" boundary-links="true"
+	total-items="pagedReportDefinitionCount" items-per-page="pageSize"
+	page="pageDefinition"
+	on-select-page="getPagedReportDefinitions(page, reportDefinitionFilter)"></pagination>
 <form>
-  <input type="text" ng-model="reportDefinitionFilter"
-    ng-change="getPagedReportDefinitions(1, reportDefinitionFilter)"> <input
-    type="submit" value="Reset Filter"
-    ng-click="resetReportDefinitionFilter(); reportDefinitionFilter = '';">
+	<input type="text" ng-model="reportDefinitionFilter"
+		ng-change="getPagedReportDefinitions(1, reportDefinitionFilter)">
+	<input type="submit" value="Reset Filter"
+		ng-click="resetReportDefinitionFilter(); reportDefinitionFilter = '';">
 </form>
 
 
 <table width="100%" class="table pure-table">
-  <thead>
-    <tr>
-      <th><div tooltip-placement="top" tooltip="Name of report definition">Name</div>
-      <th><div tooltip-placement="top"
-          tooltip="Required role to view results of this report definition">Required
-          Role</div></th>
+	<thead>
+		<tr>
+			<th><div tooltip-placement="top"
+					tooltip="Name of report definition">Name</div>
+			<th><div tooltip-placement="top"
+					tooltip="Required role to view results of this report definition">Required
+					Role</div></th>
 
-      <th><div tooltip-placement="top"
-          tooltip="Whether this report is calculated as the difference between two other reports">Diff
-          Report</div></th>
-    </tr>
-  </thead>
-  <tbody
-    ng-repeat="definition in pagedReportDefinition | orderBy: 'name'| filter: {qacheck:false}"
-    style="border: 2px solid #ccc;">
-    <tr>
-      <td>{{definition.name}}</td>
-      <td>{{definition.roleRequired}}</td>
-      <td>{{definition.diffReport == true ? 'true' : 'false'}}</td>
-      <td ng-show="editModeEnabled == true"><i
-        class="glyphicon glyphicon-remove"
-        ng-click="deleteReportDefinition(definition)"></i></td>
-      <td ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
-    </tr>
+			<th><div tooltip-placement="top"
+					tooltip="Whether this report is calculated as the difference between two other reports">Diff
+					Report</div></th>
+		</tr>
+	</thead>
+	<tbody
+		ng-repeat="definition in pagedReportDefinition | orderBy: 'name'| filter: {qacheck:false}"
+		style="border: 2px solid #ccc;">
+		<tr>
+			<td>{{definition.name}}</td>
+			<td>{{definition.roleRequired}}</td>
+			<td>{{definition.diffReport == true ? 'true' : 'false'}}</td>
+			<td ng-show="editModeEnabled == true"><i
+				class="glyphicon glyphicon-remove"
+				ng-click="deleteReportDefinition(definition)"></i></td>
+			<td ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
+		</tr>
 
-  </tbody>
+	</tbody>
 </table>
 
-<table ng-show="editModeEnabled == true" width="50%" class="table pure-table">
-  <thead>
-    <tr>
-      <th style="width: 97%;">Add Report Definition</th>
-      <th style="width: 3%;"></th>
-    </tr>
-  </thead>
-  <tbody
-    ng-repeat="definition in allowableReportDefinitions | elementFilter:focusProject.reportDefinition | filter: {qacheck:false}">
-    <tr>
-      <td>{{definition.name}}</td>
-      <td><i class="glyphicon glyphicon-plus"
-        ng-click="addReportDefinition(definition)"></i></td>
-    </tr>
-  </tbody>
+<table ng-show="editModeEnabled == true" width="50%"
+	class="table pure-table">
+	<thead>
+		<tr>
+			<th style="width: 97%;">Add Report Definition</th>
+			<th style="width: 3%;"></th>
+		</tr>
+	</thead>
+	<tbody
+		ng-repeat="definition in allowableReportDefinitions | elementFilter:focusProject.reportDefinition | filter: {qacheck:false}">
+		<tr>
+			<td>{{definition.name}}</td>
+			<td><i class="glyphicon glyphicon-plus"
+				ng-click="addReportDefinition(definition)"></i></td>
+		</tr>
+	</tbody>
 </table>
 
 </accordion-group> <accordion-group
-  ng-show="true || focusProject.reportDefinition.length > 0 || editModeEnabled == true">
+	ng-show="true || focusProject.reportDefinition.length > 0 || editModeEnabled == true">
 <accordion-heading>
 <h5>
-  <span tooltip-placement="right"
-    tooltip="List of the qa check definitions for this project."> QA
-    Check Definitions </span>
+	<span tooltip-placement="right"
+		tooltip="List of the qa check definitions for this project.">
+		QA Check Definitions </span>
 </h5>
 </accordion-heading> <pagination ng-show="focusProject.reportDefinition.length > pageSize"
-  direction-links="false" boundary-links="true"
-  total-items="pagedQACheckDefinitionCount" items-per-page="pageSize"
-  page="pagedQACheckDefinition"
-  on-select-page="getPagedQACheckDefinitions(page, qaCheckDefinitionFilter)"></pagination>
+	direction-links="false" boundary-links="true"
+	total-items="pagedQACheckDefinitionCount" items-per-page="pageSize"
+	page="pagedQACheckDefinition"
+	on-select-page="getPagedQACheckDefinitions(page, qaCheckDefinitionFilter)"></pagination>
 <form>
-  <input type="text" ng-model="qaCheckDefinitionFilter"
-    ng-change="getPagedQACheckDefinitions(1, qaCheckDefinitionFilter)"> <input
-    type="submit" value="Reset Filter"
-    ng-click="resetQACheckDefinitionFilter(); qaCheckDefinitionFilter = '';">
+	<input type="text" ng-model="qaCheckDefinitionFilter"
+		ng-change="getPagedQACheckDefinitions(1, qaCheckDefinitionFilter)">
+	<input type="submit" value="Reset Filter"
+		ng-click="resetQACheckDefinitionFilter(); qaCheckDefinitionFilter = '';">
 </form>
 
 
 <table width="100%" class="table pure-table">
-  <thead>
-    <tr>
-      <th><div tooltip-placement="top" tooltip="Name of qa check definition">Name</div>
-      <th><div tooltip-placement="top"
-          tooltip="Required role to view results of this qa check definition">Required
-          Role</div></th>
-    </tr>
-  </thead>
-  <tbody
-    ng-repeat="definition in pagedQACheckDefinition | orderBy: 'name'"
-    style="border: 2px solid #ccc;">
-    <tr>
-      <td>{{definition.name}}</td>
-      <td>{{definition.roleRequired}}</td>
-      <td ng-show="editModeEnabled == true"><i
-        class="glyphicon glyphicon-remove"
-        ng-click="deleteQACheckDefinition(definition)"></i></td>
-      <td ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
-    </tr>
+	<thead>
+		<tr>
+			<th><div tooltip-placement="top"
+					tooltip="Name of qa check definition">Name</div>
+			<th><div tooltip-placement="top"
+					tooltip="Required role to view results of this qa check definition">Required
+					Role</div></th>
+		</tr>
+	</thead>
+	<tbody
+		ng-repeat="definition in pagedQACheckDefinition | orderBy: 'name'"
+		style="border: 2px solid #ccc;">
+		<tr>
+			<td>{{definition.name}}</td>
+			<td>{{definition.roleRequired}}</td>
+			<td ng-show="editModeEnabled == true"><i
+				class="glyphicon glyphicon-remove"
+				ng-click="deleteQACheckDefinition(definition)"></i></td>
+			<td ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
+		</tr>
 
-  </tbody>
+	</tbody>
 </table>
 
-<table ng-show="editModeEnabled == true" width="50%" class="table pure-table">
-  <thead>
-    <tr>
-      <th style="width: 97%;">Add QA Check Definition</th>
-      <th style="width: 3%;"></th>
-    </tr>
-  </thead>
-  <tbody
-    ng-repeat="definition in allowableQACheckDefinitions | elementFilter:focusProject.qaCheckDefinition">
-    <tr>
-      <td>{{definition.name}}</td>
-      <td><i class="glyphicon glyphicon-plus"
-        ng-click="addQACheckDefinition(definition)"></i></td>
-    </tr>
-  </tbody>
+<table ng-show="editModeEnabled == true" width="50%"
+	class="table pure-table">
+	<thead>
+		<tr>
+			<th style="width: 97%;">Add QA Check Definition</th>
+			<th style="width: 3%;"></th>
+		</tr>
+	</thead>
+	<tbody
+		ng-repeat="definition in allowableQACheckDefinitions | elementFilter:focusProject.qaCheckDefinition">
+		<tr>
+			<td>{{definition.name}}</td>
+			<td><i class="glyphicon glyphicon-plus"
+				ng-click="addQACheckDefinition(definition)"></i></td>
+		</tr>
+	</tbody>
 </table>
 
 </accordion-group> <accordion-group
-  ng-show="focusProject.mapPrinciple.length > 0 || editModeEnabled == true">
+	ng-show="focusProject.mapPrinciple.length > 0 || editModeEnabled == true">
 <accordion-heading>
 <h5>
-  <span tooltip-placement="right"
-    tooltip="List of the map principles for this project."> Map
-    Principles </span>
+	<span tooltip-placement="right"
+		tooltip="List of the map principles for this project."> Map
+		Principles </span>
 </h5>
 </accordion-heading> <pagination ng-show="focusProject.mapPrinciple.length > pageSize"
-  direction-links="false" boundary-links="true"
-  total-items="pagedPrincipleCount" items-per-page="pageSize"
-  page="pagePrinciple"
-  on-select-page="getPagedPrinciples(page, principleFilter)"></pagination>
+	direction-links="false" boundary-links="true"
+	total-items="pagedPrincipleCount" items-per-page="pageSize"
+	page="pagePrinciple"
+	on-select-page="getPagedPrinciples(page, principleFilter)"></pagination>
 <form>
-  <input type="text" ng-model="principleFilter"
-    ng-change="getPagedPrinciples(1, principleFilter)"> <input
-    type="submit" value="Reset Filter" ng-click="resetPrincipleFilter()">
+	<input type="text" ng-model="principleFilter"
+		ng-change="getPagedPrinciples(1, principleFilter)"> <input
+		type="submit" value="Reset Filter" ng-click="resetPrincipleFilter()">
 </form>
 
 <table width="100%" class="table pure-table">
-  <thead>
-    <tr>
-      <th style="width: 10%;">Id</th>
-      <th style="width: 87%;">Principle Name</th>
-      <th style="width: 3%;"></th>
-    </tr>
+	<thead>
+		<tr>
+			<th style="width: 10%;">Id</th>
+			<th style="width: 87%;">Principle Name</th>
+			<th style="width: 3%;"></th>
+		</tr>
 
-  </thead>
+	</thead>
 
-  <tbody ng-repeat="principle in pagedPrinciple | orderBy:principleId"
-    style="border: 2px solid #ccc;">
-    <tr>
-      <td>{{principle.principleId}}</td>
-      <td ng-show="editModeEnabled == false">
-        <div class="dropdown">
-          <a class="dropdown-toggle"> <i
-            class="glyphicon glyphicon-info-sign"></i>
-          </a> &nbsp <span>{{principle.name}} </span> <span class="dropdown-menu">
-            <p>Reference: {{principle.sectionRef}}</p>
-            <p ng-bind-html="to_trusted(principle.detail)"></p>
-          </span>
-        </div>
-      </td>
-      <td ng-show="editModeEnabled == true"><input
-        ng-model="principle.name" style="width: 70%;"
-        ng-change="updatePrinciple(principle)"></input> <input
-        ng-model="principle.sectionRef" style="width: 70%;"
-        ng-change="updatePrinciple(principle)"></input> <input
-        ng-model="principle.detail" style="width: 100%;"
-        ng-change="updatePrinciple(principle)"></input></td>
-      <td ng-show="editModeEnabled == true"><i
-        class="glyphicon glyphicon-remove" ng-click="deletePrinciple(principle)"></i></td>
-      <td ng-show="editModeEnabled == false"></td>
-    </tr>
-  </tbody>
+	<tbody ng-repeat="principle in pagedPrinciple | orderBy:principleId"
+		style="border: 2px solid #ccc;">
+		<tr>
+			<td>{{principle.principleId}}</td>
+			<td ng-show="editModeEnabled == false">
+				<div class="dropdown">
+					<a class="dropdown-toggle"> <i
+						class="glyphicon glyphicon-info-sign"></i>
+					</a> &nbsp <span>{{principle.name}} </span> <span class="dropdown-menu">
+						<p>Reference: {{principle.sectionRef}}</p>
+						<p ng-bind-html="to_trusted(principle.detail)"></p>
+					</span>
+				</div>
+			</td>
+			<td ng-show="editModeEnabled == true"><input
+				ng-model="principle.name" style="width: 70%;"
+				ng-change="updatePrinciple(principle)"></input> <input
+				ng-model="principle.sectionRef" style="width: 70%;"
+				ng-change="updatePrinciple(principle)"></input> <input
+				ng-model="principle.detail" style="width: 100%;"
+				ng-change="updatePrinciple(principle)"></input></td>
+			<td ng-show="editModeEnabled == true"><i
+				class="glyphicon glyphicon-remove"
+				ng-click="deletePrinciple(principle)"></i></td>
+			<td ng-show="editModeEnabled == false"></td>
+		</tr>
+	</tbody>
 </table>
 
-<table ng-show="editModeEnabled == true" width="50%" class="table pure-table">
-  <thead>
-    <tr>
-      <th style="width: 97%;">Add Map Principle</th>
-      <th style="width: 3%;"></th>
-    </tr>
-  </thead>
-  <tbody
-    ng-repeat="principle in allowableMapPrinciples | elementFilter:focusProject.mapPrinciple">
-    <tr>
-      <td>{{principle.name}}</td>
-      <td><i class="glyphicon glyphicon-plus"
-        ng-click="addPrinciple(principle)"></i></td>
-    </tr>
-  </tbody>
+<table ng-show="editModeEnabled == true" width="50%"
+	class="table pure-table">
+	<thead>
+		<tr>
+			<th style="width: 97%;">Add Map Principle</th>
+			<th style="width: 3%;"></th>
+		</tr>
+	</thead>
+	<tbody
+		ng-repeat="principle in allowableMapPrinciples | elementFilter:focusProject.mapPrinciple">
+		<tr>
+			<td>{{principle.name}}</td>
+			<td><i class="glyphicon glyphicon-plus"
+				ng-click="addPrinciple(principle)"></i></td>
+		</tr>
+	</tbody>
 </table>
 
 <form ng-show="editModeEnabled == true">
-  <div style="margin-top: 15px;">
-    <b>Create New Map Principle</b>
-  </div>
-  <hr>
-  <table class="table pure-table" style="margin-bottom: 5px;">
-    <thead>
-      <tr>
-        <th style="width: 25%;"></th>
-        <th style="width: 75%;"></th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Principle Name</td>
-        <td><input id="newPrincipleName" style="width: 100%;" type="text"
-          ng-model="newPrincipleName"></td>
-      </tr>
-      <tr>
-        <td>Principle Id</td>
-        <td><input id="newPrincipleId" style="width: 100%;" type="text"
-          ng-model="newPrincipleId"></td>
-      </tr>
-      <tr>
-        <td>Principle Detail</td>
-        <td><input id="newPrincipleDetail" style="width: 100%;" type="text"
-          ng-model="newPrincipleDetail"></td>
-      </tr>
-      <tr>
-        <td>Principle Section Ref</td>
-        <td><input id="newPrincipleSectionRef" style="width: 100%;"
-          type="text" ng-model="newPrincipleSectionRef"></td>
-      </tr>
-      <tr>
-        <td><button class="btn btn-sm btn-primary style="
-            margin-bottom:15px;"" 
+	<div style="margin-top: 15px;">
+		<b>Create New Map Principle</b>
+	</div>
+	<hr>
+	<table class="table pure-table" style="margin-bottom: 5px;">
+		<thead>
+			<tr>
+				<th style="width: 25%;"></th>
+				<th style="width: 75%;"></th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>Principle Name</td>
+				<td><input id="newPrincipleName" style="width: 100%;"
+					type="text" ng-model="newPrincipleName"></td>
+			</tr>
+			<tr>
+				<td>Principle Id</td>
+				<td><input id="newPrincipleId" style="width: 100%;" type="text"
+					ng-model="newPrincipleId"></td>
+			</tr>
+			<tr>
+				<td>Principle Detail</td>
+				<td><input id="newPrincipleDetail" style="width: 100%;"
+					type="text" ng-model="newPrincipleDetail"></td>
+			</tr>
+			<tr>
+				<td>Principle Section Ref</td>
+				<td><input id="newPrincipleSectionRef" style="width: 100%;"
+					type="text" ng-model="newPrincipleSectionRef"></td>
+			</tr>
+			<tr>
+				<td><button class="btn btn-sm btn-primary style="
+						margin-bottom:15px;"" 
         ng-click="submitNewMapPrinciple(newPrincipleName, newPrincipleId, newPrincipleDetail, newPrincipleSectionRef);
          newPrincipleName = ''; newPrincipleId = ''; newPrincipleDetail = ''; newPrincipleSectionRef = '';">Submit</button></td>
-        <td></td>
-      </tr>
-    </tbody>
-  </table>
+				<td></td>
+			</tr>
+		</tbody>
+	</table>
 </form>
 <hr>
 
 <div ng-show="editModeEnabled == true">
-  <div style="margin-top: 15px;">
-    <b>Add New Map Principle Document</b>
-  </div>
-  <hr>
-  <input type="file" ng-file-select="onFileSelect($files)">
+	<div style="margin-top: 15px;">
+		<b>Add New Map Principle Document</b>
+	</div>
+	<hr>
+	<input type="file" ng-file-select="onFileSelect($files)">
 </div>
 <div
-  ng-show="focusProject.mapPrincipleSourceDocument != null &&
+	ng-show="focusProject.mapPrincipleSourceDocument != null &&
                     focusProject.mapPrincipleSourceDocument != ''">
-  Principles taken from <a
-    href="doc/{{focusProject.mapPrincipleSourceDocument}}" target="_blank">Map
-    Principles Document</a>
+	Principles taken from <a
+		href="doc/{{focusProject.mapPrincipleSourceDocument}}" target="_blank">Map
+		Principles Document</a>
 </div>
 </accordion-group> <accordion-group
-  ng-show="focusProject.mapAgeRange.length > 0 || editModeEnabled == true">
+	ng-show="focusProject.mapAgeRange.length > 0 || editModeEnabled == true">
 <accordion-heading>
 <h5>
-  <span tooltip-placement="right"
-    tooltip="List of the preset age ranges used for rule construction for this project.">
-    Preset Age Ranges </span>
+	<span tooltip-placement="right"
+		tooltip="List of the preset age ranges used for rule construction for this project.">
+		Preset Age Ranges </span>
 </h5>
 </accordion-heading>
 <table width="100%" class="table pure-table"" >
-  <thead>
-    <tr>
-      <th style="width: 30%;">Name</th>
-      <th style="width: 35%;">Lower Bound</th>
-      <th style="width: 35%;">Upper Bound</th>
-    </tr>
-  </thead>
+	<thead>
+		<tr>
+			<th style="width: 30%;">Name</th>
+			<th style="width: 35%;">Lower Bound</th>
+			<th style="width: 35%;">Upper Bound</th>
+		</tr>
+	</thead>
 
 
-  <tbody ng-repeat="ageRange in focusProject.mapAgeRange | orderBy: 'name'">
+	<tbody
+		ng-repeat="ageRange in focusProject.mapAgeRange | orderBy: 'name'">
 
-    <tr>
-      <td>{{ageRange.name}}</td>
-      <td>
-        <div ng-show="ageRange.lowerValue != '-1'">
-          <span
-            ng-show="ageRange.lowerInclusive == true && ageRange.lowerValue != null">≥</span>
-          <span
-            ng-show="ageRange.lowerInclusive == false && ageRange.lowerValue != null">></span>
+		<tr>
+			<td>{{ageRange.name}}</td>
+			<td>
+				<div ng-show="ageRange.lowerValue != '-1'">
+					<span
+						ng-show="ageRange.lowerInclusive == true && ageRange.lowerValue != null">≥</span>
+					<span
+						ng-show="ageRange.lowerInclusive == false && ageRange.lowerValue != null">></span>
 
-          {{ageRange.lowerValue}} {{ageRange.lowerUnits}}
-        </div>
-      </td>
-      <td>
+					{{ageRange.lowerValue}} {{ageRange.lowerUnits}}
+				</div>
+			</td>
+			<td>
 
-        <div ng-show="ageRange.upperValue != '-1'">
+				<div ng-show="ageRange.upperValue != '-1'">
 
-          <span
-            ng-show="ageRange.upperInclusive == true && ageRange.upperValue != null">≤</span>
-          <span
-            ng-show="ageRange.upperInclusive == false && ageRange.upperValue != null"><</span>
+					<span
+						ng-show="ageRange.upperInclusive == true && ageRange.upperValue != null">≤</span>
+					<span
+						ng-show="ageRange.upperInclusive == false && ageRange.upperValue != null"><</span>
 
-          {{ageRange.upperValue}} {{ageRange.upperUnits}}
-        </div>
-      </td>
-      <td ng-show="editModeEnabled == true"><i
-        class="glyphicon glyphicon-remove" ng-click="deleteAgeRange(ageRange)"></i></td>
-      <td ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
-    </tr>
-  </tbody>
+					{{ageRange.upperValue}} {{ageRange.upperUnits}}
+				</div>
+			</td>
+			<td ng-show="editModeEnabled == true"><i
+				class="glyphicon glyphicon-remove"
+				ng-click="deleteAgeRange(ageRange)"></i></td>
+			<td ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
+		</tr>
+	</tbody>
 </table>
 
-<table ng-show="editModeEnabled == true" width="50%" class="table pure-table">
-  <thead>
-    <tr>
-      <th style="width: 97%;">Add Map Age Range</th>
-      <th style="width: 3%;"></th>
-    </tr>
-  </thead>
-  <tbody
-    ng-repeat="ageRange in allowableMapAgeRanges | elementFilter:focusProject.mapAgeRange">
-    <tr>
-      <td>{{ageRange.name}}</td>
-      <td><i class="glyphicon glyphicon-plus"
-        ng-click="addAgeRange(ageRange)"></i></td>
-    </tr>
-  </tbody>
+<table ng-show="editModeEnabled == true" width="50%"
+	class="table pure-table">
+	<thead>
+		<tr>
+			<th style="width: 97%;">Add Map Age Range</th>
+			<th style="width: 3%;"></th>
+		</tr>
+	</thead>
+	<tbody
+		ng-repeat="ageRange in allowableMapAgeRanges | elementFilter:focusProject.mapAgeRange">
+		<tr>
+			<td>{{ageRange.name}}</td>
+			<td><i class="glyphicon glyphicon-plus"
+				ng-click="addAgeRange(ageRange)"></i></td>
+		</tr>
+	</tbody>
 </table>
 
 <form ng-show="editModeEnabled == true" name="ageRangeForm">
-  <div style="margin-top: 15px;">
-    <b>Create New Map Age Range</b>
-  </div>
-  <hr>
-  <table class="table pure-table">
-    <thead>
-      <tr>
-        <th style="width: 25%;"></th>
-        <th style="width: 75%;"></th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Age Range Name</td>
-        <td><input id="newAgeRangeName" type="text"
-          ng-model="newAgeRangeName"></td>
-      </tr>
-      <tr>
-        <td>Age Range Lower Value</td>
-        <td><input id="newAgeRangeLowerValue" type="text"
-          ng-model="newAgeRangeLowerValue"></td>
-      </tr>
-      <tr>
-        <td>Age Range Lower Units</td>
-        <td><input id="newAgeRangeLowerUnits" type="text"
-          ng-model="newAgeRangeLowerUnits"></td>
-      </tr>
-      <tr>
-        <td>Age Range Lower Inclusive</td>
-        <td><select ng-model="newAgeRangeLowerInclusive"
-          ng-options="item for item in [true, false]">
-        </select></td>
-      </tr>
-      <tr>
-        <td>Age Range Upper Value</td>
-        <td><input id="newAgeRangeUpperValue" type="text"
-          ng-model="newAgeRangeUpperValue"></td>
-      </tr>
-      <tr>
-        <td>Age Range Upper Units</td>
-        <td><input id="newAgeRangeUpperUnits" type="text"
-          ng-model="newAgeRangeUpperUnits"></td>
-      </tr>
-      <tr>
-        <td>Age Range Upper Inclusive</td>
-        <td><select ng-model="newAgeRangeUpperInclusive"
-          ng-options="item for item in [true, false]">
-        </select></td>
-      </tr>
-      <tr>
-        <td><button class="btn btn-sm btn-primary"
-            ng-click="submitNewMapAgeRange(newAgeRangeName, newAgeRangeLowerInclusive, newAgeRangeLowerUnits,
+	<div style="margin-top: 15px;">
+		<b>Create New Map Age Range</b>
+	</div>
+	<hr>
+	<table class="table pure-table">
+		<thead>
+			<tr>
+				<th style="width: 25%;"></th>
+				<th style="width: 75%;"></th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>Age Range Name</td>
+				<td><input id="newAgeRangeName" type="text"
+					ng-model="newAgeRangeName"></td>
+			</tr>
+			<tr>
+				<td>Age Range Lower Value</td>
+				<td><input id="newAgeRangeLowerValue" type="text"
+					ng-model="newAgeRangeLowerValue"></td>
+			</tr>
+			<tr>
+				<td>Age Range Lower Units</td>
+				<td><input id="newAgeRangeLowerUnits" type="text"
+					ng-model="newAgeRangeLowerUnits"></td>
+			</tr>
+			<tr>
+				<td>Age Range Lower Inclusive</td>
+				<td><select ng-model="newAgeRangeLowerInclusive"
+					ng-options="item for item in [true, false]">
+				</select></td>
+			</tr>
+			<tr>
+				<td>Age Range Upper Value</td>
+				<td><input id="newAgeRangeUpperValue" type="text"
+					ng-model="newAgeRangeUpperValue"></td>
+			</tr>
+			<tr>
+				<td>Age Range Upper Units</td>
+				<td><input id="newAgeRangeUpperUnits" type="text"
+					ng-model="newAgeRangeUpperUnits"></td>
+			</tr>
+			<tr>
+				<td>Age Range Upper Inclusive</td>
+				<td><select ng-model="newAgeRangeUpperInclusive"
+					ng-options="item for item in [true, false]">
+				</select></td>
+			</tr>
+			<tr>
+				<td><button class="btn btn-sm btn-primary"
+						ng-click="submitNewMapAgeRange(newAgeRangeName, newAgeRangeLowerInclusive, newAgeRangeLowerUnits,
          newAgeRangeLowerValue, newAgeRangeUpperInclusive, newAgeRangeUpperUnits, newAgeRangeUpperValue);
          newAgeRangeName = ''; newAgeRangeLowerInclusive = ''; newAgeRangeLowerUnits = '';
          newAgeRangeLowerValue = ''; newAgeRangeUpperInclusive = ''; newAgeRangeUpperUnits = '';
          newAgeRangeUpperValue = '';">Submit</button></td>
-        <td></td>
-      </tr>
-    </tbody>
-  </table>
+				<td></td>
+			</tr>
+		</tbody>
+	</table>
 </form>
 
 </accordion-group> <accordion-group
-  ng-show="focusProject.errorMessages.length > 0 || editModeEnabled == true">
+	ng-show="focusProject.errorMessages.length > 0 || editModeEnabled == true">
 <accordion-heading>
 <h5>
-  <span tooltip-placement="right"
-    tooltip="List of the potential error messages available for this project.">
-    Error Messages </span>
+	<span tooltip-placement="right"
+		tooltip="List of the potential error messages available for this project.">
+		Error Messages </span>
 </h5>
 </accordion-heading>
 <table width="100%" class="table pure-table"" >
-  <thead>
-    <tr>
-      <th style="width: 95%;">Error Message</th>
-    </tr>
-  </thead>
-  <tbody
-    ng-repeat="errorMessage in focusProject.errorMessages | orderBy: 'toString()'">
+	<thead>
+		<tr>
+			<th style="width: 95%;">Error Message</th>
+		</tr>
+	</thead>
+	<tbody
+		ng-repeat="errorMessage in focusProject.errorMessages | orderBy: 'toString()'">
 
-    <tr>
-      <td>{{errorMessage}}</td>
+		<tr>
+			<td>{{errorMessage}}</td>
 
-      <td ng-show="editModeEnabled == true"><i
-        class="glyphicon glyphicon-remove"
-        ng-click="deleteErrorMessage(errorMessage)"></i></td>
-      <td ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
-    </tr>
-  </tbody>
+			<td ng-show="editModeEnabled == true"><i
+				class="glyphicon glyphicon-remove"
+				ng-click="deleteErrorMessage(errorMessage)"></i></td>
+			<td ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
+		</tr>
+	</tbody>
 </table>
 
 <form ng-show="editModeEnabled == true" name="errorMessageForm">
-  <div style="margin-top: 15px;">
-    <b>Create New Error Message</b>
-  </div>
-  <table class="table pure-table">
-    <thead>
-      <tr>
-        <th style="width: 25%;"></th>
-        <th style="width: 75%;"></th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Error Message</td>
-        <td><input id="newErrorMessage" type="text"
-          ng-model="newErrorMessage"></td>
-      </tr>
+	<div style="margin-top: 15px;">
+		<b>Create New Error Message</b>
+	</div>
+	<table class="table pure-table">
+		<thead>
+			<tr>
+				<th style="width: 25%;"></th>
+				<th style="width: 75%;"></th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>Error Message</td>
+				<td><input id="newErrorMessage" type="text"
+					ng-model="newErrorMessage"></td>
+			</tr>
 
-      <tr>
-        <td><button class="btn btn-sm btn-primary"
-            ng-click="submitNewErrorMessage(newErrorMessage);
+			<tr>
+				<td><button class="btn btn-sm btn-primary"
+						ng-click="submitNewErrorMessage(newErrorMessage);
          newErrorMessage = '';">Submit</button></td>
-        <td></td>
-      </tr>
-    </tbody>
-  </table>
+				<td></td>
+			</tr>
+		</tbody>
+	</table>
 </form>
 
 </accordion-group> <accordion-group> <accordion-heading>
 <h5>
-  <span tooltip-placement="right"
-    tooltip="List of the concepts in scope for this project."> Scope
-    Concepts </span>
+	<span tooltip-placement="right"
+		tooltip="List of the concepts in scope for this project.">
+		Scope Concepts </span>
 </h5>
 </accordion-heading> <pagination direction-links="false" boundary-links="true"
-  total-items="pagedScopeConceptCount" items-per-page="pageSize"
-  max-size="maxSize" page="pageScopeConcept"
-  on-select-page="getPagedScopeConcepts(page)"></pagination> <!-- <form>
+	total-items="pagedScopeConceptCount" items-per-page="pageSize"
+	max-size="maxSize" page="pageScopeConcept"
+	on-select-page="getPagedScopeConcepts(page)"></pagination> <!-- <form>
       <input id="scopeConceptSearch" type="text" ng-model="scopeConceptFilter" ng-change="getPagedScopeConcepts(1)">
       <input type="submit" value="Reset Filter" ng-click="resetScopeConceptFilter()">
     </form>  -->
 
 <table width="100%" class="table pure-table">
-  <thead>
-    <tr>
-      <th style="width: 50%;">Scope Included Concepts</th>
-      <th style="width: 47%;">Default Preferred Name</th>
-      <th style="width: 3%;"></th>
-    </tr>
-  </thead>
-  <tbody ng-repeat="scopeConcept in pagedScopeConcept "
-    style="border: 2px solid #ccc;">
-    <tr>
-      <td>{{scopeConcept.terminologyId}}</td>
-      <td>{{scopeConcept.value}}</td>
-      <td ng-show="editModeEnabled == true"><i
-        class="glyphicon glyphicon-remove"
-        ng-click="deleteScopeIncludedConcept(scopeConcept)"></i></td>
-      <td ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
-    </tr>
+	<thead>
+		<tr>
+			<th style="width: 50%;">Scope Included Concepts</th>
+			<th style="width: 47%;">Default Preferred Name</th>
+			<th style="width: 3%;"></th>
+		</tr>
+	</thead>
+	<tbody ng-repeat="scopeConcept in pagedScopeConcept "
+		style="border: 2px solid #ccc;">
+		<tr>
+			<td>{{scopeConcept.terminologyId}}</td>
+			<td>{{scopeConcept.value}}</td>
+			<td ng-show="editModeEnabled == true"><i
+				class="glyphicon glyphicon-remove"
+				ng-click="deleteScopeIncludedConcept(scopeConcept)"></i></td>
+			<td ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
+		</tr>
 
-  </tbody>
+	</tbody>
 </table>
 
-<div ng-show="focusProject.scopeDescendantsFlag == true">Scope Descendants
-  Included</div>
+<div ng-show="focusProject.scopeDescendantsFlag == true">Scope
+	Descendants Included</div>
 <div ng-show="focusProject.scopeDescendantsFlag == false">Scope
-  Descendants Not Included</div>
+	Descendants Not Included</div>
 
 <div ng-show="editModeEnabled == true">
-  Scope Descendants Included <select
-    ng-model="focusProject.scopeDescendantsFlag" ng-change="updateMapProject()"
-    ng-options="item for item in [true, false]">
-  </select>
+	Scope Descendants Included <select
+		ng-model="focusProject.scopeDescendantsFlag"
+		ng-change="updateMapProject()"
+		ng-options="item for item in [true, false]">
+	</select>
 
-  <div style="margin-top: 15px;">
-    <b>Create New Scope Included Concept</b>
-  </div>
-  <hr>
-  <div style="margin-bottom: 5px;">
-    Concept Id: <input id="newScopeIncludedConceptId" type="text"
-      ng-model="newScopeIncludedConceptId">
-  </div>
-  <button class="btn btn-sm btn-primary"
-    ng-click="submitNewScopeIncludedConcept(newScopeIncludedConceptId);
-          newScopeIncludedConceptId = '';">Submit</button>
+	<div style="margin-top: 15px;">
+		<b>Create New Scope Included Concept(s)</b>
+	</div>
+	<hr>
+	<tabset> <tab heading="Add Concepts"> Enter concept
+	terminology ids, delimited by either whitespace or commas. <textarea
+		style="width: 100%; height: 100px" ng-model="scopeConceptsToAdd"></textarea>
+	<button class="btn btn-sm btn-primary"
+		ng-click="submitNewScopeIncludedConcepts(scopeConceptsToAdd)">Add</button>
+    <button class="btn btn-sm btn-warning"
+		ng-click="scopeConceptsToAdd = null">Clear</button>
+	</tab> <tab heading="Remove Concepts"> Enter concept terminology ids,
+	delimited by either whitespace or commas. <textarea
+		style="width: 100%; height: 100px" ng-model="scopeConceptsToRemove"></textarea>
+	<button class="btn btn-sm btn-primary"
+		ng-click="removeScopeIncludedConcepts(scopeConceptsToRemove)">Remove</button>
+	<button class="btn btn-sm btn-warning"
+		ng-click="scopeConceptsToRemove = null">Clear</button>
+	</tab> </tabset>
 </div>
 
 </accordion-group> <accordion-group> <accordion-heading>
 <h5>
-  <span tooltip-placement="right"
-    tooltip="List of the concepts excluded from scope for this project.">
-    Scope Excluded Concepts </span>
+	<span tooltip-placement="right"
+		tooltip="List of the concepts excluded from scope for this project.">
+		Scope Excluded Concepts </span>
 </h5>
 </accordion-heading> <pagination direction-links="false" boundary-links="true"
-  total-items="pagedScopeExcludedConceptCount" items-per-page="pageSize"
-  max-size="maxSize" page="pageScopeExcludedConcept"
-  on-select-page="getPagedScopeExcludedConcepts(page)"></pagination> <!--<form>
+	total-items="pagedScopeExcludedConceptCount" items-per-page="pageSize"
+	max-size="maxSize" page="pageScopeExcludedConcept"
+	on-select-page="getPagedScopeExcludedConcepts(page)"></pagination> <!--<form>
       <input id="scopeExcludedConceptSearch" type="text" ng-model="scopeExcludedConceptFilter" ng-change="getPagedScopeExcludedConcepts(1)">
       <input type="submit" value="Reset Filter" ng-click="resetScopeExcludedConceptFilter()">
     </form>  -->
 
 <table width="100%" class="table pure-table">
-  <thead>
-    <tr>
-      <th style="width: 50%;">Scope Excluded Concepts</th>
-      <th style="width: 47%;">Default Preferred Name</th>
-      <th style="width: 3%;"></th>
-    </tr>
-  </thead>
-  <tbody ng-repeat="scopeExcludedConcept in pagedScopeExcludedConcept "
-    style="border: 2px solid #ccc;">
-    <tr>
-      <td>{{scopeExcludedConcept.terminologyId}}</td>
-      <td>{{scopeExcludedConcept.value}}</td>
-      <td ng-show="editModeEnabled == true"><i
-        class="glyphicon glyphicon-remove"
-        ng-click="deleteScopeExcludedConcept(scopeExcludedConcept, pageScopeExcludedConcept)"></i>
-      </td>
-      <td ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
-    </tr>
-  </tbody>
+	<thead>
+		<tr>
+			<th style="width: 50%;">Scope Excluded Concepts</th>
+			<th style="width: 47%;">Default Preferred Name</th>
+			<th style="width: 3%;"></th>
+		</tr>
+	</thead>
+	<tbody ng-repeat="scopeExcludedConcept in pagedScopeExcludedConcept "
+		style="border: 2px solid #ccc;">
+		<tr>
+			<td>{{scopeExcludedConcept.terminologyId}}</td>
+			<td>{{scopeExcludedConcept.value}}</td>
+			<td ng-show="editModeEnabled == true"><i
+				class="glyphicon glyphicon-remove"
+				ng-click="deleteScopeExcludedConcept(scopeExcludedConcept, pageScopeExcludedConcept)"></i>
+			</td>
+			<td ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
+		</tr>
+	</tbody>
 </table>
 
-<div ng-show="editModeEnabled == false || (editModeEnabled == true)">
-  <div ng-show="focusProject.scopeExcludedDescendantsFlag == true">Scope
-    Descendants Included</div>
-  <div ng-show="focusProject.scopeExcludedDescendantsFlag == false">Scope
-    Descendants Not Included</div>
+<div>
+	<div ng-show="focusProject.scopeExcludedDescendantsFlag == true">Scope
+		Descendants Included</div>
+	<div ng-show="focusProject.scopeExcludedDescendantsFlag == false">Scope
+		Descendants Not Included</div>
 </div>
 
 <div ng-show="editModeEnabled == true">
-  Scope Descendants Included <select
-    ng-model="focusProject.scopeExcludedDescendantsFlag"
-    ng-change="updateMapProject()" ng-options="item for item in [true, false]">
-  </select>
+	Scope Descendants Included <select
+		ng-model="focusProject.scopeExcludedDescendantsFlag"
+		ng-change="updateMapProject()"
+		ng-options="item for item in [true, false]">
+	</select>
 
-  <div style="margin-top: 15px;">
-    <b>Create New Scope Excluded Concept</b>
-  </div>
-  <hr>
-  <div style="margin-bottom: 5px;">
-    Concept Id: <input id="newScopeExcludedConceptId" type="text"
-      ng-model="newScopeExcludedConceptId">
-  </div>
-  <button class="btn btn-sm btn-primary"
-    ng-click="submitNewScopeExcludedConcept(newScopeExcludedConceptId);
-           newScopeExcludedConceptId = '';">Submit</button>
+	<div style="margin-top: 15px;">
+		<b>Create New Scope Excluded Concept(s)</b>
+	</div>
+	<hr>
+	<tabset> <tab heading="Add Concepts"> Enter concept
+	terminology ids, delimited by either whitespace or commas. <textarea
+		style="width: 100%; height: 100px" ng-model="scopeExcludedConceptsToAdd"></textarea>
+	<button class="btn btn-sm btn-primary"
+		ng-click="submitNewScopeExcludedConcepts(scopeExcludedConceptsToAdd)">Add</button>
+	<button class="btn btn-sm btn-warning"
+		ng-click="scopeExcludedConceptsToAdd = null">Clear</button>
+	</tab> <tab heading="Remove Concepts"> Enter concept terminology ids,
+	delimited by either whitespace or commas. <textarea
+		style="width: 100%; height: 100px" ng-model="scopeExcludedConceptsToRemove"></textarea>
+	<button class="btn btn-sm btn-primary"
+		ng-click="removeScopeExcludedConcepts(scopeExcludedConceptsToRemove)">Remove</button>
+	<button class="btn btn-sm btn-warning"
+		ng-click="scopeExcludedConceptsToRemove = null">Clear</button>
+	</tab> </tabset>
 </div>
+
 </accordion-group> </accordion>
