@@ -389,6 +389,12 @@ angular
           $scope.pagedReportDefinition = $scope.sortByKey(
             $scope.focusProject.reportDefinition, 'id').filter(
             containsReportDefinitionFilter);
+          // remove qa check report definitions from the list; they have their own section
+          for (var j = 0; j < $scope.pagedReportDefinition.length; j++) {
+            if ($scope.pagedReportDefinition[j].qacheck == true) {
+              $scope.pagedReportDefinition.splice(j, 1);
+            }
+          }
           $scope.pagedReportDefinitionCount = $scope.pagedReportDefinition.length;
           $scope.pagedReportDefinition = $scope.pagedReportDefinition.slice(
             (page - 1) * $scope.pageSize, page * $scope.pageSize);
