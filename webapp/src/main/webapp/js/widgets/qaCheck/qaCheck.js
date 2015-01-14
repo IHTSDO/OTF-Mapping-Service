@@ -126,7 +126,20 @@ angular
           }).success(
           function(data) {
             $rootScope.glassPane--;
+            
+            console.debug(data);
+            
+            // clear the items to prevent display of potentially enormous list
+            for (var i = 0; i < data.results.length; i++) {
+            	data.results[i].resultsItems = [];
+            }
+            
+            // set the report displayed and get the result items for each report result
             $scope.reportDisplayed = data;
+            console.debug("Displayed report", $scope.reportDisplayed);
+            for (var i = 0; i < $scope.reportDisplayed.results.length; i++) {
+            	$scope.getResultItems($scope.reportDisplayed.results[i]);
+            }
 
             $scope.definitionMsg = "Successfully generated new qa check";
 
@@ -160,9 +173,7 @@ angular
           var a         = document.createElement('a');
           a.href        = fileURL; 
           a.target      = "_blank";
-          a.download    = report.name + '.' +
-             (new Date().toISOString().slice(0,10).replace(/-/g,"")) 
-             + ".xls";
+          a.download    = getReportFileName(report);
           document.body.appendChild(a);
           $rootScope.glassPane--;
           a.click();
@@ -171,6 +182,11 @@ angular
           $rootScope.glassPane--;
           $rootScope.handleHttpError(data, status, headers, config);
         });
+    };
+    
+    var getReportFileName = function(report) {
+      var date = new Date().toISOString().slice(0,10).replace(/-/g,"");
+      return report.name + "." + date + ".xls";
     };
     
       $scope.addToQAWorkflow = function(report) {
