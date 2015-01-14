@@ -1518,10 +1518,15 @@ angular
             });
           $scope.updateMapProject();
         };
-
-        $scope.deleteScopeIncludedConcept = function(scopeConcept, currentPage) {
+        
+        //////////////////////////////////////////////
+        // Scope Include Concept Addition/Removal
+        //////////////////////////////////////////////
+        
+        // remove a single concept (using the [x] button)
+        $scope.removeScopeIncludedConcept = function(scopeConcept, currentPage) {
           // TODO: recalculate workflow
-          console.debug("in deleteScopeIncludedConcept");
+          console.debug("in removeScopeIncludedConcept");
           $rootScope.glassPane++;
 
           $http(
@@ -1543,18 +1548,48 @@ angular
             $rootScope.handleHttpError(data, status, headers, config);
           });
         };
+        
+        // remove a single/batch of excluded concepts
+        $scope.removeScopeIncludedConcepts = function(scopeConceptsUnsplit) {
+          console.debug("in removeScopeIncludedConcepts");
+          $rootScope.glassPane++;
 
-        $scope.submitNewScopeIncludedConcept = function(scopeConcept) {
+          var scopeConcepts = scopeConceptsUnsplit.split(/,\s*|\s+/);
+          
+          $http(
+            {
+              url : root_mapping + "project/id/" + $scope.focusProject.id
+                + "/scopeConcepts/remove",
+              dataType : "json",
+              data : scopeConcepts,
+              method : "POST",
+              headers : {
+                "Content-Type" : "application/json"
+              }
+            }).success(function(data) {
+            $rootScope.glassPane--;
+            $scope.getPagedScopeConcepts(1);
+          }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        };
+
+        // submit a single/batch of concepts for addition
+        $scope.submitNewScopeIncludedConcepts = function(scopeConceptsUnsplit) {
           console.debug("in submitNewScopeIncludedConcept");
 
           $rootScope.glassPane++;
+          
+          var scopeConcepts = scopeConceptsUnsplit.split(/,\s*|\s+/);
 
           $http(
             {
               url : root_mapping + "project/id/" + $scope.focusProject.id
                 + "/scopeConcepts/add",
               dataType : "json",
-              data : scopeConcept,
+              data : scopeConcepts,
               method : "POST",
               headers : {
                 "Content-Type" : "application/json"
@@ -1569,10 +1604,15 @@ angular
           });
 
         };
+        
+        //////////////////////////////////////////////
+        // Scope Exclude Concept Addition/Removal
+        //////////////////////////////////////////////
 
-        $scope.deleteScopeExcludedConcept = function(scopeConcept, currentPage) {
+     // remove a single concept (using the [x] button)
+        $scope.removeScopeExcludedConcept = function(scopeExcludedConcept, currentPage) {
           // TODO: recalculate workflow
-          console.debug("in deleteScopeExcludedConcept");
+          console.debug("in removeScopeExcludedConcept");
           $rootScope.glassPane++;
 
           $http(
@@ -1580,7 +1620,7 @@ angular
               url : root_mapping + "project/id/" + $scope.focusProject.id
                 + "/scopeExcludedConcepts/remove",
               dataType : "json",
-              data : scopeConcept.terminologyId,
+              data : scopeExcludedConcept.terminologyId,
               method : "POST",
               headers : {
                 "Content-Type" : "application/json"
@@ -1594,18 +1634,48 @@ angular
             $rootScope.handleHttpError(data, status, headers, config);
           });
         };
+        
+        // remove a single/batch of excluded concepts
+        $scope.removeScopeExcludedConcepts = function(scopeExcludedConceptsUnsplit) {
+          console.debug("in removeScopeExcludedConcepts");
+          $rootScope.glassPane++;
 
-        $scope.submitNewScopeExcludedConcept = function(scopeConcept) {
+          var scopeExcludedConcepts = scopeExcludedConceptsUnsplit.split(/,\s*|\s+/);
+          
+          $http(
+            {
+              url : root_mapping + "project/id/" + $scope.focusProject.id
+                + "/scopeExcludedConcepts/remove",
+              dataType : "json",
+              data : scopeExcludedConcepts,
+              method : "POST",
+              headers : {
+                "Content-Type" : "application/json"
+              }
+            }).success(function(data) {
+            $rootScope.glassPane--;
+            $scope.getPagedScopeExcludedConcepts(1);
+          }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        };
+
+        // submit a single/batch of concepts for addition
+        $scope.submitNewScopeExcludedConcepts = function(scopeExcludedConceptsUnsplit) {
           console.debug("in submitNewScopeExcludedConcept");
 
           $rootScope.glassPane++;
+          
+          var scopeExcludedConcepts = scopeExcludedConceptsUnsplit.split(/,\s*|\s+/);
 
           $http(
             {
               url : root_mapping + "project/id/" + $scope.focusProject.id
                 + "/scopeExcludedConcepts/add",
               dataType : "json",
-              data : scopeConcept,
+              data : scopeExcludedConcepts,
               method : "POST",
               headers : {
                 "Content-Type" : "application/json"
@@ -1620,6 +1690,10 @@ angular
           });
 
         };
+        
+        ///////////////////////////////////////
+        // Model reset, clears all filters
+        ///////////////////////////////////////
 
         $scope.resetModel = function() {
           console.debug("in resetModel");
