@@ -36,6 +36,16 @@ public class InitializationListener implements AbstractResourceModelListener {
    */
   @Override
   public void onLoaded(AbstractResourceModelContext modelContext) {
+    // AUthenticate guest user
+    try {
+    SecurityService service = new SecurityServiceJpa();
+    service.authenticate("guest","guest");
+    service.close();
+    } catch (Exception e) {
+      e.printStackTrace();
+      // do nothing
+    }
+    
     // Set up a timer task to run at 2AM every day
     TimerTask task = new ComputeCompareFinishedRecordsTask();
     timer = new Timer();
@@ -59,9 +69,6 @@ public class InitializationListener implements AbstractResourceModelListener {
     @Override
     public void run() {
       try {
-        SecurityService service = new SecurityServiceJpa();
-        service.authenticate("guest","guest");
-        service.close();
         timer.cancel(); // Terminate the timer thread
 
         // For now, the timer is not doing anything
