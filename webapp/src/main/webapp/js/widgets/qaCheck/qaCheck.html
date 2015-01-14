@@ -49,19 +49,24 @@
 						on-select-page="getResultItems(result, page)"></pagination>
 				</div>
 
-				<div ng-repeat="reportResultItem in result.reportResultItems">
+				<table class="table">
+					<thead>
+						<th>Id</th>
+						<th>Name</th>
+					</thead>
+					<tbody>
 
-					<!-- the actual result items -->
-					<div style="float: left; padding: 5px; width: 100%;">
+					<tr ng-repeat="reportResultItem in result.reportResultItems">
 
-						<a
+						<!-- the actual result items -->
+						<td><a
 							ng-href="{{'index.html#/record/conceptId/' + reportResultItem.itemId}}"
-							target="_blank">{{reportResultItem.itemId}}</a>,
-						{{reportResultItem.itemName}}
-					</div>
+							target="_blank">{{reportResultItem.itemId}}</a></td>
+						<td>{{reportResultItem.itemName}}</td>
+					</tr>
+					</tbody>
 
-				</div>
-
+				</table>
 			</div>
 			<button ng-show="reportDisplayed.results.length > 0"
 				class="btn btn-sm btn-primary"
