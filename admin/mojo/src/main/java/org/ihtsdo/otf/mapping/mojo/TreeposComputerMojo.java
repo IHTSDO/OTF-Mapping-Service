@@ -6,8 +6,7 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
-import org.ihtsdo.otf.mapping.rf2.Concept;
-import org.ihtsdo.otf.mapping.rf2.Relationship;
+import org.ihtsdo.otf.mapping.rf2.TreePosition;
 import org.ihtsdo.otf.mapping.services.ContentService;
 
 /**
@@ -71,25 +70,13 @@ public class TreeposComputerMojo extends AbstractMojo {
       // Walk up tree to the root
       // ASSUMPTION: single root
       String conceptId = isaRelType;
-      String rootId = null;
-      OUTER: while (true) {
-        getLog().info("  Walk up tree from " + conceptId);
-        Concept c =
-            contentService.getConcept(conceptId, terminology,
-                terminologyVersion);
-        for (Relationship r : c.getRelationships()) {
-          if (r.isActive() && r.getTypeId().equals(Long.valueOf(isaRelType))) {
-            conceptId = r.getDestinationConcept().getTerminologyId();
-            continue OUTER;
-          }
-        }
-        rootId = conceptId;
-        break;
+      for (TreePosition treePos  : contentService.getRootTreePositions(terminology,
+          terminologyVersion).getTreePositions()) {
+        String rootId = treePos.getTerminologyId();
+        getLog().info("  Compute tree from rootId " + rootId);
+        contentService.computeTreePositions(terminology, terminologyVersion,
+            isaRelType, rootId);
       }
-      getLog().info("  Compute tree from rootId " + conceptId);
-      contentService.computeTreePositions(terminology, terminologyVersion,
-          isaRelType, rootId);
-
       contentService.close();
 
       getLog().info("Done ...");

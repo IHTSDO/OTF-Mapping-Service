@@ -57,36 +57,6 @@ angular
         $location.path(path);
       };
 
-      $scope.computeWorkflow = function() {
-        console.debug("Computing workflow");
-        $rootScope.glassPane++;
-
-        var confirmWorkflow = confirm("Are you sure you want to compute workflow?");
-        if (confirmWorkflow == true) {
-          // retrieve project information
-          $http(
-            {
-              url : root_workflow + "project/id/" + $scope.project.id
-                + "/compute",
-              dataType : "json",
-              method : "POST",
-              headers : {
-                "Content-Type" : "application/json"
-              }
-            }).success(
-            function(data) {
-              $rootScope
-                .$broadcast('mapProjectWidget.notification.workflowComputed');
-              $rootScope.glassPane--;
-            }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
-            $rootScope.handleHttpError(data, status, headers, config);
-          });
-
-        } else {
-          $rootScope.glassPane--;
-        }
-      };
 
       $scope.generateTestData = function() {
 
