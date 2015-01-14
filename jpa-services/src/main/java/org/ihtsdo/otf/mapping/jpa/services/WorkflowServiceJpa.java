@@ -718,9 +718,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     String full_query = constructMapProjectIdQuery(mapProject.getId(), query);
 
     // add the query terms specific to findAvailableConflicts
-    // - user and workflowStatus pair of CONFLICT_DETECTED~userName exists
+    // - user and workflowStatus pair of CONFLICT_DETECTED_userName exists
     // - user and workflowStatus pairs of
-    // CONFLICT_NEW/CONFLICT_IN_PROGRESS~userName does not exist
+    // CONFLICT_NEW/CONFLICT_IN_PROGRESS_userName does not exist
     full_query += " AND userAndWorkflowStatusPairs:CONFLICT_DETECTED_*";
     full_query +=
         " AND NOT (userAndWorkflowStatusPairs:CONFLICT_NEW_* OR userAndWorkflowStatusPairs:CONFLICT_IN_PROGRESS_* OR userAndWorkflowStatusPairs:CONFLICT_RESOLVED_*)";
@@ -799,12 +799,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     String full_query = "mapProjectId:" + mapProject.getId();
 
     // add the query terms specific to findAvailableReviewWork
-    // - a user (any) and workflowStatus pair of QA_NEEDED~userName
+    // - a user (any) and workflowStatus pair of QA_NEEDED_userName
     // exists
     // - the QA_NEEDED pair is not for this user (i.e. user can't review
     // their own work, UNLESS there is only one lead on the project
     // - user and workflowStatus pairs of
-    // CONFLICT_NEW/CONFLICT_IN_PROGRESS~userName does not exist
+    // CONFLICT_NEW/CONFLICT_IN_PROGRESS_userName does not exist
 
     // must have a QA_NEEDED tag with any user
     full_query += " AND userAndWorkflowStatusPairs:QA_NEEDED_*";
@@ -946,12 +946,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     String full_query = constructMapProjectIdQuery(mapProject.getId(), query);
 
     // add the query terms specific to findAvailableReviewWork
-    // - a user (any) and workflowStatus pair of REVIEW_NEEDED~userName
+    // - a user (any) and workflowStatus pair of REVIEW_NEEDED_userName
     // exists
     // - the REVIEW_NEEDED pair is not for this user (i.e. user can't review
     // their own work, UNLESS there is only one lead on the project
     // - user and workflowStatus pairs of
-    // CONFLICT_NEW/CONFLICT_IN_PROGRESS~userName does not exist
+    // CONFLICT_NEW/CONFLICT_IN_PROGRESS_userName does not exist
 
     // must have a REVIEW_NEEDED tag with any user
     full_query += " AND userAndWorkflowStatusPairs:REVIEW_NEEDED_*";
@@ -1039,7 +1039,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
     // add the query terms specific to findAssignedWork
     // - user and workflowStatus must exist in a pair of form:
-    // workflowStatus~userName, e.g. NEW~dmo or EDITING_IN_PROGRESS~kli
+    // workflowStatus_userName, e.g. NEW_dmo or EDITING_IN_PROGRESS_kli
     // - modify search term based on pfs parameter query restriction field
     // * default: NEW, EDITING_IN_PROGRESS, EDITING_DONE/CONFLICT_DETECTED
     // * NEW: NEW
@@ -1896,6 +1896,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
             mapProject.getName() + " Workflow Error Alert, Concept "
                 + concept.getTerminologyId(), message.toString());
 
+        throw new LocalException("Workflow action " + workflowAction.toString() + " could not be performed on concept " + trackingRecord.getTerminologyId());
       }
     }
 
