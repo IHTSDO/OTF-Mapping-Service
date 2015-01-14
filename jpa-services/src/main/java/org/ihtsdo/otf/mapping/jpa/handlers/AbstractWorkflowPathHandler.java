@@ -174,10 +174,28 @@ public abstract class AbstractWorkflowPathHandler implements
     // cycle over pairs and verify each exists in the map record list
     for (String pair : userWorkflowPairs) {
 
-      // get the status and user name
-      String workflowStatus = pair.substring(0, pair.lastIndexOf("_"));
-      String user = pair.substring(pair.lastIndexOf("_") + 1);
+      // get the workflow status
+      String workflowStatus = null;
+      String user = null;
+      
+      // cycle over all defined status values
+      for (WorkflowStatus status : WorkflowStatus.values()) {
 
+        // if the pair starts with this status
+        if (pair.startsWith(status.toString())) {
+          
+          // set the status
+          workflowStatus = status.toString();
+          
+          // extract the user
+          user = pair.replace(workflowStatus + "_", "");
+          
+          // stop searching for matching statuses
+          break;
+        }
+      }
+
+      // find the record matching the tracking record's workflow status/user pair
       boolean recordFound = false;
       for (MapRecord mr : mapRecords.getMapRecords()) {
         if (mr.getOwner().getUserName().equals(user)
@@ -187,6 +205,7 @@ public abstract class AbstractWorkflowPathHandler implements
         }
       }
 
+      // if record not found, tracking record is not in sync with map records
       if (!recordFound) {
         result
             .addError("Tracking record references workflow and user pair not present in tracked records");
@@ -238,8 +257,15 @@ public abstract class AbstractWorkflowPathHandler implements
 
       for (String pair : tr.getUserAndWorkflowStatusPairs().split(" ")) {
 
-        workflowCombination.addWorkflowStatus(WorkflowStatus.valueOf(pair
-            .substring(0, pair.lastIndexOf("_"))));
+        // get the workflow status
+        String workflowStatus = null;
+        for (WorkflowStatus status : WorkflowStatus.values()) {
+          if (pair.startsWith(status.toString())) {
+            workflowStatus = status.toString();
+          }
+        }
+
+        workflowCombination.addWorkflowStatus(WorkflowStatus.valueOf(workflowStatus));
       }
     }
 
