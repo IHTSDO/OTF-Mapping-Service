@@ -640,7 +640,8 @@ public class MappingServiceRest extends RootServiceRest {
       mappingService.updateMapProject(mapProject);
 
       mappingService.close();
-
+      
+      
     } catch (Exception e) {
       this.handleException(e, "trying to add scope concept to project", user,
           projectName, "");
@@ -684,19 +685,18 @@ public class MappingServiceRest extends RootServiceRest {
 
       MappingService mappingService = new MappingServiceJpa();
       MapProject mapProject = mappingService.getMapProject(projectId);
-
+  
       for (String terminologyId : terminologyIds) {
         mapProject.addScopeConcept(terminologyId);
       }
       mappingService.updateMapProject(mapProject);
-
       mappingService.close();
-
+        
     } catch (Exception e) {
       this.handleException(e, "trying to add scope concept to project", user,
           projectName, "");
     }
-  }
+   }
 
   /**
    * Removes a single scope concept from map project.
@@ -708,9 +708,6 @@ public class MappingServiceRest extends RootServiceRest {
   @POST
   @Path("/project/id/{projectId}/scopeConcept/remove")
   @ApiOperation(value = "Removes a single scope concept from a map project.", notes = "Removes a single scope concept from a map project.", response = Response.class)
-  @Produces({
-      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-  })
   public void removeScopeConceptFromMapProject(
     @ApiParam(value = "Concept to remove, e.g. 100075006", required = true) String terminologyId,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
@@ -1116,7 +1113,7 @@ public class MappingServiceRest extends RootServiceRest {
       MappingService mappingService = new MappingServiceJpa();
       mappingService.addMapUser(mapUser);
       mappingService.close();
-      return null;
+      return mapUser;
 
     } catch (Exception e) {
       handleException(e, "trying to add a user", user, "", "");
@@ -1257,7 +1254,7 @@ public class MappingServiceRest extends RootServiceRest {
   })
   @Path("/advice/add")
   @ApiOperation(value = "Add an advice.", notes = "Adds the specified map advice.", response = MapAdviceJpa.class)
-  public MapUser addMapAdvice(
+  public MapAdvice addMapAdvice(
     @ApiParam(value = "Map advice, in JSON or XML POST data", required = true) MapAdviceJpa mapAdvice,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
@@ -1277,7 +1274,7 @@ public class MappingServiceRest extends RootServiceRest {
       MappingService mappingService = new MappingServiceJpa();
       mappingService.addMapAdvice(mapAdvice);
       mappingService.close();
-      return null;
+      return mapAdvice;
 
     } catch (Exception e) {
       handleException(e, "trying to add an advice", user, "", "");
@@ -1424,7 +1421,7 @@ public class MappingServiceRest extends RootServiceRest {
   })
   @Path("/ageRange/add")
   @ApiOperation(value = "Add an age range.", notes = "Adds the specified age range.", response = MapAgeRangeJpa.class)
-  public MapUser addMapAgeRange(
+  public MapAgeRange addMapAgeRange(
     @ApiParam(value = "Age range, in JSON or XML POST data", required = true) MapAgeRangeJpa mapAgeRange,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
@@ -1445,7 +1442,7 @@ public class MappingServiceRest extends RootServiceRest {
       MappingService mappingService = new MappingServiceJpa();
       mappingService.addMapAgeRange(mapAgeRange);
       mappingService.close();
-      return null;
+      return mapAgeRange;
 
     } catch (Exception e) {
       handleException(e, "trying to add an age range", user, "", "");
@@ -1589,7 +1586,7 @@ public class MappingServiceRest extends RootServiceRest {
   })
   @Path("/relation/add")
   @ApiOperation(value = "Add a map relation.", notes = "Adds the specified map relation.", response = MapRelationJpa.class)
-  public MapUser addMapRelation(
+  public MapRelation addMapRelation(
     @ApiParam(value = "Map relation, in JSON or XML POST data", required = true) MapRelationJpa mapRelation,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
@@ -1610,7 +1607,7 @@ public class MappingServiceRest extends RootServiceRest {
       MappingService mappingService = new MappingServiceJpa();
       mappingService.addMapRelation(mapRelation);
       mappingService.close();
-      return null;
+      return mapRelation;
 
     } catch (Exception e) {
       handleException(e, "trying to add a relation", user, "", "");
