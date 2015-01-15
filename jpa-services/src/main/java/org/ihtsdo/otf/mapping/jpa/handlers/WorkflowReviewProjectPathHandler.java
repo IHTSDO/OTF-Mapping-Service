@@ -137,10 +137,14 @@ public class WorkflowReviewProjectPathHandler extends
     // Switch on workflow path state //
     // /////////////////////////////////
 
+    if (state == null) {
+      result.addError("Could not determine workflow path state for tracking record");
+    }
+    
     // Record requirement : No record
     // Permissible action : ASSIGN_FROM_SCRATCH
     // Minimum role : Specialist
-    if (state.equals(initialState)) {
+    else if (state.equals(initialState)) {
   
       // check record
       if (currentRecord != null) {
@@ -290,6 +294,10 @@ public class WorkflowReviewProjectPathHandler extends
       }
     } else  {
       result.addError("Could not determine workflow state for tracking record");
+    }
+    
+    if (result.getErrors().size() != 0) {
+      result.addError("Error occured in workflow state " + state.getWorkflowStateName());;
     }
 
     return result;

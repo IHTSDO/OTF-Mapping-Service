@@ -115,8 +115,11 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
     // /////////////////////////////////
     // Switch on workflow path state //
     // /////////////////////////////////
-
-    if (state.equals(qaNeededState)) {
+    if (state == null) {
+      result.addError("Could not determine workflow path state for tracking record");
+    }
+    
+    else if (state.equals(qaNeededState)) {
 
       // check record -- null means none assigned
       if (currentRecord == null) {
@@ -191,6 +194,10 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
           && !action.equals(WorkflowAction.PUBLISH)) {
         result.addError("Action is not permitted.");
       }
+    }
+    
+    if (result.getErrors().size() != 0) {
+      result.addError("Error occured in workflow state " + state.getWorkflowStateName());;
     }
 
     return result;
