@@ -423,6 +423,12 @@ angular
 								$scope.pagedReportDefinition = $scope.sortByKey(
 										$scope.focusProject.reportDefinition, 'name').filter(
 										containsReportDefinitionFilter);
+          // remove qa check report definitions from the list; they have their own section
+          for (var j = 0; j < $scope.pagedReportDefinition.length; j++) {
+            if ($scope.pagedReportDefinition[j].qacheck == true) {
+              $scope.pagedReportDefinition.splice(j, 1);
+            }
+          }
 								$scope.pagedReportDefinitionCount = $scope.pagedReportDefinition.length;
 								$scope.pagedReportDefinition = $scope.pagedReportDefinition
 										.slice((page - 1) * $scope.pageSize, page * $scope.pageSize);
@@ -1827,15 +1833,25 @@ angular
 								// has name, size, and type.
 								for (var i = 0; i < $files.length; i++) {
 									var $file = $files[i];
+            $rootScope.glassPane++;
 									$upload.upload({
 										url : root_mapping + "upload/" + $scope.focusProject.id,
 										file : $file,
 										progress : function(e) {
-										}
-									}).then(function(data, status, headers, config) {
+              } 
+            }).error(function(data, status, headers, config) {
+                // file is not uploaded
+                // successfully
+                console.log("error", data);
+                $scope.recordError = "Error updating map project.";
+                $rootScope.handleHttpError(data, status, headers, config);
+                $rootScope.glassPane--;
+            }).success(function(data) {
 										// file is uploaded
 										// successfully
-										console.log(data);
+              confirm("The mapping principle handbook file upload is complete.");
+              $rootScope.glassPane--;
+             $scope.focusProject.mapPrincipleSourceDocument = data.substring(1, data.length -1);
 									});
 								}
 							};

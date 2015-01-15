@@ -139,10 +139,7 @@
 				ng-options="item for item in handlers"
 				ng-change="setEditingPerformed(project)"
 				style="margin-bottom: 5px; width: 100%;">
-			</select> <input tooltip-placement="top" tooltip="Map Principle Document Name"
-				ng-model="project.mapPrincipleSourceDocumentName"
-				ng-change="setEditingPerformed(project)"
-				style="margin-bottom: 5px; width: 100%;"></input></td>
+			</select> </td>
 			<td><button class="btn btn-sm btn-primary"
 					ng-click="updateMapProjectFromList(project)"
 					ng-show="isComponentChanged(project) == true">Save</button></td>
@@ -269,12 +266,6 @@
 					ng-options="item for item in handlers">
 				</select></td>
 			</tr>
-			<tr>
-				<td>Map Principle Document Name</td>
-				<td><input id="newMapProjectMapPrincipleSourceDocumentName"
-					type="text" ng-model="newMapProjectMapPrincipleSourceDocumentName">
-				</td>
-			</tr>
 
 			<tr>
 				<td><button class="btn btn-sm btn-primary"
@@ -283,15 +274,15 @@
         newMapProjectRuleBased, newMapProjectGroupStructure, newMapProjectPublic, 
         newMapProjectScopeDescendantsFlag, newMapProjectScopeExcludedDescendantsFlag, 
         newMapProjectMapType, newWorkflowType, newMapRelationStyle, newHandler, 
-        newMapProjectMapPrincipleSourceDocumentName, newMapProjectPropagationFlag,
+        newMapProjectPropagationFlag,
         newMapProjectPropagationThreshold); 
           newMapProjectName = ''; newMapProjectRefSetId = ''; newHandler = '';
           newMapProjectSourceVersion = ''; newMapProjectDestinationVersion = '';
           newMapProjectPropagationThreshold = ''; newMapProjectPublished = false; 
           newMapProjectRuleBased = false; newMapProjectGroupStructure = false; 
           newMapProjectPublic = false; newMapProjectScopeDescendantsFlag = false; 
-          newMapProjectScopeExcludedDescendantsFlag = false; newMapProjectPropagationFlag = false;
-          newMapProjectMapPrincipleSourceDocumentName = '';">Submit</button></td>
+          newMapProjectScopeExcludedDescendantsFlag = false; newMapProjectPropagationFlag = false;"
+          >Submit</button></td>
 				<td></td>
 			</tr>
 		</tbody>
