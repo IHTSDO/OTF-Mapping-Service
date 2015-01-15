@@ -296,7 +296,9 @@ public class MappingServiceRest extends RootServiceRest {
    * @param authToken the auth token
    */
   @POST
-  @Consumes(MediaType.APPLICATION_JSON)
+  @Consumes({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
   @Path("/project/update")
   @ApiOperation(value = "Update a map project.", notes = "Updates specified map project if it already exists.", response = MapProjectJpa.class)
   public void updateMapProject(
@@ -608,9 +610,6 @@ public class MappingServiceRest extends RootServiceRest {
   @POST
   @Path("/project/id/{projectId}/scopeConcept/add")
   @ApiOperation(value = "Adds a single scope concept to a map project.", notes = "Adds a single scope concept to a map project.", response = Response.class)
-  @Produces({
-      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-  })
   public void addScopeConceptToMapProject(
     @ApiParam(value = "Concept to add, e.g. 100073004", required = true) String terminologyId,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
@@ -708,9 +707,6 @@ public class MappingServiceRest extends RootServiceRest {
   @POST
   @Path("/project/id/{projectId}/scopeConcept/remove")
   @ApiOperation(value = "Removes a single scope concept from a map project.", notes = "Removes a single scope concept from a map project.", response = Response.class)
-  @Produces({
-      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-  })
   public void removeScopeConceptFromMapProject(
     @ApiParam(value = "Concept to remove, e.g. 100075006", required = true) String terminologyId,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
@@ -755,7 +751,7 @@ public class MappingServiceRest extends RootServiceRest {
   @POST
   @Path("/project/id/{projectId}/scopeConcepts/remove")
   @ApiOperation(value = "Removes a list of scope concepts from a map project.", notes = "Removes a list of scope concept from a map project.", response = Response.class)
-  @Produces({
+  @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public void removeScopeConceptsFromMapProject(
@@ -859,16 +855,14 @@ public class MappingServiceRest extends RootServiceRest {
   @POST
   @Path("/project/id/{projectId}/scopeExcludedConcept/add")
   @ApiOperation(value = "Adds a single scope excluded concept to a map project.", notes = "Adds a single scope excluded concept to a map project.", response = Response.class)
-  @Produces({
-      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-  })
   public void addScopeExcludedConceptToMapProject(
     @ApiParam(value = "Concept to add, e.g. 100073004", required = true) String terminologyId,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
     Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping):  /project/id/" + projectId + "/scopeExcludedConcepts/add");
+        "RESTful call (Mapping):  /project/id/" + projectId
+            + "/scopeExcludedConcepts/add");
     String projectName = "(not retrieved)";
     String user = "(not retrieved)";
 
@@ -878,11 +872,12 @@ public class MappingServiceRest extends RootServiceRest {
           securityService.getMapProjectRoleForToken(authToken, projectId);
       user = securityService.getUsernameForToken(authToken);
       if (!role.hasPrivilegesOf(MapUserRole.LEAD))
-        throw new WebApplicationException(Response
-            .status(401)
-            .entity(
-                "User does not have permissions to retrieve scope excluded concepts.")
-            .build());
+        throw new WebApplicationException(
+            Response
+                .status(401)
+                .entity(
+                    "User does not have permissions to retrieve scope excluded concepts.")
+                .build());
 
       MappingService mappingService = new MappingServiceJpa();
       MapProject mapProject = mappingService.getMapProject(projectId);
@@ -893,8 +888,9 @@ public class MappingServiceRest extends RootServiceRest {
       mappingService.close();
 
     } catch (Exception e) {
-      this.handleException(e, "trying to add scope excluded concept to project", user,
-          projectName, "");
+      this.handleException(e,
+          "trying to add scope excluded concept to project", user, projectName,
+          "");
     }
   }
 
@@ -908,16 +904,14 @@ public class MappingServiceRest extends RootServiceRest {
   @POST
   @Path("/project/id/{projectId}/scopeExcludedConcepts/add")
   @ApiOperation(value = "Adds a list of scope excluded concepts to a map project.", notes = "Adds a list of scope excluded concepts to a map project.", response = Response.class)
-  @Produces({
-      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-  })
   public void addScopeExcludedConceptsToMapProject(
     @ApiParam(value = "List of concepts to add, e.g. {'100073004', '100075006'", required = true) List<String> terminologyIds,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
     Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping):  /project/id/" + projectId + "/scopeExcludedConcepts/add");
+        "RESTful call (Mapping):  /project/id/" + projectId
+            + "/scopeExcludedConcepts/add");
     String projectName = "(not retrieved)";
     String user = "(not retrieved)";
 
@@ -927,11 +921,12 @@ public class MappingServiceRest extends RootServiceRest {
           securityService.getMapProjectRoleForToken(authToken, projectId);
       user = securityService.getUsernameForToken(authToken);
       if (!role.hasPrivilegesOf(MapUserRole.LEAD))
-        throw new WebApplicationException(Response
-            .status(401)
-            .entity(
-                "User does not have permissions to retrieve scope excluded concepts.")
-            .build());
+        throw new WebApplicationException(
+            Response
+                .status(401)
+                .entity(
+                    "User does not have permissions to retrieve scope excluded concepts.")
+                .build());
 
       MappingService mappingService = new MappingServiceJpa();
       MapProject mapProject = mappingService.getMapProject(projectId);
@@ -944,8 +939,9 @@ public class MappingServiceRest extends RootServiceRest {
       mappingService.close();
 
     } catch (Exception e) {
-      this.handleException(e, "trying to add scope excluded concept to project", user,
-          projectName, "");
+      this.handleException(e,
+          "trying to add scope excluded concept to project", user, projectName,
+          "");
     }
   }
 
@@ -959,16 +955,14 @@ public class MappingServiceRest extends RootServiceRest {
   @POST
   @Path("/project/id/{projectId}/scopeExcludedConcept/remove")
   @ApiOperation(value = "Removes a single scope excluded concept from a map project.", notes = "Removes a single scope excluded concept from a map project.", response = Response.class)
-  @Produces({
-      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-  })
   public void removeScopeExcludedConceptFromMapProject(
     @ApiParam(value = "Concept to remove, e.g. 100075006", required = true) String terminologyId,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
     Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping):  /project/id/" + projectId + "/scopeExcludedConcept/remove");
+        "RESTful call (Mapping):  /project/id/" + projectId
+            + "/scopeExcludedConcept/remove");
     String projectName = "(not retrieved)";
     String user = "(not retrieved)";
 
@@ -978,9 +972,12 @@ public class MappingServiceRest extends RootServiceRest {
           securityService.getMapProjectRoleForToken(authToken, projectId);
       user = securityService.getUsernameForToken(authToken);
       if (!role.hasPrivilegesOf(MapUserRole.LEAD))
-        throw new WebApplicationException(Response.status(401)
-            .entity("User does not have permissions to remove scope excluded concepts.")
-            .build());
+        throw new WebApplicationException(
+            Response
+                .status(401)
+                .entity(
+                    "User does not have permissions to remove scope excluded concepts.")
+                .build());
 
       MappingService mappingService = new MappingServiceJpa();
       MapProject mapProject = mappingService.getMapProject(projectId);
@@ -991,8 +988,9 @@ public class MappingServiceRest extends RootServiceRest {
       mappingService.close();
 
     } catch (Exception e) {
-      this.handleException(e, "trying to remove scope excluded concept from project",
-          user, projectName, "");
+      this.handleException(e,
+          "trying to remove scope excluded concept from project", user,
+          projectName, "");
     }
   }
 
@@ -1006,16 +1004,14 @@ public class MappingServiceRest extends RootServiceRest {
   @POST
   @Path("/project/id/{projectId}/scopeExcludedConcepts/remove")
   @ApiOperation(value = "Removes a list of scope excluded concepts from a map project.", notes = "Removes a list of scope excluded concept from a map project.", response = Response.class)
-  @Produces({
-      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-  })
   public void removeScopeExcludedConceptsFromMapProject(
     @ApiParam(value = "List of concepts to remove, e.g. {'100073004', '100075006'", required = true) List<String> terminologyIds,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
     Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping):  /project/id/" + projectId + "/scopeExcludedConcepts/remove");
+        "RESTful call (Mapping):  /project/id/" + projectId
+            + "/scopeExcludedConcepts/remove");
     String projectName = "(not retrieved)";
     String user = "(not retrieved)";
 
@@ -1025,9 +1021,12 @@ public class MappingServiceRest extends RootServiceRest {
           securityService.getMapProjectRoleForToken(authToken, projectId);
       user = securityService.getUsernameForToken(authToken);
       if (!role.hasPrivilegesOf(MapUserRole.LEAD))
-        throw new WebApplicationException(Response.status(401)
-            .entity("User does not have permissions to remove scope excluded concepts.")
-            .build());
+        throw new WebApplicationException(
+            Response
+                .status(401)
+                .entity(
+                    "User does not have permissions to remove scope excluded concepts.")
+                .build());
 
       MappingService mappingService = new MappingServiceJpa();
       MapProject mapProject = mappingService.getMapProject(projectId);
@@ -1039,8 +1038,9 @@ public class MappingServiceRest extends RootServiceRest {
       mappingService.close();
 
     } catch (Exception e) {
-      this.handleException(e, "trying to remove scope excluded concept from project",
-          user, projectName, "");
+      this.handleException(e,
+          "trying to remove scope excluded concept from project", user,
+          projectName, "");
     }
   }
 
@@ -1131,8 +1131,10 @@ public class MappingServiceRest extends RootServiceRest {
    * @param authToken the auth token
    */
   @POST
-  @Consumes(MediaType.APPLICATION_JSON)
   @Path("/user/update")
+  @Consumes({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
   @ApiOperation(value = "Update a user.", notes = "Updates the specified user.", response = MapUserJpa.class)
   public void updateMapUser(
     @ApiParam(value = "User, in JSON or XML POST data", required = true) MapUserJpa mapUser,
@@ -1292,7 +1294,9 @@ public class MappingServiceRest extends RootServiceRest {
    * @param authToken the auth token
    */
   @POST
-  @Consumes(MediaType.APPLICATION_JSON)
+  @Consumes({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
   @Path("/advice/update")
   @ApiOperation(value = "Update an advice.", notes = "Updates the specified advice.", response = MapAdviceJpa.class)
   public void updateMapAdvice(
@@ -1460,7 +1464,9 @@ public class MappingServiceRest extends RootServiceRest {
    * @param authToken the auth token
    */
   @POST
-  @Consumes(MediaType.APPLICATION_JSON)
+  @Consumes({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
   @Path("/ageRange/update")
   @ApiOperation(value = "Update an age range.", notes = "Updates the specified age range.", response = MapAgeRangeJpa.class)
   public void updateMapAgeRange(
@@ -1625,7 +1631,9 @@ public class MappingServiceRest extends RootServiceRest {
    * @param authToken the auth token
    */
   @POST
-  @Consumes(MediaType.APPLICATION_JSON)
+  @Consumes({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
   @Path("/relation/update")
   @ApiOperation(value = "Update a map relation.", notes = "Updates the specified map relation.", response = MapRelationJpa.class)
   public void updateMapRelation(
@@ -1846,9 +1854,6 @@ public class MappingServiceRest extends RootServiceRest {
   })
   @Path("/principle/update")
   @ApiOperation(value = "Update a map principle.", notes = "Updates the specified map principle.", response = MapPrincipleJpa.class)
-  @Produces({
-      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-  })
   public void updateMapPrinciple(
     @ApiParam(value = "Map principle, in JSON or XML POST data", required = true) MapPrincipleJpa mapPrinciple,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
@@ -2227,9 +2232,6 @@ public class MappingServiceRest extends RootServiceRest {
   @POST
   @Path("/record/update")
   @Consumes({
-      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-  })
-  @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   @ApiOperation(value = "Update a map record.", notes = "Updates the specified map record.", response = Response.class)
@@ -3671,12 +3673,12 @@ public class MappingServiceRest extends RootServiceRest {
 
       String docDir = config.getProperty("map.principle.source.document.dir");
 
-       // make sure docDir ends with /doc - validation
+      // make sure docDir ends with /doc - validation
       // mkdirs with project id in both dir and archiveDir
-      
+
       File dir = new File(docDir);
       File archiveDir = new File(docDir + "/archive");
-      
+
       File projectDir = new File(docDir, mapProjectId.toString());
       projectDir.mkdir();
       File archiveProjectDir = new File(archiveDir, mapProjectId.toString());
@@ -3716,7 +3718,8 @@ public class MappingServiceRest extends RootServiceRest {
           + extension);
       updateMapProject((MapProjectJpa) mapProject, authToken);
 
-      return Response.status(200).entity(mapProjectId + "/" + file.getName()).build();
+      return Response.status(200).entity(mapProjectId + "/" + file.getName())
+          .build();
     } catch (Exception e) {
       handleException(e, "trying to upload a file", user,
           mapProjectId.toString(), "");
