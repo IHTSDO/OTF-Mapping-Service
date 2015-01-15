@@ -728,9 +728,6 @@ public class WorkflowServiceRest extends RootServiceRest {
   @POST
   @Path("/assignFromRecord/user/id/{userName}")
   @ApiOperation(value = "Assign user to concept", notes = "Assigns a user (specialist or lead) to a previously mapped concept.")
-  @Produces({
-      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-  })
   public void assignConceptFromMapRecord(
     @ApiParam(value = "Username", required = true) @PathParam("userName") String userName,
     @ApiParam(value = "Initial map record to copy, in JSON or XML POST data", required = true) MapRecordJpa mapRecord,
@@ -794,9 +791,6 @@ public class WorkflowServiceRest extends RootServiceRest {
   @POST
   @Path("/assign/project/id/{id}/concept/id/{terminologyId}/user/id/{userName}")
   @ApiOperation(value = "Assign user to concept", notes = "Assigns specified user to map the specified concept for the specified project.")
-  @Produces({
-      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-  })
   public void assignConcept(
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") String mapProjectId,
     @ApiParam(value = "Concept id, e.g. 22298006", required = true) @PathParam("terminologyId") String terminologyId,
@@ -855,10 +849,10 @@ public class WorkflowServiceRest extends RootServiceRest {
    */
   @POST
   @Path("/assignBatch/project/id/{id}/user/id/{userName}")
-  @ApiOperation(value = "Assign user to batch of concepts.", notes = "Assigns specified user to map the specified list of concept ids for the specified project.")
-  @Produces({
+  @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
+  @ApiOperation(value = "Assign user to batch of concepts.", notes = "Assigns specified user to map the specified list of concept ids for the specified project.")
   public void assignBatch(
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") String mapProjectId,
     @ApiParam(value = "Username", required = true) @PathParam("userName") String userName,
@@ -1004,10 +998,10 @@ public class WorkflowServiceRest extends RootServiceRest {
    */
   @POST
   @Path("/unassign/project/id/{id}/user/id/{userName}/batch")
-  @ApiOperation(value = "Unassign user from a batch of concepts.", notes = "Unassigns specified user from the specified list of concept ids for the specified project.")
-  @Produces({
+  @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
+  @ApiOperation(value = "Unassign user from a batch of concepts.", notes = "Unassigns specified user from the specified list of concept ids for the specified project.")
   public void unassignWorkBatch(
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Username", required = true) @PathParam("userName") String userName,
@@ -1072,9 +1066,6 @@ public class WorkflowServiceRest extends RootServiceRest {
   @POST
   @Path("/unassign/project/id/{id}/user/id/{userName}/all")
   @ApiOperation(value = "Unassign user from all currently assigned work for a map project.", notes = "Unassigns the specified user from all work in the specified project.")
-  @Produces({
-      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-  })
   public void unassignAllWork(
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Username", required = true) @PathParam("userName") String userName,
@@ -1154,9 +1145,6 @@ public class WorkflowServiceRest extends RootServiceRest {
   @POST
   @Path("/unassign/project/id/{id}/user/id/{userName}/unedited")
   @ApiOperation(value = "Unassign user from all currently edited work", notes = "Unassigns the specified user from all edited work for the specified project.")
-  @Produces({
-      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-  })
   public void unassignAllUneditedWork(
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Username", required = true) @PathParam("userName") String userName,
@@ -1248,7 +1236,7 @@ public class WorkflowServiceRest extends RootServiceRest {
    */
   @POST
   @Path("/finish")
-  @Produces({
+  @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   @ApiOperation(value = "Finish work on a map record.", notes = "Finished work on the specified map record if it passes validation, then moves it forward in the worfklow.")
@@ -1315,7 +1303,7 @@ public class WorkflowServiceRest extends RootServiceRest {
    */
   @POST
   @Path("/publish")
-  @Produces({
+  @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   @ApiOperation(value = "Mark a map record for publication.", notes = "Moves a previously resolved conflict or review record owned by a lead out of the workflow and into publication-ready status")
@@ -1381,7 +1369,7 @@ public class WorkflowServiceRest extends RootServiceRest {
    */
   @POST
   @Path("/save")
-  @Produces({
+  @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   @ApiOperation(value = "Save work on a map record.", notes = "Updates the map record and sets workflow accordingly.")
@@ -1453,6 +1441,9 @@ public class WorkflowServiceRest extends RootServiceRest {
    */
   @POST
   @Path("/cancel")
+  @Consumes({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
   @ApiOperation(value = "Cancel editing of a map record.", notes = "Cancels editing of a map record.  Performs necessary workflow actions for current workflow path and status.")
   public void cancelWorkForMapRecord(
     @ApiParam(value = "Map record to cancel work for , in JSON or XML POST data") MapRecordJpa mapRecord,
@@ -1514,6 +1505,9 @@ public class WorkflowServiceRest extends RootServiceRest {
    */
   @POST
   @Path("/createQARecord")
+  @Consumes({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
   @ApiOperation(value = "Creates a qa record.", notes = "Creates a qa record given a map record.")
   public void createQARecord(
     @ApiParam(value = "Map record to create qa record for , in JSON or XML POST data") MapRecordJpa mapRecord,
@@ -1584,6 +1578,9 @@ public class WorkflowServiceRest extends RootServiceRest {
    */
   @POST
   @Path("/createQAWork")
+  @Consumes({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
   @ApiOperation(value = "Creates qa work.", notes = "Creates qa work given a report of concepts.")
   public void createQAWork(
     @ApiParam(value = "Report of concepts to create qa records for , in JSON or XML POST data") Long reportId,
@@ -1817,9 +1814,10 @@ public class WorkflowServiceRest extends RootServiceRest {
                 .build());
 
       WorkflowService workflowService = new WorkflowServiceJpa();
-      
+
       Logger.getLogger(WorkflowServiceRest.class).info(
-          "RESTful call (Workflow): /conversation/update feedback msg: " + conversation.getFeedbacks().get(0));
+          "RESTful call (Workflow): /conversation/update feedback msg: "
+              + conversation.getFeedbacks().get(0));
 
       workflowService.addFeedbackConversation(conversation);
       workflowService.close();
@@ -1844,9 +1842,6 @@ public class WorkflowServiceRest extends RootServiceRest {
   @POST
   @Path("/record/id/{id:[0-9][0-9]*}/falseConflict/{isFalseConflict}")
   @ApiOperation(value = "Sets whether record is false conflict.", notes = "Sets a flag indicating a false conflict for the specified parameters.", response = Response.class)
-  @Produces({
-      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-  })
   public void setMapRecordFalseConflict(
     @ApiParam(value = "Map record id, e.g. 7", required = true) @PathParam("id") Long recordId,
     @ApiParam(value = "Whether is false conflict, e.g. true", required = true) @PathParam("isFalseConflict") boolean isFalseConflict,
@@ -1946,9 +1941,6 @@ public class WorkflowServiceRest extends RootServiceRest {
   @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  @Produces({
-      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-  })
   @ApiOperation(value = "Update a feedback conversation.", notes = "Updates specified feedback conversation.", response = Response.class)
   public void updateFeedbackConversation(
     @ApiParam(value = "Feedback conversation, in JSON or XML POST data", required = true) FeedbackConversationJpa feedbackConversation,
@@ -1971,12 +1963,13 @@ public class WorkflowServiceRest extends RootServiceRest {
 
       WorkflowService workflowService = new WorkflowServiceJpa();
       workflowService.updateFeedbackConversation(feedbackConversation);
-      
+
       // add debug
       int ct = feedbackConversation.getFeedbacks().size();
       Logger.getLogger(WorkflowServiceRest.class).info(
-          "RESTful call (Workflow): /conversation/update feedback msg: " + feedbackConversation.getFeedbacks().get(ct - 1));
-      
+          "RESTful call (Workflow): /conversation/update feedback msg: "
+              + feedbackConversation.getFeedbacks().get(ct - 1));
+
       workflowService.close();
     } catch (Exception e) {
       handleException(e, "update the feedback conversation");
@@ -2193,7 +2186,7 @@ public class WorkflowServiceRest extends RootServiceRest {
                 .build());
 
       MappingService mappingService = new MappingServiceJpa();
-     
+
       MapProject mapProject = mappingService.getMapProject(mapProjectId);
       MapUser mapUser = mappingService.getMapUser(userName);
 
@@ -2210,8 +2203,8 @@ public class WorkflowServiceRest extends RootServiceRest {
         MapRecordList mrList =
             mappingService.getMapRecordsForProjectAndConcept(mapProjectId,
                 terminologyId);
-        
-        // first check:  records retrieved
+
+        // first check: records retrieved
         if (mrList.getCount() == 0) {
           result.addError("No records found for concept " + terminologyId);
           continue;
@@ -2223,13 +2216,10 @@ public class WorkflowServiceRest extends RootServiceRest {
               + terminologyId);
           continue;
         }
-        
 
         // get the first record
         MapRecord mapRecord = mrList.getIterable().iterator().next();
 
-
-      
         // second check: PUBLISHED or READY_FOR_PUBLICATION
         if (!mapRecord.getWorkflowStatus().equals(
             WorkflowStatus.READY_FOR_PUBLICATION)
@@ -2241,14 +2231,14 @@ public class WorkflowServiceRest extends RootServiceRest {
 
         mapRecords.add(mapRecord);
       }
-      
+
       // close the mapping service
       mappingService.close();
-      
+
       // open workflow and content services
       WorkflowService workflowService = new WorkflowServiceJpa();
       ContentService contentService = new ContentServiceJpa();
-      
+
       // cycle over all eligible map records
       for (MapRecord mapRecord : mapRecords) {
 
