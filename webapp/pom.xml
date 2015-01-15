@@ -42,7 +42,7 @@
     <resources>
       <resource>
         <directory>
-        ${project.build.dir}/custom
+        ${project.build.directory}/custom
         </directory>
       </resource>
     </resources>
