@@ -1,5 +1,7 @@
 INSERT INTO map_users VALUES (1, 'VIEWER', 'test@example.com', 'Loader', 'loader');
 INSERT INTO map_users VALUES (2, 'VIEWER', 'test@example.com', 'QA Path', 'qa');
+INSERT INTO map_users VALUES (3, 'VIEWER', 'test@example.com', 'Guest', 'guest');
+
 -- For performance of searching map record history
 -- we need an index on the owner_id.  The framework 
 -- does not support creating indexes on audit tables

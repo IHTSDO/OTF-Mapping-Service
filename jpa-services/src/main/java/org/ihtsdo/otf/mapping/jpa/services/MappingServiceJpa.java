@@ -2538,7 +2538,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
           // any possible errors
           // in multiplication/division/comparison
           if (samplingRate != -1.0f
-              && random.nextInt(100 + 1) / 100.0 <= samplingRate) {
+              && random.nextInt(100 + 1) / 100.0 < samplingRate) {
             samplingRecordsCreated++;
             mapRecord.setWorkflowStatus(workflowStatus);
           } else {

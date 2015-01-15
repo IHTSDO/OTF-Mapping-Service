@@ -1,0 +1,283 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <!-- Module Metadata -->
+  <parent>
+    <groupId>org.ihtsdo.otf.mapping</groupId>
+    <artifactId>mapping-parent</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <relativePath>../../parent</relativePath>
+  </parent>
+
+  <artifactId>mapping-admin-daily-build</artifactId>
+  <name>OTF RF2 Daily build </name>
+  <description>
+     Produces in maven artifact form a build of the RF2 release for each IHTSDO mapping project.  
+     This module is IHTSDO specific and a similar kind of thing
+     should be done for other installations (even as a separate project)
+     to produce daily builds.</description>
+  <packaging>pom</packaging>
+
+  <!-- Project properties -->
+  <properties>
+    <!-- The next release version (must be changed periodically) -->
+    <version>20150731</version>
+    <!-- SNOMED to ICD10 info -->
+    <icd10.refset.id>447562003</icd10.refset.id>
+    <icd10.module.id>449080006</icd10.module.id>
+
+    <!-- SNOMED to ICD9CM info -->
+    <icd9cm.refset.id>447563008</icd9cm.refset.id>
+    <icd9cm.module.id>900000000000207008</icd9cm.module.id>
+
+    <!-- SNOMED to ICPC info -->
+    <icpc.refset.id>450993002</icpc.refset.id>
+    <icpc.module.id>900000000000207008</icpc.module.id>
+
+  </properties>
+
+  <!-- Module build -->
+  <profiles>
+    <profile>
+      <id>DailyBuild</id>
+
+      <build>
+
+        <plugins>
+
+          <!-- Make directories (this is a hack to get the directories created) -->
+          <!-- For safety, the release mojo requires the output directory to exist -->
+          <plugin>
+            <artifactId>maven-resources-plugin</artifactId>
+            <version>2.7</version>
+            <executions>
+              <!-- Create dir for ICD10 -->
+              <execution>
+                <id>copy-resources-icd10</id>
+                <phase>validate</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${project.build.directory}/ICD10</outputDirectory>
+                  <resources>
+                    <resource>
+                      <directory>src/main/resources</directory>
+                    </resource>
+                  </resources>
+                </configuration>
+              </execution>
+
+              <!-- Create dir for ICD9CM -->
+              <execution>
+                <id>copy-resources-icd9cm</id>
+                <phase>validate</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${project.build.directory}/ICD9CM</outputDirectory>
+                  <resources>
+                    <resource>
+                      <directory>src/main/resources</directory>
+                    </resource>
+                  </resources>
+                </configuration>
+              </execution>
+
+              <!-- Create dir for ICPC -->
+              <execution>
+                <id>copy-resources-icpc</id>
+                <phase>validate</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${project.build.directory}/ICPC</outputDirectory>
+                  <resources>
+                    <resource>
+                      <directory>src/main/resources</directory>
+                    </resource>
+                  </resources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <!-- Perform releases -->
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+
+              <!-- Perform release for SNOMED to ICD10 Project -->
+              <execution>
+                <id>release-icd10</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>release</goal>
+                </goals>
+                <configuration>
+                  <refsetId>${icd10.refset.id}</refsetId>
+                  <outputDir>${project.build.directory}/ICD10</outputDir>
+                  <effectiveTime>${version}</effectiveTime>
+                  <moduleId>${icd10.module.id}</moduleId>
+                  <testModeFlag>true</testModeFlag>
+                </configuration>
+              </execution>
+
+              <!-- Perform release for SNOMED to ICD9CM Project -->
+              <execution>
+                <id>release-icd9cm</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>release</goal>
+                </goals>
+                <configuration>
+                  <refsetId>${icd9cm.refset.id}</refsetId>
+                  <outputDir>${project.build.directory}/ICD9CM</outputDir>
+                  <effectiveTime>${version}</effectiveTime>
+                  <moduleId>${icd9cm.module.id}</moduleId>
+                  <testModeFlag>true</testModeFlag>
+                </configuration>
+              </execution>
+
+              <!-- Perform release for SNOMED to ICPC Project -->
+              <execution>
+                <id>release-icpc</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>release</goal>
+                </goals>
+                <configuration>
+                  <refsetId>${icpc.refset.id}</refsetId>
+                  <outputDir>${project.build.directory}/ICPC</outputDir>
+                  <effectiveTime>${version}</effectiveTime>
+                  <moduleId>${icpc.module.id}</moduleId>
+                  <testModeFlag>true</testModeFlag>
+                </configuration>
+              </execution>
+
+            </executions>
+          </plugin>
+
+          <!-- Package data -->
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>truezip-maven-plugin</artifactId>
+            <executions>
+
+              <!-- Package SNOMED to ICD10 data -->
+              <execution>
+                <id>copy-into-icd10</id>
+                <goals>
+                  <goal>copy</goal>
+                </goals>
+                <phase>package</phase>
+                <configuration>
+                  <fileset>
+                    <directory>src/main/resources</directory>
+                    <outputDirectory>${project.build.directory}/Release-ICD10-${releaseVersion}.zip</outputDirectory>
+                  </fileset>
+                </configuration>
+              </execution>
+
+              <!-- Package SNOMED to ICD9CM data -->
+              <execution>
+                <id>copy-into-icd9cm</id>
+                <goals>
+                  <goal>copy</goal>
+                </goals>
+                <phase>package</phase>
+                <configuration>
+                  <fileset>
+                    <directory>src/main/resources</directory>
+                    <outputDirectory>${project.build.directory}/Release-ICD9CM-${releaseVersion}.zip</outputDirectory>
+                  </fileset>
+                </configuration>
+              </execution>
+
+              <!-- Package SNOMED to ICPC data -->
+              <execution>
+                <id>copy-into-icpc</id>
+                <goals>
+                  <goal>copy</goal>
+                </goals>
+                <phase>package</phase>
+                <configuration>
+                  <fileset>
+                    <directory>src/main/resources</directory>
+                    <outputDirectory>${project.build.directory}/Release-ICPC-${releaseVersion}.zip</outputDirectory>
+                  </fileset>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <!-- Attach .zip file artifact -->
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <executions>
+
+              <!-- Attach SNOMED to ICD10 data artifact -->
+              <execution>
+                <id>attach-zip-icd10</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>attach-artifact</goal>
+                </goals>
+                <configuration>
+                  <artifacts>
+                    <artifact>
+                      <file>${project.build.directory}/Release-ICD10-${releaseVersion}.zip</file>
+                      <type>zip</type>
+                    </artifact>
+                  </artifacts>
+                </configuration>
+              </execution>
+
+              <!-- Attach SNOMED to ICD9CM data artifact -->
+              <execution>
+                <id>attach-zip-icd9cm</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>attach-artifact</goal>
+                </goals>
+                <configuration>
+                  <artifacts>
+                    <artifact>
+                      <file>${project.build.directory}/Release-ICD9CM-${releaseVersion}.zip</file>
+                      <type>zip</type>
+                    </artifact>
+                  </artifacts>
+                </configuration>
+              </execution>
+
+              <!-- Attach SNOMED to ICPC data artifact -->
+              <execution>
+                <id>attach-zip-icpc</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>attach-artifact</goal>
+                </goals>
+                <configuration>
+                  <artifacts>
+                    <artifact>
+                      <file>${project.build.directory}/Release-ICPC-${releaseVersion}.zip</file>
+                      <type>zip</type>
+                    </artifact>
+                  </artifacts>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+        </plugins>
+
+      </build>
+    </profile>
+  </profiles>
+
+</project>

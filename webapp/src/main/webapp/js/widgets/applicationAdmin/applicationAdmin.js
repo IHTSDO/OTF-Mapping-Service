@@ -3083,7 +3083,7 @@ angular
 									newMapProjectPublic, newMapProjectScopeDescendantsFlag,
 									newMapProjectScopeExcludedDescendantsFlag,
 									newMapProjectMapType, newWorkflowType, newMapRelationStyle,
-									newHandler, newMapProjectMapPrincipleSourceDocumentName,
+									newHandler, 
 									newMapProjectPropagationFlag,
 									newMapProjectPropagationThreshold) {
 
@@ -3147,7 +3147,7 @@ angular
 														"projectSpecificAlgorithmHandlerClass" : newHandler,
 														"scopeDescendantsFlag" : newMapProjectScopeDescendantsFlag,
 														"scopeExcludedDescendantsFlag" : newMapProjectScopeExcludedDescendantsFlag,
-														"mapPrincipleSourceDocumentName" : newMapProjectMapPrincipleSourceDocumentName,
+														"mapPrincipleSourceDocumentName" : "",
 														"propagatedFlag" : newMapProjectPropagationFlag,
 														"propagationDescendantThreshold" : newMapProjectPropagationThreshold
 													};

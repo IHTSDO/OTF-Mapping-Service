@@ -77,5 +77,6 @@
     <module>import</module>
     <module>qa</module>
     <module>release</module>
+    <module>daily-build</module>
   </modules>
 </project>
