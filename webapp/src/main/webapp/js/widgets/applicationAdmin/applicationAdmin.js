@@ -26,8 +26,9 @@ angular
 						'$location',
 						'localStorageService',
 						'$upload',
+						'$q',
 						function($scope, $http, $sce, $rootScope, $location,
-								localStorageService, $upload) {
+								localStorageService, $upload, $q) {
 
 							$scope.page = 'project';
 
@@ -2993,6 +2994,8 @@ angular
 							 * cached projects
 							 */
 							$scope.updateMapProject = function(project) {
+									
+								var deferred = $q.defer();
 
 								$http({
 									url : root_mapping + "project/update",
@@ -3008,49 +3011,24 @@ angular
 													console.debug("success to updateMapProject");
 													removeComponentFromArray(editingPerformed, project);
 
-													// retrieve updated projects
-													// and broadcast
-													$http({
-														url : root_mapping + "project/projects",
-														dataType : "json",
-														method : "GET",
-														headers : {
-															"Content-Type" : "application/json"
+													// update the cached project list
+													for (var i = 0; i < $scope.mapProjects.length; i++) {
+														if ($scope.mapProjects[i].id = data.id) {
+															$scope.mapProjects[i] = data;
 														}
+													}
+													localStorageService.add('mapProjects', $scope.mapProjects[i]);
 
-													})
-															.success(
-																	function(data) {
-																		localStorageService.add('mapProjects',
-																				data.mapProject);
-																		$rootScope
-																				.$broadcast(
-																						'localStorageModule.notification.setMapProjects',
-																						{
-																							key : 'mapProjects',
-																							mapProjects : data.mapProject
-																						});
-																		$scope.mapProjects = data.mapProject;
-																	}).error(
-																	function(data, status, headers, config) {
-																		$rootScope.glassPane--;
-																		$rootScope.handleHttpError(data, status,
-																				headers, config);
-																	});
-
-													$rootScope.$broadcast(
-															'localStorageModule.notification.setMapProjects',
-															{
-																key : 'mapProjects',
-																mapProjects : $scope.mapProjects
-															});
-
+													deferred.resolve();
+													
 												}).error(
 												function(data, status, headers, config) {
-													$scope.recordError = "Error updating map project.";
 													$rootScope.handleHttpError(data, status, headers,
 															config);
+													deferred.reject();
 												});
+								
+								return deferred.promise;
 							};
 
 							$scope.deleteMapProject = function(project) {

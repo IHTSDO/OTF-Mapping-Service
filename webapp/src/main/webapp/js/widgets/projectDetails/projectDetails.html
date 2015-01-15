@@ -100,59 +100,7 @@
 	</tbody>
 </table>
 <p></p>
-</accordion-group> <accordion-group
-	ng-show="focusProject.mapAdministrator.length > 0 || editModeEnabled == true">
-<accordion-heading>
-<h5>
-	<span tooltip-placement="right"
-		tooltip="List of the map administrators for this project."> Map
-		Administrators </span>
-</h5>
-</accordion-heading>
-<table width="100%" class="table pure-table">
-	<thead>
-		<tr>
-			<th style="width: 30%;">User</th>
-			<th style="width: 20%;">User Name</th>
-			<th style="width: 47%;">Email</th>
-			<th style="width: 3%;"></th>
-		</tr>
-	</thead>
-	<tbody ng-repeat="administrator in focusProject.mapAdministrator"
-		style="border: 2px solid #ccc;">
-		<tr>
-			<td>{{administrator.name}}</td>
-			<td>{{administrator.userName}}</td>
-			<td ng-show="isEmailViewable(administrator.email) == true">{{administrator.email}}</td>
-			<td ng-show="isEmailViewable(administrator.email) == false">Private
-				email</td>
-			<td ng-show="editModeEnabled == true"><i
-				class="glyphicon glyphicon-remove"
-				ng-click="deleteAdministrator(administrator)"></i></td>
-			<td ng-show="editModeEnabled == false"></td>
-		</tr>
-	</tbody>
-</table>
-
-<table ng-show="editModeEnabled == true" width="50%"
-	class="table pure-table">
-	<thead>
-		<tr>
-			<th style="width: 97%;">Add Map Administrator</th>
-			<th style="width: 3%;"></th>
-		</tr>
-	</thead>
-	<tbody
-		ng-repeat="mapUser in mapUsers | elementFilter:focusProject.mapAdministrator">
-		<tr>
-			<td>{{mapUser.name}}</td>
-			<td><i class="glyphicon glyphicon-plus"
-				ng-click="addAdministrator(mapUser)"></i></td>
-		</tr>
-	</tbody>
-</table>
-
-</accordion-group> <accordion-group
+</accordion-group><accordion-group
 	ng-show="focusProject.mapLead.length > 0 || editModeEnabled == true">
 <accordion-heading>
 <h5>
@@ -200,6 +148,39 @@
 		</tr>
 	</tbody>
 </table>
+
+<form>
+	<div style="margin-top: 15px;">
+		<b>Add New Map Lead to Project</b>
+	</div>
+	<table class="table pure-table">
+		<thead>
+			<tr>
+				<th style="width: 25%;"></th>
+				<th style="width: 75%;"></th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>Login Name</td>
+				<td><input id="newLeadUserName" type="text" ng-model="newLead.userName"></td>
+			</tr>
+			<tr>
+				<td>Full Name</td>
+				<td><input id="newLeadNname" type="text"
+					ng-model="newLead.name"></td>
+			</tr>
+			<tr>
+				<td>Email</td>
+				<td><input id="newLeadEmail" type="text"
+					ng-model="newLead.email"></td>
+			</tr>
+		</tbody>
+	</table>
+
+	<button class="btn btn-sm btn-primary"
+		ng-click="addMapUserToMapProjectWithRole(newLead, 'Lead'); newLead = null; ">Submit</button>
+</form>
 
 </accordion-group> <accordion-group
 	ng-show="focusProject.mapSpecialist.length > 0 || editModeEnabled == true">
@@ -252,33 +233,39 @@
 		</tr>
 	</tbody>
 </table>
-</accordion-group> <accordion-group ng-show="focusProject.mapAdministrators.length > 0">
-<accordion-heading>
-<h5>
-	<span tooltip-placement="right"
-		tooltip="List of the map administrators for this project."> Map
-		Administrators </span>
-</h5>
-</accordion-heading>
-<table width="100%" class="table pure-table">
-	<thead>
-		<tr>
-			<th style="width: 30%;">User</th>
-			<th style="width: 20%;">User Name</th>
-			<th style="width: 50%;">Email</th>
-		</tr>
-	</thead>
-	<tbody ng-repeat="admin in focusProject.mapAdministrators"
-		style="border: 2px solid #ccc;">
-		<tr>
-			<td>{{admin.name}}</td>
-			<td>{{admin.userName}}</td>
-			<td ng-show="isEmailViewable(admin.email) == true">{{admin.email}}</td>
-			<td ng-show="isEmailViewable(admin.email) == false">Private
-				email</td>
-		</tr>
-	</tbody>
-</table>
+<form>
+	<div style="margin-top: 15px;">
+		<b>Add New Map Specialist to Project</b>
+	</div>
+	<table class="table pure-table">
+		<thead>
+			<tr>
+				<th style="width: 25%;"></th>
+				<th style="width: 75%;"></th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>Login Name</td>
+				<td><input id="newSpecialistUserName" type="text" ng-model="newSpecialist.userName"></td>
+			</tr>
+			<tr>
+				<td>Full Name</td>
+				<td><input id="newSpecialistName" type="text"
+					ng-model="newSpecialist.name"></td>
+			</tr>
+			<tr>
+				<td>Email</td>
+				<td><input id="newSpecialistEmail" type="text"
+					ng-model="newSpecialist.email"></td>
+			</tr>
+		</tbody>
+	</table>
+
+	<button class="btn btn-sm btn-primary"
+		ng-click="addMapUserToMapProjectWithRole(newSpecialist, 'Specialist'); newSpecialist = null; ">Submit</button>
+</form>
+
 </accordion-group> <accordion-group
 	ng-show="focusProject.mapAdvice.length > 0 || editModeEnabled == true">
 <accordion-heading>
@@ -339,7 +326,7 @@
 		</tr>
 	</thead>
 	<tbody
-		ng-repeat="advice in allowableMapAdvices | elementFilter:focusProject.mapAdvice">
+		ng-repeat="advice in allowableMapAdvices | elementFilter:focusProject.mapAdvice | orderBy:'name'">
 		<tr>
 			<td>{{advice.name}}</td>
 			<td><i class="glyphicon glyphicon-plus"
@@ -352,7 +339,6 @@
 	<div style="margin-top: 15px;">
 		<b>Create New Map Advice</b>
 	</div>
-	<hr>
 	<table class="table pure-table">
 		<thead>
 			<tr>
@@ -455,7 +441,7 @@
 		</tr>
 	</thead>
 	<tbody
-		ng-repeat="relation in allowableMapRelations | elementFilter:focusProject.mapRelation">
+		ng-repeat="relation in allowableMapRelations | elementFilter:focusProject.mapRelation | orderBy:'name'">
 		<tr>
 			<td>{{relation.name}}</td>
 			<td><i class="glyphicon glyphicon-plus"
@@ -480,36 +466,33 @@
 			<tr>
 				<td>Relation Terminology Id</td>
 				<td><input id="newRelationTerminologyId" type="text"
-					ng-model="newRelationTerminologyId"></td>
+					ng-model="newRelation.terminologyId"></td>
 			</tr>
 			<tr>
 				<td>Relation Code</td>
 				<td><input id="newRelationAbbreviation" type="text"
-					ng-model="newRelationAbbreviation"></td>
+					ng-model="newRelation.abbreviation"></td>
 			</tr>
 			<tr>
 				<td>Relation Name</td>
 				<td><input id="newRelationName" type="text"
-					ng-model="newRelationName"></td>
+					ng-model="newRelation.name"></td>
 			</tr>
 			<tr>
 				<td>Allowable for Null Target</td>
-				<td><select ng-model="newRelationAllowableForNullTarget"
+				<td><select ng-model="newRelation.allowableForNullTarget"
 					ng-options="item for item in [true, false]">
 				</select></td>
 			</tr>
 			<tr>
 				<td>Is Computed</td>
-				<td><select ng-model="newRelationIsComputed"
+				<td><select ng-model="newRelation.isComputed"
 					ng-options="item for item in [true, false]">
 				</select></td>
 			</tr>
 			<tr>
 				<td><button class="btn btn-sm btn-primary"
-						ng-click="submitNewMapRelation(newRelationName, newRelationAbbreviation, newRelationTerminologyId, 
-        newRelationAllowableForNullTarget, newRelationIsComputed); 
-        newRelationName = ''; newRelationAbbreviation = ''; newRelationTerminologyId = '';
-        newRelationAllowableForNullTarget = false; newRelationIsComputed = false;">Submit</button></td>
+						ng-click="submitNewMapRelation(newRelation);newRelation = null;">Submit</button></td>
 				<td></td>
 			</tr>
 		</tbody>
@@ -640,7 +623,7 @@
 		</tr>
 	</thead>
 	<tbody
-		ng-repeat="definition in allowableQACheckDefinitions | elementFilter:focusProject.qaCheckDefinition">
+		ng-repeat="definition in allowableQACheckDefinitions | elementFilter:focusProject.qaCheckDefinition | orderBy:'name'">
 		<tr>
 			<td>{{definition.name}}</td>
 			<td><i class="glyphicon glyphicon-plus"
@@ -716,9 +699,9 @@
 		</tr>
 	</thead>
 	<tbody
-		ng-repeat="principle in allowableMapPrinciples | elementFilter:focusProject.mapPrinciple">
+		ng-repeat="principle in allowableMapPrinciples | elementFilter:focusProject.mapPrinciple | orderBy:'principleId'">
 		<tr>
-			<td>{{principle.name}}</td>
+			<td>{{principle.principleId}}: {{principle.name}}</td>
 			<td><i class="glyphicon glyphicon-plus"
 				ng-click="addPrinciple(principle)"></i></td>
 		</tr>
@@ -741,28 +724,27 @@
 			<tr>
 				<td>Principle Name</td>
 				<td><input id="newPrincipleName" style="width: 100%;"
-					type="text" ng-model="newPrincipleName"></td>
+					type="text" ng-model="newPrinciple.name"></td>
 			</tr>
 			<tr>
 				<td>Principle Id</td>
 				<td><input id="newPrincipleId" style="width: 100%;" type="text"
-					ng-model="newPrincipleId"></td>
+					ng-model="newPrinciple.principleId"></td>
 			</tr>
 			<tr>
 				<td>Principle Detail</td>
 				<td><input id="newPrincipleDetail" style="width: 100%;"
-					type="text" ng-model="newPrincipleDetail"></td>
+					type="text" ng-model="newPrinciple.detail"></td>
 			</tr>
 			<tr>
 				<td>Principle Section Ref</td>
 				<td><input id="newPrincipleSectionRef" style="width: 100%;"
-					type="text" ng-model="newPrincipleSectionRef"></td>
+					type="text" ng-model="newPrinciple.sectionRef"></td>
 			</tr>
 			<tr>
 				<td><button class="btn btn-sm btn-primary style="
 						margin-bottom:15px;"" 
-        ng-click="submitNewMapPrinciple(newPrincipleName, newPrincipleId, newPrincipleDetail, newPrincipleSectionRef);
-         newPrincipleName = ''; newPrincipleId = ''; newPrincipleDetail = ''; newPrincipleSectionRef = '';">Submit</button></td>
+        ng-click="submitNewMapPrinciple(newPrinciple);newPrinciple=null;">Submit</button></td>
 				<td></td>
 			</tr>
 		</tbody>
@@ -813,7 +795,7 @@
 					<span
 						ng-show="ageRange.lowerInclusive == true && ageRange.lowerValue != null">≥</span>
 					<span
-						ng-show="ageRange.lowerInclusive == false && ageRange.lowerValue != null">></span>
+						ng-show="ageRange.lowerInclusive == false && ageRange.lowerValue != null">&gt</span>
 
 					{{ageRange.lowerValue}} {{ageRange.lowerUnits}}
 				</div>
@@ -825,7 +807,7 @@
 					<span
 						ng-show="ageRange.upperInclusive == true && ageRange.upperValue != null">≤</span>
 					<span
-						ng-show="ageRange.upperInclusive == false && ageRange.upperValue != null"><</span>
+						ng-show="ageRange.upperInclusive == false && ageRange.upperValue != null">&lt</span>
 
 					{{ageRange.upperValue}} {{ageRange.upperUnits}}
 				</div>
@@ -847,7 +829,7 @@
 		</tr>
 	</thead>
 	<tbody
-		ng-repeat="ageRange in allowableMapAgeRanges | elementFilter:focusProject.mapAgeRange">
+		ng-repeat="ageRange in allowableMapAgeRanges | elementFilter:focusProject.mapAgeRange | orderBy:'name'">
 		<tr>
 			<td>{{ageRange.name}}</td>
 			<td><i class="glyphicon glyphicon-plus"
@@ -872,47 +854,43 @@
 			<tr>
 				<td>Age Range Name</td>
 				<td><input id="newAgeRangeName" type="text"
-					ng-model="newAgeRangeName"></td>
+					ng-model="newAgeRange.name"></td>
 			</tr>
 			<tr>
 				<td>Age Range Lower Value</td>
 				<td><input id="newAgeRangeLowerValue" type="text"
-					ng-model="newAgeRangeLowerValue"></td>
+					ng-model="newAgeRange.lowerValue"></td>
 			</tr>
 			<tr>
 				<td>Age Range Lower Units</td>
 				<td><input id="newAgeRangeLowerUnits" type="text"
-					ng-model="newAgeRangeLowerUnits"></td>
+					ng-model="newAgeRange.lowerUnits"></td>
 			</tr>
 			<tr>
 				<td>Age Range Lower Inclusive</td>
-				<td><select ng-model="newAgeRangeLowerInclusive"
+				<td><select ng-model="newAgeRange.lowerInclusive"
 					ng-options="item for item in [true, false]">
 				</select></td>
 			</tr>
 			<tr>
 				<td>Age Range Upper Value</td>
 				<td><input id="newAgeRangeUpperValue" type="text"
-					ng-model="newAgeRangeUpperValue"></td>
+					ng-model="newAgeRange.upperValue"></td>
 			</tr>
 			<tr>
 				<td>Age Range Upper Units</td>
 				<td><input id="newAgeRangeUpperUnits" type="text"
-					ng-model="newAgeRangeUpperUnits"></td>
+					ng-model="newAgeRange.upperUnits"></td>
 			</tr>
 			<tr>
 				<td>Age Range Upper Inclusive</td>
-				<td><select ng-model="newAgeRangeUpperInclusive"
+				<td><select ng-model="newAgeRange.upperInclusive"
 					ng-options="item for item in [true, false]">
 				</select></td>
 			</tr>
 			<tr>
 				<td><button class="btn btn-sm btn-primary"
-						ng-click="submitNewMapAgeRange(newAgeRangeName, newAgeRangeLowerInclusive, newAgeRangeLowerUnits,
-         newAgeRangeLowerValue, newAgeRangeUpperInclusive, newAgeRangeUpperUnits, newAgeRangeUpperValue);
-         newAgeRangeName = ''; newAgeRangeLowerInclusive = ''; newAgeRangeLowerUnits = '';
-         newAgeRangeLowerValue = ''; newAgeRangeUpperInclusive = ''; newAgeRangeUpperUnits = '';
-         newAgeRangeUpperValue = '';">Submit</button></td>
+						ng-click="submitNewMapAgeRange(newAgeRange);newAgeRange = null;">Submit</button></td>
 				<td></td>
 			</tr>
 		</tbody>
@@ -1005,7 +983,7 @@
 			<td>{{scopeConcept.value}}</td>
 			<td ng-show="editModeEnabled == true"><i
 				class="glyphicon glyphicon-remove"
-				ng-click="deleteScopeIncludedConcept(scopeConcept)"></i></td>
+				ng-click="removeScopeIncludedConcept(scopeConcept)"></i></td>
 			<td ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
 		</tr>
 
@@ -1074,7 +1052,7 @@
 			<td>{{scopeExcludedConcept.value}}</td>
 			<td ng-show="editModeEnabled == true"><i
 				class="glyphicon glyphicon-remove"
-				ng-click="deleteScopeExcludedConcept(scopeExcludedConcept, pageScopeExcludedConcept)"></i>
+				ng-click="removeScopeExcludedConcept(scopeExcludedConcept, pageScopeExcludedConcept)"></i>
 			</td>
 			<td ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
 		</tr>
