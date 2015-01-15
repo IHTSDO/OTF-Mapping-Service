@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -180,7 +181,7 @@ public class ReportServiceRest extends RootServiceRest {
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public ReportDefinition addReportDefinition(
-    @ApiParam(value = "The report definition to add", required = true) ReportDefinitionJpa reportDefinition,
+    @ApiParam(value = "The report definition to add, in JSON or XML format", required = true) ReportDefinitionJpa reportDefinition,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
     Logger.getLogger(MappingServiceRest.class).info(
         "RESTful call (Report):  /definition/add");
@@ -219,12 +220,12 @@ public class ReportServiceRest extends RootServiceRest {
    */
   @POST
   @Path("/definition/update")
-  @ApiOperation(value = "Update a report definition", notes = "Updates the specified report definition.", response = Response.class)
-  @Produces({
+  @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
+  @ApiOperation(value = "Update a report definition", notes = "Updates the specified report definition.", response = Response.class)
   public void updateReportDefinitions(
-    @ApiParam(value = "Report definition to update", required = true) ReportDefinitionJpa definition,
+    @ApiParam(value = "Report definition to update, in JSON or XML format", required = true) ReportDefinitionJpa definition,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
     Logger.getLogger(MappingServiceRest.class).info(
         "RESTful call (Report):  /definition/update");
@@ -260,12 +261,12 @@ public class ReportServiceRest extends RootServiceRest {
    */
   @DELETE
   @Path("/definition/delete")
-  @ApiOperation(value = "Delete a report definition", notes = "Deletes the specified report definition.", response = ReportDefinitionJpa.class)
-  @Produces({
+  @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
+  @ApiOperation(value = "Delete a report definition", notes = "Deletes the specified report definition.", response = ReportDefinitionJpa.class)
   public void removeReportDefinitions(
-    @ApiParam(value = "The report definition to delete", required = true) ReportDefinitionJpa reportDefinition,
+    @ApiParam(value = "The report definition to delete, in JSON or XML format", required = true) ReportDefinitionJpa reportDefinition,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
     Logger.getLogger(MappingServiceRest.class).info(
         "RESTful call (Report):  /definition/delete");
@@ -328,12 +329,12 @@ public class ReportServiceRest extends RootServiceRest {
    */
   @POST
   @Path("/report/add")
-  @ApiOperation(value = "Updates a report", notes = "Updates the specified report", response = Response.class)
-  @Produces({
+  @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
+  @ApiOperation(value = "Updates a report", notes = "Updates the specified report", response = Response.class)
   public void updateReport(
-    @ApiParam(value = "Report report to update", required = true) ReportJpa report,
+    @ApiParam(value = "Report report to update, in JSON or XML format", required = true) ReportJpa report,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
     Logger.getLogger(MappingServiceRest.class).info(
         "RESTful call (Report):  /report/add");
@@ -368,12 +369,12 @@ public class ReportServiceRest extends RootServiceRest {
    */
   @DELETE
   @Path("/report/delete")
-  @ApiOperation(value = "Delete a report", notes = "Deletes the specified report.", response = ReportDefinitionJpa.class)
-  @Produces({
+  @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
+  @ApiOperation(value = "Delete a report", notes = "Deletes the specified report.", response = ReportDefinitionJpa.class)
   public void removeReport(
-    @ApiParam(value = "The report to delete", required = true) ReportJpa report,
+    @ApiParam(value = "The report to delete, in JSON or XML format", required = true) ReportJpa report,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
     Logger.getLogger(MappingServiceRest.class).info(
         "RESTful call (Report):  /report/delete");
@@ -416,7 +417,7 @@ public class ReportServiceRest extends RootServiceRest {
   })
   public ReportList getReportsForMapProject(
     @ApiParam(value = "Map project id", required = true) @PathParam("projectId") Long projectId,
-    @ApiParam(value = "Paging/filtering/sorting object", required = true) PfsParameterJpa pfsParameter,
+    @ApiParam(value = "Paging/filtering/sorting object, in JSON or XML format", required = true) PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
     Logger.getLogger(MappingServiceRest.class).info(
@@ -483,8 +484,8 @@ public class ReportServiceRest extends RootServiceRest {
   })
   public ReportList getReportsForMapProjectAndReportDefinition(
     @ApiParam(value = "Map project id", required = true) @PathParam("projectId") Long projectId,
-    @ApiParam(value = "Report definition", required = true) @PathParam("definitionId") Long definitionId,
-    @ApiParam(value = "Paging/filtering/sorting object", required = true) PfsParameterJpa pfsParameter,
+    @ApiParam(value = "Report definition id", required = true) @PathParam("definitionId") Long definitionId,
+    @ApiParam(value = "Paging/filtering/sorting object, in JSON or XML format", required = true) PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
     Logger.getLogger(MappingServiceRest.class).info(
@@ -551,7 +552,7 @@ public class ReportServiceRest extends RootServiceRest {
   })
   public Report getLatestReport(
     @ApiParam(value = "Map project id", required = true) @PathParam("projectId") Long projectId,
-    @ApiParam(value = "Report definition", required = true) @PathParam("definitionId") Long definitionId,
+    @ApiParam(value = "Report definition id", required = true) @PathParam("definitionId") Long definitionId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
     Logger.getLogger(MappingServiceRest.class).info(
@@ -622,11 +623,14 @@ public class ReportServiceRest extends RootServiceRest {
   @POST
   @Path("/report/generate/project/id/{projectId}/user/id/{userName}")
   @ApiOperation(value = "Generate a report", notes = "Generates and returns a report for the specified report definition and project", response = ReportJpa.class)
+  @Consumes({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public Report generateReport(
-    @ApiParam(value = "The report definition", required = true) ReportDefinitionJpa reportDefinition,
+    @ApiParam(value = "The report definition, in JSON or XML format", required = true) ReportDefinitionJpa reportDefinition,
     @ApiParam(value = "Map project id", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "User generating report", required = true) @PathParam("userName") String userName,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
@@ -695,6 +699,9 @@ public class ReportServiceRest extends RootServiceRest {
   @POST
   @Path("/report/test/project/id/{projectId}/user/id/{userName}")
   @ApiOperation(value = "Tests a report", notes = "Tests generation of the specified report definition.", response = ReportJpa.class)
+  @Consumes({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
@@ -757,11 +764,14 @@ public class ReportServiceRest extends RootServiceRest {
   @POST
   @Path("/reportResult/id/{reportResultId}/items")
   @ApiOperation(value = "Gets report result items", notes = "Gets paged report result items for the report result id", response = ReportJpa.class)
+  @Consumes({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public ReportResultItemList getReportResultItems(
-    @ApiParam(value = "The paging/filtering/sorting object", required = true) PfsParameterJpa pfsParameter,
+    @ApiParam(value = "The paging/filtering/sorting object, in JSON or XML format", required = true) PfsParameterJpa pfsParameter,
     @ApiParam(value = "Report id", required = true) @PathParam("reportResultId") Long reportResultId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
