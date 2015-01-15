@@ -177,25 +177,26 @@ public abstract class AbstractWorkflowPathHandler implements
       // get the workflow status
       String workflowStatus = null;
       String user = null;
-      
+
       // cycle over all defined status values
       for (WorkflowStatus status : WorkflowStatus.values()) {
 
         // if the pair starts with this status
         if (pair.startsWith(status.toString())) {
-          
+
           // set the status
           workflowStatus = status.toString();
-          
+
           // extract the user
           user = pair.replace(workflowStatus + "_", "");
-          
+
           // stop searching for matching statuses
           break;
         }
       }
 
-      // find the record matching the tracking record's workflow status/user pair
+      // find the record matching the tracking record's workflow status/user
+      // pair
       boolean recordFound = false;
       for (MapRecord mr : mapRecords.getMapRecords()) {
         if (mr.getOwner().getUserName().equals(user)
@@ -265,7 +266,8 @@ public abstract class AbstractWorkflowPathHandler implements
           }
         }
 
-        workflowCombination.addWorkflowStatus(WorkflowStatus.valueOf(workflowStatus));
+        workflowCombination.addWorkflowStatus(WorkflowStatus
+            .valueOf(workflowStatus));
       }
     }
 
@@ -308,12 +310,25 @@ public abstract class AbstractWorkflowPathHandler implements
     MapUser mapUser) {
     MapRecord assignedRecord = null;
     for (MapRecord mr : records.getMapRecords()) {
-      if (mr.getOwner().equals(mapUser)) {
-        if (assignedRecord == null) {
-          assignedRecord = mr;
-        } else if (mr.getWorkflowStatus().compareTo(
-            assignedRecord.getWorkflowStatus()) > 0)
-          assignedRecord = mr;
+
+      // publication-ready and REVISION records cannot be current records
+      if (!mr.getWorkflowStatus().equals(WorkflowStatus.READY_FOR_PUBLICATION)
+          && !mr.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)
+          && !mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
+        
+        // if user owns this record
+        if (mr.getOwner().equals(mapUser)) {
+
+          // if assigned record is null, set to this record
+          if (assignedRecord == null) {
+            assignedRecord = mr;
+          } 
+          
+          // otherwise, if this workflow status is higher, set to this record
+          else if (mr.getWorkflowStatus().compareTo(
+              assignedRecord.getWorkflowStatus()) > 0)
+            assignedRecord = mr;
+        }
       }
     }
     return assignedRecord;
@@ -379,4 +394,9 @@ public abstract class AbstractWorkflowPathHandler implements
     }
     return null;
   }
+
+  /**
+   * Utility function: could action have led to this state
+   */
+
 }

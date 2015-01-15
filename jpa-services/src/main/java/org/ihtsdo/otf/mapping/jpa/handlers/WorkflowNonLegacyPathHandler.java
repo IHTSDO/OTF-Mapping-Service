@@ -173,11 +173,16 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
     // Switch on workflow path state //
     // /////////////////////////////////
 
+    if (state == null) {
+      result.addError("Could not determine workflow path state for tracking record");
+    }
+    
+    
     // INITIAL STATE: No specialists have started editing
     // Record requirement : None
     // Permissible actions: ASSIGN_FROM_SCRATCH
     // Minimum role : Specialist
-    if (state.equals(initialState)) {
+    else if (state.equals(initialState)) {
 
       System.out.println("initial");
 
@@ -389,6 +394,10 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
       }
     } else {
       result.addError("Invalid state/could not determine state");
+    }
+    
+    if (result.getErrors().size() != 0) {
+      result.addError("Error occured in workflow state " + state.getWorkflowStateName());;
     }
 
     return result;

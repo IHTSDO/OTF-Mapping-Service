@@ -3386,6 +3386,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     mapProject.getReportDefinitions().size();
     mapProject.getScopeConcepts().size();
     mapProject.getScopeExcludedConcepts().size();
+    mapProject.getErrorMessages().size();
 
   }
 
