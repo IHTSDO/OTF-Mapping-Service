@@ -3671,8 +3671,16 @@ public class MappingServiceRest extends RootServiceRest {
 
       String docDir = config.getProperty("map.principle.source.document.dir");
 
+       // make sure docDir ends with /doc - validation
+      // mkdirs with project id in both dir and archiveDir
+      
       File dir = new File(docDir);
       File archiveDir = new File(docDir + "/archive");
+      
+      File projectDir = new File(docDir, mapProjectId.toString());
+      projectDir.mkdir();
+      File archiveProjectDir = new File(archiveDir, mapProjectId.toString());
+      archiveProjectDir.mkdir();
 
       // compose the name of the stored file
       MappingService mappingService = new MappingServiceJpa();
@@ -3694,9 +3702,9 @@ public class MappingServiceRest extends RootServiceRest {
               .substring(0,
                   contentDispositionHeader.getFileName().lastIndexOf("."))
               .replaceAll(" ", "_");
-      File file = new File(dir, mapProjectId + "_" + fileName + extension);
+      File file = new File(dir, mapProjectId + "/" + fileName + extension);
       File archiveFile =
-          new File(archiveDir, mapProjectId + "_" + fileName + "." + date
+          new File(archiveDir, mapProjectId + "/" + fileName + "." + date
               + extension);
 
       // save the file to the server
@@ -3704,11 +3712,11 @@ public class MappingServiceRest extends RootServiceRest {
       copyFile(file, archiveFile);
 
       // update project
-      mapProject.setMapPrincipleSourceDocument(mapProjectId + "_" + fileName
+      mapProject.setMapPrincipleSourceDocument(mapProjectId + "/" + fileName
           + extension);
       updateMapProject((MapProjectJpa) mapProject, authToken);
 
-      return Response.status(200).entity(file.getName()).build();
+      return Response.status(200).entity(mapProjectId + "/" + file.getName()).build();
     } catch (Exception e) {
       handleException(e, "trying to upload a file", user,
           mapProjectId.toString(), "");
