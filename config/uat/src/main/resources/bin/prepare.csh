@@ -34,6 +34,15 @@ if ($status != 0) then
     exit 1
 endif
 
+echo "    Create admin user and empty project ...`/bin/date`"
+cd $MAPPING_CODE/admin/loader
+mvn install -PCreateMapAdmin -Drun.config=$MAPPING_CONFIG -Dmap.user=admin >&! mvn.log
+if ($status != 0) then
+    echo "ERROR creating admin user and empty project"
+    cat mvn.log
+    exit 1
+endif
+
 echo "------------------------------------------------"
 echo "Finished ...`/bin/date`"
 echo "------------------------------------------------"
