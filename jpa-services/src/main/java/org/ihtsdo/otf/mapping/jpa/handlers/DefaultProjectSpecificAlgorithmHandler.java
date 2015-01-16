@@ -1683,10 +1683,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
           throw new Exception(
               "Publish called on QA_PATH, but no QA_NEEDED record found");
 
-        mapRecord.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
-
-        newRecords.clear();
-        newRecords.add(mapRecord);
+       
 
         Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
             "publish - QA_PATH - Creating READY_FOR_PUBLICATION record "
@@ -2118,6 +2115,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
           // mark the lead record as resolved
           leadRecord.setWorkflowStatus(WorkflowStatus.REVIEW_RESOLVED);
+          
+          // SPECIAL CASE:  Lead does not need to have their work reviewed, call publish immediately
+          publish(trackingRecord, mapRecords, mapUser);
 
         } else {
           throw new Exception(
@@ -2159,18 +2159,20 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
           if (originalRecord == null)
             throw new Exception(
-                "QA_PATH: Lead finished reviewing work, but could not find previously published record");
+                "QA_PATH: User finished reviewing work, but could not find previously published record");
 
           if (modifiedRecord == null)
             throw new Exception(
-                "QA_PATH: Lead finished reviewing work, but could not find the specialist's (QA) record");
+                "QA_PATH: User finished reviewing work, but could not find the specialist's (QA) record");
 
           if (leadRecord == null)
             throw new Exception(
-                "QA_PATH: Lead finished reviewing work, but could not find their record.");
+                "QA_PATH: User finished reviewing work, but could not find their record.");
 
-          // mark the lead record as resolved
-          leadRecord.setWorkflowStatus(WorkflowStatus.QA_RESOLVED);
+          mapRecord.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+
+          newRecords.clear();
+          newRecords.add(mapRecord);
 
         } else {
           throw new Exception(
