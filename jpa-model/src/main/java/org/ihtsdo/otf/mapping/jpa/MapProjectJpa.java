@@ -20,6 +20,7 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
+import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -46,14 +47,15 @@ import org.ihtsdo.otf.mapping.reports.ReportDefinitionJpa;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-// TODO: Auto-generated Javadoc
 /**
  * JPA enabled implementation of {@link MapProject}.
- *
- * @author ${author}
  */
 @Entity
-@Table(name = "map_projects")
+@Table(name = "map_projects", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {
+      "name"
+    })
+  })
 @Audited
 @Indexed
 @XmlRootElement(name = "mapProject")
