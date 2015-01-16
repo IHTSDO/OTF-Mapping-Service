@@ -7,6 +7,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -24,7 +25,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * A JPA-enabled implementation of {@link MapUser}.
  */
 @Entity
-@Table(name = "map_users")
+@Table(name = "map_users", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {
+      "userName"
+    })
+  })
 @Audited
 @XmlRootElement(name = "mapUser")
 @JsonIgnoreProperties(ignoreUnknown = true)
