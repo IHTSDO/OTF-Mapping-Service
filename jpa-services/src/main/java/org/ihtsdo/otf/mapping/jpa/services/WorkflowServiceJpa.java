@@ -1872,15 +1872,17 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         StringBuffer message = new StringBuffer();
 
         message.append("Errors were detected in the workflow for:\n");
-        message.append("  Project: " + mapProject.getName() + "\n");
-        message.append("  Concept: " + concept.getTerminologyId() + "\n");
-        message.append("  User   : " + mapUser.getUserName() + "\n");
-        message.append("  Action : " + workflowAction.toString() + "\n");
+        message.append("  Project\t: " + mapProject.getName() + "\n");
+        message.append("  Concept\t: " + concept.getTerminologyId() + "\n");
+        message.append("  Path:\t " + trackingRecord.getWorkflowPath().toString() + "\n");
+        message.append("  User\t: " + mapUser.getUserName() + "\n");
+        message.append("  Action\t: " + workflowAction.toString() + "\n");
 
         message.append("\n");
 
         // record information
-        message.append("Records involved (id owner workflowStatus)\n");
+        message.append("Records involved:\n");
+        message.append("  " + "id\tUser\tWorkflowStatus\n");
         
         for (MapRecord mr : getMapRecordsForTrackingRecord(trackingRecord)) {
           message.append("  " + mr.getId().toString() + "\t" + mr.getOwner().getUserName() + "\t" + mr.getWorkflowStatus().toString() + "\n");

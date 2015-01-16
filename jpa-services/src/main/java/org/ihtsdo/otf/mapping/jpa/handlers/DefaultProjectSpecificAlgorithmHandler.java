@@ -12,6 +12,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
+import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
@@ -743,7 +744,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
       }
 
       // check that any rule/target pairs are not different
-      // for non-rule based projects, this will compare a single entry in each group
+      // for non-rule based projects, this will compare a single entry in each
+      // group
       for (int d = 0; d < entries1.size(); d++) {
         for (int f = 0; f < entries2.size(); f++) {
           if (isRulesEqual(entries1.get(d), entries2.get(f))
@@ -1463,16 +1465,24 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         MapRecord editingRecord = null;
         MapRecord reviewRecord = null;
         for (MapRecord mr : mapRecords) {
-          if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION))
+          System.out.println(mr.toString());
+          if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
+
             revisionRecord = mr;
-          else if (mr.getWorkflowStatus().compareTo(
-              WorkflowStatus.REVIEW_NEEDED) <= 0)
+            System.out.println("Revision record: " + mr.toString());
+          } else if (mr.getWorkflowStatus().equals(WorkflowStatus.NEW)
+              || mr.getWorkflowStatus().equals(
+                  WorkflowStatus.EDITING_IN_PROGRESS)
+              || mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED)) {
             editingRecord = mr;
-          else if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED)
+            System.out.println("Editing record:  " + mr.toString());
+          } else if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW)
               || mr.getWorkflowStatus().equals(
                   WorkflowStatus.REVIEW_IN_PROGRESS)
-              || mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_RESOLVED))
+              || mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_RESOLVED)) {
             reviewRecord = mr;
+            System.out.println("Review record:   " + mr.toString());
+          }
         }
 
         if (revisionRecord == null)
@@ -1500,8 +1510,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
           }
 
-          newRecords.remove(editingRecord);
-          newRecords.remove(revisionRecord);
+          newRecords.clear();
           newRecords.add(previousRevisionRecord);
 
           // Case 2: A lead unassigns themselves from reviewing a fixed
@@ -1682,8 +1691,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         if (!qaNeededRecordFound)
           throw new Exception(
               "Publish called on QA_PATH, but no QA_NEEDED record found");
-
-       
 
         Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
             "publish - QA_PATH - Creating READY_FOR_PUBLICATION record "
@@ -2066,15 +2073,33 @@ public class DefaultProjectSpecificAlgorithmHandler implements
             throw new Exception(
                 "FIX_ERROR_PATH: Specialist finished work, but could not find their record");
 
+          // instantiate mapping service to get user's project role
+          MappingService mappingService = new MappingServiceJpa();
+
           // cycle over the records
           for (MapRecord mr : mapRecords) {
 
             // two records, one marked REVISION, one marked with NEW,
             // EDITING_IN_PROGRESS
             if (!mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
+
+              // if the user is a lead, send directly to publication
+
+              if (mappingService.getMapUserRoleForMapProject(
+                  mapUser.getUserName(), mr.getMapProjectId()).hasPrivilegesOf(
+                  MapUserRole.LEAD)) {
+                mr.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+                newRecords.clear();
+                newRecords.add(mr);
+                break;
+              }
+
               mr.setWorkflowStatus(WorkflowStatus.REVIEW_NEEDED);
             }
           }
+
+          // close the mapping service
+          mappingService.close();
 
           // Case 2: A lead has finished reviewing a corrected error
         } else if (mapRecords.size() == 3) {
@@ -2113,11 +2138,11 @@ public class DefaultProjectSpecificAlgorithmHandler implements
             throw new Exception(
                 "FIX_ERROR_PATH: Lead finished reviewing work, but could not find their record.");
 
-          // mark the lead record as resolved
-          leadRecord.setWorkflowStatus(WorkflowStatus.REVIEW_RESOLVED);
-          
-          // SPECIAL CASE:  Lead does not need to have their work reviewed, call publish immediately
-          publish(trackingRecord, mapRecords, mapUser);
+          // FIX_ERROR_PATH does not use Publish, send to publication
+          leadRecord.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+
+          newRecords.clear();
+          newRecords.add(leadRecord);
 
         } else {
           throw new Exception(
