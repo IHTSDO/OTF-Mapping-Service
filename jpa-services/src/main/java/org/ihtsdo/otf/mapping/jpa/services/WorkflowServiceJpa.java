@@ -1867,14 +1867,13 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
         Logger.getLogger(WorkflowServiceJpa.class).info(result.toString());
 
-       
-
         StringBuffer message = new StringBuffer();
 
         message.append("Errors were detected in the workflow for:\n");
         message.append("  Project\t: " + mapProject.getName() + "\n");
         message.append("  Concept\t: " + concept.getTerminologyId() + "\n");
-        message.append("  Path:\t " + trackingRecord.getWorkflowPath().toString() + "\n");
+        message.append("  Path:\t "
+            + trackingRecord.getWorkflowPath().toString() + "\n");
         message.append("  User\t: " + mapUser.getUserName() + "\n");
         message.append("  Action\t: " + workflowAction.toString() + "\n");
 
@@ -1883,9 +1882,11 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         // record information
         message.append("Records involved:\n");
         message.append("  " + "id\tUser\tWorkflowStatus\n");
-        
+
         for (MapRecord mr : getMapRecordsForTrackingRecord(trackingRecord)) {
-          message.append("  " + mr.getId().toString() + "\t" + mr.getOwner().getUserName() + "\t" + mr.getWorkflowStatus().toString() + "\n");
+          message.append("  " + mr.getId().toString() + "\t"
+              + mr.getOwner().getUserName() + "\t"
+              + mr.getWorkflowStatus().toString() + "\n");
         }
         message.append("\n");
 
@@ -1896,10 +1897,11 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         }
 
         message.append("\n");
-        
+
         // log the message
-        Logger.getLogger(WorkflowServiceJpa.class).error("Workflow error detected\n" + message.toString());
-        
+        Logger.getLogger(WorkflowServiceJpa.class).error(
+            "Workflow error detected\n" + message.toString());
+
         // send email if indicated
         Properties config = ConfigUtility.getConfigProperties();
 
@@ -1907,13 +1909,11 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
             config.getProperty("send.notification.recipients");
         if (!notificationRecipients.isEmpty()) {
           OtfEmailHandler emailHandler = new OtfEmailHandler();
-          emailHandler.sendSimpleEmail(
-              notificationRecipients,
+          emailHandler.sendSimpleEmail(notificationRecipients,
               mapProject.getName() + " Workflow Error Alert, Concept "
                   + concept.getTerminologyId(), message.toString());
         }
-        
-        
+
         throw new LocalException("Workflow action " + workflowAction.toString()
             + " could not be performed on concept "
             + trackingRecord.getTerminologyId());
@@ -1988,11 +1988,11 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
           mapRecords =
               algorithmHandler.assignFromInitialRecord(trackingRecord,
                   mapRecords, mapRecord, mapUser);
+
+          // otherwise, this concept is already in the workflow, do nothing
         } else {
 
-          throw new Exception(
-              "Assignment from published record failed -- concept already in workflow");
-
+          // do nothing (label will be added in synchronize)
         }
 
         break;
