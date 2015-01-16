@@ -603,7 +603,9 @@ public interface MapProject {
   public void setPropagatedFlag(boolean propagatedFlag);
 
   /**
-   * Returns the report definitions.
+   * Returns the report definitions.  NOTE: this also includes the QA Check
+   * definitions associated with this project.  They can be differentiated
+   * via the "isQaCheck" method.
    *
    * @return the report definitions
    */
