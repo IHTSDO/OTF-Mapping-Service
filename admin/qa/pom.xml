@@ -42,6 +42,7 @@
                 </goals>
                 <configuration>
                   <refsetId>${refset.id}</refsetId>
+                  <sendNotification>${send.notification}</sendNotification>
                 </configuration>
               </execution>
             </executions>
