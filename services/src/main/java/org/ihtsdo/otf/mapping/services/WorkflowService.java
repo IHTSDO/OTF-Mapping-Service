@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.services;
 
+import java.util.List;
 import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.FeedbackConversationList;
@@ -341,10 +342,10 @@ public interface WorkflowService extends RootService {
    * QA check: Check that workflow state for all current records is valid.
    *
    * @param mapProject the map project
-   * @return the validation result
+   * @return the results as a list of strings
    * @throws Exception the exception
    */
-  public ValidationResult computeWorkflowStatusErrors(MapProject mapProject)
+  public List<String> computeWorkflowStatusErrors(MapProject mapProject)
     throws Exception;
 
   /**
