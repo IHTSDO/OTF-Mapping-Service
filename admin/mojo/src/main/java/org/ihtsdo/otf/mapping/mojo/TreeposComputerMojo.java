@@ -6,7 +6,6 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
-import org.ihtsdo.otf.mapping.rf2.TreePosition;
 import org.ihtsdo.otf.mapping.services.ContentService;
 
 /**
@@ -35,6 +34,13 @@ public class TreeposComputerMojo extends AbstractMojo {
   private String terminologyVersion;
 
   /**
+   * A comma-separated list of the root ids
+   * @parameter
+   * @requried
+   */
+  private String rootIds;
+  
+  /**
    * Instantiates a {@link TreeposComputerMojo} from the specified parameters.
    * 
    */
@@ -52,6 +58,7 @@ public class TreeposComputerMojo extends AbstractMojo {
     getLog().info("Starting computing tree positions");
     getLog().info("  terminology = " + terminology);
     getLog().info("  terminologyVersion = " + terminologyVersion);
+    getLog().info("  rootIds = " + rootIds);
 
     try {
 
@@ -69,10 +76,7 @@ public class TreeposComputerMojo extends AbstractMojo {
 
       // Walk up tree to the root
       // ASSUMPTION: single root
-      String conceptId = isaRelType;
-      for (TreePosition treePos  : contentService.getRootTreePositions(terminology,
-          terminologyVersion).getTreePositions()) {
-        String rootId = treePos.getTerminologyId();
+      for (String rootId : rootIds.split(",")) {
         getLog().info("  Compute tree from rootId " + rootId);
         contentService.computeTreePositions(terminology, terminologyVersion,
             isaRelType, rootId);
