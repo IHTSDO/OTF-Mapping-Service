@@ -22,6 +22,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * JPA enabled implementation of {@link ReportDefinition}.
+ *
+ * @author ${author}
  */
 @Entity
 @Audited
@@ -42,6 +44,10 @@ public class ReportDefinitionJpa implements ReportDefinition {
   /** The report type name. */
   @Column(nullable = false)
   private String name;
+  
+  /**  The report description. */
+  @Column(length = 4000, nullable = true)
+  private String description;
 
   /** The is diff report. */
   @Column(nullable = false)
@@ -51,11 +57,11 @@ public class ReportDefinitionJpa implements ReportDefinition {
   @Column(nullable = false)
   private boolean isQACheck = false;
 
-  /** The time period (in days) for diff and rate reports */
+  /**  The time period (in days) for diff and rate reports. */
   @Enumerated(EnumType.STRING)
   private ReportTimePeriod timePeriod;
 
-  /** The frequency with which the report is run */
+  /**  The frequency with which the report is run. */
   @Enumerated(EnumType.STRING)
 	@Column(nullable = false)
   private ReportFrequency frequency;
@@ -76,9 +82,28 @@ public class ReportDefinitionJpa implements ReportDefinition {
   @Enumerated(EnumType.STRING)
   private MapUserRole roleRequired;
 
-  /** The report definition used for constructing diff reports (if applicable) */
+  /**  The report definition used for constructing diff reports (if applicable). */
   @Column(nullable = true)
   private String diffReportDefinitionName;
+  
+  /** Default constructor */
+  public ReportDefinitionJpa() {}
+
+  /** Copy constructor */
+  public ReportDefinitionJpa(ReportDefinition reportDefinition) {
+    super();
+    this.name = reportDefinition.getName();
+    this.description = reportDefinition.getDescription();
+    this.isDiffReport = reportDefinition.isDiffReport();
+    this.isQACheck = reportDefinition.isQACheck();
+    this.timePeriod = reportDefinition.getTimePeriod();
+    this.frequency = reportDefinition.getFrequency();
+    this.resultType = reportDefinition.getResultType();
+    this.queryType = reportDefinition.getQueryType();
+    this.query = reportDefinition.getQuery();
+    this.roleRequired = reportDefinition.getRoleRequired();
+    this.diffReportDefinitionName = reportDefinition.getDiffReportDefinitionName();
+  }
 
   /**
    * Gets the id.
@@ -130,6 +155,24 @@ public class ReportDefinitionJpa implements ReportDefinition {
   public void setName(String name) {
     this.name = name;
   }
+  
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#getDescription()
+   */
+  @Override
+  public String getDescription() {
+    return this.description;
+  }
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#setDescription(java.lang.String)
+   */
+  @Override
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
 
   /*
    * (non-Javadoc)
@@ -315,6 +358,9 @@ public class ReportDefinitionJpa implements ReportDefinition {
     this.isQACheck = isQACheck;
   }
 
+  /* (non-Javadoc)
+   * @see java.lang.Object#toString()
+   */
   @Override
   public String toString() {
     return "ReportDefinitionJpa [id=" + id + ", name=" + name
@@ -347,11 +393,17 @@ public class ReportDefinitionJpa implements ReportDefinition {
     this.frequency = timePeriod;
   }
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#getDiffReportDefinitionName()
+   */
   @Override
   public String getDiffReportDefinitionName() {
     return diffReportDefinitionName;
   }
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#setDiffReportDefinitionName(java.lang.String)
+   */
   @Override
   public void setDiffReportDefinitionName(String diffReportDefinitionName) {
     this.diffReportDefinitionName = diffReportDefinitionName;
@@ -361,6 +413,8 @@ public class ReportDefinitionJpa implements ReportDefinition {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
+    result =
+        prime * result + ((description == null) ? 0 : description.hashCode());
     result =
         prime
             * result
@@ -390,6 +444,11 @@ public class ReportDefinitionJpa implements ReportDefinition {
     if (getClass() != obj.getClass())
       return false;
     ReportDefinitionJpa other = (ReportDefinitionJpa) obj;
+    if (description == null) {
+      if (other.description != null)
+        return false;
+    } else if (!description.equals(other.description))
+      return false;
     if (diffReportDefinitionName == null) {
       if (other.diffReportDefinitionName != null)
         return false;

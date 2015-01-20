@@ -42,7 +42,7 @@
     <resources>
       <resource>
         <directory>
-        ${project.build.dir}/custom
+        ${project.build.directory}/custom
         </directory>
       </resource>
     </resources>
@@ -135,6 +135,7 @@
                 <include>index.html</include>
                 <include>partials/footer.html</include>
                 <include>partials/header.html</include>
+                <include>partials/login.html</include>
               </includes>
             </resource>
             <resource>
@@ -144,6 +145,7 @@
                 <exclude>index.html</exclude>
                 <exclude>partials/footer.html</exclude>
                 <exclude>partials/header.html</exclude>
+                <exclude>partials/login.html</exclude>
               </excludes>
             </resource>
           </webResources>

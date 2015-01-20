@@ -52,9 +52,11 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Map Record Jpa object.
- * 
+ *
+ * @author ${author}
  */
 @Entity
 // @UniqueConstraint here is being used to create an index, not to enforce
@@ -153,7 +155,7 @@ public class MapRecordJpa implements MapRecord {
   @Enumerated(EnumType.STRING)
   private WorkflowStatus workflowStatus;
 
-  /** Whether this record has discrepancy review */
+  /**  Whether this record has discrepancy review. */
   @Transient
   private boolean isDiscrepancyReview = false;
 
@@ -165,6 +167,14 @@ public class MapRecordJpa implements MapRecord {
   @Field(bridge = @FieldBridge(impl = CollectionToCSVBridge.class))
   private Set<String> labels = new HashSet<>();
 
+  /** The reasons for conflict for this map record. */
+  @ElementCollection
+  @CollectionTable(name = "map_records_reasons", joinColumns = @JoinColumn(name = "id"))
+  @Column(nullable = true)
+  // treat reasons as a single field called reasonsForConflict
+  @Field(bridge = @FieldBridge(impl = CollectionToCSVBridge.class))
+  private Set<String> reasonsForConflict = new HashSet<>();
+  
   /**
    * Default constructor.
    */
@@ -216,6 +226,10 @@ public class MapRecordJpa implements MapRecord {
     }
     for (String label : mapRecord.getLabels()) {
       addLabel(label);
+    }
+    
+    for (String reason : mapRecord.getReasonsForConflict()) {
+    	addReasonForConflict(reason);
     }
   }
 
@@ -855,6 +869,8 @@ public class MapRecordJpa implements MapRecord {
     this.labels = labels;
   }
 
+
+  
   /*
    * (non-Javadoc)
    * 
@@ -875,6 +891,41 @@ public class MapRecordJpa implements MapRecord {
     labels.remove(label);
   }
 
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.model.MapRecord#getReasonsForConflict()
+   */
+  @Override
+  public Set<String> getReasonsForConflict() {
+    return reasonsForConflict;
+  }
+
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.model.MapRecord#setReasonsForConflict(java.util.Set)
+   */
+  @Override
+  public void setReasonsForConflict(Set<String> reasons) {
+    this.reasonsForConflict = reasons;
+  }
+  
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.model.MapRecord#addReasonForConflict(java.lang.String)
+   */
+  @Override
+  public void addReasonForConflict(String reason) {
+    reasonsForConflict.add(reason);
+  }
+
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.model.MapRecord#removeReasonForConflict(java.lang.String)
+   */
+  @Override
+  public void removeReasonForConflict(String reason) {
+    reasonsForConflict.remove(reason);
+  }
+  
   /*
    * (non-Javadoc)
    * 
@@ -915,6 +966,7 @@ public class MapRecordJpa implements MapRecord {
         prime * result
             + ((workflowStatus == null) ? 0 : workflowStatus.hashCode());
     result = prime * result + ((labels == null) ? 0 : labels.hashCode());
+    result = prime * result + ((reasonsForConflict == null) ? 0 : reasonsForConflict.hashCode());
     return result;
   }
 
@@ -1003,6 +1055,11 @@ public class MapRecordJpa implements MapRecord {
         return false;
     } else if (!labels.equals(other.labels))
       return false;
+    if (reasonsForConflict == null) {
+      if (other.reasonsForConflict != null)
+        return false;
+    } else if (!reasonsForConflict.equals(other.reasonsForConflict))
+      return false;
     if (workflowStatus != other.workflowStatus)
       return false;
     return true;
@@ -1025,7 +1082,8 @@ public class MapRecordJpa implements MapRecord {
         + ", flagForMapLeadReview=" + flagForMapLeadReview
         + ", flagForEditorialReview=" + flagForEditorialReview
         + ", flagForConsensusReview=" + flagForConsensusReview
-        + ", workflowStatus=" + workflowStatus + ", labels=" + labels + "]";
+        + ", workflowStatus=" + workflowStatus + ", labels=" + labels 
+        + ", reasonsForConflict=" + reasonsForConflict + "]";
   }
 
 }

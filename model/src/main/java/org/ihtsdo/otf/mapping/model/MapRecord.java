@@ -5,9 +5,12 @@ import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 
+// TODO: Auto-generated Javadoc
 /**
  * Generically represents a map record, or a complete mapping of a source
  * concept in a map project.
+ *
+ * @author ${author}
  */
 public interface MapRecord {
 
@@ -374,5 +377,33 @@ public interface MapRecord {
    * @param label the label
    */
   public void removeLabel(String label);
+  
+  /**
+   * Returns the reasons for conflict.
+   *
+   * @return the reasons for conflict
+   */
+  public Set<String> getReasonsForConflict();
+
+  /**
+   * Sets the reasons for conflict.
+   *
+   * @param reasons the reasons for conflict
+   */
+  public void setReasonsForConflict(Set<String> reasons);
+  
+  /**
+   * Adds the reason for conflict.
+   *
+   * @param reason the reason
+   */
+  public void addReasonForConflict(String reason);
+
+  /**
+   * Removes the reason for conflict.
+   *
+   * @param reason the reason
+   */
+  public void removeReasonForConflict(String reason);
 
 }
