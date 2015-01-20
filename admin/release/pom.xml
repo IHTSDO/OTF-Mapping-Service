@@ -30,6 +30,7 @@
 
     <!-- Specify a test mode for the release if desired -->
     <test.mode.flag>false</test.mode.flag>
+    
   </properties>
 
   <profiles>
@@ -115,6 +116,30 @@
       </build>
     </profile>
 
+    <!-- Used to start an editing cycle. -->
+    <profile>
+      <id>BeginEditingCycle</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>begin-editing-cycle</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>begin-editing-cycle</goal>
+                </goals>
+                <configuration>
+                  <refsetId>${refset.id}</refsetId>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
 
   </profiles>
 </project>

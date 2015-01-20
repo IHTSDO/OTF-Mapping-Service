@@ -58,18 +58,3 @@
 
 
 </div>
-
-
-
-
-
-
-<accordion close-others="false"> <accordion-group
-	ng-repeat="record in editedRecords"> <accordion-heading>{{record.lastModified
-| date: 'MM/dd/yyyy'}}: {{record.conceptName}} ({{record.conceptId}})</accordion-heading> <a
-	href="#/record/conceptId/{{record.conceptId}}">View Current Records</a>
-
-<div otf-map-record-wide record="record" project="focusProject"
-	show-title="false"></div>
-</accordion-group> </accordion>
-</div>

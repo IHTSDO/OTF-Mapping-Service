@@ -5,6 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -22,7 +23,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * JPA enabled map advice.
  */
 @Entity
-@Table(name = "map_advices")
+@Table(name = "map_advices", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {
+      "name"
+    })
+  })
 @Audited
 @XmlRootElement(name = "mapAdvice")
 @JsonIgnoreProperties(ignoreUnknown = true)

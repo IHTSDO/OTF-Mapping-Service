@@ -46,6 +46,13 @@ angular
 					$scope.availableTab = localStorageService.get('availableTab');
 					$scope.isConceptListOpen = false;
 					$scope.queryAvailable = null;
+					
+					// innitialize the search fields
+					$scope.queryAvailableWork = null;
+					$scope.queryAvailableReview = null;
+					$scope.queryAvailableConflict = null;
+					$scope.queryAvailableQaWork = null;
+					$scope.queryAvailableWorkForUser = null;
 
 					// intiialize the user list
 					$scope.mapUsers = {};
@@ -90,14 +97,15 @@ angular
 									function(event, parameters) {
 										console
 												.debug("WorkAvailableCtrl:  Detected unassign work notification");
-										$scope.retrieveAvailableWork($scope.availableWorkPage);
-										$scope.retrieveAvailableQAWork($scope.availableQAWorkPage);
+										console.debug($scope.queryAvailableWork, $scope.queryAvailableConflicts);
+										$scope.retrieveAvailableWork(1, $scope.queryAvailableWork);
+										$scope.retrieveAvailableQAWork(1, $scope.queryAvailableQaWork);
 										if ($scope.currentRole === 'Lead'
 												|| $scope.currentRole === 'Admin') {
 											$scope
-													.retrieveAvailableConflicts($scope.availableConflictsPage);
+													.retrieveAvailableConflicts(1, $scope.queryAvailableConflicts);
 											$scope
-													.retrieveAvailableReviewWork($scope.availableReviewWorkPage);
+													.retrieveAvailableReviewWork(1, $scope.queryAvailableReviewWork);
 										}
 									});
 
@@ -681,6 +689,8 @@ angular
 
 					// assign a batch of records to the current user
 					$scope.assignBatch = function(mapUser, batchSize, query) {
+						
+						console.debug("workAvailable, assignBatch:", mapUser, batchSize, query);
 
 						// set query to null string if not provided
 						if (query == undefined)
@@ -744,7 +754,7 @@ angular
 													if (trackingRecords[i].id != $scope.availableWork[i].id) {
 														retrieveAvailableWork($scope.availableWorkPage,
 																query);
-														alert("One or more of the concepts you are viewing are not in the first available batch.  Please try again.  \n\nTo claim the first available batch, return to the first page and re-click 'Claim Batch'");
+														alert("The list of available concepts has changed.  Please check the refreshed list and try again");
 														conceptListValid = false;
 													}
 												}
@@ -815,6 +825,8 @@ angular
 					// assign a batch of conflicts to the current user
 					$scope.assignBatchConflict = function(mapUser, batchSize, query) {
 
+						console.debug("workAvailable, assignBatchConflict", mapUser, batchSize, query);
+						
 						// set query to null string if not provided
 						if (query == undefined)
 							query == null;
@@ -823,14 +835,7 @@ angular
 							$scope.errorConflict = "Work recipient must be selected from list.";
 							return;
 						}
-						;
-
-						if (batchSize > $scope.nAvailableConflicts) {
-							$scope.errorConflict = "Batch size is greater than available number of conflicts.";
-							return;
-						} else {
-							$scope.errorConflict = null;
-						}
+						
 
 						// construct a paging/filtering/sorting object
 						var pfsParameterObj = {
@@ -878,7 +883,7 @@ angular
 													if (trackingRecords[i].id != $scope.availableWork[i].id) {
 														retrieveAvailableWork($scope.availableWorkPage,
 																query);
-														alert("One or more of the conflicts you are viewing are not in the first available batch.  Please try again.  \n\nTo claim the first available batch, leave the Viewer closed and click 'Claim Batch'");
+														alert("The available conflicts list has changed since loading.  Please review the new available conflicts and try again.");
 														$scope.isConceptListOpen = false;
 														conceptListValid = false;
 													}
@@ -960,14 +965,6 @@ angular
 							$scope.errorReview = "Work recipient must be selected from list.";
 							return;
 						}
-						;
-
-						if (batchSize > $scope.nAvailableReviewWork) {
-							$scope.errorReview = "Batch size is greater than available number of review items.";
-							return;
-						} else {
-							$scope.errorReview = null;
-						}
 
 						// construct a paging/filtering/sorting object
 						var pfsParameterObj = {
@@ -1011,7 +1008,7 @@ angular
 													if (trackingRecords[i].id != $scope.availableReviewWork[i].id) {
 														retrieveAvailableWork($scope.availableWorkPage,
 																query);
-														alert("One or more of the conflicts you are viewing are not in the first available batch.  Please try again.  \n\nTo claim the first available batch, leave the Viewer closed and click 'Claim Batch'");
+														alert("The list of available review work has changed.  Please check the refreshed list and try again.");
 														$scope.isConceptListOpen = false;
 														conceptListValid = false;
 													}
@@ -1094,14 +1091,6 @@ angular
 							$scope.errorReview = "Work recipient must be selected from list.";
 							return;
 						}
-						;
-
-						if (batchSize > $scope.nAvailableQAWork) {
-							$scope.errorReview = "Batch size is greater than available number of qa items.";
-							return;
-						} else {
-							$scope.errorReview = null;
-						}
 
 						// construct a paging/filtering/sorting object
 						var pfsParameterObj = {
@@ -1144,7 +1133,7 @@ angular
 													if (trackingRecords[i].id != $scope.availableQAWork[i].id) {
 														retrieveAvailableQAWork($scope.availableQAWorkPage,
 																query);
-														alert("One or more of the qa items you are viewing are not in the first available batch.  Please try again.  \n\nTo claim the first available batch, leave the Viewer closed and click 'Claim Batch'");
+														alert("The list of available QA work has changed.  Please check the refreshed list and try again.");
 														$scope.isConceptListOpen = false;
 														conceptListValid = false;
 													}
@@ -1165,7 +1154,7 @@ angular
 
 												console.debug("Calling batch assignment API");
 
-												$rootScope.glassPane++;
+											
 												$http(
 														{
 															url : root_workflow + "assignBatch/project/id/"

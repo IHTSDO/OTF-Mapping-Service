@@ -49,13 +49,13 @@ import org.ihtsdo.otf.mapping.helpers.TrackingRecordList;
 import org.ihtsdo.otf.mapping.helpers.TrackingRecordListJpa;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
-import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.helpers.WorkflowType;
 import org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
+import org.ihtsdo.otf.mapping.jpa.handlers.AbstractWorkflowPathHandler;
 import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowFixErrorPathHandler;
 import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowNonLegacyPathHandler;
 import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowQaPathHandler;
@@ -718,9 +718,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     String full_query = constructMapProjectIdQuery(mapProject.getId(), query);
 
     // add the query terms specific to findAvailableConflicts
-    // - user and workflowStatus pair of CONFLICT_DETECTED~userName exists
+    // - user and workflowStatus pair of CONFLICT_DETECTED_userName exists
     // - user and workflowStatus pairs of
-    // CONFLICT_NEW/CONFLICT_IN_PROGRESS~userName does not exist
+    // CONFLICT_NEW/CONFLICT_IN_PROGRESS_userName does not exist
     full_query += " AND userAndWorkflowStatusPairs:CONFLICT_DETECTED_*";
     full_query +=
         " AND NOT (userAndWorkflowStatusPairs:CONFLICT_NEW_* OR userAndWorkflowStatusPairs:CONFLICT_IN_PROGRESS_* OR userAndWorkflowStatusPairs:CONFLICT_RESOLVED_*)";
@@ -799,12 +799,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     String full_query = "mapProjectId:" + mapProject.getId();
 
     // add the query terms specific to findAvailableReviewWork
-    // - a user (any) and workflowStatus pair of QA_NEEDED~userName
+    // - a user (any) and workflowStatus pair of QA_NEEDED_userName
     // exists
     // - the QA_NEEDED pair is not for this user (i.e. user can't review
     // their own work, UNLESS there is only one lead on the project
     // - user and workflowStatus pairs of
-    // CONFLICT_NEW/CONFLICT_IN_PROGRESS~userName does not exist
+    // CONFLICT_NEW/CONFLICT_IN_PROGRESS_userName does not exist
 
     // must have a QA_NEEDED tag with any user
     full_query += " AND userAndWorkflowStatusPairs:QA_NEEDED_*";
@@ -946,12 +946,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     String full_query = constructMapProjectIdQuery(mapProject.getId(), query);
 
     // add the query terms specific to findAvailableReviewWork
-    // - a user (any) and workflowStatus pair of REVIEW_NEEDED~userName
+    // - a user (any) and workflowStatus pair of REVIEW_NEEDED_userName
     // exists
     // - the REVIEW_NEEDED pair is not for this user (i.e. user can't review
     // their own work, UNLESS there is only one lead on the project
     // - user and workflowStatus pairs of
-    // CONFLICT_NEW/CONFLICT_IN_PROGRESS~userName does not exist
+    // CONFLICT_NEW/CONFLICT_IN_PROGRESS_userName does not exist
 
     // must have a REVIEW_NEEDED tag with any user
     full_query += " AND userAndWorkflowStatusPairs:REVIEW_NEEDED_*";
@@ -1039,7 +1039,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
     // add the query terms specific to findAssignedWork
     // - user and workflowStatus must exist in a pair of form:
-    // workflowStatus~userName, e.g. NEW~dmo or EDITING_IN_PROGRESS~kli
+    // workflowStatus_userName, e.g. NEW_dmo or EDITING_IN_PROGRESS_kli
     // - modify search term based on pfs parameter query restriction field
     // * default: NEW, EDITING_IN_PROGRESS, EDITING_DONE/CONFLICT_DETECTED
     // * NEW: NEW
@@ -1589,8 +1589,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         fullTextEntityManager.createFullTextQuery(luceneQuery,
             TrackingRecordJpa.class);
 
-    assignedReviewWork.setTotalCount(ftquery.getResultSize());
-
     List<TrackingRecord> allResults = ftquery.getResultList();
     List<TrackingRecord> results = new ArrayList<>();
 
@@ -1614,6 +1612,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         }
       }
     }
+
+    assignedReviewWork.setTotalCount(results.size());
 
     // apply paging, and sorting if appropriate
     if (pfsParameter != null
@@ -1652,9 +1652,14 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     int startIndex = 0;
     int toIndex = results.size();
     if (pfsParameter != null) {
-      startIndex = pfsParameter.getStartIndex();
-      toIndex =
-          Math.min(results.size(), startIndex + pfsParameter.getMaxResults());
+      if (pfsParameter.getStartIndex() != -1) {
+        startIndex = pfsParameter.getStartIndex();
+      }
+
+      if (pfsParameter.getMaxResults() != -1) {
+        toIndex =
+            Math.min(results.size(), startIndex + pfsParameter.getMaxResults());
+      }
     }
 
     for (TrackingRecord tr : results.subList(startIndex, toIndex)) {
@@ -1822,73 +1827,94 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
       trackingRecord = null;
     }
 
-    // switch on workflow path
+    // Validate tracking record
     if (trackingRecord != null) {
-      ValidationResult result = null;
+
+      // instantiate the handler based on tracking record workflow type
+      AbstractWorkflowPathHandler handler = null;
       switch (trackingRecord.getWorkflowPath()) {
         case CONSENSUS_PATH:
           break;
         case DRIP_FEED_REVIEW_PATH:
           break;
         case FIX_ERROR_PATH:
-          result =
-          (new WorkflowFixErrorPathHandler())
-              .validateTrackingRecordForActionAndUser(trackingRecord,
-                  workflowAction, mapUser);
+          handler = new WorkflowFixErrorPathHandler();
           break;
         case LEGACY_PATH:
           break;
         case NON_LEGACY_PATH:
-          result =
-              (new WorkflowNonLegacyPathHandler())
-                  .validateTrackingRecordForActionAndUser(trackingRecord,
-                      workflowAction, mapUser);
+          handler = new WorkflowNonLegacyPathHandler();
           break;
         case QA_PATH:
-          result =
-              (new WorkflowQaPathHandler())
-                  .validateTrackingRecordForActionAndUser(trackingRecord,
-                      workflowAction, mapUser);
+          handler = new WorkflowQaPathHandler();
           break;
         case REVIEW_PROJECT_PATH:
-          result =
-              (new WorkflowReviewProjectPathHandler())
-                  .validateTrackingRecordForActionAndUser(trackingRecord,
-                      workflowAction, mapUser);
+          handler = new WorkflowReviewProjectPathHandler();
           break;
         default:
-          break;
-
+          throw new Exception(
+              "Could not determine workflow handler from tracking record for path: "
+                  + trackingRecord.getWorkflowPath().toString());
       }
+
+      ValidationResult result =
+          handler.validateTrackingRecordForActionAndUser(trackingRecord,
+              workflowAction, mapUser);
 
       if (!result.isValid()) {
 
         Logger.getLogger(WorkflowServiceJpa.class).info(result.toString());
 
-        Properties config = ConfigUtility.getConfigProperties();
-
-        String notificationRecipients =
-            config.getProperty("send.notification.recipients");
-
         StringBuffer message = new StringBuffer();
 
-        message.append(
-            "Errors were detected in the workflow for project: "
-                + mapProject.getName() + " and concept "
-                + concept.getTerminologyId()).append("\n\n");
+        message.append("Errors were detected in the workflow for:\n");
+        message.append("  Project\t: " + mapProject.getName() + "\n");
+        message.append("  Concept\t: " + concept.getTerminologyId() + "\n");
+        message.append("  Path:\t "
+            + trackingRecord.getWorkflowPath().toString() + "\n");
+        message.append("  User\t: " + mapUser.getUserName() + "\n");
+        message.append("  Action\t: " + workflowAction.toString() + "\n");
+
+        message.append("\n");
+
+        // record information
+        message.append("Records involved:\n");
+        message.append("  " + "id\tUser\tWorkflowStatus\n");
+
+        for (MapRecord mr : getMapRecordsForTrackingRecord(trackingRecord)) {
+          message.append("  " + mr.getId().toString() + "\t"
+              + mr.getOwner().getUserName() + "\t"
+              + mr.getWorkflowStatus().toString() + "\n");
+        }
+        message.append("\n");
+
+        message.append("Errors reported:\n");
 
         for (String error : result.getErrors()) {
-          message.append(error).append("\n");
+          message.append("  " + error + "\n");
         }
 
         message.append("\n");
 
-        OtfEmailHandler emailHandler = new OtfEmailHandler();
-        emailHandler.sendSimpleEmail(
-            notificationRecipients,
-            mapProject.getName() + " Workflow Error Alert, Concept "
-                + concept.getTerminologyId(), message.toString());
+        // log the message
+        Logger.getLogger(WorkflowServiceJpa.class).error(
+            "Workflow error detected\n" + message.toString());
 
+        // send email if indicated
+        Properties config = ConfigUtility.getConfigProperties();
+
+        String notificationRecipients =
+            config.getProperty("send.notification.recipients");
+        if (!notificationRecipients.isEmpty()) {
+          OtfEmailHandler emailHandler = new OtfEmailHandler();
+          emailHandler.sendSimpleEmail(notificationRecipients,
+              mapProject.getName() + " Workflow Error Alert, Concept "
+                  + concept.getTerminologyId(), message.toString());
+        }
+
+        throw new LocalException("Workflow action " + workflowAction.toString()
+            + " could not be performed on concept "
+            + trackingRecord.getTerminologyId());
       }
     }
 
@@ -1960,11 +1986,11 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
           mapRecords =
               algorithmHandler.assignFromInitialRecord(trackingRecord,
                   mapRecords, mapRecord, mapUser);
+
+          // otherwise, this concept is already in the workflow, do nothing
         } else {
 
-          throw new Exception(
-              "Assignment from published record failed -- concept already in workflow");
-
+          // do nothing (label will be added in synchronize)
         }
 
         break;
@@ -2704,10 +2730,10 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
   }
 
   @Override
-  public ValidationResult computeWorkflowStatusErrors(MapProject mapProject)
+  public List<String> computeWorkflowStatusErrors(MapProject mapProject)
     throws Exception {
-
-    ValidationResult result = new ValidationResultJpa();
+    
+    List<String> results = new ArrayList<String>();
 
     // instantiate the mapping service
     MappingService mappingService = new MappingServiceJpa();
@@ -2731,37 +2757,44 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
     // construct a set of terminology ids for which a tracking record exists
     Set<String> terminologyIdsWithTrackingRecord = new HashSet<>();
-
-    // first check all the tracking records for valid state
+    
     for (TrackingRecord trackingRecord : trackingRecords.getTrackingRecords()) {
-      switch (trackingRecord.getWorkflowPath()) {
-        case CONSENSUS_PATH:
-          break;
-        case DRIP_FEED_REVIEW_PATH:
-          break;
-        case FIX_ERROR_PATH:
-          result.merge(fixErrorHandler.validateTrackingRecord(trackingRecord));
-          break;
-        case LEGACY_PATH:
-          break;
-        case NON_LEGACY_PATH:
-          result.merge(nonLegacyHandler.validateTrackingRecord(trackingRecord));
-          break;
-        case QA_PATH:
-          result.merge(qaHandler.validateTrackingRecord(trackingRecord));
-          break;
-        case REVIEW_PROJECT_PATH:
-          result.merge(reviewHandler.validateTrackingRecord(trackingRecord));
-          break;
-        default:
-          break;
-
-      }
-
-      // add this tracking record id to the set
+      
       terminologyIdsWithTrackingRecord.add(trackingRecord.getTerminologyId());
-    }
 
+    // instantiate the handler based on tracking record workflow type
+       AbstractWorkflowPathHandler handler = null;
+       switch (trackingRecord.getWorkflowPath()) {
+         case CONSENSUS_PATH:
+           break;
+         case DRIP_FEED_REVIEW_PATH:
+           break;
+         case FIX_ERROR_PATH:
+           handler = fixErrorHandler;
+           break;
+         case LEGACY_PATH:
+           break;
+         case NON_LEGACY_PATH:
+           handler = nonLegacyHandler;
+           break;
+         case QA_PATH:
+           handler = qaHandler;
+           break;
+         case REVIEW_PROJECT_PATH:
+           handler = reviewHandler;
+           break;
+         default:
+           results.add("ERROR: Could not determine workflow handler from tracking record for concept " + trackingRecord.getTerminologyId() + " for path: "
+                   + trackingRecord.getWorkflowPath().toString());
+       }
+
+       ValidationResult result =
+           handler.validateTrackingRecord(trackingRecord);
+       
+       if (!result.isValid()) {
+         results.add(constructErrorMessageStringForTrackingRecordAndValidationResult(trackingRecord, result));
+       }
+    }
     Logger.getLogger(WorkflowServiceJpa.class).info(
         "  Checking map records for " + mapProject.getId() + ", "
             + mapProject.getName());
@@ -2779,7 +2812,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         // if no tracking record found for this concept
         if (!terminologyIdsWithTrackingRecord
             .contains(mapRecord.getConceptId())) {
-          result.addError("Map Record " + mapRecord.getId() + ": "
+          results.add("Map Record " + mapRecord.getId() + ": "
               + mapRecord.getWorkflowStatus()
               + " but no tracking record exists (Concept "
               + mapRecord.getConceptId() + " " + mapRecord.getConceptName());
@@ -2788,7 +2821,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
     }
 
-    return result;
+    return results;
 
   }
 
@@ -3313,11 +3346,34 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
             "  Concept not successfully modified " + tr.getTerminologyId());
       }
     }
+  }
 
-    // do a general check on workflow status to ensure no issues
-    // TODO This qa check should really catch this particular situation, but
-    // does not as of 10/14/2014
-    this.computeWorkflowStatusErrors(mapProject);
+  private String constructErrorMessageStringForTrackingRecordAndValidationResult(
+    TrackingRecord trackingRecord,
+    ValidationResult result) throws Exception {
 
+    StringBuffer message = new StringBuffer();
+
+    message.append("ERROR for Concept "
+        + trackingRecord.getTerminologyId() + ", Path "
+        + trackingRecord.getWorkflowPath().toString() + "\n");
+
+    // record information
+    message.append("  Records involved:\n");
+    message.append("    " + "id\tUser\tWorkflowStatus\n");
+
+    for (MapRecord mr : getMapRecordsForTrackingRecord(trackingRecord)) {
+      message.append("    " + mr.getId().toString() + "\t"
+          + mr.getOwner().getUserName() + "\t"
+          + mr.getWorkflowStatus().toString() + "\n");
+    }
+
+    message.append("  Errors reported:\n");
+
+    for (String error : result.getErrors()) {
+      message.append("    " + error + "\n");
+    }
+
+    return message.toString();
   }
 }

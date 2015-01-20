@@ -2538,7 +2538,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
           // any possible errors
           // in multiplication/division/comparison
           if (samplingRate != -1.0f
-              && random.nextInt(100 + 1) / 100.0 <= samplingRate) {
+              && random.nextInt(100 + 1) / 100.0 < samplingRate) {
             samplingRecordsCreated++;
             mapRecord.setWorkflowStatus(workflowStatus);
           } else {
@@ -2578,6 +2578,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
           }
           Logger.getLogger(this.getClass()).debug(
               "      Setting target name " + targetName);
+        } else {
+          targetName = "No target";
         }
 
         // Set map relation id as well from the cache
@@ -3358,6 +3360,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     mapRecord.getMapPrinciples().size();
     mapRecord.getOriginIds().size();
     mapRecord.getLabels().size();
+    mapRecord.getReasonsForConflict().size();
     for (MapEntry mapEntry : mapRecord.getMapEntries()) {
       if (mapEntry.getMapRelation() != null)
         mapEntry.getMapRelation().getName();
@@ -3383,6 +3386,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     mapProject.getReportDefinitions().size();
     mapProject.getScopeConcepts().size();
     mapProject.getScopeExcludedConcepts().size();
+    mapProject.getErrorMessages().size();
 
   }
 

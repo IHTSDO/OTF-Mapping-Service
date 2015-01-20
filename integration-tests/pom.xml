@@ -1,57 +1,97 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-  <!-- Module Metadata -->
-  <parent>
-    <groupId>org.ihtsdo.otf.mapping</groupId>
-    <artifactId>mapping-parent</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
-    <relativePath>../parent</relativePath>
-  </parent>
+	<!-- Module Metadata -->
+	<parent>
+		<groupId>org.ihtsdo.otf.mapping</groupId>
+		<artifactId>mapping-parent</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+		<relativePath>../parent</relativePath>
+	</parent>
 
-  <artifactId>mapping-integration-tests</artifactId>
-  <name>OTF Mapping tool integration tests</name>
-  <description>OTF Mapping tool integration tests</description>
+	<artifactId>mapping-integration-tests</artifactId>
+	<name>OTF Mapping tool integration tests</name>
+	<description>OTF Mapping tool integration tests</description>
 
-  <!-- Properties -->
-  <properties>
-    <skipTests>true</skipTests>
-  </properties>
+	<!-- Properties -->
+	<properties>
+		<skipTests>true</skipTests>
+	</properties>
 
-  <!-- Dependencies -->
-  <dependencies>
+	<!-- Dependencies -->
+	<dependencies>
 
-    <!-- inter-dependencies. -->
+		<!-- inter-dependencies. -->
 
-    <dependency>
-      <groupId>org.ihtsdo.otf.mapping</groupId>
-      <artifactId>mapping-rest</artifactId>
-      <classifier>classes</classifier>
-    </dependency>
+		<dependency>
+			<groupId>org.ihtsdo.otf.mapping</groupId>
+			<artifactId>mapping-rest</artifactId>
+			<classifier>classes</classifier>
+		</dependency>
 
 
-    <!-- Unit tests -->
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-    </dependency>
-  </dependencies>
+		<!-- Unit tests -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+		</dependency>
 
-  <build>
-    <plugins>
-      <!-- Add src/main/resources to the classpath for testing -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <additionalClasspathElements>
-            <additionalClasspathElement>src/main/resources</additionalClasspathElement>
-          </additionalClasspathElements>
-          <skipTests>${skipTests}</skipTests>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+		<!-- Selenium UI Testing -->
+		<dependency>
+			<groupId>org.seleniumhq.selenium</groupId>
+			<artifactId>selenium-java</artifactId>
+			<version>2.44.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.opera</groupId>
+			<artifactId>operadriver</artifactId>
+		</dependency>
+
+		<!-- Required version of Apache XML APIs for Selenium -->
+		<dependency>
+			<groupId>xml-apis</groupId>
+			<artifactId>xml-apis</artifactId>
+			<version>1.4.01</version>
+		</dependency>
+	</dependencies>
+
+	<!-- Dependency Management -->
+	<dependencyManagement>
+
+		<!-- Selenium dependency management dependencies -->
+		<dependencies>
+			<dependency>
+				<groupId>com.opera</groupId>
+				<artifactId>operadriver</artifactId>
+				<version>1.5</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.seleniumhq.selenium</groupId>
+						<artifactId>selenium-remote-driver</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+
+	<build>
+		<plugins>
+			<!-- Add src/main/resources to the classpath for testing -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<additionalClasspathElements>
+						<additionalClasspathElement>src/main/resources</additionalClasspathElement>
+					</additionalClasspathElements>
+					<skipTests>${skipTests}</skipTests>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+
 
 </project>

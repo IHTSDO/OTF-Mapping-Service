@@ -1,7 +1,6 @@
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -13,6 +12,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
+import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
@@ -531,6 +531,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
           .addError("Invalid comparison, map project ids do not match ("
               + record1.getMapProjectId() + ", " + record2.getMapProjectId()
               + ").");
+      validationResult
+          .addConciseError("Invalid comparison - map project ids do not match");
       return validationResult;
     }
 
@@ -539,6 +541,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
       validationResult
           .addError("Invalid comparison, map record concept ids do not match ("
               + record1.getConceptId() + ", " + record2.getConceptId() + ").");
+      validationResult
+          .addConciseError("Invalid comparison - map record concept ids do not match");
       return validationResult;
     }
 
@@ -563,45 +567,61 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
     if (principles1.size() != principles2.size()) {
       validationResult
-          .addError("Map Principle Assignment is Different: Number of Principles is Different");
+          .addError("Map principle assignment is different: Number of principles is different");
+      validationResult.addConciseError("Map principle assignment is different");
     } else {
       for (int i = 0; i < principles1.size(); i++) {
         if (!principles1.get(i).getPrincipleId()
-            .equals(principles2.get(i).getPrincipleId()))
-          validationResult.addError("Map Principle Assignment is Different: "
+            .equals(principles2.get(i).getPrincipleId())) {
+          validationResult.addError("Map principle assignment is different: "
               + principles1.get(i).getName() + " vs. "
               + principles2.get(i).getName());
+          validationResult
+              .addConciseError("Map principle assignment is different");
+        }
       }
     }
 
     // check force map lead review flag
     if (record1.isFlagForMapLeadReview()) {
       validationResult
-          .addError("Mapping Specialist #1 requests MAP LEAD REVIEW.");
+          .addError("Mapping specialist #1 requests map lead review.");
+      validationResult
+          .addConciseError("Mapping specialist requests map lead review");
     }
     if (record2.isFlagForMapLeadReview()) {
       validationResult
-          .addError("Mapping Specialist #2 requests MAP LEAD REVIEW.");
+          .addError("Mapping specialist #2 requests map lead review.");
+      validationResult
+          .addConciseError("Mapping specialist requests map lead review");
     }
 
     // check consensus review flag
     if (record1.isFlagForConsensusReview()) {
       validationResult
-          .addError("Mapping Specialist #1 requests CONSENSUS REVIEW.");
+          .addError("Mapping specialist #1 requests consensus review.");
+      validationResult
+          .addConciseError("Mapping specialist requests consensus review");
     }
     if (record2.isFlagForConsensusReview()) {
       validationResult
-          .addError("Mapping Specialist #2 requests CONSENSUS REVIEW.");
+          .addError("Mapping specialist #2 requests consensus review.");
+      validationResult
+          .addConciseError("Mapping specialist requests consensus review");
     }
 
     // check editorial review flag
     if (record1.isFlagForEditorialReview()) {
       validationResult
-          .addError("Mapping Specialist #1 requests EDITORIAL REVIEW.");
+          .addError("Mapping specialist #1 requests editorial review.");
+      validationResult
+          .addConciseError("Mapping specialist requests editorial review");
     }
     if (record2.isFlagForEditorialReview()) {
       validationResult
-          .addError("Mapping Specialist #2 requests EDITORIAL REVIEW.");
+          .addError("Mapping specialist #2 requests editorial review.");
+      validationResult
+          .addConciseError("Mapping specialist requests editorial review");
     }
 
     // compare mapEntries
@@ -634,7 +654,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     // if records have differing numbers of groups
     if (groupToMapEntryList1.keySet().size() != groupToMapEntryList2.keySet()
         .size()) {
-      validationResult.addError("Number of Map Groups is Different");
+      validationResult.addError("Number of map groups is different");
+      validationResult.addConciseError("Number of map groups is different");
     }
 
     // for each group
@@ -645,13 +666,16 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
       // error if different numbers of entries
       if (entries1 == null) {
-        validationResult.addError("Number of Map Entries is Different");
+        validationResult.addError("Number of map entries is different");
+        validationResult.addConciseError("Number of map entries is different");
         continue;
       } else if (entries2 == null) {
-        validationResult.addError("Number of Map Entries is Different");
+        validationResult.addError("Number of map entries is different");
+        validationResult.addConciseError("Number of map entries is different");
         continue;
       } else if (entries1.size() != entries2.size()) {
-        validationResult.addError("Number of Map Entries is Different");
+        validationResult.addError("Number of map entries is different");
+        validationResult.addConciseError("Number of map entries is different");
       }
 
       // create string lists for entry comparison
@@ -682,7 +706,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         continue; // to next group for comparison
       }
       if (outOfOrderFlag && !missingEntry) {
-        validationResult.addWarning("Map Entries in Different Order");
+        validationResult.addWarning("Map entries in different order");
         continue; // to next group for comparison
       }
 
@@ -692,9 +716,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         for (int f = 0; f < entries2.size(); f++) {
           if (isRulesEqual(entries1.get(d), entries2.get(f))
               && isTargetIdsEqual(entries1.get(d), entries2.get(f))
-              && !isMapRelationsEqual(entries1.get(d), entries2.get(f)))
+              && !isMapRelationsEqual(entries1.get(d), entries2.get(f))) {
 
-            validationResult.addError("Map Relation is Different: "
+            validationResult.addError("Map relation is different: "
                 + (entries1.get(d).getMapRelation() == null
                     ? "No relation specified" : entries1.get(d)
                         .getMapRelation().getName())
@@ -702,6 +726,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
                 + (entries2.get(f).getMapRelation() == null
                     ? "No relation specified" : entries2.get(f)
                         .getMapRelation().getName()));
+
+            validationResult.addConciseError("Map relation is different");
+          }
         }
       }
       for (int d = 0; d < entries1.size(); d++) {
@@ -715,12 +742,16 @@ public class DefaultProjectSpecificAlgorithmHandler implements
                 entries2.get(f));
         }
       }
+
+      // check that any rule/target pairs are not different
+      // for non-rule based projects, this will compare a single entry in each
+      // group
       for (int d = 0; d < entries1.size(); d++) {
         for (int f = 0; f < entries2.size(); f++) {
           if (isRulesEqual(entries1.get(d), entries2.get(f))
-              && !isTargetIdsEqual(entries1.get(d), entries2.get(f)))
+              && !isTargetIdsEqual(entries1.get(d), entries2.get(f))) {
 
-            validationResult.addError("Target Code is Different: "
+            validationResult.addError("Target code is different: "
                 + (entries1.get(d).getTargetId() == null
                     || entries1.get(d).getTargetId().equals("") ? "No target"
                     : entries1.get(d).getTargetId())
@@ -728,17 +759,26 @@ public class DefaultProjectSpecificAlgorithmHandler implements
                 + (entries2.get(f).getTargetId() == null
                     || entries2.get(f).getTargetId().equals("") ? "No target"
                     : entries2.get(f).getTargetId()));
+            validationResult.addConciseError("Target code is different");
+          }
         }
       }
-      for (int d = 0; d < entries1.size(); d++) {
-        for (int f = 0; f < entries2.size(); f++) {
-          if (!entries1.get(d).getRule().equals("TRUE")
-              && !entries2.get(f).getRule().equals("TRUE")
-              && !isRulesEqual(entries1.get(d), entries2.get(f)))
 
-            validationResult.addError("Map Rule is Different: "
-                + entries1.get(d).getRule() + " vs. "
-                + entries2.get(f).getRule());
+      // only check TRUE rules if project is rule based
+      if (mapProject.isRuleBased()) {
+
+        for (int d = 0; d < entries1.size(); d++) {
+          for (int f = 0; f < entries2.size(); f++) {
+            if (!entries1.get(d).getRule().equals("TRUE")
+                && !entries2.get(f).getRule().equals("TRUE")
+                && !isRulesEqual(entries1.get(d), entries2.get(f))) {
+
+              validationResult.addError("Map rule is different: "
+                  + entries1.get(d).getRule() + " vs. "
+                  + entries2.get(f).getRule());
+              validationResult.addConciseError("Map rule is different");
+            }
+          }
         }
       }
 
@@ -1124,6 +1164,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
           mapRecord.setWorkflowStatus(WorkflowStatus.CONFLICT_NEW);
 
+          MapRecord mapRecord1 = (MapRecord) mapRecords.toArray()[0];
+          MapRecord mapRecord2 = (MapRecord) mapRecords.toArray()[1];
+          ValidationResult validationResult =
+              compareMapRecords(mapRecord1, mapRecord2);
+          mapRecord.setReasonsForConflict(validationResult.getConciseErrors());
+
           // get the origin ids from the tracking record
           for (MapRecord mr : newRecords) {
             mapRecord.addOrigin(mr.getId());
@@ -1419,16 +1465,24 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         MapRecord editingRecord = null;
         MapRecord reviewRecord = null;
         for (MapRecord mr : mapRecords) {
-          if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION))
+          System.out.println(mr.toString());
+          if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
+
             revisionRecord = mr;
-          else if (mr.getWorkflowStatus().compareTo(
-              WorkflowStatus.REVIEW_NEEDED) <= 0)
+            System.out.println("Revision record: " + mr.toString());
+          } else if (mr.getWorkflowStatus().equals(WorkflowStatus.NEW)
+              || mr.getWorkflowStatus().equals(
+                  WorkflowStatus.EDITING_IN_PROGRESS)
+              || mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED)) {
             editingRecord = mr;
-          else if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED)
+            System.out.println("Editing record:  " + mr.toString());
+          } else if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW)
               || mr.getWorkflowStatus().equals(
                   WorkflowStatus.REVIEW_IN_PROGRESS)
-              || mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_RESOLVED))
+              || mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_RESOLVED)) {
             reviewRecord = mr;
+            System.out.println("Review record:   " + mr.toString());
+          }
         }
 
         if (revisionRecord == null)
@@ -1456,8 +1510,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
           }
 
-          newRecords.remove(editingRecord);
-          newRecords.remove(revisionRecord);
+          newRecords.clear();
           newRecords.add(previousRevisionRecord);
 
           // Case 2: A lead unassigns themselves from reviewing a fixed
@@ -1551,6 +1604,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
     // clear any labels before publication
     mapRecord.setLabels(new HashSet<String>());
+    // clear any reasonsForConflicts before publication
+    mapRecord.setReasonsForConflict(new HashSet<String>());
 
     switch (trackingRecord.getWorkflowPath()) {
       case CONSENSUS_PATH:
@@ -1637,15 +1692,15 @@ public class DefaultProjectSpecificAlgorithmHandler implements
           throw new Exception(
               "Publish called on QA_PATH, but no QA_NEEDED record found");
 
+        Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
+            "publish - QA_PATH - Creating READY_FOR_PUBLICATION record "
+                + mapRecord.toString());
+        
         mapRecord.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
 
         newRecords.clear();
         newRecords.add(mapRecord);
-
-        Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
-            "publish - QA_PATH - Creating READY_FOR_PUBLICATION record "
-                + mapRecord.toString());
-
+        
         break;
       case LEGACY_PATH:
         // do nothing
@@ -1661,15 +1716,19 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         // - 1 record marked CONFLICT_RESOLVED
         // - 2 records marked CONFLICT_DETECTED
 
-        // if two map records, must be two EDITING_DONE records
+        // if two map records, must be two EDITING_DONE or CONFLICT_DETECTED
+        // records
         // with publish called by finishEditing
         if (mapRecords.size() == 2) {
 
-          // check assumption: records are both marked EDITING_DONE
+          // check assumption: records are both marked EDITING_DONE or
+          // CONFLICT_DETECTED
           for (MapRecord mr : mapRecords) {
-            if (!mr.getWorkflowStatus().equals(WorkflowStatus.EDITING_DONE))
+            if (!mr.getWorkflowStatus().equals(WorkflowStatus.EDITING_DONE)
+                && !mr.getWorkflowStatus().equals(
+                    WorkflowStatus.CONFLICT_DETECTED))
               throw new Exception(
-                  "Publish called, expected two matching specialist records marked EDITING_DONE, but found record with status "
+                  "Publish called, expected two matching specialist records marked EDITING_DONE or CONFLICT_DETECTED, but found record with status "
                       + mr.getWorkflowStatus().toString());
           }
 
@@ -2019,6 +2078,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
             throw new Exception(
                 "FIX_ERROR_PATH: Specialist finished work, but could not find their record");
 
+          // instantiate mapping service to get user's project role
+          MappingService mappingService = new MappingServiceJpa();
+
           // cycle over the records
           for (MapRecord mr : mapRecords) {
 
@@ -2028,6 +2090,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
               mr.setWorkflowStatus(WorkflowStatus.REVIEW_NEEDED);
             }
           }
+
+          // close the mapping service
+          mappingService.close();
 
           // Case 2: A lead has finished reviewing a corrected error
         } else if (mapRecords.size() == 3) {
@@ -2066,8 +2131,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
             throw new Exception(
                 "FIX_ERROR_PATH: Lead finished reviewing work, but could not find their record.");
 
-          // mark the lead record as resolved
+          // set to resolved
           leadRecord.setWorkflowStatus(WorkflowStatus.REVIEW_RESOLVED);
+
 
         } else {
           throw new Exception(
@@ -2109,18 +2175,17 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
           if (originalRecord == null)
             throw new Exception(
-                "QA_PATH: Lead finished reviewing work, but could not find previously published record");
+                "QA_PATH: User finished reviewing work, but could not find previously published record");
 
           if (modifiedRecord == null)
             throw new Exception(
-                "QA_PATH: Lead finished reviewing work, but could not find the specialist's (QA) record");
+                "QA_PATH: User finished reviewing work, but could not find the specialist's (QA) record");
 
           if (leadRecord == null)
             throw new Exception(
-                "QA_PATH: Lead finished reviewing work, but could not find their record.");
+                "QA_PATH: User finished reviewing work, but could not find their record.");
 
-          // mark the lead record as resolved
-          leadRecord.setWorkflowStatus(WorkflowStatus.QA_RESOLVED);
+          mapRecord.setWorkflowStatus(WorkflowStatus.QA_RESOLVED);
 
         } else {
           throw new Exception(
