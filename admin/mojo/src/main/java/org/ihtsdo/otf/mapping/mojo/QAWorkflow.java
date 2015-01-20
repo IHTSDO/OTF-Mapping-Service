@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
@@ -26,11 +27,18 @@ import org.ihtsdo.otf.mapping.services.helpers.OtfEmailHandler;
 public class QAWorkflow extends AbstractMojo {
 
   /**
-   * The refSet id
-   * @parameter refsetId
+   * The refSet id.
    * 
+   * @parameter refsetId
    */
   private String refsetId = null;
+
+  /**
+   * Whether to send notifictaions via email
+   * 
+   * @parameter sendNotification
+   */
+  private boolean sendNotification = false;
 
   /**
    * Executes the plugin.
@@ -41,10 +49,13 @@ public class QAWorkflow extends AbstractMojo {
   public void execute() throws MojoExecutionException {
     getLog().info("Starting workflow quality assurance checks");
     getLog().info("  refsetId = " + refsetId);
+    getLog().info("  sendNotification = " + sendNotification);
 
     try {
 
       MappingService mappingService = new MappingServiceJpa();
+      WorkflowService workflowService = new WorkflowServiceJpa();
+
       List<MapProject> mapProjects = new ArrayList<>();
 
       if (refsetId == null) {
@@ -60,53 +71,64 @@ public class QAWorkflow extends AbstractMojo {
         }
       }
 
+      List<String> errors = new ArrayList<>();
+
       // Perform the QA checks
-      WorkflowService workflowService = new WorkflowServiceJpa();
+
       for (MapProject mapProject : mapProjects) {
         getLog().info(
             "Checking workflow for " + mapProject.getName() + ", "
                 + mapProject.getId());
-        ValidationResult result =
+        List<String> results =
             workflowService.computeWorkflowStatusErrors(mapProject);
 
-        // TODO hardcoded while testing in prod environment
-        if (!result.isValid()) {
-          OtfEmailHandler emailHandler = new OtfEmailHandler();
-          StringBuffer message = new StringBuffer();
+        if (results.size() != 0) {
 
-          message.append(
-              "Errors were detected in the workflow for project: "
-                  + mapProject.getName()).append("\n\n");
+          // add some header material
+          errors.add("------------------------------------------");
+          errors.add(mapProject.getName());
+          errors.add("------------------------------------------");
+          errors.add("");
 
-          for (String error : result.getErrors()) {
-            message.append(error).append("\n");
-          }
-          
-          message.append("\n");
-          
-          
-          Properties config;
-          try {
-            config = ConfigUtility.getConfigProperties();
-          } catch (Exception e1) {
-            throw new MojoExecutionException("Failed to retrieve config properties");
-          }
-          String notificationRecipients =
-              config.getProperty("send.notification.recipients");
-          
-          emailHandler.sendSimpleEmail(notificationRecipients,
-              mapProject.getName() + " Workflow Errors", message.toString());
+          errors.addAll(results);
         }
-
       }
 
-      mappingService.close();
-      workflowService.close();
-      getLog().info("Done ...");
+      // convert the list of error strings into a single message
+      StringBuffer message = new StringBuffer();
+      for (String error : errors) {
+        message.append(error).append("\n");
+      }
+
+      // log the message sent
+      Logger.getLogger(getClass()).info(message);
+
+      // try to send the email
+      if (sendNotification == true) {
+        Properties config;
+        try {
+          config = ConfigUtility.getConfigProperties();
+        } catch (Exception e1) {
+          throw new MojoExecutionException(
+              "Could not send email:  Failed to retrieve config properties");
+        }
+        String notificationRecipients =
+            config.getProperty("send.notification.recipients");
+
+        // instantiate the email handler
+        OtfEmailHandler emailHandler = new OtfEmailHandler();
+        emailHandler.sendSimpleEmail(notificationRecipients,
+            "OTF Mapping Tool:  Workflow Errors Detected", message.toString());
+
+        mappingService.close();
+        workflowService.close();
+
+        getLog().info("Done ...");
+      }
     } catch (Exception e) {
       e.printStackTrace();
       throw new MojoExecutionException("Performing workflow QA failed.", e);
     }
-
   }
+
 }

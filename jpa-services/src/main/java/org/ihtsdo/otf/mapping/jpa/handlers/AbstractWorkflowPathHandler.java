@@ -174,10 +174,29 @@ public abstract class AbstractWorkflowPathHandler implements
     // cycle over pairs and verify each exists in the map record list
     for (String pair : userWorkflowPairs) {
 
-      // get the status and user name
-      String workflowStatus = pair.substring(0, pair.lastIndexOf("_"));
-      String user = pair.substring(pair.lastIndexOf("_") + 1);
+      // get the workflow status
+      String workflowStatus = null;
+      String user = null;
 
+      // cycle over all defined status values
+      for (WorkflowStatus status : WorkflowStatus.values()) {
+
+        // if the pair starts with this status
+        if (pair.startsWith(status.toString())) {
+
+          // set the status
+          workflowStatus = status.toString();
+
+          // extract the user
+          user = pair.replace(workflowStatus + "_", "");
+
+          // stop searching for matching statuses
+          break;
+        }
+      }
+
+      // find the record matching the tracking record's workflow status/user
+      // pair
       boolean recordFound = false;
       for (MapRecord mr : mapRecords.getMapRecords()) {
         if (mr.getOwner().getUserName().equals(user)
@@ -187,6 +206,7 @@ public abstract class AbstractWorkflowPathHandler implements
         }
       }
 
+      // if record not found, tracking record is not in sync with map records
       if (!recordFound) {
         result
             .addError("Tracking record references workflow and user pair not present in tracked records");
@@ -238,8 +258,16 @@ public abstract class AbstractWorkflowPathHandler implements
 
       for (String pair : tr.getUserAndWorkflowStatusPairs().split(" ")) {
 
-        workflowCombination.addWorkflowStatus(WorkflowStatus.valueOf(pair
-            .substring(0, pair.lastIndexOf("_"))));
+        // get the workflow status
+        String workflowStatus = null;
+        for (WorkflowStatus status : WorkflowStatus.values()) {
+          if (pair.startsWith(status.toString())) {
+            workflowStatus = status.toString();
+          }
+        }
+
+        workflowCombination.addWorkflowStatus(WorkflowStatus
+            .valueOf(workflowStatus));
       }
     }
 
@@ -282,12 +310,25 @@ public abstract class AbstractWorkflowPathHandler implements
     MapUser mapUser) {
     MapRecord assignedRecord = null;
     for (MapRecord mr : records.getMapRecords()) {
-      if (mr.getOwner().equals(mapUser)) {
-        if (assignedRecord == null) {
-          assignedRecord = mr;
-        } else if (mr.getWorkflowStatus().compareTo(
-            assignedRecord.getWorkflowStatus()) > 0)
-          assignedRecord = mr;
+
+      // publication-ready and REVISION records cannot be current records
+      if (!mr.getWorkflowStatus().equals(WorkflowStatus.READY_FOR_PUBLICATION)
+          && !mr.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)
+          && !mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
+        
+        // if user owns this record
+        if (mr.getOwner().equals(mapUser)) {
+
+          // if assigned record is null, set to this record
+          if (assignedRecord == null) {
+            assignedRecord = mr;
+          } 
+          
+          // otherwise, if this workflow status is higher, set to this record
+          else if (mr.getWorkflowStatus().compareTo(
+              assignedRecord.getWorkflowStatus()) > 0)
+            assignedRecord = mr;
+        }
       }
     }
     return assignedRecord;
@@ -353,4 +394,9 @@ public abstract class AbstractWorkflowPathHandler implements
     }
     return null;
   }
+
+  /**
+   * Utility function: could action have led to this state
+   */
+
 }

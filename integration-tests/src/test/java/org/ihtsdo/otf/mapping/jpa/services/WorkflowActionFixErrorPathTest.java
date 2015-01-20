@@ -66,9 +66,6 @@ public class WorkflowActionFixErrorPathTest {
   // the workflow handler
   /**  The handler. */
   private static WorkflowFixErrorPathHandler handler;
-
-  // TODO Make sure to test a few bad workflow states
-  
   /**
    * Inits the.
    *

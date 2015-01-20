@@ -38,6 +38,9 @@ angular
       $scope.record1 = null;
       $scope.record2 = null;
 
+      // flag indicating if index viewer is available for dest terminology
+      $scope.indexViewerExists = false;
+      
       // settings for recipients mechanism
       $scope.allUsers = new Array();
       $scope.returnRecipients = new Array();
@@ -81,6 +84,8 @@ angular
                 .concat($scope.focusProject.mapLead);
               organizeUsers($scope.allUsers);
               $scope.getFeedbackConversation();
+
+              setIndexViewerStatus();
             }
           });
 
@@ -467,4 +472,27 @@ angular
         });
       }
       ;
+      
+      function setIndexViewerStatus() {       
+        $http(
+          {
+            url : root_content + "index/"
+              + $scope.project.destinationTerminology + "/"
+              + $scope.project.destinationTerminologyVersion,
+            dataType : "json",
+            method : "GET",
+            headers : {
+              "Content-Type" : "application/json"
+            }
+          }).success(function(data) {
+          console.debug("Success in getting viewable indexes.");
+          if (data.searchResult.length > 0) {
+            $scope.indexViewerExists = true;
+          } else {
+            $scope.indexViewerExists = false;
+          }
+        }).error(function(data, status, headers, config) {
+          $scope.indexViewerExists = false;
+        });
+      };
     });

@@ -6,8 +6,6 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
-import org.ihtsdo.otf.mapping.rf2.Concept;
-import org.ihtsdo.otf.mapping.rf2.Relationship;
 import org.ihtsdo.otf.mapping.services.ContentService;
 
 /**
@@ -36,6 +34,13 @@ public class TreeposComputerMojo extends AbstractMojo {
   private String terminologyVersion;
 
   /**
+   * A comma-separated list of the root ids
+   * @parameter
+   * @requried
+   */
+  private String rootIds;
+  
+  /**
    * Instantiates a {@link TreeposComputerMojo} from the specified parameters.
    * 
    */
@@ -53,6 +58,7 @@ public class TreeposComputerMojo extends AbstractMojo {
     getLog().info("Starting computing tree positions");
     getLog().info("  terminology = " + terminology);
     getLog().info("  terminologyVersion = " + terminologyVersion);
+    getLog().info("  rootIds = " + rootIds);
 
     try {
 
@@ -70,26 +76,11 @@ public class TreeposComputerMojo extends AbstractMojo {
 
       // Walk up tree to the root
       // ASSUMPTION: single root
-      String conceptId = isaRelType;
-      String rootId = null;
-      OUTER: while (true) {
-        getLog().info("  Walk up tree from " + conceptId);
-        Concept c =
-            contentService.getConcept(conceptId, terminology,
-                terminologyVersion);
-        for (Relationship r : c.getRelationships()) {
-          if (r.isActive() && r.getTypeId().equals(Long.valueOf(isaRelType))) {
-            conceptId = r.getDestinationConcept().getTerminologyId();
-            continue OUTER;
-          }
-        }
-        rootId = conceptId;
-        break;
+      for (String rootId : rootIds.split(",")) {
+        getLog().info("  Compute tree from rootId " + rootId);
+        contentService.computeTreePositions(terminology, terminologyVersion,
+            isaRelType, rootId);
       }
-      getLog().info("  Compute tree from rootId " + conceptId);
-      contentService.computeTreePositions(terminology, terminologyVersion,
-          isaRelType, rootId);
-
       contentService.close();
 
       getLog().info("Done ...");

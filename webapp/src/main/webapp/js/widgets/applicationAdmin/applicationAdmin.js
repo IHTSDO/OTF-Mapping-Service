@@ -26,8 +26,9 @@ angular
 						'$location',
 						'localStorageService',
 						'$upload',
+						'$q',
 						function($scope, $http, $sce, $rootScope, $location,
-								localStorageService, $upload) {
+								localStorageService, $upload, $q) {
 
 							$scope.page = 'project';
 
@@ -56,6 +57,7 @@ angular
 
 							$scope.terminologyVersionPairs = new Array();
 							$scope.mapProjectMetadataPairs = new Array();
+
 							var editingPerformed = new Array();
 							var previousUserPage = 1;
 							var previousAdvicePage = 1;
@@ -455,7 +457,7 @@ angular
 								}
 								$scope.reportDefinitionFilter = filter;
 								$scope.pagedReportDefinition = $scope.sortByKey(
-										$scope.reportDefinitions, 'id').filter(
+										$scope.reportDefinitions, 'name').filter(
 										containsReportDefinitionFilter);
 								$scope.pagedReportDefinitionCount = $scope.pagedReportDefinition.length;
 								$scope.pagedReportDefinition = $scope.pagedReportDefinition
@@ -652,6 +654,16 @@ angular
 								return false;
 							}
 							;
+							
+							function reportDefinitionUsedInProjects(definition) {
+							  for (var i = 0; i < $scope.mapProjects.length; i++) {
+							    for (var j = 0; j < $scope.mapProjects[i].reportDefinition.length; j++) {
+							      if ($scope.mapProjects[i].reportDefinition[j].id == definition.id)
+							        return true;
+							    }
+							  }
+							  return false;
+							};
 
 							function initializeMapProjectMetadata() {
 								if ($scope.mapProjectMetadata != null) {
@@ -691,9 +703,25 @@ angular
 							// helper function to sort a JSON array by field
 							$scope.sortByKey = function sortById(array, key) {
 								return array.sort(function(a, b) {
-									var x = a[key];
-									var y = b[key];
-									return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+									var x, y;
+									// if a number
+									if (!isNaN(parseInt(a[key]))) {
+
+										x = a[key];
+										y = b[key];
+
+									} else {
+
+										x = new String(a[key]).toUpperCase();
+										y = new String(b[key]).toUpperCase();
+
+									}
+							
+									if (x < y)
+										return -1;
+									if (x > y)
+										return 1;
+									return 0;
 								});
 							};
 
@@ -980,6 +1008,54 @@ angular
 								}
 								return false;
 							};
+
+							// reverts an unsaved Report or QA Check definition
+							// 1) Removes from edited list
+							// 2) Replaces scope object with REST-retrieved object
+							$scope.revertUnsavedReportDefinition = function(definition) {
+								// get last saved state of reportDefinitions
+								$http({
+									url : root_reporting + "definition/id/" + definition.id,
+									dataType : "json",
+									method : "GET",
+									headers : {
+										"Content-Type" : "application/json"
+									}
+								}).success(
+										function(data) {
+
+											// remove this definition from the editing performed
+											// array
+											for (var i = editingPerformed.length; i--;) {
+												if (editingPerformed[i].id == definition.id
+														&& editingPerformed[i].name == definition.name) {
+													editingPerformed.splice(i, 1);
+												}
+												;
+											}
+
+											// replace this definition with the new data
+											if (data.qacheck == false) {
+												for (var i = 0; i < $scope.pagedReportDefinition.length; i++) {
+													if ($scope.pagedReportDefinition[i].id == data.id) {
+														console.debug("Reverting definition:", $scope.pagedReportDefinition[i], data);
+														$scope.pagedReportDefinition[i] = data;
+													}
+												}
+											} else {
+												for (var i = 0; i < $scope.pagedQaDefinition.length; i++) {
+													if ($scope.pagedQaDefinition[i].id == data.id) {
+														console.debug("Reverting definition:", $scope.pagedQaDefinition[i], data);
+														$scope.pagedQaDefinition[i] = data;
+													}
+												}
+											}
+										
+											
+										}).error(function(data, status, headers, config) {
+									$rootScope.handleHttpError(data, status, headers, config);
+								});
+							}
 
 							// reverts reportDefinition to last saved state
 							$scope.revertUnsavedReportDefinitions = function() {
@@ -2227,8 +2303,16 @@ angular
 							$scope.deleteReportDefinition = function(reportDefinition) {
 								console.debug("in deleteReportDefinition from application");
 
-								if (confirm("Are you sure that you want to delete a map reportDefinition?") == false)
+								if (confirm("Are you sure that you want to delete a map report definition?") == false)
 									return;
+
+								if (reportDefinitionUsedInProjects(reportDefinition) == true &&
+								  confirm("This report definition is active in at least one project.\nAre you" +
+								  		" still sure that you want to delete a map report definition? \nAll reports" +
+								  		" with this report definition type will be deleted as well!") == false)
+								  return;
+								
+								$rootScope.glassPane++;
 
 								$http({
 									url : root_reporting + "definition/delete",
@@ -2243,12 +2327,14 @@ angular
 												function(data) {
 													console
 															.debug("success to deleteReportDefinition from application");
+													$rootScope.glassPane--;
 												})
 										.error(
 												function(data, status, headers, config) {
 													$scope.recordError = "Error deleting map reportDefinition from application.";
 													$rootScope.handleHttpError(data, status, headers,
 															config);
+													$rootScope.glassPane--;
 												})
 										.then(
 												function(data) {
@@ -2416,26 +2502,12 @@ angular
 								definition.testReportSuccess = null;
 								definition.testReportErrors = null;
 
-								var obj = {
-									"id" : definition.objectId,
-									"name" : definition.name,
-									"roleRequired" : definition.roleRequired,
-									"resultType" : definition.resultType,
-									"queryType" : definition.queryType,
-									"frequency" : definition.frequency,
-									"diffReport" : definition.diffReport,
-									"timePeriod" : definition.timePeriod,
-									"diffReportDefinitionName" : definition.diffReportDefinitionName,
-									"qaCheck" : "false",
-									"query" : definition.query
-								};
-
 								$rootScope.glassPane++;
 
 								$http({
 									url : root_reporting + "definition/update",
 									dataType : "json",
-									data : obj,
+									data : definition,
 									method : "POST",
 									headers : {
 										"Content-Type" : "application/json"
@@ -2533,14 +2605,16 @@ angular
 									}
 								})
 										.success(function(data) {
-											definition.testReportSuccess = null;
-											definition.testReportError = null;
+
+											$scope.newReportAdded = true;
+
 											console.debug("success to addReportDefinition");
 										})
 										.error(
 												function(data, status, headers, config) {
+													$scope.newReportAdded = false;
 													definition.testReportSuccess = null;
-													definition.testReportError = null;
+													definition.testReportError = "Error adding report";
 													$rootScope.handleHttpError(data, status, headers,
 															config);
 												})
@@ -2584,8 +2658,10 @@ angular
 							$scope.deleteQaDefinition = function(qaCheckDefinition) {
 								console.debug("in deleteQaDefinition from application");
 
-								if (confirm("Are you sure that you want to delete a map qaCheckDefinition?") == false)
+								if (confirm("Are you sure that you want to delete a map QA Check Definition?") == false)
 									return;
+
+								$rootScope.glassPane++;
 
 								$http({
 									url : root_reporting + "definition/delete",
@@ -2598,6 +2674,8 @@ angular
 								})
 										.success(
 												function(data) {
+													$rootScope.glassPane--;
+
 													console
 															.debug("success to deleteQaDefinition from application");
 												})
@@ -2606,6 +2684,8 @@ angular
 													$scope.recordError = "Error deleting map qaCheckDefinition from application.";
 													$rootScope.handleHttpError(data, status, headers,
 															config);
+													$rootScope.glassPane--;
+
 												})
 										.then(
 												function(data) {
@@ -2843,11 +2923,15 @@ angular
 									}
 								})
 										.success(function(data) {
+
+											$scope.newQaReportAdded = true;
+
 											console.debug("success to addQaDefinition");
 										})
 										.error(
 												function(data, status, headers, config) {
-													$scope.recordError = "Error adding new map qa check Definition.";
+													$scope.testQaSuccess = false;
+													$scope.testQaError = "Error adding new map qa check Definition.";
 													$rootScope.handleHttpError(data, status, headers,
 															config);
 												})
@@ -2910,6 +2994,8 @@ angular
 							 * cached projects
 							 */
 							$scope.updateMapProject = function(project) {
+									
+								var deferred = $q.defer();
 
 								$http({
 									url : root_mapping + "project/update",
@@ -2925,49 +3011,24 @@ angular
 													console.debug("success to updateMapProject");
 													removeComponentFromArray(editingPerformed, project);
 
-													// retrieve updated projects
-													// and broadcast
-													$http({
-														url : root_mapping + "project/projects",
-														dataType : "json",
-														method : "GET",
-														headers : {
-															"Content-Type" : "application/json"
+													// update the cached project list
+													for (var i = 0; i < $scope.mapProjects.length; i++) {
+														if ($scope.mapProjects[i].id = data.id) {
+															$scope.mapProjects[i] = data;
 														}
+													}
+													localStorageService.add('mapProjects', $scope.mapProjects[i]);
 
-													})
-															.success(
-																	function(data) {
-																		localStorageService.add('mapProjects',
-																				data.mapProject);
-																		$rootScope
-																				.$broadcast(
-																						'localStorageModule.notification.setMapProjects',
-																						{
-																							key : 'mapProjects',
-																							mapProjects : data.mapProject
-																						});
-																		$scope.mapProjects = data.mapProject;
-																	}).error(
-																	function(data, status, headers, config) {
-																		$rootScope.glassPane--;
-																		$rootScope.handleHttpError(data, status,
-																				headers, config);
-																	});
-
-													$rootScope.$broadcast(
-															'localStorageModule.notification.setMapProjects',
-															{
-																key : 'mapProjects',
-																mapProjects : $scope.mapProjects
-															});
-
+													deferred.resolve();
+													
 												}).error(
 												function(data, status, headers, config) {
-													$scope.recordError = "Error updating map project.";
 													$rootScope.handleHttpError(data, status, headers,
 															config);
+													deferred.reject();
 												});
+								
+								return deferred.promise;
 							};
 
 							$scope.deleteMapProject = function(project) {
@@ -3022,7 +3083,7 @@ angular
 									newMapProjectPublic, newMapProjectScopeDescendantsFlag,
 									newMapProjectScopeExcludedDescendantsFlag,
 									newMapProjectMapType, newWorkflowType, newMapRelationStyle,
-									newHandler, newMapProjectMapPrincipleSourceDocumentName,
+									newHandler, 
 									newMapProjectPropagationFlag,
 									newMapProjectPropagationThreshold) {
 
@@ -3086,7 +3147,7 @@ angular
 														"projectSpecificAlgorithmHandlerClass" : newHandler,
 														"scopeDescendantsFlag" : newMapProjectScopeDescendantsFlag,
 														"scopeExcludedDescendantsFlag" : newMapProjectScopeExcludedDescendantsFlag,
-														"mapPrincipleSourceDocumentName" : newMapProjectMapPrincipleSourceDocumentName,
+														"mapPrincipleSourceDocumentName" : "",
 														"propagatedFlag" : newMapProjectPropagationFlag,
 														"propagationDescendantThreshold" : newMapProjectPropagationThreshold
 													};

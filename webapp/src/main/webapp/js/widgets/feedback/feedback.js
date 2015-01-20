@@ -19,7 +19,7 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
     $scope.feedbackConversations = null;
     
 
-    $scope.feedbackTypes = ['All Feedback', 'Feedback', 'Group Feedback', 'Error Feedback', 'Discrepancy Feedback', 'Viewer Feedback'];
+    $scope.feedbackTypes = ['All Feedback', 'Feedback', 'Group Feedback', 'Error Feedback', 'Discrepancy Review Feedback', 'Viewer Feedback'];
     $scope.reviewedTypes = ['All', 'Viewed', 'Unviewed'];
     $scope.resolvedTypes = ['All', 'Active', 'Resolved'];
     

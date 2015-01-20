@@ -9,9 +9,9 @@
       <form>
         <input id="assignedSearch" ng-model="queryAssigned">
         <button class="btn btn-sm btn-primary"
-          ng-click="retrieveAssignedWork(1, queryAssigned)">Search</button>
+          ng-click="retrieveAssignedWork(1, queryAssigned, assignedWorkType)">Search</button>
         <button class="btn btn-sm btn-primary"
-          ng-click="retrieveAssignedWork(1, 'null'); queryAssigned = null">Reset</button>
+          ng-click="retrieveAssignedWork(1, 'null', assignedWorkType); queryAssigned = null">Reset</button>
       </form>
     </td>
   </tr>
@@ -63,7 +63,7 @@
 
         <th style="width: 75%; padding: 5px;">Preferred Name</th>
         <th style="width: 3%; padding: 5px;"><a title="Return All Work"
-          ng-click="openUnassignModal(currentUser, 'concepts')"><i
+          ng-click="unassignAllWork(currentUser, 'concept', assignedWorkType, queryAssigned)"><i
             class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i></a>
         </th>
 
@@ -127,7 +127,7 @@
 
 
         <td style="width: 3%; padding: 5px;"><a title="Return"
-          ng-click="unassignWork(result, currentUser)"><i
+          ng-click="unassignWork(result, currentUser, 'concept')"><i
             class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i></a></td>
       </tr>
     </tbody>
@@ -218,7 +218,7 @@
         <th style="width: 75%; padding: 5px;">Preferred Name</th>
         <th style="width: 3%; padding: 5px;"><a
           title="Return All Conflicts"
-          ng-click="openUnassignModal(currentUser, 'conflicts')"><i
+          ng-click="unassignAllWork(currentUser, 'conflict', assignedConflictType, queryConflict)"><i
             class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i></a>
         </th>
 
@@ -265,7 +265,7 @@
 
         <td style="width: 80%; padding: 5px;">{{result.value}}</td>
         <td style="width: 3%; padding: 5px;"><a title="Return"
-          ng-click="unassignWork(result, currentUser)"><i
+          ng-click="unassignWork(result, currentUser, 'conflict')"><i
             class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i></a></td>
       </tr>
     </tbody>
@@ -352,7 +352,7 @@
         </a></th>
         <th style="width: 80%; padding: 5px;">Preferred Name</th>
         <th style="width: 3%; padding: 5px;"><a title="Return All Work"
-          ng-click="openUnassignModal(currentUser, 'review')"><i
+          ng-click="unassignAllWork(currentUser, 'review', assignedReviewWorkType, queryReviewWork)"><i
             class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i>
         </a></th>
 
@@ -399,7 +399,7 @@
 
         <td style="width: 80%; padding: 5px;">{{result.value}}</td>
         <td style="width: 3%; padding: 5px;"><a title="Return"
-          ng-click="unassignWork(result, currentUser)"><i
+          ng-click="unassignWork(result, currentUser, 'review')"><i
             class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i></a></td>
       </tr>
     </tbody>
@@ -476,7 +476,7 @@
       <th style="width: 60%; padding: 5px;">Preferred Name</th>
       <th style="width: 25%; padding: 5px;">Last Modified</th>
       <th style="width: 3%; padding: 5px;"><a title="Return All Work"
-        ng-click="openUnassignModal(mapUserViewed, 'concepts')"><i
+        ng-click="unassignAllWork(mapUserViewed, 'concept', assignedWorkForUserType, queryAssignedForUser)"><i
           class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i>
       </a></th>
 
@@ -496,7 +496,7 @@
       <td style="width: 25%; padding: 5px;">{{result.terminology |
         date:'MM-dd-yyyy HH:mm'}}</td>
       <td style="width: 3%; padding: 5px;"><a title="Return"
-        ng-click="unassignWork(result, mapUserViewed)"><i
+        ng-click="unassignWork(result, mapUserViewed, 'conceptsByUser')"><i
           class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i></a></td>
     </tr>
 
@@ -511,26 +511,15 @@
 <table style="margin-top: 10px; margin-bottom: 10px;">
   <tr>
     <td style="padding: 5px;">Filter by label:</td>
-    <td style="padding: 5px;"><select ng-model="selected"
-      ng-click="retrieveAssignedQAWork(1, selected, assignedQAWorkType);"
+    <td style="padding: 5px;"><select ng-model="queryQaWork"
+      ng-change="retrieveAssignedQAWork(1, 	queryQaWork, assignedQAWorkType);"
       ng-options="lbl for lbl in labelNames">
     </select>
       <button class="btn btn-sm btn-primary"
         ng-click="retrieveAssignedQAWork(1, 'null', assignedQAWorkType); selected = null;">Reset</button>
     </td>
   </tr>
-  <!-- <tr>
-    <td style="padding: 5px";>Filter concepts:</td>
-    <td style="padding: 5px;">
-      <form>
-        <input id="reviewSearch" ng-model="queryReviewWork">
-        <button class="btn btn-sm btn-primary"
-          ng-click="retrieveAssignedQAWork(1, queryReviewWork, assignedReviewWorkType)">Search</button>
-        <button class="btn btn-sm btn-primary"
-          ng-click="retrieveAssignedQAWork(1, 'null', assignedReviewWorkType); queryReviewWork = null">Reset</button>
-      </form>
-    </td>
-  </tr> -->
+  
   <tr>
     <td></td>
     <td>
@@ -582,7 +571,7 @@
         <th style="width: 77%; padding: 5px;">Preferred Name</th>
         <th style="width: 3%; padding: 5px;"></th>
         <th style="width: 3%; padding: 5px;"><a title="Return All Work"
-          ng-click="openUnassignModal(currentUser, 'review')"><i
+            ng-click="unassignAllWork(currentUser, 'qa', assignedQAWorkType, queryQAWork)"><i
             class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i>
         </a></th>
 
@@ -596,17 +585,17 @@
 
         <td style="width: 3%; padding: 5px;">
           <!-- Display a pushpin if this record has previously been edited --> <a
-          title='Continue reviewing work.'
+          title='Continue work on this concept.'
           ng-show="result.terminologyVersion === 'QA_IN_PROGRESS'"> <i
             ng-click="goEditQAWork(result.id)"
             class="glyphicon glyphicon-pushpin"></i>
         </a> <!-- Display a pencil if this record has not yet been edited --> <a
-          title='Start reviewing this work'
+          title='Start work on this concept'
           ng-show="result.terminologyVersion === 'QA_NEW'"> <i
             ng-click="goEditQAWork(result.id)"
             class="glyphicon glyphicon-pencil"></i>
         </a> <!-- Display a finished icon if this record has previously been edited -->
-          <a title='Continue working on this QA work'
+          <a title='Continue work on this concept'
           ng-show="result.terminologyVersion === 'QA_RESOLVED'"> <i
             ng-click="goEditQAWork(result.id)" class="glyphicon glyphicon-saved"></i>
         </a>
@@ -632,7 +621,7 @@
           tooltip="{{result.labels}}" style="float: right; margin-right: 5px;"><i
             class="glyphicon glyphicon-tasks"></i></a></td>
         <td style="width: 3%; padding: 5px;"><a title="Return"
-          ng-click="unassignWork(result, currentUser)"><i
+          ng-click="unassignWork(result, currentUser, 'qa')"><i
             class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i></a></td>
       </tr>
     </tbody>
