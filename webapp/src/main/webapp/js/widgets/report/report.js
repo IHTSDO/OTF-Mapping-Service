@@ -58,8 +58,9 @@ angular
               && $scope.currentUserToken != null) {
               $http.defaults.headers.common.Authorization = $scope.currentUserToken;
 
-              // retrieve the definitions
+              // retrieve the definitions and sort by name
               $scope.definitions = $scope.focusProject.reportDefinition;
+              $scope.definitions.sort();
 
               console.debug("Report definitions: ", $scope.definitions);
 
@@ -316,6 +317,7 @@ angular
         };
         
         $scope.exportReport = function(report) {
+          $rootScope.glassPane++;
             $http({
                 url : root_reporting + "report/export/"
                 + report.id ,
@@ -328,11 +330,23 @@ angular
             }).success(function(data) {
               $scope.definitionMsg = "Successfully exported report";
               var blob = new Blob([data], {type: "application/vnd.ms-excel"});
-              var objectUrl = URL.createObjectURL(blob);
-              window.open(objectUrl);
+              // hack to download store a file having its URL
+              var fileURL = URL.createObjectURL(blob);
+              var a         = document.createElement('a');
+              a.href        = fileURL; 
+              a.target      = "_blank";
+              a.download    = getReportFileName(report);
+              document.body.appendChild(a);
+              $rootScope.glassPane--;
+              a.click();                       
             }).error(function(data, status, headers, config) {
+              $rootScope.glassPane--;
               $rootScope.handleHttpError(data, status, headers, config);
             });
         };
 
+        var getReportFileName = function(report) {
+          var date = new Date().toISOString().slice(0,10).replace(/-/g,"");
+          return report.name + "." + date + ".xls";
+        };
     });

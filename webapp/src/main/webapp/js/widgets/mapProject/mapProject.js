@@ -20,7 +20,10 @@ angular
       $scope.currentUser = localStorageService.get('currentUser');
       $scope.currentRole = localStorageService.get('currentRole');
       $scope.userToken = localStorageService.get('userToken');
-
+      
+      // flag indicating if index viewer is available for dest terminology
+      $scope.indexViewerExists = false;
+        
       // watch for project change
       $scope.$on('localStorageModule.notification.setFocusProject', function(
         event, parameters) {
@@ -35,7 +38,7 @@ angular
       $scope.$watch('userToken', function() {
 
         $http.defaults.headers.common.Authorization = $scope.userToken;
-
+        setIndexViewerStatus();
       });
 
       $scope.goProjectDetails = function() {
@@ -54,36 +57,6 @@ angular
         $location.path(path);
       };
 
-      $scope.computeWorkflow = function() {
-        console.debug("Computing workflow");
-        $rootScope.glassPane++;
-
-        var confirmWorkflow = confirm("Are you sure you want to compute workflow?");
-        if (confirmWorkflow == true) {
-          // retrieve project information
-          $http(
-            {
-              url : root_workflow + "project/id/" + $scope.project.id
-                + "/compute",
-              dataType : "json",
-              method : "POST",
-              headers : {
-                "Content-Type" : "application/json"
-              }
-            }).success(
-            function(data) {
-              $rootScope
-                .$broadcast('mapProjectWidget.notification.workflowComputed');
-              $rootScope.glassPane--;
-            }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
-            $rootScope.handleHttpError(data, status, headers, config);
-          });
-
-        } else {
-          $rootScope.glassPane--;
-        }
-      };
 
       $scope.generateTestData = function() {
 
@@ -267,5 +240,28 @@ angular
         var newUrl = baseUrl + "/index/viewer";
         var myWindow = window.open(newUrl, "indexViewerWindow");
         myWindow.focus();
+      };
+      
+      function setIndexViewerStatus() {       
+        $http(
+          {
+            url : root_content + "index/"
+              + $scope.project.destinationTerminology + "/"
+              + $scope.project.destinationTerminologyVersion,
+            dataType : "json",
+            method : "GET",
+            headers : {
+              "Content-Type" : "application/json"
+            }
+          }).success(function(data) {
+          console.debug("Success in getting viewable indexes.");
+          if (data.searchResult.length > 0) {
+            $scope.indexViewerExists = true;
+          } else {
+            $scope.indexViewerExists = false;
+          }
+        }).error(function(data, status, headers, config) {
+          $scope.indexViewerExists = false;
+        });
       };
     });

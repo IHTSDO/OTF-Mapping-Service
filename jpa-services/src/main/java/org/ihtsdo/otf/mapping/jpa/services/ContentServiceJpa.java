@@ -1513,14 +1513,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     throws Exception {
 
     if (getTransactionPerOperation()) {
-
-      // remove simple ref set member
       tx.begin();
 
       javax.persistence.Query query =
           manager
-              .createQuery("DELETE From TreePositionJpa c where terminology = :terminology");
+              .createQuery("DELETE From TreePositionJpa c where terminology = :terminology and terminologyVersion = :terminologyVersion");
       query.setParameter("terminology", terminology);
+      query.setParameter("terminologyVersion", terminologyVersion);
       int deleteRecords = query.executeUpdate();
       Logger.getLogger(getClass()).info(
           "    treepos records deleted: " + deleteRecords);
@@ -1529,8 +1528,9 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     } else {
       javax.persistence.Query query =
           manager
-              .createQuery("DELETE From TreePositionJpa c where terminology = :terminology");
+              .createQuery("DELETE From TreePositionJpa c where terminology = :terminology and terminologyVersion = :terminologyVersion");
       query.setParameter("terminology", terminology);
+      query.setParameter("terminologyVersion", terminologyVersion);
       int deleteRecords = query.executeUpdate();
       Logger.getLogger(getClass()).info(
           "    treepos records deleted: " + deleteRecords);

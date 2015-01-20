@@ -111,8 +111,7 @@ angular
         $http(
           {
             url : root_mapping + "treePosition/project/id/"
-              + $scope.focusProject.id + "/terminology/id/"
-              + $scope.terminology + "/" + $scope.terminologyVersion,
+              + $scope.focusProject.id,
             method : "GET",
             headers : {
               "Content-Type" : "application/json"
@@ -139,8 +138,7 @@ angular
         $http(
           {
             url : root_mapping + "treePosition/project/id/"
-              + $scope.focusProject.id + "/terminology/id/"
-              + $scope.terminology + "/" + $scope.terminologyVersion
+              + $scope.focusProject.id
               + "/query/" + $scope.query,
             method : "GET",
             headers : {
@@ -242,8 +240,7 @@ angular
           $http(
             {
               url : root_mapping + "treePosition/project/id/"
-                + $scope.focusProject.id + "/concept/id/" + $scope.terminology
-                + "/" + $scope.terminologyVersion + "/" + terminologyId,
+                + $scope.focusProject.id + "/concept/id/" + terminologyId,
               method : "GET",
               headers : {
                 "Content-Type" : "application/json"
