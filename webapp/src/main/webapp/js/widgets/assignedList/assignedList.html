@@ -585,17 +585,17 @@
 
         <td style="width: 3%; padding: 5px;">
           <!-- Display a pushpin if this record has previously been edited --> <a
-          title='Continue reviewing work.'
+          title='Continue work on this concept.'
           ng-show="result.terminologyVersion === 'QA_IN_PROGRESS'"> <i
             ng-click="goEditQAWork(result.id)"
             class="glyphicon glyphicon-pushpin"></i>
         </a> <!-- Display a pencil if this record has not yet been edited --> <a
-          title='Start reviewing this work'
+          title='Start work on this concept'
           ng-show="result.terminologyVersion === 'QA_NEW'"> <i
             ng-click="goEditQAWork(result.id)"
             class="glyphicon glyphicon-pencil"></i>
         </a> <!-- Display a finished icon if this record has previously been edited -->
-          <a title='Continue working on this QA work'
+          <a title='Continue work on this concept'
           ng-show="result.terminologyVersion === 'QA_RESOLVED'"> <i
             ng-click="goEditQAWork(result.id)" class="glyphicon glyphicon-saved"></i>
         </a>

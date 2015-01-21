@@ -28,7 +28,7 @@ echo "    Delete current wb-release-process-1.20-SNAPSHOT-delta file ...`/bin/da
 cd ~/.m2/repository/org/ihtsdo/intl/release/process/wb-release-process/1.20-SNAPSHOT
 rm -fr wb-release-process-1.20-SNAPSHOT-delta
 if ($status != 0) then
-    echo "ERROR retrieving latest delta data"
+    echo "ERROR deleting delta data"
     exit 1
 endif
 
@@ -54,7 +54,8 @@ endif
 
 echo "    Load the delta ... `/bin/date`"
 cd $MAPPING_CODE/admin/loader
-mvn install -PRF2-delta -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT -Dinput.dir=/home/ihtsdo/.m2/repository/org/ihtsdo/intl/release/process/wb-release-process/1.20-SNAPSHOT/wb-release-process-1.20-SNAPSHOT-delta/destination/Delta | sed 's/^/      /'
+mvn install -PRF2-delta -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT \ 
+   -Dinput.dir=/home/ihtsdo/.m2/repository/org/ihtsdo/intl/release/process/wb-release-process/1.20-SNAPSHOT/wb-release-process-1.20-SNAPSHOT-delta/destination/Delta | sed 's/^/      /'
 if ($status != 0) then
     echo "ERROR processing delta data"
     exit 1
@@ -70,7 +71,7 @@ endif
 
 echo "    Generate SNOMEDCT tree positions ... `/bin/date`"
 cd $MAPPING_CODE/admin/loader
-mvn install -PTreepos -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT -Dversion=latest | sed 's/^/      /'
+mvn install -PTreepos -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT -Dversion=latest -Droot.ids=138875005 | sed 's/^/      /'
 if ($status != 0) then
     echo "ERROR computing tree positions"
     exit 1

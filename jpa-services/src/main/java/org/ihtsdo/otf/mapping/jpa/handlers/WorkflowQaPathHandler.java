@@ -93,20 +93,26 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
       return result;
     }
 
-    // second, check for CANCEL action -- always valid for this path for any
+    // check for CANCEL action -- always valid for this path for any
     // state or user (no-op)
     if (action.equals(WorkflowAction.CANCEL)) {
       return result;
     }
+    
+    // check for CREATE_QA_RECORD action -- this is always valid, as it merely
+    // applies labels to concepts that are already in the workflow
+    if (action.equals(WorkflowAction.CREATE_QA_RECORD)) {
+      return result;
+    }
 
-    // third, get the user role for this map project
+    // get the user role for this map project
     MappingService mappingService = new MappingServiceJpa();
     MapUserRole userRole =
         mappingService.getMapUserRoleForMapProject(user.getUserName(),
             tr.getMapProjectId());
     mappingService.close();
 
-    // fourth, get the map records and workflow path state from the tracking
+    // get the map records and workflow path state from the tracking
     // record
     MapRecordList mapRecords = getMapRecordsForTrackingRecord(tr);
     MapRecord currentRecord = getCurrentMapRecordForUser(mapRecords, user);

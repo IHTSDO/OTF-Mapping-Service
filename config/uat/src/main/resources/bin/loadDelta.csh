@@ -70,7 +70,7 @@ endif
 
 echo "    Generate SNOMEDCT tree positions ... `/bin/date`"
 cd $MAPPING_CODE/admin/loader
-mvn install -PTreepos -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT -Dversion=latest | sed 's/^/      /'
+mvn install -PTreepos -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT -Dversion=latest -Droot.ids=138875005 | sed 's/^/      /'
 if ($status != 0) then
     echo "ERROR computing tree positions"
     exit 1
