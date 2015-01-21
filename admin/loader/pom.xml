@@ -37,6 +37,12 @@
     <sampling.rate></sampling.rate>
     <!-- The map user -->
     <map.user></map.user>
+    <!-- The default root ids for treepos computer 
+         For ICD10 use: I,II,III,IV,V,VI,VII,VIII,IX,X,XI,XII,XIII,XIV,XV,XVI,XVII,XVIII,XIX,XX,XXI,XXII
+         For ICD9CM use: 001-999.99,E000-E999.9,V01-V91.99
+         For ICPC use: -,A,B,D,F,H,K,L,N,P,R,S,T,U,W,X,Y,Z
+      -->
+    <root.ids>138875005</root.ids>
   </properties>
 
   <profiles>
@@ -136,6 +142,7 @@
                 <configuration>
                   <terminology>${terminology}</terminology>
                   <terminologyVersion>${version}</terminologyVersion>
+                  <rootIds>${root.ids}</rootIds>
                 </configuration>
               </execution>
             </executions>
