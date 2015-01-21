@@ -12,7 +12,7 @@
 		title="Reset to last saved settings" ng-show="editModeEnabled == true"
 		ng-click="resetModel()"> <i class="fa fa-undo"></i>
 	</a> &nbsp <a href=""
-		title="{{editMode ? 'disable edit mode' : 'enable edit mode'}}"
+		title="{{editModeEnabled == true ? 'save & disable edit mode' : 'enable edit mode'}}"
 		ng-click="toggleEditMode()"> <i class="fa fa-edit"></i>
 	</a>
 	</span>
