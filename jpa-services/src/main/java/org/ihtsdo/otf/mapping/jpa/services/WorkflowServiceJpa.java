@@ -49,11 +49,9 @@ import org.ihtsdo.otf.mapping.helpers.TrackingRecordList;
 import org.ihtsdo.otf.mapping.helpers.TrackingRecordListJpa;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
-import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
-import org.ihtsdo.otf.mapping.helpers.WorkflowStatusCombination;
 import org.ihtsdo.otf.mapping.helpers.WorkflowType;
 import org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
@@ -1867,14 +1865,13 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
         Logger.getLogger(WorkflowServiceJpa.class).info(result.toString());
 
-       
-
         StringBuffer message = new StringBuffer();
 
         message.append("Errors were detected in the workflow for:\n");
         message.append("  Project\t: " + mapProject.getName() + "\n");
         message.append("  Concept\t: " + concept.getTerminologyId() + "\n");
-        message.append("  Path:\t " + trackingRecord.getWorkflowPath().toString() + "\n");
+        message.append("  Path:\t "
+            + trackingRecord.getWorkflowPath().toString() + "\n");
         message.append("  User\t: " + mapUser.getUserName() + "\n");
         message.append("  Action\t: " + workflowAction.toString() + "\n");
 
@@ -1883,9 +1880,11 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         // record information
         message.append("Records involved:\n");
         message.append("  " + "id\tUser\tWorkflowStatus\n");
-        
+
         for (MapRecord mr : getMapRecordsForTrackingRecord(trackingRecord)) {
-          message.append("  " + mr.getId().toString() + "\t" + mr.getOwner().getUserName() + "\t" + mr.getWorkflowStatus().toString() + "\n");
+          message.append("  " + mr.getId().toString() + "\t"
+              + mr.getOwner().getUserName() + "\t"
+              + mr.getWorkflowStatus().toString() + "\n");
         }
         message.append("\n");
 
@@ -1896,10 +1895,11 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         }
 
         message.append("\n");
-        
+
         // log the message
-        Logger.getLogger(WorkflowServiceJpa.class).error("Workflow error detected\n" + message.toString());
-        
+        Logger.getLogger(WorkflowServiceJpa.class).error(
+            "Workflow error detected\n" + message.toString());
+
         // send email if indicated
         Properties config = ConfigUtility.getConfigProperties();
 
@@ -1907,13 +1907,11 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
             config.getProperty("send.notification.recipients");
         if (!notificationRecipients.isEmpty()) {
           OtfEmailHandler emailHandler = new OtfEmailHandler();
-          emailHandler.sendSimpleEmail(
-              notificationRecipients,
+          emailHandler.sendSimpleEmail(notificationRecipients,
               mapProject.getName() + " Workflow Error Alert, Concept "
                   + concept.getTerminologyId(), message.toString());
         }
-        
-        
+
         throw new LocalException("Workflow action " + workflowAction.toString()
             + " could not be performed on concept "
             + trackingRecord.getTerminologyId());
@@ -1988,11 +1986,11 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
           mapRecords =
               algorithmHandler.assignFromInitialRecord(trackingRecord,
                   mapRecords, mapRecord, mapUser);
+
+          // otherwise, this concept is already in the workflow, do nothing
         } else {
 
-          throw new Exception(
-              "Assignment from published record failed -- concept already in workflow");
-
+          // do nothing (label will be added in synchronize)
         }
 
         break;
@@ -2732,10 +2730,10 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
   }
 
   @Override
-  public ValidationResult computeWorkflowStatusErrors(MapProject mapProject)
+  public List<String> computeWorkflowStatusErrors(MapProject mapProject)
     throws Exception {
-
-    ValidationResult result = new ValidationResultJpa();
+    
+    List<String> results = new ArrayList<String>();
 
     // instantiate the mapping service
     MappingService mappingService = new MappingServiceJpa();
@@ -2759,37 +2757,44 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
     // construct a set of terminology ids for which a tracking record exists
     Set<String> terminologyIdsWithTrackingRecord = new HashSet<>();
-
-    // first check all the tracking records for valid state
+    
     for (TrackingRecord trackingRecord : trackingRecords.getTrackingRecords()) {
-      switch (trackingRecord.getWorkflowPath()) {
-        case CONSENSUS_PATH:
-          break;
-        case DRIP_FEED_REVIEW_PATH:
-          break;
-        case FIX_ERROR_PATH:
-          result.merge(fixErrorHandler.validateTrackingRecord(trackingRecord));
-          break;
-        case LEGACY_PATH:
-          break;
-        case NON_LEGACY_PATH:
-          result.merge(nonLegacyHandler.validateTrackingRecord(trackingRecord));
-          break;
-        case QA_PATH:
-          result.merge(qaHandler.validateTrackingRecord(trackingRecord));
-          break;
-        case REVIEW_PROJECT_PATH:
-          result.merge(reviewHandler.validateTrackingRecord(trackingRecord));
-          break;
-        default:
-          break;
-
-      }
-
-      // add this tracking record id to the set
+      
       terminologyIdsWithTrackingRecord.add(trackingRecord.getTerminologyId());
-    }
 
+    // instantiate the handler based on tracking record workflow type
+       AbstractWorkflowPathHandler handler = null;
+       switch (trackingRecord.getWorkflowPath()) {
+         case CONSENSUS_PATH:
+           break;
+         case DRIP_FEED_REVIEW_PATH:
+           break;
+         case FIX_ERROR_PATH:
+           handler = fixErrorHandler;
+           break;
+         case LEGACY_PATH:
+           break;
+         case NON_LEGACY_PATH:
+           handler = nonLegacyHandler;
+           break;
+         case QA_PATH:
+           handler = qaHandler;
+           break;
+         case REVIEW_PROJECT_PATH:
+           handler = reviewHandler;
+           break;
+         default:
+           results.add("ERROR: Could not determine workflow handler from tracking record for concept " + trackingRecord.getTerminologyId() + " for path: "
+                   + trackingRecord.getWorkflowPath().toString());
+       }
+
+       ValidationResult result =
+           handler.validateTrackingRecord(trackingRecord);
+       
+       if (!result.isValid()) {
+         results.add(constructErrorMessageStringForTrackingRecordAndValidationResult(trackingRecord, result));
+       }
+    }
     Logger.getLogger(WorkflowServiceJpa.class).info(
         "  Checking map records for " + mapProject.getId() + ", "
             + mapProject.getName());
@@ -2807,7 +2812,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         // if no tracking record found for this concept
         if (!terminologyIdsWithTrackingRecord
             .contains(mapRecord.getConceptId())) {
-          result.addError("Map Record " + mapRecord.getId() + ": "
+          results.add("Map Record " + mapRecord.getId() + ": "
               + mapRecord.getWorkflowStatus()
               + " but no tracking record exists (Concept "
               + mapRecord.getConceptId() + " " + mapRecord.getConceptName());
@@ -2816,7 +2821,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
     }
 
-    return result;
+    return results;
 
   }
 
@@ -3341,5 +3346,34 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
             "  Concept not successfully modified " + tr.getTerminologyId());
       }
     }
+  }
+
+  private String constructErrorMessageStringForTrackingRecordAndValidationResult(
+    TrackingRecord trackingRecord,
+    ValidationResult result) throws Exception {
+
+    StringBuffer message = new StringBuffer();
+
+    message.append("ERROR for Concept "
+        + trackingRecord.getTerminologyId() + ", Path "
+        + trackingRecord.getWorkflowPath().toString() + "\n");
+
+    // record information
+    message.append("  Records involved:\n");
+    message.append("    " + "id\tUser\tWorkflowStatus\n");
+
+    for (MapRecord mr : getMapRecordsForTrackingRecord(trackingRecord)) {
+      message.append("    " + mr.getId().toString() + "\t"
+          + mr.getOwner().getUserName() + "\t"
+          + mr.getWorkflowStatus().toString() + "\n");
+    }
+
+    message.append("  Errors reported:\n");
+
+    for (String error : result.getErrors()) {
+      message.append("    " + error + "\n");
+    }
+
+    return message.toString();
   }
 }

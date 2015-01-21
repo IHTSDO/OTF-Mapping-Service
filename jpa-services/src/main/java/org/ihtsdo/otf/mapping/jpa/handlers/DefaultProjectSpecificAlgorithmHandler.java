@@ -1695,7 +1695,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
             "publish - QA_PATH - Creating READY_FOR_PUBLICATION record "
                 + mapRecord.toString());
+        
+        mapRecord.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
 
+        newRecords.clear();
+        newRecords.add(mapRecord);
+        
         break;
       case LEGACY_PATH:
         // do nothing
@@ -2082,18 +2087,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements
             // two records, one marked REVISION, one marked with NEW,
             // EDITING_IN_PROGRESS
             if (!mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
-
-              // if the user is a lead, send directly to publication
-
-              if (mappingService.getMapUserRoleForMapProject(
-                  mapUser.getUserName(), mr.getMapProjectId()).hasPrivilegesOf(
-                  MapUserRole.LEAD)) {
-                mr.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
-                newRecords.clear();
-                newRecords.add(mr);
-                break;
-              }
-
               mr.setWorkflowStatus(WorkflowStatus.REVIEW_NEEDED);
             }
           }
@@ -2138,11 +2131,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
             throw new Exception(
                 "FIX_ERROR_PATH: Lead finished reviewing work, but could not find their record.");
 
-          // FIX_ERROR_PATH does not use Publish, send to publication
-          leadRecord.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+          // set to resolved
+          leadRecord.setWorkflowStatus(WorkflowStatus.REVIEW_RESOLVED);
 
-          newRecords.clear();
-          newRecords.add(leadRecord);
 
         } else {
           throw new Exception(
@@ -2194,10 +2185,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
             throw new Exception(
                 "QA_PATH: User finished reviewing work, but could not find their record.");
 
-          mapRecord.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
-
-          newRecords.clear();
-          newRecords.add(mapRecord);
+          mapRecord.setWorkflowStatus(WorkflowStatus.QA_RESOLVED);
 
         } else {
           throw new Exception(
