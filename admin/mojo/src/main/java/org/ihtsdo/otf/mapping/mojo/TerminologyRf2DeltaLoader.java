@@ -75,7 +75,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
   private Long dpnTypeId = 900000000000003001L;
 
   /** The dpn ref set id. */
-  private Long dpnrefsetId = 900000000000509007L;
+  private Long dpnRefsetId = 900000000000509007L;
 
   /** The dpn acceptability id. */
   private Long dpnAcceptabilityId = 900000000000548007L;
@@ -340,7 +340,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
     prop = config.getProperty("loader.defaultPreferredNames.refsetId");
     if (prop != null) {
-      dpnrefsetId = Long.valueOf(prop);
+      dpnRefsetId = Long.valueOf(prop);
     }
     prop = config.getProperty("loader.defaultPreferredNames.acceptabilityId");
     if (prop != null) {
@@ -351,7 +351,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     getLog().info("Terminology Version: " + version);
     getLog().info("Default preferred name settings:");
     getLog().info("  typeId:          " + dpnTypeId);
-    getLog().info("  refsetId:        " + dpnrefsetId);
+    getLog().info("  refsetId:        " + dpnRefsetId);
     getLog().info("  acceptabilityId: " + dpnAcceptabilityId);
 
     // Open files
@@ -1016,7 +1016,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
                     + language.getAcceptabilityId());
 
             // If prefrred and has correct refset
-            if (new Long(language.getRefSetId()).equals(dpnrefsetId)
+            if (new Long(language.getRefSetId()).equals(dpnRefsetId)
                 && language.isActive()
                 && language.getAcceptabilityId().equals(dpnAcceptabilityId)) {
               getLog().info("      MATCH FOUND: " + description.getTerm());
