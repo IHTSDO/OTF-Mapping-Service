@@ -356,7 +356,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // Prep map relation to use for up propagated records
     MapRelation ifaRuleRelation =
         algorithmHandler.getDefaultUpPropagatedMapRelation();
-    if (ifaRuleRelation == null) {
+    if (mapProject.isPropagatedFlag() && ifaRuleRelation == null) {
       throw new Exception(
           "Unable to find default map relation for up propagated records");
     }
@@ -371,6 +371,15 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
       ct++;
 
+      // If map record is inactive, skip
+      if (!contentService.getConcept(mapRecord.getConceptId(),
+          mapProject.getSourceTerminology(),
+          mapProject.getSourceTerminologyVersion()).isActive()) {
+        Logger.getLogger(getClass()).info(
+            "      Skipping inactive concept " + mapRecord.getConceptId());
+        continue;
+      }
+      
       if (ct % 5000 == 0) {
         Logger.getLogger(getClass()).info("    count = " + ct);
       }
@@ -541,8 +550,15 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           result = algorithmHandler.validateForRelease(member);
 
           if (result != null && !result.isValid()) {
-            throw new Exception("Invalid member for "
-                + member.getConcept().getTerminologyId() + " - " + result);
+            // skip this one if in test mode.
+            if (testModeFlag) {
+              Logger.getLogger(getClass()).info(
+                  "      Skipping invalid map entry " + member);
+              continue;
+            } else {
+              throw new Exception("Invalid member for "
+                  + member.getConcept().getTerminologyId() + " - " + result);
+            }
           }
           activeMembersMap.put(member.getTerminologyId(), member);
         }
@@ -1042,9 +1058,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         found = true;
       }
     }
-    if (!found) {
-      throw new Exception("no changed concepts found.");
-    }
+
     updateStatMax(Stats.CHANGED_CONCEPTS.getValue(), changedConcepts.size());
 
     String camelCaseName =
@@ -2055,7 +2069,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
         // remove record if flag set
         if (!testModeFlag) {
-          Logger.getLogger(getClass()).debug("    REMOVE out of scope record " + mapRecord.getId());
+          Logger.getLogger(getClass()).debug(
+              "    REMOVE out of scope record " + mapRecord.getId());
           mappingService.removeMapRecord(mapRecord.getId());
         }
       }
