@@ -69,7 +69,7 @@ angular
 							$scope.allowableMapTypes = new Array();
 							$scope.allowableMapRelationStyles = new Array();
 							$scope.allowableWorkflowTypes = new Array();
-							$scope.handlers = new Array();
+							$scope.defaultProjectSpecificAlgorithmHandler = "(No default found)";
 
 							$scope.testReportSuccess = false; // flag for
 							// whether new
@@ -107,7 +107,7 @@ angular
 
 							$scope.userApplicationRoles = [ 'VIEWER', 'ADMINISTRATOR' ];
 
-							$scope.newHandler;
+
 
 							// watch for focus project change
 							$scope
@@ -686,17 +686,22 @@ angular
 														.push($scope.mapProjectMetadata.keyValuePairList[i].keyValuePair[j].key);
 											}
 										}
+										
+										
 										if ($scope.mapProjectMetadata.keyValuePairList[i].name == 'Project Specific Handlers') {
 											for (var j = 0; j < $scope.mapProjectMetadata.keyValuePairList[i].keyValuePair.length; j++) {
-												$scope.handlers
-														.push($scope.mapProjectMetadata.keyValuePairList[i].keyValuePair[j].key);
+											  if ($scope.mapProjectMetadata.keyValuePairList[i].keyValuePair[j].key === 'default') {
+											  	$scope.defaultProjectSpecificAlgorithmHandler = $scope.mapProjectMetadata.keyValuePairList[i].keyValuePair[j].value;
+												  
+											  	console.debug("Found default project specific algorithm handler: " + $scope.defaultProjectSpecificAlgorithmHandler);
+											  }
 											}
 										}
 									}
 									$scope.newMapProjectMapType = $scope.allowableMapTypes[0];
 									$scope.newMapRelationStyle = $scope.allowableMapRelationStyles[0];
 									$scope.newWorkflowType = $scope.allowableWorkflowTypes[0];
-									$scope.newHandler = $scope.handlers[0];
+									$scope.newHandler = $scope.defaultProjectSpecificAlgorithmHandler;
 								}
 							}
 
@@ -2979,10 +2984,10 @@ angular
 							 */
 							$scope.updateMapProjectFromList = function(project) {
 								// get source and version and dest and version
-								var src = project.sourceTerminologyVersion.split(" ");
+								var src = project.sourceTerminologyAndVersion.split(" ");
 								project.sourceTerminology = src[0];
 								project.sourceTerminologyVersion = src[1];
-								var res = project.destinationTerminologyVersion.split(" ");
+								var res = project.destinationTerminologyAndVersion.split(" ");
 								project.destinationTerminology = res[0];
 								project.destinationTerminologyVersion = res[1];
 
@@ -3086,6 +3091,33 @@ angular
 									newHandler, 
 									newMapProjectPropagationFlag,
 									newMapProjectPropagationThreshold) {
+								
+								var errors = '';
+								if (newMapProjectSourceVersion == null) {
+									errors += "You must specify a source terminology and version.\n";
+								}
+								if (newMapProjectDestinationVersion == null) {
+									errors += "You must specify a destination terminology and version.\n";
+								}
+								if (newMapProjectRefSetId == null) {
+									errors += "You must specify a ref set id.\n";
+								}
+								if (newMapProjectName == null) {
+									errors += "You must specify a project name.\n";
+								}
+								if (newMapProjectPropagationFlag == true && newMapProjectPropagationThreshold == null) {
+									errors += "You must specify the propagation threshold for a map project using propagation";
+								}
+								
+								for (var i = 0; i < $scope.mapProjects.length; i++) {
+									if ($scope.mapProjects[i].refSetId === newMapProjectRefSetId)
+									errors += "The refset id specified must be unique, but is used by project " + $scope.mapProjects[i].name;
+								}
+								
+								if (errors.length > 0) {
+									alert(errors);
+									return;
+								}
 
 								// get source and version and dest and version
 								var res = newMapProjectSourceVersion.split(" ");
@@ -3097,11 +3129,7 @@ angular
 								var newMapProjectRefSetName = "";
 
 								// check ref set id
-								if (newMapProjectRefSetId == null
-										|| newMapProjectRefSetId.length == 0) {
-									alert("You must specify a unique ref set id.");
-									return;
-								}
+							
 
 								// get the refsetid name
 								$http(
@@ -3183,8 +3211,6 @@ angular
 																		$scope.successMsg = 'Successfully added project '
 																				+ newProject.id;
 
-																		newProject.mapAdministrator
-																				.push($scope.currentUser);
 																		$http({
 																			url : root_mapping + "project/update",
 																			dataType : "json",
