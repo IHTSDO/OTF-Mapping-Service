@@ -6,6 +6,7 @@ package org.ihtsdo.otf.mapping.mojo;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -23,7 +24,6 @@ import org.ihtsdo.otf.mapping.helpers.RelationshipList;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
-import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember;
@@ -64,10 +64,19 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
   private String terminology;
 
   /**
-   * Name of terminology version
+   * Requirement to have the last publication version passed in.
+   * This is used for the "remove retired concepts" routine.
+   * @parameter
+   * @required
+   */
+  private String lastPublicationDate;
+
+  /**
+   * Name of terminology version - computed from what's in the DB
    */
   private String version;
 
+  
   /** The delta dir. */
   private File deltaDir;
 
@@ -155,13 +164,15 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
   public void execute() throws MojoFailureException {
 
     try {
-      getLog().info("Run delta loader ...");
       // Create and configure services and variables and open files
+      getLog().info("Run delta loader");
       setup();
-
-      // Precache all existing concept entires (not connected data like
-      // rels/descs)
-      getLog().info("Cache concepts for " + terminology + "/" + version);
+      getLog().info("    terminology = " + terminology);
+      getLog().info("    version = " + version);
+      getLog().info("    lastPublicationDate = " + lastPublicationDate);
+      
+      // Precache all existing concept entries
+      getLog().info("  Load all concept entries");
       ConceptList conceptList =
           contentService.getAllConcepts(terminology, version);
       for (Concept c : conceptList.getConcepts()) {
@@ -169,28 +180,24 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
       }
       getLog().info("  count = " + conceptList.getCount());
 
-      // Precache the description, langauge refset, and relationship id lists
-      // THIS IS FOR DEBUG/QUALITY ASSURANCE
-      getLog().info("Constructing terminology id sets for quality assurance");
-      getLog().info("Cache description ids");
+      // Precache the description, langauge refset, and relationship ids
+      getLog().info("  Load all description, language, and relationship ids");
       existingDescriptionIds =
           contentService.getAllDescriptionTerminologyIds(terminology, version);
-      getLog().info("  count = " + existingDescriptionIds.size());
-      getLog().info("Cache language refset member ids");
+      getLog().info("    descriptionCt = " + existingDescriptionIds.size());
       existingLanguageRefSetMemberIds =
           contentService.getAllLanguageRefSetMemberTerminologyIds(terminology,
               version);
-      getLog().info("  count = " + existingLanguageRefSetMemberIds.size());
-      getLog().info("Cache relationship ids");
+      getLog().info("    languageCt = " + existingLanguageRefSetMemberIds.size());
       existingRelationshipIds =
           contentService.getAllRelationshipTerminologyIds(terminology, version);
-      getLog().info("  count = " + existingRelationshipIds.size());
+      getLog().info("    relationshipCt = " + existingRelationshipIds.size());
 
       // Load delta data
       loadDelta();
 
       // Compute the number of modified objects of each type
-      getLog().info("Computing number of modified objects...");
+      getLog().info("  Computing number of modified objects");
       int nConceptsUpdated = 0;
       int nDescriptionsUpdated = 0;
       int nLanguagesUpdated = 0;
@@ -226,14 +233,13 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
       getLog().info("    " + nLanguagesUpdated + " language ref set members");
 
       // Commit the content changes
-      getLog().info("Committing...");
+      getLog().info("  Committing.");
       contentService.commit();
-      getLog().info("  Done.");
 
       // QA
       getLog()
           .info(
-              "Checking database contents against number of previously modified objects");
+              "  QA - Check database contents against previously modified objects.");
       ConceptList modifiedConcepts =
           contentService.getConceptsModifiedSinceDate(terminology,
               deltaLoaderStartDate, null);
@@ -249,38 +255,38 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
       // Report
       getLog().info(
-          (modifiedConcepts.getCount() != nConceptsUpdated) ? "  "
+          (modifiedConcepts.getCount() != nConceptsUpdated) ? "    "
               + nConceptsUpdated + " concepts expected, found "
-              + modifiedConcepts.getCount() : "  Concept count matches");
+              + modifiedConcepts.getCount() : "    Concept count matches");
       getLog().info(
-          (modifiedRelationships.getCount() != nRelationshipsUpdated) ? "  "
+          (modifiedRelationships.getCount() != nRelationshipsUpdated) ? "   "
               + nRelationshipsUpdated + " relationships expected, found"
               + modifiedRelationships.getCount()
-              : "  Relationship count matches");
+              : "    Relationship count matches");
       getLog()
           .info(
-              (modifiedDescriptions.getCount() != nDescriptionsUpdated) ? "  "
+              (modifiedDescriptions.getCount() != nDescriptionsUpdated) ? "    "
                   + nDescriptionsUpdated + " descriptions expected, found"
                   + modifiedDescriptions.getCount()
-                  : "  Description count matches");
+                  : "    Description count matches");
       getLog().info(
           (modifiedLanguageRefSetMembers.getCount() != nLanguagesUpdated)
-              ? "  " + nLanguagesUpdated
+              ? "    " + nLanguagesUpdated
                   + " languageRefSetMembers expected, found"
                   + modifiedLanguageRefSetMembers.getCount()
-              : "  LanguageRefSetMember count matches");
-      getLog().info("Computing preferred names for modified concepts");
+              : "    LanguageRefSetMember count matches");
 
       // Clean up resources
       contentService.close();
 
       // Compute default preferred names
+      getLog().info("  Compute preferred names for delta concepts.");
       contentService = new ContentServiceJpa();
       contentService.setTransactionPerOperation(false);
       contentService.beginTransaction();
       computeDefaultPreferredNames();
       contentService.commit();
-      getLog().info("...done");
+      getLog().info("Done");
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -348,8 +354,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     }
 
     // output relevant properties/settings to console
-    getLog().info("Terminology Version: " + version);
-    getLog().info("Default preferred name settings:");
     getLog().info("  typeId:          " + dpnTypeId);
     getLog().info("  refsetId:        " + dpnrefsetId);
     getLog().info("  acceptabilityId: " + dpnAcceptabilityId);
@@ -365,15 +369,14 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
    */
   private void instantiateFileReaders() throws Exception {
 
-    getLog().info("Opening readers for Terminology files...");
-
+    getLog().info("  Open readers for terminology files");
     // concepts file
     for (File f : deltaDir.listFiles()) {
       if (f.getName().contains("_Concept_Delta_")) {
-        getLog().info("  Concept file:      " + f.getName());
+        getLog().info("    Concepts: " + f.getName());
         conceptReader = new BufferedReader(new FileReader(f));
       } else if (f.getName().contains("_Relationship_Delta_")) {
-        getLog().info("  Relationship file: " + f.getName());
+        getLog().info("    Relationships: " + f.getName());
         relationshipReader = new BufferedReader(new FileReader(f));
 
         /*
@@ -383,13 +386,13 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
          * statedRelationshipReader = new BufferedReader(new FileReader(f));
          */
       } else if (f.getName().contains("_Description_")) {
-        getLog().info("  Description file: " + f.getName());
+        getLog().info("  Descriptions: " + f.getName());
         descriptionReader = new BufferedReader(new FileReader(f));
       } else if (f.getName().contains("_TextDefinition_")) {
-        getLog().info("  Text Definition file: " + f.getName());
+        getLog().info("  Text Definitions: " + f.getName());
         textDefinitionReader = new BufferedReader(new FileReader(f));
       } else if (f.getName().contains("_LanguageDelta-en")) {
-        getLog().info("  Language file:    " + f.getName());
+        getLog().info("  Languages: " + f.getName());
         languageReader = new BufferedReader(new FileReader(f));
       }
     }
@@ -975,17 +978,10 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     int dpnFoundCt = 0;
     int dpnSkippedCt = 0;
 
-    getLog().info("Checking database against calculated modifications");
-    Date rf2Version = determineVersion();
-    ConceptList modifiedConcepts =
-        contentService.getConceptsModifiedSinceDate(terminology,
-            rf2Version, null);
-    getLog().info(
-        "Computing default preferred names for " + modifiedConcepts.getCount()
-            + " concepts");
-
-    // Iterate over concepts
-    for (Concept concept : modifiedConcepts.getConcepts()) {
+    // Compute default preferred names for any concept in the delta
+    for (String terminologyId: deltaConceptIds) {
+      Concept concept = contentService.getConcept(
+          terminologyId, terminology, version);
 
       // Skip if inactive
       if (!concept.isActive()) {
@@ -1067,10 +1063,13 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
    * @throws Exception
    */
   public void retireRemovedConcepts() throws Exception {
-    // Determine the editing start date for this terminology
-    // NOTE, if a value like "latest" is used, then we have to determine
-    // from map projects, otherwise version itself can be used
-    Date rf2Version = determineVersion();
+    // Base this algortihm on the last publication date
+    // If editing resumes before last publication date
+    // this will essentially do nothing until afterwards
+    // which is fine, it just means some things will remain
+    // in scope longer than they should.
+    DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+    Date rf2Version= dateFormat.parse(lastPublicationDate);
 
     // Now remove retired concepts 
     // These are concepts created after rf2Version that are no longer in 
@@ -1117,44 +1116,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     }
     getLog().info("      retired =  " + ct);
   }
-
-  /**
-   * Determine previous release version.
-   *
-   * @return the date
-   * @throws Exception the exception
-   */
-  private Date determineVersion() throws Exception {
-    Date rf2Version = null;
-    try {
-      rf2Version = dt.parse(version);
-    } catch (Exception e) {
-      // version is an unparseable value, figure out from map projects
-      MappingService service = new MappingServiceJpa();
-      for (MapProject project : service.getMapProjects().getMapProjects()) {
-        // check for matching source terminology
-        if (project.getSourceTerminology().equals(terminology)
-            && project.getSourceTerminologyVersion().equals(version)) {
-          if (rf2Version == null
-              || project.getEditingCycleBeginDate().before(rf2Version)) {
-            rf2Version = project.getEditingCycleBeginDate();
-          }
-        }
-        // check for matching destination terminology
-        if (project.getDestinationTerminology().equals(terminology)
-            && project.getDestinationTerminologyVersion().equals(version)) {
-          if (rf2Version == null
-              || project.getEditingCycleBeginDate().before(rf2Version)) {
-            rf2Version = project.getEditingCycleBeginDate();
-          }
-        }
-      }
-      service.close();
-    }
-    getLog().info("  calculated version = " + rf2Version);
-    return rf2Version;
-  }
-  
   
   // helper function to update and store concept
   // as well as putting all descendant objects in the cache
