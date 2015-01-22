@@ -15,6 +15,9 @@
 			</tr>
 		</table>
 	</form>
+  <div style="width: 100%; padding: 5px;" ng-show="selectedDefinition != null && selectedDefinition.description != ''">
+        <strong>Description:</strong> {{selectedDefinition.description}}
+    </div>
 </div>
 
 <div>
@@ -32,7 +35,9 @@
 					<div style="float: left; width: 80%">{{reportDisplayed.name}}</div>
 				</div>
 			</h4>
-
+            <div>
+              <strong>Description:</strong> {{reportDisplayed.reportDefinition.description}}
+            </div>
 			<div class="alert alert-warning"
 				ng-show="reportDisplayed.results == 0">This QA check generated
 				no results.</div>
