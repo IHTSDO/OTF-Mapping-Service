@@ -314,7 +314,7 @@ angular
 								{
 									url : root_workflow + "project/id/" + $scope.focusProject.id
 											+ "/user/id/" + $scope.currentUser.userName + "/query/"
-											+ (query == null ? null : query) + "/assignedConflicts",
+											+ (query == null ? null : encodeURIComponent(query)) + "/assignedConflicts",
 									dataType : "json",
 									data : pfsParameterObj,
 									method : "POST",
@@ -381,7 +381,7 @@ angular
 								{
 									url : root_workflow + "project/id/" + $scope.focusProject.id
 											+ "/user/id/" + $scope.currentUser.userName + "/query/"
-											+ (query == null ? null : query) + "/assignedConcepts",
+											+ (query == null ? null : encodeURIComponent(query)) + "/assignedConcepts",
 									dataType : "json",
 									data : pfsParameterObj,
 									method : "POST",
@@ -471,7 +471,7 @@ angular
 								{
 									url : root_workflow + "project/id/" + $scope.focusProject.id
 											+ "/user/id/" + $scope.currentUser.userName + "/query/"
-											+ (query == null ? null : query) + "/assignedQAWork",
+											+ (query == null ? null : encodeURIComponent(query)) + "/assignedQAWork",
 									dataType : "json",
 									data : pfsParameterObj,
 									method : "POST",
@@ -545,7 +545,7 @@ angular
 								{
 									url : root_workflow + "project/id/" + $scope.focusProject.id
 											+ "/user/id/" + $scope.currentUser.userName + "/query/"
-											+ (query == null ? null : query) + "/assignedReviewWork",
+											+ (query == null ? null : encodeURIComponent(query)) + "/assignedReviewWork",
 									dataType : "json",
 									data : pfsParameterObj,
 									method : "POST",
@@ -626,7 +626,7 @@ angular
 								{
 									url : root_workflow + "project/id/" + $scope.focusProject.id
 											+ "/user/id/" + mapUserName + "/query/"
-											+ (query == null ? null : query) + "/assignedConcepts",
+											+ (query == null ? null : encodeURIComponent(query)) + "/assignedConcepts",
 									dataType : "json",
 									data : pfsParameterObj,
 									method : "POST",
@@ -779,7 +779,7 @@ angular
 								{
 									url : root_workflow + "project/id/" + $scope.focusProject.id
 											+ "/user/id/" + user.userName + "/query/"
-											+ (query == null ? "null" : query) + "/" + workTypeText,
+											+ (query == null ? "null" : encodeURIComponent(query)) + "/" + workTypeText,
 									dataType : "json",
 									data : pfsParameterObj,
 									method : "POST",

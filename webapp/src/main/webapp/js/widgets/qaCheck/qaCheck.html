@@ -4,7 +4,7 @@
 		<table>
 			<tr>
 				<td style="padding: 5px; width: 30%"><select id="reportSearch"
-					ng-options="definition as definition.name for definition in definitions |  filter: {qacheck:true}"
+					ng-options="definition as definition.name for definition in definitions |  orderBy: 'name' | filter: {qacheck:true}"
 					ng-change="getReports(1, selectedDefinition, queryReport)"
 					ng-model="selectedDefinition"></select></td>
 
