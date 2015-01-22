@@ -34,11 +34,11 @@ public class QAWorkflow extends AbstractMojo {
   private String refsetId = null;
 
   /**
-   * Whether to send notifictaions via email
+   * Whether to send notifications via email, default is true
    * 
    * @parameter sendNotification
    */
-  private boolean sendNotification = false;
+  private boolean sendNotification = true;
 
   /**
    * Executes the plugin.

@@ -175,9 +175,8 @@ angular.module('adf').directive(
 						}
 					};
 
-					// OTF: Note that if these features are reintroduced, name and model
-					// are no longer scope variables
-					// Will need modification at that time.
+					// OTF: Following features are not used, and do not respect the $scope.name/$scope.model changes
+					//      If re-enabled, will need rework
 
 					// edit dashboard settings
 					$scope.editDashboardDialog = function() {
