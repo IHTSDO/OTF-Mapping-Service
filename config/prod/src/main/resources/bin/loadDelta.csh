@@ -9,6 +9,7 @@
 set MAPPING_CODE=/home/ihtsdo/code
 set MAPPING_CONFIG=/home/ihtsdo/config/config.properties
 set MAPPING_DATA=/home/ihtsdo/data
+set SNOMEDCT_VERSION=20150131
 
 echo "------------------------------------------------"
 echo "Starting ...`/bin/date`"
@@ -54,7 +55,7 @@ endif
 
 echo "    Load the delta ... `/bin/date`"
 cd $MAPPING_CODE/admin/loader
-mvn install -PRF2-delta -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT -Dinput.dir=/home/ihtsdo/.m2/repository/org/ihtsdo/intl/release/process/wb-release-process/1.20-SNAPSHOT/wb-release-process-1.20-SNAPSHOT-delta/destination/Delta | sed 's/^/      /'
+mvn install -PRF2-delta -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT -Dlast.publication.date=$SNOMEDCT_VERSION -Dinput.dir=/home/ihtsdo/.m2/repository/org/ihtsdo/intl/release/process/wb-release-process/1.20-SNAPSHOT/wb-release-process-1.20-SNAPSHOT-delta/destination/Delta | sed 's/^/      /'
 if ($status != 0) then
     echo "ERROR processing delta data"
     exit 1
