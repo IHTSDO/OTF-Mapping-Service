@@ -265,7 +265,7 @@ angular
 								{
 									url : root_workflow + "project/id/" + $scope.focusProject.id
 											+ "/user/id/" + user.userName + "/query/"
-											+ (query == null ? "null" : query)
+											+ (query == null ? "null" : encodeURIComponent(query))
 											+ "/availableConflicts",
 									dataType : "json",
 									data : pfsParameterObj,
@@ -331,7 +331,7 @@ angular
 								{
 									url : root_workflow + "project/id/" + $scope.focusProject.id
 											+ "/user/id/" + user.userName + "/query/"
-											+ (query == null ? 'null' : query) + "/availableConcepts",
+											+ (query == null ? "null" : encodeURIComponent(query)) + "/availableConcepts",
 									dataType : "json",
 									data : pfsParameterObj,
 									method : "POST",
@@ -394,7 +394,7 @@ angular
 						$http(
 								{
 									url : root_workflow + "project/id/" + $scope.focusProject.id
-											+ "/query/" + (query == null ? 'null' : query)
+											+ "/query/" + (query == null ? "null" : encodeURIComponent(query))
 											+ "/availableQAWork",
 									dataType : "json",
 									data : pfsParameterObj,
@@ -501,7 +501,7 @@ angular
 						$http(
 								{
 									url : root_workflow + "project/id/" + $scope.focusProject.id
-											+ "/query/" + (query == null ? 'null' : query)
+											+ "/query/" + (query == null ? "null" : encodeURIComponent(query))
 											+ "/availableQAWork",
 									dataType : "json",
 									data : pfsParameterObj,
@@ -585,7 +585,7 @@ angular
 								{
 									url : root_workflow + "project/id/" + $scope.focusProject.id
 											+ "/user/id/" + user.userName + "/query/"
-											+ (query == null ? "null" : query)
+											+ (query == null ? "null" : encodeURIComponent(query))
 											+ "/availableReviewWork",
 									dataType : "json",
 									data : pfsParameterObj,
