@@ -120,97 +120,103 @@ public abstract class AbstractWorkflowPathHandler implements
 
     ValidationResult result = new ValidationResultJpa();
 
-    if (trackingRecord == null) {
-      result.addWarning("Result generated for null tracking record");
-      return result;
-    }
+    try {
 
-    WorkflowStatusCombination workflowCombination =
-        getWorkflowCombinationForTrackingRecord(trackingRecord);
-
-    // check for empty (allowed) combination
-    if (workflowCombination.isEmpty()) {
-      if (emptyWorkflowAllowed == false) {
-        result
-            .addError("Empty workflow combination not allowed for this workflow path");
+      if (trackingRecord == null) {
+        result.addWarning("Result generated for null tracking record");
+        return result;
       }
 
-      // otherwise, check whether this combination is allowed
-    } else if (!isWorkflowCombinationInTrackingRecordStates(workflowCombination)) {
-      result
-          .addError("Tracking record has invalid combination of reported workflow statuses for "
-              + trackingRecord.getUserAndWorkflowStatusPairs()
-              + ": "
-              + workflowCombination.toString());
-    }
+      WorkflowStatusCombination workflowCombination =
+          getWorkflowCombinationForTrackingRecord(trackingRecord);
 
-    // if invalid, return now
-    if (!result.isValid())
-      return result;
-
-    // extract the user/workflow pairs
-    Set<String> userWorkflowPairs = new HashSet<>();
-    if (trackingRecord.getUserAndWorkflowStatusPairs() != null)
-      userWorkflowPairs.addAll(Arrays.asList(trackingRecord
-          .getUserAndWorkflowStatusPairs().split(" ")));
-
-    // get the map records
-    MapRecordList mapRecords = getMapRecordsForTrackingRecord(trackingRecord);
-
-    // cycle over map records and verify each exists on the tracking record
-    // pairs
-    for (MapRecord mr : mapRecords.getMapRecords()) {
-      // construct pair
-      String pair =
-          mr.getWorkflowStatus().toString() + "_" + mr.getOwner().getUserName();
-
-      // check for pair
-      if (!userWorkflowPairs.contains(pair)) {
-        result.addError("Referenced map record " + mr.getId() + " for user "
-            + mr.getOwner().getUserName() + " is not properly tracked");
-      }
-    }
-
-    // cycle over pairs and verify each exists in the map record list
-    for (String pair : userWorkflowPairs) {
-
-      // get the workflow status
-      String workflowStatus = null;
-      String user = null;
-
-      // cycle over all defined status values
-      for (WorkflowStatus status : WorkflowStatus.values()) {
-
-        // if the pair starts with this status
-        if (pair.startsWith(status.toString())) {
-
-          // set the status
-          workflowStatus = status.toString();
-
-          // extract the user
-          user = pair.replace(workflowStatus + "_", "");
-
-          // stop searching for matching statuses
-          break;
+      // check for empty (allowed) combination
+      if (workflowCombination.isEmpty()) {
+        if (emptyWorkflowAllowed == false) {
+          result
+              .addError("Empty workflow combination not allowed for this workflow path");
         }
+
+        // otherwise, check whether this combination is allowed
+      } else if (!isWorkflowCombinationInTrackingRecordStates(workflowCombination)) {
+        result
+            .addError("Tracking record has invalid combination of reported workflow statuses for "
+                + trackingRecord.getUserAndWorkflowStatusPairs()
+                + ": "
+                + workflowCombination.toString());
       }
 
-      // find the record matching the tracking record's workflow status/user
-      // pair
-      boolean recordFound = false;
+      // if invalid, return now
+      if (!result.isValid())
+        return result;
+
+      // extract the user/workflow pairs
+      Set<String> userWorkflowPairs = new HashSet<>();
+      if (trackingRecord.getUserAndWorkflowStatusPairs() != null)
+        userWorkflowPairs.addAll(Arrays.asList(trackingRecord
+            .getUserAndWorkflowStatusPairs().split(" ")));
+
+      // get the map records
+      MapRecordList mapRecords = getMapRecordsForTrackingRecord(trackingRecord);
+
+      // cycle over map records and verify each exists on the tracking record
+      // pairs
       for (MapRecord mr : mapRecords.getMapRecords()) {
-        if (mr.getOwner().getUserName().equals(user)
-            && mr.getWorkflowStatus().equals(
-                WorkflowStatus.valueOf(workflowStatus))) {
-          recordFound = true;
+        // construct pair
+        String pair =
+            mr.getWorkflowStatus().toString() + "_"
+                + mr.getOwner().getUserName();
+
+        // check for pair
+        if (!userWorkflowPairs.contains(pair)) {
+          result.addError("Referenced map record " + mr.getId() + " for user "
+              + mr.getOwner().getUserName() + " is not properly tracked");
         }
       }
 
-      // if record not found, tracking record is not in sync with map records
-      if (!recordFound) {
-        result
-            .addError("Tracking record references workflow and user pair not present in tracked records");
+      // cycle over pairs and verify each exists in the map record list
+      for (String pair : userWorkflowPairs) {
+
+        // get the workflow status
+        String workflowStatus = null;
+        String user = null;
+
+        // cycle over all defined status values
+        for (WorkflowStatus status : WorkflowStatus.values()) {
+
+          // if the pair starts with this status
+          if (pair.startsWith(status.toString())) {
+
+            // set the status
+            workflowStatus = status.toString();
+
+            // extract the user
+            user = pair.replace(workflowStatus + "_", "");
+
+            // stop searching for matching statuses
+            break;
+          }
+        }
+
+        // find the record matching the tracking record's workflow status/user
+        // pair
+        boolean recordFound = false;
+        for (MapRecord mr : mapRecords.getMapRecords()) {
+          if (mr.getOwner().getUserName().equals(user)
+              && mr.getWorkflowStatus().equals(
+                  WorkflowStatus.valueOf(workflowStatus))) {
+            recordFound = true;
+          }
+        }
+
+        // if record not found, tracking record is not in sync with map records
+        if (!recordFound) {
+          result
+              .addError("Tracking record references workflow and user pair not present in tracked records");
+        }
       }
+    } catch (Exception e) {
+      result.addError("Unexpected error validating tracking record");
     }
 
     return result;
@@ -315,15 +321,15 @@ public abstract class AbstractWorkflowPathHandler implements
       if (!mr.getWorkflowStatus().equals(WorkflowStatus.READY_FOR_PUBLICATION)
           && !mr.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)
           && !mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
-        
+
         // if user owns this record
         if (mr.getOwner().equals(mapUser)) {
 
           // if assigned record is null, set to this record
           if (assignedRecord == null) {
             assignedRecord = mr;
-          } 
-          
+          }
+
           // otherwise, if this workflow status is higher, set to this record
           else if (mr.getWorkflowStatus().compareTo(
               assignedRecord.getWorkflowStatus()) > 0)
