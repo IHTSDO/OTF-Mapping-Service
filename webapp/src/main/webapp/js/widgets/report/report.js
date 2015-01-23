@@ -133,6 +133,11 @@ angular
         // report
       };
 
+      // function to return trusted html code (for advice content)
+      $scope.to_trusted = function(html_code) {
+        return $sce.trustAsHtml(html_code);
+      };
+
       $scope.generateReport = function(definition) {
 
         $rootScope.glassPane++;
