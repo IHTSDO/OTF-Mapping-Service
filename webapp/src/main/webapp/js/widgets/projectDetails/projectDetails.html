@@ -701,7 +701,7 @@
 		style="border: 2px solid #ccc;">
 		<tr>
 			<td>{{principle.principleId}}</td>
-			<td ng-show="editModeEnabled == false">
+			<td>
 				<div class="dropdown">
 					<a class="dropdown-toggle"> <i
 						class="glyphicon glyphicon-info-sign"></i>
@@ -710,14 +710,7 @@
 						<p ng-bind-html="to_trusted(principle.detail)"></p>
 					</span>
 				</div>
-			</td>
-			<td ng-show="editModeEnabled == true"><input
-				ng-model="principle.name" style="width: 70%;"
-				ng-change="updatePrinciple(principle)"></input> <input
-				ng-model="principle.sectionRef" style="width: 70%;"
-				ng-change="updatePrinciple(principle)"></input> <input
-				ng-model="principle.detail" style="width: 100%;"
-				ng-change="updatePrinciple(principle)"></input></td>
+			</td>			
 			<td ng-show="editModeEnabled == true"><i
 				class="glyphicon glyphicon-remove"
 				ng-click="deletePrinciple(principle)"></i></td>
