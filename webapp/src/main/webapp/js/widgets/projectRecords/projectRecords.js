@@ -199,7 +199,7 @@ angular
           "startIndex" : (page - 1) * $scope.recordsPerPage,
           "maxResults" : $scope.recordsPerPage,
           "sortField" : null,
-          "queryRestriction" : $scope.query == null ? null : $scope.query
+          "queryRestriction" : encodeURIComponent($scope.query)
         }; // assigning simply to $scope.query when null produces undefined
 
       }
