@@ -58,7 +58,7 @@
 					<td style="width: 25%; padding: 5px;">{{report.timestamp |
 						date: 'MM/dd/yyyy'}}</td>
 					<td style="width: 5%;"><a title="Delete Report"
-						ng-click="deleteReport(report, page, selectedDefinition, queryReport)"
+						ng-click="deleteReport(report, page, selectedDefinition, queryReport); reportDisplayed = null;"
 						ng-show="report.owner.id == currentUser.id || currentRole == 'Administrator'">
 							<i class="glyphicon glyphicon-remove"></i>
 					</a></td>
