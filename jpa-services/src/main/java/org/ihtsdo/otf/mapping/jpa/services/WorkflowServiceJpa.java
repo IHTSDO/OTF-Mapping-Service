@@ -1674,17 +1674,14 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
         if (mr.getOwner().equals(mapUser)) {
 
-          // check for the case where QA work is both specialist
-          // and
-          // lead level for same user
-          if (mr.getWorkflowStatus().compareTo(WorkflowStatus.QA_NEW) < 0) {
-            // do nothing, this is the specialist level work
+          if (mr.getWorkflowStatus().equals(WorkflowStatus.QA_NEEDED)) {
+            // do nothing, this is the specialist level QA work
 
           } else if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
             // do nothing
 
           } else {
-            // add the record
+            // this is the user's record
             mapRecord = mr;
           }
         }
