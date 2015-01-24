@@ -43,6 +43,8 @@
          For ICPC use: -,A,B,D,F,H,K,L,N,P,R,S,T,U,W,X,Y,Z
       -->
     <root.ids>138875005</root.ids>
+    <!-- The last publication date for RF2 delta source -->
+    <last.publication.date>20150131</last.publication.date>
   </properties>
 
   <profiles>
@@ -116,6 +118,7 @@
                 <configuration>
                   <inputDir>${input.dir}</inputDir>
                   <terminology>${terminology}</terminology>
+                  <lastPublicationDate>${last.publication.date}</lastPublicationDate>
                 </configuration>
               </execution>
             </executions>

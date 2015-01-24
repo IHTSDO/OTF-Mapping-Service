@@ -11,11 +11,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
@@ -79,9 +77,6 @@ import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
-import org.reflections.Reflections;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.util.ClasspathHelper;
 
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
@@ -268,6 +263,7 @@ public class MappingServiceRest extends RootServiceRest {
     String project = "";
 
     try {
+
       // authorize call
       MapUserRole role = securityService.getApplicationRoleForToken(authToken);
       user = securityService.getUsernameForToken(authToken);
@@ -275,6 +271,16 @@ public class MappingServiceRest extends RootServiceRest {
         throw new WebApplicationException(Response.status(401)
             .entity("User does not have permissions to add a map project.")
             .build());
+
+      // check that project specific handler exists as a class
+
+      try {
+        Class.forName(mapProject.getProjectSpecificAlgorithmHandlerClass());
+      } catch (ClassNotFoundException e) {
+        throw new LocalException(
+            "Adding map project failed -- could not find project specific algorithm handler for class name: "
+                + mapProject.getProjectSpecificAlgorithmHandlerClass());
+      }
 
       MappingService mappingService = new MappingServiceJpa();
       MapProject mp = mappingService.addMapProject(mapProject);
@@ -327,6 +333,15 @@ public class MappingServiceRest extends RootServiceRest {
         throw new WebApplicationException(Response.status(401)
             .entity("User does not have permissions to udpate a map project.")
             .build());
+
+      // check that project specific handler exists as a class
+      try {
+        Class.forName(mapProject.getProjectSpecificAlgorithmHandlerClass());
+      } catch (ClassNotFoundException e) {
+        throw new LocalException(
+            "Updating map project failed -- could not find project specific algorithm handler for class name: "
+                + mapProject.getProjectSpecificAlgorithmHandlerClass());
+      }
 
       MappingService mappingService = new MappingServiceJpa();
 
@@ -639,8 +654,7 @@ public class MappingServiceRest extends RootServiceRest {
       mappingService.updateMapProject(mapProject);
 
       mappingService.close();
-      
-      
+
     } catch (Exception e) {
       this.handleException(e, "trying to add scope concept to project", user,
           projectName, "");
@@ -684,18 +698,18 @@ public class MappingServiceRest extends RootServiceRest {
 
       MappingService mappingService = new MappingServiceJpa();
       MapProject mapProject = mappingService.getMapProject(projectId);
-  
+
       for (String terminologyId : terminologyIds) {
         mapProject.addScopeConcept(terminologyId);
       }
       mappingService.updateMapProject(mapProject);
       mappingService.close();
-        
+
     } catch (Exception e) {
       this.handleException(e, "trying to add scope concept to project", user,
           projectName, "");
     }
-   }
+  }
 
   /**
    * Removes a single scope concept from map project.
@@ -743,7 +757,7 @@ public class MappingServiceRest extends RootServiceRest {
 
   /**
    * Removes the scope concept from map project.
-   *
+   * 
    * @param terminologyIds the terminology ids
    * @param projectId the project id
    * @param authToken the auth token
@@ -996,7 +1010,7 @@ public class MappingServiceRest extends RootServiceRest {
 
   /**
    * Removes a list of scope excluded concepts from map project.
-   *
+   * 
    * @param terminologyIds the terminology ids
    * @param projectId the project id
    * @param authToken the auth token
@@ -3763,23 +3777,6 @@ public class MappingServiceRest extends RootServiceRest {
       MappingService mappingService = new MappingServiceJpa();
       Map<String, Map<String, String>> mapOfMaps =
           mappingService.getMapProjectMetadata();
-
-      // add project specific handlers
-      // TODO: move this to jpa layer
-      Reflections reflections =
-          new Reflections(
-              ClasspathHelper.forPackage("org.ihtsdo.otf.mapping.jpa.handlers"),
-              new SubTypesScanner());
-      Set<Class<? extends ProjectSpecificAlgorithmHandler>> implementingTypes =
-          reflections.getSubTypesOf(ProjectSpecificAlgorithmHandler.class);
-
-      Map<String, String> handlerMap = new HashMap<>();
-      for (Class<? extends ProjectSpecificAlgorithmHandler> handler : implementingTypes) {
-        handlerMap.put(handler.getName(), handler.getSimpleName());
-      }
-      if (handlerMap.size() > 0) {
-        mapOfMaps.put("Project Specific Handlers", handlerMap);
-      }
 
       // convert complex map to KeyValuePair objects for easy
       // transformation to

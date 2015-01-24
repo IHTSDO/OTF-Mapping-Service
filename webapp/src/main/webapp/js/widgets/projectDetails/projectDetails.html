@@ -12,7 +12,7 @@
 		title="Reset to last saved settings" ng-show="editModeEnabled == true"
 		ng-click="resetModel()"> <i class="fa fa-undo"></i>
 	</a> &nbsp <a href=""
-		title="{{editMode ? 'disable edit mode' : 'enable edit mode'}}"
+		title="{{editModeEnabled == true ? 'save & disable edit mode' : 'enable edit mode'}}"
 		ng-click="toggleEditMode()"> <i class="fa fa-edit"></i>
 	</a>
 	</span>
@@ -149,7 +149,7 @@
 	</tbody>
 </table>
 
-<form>
+<form ng-show="editModeEnabled == true">
 	<div style="margin-top: 15px;">
 		<b>Add New Map Lead to Project</b>
 	</div>
@@ -233,7 +233,7 @@
 		</tr>
 	</tbody>
 </table>
-<form>
+<form ng-show="editModeEnabled == true">
 	<div style="margin-top: 15px;">
 		<b>Add New Map Specialist to Project</b>
 	</div>
@@ -538,7 +538,16 @@
 		ng-repeat="definition in pagedReportDefinition | orderBy: 'name'| filter: {qacheck:false}"
 		style="border: 2px solid #ccc;">
 		<tr>
-			<td>{{definition.name}}</td>
+			<td>
+              <div class="dropdown">
+               <a class="dropdown-toggle"> <i
+                 class="glyphicon glyphicon-info-sign"></i>
+               </a> &nbsp <span>{{definition.name}} </span> <span class="dropdown-menu">
+               <p>Description: </p>
+               <p style="word-wrap: break-word;" ng-bind-html="to_trusted(definition.description)"></p>
+               </span>
+              </div>
+            </td>    
 			<td>{{definition.roleRequired}}</td>
 			<td>{{definition.diffReport == true ? 'true' : 'false'}}</td>
 			<td ng-show="editModeEnabled == true"><i
@@ -561,7 +570,16 @@
 	<tbody
 		ng-repeat="definition in allowableReportDefinitions | elementFilter:focusProject.reportDefinition | filter: {qacheck:false}">
 		<tr>
-			<td>{{definition.name}}</td>
+			<td>
+              <div class="dropdown">
+               <a class="dropdown-toggle"> <i
+                 class="glyphicon glyphicon-info-sign"></i>
+               </a> &nbsp <span>{{definition.name}} </span> <span class="dropdown-menu">
+               <p>Description: </p>
+               <p style="word-wrap: break-word;" ng-bind-html="to_trusted(definition.description)"></p>
+               </span>
+              </div>
+            </td>
 			<td><i class="glyphicon glyphicon-plus"
 				ng-click="addReportDefinition(definition)"></i></td>
 		</tr>
@@ -603,7 +621,16 @@
 		ng-repeat="definition in pagedQACheckDefinition | orderBy: 'name'"
 		style="border: 2px solid #ccc;">
 		<tr>
-			<td>{{definition.name}}</td>
+            <td>
+              <div class="dropdown">
+               <a class="dropdown-toggle"> <i
+                 class="glyphicon glyphicon-info-sign"></i>
+               </a> &nbsp <span>{{definition.name}} </span> <span class="dropdown-menu">
+               <p>Description: </p>
+               <p style="word-wrap: break-word;" ng-bind-html="to_trusted(definition.description)"></p>
+               </span>
+              </div>
+            </td>    
 			<td>{{definition.roleRequired}}</td>
 			<td ng-show="editModeEnabled == true"><i
 				class="glyphicon glyphicon-remove"
@@ -625,7 +652,16 @@
 	<tbody
 		ng-repeat="definition in allowableQACheckDefinitions | elementFilter:focusProject.qaCheckDefinition | orderBy:'name'">
 		<tr>
-			<td>{{definition.name}}</td>
+			<td>
+              <div class="dropdown">
+               <a class="dropdown-toggle"> <i
+                 class="glyphicon glyphicon-info-sign"></i>
+               </a> &nbsp <span>{{definition.name}} </span> <span class="dropdown-menu">
+               <p>Description: </p>
+               <p style="word-wrap: break-word;" ng-bind-html="to_trusted(definition.description)"></p>
+               </span>
+              </div>
+            </td>
 			<td><i class="glyphicon glyphicon-plus"
 				ng-click="addQACheckDefinition(definition)"></i></td>
 		</tr>
@@ -665,7 +701,7 @@
 		style="border: 2px solid #ccc;">
 		<tr>
 			<td>{{principle.principleId}}</td>
-			<td ng-show="editModeEnabled == false">
+			<td>
 				<div class="dropdown">
 					<a class="dropdown-toggle"> <i
 						class="glyphicon glyphicon-info-sign"></i>
@@ -674,14 +710,7 @@
 						<p ng-bind-html="to_trusted(principle.detail)"></p>
 					</span>
 				</div>
-			</td>
-			<td ng-show="editModeEnabled == true"><input
-				ng-model="principle.name" style="width: 70%;"
-				ng-change="updatePrinciple(principle)"></input> <input
-				ng-model="principle.sectionRef" style="width: 70%;"
-				ng-change="updatePrinciple(principle)"></input> <input
-				ng-model="principle.detail" style="width: 100%;"
-				ng-change="updatePrinciple(principle)"></input></td>
+			</td>			
 			<td ng-show="editModeEnabled == true"><i
 				class="glyphicon glyphicon-remove"
 				ng-click="deletePrinciple(principle)"></i></td>
