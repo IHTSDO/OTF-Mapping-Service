@@ -4,10 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
@@ -34,11 +32,11 @@ public class QAWorkflow extends AbstractMojo {
   private String refsetId = null;
 
   /**
-   * Whether to send notifictaions via email
+   * Whether to send notifications via email, default is true
    * 
    * @parameter sendNotification
    */
-  private boolean sendNotification = false;
+  private boolean sendNotification = true;
 
   /**
    * Executes the plugin.
@@ -101,10 +99,13 @@ public class QAWorkflow extends AbstractMojo {
       }
 
       // log the message sent
-      Logger.getLogger(getClass()).info(message);
+      getLog().info(message);
 
       // try to send the email
-      if (sendNotification == true) {
+      if (sendNotification == true && errors.size() > 0) {
+        
+        getLog().info("Errors detected and email notification requested, sending email");
+        
         Properties config;
         try {
           config = ConfigUtility.getConfigProperties();
@@ -120,11 +121,14 @@ public class QAWorkflow extends AbstractMojo {
         emailHandler.sendSimpleEmail(notificationRecipients,
             "OTF Mapping Tool:  Workflow Errors Detected", message.toString());
 
-        mappingService.close();
-        workflowService.close();
 
-        getLog().info("Done ...");
+       
       }
+      
+      mappingService.close();
+      workflowService.close();
+      
+      getLog().info("Done ...");
     } catch (Exception e) {
       e.printStackTrace();
       throw new MojoExecutionException("Performing workflow QA failed.", e);
