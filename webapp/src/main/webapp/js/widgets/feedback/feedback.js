@@ -109,7 +109,7 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
         {
           url : root_workflow + "conversation/project/id/"
             + $scope.focusProject.id + "/" + $scope.currentUser.userName
-            + "/query/" + query,
+            + "/query/" + encodeURIComponent(query),
           dataType : "json",
           data : pfsParameterObj,
           method : "POST",

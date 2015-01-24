@@ -27,15 +27,15 @@
 				ng-model="project.name" ng-change="setEditingPerformed(project)"
 				style="margin-bottom: 5px; width: 100%;"></input> <select
 				tooltip-placement="top" tooltip="Source Terminology and Version"
-				ng-init="project.sourceTerminologyVersion = getSourceVersion(project)"
-				ng-model="project.sourceTerminologyVersion"
+				ng-init="project.sourceTerminologyAndVersion = getSourceVersion(project)"
+				ng-model="project.sourceTerminologyAndVersion"
 				ng-options="item for item in terminologyVersionPairs"
 				ng-change="setEditingPerformed(project)"
 				style="margin-bottom: 5px; width: 100%;">
 			</select> <select tooltip-placement="top"
 				tooltip="Destination Terminology and Version"
-				ng-init="project.destinationTerminologyVersion = getDestinationVersion(project)"
-				ng-model="project.destinationTerminologyVersion"
+				ng-init="project.destinationTerminologyAndVersion = getDestinationVersion(project)"
+				ng-model="project.destinationTerminologyAndVersion"
 				ng-options="item for item in terminologyVersionPairs"
 				ng-change="setEditingPerformed(project)"
 				style="margin-bottom: 5px; width: 100%;">
@@ -132,14 +132,12 @@
 				ng-options="item for item in allowableMapRelationStyles"
 				ng-change="setEditingPerformed(project)"
 				style="margin-bottom: 5px; width: 100%;">
-			</select> <select tooltip-placement="top"
+			</select> <input tooltip-placement="top"
 				tooltip="Project Specific Algorithm Handler"
-				ng-init="project.projectSpecificAlgorithmHandlerClass=getHandler(project)"
 				ng-model="project.projectSpecificAlgorithmHandlerClass"
-				ng-options="item for item in handlers"
 				ng-change="setEditingPerformed(project)"
 				style="margin-bottom: 5px; width: 100%;">
-			</select> </td>
+			</input> </td>
 			<td><button class="btn btn-sm btn-primary"
 					ng-click="updateMapProjectFromList(project)"
 					ng-show="isComponentChanged(project) == true">Save</button></td>
@@ -233,12 +231,13 @@
 			<tr>
 				<td>Propagated</td>
 				<td><select ng-model="newMapProjectPropagationFlag"
-					ng-options="item for item in [true, false]">
+					ng-options="item for item in [true, false]"
+					ng-change="newMapProjectPropagationThreshold = 0">
 				</select></td>
 			</tr>
 			<tr>
 				<td>Propagation Threshold</td>
-				<td><input id="newMapProjectPropagationThreshold" type="text"
+				<td><input id="newMapProjectPropagationThreshold" type="text" ng-init="newMapProjectPropagationThreshold = 0"
 					ng-model="newMapProjectPropagationThreshold"></td>
 			</tr>
 
@@ -262,9 +261,9 @@
 			</tr>
 			<tr>
 				<td>Project Specific Algorithm Handler</td>
-				<td><select ng-model="newHandler"
-					ng-options="item for item in handlers">
-				</select></td>
+				<td><input style="width:550px;" ng-model="newHandler"
+					value = "defaultProjectSpecificAlgorithmHandler">
+				</td>
 			</tr>
 
 			<tr>
@@ -278,10 +277,10 @@
         newMapProjectPropagationThreshold); 
           newMapProjectName = ''; newMapProjectRefSetId = ''; newHandler = '';
           newMapProjectSourceVersion = ''; newMapProjectDestinationVersion = '';
-          newMapProjectPropagationThreshold = ''; newMapProjectPublished = false; 
+          newMapProjectPropagationThreshold = '0'; newMapProjectPublished = false; 
           newMapProjectRuleBased = false; newMapProjectGroupStructure = false; 
           newMapProjectPublic = false; newMapProjectScopeDescendantsFlag = false; 
-          newMapProjectScopeExcludedDescendantsFlag = false; newMapProjectPropagationFlag = false;"
+          newMapProjectScopeExcludedDescendantsFlag = false; newMapProjectPropagationFlag = false; newHandler = defaultProjectSpecificAlgorithmHandler;"
           >Submit</button></td>
 				<td></td>
 			</tr>
@@ -1019,7 +1018,7 @@
 						<tr>
 							<td><textarea style="overflow: auto; width: 100%;"
 									tooltip-placement="top"
-									tooltip="Description and details regarding QA check"
+									tooltip="Description and details regarding report definition"
 									ng-model="definition.description"
 									ng-change="setEditingPerformed(definition);">
 											</textarea></td>

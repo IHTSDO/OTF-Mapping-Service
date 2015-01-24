@@ -1674,17 +1674,14 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
         if (mr.getOwner().equals(mapUser)) {
 
-          // check for the case where QA work is both specialist
-          // and
-          // lead level for same user
-          if (mr.getWorkflowStatus().compareTo(WorkflowStatus.QA_NEW) < 0) {
-            // do nothing, this is the specialist level work
+          if (mr.getWorkflowStatus().equals(WorkflowStatus.QA_NEEDED)) {
+            // do nothing, this is the specialist level QA work
 
           } else if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
             // do nothing
 
           } else {
-            // add the record
+            // this is the user's record
             mapRecord = mr;
           }
         }
@@ -3241,112 +3238,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     return feedbackList;
   }
 
-  @Override
-  public void finishEditingDoneTrackingRecords(MapProject mapProject)
-    throws Exception {
-
-    if (!mapProject.getWorkflowType().equals(WorkflowType.CONFLICT_PROJECT)) {
-      throw new Exception("Map project " + mapProject.getName()
-          + " is not a CONFLICT_PROJECT");
-    }
-
-    Logger
-        .getLogger(WorkflowServiceJpa.class)
-        .info(
-            "Performing workflow advancement for potential conflicts stuck in EDITING_DONE status "
-                + mapProject.getName());
-
-    // get the tracking records for this project
-    Logger.getLogger(WorkflowServiceJpa.class).info(
-        "Getting tracking records for project " + mapProject.getName());
-    TrackingRecordList trackingRecords =
-        this.getTrackingRecordsForMapProject(mapProject);
-
-    // cycle over the tracking records and construct a set of concepts and users
-    // to finish
-    // note: this is done to avoid concurrent modification errors as records are
-    // finished
-    Map<String, MapRecord> conceptToMapRecordMap = new HashMap<>();
-
-    for (TrackingRecord tr : trackingRecords.getTrackingRecords()) {
-
-      // if two users, and both records are marked EDITING_DONE, this concept
-      // needs advancement
-      if (tr.getAssignedUserCount() == 2
-          && this.getLowestWorkflowStatusForTrackingRecord(tr).equals(
-              WorkflowStatus.EDITING_DONE)
-          && this.getWorkflowStatusForTrackingRecord(tr).equals(
-              WorkflowStatus.EDITING_DONE)) {
-
-        Logger.getLogger(WorkflowServiceJpa.class).info(
-            "  Found eligible concept " + tr.getTerminologyId());
-
-        // get the user names
-        String userNames[] = tr.getAssignedUserNames().split(" ");
-
-        if (userNames.length != 2) {
-          Logger.getLogger(WorkflowServiceJpa.class).info(
-              "    ERROR:  Expected to user names, but found "
-                  + userNames.length);
-
-        }
-
-        // get the first map record
-        MapRecord mapRecord =
-            this.getMapRecordsForTrackingRecord(tr).iterator().next();
-
-        // add this concept and the first user to the map
-        conceptToMapRecordMap.put(tr.getTerminologyId(), mapRecord);
-      }
-    }
-
-    Logger.getLogger(WorkflowServiceJpa.class).info(
-        "Total records requiring advancement: "
-            + conceptToMapRecordMap.keySet().size());
-
-    // instantiate the services and algorithm handler
-    ContentService contentService = new ContentServiceJpa();
-    MappingService mappingService = new MappingServiceJpa();
-
-    for (String terminologyId : conceptToMapRecordMap.keySet()) {
-
-      // get the concept
-      Concept concept =
-          contentService.getConcept(terminologyId,
-              mapProject.getSourceTerminology(),
-              mapProject.getSourceTerminologyVersion());
-
-      // retrieve the map record
-      MapRecord mapRecord = conceptToMapRecordMap.get(terminologyId);
-
-      // get the map user
-      MapUser mapUser = mapRecord.getOwner();
-
-      // process the workflow action
-      this.processWorkflowAction(mapProject, concept, mapUser, mapRecord,
-          WorkflowAction.FINISH_EDITING);
-    }
-
-    // close the services
-    contentService.close();
-    mappingService.close();
-
-    // recheck the tracking records for this project to see if these still exist
-    for (TrackingRecord tr : trackingRecords.getTrackingRecords()) {
-
-      // if two users, and both records are marked EDITING_DONE, this concept
-      // needs advancement
-      if (tr.getAssignedUserCount() == 2
-          && this.getLowestWorkflowStatusForTrackingRecord(tr).equals(
-              WorkflowStatus.EDITING_DONE)
-          && this.getWorkflowStatusForTrackingRecord(tr).equals(
-              WorkflowStatus.EDITING_DONE)) {
-
-        Logger.getLogger(WorkflowServiceJpa.class).info(
-            "  Concept not successfully modified " + tr.getTerminologyId());
-      }
-    }
-  }
 
   private String constructErrorMessageStringForTrackingRecordAndValidationResult(
     TrackingRecord trackingRecord,

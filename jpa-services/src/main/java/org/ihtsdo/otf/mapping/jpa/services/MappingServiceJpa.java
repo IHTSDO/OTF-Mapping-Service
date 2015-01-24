@@ -2593,7 +2593,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
         Logger.getLogger(this.getClass()).debug("      Create map entry");
         MapEntry mapEntry = new MapEntryJpa();
-        mapEntry.setTargetId(refSetMember.getMapTarget() == null ? "" : refSetMember.getMapTarget());
+        mapEntry.setTargetId(refSetMember.getMapTarget() == null ? ""
+            : refSetMember.getMapTarget());
         mapEntry.setTargetName(targetName);
         mapEntry.setMapRecord(mapRecord);
         mapEntry.setMapRelation(mapRelationIdMap.get(refSetMember
@@ -2987,7 +2988,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     if (mapUser.getApplicationRole().equals(MapUserRole.ADMINISTRATOR)) {
       return MapUserRole.ADMINISTRATOR;
     }
-    
+
     // return role NONE if user is not on role lists and project is private
     if (!mapProject.isPublic())
       return MapUserRole.NONE;
@@ -3703,7 +3704,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       if (adviceRemoved == true)
         updateMapProject(mp);
     }
-    
+
     removeMapAdvice(mapAdvice.getId());
 
     Logger.getLogger(MappingServiceJpa.class).info(
@@ -3746,6 +3747,17 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     if (mapRefsetPatternNameMap.size() > 0) {
       idNameMapList.put("Map Refset Patterns", mapRefsetPatternNameMap);
     }
+
+    // return a default project specific algorithm handler
+    Map<String, String> projectSpecificAlgorithmHandlers = new HashMap<>();
+
+    // add the Default Specific Project Algorithm Handler
+    // Don't want any of the other specific ones, only want the class name of the default
+    projectSpecificAlgorithmHandlers
+        .put("default",
+            "org.ihtsdo.otf.mapping.jpa.handlers.DefaultProjectSpecificAlgorithmHandler");
+    
+    idNameMapList.put("Project Specific Handlers", projectSpecificAlgorithmHandlers);
 
     return idNameMapList;
   }
