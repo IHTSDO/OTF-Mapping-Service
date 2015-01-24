@@ -133,6 +133,11 @@ angular
         // report
       };
 
+      // function to return trusted html code (for advice content)
+      $scope.to_trusted = function(html_code) {
+        return $sce.trustAsHtml(html_code);
+      };
+
       $scope.generateReport = function(definition) {
 
         $rootScope.glassPane++;
@@ -346,7 +351,7 @@ angular
         };
 
         var getReportFileName = function(report) {
-          var date = new Date().toISOString().slice(0,10).replace(/-/g,"");
+          var date = new Date(report.timestamp).toISOString().slice(0,10).replace(/-/g,"");
           return report.name + "." + date + ".xls";
         };
     });

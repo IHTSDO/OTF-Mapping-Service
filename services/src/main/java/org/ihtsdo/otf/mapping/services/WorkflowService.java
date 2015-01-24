@@ -9,7 +9,6 @@ import org.ihtsdo.otf.mapping.helpers.MapUserList;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.TrackingRecordList;
-import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.model.Feedback;
@@ -484,14 +483,6 @@ public interface WorkflowService extends RootService {
    */
   FeedbackList getFeedbackErrorsForRecord(MapRecord mapRecord) throws Exception;
 
-  /**
-   * Finish editing done tracking records. Used for one-off error correction.
-   *
-   * @param mapProject the map project
-   * @throws Exception the exception
-   */
-  public void finishEditingDoneTrackingRecords(MapProject mapProject)
-    throws Exception;
 
   /**
    * Find available qa work.

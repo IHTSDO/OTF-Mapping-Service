@@ -1,0 +1,87 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<!-- Module Metadata -->
+	<parent>
+		<groupId>org.ihtsdo.otf.mapping</groupId>
+		<artifactId>mapping-parent</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+		<relativePath>../parent</relativePath>
+	</parent>
+
+	<artifactId>mapping-custom</artifactId>
+	<name>OTF Custom Code</name>
+	<description>OTF templates for customizing code</description>
+
+	<!-- Declare Project Dependency Versions -->
+	<dependencies>
+		<!-- Model interfaces. -->
+		<dependency>
+			<groupId>org.ihtsdo.otf.mapping</groupId>
+			<artifactId>mapping-model</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ihtsdo.otf.mapping</groupId>
+			<artifactId>mapping-jpa-model</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ihtsdo.otf.mapping</groupId>
+			<artifactId>mapping-services</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ihtsdo.otf.mapping</groupId>
+			<artifactId>mapping-jpa-services</artifactId>
+		</dependency>
+
+		<!-- JPA dependencies -->
+		<dependency>
+			<groupId>org.hibernate.javax.persistence</groupId>
+			<artifactId>hibernate-jpa-2.0-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>javax.transaction</groupId>
+			<artifactId>jta</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-c3p0</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-search</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-entitymanager</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-envers</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-validator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+		</dependency>
+
+		<!-- Logging -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+		</dependency>
+
+		<!-- Unit tests -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+		</dependency>
+	</dependencies>
+</project>
