@@ -1473,7 +1473,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
       start = startDate;
     }
     if (endDate != null) {
-      start = startDate;
+      end = endDate;
     }
     Logger.getLogger(getClass()).info(
         "Removing reports for project " + mapProject.getName() + " - " + start
