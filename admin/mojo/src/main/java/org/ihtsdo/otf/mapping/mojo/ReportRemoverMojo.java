@@ -94,9 +94,6 @@ public class ReportRemoverMojo extends AbstractMojo {
       // Remove reports
       ReportService reportService = new ReportServiceJpa();
       for (MapProject mapProject : mapProjects) {
-        getLog().info(
-            "Removing reports for " + mapProject.getName() + ", "
-                + mapProject.getId());
         reportService.removeReportsForMapProject(mapProject, start, end);
       }
 
