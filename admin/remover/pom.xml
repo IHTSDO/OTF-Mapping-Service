@@ -27,9 +27,8 @@
     <map.advice.name></map.advice.name>
     <!-- Remove reports range - start date -->
     <start.date>19700101</start.date>
-    <end.date>19700101</start.date>
     <!-- Remove reports range - end date -->
-    <start.date></start.date>
+    <end.date></end.date>
   </properties>
 
 
