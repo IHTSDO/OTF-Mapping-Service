@@ -97,7 +97,6 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
       }
 
       // Get the current workflow and extract concepts for comparison
-
       WorkflowService workflowService = new WorkflowServiceJpa();
 
       // Compute workflow
@@ -134,8 +133,12 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
             getLog().info(
                 "  New concept:  " + tr.getTerminologyId() + ", "
                     + tr.getDefaultPreferredName());
-            previousWorkflowConcepts.remove(tr.getTerminologyId());
+            
             conceptsAdded++;
+            
+            // otherwise, remove it from the set
+          } else {
+            previousWorkflowConcepts.remove(tr.getTerminologyId());
           }
         }
 
