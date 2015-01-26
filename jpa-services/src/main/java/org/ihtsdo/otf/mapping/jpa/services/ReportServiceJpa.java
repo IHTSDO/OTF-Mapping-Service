@@ -850,6 +850,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
     reportList.setReports(reports);
 
+    Logger.getLogger(getClass()).info("  count = " + reportList.getCount());
+
     return reportList;
   }
 
