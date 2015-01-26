@@ -72,8 +72,8 @@ public class ReportRemoverMojo extends AbstractMojo {
       if (endDate != null) {
         end = dateFormat.parse(endDate);
       }
-      getLog().info("  start = " + startDate);
-      getLog().info("  end = " + endDate);
+      getLog().info("  start = " + start);
+      getLog().info("  end = " + end);
 
       MappingService mappingService = new MappingServiceJpa();
       Set<MapProject> mapProjects = new HashSet<>();
