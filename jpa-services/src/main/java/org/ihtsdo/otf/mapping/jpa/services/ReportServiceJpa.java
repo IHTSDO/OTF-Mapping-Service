@@ -896,9 +896,9 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
         return o1.getName().compareTo(o2.getName());
       }
     };
-    Collections.sort(nonDiffReportDefinitions,  comp);
-    Collections.sort(diffReportDefinitions,  comp);
-    
+    Collections.sort(nonDiffReportDefinitions, comp);
+    Collections.sort(diffReportDefinitions, comp);
+
     // cycle over dates until end date is passed
     Date localStartDate = startDate;
     while (localStartDate.compareTo(endDate) <= 0) {
@@ -1123,12 +1123,24 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
     // replace the map project id and timestamp parameters
     query = query.replaceAll(":MAP_PROJECT_ID:", mapProject.getId().toString());
-    query = query.replaceAll(":SOURCE_TERMINOLOGY:", mapProject.getSourceTerminology());
-    query = query.replaceAll(":SOURCE_TERMINOLOGY_VERSION:", mapProject.getSourceTerminologyVersion());
-    query = query.replaceAll(":DESTINATION_TERMINOLOGY:", mapProject.getDestinationTerminology());
-    query = query.replaceAll(":DESTINATION_TERMINOLOGY_VERSION:", mapProject.getDestinationTerminologyVersion());
-    query = query.replaceAll(":EDITING_CYCLE_BEGIN_DATE:", Long.toString(mapProject.getEditingCycleBeginDate().getTime()));
-    query = query.replaceAll(":LATEST_PUBLICATION_DATE:", Long.toString(mapProject.getLatestPublicationDate().getTime()));
+    query =
+        query.replaceAll(":SOURCE_TERMINOLOGY:",
+            mapProject.getSourceTerminology());
+    query =
+        query.replaceAll(":SOURCE_TERMINOLOGY_VERSION:",
+            mapProject.getSourceTerminologyVersion());
+    query =
+        query.replaceAll(":DESTINATION_TERMINOLOGY:",
+            mapProject.getDestinationTerminology());
+    query =
+        query.replaceAll(":DESTINATION_TERMINOLOGY_VERSION:",
+            mapProject.getDestinationTerminologyVersion());
+    query =
+        query.replaceAll(":EDITING_CYCLE_BEGIN_DATE:",
+            Long.toString(mapProject.getEditingCycleBeginDate().getTime()));
+    query =
+        query.replaceAll(":LATEST_PUBLICATION_DATE:",
+            Long.toString(mapProject.getLatestPublicationDate().getTime()));
     query = query.replaceAll(":TIMESTAMP:", Long.toString(date.getTime()));
 
     // Handle previous versions
@@ -1451,19 +1463,26 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
    * (org.ihtsdo.otf.mapping.model.MapProject)
    */
   @Override
-  public void removeReportsForMapProject(MapProject mapProject) {
-
-    Logger.getLogger(getClass()).info(
-        "Retrieving reports for project " + mapProject.getName() + "...");
+  public void removeReportsForMapProject(MapProject mapProject, Date startDate,
+    Date endDate) {
 
     ReportList reports = getReportsForMapProject(mapProject, null);
-
+    Date start = new Date(0);
+    Date end = new Date();
+    if (startDate != null) {
+      start = startDate;
+    }
+    if (endDate != null) {
+      start = startDate;
+    }
     Logger.getLogger(getClass()).info(
-        "Removing " + reports.getCount() + " reports.");
-
+        "Removing reports for project " + mapProject.getName() + " - " + start
+            + " to " + end);
     for (Report report : reports.getReports()) {
-
-      removeReport(report.getId());
+      if (report.getTimestamp() >= start.getTime()
+          && report.getTimestamp() <= end.getTime()) {
+        removeReport(report.getId());
+      }
     }
 
   }
