@@ -66,10 +66,10 @@ public class ReportRemoverMojo extends AbstractMojo {
       Date start = new Date(0);
       Date end = new Date();
       DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-      if (startDate == null) {
+      if (startDate != null) {
         start = dateFormat.parse(startDate);
       }
-      if (endDate == null) {
+      if (endDate != null) {
         end = dateFormat.parse(endDate);
       }
 
