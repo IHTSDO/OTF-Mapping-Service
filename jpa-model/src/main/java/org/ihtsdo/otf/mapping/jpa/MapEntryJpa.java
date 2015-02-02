@@ -136,8 +136,8 @@ public class MapEntryJpa implements MapEntry {
 
     // System.out.println("Deep copying entry.");
 
-    // if deep copy not indicated, copy id, otherwise leave null
-    if (!keepIds) {
+    // copy id, otherwise leave null
+    if (keepIds) {
       this.id = mapEntry.getId();
     }
     this.mapRecord = mapEntry.getMapRecord();
