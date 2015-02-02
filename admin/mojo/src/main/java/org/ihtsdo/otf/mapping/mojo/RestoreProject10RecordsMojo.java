@@ -9,6 +9,7 @@ import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
+import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.services.MappingService;
 
@@ -33,12 +34,20 @@ public class RestoreProject10RecordsMojo extends AbstractMojo {
     try {
 
       MappingService service = new MappingServiceJpa();
+      OUTER:
       for (String id : getIds()) {
         MapRecordList list = service.getMapRecordRevisionsForConcept(id, 10L);
         // iterate from top of list until we find a non-"wci" owned entry
         for (MapRecord record : list.getMapRecords()) {
           getLog().info("Record Info: " + record.getConceptId() + ", " + record.getLastModifiedBy().getUserName() + ", "
               + record.getWorkflowStatus());
+          // Skip ones that need review
+          if (record.getLastModifiedBy().getUserName().equals("wci") &&
+              record.getWorkflowStatus() == WorkflowStatus.REVIEW_NEEDED) {
+            getLog().info("  SKIPPED");
+            continue OUTER;
+          }
+          
           if (!record.getLastModifiedBy().getUserName().equals("wci")
               && record.getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION) {
             // found record, restore this one.
@@ -52,13 +61,20 @@ public class RestoreProject10RecordsMojo extends AbstractMojo {
             }
             MapRecord toremove = list2.getMapRecords().iterator().next();
             getLog().info("REMOVE " + toremove);
+            for (MapEntry entry : toremove.getMapEntries()) {
+              getLog().info("  ENTRY = " + entry);
+            }
+            handleMapRecordLazyInitialization(record);
             MapRecord toinsert = new MapRecordJpa(record, false);
+            for (MapEntry entry : toinsert.getMapEntries()) {
+              getLog().info("  ENTRY = " + entry);
+            }
             getLog().info("ADD " + toinsert);
             getLog().info("\n");
           
             //service.removeMapRecord(toremove.getId());
             //service.addMapRecord(toinsert);
-            
+            continue OUTER;
           }
 
         }
@@ -68,6 +84,28 @@ public class RestoreProject10RecordsMojo extends AbstractMojo {
       e.printStackTrace();
       throw new MojoExecutionException(
           "Loading of Unpublished RF2 Complex Maps failed.", e);
+    }
+
+  }
+
+  /**
+   * Handle map record lazy initialization.
+   *
+   * @param mapRecord the map record
+   */
+  private void handleMapRecordLazyInitialization(MapRecord mapRecord) {
+    // handle all lazy initializations
+    mapRecord.getOwner().getEmail();
+    mapRecord.getLastModifiedBy().getEmail();
+    mapRecord.getMapNotes().size();
+    mapRecord.getMapPrinciples().size();
+    mapRecord.getOriginIds().size();
+    mapRecord.getLabels().size();
+    mapRecord.getReasonsForConflict().size();
+    for (MapEntry mapEntry : mapRecord.getMapEntries()) {
+      if (mapEntry.getMapRelation() != null)
+        mapEntry.getMapRelation().getName();
+      mapEntry.getMapAdvices().size();
     }
 
   }
