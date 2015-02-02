@@ -6,6 +6,7 @@ import java.util.Set;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
+import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapRecord;
@@ -36,10 +37,10 @@ public class RestoreProject10RecordsMojo extends AbstractMojo {
         MapRecordList list = service.getMapRecordRevisionsForConcept(id, 10L);
         // iterate from top of list until we find a non-"wci" owned entry
         for (MapRecord record : list.getMapRecords()) {
-          getLog().info("Record Info: " + record.getId() + ", " + record.getLastModifiedBy().getUserName() + ", "
+          getLog().info("Record Info: " + record.getConceptId() + ", " + record.getLastModifiedBy().getUserName() + ", "
               + record.getWorkflowStatus());
           if (!record.getLastModifiedBy().getUserName().equals("wci")
-              && record.getWorkflowStatus().equals("READY_FOR_PUBLICATION")) {
+              && record.getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION) {
             // found record, restore this one.
             getLog().info("  FOUND");  
 
