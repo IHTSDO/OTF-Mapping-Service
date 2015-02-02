@@ -34,30 +34,36 @@ public class RestoreProject10RecordsMojo extends AbstractMojo {
     try {
 
       MappingService service = new MappingServiceJpa();
-      OUTER:
-      for (String id : getIds()) {
+      OUTER: for (String id : getIds()) {
         MapRecordList list = service.getMapRecordRevisionsForConcept(id, 10L);
         // iterate from top of list until we find a non-"wci" owned entry
         for (MapRecord record : list.getMapRecords()) {
-          getLog().info("Record Info: " + record.getConceptId() + ", " + record.getLastModifiedBy().getUserName() + ", "
-              + record.getWorkflowStatus());
+          getLog().info(
+              "Record Info: " + record.getConceptId() + ", "
+                  + record.getLastModifiedBy().getUserName() + ", "
+                  + record.getWorkflowStatus());
           // Skip ones that need review
-          if (record.getLastModifiedBy().getUserName().equals("wci") &&
-              record.getWorkflowStatus() == WorkflowStatus.REVIEW_NEEDED) {
+          if (record.getLastModifiedBy().getUserName().equals("wci")
+              && record.getWorkflowStatus() == WorkflowStatus.REVIEW_NEEDED) {
             getLog().info("  SKIPPED");
             continue OUTER;
           }
-          
+
           if (!record.getLastModifiedBy().getUserName().equals("wci")
               && record.getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION) {
             // found record, restore this one.
-            getLog().info("  FOUND");  
+            getLog().info("  FOUND");
 
             MapRecordList list2 =
                 service.getMapRecordsForProjectAndConcept(10L,
                     record.getConceptId());
+            if (list2.getCount() == 0) {
+              getLog().debug("  SKIP");
+              continue OUTER;
+            }
             if (list2.getCount() != 1) {
-              throw new Exception("Expected only a single record for " + record.getConceptId());
+              throw new Exception("Expected only a single record for "
+                  + record.getConceptId());
             }
             MapRecord toremove = list2.getMapRecords().iterator().next();
             if (!toremove.getLastModifiedBy().getUserName().equals("wci")) {
@@ -77,7 +83,7 @@ public class RestoreProject10RecordsMojo extends AbstractMojo {
               getLog().debug("  ENTRY = " + entry);
             }
             getLog().debug("\n");
-          
+
             service.removeMapRecord(toremove.getId());
             service.addMapRecord(toinsert);
             continue OUTER;
