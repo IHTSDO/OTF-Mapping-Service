@@ -50,6 +50,7 @@ public class RestoreProject10RecordsMojo extends AbstractMojo {
             getLog().info("REMOVE " + toremove);
             MapRecord toinsert = new MapRecordJpa(record, false);
             getLog().info("ADD " + toinsert);
+            getLog().info("\n");
           
           }
 
