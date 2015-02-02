@@ -143,6 +143,9 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
   /** The delta concept ids. */
   private Set<String> deltaConceptIds = new HashSet<>();
 
+  /** The "recompute preferred name" concept ids. */
+  private Set<String> recomputePnConceptIds = new HashSet<>();
+
   /** The existing concept cache. */
   private Map<String, Concept> existingConceptCache = new HashMap<>();
 
@@ -513,7 +516,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
         // Track all delta concept ids so we can properly remove concepts later.
         deltaConceptIds.add(fields[0]);
-
+        recomputePnConceptIds.add(fields[0]);
+        
         // Setup delta concept (either new or based on existing one)
         Concept newConcept = null;
         if (concept == null) {
@@ -597,6 +601,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
           // retrieve concept
           concept = contentService.getConcept(fields[4], terminology, version);
         }
+
+        recomputePnConceptIds.add(fields[4]);
 
         // if the concept is not null
         if (concept != null) {
@@ -732,10 +738,14 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
         // description should have concept (unless cached descriptions don't
         // have them)
         if (concept == null) {
-          throw new Exception("Description" + fields[0]
+          throw new Exception("Description" + fields[4]
               + " does not have concept");
 
         }
+        
+        // add to recompute pn
+        recomputePnConceptIds.add(description.getConcept().getTerminologyId());
+        
         // Cache concept and description
         cacheConcept(concept);
         cacheDescription(description);
@@ -979,7 +989,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     int dpnSkippedCt = 0;
 
     // Compute default preferred names for any concept in the delta
-    for (String terminologyId: deltaConceptIds) {
+    for (String terminologyId : recomputePnConceptIds) {
       Concept concept = contentService.getConcept(
           terminologyId, terminology, version);
 
