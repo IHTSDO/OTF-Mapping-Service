@@ -78,13 +78,14 @@ public class RestoreProject10RecordsMojo extends AbstractMojo {
             }
             getLog().debug("\n");
           
-            //service.removeMapRecord(toremove.getId());
-            //service.addMapRecord(toinsert);
+            service.removeMapRecord(toremove.getId());
+            service.addMapRecord(toinsert);
             continue OUTER;
           }
 
         }
       }
+      service.close();
       getLog().info("Done ...");
     } catch (Exception e) {
       e.printStackTrace();
