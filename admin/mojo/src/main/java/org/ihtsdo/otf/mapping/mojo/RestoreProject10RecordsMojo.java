@@ -60,17 +60,23 @@ public class RestoreProject10RecordsMojo extends AbstractMojo {
               throw new Exception("Expected only a single record for " + record.getConceptId());
             }
             MapRecord toremove = list2.getMapRecords().iterator().next();
-            getLog().info("REMOVE " + toremove);
+            if (!toremove.getLastModifiedBy().getUserName().equals("wci")) {
+              throw new Exception("Expected a wci record");
+            }
+            if (toremove.getWorkflowStatus() != WorkflowStatus.PUBLISHED) {
+              throw new Exception("Expected a PUBLISHED record");
+            }
+            getLog().debug("REMOVE " + toremove);
             for (MapEntry entry : toremove.getMapEntries()) {
-              getLog().info("  ENTRY = " + entry);
+              getLog().debug("  ENTRY = " + entry);
             }
             handleMapRecordLazyInitialization(record);
             MapRecord toinsert = new MapRecordJpa(record, false);
-            getLog().info("ADD " + toinsert);
+            getLog().debug("ADD " + toinsert);
             for (MapEntry entry : toinsert.getMapEntries()) {
-              getLog().info("  ENTRY = " + entry);
+              getLog().debug("  ENTRY = " + entry);
             }
-            getLog().info("\n");
+            getLog().debug("\n");
           
             //service.removeMapRecord(toremove.getId());
             //service.addMapRecord(toinsert);
