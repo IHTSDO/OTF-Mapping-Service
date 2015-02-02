@@ -36,11 +36,12 @@ public class RestoreProject10RecordsMojo extends AbstractMojo {
         MapRecordList list = service.getMapRecordRevisionsForConcept(id, 10L);
         // iterate from top of list until we find a non-"wci" owned entry
         for (MapRecord record : list.getMapRecords()) {
-          getLog().info("Record Info: " + record.getLastModifiedBy().getUserName() + ", "
+          getLog().info("Record Info: " + record.getId() + ", " + record.getLastModifiedBy().getUserName() + ", "
               + record.getWorkflowStatus());
           if (!record.getLastModifiedBy().getUserName().equals("wci")
               && record.getWorkflowStatus().equals("READY_FOR_PUBLICATION")) {
             // found record, restore this one.
+            getLog().info("  FOUND");  
 
             MapRecordList list2 =
                 service.getMapRecordsForProjectAndConcept(10L,
