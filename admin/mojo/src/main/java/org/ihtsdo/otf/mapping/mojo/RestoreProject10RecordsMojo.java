@@ -66,10 +66,10 @@ public class RestoreProject10RecordsMojo extends AbstractMojo {
             }
             handleMapRecordLazyInitialization(record);
             MapRecord toinsert = new MapRecordJpa(record, false);
+            getLog().info("ADD " + toinsert);
             for (MapEntry entry : toinsert.getMapEntries()) {
               getLog().info("  ENTRY = " + entry);
             }
-            getLog().info("ADD " + toinsert);
             getLog().info("\n");
           
             //service.removeMapRecord(toremove.getId());
