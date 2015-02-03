@@ -266,9 +266,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         mapProject.getSourceTerminology(),
         mapProject.getSourceTerminologyVersion()).containsKey(
         mapProject.getRefSetId())) {
-      throw new Exception(
-          "Map project refset id is not a valid complex map refset id "
-              + mapProject.getRefSetId());
+      // really, this is to support "fake" map projects
+      if (!testModeFlag) {
+        throw new Exception(
+            "Map project refset id is not a valid complex map refset id "
+                + mapProject.getRefSetId());
+      }
     }
 
     // check output directory exists
@@ -379,7 +382,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             "      Skipping inactive concept " + mapRecord.getConceptId());
         continue;
       }
-      
+
       if (ct % 5000 == 0) {
         Logger.getLogger(getClass()).info("    count = " + ct);
       }
