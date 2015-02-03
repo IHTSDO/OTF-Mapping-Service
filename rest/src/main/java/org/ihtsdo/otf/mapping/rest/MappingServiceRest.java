@@ -3508,7 +3508,7 @@ public class MappingServiceRest extends RootServiceRest {
           securityService.getMapProjectRoleForToken(authToken,
               mapRecord.getMapProjectId());
       user = securityService.getUsernameForToken(authToken);
-      if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
         throw new WebApplicationException(Response.status(401)
             .entity("User does not have permissions to validate a map record.")
             .build());
