@@ -67,7 +67,7 @@ public class RestoreProject10RecordsMojo extends AbstractMojo {
             }
             MapRecord toremove = list2.getMapRecords().iterator().next();
             if (!toremove.getLastModifiedBy().getUserName().equals("wci")) {
-              throw new Exception("Expected a wci record");
+              continue OUTER;
             }
             if (toremove.getWorkflowStatus() != WorkflowStatus.PUBLISHED) {
               throw new Exception("Expected a PUBLISHED record");
