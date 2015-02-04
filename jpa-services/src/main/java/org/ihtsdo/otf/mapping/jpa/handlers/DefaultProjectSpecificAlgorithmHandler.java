@@ -1013,7 +1013,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
           }
 
           // deep copy the map record
-          MapRecord newRecord = new MapRecordJpa(mapRecord, true);
+          MapRecord newRecord = new MapRecordJpa(mapRecord, false);
 
           // set origin ids
           newRecord.addOrigin(mapRecord.getId());
@@ -1064,7 +1064,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
           }
 
           // deep copy the map record
-          MapRecord newRecord = new MapRecordJpa(mapRecord, true);
+          MapRecord newRecord = new MapRecordJpa(mapRecord, false);
 
           // set origin ids
           newRecord.addOrigin(mapRecord.getId());
@@ -1743,7 +1743,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
           // deep copy the record and mark the new record
           // READY_FOR_PUBLICATION
-          MapRecord newRecord = new MapRecordJpa(mapRecord, true);
+          MapRecord newRecord = new MapRecordJpa(mapRecord, false);
           newRecord.setOwner(mapUser);
           newRecord.setLastModifiedBy(mapUser);
           newRecord.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
