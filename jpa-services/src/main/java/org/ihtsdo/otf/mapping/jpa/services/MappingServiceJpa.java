@@ -1318,7 +1318,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     // if no filter supplied, return query based on map project id only
     if (pfsParameter != null
         && (pfsParameter.getQueryRestriction() == null || pfsParameter
-            .getQueryRestriction().equals(""))) {
+            .getQueryRestriction().equals("") ||
+            pfsParameter.getQueryRestriction().equals("undefined"))) {
       full_query = "mapProjectId:" + mapProjectId;
       return full_query;
     }
@@ -3752,12 +3753,14 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     Map<String, String> projectSpecificAlgorithmHandlers = new HashMap<>();
 
     // add the Default Specific Project Algorithm Handler
-    // Don't want any of the other specific ones, only want the class name of the default
+    // Don't want any of the other specific ones, only want the class name of
+    // the default
     projectSpecificAlgorithmHandlers
         .put("default",
             "org.ihtsdo.otf.mapping.jpa.handlers.DefaultProjectSpecificAlgorithmHandler");
-    
-    idNameMapList.put("Project Specific Handlers", projectSpecificAlgorithmHandlers);
+
+    idNameMapList.put("Project Specific Handlers",
+        projectSpecificAlgorithmHandlers);
 
     return idNameMapList;
   }
