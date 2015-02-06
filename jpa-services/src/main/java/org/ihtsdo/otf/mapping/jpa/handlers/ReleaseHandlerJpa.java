@@ -1627,7 +1627,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           // add the type of age rule
           advice = "IF " + prepTargetName(part);
 
-          comparatorComponents = ruleComponents[2].split(" ");
+          comparatorComponents = ruleComponents[2].trim().split(" ");
 
           // add appropriate text based on comparator
           switch (comparatorComponents[0]) {
