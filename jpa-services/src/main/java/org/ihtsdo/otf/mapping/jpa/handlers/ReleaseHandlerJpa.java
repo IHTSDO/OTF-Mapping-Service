@@ -1625,7 +1625,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           String[] ruleComponents = part.split("\\|");
 
           // add the type of age rule
-          advice = "IF " + prepTargetName(part);
+          advice += "IF " + prepTargetName(part);
 
           comparatorComponents = ruleComponents[2].trim().split(" ");
 
@@ -1671,7 +1671,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         // Handle regular ifa
         else if (part.contains("IFA")) {
           String targetName = prepTargetName(part);
-          advice = "IF " + targetName;
+          advice += "IF " + targetName;
         }
       }
 
