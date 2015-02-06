@@ -31,7 +31,6 @@ import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
-import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
@@ -665,12 +664,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     // check if tree positions were successfully retrieved
     if (treePosition == null) {
-      if (testModeFlag) {
-        return true;
-      } else {
-        throw new Exception("Could not retrieve any tree position for "
-            + mapRecord.getConceptId());
-      }
+      throw new Exception("Could not retrieve any tree position for "
+          + mapRecord.getConceptId());
     }
 
     // get a list of tree positions sorted by position in hierarchy
@@ -709,7 +704,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               tp.getAncestorPath().substring(
                   tp.getAncestorPath().lastIndexOf("~") + 1);
           // TODO: this really should be parent(s) (e.g. via the "concept"
-          // object)
+          // object) and not just a single parent.
           MapRecord mrParent = getMapRecordForTerminologyId(parent);
 
           // get the map record corresponding to this specific
@@ -721,12 +716,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             Logger.getLogger(getClass()).debug(
                 "     Adding entries from map record " + mr.getId() + ", "
                     + mr.getConceptId() + ", " + mr.getConceptName());
-
-            // if no parent, continue, but log error
-            if (mrParent == null) {
-              // create a blank for comparison
-              mrParent = new MapRecordJpa();
-            }
 
             // cycle over the entries
             // TODO: this should actually compare entire groups and not just
@@ -1412,7 +1401,13 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         } else {
           // if it cannot be found and is not on scope excluded list
           // this is a serious error and the map file could be wrong without it.
-          throw new Exception("Unable to find map record for " + terminologyId);
+          
+          // If in test mode, allow this to not be the case
+          if (testModeFlag) {
+            return null;
+          } else {
+            throw new Exception("Unable to find map record for " + terminologyId);
+          }
         }
       } else if (mapRecordList.getCount() > 1) {
         throw new Exception("Multiple map records found for " + terminologyId);
