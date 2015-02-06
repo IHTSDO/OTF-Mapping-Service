@@ -746,11 +746,13 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               // need an explicit entry
               // (this produces short-form)
               // NOTE: This uses unmodified rules
-              for (MapEntry parentEntry : mrParent.getMapEntries()) {
-                if (parentEntry.getMapGroup() == me.getMapGroup()
-                    && parentEntry.isEquivalent(me)) {
-                  isDuplicateEntry = true;
-                  break;
+              if (mrParent != null) {
+                for (MapEntry parentEntry : mrParent.getMapEntries()) {
+                  if (parentEntry.getMapGroup() == me.getMapGroup()
+                      && parentEntry.isEquivalent(me)) {
+                    isDuplicateEntry = true;
+                    break;
+                  }
                 }
               }
 
@@ -1401,12 +1403,13 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         } else {
           // if it cannot be found and is not on scope excluded list
           // this is a serious error and the map file could be wrong without it.
-          
+
           // If in test mode, allow this to not be the case
           if (testModeFlag) {
             return null;
           } else {
-            throw new Exception("Unable to find map record for " + terminologyId);
+            throw new Exception("Unable to find map record for "
+                + terminologyId);
           }
         }
       } else if (mapRecordList.getCount() > 1) {
