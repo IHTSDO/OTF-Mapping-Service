@@ -1588,56 +1588,51 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // Construct advice only if using Extended Map pattern
     if (mapProject.getMapRefsetPattern().equals(MapRefsetPattern.ExtendedMap)) {
 
-      // System.out.println("Constructing human-readable advice for:  "
-      // + mapEntry.getRule());
+      Logger.getLogger(getClass()).info("  RULE : " + mapEntry.getRule());
 
       String[] comparatorComponents; // used for parsing age rules
 
-      // if map target is blank
+      // if map target is blank use map relation
       if (mapEntry.getTargetId() == null || mapEntry.getTargetId() == "") {
-        // System.out.println("  Use map relation");
-        advice = mapEntry.getMapRelation().getName();
+        return mapEntry.getMapRelation().getName();
       }
 
-      // if map rule is IFA (age)
-      else if (mapEntry.getRule().toUpperCase().contains("AGE")) {
-        // IF AGE AT ONSET OF
-        // CLINICAL FINDING BETWEEN 1.0 YEAR AND 18.0 YEARS CHOOSE
-        // M08.939
+      // Split rule on "AND IF" conditions
+      int ct = 0;
+      for (String part : mapEntry.getRule().toUpperCase().split(" AND IF")) {
+        ct++;
+        if (ct > 1) {
+          // Put the "if" back in
+          part += "IF" + part;
+          // Add an AND clause
+          advice += " AND ";
+        }
+        Logger.getLogger(getClass()).info("    PART : " + part);
 
-        // Rule examples
-        // IFA 104831000119109 | Drug induced central sleep apnea
-        // (disorder) | AND IFA 445518008 | Age at onset of clinical
-        // finding
-        // (observable
-        // entity) | < 65 years
-        // IFA 104831000119109 | Drug induced central sleep apnea
-        // (disorder) | AND IFA 445518008 | Age at onset of clinical
-        // finding
-        // (observable entity) | <= 28.0 days
-        // (disorder)
+        // if map rule is IFA (age)
+        if (part.contains("AGE AT ONSET OF CLINICAL FINDING")
+            || part.contains("CURRENT CHRONOLOGICAL AGE")) {
 
-        // split by pipe (|) character. Expected fields
-        // 0: IFA conceptId
-        // 1: conceptName
-        // 2: AND IFA ageConceptId
-        // 3: Age rule type (Age at onset, Current chronological age)
-        // 4: Comparator, Value, Units (e.g. < 65 years)
-        // ---- The following only exist for two-value age rules
-        // 5: AND IFA ageConceptId
-        // 6: Age rule type (Age at onset, Current chronological age
-        // 7: Comparator, Value, Units
-        String[] ruleComponents = mapEntry.getRule().split("|");
+          // IF AGE AT ONSET OF
+          // CLINICAL FINDING BETWEEN 1.0 YEAR AND 18.0 YEARS CHOOSE
+          // M08.939
 
-        // add the type of age rule
-        advice = "IF " + ruleComponents[3];
+          // Rule examples
+          // IFA 445518008 | Age at onset of clinical finding (observable
+          // entity) | < 65 years
+          // IFA 445518008 | Age at onset of clinical finding (observable
+          // entity) | <= 28.0 days
 
-        // if a single component age rule, construct per example:
-        // IF CURRENT CHRONOLOGICAL AGE ON OR AFTER 15.0 YEARS CHOOSE
-        // J20.9
-        if (ruleComponents.length == 5) {
+          // split by pipe (|) character. Expected fields
+          // 0: ageConceptId
+          // 1: Age rule type (Age at onset, Current chronological age)
+          // 2: Comparator, Value, Units (e.g. < 65 years)
+          String[] ruleComponents = mapEntry.getRule().split("\\|");
 
-          comparatorComponents = ruleComponents[4].split(" ");
+          // add the type of age rule
+          advice = "IF " + prepTargetName(part);
+
+          comparatorComponents = ruleComponents[2].split(" ");
 
           // add appropriate text based on comparator
           switch (comparatorComponents[0]) {
@@ -1660,61 +1655,58 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           // add the value and units
           advice +=
               " " + comparatorComponents[1] + " " + comparatorComponents[2];
-
-          // otherwise, if a double-component age rule, construct per
-          // example
-          // IF AGE AT ONSET OF CLINICAL FINDING BETWEEN 1.0 YEAR AND
-          // 18.0
-          // YEARS CHOOSE M08.939
-        } else if (ruleComponents.length == 8) {
-
-          advice += " BETWEEN ";
-
-          // get the first comparator/value/units triple
-          comparatorComponents = ruleComponents[4].split(" ");
-
-          advice += comparatorComponents[1] + " " + comparatorComponents[2];
         }
-
-        // finally, add the CHOOSE {targetId}
-        advice += " CHOOSE " + mapEntry.getTargetId();
-
         // if a gender rule (i.e. contains (FE)MALE)
-      } else if (mapEntry.getRule().toUpperCase().contains("MALE")) {
+        else if (part.contains("| MALE (FINDING)")
+            || part.contains("| FEMALE (FINDING)")) {
 
-        // add the advice based on gender
-        if (mapEntry.getRule().toUpperCase().contains("FEMALE")) {
-          advice += "IF FEMALE CHOOSE " + mapEntry.getTargetId();
-        } else {
-          advice += "IF MALE CHOOSE " + mapEntry.getTargetId();
+          // add the advice based on gender
+          if (part.contains("| FEMALE (FINDING)")) {
+            advice += "IF FEMALE CHOOSE " + mapEntry.getTargetId();
+          } else {
+            advice += "IF MALE CHOOSE " + mapEntry.getTargetId();
+          }
+        } // if not an IFA rule (i.e. TRUE, OTHERWISE TRUE), simply return
+          // ALWAYS
+        else if (!part.contains("IFA")) {
+
+          advice = "ALWAYS " + mapEntry.getTargetId();
+
         }
-      } // if not an IFA rule (i.e. TRUE, OTHERWISE TRUE), simply return
-        // ALWAYS
-      else if (!mapEntry.getRule().toUpperCase().contains("IFA")) {
-
-        advice = "ALWAYS " + mapEntry.getTargetId();
-
-        // otherwise an IFA rule
-      } else {
-        String[] ifaComponents = mapEntry.getRule().toUpperCase().split("\\|");
-
-        // remove any (disorder), etc.
-        String targetName = ifaComponents[1].trim();
-
-        // if classifier (e.g. (disorder)) present, remove it and any trailing
-        // spaces
-        if (targetName.lastIndexOf("(") != -1)
-          targetName =
-              targetName.substring(0, targetName.lastIndexOf("(")).trim();
-
-        advice = "IF " + targetName + " CHOOSE " + mapEntry.getTargetId();
+        // Handle regular ifa
+        else if (part.contains("IFA")) {
+          String targetName = prepTargetName(part);
+          advice = "IF " + targetName + " CHOOSE " + mapEntry.getTargetId();
+        }
       }
 
-      // System.out.println("   Human-readable advice: " + advice);
+      // finally, add the CHOOSE {targetId}
+      advice += " CHOOSE " + mapEntry.getTargetId();
+
+      Logger.getLogger(getClass()).info("    ADVICE: " + advice);
     }
 
     return advice;
 
+  }
+
+  /**
+   * Prep target name.
+   *
+   * @param rule the rule
+   * @return the string
+   */
+  private String prepTargetName(String rule) {
+    String[] ifaComponents = rule.split("\\|");
+
+    // remove any (disorder), etc.
+    String targetName = ifaComponents[1].trim();
+
+    // if classifier (e.g. (disorder)) present, remove it and any trailing
+    // spaces
+    if (targetName.lastIndexOf("(") != -1)
+      targetName = targetName.substring(0, targetName.lastIndexOf("(")).trim();
+    return targetName;
   }
 
   /**
