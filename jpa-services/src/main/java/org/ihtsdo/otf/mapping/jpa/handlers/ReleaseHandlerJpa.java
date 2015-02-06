@@ -1603,7 +1603,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         ct++;
         if (ct > 1) {
           // Put the "if" back in
-          part += "IF" + part;
+          part = "IF" + part;
           // Add an AND clause
           advice += " AND ";
         }
