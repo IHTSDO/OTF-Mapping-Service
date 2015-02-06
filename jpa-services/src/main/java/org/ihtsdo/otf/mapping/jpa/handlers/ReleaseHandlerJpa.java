@@ -665,8 +665,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     // check if tree positions were successfully retrieved
     if (treePosition == null) {
-      throw new Exception("Could not retrieve any tree position for "
-          + mapRecord.getConceptId());
+      if (testModeFlag) {
+        return true;
+      } else {
+        throw new Exception("Could not retrieve any tree position for "
+            + mapRecord.getConceptId());
+      }
     }
 
     // get a list of tree positions sorted by position in hierarchy
@@ -1657,9 +1661,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
           // add the advice based on gender
           if (part.contains("| FEMALE (FINDING)")) {
-            advice += "IF FEMALE " + mapEntry.getTargetId();
+            advice += "IF FEMALE ";
           } else {
-            advice += "IF MALE " + mapEntry.getTargetId();
+            advice += "IF MALE ";
           }
         } // if not an IFA rule (i.e. TRUE, OTHERWISE TRUE), simply return
           // ALWAYS
