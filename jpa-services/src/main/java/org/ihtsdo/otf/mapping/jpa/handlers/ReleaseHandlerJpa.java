@@ -8,9 +8,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -1458,14 +1455,11 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @param mapProject the map project
    * @param concept the concept
    * @return the complex map ref set member
-   * @throws IOException Signals that an I/O exception has occurred.
-   * @throws NoSuchAlgorithmException the no such algorithm exception
-   * @throws ParseException
+   * @throws Exception
    */
   private ComplexMapRefSetMember getComplexMapRefSetMemberForMapEntry(
     MapEntry mapEntry, MapRecord mapRecord, MapProject mapProject,
-    Concept concept) throws IOException, NoSuchAlgorithmException,
-    ParseException {
+    Concept concept) throws Exception {
 
     ComplexMapRefSetMember complexMapRefSetMember =
         new ComplexMapRefSetMemberJpa();
@@ -1580,15 +1574,16 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * 
    * @param mapEntry the map entry
    * @return the human readable map advice
+   * @throws Exception
    */
-  private String getHumanReadableMapAdvice(MapEntry mapEntry) {
+  private String getHumanReadableMapAdvice(MapEntry mapEntry) throws Exception {
 
     String advice = "";
 
     // Construct advice only if using Extended Map pattern
     if (mapProject.getMapRefsetPattern().equals(MapRefsetPattern.ExtendedMap)) {
 
-      Logger.getLogger(getClass()).info("  RULE : " + mapEntry.getRule());
+      Logger.getLogger(getClass()).info("  RULE: " + mapEntry.getRule());
 
       String[] comparatorComponents; // used for parsing age rules
 
@@ -1627,7 +1622,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           // 0: ageConceptId
           // 1: Age rule type (Age at onset, Current chronological age)
           // 2: Comparator, Value, Units (e.g. < 65 years)
-          String[] ruleComponents = mapEntry.getRule().split("\\|");
+          String[] ruleComponents = part.split("\\|");
 
           // add the type of age rule
           advice = "IF " + prepTargetName(part);
@@ -1649,7 +1644,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               advice += " ON OR BEFORE";
               break;
             default:
-              break;
+              throw new Exception("Illgal operator: " + comparatorComponents[0]);
           }
 
           // add the value and units
@@ -1662,9 +1657,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
           // add the advice based on gender
           if (part.contains("| FEMALE (FINDING)")) {
-            advice += "IF FEMALE CHOOSE " + mapEntry.getTargetId();
+            advice += "IF FEMALE " + mapEntry.getTargetId();
           } else {
-            advice += "IF MALE CHOOSE " + mapEntry.getTargetId();
+            advice += "IF MALE " + mapEntry.getTargetId();
           }
         } // if not an IFA rule (i.e. TRUE, OTHERWISE TRUE), simply return
           // ALWAYS
@@ -1676,12 +1671,14 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         // Handle regular ifa
         else if (part.contains("IFA")) {
           String targetName = prepTargetName(part);
-          advice = "IF " + targetName + " CHOOSE " + mapEntry.getTargetId();
+          advice = "IF " + targetName;
         }
       }
 
       // finally, add the CHOOSE {targetId}
-      advice += " CHOOSE " + mapEntry.getTargetId();
+      if (!advice.startsWith("ALWAYS")) {
+        advice += " CHOOSE " + mapEntry.getTargetId();
+      }
 
       Logger.getLogger(getClass()).info("    ADVICE: " + advice);
     }
