@@ -1407,18 +1407,16 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           // If in test mode, allow this to not be the case
           if (testModeFlag) {
             return null;
-          } else {
-            throw new Exception("Unable to find map record for "
-                + terminologyId);
           }
+          throw new Exception("Unable to find map record for " + terminologyId);
         }
       } else if (mapRecordList.getCount() > 1) {
         // If in test mode, allow this to be the case
         if (testModeFlag) {
           return null;
-        } else {
-          throw new Exception("Multiple map records found for " + terminologyId);
         }
+        throw new Exception("Multiple map records found for " + terminologyId);
+
       } else {
         mapRecord = mapRecordList.getMapRecords().iterator().next();
 
@@ -1430,6 +1428,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           mapRecordMap.put(terminologyId, mapRecord);
           return mapRecord;
         } else {
+          if (testModeFlag) {
+            return null;
+          }
           throw new Exception("Invalid workflow status "
               + mapRecord.getWorkflowStatus() + " on record for "
               + terminologyId);
