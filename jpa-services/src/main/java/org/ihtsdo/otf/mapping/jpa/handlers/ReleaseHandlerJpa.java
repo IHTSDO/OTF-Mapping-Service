@@ -1413,7 +1413,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           }
         }
       } else if (mapRecordList.getCount() > 1) {
-        throw new Exception("Multiple map records found for " + terminologyId);
+        // If in test mode, allow this to be the case
+        if (testModeFlag) {
+          return null;
+        } else {
+          throw new Exception("Multiple map records found for " + terminologyId);
+        }
       } else {
         mapRecord = mapRecordList.getMapRecords().iterator().next();
 
