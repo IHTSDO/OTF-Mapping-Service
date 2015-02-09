@@ -2293,7 +2293,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         // persistence-environment record
         // this routine also duplicates child collections to avoid
         // detached object errors
-        MapRecord newRecord = new MapRecordJpa(mr, true);
+        MapRecord newRecord = new MapRecordJpa(mr, false);
 
         Logger.getLogger(WorkflowServiceJpa.class).info(
             "Adding record: " + newRecord.toString());
