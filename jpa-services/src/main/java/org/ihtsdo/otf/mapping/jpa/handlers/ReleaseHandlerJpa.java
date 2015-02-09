@@ -8,9 +8,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,7 +31,6 @@ import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
-import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
@@ -266,9 +262,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         mapProject.getSourceTerminology(),
         mapProject.getSourceTerminologyVersion()).containsKey(
         mapProject.getRefSetId())) {
-      throw new Exception(
-          "Map project refset id is not a valid complex map refset id "
-              + mapProject.getRefSetId());
+      // really, this is to support "fake" map projects
+      if (!testModeFlag) {
+        throw new Exception(
+            "Map project refset id is not a valid complex map refset id "
+                + mapProject.getRefSetId());
+      }
     }
 
     // check output directory exists
@@ -379,7 +378,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             "      Skipping inactive concept " + mapRecord.getConceptId());
         continue;
       }
-      
+
       if (ct % 5000 == 0) {
         Logger.getLogger(getClass()).info("    count = " + ct);
       }
@@ -705,7 +704,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               tp.getAncestorPath().substring(
                   tp.getAncestorPath().lastIndexOf("~") + 1);
           // TODO: this really should be parent(s) (e.g. via the "concept"
-          // object)
+          // object) and not just a single parent.
           MapRecord mrParent = getMapRecordForTerminologyId(parent);
 
           // get the map record corresponding to this specific
@@ -717,12 +716,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             Logger.getLogger(getClass()).debug(
                 "     Adding entries from map record " + mr.getId() + ", "
                     + mr.getConceptId() + ", " + mr.getConceptName());
-
-            // if no parent, continue, but log error
-            if (mrParent == null) {
-              // create a blank for comparison
-              mrParent = new MapRecordJpa();
-            }
 
             // cycle over the entries
             // TODO: this should actually compare entire groups and not just
@@ -753,11 +746,13 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               // need an explicit entry
               // (this produces short-form)
               // NOTE: This uses unmodified rules
-              for (MapEntry parentEntry : mrParent.getMapEntries()) {
-                if (parentEntry.getMapGroup() == me.getMapGroup()
-                    && parentEntry.isEquivalent(me)) {
-                  isDuplicateEntry = true;
-                  break;
+              if (mrParent != null) {
+                for (MapEntry parentEntry : mrParent.getMapEntries()) {
+                  if (parentEntry.getMapGroup() == me.getMapGroup()
+                      && parentEntry.isEquivalent(me)) {
+                    isDuplicateEntry = true;
+                    break;
+                  }
                 }
               }
 
@@ -1049,13 +1044,11 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     updateStatMax(Stats.NEW_CONCEPTS.getValue(), ct);
 
     Set<String> changedConcepts = new HashSet<>();
-    boolean found = false;
     for (String key : activeMembers.keySet()) {
       ComplexMapRefSetMember member = activeMembers.get(key);
       ComplexMapRefSetMember member2 = prevActiveMembers.get(key);
       if (member2 != null && !member.equals(member2)) {
         changedConcepts.add(member.getConcept().getId().toString());
-        found = true;
       }
     }
 
@@ -1410,10 +1403,20 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         } else {
           // if it cannot be found and is not on scope excluded list
           // this is a serious error and the map file could be wrong without it.
+
+          // If in test mode, allow this to not be the case
+          if (testModeFlag) {
+            return null;
+          }
           throw new Exception("Unable to find map record for " + terminologyId);
         }
       } else if (mapRecordList.getCount() > 1) {
+        // If in test mode, allow this to be the case
+        if (testModeFlag) {
+          return null;
+        }
         throw new Exception("Multiple map records found for " + terminologyId);
+
       } else {
         mapRecord = mapRecordList.getMapRecords().iterator().next();
 
@@ -1425,6 +1428,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           mapRecordMap.put(terminologyId, mapRecord);
           return mapRecord;
         } else {
+          if (testModeFlag) {
+            return null;
+          }
           throw new Exception("Invalid workflow status "
               + mapRecord.getWorkflowStatus() + " on record for "
               + terminologyId);
@@ -1457,14 +1463,11 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @param mapProject the map project
    * @param concept the concept
    * @return the complex map ref set member
-   * @throws IOException Signals that an I/O exception has occurred.
-   * @throws NoSuchAlgorithmException the no such algorithm exception
-   * @throws ParseException
+   * @throws Exception
    */
   private ComplexMapRefSetMember getComplexMapRefSetMemberForMapEntry(
     MapEntry mapEntry, MapRecord mapRecord, MapProject mapProject,
-    Concept concept) throws IOException, NoSuchAlgorithmException,
-    ParseException {
+    Concept concept) throws Exception {
 
     ComplexMapRefSetMember complexMapRefSetMember =
         new ComplexMapRefSetMemberJpa();
@@ -1579,64 +1582,60 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * 
    * @param mapEntry the map entry
    * @return the human readable map advice
+   * @throws Exception
    */
-  private String getHumanReadableMapAdvice(MapEntry mapEntry) {
+  private String getHumanReadableMapAdvice(MapEntry mapEntry) throws Exception {
 
     String advice = "";
 
     // Construct advice only if using Extended Map pattern
     if (mapProject.getMapRefsetPattern().equals(MapRefsetPattern.ExtendedMap)) {
 
-      // System.out.println("Constructing human-readable advice for:  "
-      // + mapEntry.getRule());
+      Logger.getLogger(getClass()).info("  RULE: " + mapEntry.getRule());
 
       String[] comparatorComponents; // used for parsing age rules
 
-      // if map target is blank
+      // if map target is blank use map relation
       if (mapEntry.getTargetId() == null || mapEntry.getTargetId() == "") {
-        // System.out.println("  Use map relation");
-        advice = mapEntry.getMapRelation().getName();
+        return mapEntry.getMapRelation().getName();
       }
 
-      // if map rule is IFA (age)
-      else if (mapEntry.getRule().toUpperCase().contains("AGE")) {
-        // IF AGE AT ONSET OF
-        // CLINICAL FINDING BETWEEN 1.0 YEAR AND 18.0 YEARS CHOOSE
-        // M08.939
+      // Split rule on "AND IF" conditions
+      int ct = 0;
+      for (String part : mapEntry.getRule().toUpperCase().split(" AND IF")) {
+        ct++;
+        if (ct > 1) {
+          // Put the "if" back in
+          part = "IF" + part;
+          // Add an AND clause
+          advice += " AND ";
+        }
+        Logger.getLogger(getClass()).info("    PART : " + part);
 
-        // Rule examples
-        // IFA 104831000119109 | Drug induced central sleep apnea
-        // (disorder) | AND IFA 445518008 | Age at onset of clinical
-        // finding
-        // (observable
-        // entity) | < 65 years
-        // IFA 104831000119109 | Drug induced central sleep apnea
-        // (disorder) | AND IFA 445518008 | Age at onset of clinical
-        // finding
-        // (observable entity) | <= 28.0 days
-        // (disorder)
+        // if map rule is IFA (age)
+        if (part.contains("AGE AT ONSET OF CLINICAL FINDING")
+            || part.contains("CURRENT CHRONOLOGICAL AGE")) {
 
-        // split by pipe (|) character. Expected fields
-        // 0: IFA conceptId
-        // 1: conceptName
-        // 2: AND IFA ageConceptId
-        // 3: Age rule type (Age at onset, Current chronological age)
-        // 4: Comparator, Value, Units (e.g. < 65 years)
-        // ---- The following only exist for two-value age rules
-        // 5: AND IFA ageConceptId
-        // 6: Age rule type (Age at onset, Current chronological age
-        // 7: Comparator, Value, Units
-        String[] ruleComponents = mapEntry.getRule().split("|");
+          // IF AGE AT ONSET OF
+          // CLINICAL FINDING BETWEEN 1.0 YEAR AND 18.0 YEARS CHOOSE
+          // M08.939
 
-        // add the type of age rule
-        advice = "IF " + ruleComponents[3];
+          // Rule examples
+          // IFA 445518008 | Age at onset of clinical finding (observable
+          // entity) | < 65 years
+          // IFA 445518008 | Age at onset of clinical finding (observable
+          // entity) | <= 28.0 days
 
-        // if a single component age rule, construct per example:
-        // IF CURRENT CHRONOLOGICAL AGE ON OR AFTER 15.0 YEARS CHOOSE
-        // J20.9
-        if (ruleComponents.length == 5) {
+          // split by pipe (|) character. Expected fields
+          // 0: ageConceptId
+          // 1: Age rule type (Age at onset, Current chronological age)
+          // 2: Comparator, Value, Units (e.g. < 65 years)
+          String[] ruleComponents = part.split("\\|");
 
-          comparatorComponents = ruleComponents[4].split(" ");
+          // add the type of age rule
+          advice += "IF " + prepTargetName(part);
+
+          comparatorComponents = ruleComponents[2].trim().split(" ");
 
           // add appropriate text based on comparator
           switch (comparatorComponents[0]) {
@@ -1653,67 +1652,66 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               advice += " ON OR BEFORE";
               break;
             default:
-              break;
+              throw new Exception("Illgal operator: " + comparatorComponents[0]);
           }
 
           // add the value and units
           advice +=
               " " + comparatorComponents[1] + " " + comparatorComponents[2];
-
-          // otherwise, if a double-component age rule, construct per
-          // example
-          // IF AGE AT ONSET OF CLINICAL FINDING BETWEEN 1.0 YEAR AND
-          // 18.0
-          // YEARS CHOOSE M08.939
-        } else if (ruleComponents.length == 8) {
-
-          advice += " BETWEEN ";
-
-          // get the first comparator/value/units triple
-          comparatorComponents = ruleComponents[4].split(" ");
-
-          advice += comparatorComponents[1] + " " + comparatorComponents[2];
         }
-
-        // finally, add the CHOOSE {targetId}
-        advice += " CHOOSE " + mapEntry.getTargetId();
-
         // if a gender rule (i.e. contains (FE)MALE)
-      } else if (mapEntry.getRule().toUpperCase().contains("MALE")) {
+        else if (part.contains("| MALE (FINDING)")
+            || part.contains("| FEMALE (FINDING)")) {
 
-        // add the advice based on gender
-        if (mapEntry.getRule().toUpperCase().contains("FEMALE")) {
-          advice += "IF FEMALE CHOOSE " + mapEntry.getTargetId();
-        } else {
-          advice += "IF MALE CHOOSE " + mapEntry.getTargetId();
+          // add the advice based on gender
+          if (part.contains("| FEMALE (FINDING)")) {
+            advice += "IF FEMALE ";
+          } else {
+            advice += "IF MALE ";
+          }
+        } // if not an IFA rule (i.e. TRUE, OTHERWISE TRUE), simply return
+          // ALWAYS
+        else if (!part.contains("IFA")) {
+
+          advice = "ALWAYS " + mapEntry.getTargetId();
+
         }
-      } // if not an IFA rule (i.e. TRUE, OTHERWISE TRUE), simply return
-        // ALWAYS
-      else if (!mapEntry.getRule().toUpperCase().contains("IFA")) {
-
-        advice = "ALWAYS " + mapEntry.getTargetId();
-
-        // otherwise an IFA rule
-      } else {
-        String[] ifaComponents = mapEntry.getRule().toUpperCase().split("\\|");
-
-        // remove any (disorder), etc.
-        String targetName = ifaComponents[1].trim();
-
-        // if classifier (e.g. (disorder)) present, remove it and any trailing
-        // spaces
-        if (targetName.lastIndexOf("(") != -1)
-          targetName =
-              targetName.substring(0, targetName.lastIndexOf("(")).trim();
-
-        advice = "IF " + targetName + " CHOOSE " + mapEntry.getTargetId();
+        // Handle regular ifa
+        else if (part.contains("IFA")) {
+          String targetName = prepTargetName(part);
+          advice += "IF " + targetName;
+        }
       }
 
-      // System.out.println("   Human-readable advice: " + advice);
+      // finally, add the CHOOSE {targetId}
+      if (!advice.startsWith("ALWAYS")) {
+        advice += " CHOOSE " + mapEntry.getTargetId();
+      }
+
+      Logger.getLogger(getClass()).info("    ADVICE: " + advice);
     }
 
     return advice;
 
+  }
+
+  /**
+   * Prep target name.
+   *
+   * @param rule the rule
+   * @return the string
+   */
+  private String prepTargetName(String rule) {
+    String[] ifaComponents = rule.split("\\|");
+
+    // remove any (disorder), etc.
+    String targetName = ifaComponents[1].trim();
+
+    // if classifier (e.g. (disorder)) present, remove it and any trailing
+    // spaces
+    if (targetName.lastIndexOf("(") != -1)
+      targetName = targetName.substring(0, targetName.lastIndexOf("(")).trim();
+    return targetName;
   }
 
   /**
