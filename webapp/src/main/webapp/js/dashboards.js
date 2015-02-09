@@ -895,10 +895,12 @@ mapProjectAppDashboards
 									} ]
 								} ]
 							};
-							/**
-							 * Viewer (non-guest) has the following widgets: - MapProject
-							 */
-						} else if (!$scope.currentRole || $scope.currentRole === 'Viewer') {
+						} 
+						
+            /**
+             * Viewer (non-guest) has the following widgets: - MapProject
+             * MST wanted this functionality disabled.
+						else if (!$scope.currentRole || $scope.currentRole === 'Viewer') {
 							console.debug("  Setting viewer model");
 							
 							$scope.defaultModel = {
@@ -923,11 +925,14 @@ mapProjectAppDashboards
 									} ]
 								} ]
 							};
-							/**
-							 * Specialist has the following widgets: - MapProject -
-							 * WorkAvailable - AssignedList - EditedList
-							 */
-						} else if ($scope.currentRole === 'Specialist') {
+						} 
+          */          
+
+         /**
+          * Specialist has the following widgets: - MapProject -
+          * WorkAvailable - AssignedList - EditedList
+          */
+					else if ($scope.currentRole === 'Specialist') {
 
 							console.debug("  Setting specialist model");
 							
