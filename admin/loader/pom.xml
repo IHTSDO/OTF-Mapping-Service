@@ -37,18 +37,15 @@
     <sampling.rate></sampling.rate>
     <!-- The map user -->
     <map.user></map.user>
-    <!-- The default root ids for treepos computer 
-         For ICD10 use: I,II,III,IV,V,VI,VII,VIII,IX,X,XI,XII,XIII,XIV,XV,XVI,XVII,XVIII,XIX,XX,XXI,XXII
-         For ICD9CM use: 001-999.99,E000-E999.9,V01-V91.99
-         For ICPC use: -,A,B,D,F,H,K,L,N,P,R,S,T,U,W,X,Y,Z
-      -->
+    <!-- The default root ids for treepos computer For ICD10 use: I,II,III,IV,V,VI,VII,VIII,IX,X,XI,XII,XIII,XIV,XV,XVI,XVII,XVIII,XIX,XX,XXI,XXII 
+      For ICD9CM use: 001-999.99,E000-E999.9,V01-V91.99 For ICPC use: -,A,B,D,F,H,K,L,N,P,R,S,T,U,W,X,Y,Z -->
     <root.ids>138875005</root.ids>
     <!-- The last publication date for RF2 delta source -->
     <last.publication.date>20150131</last.publication.date>
   </properties>
 
   <profiles>
-
+    
     <profile>
       <id>CreateMapAdmin</id>
       <build>
@@ -153,7 +150,7 @@
         </plugins>
       </build>
     </profile>
-    
+
     <!-- Compute default preferred names -Drun.config=.. must also be specified. -->
     <profile>
       <id>DefaultPreferredNames</id>
@@ -179,7 +176,7 @@
         </plugins>
       </build>
     </profile>
-    
+
     <!-- Load ClaML -Drun.config=.. must also be specified. -->
     <profile>
       <id>ClaML</id>

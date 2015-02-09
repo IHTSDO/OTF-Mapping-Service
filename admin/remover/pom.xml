@@ -25,6 +25,10 @@
     <refset.id></refset.id>
     <!-- map advice name -->
     <map.advice.name></map.advice.name>
+    <!-- Remove reports range - start date -->
+    <start.date>19700101</start.date>
+    <!-- Remove reports range - end date -->
+    <end.date></end.date>
   </properties>
 
 
@@ -246,6 +250,8 @@
                 </goals>
                 <configuration>
                   <refsetId>${refset.id}</refsetId>
+                  <startDate>${start.date}</startDate>
+                  <endDate>${end.date}</endDate>
                 </configuration>
               </execution>
             </executions>
