@@ -191,7 +191,7 @@ public class MapRecordJpa implements MapRecord {
   public MapRecordJpa(MapRecord mapRecord, boolean keepIds) {
 
     // if deep copy not indicated, copy id and timestamp
-    if (!keepIds) {
+    if (keepIds) {
       this.id = mapRecord.getId();
       this.timestamp = mapRecord.getTimestamp();
     }
