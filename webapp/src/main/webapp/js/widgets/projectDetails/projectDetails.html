@@ -135,7 +135,7 @@
 	class="table pure-table">
 	<thead>
 		<tr>
-			<th style="width: 97%;">Add Map Lead</th>
+			<th style="width: 97%;">Add Map Lead to Project</th>
 			<th style="width: 3%;"></th>
 		</tr>
 	</thead>
@@ -149,7 +149,7 @@
 	</tbody>
 </table>
 
-<form ng-show="editModeEnabled == true">
+<form ng-show="editModeEnabled == true && currentRole == 'Administrator'">
 	<div style="margin-top: 15px;">
 		<b>Add New Map Lead to Project</b>
 	</div>
@@ -220,7 +220,7 @@
 	class="table pure-table">
 	<thead>
 		<tr>
-			<th style="width: 97%;">Add Map Specialist</th>
+			<th style="width: 97%;">Add Map Specialist to Project</th>
 			<th style="width: 3%;"></th>
 		</tr>
 	</thead>
@@ -233,7 +233,7 @@
 		</tr>
 	</tbody>
 </table>
-<form ng-show="editModeEnabled == true">
+<form ng-show="editModeEnabled == true && currentRole == 'Administrator'">
 	<div style="margin-top: 15px;">
 		<b>Add New Map Specialist to Project</b>
 	</div>
@@ -317,11 +317,11 @@
 	</tbody>
 </table>
 
-<table ng-show="editModeEnabled == true" width="50%"
+<table ng-show="editModeEnabled == true && currentRole == 'Administrator'" width="50%"
 	class="table pure-table">
 	<thead>
 		<tr>
-			<th style="width: 97%;">Add Map Advice</th>
+			<th style="width: 97%;">Add Map Advice to Project</th>
 			<th style="width: 3%;"></th>
 		</tr>
 	</thead>
@@ -335,9 +335,9 @@
 	</tbody>
 </table>
 
-<form ng-show="editModeEnabled == true">
+<form ng-show="editModeEnabled == true && currentRole == 'Administrator'">
 	<div style="margin-top: 15px;">
-		<b>Create New Map Advice</b>
+		<b>Add New Map Advice to Project</b>
 	</div>
 	<table class="table pure-table">
 		<thead>
@@ -436,7 +436,7 @@
 	class="table pure-table">
 	<thead>
 		<tr>
-			<th style="width: 97%;">Add Map Relation</th>
+			<th style="width: 97%;">Add Map Relation to Project</th>
 			<th style="width: 3%;"></th>
 		</tr>
 	</thead>
@@ -450,9 +450,9 @@
 	</tbody>
 </table>
 
-<form ng-show="editModeEnabled == true">
+<form ng-show="editModeEnabled == true && currentRole == 'Administrator'">
 	<div style="margin-top: 15px;">
-		<b>Create New Map Relation</b>
+		<b>Add New Map Relation to Project</b>
 	</div>
 	<hr>
 	<table class="table pure-table">
@@ -563,7 +563,7 @@
 	class="table pure-table">
 	<thead>
 		<tr>
-			<th style="width: 97%;">Add Report Definition</th>
+			<th style="width: 97%;">Add Report Definition to Project</th>
 			<th style="width: 3%;"></th>
 		</tr>
 	</thead>
@@ -645,7 +645,7 @@
 	class="table pure-table">
 	<thead>
 		<tr>
-			<th style="width: 97%;">Add QA Check Definition</th>
+			<th style="width: 97%;">Add QA Check Definition to Project</th>
 			<th style="width: 3%;"></th>
 		</tr>
 	</thead>
@@ -723,7 +723,7 @@
 	class="table pure-table">
 	<thead>
 		<tr>
-			<th style="width: 97%;">Add Map Principle</th>
+			<th style="width: 97%;">Add Map Principle to Project</th>
 			<th style="width: 3%;"></th>
 		</tr>
 	</thead>
@@ -737,9 +737,9 @@
 	</tbody>
 </table>
 
-<form ng-show="editModeEnabled == true">
+<form ng-show="editModeEnabled == true && currentRole == 'Administrator'">
 	<div style="margin-top: 15px;">
-		<b>Create New Map Principle</b>
+		<b>Add New Map Principle to Project</b>
 	</div>
 	<hr>
 	<table class="table pure-table" style="margin-bottom: 5px;">
@@ -781,7 +781,7 @@
 </form>
 <hr>
 
-<div ng-show="editModeEnabled == true">
+<div ng-show="editModeEnabled == true && currentRole == 'Administrator'">
 	<div style="margin-top: 15px;">
 		<b>Add New Map Principle Document</b>
 	</div>
@@ -853,7 +853,7 @@
 	class="table pure-table">
 	<thead>
 		<tr>
-			<th style="width: 97%;">Add Map Age Range</th>
+			<th style="width: 97%;">Add Map Age Range to Project</th>
 			<th style="width: 3%;"></th>
 		</tr>
 	</thead>
@@ -867,9 +867,9 @@
 	</tbody>
 </table>
 
-<form ng-show="editModeEnabled == true" name="ageRangeForm">
+<form ng-show="editModeEnabled == true && currentRole == 'Administrator'" name="ageRangeForm">
 	<div style="margin-top: 15px;">
-		<b>Create New Map Age Range</b>
+		<b>Add New Map Age Range to Project</b>
 	</div>
 	<hr>
 	<table class="table pure-table">
@@ -957,7 +957,7 @@
 
 <form ng-show="editModeEnabled == true" name="errorMessageForm">
 	<div style="margin-top: 15px;">
-		<b>Create New Error Message</b>
+		<b>Add New Error Message to Project</b>
 	</div>
 	<table class="table pure-table">
 		<thead>
@@ -1032,7 +1032,7 @@
 	</select>
 
 	<div style="margin-top: 15px;">
-		<b>Create New Scope Included Concept(s)</b>
+		<b>Add New Scope Included Concept(s) to Project</b>
 	</div>
 	<hr>
 	<tabset> <tab heading="Add Concepts"> Enter concept
@@ -1103,7 +1103,7 @@
 	</select>
 
 	<div style="margin-top: 15px;">
-		<b>Create New Scope Excluded Concept(s)</b>
+		<b>Add New Scope Excluded Concept(s) to Project</b>
 	</div>
 	<hr>
 	<tabset> <tab heading="Add Concepts"> Enter concept
