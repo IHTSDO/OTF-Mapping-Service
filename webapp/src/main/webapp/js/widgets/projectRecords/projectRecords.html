@@ -25,15 +25,15 @@
     {{record.conceptName}}, <a href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}</a>
   </h4>
 
+  <div style="float: right; width: 3%;">
   <!-- MST wanted this feature disabled.  Specialists and Leads can already
        leave feedback while editing.
-  <div style="float: right; width: 3%;">
     <a title="Submit Feedback"  ng-show="currentRole === 'Viewer'" ng-click="openViewerFeedbackModal(record, currentUser.userName)"><i
       class="glyphicon glyphicon glyphicon-comment"></i></a>
+    -->
     <a title="Edit" ng-show="isEditable(record)" ng-click="editRecord(record)"><i
       class="glyphicon glyphicon glyphicon-pencil"></i></a>
   </div>
-    -->
  
   <span ng-show="record.unmappedDescendants.length > 0"> <span
     class="dropdown"> <a class="dropdown-toggle"> <img
