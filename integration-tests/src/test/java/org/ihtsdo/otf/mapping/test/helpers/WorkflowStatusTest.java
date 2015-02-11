@@ -1,8 +1,9 @@
-package org.ihtsdo.otf.mapping.helpers;
+package org.ihtsdo.otf.mapping.test.helpers;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
