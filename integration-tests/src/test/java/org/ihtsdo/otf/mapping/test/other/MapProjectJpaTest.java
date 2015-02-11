@@ -1,4 +1,4 @@
-package org.ihtsdo.otf.mapping.jpa;
+package org.ihtsdo.otf.mapping.test.other;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -26,6 +26,8 @@ import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.helpers.MapRefsetPattern;
 import org.ihtsdo.otf.mapping.helpers.RelationStyle;
+import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
+import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.junit.BeforeClass;
 import org.junit.Test;

@@ -1,4 +1,4 @@
-package org.ihtsdo.otf.mapping.jpa.services;
+package org.ihtsdo.otf.mapping.test.other;
 
 import static org.junit.Assert.assertTrue;
 
@@ -16,7 +16,10 @@ import org.ihtsdo.otf.mapping.helpers.WorkflowType;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
-import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowQaPathHandler;
+import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowReviewProjectPathHandler;
+import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -31,20 +34,20 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Unit test for workflow action on qa path test.
+ * Unit test for workflow actions on review project path.
  */
-public class WorkflowActionQaPathTest {
+public class WorkflowActionReviewProjectPathTest {
 
   // the content
   /**  The concept. */
   private static Concept concept;
 
   // the mapping objects
-  /**  The loader. */
-  private static MapUser viewer, specialist, loader;
+  /**  The lead. */
+  private static MapUser viewer, specialist, lead;
 
-  /**  The loader record. */
-  private static MapRecord revisionRecord, specRecord, loaderRecord;
+  /**  The lead record. */
+  private static MapRecord specRecord, leadRecord;
 
   /**  The map project. */
   private static MapProject mapProject;
@@ -65,9 +68,8 @@ public class WorkflowActionQaPathTest {
 
   // the workflow handler
   /**  The handler. */
-  private static WorkflowQaPathHandler handler;
-
-
+  private static WorkflowReviewProjectPathHandler handler;
+  
   /**
    * Inits the.
    *
@@ -84,9 +86,7 @@ public class WorkflowActionQaPathTest {
     workflowService = new WorkflowServiceJpa();
 
     // instantiate the workflow handler
-    handler = new WorkflowQaPathHandler();
-    
-    System.out.println(handler.getWorkflowStatusCombinations());
+    handler = new WorkflowReviewProjectPathHandler();
 
     // ensure database is clean
     for (Concept c : contentService.getConcepts().getIterable())
@@ -127,13 +127,12 @@ public class WorkflowActionQaPathTest {
     specialist.setUserName("spec");
     mappingService.addMapUser(specialist);
 
-    // instantiate and add the loader user, used for REVISION records
-    loader = new MapUserJpa();
-    loader.setApplicationRole(MapUserRole.VIEWER);
-    loader.setEmail("none");
-    loader.setName("Loader");
-    loader.setUserName("loader");
-    mappingService.addMapUser(loader);
+    lead = new MapUserJpa();
+    lead.setApplicationRole(MapUserRole.VIEWER);
+    lead.setEmail("none");
+    lead.setName("Lead");
+    lead.setUserName("lead");
+    mappingService.addMapUser(lead);
 
     // instantiate the project
     mapProject = new MapProjectJpa();
@@ -154,6 +153,7 @@ public class WorkflowActionQaPathTest {
     mapProject.setRuleBased(true);
     mapProject.setWorkflowType(WorkflowType.REVIEW_PROJECT);
     mapProject.addMapSpecialist(specialist);
+    mapProject.addMapLead(lead);
     mapProject.addScopeConcept("1");
     mappingService.addMapProject(mapProject);
 
@@ -163,22 +163,15 @@ public class WorkflowActionQaPathTest {
   }
 
   /**
-   * Test qa needed state.
+   * Test initial state.
    *
    * @throws Exception the exception
    */
   @Test
-  public void testQaNeededState() throws Exception {
+  public void testInitialState() throws Exception {
 
     // clear existing records
     clearMapRecords();
-
-    // create revision and specialist record
-    revisionRecord = createRecord(loader, WorkflowStatus.REVISION);
-    mappingService.addMapRecord(revisionRecord);
-
-    loaderRecord = createRecord(loader, WorkflowStatus.QA_NEEDED);
-    mappingService.addMapRecord(loaderRecord);
 
     // compute workflow
     getTrackingRecord();
@@ -218,18 +211,18 @@ public class WorkflowActionQaPathTest {
 
       }
     }
-    
-    // Test: Loader
-    result = testAllActionsForUser(loader);
 
-    // all actions except cancel and UNASSIGN should fail
+    // Test: Specialist
+    result = testAllActionsForUser(specialist);
+
+    // all actions but CANCEL and ASSIGN_FROM_SCRATCH should fail
     for (WorkflowAction action : WorkflowAction.values()) {
       switch (action) {
         case ASSIGN_FROM_INITIAL_RECORD:
           assertTrue(result.getErrors().contains(action.toString()));
           break;
         case ASSIGN_FROM_SCRATCH:
-          assertTrue(result.getErrors().contains(action.toString()));
+          assertTrue(result.getMessages().contains(action.toString()));
           break;
         case CANCEL:
           assertTrue(result.getMessages().contains(action.toString()));
@@ -247,7 +240,7 @@ public class WorkflowActionQaPathTest {
           assertTrue(result.getErrors().contains(action.toString()));
           break;
         case UNASSIGN:
-          assertTrue(result.getMessages().contains(action.toString()));
+          assertTrue(result.getErrors().contains(action.toString()));
           break;
         default:
           break;
@@ -255,10 +248,10 @@ public class WorkflowActionQaPathTest {
       }
     }
 
-    // Test: Specialist
-    result = testAllActionsForUser(specialist);
+    // Test: assign lead
+    result = testAllActionsForUser(lead);
 
-    // all actions but CANCEL, ASSIGN_FROM_SCRATCH should fail
+    // all actions but CANCEL and ASSIGN_FROM_SCRATCH should fail
     for (WorkflowAction action : WorkflowAction.values()) {
       switch (action) {
         case ASSIGN_FROM_INITIAL_RECORD:
@@ -293,35 +286,32 @@ public class WorkflowActionQaPathTest {
 
   }
 
-
   /**
-   * Test editing state.
+   * Test specialist editing state.
    *
    * @throws Exception the exception
    */
   @Test
-  public void testEditingState() throws Exception {
+  public void testSpecialistEditingState() throws Exception {
 
-    for (WorkflowStatus status : Arrays.asList(WorkflowStatus.QA_NEW,
-        WorkflowStatus.QA_IN_PROGRESS)) {
+    // same test for both NEW and EDITING_IN_PROGRESS
+    for (WorkflowStatus status : Arrays.asList(WorkflowStatus.NEW,
+        WorkflowStatus.EDITING_IN_PROGRESS)) {
 
       // clear existing records
       clearMapRecords();
 
-      // create revision, specialist, and lead record
-      revisionRecord = createRecord(loader, WorkflowStatus.REVISION);
-      mappingService.addMapRecord(revisionRecord);
+      // compute workflow
+      getTrackingRecord();
 
-      loaderRecord = createRecord(loader, WorkflowStatus.QA_NEEDED);
-      mappingService.addMapRecord(loaderRecord);
-
+      // create specialist record
       specRecord = createRecord(specialist, status);
       mappingService.addMapRecord(specRecord);
 
       // compute workflow
       getTrackingRecord();
 
-      // Test: viewer
+      // Test: assign viewer
       ValidationResult result = testAllActionsForUser(viewer);
 
       // all actions except cancel should fail
@@ -358,7 +348,43 @@ public class WorkflowActionQaPathTest {
       }
 
       // Test: Specialist
-      result = testAllActionsForUser(loader);
+      result = testAllActionsForUser(specialist);
+
+      // all actions but SAVE_FOR_LATER, FINISH_EDITING, UNASSIGN should fail
+      for (WorkflowAction action : WorkflowAction.values()) {
+        switch (action) {
+          case ASSIGN_FROM_INITIAL_RECORD:
+            assertTrue(result.getErrors().contains(action.toString()));
+            break;
+          case ASSIGN_FROM_SCRATCH:
+            assertTrue(result.getErrors().contains(action.toString()));
+            break;
+          case CANCEL:
+            assertTrue(result.getMessages().contains(action.toString()));
+            break;
+          case CREATE_QA_RECORD:
+            assertTrue(result.getErrors().contains(action.toString()));
+            break;
+          case FINISH_EDITING:
+            assertTrue(result.getMessages().contains(action.toString()));
+            break;
+          case PUBLISH:
+            assertTrue(result.getErrors().contains(action.toString()));
+            break;
+          case SAVE_FOR_LATER:
+            assertTrue(result.getMessages().contains(action.toString()));
+            break;
+          case UNASSIGN:
+            assertTrue(result.getMessages().contains(action.toString()));
+            break;
+          default:
+            break;
+
+        }
+      }
+
+      // Test: assign lead
+      result = testAllActionsForUser(lead);
 
       // all actions but CANCEL should fail
       for (WorkflowAction action : WorkflowAction.values()) {
@@ -392,66 +418,26 @@ public class WorkflowActionQaPathTest {
 
         }
       }
-
-      // Test: specialist
-      result = testAllActionsForUser(specialist);
-
-      // all actions but CANCEL, SAVE_FOR_LATER, FINISH_EDITING, UNASSIGN should
-      // fail
-      for (WorkflowAction action : WorkflowAction.values()) {
-        switch (action) {
-          case ASSIGN_FROM_INITIAL_RECORD:
-            assertTrue(result.getErrors().contains(action.toString()));
-            break;
-          case ASSIGN_FROM_SCRATCH:
-            assertTrue(result.getErrors().contains(action.toString()));
-            break;
-          case CANCEL:
-            assertTrue(result.getMessages().contains(action.toString()));
-            break;
-          case CREATE_QA_RECORD:
-            assertTrue(result.getErrors().contains(action.toString()));
-            break;
-          case FINISH_EDITING:
-            assertTrue(result.getMessages().contains(action.toString()));
-            break;
-          case PUBLISH:
-            assertTrue(result.getErrors().contains(action.toString()));
-            break;
-          case SAVE_FOR_LATER:
-            assertTrue(result.getMessages().contains(action.toString()));
-            break;
-          case UNASSIGN:
-            assertTrue(result.getMessages().contains(action.toString()));
-            break;
-          default:
-            break;
-
-        }
-      }
     }
 
   }
 
   /**
-   * Test finished state.
+   * Test specialist finished state.
    *
    * @throws Exception the exception
    */
   @Test
-  public void testFinishedState() throws Exception {
+  public void testSpecialistFinishedState() throws Exception {
 
     // clear existing records
     clearMapRecords();
 
-    // create revision, specialist, and lead record
-    revisionRecord = createRecord(loader, WorkflowStatus.REVISION);
-    mappingService.addMapRecord(revisionRecord);
+    // compute workflow
+    getTrackingRecord();
 
-    loaderRecord = createRecord(loader, WorkflowStatus.QA_NEEDED);
-    mappingService.addMapRecord(loaderRecord);
-
-    specRecord = createRecord(specialist, WorkflowStatus.QA_RESOLVED);
+    // create specialist record
+    specRecord = createRecord(specialist, WorkflowStatus.REVIEW_NEEDED);
     mappingService.addMapRecord(specRecord);
 
     // compute workflow
@@ -493,8 +479,280 @@ public class WorkflowActionQaPathTest {
       }
     }
 
-    // Test: Loader
-    result = testAllActionsForUser(loader);
+    // Test: Specialist
+    result = testAllActionsForUser(specialist);
+
+    // all actions but CANCEL, SAVE_FOR_LATER, FINISH_EDITING, UNASSIGN should
+    // fail
+    for (WorkflowAction action : WorkflowAction.values()) {
+      switch (action) {
+        case ASSIGN_FROM_INITIAL_RECORD:
+          assertTrue(result.getErrors().contains(action.toString()));
+          break;
+        case ASSIGN_FROM_SCRATCH:
+          assertTrue(result.getErrors().contains(action.toString()));
+          break;
+        case CANCEL:
+          assertTrue(result.getMessages().contains(action.toString()));
+          break;
+        case CREATE_QA_RECORD:
+          assertTrue(result.getErrors().contains(action.toString()));
+          break;
+        case FINISH_EDITING:
+          assertTrue(result.getMessages().contains(action.toString()));
+          break;
+        case PUBLISH:
+          assertTrue(result.getErrors().contains(action.toString()));
+          break;
+        case SAVE_FOR_LATER:
+          assertTrue(result.getMessages().contains(action.toString()));
+          break;
+        case UNASSIGN:
+          assertTrue(result.getMessages().contains(action.toString()));
+          break;
+        default:
+          break;
+
+      }
+    }
+
+    // Test: assign lead
+    result = testAllActionsForUser(lead);
+
+    // all actions but CANCEL and ASSIGN_FROM_SCRATCH should fail
+    for (WorkflowAction action : WorkflowAction.values()) {
+      switch (action) {
+        case ASSIGN_FROM_INITIAL_RECORD:
+          assertTrue(result.getErrors().contains(action.toString()));
+          break;
+        case ASSIGN_FROM_SCRATCH:
+          assertTrue(result.getMessages().contains(action.toString()));
+          break;
+        case CANCEL:
+          assertTrue(result.getMessages().contains(action.toString()));
+          break;
+        case CREATE_QA_RECORD:
+          assertTrue(result.getErrors().contains(action.toString()));
+          break;
+        case FINISH_EDITING:
+          assertTrue(result.getErrors().contains(action.toString()));
+          break;
+        case PUBLISH:
+          assertTrue(result.getErrors().contains(action.toString()));
+          break;
+        case SAVE_FOR_LATER:
+          assertTrue(result.getErrors().contains(action.toString()));
+          break;
+        case UNASSIGN:
+          assertTrue(result.getErrors().contains(action.toString()));
+          break;
+        default:
+          break;
+
+      }
+    }
+
+  }
+
+  /**
+   * Test lead editing state.
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testLeadEditingState() throws Exception {
+
+    for (WorkflowStatus status : Arrays.asList(WorkflowStatus.REVIEW_NEW,
+        WorkflowStatus.REVIEW_IN_PROGRESS)) {
+
+      // clear existing records
+      clearMapRecords();
+
+      // compute workflow
+      getTrackingRecord();
+
+      // create specialist record
+      specRecord = createRecord(specialist, WorkflowStatus.REVIEW_NEEDED);
+      leadRecord = createRecord(lead, status);
+      mappingService.addMapRecord(specRecord);
+      mappingService.addMapRecord(leadRecord);
+
+      // compute workflow
+      getTrackingRecord();
+
+      // Test: assign viewer
+      ValidationResult result = testAllActionsForUser(viewer);
+
+      // all actions except cancel should fail
+      for (WorkflowAction action : WorkflowAction.values()) {
+        switch (action) {
+          case ASSIGN_FROM_INITIAL_RECORD:
+            assertTrue(result.getErrors().contains(action.toString()));
+            break;
+          case ASSIGN_FROM_SCRATCH:
+            assertTrue(result.getErrors().contains(action.toString()));
+            break;
+          case CANCEL:
+            assertTrue(result.getMessages().contains(action.toString()));
+            break;
+          case CREATE_QA_RECORD:
+            assertTrue(result.getErrors().contains(action.toString()));
+            break;
+          case FINISH_EDITING:
+            assertTrue(result.getErrors().contains(action.toString()));
+            break;
+          case PUBLISH:
+            assertTrue(result.getErrors().contains(action.toString()));
+            break;
+          case SAVE_FOR_LATER:
+            assertTrue(result.getErrors().contains(action.toString()));
+            break;
+          case UNASSIGN:
+            assertTrue(result.getErrors().contains(action.toString()));
+            break;
+          default:
+            break;
+
+        }
+      }
+
+      // Test: Specialist
+      result = testAllActionsForUser(specialist);
+
+      // all actions but CANCEL should fail
+      for (WorkflowAction action : WorkflowAction.values()) {
+        switch (action) {
+          case ASSIGN_FROM_INITIAL_RECORD:
+            assertTrue(result.getErrors().contains(action.toString()));
+            break;
+          case ASSIGN_FROM_SCRATCH:
+            assertTrue(result.getErrors().contains(action.toString()));
+            break;
+          case CANCEL:
+            assertTrue(result.getMessages().contains(action.toString()));
+            break;
+          case CREATE_QA_RECORD:
+            assertTrue(result.getErrors().contains(action.toString()));
+            break;
+          case FINISH_EDITING:
+            assertTrue(result.getErrors().contains(action.toString()));
+            break;
+          case PUBLISH:
+            assertTrue(result.getErrors().contains(action.toString()));
+            break;
+          case SAVE_FOR_LATER:
+            assertTrue(result.getErrors().contains(action.toString()));
+            break;
+          case UNASSIGN:
+            assertTrue(result.getErrors().contains(action.toString()));
+            break;
+          default:
+            break;
+
+        }
+      }
+
+      // Test: assign lead
+      result = testAllActionsForUser(lead);
+
+      // all actions but CANCEL, SAVE_FOR_LATER, FINISH_EDITING, UNASSIGN should
+      // fail
+      for (WorkflowAction action : WorkflowAction.values()) {
+        switch (action) {
+          case ASSIGN_FROM_INITIAL_RECORD:
+            assertTrue(result.getErrors().contains(action.toString()));
+            break;
+          case ASSIGN_FROM_SCRATCH:
+            assertTrue(result.getErrors().contains(action.toString()));
+            break;
+          case CANCEL:
+            assertTrue(result.getMessages().contains(action.toString()));
+            break;
+          case CREATE_QA_RECORD:
+            assertTrue(result.getErrors().contains(action.toString()));
+            break;
+          case FINISH_EDITING:
+            assertTrue(result.getMessages().contains(action.toString()));
+            break;
+          case PUBLISH:
+            assertTrue(result.getErrors().contains(action.toString()));
+            break;
+          case SAVE_FOR_LATER:
+            assertTrue(result.getMessages().contains(action.toString()));
+            break;
+          case UNASSIGN:
+            assertTrue(result.getMessages().contains(action.toString()));
+            break;
+          default:
+            break;
+
+        }
+      }
+    }
+
+  }
+
+  /**
+   * Test lead finished state.
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testLeadFinishedState() throws Exception {
+
+    // clear existing records
+    clearMapRecords();
+
+    // compute workflow
+    getTrackingRecord();
+
+    // create specialist record
+    specRecord = createRecord(specialist, WorkflowStatus.REVIEW_NEEDED);
+    leadRecord = createRecord(lead, WorkflowStatus.REVIEW_RESOLVED);
+    mappingService.addMapRecord(specRecord);
+    mappingService.addMapRecord(leadRecord);
+
+    // compute workflow
+    getTrackingRecord();
+
+    // Test: assign viewer
+    ValidationResult result = testAllActionsForUser(viewer);
+
+    // all actions except cancel should fail
+    for (WorkflowAction action : WorkflowAction.values()) {
+      switch (action) {
+        case ASSIGN_FROM_INITIAL_RECORD:
+          assertTrue(result.getErrors().contains(action.toString()));
+          break;
+        case ASSIGN_FROM_SCRATCH:
+          assertTrue(result.getErrors().contains(action.toString()));
+          break;
+        case CANCEL:
+          assertTrue(result.getMessages().contains(action.toString()));
+          break;
+        case CREATE_QA_RECORD:
+          assertTrue(result.getErrors().contains(action.toString()));
+          break;
+        case FINISH_EDITING:
+          assertTrue(result.getErrors().contains(action.toString()));
+          break;
+        case PUBLISH:
+          assertTrue(result.getErrors().contains(action.toString()));
+          break;
+        case SAVE_FOR_LATER:
+          assertTrue(result.getErrors().contains(action.toString()));
+          break;
+        case UNASSIGN:
+          assertTrue(result.getErrors().contains(action.toString()));
+          break;
+        default:
+          break;
+
+      }
+    }
+
+    // Test: Specialist
+    result = testAllActionsForUser(specialist);
 
     // all actions but CANCEL should fail
     for (WorkflowAction action : WorkflowAction.values()) {
@@ -530,7 +788,7 @@ public class WorkflowActionQaPathTest {
     }
 
     // Test: assign lead
-    result = testAllActionsForUser(specialist);
+    result = testAllActionsForUser(lead);
 
     // all actions but CANCEL, SAVE_FOR_LATER, FINISH_EDITING, UNASSIGN, PUBLISH
     // should fail
@@ -581,16 +839,14 @@ public class WorkflowActionQaPathTest {
     workflowService.clearWorkflowForMapProject(mapProject);
     workflowService.close();
 
-    if (revisionRecord != null)
-      mappingService.removeMapRecord(revisionRecord.getId());
     if (specRecord != null)
       mappingService.removeMapRecord(specRecord.getId());
-    if (loaderRecord != null)
-      mappingService.removeMapRecord(loaderRecord.getId());
+    if (leadRecord != null)
+      mappingService.removeMapRecord(leadRecord.getId());
 
     mappingService.removeMapProject(mapProject.getId());
     mappingService.removeMapUser(specialist.getId());
-    mappingService.removeMapUser(loader.getId());
+    mappingService.removeMapUser(lead.getId());
     mappingService.close();
 
     contentService.removeConcept(concept.getId());
@@ -621,10 +877,9 @@ public class WorkflowActionQaPathTest {
     for (MapRecord mr : mappingService.getMapRecords().getIterable()) {
       mappingService.removeMapRecord(mr.getId());
     }
-    revisionRecord = null;
     specRecord = null;
-    loaderRecord = null;
-    Thread.sleep(500);
+    leadRecord = null;
+    Thread.sleep(1000);
   }
 
   /**
@@ -642,10 +897,8 @@ public class WorkflowActionQaPathTest {
           handler.validateTrackingRecordForActionAndUser(trackingRecord,
               action, user);
       if (actionResult.isValid()) {
-        System.out.println(action + " valid");
         result.addMessage(action.toString());
       } else {
-        System.out.println(action + " invalid -- " + actionResult.toString());
         result.addError(action.toString());
       }
     }

@@ -1,8 +1,9 @@
-package org.ihtsdo.otf.mapping.rest;
+package org.ihtsdo.otf.mapping.test.rest;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.MapProjectList;
 import org.ihtsdo.otf.mapping.helpers.MapUserList;
+import org.ihtsdo.otf.mapping.rest.MappingServiceRest;
 import org.junit.BeforeClass;
 import org.junit.Test;
 

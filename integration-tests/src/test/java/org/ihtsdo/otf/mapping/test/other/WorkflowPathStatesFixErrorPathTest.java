@@ -1,4 +1,4 @@
-package org.ihtsdo.otf.mapping.jpa.services;
+package org.ihtsdo.otf.mapping.test.other;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -19,7 +19,10 @@ import org.ihtsdo.otf.mapping.helpers.WorkflowType;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
-import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowReviewProjectPathHandler;
+import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowFixErrorPathHandler;
+import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -34,12 +37,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Unit test for workflow path states on "review project path".
+ * Unit test for workflow path states for "fix error path".
  */
-public class WorkflowPathStatesReviewProjectPathTest {
+public class WorkflowPathStatesFixErrorPathTest {
 
   /**  The handler. */
-  private static WorkflowReviewProjectPathHandler handler;
+  private static WorkflowFixErrorPathHandler handler;
 
   /**  The content service. */
   private static ContentService contentService;
@@ -53,11 +56,8 @@ public class WorkflowPathStatesReviewProjectPathTest {
   /**  The tracking record. */
   private static TrackingRecord trackingRecord;
 
-  /**  The specialist. */
-  private static MapUser specialist;
-
   /**  The lead. */
-  private static MapUser lead;
+  private static MapUser specialist, lead;
 
   /**  The map project. */
   private static MapProject mapProject;
@@ -81,7 +81,7 @@ public class WorkflowPathStatesReviewProjectPathTest {
     workflowService = new WorkflowServiceJpa();
 
     // instantiate the workflow handler
-    handler = new WorkflowReviewProjectPathHandler();
+    handler = new WorkflowFixErrorPathHandler();
 
     // ensure database is clean
     for (Concept c : contentService.getConcepts().getIterable())
@@ -154,7 +154,7 @@ public class WorkflowPathStatesReviewProjectPathTest {
   @Test
   public void testLegalWorkflowCombinations() throws Exception {
 
-    Logger.getLogger(WorkflowPathStatesReviewProjectPathTest.class)
+    Logger.getLogger(WorkflowPathStatesFixErrorPathTest.class)
         .info("Testing all possible combinations against legal states...");
 
     // test empty state
@@ -265,7 +265,7 @@ public class WorkflowPathStatesReviewProjectPathTest {
   @AfterClass
   public static void cleanup() throws Exception {
 
-    Logger.getLogger(WorkflowPathStatesReviewProjectPathTest.class)
+    Logger.getLogger(WorkflowPathStatesFixErrorPathTest.class)
         .info("Clean-up");
     resetRecords();
 
@@ -342,12 +342,22 @@ public class WorkflowPathStatesReviewProjectPathTest {
     // switch on size of combination
     switch (combination.getWorkflowStatuses().size()) {
 
-    // empty workflow
+      // always invalid
       case 1:
+        mappingService
+        .addMapRecord(createRecord(specialist, statusIter.next()));
+        break;
+     // valid: REVISION + Specialist editing/complete
+      case 2:
+        mappingService
+        .addMapRecord(createRecord(specialist, statusIter.next()));
         mappingService
             .addMapRecord(createRecord(specialist, statusIter.next()));
         break;
-      case 2:
+        // valid: REVISION + Specialist omplete + Lead editing/complete
+      case 3:
+        mappingService
+        .addMapRecord(createRecord(specialist, statusIter.next()));
         mappingService
             .addMapRecord(createRecord(specialist, statusIter.next()));
         mappingService.addMapRecord(createRecord(lead, statusIter.next()));
