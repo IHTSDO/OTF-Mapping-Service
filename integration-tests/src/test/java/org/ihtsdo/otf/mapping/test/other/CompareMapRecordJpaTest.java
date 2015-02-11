@@ -1,4 +1,4 @@
-package org.ihtsdo.otf.mapping.jpa.services;
+package org.ihtsdo.otf.mapping.test.other;
 
 import static org.junit.Assert.fail;
 

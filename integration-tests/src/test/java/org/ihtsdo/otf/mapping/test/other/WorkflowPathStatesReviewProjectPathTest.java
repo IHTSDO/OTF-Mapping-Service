@@ -1,4 +1,4 @@
-package org.ihtsdo.otf.mapping.jpa.services;
+package org.ihtsdo.otf.mapping.test.other;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -19,7 +19,10 @@ import org.ihtsdo.otf.mapping.helpers.WorkflowType;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
-import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowNonLegacyPathHandler;
+import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowReviewProjectPathHandler;
+import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -34,12 +37,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Unit test for workflow path states on "non legacy path".
+ * Unit test for workflow path states on "review project path".
  */
-public class WorkflowPathStatesNonLegacyPathTest {
+public class WorkflowPathStatesReviewProjectPathTest {
 
   /**  The handler. */
-  private static WorkflowNonLegacyPathHandler handler;
+  private static WorkflowReviewProjectPathHandler handler;
 
   /**  The content service. */
   private static ContentService contentService;
@@ -53,8 +56,11 @@ public class WorkflowPathStatesNonLegacyPathTest {
   /**  The tracking record. */
   private static TrackingRecord trackingRecord;
 
+  /**  The specialist. */
+  private static MapUser specialist;
+
   /**  The lead. */
-  private static MapUser specialist, specialist2, lead;
+  private static MapUser lead;
 
   /**  The map project. */
   private static MapProject mapProject;
@@ -78,7 +84,7 @@ public class WorkflowPathStatesNonLegacyPathTest {
     workflowService = new WorkflowServiceJpa();
 
     // instantiate the workflow handler
-    handler = new WorkflowNonLegacyPathHandler();
+    handler = new WorkflowReviewProjectPathHandler();
 
     // ensure database is clean
     for (Concept c : contentService.getConcepts().getIterable())
@@ -111,13 +117,6 @@ public class WorkflowPathStatesNonLegacyPathTest {
     specialist.setUserName("spec");
     mappingService.addMapUser(specialist);
 
-    specialist2 = new MapUserJpa();
-    specialist2.setApplicationRole(MapUserRole.VIEWER);
-    specialist2.setEmail("none");
-    specialist2.setName("Specialist2");
-    specialist2.setUserName("spec2");
-    mappingService.addMapUser(specialist2);
-
     lead = new MapUserJpa();
     lead.setApplicationRole(MapUserRole.VIEWER);
     lead.setEmail("none");
@@ -142,7 +141,7 @@ public class WorkflowPathStatesNonLegacyPathTest {
     mapProject.setPublic(true);
     mapProject.setRefSetId("refsetId");
     mapProject.setRuleBased(true);
-    mapProject.setWorkflowType(WorkflowType.CONFLICT_PROJECT);
+    mapProject.setWorkflowType(WorkflowType.REVIEW_PROJECT);
     mapProject.addMapSpecialist(specialist);
     mapProject.addMapLead(lead);
     mapProject.addScopeConcept("1");
@@ -158,9 +157,8 @@ public class WorkflowPathStatesNonLegacyPathTest {
   @Test
   public void testLegalWorkflowCombinations() throws Exception {
 
-    Logger.getLogger(WorkflowPathStatesNonLegacyPathTest.class).info(
-        "Testing all possible combinations against legal states ("
-            + handler.getWorkflowStatusCombinations().size() + "found) ...");
+    Logger.getLogger(WorkflowPathStatesReviewProjectPathTest.class)
+        .info("Testing all possible combinations against legal states...");
 
     // test empty state
     if (handler.isEmptyWorkflowAllowed()) {
@@ -253,8 +251,7 @@ public class WorkflowPathStatesNonLegacyPathTest {
                 .equals(WorkflowStatus.PUBLISHED)) {
           // do nothing
         } else {
-          fail("Error computing tracking record for combination "
-              + combination.toString());
+          fail("Error computing tracking record for combination " + combination.toString());
         }
 
       }
@@ -271,7 +268,7 @@ public class WorkflowPathStatesNonLegacyPathTest {
   @AfterClass
   public static void cleanup() throws Exception {
 
-    Logger.getLogger(WorkflowPathStatesNonLegacyPathTest.class)
+    Logger.getLogger(WorkflowPathStatesReviewProjectPathTest.class)
         .info("Clean-up");
     resetRecords();
 
@@ -340,13 +337,13 @@ public class WorkflowPathStatesNonLegacyPathTest {
     resetRecords();
 
     // sleep 0.5s to allow transaction to complete
-    Thread.sleep(1000);
+    Thread.sleep(500);
 
     Iterator<WorkflowStatus> statusIter =
         combination.getWorkflowStatusesAsList().iterator();
 
     // switch on size of combination
-    switch (combination.getWorkflowStatusesAsList().size()) {
+    switch (combination.getWorkflowStatuses().size()) {
 
     // empty workflow
       case 1:
@@ -356,22 +353,12 @@ public class WorkflowPathStatesNonLegacyPathTest {
       case 2:
         mappingService
             .addMapRecord(createRecord(specialist, statusIter.next()));
-        mappingService
-            .addMapRecord(createRecord(specialist2, statusIter.next()));
-        break;
-      case 3:
-        mappingService
-            .addMapRecord(createRecord(specialist, statusIter.next()));
-        mappingService
-            .addMapRecord(createRecord(specialist2, statusIter.next()));
         mappingService.addMapRecord(createRecord(lead, statusIter.next()));
         break;
       default:
         fail("Unexpected number of workflow statuses, combination = "
             + combination.toString());
     }
-
-    Thread.sleep(500);
 
     // compute workflow
     workflowService.computeWorkflow(mapProject);

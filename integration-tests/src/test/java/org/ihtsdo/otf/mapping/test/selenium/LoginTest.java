@@ -1,4 +1,4 @@
-package org.ihtsdo.otf.mapping.selenium;
+package org.ihtsdo.otf.mapping.test.selenium;
 
 import static org.junit.Assert.assertTrue;
 
@@ -18,13 +18,22 @@ import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+/**
+ * Selenium login test class.
+ */
 public class LoginTest {
 
-  private static WebDriver webDriver;
+  /**  The web driver. */
+  static WebDriver webDriver;
 
+  /**  The config. */
   private static Properties config;
 
-
+  /**
+   * Inits the.
+   *
+   * @throws Exception the exception
+   */
   @BeforeClass
   public static void init() throws Exception {
 
@@ -54,6 +63,11 @@ public class LoginTest {
             TimeUnit.SECONDS);
   }
 
+  /**
+   * Cleanup.
+   *
+   * @throws Exception the exception
+   */
   @AfterClass
   public static void cleanup() throws Exception {
 
@@ -62,6 +76,12 @@ public class LoginTest {
     }
   }
 
+  /**
+   * Guest login test.
+   *
+   * @throws Exception the exception
+   */
+  @SuppressWarnings("static-method")
   @Test
   public void guestLoginTest() throws Exception {
     Logger.getLogger(LoginTest.class).info("Testing guest login...");
@@ -75,6 +95,7 @@ public class LoginTest {
     (new WebDriverWait(webDriver, new Long(
         config.getProperty("selenium.timeout")) / 1000))
         .until(new ExpectedCondition<Boolean>() {
+          @Override
           public Boolean apply(WebDriver d) {
             return webDriver.findElement(By.id("userAndRole")).getText()
                 .length() > 0;
@@ -89,6 +110,12 @@ public class LoginTest {
     // TODO:  Add logout
   }
 
+  /**
+   * User valid login test.
+   *
+   * @throws Exception the exception
+   */
+  @SuppressWarnings("static-method")
   @Test
   public void userValidLoginTest() throws Exception {
 
@@ -111,6 +138,7 @@ public class LoginTest {
     (new WebDriverWait(webDriver, new Long(
         config.getProperty("selenium.timeout")) / 1000))
         .until(new ExpectedCondition<Boolean>() {
+          @Override
           public Boolean apply(WebDriver d) {
             return webDriver.findElement(By.id("userAndRole")).getText()
                 .length() > 0;
@@ -126,6 +154,10 @@ public class LoginTest {
 
   }
 
+  /**
+   * User invalid login test.
+   */
+  @SuppressWarnings("static-method")
   @Test
   public void userInvalidLoginTest() {
 
@@ -149,6 +181,7 @@ public class LoginTest {
     (new WebDriverWait(webDriver, new Long(
         config.getProperty("selenium.timeout")) / 1000))
         .until(new ExpectedCondition<Boolean>() {
+          @Override
           public Boolean apply(WebDriver d) {
             return webDriver.findElement(By.id("globalError")).getText()
                 .length() > 0;
