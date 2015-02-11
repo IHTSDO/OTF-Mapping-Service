@@ -1,4 +1,4 @@
-package org.ihtsdo.otf.mapping.jpa.services;
+package org.ihtsdo.otf.mapping.test.other;
 
 import static org.junit.Assert.assertTrue;
 
@@ -17,6 +17,9 @@ import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowFixErrorPathHandler;
+import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
