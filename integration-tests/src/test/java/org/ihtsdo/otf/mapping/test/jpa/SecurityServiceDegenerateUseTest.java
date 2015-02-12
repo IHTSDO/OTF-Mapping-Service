@@ -13,9 +13,9 @@ import org.junit.Test;
  */
 public class SecurityServiceDegenerateUseTest {
 
-  /**  The service. */
-  private static SecurityService service;
-  
+  /** The service. */
+  private SecurityService service;
+
   /**
    * Create test fixtures for class.
    *
@@ -23,7 +23,7 @@ public class SecurityServiceDegenerateUseTest {
    */
   @BeforeClass
   public static void setupClass() throws Exception {
-    service = new SecurityServiceJpa();
+    // do nothing
   }
 
   /**
@@ -33,16 +33,17 @@ public class SecurityServiceDegenerateUseTest {
    */
   @Before
   public void setup() throws Exception {
-    // do nothing
+    service = new SecurityServiceJpa();
   }
 
   /**
-   * Test degenerate use of the authenticate methods of {@link SecurityServiceJpa}.
+   * Test degenerate use of the authenticate methods of
+   * {@link SecurityServiceJpa}.
    * 
    * @throws Exception the exception
    */
   @Test
-  public void testDegenerateUseS001() throws Exception {
+  public void testDegenerateUseJpaSecurity001() throws Exception {
     // placeholder
   }
 
@@ -52,7 +53,7 @@ public class SecurityServiceDegenerateUseTest {
    * @throws Exception the exception
    */
   @Test
-  public void testDegenerateUseS002() throws Exception {
+  public void testDegenerateUseJpaSecurity002() throws Exception {
     // placeholder
   }
 
@@ -62,7 +63,7 @@ public class SecurityServiceDegenerateUseTest {
    * @throws Exception the exception
    */
   @Test
-  public void testDegenerateUseS003() throws Exception {
+  public void testDegenerateUseJpaSecurity003() throws Exception {
     // placeholder
   }
 
@@ -72,20 +73,20 @@ public class SecurityServiceDegenerateUseTest {
    * @throws Exception the exception
    */
   @Test
-  public void testDegenerateUseS004() throws Exception {
+  public void testDegenerateUseJpaSecurity004() throws Exception {
     // placeholder
   }
-  
+
   /**
    * Test degenerate use of logout method of {@link SecurityServiceJpa}.
    *
    * @throws Exception the exception
    */
   @Test
-  public void testDegenerateUseS005() throws Exception {
+  public void testDegenerateUseJpaSecurity005() throws Exception {
     // placeholder
   }
-  
+
   /**
    * Teardown.
    *
@@ -93,7 +94,8 @@ public class SecurityServiceDegenerateUseTest {
    */
   @After
   public void teardown() throws Exception {
-    // close test fixtures per test
+    // close test fixtures per class
+    service.close();
   }
 
   /**
@@ -103,8 +105,7 @@ public class SecurityServiceDegenerateUseTest {
    */
   @AfterClass
   public static void teardownClass() throws Exception {
-    // close test fixtures per class
-    service.close();
+    // do nothing
   }
 
 }
