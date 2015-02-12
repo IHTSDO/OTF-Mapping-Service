@@ -16,9 +16,9 @@ import org.junit.Test;
  */
 public class RootServiceNormalUseTest {
 
-  /**  The service. */
-  private static RootService service;
-  
+  /** The service. */
+  private RootService service;
+
   /**
    * Create test fixtures for class.
    *
@@ -26,11 +26,7 @@ public class RootServiceNormalUseTest {
    */
   @BeforeClass
   public static void setupClass() throws Exception {
-    service = new RootServiceJpa() {
-      @Override
-      public void initializeFieldNames() throws Exception {
-        // do nothing        
-      }};
+    // do nothing
   }
 
   /**
@@ -40,21 +36,26 @@ public class RootServiceNormalUseTest {
    */
   @Before
   public void setup() throws Exception {
-    // do nothing
+    service = new RootServiceJpa() {
+      @Override
+      public void initializeFieldNames() throws Exception {
+        // do nothing
+      }
+    };
   }
 
   /**
-   * Test normal use of transaction management methods of {@link RootServiceJpa}.
+   * Test normal use of transaction management methods of {@link RootServiceJpa}
+   * .
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   @Test
-  public void testNormalUseR001() throws Exception {
+  public void testNormalUseJpaRoot001() throws Exception {
     assertTrue(service.getTransactionPerOperation());
     // Set transaction per operation to false
     service.setTransactionPerOperation(false);
     // Verify that it is set to false
-    assertFalse(service.getTransactionPerOperation());  
+    assertFalse(service.getTransactionPerOperation());
   }
 
   /**
@@ -62,9 +63,8 @@ public class RootServiceNormalUseTest {
    *
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   @Test
-  public void testNormalUseR002() throws Exception {
+  public void testNormalUseJpaRoot002() throws Exception {
     service.setTransactionPerOperation(false);
     service.beginTransaction();
     service.rollback();
@@ -77,9 +77,8 @@ public class RootServiceNormalUseTest {
    *
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   @Test
-  public void testNormalUseR003() throws Exception {
+  public void testNormalUseJpaRoot003() throws Exception {
     // Procedure 1
     service.setTransactionPerOperation(false);
     service.beginTransaction();
@@ -99,7 +98,8 @@ public class RootServiceNormalUseTest {
    */
   @After
   public void teardown() throws Exception {
-    // close test fixtures per test
+    // close test fixtures per class
+    service.close();
   }
 
   /**
@@ -109,8 +109,7 @@ public class RootServiceNormalUseTest {
    */
   @AfterClass
   public static void teardownClass() throws Exception {
-    // close test fixtures per class
-    service.close();
+    // do nothing
   }
 
 }

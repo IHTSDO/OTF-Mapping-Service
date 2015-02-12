@@ -1,4 +1,4 @@
-package org.ihtsdo.otf.mapping.test.rest;
+package org.ihtsdo.otf.mapping.test.other;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.MapProjectList;
