@@ -13,9 +13,9 @@ import org.junit.Test;
  */
 public class SecurityServiceEdgeCasesTest {
 
-  /**  The service. */
-  private static SecurityService service;
-  
+  /** The service. */
+  private SecurityService service;
+
   /**
    * Create test fixtures for class.
    *
@@ -23,7 +23,7 @@ public class SecurityServiceEdgeCasesTest {
    */
   @BeforeClass
   public static void setupClass() throws Exception {
-    service = new SecurityServiceJpa();
+    // do nothing
   }
 
   /**
@@ -33,16 +33,17 @@ public class SecurityServiceEdgeCasesTest {
    */
   @Before
   public void setup() throws Exception {
-    // do nothing
+    service = new SecurityServiceJpa();
   }
 
   /**
-   * Test edge cases use of the authenticate methods of {@link SecurityServiceJpa}.
+   * Test edge cases use of the authenticate methods of
+   * {@link SecurityServiceJpa}.
    * 
    * @throws Exception the exception
    */
   @Test
-  public void testEdgeCasesS001() throws Exception {
+  public void testEdgeCasesJpaSecurity001() throws Exception {
     // placeholder
   }
 
@@ -52,7 +53,7 @@ public class SecurityServiceEdgeCasesTest {
    * @throws Exception the exception
    */
   @Test
-  public void testEdgeCasesS002() throws Exception {
+  public void testEdgeCasesJpaSecurity002() throws Exception {
     // placeholder
   }
 
@@ -62,7 +63,7 @@ public class SecurityServiceEdgeCasesTest {
    * @throws Exception the exception
    */
   @Test
-  public void testEdgeCasesS003() throws Exception {
+  public void testEdgeCasesJpaSecurity003() throws Exception {
     // placeholder
   }
 
@@ -72,20 +73,20 @@ public class SecurityServiceEdgeCasesTest {
    * @throws Exception the exception
    */
   @Test
-  public void testEdgeCasesS004() throws Exception {
+  public void testEdgeCasesJpaSecurity004() throws Exception {
     // placeholder
   }
-  
+
   /**
    * Test edge cases of logout method of {@link SecurityServiceJpa}.
    *
    * @throws Exception the exception
    */
   @Test
-  public void testEdgeCasesS005() throws Exception {
+  public void testEdgeCasesJpaSecurity005() throws Exception {
     // placeholder
   }
-  
+
   /**
    * Teardown.
    *
@@ -94,6 +95,7 @@ public class SecurityServiceEdgeCasesTest {
   @After
   public void teardown() throws Exception {
     // close test fixtures per test
+    service.close();
   }
 
   /**
@@ -103,7 +105,7 @@ public class SecurityServiceEdgeCasesTest {
    */
   @AfterClass
   public static void teardownClass() throws Exception {
-    // close test fixtures per class
+    // do nothing
   }
 
 }

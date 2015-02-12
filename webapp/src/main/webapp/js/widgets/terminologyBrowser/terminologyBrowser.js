@@ -133,6 +133,10 @@ angular
       $scope.getRootTreeWithQuery = function(isNewSearch) {
 
         console.debug("QUERYING: " + $scope.query);
+        // Bail on an empty search
+        if ($scope.query == "") {
+          return;
+        }
         $scope.searchStatus = "Searching...";
         $scope.terminologyTree = [];
         $http(

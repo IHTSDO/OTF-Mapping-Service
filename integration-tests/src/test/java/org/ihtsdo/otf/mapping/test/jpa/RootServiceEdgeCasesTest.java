@@ -1,8 +1,5 @@
 package org.ihtsdo.otf.mapping.test.jpa;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import org.ihtsdo.otf.mapping.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.mapping.services.RootService;
 import org.junit.After;
@@ -17,7 +14,7 @@ import org.junit.Test;
 public class RootServiceEdgeCasesTest {
 
   /** The service. */
-  private static RootService service;
+  private RootService service;
 
   /**
    * Create test fixtures for class.
@@ -26,12 +23,7 @@ public class RootServiceEdgeCasesTest {
    */
   @BeforeClass
   public static void setupClass() throws Exception {
-    service = new RootServiceJpa() {
-      @Override
-      public void initializeFieldNames() throws Exception {
-        // do nothing
-      }
-    };
+    // do nothing
   }
 
   /**
@@ -41,7 +33,12 @@ public class RootServiceEdgeCasesTest {
    */
   @Before
   public void setup() throws Exception {
-    // do nothing
+    service = new RootServiceJpa() {
+      @Override
+      public void initializeFieldNames() throws Exception {
+        // do nothing
+      }
+    };
   }
 
   /**
@@ -49,14 +46,15 @@ public class RootServiceEdgeCasesTest {
    * .
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   @Test
-  public void testEdgeCasesR001() throws Exception {
-    assertTrue(service.getTransactionPerOperation());
-    // Set transaction per operation to false
+  public void testEdgeCasesJpaRoot001() throws Exception {
+
+    service.setTransactionPerOperation(true);
+    service.setTransactionPerOperation(true);
+
     service.setTransactionPerOperation(false);
-    // Verify that it is set to false
-    assertFalse(service.getTransactionPerOperation());
+    service.setTransactionPerOperation(false);
+
   }
 
   /**
@@ -64,34 +62,40 @@ public class RootServiceEdgeCasesTest {
    *
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   @Test
-  public void testEdgeCasesR002() throws Exception {
+  public void testEdgeCasesJpaRoot002() throws Exception {
     service.setTransactionPerOperation(false);
-    service.beginTransaction();
-    service.rollback();
+
     service.beginTransaction();
     service.commit();
+
+    service.beginTransaction();
+    service.rollback();
   }
 
   /**
-   * Test edge cases of clear and close features of {@link RootServiceJpa}.
+   * Test edge cases of clear and close features of {@link RootServiceJpa}
+   * Procedure 1.
    *
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   @Test
-  public void testEdgeCasesR003() throws Exception {
+  public void testEdgeCasesJpaRoot003Procedure1() throws Exception {
     // Procedure 1
-    service.setTransactionPerOperation(false);
-    service.beginTransaction();
-    service.clear();
-    service.commit();
+    service.close();
+  }
 
+  /**
+   * Test edge cases of clear and close features of {@link RootServiceJpa}
+   * Procedure 2.
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testEdgeCasesJpaRoot003Procedure2() throws Exception {
     // Procedure 2
-    service.setTransactionPerOperation(true);
     service.clear();
-
+    service.clear();
   }
 
   /**
@@ -101,7 +105,8 @@ public class RootServiceEdgeCasesTest {
    */
   @After
   public void teardown() throws Exception {
-    // close test fixtures per test
+    // close test fixtures per class
+    service.close();
   }
 
   /**
@@ -111,8 +116,7 @@ public class RootServiceEdgeCasesTest {
    */
   @AfterClass
   public static void teardownClass() throws Exception {
-    // close test fixtures per class
-    service.close();
+    // do nothing
   }
 
 }
