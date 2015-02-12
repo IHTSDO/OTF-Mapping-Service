@@ -1,7 +1,6 @@
 <form>
   <input ng-model="query">
-  <button ng-click="getRootTreeWithQuery(true)" 
-          ng-disabled="query == ''">Search</button>
+  <button ng-click="getRootTreeWithQuery(true)">Search</button>
   <button ng-click="getRootTree(); query = ''">Reset</button>
   <button ng-show="searchBackAllowed == true" ng-click="changeSearch(-1)">
     <i class="glyphicon glyphicon-arrow-left"></i>
