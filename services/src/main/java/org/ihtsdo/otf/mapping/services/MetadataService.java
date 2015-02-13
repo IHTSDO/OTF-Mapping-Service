@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Services to retrieve metadata objects.
+ * Generically represents a service to retrieve metadata objects.
  */
 public interface MetadataService extends RootService {
 

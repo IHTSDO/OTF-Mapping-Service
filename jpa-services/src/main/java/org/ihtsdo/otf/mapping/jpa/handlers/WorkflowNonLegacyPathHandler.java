@@ -23,7 +23,7 @@ import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
 
   // The workflow path states defining the Non Legacy Path
-  /**  The lead finished state. */
+  /** The lead finished state. */
   private static WorkflowPathState initialState, firstSpecialistEditingState,
       secondSpecialistEditingState, conflictDetectedState, leadEditingState,
       leadFinishedState;
@@ -111,9 +111,10 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
 
     // STATE: Lead review (complete)
     leadFinishedState = new WorkflowPathState("Lead Conflict Review Complete");
-    leadFinishedState.addWorkflowCombination(new WorkflowStatusCombination(
-        Arrays.asList(WorkflowStatus.CONFLICT_DETECTED,
-            WorkflowStatus.CONFLICT_DETECTED, WorkflowStatus.CONFLICT_RESOLVED)));
+    leadFinishedState
+        .addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
+            WorkflowStatus.CONFLICT_DETECTED, WorkflowStatus.CONFLICT_DETECTED,
+            WorkflowStatus.CONFLICT_RESOLVED)));
     trackingRecordStateToActionMap.put(
         leadFinishedState,
         new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING,
@@ -123,8 +124,14 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
     // Terminal State: No tracking record
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.jpa.handlers.AbstractWorkflowPathHandler#validateTrackingRecordForActionAndUser(org.ihtsdo.otf.mapping.workflow.TrackingRecord, org.ihtsdo.otf.mapping.helpers.WorkflowAction, org.ihtsdo.otf.mapping.model.MapUser)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.jpa.handlers.AbstractWorkflowPathHandler#
+   * validateTrackingRecordForActionAndUser
+   * (org.ihtsdo.otf.mapping.workflow.TrackingRecord,
+   * org.ihtsdo.otf.mapping.helpers.WorkflowAction,
+   * org.ihtsdo.otf.mapping.model.MapUser)
    */
   @SuppressWarnings("unused")
   @Override
@@ -174,10 +181,10 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
     // /////////////////////////////////
 
     if (state == null) {
-      result.addError("Could not determine workflow path state for tracking record");
+      result
+          .addError("Could not determine workflow path state for tracking record");
     }
-    
-    
+
     // INITIAL STATE: No specialists have started editing
     // Record requirement : None
     // Permissible actions: ASSIGN_FROM_SCRATCH
@@ -395,9 +402,10 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
     } else {
       result.addError("Invalid state/could not determine state");
     }
-    
+
     if (result.getErrors().size() != 0) {
-      result.addError("Error occured in workflow state " + state.getWorkflowStateName());;
+      result.addError("Error occured in workflow state "
+          + state.getWorkflowStateName());
     }
 
     return result;

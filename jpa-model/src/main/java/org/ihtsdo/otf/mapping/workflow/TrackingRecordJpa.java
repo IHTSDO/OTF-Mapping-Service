@@ -25,7 +25,7 @@ import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 
 /**
- * Default implementatino of {@link TrackingRecordJpa}.
+ * Default implementation of {@link TrackingRecordJpa}.
  */
 @Entity
 @Indexed

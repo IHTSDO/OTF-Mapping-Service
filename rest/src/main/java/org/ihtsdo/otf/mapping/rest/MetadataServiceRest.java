@@ -27,7 +27,7 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
 /**
- * Metadata Services REST package.
+ * REST implementation for metadata service.
  */
 @Path("/metadata")
 @Api(value = "/metadata", description = "Operations providing terminology metadata.")

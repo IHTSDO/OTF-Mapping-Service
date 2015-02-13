@@ -406,13 +406,13 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
   private static String constructMapProjectIdQuery(Long mapProjectId,
     String query) {
 
-    String full_query;
+    String fullQuery;
 
     // if no filter supplied, return query based on map project id only
     if (query == null || query.equals("") || query.equals("null")
         || query.equals("undefined")) {
-      full_query = "mapProjectId:" + mapProjectId;
-      return full_query;
+      fullQuery = "mapProjectId:" + mapProjectId;
+      return fullQuery;
     }
 
     // Pre-treatment: Find any lower-case boolean operators and set to
@@ -441,25 +441,24 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     // first cycle over the string to add artificial breaks before and after
     // control characters
 
-    String queryStr_mod = query;
-    queryStr_mod = queryStr_mod.replace("(", " ( ");
-    queryStr_mod = queryStr_mod.replace(")", " ) ");
-    queryStr_mod = queryStr_mod.replace("\"", " \" ");
-    queryStr_mod = queryStr_mod.replace("+", " + ");
-    queryStr_mod = queryStr_mod.replace("-", " - ");
+    String queryStrMod = query;
+    queryStrMod = queryStrMod.replace("(", " ( ");
+    queryStrMod = queryStrMod.replace(")", " ) ");
+    queryStrMod = queryStrMod.replace("\"", " \" ");
+    queryStrMod = queryStrMod.replace("+", " + ");
+    queryStrMod = queryStrMod.replace("-", " - ");
 
     // remove any leading or trailing whitespace (otherwise first/last null
     // term
     // bug)
-    queryStr_mod = queryStr_mod.trim();
+    queryStrMod = queryStrMod.trim();
 
     // split the string by white space and single-character operators
-    String[] terms = queryStr_mod.split("\\s+");
+    String[] terms = queryStrMod.split("\\s+");
 
     // merge items between quotation marks
     boolean exprInQuotes = false;
     List<String> parsedTerms = new ArrayList<>();
-    // List<String> parsedTerms_temp = new ArrayList<String>();
     String currentTerm = "";
 
     // cycle over terms to identify quoted (i.e. non-parsed) terms
@@ -468,7 +467,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
       // if an open quote is detected
       if (terms[i].equals("\"")) {
 
-        if (exprInQuotes == true) {
+        if (exprInQuotes) {
 
           // special case check: fielded term. Impossible for first
           // term to be
@@ -481,7 +480,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
             // if last parsed term ended with a colon, append this
             // term to the
             // last parsed term
-            if (lastParsedTerm.endsWith(":") == true) {
+            if (lastParsedTerm.endsWith(":")) {
               parsedTerms.set(parsedTerms.size() - 1, lastParsedTerm + "\""
                   + currentTerm + "\"");
             } else {
@@ -501,7 +500,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
       } else {
 
         // if inside quotes, continue building term
-        if (exprInQuotes == true) {
+        if (exprInQuotes) {
           currentTerm =
               currentTerm == "" ? terms[i] : currentTerm + " " + terms[i];
 
@@ -517,7 +516,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     }
 
     // cycle over terms to construct query
-    full_query = "";
+    fullQuery = "";
 
     for (int i = 0; i < parsedTerms.size(); i++) {
 
@@ -525,10 +524,10 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
       // add whitespace separator
       if (i != 0 && !parsedTerms.get(i - 1).matches(escapeTerms)) {
 
-        full_query += " ";
+        fullQuery += " ";
       }
       /*
-       * full_query += (i == 0 ? // check for first term "" : // -> if first
+       * fullQuery += (i == 0 ? // check for first term "" : // -> if first
        * character, add nothing parsedTerms.get(i-1).matches(escapeTerms) ? //
        * check if last term was an escape character "": // -> if last term was
        * an escape character, add nothing " "); // -> otherwise, add a
@@ -538,37 +537,37 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
       // if an escape character/sequence, add this term unmodified
       if (parsedTerms.get(i).matches(escapeTerms)) {
 
-        full_query += parsedTerms.get(i);
+        fullQuery += parsedTerms.get(i);
 
         // else if a boolean character, add this term in upper-case form
         // (i.e.
         // lucene format)
       } else if (parsedTerms.get(i).matches(booleanTerms)) {
 
-        full_query += parsedTerms.get(i).toUpperCase();
+        fullQuery += parsedTerms.get(i).toUpperCase();
 
         // else if already a field-specific query term, add this term
         // unmodified
       } else if (parsedTerms.get(i).contains(":")) {
 
-        full_query += parsedTerms.get(i);
+        fullQuery += parsedTerms.get(i);
 
         // otherwise, treat as unfielded query term
       } else {
 
         // open parenthetical term
-        full_query += "(";
+        fullQuery += "(";
 
         // add fielded query for each indexed term, separated by OR
-        Iterator<String> names_iter = trackingRecordFieldNames.iterator();
-        while (names_iter.hasNext()) {
-          full_query += names_iter.next() + ":" + parsedTerms.get(i);
-          if (names_iter.hasNext())
-            full_query += " OR ";
+        Iterator<String> namesIter = trackingRecordFieldNames.iterator();
+        while (namesIter.hasNext()) {
+          fullQuery += namesIter.next() + ":" + parsedTerms.get(i);
+          if (namesIter.hasNext())
+            fullQuery += " OR ";
         }
 
         // close parenthetical term
-        full_query += ")";
+        fullQuery += ")";
       }
 
       // if further terms remain in the sequence
@@ -582,18 +581,18 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
             && !parsedTerms.get(i).matches(booleanTerms)
             && !parsedTerms.get(i + 1).matches(booleanTerms)) {
 
-          full_query += " OR";
+          fullQuery += " OR";
         }
       }
     }
 
     // add parantheses and map project constraint
-    full_query = "(" + full_query + ")" + " AND mapProjectId:" + mapProjectId;
+    fullQuery = "(" + fullQuery + ")" + " AND mapProjectId:" + mapProjectId;
 
     Logger.getLogger(MappingServiceJpa.class)
-        .debug("Full query: " + full_query);
+        .debug("Full query: " + fullQuery);
 
-    return full_query;
+    return fullQuery;
   }
 
   @SuppressWarnings("unchecked")
@@ -610,7 +609,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     Query luceneQuery;
 
     // construct basic query
-    String full_query = constructMapProjectIdQuery(mapProject.getId(), query);
+    String fullQuery = constructMapProjectIdQuery(mapProject.getId(), query);
 
     // add the query terms specific to findAvailableWork
     // - must be NON_LEGACY PATH
@@ -622,15 +621,15 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
     switch (mapProject.getWorkflowType()) {
       case CONFLICT_PROJECT:
-        full_query += " AND workflowPath:NON_LEGACY_PATH";
-        full_query +=
+        fullQuery += " AND workflowPath:NON_LEGACY_PATH";
+        fullQuery +=
             " AND (assignedUserCount:0 OR "
                 + "(assignedUserCount:1 AND NOT assignedUserNames:"
                 + mapUser.getUserName() + "))";
         break;
       case REVIEW_PROJECT:
-        full_query += " AND workflowPath:REVIEW_PROJECT_PATH";
-        full_query += " AND assignedUserCount:0";
+        fullQuery += " AND workflowPath:REVIEW_PROJECT_PATH";
+        fullQuery += " AND assignedUserCount:0";
         break;
       default:
         throw new Exception("Invalid workflow type specified for project "
@@ -642,7 +641,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         new QueryParser(Version.LUCENE_36, "summary",
             searchFactory.getAnalyzer(TrackingRecordJpa.class));
     try {
-      luceneQuery = queryParser.parse(full_query);
+      luceneQuery = queryParser.parse(fullQuery);
     } catch (ParseException e) {
       throw new LocalException(
           "The specified search terms cannot be parsed.  Please check syntax and try again.");
@@ -715,21 +714,21 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     Query luceneQuery;
 
     // construct basic query
-    String full_query = constructMapProjectIdQuery(mapProject.getId(), query);
+    String fullQuery = constructMapProjectIdQuery(mapProject.getId(), query);
 
     // add the query terms specific to findAvailableConflicts
     // - user and workflowStatus pair of CONFLICT_DETECTED_userName exists
     // - user and workflowStatus pairs of
     // CONFLICT_NEW/CONFLICT_IN_PROGRESS_userName does not exist
-    full_query += " AND userAndWorkflowStatusPairs:CONFLICT_DETECTED_*";
-    full_query +=
+    fullQuery += " AND userAndWorkflowStatusPairs:CONFLICT_DETECTED_*";
+    fullQuery +=
         " AND NOT (userAndWorkflowStatusPairs:CONFLICT_NEW_* OR userAndWorkflowStatusPairs:CONFLICT_IN_PROGRESS_* OR userAndWorkflowStatusPairs:CONFLICT_RESOLVED_*)";
 
     QueryParser queryParser =
         new QueryParser(Version.LUCENE_36, "summary",
             searchFactory.getAnalyzer(TrackingRecordJpa.class));
     try {
-      luceneQuery = queryParser.parse(full_query);
+      luceneQuery = queryParser.parse(fullQuery);
     } catch (ParseException e) {
       throw new LocalException(
           "The specified search terms cannot be parsed.  Please check syntax and try again.");
@@ -796,7 +795,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     Query luceneQuery;
 
     // construct basic query
-    String full_query = "mapProjectId:" + mapProject.getId();
+    String fullQuery = "mapProjectId:" + mapProject.getId();
 
     // add the query terms specific to findAvailableReviewWork
     // - a user (any) and workflowStatus pair of QA_NEEDED_userName
@@ -807,23 +806,23 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     // CONFLICT_NEW/CONFLICT_IN_PROGRESS_userName does not exist
 
     // must have a QA_NEEDED tag with any user
-    full_query += " AND userAndWorkflowStatusPairs:QA_NEEDED_*";
+    fullQuery += " AND userAndWorkflowStatusPairs:QA_NEEDED_*";
 
-    full_query += " AND workflowPath:QA_PATH";
+    fullQuery += " AND workflowPath:QA_PATH";
 
     // there must not be an already claimed review record
-    full_query +=
+    fullQuery +=
         " AND NOT (userAndWorkflowStatusPairs:QA_NEW_*"
             + " OR userAndWorkflowStatusPairs:QA_IN_PROGRESS_*"
             + " OR userAndWorkflowStatusPairs:QA_RESOLVED_*" + ")";
 
-    System.out.println("FindAvailableQAWork query: " + full_query);
+    System.out.println("FindAvailableQAWork query: " + fullQuery);
 
     QueryParser queryParser =
         new QueryParser(Version.LUCENE_36, "summary",
             searchFactory.getAnalyzer(TrackingRecordJpa.class));
     try {
-      luceneQuery = queryParser.parse(full_query);
+      luceneQuery = queryParser.parse(fullQuery);
     } catch (ParseException e) {
       throw new LocalException(
           "The specified search terms cannot be parsed.  Please check syntax and try again.");
@@ -943,7 +942,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     Query luceneQuery;
 
     // construct basic query
-    String full_query = constructMapProjectIdQuery(mapProject.getId(), query);
+    String fullQuery = constructMapProjectIdQuery(mapProject.getId(), query);
 
     // add the query terms specific to findAvailableReviewWork
     // - a user (any) and workflowStatus pair of REVIEW_NEEDED_userName
@@ -954,10 +953,10 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     // CONFLICT_NEW/CONFLICT_IN_PROGRESS_userName does not exist
 
     // must have a REVIEW_NEEDED tag with any user
-    full_query += " AND userAndWorkflowStatusPairs:REVIEW_NEEDED_*";
+    fullQuery += " AND userAndWorkflowStatusPairs:REVIEW_NEEDED_*";
 
     // there must not be an already claimed review record
-    full_query +=
+    fullQuery +=
         " AND NOT (userAndWorkflowStatusPairs:REVIEW_NEW_*"
             + " OR userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_*"
             + " OR userAndWorkflowStatusPairs:REVIEW_RESOLVED_*" + ")";
@@ -966,7 +965,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         new QueryParser(Version.LUCENE_36, "summary",
             searchFactory.getAnalyzer(TrackingRecordJpa.class));
     try {
-      luceneQuery = queryParser.parse(full_query);
+      luceneQuery = queryParser.parse(fullQuery);
     } catch (ParseException e) {
       throw new LocalException(
           "The specified search terms cannot be parsed.  Please check syntax and try again.");
@@ -1035,7 +1034,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     Query luceneQuery;
 
     // construct basic query
-    String full_query = constructMapProjectIdQuery(mapProject.getId(), query);
+    String fullQuery = constructMapProjectIdQuery(mapProject.getId(), query);
 
     // add the query terms specific to findAssignedWork
     // - user and workflowStatus must exist in a pair of form:
@@ -1048,16 +1047,16 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     // add terms based on query restriction
     switch (localPfsParameter.getQueryRestriction()) {
       case "NEW":
-        full_query +=
+        fullQuery +=
             " AND userAndWorkflowStatusPairs:NEW_" + mapUser.getUserName();
         break;
       case "EDITING_IN_PROGRESS":
-        full_query +=
+        fullQuery +=
             " AND userAndWorkflowStatusPairs:EDITING_IN_PROGRESS_"
                 + mapUser.getUserName();
         break;
       case "EDITING_DONE":
-        full_query +=
+        fullQuery +=
             " AND (userAndWorkflowStatusPairs:EDITING_DONE_"
                 + mapUser.getUserName()
                 + " OR userAndWorkflowStatusPairs:CONFLICT_DETECTED_"
@@ -1067,7 +1066,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
         break;
       default:
-        full_query +=
+        fullQuery +=
             " AND (userAndWorkflowStatusPairs:NEW_" + mapUser.getUserName()
                 + " OR userAndWorkflowStatusPairs:EDITING_IN_PROGRESS_"
                 + mapUser.getUserName()
@@ -1081,7 +1080,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     }
 
     // add terms to exclude concepts that a lead has claimed
-    full_query +=
+    fullQuery +=
         " AND NOT (userAndWorkflowStatusPairs:CONFLICT_NEW_*"
             + " OR userAndWorkflowStatusPairs:CONFLICT_IN_PROGRESS_*"
             + " OR userAndWorkflowStatusPairs:CONFLICT_RESOLVED_*"
@@ -1089,13 +1088,11 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
             + " OR userAndWorkflowStatusPairs:REVIEW_NEEDED_*"
             + " OR userAndWorkflowStatusPairs:REVIEW_RESOLVED_*)";
 
-    // System.out.println("FindAssignedWork query: " + full_query);
-
     QueryParser queryParser =
         new QueryParser(Version.LUCENE_36, "summary",
             searchFactory.getAnalyzer(TrackingRecordJpa.class));
     try {
-      luceneQuery = queryParser.parse(full_query);
+      luceneQuery = queryParser.parse(fullQuery);
     } catch (ParseException e) {
       throw new LocalException(
           "The specified search terms cannot be parsed.  Please check syntax and try again.");
@@ -1243,7 +1240,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     Query luceneQuery;
 
     // construct basic query
-    String full_query = constructMapProjectIdQuery(mapProject.getId(), query);
+    String fullQuery = constructMapProjectIdQuery(mapProject.getId(), query);
 
     // add the query terms specific to findAssignedConflicts
     // - workflow status CONFLICT_NEW or CONFLICT_IN_PROGRESS with this user
@@ -1252,22 +1249,22 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     // add terms based on query restriction
     switch (localPfsParameter.getQueryRestriction()) {
       case "CONFLICT_NEW":
-        full_query +=
+        fullQuery +=
             " AND userAndWorkflowStatusPairs:CONFLICT_NEW_"
                 + mapUser.getUserName();
         break;
       case "CONFLICT_IN_PROGRESS":
-        full_query +=
+        fullQuery +=
             " AND userAndWorkflowStatusPairs:CONFLICT_IN_PROGRESS_"
                 + mapUser.getUserName();
         break;
       case "CONFLICT_RESOLVED":
-        full_query +=
+        fullQuery +=
             " AND userAndWorkflowStatusPairs:CONFLICT_RESOLVED_"
                 + mapUser.getUserName();
         break;
       default:
-        full_query +=
+        fullQuery +=
             " AND (userAndWorkflowStatusPairs:CONFLICT_NEW_"
                 + mapUser.getUserName()
                 + " OR userAndWorkflowStatusPairs:CONFLICT_IN_PROGRESS_"
@@ -1276,13 +1273,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
                 + mapUser.getUserName() + ")";
         break;
     }
-    // System.out.println("FindAssignedConflict query: " + full_query);
 
     QueryParser queryParser =
         new QueryParser(Version.LUCENE_36, "summary",
             searchFactory.getAnalyzer(TrackingRecordJpa.class));
     try {
-      luceneQuery = queryParser.parse(full_query);
+      luceneQuery = queryParser.parse(fullQuery);
     } catch (ParseException e) {
       throw new LocalException(
           "The specified search terms cannot be parsed.  Please check syntax and try again.");
@@ -1393,7 +1389,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     Query luceneQuery;
 
     // construct basic query
-    String full_query = constructMapProjectIdQuery(mapProject.getId(), query);
+    String fullQuery = constructMapProjectIdQuery(mapProject.getId(), query);
 
     // add the query terms specific to findAssignedReviewWork
     // - user and workflow status must exist in the form REVIEW_NEW_userName
@@ -1402,23 +1398,23 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     // add terms based on query restriction
     switch (localPfsParameter.getQueryRestriction()) {
       case "REVIEW_NEW":
-        full_query +=
+        fullQuery +=
             " AND userAndWorkflowStatusPairs:REVIEW_NEW_"
                 + mapUser.getUserName();
 
         break;
       case "REVIEW_IN_PROGRESS":
-        full_query +=
+        fullQuery +=
             " AND userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_"
                 + mapUser.getUserName();
         break;
       case "REVIEW_RESOLVED":
-        full_query +=
+        fullQuery +=
             " AND userAndWorkflowStatusPairs:REVIEW_RESOLVED_"
                 + mapUser.getUserName();
         break;
       default:
-        full_query +=
+        fullQuery +=
             " AND (userAndWorkflowStatusPairs:REVIEW_NEW_"
                 + mapUser.getUserName()
                 + " OR userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_"
@@ -1428,13 +1424,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         break;
     }
 
-    // System.out.println("FindAssignedReviewWork query: " + full_query);
 
     QueryParser queryParser =
         new QueryParser(Version.LUCENE_36, "summary",
             searchFactory.getAnalyzer(TrackingRecordJpa.class));
     try {
-      luceneQuery = queryParser.parse(full_query);
+      luceneQuery = queryParser.parse(fullQuery);
     } catch (ParseException e) {
       throw new LocalException(
           "The specified search terms cannot be parsed.  Please check syntax and try again.");
@@ -1538,7 +1533,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     Query luceneQuery;
 
     // construct basic query
-    String full_query = "mapProjectId:" + mapProject.getId();
+    String fullQuery = "mapProjectId:" + mapProject.getId();
 
     // add the query terms specific to findAssignedReviewWork
     // - user and workflow status must exist in the form QA_NEW_userName
@@ -1547,22 +1542,22 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     // add terms based on query restriction
     switch (localPfsParameter.getQueryRestriction()) {
       case "QA_NEW":
-        full_query +=
+        fullQuery +=
             " AND userAndWorkflowStatusPairs:QA_NEW_" + mapUser.getUserName();
 
         break;
       case "QA_IN_PROGRESS":
-        full_query +=
+        fullQuery +=
             " AND userAndWorkflowStatusPairs:QA_IN_PROGRESS_"
                 + mapUser.getUserName();
         break;
       case "QA_RESOLVED":
-        full_query +=
+        fullQuery +=
             " AND userAndWorkflowStatusPairs:QA_RESOLVED_"
                 + mapUser.getUserName();
         break;
       default:
-        full_query +=
+        fullQuery +=
             " AND (userAndWorkflowStatusPairs:QA_NEW_" + mapUser.getUserName()
                 + " OR userAndWorkflowStatusPairs:QA_IN_PROGRESS_"
                 + mapUser.getUserName()
@@ -1572,15 +1567,13 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     }
 
     // don't get path
-    full_query += " AND workflowPath:QA_PATH";
-
-    // System.out.println("FindAssignedReviewWork query: " + full_query);
+    fullQuery += " AND workflowPath:QA_PATH";
 
     QueryParser queryParser =
         new QueryParser(Version.LUCENE_36, "summary",
             searchFactory.getAnalyzer(TrackingRecordJpa.class));
     try {
-      luceneQuery = queryParser.parse(full_query);
+      luceneQuery = queryParser.parse(fullQuery);
     } catch (ParseException e) {
       throw new LocalException(
           "The specified search terms cannot be parsed.  Please check syntax and try again.");
@@ -2729,8 +2722,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
   @Override
   public List<String> computeWorkflowStatusErrors(MapProject mapProject)
     throws Exception {
-    
-    List<String> results = new ArrayList<String>();
+
+    List<String> results = new ArrayList<>();
 
     // instantiate the mapping service
     MappingService mappingService = new MappingServiceJpa();
@@ -2754,43 +2747,47 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
     // construct a set of terminology ids for which a tracking record exists
     Set<String> terminologyIdsWithTrackingRecord = new HashSet<>();
-    
+
     for (TrackingRecord trackingRecord : trackingRecords.getTrackingRecords()) {
-      
+
       terminologyIdsWithTrackingRecord.add(trackingRecord.getTerminologyId());
 
-    // instantiate the handler based on tracking record workflow type
-       AbstractWorkflowPathHandler handler = null;
-       switch (trackingRecord.getWorkflowPath()) {
-         case CONSENSUS_PATH:
-           break;
-         case DRIP_FEED_REVIEW_PATH:
-           break;
-         case FIX_ERROR_PATH:
-           handler = fixErrorHandler;
-           break;
-         case LEGACY_PATH:
-           break;
-         case NON_LEGACY_PATH:
-           handler = nonLegacyHandler;
-           break;
-         case QA_PATH:
-           handler = qaHandler;
-           break;
-         case REVIEW_PROJECT_PATH:
-           handler = reviewHandler;
-           break;
-         default:
-           results.add("ERROR: Could not determine workflow handler from tracking record for concept " + trackingRecord.getTerminologyId() + " for path: "
-                   + trackingRecord.getWorkflowPath().toString());
-       }
+      // instantiate the handler based on tracking record workflow type
+      AbstractWorkflowPathHandler handler = null;
+      switch (trackingRecord.getWorkflowPath()) {
+        case CONSENSUS_PATH:
+          break;
+        case DRIP_FEED_REVIEW_PATH:
+          break;
+        case FIX_ERROR_PATH:
+          handler = fixErrorHandler;
+          break;
+        case LEGACY_PATH:
+          break;
+        case NON_LEGACY_PATH:
+          handler = nonLegacyHandler;
+          break;
+        case QA_PATH:
+          handler = qaHandler;
+          break;
+        case REVIEW_PROJECT_PATH:
+          handler = reviewHandler;
+          break;
+        default:
+          results
+              .add("ERROR: Could not determine workflow handler from tracking record for concept "
+                  + trackingRecord.getTerminologyId()
+                  + " for path: "
+                  + trackingRecord.getWorkflowPath().toString());
+      }
 
-       ValidationResult result =
-           handler.validateTrackingRecord(trackingRecord);
-       
-       if (!result.isValid()) {
-         results.add(constructErrorMessageStringForTrackingRecordAndValidationResult(trackingRecord, result));
-       }
+      ValidationResult result = handler.validateTrackingRecord(trackingRecord);
+
+      if (!result.isValid()) {
+        results
+            .add(constructErrorMessageStringForTrackingRecordAndValidationResult(
+                trackingRecord, result));
+      }
     }
     Logger.getLogger(WorkflowServiceJpa.class).info(
         "  Checking map records for " + mapProject.getId() + ", "
@@ -3061,17 +3058,17 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
       modifiedQuery = query;
 
     // construct basic query
-    String full_query =
+    String fullQuery =
         constructMapProjectIdQuery(mapProject.getId(), modifiedQuery);
 
-    full_query +=
+    fullQuery +=
         " AND terminology:" + mapProject.getSourceTerminology()
             + " AND terminologyVersion:"
             + mapProject.getSourceTerminologyVersion() + " AND "
             + "( feedbacks.sender.userName:" + userName + " OR "
             + "feedbacks.recipients.userName:" + userName + ")";
 
-    Logger.getLogger(MappingServiceJpa.class).info(full_query);
+    Logger.getLogger(MappingServiceJpa.class).info(fullQuery);
 
     FullTextEntityManager fullTextEntityManager =
         Search.getFullTextEntityManager(manager);
@@ -3085,7 +3082,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         new QueryParser(Version.LUCENE_36, "summary",
             searchFactory.getAnalyzer(FeedbackConversationJpa.class));
     try {
-      luceneQuery = queryParser.parse(full_query);
+      luceneQuery = queryParser.parse(fullQuery);
     } catch (ParseException e) {
       throw new LocalException(
           "The specified search terms cannot be parsed.  Please check syntax and try again.");
@@ -3238,16 +3235,13 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     return feedbackList;
   }
 
-
   private String constructErrorMessageStringForTrackingRecordAndValidationResult(
-    TrackingRecord trackingRecord,
-    ValidationResult result) throws Exception {
+    TrackingRecord trackingRecord, ValidationResult result) throws Exception {
 
     StringBuffer message = new StringBuffer();
 
-    message.append("ERROR for Concept "
-        + trackingRecord.getTerminologyId() + ", Path "
-        + trackingRecord.getWorkflowPath().toString() + "\n");
+    message.append("ERROR for Concept " + trackingRecord.getTerminologyId()
+        + ", Path " + trackingRecord.getWorkflowPath().toString() + "\n");
 
     // record information
     message.append("  Records involved:\n");

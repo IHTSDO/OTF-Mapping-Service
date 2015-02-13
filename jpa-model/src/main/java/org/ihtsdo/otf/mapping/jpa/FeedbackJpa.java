@@ -309,8 +309,10 @@ public class FeedbackJpa implements Feedback {
   public void removeViewedBy(MapUser user) {
     viewedBy.remove(user);
   }
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override

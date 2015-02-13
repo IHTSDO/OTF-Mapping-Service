@@ -8,11 +8,11 @@ import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapRecordListJpa;
-import org.ihtsdo.otf.mapping.helpers.WorkflowPathState;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
+import org.ihtsdo.otf.mapping.helpers.WorkflowPathState;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatusCombination;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
@@ -132,7 +132,7 @@ public abstract class AbstractWorkflowPathHandler implements
 
       // check for empty (allowed) combination
       if (workflowCombination.isEmpty()) {
-        if (emptyWorkflowAllowed == false) {
+        if (!emptyWorkflowAllowed) {
           result
               .addError("Empty workflow combination not allowed for this workflow path");
         }
