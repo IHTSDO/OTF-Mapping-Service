@@ -70,7 +70,8 @@ public class MetadataServiceDegenerateUseTest {
   }
 
   /**
-   * Test degenerate use of getting all metadata from {@link MetadataServiceRest}.
+   * Test degenerate use of getting all metadata from
+   * {@link MetadataServiceRest}.
    *
    * @throws Exception the exception
    */

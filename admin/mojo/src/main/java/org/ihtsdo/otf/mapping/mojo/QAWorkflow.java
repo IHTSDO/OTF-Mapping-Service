@@ -102,10 +102,11 @@ public class QAWorkflow extends AbstractMojo {
       getLog().info(message);
 
       // try to send the email
-      if (sendNotification == true && errors.size() > 0) {
-        
-        getLog().info("Errors detected and email notification requested, sending email");
-        
+      if (sendNotification && errors.size() > 0) {
+
+        getLog().info(
+            "Errors detected and email notification requested, sending email");
+
         Properties config;
         try {
           config = ConfigUtility.getConfigProperties();
@@ -121,13 +122,11 @@ public class QAWorkflow extends AbstractMojo {
         emailHandler.sendSimpleEmail(notificationRecipients,
             "OTF Mapping Tool:  Workflow Errors Detected", message.toString());
 
-
-       
       }
-      
+
       mappingService.close();
       workflowService.close();
-      
+
       getLog().info("Done ...");
     } catch (Exception e) {
       e.printStackTrace();

@@ -23,10 +23,10 @@ import org.openqa.selenium.support.ui.WebDriverWait;
  */
 public class LoginTest {
 
-  /**  The web driver. */
+  /** The web driver. */
   static WebDriver webDriver;
 
-  /**  The config. */
+  /** The config. */
   private static Properties config;
 
   /**
@@ -106,8 +106,8 @@ public class LoginTest {
         .matches(".*(.*)*"));
 
     Logger.getLogger(LoginTest.class).info("  Success!");
-    
-    // TODO:  Add logout
+
+    // TODO: Add logout
   }
 
   /**
@@ -125,7 +125,8 @@ public class LoginTest {
     webDriver.get(config.getProperty("selenium.url"));
 
     // fill in the user name from created valid user
-    webDriver.findElement(By.id("userField")).sendKeys(config.getProperty("selenium.user.valid.name"));
+    webDriver.findElement(By.id("userField")).sendKeys(
+        config.getProperty("selenium.user.valid.name"));
 
     // fill in the password from config file
     webDriver.findElement(By.id("passwordField")).sendKeys(
@@ -149,8 +150,8 @@ public class LoginTest {
     assertTrue(webDriver.findElement(By.id("userAndRole")).getText()
         .matches(".*(.*)*"));
     Logger.getLogger(LoginTest.class).info("  Success!");
-    
-    // TODO:  Also logout
+
+    // TODO: Also logout
 
   }
 
@@ -171,8 +172,7 @@ public class LoginTest {
         config.getProperty("selenium.user.invalid.name"));
 
     // fill in the password from config file
-    webDriver.findElement(By.id("passwordField")).sendKeys(
-        "invalid_password");
+    webDriver.findElement(By.id("passwordField")).sendKeys("invalid_password");
 
     // login
     webDriver.findElement(By.id("userLoginButton")).click();

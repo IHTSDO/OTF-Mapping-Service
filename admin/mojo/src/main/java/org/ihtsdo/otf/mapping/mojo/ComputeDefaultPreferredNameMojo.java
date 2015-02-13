@@ -30,7 +30,7 @@ public class ComputeDefaultPreferredNameMojo extends AbstractMojo {
    * @required
    */
   private String terminology;
-  
+
   /**
    * The terminology version.
    * 
@@ -83,22 +83,22 @@ public class ComputeDefaultPreferredNameMojo extends AbstractMojo {
     ContentService contentService = new ContentServiceJpa();
     contentService.setTransactionPerOperation(false);
     contentService.beginTransaction();
-    
+
     // Setup vars
     int dpnNotFoundCt = 0;
     int dpnFoundCt = 0;
     int dpnSkippedCt = 0;
     int objectCt = 0;
-    
+
     ConceptList concepts =
         contentService.getAllConcepts(terminology, terminologyVersion);
     contentService.clear();
-    
+
     // Iterate over concepts
     for (Concept concept2 : concepts.getConcepts()) {
 
       Concept concept = contentService.getConcept(concept2.getId());
-      
+
       // Skip if inactive
       if (!concept.isActive()) {
         dpnSkippedCt++;
@@ -123,7 +123,7 @@ public class ComputeDefaultPreferredNameMojo extends AbstractMojo {
                 && language.isActive()
                 && language.getAcceptabilityId().equals(dpnAcceptabilityId)) {
               // print warning for multiple names found
-              if (dpnFound == true) {
+              if (dpnFound) {
                 getLog().warn(
                     "Multiple default preferred names found for concept "
                         + concept.getTerminologyId());
@@ -154,7 +154,7 @@ public class ComputeDefaultPreferredNameMojo extends AbstractMojo {
       } else {
         dpnFoundCt++;
       }
-      
+
       // periodically comit
       if (++objectCt % 5000 == 0) {
         getLog().info("    count = " + objectCt);

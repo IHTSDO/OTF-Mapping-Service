@@ -34,8 +34,7 @@ public class MapRecordComplexMapLoaderMojo extends AbstractMojo {
    */
   @Override
   public void execute() throws MojoExecutionException {
-    getLog().info(
-        "Starting generating map records from complex map records");
+    getLog().info("Starting generating map records from complex map records");
     getLog().info("  refsetId = " + refsetId);
 
     try {

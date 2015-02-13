@@ -41,28 +41,28 @@ import org.junit.Test;
  */
 public class WorkflowPathStatesNonLegacyPathTest {
 
-  /**  The handler. */
+  /** The handler. */
   private static WorkflowNonLegacyPathHandler handler;
 
-  /**  The content service. */
+  /** The content service. */
   private static ContentService contentService;
 
-  /**  The mapping service. */
+  /** The mapping service. */
   private static MappingService mappingService;
 
-  /**  The workflow service. */
+  /** The workflow service. */
   private static WorkflowService workflowService;
 
-  /**  The tracking record. */
+  /** The tracking record. */
   private static TrackingRecord trackingRecord;
 
-  /**  The lead. */
+  /** The lead. */
   private static MapUser specialist, specialist2, lead;
 
-  /**  The map project. */
+  /** The map project. */
   private static MapProject mapProject;
 
-  /**  The concept. */
+  /** The concept. */
   private static Concept concept;
 
   /**
@@ -307,7 +307,7 @@ public class WorkflowPathStatesNonLegacyPathTest {
   }
 
   /**
-   *  Construct and return a map record for a user and status.
+   * Construct and return a map record for a user and status.
    *
    * @param user the user
    * @param status the status
@@ -328,7 +328,7 @@ public class WorkflowPathStatesNonLegacyPathTest {
   }
 
   /**
-   *  Computes the tracking record based on map records.
+   * Computes the tracking record based on map records.
    *
    * @param combination the combination
    * @throws Exception the exception

@@ -58,6 +58,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
    * @required
    */
   private String inputDir;
+
   /**
    * Name of terminology to be loaded.
    * @parameter
@@ -167,11 +168,9 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
       if (prop != null) {
         dpnrefsetId = Long.valueOf(prop);
       }
-      prop = config
-          .getProperty("loader.defaultPreferredNames.acceptabilityId");
+      prop = config.getProperty("loader.defaultPreferredNames.acceptabilityId");
       if (prop != null) {
-      dpnAcceptabilityId =
-          Long.valueOf(prop);
+        dpnAcceptabilityId = Long.valueOf(prop);
       }
 
       //
@@ -738,8 +737,6 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     getLog().info(
         "    Refset/Metadata dir = " + coreMetadataInputDir.toString() + " "
             + coreMetadataInputDir.exists());
-
-    // TODO: load metadata files
 
     // Initialize files
     File conceptsByConceptFile =

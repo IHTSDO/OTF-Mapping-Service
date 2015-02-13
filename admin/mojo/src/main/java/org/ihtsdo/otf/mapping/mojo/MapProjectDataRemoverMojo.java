@@ -119,7 +119,7 @@ public class MapProjectDataRemoverMojo extends AbstractMojo {
         getLog().info("  Remove report definition - " + def.getName());
         reportService.removeReportDefinition(def.getId());
       }
-      
+
       // Remove qa check definitions
       for (ReportDefinition def : reportService.getQACheckDefinitions()
           .getReportDefinitions()) {

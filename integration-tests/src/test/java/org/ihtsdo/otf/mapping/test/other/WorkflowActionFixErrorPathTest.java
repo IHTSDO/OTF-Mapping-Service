@@ -39,36 +39,37 @@ import org.junit.Test;
 public class WorkflowActionFixErrorPathTest {
 
   // the content
-  /**  The concept. */
+  /** The concept. */
   private static Concept concept;
 
   // the mapping objects
-  /**  The loader. */
+  /** The loader. */
   private static MapUser viewer, specialist, lead, loader;
 
-  /**  The lead record. */
+  /** The lead record. */
   private static MapRecord revisionRecord, specRecord, leadRecord;
 
-  /**  The map project. */
+  /** The map project. */
   private static MapProject mapProject;
 
   // the tracking record
-  /**  The tracking record. */
+  /** The tracking record. */
   private static TrackingRecord trackingRecord;
 
   // the services
-  /**  The content service. */
+  /** The content service. */
   private static ContentService contentService;
 
-  /**  The mapping service. */
+  /** The mapping service. */
   private static MappingService mappingService;
 
-  /**  The workflow service. */
+  /** The workflow service. */
   private static WorkflowService workflowService;
 
   // the workflow handler
-  /**  The handler. */
+  /** The handler. */
   private static WorkflowFixErrorPathHandler handler;
+
   /**
    * Inits the.
    *
@@ -132,7 +133,7 @@ public class WorkflowActionFixErrorPathTest {
     lead.setName("Lead");
     lead.setUserName("lead");
     mappingService.addMapUser(lead);
-    
+
     // instantiate and add the loader user, used for REVISION records
     loader = new MapUserJpa();
     loader.setApplicationRole(MapUserRole.VIEWER);
@@ -187,7 +188,7 @@ public class WorkflowActionFixErrorPathTest {
       // create revision and specialist record
       revisionRecord = createRecord(loader, WorkflowStatus.REVISION);
       mappingService.addMapRecord(revisionRecord);
-      
+
       specRecord = createRecord(specialist, status);
       mappingService.addMapRecord(specRecord);
 
@@ -319,10 +320,9 @@ public class WorkflowActionFixErrorPathTest {
     // create revision and specialist record
     revisionRecord = createRecord(loader, WorkflowStatus.REVISION);
     mappingService.addMapRecord(revisionRecord);
-    
+
     specRecord = createRecord(specialist, WorkflowStatus.REVIEW_NEEDED);
     mappingService.addMapRecord(specRecord);
-
 
     // compute workflow
     getTrackingRecord();
@@ -455,10 +455,10 @@ public class WorkflowActionFixErrorPathTest {
       // create revision, specialist, and lead record
       revisionRecord = createRecord(loader, WorkflowStatus.REVISION);
       mappingService.addMapRecord(revisionRecord);
-      
+
       specRecord = createRecord(specialist, WorkflowStatus.REVIEW_NEEDED);
       mappingService.addMapRecord(specRecord);
-      
+
       leadRecord = createRecord(lead, status);
       mappingService.addMapRecord(leadRecord);
 
@@ -591,10 +591,10 @@ public class WorkflowActionFixErrorPathTest {
     // create revision, specialist, and lead record
     revisionRecord = createRecord(loader, WorkflowStatus.REVISION);
     mappingService.addMapRecord(revisionRecord);
-    
+
     specRecord = createRecord(specialist, WorkflowStatus.REVIEW_NEEDED);
     mappingService.addMapRecord(specRecord);
-    
+
     leadRecord = createRecord(lead, WorkflowStatus.REVIEW_RESOLVED);
     mappingService.addMapRecord(leadRecord);
 

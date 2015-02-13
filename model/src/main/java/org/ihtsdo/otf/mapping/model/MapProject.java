@@ -124,7 +124,7 @@ public interface MapProject {
    * @return the editing cycle begin date
    */
   public Date getEditingCycleBeginDate();
-  
+
   /**
    * Sets the editing cycle begin date.
    *
@@ -138,7 +138,7 @@ public interface MapProject {
    * @return the latest publication date
    */
   public Date getLatestPublicationDate();
-  
+
   /**
    * Sets the latest publication date.
    *
@@ -146,7 +146,6 @@ public interface MapProject {
    */
   public void setLatestPublicationDate(Date latestPublicationDate);
 
-  
   /**
    * Returns the set of allowable map advices.
    * 
@@ -230,8 +229,6 @@ public interface MapProject {
    * @param mapLead the map lead
    */
   public void removeMapLead(MapUser mapLead);
-
-
 
   /**
    * Returns the map specialists.
@@ -603,9 +600,9 @@ public interface MapProject {
   public void setPropagatedFlag(boolean propagatedFlag);
 
   /**
-   * Returns the report definitions.  NOTE: this also includes the QA Check
-   * definitions associated with this project.  They can be differentiated
-   * via the "isQaCheck" method.
+   * Returns the report definitions. NOTE: this also includes the QA Check
+   * definitions associated with this project. They can be differentiated via
+   * the "isQaCheck" method.
    *
    * @return the report definitions
    */

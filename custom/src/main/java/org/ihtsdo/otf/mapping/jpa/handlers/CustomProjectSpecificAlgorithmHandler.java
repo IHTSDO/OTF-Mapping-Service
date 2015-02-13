@@ -31,11 +31,9 @@ import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
-// TODO: Auto-generated Javadoc
 /**
- * The {@link ProjectSpecificAlgorithmHandler} for a custom project.
+ * Sample {@link ProjectSpecificAlgorithmHandler} for a custom project.
  *
- * @author ${author}
  */
 public class CustomProjectSpecificAlgorithmHandler extends
     DefaultProjectSpecificAlgorithmHandler {

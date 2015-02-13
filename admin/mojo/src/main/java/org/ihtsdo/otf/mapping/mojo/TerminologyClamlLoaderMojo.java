@@ -78,7 +78,6 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
    */
   String version;
 
-
   // NOTE: default visibility is used instead of private
   // so that the inner class parser does not require
   // the use of synthetic accessors
