@@ -21,7 +21,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 /**
  * Selenium login test class.
  */
-public class LoginTest {
+public class GeneralDegenerateUseTest {
 
   /** The web driver. */
   static WebDriver webDriver;
@@ -30,12 +30,12 @@ public class LoginTest {
   private static Properties config;
 
   /**
-   * Inits the.
+   * Sets up the class.
    *
    * @throws Exception the exception
    */
   @BeforeClass
-  public static void init() throws Exception {
+  public static void setupClass() throws Exception {
 
     // get the config properties
     config = ConfigUtility.getConfigProperties();
@@ -64,105 +64,26 @@ public class LoginTest {
   }
 
   /**
-   * Cleanup.
-   *
+   * Teardown for class
    * @throws Exception the exception
    */
   @AfterClass
-  public static void cleanup() throws Exception {
+  public static void teardownClass() throws Exception {
 
     if (webDriver != null) {
       webDriver.quit();
     }
   }
 
-  /**
-   * Guest login test.
-   *
-   * @throws Exception the exception
-   */
-  @SuppressWarnings("static-method")
-  @Test
-  public void guestLoginTest() throws Exception {
-    Logger.getLogger(LoginTest.class).info("Testing guest login...");
-    // Open website
-    webDriver.get(config.getProperty("selenium.url"));
-
-    // Find the Guest login button and click it
-    webDriver.findElement(By.id("guestLoginButton")).click();
-
-    // Find the header content and test once injection is complete
-    (new WebDriverWait(webDriver, new Long(
-        config.getProperty("selenium.timeout")) / 1000))
-        .until(new ExpectedCondition<Boolean>() {
-          @Override
-          public Boolean apply(WebDriver d) {
-            return webDriver.findElement(By.id("userAndRole")).getText()
-                .length() > 0;
-          }
-        });
-
-    assertTrue(webDriver.findElement(By.id("userAndRole")).getText()
-        .matches(".*(.*)*"));
-
-    Logger.getLogger(LoginTest.class).info("  Success!");
-
-    // TODO: Add logout
-  }
-
-  /**
-   * User valid login test.
-   *
-   * @throws Exception the exception
-   */
-  @SuppressWarnings("static-method")
-  @Test
-  public void userValidLoginTest() throws Exception {
-
-    Logger.getLogger(LoginTest.class).info("Testing valid user login...");
-
-    // Open website
-    webDriver.get(config.getProperty("selenium.url"));
-
-    // fill in the user name from created valid user
-    webDriver.findElement(By.id("userField")).sendKeys(
-        config.getProperty("selenium.user.valid.name"));
-
-    // fill in the password from config file
-    webDriver.findElement(By.id("passwordField")).sendKeys(
-        config.getProperty("selenium.user.valid.password"));
-
-    // login
-    webDriver.findElement(By.id("userLoginButton")).click();
-
-    // Find the header content and test once injection is complete
-    (new WebDriverWait(webDriver, new Long(
-        config.getProperty("selenium.timeout")) / 1000))
-        .until(new ExpectedCondition<Boolean>() {
-          @Override
-          public Boolean apply(WebDriver d) {
-            return webDriver.findElement(By.id("userAndRole")).getText()
-                .length() > 0;
-          }
-        });
-
-    // verify that string matches pattern Text (Text)
-    assertTrue(webDriver.findElement(By.id("userAndRole")).getText()
-        .matches(".*(.*)*"));
-    Logger.getLogger(LoginTest.class).info("  Success!");
-
-    // TODO: Also logout
-
-  }
 
   /**
    * User invalid login test.
    */
   @SuppressWarnings("static-method")
   @Test
-  public void userInvalidLoginTest() {
+  public void testDegenerateUseGuiGeneral001() {
 
-    Logger.getLogger(LoginTest.class).info("Testing invalid user login...");
+    Logger.getLogger(GeneralDegenerateUseTest.class).info("Testing invalid user login...");
 
     // Open website
     webDriver.get(config.getProperty("selenium.url"));
@@ -190,6 +111,7 @@ public class LoginTest {
 
     // verify that string matches pattern Text (Text)
     assertTrue(webDriver.findElement(By.id("globalError")).getText().length() > 0);
-    Logger.getLogger(LoginTest.class).info("  Success!");
+
+    Logger.getLogger(GeneralDegenerateUseTest.class).info("  PASS");
   }
 }
