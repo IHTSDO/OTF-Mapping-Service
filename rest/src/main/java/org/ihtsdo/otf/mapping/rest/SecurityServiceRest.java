@@ -19,7 +19,7 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
 /**
- * Security service for authentication.
+ * REST implementation for security service.
  */
 @Path("/security")
 @Api(value = "/security", description = "Operations supporting application authentication and authorization.")
@@ -80,8 +80,7 @@ public class SecurityServiceRest extends RootServiceRest {
     @ApiParam(value = "Username", required = true) @PathParam("userName") String userName) {
 
     Logger.getLogger(SecurityServiceRest.class).info(
-        "RESTful call (Logout) : /logout/user/id/"
-            + userName);
+        "RESTful call (Logout) : /logout/user/id/" + userName);
     try {
       SecurityService securityService = new SecurityServiceJpa();
       securityService.logout(userName);

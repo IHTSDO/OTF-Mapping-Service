@@ -57,7 +57,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
   private boolean qaTrueRuleInGroup = false;
 
   /**
-   *  The parser.
+   * The parser.
    *
    * @param mapRecord the map record
    * @return the validation result
@@ -173,7 +173,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       // if a relation is already set, and is allowable for null target,
       // keep it
       if (mapEntry.getMapRelation() != null
-          && mapEntry.getMapRelation().isAllowableForNullTarget() == true)
+          && mapEntry.getMapRelation().isAllowableForNullTarget())
         return mapEntry.getMapRelation();
       else {
         // retrieve the not classifiable relation
@@ -713,8 +713,12 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.jpa.handlers.DefaultProjectSpecificAlgorithmHandler#getDefaultUpPropagatedMapRelation()
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.jpa.handlers.DefaultProjectSpecificAlgorithmHandler
+   * #getDefaultUpPropagatedMapRelation()
    */
   @Override
   public MapRelation getDefaultUpPropagatedMapRelation() throws Exception {

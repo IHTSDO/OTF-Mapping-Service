@@ -39,37 +39,36 @@ import org.junit.Test;
 public class WorkflowActionQaPathTest {
 
   // the content
-  /**  The concept. */
+  /** The concept. */
   private static Concept concept;
 
   // the mapping objects
-  /**  The loader. */
+  /** The loader. */
   private static MapUser viewer, specialist, loader;
 
-  /**  The loader record. */
+  /** The loader record. */
   private static MapRecord revisionRecord, specRecord, loaderRecord;
 
-  /**  The map project. */
+  /** The map project. */
   private static MapProject mapProject;
 
   // the tracking record
-  /**  The tracking record. */
+  /** The tracking record. */
   private static TrackingRecord trackingRecord;
 
   // the services
-  /**  The content service. */
+  /** The content service. */
   private static ContentService contentService;
 
-  /**  The mapping service. */
+  /** The mapping service. */
   private static MappingService mappingService;
 
-  /**  The workflow service. */
+  /** The workflow service. */
   private static WorkflowService workflowService;
 
   // the workflow handler
-  /**  The handler. */
+  /** The handler. */
   private static WorkflowQaPathHandler handler;
-
 
   /**
    * Inits the.
@@ -88,7 +87,7 @@ public class WorkflowActionQaPathTest {
 
     // instantiate the workflow handler
     handler = new WorkflowQaPathHandler();
-    
+
     System.out.println(handler.getWorkflowStatusCombinations());
 
     // ensure database is clean
@@ -221,7 +220,7 @@ public class WorkflowActionQaPathTest {
 
       }
     }
-    
+
     // Test: Loader
     result = testAllActionsForUser(loader);
 
@@ -295,7 +294,6 @@ public class WorkflowActionQaPathTest {
     }
 
   }
-
 
   /**
    * Test editing state.

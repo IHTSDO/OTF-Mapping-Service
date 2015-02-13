@@ -12,7 +12,6 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa;
 import org.ihtsdo.otf.mapping.model.FeedbackConversation;
 
-
 /**
  * JAXB enabled implementation of {@link FeedbackConversationList}.
  */

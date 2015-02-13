@@ -2101,7 +2101,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         "    Log into the application to see the report results");
 
     // commit the report
-    // TODO: need a way to override the errors if we want to proceed with a
+    // TODO: may need a way to override the errors if we want to proceed with a
     // release anyway
     if (errorFlag) {
       mappingService.rollback();

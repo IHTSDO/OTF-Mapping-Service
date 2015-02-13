@@ -423,7 +423,7 @@ public class MetadataServiceJpa extends RootServiceJpa implements
     return version;
 
   }
-  
+
   /**
    * Returns the previous version.
    *
@@ -434,12 +434,12 @@ public class MetadataServiceJpa extends RootServiceJpa implements
   @Override
   public String getPreviousVersion(String terminology) throws Exception {
     List<String> versions = getVersions(terminology);
-    if (versions.size()<2) {
+    if (versions.size() < 2) {
       return null;
     }
-    return versions.get(versions.size()-2);
+    return versions.get(versions.size() - 2);
   }
-  
+
   /*
    * (non-Javadoc)
    * 
@@ -464,7 +464,7 @@ public class MetadataServiceJpa extends RootServiceJpa implements
     return resultMap;
 
   }
-  
+
   @Override
   public void initializeFieldNames() throws Exception {
     // no need

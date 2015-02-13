@@ -270,6 +270,8 @@ public interface ReportService extends RootService {
    * 01/01/1970 is used.  If a null end date is passed "now" is used.
    *
    * @param mapProject the map project
+   * @param startDate the start date
+   * @param endDate the end date
    */
   public void removeReportsForMapProject(MapProject mapProject,
     Date startDate, Date endDate);

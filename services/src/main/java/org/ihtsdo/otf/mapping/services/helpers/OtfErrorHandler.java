@@ -31,10 +31,10 @@ public class OtfErrorHandler {
   public Properties config = null;
 
   /** The address that messages will appear as though they come from. */
-  String m_from = "";
+  String mailFrom = "";
 
   /** The password for the SMTP host. */
-  String host_password = "";
+  String hostPassword = "";
 
   /** The SMTP host that will be transmitting the message. */
   String host = "";
@@ -46,10 +46,10 @@ public class OtfErrorHandler {
   String recipients = "";
 
   /** Subject text for the email. */
-  String m_subject = "IHTSDO Mapping Tool Exception Report";
+  String mailSubject = "IHTSDO Mapping Tool Exception Report";
 
   /** Text for the email. */
-  StringBuffer m_text;
+  StringBuffer mailText;
 
   /** Format for logging */
   SimpleDateFormat ft = new SimpleDateFormat("hh:mm:ss a");
@@ -133,45 +133,45 @@ public class OtfErrorHandler {
     }
 
     Properties props = new Properties();
-    props.put("mail.smtp.user", m_from);
-    props.put("mail.smtp.password", host_password);
+    props.put("mail.smtp.user", mailFrom);
+    props.put("mail.smtp.password", hostPassword);
     props.put("mail.smtp.host", host);
     props.put("mail.smtp.port", port);
     props.put("mail.smtp.starttls.enable", "true");
     props.put("mail.smtp.auth", "true");
 
-    m_subject = "IHTSDO Mapping Tool Exception Report";
-    m_text = new StringBuffer();
+    mailSubject = "IHTSDO Mapping Tool Exception Report";
+    mailText = new StringBuffer();
     if (!(e instanceof LocalException))
-      m_text.append(
+      mailText.append(
           "Unexpected error trying to " + whatIsHappening
               + ". Please contact the administrator.").append("\n\n");
 
     try {
-      m_text.append("HOST: " + InetAddress.getLocalHost().getHostName())
+      mailText.append("HOST: " + InetAddress.getLocalHost().getHostName())
           .append("\n");
     } catch (UnknownHostException e1) {
       e1.printStackTrace();
     }
-    m_text.append("TIME: " + ft.format(new Date())).append("\n");
-    m_text.append("USER: " + userName).append("\n");
-    m_text.append("PROJECT: " + project).append("\n");
-    m_text.append("ID: " + recordId).append("\n\n");
+    mailText.append("TIME: " + ft.format(new Date())).append("\n");
+    mailText.append("USER: " + userName).append("\n");
+    mailText.append("PROJECT: " + project).append("\n");
+    mailText.append("ID: " + recordId).append("\n\n");
 
-    m_text.append("MESSAGE: " + e.getMessage()).append("\n\n");
+    mailText.append("MESSAGE: " + e.getMessage()).append("\n\n");
     StringWriter out = new StringWriter();
     PrintWriter pw = new PrintWriter(out);
     e.printStackTrace(pw);
-    m_text.append(out.getBuffer());
+    mailText.append(out.getBuffer());
 
     try {
       SMTPAuthenticator auth = new SMTPAuthenticator();
       Session session = Session.getInstance(props, auth);
 
       MimeMessage msg = new MimeMessage(session);
-      msg.setText(m_text.toString());
-      msg.setSubject(m_subject);
-      msg.setFrom(new InternetAddress(m_from));
+      msg.setText(mailText.toString());
+      msg.setSubject(mailSubject);
+      msg.setFrom(new InternetAddress(mailFrom));
       String[] recipientsArray = recipients.split(";");
       for (String recipient : recipientsArray) {
         msg.addRecipient(Message.RecipientType.TO, new InternetAddress(
@@ -196,7 +196,7 @@ public class OtfErrorHandler {
      */
     @Override
     public PasswordAuthentication getPasswordAuthentication() {
-      return new PasswordAuthentication(m_from, host_password);
+      return new PasswordAuthentication(mailFrom, hostPassword);
     }
   }
 
@@ -215,8 +215,8 @@ public class OtfErrorHandler {
       config.load(in);
       in.close();
 
-      m_from = config.getProperty("mail.smtp.user");
-      host_password = config.getProperty("mail.smtp.password");
+      mailFrom = config.getProperty("mail.smtp.user");
+      hostPassword = config.getProperty("mail.smtp.password");
       host = config.getProperty("mail.smtp.host");
       port = config.getProperty("mail.smtp.port");
       recipients = config.getProperty("mail.smtp.to");

@@ -39,7 +39,7 @@ public class TreeposComputerMojo extends AbstractMojo {
    * @requried
    */
   private String rootIds;
-  
+
   /**
    * Instantiates a {@link TreeposComputerMojo} from the specified parameters.
    * 

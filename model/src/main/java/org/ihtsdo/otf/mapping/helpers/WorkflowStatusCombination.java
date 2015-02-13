@@ -7,13 +7,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
-<<<<<<< HEAD
- * The Class WorkflowStatusCombination.
+ * <<<<<<< HEAD The Class WorkflowStatusCombination.
  * 
-=======
- * Represents a collection of workflow status values that is allowed for a
- * {@link WorkflowPathState}.
->>>>>>> e1eeda452226fa58e6ba3bde608683ad62254578
+ * ======= Represents a collection of workflow status values that is allowed for
+ * a {@link WorkflowPathState}. >>>>>>> e1eeda452226fa58e6ba3bde608683ad62254578
  */
 public class WorkflowStatusCombination {
 
@@ -32,12 +29,11 @@ public class WorkflowStatusCombination {
 
   /**
    * Instantiates a {@link WorkflowStatusCombination} from the specified
-   * parameters.
-<<<<<<< HEAD
+   * parameters. <<<<<<< HEAD
    * 
-=======
+   * =======
    *
->>>>>>> e1eeda452226fa58e6ba3bde608683ad62254578
+   * >>>>>>> e1eeda452226fa58e6ba3bde608683ad62254578
    * @param workflowStatuses the workflow statuses
    */
   public WorkflowStatusCombination(List<WorkflowStatus> workflowStatuses) {

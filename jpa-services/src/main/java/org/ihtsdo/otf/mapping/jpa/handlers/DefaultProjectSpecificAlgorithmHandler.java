@@ -794,7 +794,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
   public boolean isRulesEqual(MapEntry entry1, MapEntry entry2) {
 
     // if not rule based, automatically return true
-    if (mapProject.isRuleBased() == false)
+    if (!mapProject.isRuleBased())
       return true;
 
     // check null comparisons first
@@ -1189,7 +1189,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
           // check that one record exists and is not owned by this user
           if (mapRecords.size() == 1) {
             /*
-             * TODO: Removed this, see MAP-617 if
+             * Removed this, see MAP-617 if
              * (mapRecords.iterator().next().getOwner().equals(mapUser)) throw
              * new Exception(
              * "  Cannot assign review record, user attempting to review own work"
@@ -1666,12 +1666,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
             "publish - QA_PATH - Creating READY_FOR_PUBLICATION record "
                 + mapRecord.toString());
-        
+
         mapRecord.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
 
         newRecords.clear();
         newRecords.add(mapRecord);
-        
+
         break;
       case LEGACY_PATH:
         // do nothing
@@ -1877,14 +1877,14 @@ public class DefaultProjectSpecificAlgorithmHandler implements
             Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
                 .info("NON_LEGACY_PATH - Two records found");
 
-            java.util.Iterator<MapRecord> record_iter = mapRecords.iterator();
-            MapRecord mapRecord1 = record_iter.next();
-            MapRecord mapRecord2 = record_iter.next();
+            java.util.Iterator<MapRecord> recordIter = mapRecords.iterator();
+            MapRecord mapRecord1 = recordIter.next();
+            MapRecord mapRecord2 = recordIter.next();
             ValidationResult validationResult =
                 compareMapRecords(mapRecord1, mapRecord2);
 
             // if map records validation is successful, publish
-            if (validationResult.isValid() == true) {
+            if (validationResult.isValid()) {
 
               Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
                   .info("NON_LEGACY_PATH - No conflicts detected.");
@@ -2104,7 +2104,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
           // set to resolved
           leadRecord.setWorkflowStatus(WorkflowStatus.REVIEW_RESOLVED);
-
 
         } else {
           throw new Exception(

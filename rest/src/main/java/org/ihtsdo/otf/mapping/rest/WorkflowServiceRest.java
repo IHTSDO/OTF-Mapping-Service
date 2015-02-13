@@ -62,7 +62,7 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
 /**
- * The Workflow Services REST package.
+ * REST implementation for workflow service.
  */
 @Path("/workflow")
 @Api(value = "/workflow", description = "Operations supporting workflow.")
@@ -214,7 +214,7 @@ public class WorkflowServiceRest extends RootServiceRest {
               "Could not get concept " + result.getTerminologyId() + ", "
                   + mapProject.getSourceTerminology() + ", "
                   + mapProject.getSourceTerminologyVersion());
-        } else if (c.isActive() == true) {
+        } else if (c.isActive()) {
           revisedResults.addSearchResult(result);
         } else {
           Logger.getLogger(WorkflowServiceJpa.class).warn(
@@ -903,7 +903,7 @@ public class WorkflowServiceRest extends RootServiceRest {
         // and thus has a tree position
         // This is a temporary fix for the Unmapped ICD-10 project
         // SEE MAP-862
-        if (concept.isActive() == true) {
+        if (concept.isActive()) {
 
           workflowService.processWorkflowAction(mapProject, concept, mapUser,
               null, WorkflowAction.ASSIGN_FROM_SCRATCH);
@@ -1727,7 +1727,7 @@ public class WorkflowServiceRest extends RootServiceRest {
       Set<Long> recordIds = new HashSet<>();
 
       // if setting to true, add the record ids
-      if (isFalseConflict == true) {
+      if (isFalseConflict) {
         // add this record
         recordIds.add(recordId);
 
