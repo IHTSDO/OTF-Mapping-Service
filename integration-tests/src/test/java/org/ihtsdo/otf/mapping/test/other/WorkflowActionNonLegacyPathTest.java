@@ -1305,7 +1305,6 @@ public class WorkflowActionNonLegacyPathTest {
 
     record.setConceptId(concept.getTerminologyId());
     record.setConceptName(concept.getDefaultPreferredName());
-    record.setCountDescendantConcepts(0L);
     record.setLastModified(new Date().getTime());
     record.setLastModifiedBy(user);
     record.setMapProjectId(mapProject.getId());
