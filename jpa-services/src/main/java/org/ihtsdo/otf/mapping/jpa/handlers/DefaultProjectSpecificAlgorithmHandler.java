@@ -18,7 +18,6 @@ import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
-import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
@@ -29,7 +28,6 @@ import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
-import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
@@ -1294,32 +1292,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         throw new Exception(
             "assignFromScratch called with erroneous Workflow Path.");
     }
-
-    ContentService contentService = new ContentServiceJpa();
-    try {
-      mapRecord.setCountDescendantConcepts(new Long(
-
-      // get the tree positions for this concept
-          contentService
-              .getTreePositionsWithDescendants(
-                  trackingRecord.getTerminologyId(),
-                  trackingRecord.getTerminology(),
-                  trackingRecord.getTerminologyVersion())
-
-              .getTreePositions() // get the list of tree
-              // positions
-              .get(0) // get the first tree position
-              .getDescendantCount())); // get the descendant count
-    } catch (IndexOutOfBoundsException e) {
-      throw new Exception(
-          "ASSIGN_FROM_SCRATCH:  Attempted to set descendant count for new record, but could not retrieve tree positions for concept "
-              + trackingRecord.getTerminologyId()
-              + " for terminology "
-              + trackingRecord.getTerminology()
-              + " version "
-              + trackingRecord.getTerminologyVersion());
-    }
-    contentService.close();
 
     // add this record to the tracking record
     newRecords.add(mapRecord);

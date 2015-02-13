@@ -310,7 +310,6 @@ public class MapRecordJpaTest {
     assertEquals(mapRecord.getMapEntries().size(), 1);
     assertEquals(mapRecord.getMapPrinciples().size(), 1);
     assertEquals(mapRecord.getConceptId(), conceptId1);
-    assertEquals(mapRecord.getCountDescendantConcepts(), new Long(0));
     assertEquals(mapRecord.getMapNotes().size(), 1);
 
   }
@@ -340,7 +339,6 @@ public class MapRecordJpaTest {
     mapRecord1 = new MapRecordJpa();
     mapRecord1.setConceptId(conceptId1);
     mapRecord1.setConceptName("conceptTestName");
-    mapRecord1.setCountDescendantConcepts(new Long(0));
     mapRecord1.setMapProjectId(new Long("1"));
     mapRecord1.setFlagForConsensusReview(false);
     mapRecord1.setFlagForEditorialReview(false);

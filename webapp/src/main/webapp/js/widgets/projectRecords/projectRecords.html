@@ -34,19 +34,6 @@
     <a title="Edit" ng-show="isEditable(record)" ng-click="editRecord(record)"><i
       class="glyphicon glyphicon glyphicon-pencil"></i></a>
   </div>
- 
-  <span ng-show="record.unmappedDescendants.length > 0"> <span
-    class="dropdown"> <a class="dropdown-toggle"> <img
-        src="img/warning.png" alt="question icon">
-    </a>
-      <ul class="dropdown-menu project-records-dropdown-menu">
-        <b>Unmapped Descendants</b>
-        <li ng-repeat="concept in record.unmappedDescendants"><a
-          href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}:
-            {{concept.value}}</a></li>
-      </ul>
-  </span>
-  </span>
 
   <div otf-map-record-wide record="record" project="focusProject"
     show-title="false"></div>
