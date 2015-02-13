@@ -39,37 +39,36 @@ import org.junit.Test;
 public class WorkflowActionNonLegacyPathTest {
 
   // the content
-  /**  The concept. */
+  /** The concept. */
   private static Concept concept;
 
   // the mapping objects
-  /**  The lead. */
+  /** The lead. */
   private static MapUser viewer, specialist, specialist2, lead;
 
-  /**  The lead record. */
+  /** The lead record. */
   private static MapRecord specRecord, specRecord2, leadRecord;
 
-  /**  The map project. */
+  /** The map project. */
   private static MapProject mapProject;
 
   // the tracking record
-  /**  The tracking record. */
+  /** The tracking record. */
   private static TrackingRecord trackingRecord;
 
   // the services
-  /**  The content service. */
+  /** The content service. */
   private static ContentService contentService;
 
-  /**  The mapping service. */
+  /** The mapping service. */
   private static MappingService mappingService;
 
-  /**  The workflow service. */
+  /** The workflow service. */
   private static WorkflowService workflowService;
 
   // the workflow handler
-  /**  The handler. */
+  /** The handler. */
   private static WorkflowNonLegacyPathHandler handler;
-
 
   /**
    * Inits the.
@@ -95,7 +94,7 @@ public class WorkflowActionNonLegacyPathTest {
 
     for (MapProject mp : mappingService.getMapProjects().getIterable())
       mappingService.removeMapProject(mp.getId());
-    
+
     for (MapRecord mp : mappingService.getMapRecords().getIterable())
       mappingService.removeMapRecord(mp.getId());
 

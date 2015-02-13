@@ -19,10 +19,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  */
 @Entity
 @Table(name = "map_age_ranges", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {
-      "name"
-    })
+  @UniqueConstraint(columnNames = {
+    "name"
   })
+})
 @Audited
 @XmlRootElement(name = "mapAgeRange")
 @JsonIgnoreProperties(ignoreUnknown = true)

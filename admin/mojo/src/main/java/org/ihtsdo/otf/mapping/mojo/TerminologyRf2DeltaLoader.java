@@ -64,8 +64,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
   private String terminology;
 
   /**
-   * Requirement to have the last publication version passed in.
-   * This is used for the "remove retired concepts" routine.
+   * Requirement to have the last publication version passed in. This is used
+   * for the "remove retired concepts" routine.
    * @parameter
    * @required
    */
@@ -76,7 +76,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
    */
   private String version;
 
-  
   /** The delta dir. */
   private File deltaDir;
 
@@ -173,7 +172,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
       getLog().info("    terminology = " + terminology);
       getLog().info("    version = " + version);
       getLog().info("    lastPublicationDate = " + lastPublicationDate);
-      
+
       // Precache all existing concept entries
       getLog().info("  Load all concept entries");
       ConceptList conceptList =
@@ -191,7 +190,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
       existingLanguageRefSetMemberIds =
           contentService.getAllLanguageRefSetMemberTerminologyIds(terminology,
               version);
-      getLog().info("    languageCt = " + existingLanguageRefSetMemberIds.size());
+      getLog().info(
+          "    languageCt = " + existingLanguageRefSetMemberIds.size());
       existingRelationshipIds =
           contentService.getAllRelationshipTerminologyIds(terminology, version);
       getLog().info("    relationshipCt = " + existingRelationshipIds.size());
@@ -266,12 +266,11 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
               + nRelationshipsUpdated + " relationships expected, found"
               + modifiedRelationships.getCount()
               : "    Relationship count matches");
-      getLog()
-          .info(
-              (modifiedDescriptions.getCount() != nDescriptionsUpdated) ? "    "
-                  + nDescriptionsUpdated + " descriptions expected, found"
-                  + modifiedDescriptions.getCount()
-                  : "    Description count matches");
+      getLog().info(
+          (modifiedDescriptions.getCount() != nDescriptionsUpdated) ? "    "
+              + nDescriptionsUpdated + " descriptions expected, found"
+              + modifiedDescriptions.getCount()
+              : "    Description count matches");
       getLog().info(
           (modifiedLanguageRefSetMembers.getCount() != nLanguagesUpdated)
               ? "    " + nLanguagesUpdated
@@ -517,7 +516,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
         // Track all delta concept ids so we can properly remove concepts later.
         deltaConceptIds.add(fields[0]);
         recomputePnConceptIds.add(fields[0]);
-        
+
         // Setup delta concept (either new or based on existing one)
         Concept newConcept = null;
         if (concept == null) {
@@ -742,10 +741,10 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
               + " does not have concept");
 
         }
-        
+
         // add to recompute pn
         recomputePnConceptIds.add(description.getConcept().getTerminologyId());
-        
+
         // Cache concept and description
         cacheConcept(concept);
         cacheDescription(description);
@@ -990,8 +989,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
     // Compute default preferred names for any concept in the delta
     for (String terminologyId : recomputePnConceptIds) {
-      Concept concept = contentService.getConcept(
-          terminologyId, terminology, version);
+      Concept concept =
+          contentService.getConcept(terminologyId, terminology, version);
 
       // Skip if inactive
       if (!concept.isActive()) {
@@ -1027,7 +1026,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
                 && language.getAcceptabilityId().equals(dpnAcceptabilityId)) {
               getLog().info("      MATCH FOUND: " + description.getTerm());
               // print warning for multiple names found
-              if (dpnFound == true) {
+              if (dpnFound) {
                 getLog().warn(
                     "Multiple default preferred names found for concept "
                         + concept.getTerminologyId());
@@ -1079,10 +1078,10 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     // which is fine, it just means some things will remain
     // in scope longer than they should.
     DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-    Date rf2Version= dateFormat.parse(lastPublicationDate);
+    Date rf2Version = dateFormat.parse(lastPublicationDate);
 
-    // Now remove retired concepts 
-    // These are concepts created after rf2Version that are no longer in 
+    // Now remove retired concepts
+    // These are concepts created after rf2Version that are no longer in
     // the drip feed
     int ct = 0;
     for (Concept concept : existingConceptCache.values()) {
@@ -1126,7 +1125,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     }
     getLog().info("      retired =  " + ct);
   }
-  
+
   // helper function to update and store concept
   // as well as putting all descendant objects in the cache
   // for easy retrieval

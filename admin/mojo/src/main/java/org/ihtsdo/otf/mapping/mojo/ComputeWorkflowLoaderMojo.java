@@ -61,11 +61,11 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
     String notificationRecipients =
         config.getProperty("send.notification.recipients");
     String notificationMessage = "";
-    if (sendNotification == false) {
+    if (!sendNotification) {
       getLog().info(
           "No notifications will be sent as a result of workflow computation.");
     }
-    if (sendNotification == true
+    if (sendNotification
         && config.getProperty("send.notification.recipients") == null) {
       throw new MojoExecutionException(
           "Email notification was requested, but no recipients were specified.");
@@ -133,9 +133,9 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
             getLog().info(
                 "  New concept:  " + tr.getTerminologyId() + ", "
                     + tr.getDefaultPreferredName());
-            
+
             conceptsAdded++;
-            
+
             // otherwise, remove it from the set
           } else {
             previousWorkflowConcepts.remove(tr.getTerminologyId());
@@ -172,7 +172,7 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
       workflowService.close();
 
       // if notification requested, send email
-      if (sendNotification == true) {
+      if (sendNotification) {
         OtfEmailHandler emailHandler = new OtfEmailHandler();
         emailHandler.sendSimpleEmail(notificationRecipients,
             "[OTF-Mapping-Tool] Drip feed results", notificationMessage);

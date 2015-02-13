@@ -10,8 +10,8 @@ import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.helpers.BeginEditingCycleHandler;
 
 /**
- * Goal which initiates a new editing cycle.  Mostly this is
- * for tracking purposes.
+ * Goal which initiates a new editing cycle. Mostly this is for tracking
+ * purposes.
  * 
  * See admin/release/pom.xml for a sample execution.
  * 

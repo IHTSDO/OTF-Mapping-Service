@@ -12,7 +12,6 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.jpa.DescriptionJpa;
 
-
 /**
  * JAXB enabled implementation of {@link DescriptionList}.
  */

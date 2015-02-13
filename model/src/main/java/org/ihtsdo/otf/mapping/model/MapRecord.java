@@ -360,7 +360,7 @@ public interface MapRecord {
    * @param label the label
    */
   public void removeLabel(String label);
-  
+
   /**
    * Returns the reasons for conflict.
    *
@@ -374,7 +374,7 @@ public interface MapRecord {
    * @param reasons the reasons for conflict
    */
   public void setReasonsForConflict(Set<String> reasons);
-  
+
   /**
    * Adds the reason for conflict.
    *

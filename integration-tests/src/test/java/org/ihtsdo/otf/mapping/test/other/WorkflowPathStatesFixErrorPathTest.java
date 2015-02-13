@@ -41,28 +41,28 @@ import org.junit.Test;
  */
 public class WorkflowPathStatesFixErrorPathTest {
 
-  /**  The handler. */
+  /** The handler. */
   private static WorkflowFixErrorPathHandler handler;
 
-  /**  The content service. */
+  /** The content service. */
   private static ContentService contentService;
 
-  /**  The mapping service. */
+  /** The mapping service. */
   private static MappingService mappingService;
 
-  /**  The workflow service. */
+  /** The workflow service. */
   private static WorkflowService workflowService;
 
-  /**  The tracking record. */
+  /** The tracking record. */
   private static TrackingRecord trackingRecord;
 
-  /**  The lead. */
+  /** The lead. */
   private static MapUser specialist, lead;
 
-  /**  The map project. */
+  /** The map project. */
   private static MapProject mapProject;
 
-  /**  The concept. */
+  /** The concept. */
   private static Concept concept;
 
   /**
@@ -154,8 +154,8 @@ public class WorkflowPathStatesFixErrorPathTest {
   @Test
   public void testLegalWorkflowCombinations() throws Exception {
 
-    Logger.getLogger(WorkflowPathStatesFixErrorPathTest.class)
-        .info("Testing all possible combinations against legal states...");
+    Logger.getLogger(WorkflowPathStatesFixErrorPathTest.class).info(
+        "Testing all possible combinations against legal states...");
 
     // test empty state
     if (handler.isEmptyWorkflowAllowed()) {
@@ -248,7 +248,8 @@ public class WorkflowPathStatesFixErrorPathTest {
                 .equals(WorkflowStatus.PUBLISHED)) {
           // do nothing
         } else {
-          fail("Error computing tracking record for combination " + combination.toString());
+          fail("Error computing tracking record for combination "
+              + combination.toString());
         }
 
       }
@@ -265,8 +266,7 @@ public class WorkflowPathStatesFixErrorPathTest {
   @AfterClass
   public static void cleanup() throws Exception {
 
-    Logger.getLogger(WorkflowPathStatesFixErrorPathTest.class)
-        .info("Clean-up");
+    Logger.getLogger(WorkflowPathStatesFixErrorPathTest.class).info("Clean-up");
     resetRecords();
 
     mappingService.removeMapProject(mapProject.getId());
@@ -298,7 +298,7 @@ public class WorkflowPathStatesFixErrorPathTest {
   }
 
   /**
-   *  Construct and return a map record for a user and status.
+   * Construct and return a map record for a user and status.
    *
    * @param user the user
    * @param status the status
@@ -319,7 +319,7 @@ public class WorkflowPathStatesFixErrorPathTest {
   }
 
   /**
-   *  Computes the tracking record based on map records.
+   * Computes the tracking record based on map records.
    *
    * @param combination the combination
    * @throws Exception the exception
@@ -341,22 +341,22 @@ public class WorkflowPathStatesFixErrorPathTest {
     // switch on size of combination
     switch (combination.getWorkflowStatuses().size()) {
 
-      // always invalid
+    // always invalid
       case 1:
-        mappingService
-        .addMapRecord(createRecord(specialist, statusIter.next()));
-        break;
-     // valid: REVISION + Specialist editing/complete
-      case 2:
-        mappingService
-        .addMapRecord(createRecord(specialist, statusIter.next()));
         mappingService
             .addMapRecord(createRecord(specialist, statusIter.next()));
         break;
-        // valid: REVISION + Specialist omplete + Lead editing/complete
+      // valid: REVISION + Specialist editing/complete
+      case 2:
+        mappingService
+            .addMapRecord(createRecord(specialist, statusIter.next()));
+        mappingService
+            .addMapRecord(createRecord(specialist, statusIter.next()));
+        break;
+      // valid: REVISION + Specialist omplete + Lead editing/complete
       case 3:
         mappingService
-        .addMapRecord(createRecord(specialist, statusIter.next()));
+            .addMapRecord(createRecord(specialist, statusIter.next()));
         mappingService
             .addMapRecord(createRecord(specialist, statusIter.next()));
         mappingService.addMapRecord(createRecord(lead, statusIter.next()));

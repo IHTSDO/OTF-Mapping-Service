@@ -1968,10 +1968,10 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     String terminologyVersion, String query) throws Exception {
 
     // construct the query
-    String full_query =
+    String fullQuery =
         constructTreePositionQuery(terminology, terminologyVersion, query);
 
-    Logger.getLogger(ContentServiceJpa.class).info("Full query: " + full_query);
+    Logger.getLogger(ContentServiceJpa.class).info("Full query: " + fullQuery);
 
     // execute the full text query
     FullTextEntityManager fullTextEntityManager =
@@ -1985,7 +1985,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       QueryParser queryParser =
           new QueryParser(Version.LUCENE_36, "summary",
               searchFactory.getAnalyzer(TreePositionJpa.class));
-      luceneQuery = queryParser.parse(full_query);
+      luceneQuery = queryParser.parse(fullQuery);
 
     } catch (ParseException e) {
       throw new LocalException(
@@ -2277,14 +2277,14 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
   private static String constructTreePositionQuery(String terminology,
     String terminologyVersion, String query) throws Exception {
 
-    String full_query;
+    String fullQuery;
 
     // if no filter supplied, return query based on map project id only
     if (query == null || query.equals("")) {
-      full_query =
+      fullQuery =
           "terminology:" + terminology + " AND terminologyVersion:"
               + terminologyVersion;
-      return full_query;
+      return fullQuery;
     }
 
     // Pre-treatment: Find any lower-case boolean operators and set to
@@ -2318,28 +2318,27 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     // terminology ids may contain terms like D55-D59, which should be
     // preserved whole
     // but we still want to capture lucene negation term, e.g. -D55
-    String queryStr_mod = queryStr;
+    String queryStrMod = queryStr;
 
-    queryStr_mod = queryStr_mod.replace("(", " ( ");
-    queryStr_mod = queryStr_mod.replace(")", " ) ");
-    queryStr_mod = queryStr_mod.replace("\"", " \" ");
-    queryStr_mod = queryStr_mod.replace("+", " + ");
-    queryStr_mod = queryStr_mod.replace(" -", " - "); // note extra space on
+    queryStrMod = queryStrMod.replace("(", " ( ");
+    queryStrMod = queryStrMod.replace(")", " ) ");
+    queryStrMod = queryStrMod.replace("\"", " \" ");
+    queryStrMod = queryStrMod.replace("+", " + ");
+    queryStrMod = queryStrMod.replace(" -", " - "); // note extra space on
     // this term, see
     // above
 
     // remove any leading or trailing whitespace (otherwise first/last null
     // term
     // bug)
-    queryStr_mod = queryStr_mod.trim();
+    queryStrMod = queryStrMod.trim();
 
     // split the string by white space and single-character operators
-    String[] terms = queryStr_mod.split("\\s+");
+    String[] terms = queryStrMod.split("\\s+");
 
     // merge items between quotation marks
     boolean exprInQuotes = false;
     List<String> parsedTerms = new ArrayList<>();
-    // List<String> parsedTerms_temp = new ArrayList<String>();
     String currentTerm = "";
 
     // cycle over terms to identify quoted (i.e. non-parsed) terms
@@ -2348,7 +2347,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       // if an open quote is detected
       if (terms[i].equals("\"")) {
 
-        if (exprInQuotes == true) {
+        if (exprInQuotes) {
 
           // special case check: fielded term. Impossible for first
           // term to be
@@ -2361,7 +2360,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
             // if last parsed term ended with a colon, append this
             // term to the
             // last parsed term
-            if (lastParsedTerm.endsWith(":") == true) {
+            if (lastParsedTerm.endsWith(":")) {
               parsedTerms.set(parsedTerms.size() - 1, lastParsedTerm + "\""
                   + currentTerm + "\"");
             } else {
@@ -2381,7 +2380,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       } else {
 
         // if inside quotes, continue building term
-        if (exprInQuotes == true) {
+        if (exprInQuotes) {
           currentTerm =
               currentTerm == "" ? terms[i] : currentTerm + " " + terms[i];
 
@@ -2397,7 +2396,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     }
 
     // cycle over terms to construct query
-    full_query = "";
+    fullQuery = "";
 
     for (int i = 0; i < parsedTerms.size(); i++) {
 
@@ -2405,10 +2404,10 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       // add whitespace separator
       if (i != 0 && !parsedTerms.get(i - 1).matches(escapeTerms)) {
 
-        full_query += " ";
+        fullQuery += " ";
       }
       /*
-       * full_query += (i == 0 ? // check for first term "" : // -> if first
+       * fullQuery += (i == 0 ? // check for first term "" : // -> if first
        * character, add nothing parsedTerms.get(i-1).matches(escapeTerms) ? //
        * check if last term was an escape character "": // -> if last term was
        * an escape character, add nothing " "); // -> otherwise, add a
@@ -2418,42 +2417,42 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       // if an escape character/sequence, add this term unmodified
       if (parsedTerms.get(i).matches(escapeTerms)) {
 
-        full_query += parsedTerms.get(i);
+        fullQuery += parsedTerms.get(i);
 
         // else if a boolean character, add this term in upper-case form
         // (i.e.
         // lucene format)
       } else if (parsedTerms.get(i).matches(booleanTerms)) {
 
-        full_query += parsedTerms.get(i).toUpperCase();
+        fullQuery += parsedTerms.get(i).toUpperCase();
 
         // else if already a field-specific query term, add this term
         // unmodified
       } else if (parsedTerms.get(i).contains(":")) {
 
-        full_query += parsedTerms.get(i);
+        fullQuery += parsedTerms.get(i);
 
         // otherwise, treat as unfielded query term
       } else {
 
         // open parenthetical term
-        full_query += "(";
+        fullQuery += "(";
 
         // add fielded query for each indexed term, separated by OR
-        Iterator<String> names_iter = treePositionFieldNames.iterator();
-        while (names_iter.hasNext()) {
+        Iterator<String> namesIter = treePositionFieldNames.iterator();
+        while (namesIter.hasNext()) {
 
-          String fieldName = names_iter.next();
+          String fieldName = namesIter.next();
           Logger.getLogger(ContentServiceJpa.class).info(
               "  field name: " + fieldName);
 
-          full_query += fieldName + ":" + parsedTerms.get(i);
-          if (names_iter.hasNext())
-            full_query += " OR ";
+          fullQuery += fieldName + ":" + parsedTerms.get(i);
+          if (namesIter.hasNext())
+            fullQuery += " OR ";
         }
 
         // close parenthetical term
-        full_query += ")";
+        fullQuery += ")";
       }
 
       // if further terms remain in the sequence
@@ -2467,20 +2466,20 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
             && !parsedTerms.get(i).matches(booleanTerms)
             && !parsedTerms.get(i + 1).matches(booleanTerms)) {
 
-          full_query += " OR";
+          fullQuery += " OR";
         }
       }
     }
 
     // add parantheses and map project constraint
-    full_query =
-        "(" + full_query + ")" + " AND terminology:" + terminology
+    fullQuery =
+        "(" + fullQuery + ")" + " AND terminology:" + terminology
             + " AND terminologyVersion:" + terminologyVersion;
 
     Logger.getLogger(ContentServiceJpa.class)
-        .debug("Full query: " + full_query);
+        .debug("Full query: " + fullQuery);
 
-    return full_query;
+    return fullQuery;
 
   }
 

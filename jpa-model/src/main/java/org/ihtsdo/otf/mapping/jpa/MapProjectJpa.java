@@ -52,10 +52,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  */
 @Entity
 @Table(name = "map_projects", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {
-      "name"
-    })
+  @UniqueConstraint(columnNames = {
+    "name"
   })
+})
 @Audited
 @Indexed
 @XmlRootElement(name = "mapProject")
@@ -98,12 +98,12 @@ public class MapProjectJpa implements MapProject {
   /** The ref set name. */
   private String refSetName;
 
-  /**  The editing cycle begin date. */
+  /** The editing cycle begin date. */
   @Temporal(TemporalType.TIMESTAMP)
   @Column(nullable = true)
   private Date editingCycleBeginDate;
 
-  /**  The latest publication date. */
+  /** The latest publication date. */
   @Temporal(TemporalType.TIMESTAMP)
   @Column(nullable = true)
   private Date latestPublicationDate;
@@ -229,8 +229,6 @@ public class MapProjectJpa implements MapProject {
    */
   public MapProjectJpa() {
   }
-
-  
 
   /**
    * Instantiates a {@link MapProjectJpa} from the specified parameters.
@@ -410,7 +408,6 @@ public class MapProjectJpa implements MapProject {
   public void removeMapSpecialist(MapUser mapSpecialist) {
     mapSpecialists.remove(mapSpecialist);
   }
-
 
   /*
    * (non-Javadoc)
@@ -631,7 +628,9 @@ public class MapProjectJpa implements MapProject {
 
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.ihtsdo.otf.mapping.model.MapProject#getEditingCycleBeginDate()
    */
   @Override
@@ -642,15 +641,21 @@ public class MapProjectJpa implements MapProject {
     return editingCycleBeginDate;
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.model.MapProject#setEditingCycleBeginDate(java.util.Date)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.model.MapProject#setEditingCycleBeginDate(java.util
+   * .Date)
    */
   @Override
   public void setEditingCycleBeginDate(Date editingCycleBeginDate) {
     this.editingCycleBeginDate = editingCycleBeginDate;
   }
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.ihtsdo.otf.mapping.model.MapProject#getLatestPublicationDate()
    */
   @Override
@@ -661,14 +666,18 @@ public class MapProjectJpa implements MapProject {
     return latestPublicationDate;
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.model.MapProject#setLatestPublicationDate(java.util.Date)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.model.MapProject#setLatestPublicationDate(java.util
+   * .Date)
    */
   @Override
   public void setLatestPublicationDate(Date latestPublicationDate) {
     this.latestPublicationDate = latestPublicationDate;
   }
-  
+
   /*
    * (non-Javadoc)
    * 
@@ -1143,7 +1152,9 @@ public class MapProjectJpa implements MapProject {
         projectSpecificAlgorithmHandlerClass;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
@@ -1175,7 +1186,9 @@ public class MapProjectJpa implements MapProject {
         + propagationDescendantThreshold + "]";
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#hashCode()
    */
   @Override
@@ -1215,7 +1228,9 @@ public class MapProjectJpa implements MapProject {
     return result;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#equals(java.lang.Object)
    */
   @Override

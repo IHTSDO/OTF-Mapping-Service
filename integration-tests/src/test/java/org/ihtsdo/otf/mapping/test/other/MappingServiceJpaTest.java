@@ -586,9 +586,9 @@ public class MappingServiceJpaTest {
   }
 
   /**
-   * Test updating each type of element
-   * 
-   * @throws Exception
+   * Test updating each type of element.
+   *
+   * @throws Exception the exception
    */
   @SuppressWarnings("static-method")
   @Test
@@ -602,17 +602,17 @@ public class MappingServiceJpaTest {
     String changedValue = "updatetest";
 
     // test update and envers audit of map project
-    MapProject project_old = projects.getMapProjects().get(0);
-    MapProject project_new;
+    MapProject projectOld = projects.getMapProjects().get(0);
+    MapProject projectNew;
     List<Number> revNumbers =
-        reader.getRevisions(MapProject.class, project_old);
+        reader.getRevisions(MapProject.class, projectOld);
 
-    project_old.setDestinationTerminology(changedValue);
-    service.updateMapProject(project_old);
+    projectOld.setDestinationTerminology(changedValue);
+    service.updateMapProject(projectOld);
 
-    project_new = service.getMapProject(project_old.getId());
+    projectNew = service.getMapProject(projectOld.getId());
 
-    if (!project_new.getDestinationTerminology().equals(changedValue)) {
+    if (!projectNew.getDestinationTerminology().equals(changedValue)) {
       fail("Failed to update project");
     } else {
       Logger.getLogger(MappingServiceJpaTest.class).info(
@@ -620,29 +620,28 @@ public class MappingServiceJpaTest {
     }
     // TODO Reenable for audit testing
 
-    if (reader.getRevisions(MapProject.class, project_old).size() != revNumbers
+    if (reader.getRevisions(MapProject.class, projectOld).size() != revNumbers
         .size() + 1) {
       fail("Failed to update revision table:  number of revisions has not increased by 1");
     }
 
     // test update and envers audit of map specialist
-    MapUser specialist_old = specialists.getMapUsers().get(0);
-    MapUser specialist_new;
+    MapUser specialistOld = specialists.getMapUsers().get(0);
+    MapUser specialistNew;
     // revNumbers = reader.getRevisions(MapSpecialist.class,
     // specialist_old); // TODO Reenable for audit testing
 
-    specialist_old.setEmail(changedValue);
-    service.updateMapUser(specialist_old);
+    specialistOld.setEmail(changedValue);
+    service.updateMapUser(specialistOld);
 
-    specialist_new = service.getMapUser(specialist_old.getId());
+    specialistNew = service.getMapUser(specialistOld.getId());
 
-    if (!specialist_new.getEmail().equals(changedValue)) {
+    if (!specialistNew.getEmail().equals(changedValue)) {
       fail("Failed to update specialist");
     } else {
       Logger.getLogger(MappingServiceJpaTest.class).info(
           "Specialist update successful");
     }
-    
 
   }
 
@@ -661,24 +660,24 @@ public class MappingServiceJpaTest {
     MapProjectList projects = service.getMapProjects();
     MapUserList users = service.getMapUsers();
 
-    MapProject project_removed = projects.getMapProjects().get(0);
-    MapUser user_removed = users.getMapUsers().get(0);
+    MapProject projectRemoved = projects.getMapProjects().get(0);
+    MapUser userRemoved = users.getMapUsers().get(0);
 
     // test delete of user
     Logger.getLogger(MappingServiceJpaTest.class).info(
         "Testing user removal...");
-    service.removeMapUser(user_removed.getId());
+    service.removeMapUser(userRemoved.getId());
 
-    if (service.getMapUser(user_removed.getId()) != null) {
+    if (service.getMapUser(userRemoved.getId()) != null) {
       fail("Remove user reported success, but user still present in database!");
     }
 
     // test delete of project
     Logger.getLogger(MappingServiceJpaTest.class).info(
         "Testing project removal...");
-    service.removeMapProject(project_removed.getId());
+    service.removeMapProject(projectRemoved.getId());
 
-    if (service.getMapProject(project_removed.getId()) != null) {
+    if (service.getMapProject(projectRemoved.getId()) != null) {
       fail("Remove project reported success, but project still present in database!");
     }
 

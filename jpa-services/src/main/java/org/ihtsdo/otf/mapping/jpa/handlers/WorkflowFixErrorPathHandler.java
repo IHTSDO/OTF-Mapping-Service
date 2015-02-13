@@ -198,22 +198,24 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
       // Minimum role: Lead
 
     } else if (state.equals(specialistFinishedState)) {
-      
-      // Case 1:  ASSIGN_FROM_SCRATCH requested
+
+      // Case 1: ASSIGN_FROM_SCRATCH requested
       if (action.equals(WorkflowAction.ASSIGN_FROM_SCRATCH)) {
         // check role
         if (!userRole.hasPrivilegesOf(MapUserRole.LEAD)) {
           result.addError("User does not have required role");
         }
       }
-      
-      // Case 2:  Any other action must be Specialist modifying finished record
+
+      // Case 2: Any other action must be Specialist modifying finished record
       else if (currentRecord != null) {
 
         // check record
         if (!currentRecord.getWorkflowStatus().equals(
             WorkflowStatus.REVIEW_NEEDED)) {
-          result.addError("User's record is marked " + currentRecord.getWorkflowStatus().toString() + " instead of REVIEW_NEW");
+          result.addError("User's record is marked "
+              + currentRecord.getWorkflowStatus().toString()
+              + " instead of REVIEW_NEW");
         }
 
         // check role
@@ -229,10 +231,11 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
         }
 
       }
-      
+
       // otherwise, not ASSIGN_FROM_SCRATCH and record is null
       else {
-        result.addError("Action " + action.toString() + " not permitted where user is not editing a record");
+        result.addError("Action " + action.toString()
+            + " not permitted where user is not editing a record");
       }
 
       // STATE: Lead editing review
@@ -291,9 +294,8 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
     }
 
     if (result.getErrors().size() != 0) {
-      result.addError("Error occured on " + getWorkflowPath().toString() + " in workflow state "
-          + state.getWorkflowStateName());
-      ;
+      result.addError("Error occured on " + getWorkflowPath().toString()
+          + " in workflow state " + state.getWorkflowStateName());
     }
 
     return result;
