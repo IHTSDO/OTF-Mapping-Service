@@ -2516,14 +2516,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
           mapRecord.setConceptName(concept.getDefaultPreferredName());
           mapRecord.setMapProjectId(mapProject.getId());
 
-          // get the number of descendants
-          mapRecord.setCountDescendantConcepts((long) contentService
-              .getDescendantConceptsCount(concept.getTerminologyId(),
-                  concept.getTerminology(), concept.getTerminologyVersion()));
-          Logger.getLogger(MappingServiceJpa.class).debug(
-              "      Computing descendant ct = "
-                  + mapRecord.getCountDescendantConcepts());
-
           // set the previous concept to this concept
           prevConceptId = refSetMember.getConcept().getTerminologyId();
 
