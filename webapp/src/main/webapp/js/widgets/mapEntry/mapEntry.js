@@ -40,7 +40,7 @@ angular
 								sortByKey($scope.allowableAdvices, 'detail');
 								$scope.allowableMapRelations = getAllowableRelations(
 										parameters.entry, parameters.project.mapRelation);
-								
+
 								// set the rule to null if a non-rule-based project
 								// added to catch any badly constructed rules from other widgets
 								if ($scope.project.ruleBased == false)
@@ -102,7 +102,7 @@ angular
 					}
 
 					$scope.setTarget = function(targetCode) {
-						
+
 						$scope.getValidTargetError = "";
 
 						// if target code is empty, compute parameters and return
@@ -401,16 +401,18 @@ angular
 					// controller for the modal
 					var RuleConstructorModalCtrl = function($scope, $http,
 							$modalInstance, presetAgeRanges, entry) {
+						
+						$scope.ruleError = '';
 
-						$scope.ageRange = {
+						$scope.customAgeRange = {
 							"name" : "",
 							"lowerValue" : "",
-							"lowerInclusive" : "",
-							"lowerUnits" : "",
+							"lowerInclusive" : "false",
+							"lowerUnits" : "years",
 							"upperValue" : "",
-							"upperInclusive" : "",
-							"upperUnits" : ""
-						},
+							"upperInclusive" : "false",
+							"upperUnits" : "years"
+						};
 
 						$scope.presetAgeRanges = presetAgeRanges;
 
@@ -446,51 +448,153 @@ angular
 							$modalInstance.dismiss('cancel');
 						};
 
+						// alter the rule category, and construct
 						$scope.changeRuleCategory = function(ruleCategory) {
 
 							$scope.ageRange = null;
 							$scope.constructRule(ruleCategory, null);
 						};
 
+						// construct actual text of rule based on category and age range (if
+						// supplied)
 						$scope.constructRule = function(ruleCategory, ageRange) {
 
+							console.debug("Constructing rule", ruleCategory, ageRange);
+
+							// clear the rule
 							$scope.rule = "";
 
+							// clear the rule error
+							$scope.ruleError = "";
+
+							// if a true rule
 							if (ruleCategory === "TRUE") {
 								$scope.rule = "TRUE";
 							}
 
+							// if a male gender rule
 							else if (ruleCategory === "Gender - Male") {
 								$scope.rule = "IFA 248153007 | Male (finding) |";
 							}
 
+							// if a female gender rule
 							else if (ruleCategory === "Gender - Female") {
 								$scope.rule = "IFA 248152002 | Female (finding) |";
 							}
 
-							else if (ageRange != null) {
+							// if an age range rule
+							else if (ruleCategory === "Age - Chronological"
+									|| ruleCategory === "Age - At Onset") {
 
-								if (ruleCategory === "Age - Chronological"
-										|| ruleCategory === "Age - At Onset") {
+								// if age range not yet specified, do not construct rule
+								if (ageRange == null || ageRange == undefined)
+									return;
 
-									var ruleText = (ruleCategory === "Age - Chronological") ? "IFA 424144002 | Current chronological age (observable entity)"
-											: "IFA 445518008 | Age at onset of clinical finding (observable entity)";
+								// determine if lower and upper values are complete by checking
+								// for null values
+								var lowerValueValid = ageRange.lowerValue != "-1"
+										&& ageRange.lowerValue != undefined
+										&& ageRange.lowerValue != null && ageRange.lowerValue != "";
+								var upperValueValid = ageRange.upperValue != "-1"
+										&& ageRange.upperValue != undefined
+										&& ageRange.lowerValue != null && ageRange.upperValue != "";
 
-									if (ageRange.lowerValue != "-1") {
-										$scope.rule += ruleText + " | "
-												+ (ageRange.lowerInclusive == true ? ">=" : ">") + " "
-												+ ageRange.lowerValue + " " + ageRange.lowerUnits;
+								// stop if neither value has been fully specified
+								if (!lowerValueValid && !upperValueValid)
+									return;
+
+								console.debug("Validating age range", lowerValueValid,
+										upperValueValid);
+
+								// initialize calculated values (in days)
+								var lowerValue = -1;
+								var upperValue = -1;
+
+								// calculate lower value based on units and verify greater than
+								// zero
+								if (lowerValueValid) {
+
+									switch (ageRange.lowerUnits) {
+									case "days":
+										lowerValue = parseFloat(ageRange.lowerValue, 10);
+										break;
+									case "months":
+										lowerValue = parseFloat(ageRange.lowerValue, 10) * 30;
+										break;
+									case "years":
+										lowerValue = parseFloat(ageRange.lowerValue, 10) * 365;
+										break;
+									default:
+										$scope.ruleError += "Unexpected error determining lower units\n";
 									}
 
-									if (ageRange.lowerValue != "-1"
-											&& ageRange.upperValue != "-1")
-										$scope.rule += " AND ";
-
-									if (ageRange.upperValue != "-1") {
-										$scope.rule += ruleText + " | "
-												+ (ageRange.upperInclusive == true ? "<=" : "<") + " "
-												+ ageRange.upperValue + " " + ageRange.upperUnits;
+									if (lowerValue <= 0) {
+										$scope.ruleError = "Lower bound value must be greater than zero\n";
+										return;
 									}
+								}
+								if (upperValueValid) {
+
+									switch (ageRange.upperUnits) {
+									case "days":
+										upperValue = parseFloat(ageRange.upperValue, 10)
+										break;
+									case "months":
+										upperValue = parseFloat(ageRange.upperValue, 10) * 30;
+										break;
+									case "years":
+										upperValue = parseFloat(ageRange.upperValue, 10) * 365;
+										break;
+									default:
+										$scope.ruleError += "Unexpected error determining upper units\n";
+									}
+
+									if (upperValue <= 0) {
+										$scope.ruleError = "Upper bound value must be greater than zero\n";
+										return;
+									}
+								}
+
+								console.debug("Values", lowerValue, upperValue);
+
+								// if both specified, check that upper value is greater than
+								// lower value
+								if (lowerValueValid && upperValueValid
+										&& lowerValue >= upperValue) {
+									$scope.ruleError += "Upper bound value must be greater than lower bound value";
+								}
+
+								// base text for both lower and upper value sections
+								var ruleText = (ruleCategory === "Age - Chronological") ? "IFA 424144002 | Current chronological age (observable entity)"
+										: "IFA 445518008 | Age at onset of clinical finding (observable entity)";
+
+								if (lowerValueValid) {
+									$scope.rule += ruleText
+											+ " | "
+											+ (ageRange.lowerInclusive == true ? ">=" : ">")
+											+ " "
+											+ parseFloat(ageRange.lowerValue, 10).toFixed(1)
+											+ " "
+											+ (parseFloat(ageRange.lowerValue, 10) == 1.0 ? ageRange.lowerUnits
+													.slice(0, -1)
+													: ageRange.lowerUnits);
+								}
+
+								if (lowerValueValid && upperValueValid) {
+									$scope.rule += " AND ";
+								}
+
+								if (upperValueValid) {
+									$scope.rule += ruleText
+											+ " | "
+											+ (ageRange.upperInclusive == true ? "<=" : "<")
+											+ " "
+											+ parseFloat(ageRange.upperValue, 10).toFixed(1)
+											+ " "
+											+ (parseFloat(ageRange.upperValue, 10) == 1.0 ? ageRange.upperUnits
+													.slice(0, -1)
+													: ageRange.upperUnits);
+
 								}
 							} else
 								$scope.rule = null;
@@ -716,7 +820,8 @@ angular
 						}
 
 						return allowableAdvices;
-					};
+					}
+					;
 
 					// Function for MapAdvice and MapRelations, returns allowable lists
 					// based
