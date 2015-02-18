@@ -233,62 +233,77 @@ angular
                 "Content-Type" : "application/json"
               }
             }).success(function(data) {
-              $scope.record = data;
-
+            	
+            	$scope.record = data;
+            	
+            	// verify that all entries on this record with no target have "No target" set as target name
+            	for (var i = 0; i < $scope.record.mapEntry.length; i++) {
+            		if ($scope.record.mapEntry[i].targetId == null || $scope.record.mapEntry[i].targetId == null || $scope.record.mapEntry[i].targetId === "")
+            			$scope.record.mapEntry[i].targetName = 'No target';
+            	}
+	
+            	
+            	
             }).error(function(data, status, headers, config) {
               $rootScope.handleHttpError(data, status, headers, config);
             }).then(
                 function() {
-
-                  // obtain the record concept
-                  $http(
-                      {
-                        url : root_content + "concept/id/"
-                            + $scope.project.sourceTerminology + "/"
-                            + $scope.project.sourceTerminologyVersion + "/"
-                            + $scope.record.conceptId,
-                        dataType : "json",
-                        method : "GET",
-                        headers : {
-                          "Content-Type" : "application/json"
-                        }
-                      }).success(function(data) {
-                    $scope.concept = data;
-                    $scope.conceptBrowserUrl = $scope.getBrowserUrl();
-                    // initialize
-                    // the dynamic
-                    // tooltip on
-                    // the Save/Next
-                    // button with
-                    // the next
-                    // concept to be
-                    // mapped
-                    $scope.resolveNextConcept(true);
-                  }).error(function(data, status, headers, config) {
-                    $rootScope.handleHttpError(data, status, headers, config);
-                  });
-
-                  // initialize the entries
-                  initializeGroupsTree();
-
-                  // add code to get feedback
-                  // conversations
-                  $http(
-                      {
-                        url : root_workflow + "conversation/id/"
-                            + $scope.record.id,
-                        dataType : "json",
-                        method : "GET",
-                        headers : {
-                          "Content-Type" : "application/json"
-                        }
-                      }).success(function(data) {
-                    $scope.conversation = data;
-                    initializeReturnRecipients();
-                  }).error(function(data, status, headers, config) {
-                    $rootScope.handleHttpError(data, status, headers, config);
-                  });
+                	
+               // check that this user actually owns this record
+                	if ($scope.record.owner.userName != $scope.user.userName) {
+                		$rootScope.handleReturnToDashboardError("Attempted to edit a record owned by another user; returned to dashboard", $scope.role); 
+                	} else {
+	                  // obtain the record concept
+	                  $http(
+	                      {
+	                        url : root_content + "concept/id/"
+	                            + $scope.project.sourceTerminology + "/"
+	                            + $scope.project.sourceTerminologyVersion + "/"
+	                            + $scope.record.conceptId,
+	                        dataType : "json",
+	                        method : "GET",
+	                        headers : {
+	                          "Content-Type" : "application/json"
+	                        }
+	                      }).success(function(data) {
+	                    $scope.concept = data;
+	                    $scope.conceptBrowserUrl = $scope.getBrowserUrl();
+	                    // initialize
+	                    // the dynamic
+	                    // tooltip on
+	                    // the Save/Next
+	                    // button with
+	                    // the next
+	                    // concept to be
+	                    // mapped
+	                    $scope.resolveNextConcept(true);
+	                  }).error(function(data, status, headers, config) {
+	                    $rootScope.handleHttpError(data, status, headers, config);
+	                  });
+	
+	                  // initialize the entries
+	                  initializeGroupsTree();
+	
+	                  // add code to get feedback
+	                  // conversations
+	                  $http(
+	                      {
+	                        url : root_workflow + "conversation/id/"
+	                            + $scope.record.id,
+	                        dataType : "json",
+	                        method : "GET",
+	                        headers : {
+	                          "Content-Type" : "application/json"
+	                        }
+	                      }).success(function(data) {
+	                    $scope.conversation = data;
+	                    initializeReturnRecipients();
+	                  }).error(function(data, status, headers, config) {
+	                    $rootScope.handleHttpError(data, status, headers, config);
+	                  });
+                	}
                 });
+                
           }
           ;
 
@@ -1377,7 +1392,7 @@ angular
               "id" : null,
               "mapRecordId" : $scope.record.id,
               "targetId" : null,
-              "targetName" : null,
+              "targetName" : "No target",
               "rule" : ($scope.project.ruleBased == true ? "TRUE" : null),
               "mapPriority" : group.entry.length + 1,
               "mapRelation" : null,

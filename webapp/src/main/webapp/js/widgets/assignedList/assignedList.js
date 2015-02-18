@@ -186,13 +186,13 @@ angular
 															$scope.queryReviewWork,
 															$scope.assignedReviewWorkType);
 													
-												} else if (parameters.assignType === 'conceptByUser') {
+												} else if (parameters.assignType === 'conceptsByUser') {
 
 														// set the tab
 														$scope.setTab(3);
 
 														// retrieve the work
-														$scope.retrieveAssignedWorkForUser($scope.assignedWorkForUserPage, $scope.mapUserViewed.userName,
+														$scope.retrieveAssignedWorkForUser($scope.assignedWorkForUserPage, parameters.assignUser.userName,
 																$scope.queryAssignedForUser, $scope.assignedWorkForUserType);
 
 													// QA Work
@@ -725,6 +725,9 @@ angular
 											if (mapUser.userName === $scope.currentUser.userName)
 												$rootScope
 														.$broadcast('assignedListWidget.notification.unassignWork');
+											
+											// if this user is viewing their assigned concepts via the By User tab, re-retrieve
+											
 
 										}).error(function(data, status, headers, config) {
 									$rootScope.glassPane--;
