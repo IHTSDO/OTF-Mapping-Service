@@ -21,7 +21,6 @@ import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
-import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
@@ -543,41 +542,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
       return validationResult;
     }
 
-    // compare mapPrinciples
-    Comparator<Object> principlesComparator = new Comparator<Object>() {
-      @Override
-      public int compare(Object o1, Object o2) {
-        String x1 = ((MapPrinciple) o1).getPrincipleId();
-        String x2 = ((MapPrinciple) o2).getPrincipleId();
-        if (!x1.equals(x2)) {
-          return x1.compareTo(x2);
-        }
-        return 0;
-      }
-    };
-    List<MapPrinciple> principles1 =
-        new ArrayList<>(record1.getMapPrinciples());
-    Collections.sort(principles1, principlesComparator);
-    List<MapPrinciple> principles2 =
-        new ArrayList<>(record2.getMapPrinciples());
-    Collections.sort(principles2, principlesComparator);
-
-    if (principles1.size() != principles2.size()) {
-      validationResult
-          .addError("Map principle assignment is different: Number of principles is different");
-      validationResult.addConciseError("Map principle assignment is different");
-    } else {
-      for (int i = 0; i < principles1.size(); i++) {
-        if (!principles1.get(i).getPrincipleId()
-            .equals(principles2.get(i).getPrincipleId())) {
-          validationResult.addError("Map principle assignment is different: "
-              + principles1.get(i).getName() + " vs. "
-              + principles2.get(i).getName());
-          validationResult
-              .addConciseError("Map principle assignment is different");
-        }
-      }
-    }
+    // DO NOT compare mapPrinciples -- as of MAP-1139
 
     // check force map lead review flag
     if (record1.isFlagForMapLeadReview()) {
