@@ -289,7 +289,7 @@ mapProjectAppDashboards
 							$location.path("/");
 							$rootScope.handleHttpError(data, status, headers, config);
 						});
-					}
+					};
 
 					// function to change project from the header
 					$scope.changeFocusProject = function(mapProject) {
@@ -651,7 +651,6 @@ mapProjectAppDashboards
 					$scope.currentRole = null;
 					$scope.preferences = null;
 					$scope.focusProject = null;
-					$rootScope.globalError = '';
 
 					// Used for Reload/Refresh purposes -- after setting to
 					// null, get the
