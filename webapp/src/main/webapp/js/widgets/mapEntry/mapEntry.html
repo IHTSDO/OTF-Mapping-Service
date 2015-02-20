@@ -1,107 +1,114 @@
-<div ng-show="entry == null">
+<!--  Empty div used to scroll after target selection via terminology browser -->
+<div id="mapEntryWidgetTop"></div>
 
-  <h4>No entry selected</h4>
+<div ng-show="entry == null">
+	<h4>No entry selected</h4>
 </div>
+
 <div ng-show="entry != null">
 
 
-  <accordion> <accordion-group  is-open="isTargetOpen">
-  <accordion-heading > Target<i class="pull-right glyphicon"
-    ng-class="{'glyphicon-chevron-down': isTargetOpen, 'glyphicon-chevron-right': !isTargetOpen}"></i>
-  </accordion-heading>
+	<accordion> <accordion-group is-open="isTargetOpen">
+	<accordion-heading> Target<i
+		class="pull-right glyphicon"
+		ng-class="{'glyphicon-chevron-down': isTargetOpen, 'glyphicon-chevron-right': !isTargetOpen}"></i>
+	</accordion-heading>
 
-  <table style="width: 100%;">
+	<table style="width: 100%;">
 
-    <tr>
-      <td id="targetCode" style="vertical-align: top; padding: 5px;"><strong>Target
-          Code</strong></td>
-      <td style="padding: 5px;">
-        <form>
-          {{project.destinationTerminology}}, <input style="width: 125px;"
-            id="targetIdField" placeholder="Enter target code"
-            ng-blur="setTarget(entry.targetId)" ng-model="entry.targetId" />
-          <button type="submit" ng-click="setTarget(entry.targetId)">Set <span ng-show="entry.targetId == null || entry.targetId === ''">Empty Target</span></button>
-          <button type="reset" ng-show="entry.targetId != null"
-            ng-click="clearTargetConcept(entry);mapRelationInput = null;getValidTargetError = null;">Clear</button>
-        </form> <span style="color: red" ng-show="getValidTargetError != null">{{getValidTargetError}}</span>
-        </span>
-    </tr>
-    <tr>
-      <td
-        style="vertical-align: top; padding: 5px; width: 50px; white-space: nowrap;"><strong>Preferred
-          Term</strong></td>
-      <td style="vertical-align: top; padding: 5px;"><span
-        ng-show="entry.targetId != null">{{entry.targetName}}</span> <span
-        style="color: orange;"
-        ng-show="entry.targetId == null">You must specify a valid or empty target.  </span> 
-       </td>
-    </tr>
+		<tr>
+			<td style="vertical-align: top; padding: 5px;"><strong>Target
+					Code</strong></td>
+			<td style="padding: 5px;">
+				<form>
+					{{project.destinationTerminology}}, <input style="width: 125px;"
+						id="targetIdField" placeholder="Enter target code"
+						ng-blur="setTarget(entry.targetId)" ng-model="entry.targetId" />
+					<button type="submit" ng-click="setTarget(entry.targetId)">
+						Set <span
+							ng-show="entry.targetId == null || entry.targetId === ''">Empty
+							Target</span>
+					</button>
+					<button type="reset" ng-show="entry.targetId != null"
+						ng-click="clearTargetConcept(entry);mapRelationInput = null;getValidTargetError = null;">Clear</button>
+				</form> <span style="color: red" ng-show="getValidTargetError != null">{{getValidTargetError}}</span>
+				</span>
+		</tr>
+		<tr>
+			<td
+				style="vertical-align: top; padding: 5px; width: 50px; white-space: nowrap;"><strong>Preferred
+					Term</strong></td>
+			<td style="vertical-align: top; padding: 5px;"><span
+				ng-show="entry.targetId != null">{{entry.targetName}}</span> <span
+				style="color: orange;" ng-show="entry.targetId == null">You
+					must specify a valid or empty target. </span></td>
+		</tr>
 
-  </table>
-  
-  </accordion-group> </accordion>
+	</table>
 
-  <accordion> <accordion-group is-open="isParametersOpen">
-  <accordion-heading> Mapping Parameters <i
-    class="pull-right glyphicon"
-    ng-class="{'glyphicon-chevron-down': isParametersOpen, 'glyphicon-chevron-right': !isParametersOpen}"></i>
-  </accordion-heading>
+	</accordion-group> </accordion>
 
-  <table style="padding: 5px">
+	<accordion> <accordion-group is-open="isParametersOpen">
+	<accordion-heading> Mapping Parameters <i
+		class="pull-right glyphicon"
+		ng-class="{'glyphicon-chevron-down': isParametersOpen, 'glyphicon-chevron-right': !isParametersOpen}"></i>
+	</accordion-heading>
 
-    <tr>
-      <td style="vertical-align: top; padding: 5px; width: 50px;"><strong>Relation</strong></td>
-      <td style="vertical-align: top; padding: 5px;"><span
-        ng-show="entry.mapRelation != null">{{entry.mapRelation.name}}</span> <span
-        style="color: lightgray;" ng-show="entry.mapRelation == null">No
-          relation selected.</span></td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top; padding: 5px; width: 50px;"></td>
-      <td style="vertical-align: top; padding: 5px;">Set relation: <select
-        ng-show="allowableMapRelations.length > 0" style="width: 80%"
-        ng-model="mapRelationInput"
-        ng-change="selectMapRelation(mapRelationInput); mapRelationInput = null;"
-        ng-options="mapRelation as mapRelation.displayName for mapRelation in allowableMapRelations"></select>
-        <span style="color: lightgray;"
-        ng-show="allowableMapRelations.length == 0">No relations
-          available to select.</span>
-      </td>
-    </tr>
+	<table style="padding: 5px">
 
-    <tr ng-show="project.ruleBased == true">
-      <td style="vertical-align: top; padding: 5px; width: 50px;"><strong>Rule</strong></td>
-      <td style="vertical-align: top; padding: 5px;"><span>{{entry.rule}}&nbsp;</span>
-        <span ng-show="entry.rule.length > 0"> <input type="submit"
-          value="Set Rule" ng-click="openRuleConstructor(entry)">
-      </span>
-        <div style="color: red">{{localErrorRule}}</div></td>
-    </tr>
+		<tr>
+			<td style="vertical-align: top; padding: 5px; width: 50px;"><strong>Relation</strong></td>
+			<td style="vertical-align: top; padding: 5px;"><span
+				ng-show="entry.mapRelation != null">{{entry.mapRelation.name}}</span>
+				<span style="color: lightgray;" ng-show="entry.mapRelation == null">No
+					relation selected.</span></td>
+		</tr>
+		<tr>
+			<td style="vertical-align: top; padding: 5px; width: 50px;"></td>
+			<td style="vertical-align: top; padding: 5px;">Set relation: <select
+				ng-show="allowableMapRelations.length > 0" style="width: 80%"
+				ng-model="mapRelationInput"
+				ng-change="selectMapRelation(mapRelationInput); mapRelationInput = null;"
+				ng-options="mapRelation as mapRelation.displayName for mapRelation in allowableMapRelations"></select>
+				<span style="color: lightgray;"
+				ng-show="allowableMapRelations.length == 0">No relations
+					available to select.</span>
+			</td>
+		</tr>
 
-    <tr ng-show="allowableAdvices.length > 0">
-      <td ng-show="entry.targetId != null && entry.targetId != ''"
-        style="vertical-align: top; padding: 5px;"><strong>Advice</strong></td>
-      <td ng-show="entry.targetId != null && entry.targetId != ''"
-        style="vertical-align: top; padding: 5px;">
-        <div ng-show="entry.mapAdvice.length > 0">
-          <div ng-repeat="advice in entry.mapAdvice">
-            <div class="alert alert-warning">
-              <div style="display: inline;">{{advice.detail}}</div>
-              <div style="display: inline; float: right; width: 3%;">
-                <i class="glyphicon glyphicon-remove"
-                  ng-click="removeEntryAdvice(entry, advice)"></i>
-              </div>
-            </div>
-          </div>
-          <hr>
-        </div> <span style="color: red">{{errorAddAdvice}}</span>
-        <form ng-show="entry.targetId != null && entry.targetId != ''">
-          Add Advice: <select style="width: 60%;"
-            ng-change="addEntryAdvice(entry, adviceInput);adviceInput=null;"
-            ng-model="adviceInput"
-            ng-options="advice as advice.detail for advice in allowableAdvices"></select>
-        </form>
-      </td>
-    </tr>
-  </table>
-  </accordion-group> </accordion>
+		<tr ng-show="project.ruleBased == true">
+			<td style="vertical-align: top; padding: 5px; width: 50px;"><strong>Rule</strong></td>
+			<td style="vertical-align: top; padding: 5px;"><span>{{entry.rule}}&nbsp;</span>
+				<span ng-show="entry.rule.length > 0"> <input type="submit"
+					value="Set Rule" ng-click="openRuleConstructor(entry)">
+			</span>
+				<div style="color: red">{{localErrorRule}}</div></td>
+		</tr>
+
+		<tr ng-show="allowableAdvices.length > 0">
+			<td ng-show="entry.targetId != null && entry.targetId != ''"
+				style="vertical-align: top; padding: 5px;"><strong>Advice</strong></td>
+			<td ng-show="entry.targetId != null && entry.targetId != ''"
+				style="vertical-align: top; padding: 5px;">
+				<div ng-show="entry.mapAdvice.length > 0">
+					<div ng-repeat="advice in entry.mapAdvice">
+						<div class="alert alert-warning">
+							<div style="display: inline;">{{advice.detail}}</div>
+							<div style="display: inline; float: right; width: 3%;">
+								<i class="glyphicon glyphicon-remove"
+									ng-click="removeEntryAdvice(entry, advice)"></i>
+							</div>
+						</div>
+					</div>
+					<hr>
+				</div> <span style="color: red">{{errorAddAdvice}}</span>
+				<form ng-show="entry.targetId != null && entry.targetId != ''">
+					Add Advice: <select style="width: 60%;"
+						ng-change="addEntryAdvice(entry, adviceInput);adviceInput=null;"
+						ng-model="adviceInput"
+						ng-options="advice as advice.detail for advice in allowableAdvices"></select>
+				</form>
+			</td>
+		</tr>
+	</table>
+	</accordion-group> </accordion>
