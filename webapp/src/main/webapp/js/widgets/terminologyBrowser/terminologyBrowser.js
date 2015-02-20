@@ -557,6 +557,5 @@ angular
           key : 'concept',
           concept : node
         });
-        //window.scrollTo(0, 0);
       };
     });

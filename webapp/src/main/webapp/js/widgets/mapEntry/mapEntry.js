@@ -155,6 +155,8 @@ angular
 
 					// prevent reloading because it interferes with scrolling
 					$scope.$on('$locationChangeStart', function(ev, newUrl, oldUrl) {
+					
+						console.debug("Preventing reload in mapEntry.js");
 						// prevent reload
 						ev.preventDefault();
 						
@@ -171,9 +173,14 @@ angular
 												.debug("MapEntryWidget: Detected selectConcept from terminologyBrowser");
 										console.debug(parameters);
 
-										$rootScope.currentPageDirty = false;
-										$location.hash('targetCode');
-										$anchorScroll();
+								
+										// get the relative position of the inside of the map entry widget
+										
+										var rect = document.getElementById('mapEntryWidgetTop').getBoundingClientRect();
+										
+										// scroll to (mapEntry left, mapEntry top + scroll offset - header/widget header width)
+										window.scrollTo(rect.left, rect.top + window.pageYOffset - 90);
+			
 
 										$scope.entry.targetId = parameters.concept.terminologyId;
 										$scope.entry.targetName = parameters.concept.defaultPreferredName;
