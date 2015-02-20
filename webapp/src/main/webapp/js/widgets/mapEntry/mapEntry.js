@@ -153,17 +153,6 @@ angular
 						});
 					};
 
-					// prevent reloading because it interferes with scrolling
-					$scope.$on('$locationChangeStart', function(ev, newUrl, oldUrl) {
-					
-						console.debug("Preventing reload in mapEntry.js");
-						// prevent reload
-						ev.preventDefault();
-						
-						// reset this page to dirty to re-enable confirmation of navigation
-						$rootScope.currentPageDirty = true;
-					});
-
 					// watch for concept selection from terminology browser
 					$scope
 							.$on(
