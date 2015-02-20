@@ -14,7 +14,7 @@ angular
 		.controller(
 				'mapEntryWidgetCtrl',
 				function($scope, $rootScope, $q, $http, $routeParams, $modal,
-						$location, localStorageService) {
+						$location, $anchorScroll, localStorageService) {
 
 					// for this widget, the only local storage service variable used is
 					// user
@@ -108,7 +108,7 @@ angular
 						// if target code is empty, compute parameters and return
 						if (targetCode == null || targetCode == undefined
 								|| targetCode === '') {
-							console.debug("Setting to empty target")
+							console.debug("Setting to empty target");
 							$scope.entry.targetId = '';
 							$scope.entry.targetName = 'No target';
 							$scope.computeParameters(true);
@@ -153,6 +153,15 @@ angular
 						});
 					};
 
+					// prevent reloading because it interferes with scrolling
+					$scope.$on('$locationChangeStart', function(ev, newUrl, oldUrl) {
+						// prevent reload
+						ev.preventDefault();
+						
+						// reset this page to dirty to re-enable confirmation of navigation
+						$rootScope.currentPageDirty = true;
+					});
+
 					// watch for concept selection from terminology browser
 					$scope
 							.$on(
@@ -161,6 +170,10 @@ angular
 										console
 												.debug("MapEntryWidget: Detected selectConcept from terminologyBrowser");
 										console.debug(parameters);
+
+										$rootScope.currentPageDirty = false;
+										$location.hash('targetCode');
+										$anchorScroll();
 
 										$scope.entry.targetId = parameters.concept.terminologyId;
 										$scope.entry.targetName = parameters.concept.defaultPreferredName;
@@ -401,7 +414,7 @@ angular
 					// controller for the modal
 					var RuleConstructorModalCtrl = function($scope, $http,
 							$modalInstance, presetAgeRanges, entry) {
-						
+
 						$scope.ruleError = '';
 
 						$scope.customAgeRange = {
@@ -569,15 +582,10 @@ angular
 										: "IFA 445518008 | Age at onset of clinical finding (observable entity)";
 
 								if (lowerValueValid) {
-									$scope.rule += ruleText
-											+ " | "
-											+ (ageRange.lowerInclusive == true ? ">=" : ">")
-											+ " "
-											+ parseFloat(ageRange.lowerValue, 10).toFixed(1)
-											+ " "
-											+ (parseFloat(ageRange.lowerValue, 10) == 1.0 ? ageRange.lowerUnits
-													.slice(0, -1)
-													: ageRange.lowerUnits);
+									$scope.rule += ruleText + " | "
+											+ (ageRange.lowerInclusive == true ? ">=" : ">") + " "
+											+ parseFloat(ageRange.lowerValue, 10).toFixed(1) + " "
+											+ ageRange.lowerUnits;
 								}
 
 								if (lowerValueValid && upperValueValid) {
@@ -585,15 +593,10 @@ angular
 								}
 
 								if (upperValueValid) {
-									$scope.rule += ruleText
-											+ " | "
-											+ (ageRange.upperInclusive == true ? "<=" : "<")
-											+ " "
-											+ parseFloat(ageRange.upperValue, 10).toFixed(1)
-											+ " "
-											+ (parseFloat(ageRange.upperValue, 10) == 1.0 ? ageRange.upperUnits
-													.slice(0, -1)
-													: ageRange.upperUnits);
+									$scope.rule += ruleText + " | "
+											+ (ageRange.upperInclusive == true ? "<=" : "<") + " "
+											+ parseFloat(ageRange.upperValue, 10).toFixed(1) + " "
+											+ ageRange.upperUnits;
 
 								}
 							} else
@@ -834,16 +837,9 @@ angular
 						// return an empty list, otherwise calculate
 						if (entry.targetId != null) {
 
-							console.debug('called allowable relations');
-
 							var nullTarget = entry.targetId === "";
 
-							if (nullTarget == true)
-								console.debug('NULL TARGET');
-
 							for (var i = 0; i < relations.length; i++) {
-
-								console.debug("Checking relation", relations[i]);
 
 								if (relations[i].isComputed == false) {
 
@@ -885,13 +881,9 @@ angular
 						var newArray = [];
 						for (var i = 0; i < array.length; i++) {
 							if (array[i].id != elem.id) {
-								console.debug("Pushing element " + array[i].id);
 								newArray.push(array[i]);
 							}
 						}
-
-						console.debug("After remove, before return:")
-						console.debug(newArray)
 						return newArray;
 					}
 
