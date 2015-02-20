@@ -5,15 +5,15 @@
 <div ng-show="entry != null">
 
 
-  <accordion> <accordion-group is-open="isTargetOpen">
-  <accordion-heading> Target<i class="pull-right glyphicon"
+  <accordion> <accordion-group  is-open="isTargetOpen">
+  <accordion-heading > Target<i class="pull-right glyphicon"
     ng-class="{'glyphicon-chevron-down': isTargetOpen, 'glyphicon-chevron-right': !isTargetOpen}"></i>
   </accordion-heading>
 
   <table style="width: 100%;">
 
     <tr>
-      <td style="vertical-align: top; padding: 5px;"><strong>Target
+      <td id="targetCode" style="vertical-align: top; padding: 5px;"><strong>Target
           Code</strong></td>
       <td style="padding: 5px;">
         <form>
