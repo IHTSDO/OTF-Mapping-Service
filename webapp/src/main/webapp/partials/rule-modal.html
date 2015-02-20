@@ -40,8 +40,7 @@
 						<td><select ng-model="customAgeRange.lowerUnits"
 							ng-change="constructRule(ruleCategory, customAgeRange)">
 								<option value="days">days</option>
-								<option value="months">months</option>
-								<option value="years">years</option>
+								<option value="years" selected="selected">years</option>
 						</select></td>
 					</tr>
 					<td>Upper</td>
@@ -55,7 +54,6 @@
 					<td><select ng-model="customAgeRange.upperUnits"
 						ng-change="constructRule(ruleCategory, customAgeRange)">
 							<option value="days">days</option>
-							<option value="months">months</option>
 							<option value="years" selected="selected">years</option>
 					</select></td>
 					</tr>

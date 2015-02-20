@@ -16,7 +16,6 @@ mapProjectAppDirectives.directive('otfMapRecordNarrow', function($sce) {
       // function to return trusted html code (for tooltip
       // content)
       scope.to_trusted = function(html_code) {
-        console.debug("otfMapRecord: to_trusted", $sce.trustAsHtml(html_code));
         return $sce.trustAsHtml(html_code);
       };
     } };

@@ -2405,12 +2405,17 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     // cycle over the map records, and remove concept ids if a map record is
     // publication-ready
     for (MapRecord mapRecord : mapRecords.getIterable()) {
+      
+      // if this map record is published, skip and remove this concept
       if (mapRecord.getWorkflowStatus().equals(
           WorkflowStatus.READY_FOR_PUBLICATION)
           || mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)) {
 
         conceptIds.remove(mapRecord.getConceptId());
-      } else {
+      } 
+      
+      // if this concept is in scope, add to workflow
+      else if (conceptIds.contains(mapRecord.getConceptId())) {
 
         List<MapRecord> originIds;
 
@@ -2445,7 +2450,17 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
           contentService.getConcept(terminologyId,
               mapProject.getSourceTerminology(),
               mapProject.getSourceTerminologyVersion());
-
+      
+      if (concept == null) {
+        throw new Exception("Could not retrieve concept " + terminologyId + " from terminology " + mapProject.getSourceTerminology() + ", " + mapProject.getSourceTerminologyVersion());
+      }
+      
+      if (!concept.isActive()) {
+        Logger.getLogger(WorkflowServiceJpa.class).warn(
+            "WARNING: Skipped inactive scope concept " + concept.getTerminologyId());
+        continue;
+      }
+    
       // create a workflow tracking record for this concept
       TrackingRecord trackingRecord = new TrackingRecordJpa();
 
@@ -2456,20 +2471,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
       trackingRecord.setTerminologyVersion(concept.getTerminologyVersion());
       trackingRecord.setDefaultPreferredName(concept.getDefaultPreferredName());
 
-      // get the tree positions for this concept and set the sort key to
-      // the first retrieved
-      TreePositionList treePositionsList =
-          contentService.getTreePositions(concept.getTerminologyId(),
-              concept.getTerminology(), concept.getTerminologyVersion());
-
-      // handle inactive concepts - which don't have tree positions
-      if (treePositionsList.getCount() == 0) {
-        trackingRecord.setSortKey("");
-      } else {
-        trackingRecord.setSortKey(treePositionsList.getTreePositions().get(0)
-            .getAncestorPath());
-      }
-
+     
+       
       // add any existing map records to this tracking record
       Set<MapRecord> mapRecordsForTrackingRecord = new HashSet<>();
       if (unpublishedRecords.containsKey(trackingRecord.getTerminologyId())) {
