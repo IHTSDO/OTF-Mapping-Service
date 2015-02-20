@@ -2444,6 +2444,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
     // construct the tracking records for unmapped concepts
     for (String terminologyId : conceptIds) {
+      
+      
 
       // retrieve the concept for this result
       Concept concept =
@@ -2451,16 +2453,31 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
               mapProject.getSourceTerminology(),
               mapProject.getSourceTerminologyVersion());
       
+      if (terminologyId.equals("703619001"))
+        System.out.println(concept.toString());
+      
+      // if concept could not be retrieved, throw exception
       if (concept == null) {
-        throw new Exception("Could not retrieve concept " + terminologyId + " from terminology " + mapProject.getSourceTerminology() + ", " + mapProject.getSourceTerminologyVersion());
+        throw new Exception("Failed to retrieve concept " + terminologyId);
       }
       
+      // skip inactive concepts
       if (!concept.isActive()) {
-        Logger.getLogger(WorkflowServiceJpa.class).warn(
-            "WARNING: Skipped inactive scope concept " + concept.getTerminologyId());
+        Logger.getLogger(WorkflowServiceJpa.class).warn("Skipped inactive concept " + terminologyId);
         continue;
       }
-    
+      
+      // get the tree positions for this concept and set the sort key to
+      // the first retrieved
+      TreePositionList treePositionsList =
+          contentService.getTreePositions(concept.getTerminologyId(),
+              concept.getTerminology(), concept.getTerminologyVersion());
+
+      // if no tree position, throw exception
+      if (treePositionsList.getCount() == 0) {
+        throw new Exception("Active concept " + terminologyId + " has no tree positions");
+      }
+
       // create a workflow tracking record for this concept
       TrackingRecord trackingRecord = new TrackingRecordJpa();
 
@@ -2470,9 +2487,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
       trackingRecord.setTerminologyId(concept.getTerminologyId());
       trackingRecord.setTerminologyVersion(concept.getTerminologyVersion());
       trackingRecord.setDefaultPreferredName(concept.getDefaultPreferredName());
+      trackingRecord.setSortKey(treePositionsList.getTreePositions().get(0).getAncestorPath());
 
-     
-       
       // add any existing map records to this tracking record
       Set<MapRecord> mapRecordsForTrackingRecord = new HashSet<>();
       if (unpublishedRecords.containsKey(trackingRecord.getTerminologyId())) {
