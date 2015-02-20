@@ -2453,9 +2453,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
               mapProject.getSourceTerminology(),
               mapProject.getSourceTerminologyVersion());
       
-      if (terminologyId.equals("703619001"))
-        System.out.println(concept.toString());
-      
       // if concept could not be retrieved, throw exception
       if (concept == null) {
         throw new Exception("Failed to retrieve concept " + terminologyId);
