@@ -338,6 +338,11 @@ mapProjectAppDashboards
 						// therefore, return to dashboard
 
 					};
+					
+					$scope.$on('localStorageModule.notification.setMapProjects',
+							function(event, parameters) {
+						$scope.mapProjects = parameters.mapProjects;
+					});
 
 					$scope.goToHelp = function() {
 						var path;
@@ -622,6 +627,11 @@ mapProjectAppDashboards
 										});
 
 					};
+					
+					$scope.$on('localStorageModule.notification.setMapProjects',
+							function(event, parameters) {
+						$scope.mapProjects = parameters.mapProjects;
+					});
 
 					$scope.goToHelp = function() {
 						var path;
@@ -1254,6 +1264,11 @@ mapProjectAppDashboards
 						});
 
 					};
+					
+					$scope.$on('localStorageModule.notification.setMapProjects',
+							function(event, parameters) {
+						$scope.mapProjects = parameters.mapProjects;
+					});
 
 					$scope.goToHelp = function() {
 						var path;
@@ -1572,6 +1587,11 @@ mapProjectAppDashboards
 										});
 
 					};
+					
+					$scope.$on('localStorageModule.notification.setMapProjects',
+							function(event, parameters) {
+						$scope.mapProjects = parameters.mapProjects;
+					});
 
 					$scope.goToHelp = function() {
 						var path;
@@ -1743,6 +1763,11 @@ mapProjectAppDashboards
 										});
 
 					};
+					
+					$scope.$on('localStorageModule.notification.setMapProjects',
+							function(event, parameters) {
+						$scope.mapProjects = parameters.mapProjects;
+					});
 
 					$scope.goToHelp = function() {
 						var path;
@@ -1862,6 +1887,11 @@ mapProjectAppDashboards.controller('ProjectRecordsDashboardCtrl',
 					$rootScope.handleHttpError(data, status, headers, config);
 				});
 			};
+			
+			$scope.$on('localStorageModule.notification.setMapProjects',
+					function(event, parameters) {
+				$scope.mapProjects = parameters.mapProjects;
+			});
 
 			// function to change project from the header
 			$scope.changeFocusProject = function(mapProject) {
@@ -1923,6 +1953,11 @@ mapProjectAppDashboards.controller('RecordConceptDashboardCtrl',
 			$scope.page = 'recordConceptDashboard';
 
 			console.debug('in recordConceptDashboardCtrl');
+			
+			$scope.$on('localStorageModule.notification.setMapProjects',
+					function(event, parameters) {
+				$scope.mapProjects = parameters.mapProjects;
+			});
 
 			// watch for preferences change
 			$scope.$on('localStorageModule.notification.setUserPreferences',
@@ -2065,6 +2100,11 @@ mapProjectAppDashboards.controller('IndexViewerDashboardCtrl',
 			$scope.page = 'indexViewerDashboard';
 
 			console.debug('in indexViewerDashboardCtrl');
+			
+			$scope.$on('localStorageModule.notification.setMapProjects',
+					function(event, parameters) {
+				$scope.mapProjects = parameters.mapProjects;
+			});
 
 			// watch for preferences change
 			$scope.$on('localStorageModule.notification.setUserPreferences',
