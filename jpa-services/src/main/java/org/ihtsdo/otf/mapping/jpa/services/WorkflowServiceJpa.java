@@ -2288,9 +2288,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         // detached object errors
         MapRecord newRecord = new MapRecordJpa(mr, false);
 
-        Logger.getLogger(WorkflowServiceJpa.class).info(
+       /* Logger.getLogger(WorkflowServiceJpa.class).info(
             "Adding record: " + newRecord.toString());
-
+*/
         // add the record to the database
 
         mappingService.addMapRecord(newRecord);
@@ -2302,11 +2302,11 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
       // otherwise, check for update
       else {
         // if the old map record is changed, update it
-        Logger.getLogger(WorkflowServiceJpa.class).info(
+       /* Logger.getLogger(WorkflowServiceJpa.class).info(
             "New record: " + mr.toString());
         Logger.getLogger(WorkflowServiceJpa.class).info(
             "Old record: "
-                + getMapRecordInSet(oldRecords, mr.getId()).toString());
+                + getMapRecordInSet(oldRecords, mr.getId()).toString());*/
 
         if (!mr.isEquivalent(getMapRecordInSet(oldRecords, mr.getId()))) {
           Logger.getLogger(WorkflowServiceJpa.class)
