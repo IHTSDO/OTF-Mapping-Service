@@ -2356,6 +2356,10 @@ public class DefaultProjectSpecificAlgorithmHandler implements
               + mapRecord.getId() + ", " + mapRecord.getOwner().getName()
               + ", and concept id " + mapRecord.getConceptId()
               + ", but no previous revisions exist.");
+    
+    for (MapRecord revision : revisions) {
+      System.out.println(revision.getTimestamp());
+    }
 
     // cycle over records until the previously
     // published/ready-for-publication
