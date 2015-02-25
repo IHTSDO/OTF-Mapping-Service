@@ -93,6 +93,7 @@ import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
+import org.ihtsdo.otf.mapping.services.helpers.OtfEmailHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
 /**
@@ -808,6 +809,67 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     // first assign the map record to its children
     mapRecord.assignToChildren();
 
+    // double check that all entries with blank targets are correctly set
+    // NOTES: Do not want this to interrupt normal flow if problems occur
+    // Algorithm Handler only instantiated if required
+    // Warning message used to store any errors for logging/email
+    ProjectSpecificAlgorithmHandler algorithmHandler = null;
+    String warningMsg = "";
+    for (MapEntry mapEntry : mapRecord.getMapEntries()) {
+      System.out.println(mapEntry.toString());
+      if (mapEntry.getTargetId() == null || mapEntry.getTargetId().isEmpty()) {
+        
+        System.out.println("EMPTY TARGET DETECTED");
+
+        // get handler if not already instantiated
+        if (algorithmHandler == null) {
+          try {
+            algorithmHandler =
+                getProjectSpecificAlgorithmHandler(getMapProject(mapRecord
+                    .getMapProjectId()));
+          } catch (Exception e) {
+            warningMsg +=
+                "Unexpected error attempting to instantiate project specific handler";
+          }
+        }
+
+        // try to set the default target name
+        try { 
+          Logger.getLogger(MappingServiceJpa.class).info("Ensuring blank target properly set for map entry " + mapEntry.getId());
+          mapEntry.setTargetId("");
+          mapEntry.setTargetName(algorithmHandler
+              .getDefaultTargetNameForBlankTarget());
+        } catch (Exception e) {
+
+          // do not throw exception, but send email
+          warningMsg +=
+              "Unexpected error attempting to set blank target for map entry\n"
+                  + "  Map Record Id     : " + mapRecord.getId()
+                  + "  Map Record Concept: " + mapRecord.getConceptId() + ", "
+                  + mapRecord.getConceptName() + "  Map Entry Id      : "
+                  + mapEntry.getId();
+
+        }
+
+      }
+    }
+
+    if (!warningMsg.isEmpty()) {
+      Logger.getLogger(MappingServiceJpa.class).error(
+          "Failed to correctly set blank targets: " + warningMsg);
+      try {
+        // send email if recipients list specified
+        OtfEmailHandler emailHandler = new OtfEmailHandler();
+        if (emailHandler.isRecipientsListSpecified()) {
+          emailHandler.sendSimpleEmail(
+              "OTF-Mapping-Tool Warning: Failed to properly set blank target",
+              warningMsg);
+        }
+      } catch (Exception e) {
+        // do nothing
+      }
+    }
+
     if (getTransactionPerOperation()) {
 
       tx = manager.getTransaction();
@@ -1500,8 +1562,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     // add parantheses and map project constraint
     fullQuery = "(" + fullQuery + ")" + " AND mapProjectId:" + mapProjectId;
 
-    Logger.getLogger(MappingServiceJpa.class)
-        .debug("Full query: " + fullQuery);
+    Logger.getLogger(MappingServiceJpa.class).debug("Full query: " + fullQuery);
 
     return fullQuery;
 
