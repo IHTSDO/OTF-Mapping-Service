@@ -2358,7 +2358,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
               + ", but no previous revisions exist.");
     
     for (MapRecord revision : revisions) {
-      System.out.println(revision.getTimestamp());
+      System.out.println(revision.getId() + "\t" + revision.getWorkflowStatus() + "\t" + revision.getTimestamp());
     }
 
     // cycle over records until the previously
