@@ -2344,7 +2344,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     Collections.sort(revisions, new Comparator<MapRecord>() {
       @Override
       public int compare(MapRecord mr1, MapRecord mr2) {
-        return mr2.getTimestamp().compareTo(mr1.getTimestamp());
+        return mr2.getLastModified().compareTo(mr1.getLastModified());
       }
     });
 
