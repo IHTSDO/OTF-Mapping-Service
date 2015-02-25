@@ -2344,7 +2344,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     Collections.sort(revisions, new Comparator<MapRecord>() {
       @Override
       public int compare(MapRecord mr1, MapRecord mr2) {
-        return mr1.getTimestamp().compareTo(mr2.getTimestamp());
+        return mr2.getTimestamp().compareTo(mr1.getTimestamp());
       }
     });
 
@@ -2468,6 +2468,14 @@ public class DefaultProjectSpecificAlgorithmHandler implements
   public MapRelation getDefaultUpPropagatedMapRelation() throws Exception {
     // does not apply
     return null;
+  }
+  
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#getDefaultTargetNameForBlankTarget()
+   */
+  @Override
+  public String getDefaultTargetNameForBlankTarget() {
+    return "No target";
   }
 
 }

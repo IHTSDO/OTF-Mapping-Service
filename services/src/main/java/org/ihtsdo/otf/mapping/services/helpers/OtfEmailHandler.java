@@ -94,5 +94,14 @@ public class OtfEmailHandler {
           config.getProperty("mail.smtp.password"));
     }
   }
+  
+  /**
+   * Indicates whether or not recipients list is specified (non-empty)
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public boolean isRecipientsListSpecified() {
+    return !config.getProperty("send.notification.recipients").isEmpty();
+  }
 
 }
