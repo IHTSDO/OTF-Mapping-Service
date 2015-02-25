@@ -816,11 +816,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     ProjectSpecificAlgorithmHandler algorithmHandler = null;
     String warningMsg = "";
     for (MapEntry mapEntry : mapRecord.getMapEntries()) {
-      System.out.println(mapEntry.toString());
-      if (mapEntry.getTargetId() == null || mapEntry.getTargetId().isEmpty()) {
-        
-        System.out.println("EMPTY TARGET DETECTED");
-
+       if (mapEntry.getTargetId() == null || mapEntry.getTargetId().isEmpty()) {
+   
         // get handler if not already instantiated
         if (algorithmHandler == null) {
           try {
