@@ -63,14 +63,6 @@ if ($status != 0) then
     exit 1
 endif
 
-echo "    Perform cycle check ... `/bin/date`"
-cd $MAPPING_CODE/admin/loader
-mvn install -PCycleCheck -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT -Dversion=latest -Droot.ids=138875005 | sed 's/^/      /'
-if ($status != 0) then
-    echo "ERROR performing cycle check"
-    exit 1
-endif
-
 echo "    Remove SNOMEDCT tree positions ... `/bin/date`"
 cd $MAPPING_CODE/admin/remover
 mvn install -PTreepos -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT -Dversion=latest | sed 's/^/      /'
