@@ -71,6 +71,7 @@ public class TreeposComputerMojo extends AbstractMojo {
     getLog().info("  terminology = " + terminology);
     getLog().info("  terminologyVersion = " + terminologyVersion);
     getLog().info("  rootIds = " + rootIds);
+    getLog().info("  sendNotification = " + sendNotification);
 
     // check notification parameter requirements
     Properties config;
