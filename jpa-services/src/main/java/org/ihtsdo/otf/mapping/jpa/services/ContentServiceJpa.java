@@ -1573,7 +1573,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
     // begin the recursive computation
     computeTreePositionsHelper(rootConcept, typeId, "",
-        computeTreePositionCommitCt, computeTreePositionTransaction);
+        computeTreePositionCommitCt, computeTreePositionTransaction, false);
 
     // commit any remaining tree positions
     computeTreePositionTransaction.commit();
@@ -1591,48 +1591,58 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
    * 
    * NOTE: This function is designed to keep as little Concept information in
    * storage as possible. See inline notes.
-   * 
+   *
    * @param concept the concept
    * @param typeId the type id
    * @param ancestorPath the ancestor path
    * @param computeTreePositionCommitCt the compute tree position commit ct
    * @param computeTreePositionTransaction the compute tree position transaction
+   * @param cycleCheckOnly the cycle check only
    * @return tree positions at this level
    * @throws Exception the exception
    */
   @SuppressWarnings("unused")
   private Set<Long> computeTreePositionsHelper(Concept concept, String typeId,
     String ancestorPath, int computeTreePositionCommitCt,
-    EntityTransaction computeTreePositionTransaction) throws Exception {
+    EntityTransaction computeTreePositionTransaction, boolean cycleCheckOnly)
+    throws Exception {
 
     final Set<Long> descConceptIds = new HashSet<>();
 
     // if concept is active
     if (concept.isActive()) {
 
+      if (ancestorPath.indexOf(concept.getTerminologyId()) != -1) {
+        throw new Exception("CYCLE DETECTED: " + ancestorPath + ", "
+            + concept.getTerminologyId());
+
+      }
+
       // instantiate the tree position
       final TreePosition tp = new TreePositionJpa();
 
-      // logging information
-      int ancestorCount =
-          ancestorPath.length() - ancestorPath.replaceAll("~", "").length();
-      String loggerPrefix = "";
-      for (int i = 0; i < ancestorCount; i++)
-        loggerPrefix += "  ";
+      if (!cycleCheckOnly) {
 
-      // Logger.get// Logger(ContentServiceJpa.class).info(loggerPrefix +
-      // "Computing position for concept " + concept.getTerminologyId() +
-      // ", " + concept.getDefaultPreferredName());;
+        // logging information
+        int ancestorCount =
+            ancestorPath.length() - ancestorPath.replaceAll("~", "").length();
+        String loggerPrefix = "";
+        for (int i = 0; i < ancestorCount; i++)
+          loggerPrefix += "  ";
 
-      tp.setAncestorPath(ancestorPath);
-      tp.setTerminology(concept.getTerminology());
-      tp.setTerminologyVersion(concept.getTerminologyVersion());
-      tp.setTerminologyId(concept.getTerminologyId());
-      tp.setDefaultPreferredName(concept.getDefaultPreferredName());
+        // Logger.get// Logger(ContentServiceJpa.class).info(loggerPrefix +
+        // "Computing position for concept " + concept.getTerminologyId() +
+        // ", " + concept.getDefaultPreferredName());;
 
-      // persist the tree position
-      manager.persist(tp);
+        tp.setAncestorPath(ancestorPath);
+        tp.setTerminology(concept.getTerminology());
+        tp.setTerminologyVersion(concept.getTerminologyVersion());
+        tp.setTerminologyId(concept.getTerminologyId());
+        tp.setDefaultPreferredName(concept.getDefaultPreferredName());
 
+        // persist the tree position
+        manager.persist(tp);
+      }
       // construct the ancestor path terminating at this concept
       final String conceptPath =
           (ancestorPath.equals("") ? concept.getTerminologyId() : ancestorPath
@@ -1656,8 +1666,10 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
           // add this terminology id to the set of children
           childrenConceptIds.add(childConcept.getId());
 
-          // add this terminology id to the set of descendants
-          descConceptIds.add(childConcept.getId());
+          if (!cycleCheckOnly) {
+            // add this terminology id to the set of descendants
+            descConceptIds.add(childConcept.getId());
+          }
         }
       }
 
@@ -1668,51 +1680,58 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
         // call helper function on child concept
         // add the results to the local descendant set
-        descConceptIds.addAll(computeTreePositionsHelper(
-            getConcept(childConceptId), typeId, conceptPath,
-            computeTreePositionCommitCt, computeTreePositionTransaction));
+        final Set<Long> desc =
+            computeTreePositionsHelper(getConcept(childConceptId), typeId,
+                conceptPath, computeTreePositionCommitCt,
+                computeTreePositionTransaction, cycleCheckOnly);
+        if (!cycleCheckOnly) {
+          descConceptIds.addAll(desc);
+        }
 
       }
 
-      // set the children count
-      tp.setChildrenCount(childrenConceptIds.size());
+      if (!cycleCheckOnly) {
 
-      // set the descendant count
-      tp.setDescendantCount(descConceptIds.size());
+        // set the children count
+        tp.setChildrenCount(childrenConceptIds.size());
 
-      // In case manager was cleared here, get it back onto changed list
-      manager.merge(tp);
+        // set the descendant count
+        tp.setDescendantCount(descConceptIds.size());
 
-      // routinely commit and force clear the manager
-      // any existing recursive threads are entirely dependent on local
-      // variables
-      if (++computeTreePositionTotalCount % computeTreePositionCommitCt == 0) {
+        // In case manager was cleared here, get it back onto changed list
+        manager.merge(tp);
 
-        // commit the transaction
-        computeTreePositionTransaction.commit();
+        // routinely commit and force clear the manager
+        // any existing recursive threads are entirely dependent on local
+        // variables
+        if (++computeTreePositionTotalCount % computeTreePositionCommitCt == 0) {
 
-        // Clear manager for memory management
-        manager.clear();
+          // commit the transaction
+          computeTreePositionTransaction.commit();
 
-        // begin a new transaction
-        computeTreePositionTransaction.begin();
+          // Clear manager for memory management
+          manager.clear();
 
-        // report progress and memory usage
-        Runtime runtime = Runtime.getRuntime();
-        float elapsedTime =
-            System.currentTimeMillis() - computeTreePositionLastTime;
-        elapsedTime = elapsedTime / 1000;
-        computeTreePositionLastTime = System.currentTimeMillis();
+          // begin a new transaction
+          computeTreePositionTransaction.begin();
 
-        if (runtime.totalMemory() > computeTreePositionMaxMemoryUsage)
-          computeTreePositionMaxMemoryUsage = runtime.totalMemory();
+          // report progress and memory usage
+          Runtime runtime = Runtime.getRuntime();
+          float elapsedTime =
+              System.currentTimeMillis() - computeTreePositionLastTime;
+          elapsedTime = elapsedTime / 1000;
+          computeTreePositionLastTime = System.currentTimeMillis();
 
-        Logger.getLogger(ContentServiceJpa.class).info(
-            "\t" + System.currentTimeMillis() / 1000 + "\t"
-                + computeTreePositionTotalCount + "\t"
-                + Math.floor(runtime.totalMemory() / 1024 / 1024) + "\t"
-                + Double.toString(computeTreePositionCommitCt / elapsedTime));
+          if (runtime.totalMemory() > computeTreePositionMaxMemoryUsage)
+            computeTreePositionMaxMemoryUsage = runtime.totalMemory();
 
+          Logger.getLogger(ContentServiceJpa.class).info(
+              "\t" + System.currentTimeMillis() / 1000 + "\t"
+                  + computeTreePositionTotalCount + "\t"
+                  + Math.floor(runtime.totalMemory() / 1024 / 1024) + "\t"
+                  + Double.toString(computeTreePositionCommitCt / elapsedTime));
+
+        }
       }
     }
 
@@ -1720,6 +1739,28 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     // note that the local child and descendant set will be garbage
     // collected
     return descConceptIds;
+
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.ContentService#cycleCheck(java.lang.String,
+   * java.lang.String, java.lang.String, java.lang.String)
+   */
+  @Override
+  public void cycleCheck(String terminology, String terminologyVersion,
+    String typeId, String rootId) throws Exception {
+    Logger.getLogger(this.getClass()).info(
+        "Starting cycle check - " + rootId + ", " + terminology
+            + ", isaRelTypeId = " + typeId);
+
+    // get the root concept
+    Concept rootConcept = getConcept(rootId, terminology, terminologyVersion);
+
+    // begin the recursive computation
+    computeTreePositionsHelper(rootConcept, typeId, "", 0, null, true);
 
   }
 
@@ -2476,8 +2517,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
         "(" + fullQuery + ")" + " AND terminology:" + terminology
             + " AND terminologyVersion:" + terminologyVersion;
 
-    Logger.getLogger(ContentServiceJpa.class)
-        .debug("Full query: " + fullQuery);
+    Logger.getLogger(ContentServiceJpa.class).debug("Full query: " + fullQuery);
 
     return fullQuery;
 
