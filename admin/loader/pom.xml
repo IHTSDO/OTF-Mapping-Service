@@ -151,6 +151,32 @@
       </build>
     </profile>
 
+    <profile>
+      <id>CycleCheck</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>cycle-check</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>cycle-check</goal>
+                </goals>
+                <configuration>
+                  <terminology>${terminology}</terminology>
+                  <terminologyVersion>${version}</terminologyVersion>
+                  <rootIds>${root.ids}</rootIds>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
     <!-- Compute default preferred names -Drun.config=.. must also be specified. -->
     <profile>
       <id>DefaultPreferredNames</id>
