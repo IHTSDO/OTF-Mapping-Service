@@ -89,6 +89,7 @@
                   <inputDir>${input.dir}</inputDir>
                   <terminology>${terminology}</terminology>
                   <version>${version}</version>
+                  <sendNotification>${send.notification}</sendNotification>
                 </configuration>
               </execution>
             </executions>
@@ -143,6 +144,7 @@
                   <terminology>${terminology}</terminology>
                   <terminologyVersion>${version}</terminologyVersion>
                   <rootIds>${root.ids}</rootIds>
+                  <sendNotification>${send.notification}</sendNotification>
                 </configuration>
               </execution>
             </executions>
