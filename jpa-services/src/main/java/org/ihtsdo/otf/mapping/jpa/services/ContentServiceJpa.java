@@ -1572,8 +1572,9 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     computeTreePositionTransaction.begin();
 
     // begin the recursive computation
+    Set<String> cycles = new HashSet<>();
     computeTreePositionsHelper(null, rootConcept, Long.valueOf(typeId), "",
-        computeTreePositionCommitCt, computeTreePositionTransaction, false);
+        computeTreePositionCommitCt, computeTreePositionTransaction, false, cycles);
 
     // commit any remaining tree positions
     computeTreePositionTransaction.commit();
@@ -1605,14 +1606,15 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
   private Set<Long> computeTreePositionsHelper(Map<Long, Set<Long>> parChd,
     Concept concept, Long typeId, String ancestorPath,
     int computeTreePositionCommitCt,
-    EntityTransaction computeTreePositionTransaction, boolean cycleCheckOnly)
+    EntityTransaction computeTreePositionTransaction, boolean cycleCheckOnly,
+    Set<String> cycles)
     throws Exception {
 
     // Get all relationships
     Map<Long, Set<Long>> localParChd = parChd;
     if (localParChd == null) {
       Logger.getLogger(this.getClass()).info(
-          "  Loading relationships " + typeId);
+          "  Loading relationships");
       localParChd = new HashMap<>();
       @SuppressWarnings("unchecked")
       List<Relationship> relationships =
@@ -1648,9 +1650,9 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
       if (ancestorPath.indexOf("~" + concept.getTerminologyId() + "~") != -1
           || ancestorPath.endsWith("~" + concept.getTerminologyId())) {
-        throw new Exception("CYCLE DETECTED: " + ancestorPath + ", "
+        cycles.add("CYCLE DETECTED: " + ancestorPath + ", "
             + concept.getTerminologyId());
-
+        return new HashSet<>();
       }
 
       // instantiate the tree position
@@ -1699,7 +1701,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
               computeTreePositionsHelper(localParChd,
                   getConcept(childConceptId), typeId, conceptPath,
                   computeTreePositionCommitCt, computeTreePositionTransaction,
-                  cycleCheckOnly);
+                  cycleCheckOnly, cycles);
           if (!cycleCheckOnly) {
             descConceptIds.addAll(desc);
           }
@@ -1779,9 +1781,15 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     Concept rootConcept = getConcept(rootId, terminology, terminologyVersion);
 
     // begin the recursive computation
+    Set<String> cycles = new HashSet<>();
     computeTreePositionsHelper(null, rootConcept, Long.valueOf(typeId), "", 0,
-        null, true);
-
+        null, true, cycles);
+    if (cycles.size()> 0) {
+      for (String cycle : cycles) {
+        Logger.getLogger(getClass()).info(cycle);
+      }
+      throw new Exception("CYCLES DETECTED");
+    }
   }
 
   /*
