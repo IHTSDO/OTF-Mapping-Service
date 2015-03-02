@@ -1612,7 +1612,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     // if concept is active
     if (concept.isActive()) {
 
-      if (ancestorPath.indexOf(concept.getTerminologyId()) != -1) {
+      if (ancestorPath.indexOf("~" + concept.getTerminologyId() + "~") != -1
+          || ancestorPath.endsWith("~" + concept.getTerminologyId())) {
         throw new Exception("CYCLE DETECTED: " + ancestorPath + ", "
             + concept.getTerminologyId());
 
