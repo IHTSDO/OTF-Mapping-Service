@@ -142,6 +142,15 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
   /** The delta concept ids. */
   private Set<String> deltaConceptIds = new HashSet<>();
 
+  /** The delta relationship ids. */
+  private Set<String> deltaRelationshipIds = new HashSet<>();
+
+  /** The delta description ids. */
+  private Set<String> deltaDescriptionIds = new HashSet<>();
+
+  /** The delta language refset member ids. */
+  private Set<String> deltaLanguageRefSetMemberIds = new HashSet<>();
+
   /** The "recompute preferred name" concept ids. */
   private Set<String> recomputePnConceptIds = new HashSet<>();
 
@@ -588,6 +597,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
       // if not header
       if (!fields[0].equals("id")) {
 
+        deltaDescriptionIds.add(fields[0]);
+
         // Get concept from cache or from db
         Concept concept = null;
         if (conceptCache.containsKey(fields[4])) {
@@ -714,6 +725,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
       // if not header
       if (!fields[0].equals("id")) {
+
+        deltaLanguageRefSetMemberIds.add(fields[0]);
 
         // Get the description
         Description description = null;
@@ -849,6 +862,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
       // If not header
       if (!fields[0].equals("id")) {
+        deltaRelationshipIds.add(fields[0]);
 
         // Retrieve source concept
         Concept sourceConcept = null;
@@ -1069,6 +1083,12 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
    * DB that are not in the current delta and which have effective times greater
    * than the latest release date. The latest release date is the
    * "terminologyVersion" in this case.
+   * 
+   * NOTE: this does not handle a retraction of a change because we don't
+   * preserve a static copy of the previous release to compare against. What
+   * this really needs is a daily incremental delta relative to the snapshot
+   * from the previous day.
+   * 
    * @throws Exception
    */
   public void retireRemovedConcepts() throws Exception {
@@ -1123,7 +1143,62 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
         }
       }
     }
-    getLog().info("      retired =  " + ct);
+    getLog().info("      retired concepts =  " + ct);
+
+    // Also retire inferred relationships added after the last release
+    // but not in the current delta
+    ct = 0;
+    for (String id : existingRelationshipIds) {
+      Relationship relationship =
+          contentService.getRelationship(id, terminology, version);
+
+      if (relationship.getEffectiveTime().after(rf2Version)
+          && !deltaRelationshipIds.contains(relationship.getTerminologyId())
+          && relationship.isActive()) {
+        ct++;
+        relationship.setActive(false);
+        relationship.setEffectiveTime(deltaLoaderStartDate);
+        contentService.updateRelationship(relationship);
+      }
+    }
+    getLog().info("      retired relationships =  " + ct);
+
+    // Also retire descriptions added after the last release
+    // but not in the current delta
+    ct = 0;
+    for (String id : existingDescriptionIds) {
+      Description description =
+          contentService.getDescription(id, terminology, version);
+
+      if (description.getEffectiveTime().after(rf2Version)
+          && !deltaDescriptionIds.contains(description.getTerminologyId())
+          && description.isActive()) {
+        ct++;
+        description.setActive(false);
+        description.setEffectiveTime(deltaLoaderStartDate);
+        contentService.updateDescription(description);
+      }
+    }
+    getLog().info("      retired descriptions =  " + ct);
+
+    // Also retire language refset members added after the last release
+    // but not in the current delta
+    ct = 0;
+    for (String id : existingLanguageRefSetMemberIds) {
+      LanguageRefSetMember member =
+          contentService.getLanguageRefSetMember(id, terminology, version);
+
+      if (member.getEffectiveTime().after(rf2Version)
+          && !deltaLanguageRefSetMemberIds.contains(member.getTerminologyId())
+          && member.isActive()) {
+        ct++;
+        member.setActive(false);
+        member.setEffectiveTime(deltaLoaderStartDate);
+        contentService.updateLanguageRefSetMember(member);
+      }
+    }
+    getLog().info("      retired language refset members =  " + ct);
+
   }
 
   // helper function to update and store concept
