@@ -11,6 +11,7 @@ import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.RelationshipList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
+import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.rf2.AttributeValueRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
@@ -471,14 +472,15 @@ public interface ContentService extends RootService {
 
   /**
    * Compute tree positions.
-   * 
+   *
    * @param terminology the terminology
    * @param terminologyVersion the terminology version
    * @param typeId the type id
    * @param rootId the root id
+   * @return the validation result containing any errors/warnings/messages
    * @throws Exception the exception
    */
-  public void computeTreePositions(String terminology,
+  public ValidationResult computeTreePositions(String terminology,
     String terminologyVersion, String typeId, String rootId) throws Exception;
 
   /**

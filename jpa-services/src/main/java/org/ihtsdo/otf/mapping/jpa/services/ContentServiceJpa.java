@@ -58,6 +58,8 @@ import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionListJpa;
 import org.ihtsdo.otf.mapping.helpers.TreePositionReferencedConcept;
 import org.ihtsdo.otf.mapping.helpers.TreePositionReferencedConceptJpa;
+import org.ihtsdo.otf.mapping.helpers.ValidationResult;
+import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.rf2.AttributeValueRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
@@ -92,6 +94,9 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
   /** The compute tree position last time. */
   Long computeTreePositionLastTime;
+
+  /** The compute tree position validation result */
+  ValidationResult computeTreePositionValidationResult;
 
   /** The tree position field names. */
   private static Set<String> treePositionFieldNames;
@@ -1546,7 +1551,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
    * .lang.String, java.lang.String, java.lang.String, java.lang.String)
    */
   @Override
-  public void computeTreePositions(String terminology,
+  public ValidationResult computeTreePositions(String terminology,
     String terminologyVersion, String typeId, String rootId) throws Exception {
     Logger.getLogger(this.getClass()).info(
         "Starting computeTreePositions - " + rootId + ", " + terminology
@@ -1558,6 +1563,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     computeTreePositionTotalCount = 0;
     computeTreePositionMaxMemoryUsage = 0L;
     computeTreePositionLastTime = System.currentTimeMillis();
+    computeTreePositionValidationResult = new ValidationResultJpa();
 
     // System.setOut(new PrintStream(new
     // FileOutputStream("C:/Users/Patrick/Documents/WCI/Working Notes/TreePositionRuns/computeTreePositions_"
@@ -1583,6 +1589,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
         "Final Tree Positions: " + computeTreePositionTotalCount
             + ", MEMORY USAGE: " + runtime.totalMemory());
 
+    return computeTreePositionValidationResult;
+
   }
 
   /**
@@ -1591,7 +1599,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
    * 
    * NOTE: This function is designed to keep as little Concept information in
    * storage as possible. See inline notes.
-   *
+   * 
    * @param concept the concept
    * @param typeId the type id
    * @param ancestorPath the ancestor path
@@ -1646,11 +1654,20 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     // if concept is active
     if (concept.isActive()) {
 
-      if (ancestorPath.indexOf("~" + concept.getTerminologyId() + "~") != -1
-          || ancestorPath.endsWith("~" + concept.getTerminologyId())) {
-        throw new Exception("CYCLE DETECTED: " + ancestorPath + ", "
-            + concept.getTerminologyId());
-
+      // extract the ancestor terminology ids
+      Set<String> ancestors = new HashSet<>();
+      for (String ancestor : ancestorPath.split("~"))
+        ancestors.add(ancestor);
+      
+      // if ancestor path contains this terminology id, a child/ancestor cycle exists
+      if(ancestors.contains(concept.getTerminologyId())) {
+        
+        // add error to validation result
+        computeTreePositionValidationResult.addError(
+            "Cycle detected for concept " + concept.getTerminologyId() + ", ancestor path is " + ancestorPath);
+        
+        // return empty set of descendants to truncate calculation on this path
+        return descConceptIds;
       }
 
       // instantiate the tree position
@@ -1752,6 +1769,16 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
         }
       }
+    }
+    
+    // Check that this concept does not reference itself as a child
+    if (descConceptIds.contains(concept.getTerminologyId())) {
+      
+      // add error to validation result
+      computeTreePositionValidationResult.addError("Concept " + concept.getTerminologyId() + " claims itself as a child");
+      
+      // remove this terminology id to prevent infinite loop
+      descConceptIds.remove(concept.getTerminologyId());
     }
 
     // return the descendant concept set
@@ -1899,7 +1926,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
   /**
    * Returns the any tree positions with descendants.
-   *
+   * 
    * @param terminologyId the terminology id
    * @param terminology the terminology
    * @param terminologyVersion the terminology version
