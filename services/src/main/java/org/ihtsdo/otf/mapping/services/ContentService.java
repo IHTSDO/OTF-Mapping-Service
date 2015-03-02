@@ -482,6 +482,18 @@ public interface ContentService extends RootService {
     String terminologyVersion, String typeId, String rootId) throws Exception;
 
   /**
+   * Cycle check.
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @param typeId the type id
+   * @param rootId the root id
+   * @throws Exception the exception
+   */
+  public void cycleCheck(String terminology,
+    String terminologyVersion, String typeId, String rootId) throws Exception;
+
+  /**
    * Gets the transaction per operation.
    * 
    * @return the transaction per operation
