@@ -525,7 +525,6 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     // Setup files
     //
     File coreRelInputFile = null;
-    File coreStatedRelInputFile = null;
     File coreConceptInputFile = null;
     File coreDescriptionInputFile = null;
     File coreSimpleRefsetInputFile = null;
@@ -555,19 +554,6 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     getLog().info(
         "      Relationships file = " + coreRelInputFile.toString() + " "
             + coreRelInputFile.exists());
-
-    // Stated relationships file
-    for (File f : coreTerminologyInputDir.listFiles()) {
-      if (f.getName().contains("sct2_StatedRelationship_")) {
-        if (coreStatedRelInputFile != null)
-          throw new MojoFailureException("Multiple Stated Relationships Files!");
-        coreStatedRelInputFile = f;
-      }
-    }
-    getLog().info(
-        "      Stated relationships file = "
-            + coreStatedRelInputFile.toString() + " "
-            + coreStatedRelInputFile.exists());
 
     // Concepts file
     for (File f : coreTerminologyInputDir.listFiles()) {
@@ -822,7 +808,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
   }
 
   /**
-   * Helper function for sorting an individual file with colum comparator.
+   * Helper function for sorting an individual file with column comparator.
    * 
    * @param fileIn the input file to be sorted
    * @param fileOut the resulting sorted file
