@@ -1572,7 +1572,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     computeTreePositionTransaction.begin();
 
     // begin the recursive computation
-    computeTreePositionsHelper(rootConcept, typeId, "",
+    computeTreePositionsHelper(null, rootConcept, Long.valueOf(typeId), "",
         computeTreePositionCommitCt, computeTreePositionTransaction, false);
 
     // commit any remaining tree positions
@@ -1602,10 +1602,44 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
    * @throws Exception the exception
    */
   @SuppressWarnings("unused")
-  private Set<Long> computeTreePositionsHelper(Concept concept, String typeId,
-    String ancestorPath, int computeTreePositionCommitCt,
+  private Set<Long> computeTreePositionsHelper(Map<Long, Set<Long>> parChd,
+    Concept concept, Long typeId, String ancestorPath,
+    int computeTreePositionCommitCt,
     EntityTransaction computeTreePositionTransaction, boolean cycleCheckOnly)
     throws Exception {
+
+    // Get all relationships
+    Map<Long, Set<Long>> localParChd = parChd;
+    if (localParChd == null) {
+      Logger.getLogger(this.getClass()).info(
+          "  Loading relationships " + typeId);
+      localParChd = new HashMap<>();
+      @SuppressWarnings("unchecked")
+      List<Relationship> relationships =
+          manager
+              .createQuery(
+                  "select r from RelationshipJpa r where "
+                      + "terminologyVersion = :terminologyVersion and terminology = :terminology "
+                      + "and typeId = :typeId and active = 1 "
+                      + "and sourceConcept in (select sc from ConceptJpa sc where active = 1)")
+              .setParameter("typeId", typeId)
+              .setParameter("terminology", concept.getTerminology())
+              .setParameter("terminologyVersion",
+                  concept.getTerminologyVersion()).getResultList();
+      int ct = 0;
+      for (Relationship r : relationships) {
+        ct++;
+        final Concept sourceConcept = r.getSourceConcept();
+        final Concept destinationConcept = r.getDestinationConcept();
+        if (!localParChd.containsKey(destinationConcept.getId())) {
+          localParChd.put(destinationConcept.getId(), new HashSet<Long>());
+        }
+        Set<Long> children = localParChd.get(destinationConcept.getId());
+        children.add(sourceConcept.getId());
+      }
+      Logger.getLogger(this.getClass()).info("    count = " + ct);
+
+    }
 
     final Set<Long> descConceptIds = new HashSet<>();
 
@@ -1649,44 +1683,27 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
           (ancestorPath.equals("") ? concept.getTerminologyId() : ancestorPath
               + "~" + concept.getTerminologyId());
 
-      // construct the list of terminology ids representing valid children
-      final Set<Long> childrenConceptIds = new HashSet<>();
+      // Gather descendants if this is not a leaf node
+      if (localParChd.containsKey(concept.getId())) {
 
-      // cycle over all relationships
-      for (final Relationship rel : concept.getInverseRelationships()) {
+        descConceptIds.addAll(localParChd.get(concept.getId()));
 
-        // if relationship is active, typeId equals the provided typeId,
-        // and
-        // the source concept is active
-        if (rel.isActive() && rel.getTypeId().toString().equals(typeId)
-            && rel.getSourceConcept().isActive()) {
+        // iterate over the child terminology ids
+        // this iteration is entirely local and depends on no managed
+        // objects
+        for (Long childConceptId : localParChd.get(concept.getId())) {
 
-          // get the child concept
-          final Concept childConcept = rel.getSourceConcept();
-
-          // add this terminology id to the set of children
-          childrenConceptIds.add(childConcept.getId());
-
+          // call helper function on child concept
+          // add the results to the local descendant set
+          final Set<Long> desc =
+              computeTreePositionsHelper(localParChd,
+                  getConcept(childConceptId), typeId, conceptPath,
+                  computeTreePositionCommitCt, computeTreePositionTransaction,
+                  cycleCheckOnly);
           if (!cycleCheckOnly) {
-            // add this terminology id to the set of descendants
-            descConceptIds.add(childConcept.getId());
+            descConceptIds.addAll(desc);
           }
-        }
-      }
 
-      // iterate over the child terminology ids
-      // this iteration is entirely local and depends on no managed
-      // objects
-      for (Long childConceptId : childrenConceptIds) {
-
-        // call helper function on child concept
-        // add the results to the local descendant set
-        final Set<Long> desc =
-            computeTreePositionsHelper(getConcept(childConceptId), typeId,
-                conceptPath, computeTreePositionCommitCt,
-                computeTreePositionTransaction, cycleCheckOnly);
-        if (!cycleCheckOnly) {
-          descConceptIds.addAll(desc);
         }
 
       }
@@ -1694,7 +1711,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       if (!cycleCheckOnly) {
 
         // set the children count
-        tp.setChildrenCount(childrenConceptIds.size());
+        tp.setChildrenCount(localParChd.containsKey(concept.getId())
+            ? localParChd.get(concept.getId()).size() : 0);
 
         // set the descendant count
         tp.setDescendantCount(descConceptIds.size());
@@ -1761,7 +1779,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     Concept rootConcept = getConcept(rootId, terminology, terminologyVersion);
 
     // begin the recursive computation
-    computeTreePositionsHelper(rootConcept, typeId, "", 0, null, true);
+    computeTreePositionsHelper(null, rootConcept, Long.valueOf(typeId), "", 0,
+        null, true);
 
   }
 

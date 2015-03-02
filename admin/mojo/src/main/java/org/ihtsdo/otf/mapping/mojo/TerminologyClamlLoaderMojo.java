@@ -174,8 +174,8 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       metadataService.close();
 
       // Let the service create its own transaction.
-      getLog().info("Start creating tree positions.");
       for (String root : roots) {
+        getLog().info("Start creating tree positions " + root + ", " + isaRelType);
         contentService.computeTreePositions(terminology, terminologyVersion,
             isaRelType, root);
       }

@@ -77,7 +77,7 @@ public class TreeposComputerMojo extends AbstractMojo {
       // Walk up tree to the root
       // ASSUMPTION: single root
       for (String rootId : rootIds.split(",")) {
-        getLog().info("  Compute tree from rootId " + rootId);
+        getLog().info("  Compute tree from rootId " + rootId + ", " + isaRelType);
         contentService.computeTreePositions(terminology, terminologyVersion,
             isaRelType, rootId);
       }
