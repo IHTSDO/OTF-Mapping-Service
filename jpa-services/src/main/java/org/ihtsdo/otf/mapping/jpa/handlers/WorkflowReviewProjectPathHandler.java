@@ -138,6 +138,12 @@ public class WorkflowReviewProjectPathHandler extends
     if (state == null) {
       result
           .addError("Could not determine workflow path state for tracking record");
+    } else if (action.equals(WorkflowAction.CREATE_QA_RECORD)) {
+      
+      // for creating qa record, only check role
+      if (!userRole.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
+        result.addError("User does not have required role");
+      }
     }
 
     // Record requirement : No record
