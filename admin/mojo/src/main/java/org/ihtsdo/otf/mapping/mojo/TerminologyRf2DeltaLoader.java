@@ -493,7 +493,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     // Remove concepts in the DB that were created by prior
     // deltas that no longer exist in the delta
     //getLog().info("    Retire non-existent concepts..");
-    //retireRemovedConcepts();
+    retireRemovedConcepts();
+    contentService.commit();
   }
 
   /**
@@ -1145,6 +1146,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     }
     getLog().info("      retired concepts =  " + ct);
 
+    /** REDO THIS PART
     // Also retire inferred relationships added after the last release
     // but not in the current delta
     ct = 0;
@@ -1198,7 +1200,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
       }
     }
     getLog().info("      retired language refset members =  " + ct);
-
+     **/
   }
 
   // helper function to update and store concept
