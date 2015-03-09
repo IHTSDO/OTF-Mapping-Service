@@ -1146,6 +1146,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     }
     getLog().info("      count =  " + ct);
     contentService.commit();
+    contentService.clear();
     contentService.beginTransaction();
 
     // Also retire inferred relationships added after the last release
@@ -1167,6 +1168,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     }
     getLog().info("      count =  " + ct);
     contentService.commit();
+    contentService.clear();
     contentService.beginTransaction();
 
     // Also retire descriptions added after the last release
@@ -1188,6 +1190,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     }
     getLog().info("      count =  " + ct);
     contentService.commit();
+    contentService.clear();
     contentService.beginTransaction();
 
     // Also retire language refset members added after the last release
@@ -1210,6 +1213,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     }
     getLog().info("      count = " + ct);
     contentService.commit();
+    contentService.clear();
     contentService.beginTransaction();
 
   }
