@@ -492,9 +492,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
     // Remove concepts in the DB that were created by prior
     // deltas that no longer exist in the delta
-    //getLog().info("    Retire non-existent concepts..");
-    retireRemovedConcepts();
-    contentService.commit();
+    getLog().info("    Retire non-existent content");
+    retireRemovedContent();
   }
 
   /**
@@ -1092,7 +1091,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
    * 
    * @throws Exception
    */
-  public void retireRemovedConcepts() throws Exception {
+  public void retireRemovedContent() throws Exception {
     // Base this algortihm on the last publication date
     // If editing resumes before last publication date
     // this will essentially do nothing until afterwards
@@ -1105,6 +1104,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     // These are concepts created after rf2Version that are no longer in
     // the drip feed
     int ct = 0;
+    getLog().info("    Retire removed concepts");
     for (Concept concept : existingConceptCache.values()) {
       if (concept.getEffectiveTime().after(rf2Version)
           && !deltaConceptIds.contains(concept.getTerminologyId())
@@ -1144,63 +1144,74 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
         }
       }
     }
-    getLog().info("      retired concepts =  " + ct);
+    getLog().info("      count =  " + ct);
+    contentService.commit();
+    contentService.beginTransaction();
 
-    /** REDO THIS PART
     // Also retire inferred relationships added after the last release
     // but not in the current delta
     ct = 0;
-    for (String id : existingRelationshipIds) {
-      Relationship relationship =
-          contentService.getRelationship(id, terminology, version);
+    getLog().info("    Retire removed relationships");
+    for (Relationship relationship : contentService.getAllRelationships(
+        terminology, version).getRelationships()) {
 
       if (relationship.getEffectiveTime().after(rf2Version)
           && !deltaRelationshipIds.contains(relationship.getTerminologyId())
           && relationship.isActive()) {
+        getLog().info("        retire " + relationship.getTerminologyId());
         ct++;
         relationship.setActive(false);
         relationship.setEffectiveTime(deltaLoaderStartDate);
         contentService.updateRelationship(relationship);
       }
     }
-    getLog().info("      retired relationships =  " + ct);
+    getLog().info("      count =  " + ct);
+    contentService.commit();
+    contentService.beginTransaction();
 
     // Also retire descriptions added after the last release
     // but not in the current delta
     ct = 0;
-    for (String id : existingDescriptionIds) {
-      Description description =
-          contentService.getDescription(id, terminology, version);
+    getLog().info("    Retire removed descriptions");
+    for (Description description : contentService.getAllDescriptions(
+        terminology, version).getDescriptions()) {
 
       if (description.getEffectiveTime().after(rf2Version)
           && !deltaDescriptionIds.contains(description.getTerminologyId())
           && description.isActive()) {
+        getLog().info("        retire " + description.getTerminologyId());
         ct++;
         description.setActive(false);
         description.setEffectiveTime(deltaLoaderStartDate);
         contentService.updateDescription(description);
       }
     }
-    getLog().info("      retired descriptions =  " + ct);
+    getLog().info("      count =  " + ct);
+    contentService.commit();
+    contentService.beginTransaction();
 
     // Also retire language refset members added after the last release
     // but not in the current delta
     ct = 0;
-    for (String id : existingLanguageRefSetMemberIds) {
-      LanguageRefSetMember member =
-          contentService.getLanguageRefSetMember(id, terminology, version);
+    getLog().info("    Retire removed language refset entries");
+    for (LanguageRefSetMember member : contentService
+        .getAllLanguageRefSetMembers(terminology, version)
+        .getLanguageRefSetMembers()) {
 
       if (member.getEffectiveTime().after(rf2Version)
           && !deltaLanguageRefSetMemberIds.contains(member.getTerminologyId())
           && member.isActive()) {
+        getLog().info("        retire " + member.getTerminologyId());
         ct++;
         member.setActive(false);
         member.setEffectiveTime(deltaLoaderStartDate);
         contentService.updateLanguageRefSetMember(member);
       }
     }
-    getLog().info("      retired language refset members =  " + ct);
-     **/
+    getLog().info("      count = " + ct);
+    contentService.commit();
+    contentService.beginTransaction();
+
   }
 
   // helper function to update and store concept
