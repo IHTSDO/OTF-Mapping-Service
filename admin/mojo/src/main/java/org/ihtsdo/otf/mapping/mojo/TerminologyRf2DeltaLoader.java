@@ -492,8 +492,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
     // Remove concepts in the DB that were created by prior
     // deltas that no longer exist in the delta
-    getLog().info("    Retire non-existent concepts..");
-    retireRemovedConcepts();
+    //getLog().info("    Retire non-existent concepts..");
+    //retireRemovedConcepts();
   }
 
   /**
