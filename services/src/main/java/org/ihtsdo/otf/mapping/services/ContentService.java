@@ -655,7 +655,7 @@ public interface ContentService extends RootService {
    * @return the relationships
    * @throws Exception the exception
    */
-  public RelationshipList getAllRelationships(String terminology,
+  public RelationshipList getAllActiveRelationships(String terminology,
     String terminologyVersion) throws Exception;
 
   /**
@@ -666,7 +666,7 @@ public interface ContentService extends RootService {
    * @return the descriptions
    * @throws Exception the exception
    */
-  public DescriptionList getAllDescriptions(String terminology,
+  public DescriptionList getAllActiveDescriptions(String terminology,
     String terminologyVersion) throws Exception;
 
  
@@ -678,7 +678,7 @@ public interface ContentService extends RootService {
    * @return the concepts
    * @throws Exception the exception
    */
-  public LanguageRefSetMemberList getAllLanguageRefSetMembers(String terminology,
+  public LanguageRefSetMemberList getAllActiveLanguageRefSetMembers(String terminology,
     String terminologyVersion) throws Exception;
 
   /**

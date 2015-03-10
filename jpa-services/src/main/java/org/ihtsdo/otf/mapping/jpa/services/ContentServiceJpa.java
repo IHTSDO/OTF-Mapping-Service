@@ -259,11 +259,12 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
   @SuppressWarnings("unchecked")
   @Override
-  public RelationshipList getAllRelationships(String terminology,
+  public RelationshipList getAllActiveRelationships(String terminology,
     String terminologyVersion) {
     javax.persistence.Query query =
         manager
-            .createQuery("select r from RelationshipJpa r where terminologyVersion = :terminologyVersion and terminology = :terminology");
+            .createQuery("select r from RelationshipJpa r where active = 1 "
+                + " and terminologyVersion = :terminologyVersion and terminology = :terminology");
     /*
      * Try to retrieve the single expected result If zero or more than one
      * result are returned, log error and set result to null
@@ -287,11 +288,12 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
   @SuppressWarnings("unchecked")
   @Override
-  public DescriptionList getAllDescriptions(String terminology,
+  public DescriptionList getAllActiveDescriptions(String terminology,
     String terminologyVersion) {
     javax.persistence.Query query =
         manager
-            .createQuery("select d from DescriptionJpa d where terminologyVersion = :terminologyVersion and terminology = :terminology");
+            .createQuery("select d from DescriptionJpa d where active = 1 "
+                + " and terminologyVersion = :terminologyVersion and terminology = :terminology");
     /*
      * Try to retrieve the single expected result If zero or more than one
      * result are returned, log error and set result to null
@@ -315,11 +317,12 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
   @SuppressWarnings("unchecked")
   @Override
-  public LanguageRefSetMemberList getAllLanguageRefSetMembers(
+  public LanguageRefSetMemberList getAllActiveLanguageRefSetMembers(
     String terminology, String terminologyVersion) {
     javax.persistence.Query query =
         manager
-            .createQuery("select l from LanguageRefSetMemberJpa l where terminologyVersion = :terminologyVersion and terminology = :terminology");
+            .createQuery("select l from LanguageRefSetMemberJpa l where active = 1"
+                + " and terminologyVersion = :terminologyVersion and terminology = :terminology");
     /*
      * Try to retrieve the single expected result If zero or more than one
      * result are returned, log error and set result to null
