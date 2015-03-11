@@ -1151,7 +1151,9 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     contentService.beginTransaction();
 
     // Also retire inferred relationships added after the last release
-    // but not in the current delta
+    // but not in the current delta.  Relationships do not change
+    // they are created or retired - so we likely do not need to worry
+    // about retractions of changes here
     ct = 0;
     getLog().info("    Retire removed relationships");
     List<Relationship> relationships =
@@ -1176,56 +1178,12 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     contentService.clear();
     contentService.beginTransaction();
 
-    // Also retire descriptions added after the last release
-    // but not in the current delta
-    ct = 0;
-    getLog().info("    Retire removed descriptions");
-    List<Description> descriptions =
-        contentService
-            .getDescriptionsModifiedSinceDate(terminology, rf2Version)
-            .getDescriptions();
-    contentService.clear();
-    for (Description description : descriptions) {
-
-      if (description.getEffectiveTime().after(rf2Version)
-          && !deltaDescriptionIds.contains(description.getTerminologyId())
-          && description.isActive()) {
-        getLog().info("        retire " + description.getTerminologyId());
-        ct++;
-        description.setActive(false);
-        description.setEffectiveTime(deltaLoaderStartDate);
-        contentService.updateDescription(description);
-      }
-    }
-    getLog().info("      count =  " + ct);
-    contentService.commit();
-    contentService.clear();
-    contentService.beginTransaction();
-
-    // Also retire language refset members added after the last release
-    // but not in the current delta
-    ct = 0;
-    getLog().info("    Retire removed language refset entries");
-    List<LanguageRefSetMember> members =
-        contentService.getLanguageRefSetMembersModifiedSinceDate(terminology,
-            rf2Version).getLanguageRefSetMembers();
-    contentService.clear();
-    for (LanguageRefSetMember member : members) {
-
-      if (member.getEffectiveTime().after(rf2Version)
-          && !deltaLanguageRefSetMemberIds.contains(member.getTerminologyId())
-          && member.isActive()) {
-        getLog().info("        retire " + member.getTerminologyId());
-        ct++;
-        member.setActive(false);
-        member.setEffectiveTime(deltaLoaderStartDate);
-        contentService.updateLanguageRefSetMember(member);
-      }
-    }
-    getLog().info("      count = " + ct);
-    contentService.commit();
-    contentService.clear();
-    contentService.beginTransaction();
+    // Identifying the difference between a change in a description that
+    // was retracted and an addition of a description that was retracted
+    // is difficult and likely very error prone.  Failing to properly
+    // handle retractions of changes or additions has very minor effect.
+    // So, it is recommended to be skipped.  
+    // As are retracted changes or additions of language refset member entries.
 
   }
 
