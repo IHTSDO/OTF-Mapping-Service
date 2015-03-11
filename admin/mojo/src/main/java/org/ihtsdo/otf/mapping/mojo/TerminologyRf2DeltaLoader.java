@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -1153,8 +1154,12 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     // but not in the current delta
     ct = 0;
     getLog().info("    Retire removed relationships");
-    for (Relationship relationship : contentService.getAllActiveRelationships(
-        terminology, version).getRelationships()) {
+    List<Relationship> relationships =
+        contentService.getAllActiveRelationships(terminology, version)
+            .getRelationships();
+    contentService.clear();
+
+    for (Relationship relationship : relationships) {
 
       if (relationship.getEffectiveTime().after(rf2Version)
           && !deltaRelationshipIds.contains(relationship.getTerminologyId())
@@ -1175,8 +1180,11 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     // but not in the current delta
     ct = 0;
     getLog().info("    Retire removed descriptions");
-    for (Description description : contentService.getAllActiveDescriptions(
-        terminology, version).getDescriptions()) {
+    List<Description> descriptions =
+        contentService.getAllActiveDescriptions(terminology, version)
+            .getDescriptions();
+    contentService.clear();
+    for (Description description : descriptions) {
 
       if (description.getEffectiveTime().after(rf2Version)
           && !deltaDescriptionIds.contains(description.getTerminologyId())
@@ -1197,9 +1205,11 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     // but not in the current delta
     ct = 0;
     getLog().info("    Retire removed language refset entries");
-    for (LanguageRefSetMember member : contentService
-        .getAllActiveLanguageRefSetMembers(terminology, version)
-        .getLanguageRefSetMembers()) {
+    List<LanguageRefSetMember> members =
+        contentService.getAllActiveLanguageRefSetMembers(terminology, version)
+            .getLanguageRefSetMembers();
+    contentService.clear();
+    for (LanguageRefSetMember member : members) {
 
       if (member.getEffectiveTime().after(rf2Version)
           && !deltaLanguageRefSetMemberIds.contains(member.getTerminologyId())
