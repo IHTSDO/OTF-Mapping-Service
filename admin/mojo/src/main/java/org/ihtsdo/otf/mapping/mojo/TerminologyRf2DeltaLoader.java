@@ -1155,8 +1155,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     ct = 0;
     getLog().info("    Retire removed relationships");
     List<Relationship> relationships =
-        contentService.getAllActiveRelationships(terminology, version)
-            .getRelationships();
+        contentService.getRelationshipsModifiedSinceDate(terminology,
+            rf2Version).getRelationships();
     contentService.clear();
 
     for (Relationship relationship : relationships) {
@@ -1181,7 +1181,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     ct = 0;
     getLog().info("    Retire removed descriptions");
     List<Description> descriptions =
-        contentService.getAllActiveDescriptions(terminology, version)
+        contentService
+            .getDescriptionsModifiedSinceDate(terminology, rf2Version)
             .getDescriptions();
     contentService.clear();
     for (Description description : descriptions) {
@@ -1206,8 +1207,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     ct = 0;
     getLog().info("    Retire removed language refset entries");
     List<LanguageRefSetMember> members =
-        contentService.getAllActiveLanguageRefSetMembers(terminology, version)
-            .getLanguageRefSetMembers();
+        contentService.getLanguageRefSetMembersModifiedSinceDate(terminology,
+            rf2Version).getLanguageRefSetMembers();
     contentService.clear();
     for (LanguageRefSetMember member : members) {
 
