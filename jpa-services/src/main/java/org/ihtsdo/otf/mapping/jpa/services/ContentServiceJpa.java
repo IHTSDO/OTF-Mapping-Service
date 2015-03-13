@@ -257,6 +257,94 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     }
   }
 
+  @SuppressWarnings("unchecked")
+  @Override
+  public RelationshipList getAllActiveRelationships(String terminology,
+    String terminologyVersion) {
+    javax.persistence.Query query =
+        manager
+            .createQuery("select r from RelationshipJpa r where active = 1 "
+                + " and terminologyVersion = :terminologyVersion and terminology = :terminology");
+    /*
+     * Try to retrieve the single expected result If zero or more than one
+     * result are returned, log error and set result to null
+     */
+    try {
+      query.setParameter("terminology", terminology);
+      query.setParameter("terminologyVersion", terminologyVersion);
+      List<Relationship> relationships = query.getResultList();
+      RelationshipList relationshipList = new RelationshipListJpa();
+      relationshipList.setRelationships(relationships);
+      return relationshipList;
+    } catch (NoResultException e) {
+      e.printStackTrace();
+      Logger.getLogger(ContentServiceJpa.class).debug(
+          "Relationship query terminology = " + terminology
+              + ", terminologyVersion = " + terminologyVersion
+              + " returned no results!");
+      return null;
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public DescriptionList getAllActiveDescriptions(String terminology,
+    String terminologyVersion) {
+    javax.persistence.Query query =
+        manager
+            .createQuery("select d from DescriptionJpa d where active = 1 "
+                + " and terminologyVersion = :terminologyVersion and terminology = :terminology");
+    /*
+     * Try to retrieve the single expected result If zero or more than one
+     * result are returned, log error and set result to null
+     */
+    try {
+      query.setParameter("terminology", terminology);
+      query.setParameter("terminologyVersion", terminologyVersion);
+      List<Description> descriptions = query.getResultList();
+      DescriptionList descriptionList = new DescriptionListJpa();
+      descriptionList.setDescriptions(descriptions);
+      return descriptionList;
+    } catch (NoResultException e) {
+      e.printStackTrace();
+      Logger.getLogger(ContentServiceJpa.class).debug(
+          "Concept query terminology = " + terminology
+              + ", terminologyVersion = " + terminologyVersion
+              + " returned no results!");
+      return null;
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public LanguageRefSetMemberList getAllActiveLanguageRefSetMembers(
+    String terminology, String terminologyVersion) {
+    javax.persistence.Query query =
+        manager
+            .createQuery("select l from LanguageRefSetMemberJpa l where active = 1"
+                + " and terminologyVersion = :terminologyVersion and terminology = :terminology");
+    /*
+     * Try to retrieve the single expected result If zero or more than one
+     * result are returned, log error and set result to null
+     */
+    try {
+      query.setParameter("terminology", terminology);
+      query.setParameter("terminologyVersion", terminologyVersion);
+      List<LanguageRefSetMember> languageRefSetMembers = query.getResultList();
+      LanguageRefSetMemberList languageRefSetMemberList =
+          new LanguageRefSetMemberListJpa();
+      languageRefSetMemberList.setLanguageRefSetMembers(languageRefSetMembers);
+      return languageRefSetMemberList;
+    } catch (NoResultException e) {
+      e.printStackTrace();
+      Logger.getLogger(ContentServiceJpa.class).debug(
+          "Concept query terminology = " + terminology
+              + ", terminologyVersion = " + terminologyVersion
+              + " returned no results!");
+      return null;
+    }
+  }
+
   /*
    * (non-Javadoc)
    * 
@@ -1658,14 +1746,17 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       Set<String> ancestors = new HashSet<>();
       for (String ancestor : ancestorPath.split("~"))
         ancestors.add(ancestor);
-      
-      // if ancestor path contains this terminology id, a child/ancestor cycle exists
-      if(ancestors.contains(concept.getTerminologyId())) {
-        
+
+      // if ancestor path contains this terminology id, a child/ancestor cycle
+      // exists
+      if (ancestors.contains(concept.getTerminologyId())) {
+
         // add error to validation result
-        computeTreePositionValidationResult.addError(
-            "Cycle detected for concept " + concept.getTerminologyId() + ", ancestor path is " + ancestorPath);
-        
+        computeTreePositionValidationResult
+            .addError("Cycle detected for concept "
+                + concept.getTerminologyId() + ", ancestor path is "
+                + ancestorPath);
+
         // return empty set of descendants to truncate calculation on this path
         return descConceptIds;
       }
@@ -1770,13 +1861,14 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
         }
       }
     }
-    
+
     // Check that this concept does not reference itself as a child
     if (descConceptIds.contains(concept.getTerminologyId())) {
-      
+
       // add error to validation result
-      computeTreePositionValidationResult.addError("Concept " + concept.getTerminologyId() + " claims itself as a child");
-      
+      computeTreePositionValidationResult.addError("Concept "
+          + concept.getTerminologyId() + " claims itself as a child");
+
       // remove this terminology id to prevent infinite loop
       descConceptIds.remove(concept.getTerminologyId());
     }
