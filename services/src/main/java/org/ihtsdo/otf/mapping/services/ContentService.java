@@ -648,6 +648,40 @@ public interface ContentService extends RootService {
     String terminologyVersion);
 
   /**
+   * Gets all relationships.
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @return the relationships
+   * @throws Exception the exception
+   */
+  public RelationshipList getAllActiveRelationships(String terminology,
+    String terminologyVersion) throws Exception;
+
+  /**
+   * Gets all descriptions.
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @return the descriptions
+   * @throws Exception the exception
+   */
+  public DescriptionList getAllActiveDescriptions(String terminology,
+    String terminologyVersion) throws Exception;
+
+ 
+  /**
+   * Gets all concepts.
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @return the concepts
+   * @throws Exception the exception
+   */
+  public LanguageRefSetMemberList getAllActiveLanguageRefSetMembers(String terminology,
+    String terminologyVersion) throws Exception;
+
+  /**
    * Gets the all relationship terminology ids.
    *
    * @param terminology the terminology
@@ -693,6 +727,7 @@ public interface ContentService extends RootService {
    */
   public ConceptList getConcepts() throws Exception;
 
+ 
   /**
    * Gets the tree position with descendants.
    *
