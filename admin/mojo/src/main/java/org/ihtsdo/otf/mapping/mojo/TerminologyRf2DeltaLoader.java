@@ -11,7 +11,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -1154,6 +1153,13 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     // but not in the current delta.  Relationships do not change
     // they are created or retired - so we likely do not need to worry
     // about retractions of changes here
+
+    // OK, so after experimenting with this, we can't effectively identify
+    // what kind of change was retracted, and so can't assume that it was
+    // an addition.  Every attempt to model this logic has failed because
+    // we simply do not have the intermediate information
+    // 
+/**    
     ct = 0;
     getLog().info("    Retire removed relationships");
     List<Relationship> relationships =
@@ -1174,6 +1180,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
       }
     }
     getLog().info("      count =  " + ct);
+**/
+    
     contentService.commit();
     contentService.clear();
     contentService.beginTransaction();
@@ -1186,7 +1194,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     // As are retracted changes or additions of language refset member entries.
 
   }
-
   // helper function to update and store concept
   // as well as putting all descendant objects in the cache
   // for easy retrieval
