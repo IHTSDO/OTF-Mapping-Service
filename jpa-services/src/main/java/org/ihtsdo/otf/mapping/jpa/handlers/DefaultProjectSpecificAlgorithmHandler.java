@@ -163,8 +163,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         .merge(checkMapRecordGroupStructure(mapRecord, entryGroups));
 
     /*
-     * Group validation checks â€¢ Verify the last entry in a group is a TRUE
-     * rule â€¢ Verify higher map groups do not have only NC nodes
+     * Group validation checks â€¢ Verify the last entry in a group is a
+     * TRUE rule â€¢ Verify higher map groups do not have only NC nodes
      */
 
     // Validation Check: verify correct positioning of TRUE rules
@@ -174,12 +174,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     validationResult.merge(checkMapRecordNcNodes(mapRecord, entryGroups));
 
     /*
-     * Entry Validation Checks â€¢ Verify no duplicate entries in record â€¢
-     * Verify advice values are valid for the project (this can happen if
-     * â€œallowable map adviceâ€� changes without updating map entries) â€¢
-     * Entry must have target code that is both in the target terminology and
-     * valid (e.g. leaf nodes) OR have a relationId corresponding to a valid map
-     * category
+     * Entry Validation Checks â€¢ Verify no duplicate entries in record
+     * â€¢ Verify advice values are valid for the project (this can happen
+     * if â€œallowable map adviceâ€� changes without updating map
+     * entries) â€¢ Entry must have target code that is both in the target
+     * terminology and valid (e.g. leaf nodes) OR have a relationId
+     * corresponding to a valid map category
      */
 
     // Validation Check: verify entries are not duplicated
@@ -187,7 +187,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
     // Validation Check: verify advice values are valid for the project
     // (this
-    // can happen if â€œallowable map adviceâ€� changes without updating map
+    // can happen if â€œallowable map adviceâ€� changes without
+    // updating map
     // entries)
     validationResult.merge(checkMapRecordAdvices(mapRecord, entryGroups));
 
@@ -1563,7 +1564,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         if (!mapRecord.getWorkflowStatus().equals(
             WorkflowStatus.REVIEW_RESOLVED))
           throw new Exception(
-              "Publish called on FIX_ERROR_PATH for map record not marked as REVIEW_RESOLVED");
+              "Publish called on FIX_ERROR_PATH for map record not marked as REVIEW_RESOLVED (Workflow status found on map record "
+                  + mapRecord.getId() + " is " + mapRecord.getWorkflowStatus());
 
         // check assumption: REVISION and REVIEW_NEEDED records are present
         boolean revisionRecordFound = false;
@@ -2356,9 +2358,10 @@ public class DefaultProjectSpecificAlgorithmHandler implements
               + mapRecord.getId() + ", " + mapRecord.getOwner().getName()
               + ", and concept id " + mapRecord.getConceptId()
               + ", but no previous revisions exist.");
-    
+
     for (MapRecord revision : revisions) {
-      System.out.println(revision.getId() + "\t" + revision.getWorkflowStatus() + "\t" + revision.getTimestamp());
+      System.out.println(revision.getId() + "\t" + revision.getWorkflowStatus()
+          + "\t" + revision.getTimestamp());
     }
 
     // cycle over records until the previously
@@ -2473,9 +2476,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     // does not apply
     return null;
   }
-  
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#getDefaultTargetNameForBlankTarget()
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#
+   * getDefaultTargetNameForBlankTarget()
    */
   @Override
   public String getDefaultTargetNameForBlankTarget() {
