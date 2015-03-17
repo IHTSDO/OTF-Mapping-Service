@@ -447,17 +447,13 @@
                       <value>
                         SELECT a.mapProjectId, a.id, a.conceptId, a.conceptName, a.workflowStatus
                         FROM
-                        map_records a, concepts c
-                        WHERE workflowStatus not in ('PUBLISHED',
+                        map_records a, tracking_records t
+                        WHERE a.workflowStatus in ('PUBLISHED',
                         'READY_FOR_PUBLICATION')
-                        and a.conceptId = c.terminologyId and c.active = 1
-                        AND NOT EXISTS
-                        (SELECT * FROM
-                        tracking_records b
-                        WHERE a.mapProjectId = b.mapProjectId
-                        AND a.conceptId = b.terminologyId)
-	         			order by a.mapProjectId, a.conceptId;
-
+                        and a.conceptId = t.terminologyId
+                        and a.mapProjectId = t.mapProjectId
+                        order by a.mapProjectId, a.conceptId; 
+           
                       </value>
                     </property>
 
@@ -467,9 +463,11 @@
                       <value>
                         SELECT mapProjectId, id, workflowStatus
                         FROM
-                        map_records a
+                        map_records a, concepts c
                         WHERE workflowStatus not in ('PUBLISHED',
                         'READY_FOR_PUBLICATION')
+                        AND c.terminologyId = a.conceptId
+                        AND c.active = 1
                         AND NOT EXISTS
                         (SELECT * FROM
                         tracking_records b
