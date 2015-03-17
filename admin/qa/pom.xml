@@ -176,6 +176,7 @@
                         FROM
                         concepts a
                         WHERE active = 1 AND terminology='SNOMEDCT'
+                        and terminologyId != '26383008'
                         AND
                         NOT EXISTS
                         (SELECT * FROM tree_positions b
