@@ -446,16 +446,19 @@
                       <name>PUBLISHED or READY_FOR_PUBLICATION map records do
                         not have tracking records</name>
                       <value>
-                        SELECT mapProjectId, id, workflowStatus
+                        SELECT a.mapProjectId, a.id, a.conceptId, a.conceptName, a.workflowStatus
                         FROM
-                        map_records a
-                        WHERE workflowStatus in ('PUBLISHED',
+                        map_records a, concepts c
+                        WHERE workflowStatus not in ('PUBLISHED',
                         'READY_FOR_PUBLICATION')
-                        AND EXISTS
+                        and a.conceptId = c.terminologyId and c.active = 1
+                        AND NOT EXISTS
                         (SELECT * FROM
                         tracking_records b
                         WHERE a.mapProjectId = b.mapProjectId
-                        AND a.conceptId = b.terminologyId);
+                        AND a.conceptId = b.terminologyId)
+	         			order by a.mapProjectId, a.conceptId;
+
                       </value>
                     </property>
 
