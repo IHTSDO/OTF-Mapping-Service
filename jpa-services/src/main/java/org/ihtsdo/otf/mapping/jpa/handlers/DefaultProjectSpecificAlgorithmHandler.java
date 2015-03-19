@@ -163,8 +163,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         .merge(checkMapRecordGroupStructure(mapRecord, entryGroups));
 
     /*
-     * Group validation checks â€¢ Verify the last entry in a group is a
-     * TRUE rule â€¢ Verify higher map groups do not have only NC nodes
+     * Group validation checks â€¢ Verify the last entry in a group is a TRUE
+     * rule â€¢ Verify higher map groups do not have only NC nodes
      */
 
     // Validation Check: verify correct positioning of TRUE rules
@@ -174,12 +174,13 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     validationResult.merge(checkMapRecordNcNodes(mapRecord, entryGroups));
 
     /*
-     * Entry Validation Checks â€¢ Verify no duplicate entries in record
-     * â€¢ Verify advice values are valid for the project (this can happen
-     * if â€œallowable map adviceâ€� changes without updating map
-     * entries) â€¢ Entry must have target code that is both in the target
-     * terminology and valid (e.g. leaf nodes) OR have a relationId
-     * corresponding to a valid map category
+     * Entry Validation Checks 
+     * Verify no duplicate entries in record 
+     * Verify advice values are valid for the project (this can happen if
+     * allowable map advice changes without updating map entries) 
+     * Entry must have target code that is both in the target terminology and
+     * valid (e.g. leaf nodes) OR have a relationId corresponding to a valid map
+     * category
      */
 
     // Validation Check: verify entries are not duplicated
@@ -2305,19 +2306,17 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     for (MapRecord mr : mapRecords) {
       if (mr.getOwner().equals(mapUser)) {
 
-        // if there are multiple records on this tracking record, it
-        // MUST be a dual-role lead record
-        // default behavior: use the most-advanced record, e.g.
-        // CONFLICT_NEW instead of CONFLICT_DETECTED
-        // the specialist-level work is always inaccessible while
-        // lead-level work is assigned
+        // if there are multiple records on this tracking record
+        // for a particular user, return the one with highest workflow status
+                
         // EXCEPTION: Never return a REVISION record
-        if (mapRecord != null) {
-          if (mr.getWorkflowStatus().compareTo(mapRecord.getWorkflowStatus()) > 0
-              && !mr.getWorkflowStatus().equals(WorkflowStatus.REVISION))
+        if (!mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
+          if (mapRecord != null) {
+            if (mr.getWorkflowStatus().compareTo(mapRecord.getWorkflowStatus()) > 0)
+              mapRecord = mr;
+          } else {
             mapRecord = mr;
-        } else {
-          mapRecord = mr;
+          }
         }
       }
     }
