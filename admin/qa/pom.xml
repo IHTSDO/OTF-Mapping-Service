@@ -462,7 +462,7 @@
                       <name>Non-PUBLISHED and non-READY_FOR_PUBLICATION map
                         records always have a tracking record</name>
                       <value>
-                        SELECT mapProjectId, id, workflowStatus
+                        SELECT mapProjectId, a.id, workflowStatus
                         FROM
                         map_records a, concepts c
                         WHERE workflowStatus not in ('PUBLISHED',
