@@ -896,7 +896,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     int toIndex = results.size();
     if (pfsParameter != null) {
       startIndex =
-          pfsParameter.getStartIndex() == -1 ? 0 : pfsParameter.getStartIndex();
+          pfsParameter.getStartIndex() == -1 ? 0 : Math.min(results.size(), pfsParameter.getStartIndex());
+      
+      // ensure start index not negative
+      if (startIndex < 0) 
+        startIndex = 0;
+      
       toIndex =
           pfsParameter.getMaxResults() == -1 ? results.size() : Math.min(
               results.size(), startIndex + pfsParameter.getMaxResults());
@@ -1646,7 +1651,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     int toIndex = results.size();
     if (pfsParameter != null) {
       if (pfsParameter.getStartIndex() != -1) {
-        startIndex = pfsParameter.getStartIndex();
+        // ensure that start index is within array boundaries
+        startIndex = Math.min(results.size(), pfsParameter.getStartIndex());
+       
+        // ensure startIndex not less than zero
+        if (startIndex < 0)
+          startIndex = 0;
       }
 
       if (pfsParameter.getMaxResults() != -1) {
