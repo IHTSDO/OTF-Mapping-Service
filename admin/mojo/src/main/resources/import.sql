@@ -2,6 +2,12 @@ INSERT INTO map_users VALUES (1, 'VIEWER', 'test@example.com', 'Loader', 'loader
 INSERT INTO map_users VALUES (2, 'VIEWER', 'test@example.com', 'QA Path', 'qa');
 INSERT INTO map_users VALUES (3, 'VIEWER', 'test@example.com', 'Guest', 'guest');
 
+-- Need to insert history too (use revision 0)
+INSERT INTO map_users_AUD VALUES (1,0,0, 'VIEWER', 'test@example.com', 'Loader', 'loader');
+INSERT INTO map_users_AUD VALUES (2,0,0, 'VIEWER', 'test@example.com', 'QA Path', 'qa');
+INSERT INTO map_users_AUD VALUES (3,0,0, 'VIEWER', 'test@example.com', 'Guest', 'guest');
+INSERT INTO REVINFO values (0,0);
+
 -- For performance of searching map record history
 -- we need an index on the owner_id.  The framework 
 -- does not support creating indexes on audit tables
