@@ -36,7 +36,7 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
   private int mapPriority;
 
   /** the map rule. */
-  @Column(nullable = true)
+  @Column(nullable = true, length = 4000)
   private String mapRule;
 
   /** the map advice. */
