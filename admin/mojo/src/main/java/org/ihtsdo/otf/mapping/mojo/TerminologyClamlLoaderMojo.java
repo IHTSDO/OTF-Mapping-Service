@@ -78,7 +78,6 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
    */
   String version;
 
-
   // NOTE: default visibility is used instead of private
   // so that the inner class parser does not require
   // the use of synthetic accessors
@@ -175,8 +174,8 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       metadataService.close();
 
       // Let the service create its own transaction.
-      getLog().info("Start creating tree positions.");
       for (String root : roots) {
+        getLog().info("Start creating tree positions " + root + ", " + isaRelType);
         contentService.computeTreePositions(terminology, terminologyVersion,
             isaRelType, root);
       }

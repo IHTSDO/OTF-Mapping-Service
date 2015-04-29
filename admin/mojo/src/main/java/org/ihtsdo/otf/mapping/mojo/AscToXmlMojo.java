@@ -91,8 +91,7 @@ public class AscToXmlMojo extends AbstractMojo {
     getLog().info("  terminologyVersion = " + terminologyVersion);
     getLog().info("  documentTitle = " + documentTitle);
     getLog().info("  headerProperties = " + headerProperties);
-    
-    
+
     BufferedReader reader = null;
     String outputDir = "";
 

@@ -23,7 +23,7 @@ import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
 
   // The workflow path states defining the QA Path Workflow
-  /**  The finished state. */
+  /** The finished state. */
   private static WorkflowPathState qaNeededState, editingState, finishedState;
 
   /**
@@ -43,8 +43,10 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
     qaNeededState = new WorkflowPathState("QA_NEEDED");
     qaNeededState.addWorkflowCombination(new WorkflowStatusCombination(Arrays
         .asList(WorkflowStatus.REVISION, WorkflowStatus.QA_NEEDED)));
-    trackingRecordStateToActionMap.put(qaNeededState,
-        new HashSet<>(Arrays.asList(WorkflowAction.ASSIGN_FROM_SCRATCH, WorkflowAction.UNASSIGN)));
+    trackingRecordStateToActionMap.put(
+        qaNeededState,
+        new HashSet<>(Arrays.asList(WorkflowAction.ASSIGN_FROM_SCRATCH,
+            WorkflowAction.UNASSIGN)));
 
     // workflow states representing record marked for revision, specialist work,
     // and lead QA (incomplete)
@@ -76,8 +78,14 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
     // final state: no tracking record, one READY_FOR_PUBLICATION record
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.jpa.handlers.AbstractWorkflowPathHandler#validateTrackingRecordForActionAndUser(org.ihtsdo.otf.mapping.workflow.TrackingRecord, org.ihtsdo.otf.mapping.helpers.WorkflowAction, org.ihtsdo.otf.mapping.model.MapUser)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.jpa.handlers.AbstractWorkflowPathHandler#
+   * validateTrackingRecordForActionAndUser
+   * (org.ihtsdo.otf.mapping.workflow.TrackingRecord,
+   * org.ihtsdo.otf.mapping.helpers.WorkflowAction,
+   * org.ihtsdo.otf.mapping.model.MapUser)
    */
   @Override
   public ValidationResult validateTrackingRecordForActionAndUser(
@@ -88,8 +96,10 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
     if (!result.isValid()) {
       result
           .addError("Could not validate action for user due to workflow errors.");
-      System.out.println("  " + tr.getUserAndWorkflowStatusPairs() + " - " + action + " - " + user);
-      System.out.println("  " + this.getWorkflowCombinationForTrackingRecord(tr).toString());
+      System.out.println("  " + tr.getUserAndWorkflowStatusPairs() + " - "
+          + action + " - " + user);
+      System.out.println("  "
+          + this.getWorkflowCombinationForTrackingRecord(tr).toString());
       return result;
     }
 
@@ -98,7 +108,7 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
     if (action.equals(WorkflowAction.CANCEL)) {
       return result;
     }
-    
+
     // check for CREATE_QA_RECORD action -- this is always valid, as it merely
     // applies labels to concepts that are already in the workflow
     if (action.equals(WorkflowAction.CREATE_QA_RECORD)) {
@@ -122,9 +132,10 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
     // Switch on workflow path state //
     // /////////////////////////////////
     if (state == null) {
-      result.addError("Could not determine workflow path state for tracking record");
+      result
+          .addError("Could not determine workflow path state for tracking record");
     }
-    
+
     else if (state.equals(qaNeededState)) {
 
       // check record -- null means none assigned
@@ -134,21 +145,21 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
         if (!userRole.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
           result.addError("User does not have required role");
         }
-  
+
         // check action
         if (!action.equals(WorkflowAction.ASSIGN_FROM_SCRATCH)) {
           result.addError("Action is not permitted.");
         }
       } else {
-        
+
         // check role
         // qa user does not have role requirements for unassign
-        
+
         // check action
         if (!action.equals(WorkflowAction.UNASSIGN)) {
           result.addError("Action is not permitted.");
         }
-        
+
       }
 
       // STATE: Specialist level work
@@ -201,9 +212,10 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
         result.addError("Action is not permitted.");
       }
     }
-    
+
     if (result.getErrors().size() != 0) {
-      result.addError("Error occured in workflow state " + state.getWorkflowStateName());;
+      result.addError("Error occured in workflow state "
+          + state.getWorkflowStateName());
     }
 
     return result;

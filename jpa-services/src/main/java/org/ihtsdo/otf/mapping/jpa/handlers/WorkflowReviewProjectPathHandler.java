@@ -108,17 +108,15 @@ public class WorkflowReviewProjectPathHandler extends
     ValidationResult result = validateTrackingRecord(tr);
     if (!result.isValid()) {
       result
-          .addError("Could not validate action for user due to workflow errors.");   
+          .addError("Could not validate action for user due to workflow errors.");
       return result;
     }
-    
-  
+
     // second, check for CANCEL action -- always valid for this path for any
     // state or user (no-op)
     if (action.equals(WorkflowAction.CANCEL)) {
-       return result;
+      return result;
     }
-    
 
     // third, get the user role for this map project
     MappingService mappingService = new MappingServiceJpa();
@@ -126,26 +124,33 @@ public class WorkflowReviewProjectPathHandler extends
         mappingService.getMapUserRoleForMapProject(user.getUserName(),
             tr.getMapProjectId());
     mappingService.close();
-    
+
     // fourth, get the map records and workflow path state from the tracking
     // record
     MapRecordList mapRecords = getMapRecordsForTrackingRecord(tr);
     MapRecord currentRecord = getCurrentMapRecordForUser(mapRecords, user);
     WorkflowPathState state = this.getWorkflowStateForTrackingRecord(tr);
-    
+
     // /////////////////////////////////
     // Switch on workflow path state //
     // /////////////////////////////////
 
     if (state == null) {
-      result.addError("Could not determine workflow path state for tracking record");
+      result
+          .addError("Could not determine workflow path state for tracking record");
+    } else if (action.equals(WorkflowAction.CREATE_QA_RECORD)) {
+      
+      // for creating qa record, only check role
+      if (!userRole.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
+        result.addError("User does not have required role");
+      }
     }
-    
+
     // Record requirement : No record
     // Permissible action : ASSIGN_FROM_SCRATCH
     // Minimum role : Specialist
     else if (state.equals(initialState)) {
-  
+
       // check record
       if (currentRecord != null) {
         result.addError("User record does not meet requirements");
@@ -292,12 +297,13 @@ public class WorkflowReviewProjectPathHandler extends
           && !action.equals(WorkflowAction.PUBLISH)) {
         result.addError("Action is not permitted.");
       }
-    } else  {
+    } else {
       result.addError("Could not determine workflow state for tracking record");
     }
-    
+
     if (result.getErrors().size() != 0) {
-      result.addError("Error occured in workflow state " + state.getWorkflowStateName());;
+      result.addError("Error occured in workflow state "
+          + state.getWorkflowStateName());
     }
 
     return result;

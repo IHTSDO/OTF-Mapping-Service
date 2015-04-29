@@ -133,6 +133,14 @@ angular
       $scope.getRootTreeWithQuery = function(isNewSearch) {
 
         console.debug("QUERYING: " + $scope.query);
+        // Bail on an empty search
+        if ($scope.query == "") {
+          return;
+        }
+        // bail on only whitespace search
+        if (new RegExp("^\s+$").test($scope.query)) {
+          return;
+        }
         $scope.searchStatus = "Searching...";
         $scope.terminologyTree = [];
         $http(
@@ -549,6 +557,5 @@ angular
           key : 'concept',
           concept : node
         });
-        window.scrollTo(0, 0);
       };
     });

@@ -70,9 +70,9 @@ public class ICPCProjectSpecificAlgorithmHandler extends
   }
 
   /**
-   * Computes the map relation for the SNOMEDCT to ICD10 map project. Based solely
-   * on whether an entry has a TRUE rule or not. No advices are computed for
-   * this project.
+   * Computes the map relation for the SNOMEDCT to ICD10 map project. Based
+   * solely on whether an entry has a TRUE rule or not. No advices are computed
+   * for this project.
    * @throws Exception
    */
   @Override
@@ -86,7 +86,7 @@ public class ICPCProjectSpecificAlgorithmHandler extends
       // if a relation is already set, and is allowable for null target,
       // keep it
       if (mapEntry.getMapRelation() != null
-          && mapEntry.getMapRelation().isAllowableForNullTarget() == true)
+          && mapEntry.getMapRelation().isAllowableForNullTarget())
         return mapEntry.getMapRelation();
       else {
         // retrieve the not classifiable relation

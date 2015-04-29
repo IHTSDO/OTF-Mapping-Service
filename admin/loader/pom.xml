@@ -89,6 +89,7 @@
                   <inputDir>${input.dir}</inputDir>
                   <terminology>${terminology}</terminology>
                   <version>${version}</version>
+                  <sendNotification>${send.notification}</sendNotification>
                 </configuration>
               </execution>
             </executions>
@@ -138,6 +139,33 @@
                 <phase>package</phase>
                 <goals>
                   <goal>compute-treepos</goal>
+                </goals>
+                <configuration>
+                  <terminology>${terminology}</terminology>
+                  <terminologyVersion>${version}</terminologyVersion>
+                  <rootIds>${root.ids}</rootIds>
+                  <sendNotification>${send.notification}</sendNotification>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>CycleCheck</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>cycle-check</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>cycle-check</goal>
                 </goals>
                 <configuration>
                   <terminology>${terminology}</terminology>

@@ -16,6 +16,7 @@ import java.util.Properties;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
+import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.rf2.AttributeValueRefSetMember;
@@ -38,6 +39,7 @@ import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.ihtsdo.otf.mapping.services.helpers.FileSorter;
+import org.ihtsdo.otf.mapping.services.helpers.OtfEmailHandler;
 
 import com.google.common.io.Files;
 
@@ -58,6 +60,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
    * @required
    */
   private String inputDir;
+
   /**
    * Name of terminology to be loaded.
    * @parameter
@@ -71,6 +74,12 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
    * @required
    */
   private String version;
+  
+  /**
+   * Whether to send email notification of any errors
+   * @parameter
+   */
+  private boolean sendNotification = false;
 
   /** the defaultPreferredNames type id. */
   private Long dpnTypeId = 900000000000003001L;
@@ -142,6 +151,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     getLog().info("Starting loading RF2 data");
     getLog().info("  inputDir = " + inputDir);
     getLog().info("  terminology = " + terminology);
+    getLog().info("  sendNotification = " + sendNotification);
 
     try {
 
@@ -150,6 +160,23 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
       // Load config properties
       Properties config = ConfigUtility.getConfigProperties();
+      
+      // check that notifications can be sent if requested
+      String notificationRecipients =
+          config.getProperty("send.notification.recipients");
+      if (!sendNotification) {
+        getLog().info(
+            "No notifications will be sent as a result of workflow computation.");
+      }
+      if (sendNotification
+          && config.getProperty("send.notification.recipients") == null) {
+        throw new MojoFailureException(
+            "Email notification was requested, but no recipients were specified.");
+      } else {
+        getLog().info(
+            "Request to send notification email for any errors to recipients: "
+                + notificationRecipients);
+      }
 
       // Set the input directory
       File coreInputDir = new File(inputDir);
@@ -167,11 +194,9 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
       if (prop != null) {
         dpnrefsetId = Long.valueOf(prop);
       }
-      prop = config
-          .getProperty("loader.defaultPreferredNames.acceptabilityId");
+      prop = config.getProperty("loader.defaultPreferredNames.acceptabilityId");
       if (prop != null) {
-      dpnAcceptabilityId =
-          Long.valueOf(prop);
+        dpnAcceptabilityId = Long.valueOf(prop);
       }
 
       //
@@ -337,8 +362,18 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
           break;
         }
         getLog().info("    Compute tree from rootId " + conceptId);
-        contentService.computeTreePositions(terminology, version, isaRelType,
+        ValidationResult result = contentService.computeTreePositions(terminology, version, isaRelType,
             rootId);
+        if (sendNotification && !result.isValid()) {
+          OtfEmailHandler handler = new OtfEmailHandler();
+          handler
+              .sendValidationResultEmail(
+                  config.getProperty("notification.recipients"),
+                  "OTF-Mapping-Tool:  Errors in computing " + terminology + ", "
+                      + version + " hierarchical tree positions",
+                  "Hello,\n\nErrors were detected when computing hierarchical tree positions for "
+                      + terminology + ", " + version, result);
+        }
 
         // Close service
         contentService.close();
@@ -526,7 +561,6 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     // Setup files
     //
     File coreRelInputFile = null;
-    File coreStatedRelInputFile = null;
     File coreConceptInputFile = null;
     File coreDescriptionInputFile = null;
     File coreSimpleRefsetInputFile = null;
@@ -556,19 +590,6 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     getLog().info(
         "      Relationships file = " + coreRelInputFile.toString() + " "
             + coreRelInputFile.exists());
-
-    // Stated relationships file
-    for (File f : coreTerminologyInputDir.listFiles()) {
-      if (f.getName().contains("sct2_StatedRelationship_")) {
-        if (coreStatedRelInputFile != null)
-          throw new MojoFailureException("Multiple Stated Relationships Files!");
-        coreStatedRelInputFile = f;
-      }
-    }
-    getLog().info(
-        "      Stated relationships file = "
-            + coreStatedRelInputFile.toString() + " "
-            + coreStatedRelInputFile.exists());
 
     // Concepts file
     for (File f : coreTerminologyInputDir.listFiles()) {
@@ -739,8 +760,6 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
         "    Refset/Metadata dir = " + coreMetadataInputDir.toString() + " "
             + coreMetadataInputDir.exists());
 
-    // TODO: load metadata files
-
     // Initialize files
     File conceptsByConceptFile =
         new File(outputDir, "concepts_by_concept.sort");
@@ -825,7 +844,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
   }
 
   /**
-   * Helper function for sorting an individual file with colum comparator.
+   * Helper function for sorting an individual file with column comparator.
    * 
    * @param fileIn the input file to be sorted
    * @param fileOut the resulting sorted file

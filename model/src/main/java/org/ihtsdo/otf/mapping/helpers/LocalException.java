@@ -1,6 +1,5 @@
 package org.ihtsdo.otf.mapping.helpers;
 
-import java.lang.Exception;
 
 /**
  * Represents an exception for a known condition that can be simply handled and

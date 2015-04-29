@@ -48,7 +48,7 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
 /**
- * The Workflow Services REST package.
+ * REST implementation for report service.
  */
 @Path("/reporting")
 @Api(value = "/report", description = "Operations supporting reporting.")
