@@ -79,7 +79,8 @@ public class ReportRemoverMojo extends AbstractMojo {
       Set<MapProject> mapProjects = new HashSet<>();
 
       if (refsetId == null) {
-        mapProjects = new HashSet<>(mappingService.getMapProjects().getMapProjects());
+        mapProjects =
+            new HashSet<>(mappingService.getMapProjects().getMapProjects());
       } else {
         for (MapProject mapProject : mappingService.getMapProjects()
             .getIterable()) {
@@ -90,7 +91,7 @@ public class ReportRemoverMojo extends AbstractMojo {
           }
         }
       }
-      
+
       // Remove reports
       ReportService reportService = new ReportServiceJpa();
       for (MapProject mapProject : mapProjects) {

@@ -27,6 +27,17 @@ mapProjectAppControllers
         }
         window.scrollTo(0, 0);
       };
+      
+      // global function to handle an error that returns user to dashboard
+      // currently used for improper viewing of records in editing
+      $rootScope.handleReturnToDashboardError = function(errorString, currentRole) {
+      	console.debug("Error requiring return to dashboard", errorString, currentRole);
+      	console.debug("Attemptingn to redirect to ", "/" + currentRole.toLowerCase() + "/dash");
+      	$rootScope.globalError = errorString;
+      	$location.path("/" + currentRole.toLowerCase() + "/dash");
+      	window.scrollTo(0,0);
+      	
+      }
 
       // global function to reset the global error
       $rootScope.resetGlobalError = function() {
@@ -39,6 +50,7 @@ mapProjectAppControllers
 
       // global variable, contains user-viewable error text displayed one very
       // page if not empty
+      console.debug("rootScope: resetting global error");
       $rootScope.resetGlobalError();
 
     	// check if local storage service can be accessed
@@ -146,7 +158,7 @@ mapProjectAppControllers
               $scope.go = function() {
 
                 // reset the global error on log in attempt
-                $scope.globalError = "";
+                $rootScope.resetGlobalError();
 
                 console.debug($scope.role);
 

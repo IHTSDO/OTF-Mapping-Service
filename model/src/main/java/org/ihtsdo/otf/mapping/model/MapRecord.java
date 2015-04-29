@@ -5,12 +5,9 @@ import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 
-// TODO: Auto-generated Javadoc
 /**
  * Generically represents a map record, or a complete mapping of a source
  * concept in a map project.
- *
- * @author ${author}
  */
 public interface MapRecord {
 
@@ -132,20 +129,6 @@ public interface MapRecord {
    * @param conceptName the concept name
    */
   public void setConceptName(String conceptName);
-
-  /**
-   * Returns the number of descendant concepts.
-   * 
-   * @return the number of descendant concepts
-   */
-  public Long getCountDescendantConcepts();
-
-  /**
-   * Sets the number of descendant concepts.
-   * 
-   * @param countDescendantConcepts the number of descendant concepts
-   */
-  public void setCountDescendantConcepts(Long countDescendantConcepts);
 
   /**
    * Returns the map notes.
@@ -377,7 +360,7 @@ public interface MapRecord {
    * @param label the label
    */
   public void removeLabel(String label);
-  
+
   /**
    * Returns the reasons for conflict.
    *
@@ -391,7 +374,7 @@ public interface MapRecord {
    * @param reasons the reasons for conflict
    */
   public void setReasonsForConflict(Set<String> reasons);
-  
+
   /**
    * Adds the reason for conflict.
    *

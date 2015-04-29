@@ -3,12 +3,12 @@
 	<form>
 		<table>
 			<tr>
-				<td style="padding: 5px; width: 30%"><select id="reportSearch"
+				<td style="padding: 5px;" ><select style="width: 250px;" id="reportSearch"
 					ng-options="definition as definition.name for definition in definitions |  orderBy: 'name' | filter: {qacheck:true}"
 					ng-change="getReports(1, selectedDefinition, queryReport)"
 					ng-model="selectedDefinition"></select></td>
 
-				<td><button
+				<td style="padding: 5px;" ><button
 						ng-show="reportDisplayed == null || reportDisplayed.id != null"
 						class="btn btn-sm btn-primary"
 						ng-click="generateNewReport(selectedDefinition)">Generate</button></td>

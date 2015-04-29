@@ -117,7 +117,7 @@ public class QaDatabase extends AbstractMojo {
               "[OTF-Mapping-Tool] Database QA Results", msg.toString());
         }
         getLog().info(msg.toString());
-        
+
       } else {
         getLog().info("  NO errors");
       }

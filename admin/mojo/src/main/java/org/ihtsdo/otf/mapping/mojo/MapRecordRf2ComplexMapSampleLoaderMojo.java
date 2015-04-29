@@ -197,7 +197,7 @@ public class MapRecordRf2ComplexMapSampleLoaderMojo extends AbstractMojo {
 
       // clean-up
       mappingService.close();
-      //outputFile.delete();
+      // outputFile.delete();
       getLog().info("done ...");
     } catch (Exception e) {
       e.printStackTrace();

@@ -12,7 +12,6 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.jpa.LanguageRefSetMemberJpa;
 
-
 /**
  * JAXB enabled implementation of {@link LanguageRefSetMemberList}.
  */

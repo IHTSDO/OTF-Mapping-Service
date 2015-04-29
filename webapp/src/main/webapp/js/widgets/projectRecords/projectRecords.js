@@ -65,8 +65,9 @@ angular
       // watch for changes to focus project
       $scope.$on('localStorageModule.notification.setFocusProject', function(
         event, parameters) {
-        console.debug("ProjectRecordCtrl:  Detected change in focus project");
+        console.debug("ProjectRecordCtrl:  Detected change in focus project", parameters.focusProject);
         $scope.focusProject = parameters.focusProject;
+        $scope.getRecordsForProject();
       });
 
       // retrieve the current global variables
@@ -74,10 +75,13 @@ angular
       $scope.mapProjects = localStorageService.get("mapProjects");
       $scope.currentUser = localStorageService.get('currentUser');
       $scope.currentRole = localStorageService.get('currentRole');
+      $scope.preferences = localStorageService.get('preferences');
 
       // once focus project retrieved, retrieve the concept and records
       $scope.userToken = localStorageService.get('userToken');
       $scope.$watch([ 'focusProject', 'userToken' ], function() {
+      	
+      	console.debug('Detected project or user change', $scope.focusProject, $scope.userToken);
 
         // need both focus project and user token set before executing main
         // functions
@@ -283,8 +287,7 @@ angular
             }
           }
         }
-      }
-      ;
+      };
 
       // function to change project from the header
       $scope.changeFocusProject = function(mapProject) {

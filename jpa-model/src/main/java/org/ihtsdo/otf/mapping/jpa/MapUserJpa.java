@@ -26,10 +26,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  */
 @Entity
 @Table(name = "map_users", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {
-      "userName"
-    })
+  @UniqueConstraint(columnNames = {
+    "userName"
   })
+})
 @Audited
 @XmlRootElement(name = "mapUser")
 @JsonIgnoreProperties(ignoreUnknown = true)

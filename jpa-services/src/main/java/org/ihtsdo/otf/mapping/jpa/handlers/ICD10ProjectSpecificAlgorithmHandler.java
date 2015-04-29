@@ -57,7 +57,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
   private boolean qaTrueRuleInGroup = false;
 
   /**
-   *  The parser.
+   * The parser.
    *
    * @param mapRecord the map record
    * @return the validation result
@@ -173,7 +173,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       // if a relation is already set, and is allowable for null target,
       // keep it
       if (mapEntry.getMapRelation() != null
-          && mapEntry.getMapRelation().isAllowableForNullTarget() == true)
+          && mapEntry.getMapRelation().isAllowableForNullTarget())
         return mapEntry.getMapRelation();
       else {
         // retrieve the not classifiable relation
@@ -327,27 +327,21 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       // {
       return false;
     }
+    
+    // SPECIFIC CASE:  for M14.__, codes with fifth digit are not assignable
+    if (terminologyId.toUpperCase().startsWith("M14") && terminologyId.length() == 6)
+      return false;
 
     // open the content service
     ContentService contentService = new ContentServiceJpa();
-
+ 
+    // if a three digit code
     if (terminologyId.matches(".[0-9].")) {
 
+      // SPECIFIC CASE for W00-W19, X00-X09, Y10-Y34, fourth digit not required, return true for codes with 3 or more digits
       if (terminologyId.toUpperCase().matches("W..|X..|Y[0-2].|Y3[0-4]"))
-        return true;
-
-      /*
-       * // Fourth digit not necessary: check W00-W19 if
-       * (terminologyId.startsWith("W")) return true;
-       * 
-       * // Fourth digit not necessary: check X00-X09 if
-       * (terminologyId.startsWith("X")) return true;
-       * 
-       * // Fourth digit not necessary: check Y10-Y34 if
-       * (terminologyId.startsWith("Y")) { if (terminologyId.charAt(1) == '1' ||
-       * terminologyId.charAt(1) == '2') return true; if
-       * (terminologyId.charAt(1) == '3' && (terminology.)) return true;
-       */
+        return true;  
+      
       // otherwise, if 3-digit code has children, return false
       TreePositionList tpList =
           contentService.getTreePositions(terminologyId,
@@ -362,7 +356,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       }
     }
 
-    // third, verify concept exists in database
+    // verify concept exists in database
     Concept concept =
         contentService.getConcept(terminologyId,
             mapProject.getDestinationTerminology(),
@@ -713,8 +707,12 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.jpa.handlers.DefaultProjectSpecificAlgorithmHandler#getDefaultUpPropagatedMapRelation()
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.jpa.handlers.DefaultProjectSpecificAlgorithmHandler
+   * #getDefaultUpPropagatedMapRelation()
    */
   @Override
   public MapRelation getDefaultUpPropagatedMapRelation() throws Exception {
