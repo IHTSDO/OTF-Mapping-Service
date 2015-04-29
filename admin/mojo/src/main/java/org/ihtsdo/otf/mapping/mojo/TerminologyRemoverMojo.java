@@ -34,7 +34,7 @@ import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
  * Goal which removes a terminology from a database.
  * 
  * See admin/remover/pom.xml for a sample execution.
- *  
+ * 
  * @goal remove-terminology
  * 
  * @phase package
@@ -74,7 +74,6 @@ public class TerminologyRemoverMojo extends AbstractMojo {
     getLog().info("Starting removing terminology");
     getLog().info("  terminology = " + terminology);
     getLog().info("  terminologyVersion = " + terminologyVersion);
-    
 
     try {
       Properties config = ConfigUtility.getConfigProperties();

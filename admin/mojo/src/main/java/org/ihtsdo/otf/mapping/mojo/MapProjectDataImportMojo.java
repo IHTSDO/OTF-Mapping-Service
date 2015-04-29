@@ -204,7 +204,8 @@ public class MapProjectDataImportMojo extends AbstractMojo {
             project.getReportDefinitions();
         List<ReportDefinition> currentReportDefinitions =
             reportService.getReportDefinitions().getReportDefinitions();
-        currentReportDefinitions.addAll(reportService.getQACheckDefinitions().getReportDefinitions());
+        currentReportDefinitions.addAll(reportService.getQACheckDefinitions()
+            .getReportDefinitions());
         for (ReportDefinition reportDefinition : reportDefinitions) {
           if (!currentReportDefinitions.contains(reportDefinition)) {
             getLog().info(

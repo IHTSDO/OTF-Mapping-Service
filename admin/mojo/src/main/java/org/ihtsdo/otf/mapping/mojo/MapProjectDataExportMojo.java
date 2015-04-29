@@ -69,7 +69,6 @@ public class MapProjectDataExportMojo extends AbstractMojo {
       MappingService mappingService = new MappingServiceJpa();
       for (MapProject mpr : mappingService.getMapProjects().getMapProjects()) {
 
-
         // Write out scope and scope excludes info
         File scopeIncludesFile =
             new File(outputDirFile, "Project" + mpr.getId() + "Scope.txt");
@@ -78,18 +77,19 @@ public class MapProjectDataExportMojo extends AbstractMojo {
           scopeIncludesFile.createNewFile();
         }
         BufferedWriter scopeIncludesWriter =
-            new BufferedWriter(
-                new FileWriter(scopeIncludesFile.getAbsoluteFile()));
+            new BufferedWriter(new FileWriter(
+                scopeIncludesFile.getAbsoluteFile()));
 
         File scopeExcludesFile =
-            new File(outputDirFile, "Project" + mpr.getId() + "ScopeExcludes.txt");
+            new File(outputDirFile, "Project" + mpr.getId()
+                + "ScopeExcludes.txt");
         // if file doesn't exist, then create it
         if (!scopeExcludesFile.exists()) {
           scopeExcludesFile.createNewFile();
         }
         BufferedWriter scopeExcludesWriter =
-            new BufferedWriter(
-                new FileWriter(scopeExcludesFile.getAbsoluteFile()));
+            new BufferedWriter(new FileWriter(
+                scopeExcludesFile.getAbsoluteFile()));
 
         for (String concept : mpr.getScopeConcepts()) {
           scopeIncludesWriter.write(concept + "\n");
@@ -99,12 +99,12 @@ public class MapProjectDataExportMojo extends AbstractMojo {
         for (String concept : mpr.getScopeExcludedConcepts()) {
           scopeExcludesWriter.write(concept + "\n");
         }
-        scopeExcludesWriter.close();        
+        scopeExcludesWriter.close();
 
         // Clear scope concepts list for this part
         mpr.setScopeConcepts(new HashSet<String>());
         mpr.setScopeExcludedConcepts(new HashSet<String>());
-        
+
         // Write out map project
         StringWriter writer = new StringWriter();
         File projectsFile =

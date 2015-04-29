@@ -417,7 +417,7 @@ public class ContentServiceRest extends RootServiceRest {
 
         SearchResult result = new SearchResultJpa();
         result.setId(c.getId());
-        result.setTerminologyVersion(modifiedConcept == true ? "Modified"
+        result.setTerminologyVersion(modifiedConcept ? "Modified"
             : "New");
         result.setTerminologyId(c.getTerminologyId());
         result.setValue(c.getDefaultPreferredName());
@@ -433,7 +433,7 @@ public class ContentServiceRest extends RootServiceRest {
       return null;
     }
   }
-  
+
   /**
    * Returns the index viewer indexes.
    *
@@ -449,12 +449,13 @@ public class ContentServiceRest extends RootServiceRest {
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public SearchResultList getIndexDomains(
-	@ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
-	@ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
+    @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
+    @ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
     Logger.getLogger(ContentServiceRest.class).info(
-        "RESTful call (Content): /index/" + terminology + "/" + terminologyVersion);
+        "RESTful call (Content): /index/" + terminology + "/"
+            + terminologyVersion);
 
     try {
       // authorize call
@@ -468,7 +469,8 @@ public class ContentServiceRest extends RootServiceRest {
                 .build());
 
       IndexViewerHandler indexViewerHandler = new IndexViewerHandler();
-      SearchResultList searchResultList = indexViewerHandler.getIndexDomains(terminology, terminologyVersion);
+      SearchResultList searchResultList =
+          indexViewerHandler.getIndexDomains(terminology, terminologyVersion);
       return searchResultList;
 
     } catch (Exception e) {
@@ -493,14 +495,14 @@ public class ContentServiceRest extends RootServiceRest {
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public SearchResultList getIndexViewerPagesForIndex(
-	@ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
-	@ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
-	@ApiParam(value = "Name of index or domain", required = true) @PathParam("index") String index,
+    @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
+    @ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
+    @ApiParam(value = "Name of index or domain", required = true) @PathParam("index") String index,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
     Logger.getLogger(ContentServiceRest.class).info(
-        "RESTful call (Content): /index/" + terminology + "/" + terminologyVersion + "/" +
-      index);
+        "RESTful call (Content): /index/" + terminology + "/"
+            + terminologyVersion + "/" + index);
 
     try {
       // authorize call
@@ -512,18 +514,21 @@ public class ContentServiceRest extends RootServiceRest {
                 .entity(
                     "User does not have permissions to retrieve the page names for the given index.")
                 .build());
-   
+
       IndexViewerHandler indexViewerHandler = new IndexViewerHandler();
-      SearchResultList searchResultList = indexViewerHandler.getIndexPagesForIndex(terminology, terminologyVersion, index);
+      SearchResultList searchResultList =
+          indexViewerHandler.getIndexPagesForIndex(terminology,
+              terminologyVersion, index);
 
       return searchResultList;
 
     } catch (Exception e) {
-      handleException(e, "trying to retrieve the page names for the given index");
+      handleException(e,
+          "trying to retrieve the page names for the given index");
       return null;
     }
   }
-  
+
   /**
    * Find index viewer search result entries.
    *
@@ -537,7 +542,7 @@ public class ContentServiceRest extends RootServiceRest {
    * @param authToken the auth token
    * @return the search result list
    */
-  @GET  
+  @GET
   @Path("/index/{terminology}/{terminologyVersion}/{domain}/search/{searchField}/subSearch/{subSearchField}/subSubSearch/{subSubSearchField}/{allFlag}")
   @ApiOperation(value = "Peform the search given the search terms.", notes = "Performs the search given the search terms in the given terminology.", response = SearchResultList.class)
   @Produces({
@@ -554,8 +559,9 @@ public class ContentServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
     Logger.getLogger(ContentServiceRest.class).info(
-        "RESTful call (Content): /index/" + terminology + "/" + terminologyVersion +
-        "/" + domain + "/" + searchField + "/" + subSearchField + "/" + subSubSearchField + "/" + allFlag);
+        "RESTful call (Content): /index/" + terminology + "/"
+            + terminologyVersion + "/" + domain + "/" + searchField + "/"
+            + subSearchField + "/" + subSubSearchField + "/" + allFlag);
 
     try {
       // authorize call
@@ -569,11 +575,11 @@ public class ContentServiceRest extends RootServiceRest {
                 .build());
 
       IndexViewerHandler indexViewerHandler = new IndexViewerHandler();
-      SearchResultList searchResultList = indexViewerHandler.findIndexEntries(terminology, 
-          terminologyVersion, domain, searchField, subSearchField, subSubSearchField, allFlag);
+      SearchResultList searchResultList =
+          indexViewerHandler.findIndexEntries(terminology, terminologyVersion,
+              domain, searchField, subSearchField, subSubSearchField, allFlag);
       searchResultList.setTotalCount(searchResultList.getCount());
       return searchResultList;
-
 
     } catch (Exception e) {
       handleException(e, "trying to perform a search of the indexes");

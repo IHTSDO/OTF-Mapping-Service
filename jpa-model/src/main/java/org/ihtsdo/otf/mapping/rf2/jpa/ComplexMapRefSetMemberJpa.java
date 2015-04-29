@@ -15,39 +15,39 @@ import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
     implements ComplexMapRefSetMember {
 
-  /**  The map block. */
+  /** The map block. */
   @Column(nullable = false)
   private int mapBlock;
 
-  /**  the map block rule. */
+  /** the map block rule. */
   @Column(nullable = true)
   private String mapBlockRule;
 
-  /**  the map block advice. */
+  /** the map block advice. */
   @Column(nullable = true)
   private String mapBlockAdvice;
 
-  /**  The map group. */
+  /** The map group. */
   @Column(nullable = false)
   private int mapGroup;
 
-  /**  The map priority. */
+  /** The map priority. */
   @Column(nullable = false)
   private int mapPriority;
 
-  /**  the map rule. */
-  @Column(nullable = true)
+  /** the map rule. */
+  @Column(nullable = true, length = 4000)
   private String mapRule;
 
-  /**  the map advice. */
+  /** the map advice. */
   @Column(nullable = true, length = 500)
   private String mapAdvice;
 
-  /**  the map target. */
+  /** the map target. */
   @Column(nullable = true)
   private String mapTarget;
 
-  /**  the correlation id. */
+  /** the correlation id. */
   @Column(nullable = false)
   private Long mapRelationId;
 
@@ -81,8 +81,12 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
     return this.mapBlockRule;
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember#setMapBlockRule(java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember#setMapBlockRule(java.
+   * lang.String)
    */
   @Override
   public void setMapBlockRule(String mapBlockRule) {
@@ -233,7 +237,9 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
     this.mapRelationId = mapRelationId;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.ihtsdo.otf.mapping.rf2.jpa.AbstractComponent#toString()
    */
   @Override
@@ -319,5 +325,4 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
     return result;
   }
 
-  
 }

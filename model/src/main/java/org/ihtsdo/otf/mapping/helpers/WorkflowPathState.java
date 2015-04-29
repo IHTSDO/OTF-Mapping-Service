@@ -9,7 +9,6 @@ import java.util.Set;
  */
 public class WorkflowPathState {
 
- 
   /** The workflow state name, used only for display purposes. */
   private String workflowStateName;
 
@@ -48,9 +47,6 @@ public class WorkflowPathState {
   public void setWorkflowStateName(String workflowStateName) {
     this.workflowStateName = workflowStateName;
   }
-  
-  
-
 
   /**
    * Returns the workflow combinations.
@@ -76,13 +72,14 @@ public class WorkflowPathState {
    *
    * @param workflowCombination the workflow combination
    */
-  public void addWorkflowCombination(WorkflowStatusCombination workflowCombination) {
+  public void addWorkflowCombination(
+    WorkflowStatusCombination workflowCombination) {
     if (this.workflowCombinations == null) {
       this.workflowCombinations = new HashSet<>();
     }
     workflowCombinations.add(workflowCombination);
   }
-  
+
   /**
    * Contains.
    *
@@ -90,7 +87,7 @@ public class WorkflowPathState {
    * @return true, if successful
    */
   public boolean contains(WorkflowStatusCombination workflowCombination) {
-    
+
     if (this.workflowCombinations.size() == 0 && workflowCombination.isEmpty())
       return true;
 
@@ -131,6 +128,5 @@ public class WorkflowPathState {
     return "WorkflowPathState [workflowStateName=" + workflowStateName
         + ", workflowCombinations=" + workflowCombinations + "]";
   }
-  
-  
+
 }

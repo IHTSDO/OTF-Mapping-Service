@@ -289,7 +289,7 @@ mapProjectAppDashboards
 							$location.path("/");
 							$rootScope.handleHttpError(data, status, headers, config);
 						});
-					}
+					};
 
 					// function to change project from the header
 					$scope.changeFocusProject = function(mapProject) {
@@ -338,6 +338,11 @@ mapProjectAppDashboards
 						// therefore, return to dashboard
 
 					};
+					
+					$scope.$on('localStorageModule.notification.setMapProjects',
+							function(event, parameters) {
+						$scope.mapProjects = parameters.mapProjects;
+					});
 
 					$scope.goToHelp = function() {
 						var path;
@@ -622,6 +627,11 @@ mapProjectAppDashboards
 										});
 
 					};
+					
+					$scope.$on('localStorageModule.notification.setMapProjects',
+							function(event, parameters) {
+						$scope.mapProjects = parameters.mapProjects;
+					});
 
 					$scope.goToHelp = function() {
 						var path;
@@ -651,7 +661,6 @@ mapProjectAppDashboards
 					$scope.currentRole = null;
 					$scope.preferences = null;
 					$scope.focusProject = null;
-					$rootScope.globalError = '';
 
 					// Used for Reload/Refresh purposes -- after setting to
 					// null, get the
@@ -895,10 +904,12 @@ mapProjectAppDashboards
 									} ]
 								} ]
 							};
-							/**
-							 * Viewer (non-guest) has the following widgets: - MapProject
-							 */
-						} else if (!$scope.currentRole || $scope.currentRole === 'Viewer') {
+						} 
+						
+            /**
+             * Viewer (non-guest) has the following widgets: - MapProject
+             * MST wanted this functionality disabled.
+						else if (!$scope.currentRole || $scope.currentRole === 'Viewer') {
 							console.debug("  Setting viewer model");
 							
 							$scope.defaultModel = {
@@ -923,11 +934,14 @@ mapProjectAppDashboards
 									} ]
 								} ]
 							};
-							/**
-							 * Specialist has the following widgets: - MapProject -
-							 * WorkAvailable - AssignedList - EditedList
-							 */
-						} else if ($scope.currentRole === 'Specialist') {
+						} 
+          */          
+
+         /**
+          * Specialist has the following widgets: - MapProject -
+          * WorkAvailable - AssignedList - EditedList
+          */
+					else if ($scope.currentRole === 'Specialist') {
 
 							console.debug("  Setting specialist model");
 							
@@ -1250,6 +1264,11 @@ mapProjectAppDashboards
 						});
 
 					};
+					
+					$scope.$on('localStorageModule.notification.setMapProjects',
+							function(event, parameters) {
+						$scope.mapProjects = parameters.mapProjects;
+					});
 
 					$scope.goToHelp = function() {
 						var path;
@@ -1568,6 +1587,11 @@ mapProjectAppDashboards
 										});
 
 					};
+					
+					$scope.$on('localStorageModule.notification.setMapProjects',
+							function(event, parameters) {
+						$scope.mapProjects = parameters.mapProjects;
+					});
 
 					$scope.goToHelp = function() {
 						var path;
@@ -1739,6 +1763,11 @@ mapProjectAppDashboards
 										});
 
 					};
+					
+					$scope.$on('localStorageModule.notification.setMapProjects',
+							function(event, parameters) {
+						$scope.mapProjects = parameters.mapProjects;
+					});
 
 					$scope.goToHelp = function() {
 						var path;
@@ -1858,6 +1887,11 @@ mapProjectAppDashboards.controller('ProjectRecordsDashboardCtrl',
 					$rootScope.handleHttpError(data, status, headers, config);
 				});
 			};
+			
+			$scope.$on('localStorageModule.notification.setMapProjects',
+					function(event, parameters) {
+				$scope.mapProjects = parameters.mapProjects;
+			});
 
 			// function to change project from the header
 			$scope.changeFocusProject = function(mapProject) {
@@ -1919,6 +1953,11 @@ mapProjectAppDashboards.controller('RecordConceptDashboardCtrl',
 			$scope.page = 'recordConceptDashboard';
 
 			console.debug('in recordConceptDashboardCtrl');
+			
+			$scope.$on('localStorageModule.notification.setMapProjects',
+					function(event, parameters) {
+				$scope.mapProjects = parameters.mapProjects;
+			});
 
 			// watch for preferences change
 			$scope.$on('localStorageModule.notification.setUserPreferences',
@@ -2061,6 +2100,11 @@ mapProjectAppDashboards.controller('IndexViewerDashboardCtrl',
 			$scope.page = 'indexViewerDashboard';
 
 			console.debug('in indexViewerDashboardCtrl');
+			
+			$scope.$on('localStorageModule.notification.setMapProjects',
+					function(event, parameters) {
+				$scope.mapProjects = parameters.mapProjects;
+			});
 
 			// watch for preferences change
 			$scope.$on('localStorageModule.notification.setUserPreferences',

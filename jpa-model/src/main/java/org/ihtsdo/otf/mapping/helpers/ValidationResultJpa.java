@@ -6,14 +6,12 @@ import java.util.Set;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * The Class ValidationResultJpa.
- *
- * @author ${author}
+ * A JPA enabled implementation of {@link ValidationResult}.
  */
 @XmlRootElement
 public class ValidationResultJpa implements ValidationResult {
 
-  /**  The general messages. */
+  /** The general messages. */
   private Set<String> messages = new HashSet<>();
 
   /** The errors. */
@@ -21,7 +19,7 @@ public class ValidationResultJpa implements ValidationResult {
 
   /** The warnings. */
   private Set<String> warnings = new HashSet<>();
-  
+
   /** The errors, expressed in an abbreviated, non-particular manner. */
   private Set<String> conciseErrors = new HashSet<>();
 
@@ -202,8 +200,12 @@ public class ValidationResultJpa implements ValidationResult {
     this.warnings.remove(warning);
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.helpers.ValidationResult#merge(org.ihtsdo.otf.mapping.helpers.ValidationResult)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.helpers.ValidationResult#merge(org.ihtsdo.otf.mapping
+   * .helpers.ValidationResult)
    */
   @Override
   public void merge(ValidationResult validationResult) {
@@ -212,8 +214,10 @@ public class ValidationResultJpa implements ValidationResult {
     this.warnings.addAll(validationResult.getWarnings());
 
   }
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
@@ -221,44 +225,62 @@ public class ValidationResultJpa implements ValidationResult {
     return "ERRORS: " + errors + ", WARNINGS: " + warnings;
   }
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.helpers.ValidationResult#getConciseErrors()
-	 */
-	@Override
-	public Set<String> getConciseErrors() {
-		return conciseErrors;
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.helpers.ValidationResult#getConciseErrors()
+   */
+  @Override
+  public Set<String> getConciseErrors() {
+    return conciseErrors;
+  }
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.helpers.ValidationResult#setConciseErrors(java.util.Set)
-	 */
-	@Override
-	public void setConciseErrors(Set<String> errors) {
-		this.conciseErrors = errors;
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.helpers.ValidationResult#setConciseErrors(java.util
+   * .Set)
+   */
+  @Override
+  public void setConciseErrors(Set<String> errors) {
+    this.conciseErrors = errors;
+  }
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.helpers.ValidationResult#addConciseError(java.lang.String)
-	 */
-	@Override
-	public void addConciseError(String error) {
-		conciseErrors.add(error);
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.helpers.ValidationResult#addConciseError(java.lang
+   * .String)
+   */
+  @Override
+  public void addConciseError(String error) {
+    conciseErrors.add(error);
+  }
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.helpers.ValidationResult#removeConciseError(java.lang.String)
-	 */
-	@Override
-	public void removeConciseError(String error) {
-		conciseErrors.remove(error);
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.helpers.ValidationResult#removeConciseError(java
+   * .lang.String)
+   */
+  @Override
+  public void removeConciseError(String error) {
+    conciseErrors.remove(error);
+  }
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.helpers.ValidationResult#addConciseErrors(java.util.Set)
-	 */
-	@Override
-	public void addConciseErrors(Set<String> errors) {
-		conciseErrors.addAll(errors);
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.helpers.ValidationResult#addConciseErrors(java.util
+   * .Set)
+   */
+  @Override
+  public void addConciseErrors(Set<String> errors) {
+    conciseErrors.addAll(errors);
+  }
 
 }

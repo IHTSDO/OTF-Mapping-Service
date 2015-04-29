@@ -64,8 +64,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
   private String terminology;
 
   /**
-   * Requirement to have the last publication version passed in.
-   * This is used for the "remove retired concepts" routine.
+   * Requirement to have the last publication version passed in. This is used
+   * for the "remove retired concepts" routine.
    * @parameter
    * @required
    */
@@ -76,7 +76,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
    */
   private String version;
 
-  
   /** The delta dir. */
   private File deltaDir;
 
@@ -143,6 +142,15 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
   /** The delta concept ids. */
   private Set<String> deltaConceptIds = new HashSet<>();
 
+  /** The delta relationship ids. */
+  private Set<String> deltaRelationshipIds = new HashSet<>();
+
+  /** The delta description ids. */
+  private Set<String> deltaDescriptionIds = new HashSet<>();
+
+  /** The delta language refset member ids. */
+  private Set<String> deltaLanguageRefSetMemberIds = new HashSet<>();
+
   /** The "recompute preferred name" concept ids. */
   private Set<String> recomputePnConceptIds = new HashSet<>();
 
@@ -173,7 +181,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
       getLog().info("    terminology = " + terminology);
       getLog().info("    version = " + version);
       getLog().info("    lastPublicationDate = " + lastPublicationDate);
-      
+
       // Precache all existing concept entries
       getLog().info("  Load all concept entries");
       ConceptList conceptList =
@@ -191,7 +199,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
       existingLanguageRefSetMemberIds =
           contentService.getAllLanguageRefSetMemberTerminologyIds(terminology,
               version);
-      getLog().info("    languageCt = " + existingLanguageRefSetMemberIds.size());
+      getLog().info(
+          "    languageCt = " + existingLanguageRefSetMemberIds.size());
       existingRelationshipIds =
           contentService.getAllRelationshipTerminologyIds(terminology, version);
       getLog().info("    relationshipCt = " + existingRelationshipIds.size());
@@ -266,12 +275,11 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
               + nRelationshipsUpdated + " relationships expected, found"
               + modifiedRelationships.getCount()
               : "    Relationship count matches");
-      getLog()
-          .info(
-              (modifiedDescriptions.getCount() != nDescriptionsUpdated) ? "    "
-                  + nDescriptionsUpdated + " descriptions expected, found"
-                  + modifiedDescriptions.getCount()
-                  : "    Description count matches");
+      getLog().info(
+          (modifiedDescriptions.getCount() != nDescriptionsUpdated) ? "    "
+              + nDescriptionsUpdated + " descriptions expected, found"
+              + modifiedDescriptions.getCount()
+              : "    Description count matches");
       getLog().info(
           (modifiedLanguageRefSetMembers.getCount() != nLanguagesUpdated)
               ? "    " + nLanguagesUpdated
@@ -484,8 +492,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
     // Remove concepts in the DB that were created by prior
     // deltas that no longer exist in the delta
-    getLog().info("    Retire non-existent concepts..");
-    retireRemovedConcepts();
+    getLog().info("    Retire non-existent content");
+    retireRemovedContent();
   }
 
   /**
@@ -517,7 +525,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
         // Track all delta concept ids so we can properly remove concepts later.
         deltaConceptIds.add(fields[0]);
         recomputePnConceptIds.add(fields[0]);
-        
+
         // Setup delta concept (either new or based on existing one)
         Concept newConcept = null;
         if (concept == null) {
@@ -588,6 +596,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
       // if not header
       if (!fields[0].equals("id")) {
+
+        deltaDescriptionIds.add(fields[0]);
 
         // Get concept from cache or from db
         Concept concept = null;
@@ -716,6 +726,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
       // if not header
       if (!fields[0].equals("id")) {
 
+        deltaLanguageRefSetMemberIds.add(fields[0]);
+
         // Get the description
         Description description = null;
         if (descriptionCache.containsKey(fields[5])) {
@@ -742,10 +754,10 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
               + " does not have concept");
 
         }
-        
+
         // add to recompute pn
         recomputePnConceptIds.add(description.getConcept().getTerminologyId());
-        
+
         // Cache concept and description
         cacheConcept(concept);
         cacheDescription(description);
@@ -850,6 +862,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
       // If not header
       if (!fields[0].equals("id")) {
+        deltaRelationshipIds.add(fields[0]);
 
         // Retrieve source concept
         Concept sourceConcept = null;
@@ -990,8 +1003,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
     // Compute default preferred names for any concept in the delta
     for (String terminologyId : recomputePnConceptIds) {
-      Concept concept = contentService.getConcept(
-          terminologyId, terminology, version);
+      Concept concept =
+          contentService.getConcept(terminologyId, terminology, version);
 
       // Skip if inactive
       if (!concept.isActive()) {
@@ -1027,7 +1040,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
                 && language.getAcceptabilityId().equals(dpnAcceptabilityId)) {
               getLog().info("      MATCH FOUND: " + description.getTerm());
               // print warning for multiple names found
-              if (dpnFound == true) {
+              if (dpnFound) {
                 getLog().warn(
                     "Multiple default preferred names found for concept "
                         + concept.getTerminologyId());
@@ -1070,21 +1083,28 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
    * DB that are not in the current delta and which have effective times greater
    * than the latest release date. The latest release date is the
    * "terminologyVersion" in this case.
+   * 
+   * NOTE: this does not handle a retraction of a change because we don't
+   * preserve a static copy of the previous release to compare against. What
+   * this really needs is a daily incremental delta relative to the snapshot
+   * from the previous day.
+   * 
    * @throws Exception
    */
-  public void retireRemovedConcepts() throws Exception {
+  public void retireRemovedContent() throws Exception {
     // Base this algortihm on the last publication date
     // If editing resumes before last publication date
     // this will essentially do nothing until afterwards
     // which is fine, it just means some things will remain
     // in scope longer than they should.
     DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-    Date rf2Version= dateFormat.parse(lastPublicationDate);
+    Date rf2Version = dateFormat.parse(lastPublicationDate);
 
-    // Now remove retired concepts 
-    // These are concepts created after rf2Version that are no longer in 
+    // Now remove retired concepts
+    // These are concepts created after rf2Version that are no longer in
     // the drip feed
     int ct = 0;
+    getLog().info("    Retire removed concepts");
     for (Concept concept : existingConceptCache.values()) {
       if (concept.getEffectiveTime().after(rf2Version)
           && !deltaConceptIds.contains(concept.getTerminologyId())
@@ -1124,9 +1144,56 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
         }
       }
     }
-    getLog().info("      retired =  " + ct);
+    getLog().info("      count =  " + ct);
+    contentService.commit();
+    contentService.clear();
+    contentService.beginTransaction();
+
+    // Also retire inferred relationships added after the last release
+    // but not in the current delta.  Relationships do not change
+    // they are created or retired - so we likely do not need to worry
+    // about retractions of changes here
+
+    // OK, so after experimenting with this, we can't effectively identify
+    // what kind of change was retracted, and so can't assume that it was
+    // an addition.  Every attempt to model this logic has failed because
+    // we simply do not have the intermediate information
+    // 
+/**    
+    ct = 0;
+    getLog().info("    Retire removed relationships");
+    List<Relationship> relationships =
+        contentService.getRelationshipsModifiedSinceDate(terminology,
+            rf2Version).getRelationships();
+    contentService.clear();
+
+    for (Relationship relationship : relationships) {
+
+      if (relationship.getEffectiveTime().after(rf2Version)
+          && !deltaRelationshipIds.contains(relationship.getTerminologyId())
+          && relationship.isActive()) {
+        getLog().info("        retire " + relationship.getTerminologyId());
+        ct++;
+        relationship.setActive(false);
+        relationship.setEffectiveTime(deltaLoaderStartDate);
+        contentService.updateRelationship(relationship);
+      }
+    }
+    getLog().info("      count =  " + ct);
+**/
+    
+    contentService.commit();
+    contentService.clear();
+    contentService.beginTransaction();
+
+    // Identifying the difference between a change in a description that
+    // was retracted and an addition of a description that was retracted
+    // is difficult and likely very error prone.  Failing to properly
+    // handle retractions of changes or additions has very minor effect.
+    // So, it is recommended to be skipped.  
+    // As are retracted changes or additions of language refset member entries.
+
   }
-  
   // helper function to update and store concept
   // as well as putting all descendant objects in the cache
   // for easy retrieval

@@ -9,9 +9,12 @@ import org.hibernate.search.bridge.StringBridge;
  * A bridge between a string collection and a string.
  */
 public class CollectionToCSVBridge implements StringBridge {
-  
-  /* (non-Javadoc)
-   * @see org.hibernate.search.bridge.StringBridge#objectToString(java.lang.Object)
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.hibernate.search.bridge.StringBridge#objectToString(java.lang.Object)
    */
   @Override
   public String objectToString(Object value) {

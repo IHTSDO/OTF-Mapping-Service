@@ -5,12 +5,12 @@
 		<table>
 			<tbody>
 				<tr>
-					<td style="width: 30%; padding: 5px;"><select
+					<td style="padding: 5px;"><select style="width: 250px;"
 						id="reportSearch"
 						ng-options="definition as definition.name for definition in definitions |  orderBy: 'name' | filter: {qacheck:false}"
 						ng-change="getReports(1, selectedDefinition, queryReport)"
 						ng-model="selectedDefinition"></select>
-					<td style="width: 62%; padding: 5px">
+					<td style="padding: 5px">
 						<button class="btn btn-sm btn-primary"
 							ng-click="getReports(1, null, queryReport); selectedDefinition = null;">Reset</button>
 						<button ng-show="selectedDefinition != null"

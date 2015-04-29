@@ -118,7 +118,7 @@ public interface ValidationResult {
    * @param message the message
    */
   public void addMessage(String message);
-  
+
   /**
    * Returns the concise errors.
    *
@@ -132,27 +132,26 @@ public interface ValidationResult {
    * @param errors the concise errors
    */
   public void setConciseErrors(Set<String> errors);
-  
+
   /**
    * Adds the concise error.
    *
    * @param error the error
    */
   public void addConciseError(String error);
-  
+
   /**
    * Removes the concise error.
    *
    * @param error the error
    */
   public void removeConciseError(String error);
-  
+
   /**
    * Adds the concise errors.
    *
    * @param errors the errors
    */
   public void addConciseErrors(Set<String> errors);
-  
 
 }

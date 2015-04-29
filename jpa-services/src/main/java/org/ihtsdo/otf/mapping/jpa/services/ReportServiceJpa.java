@@ -824,8 +824,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
           manager
               .createQuery("select r from ReportJpa r, ReportDefinitionJpa d "
                   + "where mapProjectId = :mapProjectId "
-                  + "and r.reportDefinition = d "
-                  + "and d.isQACheck = false " + "order by timestamp desc");
+                  + "and r.reportDefinition = d " + "and d.isQACheck = false "
+                  + "order by timestamp desc");
     }
 
     // add project parameter for both cases
@@ -1483,8 +1483,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     for (Report report : reports.getReports()) {
       if (report.getTimestamp() >= start.getTime()
           && report.getTimestamp() <= end.getTime()) {
-        Logger.getLogger(getClass()).info(
-            "  Remove report - " + report.getId());
+        Logger.getLogger(getClass())
+            .info("  Remove report - " + report.getId());
         removeReport(report.getId());
       }
     }

@@ -84,11 +84,8 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Mapping Services REST package.
- * 
- * @author ${author}
+ * REST implementation for mapping service.
  */
 @Path("/mapping")
 @Api(value = "/mapping", description = "Operations supporting map objects.")
@@ -154,7 +151,7 @@ public class MappingServiceRest extends RootServiceRest {
         // not NONE)
         if (!securityService.getMapProjectRoleForToken(authToken,
             mapProject.getId()).equals(MapUserRole.NONE)
-            || mapProject.isPublic() == true) {
+            || mapProject.isPublic()) {
 
           // do not serialize the scope concepts or excludes (retrieval
           // optimization)
@@ -2409,7 +2406,7 @@ public class MappingServiceRest extends RootServiceRest {
 
         // if a non-descendant-based project (i.e. enumerated scope), remove
         // scope concept
-        if (mapProject.isScopeDescendantsFlag() == false) {
+        if (!mapProject.isScopeDescendantsFlag()) {
 
           // remove this terminology id from the scope concepts
           if (mapProject.getScopeConcepts().contains(terminologyId)) {
@@ -2429,7 +2426,7 @@ public class MappingServiceRest extends RootServiceRest {
           + " records successfully removed");
 
       // if scope concepts were removed, add a success message
-      if (mapProject.isScopeDescendantsFlag() == false) {
+      if (!mapProject.isScopeDescendantsFlag()) {
 
         validationResult.addMessage(nScopeConceptsRemoved
             + " concepts removed from project scope definition");
@@ -3504,8 +3501,7 @@ public class MappingServiceRest extends RootServiceRest {
     String user = "";
     try {
       // authorize call
-      MapUserRole role =
-          securityService.getApplicationRoleForToken(authToken);
+      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
       user = securityService.getUsernameForToken(authToken);
       if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
         throw new WebApplicationException(Response.status(401)
@@ -3630,7 +3626,7 @@ public class MappingServiceRest extends RootServiceRest {
       boolean isValid = algorithmHandler.isTargetCodeValid(terminologyId);
 
       mappingService.close();
-      if (isValid == true) {
+      if (isValid) {
         ContentService contentService = new ContentServiceJpa();
         Concept c =
             contentService.getConcept(terminologyId,

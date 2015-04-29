@@ -29,7 +29,7 @@ import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
 /**
- * Services for interacting with mapping objects.
+ * Generically represents a service for interacting with mapping objects.
  */
 public interface MappingService extends RootService {
 
