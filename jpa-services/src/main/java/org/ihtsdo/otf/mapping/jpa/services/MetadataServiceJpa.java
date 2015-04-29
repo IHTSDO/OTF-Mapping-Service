@@ -3,8 +3,10 @@ package org.ihtsdo.otf.mapping.jpa.services;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.ihtsdo.otf.mapping.services.MetadataService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 /**
  * Reference implementation of {@link MetadataService}
@@ -12,9 +14,28 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
 public class MetadataServiceJpa extends RootServiceJpa implements
     MetadataService {
 
-  /** The helper map. */
-  private Map<String, MetadataService> helperMap = null;
 
+  /** The helper map. */
+  private static Map<String, MetadataService> helperMap = null;
+  static {
+    helperMap = new HashMap<>();
+    Properties config;
+    try {
+      config = ConfigUtility.getConfigProperties();
+      String key = "metadata.service.handler";
+      for (String handlerName : config.getProperty(key).split(",")) {
+
+        // Add handlers to map
+        MetadataService handlerService =
+            ConfigUtility.newStandardHandlerInstanceWithConfiguration(key,
+                handlerName, MetadataService.class);
+        helperMap.put(handlerName, handlerService);
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      helperMap = null;
+    }
+  }
   /**
    * Instantiates an empty {@link MetadataServiceJpa}.
    * @throws Exception
@@ -22,11 +43,9 @@ public class MetadataServiceJpa extends RootServiceJpa implements
   public MetadataServiceJpa() throws Exception {
     super();
 
-    helperMap = new HashMap<>();
-    helperMap.put("SNOMEDCT", new SnomedMetadataServiceJpaHelper());
-    helperMap.put("ICD10", new ClamlMetadataServiceJpaHelper());
-    helperMap.put("ICD9CM", new ClamlMetadataServiceJpaHelper());
-    helperMap.put("ICPC", new ClamlMetadataServiceJpaHelper());
+    if (helperMap == null) {
+      throw new Exception("Helper map not properly initialized, serious error.");
+    }
   }
 
   /*
