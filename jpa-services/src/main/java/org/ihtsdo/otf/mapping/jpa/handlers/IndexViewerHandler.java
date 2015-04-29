@@ -175,6 +175,7 @@ public class IndexViewerHandler {
    * @return the results
    * @throws Exception the exception
    */
+  @SuppressWarnings("resource")
   private List<String> performSearch(String terminology,
     String terminologyVersion, String domain, String searchStr, int startLevel,
     int endLevel, String subSearchAnchor, boolean requireHasChild)

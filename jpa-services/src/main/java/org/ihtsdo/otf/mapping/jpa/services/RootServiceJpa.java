@@ -141,7 +141,7 @@ public abstract class RootServiceJpa implements RootService {
     tx.commit();
     manager.clear();
   }
-  
+
   @Override
   public void rollback() throws Exception {
 
@@ -158,8 +158,7 @@ public abstract class RootServiceJpa implements RootService {
     tx.rollback();
     manager.clear();
   }
-  
-  
+
   @Override
   public void clear() throws Exception {
     manager.clear();

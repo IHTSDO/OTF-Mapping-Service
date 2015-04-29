@@ -8,8 +8,6 @@ import org.ihtsdo.otf.mapping.helpers.ReportTimePeriod;
 
 /**
  * Generically represents a report definition.
- * 
- * @author ${author}
  */
 public interface ReportDefinition {
 

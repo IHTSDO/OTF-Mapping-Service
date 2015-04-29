@@ -1591,7 +1591,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // Construct advice only if using Extended Map pattern
     if (mapProject.getMapRefsetPattern().equals(MapRefsetPattern.ExtendedMap)) {
 
-      Logger.getLogger(getClass()).info("  RULE: " + mapEntry.getRule());
+      Logger.getLogger(getClass()).debug("  RULE: " + mapEntry.getRule());
 
       String[] comparatorComponents; // used for parsing age rules
 
@@ -1610,7 +1610,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           // Add an AND clause
           advice += " AND ";
         }
-        Logger.getLogger(getClass()).info("    PART : " + part);
+        Logger.getLogger(getClass()).debug("    PART : " + part);
 
         // if map rule is IFA (age)
         if (part.contains("AGE AT ONSET OF CLINICAL FINDING")
@@ -1665,9 +1665,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
           // add the advice based on gender
           if (part.contains("| FEMALE (FINDING)")) {
-            advice += "IF FEMALE ";
+            advice += "IF FEMALE";
           } else {
-            advice += "IF MALE ";
+            advice += "IF MALE";
           }
         } // if not an IFA rule (i.e. TRUE, OTHERWISE TRUE), simply return
           // ALWAYS
@@ -1688,7 +1688,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         advice += " CHOOSE " + mapEntry.getTargetId();
       }
 
-      Logger.getLogger(getClass()).info("    ADVICE: " + advice);
+      Logger.getLogger(getClass()).debug("    ADVICE: " + advice);
     }
 
     return advice;
@@ -2101,7 +2101,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         "    Log into the application to see the report results");
 
     // commit the report
-    // TODO: need a way to override the errors if we want to proceed with a
+    // TODO: may need a way to override the errors if we want to proceed with a
     // release anyway
     if (errorFlag) {
       mappingService.rollback();

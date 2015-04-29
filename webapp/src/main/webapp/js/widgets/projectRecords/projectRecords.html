@@ -26,24 +26,14 @@
   </h4>
 
   <div style="float: right; width: 3%;">
+  <!-- MST wanted this feature disabled.  Specialists and Leads can already
+       leave feedback while editing.
     <a title="Submit Feedback"  ng-show="currentRole === 'Viewer'" ng-click="openViewerFeedbackModal(record, currentUser.userName)"><i
       class="glyphicon glyphicon glyphicon-comment"></i></a>
+    -->
     <a title="Edit" ng-show="isEditable(record)" ng-click="editRecord(record)"><i
       class="glyphicon glyphicon glyphicon-pencil"></i></a>
   </div>
-
-  <span ng-show="record.unmappedDescendants.length > 0"> <span
-    class="dropdown"> <a class="dropdown-toggle"> <img
-        src="img/warning.png" alt="question icon">
-    </a>
-      <ul class="dropdown-menu project-records-dropdown-menu">
-        <b>Unmapped Descendants</b>
-        <li ng-repeat="concept in record.unmappedDescendants"><a
-          href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}:
-            {{concept.value}}</a></li>
-      </ul>
-  </span>
-  </span>
 
   <div otf-map-record-wide record="record" project="focusProject"
     show-title="false"></div>
