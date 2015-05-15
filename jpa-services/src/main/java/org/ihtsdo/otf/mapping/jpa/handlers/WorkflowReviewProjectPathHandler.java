@@ -139,7 +139,7 @@ public class WorkflowReviewProjectPathHandler extends
       result
           .addError("Could not determine workflow path state for tracking record");
     } else if (action.equals(WorkflowAction.CREATE_QA_RECORD)) {
-      
+
       // for creating qa record, only check role
       if (!userRole.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
         result.addError("User does not have required role");
@@ -200,7 +200,8 @@ public class WorkflowReviewProjectPathHandler extends
       // Minimum role : Specialist
       //
       // Case 2: Lead assigning review
-      // Record requirement : No record
+      // Record requirement : No record (or if lead edited, could be
+      // REVIEW_NEEDED)
       // Permissible actions: ASSIGN_FROM_SCRATCH
       // Minimum role: Lead
 
@@ -220,11 +221,22 @@ public class WorkflowReviewProjectPathHandler extends
           result.addError("User does not have required role");
         }
 
-        // check action
-        if (!action.equals(WorkflowAction.SAVE_FOR_LATER)
-            && !action.equals(WorkflowAction.FINISH_EDITING)
-            && !action.equals(WorkflowAction.UNASSIGN)) {
-          result.addError("Action is not permitted.");
+        // If lead role, ASSIGN_FROM_SCRATCH is allowed 
+        // ( e.g., this is the case where a lead edited the record
+        //   instead of a specialist - reviewing their own work)
+        if (userRole.hasPrivilegesOf(MapUserRole.LEAD)) {
+          if (!action.equals(WorkflowAction.ASSIGN_FROM_SCRATCH)) {
+            result.addError("Action is not permitted.");
+          }
+        }
+
+        else {
+          // check action
+          if (!action.equals(WorkflowAction.SAVE_FOR_LATER)
+              && !action.equals(WorkflowAction.FINISH_EDITING)
+              && !action.equals(WorkflowAction.UNASSIGN)) {
+            result.addError("Action is not permitted.");
+          }
         }
 
         // Case 2: Lead assigning review
