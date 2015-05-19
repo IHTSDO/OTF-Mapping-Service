@@ -66,6 +66,7 @@ public class ContentServiceRest extends RootServiceRest {
    * @param terminologyVersion the terminology version
    * @param authToken the auth token
    * @return the concept
+   * @throws Exception the exception
    */
   @GET
   @Path("/concept/id/{terminology}/{terminolgoyVersion}/{terminologyId}")
@@ -77,12 +78,14 @@ public class ContentServiceRest extends RootServiceRest {
     @ApiParam(value = "Concept terminology id, e.g. 22298006", required = true) @PathParam("terminologyId") String terminologyId,
     @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminolgoyVersion") String terminologyVersion,
-    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
 
     Logger.getLogger(ContentServiceRest.class).info(
         "RESTful call (Content): /concept/" + terminology + "/"
             + terminologyVersion + "/id/" + terminologyId);
 
+    ContentService contentService = new ContentServiceJpa();
     try {
       // authorize call
       MapUserRole role = securityService.getApplicationRoleForToken(authToken);
@@ -91,7 +94,6 @@ public class ContentServiceRest extends RootServiceRest {
             .entity("User does not have permissions to retrieve the concept.")
             .build());
 
-      ContentService contentService = new ContentServiceJpa();
       Concept c =
           contentService.getConcept(terminologyId, terminology,
               terminologyVersion);
@@ -107,11 +109,13 @@ public class ContentServiceRest extends RootServiceRest {
         }
       }
 
-      contentService.close();
       return c;
     } catch (Exception e) {
       handleException(e, "trying to retrieve a concept");
       return null;
+    } finally {
+      contentService.close();
+      securityService.close();
     }
 
   }
@@ -124,6 +128,7 @@ public class ContentServiceRest extends RootServiceRest {
    * @param terminology the concept terminology
    * @param authToken the auth token
    * @return the concept
+   * @throws Exception the exception
    */
   @GET
   @Path("/concept/id/{terminology}/{terminologyId}")
@@ -134,12 +139,15 @@ public class ContentServiceRest extends RootServiceRest {
   public Concept getConcept(
     @ApiParam(value = "Concept terminology id, e.g. 22298006", required = true) @PathParam("terminologyId") String terminologyId,
     @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
-    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
 
     Logger.getLogger(ContentServiceRest.class).info(
         "RESTful call (Content): /concept/" + terminology + "/id/"
             + terminologyId);
 
+    ContentService contentService = new ContentServiceJpa();
+    MetadataService metadataService = new MetadataServiceJpa();
     try {
       // authorize call
       MapUserRole role = securityService.getApplicationRoleForToken(authToken);
@@ -151,20 +159,20 @@ public class ContentServiceRest extends RootServiceRest {
                     "User does not have permissions to retrieve the latest version concept.")
                 .build());
 
-      ContentService contentService = new ContentServiceJpa();
-      MetadataService metadataService = new MetadataServiceJpa();
       String version = metadataService.getLatestVersion(terminology);
       Concept c =
           contentService.getConcept(terminologyId, terminology, version);
       c.getDescriptions();
       c.getRelationships();
-      metadataService.close();
-      contentService.close();
       return c;
 
     } catch (Exception e) {
       handleException(e, "trying to retrieve the latest version concept");
       return null;
+    } finally {
+      metadataService.close();
+      contentService.close();
+      securityService.close();
     }
   }
 
@@ -174,17 +182,20 @@ public class ContentServiceRest extends RootServiceRest {
    * @param searchString the lucene search string
    * @param authToken the auth token
    * @return the concept for id
+   * @throws Exception the exception
    */
   @GET
   @Path("/concept/query/{string}")
   @ApiOperation(value = "Find concepts matching a search query.", notes = "Gets a list of search results that match the lucene query.", response = String.class)
   public SearchResultList findConceptsForQuery(
     @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @PathParam("string") String searchString,
-    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
 
     Logger.getLogger(ContentServiceRest.class).info(
         "RESTful call (Content): /concept/query/" + searchString);
 
+    ContentService contentService = new ContentServiceJpa();
     try {
       // authorize call
       MapUserRole role = securityService.getApplicationRoleForToken(authToken);
@@ -196,16 +207,17 @@ public class ContentServiceRest extends RootServiceRest {
                     "User does not have permissions to find the concepts by query.")
                 .build());
 
-      ContentService contentService = new ContentServiceJpa();
       SearchResultList sr =
           contentService.findConceptsForQuery(searchString,
               new PfsParameterJpa());
-      contentService.close();
       return sr;
 
     } catch (Exception e) {
       handleException(e, "trying to find the concepts by query");
       return null;
+    } finally {
+      contentService.close();
+      securityService.close();
     }
   }
 
@@ -218,6 +230,7 @@ public class ContentServiceRest extends RootServiceRest {
    * @param terminologyVersion the terminology version
    * @param authToken the auth token
    * @return the search result list
+   * @throws Exception the exception
    */
   @GET
   @Path("/concept/id/{terminology}/{terminologyVersion}/{terminologyId}/descendants")
@@ -229,12 +242,14 @@ public class ContentServiceRest extends RootServiceRest {
     @ApiParam(value = "Concept terminology id, e.g. 22298006", required = true) @PathParam("terminologyId") String terminologyId,
     @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
-    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
 
     Logger.getLogger(ContentServiceRest.class).info(
         "RESTful call (Content): /concept/" + terminology + "/"
             + terminologyVersion + "/id/" + terminologyId + "/descendants");
 
+    ContentService contentService = new ContentServiceJpa();
     try {
       // authorize call
       MapUserRole role = securityService.getApplicationRoleForToken(authToken);
@@ -246,19 +261,19 @@ public class ContentServiceRest extends RootServiceRest {
                     "User does not have permissions to find the descendant concepts.")
                 .build());
 
-      ContentService contentService = new ContentServiceJpa();
-
       // want all descendants, do not use PFS parameter
       SearchResultList results =
           contentService.findDescendantConcepts(terminologyId, terminology,
               terminologyVersion, null);
 
-      contentService.close();
       return results;
 
     } catch (Exception e) {
       handleException(e, "trying to find descendant concepts");
       return null;
+    } finally {
+      contentService.close();
+      securityService.close();
     }
   }
 
@@ -270,6 +285,7 @@ public class ContentServiceRest extends RootServiceRest {
    * @param terminologyVersion the terminology version
    * @param authToken the auth token
    * @return the search result list
+   * @throws Exception the exception
    */
   @GET
   @Path("/concept/id/{terminology}/{terminologyVersion}/{terminologyId}/children")
@@ -281,12 +297,15 @@ public class ContentServiceRest extends RootServiceRest {
     @ApiParam(value = "Concept terminology id, e.g. 22298006", required = true) @PathParam("terminologyId") String id,
     @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
-    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
 
     Logger.getLogger(ContentServiceRest.class).info(
         "RESTful call (Content): /concept/" + terminology + "/"
             + terminologyVersion + "/id/" + id.toString() + "/descendants");
 
+    ContentService contentService = new ContentServiceJpa();
+    MetadataService metadataService = new MetadataServiceJpa();
     try {
       // authorize call
       MapUserRole role = securityService.getApplicationRoleForToken(authToken);
@@ -296,9 +315,6 @@ public class ContentServiceRest extends RootServiceRest {
             .entity(
                 "User does not have permissions to find the child concepts.")
             .build());
-
-      ContentService contentService = new ContentServiceJpa();
-      MetadataService metadataService = new MetadataServiceJpa();
 
       String isaId = "";
       Map<String, String> relTypesMap =
@@ -341,13 +357,15 @@ public class ContentServiceRest extends RootServiceRest {
         }
       }
 
-      metadataService.close();
-      contentService.close();
       return results;
 
     } catch (Exception e) {
       handleException(e, "trying to find the child concepts");
       return null;
+    } finally {
+      metadataService.close();
+      contentService.close();
+      securityService.close();
     }
   }
 
@@ -359,6 +377,7 @@ public class ContentServiceRest extends RootServiceRest {
    * @param authToken the auth token
    * @param pfsParameter the pfs parameter
    * @return the search result list
+   * @throws Exception the exception
    */
   @POST
   @Path("/terminology/id/{terminology}/{terminologyVersion}/delta")
@@ -370,12 +389,14 @@ public class ContentServiceRest extends RootServiceRest {
     @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken,
-    @ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter) {
+    @ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter)
+    throws Exception {
 
     Logger.getLogger(ContentServiceRest.class).info(
         "RESTful call (Content): /terminology/id/" + terminology + "/"
             + terminologyVersion + "/delta");
 
+    ContentService contentService = new ContentServiceJpa();
     try {
       // authorize call
       MapUserRole role = securityService.getApplicationRoleForToken(authToken);
@@ -385,8 +406,6 @@ public class ContentServiceRest extends RootServiceRest {
             .entity(
                 "User does not have permissions to find the child concepts.")
             .build());
-
-      ContentService contentService = new ContentServiceJpa();
 
       ConceptList conceptList =
           contentService.getConceptsModifiedSinceDate(terminology, null,
@@ -417,8 +436,7 @@ public class ContentServiceRest extends RootServiceRest {
 
         SearchResult result = new SearchResultJpa();
         result.setId(c.getId());
-        result.setTerminologyVersion(modifiedConcept ? "Modified"
-            : "New");
+        result.setTerminologyVersion(modifiedConcept ? "Modified" : "New");
         result.setTerminologyId(c.getTerminologyId());
         result.setValue(c.getDefaultPreferredName());
         results.addSearchResult(result);
@@ -431,6 +449,9 @@ public class ContentServiceRest extends RootServiceRest {
     } catch (Exception e) {
       handleException(e, "trying to retrieve concepts changed in last delta");
       return null;
+    } finally {
+      contentService.close();
+      securityService.close();
     }
   }
 
@@ -441,6 +462,7 @@ public class ContentServiceRest extends RootServiceRest {
    * @param terminologyVersion the terminology version
    * @param authToken the auth token
    * @return the index viewer indexes
+   * @throws Exception the exception
    */
   @GET
   @Path("/index/{terminology}/{terminologyVersion}")
@@ -451,12 +473,14 @@ public class ContentServiceRest extends RootServiceRest {
   public SearchResultList getIndexDomains(
     @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
-    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
 
     Logger.getLogger(ContentServiceRest.class).info(
         "RESTful call (Content): /index/" + terminology + "/"
             + terminologyVersion);
 
+    IndexViewerHandler indexViewerHandler = new IndexViewerHandler();
     try {
       // authorize call
       MapUserRole role = securityService.getApplicationRoleForToken(authToken);
@@ -468,7 +492,6 @@ public class ContentServiceRest extends RootServiceRest {
                     "User does not have permissions to retrieve the indexes to be viewed.")
                 .build());
 
-      IndexViewerHandler indexViewerHandler = new IndexViewerHandler();
       SearchResultList searchResultList =
           indexViewerHandler.getIndexDomains(terminology, terminologyVersion);
       return searchResultList;
@@ -476,6 +499,8 @@ public class ContentServiceRest extends RootServiceRest {
     } catch (Exception e) {
       handleException(e, "trying to retrieve the indexes to be viewed");
       return null;
+    } finally {
+      securityService.close();
     }
   }
 
@@ -487,6 +512,7 @@ public class ContentServiceRest extends RootServiceRest {
    * @param index the index
    * @param authToken the auth token
    * @return the index viewer pages for index
+   * @throws Exception the exception
    */
   @GET
   @Path("/index/{terminology}/{terminologyVersion}/{index}")
@@ -498,12 +524,14 @@ public class ContentServiceRest extends RootServiceRest {
     @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
     @ApiParam(value = "Name of index or domain", required = true) @PathParam("index") String index,
-    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
 
     Logger.getLogger(ContentServiceRest.class).info(
         "RESTful call (Content): /index/" + terminology + "/"
             + terminologyVersion + "/" + index);
 
+    IndexViewerHandler indexViewerHandler = new IndexViewerHandler();
     try {
       // authorize call
       MapUserRole role = securityService.getApplicationRoleForToken(authToken);
@@ -515,7 +543,6 @@ public class ContentServiceRest extends RootServiceRest {
                     "User does not have permissions to retrieve the page names for the given index.")
                 .build());
 
-      IndexViewerHandler indexViewerHandler = new IndexViewerHandler();
       SearchResultList searchResultList =
           indexViewerHandler.getIndexPagesForIndex(terminology,
               terminologyVersion, index);
@@ -526,6 +553,8 @@ public class ContentServiceRest extends RootServiceRest {
       handleException(e,
           "trying to retrieve the page names for the given index");
       return null;
+    } finally {
+      securityService.close();
     }
   }
 
@@ -541,6 +570,7 @@ public class ContentServiceRest extends RootServiceRest {
    * @param allFlag the all flag
    * @param authToken the auth token
    * @return the search result list
+   * @throws Exception the exception
    */
   @GET
   @Path("/index/{terminology}/{terminologyVersion}/{domain}/search/{searchField}/subSearch/{subSearchField}/subSubSearch/{subSubSearchField}/{allFlag}")
@@ -556,13 +586,15 @@ public class ContentServiceRest extends RootServiceRest {
     @ApiParam(value = "Second level search field to refine search", required = true) @PathParam("subSearchField") String subSearchField,
     @ApiParam(value = "Third level search field to refine search", required = true) @PathParam("subSubSearchField") String subSubSearchField,
     @ApiParam(value = "If all levels should be searched, e.g. true", required = true) @PathParam("allFlag") boolean allFlag,
-    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
 
     Logger.getLogger(ContentServiceRest.class).info(
         "RESTful call (Content): /index/" + terminology + "/"
             + terminologyVersion + "/" + domain + "/" + searchField + "/"
             + subSearchField + "/" + subSubSearchField + "/" + allFlag);
 
+    IndexViewerHandler indexViewerHandler = new IndexViewerHandler();
     try {
       // authorize call
       MapUserRole role = securityService.getApplicationRoleForToken(authToken);
@@ -574,7 +606,6 @@ public class ContentServiceRest extends RootServiceRest {
                     "User does not have permissions to perform a search of the indexes.")
                 .build());
 
-      IndexViewerHandler indexViewerHandler = new IndexViewerHandler();
       SearchResultList searchResultList =
           indexViewerHandler.findIndexEntries(terminology, terminologyVersion,
               domain, searchField, subSearchField, subSubSearchField, allFlag);
@@ -584,6 +615,8 @@ public class ContentServiceRest extends RootServiceRest {
     } catch (Exception e) {
       handleException(e, "trying to perform a search of the indexes");
       return null;
+    } finally {
+      securityService.close();
     }
   }
 
