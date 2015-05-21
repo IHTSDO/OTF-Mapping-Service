@@ -1079,7 +1079,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
               + "' "
               + "and mapProjectId = :MAP_PROJECT_ID: "
               + "and timestamp = "
-              + "(select max(timestamp) from reports where timestamp < :TIMESTAMP:) "
+              + "(select max(timestamp) from reports where timestamp <= :TIMESTAMP:) "
               + "limit 1 "
 
               // union with most recent report before or on specified date less
