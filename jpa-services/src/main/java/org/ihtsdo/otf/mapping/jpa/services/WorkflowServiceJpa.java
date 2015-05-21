@@ -712,8 +712,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     }
     List<TrackingRecord> results = ftquery.getResultList();
 
-    // System.out.println("Hi results: " + results.size());
-
     for (TrackingRecord tr : results) {
       SearchResult result = new SearchResultJpa();
       result.setTerminologyId(tr.getTerminologyId());
@@ -852,8 +850,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
             + " OR userAndWorkflowStatusPairs:QA_IN_PROGRESS_*"
             + " OR userAndWorkflowStatusPairs:QA_RESOLVED_*" + ")";
 
-    System.out.println("FindAvailableQAWork query: " + fullQuery);
-
     QueryParser queryParser =
         new QueryParser(Version.LUCENE_36, "summary",
             searchFactory.getAnalyzer(TrackingRecordJpa.class));
@@ -878,7 +874,17 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
       // matching the query
       for (TrackingRecord tr : allResults) {
         boolean labelFound = false;
-        for (MapRecord record : getMapRecordsForTrackingRecord(tr)) {
+
+        // OPTIMIZATION: Bypass the "get map records for tr" mechanism to avoid
+        // full lazy initialization of the record
+        Set<MapRecord> mapRecords = new HashSet<>();
+        if (tr != null && tr.getMapRecordIds() != null) {
+          for (Long id : tr.getMapRecordIds()) {
+            // go directly, we just need record label info
+            mapRecords.add(manager.find(MapRecordJpa.class, id));
+          }
+        }        
+        for (MapRecord record : mapRecords) {
           for (String label : record.getLabels()) {
             if (label.equals(query)) {
               labelFound = true;
@@ -1366,7 +1372,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     List<TrackingRecord> results = ftquery.getResultList();
     MappingService mappingService = new MappingServiceJpa();
     for (TrackingRecord tr : results) {
-      // System.out.println("Assigned conflict: " + tr.toString());
       SearchResult result = new SearchResultJpa();
 
       Set<MapRecord> mapRecords = this.getMapRecordsForTrackingRecord(tr);
@@ -1404,10 +1409,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         result.setValue(mapRecord.getConceptName());
         result.setTerminology(mapRecord.getLastModified().toString());
         result.setTerminologyVersion(mapRecord.getWorkflowStatus().toString());
-
-        // System.out.println(mapRecord.getWorkflowStatus());
-        // System.out.println(mapRecord.getWorkflowStatus().toString());
-
         result.setId(mapRecord.getId());
         assignedConflicts.addSearchResult(result);
       }
