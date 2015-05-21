@@ -1079,7 +1079,9 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
               + "' "
               + "and mapProjectId = :MAP_PROJECT_ID: "
               + "and timestamp = "
-              + "(select max(timestamp) from reports where timestamp <= :TIMESTAMP:) "
+              + "(select max(timestamp) from reports where timestamp <= :TIMESTAMP:"
+              + " and mapProjectId = :MAP_PROJECT_ID: and name = '"
+              + reportDefinition.getDiffReportDefinitionName() + "') "
               + "limit 1 "
 
               // union with most recent report before or on specified date less
@@ -1092,7 +1094,9 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
               + "' "
               + "and mapProjectId = :MAP_PROJECT_ID: "
               + "and timestamp = "
-              + "(select max(timestamp) from reports where timestamp <= :TIMESTAMP2:) "
+              + "(select max(timestamp) from reports where timestamp <= :TIMESTAMP2:"
+              + " and mapProjectId = :MAP_PROJECT_ID: and name = '"
+              + reportDefinition.getDiffReportDefinitionName() + "') "
               + "limit 1)";
 
       // modify date by appropriate increment
