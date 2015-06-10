@@ -2103,7 +2103,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // commit the report
     // TODO: may need a way to override the errors if we want to proceed with a
     // release anyway
-    if (errorFlag) {
+    if (errorFlag && !testModeFlag) {
       mappingService.rollback();
       throw new Exception("The validation had errors, please see the log");
     } else {
