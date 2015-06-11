@@ -1959,6 +1959,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     MappingService mappingService = new MappingServiceJpa();
     ReportService reportService = new ReportServiceJpa();
     reportService.setTransactionPerOperation(false);
+    mappingService.setTransactionPerOperation(false);
 
     // get the report definition
     Logger.getLogger(getClass()).info("  Create release QA report");
@@ -2103,11 +2104,13 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // commit the report
     // TODO: may need a way to override the errors if we want to proceed with a
     // release anyway
-    if (errorFlag && !testModeFlag) {
-      mappingService.rollback();
-      throw new Exception("The validation had errors, please see the log");
-    } else {
-      mappingService.commit();
+    if (!testModeFlag) {
+      if (errorFlag) {
+        mappingService.rollback();
+        throw new Exception("The validation had errors, please see the log");
+      } else {
+        mappingService.commit();
+      }
     }
 
     // Commit the new report either way
