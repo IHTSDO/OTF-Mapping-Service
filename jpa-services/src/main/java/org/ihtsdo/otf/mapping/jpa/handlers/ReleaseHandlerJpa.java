@@ -2067,7 +2067,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
         // remove record if flag set
         if (!testModeFlag) {
-          Logger.getLogger(getClass()).debug(
+          Logger.getLogger(getClass()).info(
               "    REMOVE out of scope record " + mapRecord.getId());
           mappingService.removeMapRecord(mapRecord.getId());
         }
