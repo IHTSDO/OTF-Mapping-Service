@@ -1959,7 +1959,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     MappingService mappingService = new MappingServiceJpa();
     ReportService reportService = new ReportServiceJpa();
     reportService.setTransactionPerOperation(false);
+    reportService.beginTransaction();
     mappingService.setTransactionPerOperation(false);
+    mappingService.beginTransaction();
 
     // get the report definition
     Logger.getLogger(getClass()).info("  Create release QA report");
@@ -1986,9 +1988,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     report.setReportDefinition(reportDefinition);
     report.setResultType(ReportResultType.CONCEPT);
     report.setTimestamp((new Date()).getTime());
-
-    // begin the transaction and add/persist the report
-    reportService.beginTransaction();
     reportService.addReport(report);
 
     // get all scope concept terminology ids for this project
