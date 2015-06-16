@@ -73,26 +73,13 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
       mappingService.beginTransaction();
 
       // Look up map projects amd ,a[ recprds
-      getLog().info("  Lookup map projects");
+      getLog().info("  Lookup map projects and cache by refset id");
       List<MapProject> mapProjects =
           mappingService.getMapProjects().getMapProjects();
-      // refsetId -> conceptId -> Set<MapRecord>s
-      Map<String, Map<String, Set<MapRecord>>> mapProjectMap = new HashMap<>();
-      for (MapProject mapProject : mapProjects) {
-        Map<String, Set<MapRecord>> mapRecordsMap = new HashMap<>();
-        // TODO: factor this out so we only read map records for
-        // refsetIds that have notes associated with them.
-        for (MapRecord mapRecord : mappingService.getMapRecordsForMapProject(
-            mapProject.getId()).getMapRecords()) {
-          if (!mapRecordsMap.containsKey(mapRecord.getConceptId())) {
-            Set<MapRecord> mapRecordSet = new HashSet<>();
-            mapRecordsMap.put(mapRecord.getConceptId(), mapRecordSet);
-          }
-          Set<MapRecord> mapRecordSet =
-              mapRecordsMap.get(mapRecord.getConceptId());
-          mapRecordSet.add(mapRecord);
-        }
-        mapProjectMap.put(mapProject.getRefSetId(), mapRecordsMap);
+      Map<String, Long> refsetMapProjectIdMap = new HashMap<>();
+      for (MapProject project : mapProjects) {
+        getLog().info("    " + project.getRefSetId() + " = " + project.getId());
+        refsetMapProjectIdMap.put(project.getRefSetId(), project.getId());
       }
 
       // Iterate through the file
@@ -101,6 +88,7 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
       String line = null;
       int ct = 0;
       while ((line = mapNoteReader.readLine()) != null) {
+        getLog().info("  line = " + line);
 
         // parse fields and create object
         // id effectiveTime active moduleId refsetId referencedComponentId
@@ -125,7 +113,11 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
         }
         mapNote.setNote(note);
 
-        Set<MapRecord> mapRecords = mapProjectMap.get(fields[4]).get(fields[5]);
+        List<MapRecord> mapRecords =
+            mappingService.getMapRecordsForProjectAndConcept(
+                refsetMapProjectIdMap.get(fields[4]), fields[5]).getMapRecords();
+        getLog().info("  records for " + fields[5] + " in project " +refsetMapProjectIdMap.get(fields[4]) 
+            + " = " + mapRecords.size());
 
         // Verify matching map records were found, otherwise fail
         if (mapRecords != null && mapRecords.size() > 0) {
@@ -144,6 +136,7 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
             if (++ct % commitCt == 0) {
               getLog().info("      commit = " + ct);
               mappingService.commit();
+              mappingService.clear();
               mappingService.beginTransaction();
             }
           }
