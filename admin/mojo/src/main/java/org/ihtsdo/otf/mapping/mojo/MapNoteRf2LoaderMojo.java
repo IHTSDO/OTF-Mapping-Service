@@ -6,10 +6,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -88,7 +86,6 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
       String line = null;
       int ct = 0;
       while ((line = mapNoteReader.readLine()) != null) {
-        getLog().info("  line = " + line);
 
         // parse fields and create object
         // id effectiveTime active moduleId refsetId referencedComponentId
@@ -116,8 +113,6 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
         List<MapRecord> mapRecords =
             mappingService.getMapRecordsForProjectAndConcept(
                 refsetMapProjectIdMap.get(fields[4]), fields[5]).getMapRecords();
-        getLog().info("  records for " + fields[5] + " in project " +refsetMapProjectIdMap.get(fields[4]) 
-            + " = " + mapRecords.size());
 
         // Verify matching map records were found, otherwise fail
         if (mapRecords != null && mapRecords.size() > 0) {
