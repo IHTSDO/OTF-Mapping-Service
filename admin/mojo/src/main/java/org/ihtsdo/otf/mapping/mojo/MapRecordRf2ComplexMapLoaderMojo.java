@@ -81,7 +81,8 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
               if (i != 0) {
                 return (int) i;
               } else {
-                i = (Long.parseLong(fields1[5]) - Long.parseLong(fields2[5]));
+                i = fields1[5].compareTo(fields2[5]);
+                //i = (Long.parseLong(fields1[5]) - Long.parseLong(fields2[5]));
                 if (i != 0) {
                   return (int) i;
                 } else {
