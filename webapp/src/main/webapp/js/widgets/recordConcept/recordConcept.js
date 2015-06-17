@@ -275,7 +275,7 @@ angular
             for (var i = 0; i < $scope.records.length; i++) {
               if ($scope.records[i].mapProjectId === $scope.focusProject.id) {
                 $scope.recordsInProject.push($scope.records[i]);
-              } else {
+              } else if ($scope.getProject($scope.records[i])) {
                 var project = $scope.getProject($scope.records[i]);
                 var projectPublic = project.public;
                 if ($scope.currentUser.name == 'Administrator'
@@ -287,7 +287,7 @@ angular
 
                     if ($scope.recordsNotInProject[j][0].mapProjectId === $scope.records[i].mapProjectId) {
                       console.debug("Found match for "
-                          + $scope.records[i].mapProjectId);
+                         + $scope.records[i].mapProjectId);
                       $scope.recordsNotInProject[j].push($scope.records[i]);
                       projectExists = true;
                     }
