@@ -93,7 +93,6 @@ angular
                       $routeParams.conceptId,
                       $scope.concept.defaultPreferredName);
                   $scope.getRecordsForConcept();
-                  $scope.getRecordsForConceptHistorical();
                   $scope.findUnmappedDescendants();
 
                   // find children based on source terminology
@@ -156,6 +155,8 @@ angular
                 })
                 .then(
                     function() {
+
+                      $scope.getRecordsForConceptHistorical();
 
                       // check relation style flags
                       if ($scope.focusProject.mapRelationStyle === "MAP_CATEGORY_STYLE") {
