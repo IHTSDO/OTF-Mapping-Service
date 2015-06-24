@@ -225,7 +225,7 @@
                         SELECT a.id, a.name, refSetId, refSetName
                         FROM
                         map_projects a
-                        WHERE a.id !=10 AND NOT EXISTS
+                        WHERE a.name not like 'Published%' AND NOT EXISTS
                         (SELECT *
                         FROM concepts b
                         WHERE a.refSetId = b.terminologyId
