@@ -241,7 +241,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     Set<Integer> mapGroups = entryGroups.keySet();
 
     // cycle over the expected group numbers
-    for (int i = 1; i < mapGroups.size(); i++) {
+    for (int i = 1; i <= mapGroups.size(); i++) {
       if (!mapGroups.contains(i)) {
         validationResult.addError("Group " + i + " is empty");
       }
@@ -353,12 +353,37 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         }
       }
 
-      // otherwise check TRUE rules
+    // otherwise check TRUE rules and gender rules (Female must be before Male)
     } else {
 
+      // cycle over the groups and note if there are both female and 
+      // male entries in a group
+      for (Integer key : entryGroups.keySet()) {
+        
+        int maleEntry = 0;
+        int femaleEntry = 0;
+        
+        for (int i=1; i<entryGroups.get(key).size() + 1; i++) {
+          MapEntry entry = entryGroups.get(key).get(i-1);
+          if (entry.getRule().contains("Male")) {
+            maleEntry = i;
+          }
+          if (entry.getRule().contains("Female")) {
+            femaleEntry = i;
+          }
+        }
+        
+        // ensure female entry is before male entry
+        if (femaleEntry != 0 && maleEntry != 0) {
+          if (femaleEntry > maleEntry) 
+            validationResult
+            .addError("Female rule must be ordered before the male rule.");
+        }
+      }
+      
       // cycle over the groups
       for (Integer key : entryGroups.keySet()) {
-
+        
         for (MapEntry mapEntry : entryGroups.get(key)) {
 
           Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
