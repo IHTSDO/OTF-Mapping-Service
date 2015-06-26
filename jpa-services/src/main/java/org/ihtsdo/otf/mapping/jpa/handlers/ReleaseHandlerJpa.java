@@ -836,7 +836,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     // Write header
     writer
-        .write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\tsourceEffectiveTime\ttargetEffectiveTime"
+        .write("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tsourceEffectiveTime\ttargetEffectiveTime"
             + "\r\n");
 
     // Write lines
@@ -891,7 +891,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // Write headers (subject to pattern)
     writer = new BufferedWriter(new FileWriter(filename));
     writer
-        .write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\t"
+        .write("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\t"
             + "mapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId");
     if (mapProject.getMapRefsetPattern().equals(MapRefsetPattern.ExtendedMap)) {
       writer.write("\tmapCategoryId");
@@ -1094,7 +1094,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     writer = new BufferedWriter(new FileWriter(filename));
     writer
-        .write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\t"
+        .write("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\t"
             + "mapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId");
     if (mapProject.getMapRefsetPattern().equals(MapRefsetPattern.ExtendedMap)) {
       writer.write("\tmapCategoryId");
@@ -1154,7 +1154,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     writer = new BufferedWriter(new FileWriter(filename));
     writer
-        .write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\t"
+        .write("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\t"
             + "mapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId");
     if (mapProject.getMapRefsetPattern().equals(MapRefsetPattern.ExtendedMap)) {
       writer.write("\tmapCategoryId");
@@ -1246,13 +1246,13 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     if (pattern == MapRefsetPattern.ExtendedMap) {
       if (humanReadableWriter != null) {
         humanReadableWriter
-            .write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\treferencedComponentName\tmapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tmapTargetName\tcorrelationId\tmapCategoryId\tmapCategoryName\r\n");
+            .write("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\treferencedComponentName\tmapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tmapTargetName\tcorrelationId\tmapCategoryId\tmapCategoryName\r\n");
         humanReadableWriter.flush();
       }
     } else if (pattern == MapRefsetPattern.ComplexMap) {
       if (humanReadableWriter != null) {
         humanReadableWriter
-            .write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\treferencedComponentName\tmapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tmapTargetName\tcorrelationId\tcorrelationValue\r\n");
+            .write("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\treferencedComponentName\tmapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tmapTargetName\tcorrelationId\tcorrelationValue\r\n");
         humanReadableWriter.flush();
       }
     }
