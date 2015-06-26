@@ -32,12 +32,13 @@ public class OtfEmailHandler {
   // basic email format, with specified users
   /**
    * Send simple email.
-   * 
+   *
    * @param recipients the recipients
+   * @param from the from
    * @param subject the subject
    * @param message the message
    */
-  public void sendSimpleEmail(String recipients, String subject, String message) {
+  public void sendSimpleEmail(String recipients, String from, String subject, String message) {
 
     Logger.getLogger(OtfEmailHandler.class).info("Sending email...");
 
@@ -48,9 +49,9 @@ public class OtfEmailHandler {
       MimeMessage msg = new MimeMessage(session);
 
       // set the message, subject, and sender
-      msg.setText(message);
+      msg.setContent(message, "text/html; charset=utf-8");
       msg.setSubject(subject);
-      msg.setFrom(config.getProperty("mail.smtp.user"));
+      msg.setFrom(from);
 
       // split recipients if needed and add each
       String[] recipientsArray = recipients.split(";");
@@ -63,6 +64,20 @@ public class OtfEmailHandler {
     } catch (Exception mex) {
       mex.printStackTrace();
     }
+  }
+  
+  /**
+   * Send simple email.
+   *
+   * @param recipients the recipients
+   * @param subject the subject
+   * @param message the message
+   */
+  public void sendSimpleEmail(String recipients, String subject, String message) {
+
+    String from = config.getProperty("mail.smtp.user"); 
+    sendSimpleEmail(recipients, from, subject, message);
+    
   }
 
   // helper function to send simple email to recipients specified in config file
