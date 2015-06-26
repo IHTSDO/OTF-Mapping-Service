@@ -1969,7 +1969,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
             config.getProperty("send.notification.recipients");
         if (!notificationRecipients.isEmpty()) {
           OtfEmailHandler emailHandler = new OtfEmailHandler();
-          emailHandler.sendSimpleEmail(notificationRecipients,
+          emailHandler.sendSimpleEmail(notificationRecipients, config.getProperty("mail.smtp.user"),
               mapProject.getName() + " Workflow Error Alert, Concept "
                   + concept.getTerminologyId(), message.toString());
         }
@@ -3397,6 +3397,31 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     return feedbackList;
   }
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.services.WorkflowService#sendFeedbackEmail(java.lang.String)
+   */
+  @Override
+  public String sendFeedbackEmail(List<String> message) throws Exception {
+    OtfEmailHandler emailHandler = new OtfEmailHandler();
+    // get to address from config.properties
+    Properties config = ConfigUtility.getConfigProperties();
+    String feedbackUserRecipient =
+        config.getProperty("mail.smtp.to.feedback.user");
+    String baseUrlWebapp = 
+        config.getProperty("base.url.webapp");
+    String conceptUrl =
+        baseUrlWebapp + "/#/record/conceptId/" + message.get(2);
+    
+    emailHandler.sendSimpleEmail(feedbackUserRecipient, message.get(1),
+      "Mapping Tool User Feedback: " + message.get(2) + "-" + message.get(3), 
+      "User: " + message.get(0) + "<br>" + 
+      "Email: " + message.get(1) + "<br>" + 
+      "Concept: <a href=" + conceptUrl + ">" + message.get(2) + "- " + message.get(3) + "</a><br><br>" + 
+      message.get(4));
+    
+    return message.get(2);
+  }
+  
   /**
    * Construct error message string for tracking record and validation result.
    *
