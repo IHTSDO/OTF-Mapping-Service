@@ -517,5 +517,15 @@ public interface WorkflowService extends RootService {
    * @throws Exception the exception
    */
   public void createQAWork(Report report) throws Exception;
+  
+
+  /**
+   * Send feedback email.
+   *
+   * @param message the message
+   * @return the string
+   * @throws Exception the exception
+   */
+  public String sendFeedbackEmail(List<String> message) throws Exception;
 
 }
