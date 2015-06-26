@@ -836,7 +836,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     // Write header
     writer
-        .write("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tsourceEffectiveTime\ttargetEffectiveTime"
+        .write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\tsourceEffectiveTime\ttargetEffectiveTime"
             + "\r\n");
 
     // Write lines
@@ -1177,9 +1177,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // Write previous active members (changed, unchanged, or inactive)
     for (String key : prevActiveMembers.keySet()) {
       if (!currentActiveMembers.containsKey(key)) {
+        // active value is always changing here from 1 to 0,
+        // so we should always write the previous member with an updated
+        // effective time (e.g. "trueEffectiveTime" parameter is false)
         ComplexMapRefSetMember member = prevActiveMembers.get(key);
         member.setActive(false);
-        lines.add(getOutputLine(member, true));
+        lines.add(getOutputLine(member, false));
         member.setActive(true);
       } else {
         ComplexMapRefSetMember member = currentActiveMembers.get(key);
