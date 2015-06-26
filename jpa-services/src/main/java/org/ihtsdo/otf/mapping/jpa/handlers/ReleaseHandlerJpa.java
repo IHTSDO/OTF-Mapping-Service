@@ -891,7 +891,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // Write headers (subject to pattern)
     writer = new BufferedWriter(new FileWriter(filename));
     writer
-        .write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\t"
+        .write("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\t"
             + "mapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId");
     if (mapProject.getMapRefsetPattern().equals(MapRefsetPattern.ExtendedMap)) {
       writer.write("\tmapCategoryId");
@@ -1094,7 +1094,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     writer = new BufferedWriter(new FileWriter(filename));
     writer
-        .write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\t"
+        .write("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\t"
             + "mapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId");
     if (mapProject.getMapRefsetPattern().equals(MapRefsetPattern.ExtendedMap)) {
       writer.write("\tmapCategoryId");
@@ -1154,7 +1154,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     writer = new BufferedWriter(new FileWriter(filename));
     writer
-        .write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\t"
+        .write("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\t"
             + "mapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId");
     if (mapProject.getMapRefsetPattern().equals(MapRefsetPattern.ExtendedMap)) {
       writer.write("\tmapCategoryId");
@@ -1177,9 +1177,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // Write previous active members (changed, unchanged, or inactive)
     for (String key : prevActiveMembers.keySet()) {
       if (!currentActiveMembers.containsKey(key)) {
+        // active value is always changing here from 1 to 0,
+        // so we should always write the previous member with an updated
+        // effective time (e.g. "trueEffectiveTime" parameter is false)
         ComplexMapRefSetMember member = prevActiveMembers.get(key);
         member.setActive(false);
-        lines.add(getOutputLine(member, true));
+        lines.add(getOutputLine(member, false));
         member.setActive(true);
       } else {
         ComplexMapRefSetMember member = currentActiveMembers.get(key);
@@ -1243,13 +1246,13 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     if (pattern == MapRefsetPattern.ExtendedMap) {
       if (humanReadableWriter != null) {
         humanReadableWriter
-            .write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\treferencedComponentName\tmapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tmapTargetName\tcorrelationId\tmapCategoryId\tmapCategoryName\r\n");
+            .write("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\treferencedComponentName\tmapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tmapTargetName\tcorrelationId\tmapCategoryId\tmapCategoryName\r\n");
         humanReadableWriter.flush();
       }
     } else if (pattern == MapRefsetPattern.ComplexMap) {
       if (humanReadableWriter != null) {
         humanReadableWriter
-            .write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\treferencedComponentName\tmapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tmapTargetName\tcorrelationId\tcorrelationValue\r\n");
+            .write("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\treferencedComponentName\tmapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tmapTargetName\tcorrelationId\tcorrelationValue\r\n");
         humanReadableWriter.flush();
       }
     }
@@ -1959,6 +1962,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     MappingService mappingService = new MappingServiceJpa();
     ReportService reportService = new ReportServiceJpa();
     reportService.setTransactionPerOperation(false);
+    reportService.beginTransaction();
+    mappingService.setTransactionPerOperation(false);
+    mappingService.beginTransaction();
 
     // get the report definition
     Logger.getLogger(getClass()).info("  Create release QA report");
@@ -1985,9 +1991,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     report.setReportDefinition(reportDefinition);
     report.setResultType(ReportResultType.CONCEPT);
     report.setTimestamp((new Date()).getTime());
-
-    // begin the transaction and add/persist the report
-    reportService.beginTransaction();
     reportService.addReport(report);
 
     // get all scope concept terminology ids for this project
@@ -2067,7 +2070,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
         // remove record if flag set
         if (!testModeFlag) {
-          Logger.getLogger(getClass()).debug(
+          Logger.getLogger(getClass()).info(
               "    REMOVE out of scope record " + mapRecord.getId());
           mappingService.removeMapRecord(mapRecord.getId());
         }
@@ -2103,11 +2106,13 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // commit the report
     // TODO: may need a way to override the errors if we want to proceed with a
     // release anyway
-    if (errorFlag) {
-      mappingService.rollback();
-      throw new Exception("The validation had errors, please see the log");
-    } else {
-      mappingService.commit();
+    if (!testModeFlag) {
+      if (errorFlag) {
+        mappingService.rollback();
+        throw new Exception("The validation had errors, please see the log");
+      } else {
+        mappingService.commit();
+      }
     }
 
     // Commit the new report either way
