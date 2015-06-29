@@ -441,11 +441,6 @@ angular
             }
           });
 
-        /*modalInstance.result.then(function(result) {
-          console.debug("Unassigning batch work for user " + mapUser.userName
-            + ", with parameters: ", result);
-
-        });*/
 
       };
 
@@ -482,27 +477,29 @@ angular
           }
 
           
-          var sList = [name, email, record.conceptId, record.conceptName, feedbackMessage];
+          var sList = [ name, email, record.conceptId, record.conceptName,
+            feedbackMessage ];
 
+          $rootScope.glassPane++;
+          $http({
+            url : root_workflow + "message",
+            dataType : "json",
+            method : "POST",
+            data : sList,
+            headers : {
+              "Content-Type" : "application/json"
+            }
 
-              $http({
-                url : root_workflow + "message",
-                dataType : "json",
-                method : "POST",
-                data: sList,
-                headers : {
-                  "Content-Type" : "application/json"
-                }
-              
-              }).success(function(data) {
-                console.debug("success to sendFeedbackEmail.");
-                $modalInstance.close();
-              }).error(function(data, status, headers, config) {
-                $modalInstance.close();
-                $scope.recordError = "Error sending feedback email.";
-                $rootScope.handleHttpError(data, status, headers, config);
-              });
-
+          }).success(function(data) {
+            console.debug("success to sendFeedbackEmail.");
+            $rootScope.glassPane--;
+            $modalInstance.close();
+          }).error(function(data, status, headers, config) {
+            $modalInstance.close();
+            $scope.recordError = "Error sending feedback email.";
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
 
         };
 
