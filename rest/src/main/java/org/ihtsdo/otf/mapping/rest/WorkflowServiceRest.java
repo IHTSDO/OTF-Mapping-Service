@@ -862,7 +862,6 @@ public class WorkflowServiceRest extends RootServiceRest {
       workflowService.processWorkflowAction(mapProject, concept, mapUser, null,
           WorkflowAction.ASSIGN_FROM_SCRATCH);
 
-
     } catch (Exception e) {
       handleException(e, "trying to assign work", userName, project,
           terminologyId);
@@ -1727,7 +1726,7 @@ public class WorkflowServiceRest extends RootServiceRest {
   /**
    * Sends a feedback message email.
    *
-   * @param message the message
+   * @param messageInfo the message
    * @param authToken the auth token
    * @return the string
    * @throws Exception the exception
@@ -1736,13 +1735,13 @@ public class WorkflowServiceRest extends RootServiceRest {
   @Path("/message")
   @ApiOperation(value = "Sends a feedback message email.", notes = "Sends a feedback message email.")
   @Consumes({
-    MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-})
-@Produces({
-    MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-})
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
   public Response sendFeedbackEmail(
-    @ApiParam(value = "message", required = true) List<String>  message,
+    @ApiParam(value = "message", required = true) List<String> messageInfo,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
@@ -1766,16 +1765,18 @@ public class WorkflowServiceRest extends RootServiceRest {
                 .build());
 
       Logger.getLogger(WorkflowServiceRest.class).info(
-          "RESTful call (Workflow): /message msg: "
-              + message);
+          "RESTful call (Workflow): /message msg: " + messageInfo);
 
-      workflowService.sendFeedbackEmail(message);
-
+      // Split up message and send parts
+      workflowService.sendFeedbackEmail(messageInfo.get(0),
+          messageInfo.get(1), messageInfo.get(2), messageInfo.get(3), 
+          messageInfo.get(4), messageInfo.get(5));
+      
+      
       return null;
 
     } catch (Exception e) {
-      handleException(e, "send a message email", userName, "",
-          message.get(0));
+      handleException(e, "send a message email", userName, "", messageInfo.get(0));
       return null;
     } finally {
       workflowService.close();
