@@ -21,19 +21,24 @@ angular
       $scope.focusProject = localStorageService.get('focusProject');
 
       $scope.currentUserToken = localStorageService.get('userToken');
-      $scope.$watch([ 'focusProject', 'userToken' ], function() {
-     
-        if ($scope.focusProject != null && $scope.currentUserToken != null) {
+      $scope
+        .$watch(
+          [ 'focusProject', 'userToken' ],
+          function() {
 
-          $http.defaults.headers.common.Authorization = $scope.currentUserToken;
-          
-          console.debug("Project and users", $scope.focusProject, $scope.focusProject.mapSpecialist, $scope.focusProject.mapLead);
-          
-          // construct list of specialists and leads
-          $scope.projectUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
+            if ($scope.focusProject != null && $scope.currentUserToken != null) {
 
-        }
-      });
+              $http.defaults.headers.common.Authorization = $scope.currentUserToken;
+
+              console.debug("Project and users", $scope.focusProject,
+                $scope.focusProject.mapSpecialist, $scope.focusProject.mapLead);
+
+              // construct list of specialists and leads
+              $scope.projectUsers = $scope.focusProject.mapSpecialist
+                .concat($scope.focusProject.mapLead);
+
+            }
+          });
 
       $scope.getRecord = function(id, createQA) {
 
@@ -168,14 +173,14 @@ angular
         });
 
       };
-      
+
       $scope.assignFixError = function(terminologyIdsUnsplit, mapUser) {
 
         if (mapUser == null || mapUser == undefined) {
           alert("You must specify a user");
           return;
         }
-        
+
         if (confirm("ARE YOU ABSOLUTELY SURE? Any eligible concepts in this list will be re-inserted into the workflow") == false)
           return;
 
@@ -196,7 +201,7 @@ angular
               "Content-Type" : "application/json"
             }
           }).success(function(data) {
-          $rootScope.glassPane--;   
+          $rootScope.glassPane--;
           $scope.validationResultAssign = data;
           console.debug("validation result: ", $scope.validationResultAssign);
         }).error(function(data, status, headers, config) {
