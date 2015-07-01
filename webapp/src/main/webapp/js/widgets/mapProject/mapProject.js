@@ -20,10 +20,10 @@ angular
       $scope.currentUser = localStorageService.get('currentUser');
       $scope.currentRole = localStorageService.get('currentRole');
       $scope.userToken = localStorageService.get('userToken');
-      
+
       // flag indicating if index viewer is available for dest terminology
       $scope.indexViewerExists = false;
-        
+
       // watch for project change
       $scope.$on('localStorageModule.notification.setFocusProject', function(
         event, parameters) {
@@ -56,7 +56,6 @@ angular
         // redirect page
         $location.path(path);
       };
-
 
       $scope.generateTestData = function() {
 
@@ -232,7 +231,7 @@ angular
               "browserWindow");
         myWindow.focus();
       };
-      
+
       $scope.openIndexViewer = function() {
         console.debug("page location is", window.location.href);
         var currentUrl = window.location.href;
@@ -241,8 +240,8 @@ angular
         var myWindow = window.open(newUrl, "indexViewerWindow");
         myWindow.focus();
       };
-      
-      function setIndexViewerStatus() {       
+
+      function setIndexViewerStatus() {
         $http(
           {
             url : root_content + "index/"
@@ -263,5 +262,6 @@ angular
         }).error(function(data, status, headers, config) {
           $scope.indexViewerExists = false;
         });
-      };
+      }
+      ;
     });

@@ -101,9 +101,9 @@ angular
               / $scope.recordsPerPage);
 
             $scope.editedRecords = data.mapRecord;
-            
+
             for (var i = 0; i < $scope.editedRecords.length; i++) {
-            	$scope.editedRecords[i].isCollapsed = true;
+              $scope.editedRecords[i].isCollapsed = true;
             }
 
             $scope.searchPerformed = true;
@@ -223,9 +223,9 @@ angular
         $scope.editedRecords = [];
         $scope.searchPerformed = false;
       };
-      
+
       $scope.gotoConcept = function(terminologyId) {
-      	$location.path("#/record/conceptId/" + terminologyId);
+        $location.path("#/record/conceptId/" + terminologyId);
       };
 
     });
