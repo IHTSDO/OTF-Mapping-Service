@@ -478,7 +478,7 @@ angular
             return;
           }
 
-          var sList = [ name, email, record.conceptId, record.conceptName,
+          var sList = [ name, email, record.conceptId, record.conceptName, $scope.project.refSetId,
             feedbackMessage ];
 
           $rootScope.glassPane++;
