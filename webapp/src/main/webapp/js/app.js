@@ -18,9 +18,9 @@ var mapProjectApp = angular.module(
     'mapProjectApp.widgets.feedbackConversation',
     'mapProjectApp.widgets.applicationAdmin', 'mapProjectApp.widgets.report',
     'mapProjectApp.widgets.qaCheck', 'mapProjectApp.widgets.indexViewer',
-    'LocalStorageModule', 'ngCookies',
-    'ui.tinymce', 'angularjs-dropdown-multiselect', 'angularFileUpload',
-    'ui.tree' ]).value('prefix', '').config(function(dashboardProvider) {
+    'LocalStorageModule', 'ngCookies', 'ui.tinymce',
+    'angularjs-dropdown-multiselect', 'angularFileUpload', 'ui.tree' ]).value(
+  'prefix', '').config(function(dashboardProvider) {
 
   dashboardProvider.structure('6-6', {
     rows : [ {
@@ -115,8 +115,8 @@ mapProjectApp.config([ '$routeProvider', function($routeProvider) {
     templateUrl : 'partials/otf-dashboard.html',
     controller : 'RecordConceptDashboardCtrl'
   });
-  
-  $routeProvider.when('/record/conceptId/:conceptId/guest/:guestFlag/projectId/:projectId', {
+
+  $routeProvider.when('/record/conceptId/:conceptId/autologin', {
     templateUrl : 'partials/otf-dashboard.html',
     controller : 'LoginCtrl'
   });
@@ -140,7 +140,7 @@ mapProjectApp.config([ '$routeProvider', function($routeProvider) {
     templateUrl : 'partials/otf-dashboard.html',
     controller : 'ResolveConflictsDashboardCtrl'
   });
-  
+
   $routeProvider.when('/index/viewer', {
     templateUrl : 'partials/otf-dashboard.html',
     controller : 'IndexViewerDashboardCtrl'

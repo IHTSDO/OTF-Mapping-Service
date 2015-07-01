@@ -109,7 +109,7 @@ angular
           function(data) {
             $rootScope.glassPane--;
             $scope.reports = data.report;
-            
+
             console.debug("Reports fetched: ", data.report);
 
             // set paging parameters
@@ -191,7 +191,7 @@ angular
       $scope.getResultItems = function(reportResult, page) {
 
         $rootScope.glassPane++;
-        
+
         console.debug("Getting report result items", reportResult, page);
 
         // construct a PFS object
@@ -240,8 +240,6 @@ angular
         }
       };
 
-    
-
       $scope.generateNewReport = function(reportDefinition) {
         $rootScope.glassPane++;
 
@@ -270,7 +268,6 @@ angular
         });
       };
 
-
       $scope.addReportDefinition = function() {
 
         console.debug("Adding new report definition");
@@ -291,67 +288,63 @@ angular
 
       };
 
-      
-      $scope.deleteReport = function(report, page, selectedDefinition, queryReport) {
-          console.debug("in delete Report from reports");
+      $scope.deleteReport = function(report, page, selectedDefinition,
+        queryReport) {
+        console.debug("in delete Report from reports");
 
-          if (confirm("Are you sure that you want to delete a report?") == false)
-            return;
+        if (confirm("Are you sure that you want to delete a report?") == false)
+          return;
 
-          $http({
-            url : root_reporting + "report/delete",
-            dataType : "json",
-            data : report,
-            method : "DELETE",
-            headers : {
-              "Content-Type" : "application/json"
-            }
-          })
-            .success(
-               function(data) {
-                    console
-                        .debug("success to delete report from application");
-                    $scope.getReports(page, selectedDefinition, queryReport);
-            })
-            .error(
-               function(data, status, headers, config) {
-                    $scope.recordError = "Error deleting map report from application.";
-                    $rootScope.handleHttpError(data, status, headers,
-                        config);
-            });
-        };
-        
-        $scope.exportReport = function(report) {
-          $rootScope.glassPane++;
-            $http({
-                url : root_reporting + "report/export/"
-                + report.id ,
-                dataType : "json",
-                method : "GET",
-                headers : {
-                  "Content-Type" : "application/json"
-                },
-                responseType: 'arraybuffer'
-            }).success(function(data) {
-              $scope.definitionMsg = "Successfully exported report";
-              var blob = new Blob([data], {type: "application/vnd.ms-excel"});
-              // hack to download store a file having its URL
-              var fileURL = URL.createObjectURL(blob);
-              var a         = document.createElement('a');
-              a.href        = fileURL; 
-              a.target      = "_blank";
-              a.download    = getReportFileName(report);
-              document.body.appendChild(a);
-              $rootScope.glassPane--;
-              a.click();                       
-            }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
-              $rootScope.handleHttpError(data, status, headers, config);
-            });
-        };
+        $http({
+          url : root_reporting + "report/delete",
+          dataType : "json",
+          data : report,
+          method : "DELETE",
+          headers : {
+            "Content-Type" : "application/json"
+          }
+        }).success(function(data) {
+          console.debug("success to delete report from application");
+          $scope.getReports(page, selectedDefinition, queryReport);
+        }).error(function(data, status, headers, config) {
+          $scope.recordError = "Error deleting map report from application.";
+          $rootScope.handleHttpError(data, status, headers, config);
+        });
+      };
 
-        var getReportFileName = function(report) {
-          var date = new Date(report.timestamp).toISOString().slice(0,10).replace(/-/g,"");
-          return report.name + "." + date + ".xls";
-        };
+      $scope.exportReport = function(report) {
+        $rootScope.glassPane++;
+        $http({
+          url : root_reporting + "report/export/" + report.id,
+          dataType : "json",
+          method : "GET",
+          headers : {
+            "Content-Type" : "application/json"
+          },
+          responseType : 'arraybuffer'
+        }).success(function(data) {
+          $scope.definitionMsg = "Successfully exported report";
+          var blob = new Blob([ data ], {
+            type : "application/vnd.ms-excel"
+          });
+          // hack to download store a file having its URL
+          var fileURL = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = fileURL;
+          a.target = "_blank";
+          a.download = getReportFileName(report);
+          document.body.appendChild(a);
+          $rootScope.glassPane--;
+          a.click();
+        }).error(function(data, status, headers, config) {
+          $rootScope.glassPane--;
+          $rootScope.handleHttpError(data, status, headers, config);
+        });
+      };
+
+      var getReportFileName = function(report) {
+        var date = new Date(report.timestamp).toISOString().slice(0, 10)
+          .replace(/-/g, "");
+        return report.name + "." + date + ".xls";
+      };
     });
