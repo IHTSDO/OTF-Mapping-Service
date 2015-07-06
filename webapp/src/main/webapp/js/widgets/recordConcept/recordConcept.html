@@ -35,7 +35,7 @@
       <ul class="dropdown-menu">
         <strong>Children</strong>
         <li ng-repeat="concept in concept.children | orderBy: 'value'"><a
-          href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}:
+            href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}:
             {{concept.value}}</a></li>
       </ul>
     </div>
@@ -52,17 +52,23 @@
   <div style="width: 100%" ng-repeat="record in recordsInProject"
     ng-class-odd="'odd'" ng-class-even="'even'">
 
-    <a title="Submit Feedback" ng-show="currentRole === 'Viewer'"  ng-click="openViewerFeedbackModal(record, currentUser.userName)"><i
-      class="glyphicon glyphicon glyphicon-comment"></i></a>
 
     <div ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
-      Owner: {{record.owner.name}}&nbsp<a title="Edit"
-        ng-show="isEditable(record) == true" ng-click="editRecord(record)"><i
-        class="glyphicon glyphicon glyphicon-pencil pull-right"></i></a><br>
-      Status: {{record.workflowStatus}}
+      Owner: {{record.owner.name}}&nbsp
+      <a title="Edit" ng-show="isEditable(record) == true"
+        ng-click="editRecord(record)">
+        <i class="glyphicon glyphicon glyphicon-pencil pull-right"></i>
+      </a>
+      <br> Status: {{record.workflowStatus}}
 
     </div>
+    <div style="float: right; width: 3%;">
 
+      <a title="Submit Feedback" ng-show="currentRole === 'Viewer'"
+        ng-click="openViewerFeedbackModal(record, currentUser.userName)">
+        <i class="glyphicon glyphicon glyphicon-comment"></i>
+      </a>
+    </div>
 
     <div otf-map-record-wide record="record" project="focusProject"
       show-title="false"></div>
@@ -103,10 +109,12 @@
       ng-class-even="'even'">
 
       <div ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
-        Owner: {{record.owner.name}}&nbsp<a title="Edit"
-          ng-show="isEditable(record) == true" ng-click="editRecord(record)"><i
-          class="glyphicon glyphicon glyphicon-pencil pull-right"></i></a><br>
-        Status: {{record.workflowStatus}}
+        Owner: {{record.owner.name}}&nbsp
+        <a title="Edit" ng-show="isEditable(record) == true"
+          ng-click="editRecord(record)">
+          <i class="glyphicon glyphicon glyphicon-pencil pull-right"></i>
+        </a>
+        <br> Status: {{record.workflowStatus}}
 
       </div>
       <div otf-map-record-wide record="record" project="focusProject"
