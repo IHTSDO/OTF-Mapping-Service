@@ -52,6 +52,9 @@
   <div style="width: 100%" ng-repeat="record in recordsInProject"
     ng-class-odd="'odd'" ng-class-even="'even'">
 
+    <a title="Submit Feedback" ng-show="currentRole === 'Viewer'"  ng-click="openViewerFeedbackModal(record, currentUser.userName)"><i
+      class="glyphicon glyphicon glyphicon-comment"></i></a>
+
     <div ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
       Owner: {{record.owner.name}}&nbsp<a title="Edit"
         ng-show="isEditable(record) == true" ng-click="editRecord(record)"><i
