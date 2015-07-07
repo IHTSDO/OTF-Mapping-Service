@@ -146,8 +146,8 @@ angular
         $http(
           {
             url : root_mapping + "treePosition/project/id/"
-              + $scope.focusProject.id
-              + "/query/" + encodeURIComponent($scope.query),
+              + $scope.focusProject.id + "/query/"
+              + encodeURIComponent($scope.query),
             method : "GET",
             headers : {
               "Content-Type" : "application/json"

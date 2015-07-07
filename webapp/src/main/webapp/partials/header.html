@@ -21,7 +21,7 @@
 						ng-show="currentUser.name != null">
 						{{currentUser.name}} ({{currentRole}})&nbsp; <a
 							ng-show="currentUser.name != null && page != 'indexViewerDashboard'"
-							title="Log out" ng-click="logout()"><i
+							title="Log out" ng-click="logout(); alert('clicked');"><i
 							class="glyphicon glyphicon-log-out"></i></a>
 					</p>
 				</li>
@@ -51,7 +51,7 @@
 
 
 						<a
-							ng-show="currentRole === 'Viewer' && page != 'indexViewerDashboard'"
+							ng-show="currentRole.toLowerCase() === 'viewer' && page != 'indexViewerDashboard'"
 							title="Dashboard" href="index.html#/viewer/dash"><i
 							class="glyphicon glyphicon-stats"></i></a> <a
 							ng-show="currentRole === 'Specialist' && page != 'indexViewerDashboard'"

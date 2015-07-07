@@ -123,31 +123,31 @@ angular
             headers : {
               "Content-Type" : "application/json"
             }
-          }).success(
-          function(data) {
-            $rootScope.glassPane--;
-            
-            console.debug(data);
-            
-            // clear the items to prevent display of potentially enormous list
-            for (var i = 0; i < data.results.length; i++) {
-            	data.results[i].resultsItems = [];
-            }
-            
-            // set the report displayed and get the result items for each report result
-            $scope.reportDisplayed = data;
-            console.debug("Displayed report", $scope.reportDisplayed);
-            for (var i = 0; i < $scope.reportDisplayed.results.length; i++) {
-            	$scope.getResultItems($scope.reportDisplayed.results[i]);
-            }
+          }).success(function(data) {
+          $rootScope.glassPane--;
 
-            $scope.definitionMsg = "Successfully generated new qa check";
+          console.debug(data);
 
-            //if ($scope.reportDisplayed.results.length > 0) {
-            //  reportResult = $scope.getResultItems(
-            //    $scope.reportDisplayed.results[0], 1);
-           // }
-          }).error(function(data, status, headers, config) {
+          // clear the items to prevent display of potentially enormous list
+          for (var i = 0; i < data.results.length; i++) {
+            data.results[i].resultsItems = [];
+          }
+
+          // set the report displayed and get the result items for each report
+          // result
+          $scope.reportDisplayed = data;
+          console.debug("Displayed report", $scope.reportDisplayed);
+          for (var i = 0; i < $scope.reportDisplayed.results.length; i++) {
+            $scope.getResultItems($scope.reportDisplayed.results[i]);
+          }
+
+          $scope.definitionMsg = "Successfully generated new qa check";
+
+          // if ($scope.reportDisplayed.results.length > 0) {
+          // reportResult = $scope.getResultItems(
+          // $scope.reportDisplayed.results[0], 1);
+          // }
+        }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
           $rootScope.handleHttpError(data, status, headers, config);
         });
@@ -156,24 +156,25 @@ angular
       $scope.exportReport = function(report) {
         $rootScope.glassPane++;
         $http({
-            url : root_reporting + "report/export/"
-            + $scope.reportDisplayed.id ,
-            dataType : "json",
-            method : "GET",
-            headers : {
-              "Content-Type" : "application/json"
-            },
-            responseType: 'arraybuffer'
+          url : root_reporting + "report/export/" + $scope.reportDisplayed.id,
+          dataType : "json",
+          method : "GET",
+          headers : {
+            "Content-Type" : "application/json"
+          },
+          responseType : 'arraybuffer'
         }).success(function(data) {
           $scope.definitionMsg = "Successfully exported report";
-          var blob = new Blob([data], {type: "application/vnd.ms-excel"});
+          var blob = new Blob([ data ], {
+            type : "application/vnd.ms-excel"
+          });
 
           // hack to download store a file having its URL
           var fileURL = URL.createObjectURL(blob);
-          var a         = document.createElement('a');
-          a.href        = fileURL; 
-          a.target      = "_blank";
-          a.download    = getReportFileName(report);
+          var a = document.createElement('a');
+          a.href = fileURL;
+          a.target = "_blank";
+          a.download = getReportFileName(report);
           document.body.appendChild(a);
           $rootScope.glassPane--;
           a.click();
@@ -182,13 +183,13 @@ angular
           $rootScope.glassPane--;
           $rootScope.handleHttpError(data, status, headers, config);
         });
-    };
-    
-    var getReportFileName = function(report) {
-      var date = new Date().toISOString().slice(0,10).replace(/-/g,"");
-      return report.name + "." + date + ".xls";
-    };
-    
+      };
+
+      var getReportFileName = function(report) {
+        var date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+        return report.name + "." + date + ".xls";
+      };
+
       $scope.addToQAWorkflow = function(report) {
         $rootScope.glassPane++;
 
@@ -214,4 +215,3 @@ angular
       };
 
     });
-
