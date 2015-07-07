@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2015 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.services;
 
 import java.util.List;
@@ -325,8 +328,6 @@ public interface WorkflowService extends RootService {
   @Override
   public void commit() throws Exception;
 
-  
-
   /**
    * Gets the tracking record for map project and concept.
    *
@@ -483,7 +484,6 @@ public interface WorkflowService extends RootService {
    */
   FeedbackList getFeedbackErrorsForRecord(MapRecord mapRecord) throws Exception;
 
-
   /**
    * Find available qa work.
    *
@@ -517,15 +517,20 @@ public interface WorkflowService extends RootService {
    * @throws Exception the exception
    */
   public void createQAWork(Report report) throws Exception;
-  
 
   /**
    * Send feedback email.
    *
-   * @param message the message
-   * @return the string
+   * @param name the name
+   * @param email the email
+   * @param conceptId the concept id
+   * @param conceptName the concept name
+   * @param refSetId the ref set id
+   * @param feedbackMessage the feedback message
    * @throws Exception the exception
    */
-  public String sendFeedbackEmail(List<String> message) throws Exception;
+  public void sendFeedbackEmail(String name, String email, String conceptId,
+    String conceptName, String refSetId, String feedbackMessage)
+    throws Exception;
 
 }

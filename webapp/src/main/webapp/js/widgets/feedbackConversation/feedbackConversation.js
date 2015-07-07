@@ -40,7 +40,7 @@ angular
 
       // flag indicating if index viewer is available for dest terminology
       $scope.indexViewerExists = false;
-      
+
       // settings for recipients mechanism
       $scope.allUsers = new Array();
       $scope.returnRecipients = new Array();
@@ -105,7 +105,7 @@ angular
           }
         }).success(
           function(data) {
-           
+
             $scope.conversation = data;
             console.debug("Feedback Conversation:");
             console.debug($scope.conversation);
@@ -127,9 +127,9 @@ angular
                 }
               }).success(
               function(data) {
-                
+
                 $rootScope.glassPane--;
-                
+
                 $scope.record = data;
 
                 setTitle();
@@ -137,7 +137,7 @@ angular
                 // get the conflict records if they exist
                 var originIds = $scope.record.originIds;
                 if (originIds != null && originIds.length > 0) {
-                  
+
                   $rootScope.glassPane++;
                   $http(
                     {
@@ -151,12 +151,11 @@ angular
                       }
                     }).success(
                     function(data) {
-                      
+
                       $rootScope.glassPane--;
-                      
+
                       $scope.record1 = data;
 
-                      
                       if (originIds != null && originIds.length == 2) {
                         $rootScope.glassPane++;
                         $http(
@@ -327,7 +326,7 @@ angular
       $scope.openConceptBrowser = function() {
         window.open($scope.getBrowserUrl(), "browserWindow");
       };
-      
+
       $scope.openIndexViewer = function() {
         console.debug("page location is", window.location.href);
         var currentUrl = window.location.href;
@@ -472,8 +471,8 @@ angular
         });
       }
       ;
-      
-      function setIndexViewerStatus() {       
+
+      function setIndexViewerStatus() {
         $http(
           {
             url : root_content + "index/"
@@ -494,5 +493,6 @@ angular
         }).error(function(data, status, headers, config) {
           $scope.indexViewerExists = false;
         });
-      };
+      }
+      ;
     });
