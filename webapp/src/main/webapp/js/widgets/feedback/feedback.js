@@ -21,7 +21,7 @@ angular
       $scope.feedbackConversations = null;
 
       $scope.feedbackTypes = [ 'All Feedback', 'Feedback', 'Group Feedback',
-        'Error Feedback', 'Discrepancy Review Feedback', 'Viewer Feedback' ];
+        'Error Feedback', 'Discrepancy Review Feedback' ];
       $scope.reviewedTypes = [ 'All', 'Viewed', 'Unviewed' ];
       $scope.resolvedTypes = [ 'All', 'Active', 'Resolved' ];
 
