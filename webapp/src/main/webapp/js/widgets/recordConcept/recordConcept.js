@@ -633,4 +633,113 @@ angular
         window.open($scope.getBrowserUrl(), "browserWindow");
       };
 
+      
+
+      $scope.openViewerFeedbackModal = function(lrecord, currentUser) {
+
+        console.debug("openViewerFeedbackModal with ", lrecord, currentUser);
+
+        var modalInstance = $modal
+          .open({
+            templateUrl : 'js/widgets/projectRecords/projectRecordsViewerFeedback.html',
+            controller : ViewerFeedbackModalCtrl,
+            resolve : {
+              record : function() {
+                return lrecord;
+              },
+              currentUser : function() {
+                return currentUser;
+              }
+            }
+          });
+
+      };
+
+      var ViewerFeedbackModalCtrl = function($scope, $modalInstance, record) {
+
+        console.debug("Entered modal control", record);
+
+        $scope.record = record;
+        $scope.project = localStorageService.get('focusProject');
+        $scope.currentUser = localStorageService.get('currentUser');
+        $scope.returnRecipients = $scope.project.mapLead;
+        $scope.feedbackInput = '';
+
+        $scope.sendFeedback = function(record, feedbackMessage, name, email) {
+          console.debug("Sending feedback email", record);
+
+          if (feedbackMessage == null || feedbackMessage == undefined
+            || feedbackMessage === '') {
+            window.alert("The feedback field cannot be blank. ");
+            return;
+          }
+
+          if ($scope.currentUser.userName === 'guest'
+            && (name == null || name == undefined || name === ''
+              || email == null || email == undefined || email === '')) {
+            window.alert("Name and email must be provided.");
+            return;
+          }
+
+          if ($scope.currentUser.userName === 'guest'
+            && validateEmail(email) == false) {
+            window.alert("Invalid email address provided.");
+            return;
+          }
+
+          var sList = [ name, email, record.conceptId, record.conceptName, $scope.project.refSetId,
+            feedbackMessage ];
+
+          $rootScope.glassPane++;
+          $http({
+            url : root_workflow + "message",
+            dataType : "json",
+            method : "POST",
+            data : sList,
+            headers : {
+              "Content-Type" : "application/json"
+            }
+
+          }).success(function(data) {
+            console.debug("success to sendFeedbackEmail.");
+            $rootScope.glassPane--;
+            $modalInstance.close();
+          }).error(function(data, status, headers, config) {
+            $modalInstance.close();
+            $scope.recordError = "Error sending feedback email.";
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+
+        };
+
+        $scope.cancel = function() {
+          $modalInstance.dismiss('cancel');
+        };
+
+        function validateEmail(email) {
+          var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+          return re.test(email);
+        }
+
+        $scope.tinymceOptions = {
+
+          menubar : false,
+          statusbar : false,
+          plugins : "autolink autoresize link image charmap searchreplace lists paste",
+          toolbar : "undo redo | styleselect lists | bold italic underline strikethrough | charmap link image",
+
+          setup : function(ed) {
+
+            // added to fake two-way binding from the html
+            // element
+            // noteInput is not accessible from this javascript
+            // for some reason
+            ed.on('keyup', function(e) {
+              $scope.tinymceContent = ed.getContent();
+              $scope.$apply();
+            });
+          }
+        };
+      };      
     });
