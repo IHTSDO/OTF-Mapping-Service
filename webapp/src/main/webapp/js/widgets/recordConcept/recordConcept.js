@@ -13,7 +13,7 @@ angular
   })
   .controller(
     'recordConceptCtrl',
-    function($scope, $rootScope, $http, $routeParams, $location,
+    function($scope, $rootScope, $http, $routeParams, $location, $modal,
       localStorageService, $sce) {
 
       // scope variables
