@@ -143,8 +143,15 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
                         + " AND terminologyVersion:"
                         + concept.getTerminologyVersion()
                         + " AND terminologyId:" + concept.getTerminologyId()
-                        + ".*", null);
-            if (list.getCount() > 0) {
+                        + ".0", null);
+            SearchResultList list2 =
+                contentService.findConceptsForQuery(
+                    "terminology:" + concept.getTerminology()
+                        + " AND terminologyVersion:"
+                        + concept.getTerminologyVersion()
+                        + " AND terminologyId:" + concept.getTerminologyId()
+                        + ".9", null);
+            if (list.getCount() > 0 || list2.getCount()>0) {
               validationResult.addError("Target code "
                   + mapEntry.getTargetId()
                   + " not found in database!"
