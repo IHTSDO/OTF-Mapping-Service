@@ -154,7 +154,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
             if (list.getCount() > 0 || list2.getCount()>0) {
               validationResult.addError("Target code "
                   + mapEntry.getTargetId()
-                  + " not found in database!"
+                  + " is an invalid code, use a child code instead. "
                   + " Entry:"
                   + (mapProject.isGroupStructure() ? " group "
                       + Integer.toString(mapEntry.getMapGroup()) + "," : "")
