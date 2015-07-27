@@ -1112,6 +1112,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
       case "EDITING_IN_PROGRESS":
         fullQuery +=
             " AND userAndWorkflowStatusPairs:EDITING_IN_PROGRESS_"
+                + mapUser.getUserName()
+                + " OR userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_"
                 + mapUser.getUserName();
         break;
       case "EDITING_DONE":
