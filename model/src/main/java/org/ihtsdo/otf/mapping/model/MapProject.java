@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2015 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.model;
 
 import java.util.Date;
@@ -629,4 +632,17 @@ public interface MapProject {
    */
   public void removeReportDefinition(ReportDefinition reportDefinition);
 
+  /**
+   * Indicates whether or not team based is the case.
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public boolean isTeamBased();
+  
+  /**
+   * Sets the team based.
+   *
+   * @param teamBased the team based
+   */
+  public void setTeamBased(boolean teamBased);
 }
