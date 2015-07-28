@@ -57,29 +57,14 @@ public class MapUserJpa implements MapUser {
   @Column(nullable = false)
   private MapUserRole applicationRole;
 
+  /** The team. */
+  @Column(nullable = false)
+  private String team;
+
   /**
    * The default constructor.
    */
   public MapUserJpa() {
-  }
-
-  /**
-   * Instantiates a new map user jpa.
-   *
-   * @param id the id
-   * @param userName the user name
-   * @param name the name
-   * @param email the email
-   * @param applicationRole the application role
-   */
-  public MapUserJpa(Long id, String userName, String name, String email,
-      MapUserRole applicationRole) {
-    super();
-    this.id = id;
-    this.userName = userName;
-    this.name = name;
-    this.email = email;
-    this.applicationRole = applicationRole;
   }
 
   /**
@@ -93,6 +78,7 @@ public class MapUserJpa implements MapUser {
     this.userName = mapUser.getUserName();
     this.name = mapUser.getName();
     this.email = mapUser.getEmail();
+    this.team = mapUser.getTeam();
     this.applicationRole = mapUser.getApplicationRole();
   }
 
@@ -189,35 +175,26 @@ public class MapUserJpa implements MapUser {
     this.name = name;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapUser#getEmail()
-   */
-  /**
-   * Returns the email.
-   *
-   * @return the email
-   */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public String getEmail() {
     return email;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapUser#setEmail(java.lang.String)
-   */
-  /**
-   * Sets the email.
-   *
-   * @param email the email
-   */
   @Override
   public void setEmail(String email) {
     this.email = email;
+  }
+
+  @Override
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  public String getTeam() {
+    return team;
+  }
+
+  @Override
+  public void setTeam(String team) {
+    this.team = team;
   }
 
   /**
@@ -263,6 +240,7 @@ public class MapUserJpa implements MapUser {
         prime * result
             + ((applicationRole == null) ? 0 : applicationRole.hashCode());
     result = prime * result + ((email == null) ? 0 : email.hashCode());
+    result = prime * result + ((team == null) ? 0 : team.hashCode());
     result = prime * result + ((name == null) ? 0 : name.hashCode());
     result = prime * result + ((userName == null) ? 0 : userName.hashCode());
     return result;
@@ -289,6 +267,11 @@ public class MapUserJpa implements MapUser {
       if (other.email != null)
         return false;
     } else if (!email.equals(other.email))
+      return false;
+    if (team == null) {
+      if (other.team != null)
+        return false;
+    } else if (!team.equals(other.team))
       return false;
     if (name == null) {
       if (other.name != null)
