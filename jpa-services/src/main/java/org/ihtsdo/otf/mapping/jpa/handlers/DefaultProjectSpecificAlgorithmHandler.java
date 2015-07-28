@@ -188,7 +188,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
     // Validation Check: verify advice values are valid for the project
     // (this
-    // can happen if â€œallowable map adviceâ€� changes without
+    // can happen if "allowable map advice" changes without
     // updating map
     // entries)
     validationResult.merge(checkMapRecordAdvices(mapRecord, entryGroups));
