@@ -638,7 +638,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
   @Override
   public SearchResultList findAvailableWork(MapProject mapProject,
     MapUser mapUser, String query, PfsParameter pfsParameter) throws Exception {
-
     SearchResultList availableWork = new SearchResultListJpa();
 
     FullTextEntityManager fullTextEntityManager =
@@ -661,10 +660,23 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     switch (mapProject.getWorkflowType()) {
       case CONFLICT_PROJECT:
         fullQuery += " AND workflowPath:NON_LEGACY_PATH";
-        fullQuery +=
-            " AND (assignedUserCount:0 OR "
-                + "(assignedUserCount:1 AND NOT assignedUserNames:"
-                + mapUser.getUserName() + "))";
+        // Handle "team" based assignment
+        if (mapProject.isTeamBased() && mapUser.getTeam() != null
+            && !mapUser.getTeam().isEmpty()) {
+          // Use "AND NOT" clauses for all members matching my user's team.
+          MappingService service = new MappingServiceJpa();
+          fullQuery += " AND (assignedUserCount:0 OR (assignedUserCount:1 ";
+          for (MapUser user : service.getMapUsersForTeam(mapUser.getTeam())
+              .getMapUsers()) {
+            fullQuery += " AND NOT assignedUserNames:" + user.getUserName();
+          }
+          fullQuery += ") )";
+        } else {
+          fullQuery +=
+              " AND (assignedUserCount:0 OR "
+                  + "(assignedUserCount:1 AND NOT assignedUserNames:"
+                  + mapUser.getUserName() + "))";
+        }
         break;
       case REVIEW_PROJECT:
         fullQuery += " AND workflowPath:REVIEW_PROJECT_PATH";
