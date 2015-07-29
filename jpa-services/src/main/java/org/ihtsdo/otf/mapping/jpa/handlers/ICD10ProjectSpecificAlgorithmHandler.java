@@ -137,8 +137,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           // If concept is 3 digits and there's a 4th digit, then it's not a
           // valid code
 
-          if (concept.getTerminologyId() != null &&
-              concept.getTerminologyId().length() == 3) {
+          if (concept != null && concept.getTerminologyId() != null
+              && concept.getTerminologyId().length() == 3) {
             SearchResultList list =
                 contentService.findConceptsForQuery(
                     "terminology:" + concept.getTerminology()
@@ -153,7 +153,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
                         + concept.getTerminologyVersion()
                         + " AND terminologyId:" + concept.getTerminologyId()
                         + ".9", null);
-            if (list.getCount() > 0 || list2.getCount()>0) {
+            if (list.getCount() > 0 || list2.getCount() > 0) {
               validationResult.addError("Target code "
                   + mapEntry.getTargetId()
                   + " is an invalid code, use a child code instead. "
