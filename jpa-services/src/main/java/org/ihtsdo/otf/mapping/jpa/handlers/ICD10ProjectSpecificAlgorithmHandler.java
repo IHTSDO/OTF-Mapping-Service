@@ -136,7 +136,9 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
           // If concept is 3 digits and there's a 4th digit, then it's not a
           // valid code
-          if (concept.getTerminologyId().length() == 3) {
+
+          if (concept.getTerminologyId() != null &&
+              concept.getTerminologyId().length() == 3) {
             SearchResultList list =
                 contentService.findConceptsForQuery(
                     "terminology:" + concept.getTerminology()
