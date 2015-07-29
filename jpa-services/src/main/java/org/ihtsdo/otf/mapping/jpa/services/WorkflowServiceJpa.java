@@ -2141,6 +2141,23 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
           throw new Exception("Could not find tracking record for assignment.");
         }
 
+        // If a team based project and this is assigned already
+        // to another member of the team, then fail with an error message
+        if (mapProject.isTeamBased()
+            && trackingRecord.getAssignedUserCount() > 0) {
+          MappingService service = new MappingServiceJpa();
+          for (MapUser user : service.getMapUsersForTeam(mapUser.getTeam())
+              .getMapUsers()) {
+            if (trackingRecord.getAssignedUserNames().contains(user.getName())) {
+              service.close();
+              throw new LocalException(
+                  "This concept is already assigned to another member of "
+                      + "the same team.  Reload the dashboard and try again");
+            }
+          }
+          service.close();
+        }
+
         // perform the assignment via the algorithm handler
         mapRecords =
             algorithmHandler.assignFromScratch(trackingRecord, mapRecords,
