@@ -726,11 +726,11 @@ angular
               // first displayed result
               if ($scope.currentUser.userName === mapUser.userName) {
                 for (var i = 0; i < $scope.itemsPerPage && i < batchSize; i++) {
-                  console.debug(trackingRecords[i]);
-                  console.debug($scope.availableWork[i]);
                   if (trackingRecords[i].id != $scope.availableWork[i].id) {
                     $scope.retrieveAvailableWork($scope.availableWorkPage, query);
                     alert("The list of available concepts has changed.  Please check the refreshed list and try again");
+		      $rootScope.glassPane--;
+		    return;
                     conceptListValid = false;
                   }
                 }

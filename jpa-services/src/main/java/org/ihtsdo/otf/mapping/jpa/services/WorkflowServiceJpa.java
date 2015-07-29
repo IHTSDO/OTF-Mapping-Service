@@ -2148,7 +2148,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
           MappingService service = new MappingServiceJpa();
           for (MapUser user : service.getMapUsersForTeam(mapUser.getTeam())
               .getMapUsers()) {
-            if (trackingRecord.getAssignedUserNames().contains(user.getName())) {
+            if (trackingRecord.getAssignedUserNames().contains(user.getUserName())) {
               service.close();
               throw new LocalException(
                   "This concept is already assigned to another member of "
