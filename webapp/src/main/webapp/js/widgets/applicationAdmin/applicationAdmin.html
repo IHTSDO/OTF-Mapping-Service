@@ -39,7 +39,7 @@
         ng-options="item for item in terminologyVersionPairs"
         ng-change="setEditingPerformed(project)"
         style="margin-bottom: 5px; width: 100%;">
-      </select> <input type="checkbox" ng-model="project.teamBased" value="Team Based"
+      </select> Team Based: <input type="checkbox" ng-model="project.teamBased"
         ng-change="setEditingPerformed(project)"></td>
       <td>Team Based: <input tooltip-placement="top" tooltip="Team Based"
         ng-model="project.refSetId" ng-change="setEditingPerformed(project)"
