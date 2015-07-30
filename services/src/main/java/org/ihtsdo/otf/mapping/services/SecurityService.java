@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2015 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.services;
 
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
