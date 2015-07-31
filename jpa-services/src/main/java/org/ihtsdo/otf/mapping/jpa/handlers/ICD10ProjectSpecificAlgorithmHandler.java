@@ -23,7 +23,6 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
-import org.ihtsdo.otf.mapping.rf2.Relationship;
 import org.ihtsdo.otf.mapping.rf2.SimpleRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 import org.ihtsdo.otf.mapping.services.ContentService;
@@ -139,29 +138,55 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
           if (concept != null && concept.getTerminologyId() != null
               && concept.getTerminologyId().length() == 3) {
-            SearchResultList list =
-                contentService.findConceptsForQuery(
-                    "terminology:" + concept.getTerminology()
-                        + " AND terminologyVersion:"
-                        + concept.getTerminologyVersion()
-                        + " AND terminologyId:" + concept.getTerminologyId()
-                        + ".0", null);
-            SearchResultList list2 =
-                contentService.findConceptsForQuery(
-                    "terminology:" + concept.getTerminology()
-                        + " AND terminologyVersion:"
-                        + concept.getTerminologyVersion()
-                        + " AND terminologyId:" + concept.getTerminologyId()
-                        + ".9", null);
-            if (list.getCount() > 0 || list2.getCount() > 0) {
-              validationResult.addError("Target code "
-                  + mapEntry.getTargetId()
-                  + " is an invalid code, use a child code instead. "
-                  + " Entry:"
-                  + (mapProject.isGroupStructure() ? " group "
-                      + Integer.toString(mapEntry.getMapGroup()) + "," : "")
-                  + " map  priority "
-                  + Integer.toString(mapEntry.getMapPriority()));
+
+            // Exceptions for PRINCIPLE 3
+            // For codes W00-Y34 ICD-10 provides characters to identify the
+            // place of occurrence of the external causes, where relevant. These
+            // are added as a fourth character to Chapter XX codes to record
+            // where the incident happened, with the exceptions of Neglect and
+            // abandonment (Y06), Other maltreatment (Y07), and Legal
+            // intervention and Operations of war (Y35, Y36), X34, X59, which
+            // already have a fourth character:
+            final String code = concept.getTerminologyId();
+            boolean threeDigitOk = false;
+            if (code.startsWith("W") || code.startsWith("X")
+                || code.startsWith("Y0") || code.startsWith("Y1")
+                || code.startsWith("Y2") || code.startsWith("Y30")
+                || code.startsWith("Y31") || code.startsWith("Y32")
+                || code.startsWith("Y33") || code.startsWith("Y34")) {
+
+              if (!code.equals("Y06") && !code.equals("Y07")
+                  && !code.equals("Y35") && !code.equals("Y36")
+                  && !code.equals("X34") && !code.equals("X59")) {
+                threeDigitOk = true;
+              }
+            }
+
+            if (!threeDigitOk) {
+              SearchResultList list =
+                  contentService.findConceptsForQuery(
+                      "terminology:" + concept.getTerminology()
+                          + " AND terminologyVersion:"
+                          + concept.getTerminologyVersion()
+                          + " AND terminologyId:" + concept.getTerminologyId()
+                          + ".0", null);
+              SearchResultList list2 =
+                  contentService.findConceptsForQuery(
+                      "terminology:" + concept.getTerminology()
+                          + " AND terminologyVersion:"
+                          + concept.getTerminologyVersion()
+                          + " AND terminologyId:" + concept.getTerminologyId()
+                          + ".9", null);
+              if (list.getCount() > 0 || list2.getCount() > 0) {
+                validationResult.addError("Target code "
+                    + mapEntry.getTargetId()
+                    + " is an invalid code, use a child code instead. "
+                    + " Entry:"
+                    + (mapProject.isGroupStructure() ? " group "
+                        + Integer.toString(mapEntry.getMapGroup()) + "," : "")
+                    + " map  priority "
+                    + Integer.toString(mapEntry.getMapPriority()));
+              }
             }
 
           }
