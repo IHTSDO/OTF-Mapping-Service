@@ -133,61 +133,17 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
                 + Integer.toString(mapEntry.getMapPriority()));
           }
 
-          // If concept is 3 digits and there's a 4th digit, then it's not a
-          // valid code
+          // Validate the code
+          if (!isTargetCodeValid(concept.getTerminologyId())) {
 
-          if (concept != null && concept.getTerminologyId() != null
-              && concept.getTerminologyId().length() == 3) {
-
-            // Exceptions for PRINCIPLE 3
-            // For codes W00-Y34 ICD-10 provides characters to identify the
-            // place of occurrence of the external causes, where relevant. These
-            // are added as a fourth character to Chapter XX codes to record
-            // where the incident happened, with the exceptions of Neglect and
-            // abandonment (Y06), Other maltreatment (Y07), and Legal
-            // intervention and Operations of war (Y35, Y36), X34, X59, which
-            // already have a fourth character:
-            final String code = concept.getTerminologyId();
-            boolean threeDigitOk = false;
-            if (code.startsWith("W") || code.startsWith("X")
-                || code.startsWith("Y0") || code.startsWith("Y1")
-                || code.startsWith("Y2") || code.startsWith("Y30")
-                || code.startsWith("Y31") || code.startsWith("Y32")
-                || code.startsWith("Y33") || code.startsWith("Y34")) {
-
-              if (!code.equals("Y06") && !code.equals("Y07")
-                  && !code.equals("Y35") && !code.equals("Y36")
-                  && !code.equals("X34") && !code.equals("X59")) {
-                threeDigitOk = true;
-              }
-            }
-
-            if (!threeDigitOk) {
-              SearchResultList list =
-                  contentService.findConceptsForQuery(
-                      "terminology:" + concept.getTerminology()
-                          + " AND terminologyVersion:"
-                          + concept.getTerminologyVersion()
-                          + " AND terminologyId:" + concept.getTerminologyId()
-                          + ".0", null);
-              SearchResultList list2 =
-                  contentService.findConceptsForQuery(
-                      "terminology:" + concept.getTerminology()
-                          + " AND terminologyVersion:"
-                          + concept.getTerminologyVersion()
-                          + " AND terminologyId:" + concept.getTerminologyId()
-                          + ".9", null);
-              if (list.getCount() > 0 || list2.getCount() > 0) {
-                validationResult.addError("Target code "
-                    + mapEntry.getTargetId()
-                    + " is an invalid code, use a child code instead. "
-                    + " Entry:"
-                    + (mapProject.isGroupStructure() ? " group "
-                        + Integer.toString(mapEntry.getMapGroup()) + "," : "")
-                    + " map  priority "
-                    + Integer.toString(mapEntry.getMapPriority()));
-              }
-            }
+            validationResult.addError("Target code "
+                + mapEntry.getTargetId()
+                + " is an invalid code, use a child code instead. "
+                + " Entry:"
+                + (mapProject.isGroupStructure() ? " group "
+                    + Integer.toString(mapEntry.getMapGroup()) + "," : "")
+                + " map  priority "
+                + Integer.toString(mapEntry.getMapPriority()));
 
           }
           Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info(
@@ -397,7 +353,13 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
       // SPECIFIC CASE for W00-W19, X00-X09, Y10-Y34, fourth digit not required,
       // return true for codes with 3 or more digits
-      if (terminologyId.toUpperCase().matches("W..|X..|Y[0-2].|Y3[0-4]"))
+      if (terminologyId.toUpperCase().matches("W..|X..|Y[0-2].|Y3[0-4]") &&
+          !terminologyId.toUpperCase().equals("Y06") &&
+          !terminologyId.toUpperCase().equals("Y07") &&
+          !terminologyId.toUpperCase().equals("Y35") &&
+          !terminologyId.toUpperCase().equals("Y36") &&
+          !terminologyId.toUpperCase().equals("X34") &&
+          !terminologyId.toUpperCase().equals("X59"))
         return true;
 
       // otherwise, if 3-digit code has children, return false
