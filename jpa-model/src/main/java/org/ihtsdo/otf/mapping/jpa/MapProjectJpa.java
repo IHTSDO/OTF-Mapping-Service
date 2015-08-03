@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2015 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.jpa;
 
 import java.util.Date;
@@ -224,10 +227,15 @@ public class MapProjectJpa implements MapProject {
   @Column(nullable = true)
   private Integer propagationDescendantThreshold;
 
+  /** The team based. */
+  @Column(nullable = true)
+  private Boolean teamBased;
+
   /**
    * Default constructor.
    */
   public MapProjectJpa() {
+    // n/a
   }
 
   /**
@@ -276,6 +284,7 @@ public class MapProjectJpa implements MapProject {
     this.workflowType = project.getWorkflowType();
     this.latestPublicationDate = project.getLatestPublicationDate();
     this.editingCycleBeginDate = project.getEditingCycleBeginDate();
+    this.teamBased = project.isTeamBased();
   }
 
   /**
@@ -1395,6 +1404,18 @@ public class MapProjectJpa implements MapProject {
   @Override
   public void removeReportDefinition(ReportDefinition reportDefinition) {
     reportDefinitions.remove(reportDefinition);
+  }
+
+  /* see superclass */
+  @Override
+  public boolean isTeamBased() {
+    return teamBased;
+  }
+
+  /* see superclass */
+  @Override
+  public void setTeamBased(boolean teamBased) {
+    this.teamBased = teamBased;
   }
 
 }
