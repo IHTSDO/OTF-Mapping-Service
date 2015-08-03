@@ -726,11 +726,11 @@ angular
               // first displayed result
               if ($scope.currentUser.userName === mapUser.userName) {
                 for (var i = 0; i < $scope.itemsPerPage && i < batchSize; i++) {
-                  console.debug(trackingRecords[i]);
-                  console.debug($scope.availableWork[i]);
                   if (trackingRecords[i].id != $scope.availableWork[i].id) {
-                    retrieveAvailableWork($scope.availableWorkPage, query);
+                    $scope.retrieveAvailableWork($scope.availableWorkPage, query);
                     alert("The list of available concepts has changed.  Please check the refreshed list and try again");
+		      $rootScope.glassPane--;
+		    return;
                     conceptListValid = false;
                   }
                 }
@@ -849,7 +849,7 @@ angular
                   console.debug(trackingRecords[i]);
                   console.debug($scope.availableWork[i]);
                   if (trackingRecords[i].id != $scope.availableWork[i].id) {
-                    retrieveAvailableWork($scope.availableWorkPage, query);
+                    $scope.retrieveAvailableWork($scope.availableWorkPage, query);
                     alert("The available conflicts list has changed since loading.  Please review the new available conflicts and try again.");
                     $scope.isConceptListOpen = false;
                     conceptListValid = false;
@@ -965,7 +965,7 @@ angular
                   && i < $scope.availableReviewWork; i++) {
 
                   if (trackingRecords[i].id != $scope.availableReviewWork[i].id) {
-                    retrieveAvailableWork($scope.availableWorkPage, query);
+                    $scope.retrieveAvailableWork($scope.availableWorkPage, query);
                     alert("The list of available review work has changed.  Please check the refreshed list and try again.");
                     $scope.isConceptListOpen = false;
                     conceptListValid = false;

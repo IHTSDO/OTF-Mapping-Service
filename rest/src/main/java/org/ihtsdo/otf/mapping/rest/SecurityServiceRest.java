@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2015 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.rest;
 
 import javax.ws.rs.Consumes;
@@ -72,11 +75,12 @@ public class SecurityServiceRest extends RootServiceRest {
    * Authenticate.
    *
    * @param userName the user name
+   * @return the string
    */
   @POST
   @Path("/logout/user/id/{userName}")
-  @ApiOperation(value = "Log out.", notes = "Logs a map user out of the tool.", response = Response.class)
-  public void logout(
+  @ApiOperation(value = "Log out.", notes = "Logs a map user out of the tool.", response = String.class)
+  public String logout(
     @ApiParam(value = "Username", required = true) @PathParam("userName") String userName) {
 
     Logger.getLogger(SecurityServiceRest.class).info(
@@ -85,6 +89,7 @@ public class SecurityServiceRest extends RootServiceRest {
       SecurityService securityService = new SecurityServiceJpa();
       securityService.logout(userName);
       securityService.close();
+      return null;
     } catch (LocalException e) {
       Logger.getLogger(SecurityServiceRest.class).error(
           "Local exception thrown");
@@ -95,6 +100,6 @@ public class SecurityServiceRest extends RootServiceRest {
           "General exception thrown");
       handleException(e, "Unexpected error trying to authenticate a map user");
     }
-
+    return null;
   }
 }
