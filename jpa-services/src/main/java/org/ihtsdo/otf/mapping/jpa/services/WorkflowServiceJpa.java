@@ -638,7 +638,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
   @Override
   public SearchResultList findAvailableWork(MapProject mapProject,
     MapUser mapUser, String query, PfsParameter pfsParameter) throws Exception {
-
     SearchResultList availableWork = new SearchResultListJpa();
 
     FullTextEntityManager fullTextEntityManager =
@@ -661,10 +660,23 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     switch (mapProject.getWorkflowType()) {
       case CONFLICT_PROJECT:
         fullQuery += " AND workflowPath:NON_LEGACY_PATH";
-        fullQuery +=
-            " AND (assignedUserCount:0 OR "
-                + "(assignedUserCount:1 AND NOT assignedUserNames:"
-                + mapUser.getUserName() + "))";
+        // Handle "team" based assignment
+        if (mapProject.isTeamBased() && mapUser.getTeam() != null
+            && !mapUser.getTeam().isEmpty()) {
+          // Use "AND NOT" clauses for all members matching my user's team.
+          MappingService service = new MappingServiceJpa();
+          fullQuery += " AND (assignedUserCount:0 OR (assignedUserCount:1 ";
+          for (MapUser user : service.getMapUsersForTeam(mapUser.getTeam())
+              .getMapUsers()) {
+            fullQuery += " AND NOT assignedUserNames:" + user.getUserName();
+          }
+          fullQuery += ") )";
+        } else {
+          fullQuery +=
+              " AND (assignedUserCount:0 OR "
+                  + "(assignedUserCount:1 AND NOT assignedUserNames:"
+                  + mapUser.getUserName() + "))";
+        }
         break;
       case REVIEW_PROJECT:
         fullQuery += " AND workflowPath:REVIEW_PROJECT_PATH";
@@ -1111,8 +1123,10 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         break;
       case "EDITING_IN_PROGRESS":
         fullQuery +=
-            " AND userAndWorkflowStatusPairs:EDITING_IN_PROGRESS_"
-                + mapUser.getUserName();
+            " AND (userAndWorkflowStatusPairs:EDITING_IN_PROGRESS_"
+                + mapUser.getUserName()
+                + " OR userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_"
+                + mapUser.getUserName() + ")";
         break;
       case "EDITING_DONE":
         fullQuery +=
@@ -2125,6 +2139,27 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         // expect existing (pre-computed) workflow tracking record
         if (trackingRecord == null) {
           throw new Exception("Could not find tracking record for assignment.");
+        }
+
+        // IF not assigning a conflict case and
+        // If a team based project and this is assigned already
+        // to another member of the team, then fail with an error message
+        if (!trackingRecord.getUserAndWorkflowStatusPairs().contains(
+            WorkflowStatus.CONFLICT_DETECTED.toString())
+            && mapProject.isTeamBased()
+            && trackingRecord.getAssignedUserCount() > 0) {
+          MappingService service = new MappingServiceJpa();
+          for (MapUser user : service.getMapUsersForTeam(mapUser.getTeam())
+              .getMapUsers()) {
+            if (trackingRecord.getAssignedUserNames().contains(
+                user.getUserName())) {
+              service.close();
+              throw new LocalException(
+                  "This concept is already assigned to another member of "
+                      + "the same team.  Reload the dashboard and try again");
+            }
+          }
+          service.close();
         }
 
         // perform the assignment via the algorithm handler
