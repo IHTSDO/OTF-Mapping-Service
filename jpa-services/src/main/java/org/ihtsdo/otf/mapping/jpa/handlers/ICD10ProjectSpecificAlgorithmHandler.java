@@ -23,7 +23,6 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
-import org.ihtsdo.otf.mapping.rf2.Relationship;
 import org.ihtsdo.otf.mapping.rf2.SimpleRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 import org.ihtsdo.otf.mapping.services.ContentService;
@@ -134,33 +133,17 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
                 + Integer.toString(mapEntry.getMapPriority()));
           }
 
-          // If concept is 3 digits and there's a 4th digit, then it's not a
-          // valid code
-          if (concept.getTerminologyId().length() == 3) {
-            SearchResultList list =
-                contentService.findConceptsForQuery(
-                    "terminology:" + concept.getTerminology()
-                        + " AND terminologyVersion:"
-                        + concept.getTerminologyVersion()
-                        + " AND terminologyId:" + concept.getTerminologyId()
-                        + ".0", null);
-            SearchResultList list2 =
-                contentService.findConceptsForQuery(
-                    "terminology:" + concept.getTerminology()
-                        + " AND terminologyVersion:"
-                        + concept.getTerminologyVersion()
-                        + " AND terminologyId:" + concept.getTerminologyId()
-                        + ".9", null);
-            if (list.getCount() > 0 || list2.getCount()>0) {
-              validationResult.addError("Target code "
-                  + mapEntry.getTargetId()
-                  + " is an invalid code, use a child code instead. "
-                  + " Entry:"
-                  + (mapProject.isGroupStructure() ? " group "
-                      + Integer.toString(mapEntry.getMapGroup()) + "," : "")
-                  + " map  priority "
-                  + Integer.toString(mapEntry.getMapPriority()));
-            }
+          // Validate the code
+          if (concept != null && !isTargetCodeValid(concept.getTerminologyId())) {
+
+            validationResult.addError("Target code "
+                + mapEntry.getTargetId()
+                + " is an invalid code, use a child code instead. "
+                + " Entry:"
+                + (mapProject.isGroupStructure() ? " group "
+                    + Integer.toString(mapEntry.getMapGroup()) + "," : "")
+                + " map  priority "
+                + Integer.toString(mapEntry.getMapPriority()));
 
           }
           Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info(
@@ -370,7 +353,13 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
       // SPECIFIC CASE for W00-W19, X00-X09, Y10-Y34, fourth digit not required,
       // return true for codes with 3 or more digits
-      if (terminologyId.toUpperCase().matches("W..|X..|Y[0-2].|Y3[0-4]"))
+      if (terminologyId.toUpperCase().matches("W..|X..|Y[0-2].|Y3[0-4]") &&
+          !terminologyId.toUpperCase().equals("Y06") &&
+          !terminologyId.toUpperCase().equals("Y07") &&
+          !terminologyId.toUpperCase().equals("Y35") &&
+          !terminologyId.toUpperCase().equals("Y36") &&
+          !terminologyId.toUpperCase().equals("X34") &&
+          !terminologyId.toUpperCase().equals("X59"))
         return true;
 
       // otherwise, if 3-digit code has children, return false

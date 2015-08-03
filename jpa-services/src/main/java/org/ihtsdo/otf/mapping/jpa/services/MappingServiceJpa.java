@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2015 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.jpa.services;
 
 import java.util.ArrayList;
@@ -471,6 +474,22 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return mapUserList;
   }
 
+  /* see superclass */
+  @Override
+  @SuppressWarnings("unchecked")
+  public MapUserList getMapUsersForTeam(String team) {
+
+    List<MapUser> m = null;
+
+    javax.persistence.Query query =
+        manager.createQuery("select m from MapUserJpa m where team = :team");
+    query.setParameter("team", team);
+    m = query.getResultList();
+    MapUserListJpa mapUserList = new MapUserListJpa();
+    mapUserList.setMapUsers(m);
+    mapUserList.setTotalCount(m.size());
+    return mapUserList;
+  }
   /**
    * Return map specialist for auto-generated id.
    * 

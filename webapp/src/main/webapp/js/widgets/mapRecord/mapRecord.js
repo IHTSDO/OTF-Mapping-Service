@@ -171,20 +171,48 @@ angular
       };
 
       // Watcher for Conflict Resolution Select Record Event
-      $rootScope.$on('compareRecordsWidget.notification.selectRecord',
-        function(event, parameters) {
-          console.debug("received new record");
-          console.debug(parameters);
-          console.debug(parameters.record);
-          $scope.record = parameters.record;
+      $rootScope
+        .$on(
+          'compareRecordsWidget.notification.selectRecord',
+          function(event, parameters) {
+            console.debug("received new record");
+            console.debug(parameters);
+            console.debug(parameters.record);
+            $scope.record = parameters.record;
 
-          console.debug("Passed record: ", parameters.record);
+            console.debug("Passed record: ", parameters.record);
 
-          // This MUST not be removed for "Start here" to
-          // work
-          initializeGroupsTree();
+            // This MUST not be removed for "Start here" to
+            // work
+            initializeGroupsTree();
 
-        });
+            // Validate the record immediately
+            // this is good to show messages right away
+            // if there are problems
+            console.debug("Validating the map record.");
+            // validate the record
+            $rootScope.glassPane++;
+            $http({
+              url : root_mapping + "validation/record/validate",
+              dataType : "json",
+              data : $scope.record,
+              method : "POST",
+              headers : {
+                "Content-Type" : "application/json"
+              }
+            })
+              .success(function(data) {
+                $rootScope.glassPane--;
+                console.debug(data);
+                $scope.validationResult = data;
+              })
+              .error(
+                function(data, status, headers, config) {
+                  $rootScope.glassPane--;
+                  $scope.validationResult = null;
+                  $rootScope.handleHttpError(data, status, headers, config);
+                })
+          });
 
       // on successful retrieval of project, get the
       // record/concept

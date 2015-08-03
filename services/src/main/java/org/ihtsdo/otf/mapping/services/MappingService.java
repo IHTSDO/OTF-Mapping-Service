@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2015 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.services;
 
 import java.util.List;
@@ -105,6 +108,15 @@ public interface MappingService extends RootService {
    * @throws Exception the exception
    */
   public MapUserList getMapUsers() throws Exception;
+  
+  /**
+   * Returns the map users for team.
+   *
+   * @param team the team
+   * @return the map users for team
+   * @throws Exception the exception
+   */
+  public MapUserList getMapUsersForTeam(String team) throws Exception;
 
   /**
    * Retrieve all map principles.
