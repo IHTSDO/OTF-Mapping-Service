@@ -134,7 +134,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           }
 
           // Validate the code
-          if (!isTargetCodeValid(concept.getTerminologyId())) {
+          if (concept != null && !isTargetCodeValid(concept.getTerminologyId())) {
 
             validationResult.addError("Target code "
                 + mapEntry.getTargetId()
