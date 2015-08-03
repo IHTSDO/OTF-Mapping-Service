@@ -2144,7 +2144,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         // IF not assigning a conflict case and
         // If a team based project and this is assigned already
         // to another member of the team, then fail with an error message
-        if (!trackingRecord.getAssignedUserNames().contains(
+        if (!trackingRecord.getUserAndWorkflowStatusPairs().contains(
             WorkflowStatus.CONFLICT_DETECTED.toString())
             && mapProject.isTeamBased()
             && trackingRecord.getAssignedUserCount() > 0) {
