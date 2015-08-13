@@ -2141,14 +2141,16 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
           throw new Exception("Could not find tracking record for assignment.");
         }
 
-        // Team based assignment only matters on NON_LEGACY_PATH and not for conflict cases
-        // If "concepts" assignment is being done on NON_LEGACY PATH and another team
+        // Team based assignment only matters on NON_LEGACY_PATH and not for
+        // conflict cases
+        // If "concepts" assignment is being done on NON_LEGACY PATH and another
+        // team
         // member claimed the other role, then leave alone
         if (trackingRecord.getWorkflowPath() == WorkflowPath.NON_LEGACY_PATH
             && mapProject.isTeamBased()
+            && trackingRecord.getAssignedUserCount() > 0
             && !trackingRecord.getUserAndWorkflowStatusPairs().contains(
-                WorkflowStatus.CONFLICT_DETECTED.toString())
-            && trackingRecord.getAssignedUserCount() > 0) {
+                WorkflowStatus.CONFLICT_DETECTED.toString())) {
           MappingService service = new MappingServiceJpa();
           for (MapUser user : service.getMapUsersForTeam(mapUser.getTeam())
               .getMapUsers()) {
