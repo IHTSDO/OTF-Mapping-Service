@@ -490,6 +490,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     mapUserList.setTotalCount(m.size());
     return mapUserList;
   }
+
   /**
    * Return map specialist for auto-generated id.
    * 
@@ -835,8 +836,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     ProjectSpecificAlgorithmHandler algorithmHandler = null;
     String warningMsg = "";
     for (MapEntry mapEntry : mapRecord.getMapEntries()) {
-       if (mapEntry.getTargetId() == null || mapEntry.getTargetId().isEmpty()) {
-   
+      if (mapEntry.getTargetId() == null || mapEntry.getTargetId().isEmpty()) {
+
         // get handler if not already instantiated
         if (algorithmHandler == null) {
           try {
@@ -850,8 +851,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
         }
 
         // try to set the default target name
-        try { 
-          Logger.getLogger(MappingServiceJpa.class).info("Ensuring blank target properly set for map entry " + mapEntry.getId());
+        try {
+          Logger.getLogger(MappingServiceJpa.class).info(
+              "Ensuring blank target properly set for map entry "
+                  + mapEntry.getId());
           mapEntry.setTargetId("");
           mapEntry.setTargetName(algorithmHandler
               .getDefaultTargetNameForBlankTarget());
@@ -1619,13 +1622,16 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
         if (c == null) {
           throw new Exception("Scope concept " + conceptId + " does not exist.");
         }
-        SearchResult sr = new SearchResultJpa();
-        sr.setId(c.getId());
-        sr.setTerminologyId(c.getTerminologyId());
-        sr.setTerminology(c.getTerminology());
-        sr.setTerminologyVersion(c.getTerminologyVersion());
-        sr.setValue(c.getDefaultPreferredName());
-        conceptsInScope.addSearchResult(sr);
+        // Only keep active concepts
+        if (c.isActive()) {
+          SearchResult sr = new SearchResultJpa();
+          sr.setId(c.getId());
+          sr.setTerminologyId(c.getTerminologyId());
+          sr.setTerminology(c.getTerminology());
+          sr.setTerminologyVersion(c.getTerminologyVersion());
+          sr.setValue(c.getDefaultPreferredName());
+          conceptsInScope.addSearchResult(sr);
+        }
       }
     }
 
