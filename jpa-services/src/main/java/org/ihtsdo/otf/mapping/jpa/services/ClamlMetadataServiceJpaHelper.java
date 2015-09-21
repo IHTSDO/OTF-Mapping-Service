@@ -91,6 +91,7 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
         break;
       }
     }
+    contentService.close();
     if (rootId == null)
       throw new Exception("Module concept cannot be found.");
 
@@ -173,6 +174,7 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
         break;
       }
     }
+    contentService.close();
     if (rootId == null)
       throw new Exception("Simple refsets concept cannot be found.");
 
@@ -215,6 +217,7 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
         break;
       }
     }
+    contentService.close();
     if (rootId == null)
       throw new Exception("Definition status concept cannot be found.");
 
@@ -244,6 +247,7 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
         break;
       }
     }
+    contentService.close();
     if (rootId == null)
       throw new Exception("Description type concept cannot be found.");
 
@@ -273,6 +277,7 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
         break;
       }
     }
+    contentService.close();
     if (rootId == null)
       throw new Exception("Case significance concept cannot be found.");
 
@@ -303,6 +308,7 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
         break;
       }
     }
+    contentService.close();
     if (rootId == null)
       throw new Exception("Relationship type concept cannot be found.");
 
@@ -353,6 +359,7 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
         break;
       }
     }
+    contentService.close();
     if (rootId == null)
       throw new Exception("Characteristic type concept cannot be found.");
 
@@ -381,6 +388,7 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
         break;
       }
     }
+    contentService.close();
     if (rootId == null)
       throw new Exception("Modifier concept cannot be found.");
 

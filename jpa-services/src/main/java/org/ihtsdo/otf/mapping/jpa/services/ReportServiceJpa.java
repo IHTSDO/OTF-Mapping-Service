@@ -1168,6 +1168,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
       query =
           query.replaceAll(":PREVIOUS_DESTINATION_TERMINOLOGY_VERSION:",
               prevDestVersion);
+      service.close();
     }
 
     // instantiate the report
