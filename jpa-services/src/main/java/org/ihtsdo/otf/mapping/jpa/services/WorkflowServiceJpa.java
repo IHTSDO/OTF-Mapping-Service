@@ -671,6 +671,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
             fullQuery += " AND NOT assignedUserNames:" + user.getUserName();
           }
           fullQuery += ") )";
+          service.close();
         } else {
           fullQuery +=
               " AND (assignedUserCount:0 OR "
@@ -2067,6 +2068,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
               algorithmHandler.assignFromInitialRecord(trackingRecord,
                   mapRecords, mapRecord, mapUser);
 
+          contentService.close();
           // otherwise, this concept is already in the workflow, do nothing
         } else {
 
@@ -2122,6 +2124,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
           mapRecords =
               algorithmHandler.assignFromInitialRecord(trackingRecord,
                   mapRecords, mapRecord, mapUser);
+          contentService.close();
         } else {
 
           throw new LocalException(
@@ -2968,7 +2971,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         }
       }
     }
-
+    mappingService.close();
+    contentService.close();
     return results;
 
   }

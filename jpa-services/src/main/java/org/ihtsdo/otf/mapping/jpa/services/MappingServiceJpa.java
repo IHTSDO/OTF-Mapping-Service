@@ -1620,6 +1620,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
             contentService.getConcept(conceptId, terminology,
                 terminologyVersion);
         if (c == null) {
+          contentService.close();
           throw new Exception("Scope concept " + conceptId + " does not exist.");
         }
         // Only keep active concepts
@@ -3329,6 +3330,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
             // check assumption
             if (!mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED)
                 && !mr.getWorkflowStatus().equals(WorkflowStatus.QA_NEEDED)) {
+              workflowService.close();
               throw new Exception(
                   "Single origin record found for review, but was not REVIEW_NEEDED or QA_NEEDED");
             }
@@ -3336,6 +3338,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
             // add and return this record
             conflictRecords.addMapRecord(mr);
             conflictRecords.setTotalCount(conflictRecords.getCount());
+            workflowService.close();
 
             return conflictRecords;
 
@@ -3378,6 +3381,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
           // once records are found, stop processing origin ids
           if (foundReviewRecord && foundRevisionRecord) {
             conflictRecords.setTotalCount(conflictRecords.getCount());
+            workflowService.close();
             return conflictRecords;
           }
 
