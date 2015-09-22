@@ -282,11 +282,13 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
             mapProject.getDestinationTerminology(),
             mapProject.getDestinationTerminologyVersion());
     if (hierarchicalRelationshipTypeMap.keySet().size() > 1) {
+      metadataService.close();
       throw new IllegalStateException(
           "Map project source terminology has too many hierarchical relationship types - "
               + mapProject.getDestinationTerminology());
     }
     if (hierarchicalRelationshipTypeMap.keySet().size() < 1) {
+      metadataService.close();
       throw new IllegalStateException(
           "Map project source terminology has too few hierarchical relationship types - "
               + mapProject.getDestinationTerminology());
@@ -353,13 +355,13 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
       // SPECIFIC CASE for W00-W19, X00-X09, Y10-Y34, fourth digit not required,
       // return true for codes with 3 or more digits
-      if (terminologyId.toUpperCase().matches("W..|X..|Y[0-2].|Y3[0-4]") &&
-          !terminologyId.toUpperCase().equals("Y06") &&
-          !terminologyId.toUpperCase().equals("Y07") &&
-          !terminologyId.toUpperCase().equals("Y35") &&
-          !terminologyId.toUpperCase().equals("Y36") &&
-          !terminologyId.toUpperCase().equals("X34") &&
-          !terminologyId.toUpperCase().equals("X59"))
+      if (terminologyId.toUpperCase().matches("W..|X..|Y[0-2].|Y3[0-4]")
+          && !terminologyId.toUpperCase().equals("Y06")
+          && !terminologyId.toUpperCase().equals("Y07")
+          && !terminologyId.toUpperCase().equals("Y35")
+          && !terminologyId.toUpperCase().equals("Y36")
+          && !terminologyId.toUpperCase().equals("X34")
+          && !terminologyId.toUpperCase().equals("X59"))
         return true;
 
       // otherwise, if 3-digit code has children, return false
@@ -367,8 +369,10 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           contentService.getTreePositions(terminologyId,
               mapProject.getDestinationTerminology(),
               mapProject.getDestinationTerminologyVersion());
-      if (tpList.getCount() == 0)
+      if (tpList.getCount() == 0) {
+        contentService.close();
         return false;
+      }
 
       if (tpList.getTreePositions().get(0).getChildrenCount() > 0) {
         contentService.close();
