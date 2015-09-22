@@ -138,10 +138,11 @@ public class MappingServiceRest extends RootServiceRest {
       // authorize call
       MapUserRole role = securityService.getApplicationRoleForToken(authToken);
       user = securityService.getUsernameForToken(authToken);
-      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+      if (!role.hasPrivilegesOf(MapUserRole.VIEWER)) {
         throw new WebApplicationException(Response.status(401)
             .entity("User does not have permissions to retrieve map projects.")
             .build());
+      }
 
       // instantiate list of projects to return
       MapProjectListJpa mapProjects = new MapProjectListJpa();
@@ -3417,6 +3418,7 @@ public class MappingServiceRest extends RootServiceRest {
 
     String user = "";
     MappingService mappingService = new MappingServiceJpa();
+    ContentService contentService = new ContentServiceJpa();
     try {
       // authorize call
       MapUserRole role =
@@ -3433,7 +3435,6 @@ public class MappingServiceRest extends RootServiceRest {
       MapProject mapProject = mappingService.getMapProject(mapProjectId);
 
       // get the local tree positions from content service
-      ContentService contentService = new ContentServiceJpa();
       TreePositionList treePositions =
           contentService.getTreePositionsWithChildren(terminologyId,
               mapProject.getDestinationTerminology(),
@@ -3453,6 +3454,7 @@ public class MappingServiceRest extends RootServiceRest {
           user, mapProjectId.toString(), terminologyId);
       return null;
     } finally {
+      contentService.close();
       mappingService.close();
       securityService.close();
     }
@@ -3544,7 +3546,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(ContentServiceJpa.class).info(
+    Logger.getLogger(getClass()).info(
         "RESTful call (Mapping): /treePosition/project/id/" + mapProjectId);
 
     String user = "";
@@ -3861,6 +3863,7 @@ public class MappingServiceRest extends RootServiceRest {
 
     String user = "";
     MappingService mappingService = new MappingServiceJpa();
+    ContentService contentService = new ContentServiceJpa();
     try {
 
       // authorize call
@@ -3880,7 +3883,6 @@ public class MappingServiceRest extends RootServiceRest {
       boolean isValid = algorithmHandler.isTargetCodeValid(terminologyId);
 
       if (isValid) {
-        ContentService contentService = new ContentServiceJpa();
         Concept c =
             contentService.getConcept(terminologyId,
                 mapProject.getDestinationTerminology(),
@@ -3895,6 +3897,7 @@ public class MappingServiceRest extends RootServiceRest {
           mapProjectId.toString(), "");
       return null;
     } finally {
+      contentService.close();
       mappingService.close();
       securityService.close();
     }
@@ -4068,6 +4071,7 @@ public class MappingServiceRest extends RootServiceRest {
    * @param uploadedInputStream the uploaded input stream
    * @param serverLocation the server location
    */
+  @SuppressWarnings("static-method")
   private void saveFile(InputStream uploadedInputStream, String serverLocation) {
     OutputStream outputStream = null;
     try {
