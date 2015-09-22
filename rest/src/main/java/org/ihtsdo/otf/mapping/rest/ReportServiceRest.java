@@ -808,7 +808,7 @@ public class ReportServiceRest extends RootServiceRest {
       ReportResultItemList reportResultItemList =
           reportService.getReportResultItemsForReportResult(reportResultId,
               pfsParameter);
-
+      mappingService.close();
       reportService.close();
 
       return reportResultItemList;

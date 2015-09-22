@@ -671,6 +671,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
             fullQuery += " AND NOT assignedUserNames:" + user.getUserName();
           }
           fullQuery += ") )";
+          service.close();
         } else {
           fullQuery +=
               " AND (assignedUserCount:0 OR "
@@ -1570,6 +1571,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
       }
 
       if (mapRecord == null) {
+        mappingService.close();
         throw new Exception(
             "Failed to retrieve assigned work:  no map record found for user "
                 + mapUser.getUserName() + " and concept "
@@ -1838,13 +1840,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
               mapProject.getSourceTerminology(),
               mapProject.getSourceTerminologyVersion());
 
-      mappingService = new MappingServiceJpa();
-
       MapRecordList recordList =
           mappingService.getMapRecordsForProjectAndConcept(mapProject.getId(),
               conceptId);
-
-      mappingService.close();
 
       for (MapRecord mapRecord : recordList.getMapRecords()) {
         // set the label on the record
@@ -2067,6 +2065,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
               algorithmHandler.assignFromInitialRecord(trackingRecord,
                   mapRecords, mapRecord, mapUser);
 
+          contentService.close();
           // otherwise, this concept is already in the workflow, do nothing
         } else {
 
@@ -2122,6 +2121,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
           mapRecords =
               algorithmHandler.assignFromInitialRecord(trackingRecord,
                   mapRecords, mapRecord, mapUser);
+          contentService.close();
         } else {
 
           throw new LocalException(
@@ -2141,13 +2141,16 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
           throw new Exception("Could not find tracking record for assignment.");
         }
 
-        // IF not assigning a conflict case and
-        // If a team based project and this is assigned already
-        // to another member of the team, then fail with an error message
-        if (!trackingRecord.getUserAndWorkflowStatusPairs().contains(
-            WorkflowStatus.CONFLICT_DETECTED.toString())
+        // Team based assignment only matters on NON_LEGACY_PATH and not for
+        // conflict cases
+        // If "concepts" assignment is being done on NON_LEGACY PATH and another
+        // team
+        // member claimed the other role, then leave alone
+        if (trackingRecord.getWorkflowPath() == WorkflowPath.NON_LEGACY_PATH
             && mapProject.isTeamBased()
-            && trackingRecord.getAssignedUserCount() > 0) {
+            && trackingRecord.getAssignedUserCount() > 0
+            && !trackingRecord.getUserAndWorkflowStatusPairs().contains(
+                WorkflowStatus.CONFLICT_DETECTED.toString())) {
           MappingService service = new MappingServiceJpa();
           for (MapUser user : service.getMapUsersForTeam(mapUser.getTeam())
               .getMapUsers()) {
@@ -2965,7 +2968,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         }
       }
     }
-
+    mappingService.close();
+    contentService.close();
     return results;
 
   }

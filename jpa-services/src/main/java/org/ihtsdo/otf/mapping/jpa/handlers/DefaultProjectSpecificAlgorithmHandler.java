@@ -2308,6 +2308,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         for (Long id : trackingRecord.getMapRecordIds()) {
           newRecords.add(mappingService.getMapRecord(id));
         }
+        mappingService.close();
         break;
     }
 
@@ -2376,16 +2377,13 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
     // check assumption: last revision exists, at least two records must be
     // present
-    if (revisions.size() < 2)
+    if (revisions.size() < 2) {
+      mappingService.close();
       throw new Exception(
           "Attempted to get the previously published version of map record with id "
               + mapRecord.getId() + ", " + mapRecord.getOwner().getName()
               + ", and concept id " + mapRecord.getConceptId()
               + ", but no previous revisions exist.");
-
-    for (MapRecord revision : revisions) {
-      System.out.println(revision.getId() + "\t" + revision.getWorkflowStatus()
-          + "\t" + revision.getTimestamp());
     }
 
     // cycle over records until the previously
