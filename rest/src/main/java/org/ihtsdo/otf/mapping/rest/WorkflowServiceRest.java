@@ -105,6 +105,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     String project = "";
 
     WorkflowService workflowService = new WorkflowServiceJpa();
+    MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
       userName = securityService.getUsernameForToken(authToken);
@@ -115,7 +116,6 @@ public class WorkflowServiceRest extends RootServiceRest {
             .entity("User does not have permissions to compute workflow.")
             .build());
 
-      MappingService mappingService = new MappingServiceJpa();
       MapProject mapProject = mappingService.getMapProject(mapProjectId);
       project = mapProject.getName();
       workflowService.computeWorkflow(mapProject);
@@ -123,6 +123,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     } catch (Exception e) {
       handleException(e, "trying to compute workflow", userName, project, "");
     } finally {
+      mappingService.close();
       workflowService.close();
       securityService.close();
     }
@@ -2254,6 +2255,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     } finally {
       workflowService.close();
       mappingService.close();
+      contentService.close();
       securityService.close();
     }
 
