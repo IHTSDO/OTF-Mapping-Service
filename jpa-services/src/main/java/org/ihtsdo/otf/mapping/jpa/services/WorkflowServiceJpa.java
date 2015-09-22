@@ -1571,6 +1571,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
       }
 
       if (mapRecord == null) {
+        mappingService.close();
         throw new Exception(
             "Failed to retrieve assigned work:  no map record found for user "
                 + mapUser.getUserName() + " and concept "
@@ -1839,13 +1840,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
               mapProject.getSourceTerminology(),
               mapProject.getSourceTerminologyVersion());
 
-      mappingService = new MappingServiceJpa();
-
       MapRecordList recordList =
           mappingService.getMapRecordsForProjectAndConcept(mapProject.getId(),
               conceptId);
-
-      mappingService.close();
 
       for (MapRecord mapRecord : recordList.getMapRecords()) {
         // set the label on the record
