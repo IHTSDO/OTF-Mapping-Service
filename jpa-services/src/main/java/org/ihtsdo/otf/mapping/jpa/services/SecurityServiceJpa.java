@@ -100,8 +100,10 @@ public class SecurityServiceJpa extends RootServiceJpa implements
       try {
         mappingService.getMapUser(username);
       } catch (Exception e) {
+        mappingService.close();
         throw new LocalException("Unable to find map user for username", "401");
       }
+      mappingService.close();
       return username;
     }    
     
