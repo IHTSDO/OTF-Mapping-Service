@@ -247,11 +247,11 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
         break;
       }
     }
-    contentService.close();
     if (rootId == null)
       throw new Exception("Description type concept cannot be found.");
-
-    return getDescendantMap(contentService, rootId, terminology, version);
+    Map<String,String> result =getDescendantMap(contentService, rootId, terminology, version);
+    contentService.close();
+    return result;
   }
 
   /*
