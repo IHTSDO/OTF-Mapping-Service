@@ -105,7 +105,9 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
         // construct a map of terminology id -> concept name
         // used to determine change in workflow status after recomputation
         Map<String, String> previousWorkflowConcepts = new HashMap<>();
+        StringBuilder conceptsAddedSb = new StringBuilder();
         int conceptsAdded = 0;
+        StringBuilder conceptsRemovedSb = new StringBuilder();
         int conceptsRemoved = 0;
 
         // add all current concepts with a tracking record to set
@@ -133,7 +135,8 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
             getLog().info(
                 "  New concept:  " + tr.getTerminologyId() + ", "
                     + tr.getDefaultPreferredName());
-
+            conceptsAddedSb.append("    ADDED " + tr.getTerminologyId() + ", "
+                + tr.getDefaultPreferredName() + "\n");
             conceptsAdded++;
 
             // otherwise, remove it from the set
@@ -148,6 +151,8 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
           getLog().info(
               "  Removed concept:  " + terminologyId + ", "
                   + previousWorkflowConcepts.get(terminologyId));
+          conceptsRemovedSb.append("    REMOVED " + terminologyId + ", "
+              + previousWorkflowConcepts.get(terminologyId) + "\n");
           conceptsRemoved++;
         }
 
@@ -158,7 +163,7 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
         notificationMessage +=
             "Project: " + mapProject.getName() + "\n" + "\tConcepts Added:   "
                 + conceptsAdded + "\tConcepts Removed: " + conceptsRemoved
-                + "\n\n";
+                + "\n" + conceptsAddedSb + "\n" + conceptsRemovedSb + "\n\n";
 
       }
 
