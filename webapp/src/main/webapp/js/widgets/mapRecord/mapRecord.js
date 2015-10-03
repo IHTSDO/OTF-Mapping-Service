@@ -1765,4 +1765,8 @@ angular
         myWindow.focus();
       };
 
+      // ORder by principle id
+      $scope.orderByPrincipleId = function(principle) {
+        return parseInt(principle.principleId,10)+1;
+      }
     });
