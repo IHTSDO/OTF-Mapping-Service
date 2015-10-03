@@ -182,7 +182,7 @@ Principles <i class="pull-right glyphicon"
   Add Principle: <select style="width: 75%;"
     ng-change="addRecordPrinciple(record, principleInput)"
     ng-model="principleInput"
-    ng-options="principle as principle.principleId + ':  ' + principle.name for principle in project.mapPrinciple | orderBy:'number(principleId)'"></select>
+    ng-options="principle as principle.principleId + ':  ' + principle.name for principle in project.mapPrinciple | orderBy:orderByPrincipleId'"></select>
 </form>
 <hr>
 <div
