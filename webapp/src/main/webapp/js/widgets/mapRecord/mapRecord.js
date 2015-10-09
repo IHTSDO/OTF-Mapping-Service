@@ -171,48 +171,43 @@ angular
       };
 
       // Watcher for Conflict Resolution Select Record Event
-      $rootScope
-        .$on(
-          'compareRecordsWidget.notification.selectRecord',
-          function(event, parameters) {
-            console.debug("received new record");
-            console.debug(parameters);
-            console.debug(parameters.record);
-            $scope.record = parameters.record;
+      $rootScope.$on('compareRecordsWidget.notification.selectRecord',
+        function(event, parameters) {
+          console.debug("received new record");
+          console.debug(parameters);
+          console.debug(parameters.record);
+          $scope.record = parameters.record;
 
-            console.debug("Passed record: ", parameters.record);
+          console.debug("Passed record: ", parameters.record);
 
-            // This MUST not be removed for "Start here" to
-            // work
-            initializeGroupsTree();
+          // This MUST not be removed for "Start here" to
+          // work
+          initializeGroupsTree();
 
-            // Validate the record immediately
-            // this is good to show messages right away
-            // if there are problems
-            console.debug("Validating the map record.");
-            // validate the record
-            $rootScope.glassPane++;
-            $http({
-              url : root_mapping + "validation/record/validate",
-              dataType : "json",
-              data : $scope.record,
-              method : "POST",
-              headers : {
-                "Content-Type" : "application/json"
-              }
-            })
-              .success(function(data) {
-                $rootScope.glassPane--;
-                console.debug(data);
-                $scope.validationResult = data;
-              })
-              .error(
-                function(data, status, headers, config) {
-                  $rootScope.glassPane--;
-                  $scope.validationResult = null;
-                  $rootScope.handleHttpError(data, status, headers, config);
-                })
-          });
+          // Validate the record immediately
+          // this is good to show messages right away
+          // if there are problems
+          console.debug("Validating the map record.");
+          // validate the record
+          $rootScope.glassPane++;
+          $http({
+            url : root_mapping + "validation/record/validate",
+            dataType : "json",
+            data : $scope.record,
+            method : "POST",
+            headers : {
+              "Content-Type" : "application/json"
+            }
+          }).success(function(data) {
+            $rootScope.glassPane--;
+            console.debug(data);
+            $scope.validationResult = data;
+          }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $scope.validationResult = null;
+            $rootScope.handleHttpError(data, status, headers, config);
+          })
+        });
 
       // on successful retrieval of project, get the
       // record/concept
@@ -245,7 +240,8 @@ angular
       }
 
       // initialize local variables
-      var currentLocalId = 1; // used for addition of new entries
+      var currentLocalId = 1; // used for addition
+      // of new entries
       // without hibernate id
 
       // function to initially retrieve the project
@@ -265,7 +261,8 @@ angular
 
               $scope.record = data;
 
-              // verify that all entries on this record with no target have "No
+              // verify that all entries on this record with no
+              // target have "No
               // target" set as target name
               for (var i = 0; i < $scope.record.mapEntry.length; i++) {
                 if ($scope.record.mapEntry[i].targetId == null
@@ -420,7 +417,8 @@ angular
 
           console.debug('GROUPS TREE BEFORE SORT: ', $scope.groupsTree);
 
-          // groups may be disordered, re-order the groups and add empty
+          // groups may be disordered, re-order the groups and add
+          // empty
           // groups if necessary
           var groupsTreeTemp = angular.copy($scope.groupsTree);
           $scope.groupsTree = [];
@@ -432,7 +430,8 @@ angular
           }
           console.debug('MAX GROUP: ', maxGroup);
 
-          // cycle from 1:maxGroup and add existing group or blank group
+          // cycle from 1:maxGroup and add existing group or blank
+          // group
           for (var group = 1; group <= maxGroup; group++) {
 
             var groupFound = false;
@@ -466,8 +465,8 @@ angular
       }
 
       /**
-       * MAP RECORD FUNCTIONS
-       */
+             * MAP RECORD FUNCTIONS
+             */
 
       $scope.finishMapRecord = function(returnBack) {
 
@@ -613,7 +612,8 @@ angular
         $scope.record.flagForConsensus = false;
         $scope.record.flagForEditorialReview = false;
 
-        $scope.addMapGroup(); // automatically adds entry as
+        $scope.addMapGroup(); // automatically
+        // adds entry as
         // well
 
         window.scrollTo(0, 0);
@@ -881,10 +881,10 @@ angular
             $rootScope.handleHttpError(data, status, headers, config);
           });
           /*
-           * } else { $rootScope.glassPane--; console.debug("MapRecord
-           * finish/next can't determine type of work, returning to dashboard");
-           * $location.path($scope.role + "/dash");
-           */
+                     * } else { $rootScope.glassPane--; console.debug("MapRecord
+                     * finish/next can't determine type of work, returning to
+                     * dashboard"); $location.path($scope.role + "/dash");
+                     */
         }
       };
 
@@ -1115,8 +1115,8 @@ angular
       };
 
       /**
-       * FEEDBACK FUNCTIONS
-       */
+             * FEEDBACK FUNCTIONS
+             */
       $scope.sendFeedback = function(record, feedbackMessage, recipientList) {
         console.debug("Adding feedback", record);
 
@@ -1267,8 +1267,8 @@ angular
       };
 
       /**
-       * MAP ENTRY FUNCTIONS
-       */
+             * MAP ENTRY FUNCTIONS
+             */
 
       $scope.entriesEqualById = function(entry1, entry2) {
 
@@ -1602,7 +1602,9 @@ angular
         });
 
         this.length = 0; // clear original array
-        this.push.apply(this, array); // push all elements
+        this.push.apply(this, array); // push
+        // all
+        // elements
         // except the one we
         // want to delete
 
@@ -1635,6 +1637,8 @@ angular
         if ($scope.user.userName === 'guest')
           return "http://browser.ihtsdotools.org/index.html?perspective=full&conceptId1="
             + $scope.concept.terminologyId
+            + "&edition=en-edition"
+            + "&server=https://browser-aws-1.ihtsdotools.org/&langRefset=900000000000509007"
             + "&diagrammingMarkupEnabled=true&acceptLicense=true";
         else
           return "http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1="
@@ -1767,6 +1771,6 @@ angular
 
       // ORder by principle id
       $scope.orderByPrincipleId = function(principle) {
-        return parseInt(principle.principleId,10)+1;
+        return parseInt(principle.principleId, 10) + 1;
       }
     });
