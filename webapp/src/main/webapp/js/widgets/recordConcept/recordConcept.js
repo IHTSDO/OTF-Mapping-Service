@@ -633,7 +633,7 @@ angular
             + $scope.conceptId
             + "&edition=en-edition"
             + "&server=https://browser-aws-1.ihtsdotools.org/&langRefset=900000000000509007"
-            + "&diagrammingMarkupEnabled=true&acceptLicense=true";
+            + "&acceptLicense=true";
         else
           return "http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1="
             + $scope.conceptId
