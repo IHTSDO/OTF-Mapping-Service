@@ -622,7 +622,9 @@ angular
         if ($scope.currentUser.userName === 'guest')
           return "http://browser.ihtsdotools.org/index.html?perspective=full&conceptId1="
             + $scope.conceptId
-            + "&diagrammingMarkupEnabled=true&acceptLicense=true";
+            + "&edition=en-edition&release=v"
+            + $scope.focusProject.sourceTerminologyVersion
+            + "&server=https://browser-aws-1.ihtsdotools.org/&langRefset=900000000000509007";
         else
           return "http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1="
             + $scope.conceptId
