@@ -26,7 +26,8 @@ angular
       $scope.conversation = null;
       $scope.record = null;
 
-      // initialize as empty to indicate still initializing database connection
+      // initialize as empty to indicate still initializing database
+            // connection
       $scope.currentUser = localStorageService.get('currentUser');
       $scope.currentRole = localStorageService.get('currentRole');
       $scope.currentUserToken = localStorageService.get('userToken');
@@ -114,7 +115,8 @@ angular
 
             $scope.record = null;
 
-            // load record to be displayed; try to find active record first
+            // load record to be displayed; try to find active
+                        // record first
             $http(
               {
                 url : root_mapping + "record/id/"
@@ -257,7 +259,8 @@ angular
           window.alert("The feedback field cannot be blank. ");
           return;
         }
-        // figure out the return recipients based on previous feedback in
+        // figure out the return recipients based on previous feedback
+                // in
         // conversation
         var localFeedback = conversation.feedback;
 
@@ -316,7 +319,10 @@ angular
         if ($scope.currentUser.userName === 'guest')
           return "http://browser.ihtsdotools.org/index.html?perspective=full&conceptId1="
             + $scope.conversation.terminologyId
-            + "&diagrammingMarkupEnabled=true&acceptLicense=true";
+            + "&edition=en-edition&release=v"
+            + $scope.focusProject.sourceTerminologyVersion
+            + "&server=https://browser-aws-1.ihtsdotools.org/&langRefset=900000000000509007";
+
         else
           return "http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1="
             + $scope.conversation.terminologyId
@@ -397,14 +403,16 @@ angular
       // determines default recipients dependending on the conversation
       function initializeReturnRecipients(conversation) {
 
-        // if no previous feedback conversations, return just first map lead in
+        // if no previous feedback conversations, return just first map
+                // lead in
         // list
         if (conversation == null || conversation == "") {
           $scope.returnRecipients.push($scope.focusProject.mapLead[0]);
           return;
         }
 
-        // figure out the return recipients based on previous feedback in
+        // figure out the return recipients based on previous feedback
+                // in
         // conversation
         var localFeedback = conversation.feedback;
         var localSender = localFeedback[localFeedback.length - 1].sender;
