@@ -222,8 +222,9 @@ angular
         if ($scope.currentUser.userName === 'guest')
           var myWindow = window
             .open(
-              "http://browser.ihtsdotools.org/index.html?perspective=full&diagrammingMarkupEnabled=true&acceptLicense=true",
-              "browserWindow");
+              "http://browser.ihtsdotools.org/index.html?perspective=full&edition=en-edition&release=v"
+                + $scope.project.sourceTerminologyVersion
+                + "&server=https://browser-aws-1.ihtsdotools.org/&langRefset=900000000000509007);
         else
           var myWindow = window
             .open(
