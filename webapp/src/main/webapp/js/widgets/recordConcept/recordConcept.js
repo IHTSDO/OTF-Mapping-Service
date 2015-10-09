@@ -23,7 +23,11 @@ angular
       $scope.recordsInProject = [];
       $scope.recordsNotInProject = [];
       $scope.historicalRecords = [];
-      $scope.recordsInProjectNotFound = false; // set to true after record
+      $scope.recordsInProjectNotFound = false; // set
+                                                                                              // to
+                                                                                              // true
+                                                                                              // after
+                                                                                              // record
       // retrieval returns no records
       // for focus project
 
@@ -219,7 +223,8 @@ angular
           .success(
             function(data) {
               $scope.historicalRecords = data.mapRecord;
-              // remove records that are already displayed in focus
+              // remove records that are already displayed in
+                            // focus
               // project
               // section
               for (var i = $scope.historicalRecords.length; i--;) {
@@ -237,12 +242,12 @@ angular
           }).then(function() {
             // check relation style flags
             /*
-             * if ($scope.focusProject.mapRelationStyle ===
-             * "MAP_CATEGORY_STYLE") { applyMapCategoryStyle(); }
-             * 
-             * if ($scope.focusProject.mapRelationStyle ===
-             * "RELATIONSHIP_STYLE") { applyRelationshipStyle(); }
-             */
+                         * if ($scope.focusProject.mapRelationStyle ===
+                         * "MAP_CATEGORY_STYLE") { applyMapCategoryStyle(); }
+                         * 
+                         * if ($scope.focusProject.mapRelationStyle ===
+                         * "RELATIONSHIP_STYLE") { applyRelationshipStyle(); }
+                         */
           });
       };
 
@@ -358,7 +363,8 @@ angular
           // assign the record along the FIX_ERROR_PATH
           $rootScope.glassPane++;
 
-          // remove advices if this is a RELATIONSHIP_STYLE project (these
+          // remove advices if this is a RELATIONSHIP_STYLE project
+                    // (these
           // are
           // used to render relation names)
           if ($scope.focusProject.mapRelationStyle === "RELATIONSHIP_STYLE") {
@@ -471,7 +477,8 @@ angular
 
       function applyMapCategoryStyle() {
 
-        // Cycle over all entries. If targetId is blank, show relationName
+        // Cycle over all entries. If targetId is blank, show
+                // relationName
         // as
         // the target name
         for (var i = 0; i < $scope.records.length; i++) {
@@ -488,7 +495,8 @@ angular
       ;
 
       function applyRelationshipStyle() {
-        // Cycle over all entries. Add the relation name to the advice list
+        // Cycle over all entries. Add the relation name to the advice
+                // list
         for (var i = 0; i < $scope.records.length; i++) {
           for (var j = 0; j < $scope.records[i].mapEntry.length; j++) {
             if ($scope.records[i].mapEntry[j].targetId === "") {
@@ -515,7 +523,8 @@ angular
       }
       ;
 
-      // change the focus project to the project associated with a specified
+      // change the focus project to the project associated with a
+            // specified
       // record
       $scope.changeFocusProjectByRecord = function(record) {
 
@@ -622,9 +631,9 @@ angular
         if ($scope.currentUser.userName === 'guest')
           return "http://browser.ihtsdotools.org/index.html?perspective=full&conceptId1="
             + $scope.conceptId
-            + "&edition=en-edition&release=v"
-            + $scope.focusProject.sourceTerminologyVersion
-            + "&server=https://browser-aws-1.ihtsdotools.org/&langRefset=900000000000509007";
+            + "&edition=en-edition"
+            + "&server=https://browser-aws-1.ihtsdotools.org/&langRefset=900000000000509007"
+            + "&diagrammingMarkupEnabled=true&acceptLicense=true";
         else
           return "http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1="
             + $scope.conceptId
