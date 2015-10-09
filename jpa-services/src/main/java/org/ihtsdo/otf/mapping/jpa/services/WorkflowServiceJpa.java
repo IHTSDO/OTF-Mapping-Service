@@ -1830,9 +1830,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
       if (user.getUserName().equals("qa"))
         mapUser = user;
     }
-
-    mappingService.close();
-
+    
     for (String conceptId : conceptIds) {
 
       Concept concept =
@@ -1854,6 +1852,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
       }
     }
 
+    mappingService.close();
     contentService.close();
   }
 
