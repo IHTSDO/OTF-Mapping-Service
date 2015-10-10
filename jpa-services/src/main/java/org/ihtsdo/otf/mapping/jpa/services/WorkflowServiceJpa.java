@@ -1830,6 +1830,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
       if (user.getUserName().equals("qa"))
         mapUser = user;
     }
+    mappingService.close();
 
     for (String conceptId : conceptIds) {
 
@@ -1838,6 +1839,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
               mapProject.getSourceTerminology(),
               mapProject.getSourceTerminologyVersion());
 
+      mappingService = new MappingServiceJpa();
       MapRecordList recordList =
           mappingService.getMapRecordsForProjectAndConcept(mapProject.getId(),
               conceptId);
