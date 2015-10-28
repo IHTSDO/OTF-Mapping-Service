@@ -34,7 +34,8 @@ angular
         console.debug($scope.project);
       });
 
-      // the only local storage variable required for this app is userToken
+      // the only local storage variable required for this app is
+            // userToken
       $scope.$watch('userToken', function() {
 
         $http.defaults.headers.common.Authorization = $scope.userToken;
@@ -170,7 +171,9 @@ angular
         terminology, version) {
 
         $scope.pageSize = 10;
-        $scope.terminology = terminology; // used for title
+        $scope.terminology = terminology; // used
+                                                                                    // for
+                                                                                    // title
 
         $scope.close = function() {
           $modalInstance.close();
@@ -211,7 +214,8 @@ angular
             }).error(function(data, status, headers, config) {
             $rootScope.glassPane--;
             $scope.concepts = [];
-            // $rootScope.handleHttpError(data, status, headers, config);
+            // $rootScope.handleHttpError(data, status, headers,
+                        // config);
           });
 
         };
@@ -221,9 +225,10 @@ angular
       $scope.openConceptBrowser = function() {
         if ($scope.currentUser.userName === 'guest')
           var myWindow = window
-            .open(
-              "http://browser.ihtsdotools.org/index.html?perspective=full&diagrammingMarkupEnabled=true&acceptLicense=true",
-              "browserWindow");
+            .open("http://browser.ihtsdotools.org/index.html?perspective=full"
+              + "&edition=en-edition"
+              + "&server=https://browser-aws-1.ihtsdotools.org/&langRefset=900000000000509007"
+              + "&acceptLicense=true");
         else
           var myWindow = window
             .open(

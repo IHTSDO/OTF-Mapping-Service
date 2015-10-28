@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -73,6 +74,8 @@ import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.model.MapUserPreferences;
 import org.ihtsdo.otf.mapping.rf2.Concept;
+import org.ihtsdo.otf.mapping.rf2.Description;
+import org.ihtsdo.otf.mapping.rf2.Relationship;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
@@ -3887,6 +3890,9 @@ public class MappingServiceRest extends RootServiceRest {
             contentService.getConcept(terminologyId,
                 mapProject.getDestinationTerminology(),
                 mapProject.getDestinationTerminologyVersion());
+        // Empty descriptions/relationships
+        c.setDescriptions(new HashSet<Description>());
+        c.setRelationships(new HashSet<Relationship>());
         return c;
       } else {
         return null;

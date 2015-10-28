@@ -106,7 +106,7 @@ public class OtfEmailHandler {
     String validationMessage = message + "\n\n";
 
     // add the messages
-    if (validationResult.getMessages().isEmpty()) {
+    if (!validationResult.getMessages().isEmpty()) {
       validationMessage += "Messages:\n";
       for (String s : validationResult.getMessages()) {
         validationMessage += "  " + s + "\n";
@@ -115,7 +115,7 @@ public class OtfEmailHandler {
     }
 
     // add the errors
-    if (validationResult.getErrors().isEmpty()) {
+    if (!validationResult.getErrors().isEmpty()) {
       validationMessage += "Errors:\n";
       for (String s : validationResult.getErrors()) {
         validationMessage += "  " + s + "\n";
@@ -124,7 +124,7 @@ public class OtfEmailHandler {
     }
 
     // add the warnings
-    if (validationResult.getWarnings().isEmpty()) {
+    if (!validationResult.getWarnings().isEmpty()) {
       validationMessage += "Warnings:\n";
       for (String s : validationResult.getWarnings()) {
         validationMessage += "  " + s + "\n";
