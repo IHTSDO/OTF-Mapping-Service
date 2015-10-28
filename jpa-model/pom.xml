@@ -87,19 +87,4 @@
 
   </dependencies>
 
-  <build>
-    <plugins>
-      <!-- Add src/main/resources to the classpath for testing -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <additionalClasspathElements>
-            <additionalClasspathElement>src/main/resources</additionalClasspathElement>
-          </additionalClasspathElements>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-
 </project>
