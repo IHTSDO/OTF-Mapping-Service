@@ -2269,7 +2269,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
           metadataService.getDescriptionTypes(terminology, terminologyVersion);
       Map<String, String> relTypes =
           metadataService.getRelationshipTypes(terminology, terminologyVersion);
-
+      metadataService.close();
       for (TreePosition tp : tpList.getTreePositions())
         computeTreePositionInformationHelper(tp, descTypes, relTypes);
     }

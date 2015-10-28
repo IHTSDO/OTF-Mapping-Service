@@ -32,6 +32,11 @@ public class ICPCProjectSpecificAlgorithmHandler extends
 
     for (MapEntry mapEntry : mapRecord.getMapEntries()) {
 
+      // accept a blank code
+      if (mapEntry.getTargetId().equals("")) {
+        continue;
+      }
+      
       // get concept
       Concept concept =
           contentService.getConcept(mapEntry.getTargetId(),
