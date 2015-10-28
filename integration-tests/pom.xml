@@ -14,6 +14,9 @@
   <name>OTF Mapping tool integration tests</name>
   <description>OTF Mapping tool integration tests</description>
 
+  <properties>
+    <skipTests>true</skipTests>
+  </properties>
   <!-- Dependencies -->
   <dependencies>
 
@@ -81,6 +84,7 @@
           <additionalClasspathElements>
             <additionalClasspathElement>src/main/resources</additionalClasspathElement>
           </additionalClasspathElements>
+          <skipTests>${skipTests}</skipTests>
         </configuration>
       </plugin>
     </plugins>
