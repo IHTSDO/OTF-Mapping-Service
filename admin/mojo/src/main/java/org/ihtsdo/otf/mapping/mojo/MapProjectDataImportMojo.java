@@ -234,6 +234,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
         bareProject.setReportDefinitions(new HashSet<ReportDefinition>());
         bareProject.setScopeConcepts(new HashSet<String>());
         bareProject.setScopeExcludedConcepts(new HashSet<String>());
+        bareProject.setTeamBased(false);
         bareProject.setId(null);
 
         // add the blank project (because cascade is not used)
