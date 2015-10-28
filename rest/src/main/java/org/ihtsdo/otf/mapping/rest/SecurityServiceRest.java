@@ -37,6 +37,7 @@ public class SecurityServiceRest extends RootServiceRest {
    * @param username the username
    * @param password the password
    * @return the string
+   * @throws Exception 
    */
   @POST
   @Path("/authenticate/{username}")
@@ -49,13 +50,13 @@ public class SecurityServiceRest extends RootServiceRest {
   @ApiOperation(value = "Authenticate a map user.", notes = "Performs authentication on specified username and password and returns a token upon successful authentication. Throws 401 error if not.", response = String.class)
   public String authenticate(
     @ApiParam(value = "Username", required = true) @PathParam("username") String username,
-    @ApiParam(value = "Password, as string post data", required = true) String password) {
+    @ApiParam(value = "Password, as string post data", required = true) String password) throws Exception {
 
     Logger.getLogger(SecurityServiceRest.class).info(
         "RESTful call (Authentication): /authentication for map user = "
             + username);
+    SecurityService securityService = new SecurityServiceJpa();
     try {
-      SecurityService securityService = new SecurityServiceJpa();
       return securityService.authenticate(username, password);
     } catch (LocalException e) {
       Logger.getLogger(SecurityServiceRest.class).error(
@@ -67,6 +68,8 @@ public class SecurityServiceRest extends RootServiceRest {
           "General exception thrown");
       handleException(e, "Unexpected error trying to authenticate a map user");
       return null;
+    } finally {
+      securityService.close();
     }
 
   }
