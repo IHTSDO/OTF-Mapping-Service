@@ -123,6 +123,7 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
       InputSource is = new InputSource(reader);
       is.setEncoding("UTF-8");
       saxParser.parse(is, handler);
+      reader.close();
       getLog().info("Done...");
 
     } catch (Exception e) {

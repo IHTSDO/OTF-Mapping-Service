@@ -81,7 +81,8 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
               if (i != 0) {
                 return (int) i;
               } else {
-                i = (Long.parseLong(fields1[5]) - Long.parseLong(fields2[5]));
+                i = fields1[5].compareTo(fields2[5]);
+                //i = (Long.parseLong(fields1[5]) - Long.parseLong(fields2[5]));
                 if (i != 0) {
                   return (int) i;
                 } else {
@@ -203,7 +204,7 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
           new ArrayList<ComplexMapRefSetMember>());
     }
 
-    final SimpleDateFormat dt = new SimpleDateFormat("yyyymmdd");
+    final SimpleDateFormat dt = new SimpleDateFormat("yyyyMMdd");
     while ((line = complexMapReader.readLine()) != null) {
       line = line.replace("\r", "");
       String fields[] = line.split("\t");

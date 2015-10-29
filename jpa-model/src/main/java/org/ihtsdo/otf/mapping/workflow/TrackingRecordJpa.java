@@ -25,7 +25,7 @@ import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 
 /**
- * Default implementatino of {@link TrackingRecordJpa}.
+ * Default implementation of {@link TrackingRecordJpa}.
  */
 @Entity
 @Indexed
@@ -69,7 +69,7 @@ public class TrackingRecordJpa implements TrackingRecord {
 
   /**
    * The workflow status. Pairs are constructed in the format
-   * workflowStatus~userName e.g. NEW~dmo, EDITING_DONE~kli
+   * workflowStatus_userName e.g. NEW_dmo, EDITING_DONE_kli
    */
   @Column(nullable = true)
   private String userAndWorkflowStatusPairs;

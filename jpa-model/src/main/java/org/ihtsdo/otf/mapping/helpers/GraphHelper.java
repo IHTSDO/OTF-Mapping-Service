@@ -43,14 +43,14 @@ public class GraphHelper {
       if (c.isActive()) {
 
         // relationship set and iterator
-        Set<Relationship> inv_relationships = c.getInverseRelationships();
-        Iterator<Relationship> it_inv_rel = inv_relationships.iterator();
+        Set<Relationship> invRelationships = c.getInverseRelationships();
+        Iterator<Relationship> invRelIterator = invRelationships.iterator();
 
         // iterate over inverse relationships
-        while (it_inv_rel.hasNext()) {
+        while (invRelIterator.hasNext()) {
 
           // get relationship
-          Relationship rel = it_inv_rel.next();
+          Relationship rel = invRelIterator.next();
 
           // if relationship is active, typeId equals the provided typeId, and
           // the source concept is active
@@ -59,13 +59,13 @@ public class GraphHelper {
 
             // get source concept from inverse relationship (i.e. child of
             // concept)
-            Concept c_rel = rel.getSourceConcept();
+            Concept sourceConcept = rel.getSourceConcept();
 
             // if set does not contain the source concept, add it to set and
             // queue
-            if (!conceptSet.contains(c_rel)) {
-              conceptSet.add(c_rel);
-              conceptQueue.add(c_rel);
+            if (!conceptSet.contains(sourceConcept)) {
+              conceptSet.add(sourceConcept);
+              conceptQueue.add(sourceConcept);
 
             }
           }
@@ -88,15 +88,15 @@ public class GraphHelper {
     throws Exception {
 
     // relationship set and iterator
-    Set<Relationship> inv_relationships = rootConcept.getInverseRelationships();
-    Iterator<Relationship> it_inv_rel = inv_relationships.iterator();
+    Set<Relationship> invRelationships = rootConcept.getInverseRelationships();
+    Iterator<Relationship> invRelIterator = invRelationships.iterator();
     Set<Concept> conceptSet = new HashSet<>();
 
     // iterate over inverse relationships
-    while (it_inv_rel.hasNext()) {
+    while (invRelIterator.hasNext()) {
 
       // get relationship
-      Relationship rel = it_inv_rel.next();
+      Relationship rel = invRelIterator.next();
 
       // if relationship is active, typeId equals the provided typeId, and
       // the source concept is active
@@ -105,12 +105,12 @@ public class GraphHelper {
 
         // get source concept from inverse relationship (i.e. child of
         // concept)
-        Concept c_rel = rel.getSourceConcept();
+        Concept sourceConcept = rel.getSourceConcept();
 
         // if set does not contain the source concept, add it to set and
         // queue
-        if (!conceptSet.contains(c_rel)) {
-          conceptSet.add(c_rel);
+        if (!conceptSet.contains(sourceConcept)) {
+          conceptSet.add(sourceConcept);
 
         }
       }

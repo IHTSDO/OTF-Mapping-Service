@@ -175,9 +175,8 @@ angular
               }
               $rootScope.glassPane--;
 
-            })
-            .error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+            }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
             $scope.results = null;
             $rootScope.handleHttpError(data, status, headers, config);
           });
@@ -232,8 +231,8 @@ angular
             }
 
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
-            $rootScope.handleHttpError(data, status, headers, config);
+          $rootScope.glassPane--;
+          $rootScope.handleHttpError(data, status, headers, config);
         });
       };
 
@@ -261,10 +260,11 @@ angular
       // updates the url to switch to display a new html page in the index
       // viewer
       $scope.updateUrl = function(pageName) {
-        
+
         $scope.selectedPage = pageName;
 
-        $scope.tUrl = "indexViewerData/" + $scope.focusProject.destinationTerminology + "/"
+        $scope.tUrl = "indexViewerData/"
+          + $scope.focusProject.destinationTerminology + "/"
           + $scope.focusProject.destinationTerminologyVersion + "/html/"
           + $scope.selectedDomain + "/" + pageName + ".html";
 

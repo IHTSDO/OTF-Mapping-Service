@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.0-SNAPSHOT</version>
     <relativePath>../parent</relativePath>
   </parent>
 
@@ -22,7 +22,7 @@
     <!-- Specify the config artifact parameters -->
     <config.groupId>org.ihtsdo.otf.mapping</config.groupId>
     <config.artifactId>mapping-config-dev-windows</config.artifactId>
-    <config.version>${project.version}</config.version>
+    <config.version>${releaseVersion}</config.version>
   </properties>
 
   <dependencies>
@@ -206,6 +206,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
         <configuration>
+          <attachClasses>true</attachClasses>
           <filteringDeploymentDescriptors>true</filteringDeploymentDescriptors>
           <webResources>
             <resource>
@@ -265,7 +266,7 @@
               <goal>jdeb</goal>
             </goals>
             <configuration>
-              <deb>${project.build.directory}/${packageName}-${project.version}-all.deb</deb>
+              <deb>${project.build.directory}/${packageName}-${releaseVersion}-all.deb</deb>
               <controlDir>${basedir}/src/deb/control</controlDir>
               <snapshotExpand>true</snapshotExpand>
               <snapshotEnv>BUILD_NUMBER</snapshotEnv>

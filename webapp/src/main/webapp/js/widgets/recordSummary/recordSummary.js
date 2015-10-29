@@ -26,7 +26,7 @@ angular.module('mapProjectApp.widgets.recordSummary', [ 'adf.provider' ])
       });
 
       // function to return trusted html code (for tooltip content)
-      $scope.to_trusted = function(html_code) { 
+      $scope.to_trusted = function(html_code) {
         return $sce.trustAsHtml(html_code);
       };
 

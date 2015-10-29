@@ -1,7 +1,7 @@
 package org.ihtsdo.otf.mapping.helpers;
 
 /**
- * The Enum ReportTimePeriod.
+ * Enum for diff report time periods for comparison.
  */
 public enum ReportTimePeriod {
 

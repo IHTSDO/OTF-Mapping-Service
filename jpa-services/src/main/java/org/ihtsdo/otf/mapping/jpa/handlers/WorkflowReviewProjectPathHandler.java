@@ -1,11 +1,14 @@
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
 import java.util.Arrays;
+import java.util.HashSet;
 
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
+import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
+import org.ihtsdo.otf.mapping.helpers.WorkflowPathState;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatusCombination;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
@@ -14,113 +17,307 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
+/**
+ * Workflow path handler for "review project path".
+ */
 public class WorkflowReviewProjectPathHandler extends
     AbstractWorkflowPathHandler {
 
+  // The workflow states defining the Review Project Path
+  private static WorkflowPathState initialState, specialistEditingState,
+      specialistFinishedState, leadEditingState, leadFinishedState;
+
+  /**
+   * Instantiates an empty {@link WorkflowReviewProjectPathHandler}.
+   */
   public WorkflowReviewProjectPathHandler() {
+
+    // set the workflow path
+    setWorkflowPath(WorkflowPath.REVIEW_PROJECT_PATH);
 
     // empty workflow is allowed for this path
     setEmptyWorkflowAllowed(true);
-    
-    // initial state:  tracking record, no map records
-    // final state:  no tracking record, one map record ready for publication
 
-    // add states representing specialist-level work
-    addWorkflowCombination(new WorkflowStatusCombination(
-        Arrays.asList(WorkflowStatus.NEW)));
-    addWorkflowCombination(new WorkflowStatusCombination(
-        Arrays.asList(WorkflowStatus.EDITING_IN_PROGRESS)));
-    addWorkflowCombination(new WorkflowStatusCombination(
-        Arrays.asList(WorkflowStatus.REVIEW_NEEDED)));
+    // initial STATE: tracking record exists, no map records
+    // permissible actions: ASSIGN_FROM_SCRATCH
+    initialState = new WorkflowPathState("Initial State");
+    trackingRecordStateToActionMap.put(initialState,
+        new HashSet<>(Arrays.asList(WorkflowAction.ASSIGN_FROM_SCRATCH)));
 
-    // add states representing lead-level work
-    addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
-        WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_NEW)));
-    addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
-        WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_IN_PROGRESS)));
-    addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
-        WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_RESOLVED)));
+    // STATE: Specialist level work
+    // permissible actions: SAVE_FOR_LATER, FINISH_EDITING, UNASSIGN
+    specialistEditingState =
+        new WorkflowPathState("REVIEW_NEW/REVIEW_IN_PROGRESS");
+    specialistEditingState
+        .addWorkflowCombination(new WorkflowStatusCombination(Arrays
+            .asList(WorkflowStatus.NEW)));
+    specialistEditingState
+        .addWorkflowCombination(new WorkflowStatusCombination(Arrays
+            .asList(WorkflowStatus.EDITING_IN_PROGRESS)));
+    trackingRecordStateToActionMap.put(
+        specialistEditingState,
+        new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING,
+            WorkflowAction.SAVE_FOR_LATER, WorkflowAction.UNASSIGN)));
+
+    // STATE: Specialist level work (complete)
+    // permissible actions: SAVE_FOR_LATER, FINISH_EDITING, UNASSIGN,
+    // ASSIGN_FROM_SCRATCH
+    specialistFinishedState = new WorkflowPathState("REVIEW_NEEDED");
+    specialistFinishedState
+        .addWorkflowCombination(new WorkflowStatusCombination(Arrays
+            .asList(WorkflowStatus.REVIEW_NEEDED)));
+    trackingRecordStateToActionMap.put(
+        specialistFinishedState,
+        new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING,
+            WorkflowAction.SAVE_FOR_LATER, WorkflowAction.UNASSIGN,
+            WorkflowAction.ASSIGN_FROM_SCRATCH)));
+
+    // STATE: Lead work
+    // permissible actions: SAVE_FOR_LATER, FINISH_EDITING, UNASSIGN
+    leadEditingState = new WorkflowPathState("REVIEW_NEW/REVIEW_IN_PROGRESS");
+    leadEditingState
+        .addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
+            WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_NEW)));
+    leadEditingState.addWorkflowCombination(new WorkflowStatusCombination(
+        Arrays.asList(WorkflowStatus.REVIEW_NEEDED,
+            WorkflowStatus.REVIEW_IN_PROGRESS)));
+    trackingRecordStateToActionMap.put(
+        leadEditingState,
+        new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING,
+            WorkflowAction.SAVE_FOR_LATER, WorkflowAction.UNASSIGN)));
+
+    // STATE: Finished lead work
+    // permissible actions: SAVE_FOR_LATER, FINISH_EDITING, PUBLISH, UNASSIGN
+    leadFinishedState = new WorkflowPathState("REVIEW_RESOLVED");
+    leadFinishedState.addWorkflowCombination(new WorkflowStatusCombination(
+        Arrays.asList(WorkflowStatus.REVIEW_NEEDED,
+            WorkflowStatus.REVIEW_RESOLVED)));
+    trackingRecordStateToActionMap.put(
+        leadFinishedState,
+        new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING,
+            WorkflowAction.PUBLISH, WorkflowAction.SAVE_FOR_LATER,
+            WorkflowAction.UNASSIGN)));
+
   }
 
   @Override
   public ValidationResult validateTrackingRecordForActionAndUser(
-    TrackingRecord trackingRecord, WorkflowAction action, MapUser mapUser)
-    throws Exception {
+    TrackingRecord tr, WorkflowAction action, MapUser user) throws Exception {
 
-    // first validate the tracking record itself
-    ValidationResult result =
-        super.validateTrackingRecordForActionAndUser(trackingRecord, action,
-            mapUser);
-
-    // if failed first check, return
-    if (!result.isValid())
+    // first, validate the tracking record itself
+    ValidationResult result = validateTrackingRecord(tr);
+    if (!result.isValid()) {
+      result
+          .addError("Could not validate action for user due to workflow errors.");
       return result;
+    }
 
+    // second, check for CANCEL action -- always valid for this path for any
+    // state or user (no-op)
+    if (action.equals(WorkflowAction.CANCEL)) {
+      return result;
+    }
+
+    // third, get the user role for this map project
     MappingService mappingService = new MappingServiceJpa();
+    MapUserRole userRole =
+        mappingService.getMapUserRoleForMapProject(user.getUserName(),
+            tr.getMapProjectId());
+    mappingService.close();
 
-    // second, get the map records and find the record assigned to this user (if
-    // any)
-    MapRecordList records = this.getMapRecordsForTrackingRecord(trackingRecord);
-    MapRecord assignedRecord =
-        this.getCurrentMapRecordForUser(records, mapUser);
+    // fourth, get the map records and workflow path state from the tracking
+    // record
+    MapRecordList mapRecords = getMapRecordsForTrackingRecord(tr);
+    MapRecord currentRecord = getCurrentMapRecordForUser(mapRecords, user);
+    WorkflowPathState state = this.getWorkflowStateForTrackingRecord(tr);
 
-    // third, get the role for this user on this project
-    MapUserRole role =
-        mappingService.getMapUserRoleForMapProject(mapUser.getUserName(),
-            trackingRecord.getMapProjectId());
+    // /////////////////////////////////
+    // Switch on workflow path state //
+    // /////////////////////////////////
 
-    // switch on requested action
-    switch (action) {
-      case ASSIGN_FROM_SCRATCH:
-        if (records.getCount() == 1 && !role.hasPrivilegesOf(MapUserRole.LEAD)) {
-          result.addError("User is not a lead");
-        } else if (records.getCount() >= 2) {
-          result.addError("Too many records, cannot assign");
+    if (state == null) {
+      result
+          .addError("Could not determine workflow path state for tracking record");
+    } else if (action.equals(WorkflowAction.CREATE_QA_RECORD)) {
+
+      // for creating qa record, only check role
+      if (!userRole.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
+        result.addError("User does not have required role");
+      }
+    }
+
+    // Record requirement : No record
+    // Permissible action : ASSIGN_FROM_SCRATCH
+    // Minimum role : Specialist
+    else if (state.equals(initialState)) {
+
+      // check record
+      if (currentRecord != null) {
+        result.addError("User record does not meet requirements");
+      }
+
+      // check role
+      if (!userRole.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
+        result.addError("User does not have required role");
+      }
+
+      // check action
+      if (!action.equals(WorkflowAction.ASSIGN_FROM_SCRATCH)) {
+        result.addError("Action is not permitted.");
+      }
+
+      // STATE: Specialist level work
+      // Record requirement : NEW, EDITING_IN_PROGRESS
+      // Permissible actions: SAVE_FOR_LATER, FINISH_EDITING, UNASSIGN
+      // Minimum role : Specialist
+    } else if (state.equals(specialistEditingState)) {
+
+      // check record
+      if (currentRecord == null) {
+        result.addError("User must have a record");
+      } else if (!currentRecord.getWorkflowStatus().equals(WorkflowStatus.NEW)
+          && !currentRecord.getWorkflowStatus().equals(
+              WorkflowStatus.EDITING_IN_PROGRESS)) {
+        result.addError("User's record does not meet requirements");
+      }
+
+      // check role
+      if (!userRole.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
+        result.addError("User does not have required role");
+      }
+
+      // check action
+      if (!action.equals(WorkflowAction.SAVE_FOR_LATER)
+          && !action.equals(WorkflowAction.FINISH_EDITING)
+          && !action.equals(WorkflowAction.UNASSIGN)) {
+        result.addError("Action is not permitted.");
+      }
+
+      // STATE: Specialist level work (complete)
+      // Case 1: Specialist modifying record
+      // Record requirement : REVIEW_NEEDED
+      // Permissible actions: SAVE_FOR_LATER, FINISH_EDITING, UNASSIGN,
+      // Minimum role : Specialist
+      //
+      // Case 2: Lead assigning review
+      // Record requirement : No record (or if lead edited, could be
+      // REVIEW_NEEDED)
+      // Permissible actions: ASSIGN_FROM_SCRATCH
+      // Minimum role: Lead
+
+    } else if (state.equals(specialistFinishedState)) {
+
+      // Case 1: Specialist modifying record
+      if (currentRecord != null) {
+
+        // check record
+        if (!currentRecord.getWorkflowStatus().equals(
+            WorkflowStatus.REVIEW_NEEDED)) {
+          result.addError("User's record does not meet requirements");
         }
-        break;
-      case FINISH_EDITING:
-        if (assignedRecord == null) {
-          result
-          .addError("Cannot retrieve assigned record");
-        }
-        break;
-      case PUBLISH:
-        // if no record, return error
-        if (!role.hasPrivilegesOf(MapUserRole.LEAD)) {
-          result.addError("User is not a lead");
-        } else if (assignedRecord == null) {
-          result
-              .addError("Cannot retrieve assigned record");
 
-          // check if workflow status is a lead REVIEW_* record
-        } else if (!assignedRecord.getWorkflowStatus().equals(
-            WorkflowStatus.REVIEW_NEW)
-            && !assignedRecord.getWorkflowStatus().equals(
-                WorkflowStatus.REVIEW_IN_PROGRESS)
-            && !assignedRecord.getWorkflowStatus().equals(
-                WorkflowStatus.REVIEW_RESOLVED)) {
-          result.addError("Assigned record not eligible");
+        // check role
+        if (!userRole.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
+          result.addError("User does not have required role");
         }
 
-        break;
-      case SAVE_FOR_LATER:
-        if (assignedRecord == null) {
-          result
-              .addError("Cannot retrieve assigned record");
+        // If lead role, ASSIGN_FROM_SCRATCH is allowed 
+        // ( e.g., this is the case where a lead edited the record
+        //   instead of a specialist - reviewing their own work)
+        if (userRole.hasPrivilegesOf(MapUserRole.LEAD)) {
+          if (!action.equals(WorkflowAction.ASSIGN_FROM_SCRATCH)) {
+            result.addError("Action is not permitted.");
+          }
         }
-        break;
-      case UNASSIGN:
-        if (assignedRecord == null) {
-          result
-              .addError("Cannot retrieve assigned record");
-        }
-      default:
-        result.addError("Illegal operation requested for workflow path");
-        break;
 
+        else {
+          // check action
+          if (!action.equals(WorkflowAction.SAVE_FOR_LATER)
+              && !action.equals(WorkflowAction.FINISH_EDITING)
+              && !action.equals(WorkflowAction.UNASSIGN)) {
+            result.addError("Action is not permitted.");
+          }
+        }
+
+        // Case 2: Lead assigning review
+      } else {
+
+        // check record
+        // no-op, already verified null
+
+        // check role
+        if (!userRole.hasPrivilegesOf(MapUserRole.LEAD)) {
+          result.addError("User does not have required role");
+        }
+
+        // check action
+        if (!action.equals(WorkflowAction.ASSIGN_FROM_SCRATCH)) {
+          result.addError("Action is not permitted.");
+        }
+      }
+
+      // STATE: Lead editing review
+      // Record requirement : REVIEW_NEW, REVIEW_IN_PROGRESS
+      // Permissible actions: SAVE_FOR_LATER, FINISH_EDITING, UNASSIGN,
+      // Minimum role : Lead
+    } else if (state.equals(leadEditingState)) {
+
+      // check record
+      if (currentRecord == null) {
+        result.addError("User must have a record");
+      } else if (!currentRecord.getWorkflowStatus().equals(
+          WorkflowStatus.REVIEW_NEW)
+          && !currentRecord.getWorkflowStatus().equals(
+              WorkflowStatus.REVIEW_IN_PROGRESS)) {
+        result.addError("User's record does meet requirements");
+      }
+
+      // check role
+      if (!userRole.hasPrivilegesOf(MapUserRole.LEAD)) {
+        result.addError("User does not have required role");
+      }
+
+      // check action
+      if (!action.equals(WorkflowAction.SAVE_FOR_LATER)
+          && !action.equals(WorkflowAction.FINISH_EDITING)
+          && !action.equals(WorkflowAction.UNASSIGN)) {
+        result.addError("Action is not permitted.");
+      }
+
+      // STATE: Lead editing review
+      // Record requirement : REVIEW_RESOLVED
+      // Permissible actions: SAVE_FOR_LATER, FINISH_EDITING, UNASSIGN, PUBLISHF
+      // Minimum role : Lead
+    } else if (state.equals(leadFinishedState)) {
+      // check record
+      if (currentRecord == null) {
+        result.addError("User must have a record");
+      } else if (!currentRecord.getWorkflowStatus().equals(
+          WorkflowStatus.REVIEW_RESOLVED)) {
+        result.addError("User's record does meet requirements");
+      }
+
+      // check role
+      if (!userRole.hasPrivilegesOf(MapUserRole.LEAD)) {
+        result.addError("User does not have required role");
+      }
+
+      // check action
+      if (!action.equals(WorkflowAction.SAVE_FOR_LATER)
+          && !action.equals(WorkflowAction.FINISH_EDITING)
+          && !action.equals(WorkflowAction.UNASSIGN)
+          && !action.equals(WorkflowAction.PUBLISH)) {
+        result.addError("Action is not permitted.");
+      }
+    } else {
+      result.addError("Could not determine workflow state for tracking record");
+    }
+
+    if (result.getErrors().size() != 0) {
+      result.addError("Error occured in workflow state "
+          + state.getWorkflowStateName());
     }
 
     return result;
   }
-
 }

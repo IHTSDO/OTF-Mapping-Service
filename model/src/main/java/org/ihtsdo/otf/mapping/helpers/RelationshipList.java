@@ -6,7 +6,7 @@ import java.util.Set;
 import org.ihtsdo.otf.mapping.rf2.Relationship;
 
 /**
- * Represents a sortable list of {@link Relationship}
+ * Represents a sortable list of {@link Relationship}.
  */
 public interface RelationshipList extends ResultList<Relationship> {
 

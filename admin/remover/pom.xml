@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.0-SNAPSHOT</version>
     <relativePath>../../parent</relativePath>
   </parent>
 
@@ -19,10 +19,16 @@
   <properties>
     <!-- The terminology -->
     <terminology></terminology>
+    <!-- The terminology version, default "latest" -->
+    <version>latest</version>
     <!-- refset id -->
     <refset.id></refset.id>
     <!-- map advice name -->
     <map.advice.name></map.advice.name>
+    <!-- Remove reports range - start date -->
+    <start.date>19700101</start.date>
+    <!-- Remove reports range - end date -->
+    <end.date></end.date>
   </properties>
 
 
@@ -36,7 +42,6 @@
           <plugin>
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
             <executions>
               <execution>
                 <id>remove-terminology</id>
@@ -46,6 +51,7 @@
                 </goals>
                 <configuration>
                   <terminology>${terminology}</terminology>
+                  <terminologyVersion>${version}</terminologyVersion>
                 </configuration>
               </execution>
             </executions>
@@ -62,7 +68,6 @@
           <plugin>
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
             <executions>
               <execution>
                 <id>remove-treepos</id>
@@ -72,6 +77,7 @@
                 </goals>
                 <configuration>
                   <terminology>${terminology}</terminology>
+                  <terminologyVersion>${version}</terminologyVersion>
                 </configuration>
               </execution>
             </executions>
@@ -88,7 +94,6 @@
           <plugin>
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
             <executions>
               <execution>
                 <id>remove-map-projects</id>
@@ -111,7 +116,6 @@
           <plugin>
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
             <executions>
               <execution>
                 <id>remove-map-notes</id>
@@ -137,7 +141,6 @@
           <plugin>
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
             <executions>
               <execution>
                 <id>remove-map-records</id>
@@ -163,7 +166,6 @@
           <plugin>
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
             <executions>
               <execution>
                 <id>clear-workflow</id>
@@ -189,7 +191,6 @@
           <plugin>
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
             <executions>
               <execution>
                 <id>remove-map-advice</id>
@@ -206,7 +207,32 @@
         </plugins>
       </build>
     </profile>
-
+    
+    <!-- Remove a specific map advice, specify -Drun.config... -->
+    <profile>
+      <id>MapAdviceFifthCharacter</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>remove-map-advice-fifth-character</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>remove-map-advice-fifth-character</goal>
+                </goals>
+                <configuration>
+                  <refsetId>${refset.id}</refsetId>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  
     <!-- Remove all reports for a project, specify -Drun.config... -->
     <profile>
       <id>Reports</id>
@@ -215,7 +241,6 @@
           <plugin>
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
             <executions>
               <execution>
                 <id>remove-reports</id>
@@ -225,6 +250,8 @@
                 </goals>
                 <configuration>
                   <refsetId>${refset.id}</refsetId>
+                  <startDate>${start.date}</startDate>
+                  <endDate>${end.date}</endDate>
                 </configuration>
               </execution>
             </executions>

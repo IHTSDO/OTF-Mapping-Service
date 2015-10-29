@@ -5,7 +5,7 @@ import java.util.List;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
 /**
- * Represents a sortable list of {@link TreePosition}
+ * Represents a sortable list of {@link TreePosition}.
  */
 public interface TreePositionList extends ResultList<TreePosition> {
 
