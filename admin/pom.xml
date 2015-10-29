@@ -15,6 +15,57 @@
   <name>OTF RF2 Admin</name>
   <description>OTF RF2 Administrator Tools</description>
 
+  <build>
+    <plugins>
+
+      <!-- Package tools -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>truezip-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-into</id>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <fileset>
+                <directory>src/main/resources</directory>
+                <outputDirectory>${project.build.directory}/mapping-admin-${releaseVersion}.zip</outputDirectory>
+              </fileset>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Attach .zip file artifact -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-zip</id>
+            <phase>package</phase>
+            <goals>
+              <goal>attach-artifact</goal>
+            </goals>
+            <configuration>
+              <artifacts>
+                <artifact>
+                  <file>${project.build.directory}/mapping-admin-${releaseVersion}.zip</file>
+                  <type>zip</type>
+                </artifact>
+              </artifacts>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+    </plugins>
+
+  </build>
+
   <!-- Sub-modules -->
   <modules>
     <module>mojo</module>
@@ -26,5 +77,6 @@
     <module>import</module>
     <module>qa</module>
     <module>release</module>
+    <module>daily-build</module>
   </modules>
 </project>

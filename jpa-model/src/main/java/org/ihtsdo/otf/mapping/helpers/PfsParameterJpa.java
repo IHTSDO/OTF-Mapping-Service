@@ -3,14 +3,12 @@ package org.ihtsdo.otf.mapping.helpers;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * The Jpa implementation of the paging/filtering/sorting object
- * @author Patrick
- * 
+ * A JPA enabled implementation of the paging/filtering/sorting object
  */
 @XmlRootElement
 public class PfsParameterJpa implements PfsParameter {
 
-/** The maximum number of results */
+  /** The maximum number of results */
   private int maxResults = -1;
 
   /** The start index for queries */
@@ -111,13 +109,12 @@ public class PfsParameterJpa implements PfsParameter {
     return getStartIndex() != -1 && getMaxResults() != -1
         && i >= getStartIndex() && i < (getStartIndex() + getMaxResults());
   }
-  
 
   @Override
-	public String toString() {
-		return "PfsParameterJpa [maxResults=" + maxResults + ", startIndex="
-				+ startIndex + ", queryRestriction=" + queryRestriction
-				+ ", sortField=" + sortField + "]";
-	}
+  public String toString() {
+    return "PfsParameterJpa [maxResults=" + maxResults + ", startIndex="
+        + startIndex + ", queryRestriction=" + queryRestriction
+        + ", sortField=" + sortField + "]";
+  }
 
 }

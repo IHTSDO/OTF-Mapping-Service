@@ -1,5 +1,14 @@
 /* CSS file for OTF Mapping WebApp */
 
+#scrollArea {
+    height: 100%;
+    overflow: auto;
+  }
+ 
+  #bottom {
+    display: block;
+  }
+
 /* ensures that all links properly display a pointer cursor */
 a {
 	cursor:pointer;
@@ -29,7 +38,12 @@ a {
   background-color: #F3F7F2;
 }
 
-
+/* to make padding smaller on tab headers */
+.nav > li > a {
+  position: relative;
+  display: block;
+  padding: 10px 10px;
+}
 
 
 html,body {

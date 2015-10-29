@@ -13,27 +13,7 @@ import org.ihtsdo.otf.mapping.services.MappingService;
 /**
  * Loads unpublished complex maps.
  * 
- * Sample execution:
- * 
- * <pre>
- *     <plugin>
- *       <groupId>org.ihtsdo.otf.mapping</groupId>
- *       <artifactId>mapping-admin-mojo</artifactId>
- *       <version>${project.version}</version>
- *       <executions>
- *         <execution>
- *           <id>create-map-records-from-complex-map</id>
- *           <phase>package</phase>
- *           <goals>
- *             <goal>create-map-records-from-complex-map</goal>
- *           </goals>
- *           <configuration>
- *             <refSetId>${refset.id}</refSetId>
- *           </configuration>
- *         </execution>
- *       </executions>
- *     </plugin>
- * </pre>
+ * See admin/loader/pom.xml for a sample execution.
  * 
  * @goal create-map-records-from-complex-map
  * @phase package
@@ -42,9 +22,10 @@ public class MapRecordComplexMapLoaderMojo extends AbstractMojo {
 
   /**
    * The refSet id
-   * @parameter refSetId
+   * @parameter refsetId
+   * @required
    */
-  private String refSetId = null;
+  private String refsetId = null;
 
   /**
    * Executes the plugin.
@@ -53,13 +34,8 @@ public class MapRecordComplexMapLoaderMojo extends AbstractMojo {
    */
   @Override
   public void execute() throws MojoExecutionException {
-    getLog().info(
-        "Starting generating map records from complex map records - "
-            + refSetId);
-
-    if (refSetId == null) {
-      throw new MojoExecutionException("You must specify a refSetId.");
-    }
+    getLog().info("Starting generating map records from complex map records");
+    getLog().info("  refsetId = " + refsetId);
 
     try {
 
@@ -68,7 +44,7 @@ public class MapRecordComplexMapLoaderMojo extends AbstractMojo {
 
       for (MapProject mapProject : mappingService.getMapProjects()
           .getIterable()) {
-        for (String id : refSetId.split(",")) {
+        for (String id : refsetId.split(",")) {
           if (mapProject.getRefSetId().equals(id)) {
             mapProjects.add(mapProject);
           }
@@ -84,9 +60,8 @@ public class MapRecordComplexMapLoaderMojo extends AbstractMojo {
             WorkflowStatus.PUBLISHED);
       }
 
-      getLog().info("done ...");
       mappingService.close();
-
+      getLog().info("Done ...");
     } catch (Exception e) {
       e.printStackTrace();
       throw new MojoExecutionException(

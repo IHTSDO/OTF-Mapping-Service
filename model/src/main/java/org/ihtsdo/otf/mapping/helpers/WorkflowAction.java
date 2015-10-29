@@ -14,18 +14,18 @@ public enum WorkflowAction {
   /** The unassign. */
   UNASSIGN,
 
-  /** The start editing. */
-  START_EDITING,
-
   /** The save for later. */
   SAVE_FOR_LATER,
 
   /** The finish editing. */
   FINISH_EDITING,
-  
+
   /** The publish */
   PUBLISH,
-  
+
   /** Cancel work */
-  CANCEL;
+  CANCEL,
+
+  /** Create qa record */
+  CREATE_QA_RECORD;
 }

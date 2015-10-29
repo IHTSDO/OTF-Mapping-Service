@@ -1,9 +1,7 @@
 package org.ihtsdo.otf.mapping.helpers;
 
 /**
- * Generic object to contain search results
- * @author Patrick
- * 
+ * Generically represents a search result.
  */
 public interface SearchResult {
 
@@ -56,5 +54,19 @@ public interface SearchResult {
    * @param value the value to set
    */
   public void setValue(String value);
+
+  /**
+   * Returns the value2.
+   *
+   * @return the value2
+   */
+  public String getValue2();
+
+  /**
+   * Sets the value2.
+   *
+   * @param value2 the value2
+   */
+  public void setValue2(String value2);
 
 }

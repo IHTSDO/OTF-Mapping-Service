@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.jpa.LanguageRefSetMemberJpa;
@@ -15,7 +16,8 @@ import org.ihtsdo.otf.mapping.rf2.jpa.LanguageRefSetMemberJpa;
  * JAXB enabled implementation of {@link LanguageRefSetMemberList}.
  */
 @XmlRootElement(name = "languageRefSetMemberList")
-public class LanguageRefSetMemberListJpa extends AbstractResultList<LanguageRefSetMember> implements
+public class LanguageRefSetMemberListJpa extends
+    AbstractResultList<LanguageRefSetMember> implements
     LanguageRefSetMemberList {
 
   /** The map languageRefSetMembers. */
@@ -32,8 +34,8 @@ public class LanguageRefSetMemberListJpa extends AbstractResultList<LanguageRefS
    * (non-Javadoc)
    * 
    * @see
-   * org.ihtsdo.otf.mapping.helpers.LanguageRefSetMemberList#addLanguageRefSetMember(org.ihtsdo.otf.mapping
-   * .rf2.LanguageRefSetMember)
+   * org.ihtsdo.otf.mapping.helpers.LanguageRefSetMemberList#addLanguageRefSetMember
+   * (org.ihtsdo.otf.mapping .rf2.LanguageRefSetMember)
    */
   @Override
   public void addLanguageRefSetMember(LanguageRefSetMember LanguageRefSetMember) {
@@ -43,22 +45,25 @@ public class LanguageRefSetMemberListJpa extends AbstractResultList<LanguageRefS
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * org.ihtsdo.otf.mapping.helpers.LanguageRefSetMemberList#removeLanguageRefSetMember(org.ihtsdo.otf
+   * @see org.ihtsdo.otf.mapping.helpers.LanguageRefSetMemberList#
+   * removeLanguageRefSetMember(org.ihtsdo.otf
    * .mapping.rf2.LanguageRefSetMember)
    */
   @Override
-  public void removeLanguageRefSetMember(LanguageRefSetMember LanguageRefSetMember) {
+  public void removeLanguageRefSetMember(
+    LanguageRefSetMember LanguageRefSetMember) {
     languageRefSetMembers.remove(LanguageRefSetMember);
   }
 
   /*
    * (non-Javadoc)
    * 
-   * @see org.ihtsdo.otf.mapping.helpers.LanguageRefSetMemberList#setLanguageRefSetMembers(java.util.List)
+   * @see org.ihtsdo.otf.mapping.helpers.LanguageRefSetMemberList#
+   * setLanguageRefSetMembers(java.util.List)
    */
   @Override
-  public void setLanguageRefSetMembers(List<LanguageRefSetMember> LanguageRefSetMembers) {
+  public void setLanguageRefSetMembers(
+    List<LanguageRefSetMember> LanguageRefSetMembers) {
     this.languageRefSetMembers = new ArrayList<>();
     if (LanguageRefSetMembers != null) {
       this.languageRefSetMembers.addAll(LanguageRefSetMembers);
@@ -68,7 +73,8 @@ public class LanguageRefSetMemberListJpa extends AbstractResultList<LanguageRefS
   /*
    * (non-Javadoc)
    * 
-   * @see org.ihtsdo.otf.mapping.helpers.LanguageRefSetMemberList#getLanguageRefSetMembers()
+   * @see org.ihtsdo.otf.mapping.helpers.LanguageRefSetMemberList#
+   * getLanguageRefSetMembers()
    */
   @Override
   @XmlElement(type = LanguageRefSetMemberJpa.class, name = "languageRefSetMember")
@@ -112,6 +118,7 @@ public class LanguageRefSetMemberListJpa extends AbstractResultList<LanguageRefS
    * @see org.ihtsdo.otf.mapping.helpers.ResultList#getIterable()
    */
   @Override
+  @XmlTransient
   public Iterable<LanguageRefSetMember> getIterable() {
     return languageRefSetMembers;
   }

@@ -61,7 +61,7 @@ public class CompareMapRecordJpaTest {
     entry2.setMapRelation(relation2);
     record2.addMapEntry(entry2);
 
-    if (handler.compareMapRecords(record1, record2).isValid() == false) {
+    if (!handler.compareMapRecords(record1, record2).isValid()) {
       fail("testSingleGroupSingleEntryMatching failed!");
     }
   }
@@ -233,7 +233,7 @@ public class CompareMapRecordJpaTest {
     record2.addMapEntry(entry1);
     record2.addMapEntry(entry2);
 
-    if (handler.compareMapRecords(record1, record2).isValid() == false) {
+    if (handler.compareMapRecords(record1, record2).isValid()) {
       fail("testSingleGroupMultipleEntriesSameOrder failed!");
     }
   }
@@ -287,7 +287,7 @@ public class CompareMapRecordJpaTest {
     record2.addMapEntry(entry2);
     record2.addMapEntry(entry1);
 
-    if (handler.compareMapRecords(record1, record2).isValid() == false) {
+    if (!handler.compareMapRecords(record1, record2).isValid()) {
       fail("testSingleGroupMultipleEntriesDifferentOrder failed!");
     }
   }
@@ -351,7 +351,7 @@ public class CompareMapRecordJpaTest {
     record2.addMapEntry(entry2);
     record2.addMapEntry(entry3);
 
-    if (handler.compareMapRecords(record1, record2).isValid() == false) {
+    if (!handler.compareMapRecords(record1, record2).isValid()) {
       fail("testMultipleGroupsEntriesMatching failed!");
     }
   }

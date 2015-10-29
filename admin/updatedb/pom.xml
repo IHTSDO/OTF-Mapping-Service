@@ -16,30 +16,22 @@
   <packaging>pom</packaging>
 
   <profiles>
+
+    <!-- Activated by run.config setting -->
     <profile>
-      <id>run</id>
+      <id>Updatedb</id>
       <activation>
         <property>
           <name>run.config</name>
         </property>
       </activation>
-
-      <properties>
-        <!-- This can be overridden to use "create" instead via -D....=create -->
-        <!-- NOTE: this setting alone, as a maven property filters down to the
-                   HBM2DDL tool and causes it to work, no need for environment
-                   or config file properties -->
-        <hibernate.hbm2ddl.auto>update</hibernate.hbm2ddl.auto>
-      </properties>
-
       <build>
         <plugins>
 
-          <!-- Execute the mojo -->
+          <!-- Update the database, specify -Drun.config=... -->
           <plugin>
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
             <executions>
               <execution>
                 <id>updatedb</id>
@@ -53,5 +45,6 @@
         </plugins>
       </build>
     </profile>
+
   </profiles>
 </project>
