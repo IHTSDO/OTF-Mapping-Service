@@ -7,52 +7,53 @@ import javax.persistence.Table;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 
 /**
- * Concrete implementation of {@link ComplexMapRefSetMember}.
+ * JPA enabled implementation of {@link ComplexMapRefSetMember}.
  */
 @Entity
 @Table(name = "complex_map_refset_members")
-//@Audited
+// @Audited
 public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
     implements ComplexMapRefSetMember {
 
-  /** The map block */
+  /** The map block. */
   @Column(nullable = false)
   private int mapBlock;
 
-  /** the map block rule */
+  /** the map block rule. */
   @Column(nullable = true)
   private String mapBlockRule;
 
-  /** the map block advice */
+  /** the map block advice. */
   @Column(nullable = true)
   private String mapBlockAdvice;
 
-  /** The map group */
+  /** The map group. */
   @Column(nullable = false)
   private int mapGroup;
 
-  /** The map priority */
+  /** The map priority. */
   @Column(nullable = false)
   private int mapPriority;
 
-  /** the map rule */
-  @Column(nullable = true)
+  /** the map rule. */
+  @Column(nullable = true, length = 4000)
   private String mapRule;
 
-  /** the map advice */
+  /** the map advice. */
   @Column(nullable = true, length = 500)
   private String mapAdvice;
 
-  /** the map target */
+  /** the map target. */
   @Column(nullable = true)
   private String mapTarget;
 
-  /** the correlation id */
+  /** the correlation id. */
   @Column(nullable = false)
   private Long mapRelationId;
 
   /**
-   * returns the mapBlock
+   * returns the mapBlock.
+   *
    * @return the mapBlock
    */
   @Override
@@ -61,7 +62,8 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
   }
 
   /**
-   * sets the mapBlock
+   * sets the mapBlock.
+   *
    * @param mapBlock the mapBlock
    */
   @Override
@@ -70,7 +72,8 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
   }
 
   /**
-   * returns the mapBlockRule
+   * returns the mapBlockRule.
+   *
    * @return the mapBlockRule
    */
   @Override
@@ -78,9 +81,12 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
     return this.mapBlockRule;
   }
 
-  /**
-   * sets the mapBlockRule
-   * @paran the mapBlockRule
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember#setMapBlockRule(java.
+   * lang.String)
    */
   @Override
   public void setMapBlockRule(String mapBlockRule) {
@@ -88,7 +94,8 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
   }
 
   /**
-   * returns the mapBlockAdvice
+   * returns the mapBlockAdvice.
+   *
    * @return the mapBlockAdvice
    */
   @Override
@@ -97,7 +104,8 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
   }
 
   /**
-   * sets the mapBlockAdvice
+   * sets the mapBlockAdvice.
+   *
    * @param mapBlockAdvice the mapBlockAdvice
    */
   @Override
@@ -106,7 +114,8 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
   }
 
   /**
-   * returns the map group
+   * returns the map group.
+   *
    * @return the map group
    */
   @Override
@@ -115,7 +124,8 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
   }
 
   /**
-   * sets the map group
+   * sets the map group.
+   *
    * @param mapGroup the map group
    */
   @Override
@@ -124,7 +134,8 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
   }
 
   /**
-   * returns the map priority
+   * returns the map priority.
+   *
    * @return the map priority
    */
   @Override
@@ -133,7 +144,8 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
   }
 
   /**
-   * sets the map priority
+   * sets the map priority.
+   *
    * @param mapPriority the map priority
    */
   @Override
@@ -142,7 +154,8 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
   }
 
   /**
-   * returns the map rule
+   * returns the map rule.
+   *
    * @return the map rule
    */
   @Override
@@ -151,7 +164,8 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
   }
 
   /**
-   * sets the map rule
+   * sets the map rule.
+   *
    * @param mapRule the map rule
    */
   @Override
@@ -160,7 +174,8 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
   }
 
   /**
-   * returns the map advice
+   * returns the map advice.
+   *
    * @return mapAdvice the map advice
    */
   @Override
@@ -169,7 +184,8 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
   }
 
   /**
-   * sets the map advice
+   * sets the map advice.
+   *
    * @param mapAdvice the map advice
    */
   @Override
@@ -179,7 +195,8 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
   }
 
   /**
-   * returns the map target
+   * returns the map target.
+   *
    * @return the map target
    */
   @Override
@@ -188,16 +205,21 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
   }
 
   /**
-   * sets the map target
+   * sets the map target.
+   *
    * @param mapTarget the map target
    */
   @Override
   public void setMapTarget(String mapTarget) {
+    if (mapTarget == null) {
+      throw new UnsupportedOperationException("Cannot set map target to null");
+    }
     this.mapTarget = mapTarget;
   }
 
   /**
-   * returns the correlation id
+   * returns the correlation id.
+   *
    * @return the correlation id
    */
   @Override
@@ -206,7 +228,8 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
   }
 
   /**
-   * sets the correlation id
+   * sets the correlation id.
+   *
    * @param mapRelationId the correlation id
    */
   @Override
@@ -214,59 +237,43 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
     this.mapRelationId = mapRelationId;
   }
 
-  /**
-   * {@inheritDoc}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rf2.jpa.AbstractComponent#toString()
    */
   @Override
   public String toString() {
-    return this.getId()
-        + ","
-        + this.getTerminology()
-        + ","
-        + this.getTerminologyId()
-        + ","
-        + this.getTerminologyVersion()
-        + ","
-        + this.getEffectiveTime()
-        + ","
-        + this.isActive()
-        + ","
-        +
-
-        (this.getConcept() == null ? null : this.getConcept()
-            .getTerminologyId()) + "," + Integer.toString(this.getMapGroup())
-        + "," + Integer.toString(this.getMapPriority()) + ","
-        + this.getMapRule() + "," + this.getMapAdvice() + ","
-        + this.getMapTarget() + "," + this.getMapRelationId() + "," +
-
-        Integer.toString(this.getMapBlock()) + "," + this.getMapBlockRule()
-        + "," + this.getMapBlockAdvice();
+    return "ComplexMapRefSetMemberJpa [mapBlock="
+        + mapBlock
+        + ", "
+        + (mapBlockRule != null ? "mapBlockRule=" + mapBlockRule + ", " : "")
+        + (mapBlockAdvice != null ? "mapBlockAdvice=" + mapBlockAdvice + ", "
+            : "")
+        + "mapGroup="
+        + mapGroup
+        + ", mapPriority="
+        + mapPriority
+        + ", "
+        + (mapRule != null ? "mapRule=" + mapRule + ", " : "")
+        + (mapAdvice != null ? "mapAdvice=" + mapAdvice + ", " : "")
+        + (mapTarget != null ? "mapTarget=" + mapTarget + ", " : "")
+        + (mapRelationId != null ? "mapRelationId=" + mapRelationId + ", " : "")
+        + (getConceptId() != null ? "getConceptId()=" + getConceptId() + ", "
+            : "")
+        + (getRefSetId() != null ? "getRefSetId()=" + getRefSetId() + ", " : "")
+        + "isActive()="
+        + isActive()
+        + ", "
+        + (getModuleId() != null ? "getModuleId()=" + getModuleId() + ", " : "")
+        + (getTerminologyVersion() != null ? "getTerminologyVersion()="
+            + getTerminologyVersion() + ", " : "")
+        + (getTerminology() != null ? "getTerminology()=" + getTerminology()
+            + ", " : "")
+        + (getTerminologyId() != null ? "getTerminologyId()="
+            + getTerminologyId() : "") + "]";
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.rf2.jpa.AbstractConceptRefSetMember#hashCode()
-   */
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = super.hashCode();
-    result =
-        prime * result
-            + ((mapRelationId == null) ? 0 : mapRelationId.hashCode());
-    result = prime * result + ((mapRule == null) ? 0 : mapRule.hashCode());
-    result = prime * result + ((mapTarget == null) ? 0 : mapTarget.hashCode());
-    return result;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.rf2.jpa.AbstractConceptRefSetMember#equals(java.
-   * lang.Object)
-   */
   @Override
   public boolean equals(Object obj) {
     if (this == obj)
@@ -276,6 +283,15 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
     if (getClass() != obj.getClass())
       return false;
     ComplexMapRefSetMemberJpa other = (ComplexMapRefSetMemberJpa) obj;
+    if (mapAdvice == null) {
+      if (other.mapAdvice != null)
+        return false;
+    } else if (!mapAdvice.equals(other.mapAdvice))
+      return false;
+    if (mapGroup != other.mapGroup)
+      return false;
+    if (mapPriority != other.mapPriority)
+      return false;
     if (mapRelationId == null) {
       if (other.mapRelationId != null)
         return false;
@@ -292,6 +308,21 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
     } else if (!mapTarget.equals(other.mapTarget))
       return false;
     return true;
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = super.hashCode();
+    result = prime * result + ((mapAdvice == null) ? 0 : mapAdvice.hashCode());
+    result = prime * result + mapGroup;
+    result = prime * result + mapPriority;
+    result =
+        prime * result
+            + ((mapRelationId == null) ? 0 : mapRelationId.hashCode());
+    result = prime * result + ((mapRule == null) ? 0 : mapRule.hashCode());
+    result = prime * result + ((mapTarget == null) ? 0 : mapTarget.hashCode());
+    return result;
   }
 
 }

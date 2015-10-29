@@ -1,25 +1,108 @@
+<tabset> <tab heading="Single Record Administration">
 <form>
-MapRecord Id: <input type="text" id="mapRecordId" ng-model="mapRecordId"><button type="submit" ng-click="getRecord(mapRecordId)">Retrieve</button>
+  MapRecord Id: <input type="text" id="mapRecordId" ng-model="mapRecordId">
+  <button type="submit" ng-click="getRecord(mapRecordId, false)">Retrieve</button>
+  <button type="submit" ng-click="getRecord(mapRecordId, true)">Create
+    QA Record</button>
 </form>
-<div ng-show = "record != null">
-	<hr>
-	<div otf-map-record-wide record="record" project="project" show-title="true"></div>
-	
-	<table class="table">
-		<tr>
-			<td >Owner</td><td>{{record.owner.name}}</td>
-		</tr>
-		<tr>
-			<td>Last Modified By</td><td>{{record.lastModifiedBy.name}}</td>
-		</tr>
-		<tr>
-			<td>Last Modified</td><td>{{record.lastModified | date : 'short'}}</td>
-		</tr>
-		<tr>
-			<td>Workflow Status</td><td><input ng-model="record.workflowStatus"></td>
-		</tr>
-	</table>
-	
-	<button class="btn btn-sm btn-primary" ng-click="saveRecord()">Save</button>
-	<button class="btn btn-sm btn-danger pull-right" ng-click="deleteRecord()">Delete</button>
+
+<div ng-show="record != null">
+  <hr>
+  <div otf-map-record-wide record="record" project="project" show-title="true"></div>
+
+  <table class="table">
+    <tr>
+      <td>Owner</td>
+      <td>{{record.owner.name}}</td>
+    </tr>
+    <tr>
+      <td>Last Modified By</td>
+      <td>{{record.lastModifiedBy.name}}</td>
+    </tr>
+    <tr>
+      <td>Last Modified</td>
+      <td>{{record.lastModified | date : 'short'}}</td>
+    </tr>
+    <tr>
+      <td>Workflow Status</td>
+      <td><input ng-model="record.workflowStatus"></td>
+    </tr>
+  </table>
+
+  <button class="btn btn-sm btn-primary" ng-click="saveRecord()">Save</button>
+  <button class="btn btn-sm btn-danger pull-right" ng-click="deleteRecord()">Delete</button>
 </div>
+</tab> <tab heading="Batch delete">
+
+<h4>Enter Terminology Ids</h4>
+Note: Must be delimited by either whitespace or commas.
+<p></p>
+<textarea style="width: 100%; height: 250px" ng-model="conceptIdsToRemove"></textarea>
+<button class="btn btn-sm btn-primary"
+  ng-click="removeRecordBatch(conceptIdsToRemove)">Delete Records</button>
+<button class="btn btn-sm btn-danger" ng-click="conceptIdsToRemove = ''">Clear</button>
+
+<!--  Display results of batch operation -->
+<div ng-show="validationResult != null">
+  <p></p>
+  <div ng-show="validationResult.messages.length > 0" style="color: green">
+    Messages:<br>
+    <ul>
+      <li ng-repeat="message in validationResult.messages">{{message}}</li>
+    </ul>
+  </div>
+
+  <div ng-show="validationResult.warnings.length > 0" style="color: orange">
+    Warnings:<br>
+    <ul>
+      <li ng-repeat="warning in validationResult.warnings">{{warning}}</li>
+    </ul>
+  </div>
+
+  <div ng-show="validationResult.errors.length > 0" style="color: red">
+    Errors:<br>
+    <ul>
+      <li ng-repeat="error in validationResult.errors">{{error}}</li>
+    </ul>
+  </div>
+</div>
+
+</tab>
+<tab heading="Assign Fix Errors">
+
+<h4>Enter Terminology Ids to Assign Along Fix Error Path</h4>
+
+<div>Assign to: 
+<select ng-model="userToAssign" ng-options="user as user.name for user in projectUsers"></select>
+</div>
+Note: Must be delimited by either whitespace or commas.<br>
+<textarea style="width: 100%; height: 250px" ng-model="conceptIdsToAssign"></textarea>
+<button class="btn btn-sm btn-primary"
+  ng-click="assignFixError(conceptIdsToAssign, userToAssign)">Assign Records</button>
+<button class="btn btn-sm btn-danger" ng-click="conceptIdsToRemove = ''">Clear</button>
+
+<!--  Display results of batch operation -->
+<div ng-show="validationResultAssign != null">
+  <p></p>
+  <div ng-show="validationResultAssign.messages.length > 0" style="color: green">
+    Messages:<br>
+    <ul>
+      <li ng-repeat="message in validationResultAssign.messages">{{message}}</li>
+    </ul>
+  </div>
+
+  <div ng-show="validationResultAssign.warnings.length > 0" style="color: orange">
+    Warnings:<br>
+    <ul>
+      <li ng-repeat="warning in validationResultAssign.warnings">{{warning}}</li>
+    </ul>
+  </div>
+
+  <div ng-show="validationResultAssign.errors.length > 0" style="color: red">
+    Errors:<br>
+    <ul>
+      <li ng-repeat="error in validationResultAssign.errors">{{error}}</li>
+    </ul>
+  </div>
+</div>
+</tabset>

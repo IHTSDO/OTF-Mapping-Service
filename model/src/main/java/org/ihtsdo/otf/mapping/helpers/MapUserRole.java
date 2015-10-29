@@ -1,38 +1,41 @@
 package org.ihtsdo.otf.mapping.helpers;
 
 /**
- * The Enum UserRole.
+ * Enum for available user application and project roles.
  *
  */
 public enum MapUserRole {
-  
-  /**  The viewer. */
-  VIEWER ("Viewer"),
-  
-  /**  The specialist. */
-  SPECIALIST ("Specialist"),
-  
-  /**  The lead. */
-  LEAD ("Lead"),
-  
-  /**  The administrator. */
-  ADMINISTRATOR ("Administrator");
-  
+
+  /** No role. */
+  NONE("None"),
+
+  /** The viewer. */
+  VIEWER("Viewer"),
+
+  /** The specialist. */
+  SPECIALIST("Specialist"),
+
+  /** The lead. */
+  LEAD("Lead"),
+
+  /** The administrator. */
+  ADMINISTRATOR("Administrator");
+
   private String value;
-  
+
   private MapUserRole(String value) {
-  	this.value = value;
+    this.value = value;
   }
-  
+
   /**
    * Returns the value.
    *
    * @return the value
    */
   public String getValue() {
-  	return value;
+    return value;
   }
-  
+
   /**
    * Checks for privileges of.
    *
@@ -41,17 +44,20 @@ public enum MapUserRole {
    */
   public boolean hasPrivilegesOf(MapUserRole role) {
     if (this.equals(MapUserRole.VIEWER) && role.equals(MapUserRole.VIEWER))
-    	return true;
-    else if (this.equals(MapUserRole.SPECIALIST) && 
-    		(role.equals(MapUserRole.VIEWER) || role.equals(MapUserRole.SPECIALIST)))
       return true;
-    else if (this.equals(MapUserRole.LEAD) && 
-    		(role.equals(MapUserRole.VIEWER) || role.equals(MapUserRole.SPECIALIST) || role.equals(MapUserRole.LEAD)))
-    	return true;
+    else if (this.equals(MapUserRole.SPECIALIST)
+        && (role.equals(MapUserRole.VIEWER) || role
+            .equals(MapUserRole.SPECIALIST)))
+      return true;
+    else if (this.equals(MapUserRole.LEAD)
+        && (role.equals(MapUserRole.VIEWER)
+            || role.equals(MapUserRole.SPECIALIST) || role
+              .equals(MapUserRole.LEAD)))
+      return true;
     else if (this.equals(MapUserRole.ADMINISTRATOR))
-    	return true;
+      return true;
     else
-    	return false;
+      return false;
   }
-  
+
 }

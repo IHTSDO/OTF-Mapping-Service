@@ -5,7 +5,7 @@ import java.util.List;
 import org.ihtsdo.otf.mapping.reports.ReportResultItem;
 
 /**
- * Represents a sortable list of {@link ReportResultItem}
+ * Represents a sortable list of {@link ReportResultItem}.
  */
 public interface ReportResultItemList extends ResultList<ReportResultItem> {
 

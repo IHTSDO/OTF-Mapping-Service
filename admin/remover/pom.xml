@@ -1,306 +1,264 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-	<!-- Module Metadata -->
-	<parent>
-		<groupId>org.ihtsdo.otf.mapping</groupId>
+  <!-- Module Metadata -->
+  <parent>
+    <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
-		<version>1.0.0-SNAPSHOT</version>
-		<relativePath>../../parent</relativePath>
-	</parent>
+    <version>1.0.0-SNAPSHOT</version>
+    <relativePath>../../parent</relativePath>
+  </parent>
 
-	<artifactId>mapping-admin-remover</artifactId>
-	<name>OTF Admin Terminology Remover</name>
-	<description>OTF Administrator Tool to Remove Terminology data</description>
-	<packaging>pom</packaging>
+  <artifactId>mapping-admin-remover</artifactId>
+  <name>OTF Admin Terminology Remover</name>
+  <description>OTF Administrator Tool to Remove Terminology data</description>
+  <packaging>pom</packaging>
+
+  <!-- Properties used in mojos -->
+  <properties>
+    <!-- The terminology -->
+    <terminology></terminology>
+    <!-- The terminology version, default "latest" -->
+    <version>latest</version>
+    <!-- refset id -->
+    <refset.id></refset.id>
+    <!-- map advice name -->
+    <map.advice.name></map.advice.name>
+    <!-- Remove reports range - start date -->
+    <start.date>19700101</start.date>
+    <!-- Remove reports range - end date -->
+    <end.date></end.date>
+  </properties>
 
 
-	<profiles>
+  <profiles>
 
-		<!-- Remove SNOMED -->
-		<profile>
-			<id>SNOMEDCT</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.ihtsdo.otf.mapping</groupId>
-						<artifactId>mapping-admin-mojo</artifactId>
-						<version>${project.version}</version>
-						<executions>
-							<execution>
-								<id>remove-terminology</id>
-								<phase>package</phase>
-								<goals>
-									<goal>remove-terminology</goal>
-								</goals>
-								<configuration>
-									<terminology>SNOMEDCT</terminology>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
+    <!-- Remove terminology, specify -Drun.config... -Dterminology=... -->
+    <profile>
+      <id>Terminology</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>remove-terminology</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>remove-terminology</goal>
+                </goals>
+                <configuration>
+                  <terminology>${terminology}</terminology>
+                  <terminologyVersion>${version}</terminologyVersion>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
 
-		<!-- Remove SNOMED tree positions only -->
-		<profile>
-			<id>SNOMEDCT-treepos</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.ihtsdo.otf.mapping</groupId>
-						<artifactId>mapping-admin-mojo</artifactId>
-						<version>${project.version}</version>
-						<executions>
-							<execution>
-								<id>remove-snomed-treepos</id>
-								<phase>package</phase>
-								<goals>
-									<goal>remove-snomed-treepos</goal>
-								</goals>
-								<configuration>
-									<terminology>SNOMEDCT</terminology>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
+    <!-- Remove SNOMED tree positions, specify -Drun.config... -->
+    <profile>
+      <id>Treepos</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>remove-treepos</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>remove-treepos</goal>
+                </goals>
+                <configuration>
+                  <terminology>${terminology}</terminology>
+                  <terminologyVersion>${version}</terminologyVersion>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
 
-		<!-- Remove ICD10 -->
-		<profile>
-			<id>ICD10</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.ihtsdo.otf.mapping</groupId>
-						<artifactId>mapping-admin-mojo</artifactId>
-						<version>${project.version}</version>
-						<executions>
-							<execution>
-								<id>remove-terminology</id>
-								<phase>package</phase>
-								<goals>
-									<goal>remove-terminology</goal>
-								</goals>
-								<configuration>
-									<terminology>ICD10</terminology>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
+    <!-- Remove map project data, specify -Drun.config... -->
+    <profile>
+      <id>MapProject</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>remove-map-projects</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>remove-map-projects</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
 
-		<!-- Remove ICD9CM -->
-		<profile>
-			<id>ICD9CM</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.ihtsdo.otf.mapping</groupId>
-						<artifactId>mapping-admin-mojo</artifactId>
-						<version>${project.version}</version>
-						<executions>
-							<execution>
-								<id>remove-terminology</id>
-								<phase>package</phase>
-								<goals>
-									<goal>remove-terminology</goal>
-								</goals>
-								<configuration>
-									<terminology>ICD9CM</terminology>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
+    <!-- Remove map notes, specify -Drun.config... -->
+    <profile>
+      <id>MapNotes</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>remove-map-notes</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>remove-map-notes</goal>
+                </goals>
+                <configuration>
+                  <refsetId>${refset.id}</refsetId>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
 
-		<!-- Remove ICPC -->
-		<profile>
-			<id>ICPC</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.ihtsdo.otf.mapping</groupId>
-						<artifactId>mapping-admin-mojo</artifactId>
-						<version>${project.version}</version>
-						<executions>
-							<execution>
-								<id>remove-terminology</id>
-								<phase>package</phase>
-								<goals>
-									<goal>remove-terminology</goal>
-								</goals>
-								<configuration>
-									<terminology>ICPC</terminology>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
+    <!-- Remove Map records, specify -Drun.config... -->
+    <profile>
+      <id>MapRecords</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>remove-map-records</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>remove-map-records</goal>
+                </goals>
+                <configuration>
+                  <refsetId>${refset.id}</refsetId>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
 
-		<!-- Remove map project data -->
-		<profile>
-			<id>MapProjectData</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.ihtsdo.otf.mapping</groupId>
-						<artifactId>mapping-admin-mojo</artifactId>
-						<version>${project.version}</version>
-						<executions>
-							<execution>
-								<id>remove-map-projects</id>
-								<phase>package</phase>
-								<goals>
-									<goal>remove-map-projects</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
+    <!-- Clear workflow, specify -Drun.config... -->
+    <profile>
+      <id>ClearWorkflow</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>clear-workflow</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>clear-workflow</goal>
+                </goals>
+                <configuration>
+                  <refsetId>${refset.id}</refsetId>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
 
-		<!-- Remove map notes -->
-		<profile>
-			<id>MapNotes</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.ihtsdo.otf.mapping</groupId>
-						<artifactId>mapping-admin-mojo</artifactId>
-						<version>${project.version}</version>
-						<executions>
-							<execution>
-								<id>remove-map-notes</id>
-								<phase>package</phase>
-								<goals>
-									<goal>remove-map-notes</goal>
-								</goals>
-								<configuration>
-									<refSetId>${refset.id}</refSetId>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
+    <!-- Remove a specific map advice, specify -Drun.config... -->
+    <profile>
+      <id>MapAdvice</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>remove-map-advice</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>remove-map-advice</goal>
+                </goals>
+                <configuration>
+                  <mapAdviceName>${map.advice.name}</mapAdviceName>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    
+    <!-- Remove a specific map advice, specify -Drun.config... -->
+    <profile>
+      <id>MapAdviceFifthCharacter</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>remove-map-advice-fifth-character</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>remove-map-advice-fifth-character</goal>
+                </goals>
+                <configuration>
+                  <refsetId>${refset.id}</refsetId>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  
+    <!-- Remove all reports for a project, specify -Drun.config... -->
+    <profile>
+      <id>Reports</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>remove-reports</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>remove-reports</goal>
+                </goals>
+                <configuration>
+                  <refsetId>${refset.id}</refsetId>
+                  <startDate>${start.date}</startDate>
+                  <endDate>${end.date}</endDate>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
 
-		<!-- Remove Map records -->
-		<profile>
-			<id>MapRecords</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.ihtsdo.otf.mapping</groupId>
-						<artifactId>mapping-admin-mojo</artifactId>
-						<version>${project.version}</version>
-						<executions>
-							<execution>
-								<id>remove-map-records</id>
-								<phase>package</phase>
-								<goals>
-									<goal>remove-map-records</goal>
-								</goals>
-								<configuration>
-									<refSetId>${refset.id}</refSetId>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-
-		<!-- Clear workflow -->
-		<profile>
-			<id>ClearWorkflow</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.ihtsdo.otf.mapping</groupId>
-						<artifactId>mapping-admin-mojo</artifactId>
-						<version>${project.version}</version>
-						<executions>
-							<execution>
-								<id>clear-workflow</id>
-								<phase>package</phase>
-								<goals>
-									<goal>clear-workflow</goal>
-								</goals>
-								<configuration>
-									<refSetId>${refset.id}</refSetId>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-
-		<!-- Remove a specific map advice 
-			 Requires the fully specified name of the advice as parameter -->
-		<profile>
-			<id>MapAdvice</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.ihtsdo.otf.mapping</groupId>
-						<artifactId>mapping-admin-mojo</artifactId>
-						<version>${project.version}</version>
-						<executions>
-							<execution>
-								<id>remove-map-advice</id>
-								<phase>package</phase>
-								<goals>
-									<goal>remove-map-advice</goal>
-								</goals>
-								<configuration>
-									<mapAdviceName>${mapAdvice.name}</mapAdviceName>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-		
-		<!-- Remove reports for a project -->
-		<profile>
-			<id>Reports</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.ihtsdo.otf.mapping</groupId>
-						<artifactId>mapping-admin-mojo</artifactId>
-						<version>${project.version}</version>
-						<executions>
-							<execution>
-								<id>remove-map-advice</id>
-								<phase>package</phase>
-								<goals>
-									<goal>remove-reports</goal>
-								</goals>
-								<configuration>
-									<refSetId>${refset.id}</refSetId>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-
-	</profiles>
+  </profiles>
 </project>

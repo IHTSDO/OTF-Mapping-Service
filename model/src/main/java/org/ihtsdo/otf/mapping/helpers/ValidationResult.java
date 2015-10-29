@@ -3,7 +3,7 @@ package org.ihtsdo.otf.mapping.helpers;
 import java.util.Set;
 
 /**
- * The Interface ValidationResult.
+ * Generically represents the result of a validation check.
  */
 public interface ValidationResult {
 
@@ -13,6 +13,20 @@ public interface ValidationResult {
    * @return true, if is valid
    */
   public boolean isValid();
+
+  /**
+   * Gets the general messages.
+   *
+   * @return the messages
+   */
+  public Set<String> getMessages();
+
+  /**
+   * Sets the messages.
+   *
+   * @param messages the new messages
+   */
+  public void setMessages(Set<String> messages);
 
   /**
    * Gets the errors.
@@ -85,10 +99,59 @@ public interface ValidationResult {
   public void addErrors(Set<String> errors);
 
   /**
-   * Merge a second validation result into this validation result
-   * 
+   * Merge a second validation result into this validation result.
+   *
    * @param validationResult the validation result
    */
   public void merge(ValidationResult validationResult);
+
+  /**
+   * Adds the messages.
+   *
+   * @param messageSet the message set
+   */
+  public void addMessages(Set<String> messageSet);
+
+  /**
+   * Adds the message.
+   *
+   * @param message the message
+   */
+  public void addMessage(String message);
+
+  /**
+   * Returns the concise errors.
+   *
+   * @return the concise errors
+   */
+  public Set<String> getConciseErrors();
+
+  /**
+   * Sets the concise errors.
+   *
+   * @param errors the concise errors
+   */
+  public void setConciseErrors(Set<String> errors);
+
+  /**
+   * Adds the concise error.
+   *
+   * @param error the error
+   */
+  public void addConciseError(String error);
+
+  /**
+   * Removes the concise error.
+   *
+   * @param error the error
+   */
+  public void removeConciseError(String error);
+
+  /**
+   * Adds the concise errors.
+   *
+   * @param errors the errors
+   */
+  public void addConciseErrors(Set<String> errors);
 
 }

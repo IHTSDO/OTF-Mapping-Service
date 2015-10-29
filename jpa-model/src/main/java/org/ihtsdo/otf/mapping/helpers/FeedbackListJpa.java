@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.ihtsdo.otf.mapping.jpa.FeedbackJpa;
 import org.ihtsdo.otf.mapping.model.Feedback;
@@ -28,18 +29,15 @@ public class FeedbackListJpa extends AbstractResultList<Feedback> implements
     // do nothing
   }
 
-
   @Override
   public void addFeedback(Feedback feedback) {
     feedbacks.add(feedback);
   }
 
-
   @Override
   public void removeFeedback(Feedback feedback) {
     feedbacks.remove(feedback);
   }
-
 
   @Override
   public void setFeedbacks(List<Feedback> feedbacks) {
@@ -48,13 +46,11 @@ public class FeedbackListJpa extends AbstractResultList<Feedback> implements
 
   }
 
- 
   @Override
   @XmlElement(type = FeedbackJpa.class, name = "feedback")
   public List<Feedback> getFeedbacks() {
     return feedbacks;
   }
-
 
   @Override
   @XmlElement(name = "count")
@@ -62,20 +58,18 @@ public class FeedbackListJpa extends AbstractResultList<Feedback> implements
     return feedbacks.size();
   }
 
- 
   @Override
   public void sortBy(Comparator<Feedback> comparator) {
     Collections.sort(feedbacks, comparator);
   }
-
 
   @Override
   public boolean contains(Feedback element) {
     return feedbacks.contains(element);
   }
 
-
   @Override
+  @XmlTransient
   public Iterable<Feedback> getIterable() {
     return feedbacks;
   }

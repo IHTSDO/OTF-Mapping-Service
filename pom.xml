@@ -3,10 +3,7 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <!-- Module Metadata -->
-  <!-- Parent is TBD <parent> <groupId>org.ihtsdo.otf</groupId> <artifactId>otf-parent</artifactId> 
-    <version>1.0.0-SNAPSHOT</version> <relativePath/> </parent> -->
-
+  <!-- Module Metadata - no parent -->
   <groupId>org.ihtsdo.otf.mapping</groupId>
   <artifactId>ihtsdo-mapping-service</artifactId>
   <version>1.0.0-SNAPSHOT</version>
@@ -19,20 +16,23 @@
     <module>parent</module>
     <module>config</module>
     <module>model</module>
-    <module>pojo-model</module>
     <module>jpa-model</module>
     <module>services</module>
     <module>jpa-services</module>
     <module>rest</module>
     <module>webapp</module>
     <module>admin</module>
+    <module>integration-tests</module>
   </modules>
-
+ 
   <build>
     <plugins>
+
+      <!-- JGitflow configuration -->
       <plugin>
         <groupId>external.atlassian.jgitflow</groupId>
         <artifactId>jgitflow-maven-plugin</artifactId>
+        <version>1.0-m4.3</version>
         <configuration>
           <autoVersionSubmodules>true</autoVersionSubmodules>
           <enableSshAgent>true</enableSshAgent>
@@ -50,6 +50,7 @@
     </plugins>
   </build>
 
+  <!-- Distribution management -->
   <distributionManagement>
     <repository>
       <id>ihtsdo-public-nexus</id>

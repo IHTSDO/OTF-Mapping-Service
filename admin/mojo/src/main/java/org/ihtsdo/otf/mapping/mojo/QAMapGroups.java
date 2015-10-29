@@ -12,35 +12,7 @@ import org.ihtsdo.otf.mapping.services.MappingService;
 /**
  * QA Check for Properly Numbered Map Groups
  * 
- * Sample execution:
- * 
- * <pre>
- *     <profile>
- *       <id>MapGroups</id>
- *       <build>
- *         <plugins>
- *           <plugin>
- *             <groupId>org.ihtsdo.otf.mapping</groupId>
- *             <artifactId>mapping-admin-mojo</artifactId>
- *             <version>${project.version}</version>
- *             <executions>
- *               <execution>
- *                 <id>qa-map-groups</id>
- *                 <phase>package</phase>
- *                 <goals>
- *                   <goal>qa-map-groups</goal>
- *                 </goals>
- *                 <configuration>
- *                   <refSetId>${refset.id}</refSetId>
- *                   <mode>${updateRecords}</mode>
- *                 </configuration>
- *               </execution>
- *             </executions>
- *           </plugin>
- *         </plugins>
- *       </build>
- *     </profile> 
- * </pre>
+ * See admin/qa/pom.xml for a sample execution.
  * 
  * @goal qa-map-groups
  * @phase package
@@ -49,16 +21,16 @@ public class QAMapGroups extends AbstractMojo {
 
   /**
    * The refSet id
-   * @parameter refSetId
-   * @parameter mode
+   * @parameter
+   * @required
    */
-  private String refSetId = null;
-  
+  private String refsetId = null;
+
   /**
-   * Flag for updating vs simply checking
-   * @parameter updateRecords
+   * The mode
+   * @parameter
+   * @required
    */
-  
   private String mode = null;
 
   /**
@@ -68,31 +40,24 @@ public class QAMapGroups extends AbstractMojo {
    */
   @Override
   public void execute() throws MojoExecutionException {
-    getLog().info("Starting map group quality assurance checks - " + refSetId);
-
-    if (refSetId == null) {
-      throw new MojoExecutionException("You must specify a refSetId.");
-    }
-    
-    if (mode == null) {
-    	throw new MojoExecutionException("You must specify a mode (check for diagnostics only, update to fix group numbering errors).");
-    }
+    getLog().info("Starting map group quality assurance checks");
+    getLog().info("  refsetId = " + refsetId);
 
     try {
 
       MappingService mappingService = new MappingServiceJpa();
-      mappingService.setTransactionPerOperation(false);
-      mappingService.beginTransaction();
-      
+
       Set<MapProject> mapProjects = new HashSet<>();
 
       for (MapProject mapProject : mappingService.getMapProjects()
           .getIterable()) {
-        for (String id : refSetId.split(",")) {
+        for (String id : refsetId.split(",")) {
           if (mapProject.getRefSetId().equals(id)) {
-        	  if (mapProject.isGroupStructure() == false) {
-        		  getLog().info("Map Project " + mapProject.getName() + " does not have group structure, skipping.");
-        	  }
+            if (!mapProject.isGroupStructure()) {
+              getLog().info(
+                  "Map Project " + mapProject.getName()
+                      + " does not have group structure, skipping.");
+            }
             mapProjects.add(mapProject);
           }
         }
@@ -106,12 +71,10 @@ public class QAMapGroups extends AbstractMojo {
         boolean updateRecords = mode.equals("update");
         mappingService.checkMapGroupsForMapProject(mapProject, updateRecords);
       }
-      
-      mappingService.commit();
 
-      getLog().info("done ...");
       mappingService.close();
       mappingService.close();
+      getLog().info("Done ...");
 
     } catch (Exception e) {
       e.printStackTrace();

@@ -1,7 +1,7 @@
 package org.ihtsdo.otf.mapping.rf2;
 
 /**
- * Represents a reference set member with associated Concept
+ * Generically represents a reference set member with associated Concept
  */
 public interface ConceptRefSetMember extends RefSetMember {
 

@@ -9,13 +9,11 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
-import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.ihtsdo.otf.mapping.helpers.FileSorter;
+import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
@@ -27,36 +25,38 @@ import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.jpa.ComplexMapRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
+import org.ihtsdo.otf.mapping.services.helpers.FileSorter;
 
 /**
  * Loads a sampling unpublished complex maps.
  * 
- * Sample execution:
- * 
- * <pre>
- * <profile>
- *       <id>MapRecordsSample</id>
- *     <plugin>
- *       <groupId>org.ihtsdo.otf.mapping</groupId>
- *       <artifactId>mapping-admin-mojo</artifactId>
- *       <version>${project.version}</version>
- *       <executions>
- *         <execution>
- *           <id>load-rf2-complex-map-sample</id>
- *           <phase>package</phase>
- *           <goals>
- *             <goal>load-rf2-complex-map-sample</goal>
- *           </goals>
- *         </execution>
- *       </executions>
- *     </plugin>
- * </profile>
- * </pre>
+ * See admin/loader/pom.xml for a sample execution.
  * 
  * @goal load-rf2-complex-map-sample
  * @phase package
  */
 public class MapRecordRf2ComplexMapSampleLoaderMojo extends AbstractMojo {
+
+  /**
+   * The input file
+   * @parameter
+   * @required
+   */
+  private String inputFile;
+
+  /**
+   * The user
+   * @parameter
+   * @required
+   */
+  private String user;
+
+  /**
+   * The sampling rate
+   * @parameter
+   * @required
+   */
+  private String samplingRate;
 
   /**
    * Executes the plugin.
@@ -65,69 +65,17 @@ public class MapRecordRf2ComplexMapSampleLoaderMojo extends AbstractMojo {
    */
   @Override
   public void execute() throws MojoExecutionException {
-    getLog().info("Starting loading sample of complex map data ...");
+    getLog().info("Starting loading sample of complex map data");
+    getLog().info("  inputFile = " + inputFile);
+    getLog().info("  user = " + user);
+    getLog().info("  samplingRate = " + samplingRate);
 
     try {
-
-      String configFileName = System.getProperty("run.config");
-      getLog().info("  run.config = " + configFileName);
-      Properties config = new Properties();
-      FileReader in = new FileReader(new File(configFileName));
-      config.load(in);
-      in.close();
-      getLog().info("  properties = " + config);
-
-      // set the input directory
-      String inputFile =
-          config.getProperty("loader.complexmap.rf2.sample.input.data");
-      if (inputFile == null) {
-        throw new MojoFailureException(
-            "Input file loader.complexmap.rf2.sample.input.user must be specified");
-      }
-      if (!new File(inputFile).exists()) {
-        throw new MojoFailureException(
-            "Specified loader.complexmap.rf2.sample.input.data file does not exist: "
-                + inputFile);
-      }
-
-      // set the input directory
-      String loaderUserName =
-          config.getProperty("loader.complexmap.rf2.sample.input.user");
-
-      if (loaderUserName == null) {
-
-        throw new MojoFailureException(
-            "User name loader.complexmap.rf2.sample.input.user must be specified");
-      }
-
-      // try to parse the decimal percentage value, fail gracefully on
-      // errors
-      float samplingRate;
-      try {
-
-        // TODO: Add loader....owner parameter
-
-        samplingRate =
-            Float.parseFloat(config
-                .getProperty("loader.complexmap.rf2.sample.percentage"));
-      } catch (Exception e) {
-        throw new MojoFailureException(
-            "Sampling percentage loader.complexmap.rf2.sample.percentage could not be loaded from config file");
-      }
-      Logger.getLogger(this.getClass()).info("  inputFile: " + inputFile);
-      Logger.getLogger(this.getClass()).info(
-          "  sampingPercentage: " + samplingRate);
-
-      // Bail if samping percentage is not set
-      if (Float.isNaN(samplingRate)) {
-        throw new MojoExecutionException(
-            "Failed to set sampling rate from property file parameter");
-      }
+      float rate = Float.parseFloat(samplingRate);
 
       // Bail if sampling percentage not in range (0, 1]
-      if (samplingRate < 0 || samplingRate > 1) {
-        throw new MojoExecutionException(
-            "Sampling percentage must be greater than or equal to zero and less than or equal to one");
+      if (rate < 0 || rate > 1) {
+        throw new MojoExecutionException("Sampling rate is out of range");
       }
 
       // sort input file
@@ -205,40 +153,39 @@ public class MapRecordRf2ComplexMapSampleLoaderMojo extends AbstractMojo {
           });
       getLog().info("  Done sorting the file ");
 
-      // Set up map of refSetIds that we may encounter
+      // Set up map of refsetIds that we may encounter
       MappingService mappingService = new MappingServiceJpa();
       Map<String, MapProject> mapProjectMap = new HashMap<>();
       for (MapProject project : mappingService.getMapProjects().getIterable()) {
         mapProjectMap.put(project.getRefSetId(), project);
       }
 
-      MapUser loaderUser = mappingService.getMapUser(loaderUserName);
+      MapUser loaderUser = mappingService.getMapUser(user);
 
       if (loaderUser == null)
         throw new MojoFailureException(
-            "Could not retrieve user object for name " + loaderUserName);
+            "Could not retrieve user object for name " + user);
 
       // load complexMapRefSetMembers from extendedMap file
-      // TODO All non-sampled ones should be PUBLISHED
       Map<String, List<ComplexMapRefSetMember>> complexMapRefSetMemberMap =
           loadExtendedMapRefSets(outputFile, mapProjectMap);
 
       // Call mapping service to create records as we go along
-      for (String refSetId : complexMapRefSetMemberMap.keySet()) {
+      for (String refsetId : complexMapRefSetMemberMap.keySet()) {
 
-        MapProject mapProject = mapProjectMap.get(refSetId);
+        MapProject mapProject = mapProjectMap.get(refsetId);
 
         getLog().info(
             "Sampling map records from file for project "
                 + mapProject.getName());
 
         mappingService.createMapRecordsForMapProject(mapProject.getId(),
-            loaderUser, complexMapRefSetMemberMap.get(refSetId),
-            WorkflowStatus.REVIEW_NEEDED, samplingRate);
+            loaderUser, complexMapRefSetMemberMap.get(refsetId),
+            WorkflowStatus.REVIEW_NEEDED, rate);
 
         // cycle over map records for this project
         for (MapRecord mr : mappingService.getMapRecordsForMapProject(
-            mapProjectMap.get(refSetId).getId()).getIterable()) {
+            mapProjectMap.get(refsetId).getId()).getIterable()) {
 
           // ensure this record's concept is in the scope includes
           mapProject.addScopeConcept(mr.getConceptId());
@@ -248,10 +195,10 @@ public class MapRecordRf2ComplexMapSampleLoaderMojo extends AbstractMojo {
         mappingService.updateMapProject(mapProject);
       }
 
-      getLog().info("done ...");
       // clean-up
       mappingService.close();
       // outputFile.delete();
+      getLog().info("done ...");
     } catch (Exception e) {
       e.printStackTrace();
       throw new MojoExecutionException(
@@ -275,6 +222,7 @@ public class MapRecordRf2ComplexMapSampleLoaderMojo extends AbstractMojo {
     BufferedReader complexMapReader =
         new BufferedReader(new FileReader(complexMapFile));
     ContentService contentService = new ContentServiceJpa();
+    MappingService mappingService = new MappingServiceJpa();
 
     // Set up sets for any map records we encounter
     String line = null;
@@ -285,7 +233,7 @@ public class MapRecordRf2ComplexMapSampleLoaderMojo extends AbstractMojo {
           new ArrayList<ComplexMapRefSetMember>());
     }
 
-    final SimpleDateFormat dt = new SimpleDateFormat("yyyymmdd");
+    final SimpleDateFormat dt = new SimpleDateFormat("yyyyMMdd");
     while ((line = complexMapReader.readLine()) != null) {
       line = line.replace("\r", "");
       String fields[] = line.split("\t");
@@ -299,8 +247,8 @@ public class MapRecordRf2ComplexMapSampleLoaderMojo extends AbstractMojo {
         complexMapRefSetMember.setEffectiveTime(dt.parse(fields[1]));
         complexMapRefSetMember.setActive(fields[2].equals("1"));
         complexMapRefSetMember.setModuleId(Long.valueOf(fields[3]));
-        final String refSetId = fields[4];
-        complexMapRefSetMember.setRefSetId(refSetId);
+        final String refsetId = fields[4];
+        complexMapRefSetMember.setRefSetId(refsetId);
         complexMapRefSetMember.setMapGroup(Integer.parseInt(fields[6]));
         complexMapRefSetMember.setMapPriority(Integer.parseInt(fields[7]));
         complexMapRefSetMember.setMapRule(fields[8]);
@@ -314,28 +262,40 @@ public class MapRecordRf2ComplexMapSampleLoaderMojo extends AbstractMojo {
         complexMapRefSetMember.setMapBlockAdvice(null); // no default
 
         // Terminology attributes
-        complexMapRefSetMember.setTerminology(mapProjectMap.get(refSetId)
+        complexMapRefSetMember.setTerminology(mapProjectMap.get(refsetId)
             .getSourceTerminology());
         complexMapRefSetMember.setTerminologyVersion(mapProjectMap
-            .get(refSetId).getSourceTerminologyVersion());
+            .get(refsetId).getSourceTerminologyVersion());
 
         // set Concept
         Concept concept =
             contentService.getConcept(
                 fields[5], // referencedComponentId
-                mapProjectMap.get(refSetId).getSourceTerminology(),
-                mapProjectMap.get(refSetId).getSourceTerminologyVersion());
+                mapProjectMap.get(refsetId).getSourceTerminology(),
+                mapProjectMap.get(refsetId).getSourceTerminologyVersion());
 
-        // Only add entries for active concept
+        // Only add entries for active concept where map records do not
+        // already exist
         if (concept != null) {
-          if (!concept.isActive()) {
+
+          // check for existing map record
+          MapRecordList mapRecordList =
+              mappingService.getMapRecordsForProjectAndConcept(mapProjectMap
+                  .get(refsetId).getId(), concept.getTerminologyId());
+
+          if (mapRecordList != null && mapRecordList.getCount() > 0) {
+            getLog()
+                .info(
+                    "  MAP RECORD ALREADY EXISTS for "
+                        + concept.getTerminologyId());
+          } else if (!concept.isActive()) {
             getLog()
                 .info(
                     "  INACTIVE concept encountered: "
                         + concept.getTerminologyId());
           } else {
             complexMapRefSetMember.setConcept(concept);
-            complexMapRefSetMemberMap.get(refSetId).add(complexMapRefSetMember);
+            complexMapRefSetMemberMap.get(refsetId).add(complexMapRefSetMember);
           }
         } else {
           complexMapReader.close();

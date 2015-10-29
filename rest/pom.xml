@@ -18,14 +18,22 @@
   <properties>
     <execFinalName>exec-${project.build.finalName}.jar</execFinalName>
     <packageName>${project.parent.artifactId}-rest</packageName>
+
+    <!-- Specify the config artifact parameters -->
+    <config.groupId>org.ihtsdo.otf.mapping</config.groupId>
+    <config.artifactId>mapping-config-dev-windows</config.artifactId>
+    <config.version>${releaseVersion}</config.version>
   </properties>
 
   <dependencies>
+
+    <!-- Servlet API, provided by container -->
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
       <scope>provided</scope>
     </dependency>
+
     <!-- Model interfaces. -->
     <dependency>
       <groupId>org.ihtsdo.otf.mapping</groupId>
@@ -77,6 +85,8 @@
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
     </dependency>
+
+    <!-- Logging -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
@@ -131,16 +141,101 @@
       <groupId>com.wordnik</groupId>
       <artifactId>swagger-jersey-jaxrs_2.10</artifactId>
     </dependency>
-      <dependency>
-        <groupId>com.sun.mail</groupId>
-        <artifactId>javax.mail</artifactId>
-      </dependency>
+
+    <!-- Sending email -->
+    <dependency>
+      <groupId>com.sun.mail</groupId>
+      <artifactId>javax.mail</artifactId>
+    </dependency>
   </dependencies>
 
-  <!-- Always build, use dev configuration by default -->
   <build>
+
+    <!-- Artifact final name -->
     <finalName>${project.artifactId}</finalName>
+
     <plugins>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>unpack</id>
+            <phase>initialize</phase>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>${config.groupId}</groupId>
+                  <artifactId>${config.artifactId}</artifactId>
+                  <version>${config.version}</version>
+                  <type>zip</type>
+                  <outputDirectory>${project.build.directory}/config/resources</outputDirectory>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Configure environment-specific build time information -->
+      <!-- In particular, this is for base.url -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>properties-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>read-project-properties</goal>
+            </goals>
+            <configuration>
+              <files>
+                <file>${project.build.directory}/config/resources/config.properties</file>
+              </files>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Configure .war build -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <configuration>
+          <attachClasses>true</attachClasses>
+          <filteringDeploymentDescriptors>true</filteringDeploymentDescriptors>
+          <webResources>
+            <resource>
+              <directory>${project.build.directory}/config/resources</directory>
+              <!-- avoid unnecessary stuff -->
+              <excludes>
+                <exclude>bin/**</exclude>
+                <exclude>config*.properties</exclude>
+              </excludes>
+            </resource>
+            <resource>
+              <directory>src/main/webapp</directory>
+              <filtering>true</filtering>
+              <includes>
+                <include>index.html</include>
+              </includes>
+            </resource>
+            <resource>
+              <directory>src/main/webapp</directory>
+              <filtering>false</filtering>
+              <excludes>
+                <exclude>index.html</exclude>
+              </excludes>
+            </resource>
+          </webResources>
+        </configuration>
+      </plugin>
+
+      <!-- Executable tomcat war file and debian build -->
       <plugin>
         <groupId>org.apache.tomcat.maven</groupId>
         <artifactId>tomcat7-maven-plugin</artifactId>
@@ -171,7 +266,7 @@
               <goal>jdeb</goal>
             </goals>
             <configuration>
-              <deb>${project.build.directory}/${packageName}-${project.version}-all.deb</deb>
+              <deb>${project.build.directory}/${packageName}-${releaseVersion}-all.deb</deb>
               <controlDir>${basedir}/src/deb/control</controlDir>
               <snapshotExpand>true</snapshotExpand>
               <snapshotEnv>BUILD_NUMBER</snapshotEnv>
@@ -233,26 +328,12 @@
                   <linkTarget>/var/opt/${packageName}/log</linkTarget>
                   <symlink>true</symlink>
                 </data>
- <!-- Moved to ansible, kept for reference
-               <data>
-                  <src>${basedir}/..</src>
-                  <type>directory</type>
-                  <mapper>
-                    <type>perm</type>
-                    <prefix>/opt/${packageName}/lib/admin</prefix>
-                  </mapper>
-                </data>-->
- <!--               <data>
-                  <src>${basedir}/src/deb/log4j.xml</src>
-                  <dst>/etc/opt/${packageName}/log4j.xml</dst>
-                  <type>file</type>
-                  <conffile>true</conffile>
-                  <mapper>
-                    <type>perm</type>
-                    <group>${packageName}</group>
-                    <filemode>0640</filemode>
-                  </mapper>
-                </data> -->
+                <!-- Moved to ansible, kept for reference <data> <src>${basedir}/..</src> 
+                  <type>directory</type> <mapper> <type>perm</type> <prefix>/opt/${packageName}/lib/admin</prefix> 
+                  </mapper> </data> -->
+                <!-- <data> <src>${basedir}/src/deb/log4j.xml</src> <dst>/etc/opt/${packageName}/log4j.xml</dst> 
+                  <type>file</type> <conffile>true</conffile> <mapper> <type>perm</type> <group>${packageName}</group> 
+                  <filemode>0640</filemode> </mapper> </data> -->
               </dataSet>
             </configuration>
           </execution>

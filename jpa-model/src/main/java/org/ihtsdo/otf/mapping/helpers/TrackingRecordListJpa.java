@@ -5,16 +5,18 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlTransient;
+
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
 /**
  * Container for map projects.
  */
-public class TrackingRecordListJpa extends AbstractResultList<TrackingRecord> implements TrackingRecordList {
+public class TrackingRecordListJpa extends AbstractResultList<TrackingRecord>
+    implements TrackingRecordList {
 
   /** The map projects. */
-  private List<TrackingRecord> trackingRecords =
-      new ArrayList<>();
+  private List<TrackingRecord> trackingRecords = new ArrayList<>();
 
   /**
    * Instantiates a new map project list.
@@ -29,8 +31,7 @@ public class TrackingRecordListJpa extends AbstractResultList<TrackingRecord> im
    * @param trackingRecord the map project
    */
   @Override
-  public void addTrackingRecord(
-    TrackingRecord trackingRecord) {
+  public void addTrackingRecord(TrackingRecord trackingRecord) {
     trackingRecords.add(trackingRecord);
   }
 
@@ -40,8 +41,7 @@ public class TrackingRecordListJpa extends AbstractResultList<TrackingRecord> im
    * @param trackingRecord the map project
    */
   @Override
-  public void removeTrackingRecord(
-    TrackingRecord trackingRecord) {
+  public void removeTrackingRecord(TrackingRecord trackingRecord) {
     trackingRecords.remove(trackingRecord);
   }
 
@@ -51,8 +51,7 @@ public class TrackingRecordListJpa extends AbstractResultList<TrackingRecord> im
    * @param trackingRecords the new map projects
    */
   @Override
-  public void setTrackingRecords(
-    List<TrackingRecord> trackingRecords) {
+  public void setTrackingRecords(List<TrackingRecord> trackingRecords) {
     this.trackingRecords = new ArrayList<>();
     this.trackingRecords.addAll(trackingRecords);
 
@@ -63,15 +62,13 @@ public class TrackingRecordListJpa extends AbstractResultList<TrackingRecord> im
    */
   public void sortTrackingRecords() {
 
-    Collections.sort(this.trackingRecords,
-        new Comparator<TrackingRecord>() {
-          @Override
-          public int compare(TrackingRecord o1,
-            TrackingRecord o2) {
-            return o1.getSortKey().compareTo(o2.getSortKey());
-          }
+    Collections.sort(this.trackingRecords, new Comparator<TrackingRecord>() {
+      @Override
+      public int compare(TrackingRecord o1, TrackingRecord o2) {
+        return o1.getSortKey().compareTo(o2.getSortKey());
+      }
 
-        });
+    });
   }
 
   /**
@@ -84,7 +81,9 @@ public class TrackingRecordListJpa extends AbstractResultList<TrackingRecord> im
     return trackingRecords;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.ihtsdo.otf.mapping.helpers.ResultList#getCount()
    */
   @Override
@@ -92,15 +91,19 @@ public class TrackingRecordListJpa extends AbstractResultList<TrackingRecord> im
     return trackingRecords.size();
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.ihtsdo.otf.mapping.helpers.ResultList#sortBy(java.util.Comparator)
    */
   @Override
   public void sortBy(Comparator<TrackingRecord> comparator) {
-    Collections.sort(trackingRecords, comparator);    
+    Collections.sort(trackingRecords, comparator);
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.ihtsdo.otf.mapping.helpers.ResultList#contains(java.lang.Object)
    */
   @Override
@@ -108,10 +111,13 @@ public class TrackingRecordListJpa extends AbstractResultList<TrackingRecord> im
     return trackingRecords.contains(element);
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.ihtsdo.otf.mapping.helpers.ResultList#getIterable()
    */
   @Override
+  @XmlTransient
   public Iterable<TrackingRecord> getIterable() {
     return trackingRecords;
   }

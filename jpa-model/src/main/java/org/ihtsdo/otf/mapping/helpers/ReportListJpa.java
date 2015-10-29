@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.ihtsdo.otf.mapping.reports.Report;
 import org.ihtsdo.otf.mapping.reports.ReportJpa;
@@ -31,8 +32,7 @@ public class ReportListJpa extends AbstractResultList<Report> implements
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * org.ihtsdo.otf.mapping.helpers.ReportList#addReport(org.ihtsdo.
+   * @see org.ihtsdo.otf.mapping.helpers.ReportList#addReport(org.ihtsdo.
    * otf.mapping.model.Report)
    */
   @Override
@@ -43,8 +43,7 @@ public class ReportListJpa extends AbstractResultList<Report> implements
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * org.ihtsdo.otf.mapping.helpers.ReportList#removeReport(org.ihtsdo
+   * @see org.ihtsdo.otf.mapping.helpers.ReportList#removeReport(org.ihtsdo
    * .otf.mapping.model.Report)
    */
   @Override
@@ -55,9 +54,7 @@ public class ReportListJpa extends AbstractResultList<Report> implements
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * org.ihtsdo.otf.mapping.helpers.ReportList#setreports(java.util.
-   * List)
+   * @see org.ihtsdo.otf.mapping.helpers.ReportList#setreports(java.util. List)
    */
   @Override
   public void setReports(List<Report> reports) {
@@ -116,6 +113,7 @@ public class ReportListJpa extends AbstractResultList<Report> implements
    * @see org.ihtsdo.otf.mapping.helpers.ResultList#getIterable()
    */
   @Override
+  @XmlTransient
   public Iterable<Report> getIterable() {
     return reports;
   }

@@ -29,25 +29,7 @@ import org.ihtsdo.otf.mapping.services.MappingService;
 /**
  * Goal which removes map notes for a specified project id.
  * 
- * <pre>
- *     <plugin>
- *       <groupId>org.ihtsdo.otf.mapping</groupId>
- *       <artifactId>mapping-admin-mojo</artifactId>
- *       <version>${project.version}</version>
- *       <executions>
- *         <execution>
- *           <id>remove-map-notes</id>
- *           <phase>package</phase>
- *           <goals>
- *             <goal>remove-map-notes</goal>
- *           </goals>
- *           <configuration>
- *             <refSetId>${refset.id}</refSetId>
- *           </configuration>
- *         </execution>
- *       </executions>
- *     </plugin>
- * </pre>
+ * See admin/remover/pom.xml for a sample execution.
  * 
  * @goal remove-map-notes
  * 
@@ -56,10 +38,11 @@ import org.ihtsdo.otf.mapping.services.MappingService;
 public class MapNoteRemoverMojo extends AbstractMojo {
 
   /**
-   * The specified refSetId
+   * The specified refsetId
    * @parameter
+   * @required
    */
-  private String refSetId = null;
+  private String refsetId = null;
 
   /**
    * Instantiates a {@link MapNoteRemoverMojo} from the specified parameters.
@@ -76,21 +59,18 @@ public class MapNoteRemoverMojo extends AbstractMojo {
    */
   @Override
   public void execute() throws MojoFailureException {
-    getLog().info("Starting removing map notes ...");
-
-    if (refSetId == null) {
-      throw new MojoFailureException("You must specify a refSetId.");
-    }
+    getLog().info("Starting removing map notes");
+    getLog().info("  refsetId = " + refsetId);
 
     try {
 
       MappingService mappingService = new MappingServiceJpa();
       Set<MapProject> mapProjects = new HashSet<>();
 
-      getLog().info("Start removing map notes for project - " + refSetId);
+      getLog().info("Start removing map notes for project - " + refsetId);
       for (MapProject mapProject : mappingService.getMapProjects()
           .getMapProjects()) {
-        for (String id : refSetId.split(",")) {
+        for (String id : refsetId.split(",")) {
           if (mapProject.getRefSetId().equals(id)) {
             mapProjects.add(mapProject);
           }
@@ -98,7 +78,7 @@ public class MapNoteRemoverMojo extends AbstractMojo {
       }
 
       if (mapProjects.isEmpty()) {
-        getLog().info("NO PROJECTS FOUND " + refSetId);
+        getLog().info("NO PROJECTS FOUND " + refsetId);
         return;
       }
 
@@ -121,9 +101,9 @@ public class MapNoteRemoverMojo extends AbstractMojo {
         }
       }
       mappingService.commit();
-      getLog().info("done ...");
-
       mappingService.close();
+
+      getLog().info("Done ...");
     } catch (Exception e) {
       e.printStackTrace();
       throw new MojoFailureException("Unexpected exception:", e);

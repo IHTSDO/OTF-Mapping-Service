@@ -5,9 +5,10 @@ import java.util.List;
 import org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember;
 
 /**
- * Represents a sortable list of {@link LanguageRefSetMember}
+ * Represents a sortable list of {@link LanguageRefSetMember}.
  */
-public interface LanguageRefSetMemberList extends ResultList<LanguageRefSetMember> {
+public interface LanguageRefSetMemberList extends
+    ResultList<LanguageRefSetMember> {
 
   /**
    * Adds the map languageRefSetMember.
@@ -21,14 +22,16 @@ public interface LanguageRefSetMemberList extends ResultList<LanguageRefSetMembe
    * 
    * @param LanguageRefSetMember the map languageRefSetMember
    */
-  public void removeLanguageRefSetMember(LanguageRefSetMember LanguageRefSetMember);
+  public void removeLanguageRefSetMember(
+    LanguageRefSetMember LanguageRefSetMember);
 
   /**
    * Sets the map languageRefSetMembers.
    * 
    * @param LanguageRefSetMembers the new map languageRefSetMembers
    */
-  public void setLanguageRefSetMembers(List<LanguageRefSetMember> LanguageRefSetMembers);
+  public void setLanguageRefSetMembers(
+    List<LanguageRefSetMember> LanguageRefSetMembers);
 
   /**
    * Gets the map languageRefSetMembers.
