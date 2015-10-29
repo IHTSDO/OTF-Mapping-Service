@@ -1,55 +1,107 @@
-<h4 ng-show="showTitle == true">{{record.conceptName}}<br>{{project.sourceTerminology}} concept {{record.conceptId}}</h4>
-<div ng-show="record.flagForLeadReview == true" style="color:red">Flagged For Lead Review</div>
+<h4 ng-show="showTitle == true">
+  {{record.conceptName}}<br>{{project.sourceTerminology}} concept
+  {{record.conceptId}}
+</h4>
+<div ng-show="record.flagForLeadReview == true" style="color: red">Flagged
+  For Lead Review</div>
+<!-- Labels -->
+<div ng-repeat="label in record.labels" style="width: 100%; margin-bottom: 5px;">
+  <div
+    style="vertical-align: top; width: 7%; display: inline-block; padding: 2px">
+    <span style="color: #99CCFF"><i
+      class="glyphicon glyphicon-tasks blue" alt="label icon"
+      tooltip-placement="top" tooltip="Label"></i></span>
+  </div>
+  <div class="alert alert-success"
+    style="vertical-align: top; display: inline-block; padding: 1px">
+    {{label}}</div>
+</div>
+<div ng-show="record.flagForLeadReview == true" style="color: red">Flagged
+  For Lead Review</div>
 <div ng-show="record.mapEntry.length == 0">No map entries available.</div>
 <div ng-show="record.mapEntry.length > 0">Map Entries</div>
-<div style="padding:0px; border-bottom:thin solid grey;" ng-repeat="entry in record.mapEntry | orderBy:['mapGroup', 'mapPriority']">
-	<!-- Group/Priority, Target Id, Target Name -->
-	<div style="display:inline-block;padding:0px;width:48%;">
-		<div style="vertical-align:top;width:7%;display:inline-block;padding:0px">{{entry.mapGroup}}/{{entry.mapPriority}}</div>
-		<div ng-show="entry.targetId.length == 0" style="vertical-align:top;width:90%;display:inline-block;padding:0px">
-			No target
-		</div>
-		<div ng-show="entry.targetId.length > 0" style="vertical-align:top;width:90%;display:inline-block;padding:0px">
-			<em>{{entry.targetId}}</em> {{entry.targetName}}
-		</div>
-		<div style="vertical-align:top;width:7%;display:inline-block;padding:0px"></div>
-		<div style="vertical-align:top;width:85%;display:inline-block;padding:0px"> {{entry.rule}}</div>
-	</div>
-	<div style="vertical-align:top;display:inline-block;padding:0px;width:48%;">
-		<!-- Advices -->
-		<div ng-repeat="advice in entry.mapAdvice">
-			<div style="vertical-align:top;width:7%;display:inline-block;padding:0px">
-				<img src="img/dialog-question.png" alt="advice icon" tooltip-placement="top" tooltip="Map Advice">
-			</div>
-			<div class="alert alert-warning" style="vertical-align:top;width:85%;display:inline-block;padding:0px">
-				{{advice.name}}
-			</div>
-		</div>
-		<!-- Relations -->
-		<div ng-show="entry.mapRelation != null">
-			<div style="vertical-align:top;width:7%;display:inline-block;padding:0px">
-				<span style="color:#99CCFF"><i class="glyphicon glyphicon-tag blue" alt="relation icon" tooltip-placement="top" tooltip="Map Relation"></i></span>
-			</div>
-			<div class="alert alert-info" style="vertical-align:top;width:85%;display:inline-block;padding:0px">
-				{{entry.mapRelation.name}}
-			</div>
-		</div>
-	</div>
-</div>
+<div style="padding: 0px;">
+  <div style="padding: 0px;"
+    ng-repeat="entry in record.mapEntry | orderBy:['mapGroup', 'mapPriority']">
+    <!-- Group/Priority, Target Id, Target Name -->
+    <div style="display: inline-block; padding: 0px; width: 48%;">
+      <div
+        style="vertical-align: top; width: 7%; display: inline-block; padding: 0px">{{entry.mapGroup}}/{{entry.mapPriority}}</div>
+      <div ng-show="entry.targetId.length == 0"
+        style="vertical-align: top; width: 90%; display: inline-block; padding: 0px">
+        No target</div>
+      <div ng-show="entry.targetId.length > 0"
+        style="vertical-align: top; width: 90%; display: inline-block; padding: 0px">
+        <em>{{entry.targetId}}</em> {{entry.targetName}}
+      </div>
+      <div
+        style="vertical-align: top; width: 7%; display: inline-block; padding: 0px"></div>
+      <div
+        style="vertical-align: top; width: 85%; display: inline-block; padding: 0px">
+        {{entry.rule}}</div>
+    </div>
+    <div
+      style="vertical-align: top; display: inline-block; padding: 0px; width: 48%;">
 
-<div ng-show="record.mapNote.length > 0">
-	<strong>Map Notes</strong>
-	<div style="padding:0px" ng-repeat="note in record.mapNote">
-		<div class="alert alert-warning">
-	 		[By <a href="mailto:{{user.email}}">{{note.user.name}}</a> on {{note.timestamp | date:'MM-dd-yyyy HH:mm'}}] 
-			<div style="padding-left:20px;" ng-bind-html="to_trusted(note.note)"></div>
-				
-		</div>
-	</div>
+      <!-- Advices -->
+      <div ng-repeat="advice in entry.mapAdvice">
+        <div
+          style="vertical-align: top; width: 7%; display: inline-block; padding: 0px">
+          <span style="color: #99CCFF"><i
+            class="glyphicon glyphicon-tags" alt="advice icon"
+            tooltip-placement="top" tooltip="Map Advice"></i></span>
+        </div>
+        <div class="alert alert-warning"
+          style="vertical-align: top; width: 85%; display: inline-block; padding: 0px">
+          {{advice.name}}</div>
+
+      </div>
+      <!-- Relations -->
+      <div ng-show="entry.mapRelation != null">
+        <div
+          style="vertical-align: top; width: 7%; display: inline-block; padding: 0px">
+          <span style="color: #99CCFF"><i
+            class="glyphicon glyphicon-tag blue" alt="relation icon"
+            tooltip-placement="top" tooltip="Map Relation"></i></span>
+        </div>
+        <div class="alert alert-info"
+          style="vertical-align: top; width: 85%; display: inline-block; padding: 0px">
+          {{entry.mapRelation.name}}</div>
+      </div>
+    </div>
+  </div>
+
+  <div ng-show="record.mapNote.length > 0">
+    Map Notes
+    <div style="padding: 0px 10px 10px 10px;" ng-repeat="note in record.mapNote">
+      <div class="alert alert-warning">
+        [By <a href="mailto:{{user.email}}">{{note.user.name}}</a> on
+        {{note.timestamp | date:'MM-dd-yyyy HH:mm'}}]
+        <div style="padding-left: 20px;" ng-bind-html="to_trusted(note.note)"></div>
+
+      </div>
+    </div>
+  </div>
 </div>
 <div ng-show="record.mapPrinciple.length > 0">
-	<strong>Map Principles</strong>
-	<div class="alert alert-warning" style="padding:0px" ng-repeat="principle in record.mapPrinciple">
-		{{principle.principleId}}: {{principle.name}}
-	</div>
+  Map Principles
+  <div style="padding: 0px 10px 10px 10px;"
+    ng-repeat="principle in record.mapPrinciple">
+    <div class="alert alert-warning">{{principle.principleId}}:
+      {{principle.name}}</div>
+  </div>
 </div>
+<div ng-show="record.errors.length > 0" style="color: red;">
+  Errors detected:
+  <ul>
+    <li ng-repeat="error in record.errors">{{error}}</li>
+  </ul>
+ </div>
+  
+<div ng-show="record.warnings.length > 0" style="color: orange;">
+  Warnings:
+  <ul>
+    <li ng-repeat="warning in record.warnings">{{warning}}</li>
+  </ul>
+ 
+</span>

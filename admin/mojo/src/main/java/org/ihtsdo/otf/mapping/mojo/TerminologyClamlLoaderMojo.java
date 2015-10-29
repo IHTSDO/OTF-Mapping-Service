@@ -17,7 +17,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
 
@@ -48,34 +47,22 @@ import org.xml.sax.helpers.DefaultHandler;
 /**
  * Converts claml data to RF2 objects.
  * 
- * Sample execution:
+ * See admin/loader/pom.xml for a sample execution.
  * 
- * <pre>
- *     <plugin>
- *       <groupId>org.ihtsdo.otf.mapping</groupId>
- *       <artifactId>mapping-admin-mojo</artifactId>
- *       <version>${project.version}</version>
- *       <executions>
- *         <execution>
- *           <id>load-claml</id>
- *           <phase>package</phase>
- *           <goals>
- *             <goal>load-claml</goal>
- *           </goals>
- *           <configuration>
- *             <terminology>ICD10</terminology>
- *           </configuration>
- *         </execution>
- *       </executions>
- *     </plugin>
- * </pre>
  * @goal load-claml
  * @phase package
  */
 public class TerminologyClamlLoaderMojo extends AbstractMojo {
 
-  /**  The date format. */
-  final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyymmdd");
+  /** The date format. */
+  final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+
+  /**
+   * The input file
+   * @parameter
+   * @required
+   */
+  String inputFile;
 
   /**
    * Name of terminology to be loaded.
@@ -83,6 +70,13 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
    * @required
    */
   String terminology;
+
+  /**
+   * Terminology version
+   * @parameter
+   * @required
+   */
+  String version;
 
   // NOTE: default visibility is used instead of private
   // so that the inner class parser does not require
@@ -100,9 +94,9 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
   /** The roots. */
   List<String> roots = null;
 
-  /**  The content service. */
+  /** The content service. */
   ContentService contentService;
-  
+
   /**
    * child to parent code map NOTE: this assumes a single superclass
    **/
@@ -122,34 +116,23 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
    */
   @Override
   public void execute() throws MojoExecutionException {
-    getLog().info("Starting loading " + terminology + " data ...");
+    getLog().info("Starting loading Claml terminology");
+    getLog().info("  inputFile = inputFile");
+    getLog().info("  terminology = " + terminology);
+    getLog().info("  version = " + version);
 
     FileInputStream fis = null;
     InputStream inputStream = null;
     Reader reader = null;
-    FileReader in = null;
     try {
 
-      // create Entity manager
-      String configFileName = System.getProperty("run.config");
-      getLog().info("  run.config = " + configFileName);
-      Properties config = new Properties();
-      in = new FileReader(new File(configFileName));
-      config.load(in);
-      in.close();
-      getLog().info("  properties = " + config);
       contentService = new ContentServiceJpa();
       contentService.setTransactionPerOperation(false);
       contentService.beginTransaction();
-      
-      // set the input directory
-      String inputFile =
-          config.getProperty("loader." + terminology + ".input.data");
+
       if (!new File(inputFile).exists()) {
-        throw new MojoFailureException("Specified loader." + terminology
-            + ".input.data directory does not exist: " + inputFile);
+        throw new MojoFailureException("Specified input file does not exist");
       }
-      getLog().info("inputFile: " + inputFile);
 
       // open input file and get effective time and version
       findVersion(inputFile);
@@ -191,14 +174,14 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       metadataService.close();
 
       // Let the service create its own transaction.
-      getLog().info("Start creating tree positions.");
       for (String root : roots) {
+        getLog().info("Start creating tree positions " + root + ", " + isaRelType);
         contentService.computeTreePositions(terminology, terminologyVersion,
             isaRelType, root);
       }
       contentService.close();
 
-      getLog().info("done ...");
+      getLog().info("Done ...");
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -206,22 +189,23 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
           "Conversion of Claml to RF2 objects failed", e);
     } finally {
       try {
-        fis.close();
+        if (fis != null) {
+          fis.close();
+        }
       } catch (IOException e) {
         // do nothing
       }
       try {
-        inputStream.close();
+        if (inputStream != null) {
+          inputStream.close();
+        }
       } catch (IOException e) {
         // do nothing
       }
       try {
-        reader.close();
-      } catch (IOException e) {
-        // do nothing
-      }
-      try {
-        in.close();
+        if (reader != null) {
+          reader.close();
+        }
       } catch (IOException e) {
         // do nothing
       }
@@ -251,8 +235,6 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 
   /**
    * The SAX parser handler.
-   * 
-   * @author ${author}
    */
   class LocalHandler extends DefaultHandler {
 
@@ -1398,6 +1380,8 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       }
     }
     br.close();
+    // Override terminology version with parameter
+    terminologyVersion = version;
     getLog().info("terminologyVersion: " + terminologyVersion);
     getLog().info("effectiveTime: " + effectiveTime);
   }

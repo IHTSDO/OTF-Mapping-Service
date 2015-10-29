@@ -8,19 +8,19 @@
     Details</button>
   <button class="btn btn-sm btn-primary" ng-click="goMapRecords()">Map
     Records</button>
-    <button ng-show="project.sourceTerminology === 'SNOMEDCT'" class="btn btn-sm btn-primary" ng-click="openConceptBrowser()">SNOMEDCT Browser</button>
+  <button ng-show="project.sourceTerminology === 'SNOMEDCT'"
+    class="btn btn-sm btn-primary" ng-click="openConceptBrowser()">SNOMEDCT
+    Browser</button>
 
-  <span ng-show="currentRole === 'Administrator'">
-    <button class="btn btn-sm btn-primary" ng-click="computeWorkflow()">Compute
-      Workflow</button>
-  </span>
-  
-    <span ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
-    <button class="btn btn-sm btn-primary" ng-click="showDelta()">Show Delta</button>
+  <button class="btn btn-sm btn-primary" ng-show="indexViewerExists == true" 
+    ng-click="openIndexViewer()">Index Viewer</button>
+  <span ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
+    <button class="btn btn-sm btn-primary" ng-click="showDelta()">Show
+      Delta</button>
   </span>
 
-  
-<!--  REMOVED FOR LIVE VERSION
+
+  <!--  REMOVED FOR LIVE VERSION
    <span ng-show="currentRole === 'Administrator'">
     <button class="btn btn-sm btn-primary" ng-click="generateTestingStateForKLININ()">Reset Records for KLI/NIN</button>
   </span>
@@ -40,7 +40,7 @@
   Maximum number of conflicts: <input id="numberOfConflicts" style="width:50px;" value="5" ng-model="nConflicts"> 
   </form>
   </div> -->
-  
-  
+
+
 </div>
 

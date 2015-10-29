@@ -14,7 +14,7 @@
   <name>OTF RF2 Model JPA implementation</name>
   <description>JPA implementation of model for OTF RF2 data objects</description>
 
-  <!-- Declare Project Dependency Versions -->
+  <!-- Dependencies -->
   <dependencies>
 
     <!-- Model interfaces. -->
@@ -38,6 +38,10 @@
     </dependency>
     <dependency>
       <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-c3p0</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate</groupId>
       <artifactId>hibernate-search</artifactId>
     </dependency>
     <dependency>
@@ -52,10 +56,14 @@
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-validator</artifactId>
     </dependency>
+
+    <!-- JDBC connector -->
     <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
     </dependency>
+
+    <!-- Logging -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
@@ -71,25 +79,12 @@
       <artifactId>jackson-module-jaxb-annotations</artifactId>
     </dependency>
 
+    <!-- Unit tests -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
     </dependency>
-  </dependencies>
 
-  <build>
-    <plugins>
-      <!-- Add src/main/resources to the classpath -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <additionalClasspathElements>
-            <additionalClasspathElement>src/main/resources</additionalClasspathElement>
-          </additionalClasspathElements>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+  </dependencies>
 
 </project>

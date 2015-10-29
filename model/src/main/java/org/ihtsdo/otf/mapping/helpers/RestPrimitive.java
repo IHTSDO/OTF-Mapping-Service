@@ -2,7 +2,6 @@ package org.ihtsdo.otf.mapping.helpers;
 
 /**
  * Generic object to contain a primitive result.
- * 
  */
 public interface RestPrimitive {
 

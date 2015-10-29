@@ -24,6 +24,8 @@ import org.hibernate.search.SearchFactory;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
+import org.ihtsdo.otf.mapping.helpers.MapRefsetPattern;
+import org.ihtsdo.otf.mapping.helpers.RelationStyle;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -173,11 +175,12 @@ public class MapProjectJpaTest {
         .setDestinationTerminologyVersion(testDestinationTerminologyVersion);
     mapProject1.setGroupStructure(testGroupStructure);
     mapProject1.setPublished(testPublished);
-    mapProject1.setMapRelationStyle("mapRelationStyle1");
+    mapProject1.setMapRelationStyle(RelationStyle.MAP_CATEGORY_STYLE);
     mapProject1.setMapPrincipleSourceDocument("mapPrincipleSourceDocument1");
-    mapProject1.setMapPrincipleSourceDocumentName("mapPrincipleSourceDocument1");
+    mapProject1
+        .setMapPrincipleSourceDocumentName("mapPrincipleSourceDocument1");
     mapProject1.setRuleBased(true);
-    mapProject1.setMapRefsetPattern("mapRefsetPattern1");
+    mapProject1.setMapRefsetPattern(MapRefsetPattern.ComplexMap);
     mapProject1
         .setProjectSpecificAlgorithmHandlerClass("projectSpecificAlgorithmHandlerClass1");
     mapProject1.setScopeDescendantsFlag(true);
@@ -197,11 +200,12 @@ public class MapProjectJpaTest {
         .setDestinationTerminologyVersion(testDestinationTerminologyVersion3);
     mapProject3.setGroupStructure(testGroupStructure);
     mapProject3.setPublished(testPublished);
-    mapProject3.setMapRelationStyle("mapRelationStyle3");
+    mapProject3.setMapRelationStyle(RelationStyle.MAP_CATEGORY_STYLE);
     mapProject3.setMapPrincipleSourceDocument("mapPrincipleSourceDocument3");
-    mapProject3.setMapPrincipleSourceDocumentName("mapPrincipleSourceDocument3");
+    mapProject3
+        .setMapPrincipleSourceDocumentName("mapPrincipleSourceDocument3");
     mapProject3.setRuleBased(true);
-    mapProject3.setMapRefsetPattern("mapRefsetPattern3");
+    mapProject3.setMapRefsetPattern(MapRefsetPattern.ComplexMap);
     mapProject3
         .setProjectSpecificAlgorithmHandlerClass("projectSpecificAlgorithmHandlerClass3");
     mapProject3.setScopeDescendantsFlag(true);
@@ -393,20 +397,22 @@ public class MapProjectJpaTest {
 
   /**
    * Clean up.
-   * @throws Exception 
+   * @throws Exception
    */
   public static void cleanUp() throws Exception {
     Logger.getLogger(MapProjectJpaTest.class).info("Cleaning up.");
 
     // create new database connection
     String configFileName = System.getProperty("run.config.test");
-    Logger.getLogger(MapProjectJpaTest.class).info("  run.config.test = " + configFileName);
+    Logger.getLogger(MapProjectJpaTest.class).info(
+        "  run.config.test = " + configFileName);
     Properties config = new Properties();
-    FileReader in = new FileReader(new File(configFileName)); 
+    FileReader in = new FileReader(new File(configFileName));
     config.load(in);
     in.close();
     Logger.getLogger(MapProjectJpaTest.class).info("  properties = " + config);
-    factory = Persistence.createEntityManagerFactory("MappingServiceDS", config);
+    factory =
+        Persistence.createEntityManagerFactory("MappingServiceDS", config);
     manager = factory.createEntityManager();
     EntityTransaction tx = manager.getTransaction();
 

@@ -15,15 +15,19 @@
   <description>OTF RF2 Administrator Tool to Make Lucene indexes</description>
   <packaging>pom</packaging>
 
+  <properties>
+    <!-- Comma separated list of objects to reindex, leave blank for all -->
+    <indexed.objects></indexed.objects>
+
+    <!-- The input dir -->
+    <input.dir></input.dir>
+  </properties>
 
   <profiles>
+
+    <!-- Activated by run.config setting -->
     <profile>
-      <id>run</id>
-      <activation>
-        <property>
-          <name>run.config</name>
-        </property>
-      </activation>
+      <id>Reindex</id>
       <build>
         <plugins>
 
@@ -31,7 +35,6 @@
           <plugin>
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
             <executions>
               <execution>
                 <id>reindex</id>
@@ -40,7 +43,7 @@
                   <goal>reindex</goal>
                 </goals>
                 <configuration>
-                  <indexedObjects>${indexedObjects}</indexedObjects>
+                  <indexedObjects>${indexed.objects}</indexedObjects>
                 </configuration>
               </execution>
             </executions>
@@ -48,5 +51,203 @@
         </plugins>
       </build>
     </profile>
+
+    <!-- Convert ASC files to XML -->
+    <!-- This is the first step for generating application-usable data from index 
+      files -->
+    <profile>
+      <id>ConvertAscToXml</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>execution1</id>
+                <phase>compile</phase>
+                <configuration>
+                  <inputDir>${input.dir}</inputDir>
+                  <inputFile>TEIL1.ASC</inputFile>
+                  <terminology>ICD10</terminology>
+                  <terminologyVersion>2010</terminologyVersion>
+                  <documentTitle>Alphabetical index to diseases and nature of
+                    injury</documentTitle>
+                  <headerProperties>
+                    <property>
+                      <name>A</name>
+                      <value>;Complication of abortion, current episode
+                        (O03-O06)
+                        -
+                        complete or unspecified;Complication of
+                        abortion, current
+                        episode (O03-O06) -
+                        incomplete;Complication of pregnancy
+                        with abortive
+                        outcome, subsequent episode (O08)</value>
+                    </property>
+                    <property>
+                      <name>N</name>
+                      <value>;Malignant Primary;Malignant Secondary;Malignant
+                        In
+                        Situ;Benign;Uncertain or unknown behavior</value>
+                    </property>
+                  </headerProperties>
+                </configuration>
+                <goals>
+                  <goal>convert-to-xml</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>execution2</id>
+                <phase>compile</phase>
+                <configuration>
+                  <inputDir>${input.dir}</inputDir>
+                  <inputFile>TEIL2.ASC</inputFile>
+                  <terminology>ICD10</terminology>
+                  <terminologyVersion>2010</terminologyVersion>
+                  <documentTitle>External causes of injury</documentTitle>
+                  <headerProperties />
+                </configuration>
+                <goals>
+                  <goal>convert-to-xml</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>execution3</id>
+                <phase>compile</phase>
+                <configuration>
+                  <inputDir>${input.dir}</inputDir>
+                  <inputFile>TEIL3.ASC</inputFile>
+                  <terminology>ICD10</terminology>
+                  <terminologyVersion>2010</terminologyVersion>
+                  <documentTitle>Table of drugs and chemicals</documentTitle>
+                  <headerProperties>
+                    <property>
+                      <name>C</name>
+                      <value>Substance;Poisoning Chapter XIX;Poisoning
+                        Accidental;
+                        Poisoning Intentional self-harm; Poisoning
+                        Undetermined
+                        intent;Adverse effect in theraputic use</value>
+                    </property>
+                  </headerProperties>
+                </configuration>
+                <goals>
+                  <goal>convert-to-xml</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- Convert index files to HTML and lucene indexes and package -->
+    <profile>
+      <id>ConvertXmlToHtmlAndLucene</id>
+      <build>
+        <plugins>
+          <!-- Apply mojo to unpacked .xml files -->
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <!-- Generate HTML for TEIL1 data -->
+              <execution>
+                <id>execution1</id>
+                <phase>compile</phase>
+                <configuration>
+                  <inputDir>${input.dir}</inputDir>
+                  <inputFile>ICD10_TEIL1.ASC.xml</inputFile>
+                  <domain>TEIL1</domain>
+                  <terminology>ICD10</terminology>
+                  <terminologyVersion>2010</terminologyVersion>
+                </configuration>
+                <goals>
+                  <goal>convert-to-html</goal>
+                </goals>
+              </execution>
+              <!-- Generate HTML for TEIL2 data -->
+              <execution>
+                <id>execution1b</id>
+                <phase>compile</phase>
+                <configuration>
+                  <inputDir>${input.dir}</inputDir>
+                  <inputFile>ICD10_TEIL2.ASC.xml</inputFile>
+                  <domain>TEIL2</domain>
+                  <terminology>ICD10</terminology>
+                  <terminologyVersion>2010</terminologyVersion>
+                </configuration>
+                <goals>
+                  <goal>convert-to-html</goal>
+                </goals>
+              </execution>
+              <!-- Generate HTML for TEIL3 data -->
+              <execution>
+                <id>execution1c</id>
+                <phase>compile</phase>
+                <configuration>
+                  <inputDir>${input.dir}</inputDir>
+                  <inputFile>ICD10_TEIL3.ASC.xml</inputFile>
+                  <domain>TEIL3</domain>
+                  <terminology>ICD10</terminology>
+                  <terminologyVersion>2010</terminologyVersion>
+                </configuration>
+                <goals>
+                  <goal>convert-to-html</goal>
+                </goals>
+              </execution>
+              <!-- Generate Lucene indexes for TEIL1 data -->
+              <execution>
+                <id>execution2a</id>
+                <phase>compile</phase>
+                <configuration>
+                  <inputDir>${input.dir}</inputDir>
+                  <inputFile>ICD10_TEIL1.ASC.xml</inputFile>
+                  <domain>TEIL1</domain>
+                  <terminology>ICD10</terminology>
+                  <terminologyVersion>2010</terminologyVersion>
+                </configuration>
+                <goals>
+                  <goal>convert-to-lucene</goal>
+                </goals>
+              </execution>
+              <!-- Generate Lucene indexes for TEIL2 data -->
+              <execution>
+                <id>execution2b</id>
+                <phase>compile</phase>
+                <configuration>
+                  <inputDir>${input.dir}</inputDir>
+                  <inputFile>ICD10_TEIL2.ASC.xml</inputFile>
+                  <domain>TEIL2</domain>
+                  <terminology>ICD10</terminology>
+                  <terminologyVersion>2010</terminologyVersion>
+                </configuration>
+                <goals>
+                  <goal>convert-to-lucene</goal>
+                </goals>
+              </execution>
+              <!-- Generate Lucene indexes for TEIL3 data -->
+              <execution>
+                <id>execution2c</id>
+                <phase>compile</phase>
+                <configuration>
+                  <inputDir>${input.dir}</inputDir>
+                  <inputFile>ICD10_TEIL3.ASC.xml</inputFile>
+                  <domain>TEIL3</domain>
+                  <terminology>ICD10</terminology>
+                  <terminologyVersion>2010</terminologyVersion>
+                </configuration>
+                <goals>
+                  <goal>convert-to-lucene</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
   </profiles>
 </project>

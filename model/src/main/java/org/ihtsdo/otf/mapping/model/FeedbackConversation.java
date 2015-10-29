@@ -3,218 +3,204 @@ package org.ihtsdo.otf.mapping.model;
 import java.util.Date;
 import java.util.List;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Interface FeedbackConversation.
- * 
- * @author ${author}
+ * Generically represents a conversation regarding {@link Feedback} between
+ * users.
  */
 public interface FeedbackConversation {
 
-	/**
-	 * Returns the id.
-	 * 
-	 * @return the id
-	 */
-	public Long getId();
+  /**
+   * Returns the id.
+   * 
+   * @return the id
+   */
+  public Long getId();
 
-	/**
-	 * Sets the id.
-	 * 
-	 * @param id
-	 *            the id
-	 */
-	public void setId(Long id);
+  /**
+   * Sets the id.
+   * 
+   * @param id the id
+   */
+  public void setId(Long id);
 
-	/**
-	 * Returns the map project id.
-	 * 
-	 * @return the map project id
-	 */
-	public Long getMapProjectId();
+  /**
+   * Returns the map project id.
+   * 
+   * @return the map project id
+   */
+  public Long getMapProjectId();
 
-	/**
-	 * Sets the map project id.
-	 * 
-	 * @param mapProjectId
-	 *            the map project id
-	 */
-	public void setMapProjectId(Long mapProjectId);
-	
-	/**
-	 * Returns the feedbacks.
-	 * 
-	 * @return the feedbacks
-	 */
-	public List<Feedback> getFeedbacks();
+  /**
+   * Sets the map project id.
+   * 
+   * @param mapProjectId the map project id
+   */
+  public void setMapProjectId(Long mapProjectId);
 
-	/**
-	 * Sets the feedbacks.
-	 * 
-	 * @param feedbacks
-	 *            the feedbacks
-	 */
-	public void setFeedbacks(List<Feedback> feedbacks);
+  /**
+   * Returns the feedbacks.
+   * 
+   * @return the feedbacks
+   */
+  public List<Feedback> getFeedbacks();
 
-	/**
-	 * Sets the active.
-	 * 
-	 * @param active
-	 *            the active
-	 */
-	public void setResolved(boolean active);
+  /**
+   * Sets the feedbacks.
+   * 
+   * @param feedbacks the feedbacks
+   */
+  public void setFeedbacks(List<Feedback> feedbacks);
 
-	/**
-	 * Indicates whether or not active is the case.
-	 * 
-	 * @return <code>true</code> if so, <code>false</code> otherwise
-	 */
-	public boolean isResolved();
+  /**
+   * Sets the active.
+   * 
+   * @param active the active
+   */
+  public void setResolved(boolean active);
 
-	/**
-	 * Returns the map record id.
-	 * 
-	 * @return the map record id
-	 */
-	public Long getMapRecordId();
+  /**
+   * Indicates whether or not active is the case.
+   * 
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public boolean isResolved();
 
-	/**
-	 * Sets the map record id.
-	 * 
-	 * @param mapRecordId
-	 *            the map record id
-	 */
-	public void setMapRecordId(Long mapRecordId);
+  /**
+   * Returns the map record id.
+   * 
+   * @return the map record id
+   */
+  public Long getMapRecordId();
 
-	/**
-	 * Sets the discrepancy review.
-	 * 
-	 * @param discrepancyReview
-	 *            the discrepancy review
-	 */
-	public void setDiscrepancyReview(boolean discrepancyReview);
+  /**
+   * Sets the map record id.
+   * 
+   * @param mapRecordId the map record id
+   */
+  public void setMapRecordId(Long mapRecordId);
 
-	/**
-	 * Indicates whether or not discrepancy review is the case.
-	 * 
-	 * @return <code>true</code> if so, <code>false</code> otherwise
-	 */
-	public boolean isDiscrepancyReview();
+  /**
+   * Sets the discrepancy review.
+   * 
+   * @param discrepancyReview the discrepancy review
+   */
+  public void setDiscrepancyReview(boolean discrepancyReview);
 
-	/**
-	 * Returns the last modified.
-	 * 
-	 * @return the last modified
-	 */
-	public Date getLastModified();
+  /**
+   * Indicates whether or not discrepancy review is the case.
+   * 
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public boolean isDiscrepancyReview();
 
-	/**
-	 * Sets the last modified.
-	 * 
-	 * @param lastModified
-	 *            the last modified
-	 */
-	public void setLastModified(Date lastModified);
+  /**
+   * Returns the last modified.
+   * 
+   * @return the last modified
+   */
+  public Date getLastModified();
 
-	/**
-	 * Sets the terminology id.
-	 * 
-	 * @param terminologyId
-	 *            the terminology id
-	 */
-	public void setTerminologyId(String terminologyId);
+  /**
+   * Sets the last modified.
+   * 
+   * @param lastModified the last modified
+   */
+  public void setLastModified(Date lastModified);
 
-	/**
-	 * Returns the terminology id.
-	 * 
-	 * @return the terminology id
-	 */
-	public String getTerminologyId();
+  /**
+   * Sets the terminology id.
+   * 
+   * @param terminologyId the terminology id
+   */
+  public void setTerminologyId(String terminologyId);
 
-	/**
-	 * Sets the terminology version.
-	 * 
-	 * @param terminologyVersion
-	 *            the terminology version
-	 */
-	public void setTerminologyVersion(String terminologyVersion);
+  /**
+   * Returns the terminology id.
+   * 
+   * @return the terminology id
+   */
+  public String getTerminologyId();
 
-	/**
-	 * Returns the terminology version.
-	 * 
-	 * @return the terminology version
-	 */
-	public String getTerminologyVersion();
+  /**
+   * Sets the terminology version.
+   * 
+   * @param terminologyVersion the terminology version
+   */
+  public void setTerminologyVersion(String terminologyVersion);
 
-	/**
-	 * Sets the terminology.
-	 * 
-	 * @param terminology
-	 *            the terminology
-	 */
-	public void setTerminology(String terminology);
+  /**
+   * Returns the terminology version.
+   * 
+   * @return the terminology version
+   */
+  public String getTerminologyVersion();
 
-	/**
-	 * Returns the terminology.
-	 * 
-	 * @return the terminology
-	 */
-	public String getTerminology();
+  /**
+   * Sets the terminology.
+   * 
+   * @param terminology the terminology
+   */
+  public void setTerminology(String terminology);
 
-	/**
-	 * Assign to children.
-	 */
-	public void assignToChildren();
+  /**
+   * Returns the terminology.
+   * 
+   * @return the terminology
+   */
+  public String getTerminology();
 
-	/**
-	 * Sets the default preferred name.
-	 * 
-	 * @param defaultPreferredName
-	 *            the default preferred name
-	 */
-	public void setDefaultPreferredName(String defaultPreferredName);
+  /**
+   * Assign to children.
+   */
+  public void assignToChildren();
 
-	/**
-	 * Returns the default preferred name.
-	 * 
-	 * @return the default preferred name
-	 */
-	public String getDefaultPreferredName();
+  /**
+   * Sets the default preferred name.
+   * 
+   * @param defaultPreferredName the default preferred name
+   */
+  public void setDefaultPreferredName(String defaultPreferredName);
 
-	/**
-	 * Sets the title.
-	 * 
-	 * @param title
-	 *            the title
-	 */
-	public void setTitle(String title);
+  /**
+   * Returns the default preferred name.
+   * 
+   * @return the default preferred name
+   */
+  public String getDefaultPreferredName();
 
-	/**
-	 * Returns the title.
-	 * 
-	 * @return the title
-	 */
-	public String getTitle();
+  /**
+   * Sets the title.
+   * 
+   * @param title the title
+   */
+  public void setTitle(String title);
 
-	/**
-	 * Adds the feedback.
-	 *
-	 * @param feedback the feedback
-	 */
-	public void addFeedback(Feedback feedback);
+  /**
+   * Returns the title.
+   * 
+   * @return the title
+   */
+  public String getTitle();
 
-	/**
-	 * Sets the user name.
-	 *
-	 * @param userName the user name
-	 */
-	public void setUserName(String userName);
+  /**
+   * Adds the feedback.
+   *
+   * @param feedback the feedback
+   */
+  public void addFeedback(Feedback feedback);
 
-	/**
-	 * Returns the user name.
-	 *
-	 * @return the user name
-	 */
-	public String getUserName();
+  /**
+   * Sets the user name.
+   *
+   * @param userName the user name
+   */
+  public void setUserName(String userName);
+
+  /**
+   * Returns the user name.
+   *
+   * @return the user name
+   */
+  public String getUserName();
 
 }

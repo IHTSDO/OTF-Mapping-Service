@@ -79,13 +79,15 @@ public class MapRecordJpaTest {
 
     // create Entity Manager
     String configFileName = System.getProperty("run.config.test");
-    Logger.getLogger(MapRecordJpaTest.class).info("  run.config.test = " + configFileName);
+    Logger.getLogger(MapRecordJpaTest.class).info(
+        "  run.config.test = " + configFileName);
     Properties config = new Properties();
-    FileReader in = new FileReader(new File(configFileName)); 
+    FileReader in = new FileReader(new File(configFileName));
     config.load(in);
     in.close();
     Logger.getLogger(MapRecordJpaTest.class).info("  properties = " + config);
-    factory = Persistence.createEntityManagerFactory("MappingServiceDS", config);
+    factory =
+        Persistence.createEntityManagerFactory("MappingServiceDS", config);
     manager = factory.createEntityManager();
     fullTextEntityManager = Search.getFullTextEntityManager(manager);
 

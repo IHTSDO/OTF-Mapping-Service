@@ -3,8 +3,8 @@ package org.ihtsdo.otf.mapping.helpers;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 
 /**
- * Represents a parameter container for paging, filtering and sorting.
- * NOTE: filtering is not currently imported or supported.
+ * Generically represents a parameter container for paging, filtering and
+ * sorting. NOTE: filtering is not currently imported or supported.
  */
 public interface PfsParameter {
 
@@ -39,16 +39,17 @@ public interface PfsParameter {
   public String getQueryRestriction();
 
   /**
-   * Sets a string that can be used as part of a query to restrict results.
-   * In practice, this is expressed in Lucene query syntax.
+   * Sets a string that can be used as part of a query to restrict results. In
+   * practice, this is expressed in Lucene query syntax.
    * @param queryRestriction the filter string
    */
   public void setQueryRestriction(String queryRestriction);
 
   /**
    * Returns the sort field name. Valid values for the sort field would include
-   * a bean-style property name for the underlying object.  For example, for {@link Concept}
-   * retrieval, you could pass id or definitionStatusId, or defaultPrefereredName.
+   * a bean-style property name for the underlying object. For example, for
+   * {@link Concept} retrieval, you could pass id or definitionStatusId, or
+   * defaultPrefereredName.
    * @return the sort field name
    */
   public String getSortField();

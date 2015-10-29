@@ -28,11 +28,12 @@ import org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember;
  * Concrete implementation of {@link Description} for use with JPA.
  */
 @Entity
-//@UniqueConstraint here is being used to create an index, not to enforce uniqueness
+// @UniqueConstraint here is being used to create an index, not to enforce
+// uniqueness
 @Table(name = "descriptions", uniqueConstraints = @UniqueConstraint(columnNames = {
     "terminologyId", "terminology", "terminologyVersion"
 }))
-//@Audited
+// @Audited
 @XmlRootElement(name = "description")
 public class DescriptionJpa extends AbstractComponent implements Description {
 
@@ -59,7 +60,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
 
   /** The language RefSet members */
   @OneToMany(mappedBy = "description", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = LanguageRefSetMemberJpa.class)
- // @IndexedEmbedded(targetElement = LanguageRefSetMemberJpa.class) PG
+  // @IndexedEmbedded(targetElement = LanguageRefSetMemberJpa.class) PG
   private Set<LanguageRefSetMember> languageRefSetMembers = new HashSet<>();
 
   /**
@@ -76,6 +77,35 @@ public class DescriptionJpa extends AbstractComponent implements Description {
    */
   public DescriptionJpa(Long type) {
     this.typeId = type;
+  }
+
+  /**
+   * Instantiates a new description jpa.
+   *
+   * @param description the description
+   * @param deepCopy indicates whether or not to perform a deep copy
+   */
+  public DescriptionJpa(Description description, boolean deepCopy) {
+
+    setId(description.getId());
+    setActive(description.isActive());
+    setEffectiveTime(description.getEffectiveTime());
+    setLabel(description.getLabel());
+    setModuleId(description.getModuleId());
+    setTerminology(description.getTerminology());
+    setTerminologyId(description.getTerminologyId());
+    setTerminologyVersion(description.getTerminologyVersion());
+    languageCode = description.getLanguageCode();
+    typeId = description.getTypeId();
+    term = description.getTerm();
+    caseSignificanceId = description.getCaseSignificanceId();
+    concept = description.getConcept();
+    if (deepCopy) {
+      languageRefSetMembers = new HashSet<>();
+      for (LanguageRefSetMember member : description.getLanguageRefSetMembers()) {
+        languageRefSetMembers.add(new LanguageRefSetMemberJpa(member, true));
+      }
+    }
   }
 
   /**
@@ -254,15 +284,15 @@ public class DescriptionJpa extends AbstractComponent implements Description {
     // fields
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.rf2.jpa.AbstractComponent#hashCode()
-   */
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = super.hashCode();
+    result =
+        prime
+            * result
+            + ((caseSignificanceId == null) ? 0 : caseSignificanceId.hashCode());
+    result = prime * result + ((concept == null) ? 0 : concept.hashCode());
     result =
         prime * result + ((languageCode == null) ? 0 : languageCode.hashCode());
     result = prime * result + ((term == null) ? 0 : term.hashCode());
@@ -270,12 +300,6 @@ public class DescriptionJpa extends AbstractComponent implements Description {
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.rf2.jpa.AbstractComponent#equals(java.lang.Object)
-   */
   @Override
   public boolean equals(Object obj) {
     if (this == obj)
@@ -285,6 +309,16 @@ public class DescriptionJpa extends AbstractComponent implements Description {
     if (getClass() != obj.getClass())
       return false;
     DescriptionJpa other = (DescriptionJpa) obj;
+    if (caseSignificanceId == null) {
+      if (other.caseSignificanceId != null)
+        return false;
+    } else if (!caseSignificanceId.equals(other.caseSignificanceId))
+      return false;
+    if (concept == null) {
+      if (other.concept != null)
+        return false;
+    } else if (!concept.equals(other.concept))
+      return false;
     if (languageCode == null) {
       if (other.languageCode != null)
         return false;

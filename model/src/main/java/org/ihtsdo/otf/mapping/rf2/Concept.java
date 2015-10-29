@@ -3,7 +3,7 @@ package org.ihtsdo.otf.mapping.rf2;
 import java.util.Set;
 
 /**
- * Represents a concept in a terminology.
+ * Generically represents a concept in a terminology.
  */
 public interface Concept extends Component {
 
@@ -57,6 +57,20 @@ public interface Concept extends Component {
   public Set<Relationship> getRelationships();
 
   /**
+   * Adds the relationship.
+   * 
+   * @param relationship the relationship
+   */
+  public void addRelationship(Relationship relationship);
+
+  /**
+   * Removes the relationship.
+   * 
+   * @param relationship the relationship
+   */
+  public void removeRelationship(Relationship relationship);
+
+  /**
    * Sets the relationships.
    * 
    * @param relationships the relationships
@@ -69,6 +83,20 @@ public interface Concept extends Component {
    * @return the inverse relationships
    */
   public Set<Relationship> getInverseRelationships();
+
+  /**
+   * Adds the inverse relationship.
+   * 
+   * @param relationship the relationship
+   */
+  public void addInverseRelationship(Relationship relationship);
+
+  /**
+   * Removes the inverse relationship.
+   * 
+   * @param relationship the relationship
+   */
+  public void removeInverseRelationship(Relationship relationship);
 
   /**
    * Sets the inverse relationships.
@@ -214,5 +242,5 @@ public interface Concept extends Component {
    */
   public void removeAttributeValueRefSetMember(
     AttributeValueRefSetMember attributeValueRefSetMember);
-  
+
 }
