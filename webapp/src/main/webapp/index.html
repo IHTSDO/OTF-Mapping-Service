@@ -1,135 +1,167 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html ng-app="mapProjectApp">
 <head>
-  <meta http-equiv="Content-Language" content="en" />
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <link rel="icon" 
-      type="image/png" 
-      href="img/favicon.png" />
-  <title>IHTSDO Mapping Tool</title>
-  <style type="text/css" media="all"></style>
-    <!-- build:css css/sample.min.css  -->
+<meta http-equiv="Content-Language" content="en" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="icon" type="image/png" href="images/favicon.png" />
+<title>IHTSDO Mapping Tool</title>
+<style type="text/css" media="all"></style>
+<!-- build:css css/sample.min.css  -->
 
-    <!-- JQuery splitter CSS  -->
-    <link href="components/jquery-splitter/jquery.splitter.css" rel="stylesheet">
-    
-   
-    <!-- dashboard style  -->
-    <link href="css/main.css" rel="stylesheet">
-    <link href="components/font-awesome/css/font-awesome.css" rel="stylesheet">
+<!-- JQuery splitter CSS  -->
+<link href="components/jquery-splitter/jquery.splitter.css"
+	rel="stylesheet">
 
-    <!-- Bootstrap core CSS  -->
-    <link href="components/bootstrap/dist/css/bootstrap.css" rel="stylesheet">
-    
-	<!--  IHTSDO Mapping Tool webapp override CSS -->
-	<link rel="stylesheet" href="css/app.css">
+
+<!-- dashboard style  -->
+<link href="css/main.css" rel="stylesheet">
+<link href="components/font-awesome/css/font-awesome.css"
+	rel="stylesheet">
+
+<!-- Bootstrap core CSS  -->
+<link href="components/bootstrap/dist/css/bootstrap.css"
+	rel="stylesheet">
+
+<!--  IHTSDO Mapping Tool webapp override CSS -->
+<link rel="stylesheet" href="css/app.css">
 
 <!--  file upload script must be before angular.js -->
-<script src="components/file-upload/angular-file-upload-shim.js"></script> 
+<script src="components/file-upload/angular-file-upload-shim.js"></script>
 
-  <!--  angular includes -->
-  <script type="text/javascript" src="components/angular/angular.js"></script>
-  <script type="text/javascript" src="components/angular/angular-route.js"></script>
-  <script type="text/javascript"
-    src="components/angular-local-storage/angular-local-storage.js"></script>
-  <script type="text/javascript" src="components/angular/sortable.js"></script>
-  <script type="text/javascript" src="components/angular/cookies.js"></script>
+<!--  angular includes -->
+<script type="text/javascript" src="components/angular/angular.js"></script>
+<script type="text/javascript" src="components/angular/angular-route.js"></script>
+<script type="text/javascript"
+	src="components/angular-local-storage/angular-local-storage.js"></script>
+<script type="text/javascript" src="components/angular/sortable.js"></script>
+<script type="text/javascript" src="components/angular/cookies.js"></script>
 
-  <script src="js/controllers.js"></script>
-  <script src="js/app.js"></script>
+<script src="js/controllers.js"></script>
+<script src="js/app.js"></script>
 
 
 <!--  file upload script must be after angular.js -->
-<script src="components/file-upload/angular-file-upload.js"></script> 
+<script src="components/file-upload/angular-file-upload.js"></script>
 
- <!-- build:js js/jquery.min.js -->
-    <script type="text/javascript" src="components/jquery/jquery.js"></script>
-    <!-- endbuild -->
+<!-- build:js js/jquery.min.js -->
+<script type="text/javascript" src="components/jquery/jquery.js"></script>
+<!-- endbuild -->
 
-    <!-- build:js js/jquery.ui.sortable.min.js -->
-    <script type="text/javascript" src="components/jquery-ui/ui/minified/jquery.ui.core.min.js"></script>
-    <script type="text/javascript" src="components/jquery-ui/ui/minified/jquery.ui.widget.min.js"></script>
-    <script type="text/javascript" src="components/jquery-ui/ui/minified/jquery.ui.mouse.min.js"></script>
-    <script type="text/javascript" src="components/jquery-ui/ui/minified/jquery.ui.sortable.min.js"></script>
-    <script type="text/javascript" src="components/jquery-splitter/jquery.splitter-0.14.0.js"></script>
-    <!-- endbuild   -->
-    
-    <!--  MUST REDECLARE ANGULAR FOR FULL FUNCTIONALITY (splitter, etc) -->
-    <script type="text/javascript" src="components/angular/angular.min.js"></script>
-  
+<!-- build:js js/jquery.ui.sortable.min.js -->
+<script type="text/javascript"
+	src="components/jquery-ui/ui/minified/jquery.ui.core.min.js"></script>
+<script type="text/javascript"
+	src="components/jquery-ui/ui/minified/jquery.ui.widget.min.js"></script>
+<script type="text/javascript"
+	src="components/jquery-ui/ui/minified/jquery.ui.mouse.min.js"></script>
+<script type="text/javascript"
+	src="components/jquery-ui/ui/minified/jquery.ui.sortable.min.js"></script>
+<script type="text/javascript"
+	src="components/jquery-splitter/jquery.splitter-0.14.0.js"></script>
+<script type="text/javascript"
+	src="components/angular-ui-tree/angular-ui-tree.js"></script>
+<!-- endbuild   -->
 
-    <!-- build:js js/sample.min.js -->
-    <!-- angular-bootstrap -->
-  <script type="text/javascript"
-    src="components/angular-bootstrap/ui-bootstrap.js"></script>
-  <script type="text/javascript"
-    src="components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
+<link href="components/angular-ui-tree/angular-ui-tree.min.css"
+	rel="stylesheet">
 
-    <!-- ADF Dashboard scripts -->
-    <script type="text/javascript" src="components/adf-dashboard/adf.js"></script>
-    <script type="text/javascript" src="components/adf-dashboard/provider.js"></script>
-    <script type="text/javascript" src="components/adf-dashboard/widget-content.js"></script>
-    <script type="text/javascript" src="components/adf-dashboard/widget.js"></script>
-    <script type="text/javascript" src="components/adf-dashboard/dashboard.js"></script>
-    
-   <!--  <script type="text/javascript" src="components/textAngular/textAngular-sanitize.js"></script>
-    <script type="text/javascript" src="components/textAngular/textAngularSetup.js"></script>
-    <script type="text/javascript" src="components/textAngular/textAngular.js"></script> -->
-    
-     <!--  TinyMCE rich text formatter -->
-    <script type="text/javascript" src="components/tinymce/tinymce.min.js"></script>
-    <script type="text/javascript" src="components/tinymce/ui.tinymce.js"></script>
-    
-    <!--  angularjs-dropdown-multiselect -->
-    <script type="text/javascript" src="components/multi-select/lodash.js"></script>
-    <script type="text/javascript" src="components/multi-select/angularjs-dropdown-multiselect.js"></script>
-    
-    <!-- OTF Angular controls -->
-    <script type="text/javascript" src="js/directives.js"></script>
-    <script type="text/javascript" src="js/services.js"></script>
-    <script type="text/javascript" src="js/dashboards.js"></script>
+<!--  MUST REDECLARE ANGULAR FOR FULL FUNCTIONALITY (splitter, etc) -->
+<script type="text/javascript" src="components/angular/angular.min.js"></script>
 
-	<!-- OTF Widgets -->
-    <script type="text/javascript" src="js/widgets/metadataList/metadataList.js"></script>
-	<script type="text/javascript" src="js/widgets/mapRecord/mapRecord.js"></script>
-	<script type="text/javascript" src="js/widgets/mapEntry/mapEntry.js"></script>
-	<script type="text/javascript" src="js/widgets/mapProject/mapProject.js"></script>
-	<script type="text/javascript" src="js/widgets/workAvailable/workAvailable.js"></script>
-	<script type="text/javascript" src="js/widgets/assignedList/assignedList.js"></script>
-	<script type="text/javascript" src="js/widgets/editedList/editedList.js"></script>
-	<script type="text/javascript" src="js/widgets/compareRecords/compareRecords.js"></script>
-    <script type="text/javascript" src="js/widgets/projectDetails/projectDetails.js"></script>
-    <script type="text/javascript" src="js/widgets/terminologyBrowser/terminologyBrowser.js"></script>
-    <script type="text/javascript" src="js/widgets/projectRecords/projectRecords.js"></script>	
-    <script type="text/javascript" src="js/widgets/recordConcept/recordConcept.js"></script>  
-    <script type="text/javascript" src="js/widgets/recordSummary/recordSummary.js"></script>  
-    <script type="text/javascript" src="js/widgets/feedback/feedback.js"></script> 
-    <script type="text/javascript" src="js/widgets/feedbackConversation/feedbackConversation.js"></script>
-    <script type="text/javascript" src="js/widgets/recordAdmin/recordAdmin.js"></script>
-    <script type="text/javascript" src="js/widgets/applicationAdmin/applicationAdmin.js"></script>
-    <script type="text/javascript" src="js/widgets/report/report.js"></script>
-    
-    <!-- Feedback link -->
-    <script type="text/javascript" src="https://jira.ihtsdotools.org/s/d41d8cd98f00b204e9800998ecf8427e/en_US49ycqb-1988229788/6262/3/1.4.7/_/download/batch/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector.js?collectorId=2101c2db"></script>
+
+<!-- build:js js/sample.min.js -->
+<!-- angular-bootstrap -->
+<script type="text/javascript"
+	src="components/angular-bootstrap/ui-bootstrap.js"></script>
+<script type="text/javascript"
+	src="components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
+
+<!-- ADF Dashboard scripts -->
+<script type="text/javascript" src="components/adf-dashboard/adf.js"></script>
+<script type="text/javascript"
+	src="components/adf-dashboard/provider.js"></script>
+<script type="text/javascript"
+	src="components/adf-dashboard/widget-content.js"></script>
+<script type="text/javascript" src="components/adf-dashboard/widget.js"></script>
+<script type="text/javascript"
+	src="components/adf-dashboard/dashboard.js"></script>
+
+<!--  TinyMCE rich text formatter -->
+<script type="text/javascript" src="components/tinymce/tinymce.min.js"></script>
+<script type="text/javascript" src="components/tinymce/ui.tinymce.js"></script>
+
+<!--  angularjs-dropdown-multiselect -->
+<script type="text/javascript" src="components/multi-select/lodash.js"></script>
+<script type="text/javascript"
+	src="components/multi-select/angularjs-dropdown-multiselect.js"></script>
+
+<!-- OTF Angular controls -->
+<script type="text/javascript" src="js/directives.js"></script>
+<script type="text/javascript" src="js/services.js"></script>
+<script type="text/javascript" src="js/dashboards.js"></script>
+
+<!-- OTF Widgets -->
+<script type="text/javascript"
+	src="js/widgets/metadataList/metadataList.js"></script>
+<script type="text/javascript" src="js/widgets/mapRecord/mapRecord.js"></script>
+<script type="text/javascript" src="js/widgets/mapEntry/mapEntry.js"></script>
+<script type="text/javascript" src="js/widgets/mapProject/mapProject.js"></script>
+<script type="text/javascript"
+	src="js/widgets/workAvailable/workAvailable.js"></script>
+<script type="text/javascript"
+	src="js/widgets/assignedList/assignedList.js"></script>
+<script type="text/javascript" src="js/widgets/editedList/editedList.js"></script>
+<script type="text/javascript"
+	src="js/widgets/compareRecords/compareRecords.js"></script>
+<script type="text/javascript"
+	src="js/widgets/projectDetails/projectDetails.js"></script>
+<script type="text/javascript"
+	src="js/widgets/terminologyBrowser/terminologyBrowser.js"></script>
+<script type="text/javascript"
+	src="js/widgets/projectRecords/projectRecords.js"></script>
+<script type="text/javascript"
+	src="js/widgets/recordConcept/recordConcept.js"></script>
+<script type="text/javascript"
+	src="js/widgets/recordSummary/recordSummary.js"></script>
+<script type="text/javascript" src="js/widgets/feedback/feedback.js"></script>
+<script type="text/javascript"
+	src="js/widgets/feedbackConversation/feedbackConversation.js"></script>
+<script type="text/javascript"
+	src="js/widgets/recordAdmin/recordAdmin.js"></script>
+<script type="text/javascript"
+	src="js/widgets/applicationAdmin/applicationAdmin.js"></script>
+<script type="text/javascript" src="js/widgets/report/report.js"></script>
+<script type="text/javascript" src="js/widgets/qaCheck/qaCheck.js"></script>
+<script type="text/javascript"
+	src="js/widgets/indexViewer/indexViewer.js"></script>
 
 </head>
 <body>
 
-  <div class="container">
-  
-    <div class="border-error alert-error" ng-show = "globalError.length > 0">
-      <h4 class="alert alert-danger alert-error" >{{globalError}}
-      <div style="display: inline; float: right; width: 3%;">
-                <i class="glyphicon glyphicon-remove"
-                 ng-click="resetGlobalError()"></i>
-      </div>
-      </h4>
-    </div>
-    <div ng-view style="margin-top:10px;"></div>
-  </div> 
-  <div ng-show="glassPane > 0" class="top-layer">
-  
-  </div>
- 
+	<noscript>
+		<style type="text/css">
+.container {
+	display: none;
+}
+</style>
+		<div class="alert alert-danger">
+			You must have Javascript enabled to use the Mapping Tool.
+		</div>
+	</noscript>
+	<div class="container">
+
+		<div id="globalError" class="border-error alert-error" ng-show="globalError.length > 0">
+			<h4 class="alert alert-danger alert-error">
+				{{globalError}}
+				<div style="display: inline; float: right; width: 3%;">
+					<i class="glyphicon glyphicon-remove" ng-click="resetGlobalError()"></i>
+				</div>
+			</h4>
+		</div>
+		<div ng-view style="margin-top: 10px;"></div>
+		<div ng-show="glassPane > 0" class="top-layer"></div>
+	</div>
+	
+
 </body>
 </html>

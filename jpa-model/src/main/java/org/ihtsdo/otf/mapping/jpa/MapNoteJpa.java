@@ -68,7 +68,7 @@ public class MapNoteJpa implements MapNote {
     this.note = note;
     this.timestamp = timestamp;
   }
-  
+
   /**
    * Instantiates a {@link MapNoteJpa} from the specified parameters.
    *
@@ -76,18 +76,19 @@ public class MapNoteJpa implements MapNote {
    * @param keepIds the keep ids
    */
   public MapNoteJpa(MapNote mapNote, boolean keepIds) {
-  
-	// if deep copy not indicated, copy id and timestamp
-	if (keepIds == false) {
-		this.id = mapNote.getId();
-		this.timestamp = mapNote.getTimestamp();
-	}
-	
-	// copy basic type fields (non-persisted objects)
-	this.note = mapNote.getNote();
-	
-	// copy objects/collections excluded from deep copy (i.e. retain persistence references)
-	this.user = new MapUserJpa(mapNote.getUser());
+
+    // if deep copy not indicated, copy id and timestamp
+    if (keepIds) {
+      this.id = mapNote.getId();
+      this.timestamp = mapNote.getTimestamp();
+    }
+
+    // copy basic type fields (non-persisted objects)
+    this.note = mapNote.getNote();
+
+    // copy objects/collections excluded from deep copy (i.e. retain persistence
+    // references)
+    this.user = new MapUserJpa(mapNote.getUser());
   }
 
   /**
@@ -202,7 +203,6 @@ public class MapNoteJpa implements MapNote {
     final int prime = 31;
     int result = 1;
     result = prime * result + ((note == null) ? 0 : note.hashCode());
-    result = prime * result + ((timestamp == null) ? 0 : timestamp.hashCode());
     result = prime * result + ((user == null) ? 0 : user.hashCode());
     return result;
   }
@@ -225,11 +225,6 @@ public class MapNoteJpa implements MapNote {
       if (other.note != null)
         return false;
     } else if (!note.equals(other.note))
-      return false;
-    if (timestamp == null) {
-      if (other.timestamp != null)
-        return false;
-    } else if (!timestamp.equals(other.timestamp))
       return false;
     if (user == null) {
       if (other.user != null)

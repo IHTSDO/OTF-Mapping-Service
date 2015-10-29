@@ -7,18 +7,17 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 
 /**
  * JAXB enabled implementation of {@link MapAgeRangeList}.
- * 
- * @author ${author}
  */
 @XmlRootElement(name = "mapAgeRangeList")
-public class MapAgeRangeListJpa extends AbstractResultList<MapAgeRange> implements
-    MapAgeRangeList {
+public class MapAgeRangeListJpa extends AbstractResultList<MapAgeRange>
+    implements MapAgeRangeList {
 
   /** The map projects. */
   private List<MapAgeRange> mapAgeRanges = new ArrayList<>();
@@ -110,6 +109,7 @@ public class MapAgeRangeListJpa extends AbstractResultList<MapAgeRange> implemen
    * @see org.ihtsdo.otf.mapping.helpers.ResultList#getIterable()
    */
   @Override
+  @XmlTransient
   public Iterable<MapAgeRange> getIterable() {
     return mapAgeRanges;
   }

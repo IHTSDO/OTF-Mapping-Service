@@ -1,6 +1,4 @@
-The config files in this project are templates for use in dev or prod
-environments and either with Junit tests or with actual deployments.
-
-DO NOT USE the files in here as your actual config file.  Copy the appropriate
-template to a known place that your environment is configured to respond to
-and then edit as needed.
+The sub-modules of this project represent actual configurations for
+use in different environments.  To deploy to another, different environment,
+make your own, separate config project and refer to it using the properties
+in the mapping-rest and mapping-webapp projects.

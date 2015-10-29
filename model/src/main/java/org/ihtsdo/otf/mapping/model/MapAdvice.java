@@ -1,9 +1,7 @@
 package org.ihtsdo.otf.mapping.model;
 
 /**
- * Represents a map lead role.
- * 
- * @author ${author}
+ * Generically represents map advice.
  */
 public interface MapAdvice {
 

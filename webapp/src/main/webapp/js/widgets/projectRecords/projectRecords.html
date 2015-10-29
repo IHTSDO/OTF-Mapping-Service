@@ -12,37 +12,30 @@
 <form>
   <input ng-model="query"> <input type="submit" value="Search"
     ng-click="retrieveRecords(1)"> <input type="submit" value="Reset"
-    ng-click="resetSearch()">
-    &nbsp&nbsp{{nRecords}} results, page {{recordPage}} of {{numRecordPages}}
+    ng-click="resetSearch()"> &nbsp&nbsp{{nRecords}} results, page
+  {{recordPage}} of {{numRecordPages}}
 </form>
 
-  <pagination total-items="nRecords" page="recordPage" max-size="recordsPerPage"
-    class="pagination-sm" boundary-links="true" rotate="true"
-    num-pages="numRecordPages" on-select-page="retrieveRecords(page)"></pagination>
-
+<pagination total-items="nRecords" page="recordPage" max-size="recordsPerPage"
+  class="pagination-sm" boundary-links="true" rotate="true"
+  num-pages="numRecordPages" on-select-page="retrieveRecords(page)"></pagination>
 
 <div ng-repeat="record in records" ng-class-odd="'odd'" ng-class-even="'even'">
- 	<h4>{{record.conceptName}}, <a href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}</a></h4>
- 	
- 	<div style="float: right; width: 3%;">
-          <a title="Edit" ng-show="isEditable(record)" 
-            ng-click="editRecord(record)"><i
-            class="glyphicon glyphicon glyphicon-pencil"></i></a>
-        </div>
- 	
- 	<span ng-show="record.unmappedDescendants.length > 0"> <span
-          class="dropdown"> <a class="dropdown-toggle"> <img
-              src="img/warning.png" alt="question icon">
-          </a>
-            <ul class="dropdown-menu project-records-dropdown-menu">
-              <b>Unmapped Descendants</b>
-              <li ng-repeat="concept in record.unmappedDescendants"><a
-                href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}:
-                  {{concept.value}}</a></li>
-            </ul>
-           </span>
-      </span>
-	<div otf-map-record-wide record="record" project="focusProject" show-title="false" ></div>
+  <h4>
+    {{record.conceptName}}, <a href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}</a>
+  </h4>
+
+  <div style="float: right; width: 3%;">
+       
+    <a title="Submit Feedback" ng-show="currentRole === 'Viewer'"  ng-click="openViewerFeedbackModal(record, currentUser.userName)"><i
+      class="glyphicon glyphicon glyphicon-comment"></i></a>
+    
+    <a title="Edit" ng-show="isEditable(record)" ng-click="editRecord(record)"><i
+      class="glyphicon glyphicon glyphicon-pencil"></i></a>
+  </div>
+
+  <div otf-map-record-wide record="record" project="focusProject"
+    show-title="false"></div>
 </div>
 
 

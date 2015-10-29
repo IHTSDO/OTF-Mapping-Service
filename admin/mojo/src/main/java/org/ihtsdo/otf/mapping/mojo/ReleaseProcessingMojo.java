@@ -1,53 +1,28 @@
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.io.File;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.ihtsdo.otf.mapping.jpa.handlers.ReleaseHandlerJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.services.MappingService;
+import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
 
 /**
  * Loads unpublished complex maps.
  * 
- * Sample execution:
+ * See admin/release/pom.xml for a sample execution.
  * 
  * <pre>
- *     <profile>
- *       <id>Release</id>
- *       <build>
- *         <plugins>
- *           <plugin>
- *             <groupId>org.ihtsdo.otf.mapping</groupId>
- *             <artifactId>mapping-admin-mojo</artifactId>
- *             <version>${project.version}</version>
- *             <executions>
- *               <execution>
- *                 <id>release</id>
- *                 <phase>package</phase>
- *                 <goals>
- *                   <goal>release</goal>
- *                 </goals>
- *                 <configuration>
- *                   <refSetId>${refset.id}</refSetId>
- *                   <outputDirName>$(output.dir)</outputDirName>
- *                   <effectiveTime>${time}</effectiveTime>
- *                   <moduleId>${module.id}</moduleId>
- *                 </configuration>
- *               </execution>
- *             </executions>
- *           </plugin>
- *         </plugins>
- *       </build>
- *     </profile>
+ * % mvn -PRelease -Drun.config=/home/ihtsdo/config/config.properties \
+ *       -Drefset.id=450993002 -Doutput.dir=/tmp -Dtime=20150131 \
+ *       -Dmodule.id=900000000000207008 install
  * </pre>
  * 
  * @goal release
@@ -55,177 +30,137 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  */
 public class ReleaseProcessingMojo extends AbstractMojo {
 
-	/**
-	 * The refSet id
-	 * 
-	 * @parameter refSetId
-	 */
-	private String refSetId = null;
+  /**
+   * The refSet id
+   * 
+   * @parameter
+   */
+  private String refsetId = null;
 
-	/**
-	 * The refSet id
-	 * 
-	 * @parameter outputDirName
-	 */
-	private String outputDirName = null;
+  /**
+   * The refSet id
+   * 
+   * @parameter
+   */
+  private String outputDir = null;
 
-	/**
-	 * The effective time of release
-	 * 
-	 * @parameter effectiveTime
-	 */
-	private String effectiveTime = null;
+  /**
+   * The effective time of release
+   * 
+   * @parameter
+   */
+  private String effectiveTime = null;
 
-	/**
-	 * The module id.
-	 * 
-	 * @parameter moduleId
-	 */
-	private String moduleId = null;
+  /**
+   * The module id.
+   * 
+   * @parameter
+   */
+  private String moduleId = null;
 
-	@Override
-	public void execute() throws MojoExecutionException, MojoFailureException {
-		getLog().info("Processing release for ref set ids: " + refSetId);
+  /**
+   * Flag indicating test mode
+   * @parameter
+   */
+  private boolean testModeFlag = false;
 
-		if (refSetId == null) {
-			throw new MojoExecutionException("You must specify a refSetId.");
-		}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.apache.maven.plugin.Mojo#execute()
+   */
+  @Override
+  public void execute() throws MojoExecutionException, MojoFailureException {
+    getLog().info("Processing RF2 release");
+    getLog().info("  refsetId = " + refsetId);
+    getLog().info("  outputDir = " + outputDir);
+    getLog().info("  effectiveTime = " + effectiveTime);
+    getLog().info("  moduleId = " + moduleId);
+    getLog().info("  testModeFlag = " + testModeFlag);
 
-		if (refSetId == null) {
-			throw new MojoExecutionException(
-					"You must specify an output file directory.");
-		}
+    // Check preconditions
+    if (refsetId == null) {
+      throw new MojoExecutionException("You must specify a refsetId.");
+    }
 
-		File outputDir = new File(outputDirName);
-		if (!outputDir.isDirectory())
-			throw new MojoExecutionException("Output file directory ("
-					+ outputDirName + ") could not be found.");
+    if (refsetId.contains(",")) {
+      throw new MojoExecutionException(
+          "You must specify only a single ref set id");
+    }
 
-		if (effectiveTime == null)
-			throw new MojoExecutionException("You must specify a release time");
+    if (outputDir == null) {
+      throw new MojoExecutionException(
+          "You must specify an output file directory.");
+    }
 
-		if (moduleId == null)
-			throw new MojoExecutionException("You must specify a module id");
+    File outputDirFile = new File(outputDir);
+    if (!outputDirFile.isDirectory())
+      throw new MojoExecutionException("Output file directory (" + outputDir
+          + ") could not be found.");
 
-		try {
+    if (effectiveTime == null)
+      throw new MojoExecutionException("You must specify a release time");
 
-			MappingService mappingService = new MappingServiceJpa();
-			Set<MapProject> mapProjects = new HashSet<>();
+    if (moduleId == null)
+      throw new MojoExecutionException("You must specify a module id");
 
-			for (MapProject mapProject : mappingService.getMapProjects()
-					.getIterable()) {
-				for (String id : refSetId.split(",")) {
-					if (mapProject.getRefSetId().equals(id)) {
-						mapProjects.add(mapProject);
-					}
-				}
-			}
+    try {
 
-			DateFormat df = new SimpleDateFormat("yyyyMMdd");
+      MappingService mappingService = new MappingServiceJpa();
+      MapProject mapProject = null;
 
-			// Perform the release processing
-			for (MapProject mapProject : mapProjects) {
+      // ///////////////////
+      // Test Parameters //
+      // ///////////////////
 
-				// add check for scope concepts contained in the map record set
+      String testConcepts[] = {};
 
-				// FOR TESTING ONLY
-				Set<MapRecord> mapRecords = new HashSet<>();
+      /*
+       * {"771000119108", "741000119101", "140131000119102", "711000119100",
+       * "140101000119109", "751000119104", "71421000119105", "140111000119107",
+       * "140121000119100", "731000119105", "721000119107"};
+       */
 
-				boolean testRun = false;
+      // Get Projects
+      for (MapProject project : mappingService.getMapProjects().getIterable()) {
+        if (project.getRefSetId().equals(refsetId)) {
+          mapProject = project;
+          break;
+        }
+      }
 
-				if (!testRun) {
+      // Create and configure release handler
+      ReleaseHandler releaseHandler = new ReleaseHandlerJpa(testModeFlag);
+      releaseHandler.setMapProject(mapProject);
+      releaseHandler.setEffectiveTime(effectiveTime);
+      releaseHandler.setModuleId(moduleId);
+      releaseHandler.setMapProject(mapProject);
+      releaseHandler.setWriteDelta(true);
+      releaseHandler.setWriteSnapshot(true);
+      releaseHandler.setOutputDir(outputDir);
+      if (testConcepts.length > 0) {
+        List<MapRecord> mapRecords = new ArrayList<>();
+        for (String terminologyId : testConcepts) {
+          mapRecords.addAll(mappingService.getMapRecordsForProjectAndConcept(
+              mapProject.getId(), terminologyId).getMapRecords());
+        }
+        releaseHandler.setMapRecords(mapRecords);
+      }
+      // call release handler with specific records
+      getLog().info(
+          "  Handle project " + mapProject.getName() + ", "
+              + mapProject.getId());
+      releaseHandler.processRelease();
 
-					// RETRIEVE MAP RECORDS HERE
-					mapRecords.addAll(mappingService
-							.getPublishedMapRecordsForMapProject(
-									mapProject.getId(), null).getMapRecords());
-				}
+      getLog().info("done ...");
+      mappingService.close();
 
-				if (testRun) {
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new MojoExecutionException("Performing release processing failed.",
+          e);
+    }
 
-					/*
-					 * String conceptIds[] = { "10000006", "10001005",
-					 * "1001000119102", "10041001", "10050004",
-					 * "100581000119102", "10061007", "10065003", "10070005" };
-					 */
-
-					/*String conceptIds[] = { "42434002" };
-
-					for (String conceptId : conceptIds) {
-						MapRecord mr = mappingService
-								.getMapRecordForProjectAndConcept(
-										mapProject.getId(), conceptId);
-						mapRecords.add(mr);
-					}*/
-				}
-
-				getLog().info(
-						"Processing release for " + mapProject.getName() + ", "
-								+ mapProject.getId() + ", with " + mapRecords.size() + " records to publish");
-
-				// ensure output directory name has a terminating /
-				if (!outputDirName.endsWith("/"))
-					outputDirName += "/";
-
-				String releaseFileName = outputDirName + "release_"
-						+ mapProject.getSourceTerminology() + "_"
-						+ mapProject.getSourceTerminologyVersion() + "_"
-						+ mapProject.getDestinationTerminology() + "_"
-						+ mapProject.getDestinationTerminologyVersion() + "_"
-						+ df.format(new Date()) + ".txt";
-
-				getLog().info("  Release file:  " + releaseFileName);
-
-				mappingService.processRelease(mapProject, releaseFileName,
-						mapRecords, effectiveTime, moduleId);
-
-				// sort the file into a temporary file
-				/*
-				 * FileSorter.sortFile(releaseFileName, releaseFileName +
-				 * ".tmp", new Comparator<String>() {
-				 * 
-				 * @Override public int compare(String o1, String o2) { String[]
-				 * fields1 = o1.split("\t"); String[] fields2 = o2.split("\t");
-				 * long i = fields1[4].compareTo(fields2[4]); if (i != 0) {
-				 * return (int) i; } else { i = (Long.parseLong(fields1[5]) -
-				 * Long .parseLong(fields2[5])); if (i != 0) { return (int) i; }
-				 * else { i = Long.parseLong(fields1[6]) -
-				 * Long.parseLong(fields2[6]); if (i != 0) { return (int) i; }
-				 * else { i = Long.parseLong(fields1[7]) -
-				 * Long.parseLong(fields2[7]); if (i != 0) { return (int) i; }
-				 * else { i = (fields1[0] + fields1[1] + fields1[2] +
-				 * fields1[3]) .compareTo(fields1[0] + fields1[1] + fields1[2] +
-				 * fields1[3]); if (i != 0) { return (int) i; } else { i =
-				 * fields1[8] .compareTo(fields2[8]); if (i != 0) { return (int)
-				 * i; } else { i = fields1[9] .compareTo(fields2[9]); if (i !=
-				 * 0) { return (int) i; } else { i = fields1[10]
-				 * .compareTo(fields2[10]); if (i != 0) { return (int) i; } else
-				 * { i = fields1[11] .compareTo(fields2[11]); if (i != 0) {
-				 * return (int) i; } else { i = fields1[12]
-				 * .compareTo(fields2[12]); if (i != 0) { return (int) i; } else
-				 * { return 0; } } } } } } } } } } } });
-				 */
-
-				/*
-				 * File tmpFile = new File(releaseFileName + ".tmp"); File
-				 * oldFile = new File(releaseFileName); oldFile.delete();
-				 * tmpFile.renameTo(oldFile);
-				 * getLog().info("  Done sorting the file ");
-				 */
-
-				
-
-			}
-
-			getLog().info("done ...");
-			mappingService.close();
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new MojoExecutionException(
-					"Performing release processing failed.", e);
-		}
-
-	}
+  }
 
 }

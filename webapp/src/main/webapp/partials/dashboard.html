@@ -1,30 +1,32 @@
 <div class="dashboard-container">
 
-	<div align="right" >
-		<span style="font-size: 16px"> <a href=""
-			title="Reset to default dashboard" } ng-click="resetModel()"
-			ng-show="editMode == true"> <i class="fa fa-undo"></i>
-		</a> &nbsp <a href=""
-			title="{{editMode ? 'disable edit mode' : 'enable edit mode'}}"
-			ng-click="toggleEditMode()"> <i ng-show="model.widgetCount > 1" class="fa fa-edit"></i>
-		</a>
+  <div align="right">
+    <span style="font-size: 16px"> <a href=""
+      title="Reset to default dashboard" } ng-click="resetModel()"
+      ng-show="editMode == true"> <i class="fa fa-undo"></i>
+    </a> &nbsp <a href=""
+      title="{{editMode ? 'disable edit mode' : 'enable edit mode'}}"
+      ng-click="toggleEditMode()"> <i ng-show="model.widgetCount > 1"
+        class="fa fa-edit"></i>
+    </a>
 
-		</span>
-	</div>
-	<div style="font-size: 16px" ng-show="model.widgetCount <= 1">&nbsp<br></div>
+    </span>
+  </div>
+  <div style="font-size: 16px" ng-show="model.widgetCount <= 1">
+    &nbsp<br>
+  </div>
 
-	<div class="dashboard" ng-class="editClass">
+  <div class="dashboard" ng-class="editClass">
 
-		<div ng-repeat="row in model.rows" class="row" ng-class="row.class">
-			<div ng-repeat="col in row.columns" class="column"
-				ng-class="col.class" ui-sortable="sortableOptions"
-				ng-model="col.widgets">
-				<div class="widgets" ng-repeat="definition in col.widgets">
-					<adf-widget definition="definition" column="col"
-						edit-mode="{{editMode}}" collapsible="collapsible" />
-				</div>
-			</div>
-		</div>
+    <div ng-repeat="row in model.rows" class="row" ng-class="row.class">
+      <div ng-repeat="col in row.columns" class="column" ng-class="col.class"
+        ui-sortable="sortableOptions" ng-model="col.widgets">
+        <div class="widgets" ng-repeat="definition in col.widgets">
+          <adf-widget  definition="definition" column="col"
+            edit-mode="{{editMode}}" collapsible="collapsible" />
+        </div>
+      </div>
+    </div>
 
-	</div>
+  </div>
 </div>

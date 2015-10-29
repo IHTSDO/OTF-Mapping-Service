@@ -1,5 +1,8 @@
 package org.ihtsdo.otf.mapping.mojo;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -14,34 +17,7 @@ import org.ihtsdo.otf.mapping.services.ReportService;
 /**
  * Loads unpublished complex maps.
  * 
- * Sample execution:
- * 
- * <pre>
- *     <profile>
- *       <id>Reports</id>
- *       <build>
- *         <plugins>
- *           <plugin>
- *             <groupId>org.ihtsdo.otf.mapping</groupId>
- *             <artifactId>mapping-admin-mojo</artifactId>
- *             <version>${project.version}</version>
- *             <executions>
- *               <execution>
- *                 <id>remove-reports</id>
- *                 <phase>package</phase>
- *                 <goals>
- *                   <goal>remove-reports</goal>
- *                 </goals>
- *                 <configuration>
- *                   <refSetId>${refset.id}</refSetId>
- *                 </configuration>
- *               </execution>
- *             </executions>
- *           </plugin>
- *         </plugins>
- *       </build>
- *     </profile> 
- * 
+ * See admin/loader/pom.xml for a sample execution.
  * 
  * @goal remove-reports
  * @phase package
@@ -50,9 +26,21 @@ public class ReportRemoverMojo extends AbstractMojo {
 
   /**
    * The refSet id
-   * @parameter refSetId
+   * @parameter refsetId
    */
-  private String refSetId = null;
+  private String refsetId = null;
+
+  /**
+   * An optional start date
+   * @parameter
+   */
+  private String startDate = null;
+
+  /**
+   * An optional end date
+   * @parameter
+   */
+  private String endDate = null;
 
   /**
    * Executes the plugin.
@@ -61,42 +49,62 @@ public class ReportRemoverMojo extends AbstractMojo {
    */
   @Override
   public void execute() throws MojoExecutionException {
-    getLog().info("Starting to remove reports - " + refSetId);
-
-    if (refSetId == null) {
-      throw new MojoExecutionException("You must specify a refSetId.");
-    }
+    getLog().info("Starting to remove reports");
+    getLog().info("  refsetId = " + refsetId);
+    getLog().info("  startDate = " + startDate);
+    getLog().info("  endDate = " + endDate);
 
     try {
+
+      // check params
+      if (refsetId == null && startDate == null && endDate == null) {
+        throw new Exception(
+            "This call will delete all reports, if you really want to do this, use a start date of 19700101");
+      }
+
+      // parse the dates
+      Date start = new Date(0);
+      Date end = new Date();
+      DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+      if (startDate != null) {
+        start = dateFormat.parse(startDate);
+      }
+      if (endDate != null) {
+        end = dateFormat.parse(endDate);
+      }
+      getLog().info("  start = " + start);
+      getLog().info("  end = " + end);
 
       MappingService mappingService = new MappingServiceJpa();
       Set<MapProject> mapProjects = new HashSet<>();
 
-      for (MapProject mapProject : mappingService.getMapProjects()
-          .getIterable()) {
-        for (String id : refSetId.split(",")) {
-          if (mapProject.getRefSetId().equals(id)) {
-            mapProjects.add(mapProject);
+      if (refsetId == null) {
+        mapProjects =
+            new HashSet<>(mappingService.getMapProjects().getMapProjects());
+      } else {
+        for (MapProject mapProject : mappingService.getMapProjects()
+            .getIterable()) {
+          for (String id : refsetId.split(",")) {
+            if (mapProject.getRefSetId().equals(id)) {
+              mapProjects.add(mapProject);
+            }
           }
         }
       }
 
-      // Clear workflow
+      // Remove reports
       ReportService reportService = new ReportServiceJpa();
       for (MapProject mapProject : mapProjects) {
-        getLog().info(
-            "Removing reports for " + mapProject.getName() + ", "
-                + mapProject.getId());
-        reportService.removeReportsForMapProject(mapProject);
+        reportService.removeReportsForMapProject(mapProject, start, end);
       }
 
-      getLog().info("done ...");
       mappingService.close();
       reportService.close();
+      getLog().info("Done ...");
 
     } catch (Exception e) {
       e.printStackTrace();
-      throw new MojoExecutionException("Clearing workflow failed.", e);
+      throw new MojoExecutionException("Report remover failed.", e);
     }
 
   }

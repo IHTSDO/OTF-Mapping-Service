@@ -1,7 +1,10 @@
-<div ng-show="entry == null">
+<!--  Empty div used to scroll after target selection via terminology browser -->
+<div id="mapEntryWidgetTop"></div>
 
+<div ng-show="entry == null">
 	<h4>No entry selected</h4>
 </div>
+
 <div ng-show="entry != null">
 
 
@@ -14,15 +17,20 @@
 	<table style="width: 100%;">
 
 		<tr>
-			<td style="vertical-align: top; padding: 5px;"><strong>Target Code</strong></td>
+			<td style="vertical-align: top; padding: 5px;"><strong>Target
+					Code</strong></td>
 			<td style="padding: 5px;">
-				<form>{{project.destinationTerminology}},
-					<input style="width: 125px;" id="targetIdField"
-						placeholder="Enter target code"
-						ng-blur="getValidTarget(entry.targetId)" ng-model="entry.targetId" />
-					<button type="submit" ng-click="getValidTarget(entry.targetId)">Set</button>
-					<button ng-click="setNullTarget(entry)">Set To Null</button>
-					<button type="reset" ng-click="clearTargetConcept(entry);mapRelationInput = null;">Clear</button>
+				<form>
+					{{project.destinationTerminology}}, <input style="width: 125px;"
+						id="targetIdField" placeholder="Enter target code"
+						ng-blur="setTarget(entry.targetId)" ng-model="entry.targetId" />
+					<button type="submit" ng-click="setTarget(entry.targetId)">
+						Set <span
+							ng-show="entry.targetId == null || entry.targetId === ''">Empty
+							Target</span>
+					</button>
+					<button type="reset" ng-show="entry.targetId != null"
+						ng-click="clearTargetConcept(entry);mapRelationInput = null;getValidTargetError = null;">Clear</button>
 				</form> <span style="color: red" ng-show="getValidTargetError != null">{{getValidTargetError}}</span>
 				</span>
 		</tr>
@@ -30,12 +38,12 @@
 			<td
 				style="vertical-align: top; padding: 5px; width: 50px; white-space: nowrap;"><strong>Preferred
 					Term</strong></td>
-			<td style="vertical-align: top; padding: 5px;">
-				<span ng-show="entry.targetId != null">{{entry.targetName}}</span>
-				<span style="color: lightgray;" ng-show="entry.targetId == null && entry.mapRelation == null">No target selected</span>
-				<span ng-show="entry.targetId == null && entry.mapRelation != null">Null target</span></td>
+			<td style="vertical-align: top; padding: 5px;"><span
+				ng-show="entry.targetId != null">{{entry.targetName}}</span> <span
+				style="color: orange;" ng-show="entry.targetId == null">You
+					must specify a valid or empty target. </span></td>
 		</tr>
-		
+
 	</table>
 
 	</accordion-group> </accordion>
@@ -47,21 +55,24 @@
 	</accordion-heading>
 
 	<table style="padding: 5px">
-	
+
 		<tr>
 			<td style="vertical-align: top; padding: 5px; width: 50px;"><strong>Relation</strong></td>
-			<td style="vertical-align: top; padding: 5px;"><span ng-show="entry.mapRelation != null">{{entry.mapRelation.name}}</span>
+			<td style="vertical-align: top; padding: 5px;"><span
+				ng-show="entry.mapRelation != null">{{entry.mapRelation.name}}</span>
 				<span style="color: lightgray;" ng-show="entry.mapRelation == null">No
-					relation selected.</span>
-			</td>
+					relation selected.</span></td>
 		</tr>
 		<tr>
 			<td style="vertical-align: top; padding: 5px; width: 50px;"></td>
-			<td style="vertical-align: top; padding: 5px;">Set relation: <select ng-show="allowableMapRelations.length > 0"
-				style="width: 80%" ng-model="mapRelationInput"
-				ng-change="selectMapRelation(mapRelationInput)"
+			<td style="vertical-align: top; padding: 5px;">Set relation: <select
+				ng-show="allowableMapRelations.length > 0" style="width: 80%"
+				ng-model="mapRelationInput"
+				ng-change="selectMapRelation(mapRelationInput); mapRelationInput = null;"
 				ng-options="mapRelation as mapRelation.displayName for mapRelation in allowableMapRelations"></select>
-				<span style="color: lightgray;" ng-show="allowableMapRelations.length == 0">No relations available to select.</span>
+				<span style="color: lightgray;"
+				ng-show="allowableMapRelations.length == 0">No relations
+					available to select.</span>
 			</td>
 		</tr>
 

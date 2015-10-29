@@ -1,7 +1,8 @@
 package org.ihtsdo.otf.mapping.model;
 
 /**
- * The Interface MapRelation.
+ * Generically represents a relationship between the source concept and target
+ * id of a {@link MapEntry} in a {@link MapRecord}.
  */
 public interface MapRelation {
 

@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.ihtsdo.otf.mapping.reports.ReportResultItem;
 import org.ihtsdo.otf.mapping.reports.ReportResultItemJpa;
@@ -15,8 +16,8 @@ import org.ihtsdo.otf.mapping.reports.ReportResultItemJpa;
  * JAXB enabled implementation of {@link ReportResultItemList}
  */
 @XmlRootElement(name = "reportResultItemList")
-public class ReportResultItemListJpa extends AbstractResultList<ReportResultItem> implements
-    ReportResultItemList {
+public class ReportResultItemListJpa extends
+    AbstractResultList<ReportResultItem> implements ReportResultItemList {
 
   /** The map projects. */
   private List<ReportResultItem> reportResultItems = new ArrayList<>();
@@ -32,8 +33,8 @@ public class ReportResultItemListJpa extends AbstractResultList<ReportResultItem
    * (non-Javadoc)
    * 
    * @see
-   * org.ihtsdo.otf.mapping.helpers.ReportResultItemList#addReportResultItem(org.ihtsdo.
-   * otf.mapping.model.ReportResultItem)
+   * org.ihtsdo.otf.mapping.helpers.ReportResultItemList#addReportResultItem
+   * (org.ihtsdo. otf.mapping.model.ReportResultItem)
    */
   @Override
   public void addReportResultItem(ReportResultItem reportResultItem) {
@@ -44,8 +45,8 @@ public class ReportResultItemListJpa extends AbstractResultList<ReportResultItem
    * (non-Javadoc)
    * 
    * @see
-   * org.ihtsdo.otf.mapping.helpers.ReportResultItemList#removeReportResultItem(org.ihtsdo
-   * .otf.mapping.model.ReportResultItem)
+   * org.ihtsdo.otf.mapping.helpers.ReportResultItemList#removeReportResultItem
+   * (org.ihtsdo .otf.mapping.model.ReportResultItem)
    */
   @Override
   public void removeReportResultItem(ReportResultItem reportResultItem) {
@@ -56,8 +57,8 @@ public class ReportResultItemListJpa extends AbstractResultList<ReportResultItem
    * (non-Javadoc)
    * 
    * @see
-   * org.ihtsdo.otf.mapping.helpers.ReportResultItemList#setReportResultItems(java.util.
-   * List)
+   * org.ihtsdo.otf.mapping.helpers.ReportResultItemList#setReportResultItems
+   * (java.util. List)
    */
   @Override
   public void setReportResultItems(List<ReportResultItem> reportResultItems) {
@@ -71,7 +72,8 @@ public class ReportResultItemListJpa extends AbstractResultList<ReportResultItem
   /*
    * (non-Javadoc)
    * 
-   * @see org.ihtsdo.otf.mapping.helpers.ReportResultItemList#getReportResultItems()
+   * @see
+   * org.ihtsdo.otf.mapping.helpers.ReportResultItemList#getReportResultItems()
    */
   @Override
   @XmlElement(type = ReportResultItemJpa.class, name = "reportResultItem")
@@ -116,6 +118,7 @@ public class ReportResultItemListJpa extends AbstractResultList<ReportResultItem
    * @see org.ihtsdo.otf.mapping.helpers.ResultList#getIterable()
    */
   @Override
+  @XmlTransient
   public Iterable<ReportResultItem> getIterable() {
     return reportResultItems;
   }

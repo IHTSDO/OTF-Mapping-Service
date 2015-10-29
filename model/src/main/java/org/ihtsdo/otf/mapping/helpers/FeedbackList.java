@@ -6,11 +6,8 @@ import org.ihtsdo.otf.mapping.model.Feedback;
 
 /**
  * Represents a sortable list of {@link Feedback}.
- *
- * @author ${author}
  */
 public interface FeedbackList extends ResultList<Feedback> {
-
 
   /**
    * Adds the feedback.
@@ -18,7 +15,6 @@ public interface FeedbackList extends ResultList<Feedback> {
    * @param Feedback the feedback
    */
   public void addFeedback(Feedback Feedback);
-
 
   /**
    * Removes the feedback.

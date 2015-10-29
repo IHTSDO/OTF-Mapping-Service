@@ -11,7 +11,7 @@ import org.ihtsdo.otf.mapping.rf2.SimpleMapRefSetMember;
  */
 @Entity
 @Table(name = "simple_map_refset_members")
-//@Audited
+// @Audited
 public class SimpleMapRefSetMemberJpa extends AbstractConceptRefSetMember
     implements SimpleMapRefSetMember {
 

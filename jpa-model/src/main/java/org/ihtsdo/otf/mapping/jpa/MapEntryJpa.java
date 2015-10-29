@@ -20,6 +20,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.apache.log4j.Logger;
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.ContainedIn;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Index;
@@ -43,542 +44,542 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MapEntryJpa implements MapEntry {
 
-	/** The id. */
-	@Id
-	@GeneratedValue
-	private Long id;
+  /** The id. */
+  @Id
+  @GeneratedValue
+  private Long id;
 
-	/** The map record. */
-	@ManyToOne(targetEntity = MapRecordJpa.class, optional = false)
-	@ContainedIn
-	private MapRecord mapRecord;
+  /** The map record. */
+  @ManyToOne(targetEntity = MapRecordJpa.class, optional = false)
+  @ContainedIn
+  private MapRecord mapRecord;
 
-	/** The map advices. */
-	@ManyToMany(targetEntity = MapAdviceJpa.class, fetch = FetchType.LAZY)
-	@IndexedEmbedded(targetElement = MapAdviceJpa.class)
-	private Set<MapAdvice> mapAdvices = new HashSet<>();
+  /** The map advices. */
+  @ManyToMany(targetEntity = MapAdviceJpa.class, fetch = FetchType.LAZY)
+  @IndexedEmbedded(targetElement = MapAdviceJpa.class)
+  private Set<MapAdvice> mapAdvices = new HashSet<>();
 
-	/** The target. */
-	@Column(nullable = true, length = 4000)
-	private String targetId;
+  /** The target. */
+  @Column(nullable = true, length = 4000)
+  private String targetId;
 
-	/** The target name. */
-	@Column(nullable = true, length = 4000)
-	private String targetName;
+  /** The target name. */
+  @Column(nullable = true, length = 4000)
+  @Analyzer(definition = "noStopWord")
+  private String targetName;
 
-	/** The rule. */
-	@Column(nullable = true, length = 4000)
-	private String rule;
+  /** The rule. */
+  @Column(nullable = true, length = 4000)
+  private String rule;
 
-	/** The map priority. */
-	@Column(nullable = false)
-	private int mapPriority;
+  /** The map priority. */
+  @Column(nullable = false)
+  private int mapPriority;
 
-	@OneToOne(targetEntity = MapRelationJpa.class, fetch = FetchType.EAGER)
-	@IndexedEmbedded(targetElement = MapRelationJpa.class)
-	private MapRelation mapRelation;
+  @OneToOne(targetEntity = MapRelationJpa.class, fetch = FetchType.EAGER)
+  @IndexedEmbedded(targetElement = MapRelationJpa.class)
+  private MapRelation mapRelation;
 
-	/** The mapBlock. */
-	@Column(nullable = false)
-	private int mapBlock;
+  /** The mapBlock. */
+  @Column(nullable = false)
+  private int mapBlock;
 
-	/** The index (map priority). */
-	@Column(nullable = false)
-	private int mapGroup;
+  /** The index (map priority). */
+  @Column(nullable = false)
+  private int mapGroup;
 
-	/**
-	 * default constructor.
-	 */
-	public MapEntryJpa() {
-		// empty
-	}
+  /**
+   * default constructor.
+   */
+  public MapEntryJpa() {
+    // empty
+  }
 
-	/**
-	 * Constructor using fields
-	 * 
-	 * @param id
-	 * @param mapRecord
-	 * @param mapAdvices
-	 * @param targetId
-	 * @param targetName
-	 * @param rule
-	 * @param mapPriority
-	 * @param mapRelation
-	 * @param mapBlock
-	 * @param mapGroup
-	 */
-	public MapEntryJpa(Long id, MapRecord mapRecord, Set<MapAdvice> mapAdvices,
-			String targetId, String targetName, String rule, int mapPriority,
-			MapRelation mapRelation, int mapBlock, int mapGroup) {
-		super();
-		this.id = id;
-		this.mapRecord = mapRecord;
-		this.mapAdvices = mapAdvices;
-		this.targetId = targetId;
-		this.targetName = targetName;
-		this.rule = rule;
-		this.mapPriority = mapPriority;
-		this.mapRelation = mapRelation;
-		this.mapBlock = mapBlock;
-		this.mapGroup = mapGroup;
-	}
+  /**
+   * Constructor using fields.
+   * 
+   * @param id the id
+   * @param mapRecord the map record
+   * @param mapAdvices the map advices
+   * @param targetId the target id
+   * @param targetName the target name
+   * @param rule the rule
+   * @param mapPriority the map priority
+   * @param mapRelation the map relation
+   * @param mapBlock the map block
+   * @param mapGroup the map group
+   */
+  public MapEntryJpa(Long id, MapRecord mapRecord, Set<MapAdvice> mapAdvices,
+      String targetId, String targetName, String rule, int mapPriority,
+      MapRelation mapRelation, int mapBlock, int mapGroup) {
+    super();
+    this.id = id;
+    this.mapRecord = mapRecord;
+    this.mapAdvices = mapAdvices;
+    this.targetId = targetId;
+    this.targetName = targetName;
+    this.rule = rule;
+    this.mapPriority = mapPriority;
+    this.mapRelation = mapRelation;
+    this.mapBlock = mapBlock;
+    this.mapGroup = mapGroup;
+  }
 
-	/**
-	 * Deep copy constructor.
-	 * 
-	 * @param mapEntry
-	 *            the map entry
-	 * @param keepIds
-	 *            the keep ids
-	 */
-	public MapEntryJpa(MapEntry mapEntry, boolean keepIds) {
-		super();
+  /**
+   * Deep copy constructor.
+   * 
+   * @param mapEntry the map entry
+   * @param keepIds the keep ids
+   */
+  public MapEntryJpa(MapEntry mapEntry, boolean keepIds) {
+    super();
 
-		// System.out.println("Deep copying entry.");
+    // System.out.println("Deep copying entry.");
 
-		// if deep copy not indicated, copy id, otherwise leave null
-		if (keepIds == false)
-			this.id = mapEntry.getId();
-		this.mapRecord = mapEntry.getMapRecord();
+    // copy id, otherwise leave null
+    if (keepIds) {
+      this.id = mapEntry.getId();
+    }
+    this.mapRecord = mapEntry.getMapRecord();
 
-		// copy basic type fields (non-persisted objects)
-		this.targetId = mapEntry.getTargetId();
-		this.targetName = mapEntry.getTargetName();
-		this.rule = mapEntry.getRule();
-		this.mapPriority = mapEntry.getMapPriority();
-		this.mapBlock = mapEntry.getMapBlock();
-		this.mapGroup = mapEntry.getMapGroup();
+    // copy basic type fields (non-persisted objects)
+    this.targetId = mapEntry.getTargetId();
+    this.targetName = mapEntry.getTargetName();
+    this.rule = mapEntry.getRule();
+    this.mapPriority = mapEntry.getMapPriority();
+    this.mapBlock = mapEntry.getMapBlock();
+    this.mapGroup = mapEntry.getMapGroup();
 
-		// copy advices
-		for (MapAdvice mapAdvice : mapEntry.getMapAdvices()) {
-			addMapAdvice(new MapAdviceJpa(mapAdvice));
-		}
+    // copy advices
+    for (MapAdvice mapAdvice : mapEntry.getMapAdvices()) {
+      addMapAdvice(new MapAdviceJpa(mapAdvice));
+    }
 
-		// copy entries
-		if (mapEntry.getMapRelation() != null) {
-			this.mapRelation = new MapRelationJpa(mapEntry.getMapRelation());
-		}
+    // copy entries
+    if (mapEntry.getMapRelation() != null) {
+      this.mapRelation = new MapRelationJpa(mapEntry.getMapRelation());
+    }
 
-	}
+  }
 
-	/**
-	 * Return the id.
-	 * 
-	 * @return the id
-	 */
-	@Override
-	public Long getId() {
-		return this.id;
-	}
+  /**
+   * Return the id.
+   * 
+   * @return the id
+   */
+  @Override
+  public Long getId() {
+    return this.id;
+  }
 
-	/**
-	 * Set the id.
-	 * 
-	 * @param id
-	 *            the id
-	 */
-	@Override
-	public void setId(Long id) {
-		this.id = id;
-	}
+  /**
+   * Set the id.
+   * 
+   * @param id the id
+   */
+  @Override
+  public void setId(Long id) {
+    this.id = id;
+  }
 
-	/**
-	 * Returns the id in string form.
-	 * 
-	 * @return the id in string form
-	 */
-	@XmlID
-	@Override
-	public String getObjectId() {
-		return (this.id == null ? null : id.toString());
-	}
+  /**
+   * Returns the id in string form.
+   * 
+   * @return the id in string form
+   */
+  @XmlID
+  @Override
+  public String getObjectId() {
+    return (this.id == null ? null : id.toString());
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getTarget()
-	 */
-	@Override
-	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
-	public String getTargetId() {
-		return targetId;
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.model.MapEntry#getTarget()
+   */
+  @Override
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  public String getTargetId() {
+    return targetId;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setTarget(java.lang.String)
-	 */
-	@Override
-	public void setTargetId(String targetId) {
-		this.targetId = targetId;
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.model.MapEntry#setTarget(java.lang.String)
+   */
+  @Override
+  public void setTargetId(String targetId) {
+    this.targetId = targetId;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getTargetName()
-	 */
-	@Override
-	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
-	public String getTargetName() {
-		return this.targetName;
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.model.MapEntry#getTargetName()
+   */
+  @Override
+  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  public String getTargetName() {
+    return this.targetName;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.model.MapEntry#setTargetName(java.lang.String)
-	 */
-	@Override
-	public void setTargetName(String targetName) {
-		this.targetName = targetName;
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.model.MapEntry#setTargetName(java.lang.String)
+   */
+  @Override
+  public void setTargetName(String targetName) {
+    this.targetName = targetName;
 
-	}
+  }
 
-	@Override
-	@XmlElement(type = MapRelationJpa.class, name = "mapRelation")
-	public MapRelation getMapRelation() {
-		return mapRelation;
-	}
+  @Override
+  @XmlElement(type = MapRelationJpa.class, name = "mapRelation")
+  public MapRelation getMapRelation() {
+    return mapRelation;
+  }
 
-	@Override
-	public void setMapRelation(MapRelation mapRelation) {
-		this.mapRelation = mapRelation;
-	}
+  @Override
+  public void setMapRelation(MapRelation mapRelation) {
+    this.mapRelation = mapRelation;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapAdvices()
-	 */
-	@XmlElement(type = MapAdviceJpa.class, name = "mapAdvice")
-	@Override
-	public Set<MapAdvice> getMapAdvices() {
-		if (mapAdvices == null)
-			mapAdvices = new HashSet<>();// ensures proper serialization
-		return mapAdvices;
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapAdvices()
+   */
+  @XmlElement(type = MapAdviceJpa.class, name = "mapAdvice")
+  @Override
+  public Set<MapAdvice> getMapAdvices() {
+    if (mapAdvices == null)
+      mapAdvices = new HashSet<>();// ensures proper serialization
+    return mapAdvices;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setMapAdvices(java.util.Set)
-	 */
-	@Override
-	public void setMapAdvices(Set<MapAdvice> mapAdvices) {
-		this.mapAdvices = mapAdvices;
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.model.MapEntry#setMapAdvices(java.util.Set)
+   */
+  @Override
+  public void setMapAdvices(Set<MapAdvice> mapAdvices) {
+    this.mapAdvices = mapAdvices;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.model.MapEntry#addMapAdvice(org.ihtsdo.otf.mapping
-	 * .model.MapAdvice)
-	 */
-	@Override
-	public void addMapAdvice(MapAdvice mapAdvice) {
-		mapAdvices.add(mapAdvice);
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.model.MapEntry#addMapAdvice(org.ihtsdo.otf.mapping
+   * .model.MapAdvice)
+   */
+  @Override
+  public void addMapAdvice(MapAdvice mapAdvice) {
+    mapAdvices.add(mapAdvice);
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.model.MapEntry#removeMapAdvice(org.ihtsdo.otf.
-	 * mapping .model.MapAdvice)
-	 */
-	@Override
-	public void removeMapAdvice(MapAdvice mapAdvice) {
-		mapAdvices.remove(mapAdvice);
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.model.MapEntry#removeMapAdvice(org.ihtsdo.otf.
+   * mapping .model.MapAdvice)
+   */
+  @Override
+  public void removeMapAdvice(MapAdvice mapAdvice) {
+    mapAdvices.remove(mapAdvice);
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getRule()
-	 */
-	@Override
-	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
-	public String getRule() {
-		return rule;
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.model.MapEntry#getRule()
+   */
+  @Override
+  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  public String getRule() {
+    return rule;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setRule(java.lang.String)
-	 */
-	@Override
-	public void setRule(String rule) {
-		this.rule = rule;
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.model.MapEntry#setRule(java.lang.String)
+   */
+  @Override
+  public void setRule(String rule) {
+    this.rule = rule;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getIndex()
-	 */
-	@Override
-	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
-	public int getMapPriority() {
-		return mapPriority;
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.model.MapEntry#getIndex()
+   */
+  @Override
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  public int getMapPriority() {
+    return mapPriority;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setIndex(java.lang.String)
-	 */
-	@Override
-	public void setMapPriority(int mapPriority) {
-		this.mapPriority = mapPriority;
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.model.MapEntry#setIndex(java.lang.String)
+   */
+  @Override
+  public void setMapPriority(int mapPriority) {
+    this.mapPriority = mapPriority;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapRecord()
-	 */
-	@XmlTransient
-	@Override
-	public MapRecord getMapRecord() {
-		return this.mapRecord;
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapRecord()
+   */
+  @XmlTransient
+  @Override
+  public MapRecord getMapRecord() {
+    return this.mapRecord;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.model.MapEntry#setMapRecord(org.ihtsdo.otf.mapping
-	 * .model.MapRecord)
-	 */
-	@Override
-	public void setMapRecord(MapRecord mapRecord) {
-		this.mapRecord = mapRecord;
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.model.MapEntry#setMapRecord(org.ihtsdo.otf.mapping
+   * .model.MapRecord)
+   */
+  @Override
+  public void setMapRecord(MapRecord mapRecord) {
+    this.mapRecord = mapRecord;
+  }
 
-	/**
-	 * Returns the map record id.
-	 * 
-	 * @return the map record id
-	 */
-	@XmlElement
-	public String getMapRecordId() {
-		return mapRecord != null ? mapRecord.getObjectId() : null;
-	}
+  /**
+   * Returns the map record id.
+   * 
+   * @return the map record id
+   */
+  @XmlElement
+  public String getMapRecordId() {
+    return mapRecord != null ? mapRecord.getObjectId() : null;
+  }
 
-	/**
-	 * Sets the map record based on serialized id Necessary when receiving a
-	 * serialized entry with only mapRecordId
-	 * 
-	 * @param mapRecordId
-	 *            the map record id
-	 */
-	public void setMapRecordId(Long mapRecordId) {
-		if (this.mapRecord == null) {
-			Logger.getLogger(MapEntryJpa.class).info(
-					"Setting map record id to " + mapRecordId.toString());
-			this.mapRecord = new MapRecordJpa();
-			this.mapRecord.setId(mapRecordId);
-		}
-	}
+  /**
+   * Sets the map record based on serialized id Necessary when receiving a
+   * serialized entry with only mapRecordId
+   * 
+   * @param mapRecordId the map record id
+   */
+  public void setMapRecordId(Long mapRecordId) {
+    if (this.mapRecord == null) {
+      Logger.getLogger(MapEntryJpa.class).info(
+          "Setting map record id to " + mapRecordId.toString());
+      this.mapRecord = new MapRecordJpa();
+      this.mapRecord.setId(mapRecordId);
+    }
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapGroup()
-	 */
-	@Override
-	public int getMapGroup() {
-		return this.mapGroup;
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapGroup()
+   */
+  @Override
+  public int getMapGroup() {
+    return this.mapGroup;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setMapGroup(int)
-	 */
-	@Override
-	public void setMapGroup(int mapGroup) {
-		this.mapGroup = mapGroup;
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.model.MapEntry#setMapGroup(int)
+   */
+  @Override
+  public void setMapGroup(int mapGroup) {
+    this.mapGroup = mapGroup;
 
-	}
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapBlock()
-	 */
-	@Override
-	public int getMapBlock() {
-		return this.mapBlock;
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapBlock()
+   */
+  @Override
+  public int getMapBlock() {
+    return this.mapBlock;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setMapBlock(int)
-	 */
-	@Override
-	public void setMapBlock(int mapBlock) {
-		this.mapBlock = mapBlock;
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.model.MapEntry#setMapBlock(int)
+   */
+  @Override
+  public void setMapBlock(int mapBlock) {
+    this.mapBlock = mapBlock;
 
-	}
+  }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((mapAdvices == null) ? 0 : mapAdvices.hashCode());
-		result = prime * result + mapBlock;
-		result = prime * result + mapGroup;
-		result = prime * result + mapPriority;
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result =
+        prime * result + ((mapAdvices == null) ? 0 : mapAdvices.hashCode());
+    result = prime * result + mapBlock;
+    result = prime * result + mapGroup;
+    result = prime * result + mapPriority;
 
-		// note: use map record id instead of map record to prevent hashCode()
-		// circular reference chain
-		result = prime
-				* result
-				+ ((mapRecord.getId() == null) ? 0 : mapRecord.getId()
-						.hashCode());
-		result = prime * result
-				+ ((mapRelation == null) ? 0 : mapRelation.hashCode());
-		result = prime * result + ((rule == null) ? 0 : rule.hashCode());
-		result = prime * result
-				+ ((targetId == null) ? 0 : targetId.hashCode());
-		result = prime * result
-				+ ((targetName == null) ? 0 : targetName.hashCode());
-		return result;
-	}
+    // note: use map record id instead of map record to prevent hashCode()
+    // circular reference chain
+    result =
+        prime * result
+            + ((mapRecord.getId() == null) ? 0 : mapRecord.getId().hashCode());
+    result =
+        prime * result + ((mapRelation == null) ? 0 : mapRelation.hashCode());
+    result = prime * result + ((rule == null) ? 0 : rule.hashCode());
+    result = prime * result + ((targetId == null) ? 0 : targetId.hashCode());
+    result =
+        prime * result + ((targetName == null) ? 0 : targetName.hashCode());
+    return result;
+  }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		MapEntryJpa other = (MapEntryJpa) obj;
-		if (mapAdvices == null) {
-			if (other.mapAdvices != null)
-				return false;
-		} else if (!mapAdvices.equals(other.mapAdvices))
-			return false;
-		if (mapBlock != other.mapBlock)
-			return false;
-		if (mapGroup != other.mapGroup)
-			return false;
-		if (mapPriority != other.mapPriority)
-			return false;
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    MapEntryJpa other = (MapEntryJpa) obj;
+    if (mapAdvices == null) {
+      if (other.mapAdvices != null)
+        return false;
+    } else if (!mapAdvices.equals(other.mapAdvices))
+      return false;
+    if (mapBlock != other.mapBlock)
+      return false;
+    if (mapGroup != other.mapGroup)
+      return false;
+    if (mapPriority != other.mapPriority)
+      return false;
 
-		// note: only compare map record id, otherwise equals() circular
-		// reference chain
-		if (mapRecord.getId() == null) {
-			if (other.mapRecord.getId() != null)
-				return false;
-		} else if (!mapRecord.getId().equals(other.mapRecord.getId()))
-			return false;
-		if (mapRelation == null) {
-			if (other.mapRelation != null)
-				return false;
-		} else if (!mapRelation.equals(other.mapRelation))
-			return false;
-		if (rule == null) {
-			if (other.rule != null)
-				return false;
-		} else if (!rule.equals(other.rule))
-			return false;
-		if (targetId == null) {
-			if (other.targetId != null)
-				return false;
-		} else if (!targetId.equals(other.targetId))
-			return false;
-		if (targetName == null) {
-			if (other.targetName != null)
-				return false;
-		} else if (!targetName.equals(other.targetName))
-			return false;
-		return true;
-	}
+    // note: only compare map record id, otherwise equals() circular
+    // reference chain
+    if (mapRecord.getId() == null) {
+      if (other.mapRecord.getId() != null)
+        return false;
+    } else if (!mapRecord.getId().equals(other.mapRecord.getId()))
+      return false;
+    if (mapRelation == null) {
+      if (other.mapRelation != null)
+        return false;
+    } else if (!mapRelation.equals(other.mapRelation))
+      return false;
+    if (rule == null) {
+      if (other.rule != null)
+        return false;
+    } else if (!rule.equals(other.rule))
+      return false;
+    if (targetId == null) {
+      if (other.targetId != null)
+        return false;
+    } else if (!targetId.equals(other.targetId))
+      return false;
+    if (targetName == null) {
+      if (other.targetName != null)
+        return false;
+    } else if (!targetName.equals(other.targetName))
+      return false;
+    return true;
+  }
 
-	@Override
-	public String toString() {
-		return "MapEntryJpa [id=" + id + ", mapRecord="
-				+ mapRecord.getId().toString() + ", mapAdvices="
-				+ (mapAdvices == null ? "null" : mapAdvices) + ", targetId="
-				+ targetId + ", targetName=" + targetName + ", rule=" + rule
-				+ ", mapPriority=" + mapPriority + ", mapRelation="
-				+ (mapRelation == null ? "null" : mapRelation) + ", mapBlock="
-				+ mapBlock + ", mapGroup=" + mapGroup + "]";
-	}
+  @Override
+  public String toString() {
+    return "MapEntryJpa [id=" + id + ", mapRecord="
+        + (mapRecord == null ? "" : mapRecord.getId()) + ", mapAdvices="
+        + (mapAdvices == null ? "null" : mapAdvices) + ", targetId=" + targetId
+        + ", targetName=" + targetName + ", rule=" + rule + ", mapPriority="
+        + mapPriority + ", mapRelation="
+        + (mapRelation == null ? "null" : mapRelation) + ", mapBlock="
+        + mapBlock + ", mapGroup=" + mapGroup + "]";
+  }
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#isEquivalent(org.ihtsdo.otf.mapping.model.MapEntry)
-	 */
-	@Override
-	public boolean isEquivalent(MapEntry me) {
-		// System.out.println("Comparing map entries");
-		// System.out.println("   Targets:  " + this.targetId + " <=>" + me.getTargetId());
-		// System.out.println("   Rules:    " + this.rule + "  <=> " + me.getRule());
-		// System.out.println("   Realtion: " + this.mapRelation.getName() + " <=> " + me.getMapRelation().getName());
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.model.MapEntry#isEquivalent(org.ihtsdo.otf.mapping
+   * .model.MapEntry)
+   */
+  @Override
+  public boolean isEquivalent(MapEntry me) {
 
-		// targets must be equal
-		if (! this.targetId.equals(me.getTargetId()))
-			return false;
-		
-		// System.out.println("  Targets equal");
+    // if comparison entry is null, return false
+    if (me == null)
+      return false;
 
-		// rules must be identical
-		if (! this.rule.equals(me.getRule()))
-			return false;
-		
-		// System.out.println("  Rules equal");
+    // targets must be equal
+    final String id1 = this.targetId == null ? "" : this.targetId;
+    final String id2 = me.getTargetId() == null ? "" : me.getTargetId();
+    if (!id1.equals(id2)) {
+      return false;
+    }
 
-		// relation must be identical
-		if (this.mapRelation != null) {
+    // rules must be identical
+    if (this.rule == null && me.getRule() != null)
+      return false;
+    if (!this.rule.equals(me.getRule()))
+      return false;
 
-			// if both non-null, return false if non equal
-			if (me.getMapRelation() != null) {
-				if (!this.mapRelation.equals(me.getMapRelation())) {
-					return false;
-				}
+    // relation must be identical
+    if (this.mapRelation != null) {
 
-				// return false if this relation is non-null and me's relation
-				// is null
-			} else {
-				return false;
-			}
+      // if both non-null, return false if non equal
+      if (me.getMapRelation() != null) {
+        if (!this.mapRelation.equals(me.getMapRelation())) {
+          return false;
+        }
 
-			// if this relation is null and me's relation is non-null, return
-			// false
-		} else if (me.getMapRelation() != null) {
-			return false;
-		}
+        // return false if this relation is non-null and me's relation
+        // is null
+      } else {
+        return false;
+      }
 
-		// System.out.println("  Relations equal");
-		// advices must be identical
-		if (this.mapAdvices == null && me.getMapAdvices() != null) {
-			return false;
-		} else if (this.mapAdvices != null & me.getMapAdvices() == null) {
-			return false;
-		} else if (this.mapAdvices.size() != me.getMapAdvices().size()) {
-			return false;
-		} else {
-			for (MapAdvice ma : this.mapAdvices) {
-				if (!me.getMapAdvices().contains(ma))
-					return false;
-			}
-		}
-		
-		// System.out.println("  Advices equal");
-		
-		// System.out.println("Entries equivalent.");
+      // if this relation is null and me's relation is non-null, return
+      // false
+    } else if (me.getMapRelation() != null) {
+      return false;
+    }
 
-		return true;
-	}
+    // System.out.println("  Relations equal");
+    // advices must be identical
+    if (this.mapAdvices == null && me.getMapAdvices() != null) {
+      return false;
+    } else if (this.mapAdvices != null && me.getMapAdvices() == null) {
+      return false;
+    } else if (mapAdvices != null
+        && mapAdvices.size() != me.getMapAdvices().size()) {
+      return false;
+    } else if (mapAdvices != null) {
+      for (MapAdvice ma : this.mapAdvices) {
+        if (!me.getMapAdvices().contains(ma))
+          return false;
+      }
+    }
+
+    // System.out.println("  Advices equal");
+
+    // System.out.println("Entries equivalent.");
+
+    return true;
+  }
 
 }

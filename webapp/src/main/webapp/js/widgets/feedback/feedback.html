@@ -1,80 +1,105 @@
 
 <form>
   <input ng-model="query"> <input type="submit" value="Search"
-    ng-click="retrieveFeedback(1, feedbackType, query)"> <input type="submit" value="Reset"
-    ng-click="resetSearch()">
-    &nbsp&nbsp{{nRecords}} results, page {{recordPage}} of {{numRecordPages}}
+    ng-click="retrieveFeedback(1, feedbackType, reviewedType, resolvedType, query)"> <input
+    type="submit" value="Reset" ng-click="resetSearch()">
+  &nbsp&nbsp{{nRecords}} results, page {{recordPage}} of {{numRecordPages}}
 </form>
 
-  <pagination total-items="nRecords" page="recordPage" max-size="recordsPerPage"
-    class="pagination-sm" boundary-links="true" rotate="true"
-    num-pages="numRecordPages" on-select-page="retrieveFeedback(page, feedbackType)"></pagination>
+<pagination total-items="nRecords" page="recordPage" max-size="recordsPerPage"
+  class="pagination-sm" boundary-links="true" rotate="true"
+  num-pages="numRecordPages"
+  on-select-page="retrieveFeedback(page, feedbackType, reviewedType, resolvedType, query)"></pagination>
+
+<form>
   
-      <form>
-        <input type="radio" ng-model="feedbackType" value="ALL"
-          ng-change="retrieveFeedback(1, feedbackType, query)">All</input>
-        <input type="radio" ng-model="feedbackType" value="FEEDBACK"
-          ng-change="retrieveFeedback(1, feedbackType, query)">Feedback</input>
-        <input type="radio" ng-model="feedbackType" value="GROUP_FEEDBACK"
-          ng-change="retrieveFeedback(1, feedbackType, query)">Group Feedback</input>
-        <input type="radio" ng-model="feedbackType" value="ERROR_FEEDBACK"
-          ng-change="retrieveFeedback(1, feedbackType, query)">Error Feedback</input>
-        <input type="radio" ng-model="feedbackType" value="DISCREPANCY_REVIEW_FEEDBACK"
-          ng-change="retrieveFeedback(1, feedbackType, query)">Discrepancy Feedback</input>
-      </form>
+  <select tooltip-placement="top" tooltip="Feedback Type"
+        ng-init="feedbackType"
+        ng-model="feedbackType"
+        ng-change="retrieveFeedback(1, feedbackType, reviewedType, resolvedType, query)"
+        ng-options="item as item for item in feedbackTypes">
+      </select> 
+      
+      <select tooltip-placement="top" tooltip="Viewed Status"
+        ng-init="reviewedType"
+        ng-model="reviewedType"
+        ng-change="retrieveFeedback(1, feedbackType, reviewedType, resolvedType, query)"
+        ng-options="item as item for item in reviewedTypes">
+      </select> 
+      
+     <select tooltip-placement="top" tooltip="Resolved Status"
+        ng-init="resolvedType"
+        ng-model="resolvedType"
+        ng-change="retrieveFeedback(1, feedbackType, reviewedType, resolvedType, query)"
+        ng-options="item as item for item in resolvedTypes">
+      </select>       
+      
+</form>
 
 <div ng-show="feedbackConversations.length > 0">
 
 
-<table class="table" style="margin-top:10px;">
+  <table class="table" style="margin-top: 10px;">
 
-  <thead>
-    <tr>
-      <th style="width: 3%; padding: 5px;"><a title="Unviewed Feedback">
-        <i
-          class="glyphicon glyphicon-eye-close pull-right"></i></a>
-      </th>
-      <th style="width: 3%; padding: 5px;"><a title="Resolved">
-        <i
-          class="glyphicon glyphicon-ok"></i></a>
-      </th>
-      <th style="width: 14%; padding: 5px;">Id</th>
-      <th style="width: 35%; padding: 5px;">Preferred Name</th>
-      <th style="width: 20%; padding: 5px;">Title</th>
-      <th style="width: 7%; padding: 5px;">Owner</th>
-      <th style="width: 18%; padding: 5px;">Last Modified</th>
-      
-
-    </tr>
-
-  </thead>
-
-   <tbody>
-        <tr ng-repeat="feedbackConversation in feedbackConversations">
-          <td ng-show="isFeedbackViewed(feedbackConversation) == false">
-            <a title="Unviewed Feedback" href="#/conversation/recordId/{{feedbackConversation.mapRecordId}}">
-            <i class="glyphicon glyphicon-eye-close pull-right"></i></a>
-          </td>
-          <td ng-show="isFeedbackViewed(feedbackConversation) == true"></td>
-          <td>   
-             <span ng-show="feedbackConversation.userName == currentUser.userName">
-               <input type="checkbox" ng-model="feedbackConversation.resolved" 
-                 ng-click="feedbackConversation.resolved ? 
-   				 markActive(feedbackConversation) : markFeedbackResolved(feedbackConversation)">  
-             </span>
-          </td>
-          <td><a href="#/conversation/recordId/{{feedbackConversation.mapRecordId}}">{{feedbackConversation.terminologyId}}</a></td>
-          <td>{{feedbackConversation.defaultPreferredName}}</td>
-          <td ng-bind-html="to_trusted(feedbackConversation.title)"></td>
-          <td>{{feedbackConversation.userName}}</td>
-          <td>{{feedbackConversation.lastModified | date:'MM-dd-yyyy HH:mm'}}&nbsp;
-          ({{feedbackConversation.feedback[feedbackConversation.feedback.length -1].sender.userName}})</td>
-        </tr>
-  </tbody>
+    <thead>
+      <tr>
+        <th style="width: 3%; padding: 5px;"><a title="Unviewed Feedback">
+            <i class="glyphicon glyphicon-eye-close pull-right"></i>
+        </a></th>
+        <th style="width: 3%; padding: 5px;"><a title="Resolved"> <i
+            class="glyphicon glyphicon-ok"></i></a></th>
+        <th style="width: 14%; padding: 5px;">Id</th>
+        <th style="width: 35%; padding: 5px;">Preferred Name</th>
+        <th style="width: 20%; padding: 5px;">Type</th>
+        <th style="width: 7%; padding: 5px;">Owner</th>
+        <th style="width: 18%; padding: 5px;">Last Modified</th>
 
 
-</table>
+      </tr>
+
+    </thead>
+
+    <tbody>
+      <tr ng-repeat="feedbackConversation in feedbackConversations">
+        <td ng-show="isFeedbackViewed(feedbackConversation) == false"><a
+          title="Unviewed Feedback"
+          href="#/conversation/recordId/{{feedbackConversation.mapRecordId}}">
+            <i class="glyphicon glyphicon-eye-close pull-right"></i>
+        </a></td>
+        <td ng-show="isFeedbackViewed(feedbackConversation) == true"></td>
+        <td>
+          <!--  only show resolved checkbox if current user is owner of record, 
+                   or if current user initiated the feedback conversation --> <span
+          ng-show="feedbackConversation.userName == currentUser.userName ||
+             			currentUser.userName == feedbackConversation.feedback[0].sender.userName">
+            <input type="checkbox" ng-model="feedbackConversation.resolved"
+            ng-click="feedbackConversation.resolved ? 
+   				 markActive(feedbackConversation) : markFeedbackResolved(feedbackConversation)">
+        </span> <!-- if no edit privileges to resolve checkbox, just show resolved state -->
+          <span
+          ng-show="feedbackConversation.userName != currentUser.userName &&
+             			currentUser.userName != feedbackConversation.feedback[0].sender.userName &&
+             			feedbackConversation.resolved == true">
+            <i class="glyphicon glyphicon-ok"></i>
+        </span>
+        </td>
+        <td><a
+          href="#/conversation/recordId/{{feedbackConversation.mapRecordId}}">{{feedbackConversation.terminologyId}}</a></td>
+        <td>{{feedbackConversation.defaultPreferredName}}</td>
+        <td ng-bind-html="to_trusted(feedbackConversation.title)"></td>
+        <td>{{feedbackConversation.userName}}</td>
+        <td>{{feedbackConversation.lastModified | date:'MM-dd-yyyy
+          HH:mm'}}&nbsp;
+          ({{feedbackConversation.feedback[feedbackConversation.feedback.length
+          -1].sender.userName}})</td>
+      </tr>
+    </tbody>
+
+
+  </table>
 
 </div>
-  
+<div class="alert alert-warning" style="margin-top:10px;" ng-show="feedbackConversations.length == 0">
+      No matching feedback results.</div> 
+ 
 

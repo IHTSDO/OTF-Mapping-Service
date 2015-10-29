@@ -15,10 +15,27 @@
   <description>OTF Administrator Tool for Publication Release</description>
   <packaging>pom</packaging>
 
+  <properties>
+    <!-- Specify the refset id to publish -->
+    <refset.id></refset.id>
+
+    <!-- Specify the output directory where it should go -->
+    <output.dir></output.dir>
+
+    <!-- Specify the effectiveTime of the release -->
+    <time></time>
+
+    <!-- Specify the moduleId to use for RF2 files -->
+    <module.id></module.id>
+
+    <!-- Specify a test mode for the release if desired -->
+    <test.mode.flag>false</test.mode.flag>
+    
+  </properties>
 
   <profiles>
 
-    <!-- Remove SNOMED -->
+    <!-- Release SNOMED, specify -Drun.config=... -->
     <profile>
       <id>Release</id>
       <build>
@@ -26,7 +43,6 @@
           <plugin>
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
             <executions>
               <execution>
                 <id>release</id>
@@ -35,10 +51,12 @@
                   <goal>release</goal>
                 </goals>
                 <configuration>
-                  <refSetId>${refset.id}</refSetId>
-                  <outputDirName>${output.dir}</outputDirName>
+                  <refsetId>${refset.id}</refsetId>
+                  <outputDir>${output.dir}</outputDir>
+                  <!-- e.g. 20150131 -->
                   <effectiveTime>${time}</effectiveTime>
-                  <moduleId>${module.id}</moduleId>>
+                  <moduleId>${module.id}</moduleId>
+                  <testModeFlag>${test.mode.flag}</testModeFlag>
                 </configuration>
               </execution>
             </executions>
@@ -47,6 +65,81 @@
       </build>
     </profile>
 
-  
+    <profile>
+      <id>BeginRelease</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>begin-release</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>begin-release</goal>
+                </goals>
+                <configuration>
+                  <refsetId>${refset.id}</refsetId>
+                  <testModeFlag>${test.mode.flag}</testModeFlag>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>FinishRelease</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>finish-release</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>finish-release</goal>
+                </goals>
+                <configuration>
+                  <refsetId>${refset.id}</refsetId>
+                  <inputFile>${input.file}</inputFile>
+                  <testModeFlag>${test.mode.flag}</testModeFlag>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- Used to start an editing cycle. -->
+    <profile>
+      <id>BeginEditingCycle</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>begin-editing-cycle</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>begin-editing-cycle</goal>
+                </goals>
+                <configuration>
+                  <refsetId>${refset.id}</refsetId>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
   </profiles>
 </project>
