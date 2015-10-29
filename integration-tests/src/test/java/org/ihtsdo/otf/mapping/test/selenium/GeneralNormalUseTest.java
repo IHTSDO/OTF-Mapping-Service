@@ -40,6 +40,11 @@ public class GeneralNormalUseTest {
     // get the config properties
     config = ConfigUtility.getConfigProperties();
 
+    // Skip if not specified
+    if (config.contains("selenium.browser")) {
+      return;
+    }
+    
     // construct a new webdriver
     switch (config.getProperty("selenium.browser")) {
       case "firefox":
@@ -70,6 +75,11 @@ public class GeneralNormalUseTest {
   @AfterClass
   public static void teardownClass() throws Exception {
 
+    // Skip if not specified
+    if (config.contains("selenium.browser")) {
+      return;
+    }
+
     if (webDriver != null) {
       webDriver.quit();
     }
@@ -82,6 +92,10 @@ public class GeneralNormalUseTest {
    */
   @Test
   public void testNormalUseGuiGeneral001() throws Exception {
+    // Skip if not specified
+    if (config.contains("selenium.browser")) {
+      return;
+    }
     Logger.getLogger(getClass()).info("Testing guest login...");
 
     // Open website
