@@ -2,33 +2,32 @@
 
 <!-- Prevent reload on this editing page -->
 <script type="text/javascript">
-	window.onbeforeunload = function() {
-		return "If you leave this page data may be lost!";
-	}
+  window.onbeforeunload = function() {
+    return "If you leave this page data may be lost!";
+  }
 </script>
 
 <accordion> <accordion-group is-open="isConceptOpen">
 <accordion-heading> Source Concept <i
   class="pull-right glyphicon"
   ng-class="{'glyphicon-chevron-down': isConceptOpen, 'glyphicon-chevron-right': !isConceptOpen}"></i>
-</accordion-heading>
-
+</accordion-heading> <!-- This is confusing/misleading so remove it
 <div ng-show="concept.effectiveTime > record.lastModified">
   <p class="alert alert-warning">The {{concept.terminology}} concept was
     modified after your last edit, on {{concept.effectiveTime |
     date:'MM-dd-yyyy'}}</p>
 </div>
+ -->
 <table>
 
   <tr>
     <td style="vertical-align: top; padding: 5px;"><strong>Id</strong></td>
     <td style="vertical-align: top; padding: 5px;">{{concept.terminology}},{{concept.terminologyId}}
-      &nbsp<a title='Open SNOMED Browser' href=""><i class="glyphicon glyphicon-info-sign"
-        ng-click="openConceptBrowser()"></i></a> 
-        
-        <a title='Open Index Viewer' ng-show="indexViewerExists == true"> <i
-        ng-click="openIndexViewer()" class="glyphicon glyphicon-book"></i>
-    </a>
+      &nbsp<a title='Open SNOMED Browser' href="">
+        <i class="glyphicon glyphicon-info-sign" ng-click="openConceptBrowser()"></i>
+      </a> <a title='Open Index Viewer' ng-show="indexViewerExists == true">
+        <i ng-click="openIndexViewer()" class="glyphicon glyphicon-book"></i>
+      </a>
 
     </td>
   </tr>
@@ -113,8 +112,9 @@ Notes <i class="pull-right glyphicon"
       <!-- <i class="glyphicon glyphicon-pencil pull-right"
 					ng-click="editRecordNote(record, note); noteInput = note.note"></i>
 	 -->
-      [By <a href="mailto:{{user.email}}">{{note.user.name}}</a> on
-      {{note.timestamp | date:'MM-dd-yyyy HH:mm'}}]
+      [By
+      <a href="mailto:{{user.email}}">{{note.user.name}}</a>
+      on {{note.timestamp | date:'MM-dd-yyyy HH:mm'}}]
       <div style="padding-left: 20px;" ng-bind-html="to_trusted(note.note)"></div>
 
     </div>
@@ -133,7 +133,12 @@ Notes <i class="pull-right glyphicon"
 		ng-click="saveEditRecordNote(record, noteInput); noteInput = ''">
 		<input ng-show="noteEditMode == true" class="pull-right" type="submit"  accesskey="a" value="Cancel Editing"
 		ng-click="cancelEditRecordNote(); noteInput = ''"> -->
-  <span class="pull-right"> Shortcut to add note: <code>Tab</code>, <code>Enter</code>&nbsp&nbsp
+  <span class="pull-right">
+    Shortcut to add note:
+    <code>Tab</code>
+    ,
+    <code>Enter</code>
+    &nbsp&nbsp
   </span>
 </form>
 
@@ -155,8 +160,10 @@ Principles <i class="pull-right glyphicon"
       <div style="display: inline; float: left; width: 7%">
         {{principle.principleId}}:</div>
       <div style="display: inline;" class="dropdown">
-        <a class="dropdown-toggle"> <i class="glyphicon glyphicon-info-sign"></i>
-        </a> {{principle.name}}
+        <a class="dropdown-toggle">
+          <i class="glyphicon glyphicon-info-sign"></i>
+        </a>
+        {{principle.name}}
         <div class="dropdown-menu">
           <p>Reference: {{principle.sectionRef}}</p>
           <p ng-bind-html="to_trusted(principle.detail)"></p>
@@ -175,13 +182,14 @@ Principles <i class="pull-right glyphicon"
   Add Principle: <select style="width: 75%;"
     ng-change="addRecordPrinciple(record, principleInput)"
     ng-model="principleInput"
-    ng-options="principle as principle.principleId + ':  ' + principle.name for principle in project.mapPrinciple | orderBy:'id'"></select>
+    ng-options="principle as principle.principleId + ':  ' + principle.name for principle in project.mapPrinciple | orderBy:orderByPrincipleId"></select>
 </form>
 <hr>
 <div
   ng-show="project.mapPrincipleSourceDocument != null && project.mapPrincipleSourceDocument.length > 0">
-  Principles taken from <a href="doc/{{project.mapPrincipleSourceDocument}}"
-    target="_blank">Map Principles Document</a>
+  Principles taken from
+  <a href="doc/{{project.mapPrincipleSourceDocument}}" target="_blank">Map
+    Principles Document</a>
 </div>
 </accordion-group> </accordion> <!--  FLAGS PANEL --> <accordion> <accordion-group
   is-open="isFlagsOpen"> <accordion-heading>
@@ -208,18 +216,21 @@ review<br>
 	&& record.workflowStatus != 'QA_RESOLVED'">
   <accordion> <accordion-group is-open="isFeedbackOpen">
   <accordion-heading> <span ng-click="markViewed()">
-    Feedback <span ng-show="conversation.feedback.length > 0">({{conversation.feedback.length}})</span><i
-    class="pull-right glyphicon"
-    ng-class="{'glyphicon-chevron-down': isFeedbackOpen, 'glyphicon-chevron-right': !isFeedbackOpen}"></i>
+    Feedback
+    <span ng-show="conversation.feedback.length > 0">({{conversation.feedback.length}})</span>
+    <i class="pull-right glyphicon"
+      ng-class="{'glyphicon-chevron-down': isFeedbackOpen, 'glyphicon-chevron-right': !isFeedbackOpen}"></i>
   </span></accordion-heading>
 
   <div ng-show="conversation.feedback.length > 0">
     <div ng-repeat="feedback in conversation.feedback">
       <div class="alert alert-warning" disabled>
-        [By {{feedback.sender.name}} to <span
-          ng-repeat="recipient in feedback.recipients">
-          {{recipient.name}}<span ng-if="$last == false">,</span>
-        </span> on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
+        [By {{feedback.sender.name}} to
+        <span ng-repeat="recipient in feedback.recipients">
+          {{recipient.name}}
+          <span ng-if="$last == false">,</span>
+        </span>
+        on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
         <div ng-show="feedback.mapError != 'None'" style="padding-left: 20px;"
           ng-bind-html="to_trusted(feedback.mapError)"></div>
         <div style="padding-left: 20px;"
@@ -242,8 +253,12 @@ review<br>
     <input class="pull-right" type="submit" value="Send Feedback"
       ng-click="sendFeedback(record, feedbackInput, returnRecipients); feedbackInput = ''">
 
-    <span class="pull-right"> Shortcut to send feedback: <code>Tab</code>,
-      <code>Enter</code>&nbsp&nbsp
+    <span class="pull-right">
+      Shortcut to send feedback:
+      <code>Tab</code>
+      ,
+      <code>Enter</code>
+      &nbsp&nbsp
     </span>
   </form>
 

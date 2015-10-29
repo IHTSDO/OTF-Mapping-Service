@@ -11,6 +11,7 @@ import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.RelationshipList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
+import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.rf2.AttributeValueRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
@@ -471,14 +472,27 @@ public interface ContentService extends RootService {
 
   /**
    * Compute tree positions.
-   * 
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @param typeId the type id
+   * @param rootId the root id
+   * @return the validation result containing any errors/warnings/messages
+   * @throws Exception the exception
+   */
+  public ValidationResult computeTreePositions(String terminology,
+    String terminologyVersion, String typeId, String rootId) throws Exception;
+
+  /**
+   * Cycle check.
+   *
    * @param terminology the terminology
    * @param terminologyVersion the terminology version
    * @param typeId the type id
    * @param rootId the root id
    * @throws Exception the exception
    */
-  public void computeTreePositions(String terminology,
+  public void cycleCheck(String terminology,
     String terminologyVersion, String typeId, String rootId) throws Exception;
 
   /**
@@ -634,6 +648,40 @@ public interface ContentService extends RootService {
     String terminologyVersion);
 
   /**
+   * Gets all relationships.
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @return the relationships
+   * @throws Exception the exception
+   */
+  public RelationshipList getAllActiveRelationships(String terminology,
+    String terminologyVersion) throws Exception;
+
+  /**
+   * Gets all descriptions.
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @return the descriptions
+   * @throws Exception the exception
+   */
+  public DescriptionList getAllActiveDescriptions(String terminology,
+    String terminologyVersion) throws Exception;
+
+ 
+  /**
+   * Gets all concepts.
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @return the concepts
+   * @throws Exception the exception
+   */
+  public LanguageRefSetMemberList getAllActiveLanguageRefSetMembers(String terminology,
+    String terminologyVersion) throws Exception;
+
+  /**
    * Gets the all relationship terminology ids.
    *
    * @param terminology the terminology
@@ -679,6 +727,7 @@ public interface ContentService extends RootService {
    */
   public ConceptList getConcepts() throws Exception;
 
+ 
   /**
    * Gets the tree position with descendants.
    *
@@ -711,45 +760,5 @@ public interface ContentService extends RootService {
   public ComplexMapRefSetMemberList getComplexMapRefSetMembersForRefSetId(
     String refSetId) throws Exception;
 
-  /**
-   * Gets the index domains for the specified terminology.
-   *
-   * @param terminology the terminology
-   * @param terminologyVersion the terminology version
-   * @return the index domains
-   * @throws Exception the exception
-   */
-  public SearchResultList getIndexDomains(String terminology,
-		String terminologyVersion) throws Exception;
-  
-  /**
-   * Gets the index pages for index.
-   *
-   * @param terminology the terminology
-   * @param terminologyVersion the terminology version
-   * @param index the index
-   * @return the index pages for index
-   * @throws Exception the exception
-   */
-  public SearchResultList getIndexPagesForIndex(
-		  String terminology, String terminologyVersion, String index) throws Exception;
-
-  /**
-   * Perform aggregated search.
-   *
-   * @param terminology the terminology
-   * @param terminologyVersion the terminology version
-   * @param domain the domain
-   * @param searchField the search field
-   * @param subSearchField the sub search field
-   * @param subSubSearchField the sub sub search field
-   * @param allFlag TODO
-   * @return the search result list
-   * @throws Exception the exception
-   */
-
-  public SearchResultList findIndexEntries(String terminology,
-    String terminologyVersion, String domain, String searchField,
-    String subSearchField, String subSubSearchField, boolean allFlag) throws Exception;
 
 }

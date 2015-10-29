@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2015 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.services.helpers;
 
 import java.io.File;
@@ -10,6 +13,7 @@ import java.util.Properties;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.mapping.helpers.Configurable;
 
 /**
  * Loads and serves configuration.
@@ -67,16 +71,18 @@ public class ConfigUtility {
   /**
    * New handler instance.
    *
+   * @param <T> the
    * @param handler the handler
    * @param handlerClass the handler class
    * @param type the type
    * @return the object
    * @throws Exception the exception
    */
-  public static Object newHandlerInstance(String handler, String handlerClass,
-    Class<?> type) throws Exception {
+  @SuppressWarnings("unchecked")
+  public static <T> T newHandlerInstance(String handler, String handlerClass,
+    Class<T> type) throws Exception {
     if (handlerClass == null) {
-      throw new Exception("Handler class " + handler + " is not defied");
+      throw new Exception("Handler class " + handlerClass + " is not defined");
     }
     Class<?> toInstantiate = Class.forName(handlerClass);
     if (toInstantiate == null) {
@@ -93,11 +99,45 @@ public class ConfigUtility {
           + ", check for default constructor.");
     }
     if (type.isAssignableFrom(o.getClass())) {
-      return toInstantiate;
+      return (T) o;
     }
     throw new Exception("Handler is not assignable from " + type.getName());
   }
 
+  public static <T extends Configurable> T newStandardHandlerInstanceWithConfiguration(
+    String property, String handlerName, Class<T> type) throws Exception {
+
+    // Instantiate the handler
+    // property = "metadata.service.handler" (e.g)
+    // handlerName = "SNOMED" (e.g.)
+    String classKey = property + "." + handlerName + ".class";
+    if (config.getProperty(classKey) == null) {
+      throw new Exception("Unexpected null classkey " + classKey);
+    }
+    String handlerClass = config.getProperty(classKey);
+    Logger.getLogger(ConfigUtility.class).info("Instantiate " + handlerClass);
+    T handler =
+        ConfigUtility.newHandlerInstance(handlerName, handlerClass, type);
+
+    // Look up and build properties
+    Properties handlerProperties = new Properties();
+    handlerProperties.setProperty("security.handler", handlerName);
+
+    for (Object key : config.keySet()) {
+      // Find properties like "metadata.service.handler.SNOMED.class"
+      if (key.toString().startsWith(property + "." + handlerName + ".")) {
+        String shortKey =
+            key.toString().substring(
+                (property + "." + handlerName + ".").length());
+        Logger.getLogger(ConfigUtility.class).info(
+            " property " + shortKey + " = "
+                + config.getProperty(key.toString()));
+        handlerProperties.put(shortKey, config.getProperty(key.toString()));
+      }
+    }
+    //handler.setProperties(handlerProperties);
+    return handler;
+  }
   /**
    * Returns the raw bytes.
    * 

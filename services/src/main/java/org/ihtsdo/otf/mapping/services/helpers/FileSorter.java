@@ -46,8 +46,8 @@ public class FileSorter {
   /**
    * Performs merge sort on a file, outputs to specified output file
    * 
-   * @param inputFile the file_in_str
-   * @param outputFile the file_out_str
+   * @param inputFile the input frile
+   * @param outputFile the output file
    * @param comparator the comp
    * @throws Exception if anything goes wrong.
    */
@@ -64,7 +64,7 @@ public class FileSorter {
     while (splitFiles.size() > 1) {
 
       // merge from the end
-      String merged_file =
+      String mergedFile =
           mergeToTempFile(splitFiles.get(splitFiles.size() - 1),
               splitFiles.get(splitFiles.size() - 2), comparator);
 
@@ -75,7 +75,7 @@ public class FileSorter {
       new File(toRemove).delete();
 
       // add merged file to beginning of the list
-      splitFiles.add(merged_file);
+      splitFiles.add(mergedFile);
     }
 
     // rename resultant file (expects only one split file to remain)
@@ -166,9 +166,9 @@ public class FileSorter {
   /**
    * Merge to temp file.
    * 
-   * @param filename1 the file1_str
-   * @param filename2 the file2_str
-   * @param comparator the comp
+   * @param filename1 the first filename to merge
+   * @param filename2 the second filename to merge
+   * @param comparator the comparator
    * @return the string
    * @throws Exception if anything goes wrong
    */
@@ -303,7 +303,7 @@ public class FileSorter {
    * Creates a temporary file from an array of lines.
    * 
    * @param lines the lines
-   * @param fileIn the file_in
+   * @param fileIn the input file
    * @return the string
    * @throws IOException Signals that an I/O exception has occurred.
    */

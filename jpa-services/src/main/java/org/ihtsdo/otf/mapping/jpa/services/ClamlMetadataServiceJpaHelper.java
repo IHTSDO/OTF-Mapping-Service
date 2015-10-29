@@ -94,7 +94,9 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     if (rootId == null)
       throw new Exception("Module concept cannot be found.");
 
-    return getDescendantMap(contentService, rootId, terminology, version);
+    Map<String,String> result =getDescendantMap(contentService, rootId, terminology, version);
+    contentService.close();
+    return result;
   }
 
   /*
@@ -176,7 +178,10 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     if (rootId == null)
       throw new Exception("Simple refsets concept cannot be found.");
 
-    return getDescendantMap(contentService, rootId, terminology, version);
+    Map<String, String> result =
+        getDescendantMap(contentService, rootId, terminology, version);
+    contentService.close();
+    return result;
   }
 
   /*
@@ -218,7 +223,9 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     if (rootId == null)
       throw new Exception("Definition status concept cannot be found.");
 
-    return getDescendantMap(contentService, rootId, terminology, version);
+    Map<String,String> result =getDescendantMap(contentService, rootId, terminology, version);
+    contentService.close();
+    return result;
   }
 
   /*
@@ -246,8 +253,9 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     }
     if (rootId == null)
       throw new Exception("Description type concept cannot be found.");
-
-    return getDescendantMap(contentService, rootId, terminology, version);
+    Map<String,String> result =getDescendantMap(contentService, rootId, terminology, version);
+    contentService.close();
+    return result;
   }
 
   /*
@@ -276,7 +284,9 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     if (rootId == null)
       throw new Exception("Case significance concept cannot be found.");
 
-    return getDescendantMap(contentService, rootId, terminology, version);
+    Map<String,String> result =getDescendantMap(contentService, rootId, terminology, version);
+    contentService.close();
+    return result;
   }
 
   /*
@@ -306,7 +316,9 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     if (rootId == null)
       throw new Exception("Relationship type concept cannot be found.");
 
-    return getDescendantMap(contentService, rootId, terminology, version);
+    Map<String,String> result =getDescendantMap(contentService, rootId, terminology, version);
+    contentService.close();
+    return result;
   }
 
   /*
@@ -356,7 +368,9 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     if (rootId == null)
       throw new Exception("Characteristic type concept cannot be found.");
 
-    return getDescendantMap(contentService, rootId, terminology, version);
+    Map<String,String> result =getDescendantMap(contentService, rootId, terminology, version);
+    contentService.close();
+    return result;
   }
 
   /*
@@ -384,7 +398,9 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     if (rootId == null)
       throw new Exception("Modifier concept cannot be found.");
 
-    return getDescendantMap(contentService, rootId, terminology, version);
+    Map<String,String> result =getDescendantMap(contentService, rootId, terminology, version);
+    contentService.close();
+    return result;
   }
 
   /*
@@ -438,6 +454,19 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
    * (non-Javadoc)
    * 
    * @see
+   * org.ihtsdo.otf.mapping.services.MetadataService#getPreviousVersion(java
+   * .lang.String)
+   */
+  @Override
+  public String getPreviousVersion(String terminology) {
+    // no-op - this is just helper class
+    return null;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
    * org.ihtsdo.otf.mapping.services.MetadataService#getTerminologyLatestVersions
    * ()
    */
@@ -473,7 +502,6 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
             descendant.getDefaultPreferredName());
       }
     }
-    contentService.close();
     return map;
   }
 

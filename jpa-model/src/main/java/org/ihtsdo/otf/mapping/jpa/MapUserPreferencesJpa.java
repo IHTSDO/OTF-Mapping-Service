@@ -24,8 +24,6 @@ import org.ihtsdo.otf.mapping.model.MapUserPreferences;
 
 /**
  * Set of preferences for a user Preferences are accessed via services.
- * 
- * @author Patrick
  */
 @Entity
 // @UniqueConstraint here is being used to create an index, not to enforce

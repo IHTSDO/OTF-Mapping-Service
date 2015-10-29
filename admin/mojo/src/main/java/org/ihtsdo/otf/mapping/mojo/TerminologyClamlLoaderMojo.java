@@ -55,7 +55,7 @@ import org.xml.sax.helpers.DefaultHandler;
 public class TerminologyClamlLoaderMojo extends AbstractMojo {
 
   /** The date format. */
-  final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyymmdd");
+  final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
 
   /**
    * The input file
@@ -70,6 +70,13 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
    * @required
    */
   String terminology;
+
+  /**
+   * Terminology version
+   * @parameter
+   * @required
+   */
+  String version;
 
   // NOTE: default visibility is used instead of private
   // so that the inner class parser does not require
@@ -112,6 +119,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
     getLog().info("Starting loading Claml terminology");
     getLog().info("  inputFile = inputFile");
     getLog().info("  terminology = " + terminology);
+    getLog().info("  version = " + version);
 
     FileInputStream fis = null;
     InputStream inputStream = null;
@@ -166,8 +174,8 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       metadataService.close();
 
       // Let the service create its own transaction.
-      getLog().info("Start creating tree positions.");
       for (String root : roots) {
+        getLog().info("Start creating tree positions " + root + ", " + isaRelType);
         contentService.computeTreePositions(terminology, terminologyVersion,
             isaRelType, root);
       }
@@ -227,8 +235,6 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 
   /**
    * The SAX parser handler.
-   * 
-   * @author ${author}
    */
   class LocalHandler extends DefaultHandler {
 
@@ -1374,6 +1380,8 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       }
     }
     br.close();
+    // Override terminology version with parameter
+    terminologyVersion = version;
     getLog().info("terminologyVersion: " + terminologyVersion);
     getLog().info("effectiveTime: " + effectiveTime);
   }

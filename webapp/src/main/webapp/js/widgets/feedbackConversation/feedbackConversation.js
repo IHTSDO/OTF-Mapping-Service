@@ -26,7 +26,8 @@ angular
       $scope.conversation = null;
       $scope.record = null;
 
-      // initialize as empty to indicate still initializing database connection
+      // initialize as empty to indicate still initializing database
+      // connection
       $scope.currentUser = localStorageService.get('currentUser');
       $scope.currentRole = localStorageService.get('currentRole');
       $scope.currentUserToken = localStorageService.get('userToken');
@@ -37,6 +38,9 @@ angular
       // conflict records
       $scope.record1 = null;
       $scope.record2 = null;
+
+      // flag indicating if index viewer is available for dest terminology
+      $scope.indexViewerExists = false;
 
       // settings for recipients mechanism
       $scope.allUsers = new Array();
@@ -81,6 +85,8 @@ angular
                 .concat($scope.focusProject.mapLead);
               organizeUsers($scope.allUsers);
               $scope.getFeedbackConversation();
+
+              setIndexViewerStatus();
             }
           });
 
@@ -100,7 +106,7 @@ angular
           }
         }).success(
           function(data) {
-           
+
             $scope.conversation = data;
             console.debug("Feedback Conversation:");
             console.debug($scope.conversation);
@@ -109,7 +115,8 @@ angular
 
             $scope.record = null;
 
-            // load record to be displayed; try to find active record first
+            // load record to be displayed; try to find active
+            // record first
             $http(
               {
                 url : root_mapping + "record/id/"
@@ -122,9 +129,9 @@ angular
                 }
               }).success(
               function(data) {
-                
+
                 $rootScope.glassPane--;
-                
+
                 $scope.record = data;
 
                 setTitle();
@@ -132,7 +139,7 @@ angular
                 // get the conflict records if they exist
                 var originIds = $scope.record.originIds;
                 if (originIds != null && originIds.length > 0) {
-                  
+
                   $rootScope.glassPane++;
                   $http(
                     {
@@ -146,12 +153,11 @@ angular
                       }
                     }).success(
                     function(data) {
-                      
+
                       $rootScope.glassPane--;
-                      
+
                       $scope.record1 = data;
 
-                      
                       if (originIds != null && originIds.length == 2) {
                         $rootScope.glassPane++;
                         $http(
@@ -253,7 +259,8 @@ angular
           window.alert("The feedback field cannot be blank. ");
           return;
         }
-        // figure out the return recipients based on previous feedback in
+        // figure out the return recipients based on previous feedback
+        // in
         // conversation
         var localFeedback = conversation.feedback;
 
@@ -312,7 +319,10 @@ angular
         if ($scope.currentUser.userName === 'guest')
           return "http://browser.ihtsdotools.org/index.html?perspective=full&conceptId1="
             + $scope.conversation.terminologyId
-            + "&diagrammingMarkupEnabled=true&acceptLicense=true";
+            + "&edition=en-edition"
+            + "&server=https://browser-aws-1.ihtsdotools.org/&langRefset=900000000000509007"
+            + "&acceptLicense=true";
+
         else
           return "http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1="
             + $scope.conversation.terminologyId
@@ -322,7 +332,7 @@ angular
       $scope.openConceptBrowser = function() {
         window.open($scope.getBrowserUrl(), "browserWindow");
       };
-      
+
       $scope.openIndexViewer = function() {
         console.debug("page location is", window.location.href);
         var currentUrl = window.location.href;
@@ -393,14 +403,16 @@ angular
       // determines default recipients dependending on the conversation
       function initializeReturnRecipients(conversation) {
 
-        // if no previous feedback conversations, return just first map lead in
+        // if no previous feedback conversations, return just first map
+        // lead in
         // list
         if (conversation == null || conversation == "") {
           $scope.returnRecipients.push($scope.focusProject.mapLead[0]);
           return;
         }
 
-        // figure out the return recipients based on previous feedback in
+        // figure out the return recipients based on previous feedback
+        // in
         // conversation
         var localFeedback = conversation.feedback;
         var localSender = localFeedback[localFeedback.length - 1].sender;
@@ -464,6 +476,30 @@ angular
           var x = a[key];
           var y = b[key];
           return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+        });
+      }
+      ;
+
+      function setIndexViewerStatus() {
+        $http(
+          {
+            url : root_content + "index/"
+              + $scope.project.destinationTerminology + "/"
+              + $scope.project.destinationTerminologyVersion,
+            dataType : "json",
+            method : "GET",
+            headers : {
+              "Content-Type" : "application/json"
+            }
+          }).success(function(data) {
+          console.debug("Success in getting viewable indexes.");
+          if (data.searchResult.length > 0) {
+            $scope.indexViewerExists = true;
+          } else {
+            $scope.indexViewerExists = false;
+          }
+        }).error(function(data, status, headers, config) {
+          $scope.indexViewerExists = false;
         });
       }
       ;

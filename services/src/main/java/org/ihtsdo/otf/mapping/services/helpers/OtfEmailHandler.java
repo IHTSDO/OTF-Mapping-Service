@@ -10,6 +10,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 
 /**
  * Email handler.
@@ -21,7 +22,7 @@ public class OtfEmailHandler {
   // on instantiation, initialize config properties
   /**
    * Instantiates an empty {@link OtfEmailHandler}.
-   *
+   * 
    * @throws Exception the exception
    */
   public OtfEmailHandler() throws Exception {
@@ -33,10 +34,12 @@ public class OtfEmailHandler {
    * Send simple email.
    *
    * @param recipients the recipients
+   * @param from the from
    * @param subject the subject
    * @param message the message
    */
-  public void sendSimpleEmail(String recipients, String subject, String message) {
+  public void sendSimpleEmail(String recipients, String from, String subject,
+    String message) {
 
     Logger.getLogger(OtfEmailHandler.class).info("Sending email...");
 
@@ -47,9 +50,13 @@ public class OtfEmailHandler {
       MimeMessage msg = new MimeMessage(session);
 
       // set the message, subject, and sender
-      msg.setText(message);
+      if (message.contains("<html")) {
+        msg.setContent(message, "text/html; charset=utf-8");
+      } else {
+        msg.setText(message);
+      }
       msg.setSubject(subject);
-      msg.setFrom(config.getProperty("mail.smtp.user"));
+      msg.setFrom(from);
 
       // split recipients if needed and add each
       String[] recipientsArray = recipients.split(";");
@@ -64,10 +71,24 @@ public class OtfEmailHandler {
     }
   }
 
-  // helper function to send simple email to recipients specified in config file
   /**
    * Send simple email.
    *
+   * @param recipients the recipients
+   * @param subject the subject
+   * @param message the message
+   */
+  public void sendSimpleEmail(String recipients, String subject, String message) {
+
+    String from = config.getProperty("mail.smtp.user");
+    sendSimpleEmail(recipients, from, subject, message);
+
+  }
+
+  // helper function to send simple email to recipients specified in config file
+  /**
+   * Send simple email.
+   * 
    * @param subject the subject
    * @param message the message
    */
@@ -75,6 +96,44 @@ public class OtfEmailHandler {
 
     String recipients = config.getProperty("mail.smtp.to");
     sendSimpleEmail(recipients, subject, message);
+
+  }
+
+  public void sendValidationResultEmail(String recipients, String subject,
+    String message, ValidationResult validationResult) {
+
+    // validation message is specified header message and two new lines
+    String validationMessage = message + "\n\n";
+
+    // add the messages
+    if (!validationResult.getMessages().isEmpty()) {
+      validationMessage += "Messages:\n";
+      for (String s : validationResult.getMessages()) {
+        validationMessage += "  " + s + "\n";
+      }
+      validationMessage += "\n";
+    }
+
+    // add the errors
+    if (!validationResult.getErrors().isEmpty()) {
+      validationMessage += "Errors:\n";
+      for (String s : validationResult.getErrors()) {
+        validationMessage += "  " + s + "\n";
+      }
+      validationMessage += "\n";
+    }
+
+    // add the warnings
+    if (!validationResult.getWarnings().isEmpty()) {
+      validationMessage += "Warnings:\n";
+      for (String s : validationResult.getWarnings()) {
+        validationMessage += "  " + s + "\n";
+      }
+      validationMessage += "\n";
+    }
+
+    // send the revised message
+    this.sendSimpleEmail(recipients, subject, validationMessage);
 
   }
 
@@ -93,6 +152,15 @@ public class OtfEmailHandler {
       return new PasswordAuthentication(config.getProperty("mail.smtp.user"),
           config.getProperty("mail.smtp.password"));
     }
+  }
+
+  /**
+   * Indicates whether or not recipients list is specified (non-empty)
+   * 
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public boolean isRecipientsListSpecified() {
+    return !config.getProperty("send.notification.recipients").isEmpty();
   }
 
 }

@@ -131,20 +131,6 @@ public interface MapRecord {
   public void setConceptName(String conceptName);
 
   /**
-   * Returns the number of descendant concepts.
-   * 
-   * @return the number of descendant concepts
-   */
-  public Long getCountDescendantConcepts();
-
-  /**
-   * Sets the number of descendant concepts.
-   * 
-   * @param countDescendantConcepts the number of descendant concepts
-   */
-  public void setCountDescendantConcepts(Long countDescendantConcepts);
-
-  /**
    * Returns the map notes.
    * 
    * @return the map notes
@@ -374,5 +360,33 @@ public interface MapRecord {
    * @param label the label
    */
   public void removeLabel(String label);
+
+  /**
+   * Returns the reasons for conflict.
+   *
+   * @return the reasons for conflict
+   */
+  public Set<String> getReasonsForConflict();
+
+  /**
+   * Sets the reasons for conflict.
+   *
+   * @param reasons the reasons for conflict
+   */
+  public void setReasonsForConflict(Set<String> reasons);
+
+  /**
+   * Adds the reason for conflict.
+   *
+   * @param reason the reason
+   */
+  public void addReasonForConflict(String reason);
+
+  /**
+   * Removes the reason for conflict.
+   *
+   * @param reason the reason
+   */
+  public void removeReasonForConflict(String reason);
 
 }

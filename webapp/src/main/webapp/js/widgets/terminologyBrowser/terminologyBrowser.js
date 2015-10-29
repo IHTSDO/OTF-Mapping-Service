@@ -111,8 +111,7 @@ angular
         $http(
           {
             url : root_mapping + "treePosition/project/id/"
-              + $scope.focusProject.id + "/terminology/id/"
-              + $scope.terminology + "/" + $scope.terminologyVersion,
+              + $scope.focusProject.id,
             method : "GET",
             headers : {
               "Content-Type" : "application/json"
@@ -134,14 +133,21 @@ angular
       $scope.getRootTreeWithQuery = function(isNewSearch) {
 
         console.debug("QUERYING: " + $scope.query);
+        // Bail on an empty search
+        if ($scope.query == "") {
+          return;
+        }
+        // bail on only whitespace search
+        if (new RegExp("^\s+$").test($scope.query)) {
+          return;
+        }
         $scope.searchStatus = "Searching...";
         $scope.terminologyTree = [];
         $http(
           {
             url : root_mapping + "treePosition/project/id/"
-              + $scope.focusProject.id + "/terminology/id/"
-              + $scope.terminology + "/" + $scope.terminologyVersion
-              + "/query/" + $scope.query,
+              + $scope.focusProject.id + "/query/"
+              + encodeURIComponent($scope.query),
             method : "GET",
             headers : {
               "Content-Type" : "application/json"
@@ -242,8 +248,7 @@ angular
           $http(
             {
               url : root_mapping + "treePosition/project/id/"
-                + $scope.focusProject.id + "/concept/id/" + $scope.terminology
-                + "/" + $scope.terminologyVersion + "/" + terminologyId,
+                + $scope.focusProject.id + "/concept/id/" + terminologyId,
               method : "GET",
               headers : {
                 "Content-Type" : "application/json"
@@ -552,6 +557,5 @@ angular
           key : 'concept',
           concept : node
         });
-        window.scrollTo(0, 0);
       };
     });

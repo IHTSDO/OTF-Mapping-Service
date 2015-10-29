@@ -1,5 +1,9 @@
+/*
+ *    Copyright 2015 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.model;
 
+import java.util.Date;
 import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.MapRefsetPattern;
@@ -118,6 +122,34 @@ public interface MapProject {
   public void setRefSetName(String refSetName);
 
   /**
+   * Returns the editing cycle begin date.
+   *
+   * @return the editing cycle begin date
+   */
+  public Date getEditingCycleBeginDate();
+
+  /**
+   * Sets the editing cycle begin date.
+   *
+   * @param editingCycleBeginDate the editing cycle begin date
+   */
+  public void setEditingCycleBeginDate(Date editingCycleBeginDate);
+
+  /**
+   * Returns the latest publication date.
+   *
+   * @return the latest publication date
+   */
+  public Date getLatestPublicationDate();
+
+  /**
+   * Sets the latest publication date.
+   *
+   * @param latestPublicationDate the latest publication date
+   */
+  public void setLatestPublicationDate(Date latestPublicationDate);
+
+  /**
    * Returns the set of allowable map advices.
    * 
    * @return the map advices
@@ -200,33 +232,6 @@ public interface MapProject {
    * @param mapLead the map lead
    */
   public void removeMapLead(MapUser mapLead);
-
-  /**
-   * Returns the map administrators.
-   * 
-   * @return the map administrators
-   */
-  public Set<MapUser> getMapAdministrators();
-
-  /**
-   * Sets the map administrators.
-   * @param mapAdministrators the map administrators
-   */
-  public void setMapAdministrators(Set<MapUser> mapAdministrators);
-
-  /**
-   * Adds the map administrator.
-   * 
-   * @param mapAdministrator a map administrator
-   */
-  public void addMapAdministrator(MapUser mapAdministrator);
-
-  /**
-   * Removes the map administrator.
-   * 
-   * @param mapAdministrator the map administrator
-   */
-  public void removeMapAdministrator(MapUser mapAdministrator);
 
   /**
    * Returns the map specialists.
@@ -598,7 +603,9 @@ public interface MapProject {
   public void setPropagatedFlag(boolean propagatedFlag);
 
   /**
-   * Returns the report definitions.
+   * Returns the report definitions. NOTE: this also includes the QA Check
+   * definitions associated with this project. They can be differentiated via
+   * the "isQaCheck" method.
    *
    * @return the report definitions
    */
@@ -625,4 +632,17 @@ public interface MapProject {
    */
   public void removeReportDefinition(ReportDefinition reportDefinition);
 
+  /**
+   * Indicates whether or not team based is the case.
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public boolean isTeamBased();
+  
+  /**
+   * Sets the team based.
+   *
+   * @param teamBased the team based
+   */
+  public void setTeamBased(boolean teamBased);
 }

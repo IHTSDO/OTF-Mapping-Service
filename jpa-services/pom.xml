@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.0-SNAPSHOT</version>
     <relativePath>../parent</relativePath>
   </parent>
 
@@ -69,7 +69,7 @@
       <artifactId>mysql-connector-java</artifactId>
     </dependency>
 
-    <!-- Loggin -->
+    <!-- Logging -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
@@ -100,11 +100,13 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
     </dependency>
-    
-    <!--  Apache POI library -->
+
+    <!-- Apache POI library -->
     <dependency>
       <groupId>org.apache.poi</groupId>
       <artifactId>poi</artifactId>
     </dependency>
+
   </dependencies>
+
 </project>

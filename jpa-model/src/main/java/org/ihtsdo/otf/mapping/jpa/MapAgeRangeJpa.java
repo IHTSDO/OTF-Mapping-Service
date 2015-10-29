@@ -5,6 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -14,12 +15,14 @@ import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * Represents an age range.
- * 
- * @author ${author}
+ * A JPA enabled {@link MapAgeRange}.
  */
 @Entity
-@Table(name = "map_age_ranges")
+@Table(name = "map_age_ranges", uniqueConstraints = {
+  @UniqueConstraint(columnNames = {
+    "name"
+  })
+})
 @Audited
 @XmlRootElement(name = "mapAgeRange")
 @JsonIgnoreProperties(ignoreUnknown = true)

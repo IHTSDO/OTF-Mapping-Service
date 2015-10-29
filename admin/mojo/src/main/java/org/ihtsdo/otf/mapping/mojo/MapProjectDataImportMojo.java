@@ -7,6 +7,7 @@ import java.io.FilenameFilter;
 import java.io.StringReader;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Set;
 
 import javax.xml.bind.JAXBContext;
@@ -82,8 +83,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 
       File inputDirFile = new File(inputDir);
       if (!inputDirFile.exists()) {
-        throw new MojoFailureException(
-            "Specified input dir does not exist");
+        throw new MojoFailureException("Specified input dir does not exist");
       }
 
       // get all project .xml files
@@ -111,14 +111,13 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 
       // read project .xml files one at a time
       for (File projectFile : projectFiles) {
-        BufferedReader projectReader =
-            new BufferedReader(new FileReader(projectFile));
+        getLog().info("  Handling project file " + projectFile);
 
         // Unmarshal project from XML
         MapProject project =
             (MapProjectJpa) unmarshaller.unmarshal(new StreamSource(
-                new StringReader(projectReader.readLine())));
-        projectReader.close();
+                new StringReader(new Scanner(projectFile, "UTF-8")
+                    .useDelimiter("\\A").next())));
 
         // Add advices if they do not already exist
         Set<MapAdvice> advices = project.getMapAdvices();
@@ -179,7 +178,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
         // Add users
         Set<MapUser> leads = project.getMapLeads();
         Set<MapUser> specialists = project.getMapSpecialists();
-        Set<MapUser> admins = project.getMapAdministrators();
+
         List<MapUser> currentUsers = mappingService.getMapUsers().getMapUsers();
         for (MapUser user : leads) {
           if (!currentUsers.contains(user)) {
@@ -199,21 +198,14 @@ public class MapProjectDataImportMojo extends AbstractMojo {
             getLog().info("  User already exists " + user.getName());
           }
         }
-        for (MapUser user : admins) {
-          if (!currentUsers.contains(user)) {
-            getLog().info("  Adding user " + user.getName());
-            user.setId(null);
-            mappingService.addMapUser(user);
-          } else {
-            getLog().info("  User already exists " + user.getName());
-          }
-        }
 
         // Add report definitions if they don't already exist
         Set<ReportDefinition> reportDefinitions =
             project.getReportDefinitions();
         List<ReportDefinition> currentReportDefinitions =
             reportService.getReportDefinitions().getReportDefinitions();
+        currentReportDefinitions.addAll(reportService.getQACheckDefinitions()
+            .getReportDefinitions());
         for (ReportDefinition reportDefinition : reportDefinitions) {
           if (!currentReportDefinitions.contains(reportDefinition)) {
             getLog().info(
@@ -233,7 +225,6 @@ public class MapProjectDataImportMojo extends AbstractMojo {
         // clear copied project of all collections
         bareProject.setMapSpecialists(new HashSet<MapUser>());
         bareProject.setMapLeads(new HashSet<MapUser>());
-        bareProject.setMapAdministrators(new HashSet<MapUser>());
 
         bareProject.setMapAdvices(new HashSet<MapAdvice>());
         bareProject.setMapPrinciples(new HashSet<MapPrinciple>());
@@ -243,6 +234,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
         bareProject.setReportDefinitions(new HashSet<ReportDefinition>());
         bareProject.setScopeConcepts(new HashSet<String>());
         bareProject.setScopeExcludedConcepts(new HashSet<String>());
+        bareProject.setTeamBased(false);
         bareProject.setId(null);
 
         // add the blank project (because cascade is not used)
@@ -266,16 +258,6 @@ public class MapProjectDataImportMojo extends AbstractMojo {
           bareProject.addMapLead(user);
         }
         getLog().info("      count = " + bareProject.getMapLeads().size());
-        mappingService.updateMapProject(bareProject);
-
-        // attach administrators
-        getLog().info("    Attach administrators");
-        for (MapUser administrator : project.getMapAdministrators()) {
-          MapUser user = mappingService.getMapUser(administrator.getUserName());
-          bareProject.addMapAdministrator(user);
-        }
-        getLog().info(
-            "      count = " + bareProject.getMapAdministrators().size());
         mappingService.updateMapProject(bareProject);
 
         // attach advices

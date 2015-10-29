@@ -47,6 +47,13 @@ angular
       $scope.isConceptListOpen = false;
       $scope.queryAvailable = null;
 
+      // innitialize the search fields
+      $scope.queryAvailableWork = null;
+      $scope.queryAvailableReview = null;
+      $scope.queryAvailableConflict = null;
+      $scope.queryAvailableQaWork = null;
+      $scope.queryAvailableWorkForUser = null;
+
       // intiialize the user list
       $scope.mapUsers = {};
 
@@ -85,11 +92,14 @@ angular
         event, parameters) {
         console
           .debug("WorkAvailableCtrl:  Detected unassign work notification");
-        $scope.retrieveAvailableWork($scope.availableWorkPage);
-        $scope.retrieveAvailableQAWork($scope.availableQAWorkPage);
+        console
+          .debug($scope.queryAvailableWork, $scope.queryAvailableConflicts);
+        $scope.retrieveAvailableWork(1, $scope.queryAvailableWork);
+        $scope.retrieveAvailableQAWork(1, $scope.queryAvailableQaWork);
         if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Admin') {
-          $scope.retrieveAvailableConflicts($scope.availableConflictsPage);
-          $scope.retrieveAvailableReviewWork($scope.availableReviewWorkPage);
+          $scope.retrieveAvailableConflicts(1, $scope.queryAvailableConflicts);
+          $scope
+            .retrieveAvailableReviewWork(1, $scope.queryAvailableReviewWork);
         }
       });
 
@@ -240,7 +250,8 @@ angular
           {
             url : root_workflow + "project/id/" + $scope.focusProject.id
               + "/user/id/" + user.userName + "/query/"
-              + (query == null ? "null" : query) + "/availableConflicts",
+              + (query == null ? "null" : encodeURIComponent(query))
+              + "/availableConflicts",
             dataType : "json",
             data : pfsParameterObj,
             method : "POST",
@@ -305,7 +316,8 @@ angular
           {
             url : root_workflow + "project/id/" + $scope.focusProject.id
               + "/user/id/" + user.userName + "/query/"
-              + (query == null ? 'null' : query) + "/availableConcepts",
+              + (query == null ? "null" : encodeURIComponent(query))
+              + "/availableConcepts",
             dataType : "json",
             data : pfsParameterObj,
             method : "POST",
@@ -337,15 +349,11 @@ angular
         });
       };
 
-      $scope.retrieveAvailableQAWork = function(page, query, user) {
+      $scope.retrieveAvailableQAWork = function(page, query) {
         console.debug('workAvailableCtrl: Retrieving available qa work');
 
         // clear local error
         $scope.error = null;
-
-        // if user not supplied, assume current user
-        if (user == null || user == undefined)
-          user = $scope.currentUser;
 
         // clear the existing work
         $scope.availableQAWork = null;
@@ -359,6 +367,7 @@ angular
           $scope.queryAvailable = null;
 
         // construct a paging/filtering/sorting object
+        // if page is null, get all results
         var pfsParameterObj = {
           "startIndex" : (page - 1) * $scope.itemsPerPage,
           "maxResults" : $scope.itemsPerPage,
@@ -371,7 +380,8 @@ angular
         $http(
           {
             url : root_workflow + "project/id/" + $scope.focusProject.id
-              + "/query/" + (query == null ? 'null' : query)
+              + "/query/"
+              + (query == null ? "null" : encodeURIComponent(query))
               + "/availableQAWork",
             dataType : "json",
             data : pfsParameterObj,
@@ -405,8 +415,120 @@ angular
                 ' ');
             }
 
-            // $scope.availableCount = data.totalCount;
-            // console.debug(data.totalCount);
+          }).error(function(data, status, headers, config) {
+          $rootScope.glassPane--;
+          $rootScope.handleHttpError(data, status, headers, config);
+        });
+      };
+
+      $scope.removeQaWork = function(conceptId, query, page) {
+        console.debug('workAvailableCtrl: Removing qa work for ' + conceptId);
+
+        $rootScope.glassPane++;
+
+        // clear local error
+        $scope.error = null;
+
+        // call unassign for the QA user
+        // TODO: Get QA user name from cached metadata or a separate REST
+        // call
+        $http(
+          {
+            url : root_workflow + "unassign/project/id/"
+              + $scope.focusProject.id + "/concept/id/" + conceptId
+              + "/user/id/qa",
+            dataType : "json",
+            data : null,
+            method : "POST",
+            headers : {
+              "Content-Type" : "application/json"
+            }
+          }).success(function(data) {
+
+          $scope.retrieveAvailableQAWork(page, query)
+
+          $rootScope.glassPane--;
+
+        }).error(function(data, status, headers, config) {
+          $rootScope.glassPane--;
+          $rootScope.handleHttpError(data, status, headers, config);
+        });
+      };
+
+      $scope.removeAllQaWork = function(query) {
+        console.debug('workAvailableCtrl: Removing available qa work');
+
+        $rootScope.glassPane++;
+
+        // clear local error
+        $scope.error = null;
+
+        // clear the existing work
+        $scope.availableQAWork = null;
+
+        // set query to null if undefined
+        if (query == undefined)
+          query = null;
+
+        // if null query, reset the search field
+        if (query == null)
+          $scope.queryAvailable = null;
+
+        // construct a blank paging/filtering/sorting object
+        // unnecessary construction, but left in for possible future use
+        var pfsParameterObj = {
+          "startIndex" : -1,
+          "maxResults" : -1,
+          "sortField" : 'sortKey',
+          "queryRestriction" : null
+        };
+
+        // first, get the currently available work (refresh)
+        $http(
+          {
+            url : root_workflow + "project/id/" + $scope.focusProject.id
+              + "/query/"
+              + (query == null ? "null" : encodeURIComponent(query))
+              + "/availableQAWork",
+            dataType : "json",
+            data : pfsParameterObj,
+            method : "POST",
+            headers : {
+              "Content-Type" : "application/json"
+            }
+          }).success(
+          function(data) {
+
+            console.debug(data);
+
+            var workToUnassign = [];
+            for (var i = 0; i < data.searchResult.length; i++) {
+              workToUnassign.push(data.searchResult[i].terminologyId);
+            }
+
+            $http(
+              {
+                // TODO Get qa user name from either previously
+                // retrieved metadata
+                // or a separate REST call
+                url : root_workflow + "unassign/project/id/"
+                  + $scope.focusProject.id + "/user/id/qa/batch",
+                dataType : "json",
+                data : workToUnassign,
+                method : "POST",
+                headers : {
+                  "Content-Type" : "application/json"
+                }
+              }).success(function(data) {
+
+              $scope.retrieveAvailableQAWork(1, query);
+
+              $rootScope.glassPane--;
+
+            }).error(function(data, status, headers, config) {
+              $rootScope.glassPane--;
+              $rootScope.handleHttpError(data, status, headers, config);
+            });
 
           }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
@@ -450,7 +572,8 @@ angular
           {
             url : root_workflow + "project/id/" + $scope.focusProject.id
               + "/user/id/" + user.userName + "/query/"
-              + (query == null ? "null" : query) + "/availableReviewWork",
+              + (query == null ? "null" : encodeURIComponent(query))
+              + "/availableReviewWork",
             dataType : "json",
             data : pfsParameterObj,
             method : "POST",
@@ -498,7 +621,8 @@ angular
         console.debug(workType);
         console.debug(workPage);
         ;
-        // doublecheck map user and query, assign default values if necessary
+        // doublecheck map user and query, assign default values if
+        // necessary
         if (mapUser == null)
           mapUser = $scope.currentUser;
         if (query == undefined)
@@ -546,6 +670,8 @@ angular
       // assign a batch of records to the current user
       $scope.assignBatch = function(mapUser, batchSize, query) {
 
+        console.debug("workAvailable, assignBatch:", mapUser, batchSize, query);
+
         // set query to null string if not provided
         if (query == undefined)
           query == null;
@@ -587,7 +713,6 @@ angular
           .success(
             function(data) {
 
-             
               console.debug("Claim batch:  Checking against viewed concepts");
 
               var trackingRecords = data.searchResult;
@@ -596,15 +721,16 @@ angular
               console.debug(trackingRecords);
               console.debug($scope.availableWork);
 
-              // if user is assigning to self, check that first result matches
+              // if user is assigning to self, check that first result
+              // matches
               // first displayed result
               if ($scope.currentUser.userName === mapUser.userName) {
                 for (var i = 0; i < $scope.itemsPerPage && i < batchSize; i++) {
-                  console.debug(trackingRecords[i]);
-                  console.debug($scope.availableWork[i]);
                   if (trackingRecords[i].id != $scope.availableWork[i].id) {
-                    retrieveAvailableWork($scope.availableWorkPage, query);
-                    alert("One or more of the concepts you are viewing are not in the first available batch.  Please try again.  \n\nTo claim the first available batch, return to the first page and re-click 'Claim Batch'");
+                    $scope.retrieveAvailableWork($scope.availableWorkPage, query);
+                    alert("The list of available concepts has changed.  Please check the refreshed list and try again");
+		      $rootScope.glassPane--;
+		    return;
                     conceptListValid = false;
                   }
                 }
@@ -623,7 +749,6 @@ angular
 
                 console.debug("Calling batch assignment API");
 
-            
                 $http(
                   {
                     url : root_workflow + "assignBatch/project/id/"
@@ -671,6 +796,9 @@ angular
       // assign a batch of conflicts to the current user
       $scope.assignBatchConflict = function(mapUser, batchSize, query) {
 
+        console.debug("workAvailable, assignBatchConflict", mapUser, batchSize,
+          query);
+
         // set query to null string if not provided
         if (query == undefined)
           query == null;
@@ -678,14 +806,6 @@ angular
         if (mapUser == null || mapUser == undefined) {
           $scope.errorConflict = "Work recipient must be selected from list.";
           return;
-        }
-        ;
-
-        if (batchSize > $scope.nAvailableConflicts) {
-          $scope.errorConflict = "Batch size is greater than available number of conflicts.";
-          return;
-        } else {
-          $scope.errorConflict = null;
         }
 
         // construct a paging/filtering/sorting object
@@ -712,7 +832,6 @@ angular
           .success(
             function(data) {
 
-             
               console.debug("Claim batch:  Checking against viewed conflicts");
 
               var trackingRecords = data.searchResult;
@@ -721,7 +840,8 @@ angular
               console.debug(trackingRecords);
               console.debug($scope.availableConflicts);
 
-              // if user is viewing conflicts, confirm that the returned batch
+              // if user is viewing conflicts, confirm that the returned
+              // batch
               // matches the displayed conflicts
               if ($scope.currentUser.userName === mapUser.userName) {
                 for (var i = 0; i < $scope.itemsPerPage && i < batchSize
@@ -729,8 +849,8 @@ angular
                   console.debug(trackingRecords[i]);
                   console.debug($scope.availableWork[i]);
                   if (trackingRecords[i].id != $scope.availableWork[i].id) {
-                    retrieveAvailableWork($scope.availableWorkPage, query);
-                    alert("One or more of the conflicts you are viewing are not in the first available batch.  Please try again.  \n\nTo claim the first available batch, leave the Viewer closed and click 'Claim Batch'");
+                    $scope.retrieveAvailableWork($scope.availableWorkPage, query);
+                    alert("The available conflicts list has changed since loading.  Please review the new available conflicts and try again.");
                     $scope.isConceptListOpen = false;
                     conceptListValid = false;
                   }
@@ -806,14 +926,6 @@ angular
           $scope.errorReview = "Work recipient must be selected from list.";
           return;
         }
-        ;
-
-        if (batchSize > $scope.nAvailableReviewWork) {
-          $scope.errorReview = "Batch size is greater than available number of review items.";
-          return;
-        } else {
-          $scope.errorReview = null;
-        }
 
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
@@ -839,22 +951,22 @@ angular
           .success(
             function(data) {
 
-            
               console
                 .debug("Claim batch:  Checking against viewed review work");
 
               var trackingRecords = data.searchResult;
               var conceptListValid = true;
 
-              // if user is viewing conflicts, confirm that the returned batch
+              // if user is viewing conflicts, confirm that the returned
+              // batch
               // matches the displayed conflicts
               if ($scope.currentUser.userName === mapUser.userName) {
                 for (var i = 0; i < $scope.itemsPerPage && i < batchSize
                   && i < $scope.availableReviewWork; i++) {
 
                   if (trackingRecords[i].id != $scope.availableReviewWork[i].id) {
-                    retrieveAvailableWork($scope.availableWorkPage, query);
-                    alert("One or more of the conflicts you are viewing are not in the first available batch.  Please try again.  \n\nTo claim the first available batch, leave the Viewer closed and click 'Claim Batch'");
+                    $scope.retrieveAvailableWork($scope.availableWorkPage, query);
+                    alert("The list of available review work has changed.  Please check the refreshed list and try again.");
                     $scope.isConceptListOpen = false;
                     conceptListValid = false;
                   }
@@ -931,14 +1043,6 @@ angular
           $scope.errorReview = "Work recipient must be selected from list.";
           return;
         }
-        ;
-
-        if (batchSize > $scope.nAvailableQAWork) {
-          $scope.errorReview = "Batch size is greater than available number of qa items.";
-          return;
-        } else {
-          $scope.errorReview = null;
-        }
 
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
@@ -969,7 +1073,8 @@ angular
               var trackingRecords = data.searchResult;
               var conceptListValid = true;
 
-              // if user is viewing conflicts, confirm that the returned batch
+              // if user is viewing conflicts, confirm that the returned
+              // batch
               // matches the displayed conflicts
               if ($scope.currentUser.userName === mapUser.userName) {
                 for (var i = 0; i < $scope.itemsPerPage && i < batchSize
@@ -977,7 +1082,7 @@ angular
 
                   if (trackingRecords[i].id != $scope.availableQAWork[i].id) {
                     retrieveAvailableQAWork($scope.availableQAWorkPage, query);
-                    alert("One or more of the qa items you are viewing are not in the first available batch.  Please try again.  \n\nTo claim the first available batch, leave the Viewer closed and click 'Claim Batch'");
+                    alert("The list of available QA work has changed.  Please check the refreshed list and try again.");
                     $scope.isConceptListOpen = false;
                     conceptListValid = false;
                   }
@@ -997,7 +1102,6 @@ angular
 
                 console.debug("Calling batch assignment API");
 
-                $rootScope.glassPane++;
                 $http(
                   {
                     url : root_workflow + "assignBatch/project/id/"
