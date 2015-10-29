@@ -59,6 +59,7 @@ public class SecurityServiceRest extends RootServiceRest {
     try {
       return securityService.authenticate(username, password);
     } catch (LocalException e) {
+      e.printStackTrace();
       Logger.getLogger(SecurityServiceRest.class).error(
           "Local exception thrown");
       throw new WebApplicationException(Response.status(401)
