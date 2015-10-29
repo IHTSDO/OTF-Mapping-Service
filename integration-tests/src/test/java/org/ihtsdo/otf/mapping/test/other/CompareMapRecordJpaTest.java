@@ -4,11 +4,13 @@ import static org.junit.Assert.fail;
 
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
+import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRelationJpa;
 import org.ihtsdo.otf.mapping.jpa.handlers.DefaultProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
+import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.junit.AfterClass;
@@ -50,6 +52,8 @@ public class CompareMapRecordJpaTest {
     relation1.setAbbreviation("NC");
     entry1.setMapRelation(relation1);
     record1.addMapEntry(entry1);
+    record1.setMapProjectId(1L);
+    record1.setConceptId("1");
 
     MapRecord record2 = new MapRecordJpa();
     MapEntry entry2 = new MapEntryJpa();
@@ -60,7 +64,12 @@ public class CompareMapRecordJpaTest {
     relation2.setAbbreviation("NC");
     entry2.setMapRelation(relation2);
     record2.addMapEntry(entry2);
+    record2.setMapProjectId(1L);
+    record2.setConceptId("1");
 
+    MapProject p = new MapProjectJpa();
+    p.setId(1L);
+    handler.setMapProject(p);
     if (!handler.compareMapRecords(record1, record2).isValid()) {
       fail("testSingleGroupSingleEntryMatching failed!");
     }
@@ -79,22 +88,32 @@ public class CompareMapRecordJpaTest {
     MapEntry entry1 = new MapEntryJpa();
     entry1.setMapGroup(1);
     entry1.setTargetId("T1");
-    entry1.setRule("TRUE");
+    entry1.setRule("ABC");
     MapRelation relation1 = new MapRelationJpa();
+    relation1.setId(1L);
     relation1.setAbbreviation("NC");
     entry1.setMapRelation(relation1);
     record1.addMapEntry(entry1);
+    record1.setMapProjectId(1L);
+    record1.setConceptId("1");
 
     MapRecord record2 = new MapRecordJpa();
     MapEntry entry2 = new MapEntryJpa();
     entry2.setMapGroup(1);
     entry2.setTargetId("T1");
-    entry2.setRule("FALSE");
+    entry2.setRule("DEF");
     MapRelation relation2 = new MapRelationJpa();
+    relation2.setId(1L);
     relation2.setAbbreviation("NC");
     entry2.setMapRelation(relation2);
     record2.addMapEntry(entry2);
+    record2.setMapProjectId(1L);
+    record2.setConceptId("1");
 
+    MapProject p = new MapProjectJpa();
+    p.setId(1L);
+    p.setRuleBased(true);
+    handler.setMapProject(p);
     if (handler.compareMapRecords(record1, record2).isValid()) {
       fail("testSingleGroupSingleEntryDifferentRules failed!");
     }
@@ -118,6 +137,8 @@ public class CompareMapRecordJpaTest {
     relation1.setId(1L);
     entry1.setMapRelation(relation1);
     record1.addMapEntry(entry1);
+    record1.setMapProjectId(1L);
+    record1.setConceptId("1");
 
     MapRecord record2 = new MapRecordJpa();
     MapEntry entry2 = new MapEntryJpa();
@@ -128,6 +149,12 @@ public class CompareMapRecordJpaTest {
     relation2.setId(2L);
     entry2.setMapRelation(relation2);
     record2.addMapEntry(entry2);
+    record1.setMapProjectId(2L);
+    record1.setConceptId("2");
+
+    MapProject p = new MapProjectJpa();
+    p.setId(1L);
+    handler.setMapProject(p);
 
     if (handler.compareMapRecords(record1, record2).isValid()) {
       fail("testSingleGroupSingleEntryDifferentRelationId failed!");
@@ -162,6 +189,8 @@ public class CompareMapRecordJpaTest {
     entry1.addMapAdvice(advice1);
     entry1.addMapAdvice(advice2);
     record1.addMapEntry(entry1);
+    record1.setMapProjectId(1L);
+    record1.setConceptId("1");
 
     MapRecord record2 = new MapRecordJpa();
     MapEntry entry2 = new MapEntryJpa();
@@ -178,7 +207,12 @@ public class CompareMapRecordJpaTest {
     entry2.addMapAdvice(advice1);
     entry2.addMapAdvice(advice3);
     record2.addMapEntry(entry2);
+    record2.setMapProjectId(1L);
+    record2.setConceptId("1");
 
+    MapProject p = new MapProjectJpa();
+    p.setId(1L);
+    handler.setMapProject(p);
     if (handler.compareMapRecords(record1, record2).isValid()) {
       fail("testSingleGroupSingleEntryDifferentAdviceLists failed!");
     }
@@ -228,12 +262,19 @@ public class CompareMapRecordJpaTest {
     MapRecord record1 = new MapRecordJpa();
     record1.addMapEntry(entry1);
     record1.addMapEntry(entry2);
+    record1.setMapProjectId(1L);
+    record1.setConceptId("1");
 
     MapRecord record2 = new MapRecordJpa();
     record2.addMapEntry(entry1);
     record2.addMapEntry(entry2);
+    record2.setMapProjectId(1L);
+    record2.setConceptId("1");
 
-    if (handler.compareMapRecords(record1, record2).isValid()) {
+    MapProject p = new MapProjectJpa();
+    p.setId(1L);
+
+    if (!handler.compareMapRecords(record1, record2).isValid()) {
       fail("testSingleGroupMultipleEntriesSameOrder failed!");
     }
   }
@@ -282,11 +323,19 @@ public class CompareMapRecordJpaTest {
     MapRecord record1 = new MapRecordJpa();
     record1.addMapEntry(entry1);
     record1.addMapEntry(entry2);
+    record1.setMapProjectId(1L);
+    record1.setConceptId("1");
 
     MapRecord record2 = new MapRecordJpa();
     record2.addMapEntry(entry2);
     record2.addMapEntry(entry1);
+    record2.setMapProjectId(1L);
+    record2.setConceptId("1");
 
+    MapProject p = new MapProjectJpa();
+    p.setId(1L);
+    handler.setMapProject(p);
+  
     if (!handler.compareMapRecords(record1, record2).isValid()) {
       fail("testSingleGroupMultipleEntriesDifferentOrder failed!");
     }
@@ -345,12 +394,19 @@ public class CompareMapRecordJpaTest {
     record1.addMapEntry(entry1);
     record1.addMapEntry(entry2);
     record1.addMapEntry(entry3);
+    record1.setMapProjectId(1L);
+    record1.setConceptId("1");
 
     MapRecord record2 = new MapRecordJpa();
     record2.addMapEntry(entry1);
     record2.addMapEntry(entry2);
     record2.addMapEntry(entry3);
+    record2.setMapProjectId(1L);
+    record2.setConceptId("1");
 
+    MapProject p = new MapProjectJpa();
+    p.setId(1L);
+    handler.setMapProject(p);
     if (!handler.compareMapRecords(record1, record2).isValid()) {
       fail("testMultipleGroupsEntriesMatching failed!");
     }
@@ -417,12 +473,19 @@ public class CompareMapRecordJpaTest {
     record1.addMapEntry(entry1);
     record1.addMapEntry(entry2);
     record1.addMapEntry(entry3);
+    record1.setMapProjectId(1L);
+    record1.setConceptId("1");
 
     MapRecord record2 = new MapRecordJpa();
     record2.addMapEntry(entry1);
     record2.addMapEntry(entry2);
     record2.addMapEntry(entry4);
+    record2.setMapProjectId(1L);
+    record2.setConceptId("1");
 
+    MapProject p = new MapProjectJpa();
+    p.setId(1L);
+    handler.setMapProject(p);
     if (handler.compareMapRecords(record1, record2).isValid()) {
       fail("testMultipleGroupsFirstGroupMatching failed!");
     }
@@ -480,12 +543,19 @@ public class CompareMapRecordJpaTest {
     MapRecord record1 = new MapRecordJpa();
     record1.addMapEntry(entry1);
     record1.addMapEntry(entry2);
+    record1.setMapProjectId(1L);
+    record1.setConceptId("1");
 
     MapRecord record2 = new MapRecordJpa();
     record2.addMapEntry(entry1);
     record2.addMapEntry(entry2);
     record2.addMapEntry(entry4);
+    record2.setMapProjectId(1L);
+    record2.setConceptId("1");
 
+    MapProject p = new MapProjectJpa();
+    p.setId(1L);
+    handler.setMapProject(p);
     if (handler.compareMapRecords(record1, record2).isValid()) {
       fail("testMultipleGroupsDifferentNumbersOfGroups failed!");
     }

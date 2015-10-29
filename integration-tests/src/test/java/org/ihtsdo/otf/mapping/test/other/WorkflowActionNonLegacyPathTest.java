@@ -99,7 +99,11 @@ public class WorkflowActionNonLegacyPathTest {
       mappingService.removeMapRecord(mp.getId());
 
     for (MapUser mu : mappingService.getMapUsers().getIterable())
-      mappingService.removeMapUser(mu.getId());
+      if (!mu.getUserName().equals("guest")
+          && !mu.getUserName().equals("loader")
+          && !mu.getUserName().equals("qa")) {
+        mappingService.removeMapUser(mu.getId());
+      }
 
     for (TrackingRecord tr : workflowService.getTrackingRecords().getIterable())
       workflowService.removeTrackingRecord(tr.getId());
