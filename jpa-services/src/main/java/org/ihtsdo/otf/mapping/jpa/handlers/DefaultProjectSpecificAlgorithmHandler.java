@@ -174,13 +174,11 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     validationResult.merge(checkMapRecordNcNodes(mapRecord, entryGroups));
 
     /*
-     * Entry Validation Checks 
-     * Verify no duplicate entries in record 
-     * Verify advice values are valid for the project (this can happen if
-     * allowable map advice changes without updating map entries) 
-     * Entry must have target code that is both in the target terminology and
-     * valid (e.g. leaf nodes) OR have a relationId corresponding to a valid map
-     * category
+     * Entry Validation Checks Verify no duplicate entries in record Verify
+     * advice values are valid for the project (this can happen if allowable map
+     * advice changes without updating map entries) Entry must have target code
+     * that is both in the target terminology and valid (e.g. leaf nodes) OR
+     * have a relationId corresponding to a valid map category
      */
 
     // Validation Check: verify entries are not duplicated
@@ -353,18 +351,19 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         }
       }
 
-    // otherwise check TRUE rules and gender rules (Female must be before Male)
+      // otherwise check TRUE rules and gender rules (Female must be before
+      // Male)
     } else {
 
-      // cycle over the groups and note if there are both female and 
+      // cycle over the groups and note if there are both female and
       // male entries in a group
       for (Integer key : entryGroups.keySet()) {
-        
+
         int maleEntry = 0;
         int femaleEntry = 0;
-        
-        for (int i=1; i<entryGroups.get(key).size() + 1; i++) {
-          MapEntry entry = entryGroups.get(key).get(i-1);
+
+        for (int i = 1; i < entryGroups.get(key).size() + 1; i++) {
+          MapEntry entry = entryGroups.get(key).get(i - 1);
           if (entry.getRule().contains("Male")) {
             maleEntry = i;
           }
@@ -372,18 +371,18 @@ public class DefaultProjectSpecificAlgorithmHandler implements
             femaleEntry = i;
           }
         }
-        
+
         // ensure female entry is before male entry
         if (femaleEntry != 0 && maleEntry != 0) {
-          if (femaleEntry > maleEntry) 
+          if (femaleEntry > maleEntry)
             validationResult
-            .addError("Female rule must be ordered before the male rule.");
+                .addError("Female rule must be ordered before the male rule.");
         }
       }
-      
+
       // cycle over the groups
       for (Integer key : entryGroups.keySet()) {
-        
+
         for (MapEntry mapEntry : entryGroups.get(key)) {
 
           Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
@@ -681,6 +680,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
       boolean outOfOrderFlag = false;
       boolean missingEntry = false;
 
+      System.out.println("strings1=" + stringEntries1);
+      System.out.println("strings2=" + stringEntries2);
       for (int d = 0; d < Math
           .min(stringEntries1.size(), stringEntries2.size()); d++) {
 
@@ -997,7 +998,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
           // check that only one record exists for this tracking record
           if (!(trackingRecord.getMapRecordIds().size() == 1)) {
-            // System.out.println(trackingRecord.toString());
             throw new Exception(
                 "DefaultProjectSpecificHandlerException - assignFromInitialRecord: More than one record exists for FIX_ERROR_PATH assignment.");
           }
@@ -1048,7 +1048,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
           // check that only one record exists for this tracking record
           if (!(trackingRecord.getMapRecordIds().size() == 1)) {
-            // System.out.println(trackingRecord.toString());
             throw new Exception(
                 "DefaultProjectSpecificHandlerException - assignFromInitialRecord: More than one record exists for QA_PATH assignment.");
           }
@@ -1112,10 +1111,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
     // the list of map records to return
     Set<MapRecord> newRecords = new HashSet<>(mapRecords);
-
-    // for (MapRecord mr : mapRecords) {
-    // System.out.println(mr.toString());
-    // }
 
     // create new record
     MapRecord mapRecord = new MapRecordJpa();
@@ -1220,7 +1215,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
           // check that only two records exists for this tracking record
           if (!(trackingRecord.getMapRecordIds().size() == 2)) {
-            // System.out.println(trackingRecord.toString());
             throw new Exception(
                 "assignFromScratch: There are not two records for FIX_ERROR_PATH assignment.");
           }
@@ -1428,23 +1422,18 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         MapRecord editingRecord = null;
         MapRecord reviewRecord = null;
         for (MapRecord mr : mapRecords) {
-          System.out.println(mr.toString());
           if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
-
             revisionRecord = mr;
-            System.out.println("Revision record: " + mr.toString());
           } else if (mr.getWorkflowStatus().equals(WorkflowStatus.NEW)
               || mr.getWorkflowStatus().equals(
                   WorkflowStatus.EDITING_IN_PROGRESS)
               || mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED)) {
             editingRecord = mr;
-            System.out.println("Editing record:  " + mr.toString());
           } else if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW)
               || mr.getWorkflowStatus().equals(
                   WorkflowStatus.REVIEW_IN_PROGRESS)
               || mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_RESOLVED)) {
             reviewRecord = mr;
-            System.out.println("Review record:   " + mr.toString());
           }
         }
 
@@ -2334,7 +2323,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
         // if there are multiple records on this tracking record
         // for a particular user, return the one with highest workflow status
-                
+
         // EXCEPTION: Never return a REVISION record
         if (!mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
           if (mapRecord != null) {
@@ -2390,7 +2379,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     // published/ready-for-publication
     // state record is found
     for (MapRecord revision : revisions) {
-      // System.out.println("Previous record = " + revision.toString());
       if (revision.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)
           || revision.getWorkflowStatus().equals(
               WorkflowStatus.READY_FOR_PUBLICATION)) {
@@ -2416,7 +2404,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements
   public WorkflowStatus getWorkflowStatus(Set<MapRecord> mapRecords) {
     WorkflowStatus workflowStatus = WorkflowStatus.NEW;
     for (MapRecord mr : mapRecords) {
-      // System.out.println(mr.getWorkflowStatus());
       if (mr.getWorkflowStatus().compareTo(workflowStatus) > 0)
         workflowStatus = mr.getWorkflowStatus();
     }

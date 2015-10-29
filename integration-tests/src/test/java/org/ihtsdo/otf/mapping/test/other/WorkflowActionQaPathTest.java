@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Arrays;
 import java.util.Date;
 
+import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.MapRefsetPattern;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.RelationStyle;
@@ -24,6 +25,7 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.Concept;
+import org.ihtsdo.otf.mapping.rf2.Relationship;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
@@ -78,8 +80,6 @@ public class WorkflowActionQaPathTest {
   @BeforeClass
   public static void init() throws Exception {
 
-    System.out.println("Initialization");
-
     // instantiate the services
     contentService = new ContentServiceJpa();
     mappingService = new MappingServiceJpa();
@@ -91,14 +91,24 @@ public class WorkflowActionQaPathTest {
     System.out.println(handler.getWorkflowStatusCombinations());
 
     // ensure database is clean
-    for (Concept c : contentService.getConcepts().getIterable())
+    for (Concept c : contentService.getConcepts().getIterable()) {
+      for (Relationship r : c.getRelationships()) {
+        contentService.removeRelationship(r.getId());
+      }
+    }
+    for (Concept c : contentService.getConcepts().getIterable()) {
       contentService.removeConcept(c.getId());
+    }
 
     for (MapProject mp : mappingService.getMapProjects().getIterable())
       mappingService.removeMapProject(mp.getId());
 
     for (MapUser mu : mappingService.getMapUsers().getIterable())
-      mappingService.removeMapUser(mu.getId());
+      if (!mu.getUserName().equals("guest")
+          && !mu.getUserName().equals("loader")
+          && !mu.getUserName().equals("qa")) {
+        mappingService.removeMapUser(mu.getId());
+      }
 
     for (TrackingRecord tr : workflowService.getTrackingRecords().getIterable())
       workflowService.removeTrackingRecord(tr.getId());
@@ -112,6 +122,7 @@ public class WorkflowActionQaPathTest {
     concept.setTerminology("sourceTerminology");
     concept.setTerminologyVersion("sourceTerminologyVersion");
     concept.setTerminologyId("1");
+    concept.setLabel("integration-test");
     contentService.addConcept(concept);
 
     // instantiate and add the users
@@ -130,12 +141,7 @@ public class WorkflowActionQaPathTest {
     mappingService.addMapUser(specialist);
 
     // instantiate and add the loader user, used for REVISION records
-    loader = new MapUserJpa();
-    loader.setApplicationRole(MapUserRole.VIEWER);
-    loader.setEmail("none");
-    loader.setName("Loader");
-    loader.setUserName("loader");
-    mappingService.addMapUser(loader);
+    loader = mappingService.getMapUser("loader");
 
     // instantiate the project
     mapProject = new MapProjectJpa();
@@ -171,10 +177,14 @@ public class WorkflowActionQaPathTest {
    */
   @Test
   public void testQaNeededState() throws Exception {
+    Logger.getLogger(getClass()).info("TEST qa needed state");
+
 
     // clear existing records
+    Logger.getLogger(getClass()).info("  clear record");
     clearMapRecords();
 
+    Logger.getLogger(getClass()).info("  create revision record");
     // create revision and specialist record
     revisionRecord = createRecord(loader, WorkflowStatus.REVISION);
     mappingService.addMapRecord(revisionRecord);
@@ -324,7 +334,7 @@ public class WorkflowActionQaPathTest {
 
       // Test: viewer
       ValidationResult result = testAllActionsForUser(viewer);
-
+      System.out.println("result="+result);
       // all actions except cancel should fail
       for (WorkflowAction action : WorkflowAction.values()) {
         switch (action) {
