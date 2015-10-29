@@ -1,6 +1,5 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
-import java.io.File;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,7 +10,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
@@ -19,25 +17,14 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
 
 import org.apache.log4j.Logger;
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.KeywordAnalyzer;
-import org.apache.lucene.analysis.PerFieldAnalyzerWrapper;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.document.Document;
 import org.apache.lucene.index.FieldInfo;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryParser.MultiFieldQueryParser;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
-import org.apache.lucene.queryParser.QueryParser.Operator;
-import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
-import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.ReaderUtil;
 import org.apache.lucene.util.Version;
 import org.hibernate.search.SearchFactory;
@@ -71,6 +58,8 @@ import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionListJpa;
 import org.ihtsdo.otf.mapping.helpers.TreePositionReferencedConcept;
 import org.ihtsdo.otf.mapping.helpers.TreePositionReferencedConceptJpa;
+import org.ihtsdo.otf.mapping.helpers.ValidationResult;
+import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.rf2.AttributeValueRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
@@ -91,7 +80,6 @@ import org.ihtsdo.otf.mapping.rf2.jpa.SimpleRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
-import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 /**
  * The Content Services for the Jpa model.
@@ -107,14 +95,14 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
   /** The compute tree position last time. */
   Long computeTreePositionLastTime;
 
+  /** The compute tree position validation result */
+  ValidationResult computeTreePositionValidationResult;
+
   /** The tree position field names. */
   private static Set<String> treePositionFieldNames;
 
   /** The concept field names. */
   private static Set<String> conceptFieldNames;
-
-  /** Track main level label by first component of link */
-  private Map<String, String> linkToLabelMap = new HashMap<>();
 
   /**
    * Instantiates an empty {@link ContentServiceJpa}.
@@ -259,6 +247,94 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       ConceptList conceptList = new ConceptListJpa();
       conceptList.setConcepts(concepts);
       return conceptList;
+    } catch (NoResultException e) {
+      e.printStackTrace();
+      Logger.getLogger(ContentServiceJpa.class).debug(
+          "Concept query terminology = " + terminology
+              + ", terminologyVersion = " + terminologyVersion
+              + " returned no results!");
+      return null;
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public RelationshipList getAllActiveRelationships(String terminology,
+    String terminologyVersion) {
+    javax.persistence.Query query =
+        manager
+            .createQuery("select r from RelationshipJpa r where active = 1 "
+                + " and terminologyVersion = :terminologyVersion and terminology = :terminology");
+    /*
+     * Try to retrieve the single expected result If zero or more than one
+     * result are returned, log error and set result to null
+     */
+    try {
+      query.setParameter("terminology", terminology);
+      query.setParameter("terminologyVersion", terminologyVersion);
+      List<Relationship> relationships = query.getResultList();
+      RelationshipList relationshipList = new RelationshipListJpa();
+      relationshipList.setRelationships(relationships);
+      return relationshipList;
+    } catch (NoResultException e) {
+      e.printStackTrace();
+      Logger.getLogger(ContentServiceJpa.class).debug(
+          "Relationship query terminology = " + terminology
+              + ", terminologyVersion = " + terminologyVersion
+              + " returned no results!");
+      return null;
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public DescriptionList getAllActiveDescriptions(String terminology,
+    String terminologyVersion) {
+    javax.persistence.Query query =
+        manager
+            .createQuery("select d from DescriptionJpa d where active = 1 "
+                + " and terminologyVersion = :terminologyVersion and terminology = :terminology");
+    /*
+     * Try to retrieve the single expected result If zero or more than one
+     * result are returned, log error and set result to null
+     */
+    try {
+      query.setParameter("terminology", terminology);
+      query.setParameter("terminologyVersion", terminologyVersion);
+      List<Description> descriptions = query.getResultList();
+      DescriptionList descriptionList = new DescriptionListJpa();
+      descriptionList.setDescriptions(descriptions);
+      return descriptionList;
+    } catch (NoResultException e) {
+      e.printStackTrace();
+      Logger.getLogger(ContentServiceJpa.class).debug(
+          "Concept query terminology = " + terminology
+              + ", terminologyVersion = " + terminologyVersion
+              + " returned no results!");
+      return null;
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public LanguageRefSetMemberList getAllActiveLanguageRefSetMembers(
+    String terminology, String terminologyVersion) {
+    javax.persistence.Query query =
+        manager
+            .createQuery("select l from LanguageRefSetMemberJpa l where active = 1"
+                + " and terminologyVersion = :terminologyVersion and terminology = :terminology");
+    /*
+     * Try to retrieve the single expected result If zero or more than one
+     * result are returned, log error and set result to null
+     */
+    try {
+      query.setParameter("terminology", terminology);
+      query.setParameter("terminologyVersion", terminologyVersion);
+      List<LanguageRefSetMember> languageRefSetMembers = query.getResultList();
+      LanguageRefSetMemberList languageRefSetMemberList =
+          new LanguageRefSetMemberListJpa();
+      languageRefSetMemberList.setLanguageRefSetMembers(languageRefSetMembers);
+      return languageRefSetMemberList;
     } catch (NoResultException e) {
       e.printStackTrace();
       Logger.getLogger(ContentServiceJpa.class).debug(
@@ -1399,6 +1475,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     query.setParameter("terminologyId", terminologyId);
 
     // get the first tree position
+    query.setMaxResults(1);
     List<String> ancestorPaths = query.getResultList();
 
     // skip construction if no ancestor path was found
@@ -1524,60 +1601,33 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
    * org.ihtsdo.otf.mapping.services.ContentService#clearTreePositions(java.
    * lang.String, java.lang.String)
    */
-  @SuppressWarnings("unchecked")
   @Override
   public void clearTreePositions(String terminology, String terminologyVersion)
     throws Exception {
 
-    Logger.getLogger(this.getClass()).info(
-        "Removing tree positions via object-management for " + terminology
-            + ", " + terminologyVersion);
-
-    // if currently in transaction-per-operation mode, temporarily set to
-    // false
-    boolean currentTransactionStrategy = getTransactionPerOperation();
     if (getTransactionPerOperation()) {
-      this.setTransactionPerOperation(false);
+      tx.begin();
+
+      javax.persistence.Query query =
+          manager
+              .createQuery("DELETE From TreePositionJpa c where terminology = :terminology and terminologyVersion = :terminologyVersion");
+      query.setParameter("terminology", terminology);
+      query.setParameter("terminologyVersion", terminologyVersion);
+      int deleteRecords = query.executeUpdate();
+      Logger.getLogger(getClass()).info(
+          "    treepos records deleted: " + deleteRecords);
+      tx.commit();
+
+    } else {
+      javax.persistence.Query query =
+          manager
+              .createQuery("DELETE From TreePositionJpa c where terminology = :terminology and terminologyVersion = :terminologyVersion");
+      query.setParameter("terminology", terminology);
+      query.setParameter("terminologyVersion", terminologyVersion);
+      int deleteRecords = query.executeUpdate();
+      Logger.getLogger(getClass()).info(
+          "    treepos records deleted: " + deleteRecords);
     }
-
-    int results = 0; // progress tracker
-    int commitSize = 5000; // retrieval/delete batch size
-
-    javax.persistence.Query query =
-        manager
-            .createQuery("select tp from TreePositionJpa tp where terminology = :terminology and terminologyVersion = :terminologyVersion");
-    query.setParameter("terminology", terminology);
-    query.setParameter("terminologyVersion", terminologyVersion);
-
-    query.setFirstResult(0);
-    query.setMaxResults(commitSize);
-
-    boolean resultsFound = true;
-
-    while (resultsFound) {
-
-      List<TreePosition> treePositions = query.getResultList();
-
-      if (treePositions.size() == 0)
-        resultsFound = false;
-
-      this.beginTransaction();
-      for (TreePosition tp : treePositions) {
-        this.removeTreePosition(tp.getId());
-      }
-      this.commit();
-
-      results += commitSize;
-
-      Logger.getLogger(this.getClass()).info(
-          "  " + results + " tree positions deleted");
-    }
-
-    Logger.getLogger(this.getClass()).info(
-        "Finished:  deleted " + results + " tree positions");
-
-    // set the transaction strategy based on status starting this routine
-    setTransactionPerOperation(currentTransactionStrategy);
 
   }
 
@@ -1589,7 +1639,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
    * .lang.String, java.lang.String, java.lang.String, java.lang.String)
    */
   @Override
-  public void computeTreePositions(String terminology,
+  public ValidationResult computeTreePositions(String terminology,
     String terminologyVersion, String typeId, String rootId) throws Exception {
     Logger.getLogger(this.getClass()).info(
         "Starting computeTreePositions - " + rootId + ", " + terminology
@@ -1601,6 +1651,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     computeTreePositionTotalCount = 0;
     computeTreePositionMaxMemoryUsage = 0L;
     computeTreePositionLastTime = System.currentTimeMillis();
+    computeTreePositionValidationResult = new ValidationResultJpa();
 
     // System.setOut(new PrintStream(new
     // FileOutputStream("C:/Users/Patrick/Documents/WCI/Working Notes/TreePositionRuns/computeTreePositions_"
@@ -1615,8 +1666,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     computeTreePositionTransaction.begin();
 
     // begin the recursive computation
-    computeTreePositionsHelper(rootConcept, typeId, "",
-        computeTreePositionCommitCt, computeTreePositionTransaction);
+    computeTreePositionsHelper(null, rootConcept, Long.valueOf(typeId), "",
+        computeTreePositionCommitCt, computeTreePositionTransaction, false);
 
     // commit any remaining tree positions
     computeTreePositionTransaction.commit();
@@ -1625,6 +1676,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     Logger.getLogger(this.getClass()).info(
         "Final Tree Positions: " + computeTreePositionTotalCount
             + ", MEMORY USAGE: " + runtime.totalMemory());
+
+    return computeTreePositionValidationResult;
 
   }
 
@@ -1640,129 +1693,213 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
    * @param ancestorPath the ancestor path
    * @param computeTreePositionCommitCt the compute tree position commit ct
    * @param computeTreePositionTransaction the compute tree position transaction
+   * @param cycleCheckOnly the cycle check only
    * @return tree positions at this level
    * @throws Exception the exception
    */
   @SuppressWarnings("unused")
-  private Set<Long> computeTreePositionsHelper(Concept concept, String typeId,
-    String ancestorPath, int computeTreePositionCommitCt,
-    EntityTransaction computeTreePositionTransaction) throws Exception {
+  private Set<Long> computeTreePositionsHelper(Map<Long, Set<Long>> parChd,
+    Concept concept, Long typeId, String ancestorPath,
+    int computeTreePositionCommitCt,
+    EntityTransaction computeTreePositionTransaction, boolean cycleCheckOnly)
+    throws Exception {
+
+    // Get all relationships
+    Map<Long, Set<Long>> localParChd = parChd;
+    if (localParChd == null) {
+      Logger.getLogger(this.getClass()).info(
+          "  Loading relationships " + typeId);
+      localParChd = new HashMap<>();
+      @SuppressWarnings("unchecked")
+      List<Relationship> relationships =
+          manager
+              .createQuery(
+                  "select r from RelationshipJpa r where "
+                      + "terminologyVersion = :terminologyVersion and terminology = :terminology "
+                      + "and typeId = :typeId and active = 1 "
+                      + "and sourceConcept in (select sc from ConceptJpa sc where active = 1)")
+              .setParameter("typeId", typeId)
+              .setParameter("terminology", concept.getTerminology())
+              .setParameter("terminologyVersion",
+                  concept.getTerminologyVersion()).getResultList();
+      int ct = 0;
+      for (Relationship r : relationships) {
+        ct++;
+        final Concept sourceConcept = r.getSourceConcept();
+        final Concept destinationConcept = r.getDestinationConcept();
+        if (!localParChd.containsKey(destinationConcept.getId())) {
+          localParChd.put(destinationConcept.getId(), new HashSet<Long>());
+        }
+        Set<Long> children = localParChd.get(destinationConcept.getId());
+        children.add(sourceConcept.getId());
+      }
+      Logger.getLogger(this.getClass()).info("    count = " + ct);
+
+    }
 
     final Set<Long> descConceptIds = new HashSet<>();
 
     // if concept is active
     if (concept.isActive()) {
 
+      // extract the ancestor terminology ids
+      Set<String> ancestors = new HashSet<>();
+      for (String ancestor : ancestorPath.split("~"))
+        ancestors.add(ancestor);
+
+      // if ancestor path contains this terminology id, a child/ancestor cycle
+      // exists
+      if (ancestors.contains(concept.getTerminologyId())) {
+
+        // add error to validation result
+        computeTreePositionValidationResult
+            .addError("Cycle detected for concept "
+                + concept.getTerminologyId() + ", ancestor path is "
+                + ancestorPath);
+
+        // return empty set of descendants to truncate calculation on this path
+        return descConceptIds;
+      }
+
       // instantiate the tree position
       final TreePosition tp = new TreePositionJpa();
 
-      // logging information
-      int ancestorCount =
-          ancestorPath.length() - ancestorPath.replaceAll("~", "").length();
-      String loggerPrefix = "";
-      for (int i = 0; i < ancestorCount; i++)
-        loggerPrefix += "  ";
+      if (!cycleCheckOnly) {
 
-      // Logger.get// Logger(ContentServiceJpa.class).info(loggerPrefix +
-      // "Computing position for concept " + concept.getTerminologyId() +
-      // ", " + concept.getDefaultPreferredName());;
+        // logging information
+        int ancestorCount =
+            ancestorPath.length() - ancestorPath.replaceAll("~", "").length();
+        String loggerPrefix = "";
+        for (int i = 0; i < ancestorCount; i++)
+          loggerPrefix += "  ";
 
-      tp.setAncestorPath(ancestorPath);
-      tp.setTerminology(concept.getTerminology());
-      tp.setTerminologyVersion(concept.getTerminologyVersion());
-      tp.setTerminologyId(concept.getTerminologyId());
-      tp.setDefaultPreferredName(concept.getDefaultPreferredName());
+        // Logger.get// Logger(ContentServiceJpa.class).info(loggerPrefix +
+        // "Computing position for concept " + concept.getTerminologyId() +
+        // ", " + concept.getDefaultPreferredName());;
 
-      // persist the tree position
-      manager.persist(tp);
+        tp.setAncestorPath(ancestorPath);
+        tp.setTerminology(concept.getTerminology());
+        tp.setTerminologyVersion(concept.getTerminologyVersion());
+        tp.setTerminologyId(concept.getTerminologyId());
+        tp.setDefaultPreferredName(concept.getDefaultPreferredName());
 
+        // persist the tree position
+        manager.persist(tp);
+      }
       // construct the ancestor path terminating at this concept
       final String conceptPath =
           (ancestorPath.equals("") ? concept.getTerminologyId() : ancestorPath
               + "~" + concept.getTerminologyId());
 
-      // construct the list of terminology ids representing valid children
-      final Set<Long> childrenConceptIds = new HashSet<>();
+      // Gather descendants if this is not a leaf node
+      if (localParChd.containsKey(concept.getId())) {
 
-      // cycle over all relationships
-      for (final Relationship rel : concept.getInverseRelationships()) {
+        descConceptIds.addAll(localParChd.get(concept.getId()));
 
-        // if relationship is active, typeId equals the provided typeId,
-        // and
-        // the source concept is active
-        if (rel.isActive() && rel.getTypeId().toString().equals(typeId)
-            && rel.getSourceConcept().isActive()) {
+        // iterate over the child terminology ids
+        // this iteration is entirely local and depends on no managed
+        // objects
+        for (Long childConceptId : localParChd.get(concept.getId())) {
 
-          // get the child concept
-          final Concept childConcept = rel.getSourceConcept();
+          // call helper function on child concept
+          // add the results to the local descendant set
+          final Set<Long> desc =
+              computeTreePositionsHelper(localParChd,
+                  getConcept(childConceptId), typeId, conceptPath,
+                  computeTreePositionCommitCt, computeTreePositionTransaction,
+                  cycleCheckOnly);
+          if (!cycleCheckOnly) {
+            descConceptIds.addAll(desc);
+          }
 
-          // add this terminology id to the set of children
-          childrenConceptIds.add(childConcept.getId());
+        }
 
-          // add this terminology id to the set of descendants
-          descConceptIds.add(childConcept.getId());
+      }
+
+      if (!cycleCheckOnly) {
+
+        // set the children count
+        tp.setChildrenCount(localParChd.containsKey(concept.getId())
+            ? localParChd.get(concept.getId()).size() : 0);
+
+        // set the descendant count
+        tp.setDescendantCount(descConceptIds.size());
+
+        // In case manager was cleared here, get it back onto changed list
+        manager.merge(tp);
+
+        // routinely commit and force clear the manager
+        // any existing recursive threads are entirely dependent on local
+        // variables
+        if (++computeTreePositionTotalCount % computeTreePositionCommitCt == 0) {
+
+          // commit the transaction
+          computeTreePositionTransaction.commit();
+
+          // Clear manager for memory management
+          manager.clear();
+
+          // begin a new transaction
+          computeTreePositionTransaction.begin();
+
+          // report progress and memory usage
+          Runtime runtime = Runtime.getRuntime();
+          float elapsedTime =
+              System.currentTimeMillis() - computeTreePositionLastTime;
+          elapsedTime = elapsedTime / 1000;
+          computeTreePositionLastTime = System.currentTimeMillis();
+
+          if (runtime.totalMemory() > computeTreePositionMaxMemoryUsage)
+            computeTreePositionMaxMemoryUsage = runtime.totalMemory();
+
+          Logger.getLogger(ContentServiceJpa.class).info(
+              "\t" + System.currentTimeMillis() / 1000 + "\t"
+                  + computeTreePositionTotalCount + "\t"
+                  + Math.floor(runtime.totalMemory() / 1024 / 1024) + "\t"
+                  + Double.toString(computeTreePositionCommitCt / elapsedTime));
+
         }
       }
+    }
 
-      // iterate over the child terminology ids
-      // this iteration is entirely local and depends on no managed
-      // objects
-      for (Long childConceptId : childrenConceptIds) {
+    // Check that this concept does not reference itself as a child
+    if (descConceptIds.contains(concept.getTerminologyId())) {
 
-        // call helper function on child concept
-        // add the results to the local descendant set
-        descConceptIds.addAll(computeTreePositionsHelper(
-            getConcept(childConceptId), typeId, conceptPath,
-            computeTreePositionCommitCt, computeTreePositionTransaction));
+      // add error to validation result
+      computeTreePositionValidationResult.addError("Concept "
+          + concept.getTerminologyId() + " claims itself as a child");
 
-      }
-
-      // set the children count
-      tp.setChildrenCount(childrenConceptIds.size());
-
-      // set the descendant count
-      tp.setDescendantCount(descConceptIds.size());
-
-      // In case manager was cleared here, get it back onto changed list
-      manager.merge(tp);
-
-      // routinely commit and force clear the manager
-      // any existing recursive threads are entirely dependent on local
-      // variables
-      if (++computeTreePositionTotalCount % computeTreePositionCommitCt == 0) {
-
-        // commit the transaction
-        computeTreePositionTransaction.commit();
-
-        // Clear manager for memory management
-        manager.clear();
-
-        // begin a new transaction
-        computeTreePositionTransaction.begin();
-
-        // report progress and memory usage
-        Runtime runtime = Runtime.getRuntime();
-        float elapsedTime =
-            System.currentTimeMillis() - computeTreePositionLastTime;
-        elapsedTime = elapsedTime / 1000;
-        computeTreePositionLastTime = System.currentTimeMillis();
-
-        if (runtime.totalMemory() > computeTreePositionMaxMemoryUsage)
-          computeTreePositionMaxMemoryUsage = runtime.totalMemory();
-
-        Logger.getLogger(ContentServiceJpa.class).info(
-            "\t" + System.currentTimeMillis() / 1000 + "\t"
-                + computeTreePositionTotalCount + "\t"
-                + Math.floor(runtime.totalMemory() / 1024 / 1024) + "\t"
-                + Double.toString(computeTreePositionCommitCt / elapsedTime));
-
-      }
+      // remove this terminology id to prevent infinite loop
+      descConceptIds.remove(concept.getTerminologyId());
     }
 
     // return the descendant concept set
     // note that the local child and descendant set will be garbage
     // collected
     return descConceptIds;
+
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.ContentService#cycleCheck(java.lang.String,
+   * java.lang.String, java.lang.String, java.lang.String)
+   */
+  @Override
+  public void cycleCheck(String terminology, String terminologyVersion,
+    String typeId, String rootId) throws Exception {
+    Logger.getLogger(this.getClass()).info(
+        "Starting cycle check - " + rootId + ", " + terminology
+            + ", isaRelTypeId = " + typeId);
+
+    // get the root concept
+    Concept rootConcept = getConcept(rootId, terminology, terminologyVersion);
+
+    // begin the recursive computation
+    computeTreePositionsHelper(null, rootConcept, Long.valueOf(typeId), "", 0,
+        null, true);
 
   }
 
@@ -1881,7 +2018,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
   /**
    * Returns the any tree positions with descendants.
-   *
+   * 
    * @param terminologyId the terminology id
    * @param terminology the terminology
    * @param terminologyVersion the terminology version
@@ -2011,10 +2148,10 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     String terminologyVersion, String query) throws Exception {
 
     // construct the query
-    String full_query =
+    String fullQuery =
         constructTreePositionQuery(terminology, terminologyVersion, query);
 
-    Logger.getLogger(ContentServiceJpa.class).info("Full query: " + full_query);
+    Logger.getLogger(ContentServiceJpa.class).info("Full query: " + fullQuery);
 
     // execute the full text query
     FullTextEntityManager fullTextEntityManager =
@@ -2028,7 +2165,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       QueryParser queryParser =
           new QueryParser(Version.LUCENE_36, "summary",
               searchFactory.getAnalyzer(TreePositionJpa.class));
-      luceneQuery = queryParser.parse(full_query);
+      luceneQuery = queryParser.parse(fullQuery);
 
     } catch (ParseException e) {
       throw new LocalException(
@@ -2132,7 +2269,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
           metadataService.getDescriptionTypes(terminology, terminologyVersion);
       Map<String, String> relTypes =
           metadataService.getRelationshipTypes(terminology, terminologyVersion);
-
+      metadataService.close();
       for (TreePosition tp : tpList.getTreePositions())
         computeTreePositionInformationHelper(tp, descTypes, relTypes);
     }
@@ -2320,14 +2457,14 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
   private static String constructTreePositionQuery(String terminology,
     String terminologyVersion, String query) throws Exception {
 
-    String full_query;
+    String fullQuery;
 
     // if no filter supplied, return query based on map project id only
     if (query == null || query.equals("")) {
-      full_query =
+      fullQuery =
           "terminology:" + terminology + " AND terminologyVersion:"
               + terminologyVersion;
-      return full_query;
+      return fullQuery;
     }
 
     // Pre-treatment: Find any lower-case boolean operators and set to
@@ -2361,28 +2498,27 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     // terminology ids may contain terms like D55-D59, which should be
     // preserved whole
     // but we still want to capture lucene negation term, e.g. -D55
-    String queryStr_mod = queryStr;
+    String queryStrMod = queryStr;
 
-    queryStr_mod = queryStr_mod.replace("(", " ( ");
-    queryStr_mod = queryStr_mod.replace(")", " ) ");
-    queryStr_mod = queryStr_mod.replace("\"", " \" ");
-    queryStr_mod = queryStr_mod.replace("+", " + ");
-    queryStr_mod = queryStr_mod.replace(" -", " - "); // note extra space on
+    queryStrMod = queryStrMod.replace("(", " ( ");
+    queryStrMod = queryStrMod.replace(")", " ) ");
+    queryStrMod = queryStrMod.replace("\"", " \" ");
+    queryStrMod = queryStrMod.replace("+", " + ");
+    queryStrMod = queryStrMod.replace(" -", " - "); // note extra space on
     // this term, see
     // above
 
     // remove any leading or trailing whitespace (otherwise first/last null
     // term
     // bug)
-    queryStr_mod = queryStr_mod.trim();
+    queryStrMod = queryStrMod.trim();
 
     // split the string by white space and single-character operators
-    String[] terms = queryStr_mod.split("\\s+");
+    String[] terms = queryStrMod.split("\\s+");
 
     // merge items between quotation marks
     boolean exprInQuotes = false;
     List<String> parsedTerms = new ArrayList<>();
-    // List<String> parsedTerms_temp = new ArrayList<String>();
     String currentTerm = "";
 
     // cycle over terms to identify quoted (i.e. non-parsed) terms
@@ -2391,7 +2527,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       // if an open quote is detected
       if (terms[i].equals("\"")) {
 
-        if (exprInQuotes == true) {
+        if (exprInQuotes) {
 
           // special case check: fielded term. Impossible for first
           // term to be
@@ -2404,7 +2540,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
             // if last parsed term ended with a colon, append this
             // term to the
             // last parsed term
-            if (lastParsedTerm.endsWith(":") == true) {
+            if (lastParsedTerm.endsWith(":")) {
               parsedTerms.set(parsedTerms.size() - 1, lastParsedTerm + "\""
                   + currentTerm + "\"");
             } else {
@@ -2424,7 +2560,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       } else {
 
         // if inside quotes, continue building term
-        if (exprInQuotes == true) {
+        if (exprInQuotes) {
           currentTerm =
               currentTerm == "" ? terms[i] : currentTerm + " " + terms[i];
 
@@ -2440,7 +2576,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     }
 
     // cycle over terms to construct query
-    full_query = "";
+    fullQuery = "";
 
     for (int i = 0; i < parsedTerms.size(); i++) {
 
@@ -2448,10 +2584,10 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       // add whitespace separator
       if (i != 0 && !parsedTerms.get(i - 1).matches(escapeTerms)) {
 
-        full_query += " ";
+        fullQuery += " ";
       }
       /*
-       * full_query += (i == 0 ? // check for first term "" : // -> if first
+       * fullQuery += (i == 0 ? // check for first term "" : // -> if first
        * character, add nothing parsedTerms.get(i-1).matches(escapeTerms) ? //
        * check if last term was an escape character "": // -> if last term was
        * an escape character, add nothing " "); // -> otherwise, add a
@@ -2461,42 +2597,42 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       // if an escape character/sequence, add this term unmodified
       if (parsedTerms.get(i).matches(escapeTerms)) {
 
-        full_query += parsedTerms.get(i);
+        fullQuery += parsedTerms.get(i);
 
         // else if a boolean character, add this term in upper-case form
         // (i.e.
         // lucene format)
       } else if (parsedTerms.get(i).matches(booleanTerms)) {
 
-        full_query += parsedTerms.get(i).toUpperCase();
+        fullQuery += parsedTerms.get(i).toUpperCase();
 
         // else if already a field-specific query term, add this term
         // unmodified
       } else if (parsedTerms.get(i).contains(":")) {
 
-        full_query += parsedTerms.get(i);
+        fullQuery += parsedTerms.get(i);
 
         // otherwise, treat as unfielded query term
       } else {
 
         // open parenthetical term
-        full_query += "(";
+        fullQuery += "(";
 
         // add fielded query for each indexed term, separated by OR
-        Iterator<String> names_iter = treePositionFieldNames.iterator();
-        while (names_iter.hasNext()) {
+        Iterator<String> namesIter = treePositionFieldNames.iterator();
+        while (namesIter.hasNext()) {
 
-          String fieldName = names_iter.next();
+          String fieldName = namesIter.next();
           Logger.getLogger(ContentServiceJpa.class).info(
               "  field name: " + fieldName);
 
-          full_query += fieldName + ":" + parsedTerms.get(i);
-          if (names_iter.hasNext())
-            full_query += " OR ";
+          fullQuery += fieldName + ":" + parsedTerms.get(i);
+          if (namesIter.hasNext())
+            fullQuery += " OR ";
         }
 
         // close parenthetical term
-        full_query += ")";
+        fullQuery += ")";
       }
 
       // if further terms remain in the sequence
@@ -2510,20 +2646,19 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
             && !parsedTerms.get(i).matches(booleanTerms)
             && !parsedTerms.get(i + 1).matches(booleanTerms)) {
 
-          full_query += " OR";
+          fullQuery += " OR";
         }
       }
     }
 
     // add parantheses and map project constraint
-    full_query =
-        "(" + full_query + ")" + " AND terminology:" + terminology
+    fullQuery =
+        "(" + fullQuery + ")" + " AND terminology:" + terminology
             + " AND terminologyVersion:" + terminologyVersion;
 
-    Logger.getLogger(ContentServiceJpa.class)
-        .debug("Full query: " + full_query);
+    Logger.getLogger(ContentServiceJpa.class).debug("Full query: " + fullQuery);
 
-    return full_query;
+    return fullQuery;
 
   }
 
@@ -2805,324 +2940,6 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     complexMapRefSetMemberList
         .setComplexMapRefSetMembers(complexMapRefSetMembers);
     return complexMapRefSetMemberList;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.ContentService#getIndexDomains(java.lang
-   * .String, java.lang.String)
-   */
-  @Override
-  public SearchResultList getIndexDomains(String terminology,
-    String terminologyVersion) throws Exception {
-
-    SearchResultList searchResultList = new SearchResultListJpa();
-
-    // Local directory
-    String dataDir =
-        ConfigUtility.getConfigProperties().getProperty("index.viewer.data");
-    for (File termDir : new File(dataDir).listFiles()) {
-      // Find terminology directory
-      if (termDir.getName().equals(terminology)) {
-        for (File versionDir : termDir.listFiles()) {
-          // Find version directory
-          if (versionDir.getName().equals(terminologyVersion)) {
-            for (File typeDir : versionDir.listFiles()) {
-              // find html directory
-              if (typeDir.getName().equals("html")) {
-                // find domain directories
-                for (File domainDir : typeDir.listFiles()) {
-                  SearchResult searchResult = new SearchResultJpa();
-                  searchResult.setValue(domainDir.getName());
-                  searchResultList.addSearchResult(searchResult);
-                  Logger.getLogger(ContentServiceJpa.class).info(
-                      "  Index domain found: " + domainDir.getName());
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-    return searchResultList;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.ContentService#getIndexViewerPagesForIndex
-   * (java.lang.String, java.lang.String, java.lang.String)
-   */
-  @Override
-  public SearchResultList getIndexPagesForIndex(String terminology,
-    String terminologyVersion, String index) throws Exception {
-
-    SearchResultList searchResultList = new SearchResultListJpa();
-
-    // Local directory
-    String dataDir =
-        ConfigUtility.getConfigProperties().getProperty("index.viewer.data");
-
-    for (File termDir : new File(dataDir).listFiles()) {
-      // Find terminology directory
-      if (termDir.getName().equals(terminology)) {
-        for (File versionDir : termDir.listFiles()) {
-          // find version directory
-          if (versionDir.getName().equals(terminologyVersion)) {
-            for (File typeDir : versionDir.listFiles()) {
-              // find html directory
-              if (typeDir.getName().equals("html")) {
-                for (File domainDir : typeDir.listFiles()) {
-                  // find domain directory
-                  if (domainDir.getName().equals(index)) {
-                    Logger.getLogger(ContentServiceJpa.class).info(
-                        "  Pages for index domain found: "
-                            + domainDir.getName());
-                    // find pages
-                    for (File pageFile : domainDir.listFiles()) {
-                      SearchResult searchResult = new SearchResultJpa();
-                      searchResult.setValue(pageFile.getName().substring(0,
-                          pageFile.getName().indexOf('.')));
-                      searchResultList.addSearchResult(searchResult);
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-    return searchResultList;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.ContentService#performAggregatedSearch(
-   * java.lang.String, java.lang.String, java.lang.String, java.lang.String,
-   * java.lang.String)
-   */
-  @Override
-  public SearchResultList findIndexEntries(String terminology,
-    String terminologyVersion, String domain, String searchField,
-    String subSearchField, String subSubSearchField, boolean allFlag)
-    throws Exception {
-
-    SearchResultList searchResultList = new SearchResultListJpa();
-
-    List<String> mainSearchResults = new ArrayList<>();
-    List<String> subSearchResults = new ArrayList<>();
-    List<String> subSubSearchResults = new ArrayList<>();
-
-    Properties config = ConfigUtility.getConfigProperties();
-
-    if (allFlag) {
-      config.setProperty("index.viewer.searchStartLevel", "0");
-      config.setProperty("index.viewer.searchEndLevel", "9");
-      config.setProperty("index.viewer.subSearchStartLevel", "0");
-      config.setProperty("index.viewer.subSearchEndLevel", "9");
-      config.setProperty("index.viewer.subSubSearchStartLevel", "0");
-      config.setProperty("index.viewer.subSubSearchEndLevel", "9");
-    } else {
-      config.setProperty("index.viewer.searchStartLevel", "0");
-      config.setProperty("index.viewer.searchEndLevel", "0");
-      config.setProperty("index.viewer.subSearchStartLevel", "1");
-      config.setProperty("index.viewer.subSearchEndLevel", "1");
-      config.setProperty("index.viewer.subSubSearchStartLevel", "2");
-      config.setProperty("index.viewer.subSubSearchEndLevel", "2");
-    }
-
-    int startLevel =
-        Integer.parseInt(config.getProperty("index.viewer.searchStartLevel"));
-    int endLevel =
-        Integer.parseInt(config.getProperty("index.viewer.searchEndLevel"));
-    mainSearchResults =
-        performSearch(terminology, terminologyVersion, domain, searchField,
-            startLevel, endLevel, null, (subSearchField != null
-                && !subSearchField.equals("undefined") && !subSearchField
-                .equals("")));
-
-    if (subSearchField == null || subSearchField.equals("undefined")
-        || subSearchField.equals("")) {
-      for (String result : mainSearchResults) {
-        SearchResult searchResult = new SearchResultJpa();
-        searchResult.setValue(result);
-        searchResult.setValue2(linkToLabelMap.get(result));
-        searchResultList.addSearchResult(searchResult);
-      }
-      return searchResultList;
-    } else {
-      startLevel =
-          Integer.parseInt(config
-              .getProperty("index.viewer.subSearchStartLevel"));
-      endLevel =
-          Integer
-              .parseInt(config.getProperty("index.viewer.subSearchEndLevel"));
-      for (int i = 0; i < mainSearchResults.size(); i++) {
-        subSearchResults.addAll(performSearch(terminology, terminologyVersion,
-            domain, subSearchField, startLevel, endLevel,
-            mainSearchResults.get(i), false));
-      }
-    }
-
-    if (subSubSearchField == null || subSubSearchField.equals("undefined")
-        || subSubSearchField.equals("")) {
-      for (String result : subSearchResults) {
-        SearchResult searchResult = new SearchResultJpa();
-        searchResult.setValue(result);
-        searchResult.setValue2(linkToLabelMap.get(result));
-        searchResultList.addSearchResult(searchResult);
-      }
-      return searchResultList;
-    } else {
-      startLevel =
-          Integer.parseInt(config
-              .getProperty("index.viewer.subSubSearchStartLevel"));
-      endLevel =
-          Integer.parseInt(config
-              .getProperty("index.viewer.subSubSearchEndLevel"));
-      for (int i = 0; i < subSearchResults.size(); i++) {
-        subSubSearchResults.addAll(performSearch(terminology,
-            terminologyVersion, domain, subSubSearchField, startLevel,
-            endLevel, subSearchResults.get(i), false));
-      }
-    }
-
-    for (String result : subSubSearchResults) {
-      SearchResult searchResult = new SearchResultJpa();
-      searchResult.setValue(result);
-      searchResult.setValue2(linkToLabelMap.get(result));
-      searchResultList.addSearchResult(searchResult);
-    }
-    return searchResultList;
-
-  }
-
-  /**
-   * Performs the search.
-   *
-   * @param terminology the terminology
-   * @param terminologyVersion the terminology version
-   * @param domain the domain
-   * @param searchStr the search string
-   * @param startLevel the start level
-   * @param endLevel the end level
-   * @param subSearchAnchor the sub search anchor
-   * @param requireHasChild the require has child
-   * @return the results
-   * @throws Exception the exception
-   */
-  @SuppressWarnings("resource")
-  private List<String> performSearch(String terminology,
-    String terminologyVersion, String domain, String searchStr, int startLevel,
-    int endLevel, String subSearchAnchor, boolean requireHasChild)
-    throws Exception {
-    Logger.getLogger(this.getClass()).info("Perform index search ");
-    Logger.getLogger(this.getClass()).info("  terminology = " + terminology);
-    Logger.getLogger(this.getClass()).info("  domain = " + domain);
-    Logger.getLogger(this.getClass()).info("  searchStr = " + searchStr);
-
-    Properties config = ConfigUtility.getConfigProperties();
-    String prop = config.getProperty("index.viewer.data");
-    if (prop == null) {
-      return new ArrayList<>();
-    }
-    String indexesDir =
-        prop + "/" + terminology + "/" + terminologyVersion + "/lucene/" + domain;
-
-    List<String> searchResults = new ArrayList<>();
-    // configure
-    File selectedDomainDir = new File(indexesDir);
-    String query = searchStr + " " + getLevelConstraint(startLevel, endLevel);
-    if (requireHasChild)
-      query = query + " hasChild:true";
-    if (subSearchAnchor != null && subSearchAnchor.indexOf(".") == -1)
-      query = query + " topLink:" + subSearchAnchor;
-    if (subSearchAnchor != null && subSearchAnchor.indexOf(".") != -1)
-      query =
-          query + " topLink:"
-              + subSearchAnchor.substring(0, subSearchAnchor.indexOf('.'));
-
-    int maxHits = Integer.parseInt(config.getProperty("index.viewer.maxHits"));
-
-    // Open index
-    Logger.getLogger(this.getClass()).info("  Open index reader");
-    Directory dir = FSDirectory.open(selectedDomainDir);
-    IndexReader reader = IndexReader.open(dir);
-
-    // Prep searcher
-    Logger.getLogger(this.getClass()).info("  Prep searcher");
-    IndexSearcher searcher = new IndexSearcher(reader);
-    String defaultField = "title";
-    Map<String, Analyzer> fieldAnalyzers = new HashMap<>();
-    fieldAnalyzers.put("code", new KeywordAnalyzer());
-    PerFieldAnalyzerWrapper analyzer =
-        new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_36),
-            fieldAnalyzers);
-
-    Logger.getLogger(this.getClass()).info("  Prep searcher");
-    QueryParser parser =
-        new QueryParser(Version.LUCENE_36, defaultField, analyzer);
-
-    // Prep query
-    parser.setAllowLeadingWildcard(true);
-    parser.setDefaultOperator(Operator.AND);
-    // System.out.println("QUERY: " + query);
-    TopDocs hits = null;
-    Query q = parser.parse(query);
-    hits = searcher.search(q, maxHits);
-
-    ScoreDoc[] scoreDocs = hits.scoreDocs;
-    for (int n = 0; n < scoreDocs.length; ++n) {
-      final ScoreDoc sd = scoreDocs[n];
-      final Document d = searcher.doc(sd.doc);
-      final String link = d.get("link");
-      final String levelTag = d.get("level");
-      final String label = d.get("label");
-      int level = Integer.parseInt(levelTag);
-
-      String linkFirstComponent =
-          (link.indexOf(".") != -1) ? link.substring(0, link.indexOf("."))
-              : link;
-      if (label != null)
-        linkToLabelMap.put(linkFirstComponent, label);
-
-      // If subSearchAnchor is specified, the link must start with it
-      if (subSearchAnchor != null && !link.startsWith(subSearchAnchor + "."))
-        continue;
-
-      // If actual level is within desired range (inclusive), add match
-      else if (level >= startLevel && level <= endLevel)
-        searchResults.add(link);
-
-    }
-    analyzer.close();
-    reader.close();
-    dir.close();
-    searcher.close();
-    return searchResults;
-  }
-
-  /**
-   * Returns the level constraint.
-   *
-   * @param s the s
-   * @param e the e
-   * @return the level constraint
-   */
-  private String getLevelConstraint(int s, int e) {
-    if (s == e) {
-      return "level:" + s;
-    } else {
-      return "level:[" + s + " TO " + e + "]";
-    }
   }
 
 }

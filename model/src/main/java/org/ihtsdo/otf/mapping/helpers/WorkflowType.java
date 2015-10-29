@@ -1,7 +1,7 @@
 package org.ihtsdo.otf.mapping.helpers;
 
 /**
- * The Enum WorkflowType specifying what type of workflow a map project uses.
+ * Enum specifying what type of workflow a map project uses.
  */
 public enum WorkflowType {
 

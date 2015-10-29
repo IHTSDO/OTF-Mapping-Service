@@ -1,7 +1,7 @@
 package org.ihtsdo.otf.mapping.helpers;
 
 /**
- * Abstract implementation of {@link ResultList}
+ * Abstract implementation of {@link ResultList}.
  * @param <T> the type sorting
  */
 public abstract class AbstractResultList<T> implements ResultList<T> {

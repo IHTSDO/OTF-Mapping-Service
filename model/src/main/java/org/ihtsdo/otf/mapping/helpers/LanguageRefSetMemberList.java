@@ -5,7 +5,7 @@ import java.util.List;
 import org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember;
 
 /**
- * Represents a sortable list of {@link LanguageRefSetMember}
+ * Represents a sortable list of {@link LanguageRefSetMember}.
  */
 public interface LanguageRefSetMemberList extends
     ResultList<LanguageRefSetMember> {

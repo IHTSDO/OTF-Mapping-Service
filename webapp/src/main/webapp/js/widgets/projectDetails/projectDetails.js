@@ -52,7 +52,7 @@ angular
   .filter('elementFilter', function() {
     return function(elementList, elementsToCheck) {
       var out = [];
-      if (elementList == undefined)
+      if (elementList == undefined || elementsToCheck == undefined)
         return out;
       for (var i = 0; i < elementList.length; i++) {
         var found = false;
@@ -79,8 +79,9 @@ angular
       '$location',
       'localStorageService',
       '$upload',
+      '$q',
       function($scope, $http, $sce, $rootScope, $location, localStorageService,
-        $upload) {
+        $upload, $q) {
 
         $scope.page = 'project';
 
@@ -95,6 +96,7 @@ angular
 
         $scope.editModeEnabled = false;
         $scope.reportDefinitions = new Array();
+        $scope.qaCheckDefinitions = new Array();
 
         $scope.allowableMapTypes = [ {
           displayName : 'Extended Map',
@@ -267,19 +269,18 @@ angular
             }
           }).success(
             function(data) {
-              $scope.qaCheckDefinitions = data.reportDefinition;
-              for (var i = 0; i < $scope.qaCheckDefinitions.length; i++) {
-                $scope.reportDefinitions.push($scope.qaCheckDefinitions[i]);
+              for (var i = 0; i < data.reportDefinition.length; i++) {
+                $scope.qaCheckDefinitions.push(data.reportDefinition[i]);
               }
-              localStorageService.add('reportDefinitions',
-                $scope.reportDefinitions);
+              localStorageService.add('qaCheckDefinitions',
+                data.reportDefinition);
               $rootScope.$broadcast(
-                'localStorageModule.notification.setMapRelations', {
-                  key : 'reportDefinitions',
-                  reportDefinitions : $scope.reportDefinitions
+                'localStorageModule.notification.setQACheckDefinitions', {
+                  key : 'qaCheckDefinitions',
+                  qaCheckDefinitions : $scope.qaCheckDefinitions
                 });
-              $scope.allowableReportDefinitions = localStorageService
-                .get('reportDefinitions');
+              $scope.allowableQACheckDefinitions = localStorageService
+                .get('qaCheckDefinitions');
             }).error(function(data, status, headers, config) {
             $rootScope.handleHttpError(data, status, headers, config);
           });
@@ -315,6 +316,17 @@ angular
           $scope.getPagedScopeConcepts(1);
           $scope.getPagedScopeExcludedConcepts(1);
           $scope.getPagedReportDefinitions(1);
+
+          // need to initialize selected qa check definitions since they
+          // are persisted in the
+          // report definition array
+          $scope.focusProject.qaCheckDefinition = new Array();
+          for (var i = 0; i < $scope.focusProject.reportDefinition.length; i++) {
+            if ($scope.focusProject.reportDefinition[i].qacheck == true)
+              $scope.focusProject.qaCheckDefinition
+                .push($scope.focusProject.reportDefinition[i]);
+          }
+          $scope.getPagedQACheckDefinitions(1);
           $scope.orderProp = 'id';
         };
 
@@ -345,10 +357,10 @@ angular
         // - returns artificial page via slice
 
         $scope.getPagedAdvices = function(page, filter) {
-          console.debug('getPagedAdvices', filter);
+          console.debug('getPagedAdvices', filter, $scope.focusProject);
           $scope.adviceFilter = filter;
           $scope.pagedAdvice = $scope.sortByKey($scope.focusProject.mapAdvice,
-            'id').filter(containsAdviceFilter);
+            'name').filter(containsAdviceFilter);
           $scope.pagedAdviceCount = $scope.pagedAdvice.length;
           $scope.pagedAdvice = $scope.pagedAdvice.slice((page - 1)
             * $scope.pageSize, page * $scope.pageSize);
@@ -357,7 +369,7 @@ angular
         $scope.getPagedRelations = function(page, filter) {
           $scope.relationFilter = filter;
           $scope.pagedRelation = $scope.sortByKey(
-            $scope.focusProject.mapRelation, 'id').filter(
+            $scope.focusProject.mapRelation, 'name').filter(
             containsRelationFilter);
           $scope.pagedRelationCount = $scope.pagedRelation.length;
           $scope.pagedRelation = $scope.pagedRelation.slice((page - 1)
@@ -367,7 +379,7 @@ angular
         $scope.getPagedPrinciples = function(page, filter) {
           $scope.principleFilter = filter;
           $scope.pagedPrinciple = $scope.sortByKey(
-            $scope.focusProject.mapPrinciple, 'id').filter(
+            $scope.focusProject.mapPrinciple, 'principleId').filter(
             containsPrincipleFilter);
           $scope.pagedPrincipleCount = $scope.pagedPrinciple.length;
           $scope.pagedPrinciple = $scope.pagedPrinciple.slice((page - 1)
@@ -379,13 +391,33 @@ angular
         $scope.getPagedReportDefinitions = function(page, filter) {
           $scope.reportDefinitionFilter = filter;
           $scope.pagedReportDefinition = $scope.sortByKey(
-            $scope.focusProject.reportDefinition, 'id').filter(
+            $scope.focusProject.reportDefinition, 'name').filter(
             containsReportDefinitionFilter);
+          // remove qa check report definitions from the list; they have
+          // their own section
+          for (var j = 0; j < $scope.pagedReportDefinition.length; j++) {
+            if ($scope.pagedReportDefinition[j].qacheck == true) {
+              $scope.pagedReportDefinition.splice(j, 1);
+            }
+          }
           $scope.pagedReportDefinitionCount = $scope.pagedReportDefinition.length;
           $scope.pagedReportDefinition = $scope.pagedReportDefinition.slice(
             (page - 1) * $scope.pageSize, page * $scope.pageSize);
 
           console.debug("pagedReportDefinition", $scope.pagedReportDefinition);
+        };
+
+        $scope.getPagedQACheckDefinitions = function(page, filter) {
+          $scope.qaCheckDefinitionFilter = filter;
+          $scope.pagedQACheckDefinition = $scope.sortByKey(
+            $scope.focusProject.qaCheckDefinition, 'name').filter(
+            containsQACheckDefinitionFilter);
+          $scope.pagedQACheckDefinitionCount = $scope.pagedQACheckDefinition.length;
+          $scope.pagedQACheckDefinition = $scope.pagedQACheckDefinition.slice(
+            (page - 1) * $scope.pageSize, page * $scope.pageSize);
+
+          console
+            .debug("pagedQACheckDefinition", $scope.pagedQACheckDefinition);
         };
 
         $scope.getPagedScopeConcepts = function(page) {
@@ -484,6 +516,11 @@ angular
           $scope.getPagedReportDefinitions(1);
         };
 
+        $scope.resetQACheckDefinitionFilter = function() {
+          $scope.qaCheckDefinitionFilter = "";
+          $scope.getPagedQACheckDefinitions(1);
+        };
+
         $scope.resetScopeExcludedConceptFilter = function() {
           $scope.scopeExcludedConceptFilter = "";
           $scope.getPagedScopeExcludedConcepts(1);
@@ -555,8 +592,9 @@ angular
           if (element.name.toString().toUpperCase().indexOf(
             $scope.principleFilter.toString().toUpperCase()) != -1)
             return true;
-          if (element.sectionRef.toString().toUpperCase().indexOf(
-            $scope.principleFilter.toString().toUpperCase()) != -1)
+          if (element.sectionRef != null
+            && element.sectionRef.toString().toUpperCase().indexOf(
+              $scope.principleFilter.toString().toUpperCase()) != -1)
             return true;
 
           // otherwise return false
@@ -628,13 +666,46 @@ angular
         }
         ;
 
+        function containsQACheckDefinitionFilter(element) {
+
+          console.debug("Checking qa check definition: ",
+            $scope.qaCheckDefinitionFilter);
+
+          // check if qaCheckDefinition filter is empty
+          if ($scope.qaCheckDefinitionFilter === ""
+            || $scope.qaCheckDefinitionFilter == null)
+            return true;
+
+          // otherwise check if upper-case
+          // qaCheckDefinition filter
+          // matches upper-case element name or detail
+          if (element.name.toString().toUpperCase().indexOf(
+            $scope.qaCheckDefinitionFilter.toString().toUpperCase()) != -1)
+            return true;
+
+          // otherwise return false
+          return false;
+        }
+        ;
+
         // helper function to sort a JSON array by field
 
         $scope.sortByKey = function sortById(array, key) {
           return array.sort(function(a, b) {
-            var x = a[key];
-            var y = b[key];
-            return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+            var x, y;
+            // if a number
+            if (!isNaN(parseInt(a[key]))) {
+              x = a[key];
+              y = b[key];
+            } else {
+              x = new String(a[key]).toUpperCase();
+              y = new String(b[key]).toUpperCase();
+            }
+            if (x < y)
+              return -1;
+            if (x > y)
+              return 1;
+            return 0;
           });
         };
 
@@ -796,6 +867,72 @@ angular
             });
         };
 
+        $scope.addMapUserToMapProjectWithRole = function(user, role) {
+
+          // check role
+          if (role != 'Specialist' && role != 'Lead') {
+            console.debug("addNewMapUser called with invalid role: ", role);
+            return;
+          }
+
+          // check user non-null
+          if (user == null || user == undefined) {
+            console.debug("addNewMapUser called with null user");
+            return;
+          }
+
+          // check user valid
+          if (user.userName == null || user.userName == undefined) {
+            alert("You must specify a login name.");
+            return;
+          }
+
+          if (user.name == null || user.name == undefined) {
+            alert("You must specify the user's name");
+            return;
+          }
+
+          if (user.email == null || user.email == undefined) {
+            alert("You must specify the user's email.  Enter 'none' or similar text if unknown");
+            return;
+          }
+
+          // by default the application role is Viewer
+          user.applicationRole = 'Viewer';
+
+          // add the user
+          $http({
+            url : root_mapping + "user/add",
+            dataType : "json",
+            data : user,
+            method : "PUT",
+            headers : {
+              "Content-Type" : "application/json"
+            }
+          }).success(function(data) {
+            console.debug("success to addNewLead");
+
+            // copy the newly updated object with id
+            user = data;
+
+            $scope.mapUsers.push(user);
+            localStorageService.add('mapUsers', $scope.mapUsers);
+
+            // add this user to the focus project
+            if (role == 'Specialist')
+              $scope.focusProject.mapSpecialist.push(user);
+            else if (role == 'Lead')
+              $scope.focusProject.mapLead.push(user);
+
+            // update the project
+            $scope.updateMapProject();
+
+          }).error(function(data, status, headers, config) {
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+
+        };
+
         $scope.deleteSpecialist = function(specialist) {
           console.debug("in deleteSpecialist");
           for (var j = 0; j < $scope.focusProject.mapSpecialist.length; j++) {
@@ -823,6 +960,7 @@ angular
               return;
             }
           }
+
           $scope.focusProject.mapSpecialist.push(user);
           // update and broadcast the updated focus
           // project
@@ -948,6 +1086,7 @@ angular
             "isComputed" : isComputed
           };
 
+          $rootScope.glassPane++;
           $http({
             url : root_mapping + "advice/add",
             dataType : "json",
@@ -957,36 +1096,26 @@ angular
               "Content-Type" : "application/json"
             }
           }).success(function(data) {
+            $rootScope.glassPane--;
             console.debug("success to addMapAdvice");
-          }).error(function(data, status, headers, config) {
-            $scope.recordError = "Error adding new map advice.";
-            $rootScope.handleHttpError(data, status, headers, config);
-          }).then(
-            function(data) {
-              $http({
-                url : root_mapping + "advice/advices",
-                dataType : "json",
-                method : "GET",
-                headers : {
-                  "Content-Type" : "application/json"
-                }
-              }).success(
-                function(data) {
-                  $scope.mapAdvices = data.mapAdvice;
-                  $scope.resetAdviceFilter();
-                  localStorageService.add('mapAdvices', data.mapAdvice);
-                  $rootScope.$broadcast(
-                    'localStorageModule.notification.setMapAdvices', {
-                      key : 'mapAdvices',
-                      mapAdvices : data.mapAdvices
-                    });
-                  $scope.allowableMapAdvices = localStorageService
-                    .get('mapAdvices');
-                }).error(function(data, status, headers, config) {
-                $rootScope.handleHttpError(data, status, headers, config);
-              });
 
+            // add the new advice to the available list
+            $scope.mapAdvices.push(data);
+            $scope.allowableMapAdvices.push(data);
+
+            // add the new advice to the current project
+            $scope.focusProject.mapAdvice.push(data);
+
+            // update the map project
+            $scope.updateMapProject().then(function(response) {
+              $scope.resetAdviceFilter();
             });
+
+          }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+
         };
 
         $scope.deleteRelation = function(relation) {
@@ -1023,59 +1152,41 @@ angular
           $scope.updateMapProject();
         };
 
-        $scope.submitNewMapRelation = function(mapRelationName,
-          mapRelationAbbreviation, mapRelationTerminologyId,
-          allowableForNullTarget, isComputed) {
+        $scope.submitNewMapRelation = function(relation) {
           console.debug("in submitNewMapRelation for application");
-          var obj = {
-            "terminologyId" : mapRelationTerminologyId,
-            "name" : mapRelationName,
-            "abbreviation" : mapRelationAbbreviation,
-            "isAllowableForNullTarget" : allowableForNullTarget,
-            "isComputed" : isComputed
-          };
+
+          $rootScope.glassPane++;
           $http({
             url : root_mapping + "relation/add",
             dataType : "json",
-            data : obj,
+            data : relation,
             method : "PUT",
             headers : {
               "Content-Type" : "application/json"
             }
           })
-            .success(function(data) {
-              console.debug("success to addMapRelation to application");
-            })
-            .error(
-              function(data, status, headers, config) {
-                $scope.recordError = "Error adding new map relation for the application.";
-                $rootScope.handleHttpError(data, status, headers, config);
-              }).then(
-              function(data) {
-                $http({
-                  url : root_mapping + "relation/relations",
-                  dataType : "json",
-                  method : "GET",
-                  headers : {
-                    "Content-Type" : "application/json"
-                  }
-                }).success(
-                  function(data) {
-                    $scope.mapRelations = data.mapRelation;
-                    $scope.resetRelationFilter();
-                    localStorageService.add('mapRelations', data.mapRelation);
-                    $rootScope.$broadcast(
-                      'localStorageModule.notification.setMapRelations', {
-                        key : 'mapRelations',
-                        mapRelations : data.mapRelations
-                      });
-                    $scope.allowableMapRelations = localStorageService
-                      .get('mapRelations');
-                  }).error(function(data, status, headers, config) {
-                  $rootScope.handleHttpError(data, status, headers, config);
-                });
 
-              });
+          .success(function(data) {
+            $rootScope.glassPane--;
+
+            console.debug("success to addMapRelation");
+
+            // add new relations to the sets
+            $scope.mapRelations.push(data);
+            $scope.allowableMapRelations.push(data);
+
+            // add the new advice to the current project
+            $scope.focusProject.mapRelation.push(data);
+
+            // update the map project
+            $scope.updateMapProject().then(function() {
+              $scope.resetRelationFilter();
+            });
+
+          }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
         };
 
         $scope.deleteReportDefinition = function(reportDefinition) {
@@ -1097,10 +1208,39 @@ angular
           $scope.updateMapProject();
         };
 
+        $scope.deleteQACheckDefinition = function(qaCheckDefinition) {
+          console.debug("in deleteQACheckDefinition");
+
+          // check the local qaCheck set
+          for (var j = 0; j < $scope.focusProject.qaCheckDefinition.length; j++) {
+            if (qaCheckDefinition.id === $scope.focusProject.qaCheckDefinition[j].id) {
+              $scope.focusProject.qaCheckDefinition.splice(j, 1);
+            }
+          }
+
+          // also need to remove from the project, qa definitions are in
+          // reportDefinitions collection
+          for (var j = 0; j < $scope.focusProject.reportDefinition.length; j++) {
+            if (qaCheckDefinition.id === $scope.focusProject.reportDefinition[j].id) {
+              $scope.focusProject.reportDefinition.splice(j, 1);
+            }
+          }
+          // update and broadcast the updated focus
+          // project
+          localStorageService.set('focusProject', $scope.focusProject);
+          $rootScope.$broadcast(
+            'localStorageModule.notification.setFocusProject', {
+              key : 'focusProject',
+              focusProject : $scope.focusProject
+            });
+          $scope.resetQACheckDefinitionFilter();
+          $scope.updateMapProject();
+        };
+
         $scope.addReportDefinition = function(reportDefinition) {
           console.debug("in addReportDefinition", reportDefinition);
           $scope.focusProject.reportDefinition.push(reportDefinition);
-          console.debug($scope.focusProject.reportDefinitions)
+          console.debug($scope.focusProject.reportDefinition);
           // update and broadcast the updated focus
           // project
           localStorageService.set('focusProject', $scope.focusProject);
@@ -1110,6 +1250,23 @@ angular
               focusProject : $scope.focusProject
             });
           $scope.resetReportDefinitionFilter();
+          $scope.updateMapProject();
+        };
+
+        $scope.addQACheckDefinition = function(qaCheckDefinition) {
+          console.debug("in addQACheckDefinition", qaCheckDefinition);
+          $scope.focusProject.qaCheckDefinition.push(qaCheckDefinition);
+          $scope.focusProject.reportDefinition.push(qaCheckDefinition);
+          console.debug($scope.focusProject.qaCheckDefinition);
+          // update and broadcast the updated focus
+          // project
+          localStorageService.set('focusProject', $scope.focusProject);
+          $rootScope.$broadcast(
+            'localStorageModule.notification.setFocusProject', {
+              key : 'focusProject',
+              focusProject : $scope.focusProject
+            });
+          $scope.resetQACheckDefinitionFilter();
           $scope.updateMapProject();
         };
 
@@ -1217,53 +1374,41 @@ angular
               });
         };
 
-        $scope.submitNewMapPrinciple = function(mapPrincipleName,
-          mapPrincipleId, mapPrincipleDetail, mapPrincipleSectionRef) {
+        $scope.submitNewMapPrinciple = function(principle) {
           console.debug("in submitNewMapPrinciple");
-          var obj = {
-            "name" : mapPrincipleName,
-            "principleId" : mapPrincipleId,
-            "detail" : mapPrincipleDetail,
-            "sectionRef" : mapPrincipleSectionRef
-          };
+
+          $rootScope.glassPane++;
           $http({
             url : root_mapping + "principle/add",
             dataType : "json",
-            data : obj,
+            data : principle,
             method : "PUT",
             headers : {
               "Content-Type" : "application/json"
             }
-          }).success(function(data) {
-            console.debug("success to addMapPrinciple");
-          }).error(function(data, status, headers, config) {
-            $scope.recordError = "Error adding new map principle.";
-            $rootScope.handleHttpError(data, status, headers, config);
-          }).then(
-            function(data) {
-              $http({
-                url : root_mapping + "principle/principles",
-                dataType : "json",
-                method : "GET",
-                headers : {
-                  "Content-Type" : "application/json"
-                }
-              }).success(
-                function(data) {
-                  $scope.mapPrinciples = data.mapPrinciple;
-                  localStorageService.add('mapPrinciples', data.mapPrinciple);
-                  $rootScope.$broadcast(
-                    'localStorageModule.notification.setMapPrinciples', {
-                      key : 'mapPrinciples',
-                      mapPrinciples : data.mapPrinciples
-                    });
-                  $scope.allowableMapPrinciples = localStorageService
-                    .get('mapPrinciples');
-                }).error(function(data, status, headers, config) {
-                $rootScope.handleHttpError(data, status, headers, config);
-              });
+          })
 
+          .success(function(data) {
+            $rootScope.glassPane--;
+
+            console.debug("success to addMapPrinciple");
+
+            // add principle to the local sets
+            $scope.mapPrinciples.push(data);
+            $scope.allowableMapPrinciples.push(data);
+
+            // add the new advice to the current project
+            $scope.focusProject.mapPrinciple.push(data);
+
+            // update the map project
+            $scope.updateMapProject().then(function() {
+              $scope.resetPrincipleFilter();
             });
+
+          }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
         };
 
         $scope.deleteAgeRange = function(ageRange) {
@@ -1298,56 +1443,41 @@ angular
           $scope.updateMapProject();
         };
 
-        $scope.submitNewMapAgeRange = function(name, lowerInclusive,
-          lowerUnits, lowerValue, upperInclusive, upperUnits, upperValue) {
+        $scope.submitNewMapAgeRange = function(ageRange) {
           console.debug("in submitNewMapAgeRange");
-          var obj = {
-            "lowerInclusive" : true,
-            "lowerUnits" : lowerUnits,
-            "lowerValue" : lowerValue,
-            "name" : name,
-            "upperInclusive" : true,
-            "upperUnits" : upperUnits,
-            "upperValue" : upperValue
-          };
+
+          $rootScope.glassPane++;
+
           $http({
             url : root_mapping + "ageRange/add",
             dataType : "json",
-            data : obj,
+            data : ageRange,
             method : "PUT",
             headers : {
               "Content-Type" : "application/json"
             }
           }).success(function(data) {
-            console.debug("success to addMapAgeRange");
-          }).error(function(data, status, headers, config) {
-            $scope.recordError = "Error adding new map age range.";
-            $rootScope.handleHttpError(data, status, headers, config);
-          }).then(
-            function(data) {
-              $http({
-                url : root_mapping + "ageRange/ageRanges",
-                dataType : "json",
-                method : "GET",
-                headers : {
-                  "Content-Type" : "application/json"
-                }
-              }).success(
-                function(data) {
-                  $scope.mapAgeRanges = data.mapAgeRange;
-                  localStorageService.add('mapAgeRanges', data.mapAgeRange);
-                  $rootScope.$broadcast(
-                    'localStorageModule.notification.setMapAgeRanges', {
-                      key : 'mapAgeRanges',
-                      mapAgeRanges : data.mapAgeRanges
-                    });
-                  $scope.allowableMapAgeRanges = localStorageService
-                    .get('mapAgeRanges');
-                }).error(function(data, status, headers, config) {
-                $rootScope.handleHttpError(data, status, headers, config);
-              });
 
+            $rootScope.glassPane--;
+
+            console.debug("success to addMapAgeRange");
+
+            // add principle to the local sets
+            $scope.mapAgeRanges.push(data);
+            $scope.allowableMapAgeRanges.push(data);
+
+            // add the new advice to the current project
+            $scope.focusProject.mapAgeRange.push(data);
+
+            // update the map project
+            $scope.updateMapProject().then(function() {
+              $scope.resetAgeRangeFilter();
             });
+
+          }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
         };
 
         $scope.submitNewErrorMessage = function(message) {
@@ -1375,24 +1505,64 @@ angular
           $scope.updateMapProject();
         };
 
-        $scope.deleteScopeIncludedConcept = function(scopeConcept, currentPage) {
-          // TODO: recalculate workflow
-          console.debug("in deleteScopeIncludedConcept");
+        // ////////////////////////////////////////////
+        // Scope Include Concept Addition/Removal
+        // ////////////////////////////////////////////
+
+        // remove a single concept (using the [x] button)
+        $scope.removeScopeIncludedConcept = function(scopeConcept, currentPage) {
+
+          console.debug("in removeScopeIncludedConcept");
           $rootScope.glassPane++;
+
+          $http(
+            {
+              url : root_mapping + "project/id/" + $scope.focusProject.id
+                + "/scopeConcept/remove",
+              data : scopeConcept.terminologyId,
+              method : "POST",
+              headers : {
+                "Content-Type" : "text/plain"
+              }
+            }).success(function(data) {
+            console.debug("success to removeScopeExcludedConcepts");
+
+            $rootScope.glassPane--;
+
+            // re-page the scope concepts
+            $scope.getPagedScopeConcepts(currentPage);
+          }).error(function(data, status, headers, config) {
+
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+
+        };
+
+        // remove a single/batch of excluded concepts
+        $scope.removeScopeIncludedConcepts = function(scopeConceptsUnsplit) {
+          console.debug("in removeScopeIncludedConcepts");
+          $rootScope.glassPane++;
+
+          var scopeConcepts = scopeConceptsUnsplit.split(/,\s*|\s+/);
 
           $http(
             {
               url : root_mapping + "project/id/" + $scope.focusProject.id
                 + "/scopeConcepts/remove",
               dataType : "json",
-              data : scopeConcept.terminologyId,
+              data : scopeConcepts,
               method : "POST",
               headers : {
                 "Content-Type" : "application/json"
               }
             }).success(function(data) {
+            console.debug("success to removeScopeExcludedConcepts");
+
             $rootScope.glassPane--;
-            $scope.getPagedScopeConcepts(currentPage);
+
+            $scope.getPagedScopeConcepts(1);
+
           }).error(function(data, status, headers, config) {
             $rootScope.glassPane--;
 
@@ -1400,50 +1570,94 @@ angular
           });
         };
 
-        $scope.submitNewScopeIncludedConcept = function(scopeConcept) {
+        // submit a single/batch of concepts for addition
+        $scope.submitNewScopeIncludedConcepts = function(scopeConceptsUnsplit) {
           console.debug("in submitNewScopeIncludedConcept");
 
           $rootScope.glassPane++;
+
+          var scopeConcepts = scopeConceptsUnsplit.split(/,\s*|\s+/);
 
           $http(
             {
               url : root_mapping + "project/id/" + $scope.focusProject.id
                 + "/scopeConcepts/add",
               dataType : "json",
-              data : scopeConcept,
+              data : scopeConcepts,
               method : "POST",
               headers : {
                 "Content-Type" : "application/json"
               }
             }).success(function(data) {
             $rootScope.glassPane--;
-            $scope.getPagedScopeConcepts(1);
-          }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            console.debug("success to addScopeIncludedConcepts");
 
+            $scope.resetScopeConceptFilter();
+
+          }).error(function(data, status, headers, config) {
             $rootScope.handleHttpError(data, status, headers, config);
           });
 
         };
 
-        $scope.deleteScopeExcludedConcept = function(scopeConcept, currentPage) {
-          // TODO: recalculate workflow
-          console.debug("in deleteScopeExcludedConcept");
+        // ////////////////////////////////////////////
+        // Scope Exclude Concept Addition/Removal
+        // ////////////////////////////////////////////
+
+        // remove a single concept (using the [x] button)
+        $scope.removeScopeExcludedConcept = function(scopeExcludedConcept,
+          currentPage) {
+
+          console.debug("in removeScopeExcludedConcept");
           $rootScope.glassPane++;
+
+          $http(
+            {
+              url : root_mapping + "project/id/" + $scope.focusProject.id
+                + "/scopeExcludedConcept/remove",
+              dataType : "json",
+              data : scopeExcludedConcept.terminologyId,
+              method : "POST",
+              headers : {
+                "Content-Type" : "application/json"
+              }
+            }).success(function(data) {
+            console.debug("success to removeScopeExcludedConcepts");
+
+            $rootScope.glassPane--;
+
+            $scope.getPagedScopeExcludedConcepts(currentPage);
+
+          }).error(function(data, status, headers, config) {
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        };
+
+        // remove a single/batch of excluded concepts
+        $scope.removeScopeExcludedConcepts = function(
+          scopeExcludedConceptsUnsplit) {
+          console.debug("in removeScopeExcludedConcepts");
+          $rootScope.glassPane++;
+
+          var scopeExcludedConcepts = scopeExcludedConceptsUnsplit
+            .split(/,\s*|\s+/);
 
           $http(
             {
               url : root_mapping + "project/id/" + $scope.focusProject.id
                 + "/scopeExcludedConcepts/remove",
               dataType : "json",
-              data : scopeConcept.terminologyId,
+              data : scopeExcludedConcepts,
               method : "POST",
               headers : {
                 "Content-Type" : "application/json"
               }
-            }).success(function(data) {
+            }).success(function() {
+
             $rootScope.glassPane--;
-            $scope.getPagedScopeExcludedConcepts(currentPage);
+
+            $scope.getPagedScopeExcludedConcepts(1);
+
           }).error(function(data, status, headers, config) {
             $rootScope.glassPane--;
 
@@ -1451,17 +1665,22 @@ angular
           });
         };
 
-        $scope.submitNewScopeExcludedConcept = function(scopeConcept) {
+        // submit a single/batch of concepts for addition
+        $scope.submitNewScopeExcludedConcepts = function(
+          scopeExcludedConceptsUnsplit) {
           console.debug("in submitNewScopeExcludedConcept");
 
           $rootScope.glassPane++;
+
+          var scopeExcludedConcepts = scopeExcludedConceptsUnsplit
+            .split(/,\s*|\s+/);
 
           $http(
             {
               url : root_mapping + "project/id/" + $scope.focusProject.id
                 + "/scopeExcludedConcepts/add",
               dataType : "json",
-              data : scopeConcept,
+              data : scopeExcludedConcepts,
               method : "POST",
               headers : {
                 "Content-Type" : "application/json"
@@ -1477,6 +1696,29 @@ angular
 
         };
 
+        $scope.updateCachedMapProjects = function() {
+
+          // first, update focus project
+          localStorageService.add('focusProject', $scope.focusProject);
+
+          var mapProjects = $scope.mapProjects;
+
+          // replace the focus project in the list
+          for (var i = 0; i < mapProjects.length; i++) {
+            if (mapProjects[i].id == $scope.focusProject.id) {
+              mapProjects[i] = $scope.focusProject;
+            }
+          }
+
+          // set the map projects in the cache
+          localStorageService.add('mapProjects', mapProjects);
+
+        };
+
+        // /////////////////////////////////////
+        // Model reset, clears all filters
+        // /////////////////////////////////////
+
         $scope.resetModel = function() {
           console.debug("in resetModel");
           angular.copy($scope.focusProjectBeforeChanges, $scope.focusProject);
@@ -1489,7 +1731,19 @@ angular
           $scope.resetReportDefinitionFilter();
         };
 
+        /**
+         * Function to update a map project via REST call and update the cached
+         * projects
+         */
         $scope.updateMapProject = function() {
+
+          // first, add the modified project to the cache
+          localStorageService.add('focusProject', $scope.focusProject);
+
+          var deferred = $q.defer();
+
+          $rootScope.glassPane++;
+
           $http({
             url : root_mapping + "project/update",
             dataType : "json",
@@ -1498,19 +1752,28 @@ angular
             headers : {
               "Content-Type" : "application/json"
             }
-          }).success(
-            function(data) {
-              console.debug("success to updateMapProject");
-              localStorageService.set('focusProject', $scope.focusProject);
-              $rootScope.$broadcast(
-                'localStorageModule.notification.setFocusProject', {
-                  key : 'focusProject',
-                  focusProject : $scope.focusProject
-                });
-            }).error(function(data, status, headers, config) {
-            $scope.recordError = "Error updating map project.";
+          }).success(function(data) {
+            console.debug("success to updateMapProject");
+
+            $rootScope.glassPane--;
+
+            // update the cached project list
+            for (var i = 0; i < $scope.mapProjects.length; i++) {
+              if ($scope.mapProjects[i].id = data.id) {
+                $scope.mapProjects[i] = data;
+              }
+            }
+            localStorageService.add('mapProjects', $scope.mapProjects);
+
+            deferred.resolve();
+
+          }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
             $rootScope.handleHttpError(data, status, headers, config);
+            deferred.reject();
           });
+
+          return deferred.promise;
         };
 
         $scope.onFileSelect = function($files) {
@@ -1518,16 +1781,31 @@ angular
           // has name, size, and type.
           for (var i = 0; i < $files.length; i++) {
             var $file = $files[i];
-            $upload.upload({
-              url : root_mapping + "upload/" + $scope.focusProject.id,
-              file : $file,
-              progress : function(e) {
-              }
-            }).then(function(data, status, headers, config) {
-              // file is uploaded
-              // successfully
-              console.log(data);
-            });
+            $rootScope.glassPane++;
+            $upload
+              .upload({
+                url : root_mapping + "upload/" + $scope.focusProject.id,
+                file : $file,
+                progress : function(e) {
+                }
+              })
+              .error(function(data, status, headers, config) {
+                // file is not uploaded
+                // successfully
+                console.log("error", data);
+                $scope.recordError = "Error updating map project.";
+                $rootScope.handleHttpError(data, status, headers, config);
+                $rootScope.glassPane--;
+              })
+              .success(
+                function(data) {
+                  // file is uploaded
+                  // successfully
+                  confirm("The mapping principle handbook file upload is complete.");
+                  $rootScope.glassPane--;
+                  $scope.focusProject.mapPrincipleSourceDocument = data
+                    .substring(1, data.length - 1);
+                });
           }
         };
 

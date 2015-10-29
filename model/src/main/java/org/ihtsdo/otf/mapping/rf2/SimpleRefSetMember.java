@@ -1,7 +1,7 @@
 package org.ihtsdo.otf.mapping.rf2;
 
 /**
- * Represents a simple reference set member.
+ * Generically represents a simple reference set member.
  */
 public interface SimpleRefSetMember extends ConceptRefSetMember {
 

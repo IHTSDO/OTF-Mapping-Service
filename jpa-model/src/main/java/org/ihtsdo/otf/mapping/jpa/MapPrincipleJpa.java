@@ -5,6 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -18,12 +19,14 @@ import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * The Map Principle Object for the Jpa Domain
- * @author Patrick
- * 
+ * A JPA enabled implementation of {@link MapPrinciple}.
  */
 @Entity
-@Table(name = "map_principles")
+@Table(name = "map_principles", uniqueConstraints = {
+  @UniqueConstraint(columnNames = {
+      "name", "principleId"
+  })
+})
 @Audited
 @XmlRootElement(name = "mapPrinciple")
 @JsonIgnoreProperties(ignoreUnknown = true)

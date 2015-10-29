@@ -61,21 +61,11 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
     String notificationRecipients =
         config.getProperty("send.notification.recipients");
     String notificationMessage = "";
-
-    if (refsetId == null) {
-      throw new MojoExecutionException("You must specify a refsetId.");
-    }
-    
-    // if no notification parameter specified, assume false
-   /* if (sendNotification == null)
-    	sendNotification = false;*/
-
-    if (sendNotification == false) {
+    if (!sendNotification) {
       getLog().info(
           "No notifications will be sent as a result of workflow computation.");
     }
-
-    if (sendNotification == true
+    if (sendNotification
         && config.getProperty("send.notification.recipients") == null) {
       throw new MojoExecutionException(
           "Email notification was requested, but no recipients were specified.");
@@ -92,17 +82,21 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
       MappingService mappingService = new MappingServiceJpa();
       Set<MapProject> mapProjects = new HashSet<>();
 
-      for (MapProject mapProject : mappingService.getMapProjects()
-          .getIterable()) {
-        for (String id : refsetId.split(",")) {
-          if (mapProject.getRefSetId().equals(id)) {
-            mapProjects.add(mapProject);
+      // For empty refsetid, compute all
+      if (refsetId == null || refsetId.isEmpty()) {
+        mapProjects.addAll(mappingService.getMapProjects().getMapProjects());
+      } else {
+        for (MapProject mapProject : mappingService.getMapProjects()
+            .getIterable()) {
+          for (String id : refsetId.split(",")) {
+            if (mapProject.getRefSetId().equals(id)) {
+              mapProjects.add(mapProject);
+            }
           }
         }
       }
 
       // Get the current workflow and extract concepts for comparison
-
       WorkflowService workflowService = new WorkflowServiceJpa();
 
       // Compute workflow
@@ -111,7 +105,9 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
         // construct a map of terminology id -> concept name
         // used to determine change in workflow status after recomputation
         Map<String, String> previousWorkflowConcepts = new HashMap<>();
+        StringBuilder conceptsAddedSb = new StringBuilder();
         int conceptsAdded = 0;
+        StringBuilder conceptsRemovedSb = new StringBuilder();
         int conceptsRemoved = 0;
 
         // add all current concepts with a tracking record to set
@@ -139,8 +135,13 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
             getLog().info(
                 "  New concept:  " + tr.getTerminologyId() + ", "
                     + tr.getDefaultPreferredName());
-            previousWorkflowConcepts.remove(tr.getTerminologyId());
+            conceptsAddedSb.append("    ADDED " + tr.getTerminologyId() + ", "
+                + tr.getDefaultPreferredName() + "\n");
             conceptsAdded++;
+
+            // otherwise, remove it from the set
+          } else {
+            previousWorkflowConcepts.remove(tr.getTerminologyId());
           }
         }
 
@@ -150,6 +151,8 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
           getLog().info(
               "  Removed concept:  " + terminologyId + ", "
                   + previousWorkflowConcepts.get(terminologyId));
+          conceptsRemovedSb.append("    REMOVED " + terminologyId + ", "
+              + previousWorkflowConcepts.get(terminologyId) + "\n");
           conceptsRemoved++;
         }
 
@@ -160,7 +163,7 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
         notificationMessage +=
             "Project: " + mapProject.getName() + "\n" + "\tConcepts Added:   "
                 + conceptsAdded + "\tConcepts Removed: " + conceptsRemoved
-                + "\n\n";
+                + "\n" + conceptsAddedSb + "\n" + conceptsRemovedSb + "\n\n";
 
       }
 
@@ -174,7 +177,7 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
       workflowService.close();
 
       // if notification requested, send email
-      if (sendNotification == true) {
+      if (sendNotification) {
         OtfEmailHandler emailHandler = new OtfEmailHandler();
         emailHandler.sendSimpleEmail(notificationRecipients,
             "[OTF-Mapping-Tool] Drip feed results", notificationMessage);

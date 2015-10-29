@@ -60,7 +60,8 @@ public class MapAdviceRemoverMojo extends AbstractMojo {
       getLog().info("Done ...");
     } catch (Exception e) {
       e.printStackTrace();
-      throw new MojoExecutionException("Performing workflow QA failed.", e);
+      throw new MojoExecutionException(
+          "Removing map advice from environment failed.", e);
     }
 
   }

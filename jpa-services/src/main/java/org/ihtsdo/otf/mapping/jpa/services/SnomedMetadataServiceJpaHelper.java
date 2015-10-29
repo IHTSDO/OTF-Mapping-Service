@@ -122,6 +122,8 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements
     Set<Concept> descendants =
         getDescendantConcepts(contentService, "447250001", terminology,
             version, isaRelationshipType);
+    descendants.addAll(getDescendantConcepts(contentService, "609331003",
+        terminology, version, isaRelationshipType));
 
     for (Concept descendant : descendants) {
       if (descendant.isActive()) {
@@ -475,29 +477,73 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements
     return map;
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.jpa.services.RootServiceJpa#close()
+   */
   @Override
   public void close() {
     // no-op - this is just helper class
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.services.MetadataService#getTerminologies()
+   */
   @Override
   public List<String> getTerminologies() {
     // no-op - this is just helper class
     return null;
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.MetadataService#getVersions(java.lang.String
+   * )
+   */
   @Override
   public List<String> getVersions(String terminology) {
     // no-op - this is just helper class
     return null;
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.MetadataService#getLatestVersion(java.lang
+   * .String)
+   */
   @Override
   public String getLatestVersion(String terminology) {
     // no-op - this is just helper class
     return null;
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.MetadataService#getPreviousVersion(java
+   * .lang.String)
+   */
+  @Override
+  public String getPreviousVersion(String terminology) {
+    // no-op - this is just helper class
+    return null;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.MetadataService#getTerminologyLatestVersions
+   * ()
+   */
   @Override
   public Map<String, String> getTerminologyLatestVersions() {
     // no-op - this is just helper class
@@ -506,13 +552,14 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements
 
   /**
    * Helper method for getting descendants.
-   * @param contentService
-   * @param terminologyId
-   * @param terminology
-   * @param terminologyVersion
-   * @param typeId
-   * @return
-   * @throws Exception
+   *
+   * @param contentService the content service
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @param typeId the type id
+   * @return the descendant concepts
+   * @throws Exception the exception
    */
   private Set<Concept> getDescendantConcepts(ContentService contentService,
     String terminologyId, String terminology, String terminologyVersion,
@@ -524,6 +571,11 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements
 
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.services.RootService#initializeFieldNames()
+   */
   @Override
   public void initializeFieldNames() throws Exception {
     // no need

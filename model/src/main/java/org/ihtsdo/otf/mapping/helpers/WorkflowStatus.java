@@ -1,7 +1,17 @@
 package org.ihtsdo.otf.mapping.helpers;
 
 /**
- * The Enum WorkflowStatus.
+ * Enum for workflow status values. Comprehensive for all workflow paths.
+ * 
+ * NOTE: Workflow status names may not be initial substrings of any other
+ * workflow status. For instance, REVIEW and REVIEW_NEW cannot both be
+ * specified, since REVIEW_NEW begins with REVIEW. Other substring matches are
+ * allowed, e.g. NEW and REVIEW_NEW can both be values.
+ * 
+ * NOTE: Workflow statuses must be in ascending order, as defined by the
+ * workflow diagrams. For instance, NEW must appear before EDITING_IN_PROGRESS.
+ * The top three statuses MUST be READY_FOR_PUBLICATION, PUBLISHED, and
+ * REVISION, in that order
  */
 
 public enum WorkflowStatus {

@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.0-SNAPSHOT</version>
     <relativePath>../parent</relativePath>
   </parent>
 
@@ -20,6 +20,7 @@
     <module>dev-windows</module>
     <module>uat</module>
     <module>prod</module>
+    <module>wci</module>
     <module>empty</module>
   </modules>
 </project>

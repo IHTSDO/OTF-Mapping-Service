@@ -6,8 +6,6 @@ import org.ihtsdo.otf.mapping.model.FeedbackConversation;
 
 /**
  * Represents a sortable list of {@link FeedbackConversation}.
- *
- * @author ${author}
  */
 public interface FeedbackConversationList extends
     ResultList<FeedbackConversation> {

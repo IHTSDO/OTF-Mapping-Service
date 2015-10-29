@@ -101,7 +101,7 @@ public class MapRecordRemoverMojo extends AbstractMojo {
       }
       mappingService.commit();
       mappingService.close();
-      getLog().info("Done ...");      
+      getLog().info("Done ...");
     } catch (Exception e) {
       e.printStackTrace();
       throw new MojoExecutionException("Unexpected exception:", e);

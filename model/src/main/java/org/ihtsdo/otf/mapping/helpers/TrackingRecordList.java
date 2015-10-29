@@ -2,7 +2,6 @@ package org.ihtsdo.otf.mapping.helpers;
 
 import java.util.List;
 
-import org.ihtsdo.otf.mapping.helpers.ResultList;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
 /**
