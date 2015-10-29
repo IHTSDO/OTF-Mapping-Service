@@ -2589,18 +2589,24 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         continue;
       }
 
-      // get the tree positions for this concept and set the sort key to
-      // the first retrieved
-      TreePositionList treePositionsList =
-          contentService.getTreePositions(concept.getTerminologyId(),
-              concept.getTerminology(), concept.getTerminologyVersion());
+      // bypass for integration tests
+      String sortKey = "";
+      if (concept.getLabel() == null
+          || !concept.getLabel().equals("integration-test")) {
+        // get the tree positions for this concept and set the sort key to
+        // the first retrieved
+        TreePositionList treePositionsList =
+            contentService.getTreePositions(concept.getTerminologyId(),
+                concept.getTerminology(), concept.getTerminologyVersion());
 
-      // if no tree position, throw exception
-      if (treePositionsList.getCount() == 0) {
-        throw new Exception("Active concept " + terminologyId
-            + " has no tree positions");
+        // if no tree position, throw exception
+        if (treePositionsList.getCount() == 0) {
+          throw new Exception("Active concept " + terminologyId
+              + " has no tree positions");
+        }
+
+        sortKey = treePositionsList.getTreePositions().get(0).getAncestorPath();
       }
-
       // create a workflow tracking record for this concept
       TrackingRecord trackingRecord = new TrackingRecordJpa();
 
@@ -2610,8 +2616,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
       trackingRecord.setTerminologyId(concept.getTerminologyId());
       trackingRecord.setTerminologyVersion(concept.getTerminologyVersion());
       trackingRecord.setDefaultPreferredName(concept.getDefaultPreferredName());
-      trackingRecord.setSortKey(treePositionsList.getTreePositions().get(0)
-          .getAncestorPath());
+      trackingRecord.setSortKey(sortKey);
 
       // add any existing map records to this tracking record
       Set<MapRecord> mapRecordsForTrackingRecord = new HashSet<>();
