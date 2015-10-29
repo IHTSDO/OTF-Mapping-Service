@@ -1,5 +1,9 @@
+/*
+ *    Copyright 2015 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.services;
 
+import java.util.List;
 import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.FeedbackConversationList;
@@ -325,34 +329,6 @@ public interface WorkflowService extends RootService {
   public void commit() throws Exception;
 
   /**
-   * Generate random conflict data.
-   * 
-   * @param mapProject the map project
-   * @param numDesiredConflicts the num desired conflicts
-   * @throws Exception the exception
-   */
-  public void generateRandomConflictData(MapProject mapProject,
-    int numDesiredConflicts) throws Exception;
-
-  /**
-   * Generate mapper testing state.
-   *
-   * @param mapProject the map project
-   * @throws Exception the exception
-   */
-  public void generateMapperTestingStateKLININ(MapProject mapProject)
-    throws Exception;
-
-  /**
-   * Generate mapper testing state.
-   *
-   * @param mapProject the map project
-   * @throws Exception the exception
-   */
-  public void generateMapperTestingStateBHEKRE(MapProject mapProject)
-    throws Exception;
-
-  /**
    * Gets the tracking record for map project and concept.
    *
    * @param mapProject the map project
@@ -366,9 +342,10 @@ public interface WorkflowService extends RootService {
    * QA check: Check that workflow state for all current records is valid.
    *
    * @param mapProject the map project
+   * @return the results as a list of strings
    * @throws Exception the exception
    */
-  public void computeWorkflowStatusErrors(MapProject mapProject)
+  public List<String> computeWorkflowStatusErrors(MapProject mapProject)
     throws Exception;
 
   /**
@@ -508,15 +485,6 @@ public interface WorkflowService extends RootService {
   FeedbackList getFeedbackErrorsForRecord(MapRecord mapRecord) throws Exception;
 
   /**
-   * Finish editing done tracking records. Used for one-off error correction.
-   *
-   * @param mapProject the map project
-   * @throws Exception the exception
-   */
-  public void finishEditingDoneTrackingRecords(MapProject mapProject)
-    throws Exception;
-
-  /**
    * Find available qa work.
    *
    * @param mapProject the map project
@@ -549,5 +517,20 @@ public interface WorkflowService extends RootService {
    * @throws Exception the exception
    */
   public void createQAWork(Report report) throws Exception;
+
+  /**
+   * Send feedback email.
+   *
+   * @param name the name
+   * @param email the email
+   * @param conceptId the concept id
+   * @param conceptName the concept name
+   * @param refSetId the ref set id
+   * @param feedbackMessage the feedback message
+   * @throws Exception the exception
+   */
+  public void sendFeedbackEmail(String name, String email, String conceptId,
+    String conceptName, String refSetId, String feedbackMessage)
+    throws Exception;
 
 }

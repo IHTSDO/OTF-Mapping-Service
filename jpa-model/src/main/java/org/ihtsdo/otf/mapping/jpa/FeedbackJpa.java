@@ -313,6 +313,16 @@ public class FeedbackJpa implements Feedback {
   /*
    * (non-Javadoc)
    * 
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    return (isError ? mapError : "") + ", " + message;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#hashCode()
    */
   @Override

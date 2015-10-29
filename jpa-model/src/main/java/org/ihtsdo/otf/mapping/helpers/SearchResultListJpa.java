@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  * JAXB-enabled implementation of {@link SearchResultList}.
@@ -163,6 +164,7 @@ public class SearchResultListJpa extends AbstractResultList<SearchResult>
    * @see org.ihtsdo.otf.mapping.helpers.ResultList#getIterable()
    */
   @Override
+  @XmlTransient
   public Iterable<SearchResult> getIterable() {
     return searchResults;
   }

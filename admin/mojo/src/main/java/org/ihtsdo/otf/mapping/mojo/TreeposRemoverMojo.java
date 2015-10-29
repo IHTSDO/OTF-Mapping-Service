@@ -19,7 +19,6 @@ package org.ihtsdo.otf.mapping.mojo;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
-import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 
 /**
  * Goal which removes a terminology from a database.
@@ -40,6 +39,13 @@ public class TreeposRemoverMojo extends AbstractMojo {
   private String terminology;
 
   /**
+   * The terminology version.
+   * @parameter
+   * @required
+   */
+  private String terminologyVersion;
+
+  /**
    * Instantiates a {@link TreeposRemoverMojo} from the specified parameters.
    * 
    */
@@ -56,12 +62,9 @@ public class TreeposRemoverMojo extends AbstractMojo {
   public void execute() throws MojoFailureException {
     getLog().info("Starting removing tree positions");
     getLog().info("  terminology = " + terminology);
+    getLog().info("  terminologyVersion = " + terminologyVersion);
 
     try {
-      MetadataServiceJpa metadataService = new MetadataServiceJpa();
-      String terminologyVersion =
-          metadataService.getTerminologyLatestVersions().get(terminology);
-      metadataService.close();
 
       ContentServiceJpa contentService = new ContentServiceJpa();
       contentService.clearTreePositions(terminology, terminologyVersion);

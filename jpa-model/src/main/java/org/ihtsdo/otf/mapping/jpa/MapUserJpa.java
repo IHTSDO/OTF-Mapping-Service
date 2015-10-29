@@ -7,6 +7,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -21,12 +22,14 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * The Class MapUserJpa.
- * 
- * @author ${author}
+ * A JPA-enabled implementation of {@link MapUser}.
  */
 @Entity
-@Table(name = "map_users")
+@Table(name = "map_users", uniqueConstraints = {
+  @UniqueConstraint(columnNames = {
+    "userName"
+  })
+})
 @Audited
 @XmlRootElement(name = "mapUser")
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -54,29 +57,14 @@ public class MapUserJpa implements MapUser {
   @Column(nullable = false)
   private MapUserRole applicationRole;
 
+  /** The team. */
+  @Column(nullable = true)
+  private String team;
+
   /**
    * The default constructor.
    */
   public MapUserJpa() {
-  }
-
-  /**
-   * Instantiates a new map user jpa.
-   *
-   * @param id the id
-   * @param userName the user name
-   * @param name the name
-   * @param email the email
-   * @param applicationRole the application role
-   */
-  public MapUserJpa(Long id, String userName, String name, String email,
-      MapUserRole applicationRole) {
-    super();
-    this.id = id;
-    this.userName = userName;
-    this.name = name;
-    this.email = email;
-    this.applicationRole = applicationRole;
   }
 
   /**
@@ -90,6 +78,7 @@ public class MapUserJpa implements MapUser {
     this.userName = mapUser.getUserName();
     this.name = mapUser.getName();
     this.email = mapUser.getEmail();
+    this.team = mapUser.getTeam();
     this.applicationRole = mapUser.getApplicationRole();
   }
 
@@ -186,35 +175,26 @@ public class MapUserJpa implements MapUser {
     this.name = name;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapUser#getEmail()
-   */
-  /**
-   * Returns the email.
-   *
-   * @return the email
-   */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public String getEmail() {
     return email;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapUser#setEmail(java.lang.String)
-   */
-  /**
-   * Sets the email.
-   *
-   * @param email the email
-   */
   @Override
   public void setEmail(String email) {
     this.email = email;
+  }
+
+  @Override
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  public String getTeam() {
+    return team;
+  }
+
+  @Override
+  public void setTeam(String team) {
+    this.team = team;
   }
 
   /**
@@ -260,6 +240,7 @@ public class MapUserJpa implements MapUser {
         prime * result
             + ((applicationRole == null) ? 0 : applicationRole.hashCode());
     result = prime * result + ((email == null) ? 0 : email.hashCode());
+    result = prime * result + ((team == null) ? 0 : team.hashCode());
     result = prime * result + ((name == null) ? 0 : name.hashCode());
     result = prime * result + ((userName == null) ? 0 : userName.hashCode());
     return result;
@@ -286,6 +267,11 @@ public class MapUserJpa implements MapUser {
       if (other.email != null)
         return false;
     } else if (!email.equals(other.email))
+      return false;
+    if (team == null) {
+      if (other.team != null)
+        return false;
+    } else if (!team.equals(other.team))
       return false;
     if (name == null) {
       if (other.name != null)

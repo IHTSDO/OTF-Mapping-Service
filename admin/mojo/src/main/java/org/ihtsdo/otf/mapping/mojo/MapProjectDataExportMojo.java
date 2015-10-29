@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.StringWriter;
+import java.util.HashSet;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
@@ -32,7 +33,7 @@ public class MapProjectDataExportMojo extends AbstractMojo {
    * @required
    */
   private String outputDir;
-  
+
   /**
    * Instantiates a {@link MapProjectDataExportMojo} from the specified
    * parameters.
@@ -67,26 +68,8 @@ public class MapProjectDataExportMojo extends AbstractMojo {
       // export project data to project specific files
       MappingService mappingService = new MappingServiceJpa();
       for (MapProject mpr : mappingService.getMapProjects().getMapProjects()) {
-        StringWriter writer = new StringWriter();
 
-        File projectsFile =
-            new File(outputDirFile, "Project" + mpr.getId() + ".xml");
-        // if file doesn't exist, then create it
-        if (!projectsFile.exists()) {
-          projectsFile.createNewFile();
-        }
-
-        BufferedWriter projectWriter =
-            new BufferedWriter(new FileWriter(projectsFile.getAbsoluteFile()));
-
-        jaxbMarshaller.marshal(mpr, writer);
-
-        projectWriter.write(writer.toString());
-        writer.close();
-        projectWriter.close();
-
-        // Write out scope includes/excludes lists to separate files, also by
-        // project
+        // Write out scope and scope excludes info
         File scopeIncludesFile =
             new File(outputDirFile, "Project" + mpr.getId() + "Scope.txt");
         // if file doesn't exist, then create it
@@ -98,7 +81,8 @@ public class MapProjectDataExportMojo extends AbstractMojo {
                 scopeIncludesFile.getAbsoluteFile()));
 
         File scopeExcludesFile =
-            new File(outputDirFile, "Project" + mpr.getId() + "ScopeExcludes.txt");
+            new File(outputDirFile, "Project" + mpr.getId()
+                + "ScopeExcludes.txt");
         // if file doesn't exist, then create it
         if (!scopeExcludesFile.exists()) {
           scopeExcludesFile.createNewFile();
@@ -116,6 +100,27 @@ public class MapProjectDataExportMojo extends AbstractMojo {
           scopeExcludesWriter.write(concept + "\n");
         }
         scopeExcludesWriter.close();
+
+        // Clear scope concepts list for this part
+        mpr.setScopeConcepts(new HashSet<String>());
+        mpr.setScopeExcludedConcepts(new HashSet<String>());
+
+        // Write out map project
+        StringWriter writer = new StringWriter();
+        File projectsFile =
+            new File(outputDirFile, "Project" + mpr.getId() + ".xml");
+        // if file doesn't exist, then create it
+        if (!projectsFile.exists()) {
+          projectsFile.createNewFile();
+        }
+        BufferedWriter projectWriter =
+            new BufferedWriter(new FileWriter(projectsFile.getAbsoluteFile()));
+        jaxbMarshaller.marshal(mpr, writer);
+
+        projectWriter.write(writer.toString());
+        writer.close();
+        projectWriter.close();
+
       }
 
       mappingService.close();

@@ -16,7 +16,6 @@
  */
 package org.ihtsdo.otf.mapping.mojo;
 
-import java.util.List;
 import java.util.Properties;
 
 import javax.persistence.EntityManager;
@@ -28,16 +27,14 @@ import javax.persistence.Query;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
-import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
-import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 /**
  * Goal which removes a terminology from a database.
  * 
  * See admin/remover/pom.xml for a sample execution.
- *  
+ * 
  * @goal remove-terminology
  * 
  * @phase package
@@ -50,6 +47,13 @@ public class TerminologyRemoverMojo extends AbstractMojo {
    * @required
    */
   private String terminology;
+
+  /**
+   * The terminology version.
+   * @parameter
+   * @required
+   */
+  private String terminologyVersion;
 
   /**
    * Instantiates a {@link TerminologyRemoverMojo} from the specified
@@ -69,7 +73,7 @@ public class TerminologyRemoverMojo extends AbstractMojo {
   public void execute() throws MojoFailureException {
     getLog().info("Starting removing terminology");
     getLog().info("  terminology = " + terminology);
-    
+    getLog().info("  terminologyVersion = " + terminologyVersion);
 
     try {
       Properties config = ConfigUtility.getConfigProperties();
@@ -82,11 +86,6 @@ public class TerminologyRemoverMojo extends AbstractMojo {
 
       EntityTransaction tx = manager.getTransaction();
       try {
-        // remove Tree Positions
-        // first get all versions for this terminology
-        MetadataService metadataService = new MetadataServiceJpa();
-        List<String> versions = metadataService.getVersions(terminology);
-        metadataService.close();
 
         // truncate all the tables that we are going to use first
         tx.begin();
@@ -94,71 +93,75 @@ public class TerminologyRemoverMojo extends AbstractMojo {
         // truncate RefSets
         Query query =
             manager
-                .createQuery("DELETE From SimpleRefSetMemberJpa rs where terminology = :terminology");
+                .createQuery("DELETE From SimpleRefSetMemberJpa rs where terminology = :terminology and terminologyVersion = :version");
         query.setParameter("terminology", terminology);
+        query.setParameter("version", terminologyVersion);
         int deleteRecords = query.executeUpdate();
         getLog().info("    simple_ref_set records deleted: " + deleteRecords);
 
         query =
             manager
-                .createQuery("DELETE From SimpleMapRefSetMemberJpa rs where terminology = :terminology");
+                .createQuery("DELETE From SimpleMapRefSetMemberJpa rs where terminology = :terminology and terminologyVersion = :version");
         query.setParameter("terminology", terminology);
+        query.setParameter("version", terminologyVersion);
         deleteRecords = query.executeUpdate();
         getLog().info(
             "    simple_map_ref_set records deleted: " + deleteRecords);
 
         query =
             manager
-                .createQuery("DELETE From ComplexMapRefSetMemberJpa rs where terminology = :terminology");
+                .createQuery("DELETE From ComplexMapRefSetMemberJpa rs where terminology = :terminology and terminologyVersion = :version");
         query.setParameter("terminology", terminology);
+        query.setParameter("version", terminologyVersion);
         deleteRecords = query.executeUpdate();
         getLog().info(
             "    complex_map_ref_set records deleted: " + deleteRecords);
 
         query =
             manager
-                .createQuery("DELETE From AttributeValueRefSetMemberJpa rs where terminology = :terminology");
+                .createQuery("DELETE From AttributeValueRefSetMemberJpa rs where terminology = :terminology and terminologyVersion = :version");
         query.setParameter("terminology", terminology);
+        query.setParameter("version", terminologyVersion);
         deleteRecords = query.executeUpdate();
         getLog().info(
             "    attribute_value_ref_set records deleted: " + deleteRecords);
 
         query =
             manager
-                .createQuery("DELETE From LanguageRefSetMemberJpa rs where terminology = :terminology");
+                .createQuery("DELETE From LanguageRefSetMemberJpa rs where terminology = :terminology and terminologyVersion = :version");
         query.setParameter("terminology", terminology);
+        query.setParameter("version", terminologyVersion);
         deleteRecords = query.executeUpdate();
         getLog().info("    language_ref_set records deleted: " + deleteRecords);
 
         // Truncate Terminology Elements
         query =
             manager
-                .createQuery("DELETE From DescriptionJpa d where terminology = :terminology");
+                .createQuery("DELETE From DescriptionJpa d where terminology = :terminology and terminologyVersion = :version");
         query.setParameter("terminology", terminology);
+        query.setParameter("version", terminologyVersion);
         deleteRecords = query.executeUpdate();
         getLog().info("    description records deleted: " + deleteRecords);
         query =
             manager
-                .createQuery("DELETE From RelationshipJpa r where terminology = :terminology");
+                .createQuery("DELETE From RelationshipJpa r where terminology = :terminology and terminologyVersion = :version");
         query.setParameter("terminology", terminology);
+        query.setParameter("version", terminologyVersion);
         deleteRecords = query.executeUpdate();
         getLog().info("    relationship records deleted: " + deleteRecords);
         query =
             manager
-                .createQuery("DELETE From ConceptJpa c where terminology = :terminology");
+                .createQuery("DELETE From ConceptJpa c where terminology = :terminology and terminologyVersion = :version");
         query.setParameter("terminology", terminology);
+        query.setParameter("version", terminologyVersion);
         deleteRecords = query.executeUpdate();
         getLog().info("    concept records deleted: " + deleteRecords);
 
         tx.commit();
 
         ContentService contentService = new ContentServiceJpa();
-
         getLog().info("Start removing tree positions from " + terminology);
-        for (String version : versions) {
-          getLog().info(" version = " + version);
-          contentService.clearTreePositions(terminology, version);
-        }
+        contentService.clearTreePositions(terminology, terminologyVersion);
         contentService.close();
 
         getLog().info("Done ...");

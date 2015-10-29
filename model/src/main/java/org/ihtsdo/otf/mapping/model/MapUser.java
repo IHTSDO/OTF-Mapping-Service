@@ -1,10 +1,12 @@
+/*
+ *    Copyright 2015 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.model;
 
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 
 /**
- * The interface for MapUser
- * 
+ * Generically represents an application user.
  */
 public interface MapUser {
   /**
@@ -22,7 +24,8 @@ public interface MapUser {
   public void setId(Long id);
 
   /**
-   * Returns the id in string form
+   * Returns the id in string form.
+   *
    * @return the string object id
    */
   public String getObjectId();
@@ -83,4 +86,17 @@ public interface MapUser {
    */
   public void setApplicationRole(MapUserRole role);
 
+  /**
+   * Returns the team.
+   *
+   * @return the team
+   */
+  public String getTeam();
+
+  /**
+   * Sets the team.
+   *
+   * @param team the team
+   */
+  public void setTeam(String team);
 }

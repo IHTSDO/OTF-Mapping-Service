@@ -53,8 +53,7 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * The Map Record Jpa object.
- * 
+ * A JPA enabled implementation of {@link MapRecord}.
  */
 @Entity
 // @UniqueConstraint here is being used to create an index, not to enforce
@@ -113,10 +112,6 @@ public class MapRecordJpa implements MapRecord {
   @Column(nullable = false)
   private String conceptName;
 
-  /** The count descendant concepts. */
-  @Column(nullable = false)
-  private Long countDescendantConcepts;
-
   /** The map entries. */
   @OneToMany(mappedBy = "mapRecord", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = MapEntryJpa.class)
   @IndexedEmbedded(targetElement = MapEntryJpa.class)
@@ -153,7 +148,7 @@ public class MapRecordJpa implements MapRecord {
   @Enumerated(EnumType.STRING)
   private WorkflowStatus workflowStatus;
 
-  /** Whether this record has discrepancy review */
+  /** Whether this record has discrepancy review. */
   @Transient
   private boolean isDiscrepancyReview = false;
 
@@ -164,6 +159,14 @@ public class MapRecordJpa implements MapRecord {
   // treat labels as a single field called labels
   @Field(bridge = @FieldBridge(impl = CollectionToCSVBridge.class))
   private Set<String> labels = new HashSet<>();
+
+  /** The reasons for conflict for this map record. */
+  @ElementCollection
+  @CollectionTable(name = "map_records_reasons", joinColumns = @JoinColumn(name = "id"))
+  @Column(nullable = true)
+  // treat reasons as a single field called reasonsForConflict
+  @Field(bridge = @FieldBridge(impl = CollectionToCSVBridge.class))
+  private Set<String> reasonsForConflict = new HashSet<>();
 
   /**
    * Default constructor.
@@ -181,7 +184,7 @@ public class MapRecordJpa implements MapRecord {
   public MapRecordJpa(MapRecord mapRecord, boolean keepIds) {
 
     // if deep copy not indicated, copy id and timestamp
-    if (!keepIds) {
+    if (keepIds) {
       this.id = mapRecord.getId();
       this.timestamp = mapRecord.getTimestamp();
     }
@@ -190,7 +193,6 @@ public class MapRecordJpa implements MapRecord {
     this.mapProjectId = mapRecord.getMapProjectId();
     this.conceptId = mapRecord.getConceptId();
     this.conceptName = mapRecord.getConceptName();
-    this.countDescendantConcepts = mapRecord.getCountDescendantConcepts();
     this.originIds = mapRecord.getOriginIds();
     this.flagForMapLeadReview = mapRecord.isFlagForMapLeadReview();
     this.flagForEditorialReview = mapRecord.isFlagForEditorialReview();
@@ -216,6 +218,10 @@ public class MapRecordJpa implements MapRecord {
     }
     for (String label : mapRecord.getLabels()) {
       addLabel(label);
+    }
+
+    for (String reason : mapRecord.getReasonsForConflict()) {
+      addReasonForConflict(reason);
     }
   }
 
@@ -399,28 +405,6 @@ public class MapRecordJpa implements MapRecord {
   @Override
   public void setConceptName(String conceptName) {
     this.conceptName = conceptName;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapRecord#getCountDescendantConcepts()
-   */
-  @Override
-  public Long getCountDescendantConcepts() {
-    return countDescendantConcepts;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapRecord#setCountDescendantConcepts(java.
-   * lang.Long)
-   */
-  @Override
-  public void setCountDescendantConcepts(Long countDescendantConcepts) {
-    this.countDescendantConcepts = countDescendantConcepts;
   }
 
   /*
@@ -705,12 +689,6 @@ public class MapRecordJpa implements MapRecord {
         return false;
     } else if (!conceptName.equals(mapRecord.getConceptName()))
       return false;
-    if (countDescendantConcepts == null) {
-      if (mapRecord.getCountDescendantConcepts() != null)
-        return false;
-    } else if (!countDescendantConcepts.equals(mapRecord
-        .getCountDescendantConcepts()))
-      return false;
     if (flagForConsensusReview != mapRecord.isFlagForConsensusReview())
       return false;
     if (flagForEditorialReview != mapRecord.isFlagForEditorialReview())
@@ -878,6 +856,51 @@ public class MapRecordJpa implements MapRecord {
   /*
    * (non-Javadoc)
    * 
+   * @see org.ihtsdo.otf.mapping.model.MapRecord#getReasonsForConflict()
+   */
+  @Override
+  public Set<String> getReasonsForConflict() {
+    return reasonsForConflict;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.model.MapRecord#setReasonsForConflict(java.util.Set)
+   */
+  @Override
+  public void setReasonsForConflict(Set<String> reasons) {
+    this.reasonsForConflict = reasons;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.model.MapRecord#addReasonForConflict(java.lang.String
+   * )
+   */
+  @Override
+  public void addReasonForConflict(String reason) {
+    reasonsForConflict.add(reason);
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.model.MapRecord#removeReasonForConflict(java.lang
+   * .String)
+   */
+  @Override
+  public void removeReasonForConflict(String reason) {
+    reasonsForConflict.remove(reason);
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#hashCode()
    */
   @Override
@@ -887,11 +910,6 @@ public class MapRecordJpa implements MapRecord {
     result = prime * result + ((conceptId == null) ? 0 : conceptId.hashCode());
     result =
         prime * result + ((conceptName == null) ? 0 : conceptName.hashCode());
-    result =
-        prime
-            * result
-            + ((countDescendantConcepts == null) ? 0 : countDescendantConcepts
-                .hashCode());
     result = prime * result + (flagForConsensusReview ? 1231 : 1237);
     result = prime * result + (flagForEditorialReview ? 1231 : 1237);
     result = prime * result + (flagForMapLeadReview ? 1231 : 1237);
@@ -915,6 +933,10 @@ public class MapRecordJpa implements MapRecord {
         prime * result
             + ((workflowStatus == null) ? 0 : workflowStatus.hashCode());
     result = prime * result + ((labels == null) ? 0 : labels.hashCode());
+    result =
+        prime
+            * result
+            + ((reasonsForConflict == null) ? 0 : reasonsForConflict.hashCode());
     return result;
   }
 
@@ -941,11 +963,6 @@ public class MapRecordJpa implements MapRecord {
       if (other.conceptName != null)
         return false;
     } else if (!conceptName.equals(other.conceptName))
-      return false;
-    if (countDescendantConcepts == null) {
-      if (other.countDescendantConcepts != null)
-        return false;
-    } else if (!countDescendantConcepts.equals(other.countDescendantConcepts))
       return false;
     if (flagForConsensusReview != other.flagForConsensusReview)
       return false;
@@ -1003,6 +1020,11 @@ public class MapRecordJpa implements MapRecord {
         return false;
     } else if (!labels.equals(other.labels))
       return false;
+    if (reasonsForConflict == null) {
+      if (other.reasonsForConflict != null)
+        return false;
+    } else if (!reasonsForConflict.equals(other.reasonsForConflict))
+      return false;
     if (workflowStatus != other.workflowStatus)
       return false;
     return true;
@@ -1018,14 +1040,14 @@ public class MapRecordJpa implements MapRecord {
     return "MapRecordJpa [id=" + id + ", owner=" + owner + ", timestamp="
         + timestamp + ", lastModifiedBy=" + lastModifiedBy + ", lastModified="
         + lastModified + ", mapProjectId=" + mapProjectId + ", conceptId="
-        + conceptId + ", conceptName=" + conceptName
-        + ", countDescendantConcepts=" + countDescendantConcepts
-        + ", mapEntries=" + mapEntries.size() + ", mapNotes=" + mapNotes
-        + ", mapPrinciples=" + mapPrinciples + ", originIds=" + originIds
+        + conceptId + ", conceptName=" + conceptName + ", mapEntries="
+        + mapEntries.size() + ", mapNotes=" + mapNotes + ", mapPrinciples="
+        + mapPrinciples + ", originIds=" + originIds
         + ", flagForMapLeadReview=" + flagForMapLeadReview
         + ", flagForEditorialReview=" + flagForEditorialReview
         + ", flagForConsensusReview=" + flagForConsensusReview
-        + ", workflowStatus=" + workflowStatus + ", labels=" + labels + "]";
+        + ", workflowStatus=" + workflowStatus + ", labels=" + labels
+        + ", reasonsForConflict=" + reasonsForConflict + "]";
   }
 
 }

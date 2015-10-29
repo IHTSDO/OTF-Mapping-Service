@@ -1,67 +1,87 @@
 <div style="float: left; width: 40%; padding-top: 10px;">
 
-  <form>
-    <table>
-      <tr>
-        <td style="padding: 5px; width: 30%"><select id="reportSearch"
-          ng-options="definition as definition.name for definition in definitions |  filter: {qacheck:true}"
-          ng-change="getReports(1, selectedDefinition, queryReport)"
-          ng-model="selectedDefinition"></select></td>
+	<form>
+		<table>
+			<tr>
+				<td style="padding: 5px;" ><select style="width: 250px;" id="reportSearch"
+					ng-options="definition as definition.name for definition in definitions |  orderBy: 'name' | filter: {qacheck:true}"
+					ng-change="getReports(1, selectedDefinition, queryReport)"
+					ng-model="selectedDefinition"></select></td>
 
-        <td><button
-            ng-show="reportDisplayed == null || reportDisplayed.id != null"
-            class="btn btn-sm btn-primary"
-            ng-click="generateNewReport(selectedDefinition)">Generate</button></td>
-      </tr>
-    </table>
-  </form>
+				<td style="padding: 5px;" ><button
+						ng-show="reportDisplayed == null || reportDisplayed.id != null"
+						class="btn btn-sm btn-primary"
+						ng-click="generateNewReport(selectedDefinition)">Generate</button></td>
+			</tr>
+		</table>
+	</form>
+  <div style="width: 100%; padding: 5px;" ng-show="selectedDefinition != null && selectedDefinition.description != ''">
+        <strong>Description:</strong> {{selectedDefinition.description}}
+    </div>
 </div>
 
 <div>
-  <div
-    style="float: right; width: 60%; padding: 10px 0px 10px 10px; border-left: thin solid #ddd;">
+	<div
+		style="float: right; width: 60%; padding: 10px 0px 10px 10px; border-left: thin solid #ddd;">
 
-    <div class="alert alert-warning" ng-show="reportDisplayed == null">
-      No QA Check results generated</div>
+		<div class="alert alert-warning" ng-show="reportDisplayed == null">
+			No QA Check results generated</div>
 
-    <div ng-show="reportDisplayed != null">
-      <h4>
-        <!--  First row:  QA Check name -->
-        <div style="width: 100%; padding: 0px 0px 15px 0px;">
-          <div style="float: left; width: 20%">QA Check:</div>
-          <div style="float: left; width: 80%">{{reportDisplayed.name}}</div>
-        </div>
-      </h4>
+		<div ng-show="reportDisplayed != null">
+			<h4>
+				<!--  First row:  QA Check name -->
+				<div style="width: 100%; padding: 0px 0px 15px 0px;">
+					<div style="float: left; width: 20%">QA Check:</div>
+					<div style="float: left; width: 80%">{{reportDisplayed.name}}</div>
+				</div>
+			</h4>
+            <div>
+              <strong>Description:</strong> {{reportDisplayed.reportDefinition.description}}
+            </div>
+			<div class="alert alert-warning"
+				ng-show="reportDisplayed.results == 0">This QA check generated
+				no results.</div>
 
 
-      <div ng-repeat="result in reportDisplayed.results">
+			<div ng-repeat="result in reportDisplayed.results">
 
-        <!--  The result items -->
+				<!--  The result items -->
 
-        <div>
-          <pagination ng-show="result.nPages > 1" total-items="result.ct"
-            page="result.page" max-size="5" class="pagination-sm"
-            boundary-links="true" rotate="true" num-pages="result.nPages"
-            on-select-page="getResultItems(result, page)"></pagination>
-        </div>
+				<div>
+					<pagination ng-show="result.nPages > 1" total-items="result.ct"
+						page="result.page" max-size="5" class="pagination-sm"
+						boundary-links="true" rotate="true" num-pages="result.nPages"
+						on-select-page="getResultItems(result, page)"></pagination>
+				</div>
 
-        <div ng-repeat="reportResultItem in result.reportResultItems">
+				<table class="table">
+					<thead>
+						<th>Id</th>
+						<th>Name</th>
+					</thead>
+					<tbody>
 
-          <!-- the actual result items -->
-          <div style="float: left; padding: 5px; width: 100%;">
+					<tr ng-repeat="reportResultItem in result.reportResultItems">
 
-            <a
-              ng-href="{{'index.html#/record/conceptId/' + reportResultItem.itemId}}"
-              target="_blank">{{reportResultItem.itemId}}</a>,
-            {{reportResultItem.itemName}}
-          </div>
+						<!-- the actual result items -->
+						<td><a
+							ng-href="{{'index.html#/record/conceptId/' + reportResultItem.itemId}}"
+							target="_blank">{{reportResultItem.itemId}}</a></td>
+						<td>{{reportResultItem.itemName}}</td>
+					</tr>
+					</tbody>
 
-        </div>
+				</table>
+			</div>
+			<button ng-show="reportDisplayed.results.length > 0"
+				class="btn btn-sm btn-primary"
+				ng-click="addToQAWorkflow(reportDisplayed)">Add to QA
+				Workflow</button>
 
-      </div>
-      <button ng-show="reportDisplayed != null" class="btn btn-sm btn-primary"
-        ng-click="addToQAWorkflow(reportDisplayed)">Add to QA Workflow</button>
-    </div>
-  </div>
+			<button class="btn btn-sm btn-primary"
+				ng-show="reportDisplayed.results.length > 0"
+				ng-click="exportReport(reportDisplayed)">Export</button>
+		</div>
+	</div>
 </div>
 
