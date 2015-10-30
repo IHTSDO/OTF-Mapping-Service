@@ -25,7 +25,6 @@ CREATE TABLE tmp1 (
     id NUMERIC(18) UNSIGNED NOT NULL PRIMARY KEY
 ) CHARACTER SET utf8;
 
--- % mysqlimport --local -uotf -ppwd mappingservicedb tmp1.txt
-
+-- % mysqlimport --local -uuser -ppwd db tmp1.txt 
 
 
