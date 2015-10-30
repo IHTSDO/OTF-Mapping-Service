@@ -4,15 +4,6 @@
 
 <web-app>
   <display-name>Mapping REST Services</display-name>
-  
-  <filter>
-    <filter-name>ApiOriginFilter</filter-name>
-    <filter-class>org.ihtsdo.otf.mapping.rest.ApiOriginFilter</filter-class>
-  </filter>
-  <filter-mapping>
-    <filter-name>ApiOriginFilter</filter-name>
-    <url-pattern>/*</url-pattern>
-  </filter-mapping>
 
   <!-- Jersey configuration -->
   <servlet>
@@ -92,5 +83,12 @@
     <url-pattern>/*</url-pattern>
   </servlet-mapping>
 
-
+  <filter>
+    <filter-name>ApiOriginFilter</filter-name>
+    <filter-class>org.ihtsdo.otf.mapping.rest.ApiOriginFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>ApiOriginFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
 </web-app>
