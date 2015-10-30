@@ -88,8 +88,6 @@ public class WorkflowActionQaPathTest {
     // instantiate the workflow handler
     handler = new WorkflowQaPathHandler();
 
-    System.out.println(handler.getWorkflowStatusCombinations());
-
     // ensure database is clean
     for (Concept c : contentService.getConcepts().getIterable()) {
       for (Relationship r : c.getRelationships()) {
@@ -179,12 +177,8 @@ public class WorkflowActionQaPathTest {
   public void testQaNeededState() throws Exception {
     Logger.getLogger(getClass()).info("TEST qa needed state");
 
-
     // clear existing records
-    Logger.getLogger(getClass()).info("  clear record");
     clearMapRecords();
-
-    Logger.getLogger(getClass()).info("  create revision record");
     // create revision and specialist record
     revisionRecord = createRecord(loader, WorkflowStatus.REVISION);
     mappingService.addMapRecord(revisionRecord);
@@ -334,8 +328,8 @@ public class WorkflowActionQaPathTest {
 
       // Test: viewer
       ValidationResult result = testAllActionsForUser(viewer);
-      System.out.println("result="+result);
-      // all actions except cancel should fail
+      Logger.getLogger(getClass()).info("result=" + result);
+      // all actions except cancel and create_qa_record should fail
       for (WorkflowAction action : WorkflowAction.values()) {
         switch (action) {
           case ASSIGN_FROM_INITIAL_RECORD:
@@ -586,9 +580,6 @@ public class WorkflowActionQaPathTest {
    */
   @AfterClass
   public static void cleanup() throws Exception {
-
-    System.out.println("Cleanup.");
-
     workflowService.clearWorkflowForMapProject(mapProject);
     workflowService.close();
 
@@ -615,8 +606,9 @@ public class WorkflowActionQaPathTest {
    * @throws Exception the exception
    */
   private void getTrackingRecord() throws Exception {
-    System.out.println("Getting tracking record for project "
-        + mapProject.getId() + " and concept " + concept.getTerminologyId());
+    Logger.getLogger(getClass()).info(
+        "Getting tracking record for project " + mapProject.getId()
+            + " and concept " + concept.getTerminologyId());
     workflowService.computeWorkflow(mapProject);
     Thread.sleep(1000);
     trackingRecord = workflowService.getTrackingRecord(mapProject, concept);
@@ -628,7 +620,7 @@ public class WorkflowActionQaPathTest {
    * @throws Exception the exception
    */
   private void clearMapRecords() throws Exception {
-    System.out.println("Clearing map records.");
+    Logger.getLogger(getClass()).info("Clearing map records.");
     for (MapRecord mr : mappingService.getMapRecords().getIterable()) {
       mappingService.removeMapRecord(mr.getId());
     }
@@ -653,10 +645,11 @@ public class WorkflowActionQaPathTest {
           handler.validateTrackingRecordForActionAndUser(trackingRecord,
               action, user);
       if (actionResult.isValid()) {
-        System.out.println(action + " valid");
+        Logger.getLogger(getClass()).info(action + " valid");
         result.addMessage(action.toString());
       } else {
-        System.out.println(action + " invalid -- " + actionResult.toString());
+        Logger.getLogger(getClass()).info(
+            action + " invalid -- " + actionResult.toString());
         result.addError(action.toString());
       }
     }
