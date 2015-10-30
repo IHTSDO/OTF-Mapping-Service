@@ -109,18 +109,23 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
       return result;
     }
 
-    // check for CREATE_QA_RECORD action -- this is always valid, as it merely
-    // applies labels to concepts that are already in the workflow
-    if (action.equals(WorkflowAction.CREATE_QA_RECORD)) {
-      return result;
-    }
-
     // get the user role for this map project
     MappingService mappingService = new MappingServiceJpa();
     MapUserRole userRole =
         mappingService.getMapUserRoleForMapProject(user.getUserName(),
             tr.getMapProjectId());
     mappingService.close();
+
+    // check role - a specialist role is needed at least for any below here
+    if (!userRole.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
+      result.addError("User does not have required role");
+    }
+
+    // check for CREATE_QA_RECORD action -- this is always valid, as it merely
+    // applies labels to concepts that are already in the workflow
+    if (action.equals(WorkflowAction.CREATE_QA_RECORD)) {
+      return result;
+    }
 
     // get the map records and workflow path state from the tracking
     // record
@@ -140,11 +145,6 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
 
       // check record -- null means none assigned
       if (currentRecord == null) {
-
-        // check role
-        if (!userRole.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
-          result.addError("User does not have required role");
-        }
 
         // check action
         if (!action.equals(WorkflowAction.ASSIGN_FROM_SCRATCH)) {
