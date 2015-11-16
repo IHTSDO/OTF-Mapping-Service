@@ -58,7 +58,7 @@ public class MapUserJpa implements MapUser {
   private MapUserRole applicationRole;
 
   /** The team. */
-  @Column(nullable = false)
+  @Column(nullable = true)
   private String team;
 
   /**
