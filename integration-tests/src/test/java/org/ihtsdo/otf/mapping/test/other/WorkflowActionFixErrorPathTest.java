@@ -95,8 +95,13 @@ public class WorkflowActionFixErrorPathTest {
     for (MapProject mp : mappingService.getMapProjects().getIterable())
       mappingService.removeMapProject(mp.getId());
 
-    for (MapUser mu : mappingService.getMapUsers().getIterable())
-      mappingService.removeMapUser(mu.getId());
+    for (MapUser mu : mappingService.getMapUsers().getIterable()) {
+      if (!mu.getUserName().equals("guest") &&
+          !mu.getUserName().equals("loader") &&
+          !mu.getUserName().equals("qa")) {
+        mappingService.removeMapUser(mu.getId());
+      }
+    }
 
     for (TrackingRecord tr : workflowService.getTrackingRecords().getIterable())
       workflowService.removeTrackingRecord(tr.getId());
@@ -134,13 +139,7 @@ public class WorkflowActionFixErrorPathTest {
     lead.setUserName("lead");
     mappingService.addMapUser(lead);
 
-    // instantiate and add the loader user, used for REVISION records
-    loader = new MapUserJpa();
-    loader.setApplicationRole(MapUserRole.VIEWER);
-    loader.setEmail("none");
-    loader.setName("Loader");
-    loader.setUserName("loader");
-    mappingService.addMapUser(loader);
+    loader = mappingService.getMapUser("loader");
 
     // instantiate the project
     mapProject = new MapProjectJpa();
