@@ -228,8 +228,8 @@ public class MapProjectJpa implements MapProject {
   private Integer propagationDescendantThreshold;
 
   /** The team based. */
-  @Column(nullable = true)
-  private Boolean teamBased;
+  @Column(nullable = false)
+  private Boolean teamBased = false;
 
   /**
    * Default constructor.
