@@ -90,6 +90,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
   /** The map record indexed field names. */
   protected static Set<String> trackingRecordFieldNames;
 
+  protected static Set<String> feedbackConversationFieldNames;
+
   /**
    * Instantiates an empty {@link WorkflowServiceJpa}.
    *
@@ -110,6 +112,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
   @Override
   public synchronized void initializeFieldNames() throws Exception {
     trackingRecordFieldNames = new HashSet<>();
+    feedbackConversationFieldNames = new HashSet<>();
     EntityManager manager = factory.createEntityManager();
     FullTextEntityManager fullTextEntityManager =
         org.hibernate.search.jpa.Search.getFullTextEntityManager(manager);
@@ -131,8 +134,39 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
           indexReaderAccessor.close(indexReader);
         }
       }
+      if (indexClass.indexOf("FeedbackConversationJpa") != -1) {
+        Logger.getLogger(ContentServiceJpa.class).info(
+            "FOUND FeedbackConversationRecordJpa index");
+        IndexReader indexReader = indexReaderAccessor.open(indexClass);
+        try {
+          for (FieldInfo info : ReaderUtil.getMergedFieldInfos(indexReader)) {
+            feedbackConversationFieldNames.add(info.name);
+          }
+        } finally {
+          indexReaderAccessor.close(indexReader);
+        }
+      }
+    }
+
+    // If the index is empty (e.g. no tracking records) - then we've got a
+    // problem
+    // because the code above can't deal with it. In that case, add these fields
+    // manually
+    if (trackingRecordFieldNames.isEmpty()) {
+      trackingRecordFieldNames.add("defaultPreferredName");
+      trackingRecordFieldNames.add("workflowPath");
+      trackingRecordFieldNames.add("assignedUserNames");
+      trackingRecordFieldNames.add("assignedUserCount");
+      trackingRecordFieldNames.add("terminologyId");
+      trackingRecordFieldNames.add("userAndWorkflowStatusPairs");
+    }
+
+    if (feedbackConversationFieldNames.isEmpty()) {
+      feedbackConversationFieldNames.add("defaultPreferredName");
+      feedbackConversationFieldNames.add("feedbacks.message");
     }
     fullTextEntityManager.close();
+
   }
 
   /*
@@ -436,7 +470,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * @return the string
    */
   private static String constructMapProjectIdQuery(Long mapProjectId,
-    String query) {
+    String query, Set<String> fields) {
 
     String fullQuery;
 
@@ -591,7 +625,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         fullQuery += "(";
 
         // add fielded query for each indexed term, separated by OR
-        Iterator<String> namesIter = trackingRecordFieldNames.iterator();
+        Iterator<String> namesIter = fields.iterator();
         while (namesIter.hasNext()) {
           fullQuery += namesIter.next() + ":" + parsedTerms.get(i);
           if (namesIter.hasNext())
@@ -647,7 +681,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     Query luceneQuery;
 
     // construct basic query
-    String fullQuery = constructMapProjectIdQuery(mapProject.getId(), query);
+    String fullQuery =
+        constructMapProjectIdQuery(mapProject.getId(), query,
+            trackingRecordFieldNames);
 
     // add the query terms specific to findAvailableWork
     // - must be NON_LEGACY PATH
@@ -764,7 +800,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     Query luceneQuery;
 
     // construct basic query
-    String fullQuery = constructMapProjectIdQuery(mapProject.getId(), query);
+    String fullQuery =
+        constructMapProjectIdQuery(mapProject.getId(), query,
+            trackingRecordFieldNames);
 
     // add the query terms specific to findAvailableConflicts
     // - user and workflowStatus pair of CONFLICT_DETECTED_userName exists
@@ -1006,7 +1044,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     Query luceneQuery;
 
     // construct basic query
-    String fullQuery = constructMapProjectIdQuery(mapProject.getId(), query);
+    String fullQuery =
+        constructMapProjectIdQuery(mapProject.getId(), query,
+            trackingRecordFieldNames);
 
     // add the query terms specific to findAvailableReviewWork
     // - a user (any) and workflowStatus pair of REVIEW_NEEDED_userName
@@ -1106,7 +1146,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     Query luceneQuery;
 
     // construct basic query
-    String fullQuery = constructMapProjectIdQuery(mapProject.getId(), query);
+    String fullQuery =
+        constructMapProjectIdQuery(mapProject.getId(), query,
+            trackingRecordFieldNames);
 
     // add the query terms specific to findAssignedWork
     // - user and workflowStatus must exist in a pair of form:
@@ -1314,7 +1356,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     Query luceneQuery;
 
     // construct basic query
-    String fullQuery = constructMapProjectIdQuery(mapProject.getId(), query);
+    String fullQuery =
+        constructMapProjectIdQuery(mapProject.getId(), query,
+            trackingRecordFieldNames);
 
     // add the query terms specific to findAssignedConflicts
     // - workflow status CONFLICT_NEW or CONFLICT_IN_PROGRESS with this user
@@ -1467,7 +1511,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     Query luceneQuery;
 
     // construct basic query
-    String fullQuery = constructMapProjectIdQuery(mapProject.getId(), query);
+    String fullQuery =
+        constructMapProjectIdQuery(mapProject.getId(), query,
+            trackingRecordFieldNames);
 
     // add the query terms specific to findAssignedReviewWork
     // - user and workflow status must exist in the form REVIEW_NEW_userName
@@ -3259,7 +3305,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
     // construct basic query
     String fullQuery =
-        constructMapProjectIdQuery(mapProject.getId(), modifiedQuery);
+        constructMapProjectIdQuery(mapProject.getId(), modifiedQuery,
+            feedbackConversationFieldNames);
 
     fullQuery +=
         " AND terminology:" + mapProject.getSourceTerminology()
