@@ -42,7 +42,7 @@ public class EditingCycleBeginMojo extends AbstractMojo {
    */
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
-    getLog().info("Finishing RF2 Release");
+    getLog().info("Begin Editing Cycle");
     getLog().info("  refsetId = " + refsetId);
 
     if (refsetId == null) {
