@@ -292,6 +292,28 @@ angular
       }
       ;
 
+      $scope.logout = function() {
+        $rootScope.glassPane++;
+        $http(
+          {
+            url : root_security + "logout/user/id/"
+              + $scope.currentUser.userName,
+            method : "POST",
+            headers : {
+              "Content-Type" : "text/plain"
+            // save userToken from authentication
+            }
+          }).success(function(data) {
+          $rootScope.glassPane--;
+          $location.path("/");
+        }).error(function(data, status, headers, config) {
+          $rootScope.glassPane--;
+          $location.path("/");
+          $rootScope.handleHttpError(data, status, headers, config);
+        });
+
+      }
+      
       // function to change project from the header
       $scope.changeFocusProject = function(mapProject) {
         $scope.focusProject = mapProject;
