@@ -44,10 +44,25 @@ public class WorkflowActionFixErrorPathTest {
 
   // the mapping objects
   /** The loader. */
-  private static MapUser viewer, specialist, lead, loader;
+  private static MapUser viewer;
+
+  /**  The specialist. */
+  private static MapUser specialist;
+
+  /**  The lead. */
+  private static MapUser lead;
+
+  /**  The loader. */
+  private static MapUser loader;
 
   /** The lead record. */
-  private static MapRecord revisionRecord, specRecord, leadRecord;
+  private static MapRecord revisionRecord;
+
+  /**  The spec record. */
+  private static MapRecord specRecord;
+
+  /**  The lead record. */
+  private static MapRecord leadRecord;
 
   /** The map project. */
   private static MapProject mapProject;
@@ -96,9 +111,9 @@ public class WorkflowActionFixErrorPathTest {
       mappingService.removeMapProject(mp.getId());
 
     for (MapUser mu : mappingService.getMapUsers().getIterable()) {
-      if (!mu.getUserName().equals("guest") &&
-          !mu.getUserName().equals("loader") &&
-          !mu.getUserName().equals("qa")) {
+      if (!mu.getUserName().equals("guest")
+          && !mu.getUserName().equals("loader")
+          && !mu.getUserName().equals("qa")) {
         mappingService.removeMapUser(mu.getId());
       }
     }
@@ -743,8 +758,10 @@ public class WorkflowActionFixErrorPathTest {
 
   /**
    * Returns the tracking record.
+   *
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   private void getTrackingRecord() throws Exception {
     System.out.println("Getting tracking record for project "
         + mapProject.getId() + " and concept " + concept.getTerminologyId());
@@ -758,6 +775,7 @@ public class WorkflowActionFixErrorPathTest {
    *
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   private void clearMapRecords() throws Exception {
     System.out.println("Clearing map records.");
     for (MapRecord mr : mappingService.getMapRecords().getIterable()) {
@@ -776,6 +794,7 @@ public class WorkflowActionFixErrorPathTest {
    * @return the validation result
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   private ValidationResult testAllActionsForUser(MapUser user) throws Exception {
     ValidationResult result = new ValidationResultJpa();
 
@@ -799,6 +818,7 @@ public class WorkflowActionFixErrorPathTest {
    * @param status the status
    * @return the map record
    */
+  @SuppressWarnings("static-method")
   private MapRecord createRecord(MapUser user, WorkflowStatus status) {
     MapRecord record = new MapRecordJpa();
 

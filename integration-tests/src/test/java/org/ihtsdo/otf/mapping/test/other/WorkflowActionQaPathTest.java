@@ -46,10 +46,22 @@ public class WorkflowActionQaPathTest {
 
   // the mapping objects
   /** The loader. */
-  private static MapUser viewer, specialist, loader;
+  private static MapUser viewer;
+
+  /** The specialist. */
+  private static MapUser specialist;
+
+  /** The loader. */
+  private static MapUser loader;
 
   /** The loader record. */
-  private static MapRecord revisionRecord, specRecord, loaderRecord;
+  private static MapRecord revisionRecord;
+
+  /** The spec record. */
+  private static MapRecord specRecord;
+
+  /** The loader record. */
+  private static MapRecord loaderRecord;
 
   /** The map project. */
   private static MapProject mapProject;
@@ -178,7 +190,6 @@ public class WorkflowActionQaPathTest {
   @Test
   public void testQaNeededState() throws Exception {
     Logger.getLogger(getClass()).info("TEST qa needed state");
-
 
     // clear existing records
     Logger.getLogger(getClass()).info("  clear record");
@@ -334,7 +345,7 @@ public class WorkflowActionQaPathTest {
 
       // Test: viewer
       ValidationResult result = testAllActionsForUser(viewer);
-      System.out.println("result="+result);
+      System.out.println("result=" + result);
       // all actions except cancel should fail
       for (WorkflowAction action : WorkflowAction.values()) {
         switch (action) {
@@ -614,6 +625,7 @@ public class WorkflowActionQaPathTest {
    *
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   private void getTrackingRecord() throws Exception {
     System.out.println("Getting tracking record for project "
         + mapProject.getId() + " and concept " + concept.getTerminologyId());
@@ -627,6 +639,7 @@ public class WorkflowActionQaPathTest {
    *
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   private void clearMapRecords() throws Exception {
     System.out.println("Clearing map records.");
     for (MapRecord mr : mappingService.getMapRecords().getIterable()) {
@@ -645,6 +658,7 @@ public class WorkflowActionQaPathTest {
    * @return the validation result
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   private ValidationResult testAllActionsForUser(MapUser user) throws Exception {
     ValidationResult result = new ValidationResultJpa();
 
@@ -670,6 +684,7 @@ public class WorkflowActionQaPathTest {
    * @param status the status
    * @return the map record
    */
+  @SuppressWarnings("static-method")
   private MapRecord createRecord(MapUser user, WorkflowStatus status) {
     MapRecord record = new MapRecordJpa();
 

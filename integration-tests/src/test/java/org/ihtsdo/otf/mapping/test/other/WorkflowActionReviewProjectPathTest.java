@@ -44,10 +44,19 @@ public class WorkflowActionReviewProjectPathTest {
 
   // the mapping objects
   /** The lead. */
-  private static MapUser viewer, specialist, lead;
+  private static MapUser viewer;
+
+  /** The specialist. */
+  private static MapUser specialist;
+
+  /** The lead. */
+  private static MapUser lead;
 
   /** The lead record. */
-  private static MapRecord specRecord, leadRecord;
+  private static MapRecord specRecord;
+
+  /** The lead record. */
+  private static MapRecord leadRecord;
 
   /** The map project. */
   private static MapProject mapProject;
@@ -863,6 +872,7 @@ public class WorkflowActionReviewProjectPathTest {
    *
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   private void getTrackingRecord() throws Exception {
     System.out.println("Getting tracking record for project "
         + mapProject.getId() + " and concept " + concept.getTerminologyId());
@@ -876,6 +886,7 @@ public class WorkflowActionReviewProjectPathTest {
    *
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   private void clearMapRecords() throws Exception {
     System.out.println("Clearing map records.");
     for (MapRecord mr : mappingService.getMapRecords().getIterable()) {
@@ -893,6 +904,7 @@ public class WorkflowActionReviewProjectPathTest {
    * @return the validation result
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   private ValidationResult testAllActionsForUser(MapUser user) throws Exception {
     ValidationResult result = new ValidationResultJpa();
 
@@ -916,6 +928,7 @@ public class WorkflowActionReviewProjectPathTest {
    * @param status the status
    * @return the map record
    */
+  @SuppressWarnings("static-method")
   private MapRecord createRecord(MapUser user, WorkflowStatus status) {
     MapRecord record = new MapRecordJpa();
 

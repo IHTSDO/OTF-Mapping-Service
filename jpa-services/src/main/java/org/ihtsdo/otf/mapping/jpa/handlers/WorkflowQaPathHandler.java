@@ -24,7 +24,13 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
 
   // The workflow path states defining the QA Path Workflow
   /** The finished state. */
-  private static WorkflowPathState qaNeededState, editingState, finishedState;
+  private static WorkflowPathState qaNeededState;
+
+  /** The editing state. */
+  private static WorkflowPathState editingState;
+
+  /** The finished state. */
+  private static WorkflowPathState finishedState;
 
   /**
    * Instantiates an empty {@link WorkflowQaPathHandler}.
@@ -87,6 +93,7 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
    * org.ihtsdo.otf.mapping.helpers.WorkflowAction,
    * org.ihtsdo.otf.mapping.model.MapUser)
    */
+  /* see superclass */
   @Override
   public ValidationResult validateTrackingRecordForActionAndUser(
     TrackingRecord tr, WorkflowAction action, MapUser user) throws Exception {

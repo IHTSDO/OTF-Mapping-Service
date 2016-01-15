@@ -209,9 +209,10 @@ public class MapRecordRf2ComplexMapSampleLoaderMojo extends AbstractMojo {
 
   /**
    * Load extended map ref sets from the file.
-   * 
-   * @return
-   * 
+   *
+   * @param complexMapFile the complex map file
+   * @param mapProjectMap the map project map
+   * @return the map
    * @throws Exception the exception
    */
   private Map<String, List<ComplexMapRefSetMember>> loadExtendedMapRefSets(

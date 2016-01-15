@@ -161,7 +161,11 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
     this.sourceConcept = sourceConcept;
   }
 
-  /** For serialization */
+  /**
+   * For serialization.
+   *
+   * @return the source concept id
+   */
   @XmlElement
   private String getSourceConceptId() {
     return sourceConcept.getTerminologyId();
@@ -188,7 +192,11 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
     this.destinationConcept = destinationConcept;
   }
 
-  /** For serialization */
+  /**
+   * For serialization.
+   *
+   * @return the destination concept id
+   */
   @XmlElement
   private String getDestinationConceptId() {
     return destinationConcept.getTerminologyId();

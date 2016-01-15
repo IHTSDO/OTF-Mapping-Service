@@ -82,7 +82,6 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
    * 
    * @throws MojoExecutionException the mojo execution exception
    */
-  @SuppressWarnings("resource")
   @Override
   public void execute() throws MojoExecutionException {
     getLog().info("Starting to convert index XML to HTML");
@@ -447,6 +446,8 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
      * Write note info. Italicize the first part of the note and split on
      * sentences in a variety of ways to make long paragraph notes more
      * readable.
+     *
+     * @param note the note
      */
     private void writeNote(String note) {
       String styledNote = note.replaceAll("Note:", "<i>Note:</i>");
@@ -684,8 +685,6 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
 
     /**
      * Write header info.
-     * 
-     * @param key the key
      */
     private void writeHeaderColumn() {
       // Write entry for "head" tag.
@@ -721,6 +720,8 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
 
     /**
      * Returns table html.
+     *
+     * @return the table html
      */
     private String getTableHtml() {
       inTable = true;

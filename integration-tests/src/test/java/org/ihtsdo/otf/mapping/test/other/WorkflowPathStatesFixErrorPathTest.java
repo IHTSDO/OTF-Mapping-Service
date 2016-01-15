@@ -57,7 +57,10 @@ public class WorkflowPathStatesFixErrorPathTest {
   private static TrackingRecord trackingRecord;
 
   /** The lead. */
-  private static MapUser specialist, lead;
+  private static MapUser specialist;
+
+  /** The lead. */
+  private static MapUser lead;
 
   /** The map project. */
   private static MapProject mapProject;
@@ -96,7 +99,7 @@ public class WorkflowPathStatesFixErrorPathTest {
           && !mu.getUserName().equals("qa")) {
         mappingService.removeMapUser(mu.getId());
       }
-    
+
     for (TrackingRecord tr : workflowService.getTrackingRecords().getIterable())
       workflowService.removeTrackingRecord(tr.getId());
 
@@ -308,6 +311,7 @@ public class WorkflowPathStatesFixErrorPathTest {
    * @param status the status
    * @return the map record
    */
+  @SuppressWarnings("static-method")
   private MapRecord createRecord(MapUser user, WorkflowStatus status) {
     MapRecord record = new MapRecordJpa();
 

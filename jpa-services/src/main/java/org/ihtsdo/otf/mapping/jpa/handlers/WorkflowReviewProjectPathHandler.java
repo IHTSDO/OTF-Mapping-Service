@@ -24,8 +24,20 @@ public class WorkflowReviewProjectPathHandler extends
     AbstractWorkflowPathHandler {
 
   // The workflow states defining the Review Project Path
-  private static WorkflowPathState initialState, specialistEditingState,
-      specialistFinishedState, leadEditingState, leadFinishedState;
+  /** The initial state. */
+  private static WorkflowPathState initialState;
+
+  /** The specialist editing state. */
+  private static WorkflowPathState specialistEditingState;
+
+  /** The specialist finished state. */
+  private static WorkflowPathState specialistFinishedState;
+
+  /** The lead editing state. */
+  private static WorkflowPathState leadEditingState;
+
+  /** The lead finished state. */
+  private static WorkflowPathState leadFinishedState;
 
   /**
    * Instantiates an empty {@link WorkflowReviewProjectPathHandler}.
@@ -100,6 +112,7 @@ public class WorkflowReviewProjectPathHandler extends
 
   }
 
+  /* see superclass */
   @Override
   public ValidationResult validateTrackingRecordForActionAndUser(
     TrackingRecord tr, WorkflowAction action, MapUser user) throws Exception {
@@ -221,9 +234,9 @@ public class WorkflowReviewProjectPathHandler extends
           result.addError("User does not have required role");
         }
 
-        // If lead role, ASSIGN_FROM_SCRATCH is allowed 
+        // If lead role, ASSIGN_FROM_SCRATCH is allowed
         // ( e.g., this is the case where a lead edited the record
-        //   instead of a specialist - reviewing their own work)
+        // instead of a specialist - reviewing their own work)
         if (userRole.hasPrivilegesOf(MapUserRole.LEAD)) {
           if (!action.equals(WorkflowAction.ASSIGN_FROM_SCRATCH)) {
             result.addError("Action is not permitted.");

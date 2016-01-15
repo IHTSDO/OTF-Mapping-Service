@@ -593,6 +593,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
    * 
    * @param report the report
    */
+  @SuppressWarnings("static-method")
   private void handleReportLazyInitialization(Report report) {
     report.getNotes().size();
     report.getResults().size();
@@ -977,13 +978,14 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
   /**
    * Helper function Given a report definition and a date, assesses whether this
-   * report should be run, based on definition frequency
-   * 
-   * @param reportDefinition
-   * @param date
-   * @return
-   * @throws Exception
+   * report should be run, based on definition frequency.
+   *
+   * @param reportDefinition the report definition
+   * @param date the date
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   private boolean isDateToRunReport(ReportDefinition reportDefinition, Date date)
     throws Exception {
 
@@ -1350,6 +1352,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
    * @param value the value
    * @return the report result for value
    */
+  @SuppressWarnings("static-method")
   private ReportResult getReportResultForValue(Report report, String value) {
     for (ReportResult result : report.getResults()) {
       if (result.getValue().equals(value))
@@ -1366,6 +1369,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
    * @param result2 the older set against which items will be compared
    * @return the report result items added
    */
+  @SuppressWarnings("static-method")
   private ReportResult getReportResultItemsNotInResult(ReportResult result1,
     ReportResult result2) {
 
