@@ -24,9 +24,22 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
 
   // The workflow path states defining the Non Legacy Path
   /** The lead finished state. */
-  private static WorkflowPathState initialState, firstSpecialistEditingState,
-      secondSpecialistEditingState, conflictDetectedState, leadEditingState,
-      leadFinishedState;
+  private static WorkflowPathState initialState;
+
+  /** The first specialist editing state. */
+  private static WorkflowPathState firstSpecialistEditingState;
+
+  /** The second specialist editing state. */
+  private static WorkflowPathState secondSpecialistEditingState;
+
+  /** The conflict detected state. */
+  private static WorkflowPathState conflictDetectedState;
+
+  /** The lead editing state. */
+  private static WorkflowPathState leadEditingState;
+
+  /** The lead finished state. */
+  private static WorkflowPathState leadFinishedState;
 
   /**
    * Instantiates an empty {@link WorkflowNonLegacyPathHandler}.
@@ -133,6 +146,7 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
    * org.ihtsdo.otf.mapping.helpers.WorkflowAction,
    * org.ihtsdo.otf.mapping.model.MapUser)
    */
+  /* see superclass */
   @SuppressWarnings("unused")
   @Override
   public ValidationResult validateTrackingRecordForActionAndUser(
@@ -183,8 +197,8 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
     if (state == null) {
       result
           .addError("Could not determine workflow path state for tracking record");
-    } 
-    
+    }
+
     // for CREATE_QA_RECORD, only a label is assigned, check role only
     else if (action.equals(WorkflowAction.CREATE_QA_RECORD)) {
 

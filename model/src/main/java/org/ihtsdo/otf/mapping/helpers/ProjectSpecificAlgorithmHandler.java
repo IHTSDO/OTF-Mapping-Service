@@ -233,5 +233,10 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    */
   public MapRelation getDefaultUpPropagatedMapRelation() throws Exception;
 
+  /**
+   * Returns the default target name for blank target.
+   *
+   * @return the default target name for blank target
+   */
   String getDefaultTargetNameForBlankTarget();
 }

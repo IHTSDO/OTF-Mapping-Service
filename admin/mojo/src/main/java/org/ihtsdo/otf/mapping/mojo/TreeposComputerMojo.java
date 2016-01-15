@@ -11,7 +11,6 @@ import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
-import org.ihtsdo.otf.mapping.services.helpers.OtfEmailHandler;
 
 /**
  * Goal which loads an RF2 Snapshot of SNOMED CT data into a database.
@@ -77,7 +76,8 @@ public class TreeposComputerMojo extends AbstractMojo {
     try {
       config = ConfigUtility.getConfigProperties();
     } catch (Exception e1) {
-      throw new MojoFailureException("Could not retrieve parameters from conf file");
+      throw new MojoFailureException(
+          "Could not retrieve parameters from conf file");
     }
     String notificationRecipients =
         config.getProperty("send.notification.recipients");
@@ -123,8 +123,7 @@ public class TreeposComputerMojo extends AbstractMojo {
       contentService.close();
 
       if (!results.isValid()) {
-        OtfEmailHandler handler = new OtfEmailHandler();
-        handler
+        ConfigUtility
             .sendValidationResultEmail(
                 notificationRecipients,
                 "OTF-Mapping-Tool:  Errors in computing " + terminology + ", "

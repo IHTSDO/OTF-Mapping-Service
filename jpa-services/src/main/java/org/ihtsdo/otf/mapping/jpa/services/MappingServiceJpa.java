@@ -96,7 +96,6 @@ import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
-import org.ihtsdo.otf.mapping.services.helpers.OtfEmailHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
 /**
@@ -821,7 +820,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
    * @param mapRecord the map record to be updated
    */
   @Override
-  public void updateMapRecord(MapRecord mapRecord) {
+  public void updateMapRecord(MapRecord mapRecord) throws Exception {
 
     // update last modified timestamp
     mapRecord.setLastModified((new java.util.Date()).getTime());
@@ -834,58 +833,23 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     // Algorithm Handler only instantiated if required
     // Warning message used to store any errors for logging/email
     ProjectSpecificAlgorithmHandler algorithmHandler = null;
-    String warningMsg = "";
     for (MapEntry mapEntry : mapRecord.getMapEntries()) {
       if (mapEntry.getTargetId() == null || mapEntry.getTargetId().isEmpty()) {
 
         // get handler if not already instantiated
         if (algorithmHandler == null) {
-          try {
-            algorithmHandler =
-                getProjectSpecificAlgorithmHandler(getMapProject(mapRecord
-                    .getMapProjectId()));
-          } catch (Exception e) {
-            warningMsg +=
-                "Unexpected error attempting to instantiate project specific handler";
-          }
+          algorithmHandler =
+              getProjectSpecificAlgorithmHandler(getMapProject(mapRecord
+                  .getMapProjectId()));
         }
 
         // try to set the default target name
-        try {
-          Logger.getLogger(MappingServiceJpa.class).info(
-              "Ensuring blank target properly set for map entry "
-                  + mapEntry.getId());
-          mapEntry.setTargetId("");
-          mapEntry.setTargetName(algorithmHandler
-              .getDefaultTargetNameForBlankTarget());
-        } catch (Exception e) {
-
-          // do not throw exception, but send email
-          warningMsg +=
-              "Unexpected error attempting to set blank target for map entry\n"
-                  + "  Map Record Id     : " + mapRecord.getId()
-                  + "  Map Record Concept: " + mapRecord.getConceptId() + ", "
-                  + mapRecord.getConceptName() + "  Map Entry Id      : "
-                  + mapEntry.getId();
-
-        }
-
-      }
-    }
-
-    if (!warningMsg.isEmpty()) {
-      Logger.getLogger(MappingServiceJpa.class).error(
-          "Failed to correctly set blank targets: " + warningMsg);
-      try {
-        // send email if recipients list specified
-        OtfEmailHandler emailHandler = new OtfEmailHandler();
-        if (emailHandler.isRecipientsListSpecified()) {
-          emailHandler.sendSimpleEmail(
-              "OTF-Mapping-Tool Warning: Failed to properly set blank target",
-              warningMsg);
-        }
-      } catch (Exception e) {
-        // do nothing
+        Logger.getLogger(MappingServiceJpa.class).info(
+            "Ensuring blank target properly set for map entry "
+                + mapEntry.getId());
+        mapEntry.setTargetId("");
+        mapEntry.setTargetName(algorithmHandler
+            .getDefaultTargetNameForBlankTarget());
       }
     }
 
@@ -3406,6 +3370,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
    * @param mapProject the map project
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   private void validateUserAndRole(MapProject mapProject) throws Exception {
     Map<MapUser, String> userToRoleMap = new HashMap<>();
     for (MapUser user : mapProject.getMapLeads()) {
@@ -3432,6 +3397,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
    * 
    * @param mapRecord the map record
    */
+  @SuppressWarnings("static-method")
   private void handleMapRecordLazyInitialization(MapRecord mapRecord) {
     // handle all lazy initializations
     mapRecord.getOwner().getEmail();
@@ -3454,6 +3420,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
    * 
    * @param mapProject the map project
    */
+  @SuppressWarnings("static-method")
   private void handleMapProjectLazyInitialization(MapProject mapProject) {
     // handle all lazy initializations
     mapProject.getMapAdvices().size();

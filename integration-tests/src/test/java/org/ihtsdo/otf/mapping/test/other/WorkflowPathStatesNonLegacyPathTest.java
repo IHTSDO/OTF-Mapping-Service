@@ -57,7 +57,13 @@ public class WorkflowPathStatesNonLegacyPathTest {
   private static TrackingRecord trackingRecord;
 
   /** The lead. */
-  private static MapUser specialist, specialist2, lead;
+  private static MapUser specialist;
+
+  /** The specialist2. */
+  private static MapUser specialist2;
+
+  /** The lead. */
+  private static MapUser lead;
 
   /** The map project. */
   private static MapProject mapProject;
@@ -316,6 +322,7 @@ public class WorkflowPathStatesNonLegacyPathTest {
    * @param status the status
    * @return the map record
    */
+  @SuppressWarnings("static-method")
   private MapRecord createRecord(MapUser user, WorkflowStatus status) {
     MapRecord record = new MapRecordJpa();
 

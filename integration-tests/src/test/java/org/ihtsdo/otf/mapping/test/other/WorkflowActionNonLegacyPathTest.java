@@ -44,10 +44,25 @@ public class WorkflowActionNonLegacyPathTest {
 
   // the mapping objects
   /** The lead. */
-  private static MapUser viewer, specialist, specialist2, lead;
+  private static MapUser viewer;
+
+  /** The specialist. */
+  private static MapUser specialist;
+
+  /** The specialist2. */
+  private static MapUser specialist2;
+
+  /** The lead. */
+  private static MapUser lead;
 
   /** The lead record. */
-  private static MapRecord specRecord, specRecord2, leadRecord;
+  private static MapRecord specRecord;
+
+  /** The spec record2. */
+  private static MapRecord specRecord2;
+
+  /** The lead record. */
+  private static MapRecord leadRecord;
 
   /** The map project. */
   private static MapProject mapProject;
@@ -1249,6 +1264,7 @@ public class WorkflowActionNonLegacyPathTest {
    *
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   private void getTrackingRecord() throws Exception {
     System.out.println("Getting tracking record for project "
         + mapProject.getId() + " and concept " + concept.getTerminologyId());
@@ -1262,6 +1278,7 @@ public class WorkflowActionNonLegacyPathTest {
    *
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   private void clearMapRecords() throws Exception {
     System.out.println("Clearing map records.");
     for (MapRecord mr : mappingService.getMapRecords().getIterable()) {
@@ -1280,6 +1297,7 @@ public class WorkflowActionNonLegacyPathTest {
    * @return the validation result
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   private ValidationResult testAllActionsForUser(MapUser user) throws Exception {
     ValidationResult result = new ValidationResultJpa();
 
@@ -1303,6 +1321,7 @@ public class WorkflowActionNonLegacyPathTest {
    * @param status the status
    * @return the map record
    */
+  @SuppressWarnings("static-method")
   private MapRecord createRecord(MapUser user, WorkflowStatus status) {
     MapRecord record = new MapRecordJpa();
 

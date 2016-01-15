@@ -431,6 +431,7 @@ public class AscToXmlMojo extends AbstractMojo {
    *
    * @param parent the parent element
    */
+  @SuppressWarnings("static-method")
   private void writeTableEndToXml(Element parent) {
     Element indexHeading = new Element("endTable");
     parent.appendChild(indexHeading);

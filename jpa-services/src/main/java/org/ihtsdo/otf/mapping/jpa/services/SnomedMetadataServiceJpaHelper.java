@@ -561,6 +561,7 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements
    * @return the descendant concepts
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   private Set<Concept> getDescendantConcepts(ContentService contentService,
     String terminologyId, String terminology, String terminologyVersion,
     String typeId) throws Exception {
