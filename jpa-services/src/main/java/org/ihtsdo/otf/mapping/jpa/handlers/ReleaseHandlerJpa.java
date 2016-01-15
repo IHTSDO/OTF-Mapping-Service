@@ -119,6 +119,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   /** The report statistics. */
   private Map<String, Integer> reportStatistics = new HashMap<>();
 
+  /**  The date format. */
   final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
 
   /**
@@ -1452,6 +1453,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @param c the c
    * @return the string
    */
+  @SuppressWarnings("static-method")
   private String getHash(ComplexMapRefSetMember c) {
     return c.getRefSetId() + c.getConcept().getTerminologyId()
         + c.getMapGroup() + c.getMapRule() + c.getMapTarget();
@@ -1704,6 +1706,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @param rule the rule
    * @return the string
    */
+  @SuppressWarnings("static-method")
   private String prepTargetName(String rule) {
     String[] ifaComponents = rule.split("\\|");
 
@@ -1725,6 +1728,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @return the sorted tree position descendant list
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   private List<TreePosition> getSortedTreePositionDescendantList(TreePosition tp)
     throws Exception {
 
@@ -2134,6 +2138,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @param conceptName the concept name
    * @param error the error
    */
+  @SuppressWarnings("static-method")
   private void addReportError(Report report, MapProject mapProject,
     String terminologyId, String conceptName, String error) {
 

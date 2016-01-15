@@ -14,7 +14,6 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
-import org.ihtsdo.otf.mapping.services.helpers.OtfEmailHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
 /**
@@ -178,8 +177,7 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
 
       // if notification requested, send email
       if (sendNotification) {
-        OtfEmailHandler emailHandler = new OtfEmailHandler();
-        emailHandler.sendSimpleEmail(notificationRecipients,
+        ConfigUtility.sendEmail(notificationRecipients,
             "[OTF-Mapping-Tool] Drip feed results", notificationMessage);
       }
 

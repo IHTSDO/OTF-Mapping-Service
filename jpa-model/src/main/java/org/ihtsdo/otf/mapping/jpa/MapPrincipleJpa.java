@@ -32,23 +32,30 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MapPrincipleJpa implements MapPrinciple {
 
+  /** The id. */
   @Id
   @GeneratedValue
   private Long id;
 
+  /** The principle id. */
   @Column(nullable = true, length = 255)
   private String principleId;
 
+  /** The name. */
   @Column(nullable = false, length = 255)
   private String name;
 
+  /** The detail. */
   @Column(nullable = true, length = 4000)
   private String detail;
 
+  /** The section ref. */
   @Column(nullable = true, length = 4000)
   private String sectionRef;
 
-  /** Default constructor */
+  /**
+   * Default constructor.
+   */
   public MapPrincipleJpa() {
     // left empty
   }
@@ -87,7 +94,8 @@ public class MapPrincipleJpa implements MapPrinciple {
   }
 
   /**
-   * Return the id
+   * Return the id.
+   *
    * @return the id
    */
   @Override
@@ -96,7 +104,8 @@ public class MapPrincipleJpa implements MapPrinciple {
   }
 
   /**
-   * Set the id
+   * Set the id.
+   *
    * @param id the id
    */
   @Override
@@ -105,7 +114,8 @@ public class MapPrincipleJpa implements MapPrinciple {
   }
 
   /**
-   * Returns the id in string form
+   * Returns the id in string form.
+   *
    * @return the id in string form
    */
   @XmlID
@@ -114,18 +124,21 @@ public class MapPrincipleJpa implements MapPrinciple {
     return id.toString();
   }
 
+  /* see superclass */
   @Override
   public String getPrincipleId() {
     return this.principleId;
   }
 
+  /* see superclass */
   @Override
   public void setPrincipleId(String principleId) {
     this.principleId = principleId;
   }
 
   /**
-   * Get the detail
+   * Get the detail.
+   *
    * @return the detail
    */
   @Override
@@ -135,7 +148,8 @@ public class MapPrincipleJpa implements MapPrinciple {
   }
 
   /**
-   * Set the detail
+   * Set the detail.
+   *
    * @param detail the detail
    */
   @Override
@@ -145,7 +159,8 @@ public class MapPrincipleJpa implements MapPrinciple {
   }
 
   /**
-   * Get the name
+   * Get the name.
+   *
    * @return the name
    */
   @Override
@@ -155,7 +170,8 @@ public class MapPrincipleJpa implements MapPrinciple {
   }
 
   /**
-   * Set the name
+   * Set the name.
+   *
    * @param name the name
    */
   @Override
@@ -165,7 +181,8 @@ public class MapPrincipleJpa implements MapPrinciple {
   }
 
   /**
-   * Get the section reference
+   * Get the section reference.
+   *
    * @return the section reference
    */
   @Override
@@ -175,7 +192,8 @@ public class MapPrincipleJpa implements MapPrinciple {
   }
 
   /**
-   * Set the section reference
+   * Set the section reference.
+   *
    * @param sectionRef the section reference
    */
   @Override
@@ -189,6 +207,7 @@ public class MapPrincipleJpa implements MapPrinciple {
    * 
    * @see java.lang.Object#hashCode()
    */
+  /* see superclass */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -207,6 +226,7 @@ public class MapPrincipleJpa implements MapPrinciple {
    * 
    * @see java.lang.Object#equals(java.lang.Object)
    */
+  /* see superclass */
   @Override
   public boolean equals(Object obj) {
     if (this == obj)
@@ -239,6 +259,7 @@ public class MapPrincipleJpa implements MapPrinciple {
     return true;
   }
 
+  /* see superclass */
   @Override
   public String toString() {
     return "MapPrincipleJpa [id=" + id + ", name=" + name + ", detail="

@@ -1687,7 +1687,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
    * 
    * NOTE: This function is designed to keep as little Concept information in
    * storage as possible. See inline notes.
-   * 
+   *
+   * @param parChd the par chd
    * @param concept the concept
    * @param typeId the type id
    * @param ancestorPath the ancestor path

@@ -18,14 +18,22 @@ import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
 /**
- * Workflow path handler for "fix error path"
+ * Workflow path handler for "fix error path".
  */
 public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
 
   // The workflow states defining the Fix Error workflow path
   /** The lead finished state. */
-  private static WorkflowPathState specialistEditingState,
-      specialistFinishedState, leadEditingState, leadFinishedState;
+  private static WorkflowPathState specialistEditingState;
+
+  /** The specialist finished state. */
+  private static WorkflowPathState specialistFinishedState;
+
+  /** The lead editing state. */
+  private static WorkflowPathState leadEditingState;
+
+  /** The lead finished state. */
+  private static WorkflowPathState leadFinishedState;
 
   /**
    * Instantiates an empty {@link WorkflowFixErrorPathHandler}.
@@ -97,6 +105,7 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
    * org.ihtsdo.otf.mapping.helpers.WorkflowAction,
    * org.ihtsdo.otf.mapping.model.MapUser)
    */
+  /* see superclass */
   @SuppressWarnings("unused")
   @Override
   public ValidationResult validateTrackingRecordForActionAndUser(
@@ -164,7 +173,7 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
       result
           .addError("Could not determine workflow path state for tracking record");
     } else if (action.equals(WorkflowAction.CREATE_QA_RECORD)) {
-      
+
       // for creating qa record, only check role
       if (!userRole.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
         result.addError("User does not have required role");
@@ -237,7 +246,7 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
         }
 
       }
-      
+
       // otherwise, not ASSIGN_FROM_SCRATCH and record is null
       else {
         result.addError("Action " + action.toString()
