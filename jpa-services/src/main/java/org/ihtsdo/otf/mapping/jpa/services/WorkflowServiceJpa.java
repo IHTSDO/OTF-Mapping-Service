@@ -75,7 +75,6 @@ import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
-import org.ihtsdo.otf.mapping.services.helpers.OtfEmailHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecordJpa;
 import org.ihtsdo.otf.mapping.workflow.WorkflowException;
@@ -90,6 +89,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
   /** The map record indexed field names. */
   protected static Set<String> trackingRecordFieldNames;
 
+  /** The feedback conversation field names. */
   protected static Set<String> feedbackConversationFieldNames;
 
   /**
@@ -109,6 +109,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * 
    * @see org.ihtsdo.otf.mapping.services.RootService#initializeFieldNames()
    */
+  /* see superclass */
   @Override
   public synchronized void initializeFieldNames() throws Exception {
     trackingRecordFieldNames = new HashSet<>();
@@ -175,6 +176,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * @see org.ihtsdo.otf.mapping.services.WorkflowService#addTrackingRecord
    * (org.ihtsdo.otf.mapping.workflow.TrackingRecord)
    */
+  /* see superclass */
   @Override
   public TrackingRecord addTrackingRecord(TrackingRecord trackingRecord)
     throws Exception {
@@ -197,6 +199,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * @see org.ihtsdo.otf.mapping.services.WorkflowService#removeTrackingRecord
    * (java.lang.Long)
    */
+  /* see superclass */
   @Override
   public void removeTrackingRecord(Long trackingRecordId) throws Exception {
 
@@ -230,6 +233,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * @see org.ihtsdo.otf.mapping.services.WorkflowService#updateTrackingRecord
    * (org.ihtsdo.otf.mapping.workflow.TrackingRecord)
    */
+  /* see superclass */
   @Override
   public void updateTrackingRecord(TrackingRecord record) throws Exception {
     if (getTransactionPerOperation()) {
@@ -247,6 +251,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * 
    * @see org.ihtsdo.otf.mapping.services.WorkflowService#getTrackingRecords ()
    */
+  /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
   public TrackingRecordList getTrackingRecords() throws Exception {
@@ -267,6 +272,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * (org.ihtsdo.otf.mapping.model.MapProject,
    * org.ihtsdo.otf.mapping.rf2.Concept)
    */
+  /* see superclass */
   @Override
   public TrackingRecord getTrackingRecordForMapProjectAndConcept(
     MapProject mapProject, Concept concept) {
@@ -293,6 +299,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * getTrackingRecordForMapProjectAndConcept
    * (org.ihtsdo.otf.mapping.model.MapProject, java.lang.String)
    */
+  /* see superclass */
   @Override
   public TrackingRecord getTrackingRecordForMapProjectAndConcept(
     MapProject mapProject, String terminologyId) {
@@ -318,6 +325,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * @see org.ihtsdo.otf.mapping.services.WorkflowService#
    * getTrackingRecordsForMapProject (org.ihtsdo.otf.mapping.model.MapProject)
    */
+  /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
   public TrackingRecordList getTrackingRecordsForMapProject(
@@ -342,6 +350,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * (org.ihtsdo.otf.mapping.model.MapProject,
    * org.ihtsdo.otf.mapping.rf2.Concept)
    */
+  /* see superclass */
   @Override
   public TrackingRecord getTrackingRecord(MapProject mapProject, Concept concept)
     throws Exception {
@@ -362,6 +371,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * @see org.ihtsdo.otf.mapping.services.WorkflowService#addWorkflowException
    * (org.ihtsdo.otf.mapping.workflow.WorkflowException)
    */
+  /* see superclass */
   @Override
   public WorkflowException addWorkflowException(WorkflowException trackingRecord)
     throws Exception {
@@ -385,6 +395,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * org.ihtsdo.otf.mapping.services.WorkflowService#removeWorkflowException
    * (java.lang.Long)
    */
+  /* see superclass */
   @Override
   public void removeWorkflowException(Long trackingRecordId) throws Exception {
 
@@ -419,6 +430,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * org.ihtsdo.otf.mapping.services.WorkflowService#updateWorkflowException
    * (org.ihtsdo.otf.mapping.workflow.WorkflowException)
    */
+  /* see superclass */
   @Override
   public void updateWorkflowException(WorkflowException workflowException)
     throws Exception {
@@ -439,6 +451,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * org.ihtsdo.otf.mapping.services.WorkflowService#getWorkflowException(org
    * .ihtsdo.otf.mapping.model.MapProject, java.lang.String)
    */
+  /* see superclass */
   @Override
   public WorkflowException getWorkflowException(MapProject mapProject,
     String terminologyId) {
@@ -467,6 +480,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    *
    * @param mapProjectId the map project id
    * @param query the query
+   * @param fields the fields
    * @return the string
    */
   private static String constructMapProjectIdQuery(Long mapProjectId,
@@ -668,6 +682,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * .otf.mapping.model.MapProject, org.ihtsdo.otf.mapping.model.MapUser,
    * java.lang.String, org.ihtsdo.otf.mapping.helpers.PfsParameter)
    */
+  /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
   public SearchResultList findAvailableWork(MapProject mapProject,
@@ -781,6 +796,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * (org.ihtsdo.otf.mapping.model.MapProject,
    * org.ihtsdo.otf.mapping.model.MapUser)
    */
+  /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
   public SearchResultList findAvailableConflicts(MapProject mapProject,
@@ -869,6 +885,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * .ihtsdo.otf.mapping.model.MapProject, org.ihtsdo.otf.mapping.model.MapUser,
    * java.lang.String, org.ihtsdo.otf.mapping.helpers.PfsParameter)
    */
+  /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
   public SearchResultList findAvailableQAWork(MapProject mapProject,
@@ -1030,6 +1047,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * (org.ihtsdo.otf.mapping.model.MapProject,
    * org.ihtsdo.otf.mapping.model.MapUser)
    */
+  /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
   public SearchResultList findAvailableReviewWork(MapProject mapProject,
@@ -1122,6 +1140,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * .otf.mapping.model.MapProject, org.ihtsdo.otf.mapping.model.MapUser,
    * java.lang.String, org.ihtsdo.otf.mapping.helpers.PfsParameter)
    */
+  /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
   public SearchResultList findAssignedWork(MapProject mapProject,
@@ -1330,6 +1349,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * org.ihtsdo.otf.mapping.model.MapProject,
    * org.ihtsdo.otf.mapping.model.MapUser)
    */
+  /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
   public SearchResultList findAssignedConflicts(MapProject mapProject,
@@ -1488,6 +1508,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * org.ihtsdo.otf.mapping.model.MapUser, java.lang.String,
    * org.ihtsdo.otf.mapping.helpers.PfsParameter)
    */
+  /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
   public SearchResultList findAssignedReviewWork(MapProject mapProject,
@@ -1642,6 +1663,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * ihtsdo.otf.mapping.model.MapProject, org.ihtsdo.otf.mapping.model.MapUser,
    * java.lang.String, org.ihtsdo.otf.mapping.helpers.PfsParameter)
    */
+  /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
   public SearchResultList findAssignedQAWork(MapProject mapProject,
@@ -1848,6 +1870,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * org.ihtsdo.otf.mapping.services.WorkflowService#createQAWork(org.ihtsdo
    * .otf.mapping.reports.Report)
    */
+  /* see superclass */
   @Override
   public void createQAWork(Report report) throws Exception {
 
@@ -2032,11 +2055,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         String notificationRecipients =
             config.getProperty("send.notification.recipients");
         if (!notificationRecipients.isEmpty()) {
-          OtfEmailHandler emailHandler = new OtfEmailHandler();
-          emailHandler.sendSimpleEmail(notificationRecipients,
-              config.getProperty("mail.smtp.user"),
-              mapProject.getName() + " Workflow Error Alert, Concept "
-                  + concept.getTerminologyId(), message.toString());
+          ConfigUtility.sendEmail(notificationRecipients, mapProject.getName()
+              + " Workflow Error Alert, Concept " + concept.getTerminologyId(),
+              message.toString());
         }
 
         throw new LocalException("Workflow action " + workflowAction.toString()
@@ -2512,7 +2533,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * @param mapRecordId the map record id
    * @return the map record in set
    */
-
+  @SuppressWarnings("static-method")
   private MapRecord getMapRecordInSet(Set<MapRecord> mapRecords,
     Long mapRecordId) {
     if (mapRecordId == null)
@@ -2532,6 +2553,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * org.ihtsdo.otf.mapping.services.WorkflowService#computeWorkflow(org.ihtsdo
    * .otf.mapping.model.MapProject)
    */
+  /* see superclass */
   @Override
   public void computeWorkflow(MapProject mapProject) throws Exception {
 
@@ -2762,6 +2784,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * org.ihtsdo.otf.mapping.services.WorkflowService#clearWorkflowForMapProject
    * (org.ihtsdo.otf.mapping.model.MapProject)
    */
+  /* see superclass */
   @Override
   public void clearWorkflowForMapProject(MapProject mapProject)
     throws Exception {
@@ -2810,6 +2833,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * getMapRecordsForTrackingRecord
    * (org.ihtsdo.otf.mapping.workflow.TrackingRecord)
    */
+  /* see superclass */
   @Override
   public Set<MapRecord> getMapRecordsForTrackingRecord(
     TrackingRecord trackingRecord) throws Exception {
@@ -2831,6 +2855,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * getMapUsersForTrackingRecord
    * (org.ihtsdo.otf.mapping.workflow.TrackingRecord)
    */
+  /* see superclass */
   @Override
   public MapUserList getMapUsersForTrackingRecord(TrackingRecord trackingRecord)
     throws Exception {
@@ -2844,6 +2869,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * getWorkflowStatusForTrackingRecord
    * (org.ihtsdo.otf.mapping.workflow.TrackingRecord)
    */
+  /* see superclass */
   @Override
   public WorkflowStatus getWorkflowStatusForTrackingRecord(
     TrackingRecord trackingRecord) throws Exception {
@@ -2857,6 +2883,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * getLowestWorkflowStatusForTrackingRecord
    * (org.ihtsdo.otf.mapping.workflow.TrackingRecord)
    */
+  /* see superclass */
   @Override
   public WorkflowStatus getLowestWorkflowStatusForTrackingRecord(
     TrackingRecord trackingRecord) throws Exception {
@@ -2870,6 +2897,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * org.ihtsdo.otf.mapping.services.WorkflowService#getMapUsersFromMapRecords
    * (java.util.Set)
    */
+  /* see superclass */
   @Override
   public MapUserList getMapUsersFromMapRecords(Set<MapRecord> mapRecords) {
     MapUserList mapUserList = new MapUserListJpa();
@@ -2885,6 +2913,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * @see org.ihtsdo.otf.mapping.services.WorkflowService#
    * getWorkflowStatusFromMapRecords(java.util.Set)
    */
+  /* see superclass */
   @Override
   public WorkflowStatus getWorkflowStatusFromMapRecords(
     Set<MapRecord> mapRecords) {
@@ -2902,6 +2931,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * @see org.ihtsdo.otf.mapping.services.WorkflowService#
    * getLowestWorkflowStatusFromMapRecords(java.util.Set)
    */
+  /* see superclass */
   @Override
   public WorkflowStatus getLowestWorkflowStatusFromMapRecords(
     Set<MapRecord> mapRecords) {
@@ -2920,6 +2950,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * org.ihtsdo.otf.mapping.services.WorkflowService#computeWorkflowStatusErrors
    * (org.ihtsdo.otf.mapping.model.MapProject)
    */
+  /* see superclass */
   @Override
   public List<String> computeWorkflowStatusErrors(MapProject mapProject)
     throws Exception {
@@ -3035,6 +3066,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * org.ihtsdo.otf.mapping.services.WorkflowService#computeUntrackedMapRecords
    * (org.ihtsdo.otf.mapping.model.MapProject)
    */
+  /* see superclass */
   @Override
   public void computeUntrackedMapRecords(MapProject mapProject)
     throws Exception {
@@ -3116,6 +3148,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * 
    * @see org.ihtsdo.otf.mapping.services.WorkflowService#getFeedbacks()
    */
+  /* see superclass */
   @Override
   @SuppressWarnings("unchecked")
   public FeedbackList getFeedbacks() {
@@ -3138,6 +3171,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * @see org.ihtsdo.otf.mapping.services.MappingService#addFeedbackConversation
    * (org.ihtsdo.otf.mapping.model.FeedbackConversation)
    */
+  /* see superclass */
   @Override
   public FeedbackConversation addFeedbackConversation(
     FeedbackConversation conversation) {
@@ -3164,6 +3198,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * org.ihtsdo.otf.mapping.services.WorkflowService#updateFeedbackConversation
    * (org.ihtsdo.otf.mapping.model.FeedbackConversation)
    */
+  /* see superclass */
   @Override
   public void updateFeedbackConversation(FeedbackConversation conversation) {
 
@@ -3190,6 +3225,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * org.ihtsdo.otf.mapping.services.WorkflowService#getFeedbackConversation
    * (java.lang.Long)
    */
+  /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
   public FeedbackConversation getFeedbackConversation(Long id) throws Exception {
@@ -3219,6 +3255,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    *
    * @param feedbackConversation the feedback conversation
    */
+  @SuppressWarnings("static-method")
   private void handleFeedbackConversationLazyInitialization(
     FeedbackConversation feedbackConversation) {
     // handle all lazy initializations
@@ -3238,6 +3275,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * @see org.ihtsdo.otf.mapping.services.WorkflowService#
    * getFeedbackConversationsForConcept(java.lang.Long, java.lang.String)
    */
+  /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
   public FeedbackConversationList getFeedbackConversationsForConcept(
@@ -3280,6 +3318,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * findFeedbackConversationsForProject(java.lang.Long, java.lang.String,
    * org.ihtsdo.otf.mapping.helpers.PfsParameter)
    */
+  /* see superclass */
   @SuppressWarnings({
     "unchecked"
   })
@@ -3436,6 +3475,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * @see org.ihtsdo.otf.mapping.services.WorkflowService#
    * getFeedbackConversationsForRecord(java.lang.Long)
    */
+  /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
   public FeedbackConversationList getFeedbackConversationsForRecord(
@@ -3470,6 +3510,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * org.ihtsdo.otf.mapping.services.WorkflowService#getFeedbackErrorsForRecord
    * (org.ihtsdo.otf.mapping.model.MapRecord)
    */
+  /* see superclass */
   @Override
   public FeedbackList getFeedbackErrorsForRecord(MapRecord mapRecord)
     throws Exception {
@@ -3503,10 +3544,10 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
    * lang.String, java.lang.String, java.lang.String, java.lang.String,
    * java.lang.String, java.lang.String)
    */
+  /* see superclass */
   @Override
   public void sendFeedbackEmail(String name, String email, String conceptId,
     String conceptName, String refSetId, String message) throws Exception {
-    OtfEmailHandler emailHandler = new OtfEmailHandler();
     // get to address from config.properties
     Properties config = ConfigUtility.getConfigProperties();
     String feedbackUserRecipient =
@@ -3516,7 +3557,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         baseUrlWebapp + "/#/record/conceptId/" + conceptId
             + "/autologin?refSetId=" + refSetId;
 
-    emailHandler.sendSimpleEmail(feedbackUserRecipient, email,
+    ConfigUtility.sendEmail(feedbackUserRecipient,
         "Mapping Tool User Feedback: " + conceptId + "-" + conceptName,
         "User: " + name + "<br>" + "Email: " + email + "<br>"
             + "Concept: <a href=" + conceptUrl + ">" + conceptId + "- "

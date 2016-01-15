@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2016 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.rf2.jpa;
 
 import java.util.ArrayList;
@@ -68,6 +71,7 @@ public class TreePositionJpa implements TreePosition {
   @Transient
   private boolean valid;
 
+  /** The desc groups. */
   @Transient
   private List<TreePositionDescriptionGroup> descGroups = new ArrayList<>();
 

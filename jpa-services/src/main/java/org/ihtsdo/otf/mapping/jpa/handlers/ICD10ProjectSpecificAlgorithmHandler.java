@@ -261,14 +261,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.jpa.handlers.DefaultProjectSpecificAlgorithmHandler
-   * #computeMapAdvice(org.ihtsdo.otf.mapping.model.MapRecord,
-   * org.ihtsdo.otf.mapping.model.MapEntry)
-   */
+  /* see superclass */
   @Override
   public MapAdviceList computeMapAdvice(MapRecord mapRecord, MapEntry mapEntry)
     throws Exception {
@@ -312,23 +305,12 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       }
     }
 
-    // System.out.println("computed advices: ");
-    // for (MapAdvice advice : advices) {
-    // System.out.println("  " + advice.getName());
-    // }
-
     MapAdviceList mapAdviceList = new MapAdviceListJpa();
     mapAdviceList.setMapAdvices(advices);
     return mapAdviceList;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.jpa.handlers.DefaultProjectSpecificAlgorithmHandler
-   * #isTargetCodeValid(java.lang.String)
-   */
+  /* see superclass */
   @Override
   public boolean isTargetCodeValid(String terminologyId) throws Exception {
 
@@ -395,14 +377,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
     return true;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.jpa.handlers.DefaultProjectSpecificAlgorithmHandler
-   * #computeTargetTerminologyNotes
-   * (org.ihtsdo.otf.mapping.helpers.TreePositionList)
-   */
+  /* see superclass */
   @Override
   public void computeTargetTerminologyNotes(TreePositionList treePositionList)
     throws Exception {
@@ -501,13 +476,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.jpa.handlers.DefaultProjectSpecificAlgorithmHandler
-   * #getDependentModules()
-   */
+  /* see superclass */
   @Override
   public Set<String> getDependentModules() {
 
@@ -518,24 +487,13 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.jpa.handlers.DefaultProjectSpecificAlgorithmHandler
-   * #getModuleDependencyRefSetId()
-   */
+  /* see superclass */
   @Override
   public String getModuleDependencyRefSetId() {
     return "900000000000534007";
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#
-   * validateForRelease(org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember)
-   */
+  /* see superclass */
   @Override
   public ValidationResult validateForRelease(ComplexMapRefSetMember member)
     throws Exception {
@@ -731,13 +689,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.jpa.handlers.DefaultProjectSpecificAlgorithmHandler
-   * #getDefaultUpPropagatedMapRelation()
-   */
+  /* see superclass */
   @Override
   public MapRelation getDefaultUpPropagatedMapRelation() throws Exception {
     MappingService mappingService = new MappingServiceJpa();

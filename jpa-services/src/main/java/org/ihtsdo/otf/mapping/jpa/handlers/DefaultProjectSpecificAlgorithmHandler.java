@@ -39,44 +39,20 @@ public class DefaultProjectSpecificAlgorithmHandler implements
   /** The map project. */
   MapProject mapProject = null;
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#getMapProject
-   * ()
-   */
+  /* see superclass */
   @Override
   public MapProject getMapProject() {
     return this.mapProject;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#setMapProject
-   * (org.ihtsdo.otf.mapping.model.MapProject)
-   */
+  /* see superclass */
   @Override
   public void setMapProject(MapProject mapProject) {
     this.mapProject = mapProject;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#
-   * computeMapAdvice (org.ihtsdo.otf.mapping.model.MapRecord,
-   * org.ihtsdo.otf.mapping.model.MapEntry)
-   */
+  /* see superclass */
   @Override
-  /**
-   * Given a map record and a map entry, returns any computed advice.
-   * This must be overwritten for each project specific handler.
-   * @param mapRecord
-   * @return
-   */
   public MapAdviceList computeMapAdvice(MapRecord mapRecord, MapEntry mapEntry)
     throws Exception {
     return null;
@@ -97,34 +73,18 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     return null;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#validateRecord
-   * (org.ihtsdo.otf.mapping.model.MapRecord)
-   */
+  /* see superclass */
   @Override
   public ValidationResult validateRecord(MapRecord mapRecord) throws Exception {
 
     ValidationResult validationResult = new ValidationResultJpa();
-
-    validationResult.merge(performUniversalValidationChecks(mapRecord));
+    validationResult.merge(performDefaultChecks(mapRecord));
     validationResult.merge(validateTargetCodes(mapRecord));
-
     return validationResult;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#
-   * validateTargetCodes(org.ihtsdo.otf.mapping.model.MapRecord)
-   */
+  /* see superclass */
   @Override
-  /**
-   * This must be overwritten for each project specific handler
-   */
   public ValidationResult validateTargetCodes(MapRecord mapRecord)
     throws Exception {
     return new ValidationResultJpa();
@@ -136,7 +96,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
    * @param mapRecord the map record
    * @return the validation result
    */
-  public ValidationResult performUniversalValidationChecks(MapRecord mapRecord) {
+  public ValidationResult performDefaultChecks(MapRecord mapRecord) {
     Map<Integer, List<MapEntry>> entryGroups = getEntryGroups(mapRecord);
 
     ValidationResult validationResult = new ValidationResultJpa();
@@ -536,13 +496,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     return entryGroups;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#
-   * compareMapRecords(org.ihtsdo.otf.mapping.model.MapRecord,
-   * org.ihtsdo.otf.mapping.model.MapRecord)
-   */
+  /* see superclass */
   @Override
   public ValidationResult compareMapRecords(MapRecord record1, MapRecord record2) {
     ValidationResult validationResult = new ValidationResultJpa();
@@ -846,6 +800,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
    * @param entry1 the entry1
    * @param entry2 the entry2
    */
+  @SuppressWarnings("static-method")
   private void printAdviceDifferences(ValidationResult validationResult,
     MapEntry entry1, MapEntry entry2) {
 
@@ -893,6 +848,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
    * @param mapEntry the map entry
    * @return the string
    */
+  @SuppressWarnings("static-method")
   private String convertToString(MapEntry mapEntry) {
 
     Comparator<Object> advicesComparator = new Comparator<Object>() {
@@ -1534,14 +1490,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#publish(
-   * org.ihtsdo.otf.mapping.workflow.TrackingRecord, java.util.Set,
-   * org.ihtsdo.otf.mapping.model.MapUser)
-   */
+  /* see superclass */
   @Override
   public Set<MapRecord> publish(TrackingRecord trackingRecord,
     Set<MapRecord> mapRecords, MapUser mapUser) throws Exception {
@@ -2157,14 +2106,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#saveForLater
-   * (org.ihtsdo.otf.mapping.workflow.TrackingRecord,
-   * org.ihtsdo.otf.mapping.model.MapUser)
-   */
+  /* see superclass */
   @Override
   public Set<MapRecord> saveForLater(TrackingRecord trackingRecord,
     Set<MapRecord> mapRecords, MapUser mapUser) throws Exception {
@@ -2425,13 +2367,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     return mapUsers;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#
-   * computeTargetTerminologyNotes
-   * (org.ihtsdo.otf.mapping.helpers.TreePositionList)
-   */
+  /* see superclass */
   @Override
   public void computeTargetTerminologyNotes(TreePositionList treePositions)
     throws Exception {
@@ -2439,34 +2375,19 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     // DO NOTHING -- Override in project specific handlers if necessary
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#
-   * getDependentModules()
-   */
+  /* see superclass */
   @Override
   public Set<String> getDependentModules() {
     return new HashSet<>();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#
-   * getModuleDependencyRefSetId()
-   */
+  /* see superclass */
   @Override
   public String getModuleDependencyRefSetId() {
     return null;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#
-   * validateForRelease(org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember)
-   */
+  /* see superclass */
   @Override
   public ValidationResult validateForRelease(ComplexMapRefSetMember member)
     throws Exception {
@@ -2474,24 +2395,14 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     return new ValidationResultJpa();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#
-   * getDefaultUpPropagatedMapRelation()
-   */
+  /* see superclass */
   @Override
   public MapRelation getDefaultUpPropagatedMapRelation() throws Exception {
     // does not apply
     return null;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#
-   * getDefaultTargetNameForBlankTarget()
-   */
+  /* see superclass */
   @Override
   public String getDefaultTargetNameForBlankTarget() {
     return "No target";

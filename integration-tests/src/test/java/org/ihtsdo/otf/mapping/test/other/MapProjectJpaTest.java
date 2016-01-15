@@ -244,6 +244,7 @@ public class MapProjectJpaTest {
   /**
    * Confirm load.
    */
+  @SuppressWarnings("static-method")
   private void confirmLoad() {
     javax.persistence.Query query =
         manager

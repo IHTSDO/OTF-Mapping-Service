@@ -311,6 +311,7 @@ public class WorkflowPathStatesQAPathTest {
    * @param status the status
    * @return the map record
    */
+  @SuppressWarnings("static-method")
   private MapRecord createRecord(MapUser user, WorkflowStatus status) {
     MapRecord record = new MapRecordJpa();
 

@@ -207,6 +207,11 @@ public class MappingServiceJpaTest {
 
   }
 
+  /**
+   * Fail.
+   *
+   * @param string the string
+   */
   private static void fail(String string) {
 
     Logger.getLogger(MappingServiceJpaTest.class).info("Failed: " + string);

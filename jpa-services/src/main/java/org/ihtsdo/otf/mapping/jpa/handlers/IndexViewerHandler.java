@@ -175,7 +175,6 @@ public class IndexViewerHandler {
    * @return the results
    * @throws Exception the exception
    */
-  @SuppressWarnings("resource")
   private List<String> performSearch(String terminology,
     String terminologyVersion, String domain, String searchStr, int startLevel,
     int endLevel, String subSearchAnchor, boolean requireHasChild)
@@ -274,6 +273,7 @@ public class IndexViewerHandler {
    * @param e the e
    * @return the level constraint
    */
+  @SuppressWarnings("static-method")
   private String getLevelConstraint(int s, int e) {
     if (s == e) {
       return "level:" + s;

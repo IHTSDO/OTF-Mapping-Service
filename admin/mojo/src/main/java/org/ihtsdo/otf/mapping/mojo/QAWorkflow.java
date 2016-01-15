@@ -12,7 +12,6 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
-import org.ihtsdo.otf.mapping.services.helpers.OtfEmailHandler;
 
 /**
  * Loads unpublished complex maps.
@@ -118,8 +117,7 @@ public class QAWorkflow extends AbstractMojo {
             config.getProperty("send.notification.recipients");
 
         // instantiate the email handler
-        OtfEmailHandler emailHandler = new OtfEmailHandler();
-        emailHandler.sendSimpleEmail(notificationRecipients,
+        ConfigUtility.sendEmail(notificationRecipients,
             "OTF Mapping Tool:  Workflow Errors Detected", message.toString());
 
       }
