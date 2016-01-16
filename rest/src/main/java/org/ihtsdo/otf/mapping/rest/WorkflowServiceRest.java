@@ -174,13 +174,13 @@ public class WorkflowServiceRest extends RootServiceRest {
           authorizeProject(mapProjectId, authToken, MapUserRole.SPECIALIST,
               "find available concepts", securityService);
 
-      // retrieve the project and user
+      // get the project and user
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
       project = mapProject.getName();
       final MapUser mapUser = mappingService.getMapUser(userName);
       user = mapUser.getUserName();
 
-      // retrieve the workflow tracking records
+      // get the workflow tracking records
       SearchResultList results =
           workflowService.findAvailableWork(mapProject, mapUser, query,
               pfsParameter);
@@ -273,13 +273,13 @@ public class WorkflowServiceRest extends RootServiceRest {
           authorizeProject(mapProjectId, authToken, MapUserRole.SPECIALIST,
               "find assigned concepts", securityService);
 
-      // retrieve the project and user
+      // get the project and user
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
       project = mapProject.getName();
       final MapUser mapUser = mappingService.getMapUser(userName);
       user = mapUser.getUserName();
 
-      // retrieve the workflow tracking records
+      // get the workflow tracking records
       return workflowService.findAssignedWork(mapProject, mapUser, query,
           pfsParameter);
     } catch (Exception e) {
@@ -337,13 +337,13 @@ public class WorkflowServiceRest extends RootServiceRest {
           authorizeProject(mapProjectId, authToken, MapUserRole.LEAD,
               "find available conflicts", securityService);
 
-      // retrieve the project and user
+      // get the project and user
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
       project = mapProject.getName();
       final MapUser mapUser = mappingService.getMapUser(userName);
       user = mapUser.getUserName();
 
-      // retrieve the workflow tracking records
+      // get the workflow tracking records
       return workflowService.findAvailableConflicts(mapProject, mapUser, query,
           pfsParameter);
     } catch (Exception e) {
@@ -402,13 +402,13 @@ public class WorkflowServiceRest extends RootServiceRest {
           authorizeProject(mapProjectId, authToken, MapUserRole.LEAD,
               "find assigned conflicts", securityService);
 
-      // retrieve the project and user
+      // get the project and user
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
       project = mapProject.getName();
       final MapUser mapUser = mappingService.getMapUser(userName);
       user = mapUser.getUserName();
 
-      // retrieve the map records
+      // get the map records
       return workflowService.findAssignedConflicts(mapProject, mapUser, query,
           pfsParameter);
 
@@ -467,13 +467,13 @@ public class WorkflowServiceRest extends RootServiceRest {
           authorizeProject(mapProjectId, authToken, MapUserRole.LEAD,
               "find available review work ", securityService);
 
-      // retrieve the project and user
+      // get the project and user
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
       project = mapProject.getName();
       final MapUser mapUser = mappingService.getMapUser(userName);
       user = mapUser.getUserName();
 
-      // retrieve the workflow tracking records
+      // get the workflow tracking records
       return workflowService.findAvailableReviewWork(mapProject, mapUser,
           query, pfsParameter);
     } catch (Exception e) {
@@ -531,13 +531,13 @@ public class WorkflowServiceRest extends RootServiceRest {
           authorizeProject(mapProjectId, authToken, MapUserRole.SPECIALIST,
               "find available qa work ", securityService);
 
-      // retrieve the project and user
+      // get the project and user
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
       project = mapProject.getName();
       final MapUser mapUser = mappingService.getMapUser(user);
       user = mapUser.getUserName();
 
-      // retrieve the workflow tracking records
+      // get the workflow tracking records
       return workflowService.findAvailableQAWork(mapProject, mapUser, query,
           pfsParameter);
     } catch (Exception e) {
@@ -595,13 +595,13 @@ public class WorkflowServiceRest extends RootServiceRest {
           authorizeProject(mapProjectId, authToken, MapUserRole.LEAD,
               "find assigned review work ", securityService);
 
-      // retrieve the project and user
+      // get the project and user
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
       project = mapProject.getName();
       final MapUser mapUser = mappingService.getMapUser(userName);
       user = mapUser.getUserName();
 
-      // retrieve the map records
+      // get the map records
       return workflowService.findAssignedReviewWork(mapProject, mapUser, query,
           pfsParameter);
     } catch (Exception e) {
@@ -660,13 +660,13 @@ public class WorkflowServiceRest extends RootServiceRest {
           authorizeProject(mapProjectId, authToken, MapUserRole.SPECIALIST,
               "find assigned qa work ", securityService);
 
-      // retrieve the project and user
+      // get the project and user
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
       project = mapProject.getName();
       final MapUser mapUser = mappingService.getMapUser(userName);
       user = mapUser.getUserName();
 
-      // retrieve the map records
+      // get the map records
       return workflowService.findAssignedQAWork(mapProject, mapUser, query,
           pfsParameter);
 
@@ -1414,7 +1414,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
       return null;
     } catch (Exception e) {
-      handleException(e, "trying to retrieve an assigned map record", user,
+      handleException(e, "trying to get an assigned map record", user,
           project, terminologyId);
       return null;
     } finally {
@@ -1477,7 +1477,7 @@ public class WorkflowServiceRest extends RootServiceRest {
           return false;
       }
     } catch (Exception e) {
-      handleException(e, "trying to retrieve flag for false conflict");
+      handleException(e, "trying to get flag for false conflict");
     } finally {
       mappingService.close();
       workflowService.close();
@@ -1714,7 +1714,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
       return conversation;
     } catch (Exception e) {
-      handleException(e, "trying to retrieve the feedback conversation");
+      handleException(e, "trying to get the feedback conversation");
       return null;
     } finally {
       workflowService.close();
@@ -1775,7 +1775,7 @@ public class WorkflowServiceRest extends RootServiceRest {
       return feedbackConversationList;
     } catch (Exception e) {
       handleException(e,
-          "trying to retrieve the feedback conversations for a map project",
+          "trying to get the feedback conversations for a map project",
           user, mapProjectId.toString(), "");
       return null;
     } finally {
@@ -1877,7 +1877,7 @@ public class WorkflowServiceRest extends RootServiceRest {
       final MapUser mapUser = mappingService.getMapUser(userName);
 
       if (mapUser == null)
-        throw new LocalException("The user could not be retrieved");
+        throw new LocalException("The user could not be found");
 
       final ValidationResult result = new ValidationResultJpa();
 
@@ -1890,7 +1890,7 @@ public class WorkflowServiceRest extends RootServiceRest {
             mappingService.getMapRecordsForProjectAndConcept(mapProjectId,
                 terminologyId);
 
-        // first check: records retrieved
+        // first check: records getd
         if (mrList.getCount() == 0) {
           result.addError("No records found for concept " + terminologyId);
           continue;
@@ -1930,7 +1930,7 @@ public class WorkflowServiceRest extends RootServiceRest {
                 mapProject.getSourceTerminologyVersion());
 
         if (concept == null) {
-          result.addError("Could not retrieve concept for id "
+          result.addError("Could not get concept for id "
               + mapRecord.getConceptId());
           continue;
         }

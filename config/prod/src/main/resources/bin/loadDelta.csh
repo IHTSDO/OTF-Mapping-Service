@@ -26,9 +26,9 @@ if ($status != 0) then
         exit 1
 endif
 
-echo "    Delete current wb-release-process-1.21-SNAPSHOT-delta file ...`/bin/date`"
+echo "    Delete last delta ...`/bin/date`"
 cd $dir
-rm -fr $dir/*_INT_*txt
+rm -fr $dir/*
 if ($status != 0) then
     echo "ERROR deleting old delta data"
     exit 1
@@ -36,21 +36,50 @@ endif
 
 # THIS MAY CHANGE - obviously dates are a one-time thing
 echo "    Obtain latest release ...`/bin/date`"
-touch der2_cRefset_AssociationReferenceDelta_INT_$version.txt
-touch der2_cRefset_AttributeValueDelta_INT_$version.txt
-touch der2_Refset_SimpleDelta_INT_$version.txt
-touch der2_sRefset_SimpleMapDelta_INT_$version.txt
-touch sct2_TextDefinition_Delta-en_INT_$version.txt
-wget https://release.ihtsdotools.org/api/v1/centers/international/products/snomed_ct_ts_release/builds/2016-01-14T11:11:36/outputfiles/sct2_Concept_Delta_INT_20160731.txt
-wget https://release.ihtsdotools.org/api/v1/centers/international/products/snomed_ct_ts_release/builds/2016-01-14T11:11:36/outputfiles/sct2_Description_Delta-en_INT_20160731.txt
-wget https://release.ihtsdotools.org/api/v1/centers/international/products/snomed_ct_ts_release/builds/2016-01-14T11:11:36/outputfiles/der2_cRefset_LanguageDelta-en_INT_20160731.txt
-wget https://release.ihtsdotools.org/api/v1/centers/international/products/snomed_ct_ts_release/builds/2016-01-14T11:11:36/outputfiles/sct2_Relationship_Delta_INT_20160731.txt
-wget https://release.ihtsdotools.org/api/v1/centers/international/products/snomed_ct_ts_release/builds/2016-01-14T11:11:36/outputfiles/sct2_StatedRelationship_Delta_INT_20160731.txt
-
-if (`ls $dir/*_INT_*txt | wc -l` != 10) then
-    echo "ERROR retrieving latest delta data"
+wget "https://release.ihtsdotools.org/api/v1/centers/international/products/snomed_ct_ts_release/builds/" -O /tmp/xx.$$.json
+if ($status != 0) then
+    echo "ERROR downloading builds file"
     exit 1
 endif
+
+set latestRelease = `grep outputfiles_url /tmp/xx.$$.json | sort -n | tail -1 | cut -d\: -f 2- | sed 's/ "//; s/",//'`
+if ($status != 0) then
+    echo "ERROR determining latest release"
+    exit 1
+endif
+
+wget $latestRelease -O /tmp/yy.$$.json
+if ($status != 0) then
+    echo "ERROR downloading latest release directory"
+    exit 1
+endif
+
+set zipFile = `grep '.zip"' /tmp/yy.$$.json | grep '"url"' | cut -d\: -f 2- | sed 's/ "//; s/"//'`
+if ($status != 0) then
+    echo "ERROR determining zip file"
+    exit 1
+endif
+
+wget $zipFile
+if ($status != 0) then
+    echo "ERROR downloading .zip"
+    exit 1
+endif
+
+echo "    Unpack the delta ...`/bin/date`"
+unzip $zipFile:t "*/Delta/*"
+if ($status != 0) then
+    echo "ERROR unpacking .zip"
+    exit 1
+endif
+
+/bin/mv `find */Delta -name "*txt"` .
+if ($status != 0) then
+    echo "ERROR  moving delta files to current dir"
+    exit 1
+endif
+
+/bin/rm -rf *zip /tmp/{xx,yy}.$$.json
 
 echo "    Load the delta ... `/bin/date`"
 cd $MAPPING_CODE/admin/loader
