@@ -11,28 +11,28 @@
 <accordion-heading> Source Concept <i
   class="pull-right glyphicon"
   ng-class="{'glyphicon-chevron-down': isConceptOpen, 'glyphicon-chevron-right': !isConceptOpen}"></i>
-</accordion-heading> <!-- This is confusing/misleading so remove it
-<div ng-show="concept.effectiveTime > record.lastModified">
-  <p class="alert alert-warning">The {{concept.terminology}} concept was
-    modified after your last edit, on {{concept.effectiveTime |
-    date:'MM-dd-yyyy'}}</p>
-</div>
- -->
+</accordion-heading>
 <table>
 
   <tr>
-    <td style="vertical-align: top; padding: 5px;"><strong>Id</strong></td>
-    <td style="vertical-align: top; padding: 5px;">{{concept.terminology}},{{concept.terminologyId}}
-      &nbsp<a title='Open SNOMED Browser' href="">
+    <td style="vertical-align: top; padding: 5px;">
+      <strong>Id</strong>
+    </td>
+    <td style="vertical-align: top; padding: 5px;">
+      {{concept.terminology}},{{concept.terminologyId}} &nbsp
+      <a title='Open SNOMED Browser' href="">
         <i class="glyphicon glyphicon-info-sign" ng-click="openConceptBrowser()"></i>
-      </a> <a title='Open Index Viewer' ng-show="indexViewerExists == true">
+      </a>
+      <a title='Open Index Viewer' ng-show="indexViewerExists == true">
         <i ng-click="openIndexViewer()" class="glyphicon glyphicon-book"></i>
       </a>
 
     </td>
   </tr>
   <tr>
-    <td style="vertical-align: top; padding: 5px;"><strong>Name</strong></td>
+    <td style="vertical-align: top; padding: 5px;">
+      <strong>Name</strong>
+    </td>
     <td style="vertical-align: top; padding: 5px;">{{concept.defaultPreferredName}}</td>
   </tr>
 

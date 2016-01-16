@@ -10,6 +10,7 @@ import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
+import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 /**
@@ -99,16 +100,16 @@ public class TreeposComputerMojo extends AbstractMojo {
 
       // creating tree positions
       // first get isaRelType from metadata
-      MetadataServiceJpa metadataService = new MetadataServiceJpa();
+      final MetadataService metadataService = new MetadataServiceJpa();
       Map<String, String> hierRelTypeMap =
           metadataService.getHierarchicalRelationshipTypes(terminology,
               terminologyVersion);
       String isaRelType = hierRelTypeMap.keySet().iterator().next().toString();
-      metadataService.close();
 
-      ContentService contentService = new ContentServiceJpa();
       getLog().info("Start creating tree positions.");
-
+      metadataService.close();
+      
+      final ContentService contentService = new ContentServiceJpa();
       // Walk up tree to the root
       // ASSUMPTION: single root
       ValidationResult results = new ValidationResultJpa();
