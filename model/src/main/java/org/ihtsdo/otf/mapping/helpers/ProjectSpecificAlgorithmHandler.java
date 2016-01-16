@@ -51,7 +51,17 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @throws Exception the exception
    */
   public ValidationResult validateTargetCodes(MapRecord mapRecord)
-    throws Exception;
+      throws Exception;
+
+  /**
+   * Validate semantic checks.
+   *
+   * @param mapRecord the map record
+   * @return the validation result
+   * @throws Exception the exception
+   */
+  public ValidationResult validateSemanticChecks(MapRecord mapRecord)
+      throws Exception;
 
   /**
    * Compute map advice and map relations. Must be overwritten for each project

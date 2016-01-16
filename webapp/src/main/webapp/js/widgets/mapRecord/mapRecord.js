@@ -16,8 +16,8 @@ angular
 
   .controller(
     'mapRecordWidgetCtrl',
-    function($scope, $rootScope, $http, $routeParams, $location, $sce, $modal,
-      $window, localStorageService) {
+    function($scope, $rootScope, $http, $routeParams, $location, $sce, $modal, $window,
+      localStorageService) {
 
       // ///////////////////////////////////
       // Map Record Controller Functions //
@@ -171,54 +171,47 @@ angular
       };
 
       // Watcher for Conflict Resolution Select Record Event
-      $rootScope.$on('compareRecordsWidget.notification.selectRecord',
-        function(event, parameters) {
-          console.debug("received new record");
-          console.debug(parameters);
-          console.debug(parameters.record);
-          $scope.record = parameters.record;
+      $rootScope.$on('compareRecordsWidget.notification.selectRecord', function(event, parameters) {
+        console.debug("received new record", parameters);
+        $scope.record = parameters.record;
 
-          console.debug("Passed record: ", parameters.record);
+        // This MUST not be removed for "Start here" to work
+        initializeGroupsTree();
 
-          // This MUST not be removed for "Start here" to
-          // work
-          initializeGroupsTree();
-
-          // Validate the record immediately
-          // this is good to show messages right away
-          // if there are problems
-          console.debug("Validating the map record.");
-          // validate the record
-          $rootScope.glassPane++;
-          $http({
-            url : root_mapping + "validation/record/validate",
-            dataType : "json",
-            data : $scope.record,
-            method : "POST",
-            headers : {
-              "Content-Type" : "application/json"
-            }
-          }).success(function(data) {
-            $rootScope.glassPane--;
-            console.debug(data);
-            $scope.validationResult = data;
-          }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
-            $scope.validationResult = null;
-            $rootScope.handleHttpError(data, status, headers, config);
-          })
-        });
+        // Validate the record immediately
+        // this is good to show messages right away
+        // if there are problems
+        console.debug("Validating the map record.");
+        // validate the record
+        $rootScope.glassPane++;
+        $http({
+          url : root_mapping + "validation/record/validate",
+          dataType : "json",
+          data : $scope.record,
+          method : "POST",
+          headers : {
+            "Content-Type" : "application/json"
+          }
+        }).success(function(data) {
+          $rootScope.glassPane--;
+          console.debug(data);
+          $scope.validationResult = data;
+        }).error(function(data, status, headers, config) {
+          $rootScope.glassPane--;
+          $scope.validationResult = null;
+          $rootScope.handleHttpError(data, status, headers, config);
+        })
+      });
 
       // on successful retrieval of project, get the
       // record/concept
-      $scope.$watch([ 'project', 'userToken', 'role', 'user', 'record' ],
-        function() {
-          if ($scope.project != null && $scope.userToken != null) {
-            $http.defaults.headers.common.Authorization = $scope.userToken;
-            setIndexViewerStatus();
-            retrieveRecord();
-          }
-        });
+      $scope.$watch([ 'project', 'userToken', 'role', 'user', 'record' ], function() {
+        if ($scope.project != null && $scope.userToken != null) {
+          $http.defaults.headers.common.Authorization = $scope.userToken;
+          setIndexViewerStatus();
+          retrieveRecord();
+        }
+      });
 
       // any time the record changes, broadcast it to the record
       // summary widget
@@ -255,84 +248,78 @@ angular
           headers : {
             "Content-Type" : "application/json"
           }
-        })
-          .success(
-            function(data) {
+        }).success(
+          function(data) {
 
-              $scope.record = data;
+            $scope.record = data;
 
-              // verify that all entries on this record with no
-              // target have "No
-              // target" set as target name
-              for (var i = 0; i < $scope.record.mapEntry.length; i++) {
-                if ($scope.record.mapEntry[i].targetId == null
-                  || $scope.record.mapEntry[i].targetId == null
-                  || $scope.record.mapEntry[i].targetId === "")
-                  $scope.record.mapEntry[i].targetName = 'No target';
-              }
+            // verify that all entries on this record with no
+            // target have "No
+            // target" set as target name
+            for (var i = 0; i < $scope.record.mapEntry.length; i++) {
+              if ($scope.record.mapEntry[i].targetId == null
+                || $scope.record.mapEntry[i].targetId == null
+                || $scope.record.mapEntry[i].targetId === "")
+                $scope.record.mapEntry[i].targetName = 'No target';
+            }
 
-            })
-          .error(function(data, status, headers, config) {
-            $rootScope.handleHttpError(data, status, headers, config);
-          })
-          .then(
-            function() {
+          }).error(function(data, status, headers, config) {
+          $rootScope.handleHttpError(data, status, headers, config);
+        }).then(
+          function() {
 
-              // check that this user actually owns this record
-              if ($scope.record.owner.userName != $scope.user.userName) {
-                $rootScope
-                  .handleReturnToDashboardError(
-                    "Attempted to edit a record owned by another user; returned to dashboard",
-                    $scope.role);
-              } else {
-                // obtain the record concept
-                $http(
-                  {
-                    url : root_content + "concept/id/"
-                      + $scope.project.sourceTerminology + "/"
-                      + $scope.project.sourceTerminologyVersion + "/"
-                      + $scope.record.conceptId,
-                    dataType : "json",
-                    method : "GET",
-                    headers : {
-                      "Content-Type" : "application/json"
-                    }
-                  }).success(function(data) {
-                  $scope.concept = data;
-                  $scope.conceptBrowserUrl = $scope.getBrowserUrl();
-                  // initialize
-                  // the dynamic
-                  // tooltip on
-                  // the Save/Next
-                  // button with
-                  // the next
-                  // concept to be
-                  // mapped
-                  $scope.resolveNextConcept(true);
-                }).error(function(data, status, headers, config) {
-                  $rootScope.handleHttpError(data, status, headers, config);
-                });
-
-                // initialize the entries
-                initializeGroupsTree();
-
-                // add code to get feedback
-                // conversations
-                $http({
-                  url : root_workflow + "conversation/id/" + $scope.record.id,
+            // check that this user actually owns this record
+            if ($scope.record.owner.userName != $scope.user.userName) {
+              $rootScope.handleReturnToDashboardError(
+                "Attempted to edit a record owned by another user; returned to dashboard",
+                $scope.role);
+            } else {
+              // obtain the record concept
+              $http(
+                {
+                  url : root_content + "concept/id/" + $scope.project.sourceTerminology + "/"
+                    + $scope.project.sourceTerminologyVersion + "/" + $scope.record.conceptId,
                   dataType : "json",
                   method : "GET",
                   headers : {
                     "Content-Type" : "application/json"
                   }
                 }).success(function(data) {
-                  $scope.conversation = data;
-                  initializeReturnRecipients();
-                }).error(function(data, status, headers, config) {
-                  $rootScope.handleHttpError(data, status, headers, config);
-                });
-              }
-            });
+                $scope.concept = data;
+                $scope.conceptBrowserUrl = $scope.getBrowserUrl();
+                // initialize
+                // the dynamic
+                // tooltip on
+                // the Save/Next
+                // button with
+                // the next
+                // concept to be
+                // mapped
+                $scope.resolveNextConcept(true);
+              }).error(function(data, status, headers, config) {
+                $rootScope.handleHttpError(data, status, headers, config);
+              });
+
+              // initialize the entries
+              initializeGroupsTree();
+
+              // add code to get feedback
+              // conversations
+              $http({
+                url : root_workflow + "conversation/id/" + $scope.record.id,
+                dataType : "json",
+                method : "GET",
+                headers : {
+                  "Content-Type" : "application/json"
+                }
+              }).success(function(data) {
+                $scope.conversation = data;
+                initializeReturnRecipients();
+              }).error(function(data, status, headers, config) {
+                $rootScope.handleHttpError(data, status, headers, config);
+              });
+            }
+          });
 
       }
       ;
@@ -340,8 +327,7 @@ angular
       function setIndexViewerStatus() {
         $http(
           {
-            url : root_content + "index/"
-              + $scope.project.destinationTerminology + "/"
+            url : root_content + "index/" + $scope.project.destinationTerminology + "/"
               + $scope.project.destinationTerminologyVersion,
             dataType : "json",
             method : "GET",
@@ -439,8 +425,7 @@ angular
             // cycle over all existing groups
             for (var i = 0; i < groupsTreeTemp.length; i++) {
 
-              console.debug("CHECKING groups", groupsTreeTemp[i].mapGroup,
-                group);
+              console.debug("CHECKING groups", groupsTreeTemp[i].mapGroup, group);
 
               // if group matches, push it next onto list
               if (groupsTreeTemp[i].mapGroup == group) {
@@ -495,14 +480,13 @@ angular
             console.debug(data);
             $scope.validationResult = data;
           })
-          .error(
-            function(data, status, headers, config) {
-              $rootScope.glassPane--;
-              $scope.validationResult = null;
-              $scope.recordError = "Unexpected error reported by server.  Contact an admin.";
-              console.debug("Failed to validate map record");
-              $rootScope.handleHttpError(data, status, headers, config);
-            })
+          .error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $scope.validationResult = null;
+            $scope.recordError = "Unexpected error reported by server.  Contact an admin.";
+            console.debug("Failed to validate map record");
+            $rootScope.handleHttpError(data, status, headers, config);
+          })
           .then(
             function(data) {
 
@@ -556,33 +540,30 @@ angular
                       "Content-Type" : "application/json"
                     }
                   })
-                    .success(
-                      function(data) {
-                        $scope.recordSuccess = "Record saved.";
-                        $scope.recordError = "";
+                    .success(function(data) {
+                      $scope.recordSuccess = "Record saved.";
+                      $scope.recordError = "";
 
-                        // user
-                        // has
-                        // successfully
-                        // finished
-                        // record,
-                        // page
-                        // is no
-                        // longer
-                        // "dirty"
-                        $rootScope.currentPageDirty = false;
+                      // user
+                      // has
+                      // successfully
+                      // finished
+                      // record,
+                      // page
+                      // is no
+                      // longer
+                      // "dirty"
+                      $rootScope.currentPageDirty = false;
 
-                        $rootScope.glassPane--;
-                        console
-                          .debug("Simple finish called, return to dashboard");
-                        $location.path($scope.role + "/dash");
-                      })
+                      $rootScope.glassPane--;
+                      console.debug("Simple finish called, return to dashboard");
+                      $location.path($scope.role + "/dash");
+                    })
                     .error(
                       function(data, status, headers, config) {
                         $rootScope.glassPane--;
                         $scope.recordError = "Unexpected server error.  Try saving your work for later, and contact an admin.";
-                        $rootScope.handleHttpError(data, status, headers,
-                          config);
+                        $rootScope.handleHttpError(data, status, headers, config);
                         console.debug('SERVER ERROR');
                         $scope.recordSuccess = "";
                       });
@@ -650,9 +631,8 @@ angular
           $rootScope.glassPane++;
           $http(
             {
-              url : root_workflow + "project/id/" + $scope.project.id
-                + "/user/id/" + $scope.user.userName
-                + "/query/null/assignedConcepts",
+              url : root_workflow + "project/id/" + $scope.project.id + "/user/id/"
+                + $scope.user.userName + "/query/null/assignedConcepts",
 
               dataType : "json",
               data : pfsParameterObj,
@@ -712,9 +692,8 @@ angular
           $rootScope.glassPane++;
           $http(
             {
-              url : root_workflow + "project/id/" + $scope.project.id
-                + "/user/id/" + $scope.user.userName
-                + "/query/null/assignedConflicts",
+              url : root_workflow + "project/id/" + $scope.project.id + "/user/id/"
+                + $scope.user.userName + "/query/null/assignedConflicts",
 
               dataType : "json",
               data : pfsParameterObj,
@@ -740,8 +719,7 @@ angular
                 // assigned work, return to
                 // dashboard
                 if (assignedWork.length == 0) {
-                  console
-                    .debug("No more assigned conflicts, return to dashboard");
+                  console.debug("No more assigned conflicts, return to dashboard");
                   $location.path($scope.role + "/dash");
 
                   // otherwise redirect to
@@ -779,67 +757,8 @@ angular
           $rootScope.glassPane++;
           $http(
             {
-              url : root_workflow + "project/id/" + $scope.project.id
-                + "/user/id/" + $scope.user.userName
-                + "/query/null/assignedReviewWork",
-
-              dataType : "json",
-              data : pfsParameterObj,
-              method : "POST",
-              headers : {
-                "Content-Type" : "application/json"
-              }
-            })
-            .success(
-              function(data) {
-                $rootScope.glassPane--;
-
-                var assignedWork = data.searchResult;
-                if (tooltipOnly == true) {
-                  if (assignedWork.length == 0) {
-                    $scope.dynamicTooltip = "";
-                  } else {
-                    $scope.dynamicTooltip = assignedWork[0].terminologyId + " "
-                      + assignedWork[0].value;
-                  }
-                } else {
-                  // if there is no more
-                  // assigned work, return to
-                  // dashboard
-                  if (assignedWork.length == 0) {
-                    console
-                      .debug("No more assigned review work, return to dashboard");
-                    $location.path($scope.role + "/dash");
-
-                    // otherwise redirect to
-                    // the next record to be
-                    // edited
-                  } else {
-                    console.debug("More work, redirecting");
-                    $location.path("record/review/" + assignedWork[0].id);
-                  }
-                }
-              }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
-              $rootScope.handleHttpError(data, status, headers, config);
-            });
-        } else if ($scope.record.workflowStatus === 'QA_NEW'
-          || $scope.record.workflowStatus === 'QA_IN_PROGRESS') {
-
-          // construct a paging/filtering/sorting object
-          var pfsParameterObj = {
-            "startIndex" : startIndex,
-            "maxResults" : 1,
-            "sortField" : 'sortKey',
-            "queryRestriction" : 'QA_NEW'
-          };
-          // get the assigned review work
-          $rootScope.glassPane++;
-          $http(
-            {
-              url : root_workflow + "project/id/" + $scope.project.id
-                + "/user/id/" + $scope.user.userName
-                + "/query/null/assignedQAWork",
+              url : root_workflow + "project/id/" + $scope.project.id + "/user/id/"
+                + $scope.user.userName + "/query/null/assignedReviewWork",
 
               dataType : "json",
               data : pfsParameterObj,
@@ -864,8 +783,62 @@ angular
                 // assigned work, return to
                 // dashboard
                 if (assignedWork.length == 0) {
-                  console
-                    .debug("No more assigned qa work, return to dashboard");
+                  console.debug("No more assigned review work, return to dashboard");
+                  $location.path($scope.role + "/dash");
+
+                  // otherwise redirect to
+                  // the next record to be
+                  // edited
+                } else {
+                  console.debug("More work, redirecting");
+                  $location.path("record/review/" + assignedWork[0].id);
+                }
+              }
+            }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        } else if ($scope.record.workflowStatus === 'QA_NEW'
+          || $scope.record.workflowStatus === 'QA_IN_PROGRESS') {
+
+          // construct a paging/filtering/sorting object
+          var pfsParameterObj = {
+            "startIndex" : startIndex,
+            "maxResults" : 1,
+            "sortField" : 'sortKey',
+            "queryRestriction" : 'QA_NEW'
+          };
+          // get the assigned review work
+          $rootScope.glassPane++;
+          $http(
+            {
+              url : root_workflow + "project/id/" + $scope.project.id + "/user/id/"
+                + $scope.user.userName + "/query/null/assignedQAWork",
+
+              dataType : "json",
+              data : pfsParameterObj,
+              method : "POST",
+              headers : {
+                "Content-Type" : "application/json"
+              }
+            }).success(
+            function(data) {
+              $rootScope.glassPane--;
+
+              var assignedWork = data.searchResult;
+              if (tooltipOnly == true) {
+                if (assignedWork.length == 0) {
+                  $scope.dynamicTooltip = "";
+                } else {
+                  $scope.dynamicTooltip = assignedWork[0].terminologyId + " "
+                    + assignedWork[0].value;
+                }
+              } else {
+                // if there is no more
+                // assigned work, return to
+                // dashboard
+                if (assignedWork.length == 0) {
+                  console.debug("No more assigned qa work, return to dashboard");
                   $location.path($scope.role + "/dash");
 
                   // otherwise redirect to
@@ -881,9 +854,9 @@ angular
             $rootScope.handleHttpError(data, status, headers, config);
           });
           /*
-                     * } else { $rootScope.glassPane--; console.debug("MapRecord
-                     * finish/next can't determine type of work, returning to
-                     * dashboard"); $location.path($scope.role + "/dash");
+                     * } else { $rootScope.glassPane--; console.debug("MapRecord finish/next can't
+                     * determine type of work, returning to dashboard"); $location.path($scope.role +
+                     * "/dash");
                      */
         }
       };
@@ -993,8 +966,7 @@ angular
           }
 
           if (principlePresent == true) {
-            $scope.errorAddRecordPrinciple = "The principle with id "
-              + principle.principleId
+            $scope.errorAddRecordPrinciple = "The principle with id " + principle.principleId
               + " is already attached to the map record";
           } else {
             console.debug('Adding principle');
@@ -1010,8 +982,7 @@ angular
       };
 
       $scope.removeRecordPrinciple = function(record, principle) {
-        record['mapPrinciple'] = removeJsonElement(record['mapPrinciple'],
-          principle);
+        record['mapPrinciple'] = removeJsonElement(record['mapPrinciple'], principle);
         $scope.record = record;
 
         console.debug('Removed principle');
@@ -1068,8 +1039,7 @@ angular
           }
 
           if (noteFound = false) {
-            console.debug("ERROR: Could not find note to edit with id = "
-              + $scope.noteEditId);
+            console.debug("ERROR: Could not find note to edit with id = " + $scope.noteEditId);
           }
         } else {
           console.debug("Save Edit Record Note called when not in edit mode");
@@ -1120,8 +1090,7 @@ angular
       $scope.sendFeedback = function(record, feedbackMessage, recipientList) {
         console.debug("Adding feedback", record);
 
-        if (feedbackMessage == null || feedbackMessage == undefined
-          || feedbackMessage === '') {
+        if (feedbackMessage == null || feedbackMessage == undefined || feedbackMessage === '') {
           window.alert("The feedback field cannot be blank. ");
           return;
         }
@@ -1294,8 +1263,7 @@ angular
         var entries = new Array();
 
         for (var i = 0; i < $scope.record.mapEntry.length; i++) {
-          if (parseInt($scope.record.mapEntry[i].mapGroup, 10) === parseInt(
-            mapGroup, 10)) {
+          if (parseInt($scope.record.mapEntry[i].mapGroup, 10) === parseInt(mapGroup, 10)) {
             entries.push($scope.record.mapEntry[i]);
           }
           ;
@@ -1356,8 +1324,7 @@ angular
 
             if (lowerBound != null && lowerBound != '' && lowerBound.length > 0) {
               ruleSummary += lowerBound[0];
-              if (upperBound != null && upperBound != ''
-                && upperBound.length > 0)
+              if (upperBound != null && upperBound != '' && upperBound.length > 0)
                 ruleSummary += ' AND ';
             }
             if (upperBound != null && upperBound != '' && upperBound.length > 0)
@@ -1389,13 +1356,12 @@ angular
 
         console.debug("Entry selected, new entries: ", $scope.entries);
 
-        $rootScope.$broadcast(
-          'mapRecordWidget.notification.changeSelectedEntry', {
-            key : 'changeSelectedEntry',
-            entry : angular.copy(entry),
-            record : $scope.record,
-            project : $scope.project
-          });
+        $rootScope.$broadcast('mapRecordWidget.notification.changeSelectedEntry', {
+          key : 'changeSelectedEntry',
+          entry : angular.copy(entry),
+          record : $scope.record,
+          project : $scope.project
+        });
 
       };
 
@@ -1488,8 +1454,7 @@ angular
                 $scope.groupsTree[entry.mapGroup - 1].entry[entry.mapPriority - 1] = entry;
 
               } else {
-                console
-                  .error("MapRecordWidget: Invalid action requested for entry modification");
+                console.error("MapRecordWidget: Invalid action requested for entry modification");
               }
             }
 
@@ -1636,14 +1601,12 @@ angular
       $scope.getBrowserUrl = function() {
         if ($scope.user.userName === 'guest')
           return "http://browser.ihtsdotools.org/index.html?perspective=full&conceptId1="
-            + $scope.concept.terminologyId
-            + "&edition=en-edition"
+            + $scope.concept.terminologyId + "&edition=en-edition"
             + "&server=https://browser-aws-1.ihtsdotools.org/&langRefset=900000000000509007"
             + "&acceptLicense=true";
         else
           return "http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1="
-            + $scope.concept.terminologyId
-            + "&diagrammingMarkupEnabled=true&acceptLicense=true";
+            + $scope.concept.terminologyId + "&diagrammingMarkupEnabled=true&acceptLicense=true";
       };
 
       $scope.openConceptBrowser = function() {

@@ -37,7 +37,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     ProjectSpecificAlgorithmHandler {
 
   /** The map project. */
-  MapProject mapProject = null;
+  protected MapProject mapProject = null;
 
   /* see superclass */
   @Override
@@ -58,15 +58,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     return null;
   }
 
-  /**
-   * Given a map record and a map entry, returns the computed map relation (if
-   * applicable) This must be overwritten for each project specific handler.
-   * 
-   * @param mapRecord the map record
-   * @param mapEntry the map entry
-   * @return computed map relation
-   * @throws Exception the exception
-   */
+  /* see superclass */
   @Override
   public MapRelation computeMapRelation(MapRecord mapRecord, MapEntry mapEntry)
     throws Exception {
@@ -77,21 +69,20 @@ public class DefaultProjectSpecificAlgorithmHandler implements
   @Override
   public ValidationResult validateRecord(MapRecord mapRecord) throws Exception {
 
-    ValidationResult validationResult = new ValidationResultJpa();
+    // Universal checks
+    final ValidationResult validationResult = new ValidationResultJpa();
     validationResult.merge(performDefaultChecks(mapRecord));
+
+    // Generally should be overridden
     validationResult.merge(validateTargetCodes(mapRecord));
+    validationResult.merge(validateSemanticChecks(mapRecord));
+
     return validationResult;
   }
 
-  /* see superclass */
-  @Override
-  public ValidationResult validateTargetCodes(MapRecord mapRecord)
-    throws Exception {
-    return new ValidationResultJpa();
-  }
-
   /**
-   * Perform universal validation checks.
+   * Perform validation checks that likely apply to all mappings. This is mostly
+   * structural stuff and not semantically tied to any particular map.
    * 
    * @param mapRecord the map record
    * @return the validation result
@@ -99,7 +90,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
   public ValidationResult performDefaultChecks(MapRecord mapRecord) {
     Map<Integer, List<MapEntry>> entryGroups = getEntryGroups(mapRecord);
 
-    ValidationResult validationResult = new ValidationResultJpa();
+    final ValidationResult validationResult = new ValidationResultJpa();
 
     // FATAL ERROR: map record has no entries
     if (mapRecord.getMapEntries().size() == 0) {
@@ -115,17 +106,10 @@ public class DefaultProjectSpecificAlgorithmHandler implements
       return validationResult;
     }
 
-    /*
-     * Verify that groups begin at index 1 and are sequential (i.e. no empty
-     * groups)
-     */
+    // Verify that groups begin at index 1 and are sequential (i.e. no empty
+    // groups)
     validationResult
         .merge(checkMapRecordGroupStructure(mapRecord, entryGroups));
-
-    /*
-     * Group validation checks â€¢ Verify the last entry in a group is a TRUE
-     * rule â€¢ Verify higher map groups do not have only NC nodes
-     */
 
     // Validation Check: verify correct positioning of TRUE rules
     validationResult.merge(checkMapRecordRules(mapRecord, entryGroups));
@@ -133,21 +117,11 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     // Validation Check: very higher map groups do not have only NC nodes
     validationResult.merge(checkMapRecordNcNodes(mapRecord, entryGroups));
 
-    /*
-     * Entry Validation Checks Verify no duplicate entries in record Verify
-     * advice values are valid for the project (this can happen if allowable map
-     * advice changes without updating map entries) Entry must have target code
-     * that is both in the target terminology and valid (e.g. leaf nodes) OR
-     * have a relationId corresponding to a valid map category
-     */
-
     // Validation Check: verify entries are not duplicated
     validationResult.merge(checkMapRecordForDuplicateEntries(mapRecord));
 
-    // Validation Check: verify advice values are valid for the project
-    // (this
-    // can happen if "allowable map advice" changes without
-    // updating map
+    // Validation Check: verify advice values are valid for the project (this
+    // can happen if "allowable map advice" changes without updating map
     // entries)
     validationResult.merge(checkMapRecordAdvices(mapRecord, entryGroups));
 
@@ -158,348 +132,23 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     return validationResult;
   }
 
-  // ////////////////////
-  // HELPER FUNCTIONS //
-  // ////////////////////
-
-  /**
-   * Check map record for null target ids.
-   * 
-   * @param mapRecord the map record
-   * @return the validation result
-   */
-  @SuppressWarnings("static-method")
-  public ValidationResult checkMapRecordForNullTargetIds(MapRecord mapRecord) {
-    ValidationResult validationResult = new ValidationResultJpa();
-
-    for (MapEntry me : mapRecord.getMapEntries()) {
-      if (me.getTargetId() == null)
-        validationResult.addError("Map entry at group " + me.getMapGroup()
-            + ", priority " + me.getMapPriority()
-            + " has no target (valid or empty) selected.");
-    }
-
-    return validationResult;
+  /* see superclass */
+  @Override
+  public ValidationResult validateTargetCodes(MapRecord mapRecord)
+    throws Exception {
+    return new ValidationResultJpa();
   }
 
-  /**
-   * Check map record group structure.
-   * 
-   * @param mapRecord the map record
-   * @param entryGroups the entry groups
-   * @return the validation result
-   */
-  @SuppressWarnings("static-method")
-  public ValidationResult checkMapRecordGroupStructure(MapRecord mapRecord,
-    Map<Integer, List<MapEntry>> entryGroups) {
-
-    ValidationResult validationResult = new ValidationResultJpa();
-
-    // get the list of groups
-    Set<Integer> mapGroups = entryGroups.keySet();
-
-    // cycle over the expected group numbers
-    for (int i = 1; i <= mapGroups.size(); i++) {
-      if (!mapGroups.contains(i)) {
-        validationResult.addError("Group " + i + " is empty");
-      }
-    }
-
-    return validationResult;
-  }
-
-  // ///////////////////////////////////////////////////////
-  // Map Record Validation Checks and Helper Functions
-  // ///////////////////////////////////////////////////////
-
-  /**
-   * Function to check a map record for duplicate entries within map groups.
-   * 
-   * @param mapRecord the map record
-   * @return a list of errors detected
-   */
-  @SuppressWarnings("static-method")
-  public ValidationResult checkMapRecordForDuplicateEntries(MapRecord mapRecord) {
-
-    // Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
-    // .info("  Checking map record for duplicate entries within map groups...");
-
-    ValidationResult validationResult = new ValidationResultJpa();
-    List<MapEntry> entries = mapRecord.getMapEntries();
-
-    // cycle over all entries but last
-    for (int i = 0; i < entries.size() - 1; i++) {
-
-      // cycle over all entries after this one
-      // NOTE: separated boolean checks for easier handling of possible
-      // null
-      // relations
-      for (int j = i + 1; j < entries.size(); j++) {
-
-        // if first entry target null
-        if (entries.get(i).getTargetId() == null) {
-
-          // if both null, check relations
-          if (entries.get(j).getTargetId() == null) {
-
-            if (entries.get(i).getMapRelation() != null
-                && entries.get(j).getMapRelation() != null
-                && entries.get(i).getMapRelation()
-                    .equals(entries.get(j).getMapRelation())) {
-              validationResult
-                  .addError("Duplicate entries (null target code, same map relation) found: "
-                      + "Group "
-                      + Integer.toString(entries.get(i).getMapGroup())
-                      + ", priority "
-                      + entries.get(i).getMapPriority()
-                      + " and "
-                      + "Group "
-                      + Integer.toString(entries.get(j).getMapGroup())
-                      + ", priority " + entries.get(j).getMapPriority());
-            }
-
-          }
-        } else {
-
-          // check if second entry's target identical to this one
-          if (entries.get(i).getTargetId().equals(entries.get(j).getTargetId())) {
-            validationResult
-                .addError("Duplicate entries (same target code) found: "
-                    + "Group " + Integer.toString(entries.get(i).getMapGroup())
-                    + ", priority " + Integer.toString(i) + " and " + "Group "
-                    + Integer.toString(entries.get(j).getMapGroup())
-                    + ", priority " + Integer.toString(j));
-          }
-        }
-
-      }
-    }
-
-    for (String error : validationResult.getErrors()) {
-      Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
-          "    " + error);
-    }
-
-    return validationResult;
-  }
-
-  /**
-   * Function to check proper use of TRUE rules and presence of rules on
-   * non-rule based projects.
-   * 
-   * @param mapRecord the map record
-   * @param entryGroups the binned entry lists by group
-   * @return a list of errors detected
-   */
-  public ValidationResult checkMapRecordRules(MapRecord mapRecord,
-    Map<Integer, List<MapEntry>> entryGroups) {
-
-    // Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
-    // "  Checking map record for proper use of TRUE rules...");
-
-    ValidationResult validationResult = new ValidationResultJpa();
-
-    // if not rule based, check for rules present
-    if (!mapProject.isRuleBased()) {
-
-      for (MapEntry me : mapRecord.getMapEntries()) {
-        if (me.getRule() != null && !me.getRule().isEmpty()) {
-          validationResult
-              .addError("Rule found for non-rule based project at map group "
-                  + me.getMapGroup() + ", priority " + me.getMapPriority()
-                  + ", rule specified is " + me.getRule() + ".");
-        }
-      }
-
-      // otherwise check TRUE rules and gender rules (Female must be before
-      // Male)
-    } else {
-
-      // cycle over the groups and note if there are both female and
-      // male entries in a group
-      for (Integer key : entryGroups.keySet()) {
-
-        int maleEntry = 0;
-        int femaleEntry = 0;
-
-        for (int i = 1; i < entryGroups.get(key).size() + 1; i++) {
-          MapEntry entry = entryGroups.get(key).get(i - 1);
-          if (entry.getRule().contains("Male")) {
-            maleEntry = i;
-          }
-          if (entry.getRule().contains("Female")) {
-            femaleEntry = i;
-          }
-        }
-
-        // ensure female entry is before male entry
-        if (femaleEntry != 0 && maleEntry != 0) {
-          if (femaleEntry > maleEntry)
-            validationResult
-                .addError("Female rule must be ordered before the male rule.");
-        }
-      }
-
-      // cycle over the groups
-      for (Integer key : entryGroups.keySet()) {
-
-        for (MapEntry mapEntry : entryGroups.get(key)) {
-
-          Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
-              "    Checking entry "
-                  + Integer.toString(mapEntry.getMapPriority()));
-
-          // add message if TRUE rule found at non-terminating entry
-          if (mapEntry.getMapPriority() != entryGroups.get(key).size()
-              && mapEntry.getRule().equals("TRUE")) {
-            validationResult
-                .addError("Found non-terminating entry with TRUE rule."
-                    + " Entry:"
-                    + (mapProject.isGroupStructure() ? " group "
-                        + Integer.toString(mapEntry.getMapGroup()) + "," : "")
-                    + " map priority "
-                    + Integer.toString(mapEntry.getMapPriority()));
-
-            // add message if terminating entry rule is not TRUE
-          } else if (mapEntry.getMapPriority() == entryGroups.get(key).size()
-              && !mapEntry.getRule().equals("TRUE")) {
-            validationResult.addError("Terminating entry has non-TRUE rule."
-                + " Entry:"
-                + (mapProject.isGroupStructure() ? " group "
-                    + Integer.toString(mapEntry.getMapGroup()) + "," : "")
-                + " map priority "
-                + Integer.toString(mapEntry.getMapPriority()));
-          }
-        }
-      }
-    }
-    for (String error : validationResult.getErrors()) {
-      Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
-          "    " + error);
-    }
-
-    return validationResult;
-  }
-
-  /**
-   * Function to check higher level groups do not have only NC target codes.
-   * 
-   * @param mapRecord the map record
-   * @param entryGroups the binned entry lists by group
-   * @return a list of errors detected
-   */
-  @SuppressWarnings("static-method")
-  public ValidationResult checkMapRecordNcNodes(MapRecord mapRecord,
-    Map<Integer, List<MapEntry>> entryGroups) {
-
-    // Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
-    // .info("  Checking map record for high-level groups with only NC target codes...");
-
-    ValidationResult validationResult = new ValidationResultJpa();
-
-    // if only one group, return empty validation result (also covers
-    // non-group-structure projects)
-    if (entryGroups.keySet().size() == 1)
-      return validationResult;
-
-    // otherwise cycle over the high-level groups (i.e. all but first group)
-    for (int group : entryGroups.keySet()) {
-
-      if (group != 1) {
-        List<MapEntry> entries = entryGroups.get(group);
-
-        boolean isValidGroup = false;
-        for (MapEntry entry : entries) {
-          if (entry.getTargetId() != null && !entry.getTargetId().equals(""))
-            isValidGroup = true;
-        }
-
-        if (!isValidGroup) {
-          validationResult.addError("High-level group "
-              + Integer.toString(group) + " has no entries with targets");
-        }
-      }
-    }
-
-    for (String error : validationResult.getErrors()) {
-      Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
-          "    " + error);
-    }
-
-    return validationResult;
-  }
-
-  /**
-   * Function to check that all advices attached are allowable by the project.
-   * 
-   * @param mapRecord the map record
-   * @param entryGroups the binned entry lists by group
-   * @return a list of errors detected
-   */
-  public ValidationResult checkMapRecordAdvices(MapRecord mapRecord,
-    Map<Integer, List<MapEntry>> entryGroups) {
-
-    // Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
-    // "  Checking map record for valid map advices...");
-
-    ValidationResult validationResult = new ValidationResultJpa();
-
-    for (MapEntry mapEntry : mapRecord.getMapEntries()) {
-
-      for (MapAdvice mapAdvice : mapEntry.getMapAdvices()) {
-
-        if (!mapProject.getMapAdvices().contains(mapAdvice)) {
-          validationResult.addError("Invalid advice "
-              + mapAdvice.getName()
-              + "."
-              + " Entry:"
-              + (mapProject.isGroupStructure() ? " group "
-                  + Integer.toString(mapEntry.getMapGroup()) + "," : "")
-              + " map priority " + Integer.toString(mapEntry.getMapPriority()));
-        }
-      }
-
-    }
-
-    for (String error : validationResult.getErrors()) {
-      Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
-          "    " + error);
-    }
-
-    return validationResult;
-  }
-
-  /**
-   * Helper function to sort a records entries into entry lists binned by group.
-   * 
-   * @param mapRecord the map record
-   * @return a map of group to entry list
-   */
-  @SuppressWarnings("static-method")
-  public Map<Integer, List<MapEntry>> getEntryGroups(MapRecord mapRecord) {
-
-    Map<Integer, List<MapEntry>> entryGroups = new HashMap<>();
-
-    for (MapEntry entry : mapRecord.getMapEntries()) {
-
-      // if no existing set for this group, create a blank set
-      List<MapEntry> entryGroup = entryGroups.get(entry.getMapGroup());
-      if (entryGroup == null) {
-        entryGroup = new ArrayList<>();
-      }
-
-      // add this entry to group and put it in group map
-      entryGroup.add(entry);
-      entryGroups.put(entry.getMapGroup(), entryGroup);
-    }
-
-    return entryGroups;
+  @Override
+  public ValidationResult validateSemanticChecks(MapRecord mapRecord)
+    throws Exception {
+    return new ValidationResultJpa();
   }
 
   /* see superclass */
   @Override
   public ValidationResult compareMapRecords(MapRecord record1, MapRecord record2) {
-    ValidationResult validationResult = new ValidationResultJpa();
+    final ValidationResult validationResult = new ValidationResultJpa();
 
     // compare mapProjectId
     if (!record1.getMapProjectId().equals(record2.getMapProjectId())) {
@@ -568,26 +217,26 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
     // compare mapEntries
     // organize map entries by group
-    Map<Integer, List<MapEntry>> groupToMapEntryList1 = new HashMap<>();
-    for (MapEntry entry : record1.getMapEntries()) {
+    final Map<Integer, List<MapEntry>> groupToMapEntryList1 = new HashMap<>();
+    for (final MapEntry entry : record1.getMapEntries()) {
       if (groupToMapEntryList1.containsKey(entry.getMapGroup())) {
-        List<MapEntry> entryList =
+        final List<MapEntry> entryList =
             groupToMapEntryList1.get(entry.getMapGroup());
         entryList.add(entry);
       } else {
-        List<MapEntry> entryList = new ArrayList<>();
+        final List<MapEntry> entryList = new ArrayList<>();
         entryList.add(entry);
         groupToMapEntryList1.put(entry.getMapGroup(), entryList);
       }
     }
-    Map<Integer, List<MapEntry>> groupToMapEntryList2 = new HashMap<>();
-    for (MapEntry entry : record2.getMapEntries()) {
+    final Map<Integer, List<MapEntry>> groupToMapEntryList2 = new HashMap<>();
+    for (final MapEntry entry : record2.getMapEntries()) {
       if (groupToMapEntryList2.containsKey(entry.getMapGroup())) {
-        List<MapEntry> entryList =
+        final List<MapEntry> entryList =
             groupToMapEntryList2.get(entry.getMapGroup());
         entryList.add(entry);
       } else {
-        List<MapEntry> entryList = new ArrayList<>();
+        final List<MapEntry> entryList = new ArrayList<>();
         entryList.add(entry);
         groupToMapEntryList2.put(entry.getMapGroup(), entryList);
       }
@@ -603,8 +252,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     // for each group
     for (int i = 1; i < Math.max(groupToMapEntryList1.size(),
         groupToMapEntryList2.size()) + 1; i++) {
-      List<MapEntry> entries1 = groupToMapEntryList1.get(new Integer(i));
-      List<MapEntry> entries2 = groupToMapEntryList2.get(new Integer(i));
+      final List<MapEntry> entries1 = groupToMapEntryList1.get(new Integer(i));
+      final List<MapEntry> entries2 = groupToMapEntryList2.get(new Integer(i));
 
       // error if different numbers of entries
       if (entries1 == null) {
@@ -621,12 +270,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements
       }
 
       // create string lists for entry comparison
-      List<String> stringEntries1 = new ArrayList<>();
-      List<String> stringEntries2 = new ArrayList<>();
-      for (MapEntry entry1 : entries1) {
+      final List<String> stringEntries1 = new ArrayList<>();
+      final List<String> stringEntries2 = new ArrayList<>();
+      for (final MapEntry entry1 : entries1) {
         stringEntries1.add(convertToString(entry1));
       }
-      for (MapEntry entry2 : entries2) {
+      for (final MapEntry entry2 : entries2) {
         stringEntries2.add(convertToString(entry2));
       }
 
@@ -634,8 +283,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements
       boolean outOfOrderFlag = false;
       boolean missingEntry = false;
 
-      System.out.println("strings1=" + stringEntries1);
-      System.out.println("strings2=" + stringEntries2);
       for (int d = 0; d < Math
           .min(stringEntries1.size(), stringEntries2.size()); d++) {
 
@@ -682,8 +329,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
               && !entries1.get(d).getMapAdvices()
                   .equals(entries2.get(f).getMapAdvices()))
 
-            printAdviceDifferences(validationResult, entries1.get(d),
-                entries2.get(f));
+            validationResult.merge(checkAdviceDifferences(entries1.get(d),
+                entries2.get(f)));
         }
       }
 
@@ -729,6 +376,305 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     }
 
     return validationResult;
+  }
+
+  /* see superclass */
+  @Override
+  public boolean isTargetCodeValid(String terminologyId) throws Exception {
+    return true;
+  }
+
+  // ////////////////////
+  // HELPER FUNCTIONS //
+  // ////////////////////
+
+  /**
+   * Verify map records do not have null target ids
+   * 
+   * @param mapRecord the map record
+   * @return the validation result
+   */
+  @SuppressWarnings("static-method")
+  public ValidationResult checkMapRecordForNullTargetIds(MapRecord mapRecord) {
+    final ValidationResult validationResult = new ValidationResultJpa();
+
+    for (final MapEntry me : mapRecord.getMapEntries()) {
+      if (me.getTargetId() == null)
+        validationResult.addError("Map entry at group " + me.getMapGroup()
+            + ", priority " + me.getMapPriority()
+            + " has no target (valid or empty) selected.");
+    }
+
+    return validationResult;
+  }
+
+  /**
+   * Verify there are no empty map groups
+   * 
+   * @param mapRecord the map record
+   * @param entryGroups the entry groups
+   * @return the validation result
+   */
+  @SuppressWarnings("static-method")
+  public ValidationResult checkMapRecordGroupStructure(MapRecord mapRecord,
+    Map<Integer, List<MapEntry>> entryGroups) {
+
+    final ValidationResult validationResult = new ValidationResultJpa();
+
+    // get the list of groups
+    final Set<Integer> mapGroups = entryGroups.keySet();
+
+    // cycle over the expected group numbers
+    for (int i = 1; i <= mapGroups.size(); i++) {
+      if (!mapGroups.contains(i)) {
+        validationResult.addError("Group " + i + " is empty");
+      }
+    }
+    return validationResult;
+  }
+
+  /**
+   * Verify no duplicate entries in the map.
+   * 
+   * @param mapRecord the map record
+   * @return a list of errors detected
+   */
+  @SuppressWarnings("static-method")
+  public ValidationResult checkMapRecordForDuplicateEntries(MapRecord mapRecord) {
+    ValidationResult validationResult = new ValidationResultJpa();
+    final List<MapEntry> entries = mapRecord.getMapEntries();
+
+    // cycle over all entries but last
+    for (int i = 0; i < entries.size() - 1; i++) {
+
+      // cycle over all entries after this one
+      // NOTE: separated boolean checks for easier handling of possible null
+      // relations
+      for (int j = i + 1; j < entries.size(); j++) {
+
+        // if first entry target null
+        if (entries.get(i).getTargetId() == null) {
+
+          // if both null, check relations
+          if (entries.get(j).getTargetId() == null) {
+
+            if (entries.get(i).getMapRelation() != null
+                && entries.get(j).getMapRelation() != null
+                && entries.get(i).getMapRelation()
+                    .equals(entries.get(j).getMapRelation())) {
+              validationResult
+                  .addError("Duplicate entries (null target code, same map relation) found: "
+                      + "Group "
+                      + Integer.toString(entries.get(i).getMapGroup())
+                      + ", priority "
+                      + entries.get(i).getMapPriority()
+                      + " and "
+                      + "Group "
+                      + Integer.toString(entries.get(j).getMapGroup())
+                      + ", priority " + entries.get(j).getMapPriority());
+            }
+          }
+
+        } else {
+
+          // check if second entry's target identical to this one
+          if (entries.get(i).getTargetId().equals(entries.get(j).getTargetId())) {
+            validationResult
+                .addError("Duplicate entries (same target code) found: "
+                    + "Group " + Integer.toString(entries.get(i).getMapGroup())
+                    + ", priority " + Integer.toString(i) + " and " + "Group "
+                    + Integer.toString(entries.get(j).getMapGroup())
+                    + ", priority " + Integer.toString(j));
+          }
+        }
+
+      }
+    }
+    return validationResult;
+  }
+
+  /**
+   * Verify proper use of TRUE rules (for rule based project). Verify no rules
+   * on non-rule based projects.
+   * 
+   * @param mapRecord the map record
+   * @param entryGroups the binned entry lists by group
+   * @return a list of errors detected
+   */
+  public ValidationResult checkMapRecordRules(MapRecord mapRecord,
+    Map<Integer, List<MapEntry>> entryGroups) {
+
+    final ValidationResult validationResult = new ValidationResultJpa();
+
+    // if not rule based, check for rules present
+    if (!mapProject.isRuleBased()) {
+
+      for (final MapEntry me : mapRecord.getMapEntries()) {
+        if (me.getRule() != null && !me.getRule().isEmpty()) {
+          validationResult
+              .addError("Rule found for non-rule based project at map group "
+                  + me.getMapGroup() + ", priority " + me.getMapPriority()
+                  + ", rule specified is " + me.getRule() + ".");
+        }
+      }
+
+      // otherwise check TRUE rules and gender rules (Female must be before
+      // Male)
+    } else {
+
+      // cycle over the groups and note if there are both female and
+      // male entries in a group
+      for (final Integer key : entryGroups.keySet()) {
+
+        int maleEntry = 0;
+        int femaleEntry = 0;
+
+        for (int i = 1; i < entryGroups.get(key).size() + 1; i++) {
+          MapEntry entry = entryGroups.get(key).get(i - 1);
+          if (entry.getRule().contains("Male")) {
+            maleEntry = i;
+          }
+          if (entry.getRule().contains("Female")) {
+            femaleEntry = i;
+          }
+        }
+
+        // ensure female entry is before male entry
+        if (femaleEntry != 0 && maleEntry != 0) {
+          if (femaleEntry > maleEntry)
+            validationResult
+                .addError("Female rule must be ordered before the male rule.");
+        }
+      }
+
+      // cycle over the groups
+      for (final Integer key : entryGroups.keySet()) {
+
+        for (final MapEntry mapEntry : entryGroups.get(key)) {
+
+          Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
+              "    Checking entry "
+                  + Integer.toString(mapEntry.getMapPriority()));
+
+          // add message if TRUE rule found at non-terminating entry
+          if (mapEntry.getMapPriority() != entryGroups.get(key).size()
+              && mapEntry.getRule().equals("TRUE")) {
+            validationResult
+                .addError("Found non-terminating entry with TRUE rule."
+                    + " Entry:"
+                    + (mapProject.isGroupStructure() ? " group "
+                        + Integer.toString(mapEntry.getMapGroup()) + "," : "")
+                    + " map priority "
+                    + Integer.toString(mapEntry.getMapPriority()));
+
+            // add message if terminating entry rule is not TRUE
+          } else if (mapEntry.getMapPriority() == entryGroups.get(key).size()
+              && !mapEntry.getRule().equals("TRUE")) {
+            validationResult.addError("Terminating entry has non-TRUE rule."
+                + " Entry:"
+                + (mapProject.isGroupStructure() ? " group "
+                    + Integer.toString(mapEntry.getMapGroup()) + "," : "")
+                + " map priority "
+                + Integer.toString(mapEntry.getMapPriority()));
+          }
+        }
+      }
+    }
+
+    return validationResult;
+  }
+
+  /**
+   * Verify higher level map groups do not have only NC target codes.
+   * 
+   * @param mapRecord the map record
+   * @param entryGroups the binned entry lists by group
+   * @return a list of errors detected
+   */
+  @SuppressWarnings("static-method")
+  public ValidationResult checkMapRecordNcNodes(MapRecord mapRecord,
+    Map<Integer, List<MapEntry>> entryGroups) {
+
+    final ValidationResult validationResult = new ValidationResultJpa();
+
+    // if only one group, return empty validation result (also covers
+    // non-group-structure projects)
+    if (entryGroups.keySet().size() == 1)
+      return validationResult;
+
+    // otherwise cycle over the high-level groups (i.e. all but first group)
+    for (int group : entryGroups.keySet()) {
+
+      if (group != 1) {
+        List<MapEntry> entries = entryGroups.get(group);
+
+        boolean isValidGroup = false;
+        for (final MapEntry entry : entries) {
+          if (entry.getTargetId() != null && !entry.getTargetId().equals(""))
+            isValidGroup = true;
+        }
+
+        if (!isValidGroup) {
+          validationResult.addError("High-level group "
+              + Integer.toString(group) + " has no entries with targets");
+        }
+      }
+    }
+    for (final String error : validationResult.getErrors()) {
+      Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
+          "    " + error);
+    }
+    return validationResult;
+  }
+
+  /**
+   * Verify advices are valid for the project
+   * 
+   * @param mapRecord the map record
+   * @param entryGroups the binned entry lists by group
+   * @return a list of errors detected
+   */
+  public ValidationResult checkMapRecordAdvices(MapRecord mapRecord,
+    Map<Integer, List<MapEntry>> entryGroups) {
+
+    final ValidationResult validationResult = new ValidationResultJpa();
+    for (final MapEntry mapEntry : mapRecord.getMapEntries()) {
+      for (final MapAdvice mapAdvice : mapEntry.getMapAdvices()) {
+        if (!mapProject.getMapAdvices().contains(mapAdvice)) {
+          validationResult.addError("Invalid advice "
+              + mapAdvice.getName()
+              + "."
+              + " Entry:"
+              + (mapProject.isGroupStructure() ? " group "
+                  + Integer.toString(mapEntry.getMapGroup()) + "," : "")
+              + " map priority " + Integer.toString(mapEntry.getMapPriority()));
+        }
+      }
+    }
+
+    return validationResult;
+  }
+
+  /**
+   * Helper function to sort a records entries into entry lists binned by group.
+   * 
+   * @param mapRecord the map record
+   * @return a map of group to entry list
+   */
+  @SuppressWarnings("static-method")
+  public Map<Integer, List<MapEntry>> getEntryGroups(MapRecord mapRecord) {
+    Map<Integer, List<MapEntry>> entryGroups = new HashMap<>();
+    for (final MapEntry entry : mapRecord.getMapEntries()) {
+      // if no existing set for this group, create a blank set
+      List<MapEntry> entryGroup = entryGroups.get(entry.getMapGroup());
+      if (entryGroup == null) {
+        entryGroup = new ArrayList<>();
+      }
+      // add this entry to group and put it in group map
+      entryGroup.add(entry);
+      entryGroups.put(entry.getMapGroup(), entryGroup);
+    }
+    return entryGroups;
   }
 
   /**
@@ -795,16 +741,17 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
   /**
    * Prints the advice differences.
-   * 
-   * @param validationResult the validation result
+   *
    * @param entry1 the entry1
    * @param entry2 the entry2
+   * @return the advice differences
    */
   @SuppressWarnings("static-method")
-  private void printAdviceDifferences(ValidationResult validationResult,
-    MapEntry entry1, MapEntry entry2) {
+  private ValidationResult checkAdviceDifferences(MapEntry entry1,
+    MapEntry entry2) {
 
-    Comparator<Object> advicesComparator = new Comparator<Object>() {
+    final ValidationResult result = new ValidationResultJpa();
+    final Comparator<Object> advicesComparator = new Comparator<Object>() {
       @Override
       public int compare(Object o1, Object o2) {
         String x1 = ((MapAdvice) o1).getName();
@@ -816,9 +763,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
       }
     };
 
-    List<MapAdvice> advices1 = new ArrayList<>(entry1.getMapAdvices());
+    final List<MapAdvice> advices1 = new ArrayList<>(entry1.getMapAdvices());
     Collections.sort(advices1, advicesComparator);
-    List<MapAdvice> advices2 = new ArrayList<>(entry2.getMapAdvices());
+    final List<MapAdvice> advices2 = new ArrayList<>(entry2.getMapAdvices());
     Collections.sort(advices2, advicesComparator);
 
     for (int i = 0; i < Math.max(advices1.size(), advices2.size()); i++) {
@@ -828,18 +775,20 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         if (advices1.get(i) != null && advices2.get(i) == null)
           continue;
         if (!advices1.get(i).equals(advices2.get(i))) {
-          validationResult.addError("Map Advice is Different: "
+          result.addError("Map Advice is Different: "
               + (advices1.get(i).getName() + " vs. " + advices2.get(i)
                   .getName()));
         }
       } catch (IndexOutOfBoundsException e) {
-        validationResult.addError("Map Advice is Different: "
+        result.addError("Map Advice is Different: "
             + (advices1.size() > i ? advices1.get(i).getName() : "No advice")
             + " vs. "
             + (advices2.size() > i ? advices2.get(i).getName() : "No advice"));
 
       }
     }
+
+    return result;
   }
 
   /**
@@ -851,7 +800,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
   @SuppressWarnings("static-method")
   private String convertToString(MapEntry mapEntry) {
 
-    Comparator<Object> advicesComparator = new Comparator<Object>() {
+    final Comparator<Object> advicesComparator = new Comparator<Object>() {
       @Override
       public int compare(Object o1, Object o2) {
         String x1 = ((MapAdvice) o1).getName();
@@ -864,17 +813,17 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
     };
 
-    List<MapAdvice> advices = new ArrayList<>(mapEntry.getMapAdvices());
+    final List<MapAdvice> advices = new ArrayList<>(mapEntry.getMapAdvices());
     Collections.sort(advices, advicesComparator);
 
-    StringBuffer sb = new StringBuffer();
+    final StringBuffer sb = new StringBuffer();
     sb.append(mapEntry.getTargetId()
         + " "
         + mapEntry.getRule()
         + " "
         + (mapEntry.getMapRelation() != null ? mapEntry.getMapRelation()
             .getId() : ""));
-    for (MapAdvice mapAdvice : advices) {
+    for (final MapAdvice mapAdvice : advices) {
       sb.append(mapAdvice.getObjectId() + " ");
     }
 
@@ -890,23 +839,11 @@ public class DefaultProjectSpecificAlgorithmHandler implements
   @SuppressWarnings("static-method")
   public WorkflowStatus getLowestWorkflowStatus(Set<MapRecord> mapRecords) {
     WorkflowStatus workflowStatus = WorkflowStatus.REVISION;
-    for (MapRecord mr : mapRecords) {
+    for (final MapRecord mr : mapRecords) {
       if (mr.getWorkflowStatus().compareTo(workflowStatus) < 0)
         workflowStatus = mr.getWorkflowStatus();
     }
     return workflowStatus;
-  }
-
-  /**
-   * For default project, all target codes are considered valid.
-   * 
-   * @param terminologyId the terminology id
-   * @return true, if is target code valid
-   * @throws Exception the exception
-   */
-  @Override
-  public boolean isTargetCodeValid(String terminologyId) throws Exception {
-    return true;
   }
 
   /**
@@ -936,7 +873,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     Set<MapRecord> mapRecords, MapRecord mapRecord, MapUser mapUser)
     throws Exception {
 
-    Set<MapRecord> newRecords = new HashSet<>();
+    final Set<MapRecord> newRecords = new HashSet<>();
 
     switch (trackingRecord.getWorkflowPath()) {
 
@@ -959,7 +896,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
           }
 
           // deep copy the map record
-          MapRecord newRecord = new MapRecordJpa(mapRecord, false);
+          final MapRecord newRecord = new MapRecordJpa(mapRecord, false);
 
           // set origin ids
           newRecord.addOrigin(mapRecord.getId());
@@ -1009,7 +946,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
           }
 
           // deep copy the map record
-          MapRecord newRecord = new MapRecordJpa(mapRecord, false);
+          final MapRecord newRecord = new MapRecordJpa(mapRecord, false);
 
           // set origin ids
           newRecord.addOrigin(mapRecord.getId());
@@ -1066,10 +1003,10 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     throws Exception {
 
     // the list of map records to return
-    Set<MapRecord> newRecords = new HashSet<>(mapRecords);
+    final Set<MapRecord> newRecords = new HashSet<>(mapRecords);
 
     // create new record
-    MapRecord mapRecord = new MapRecordJpa();
+    final MapRecord mapRecord = new MapRecordJpa();
     mapRecord.setMapProjectId(mapProject.getId());
     mapRecord.setConceptId(concept.getTerminologyId());
     mapRecord.setConceptName(concept.getDefaultPreferredName());
@@ -1111,7 +1048,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
           mapRecord.setReasonsForConflict(validationResult.getConciseErrors());
 
           // get the origin ids from the tracking record
-          for (MapRecord mr : newRecords) {
+          for (final MapRecord mr : newRecords) {
             mapRecord.addOrigin(mr.getId());
           }
           Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
@@ -1176,7 +1113,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
           }
 
           // set origin id
-          for (MapRecord mr : mapRecords) {
+          for (final MapRecord mr : mapRecords) {
             mapRecord.addOrigin(mr.getId());
             mapRecord.addOrigins(mr.getOriginIds());
           }
@@ -1211,7 +1148,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
           }
 
           // set origin id and copy labels
-          for (MapRecord record : mapRecords) {
+          for (final MapRecord record : mapRecords) {
             // if (record.getWorkflowStatus().equals(WorkflowStatus.REVISION))
             // mapRecord.addOrigin(record.getId());
             if (record.getWorkflowStatus().equals(WorkflowStatus.QA_NEEDED)) {
@@ -1262,10 +1199,10 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
         "Unassign called along " + trackingRecord.getWorkflowPath() + " path");
 
-    Set<MapRecord> newRecords = new HashSet<>(mapRecords);
+    final Set<MapRecord> newRecords = new HashSet<>(mapRecords);
 
     // find the record assigned to this user
-    MapRecord mapRecord = getCurrentMapRecordForUser(mapRecords, mapUser);
+    final MapRecord mapRecord = getCurrentMapRecordForUser(mapRecords, mapUser);
 
     // switch on workflow path
     switch (trackingRecord.getWorkflowPath()) {
@@ -1321,7 +1258,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
           case CONFLICT_DETECTED:
 
             MapRecord recordToRemove = null;
-            for (MapRecord mr : newRecords) {
+            for (final MapRecord mr : newRecords) {
 
               // if another specialist's record, revert to EDITING_DONE
               if (mr.getWorkflowStatus().equals(
@@ -1377,7 +1314,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         MapRecord revisionRecord = null;
         MapRecord editingRecord = null;
         MapRecord reviewRecord = null;
-        for (MapRecord mr : mapRecords) {
+        for (final MapRecord mr : mapRecords) {
           if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
             revisionRecord = mr;
           } else if (mr.getWorkflowStatus().equals(WorkflowStatus.NEW)
@@ -1403,7 +1340,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
           Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
               "Unassign:  FIX_ERROR_PATH - User unassigning review work");
 
-          MapRecord previousRevisionRecord =
+          final MapRecord previousRevisionRecord =
               getPreviouslyPublishedVersionOfMapRecord(revisionRecord);
 
           if (previousRevisionRecord == null) {
@@ -1439,7 +1376,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         revisionRecord = null;
         editingRecord = null;
         reviewRecord = null;
-        for (MapRecord mr : mapRecords) {
+        for (final MapRecord mr : mapRecords) {
           if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION))
             revisionRecord = mr;
           else if (mr.getWorkflowStatus().compareTo(WorkflowStatus.QA_NEEDED) <= 0)
@@ -1494,11 +1431,10 @@ public class DefaultProjectSpecificAlgorithmHandler implements
   @Override
   public Set<MapRecord> publish(TrackingRecord trackingRecord,
     Set<MapRecord> mapRecords, MapUser mapUser) throws Exception {
-
-    Set<MapRecord> newRecords = new HashSet<>(mapRecords);
+    final Set<MapRecord> newRecords = new HashSet<>(mapRecords);
 
     // find the record assigned to this user
-    MapRecord mapRecord = getCurrentMapRecordForUser(mapRecords, mapUser);
+    final MapRecord mapRecord = getCurrentMapRecordForUser(mapRecords, mapUser);
 
     if (mapRecord == null)
       throw new Exception("publish:  Record for user could not be found");
@@ -1535,7 +1471,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         boolean revisionRecordFound = false;
         boolean reviewNeededRecordFound = false;
 
-        for (MapRecord mr : mapRecords) {
+        for (final MapRecord mr : mapRecords) {
           if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION))
             revisionRecordFound = true;
           else if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED))
@@ -1579,7 +1515,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         boolean qaRecordFound = false;
         boolean qaNeededRecordFound = false;
 
-        for (MapRecord mr : mapRecords) {
+        for (final MapRecord mr : mapRecords) {
           if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION))
             qaRecordFound = true;
           else if (mr.getWorkflowStatus().equals(WorkflowStatus.QA_NEEDED))
@@ -1625,7 +1561,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
           // check assumption: records are both marked EDITING_DONE or
           // CONFLICT_DETECTED
-          for (MapRecord mr : mapRecords) {
+          for (final MapRecord mr : mapRecords) {
             if (!mr.getWorkflowStatus().equals(WorkflowStatus.EDITING_DONE)
                 && !mr.getWorkflowStatus().equals(
                     WorkflowStatus.CONFLICT_DETECTED))
@@ -1646,13 +1582,13 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
           // deep copy the record and mark the new record
           // READY_FOR_PUBLICATION
-          MapRecord newRecord = new MapRecordJpa(mapRecord, false);
+          final MapRecord newRecord = new MapRecordJpa(mapRecord, false);
           newRecord.setOwner(mapUser);
           newRecord.setLastModifiedBy(mapUser);
           newRecord.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
 
           // construct and set the new origin ids
-          Set<Long> originIds = new HashSet<>();
+          final Set<Long> originIds = new HashSet<>();
           originIds.add(mapRecord1.getId());
           originIds.add(mapRecord2.getId());
           originIds.addAll(mapRecord1.getOriginIds());
@@ -1680,7 +1616,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
           // Check assumption: two CONFLICT_DETECTED records
           int nConflictRecords = 0;
-          for (MapRecord mr : mapRecords) {
+          for (final MapRecord mr : mapRecords) {
             if (mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED))
               nConflictRecords++;
           }
@@ -1693,7 +1629,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
           }
 
           // cycle over the previously existing records
-          for (MapRecord mr : mapRecords) {
+          for (final MapRecord mr : mapRecords) {
 
             // remove the CONFLICT_DETECTED records from the revised set
             if (mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED)) {
@@ -1735,7 +1671,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
         // check assumption: record requiring review is present
         MapRecord reviewNeededRecord = null;
-        for (MapRecord mr : newRecords) {
+        for (final MapRecord mr : newRecords) {
           if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED))
             reviewNeededRecord = mr;
         }
@@ -1777,7 +1713,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     Set<MapRecord> newRecords = new HashSet<>(mapRecords);
 
     // find the record assigned to this user
-    MapRecord mapRecord = getCurrentMapRecordForUser(mapRecords, mapUser);
+    final MapRecord mapRecord = getCurrentMapRecordForUser(mapRecords, mapUser);
 
     if (mapRecord == null)
       throw new Exception("finishEditing:  Record for user could not be found");
@@ -1808,10 +1744,10 @@ public class DefaultProjectSpecificAlgorithmHandler implements
             Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
                 .info("NON_LEGACY_PATH - Two records found");
 
-            java.util.Iterator<MapRecord> recordIter = mapRecords.iterator();
-            MapRecord mapRecord1 = recordIter.next();
-            MapRecord mapRecord2 = recordIter.next();
-            ValidationResult validationResult =
+            final Iterator<MapRecord> recordIter = mapRecords.iterator();
+            final MapRecord mapRecord1 = recordIter.next();
+            final MapRecord mapRecord2 = recordIter.next();
+            final ValidationResult validationResult =
                 compareMapRecords(mapRecord1, mapRecord2);
 
             // if map records validation is successful, publish
@@ -1831,7 +1767,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
               // records (if not a lead's existing conflict record)
               // and
               // update records
-              for (MapRecord mr : newRecords) {
+              for (final MapRecord mr : newRecords) {
                 if (mr.getWorkflowStatus().compareTo(
                     WorkflowStatus.CONFLICT_DETECTED) <= 0)
                   mr.setWorkflowStatus(WorkflowStatus.CONFLICT_DETECTED);
@@ -1918,7 +1854,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
             // check assumption: review needed record present
             MapRecord reviewRecord = null;
-            for (MapRecord mr : mapRecords) {
+            for (final MapRecord mr : mapRecords) {
               if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED))
                 reviewRecord = mr;
             }
@@ -1961,7 +1897,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
           boolean foundOriginalRecord = false;
           boolean foundModifiedRecord = false;
 
-          for (MapRecord mr : mapRecords) {
+          for (final MapRecord mr : mapRecords) {
             if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION))
               foundOriginalRecord = true;
             if (mr.getWorkflowStatus().equals(WorkflowStatus.NEW)
@@ -1981,10 +1917,10 @@ public class DefaultProjectSpecificAlgorithmHandler implements
                 "FIX_ERROR_PATH: Specialist finished work, but could not find their record");
 
           // instantiate mapping service to get user's project role
-          MappingService mappingService = new MappingServiceJpa();
+          final MappingService mappingService = new MappingServiceJpa();
 
           // cycle over the records
-          for (MapRecord mr : mapRecords) {
+          for (final MapRecord mr : mapRecords) {
 
             // two records, one marked REVISION, one marked with NEW,
             // EDITING_IN_PROGRESS
@@ -2008,7 +1944,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
           MapRecord modifiedRecord = null;
           MapRecord leadRecord = null;
 
-          for (MapRecord mr : mapRecords) {
+          for (final MapRecord mr : mapRecords) {
             if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION))
               originalRecord = mr;
             if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED))
@@ -2063,7 +1999,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
           MapRecord modifiedRecord = null;
           MapRecord leadRecord = null;
 
-          for (MapRecord mr : mapRecords) {
+          for (final MapRecord mr : mapRecords) {
             if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION))
               originalRecord = mr;
             if (mr.getWorkflowStatus().equals(WorkflowStatus.QA_NEEDED))
@@ -2114,7 +2050,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     Set<MapRecord> newRecords = new HashSet<>(mapRecords);
 
     // find the record assigned to this user
-    MapRecord mapRecord = getCurrentMapRecordForUser(mapRecords, mapUser);
+    final MapRecord mapRecord = getCurrentMapRecordForUser(mapRecords, mapUser);
 
     if (mapRecord == null)
       throw new Exception("saveForLater:  Record for user could not be found");
@@ -2122,7 +2058,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     // check for blank entries and remove them
     // "blank" is defined as a null target id and a null map relation id
     Set<MapEntry> entriesToRemove = new HashSet<>();
-    for (MapEntry mapEntry : mapRecord.getMapEntries()) {
+    for (final MapEntry mapEntry : mapRecord.getMapEntries()) {
       if (mapEntry.getTargetId() == null && mapEntry.getMapRelation() == null) {
 
         Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
@@ -2130,7 +2066,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         entriesToRemove.add(mapEntry);
       }
     }
-    for (MapEntry mapEntry : entriesToRemove) {
+    for (final MapEntry mapEntry : entriesToRemove) {
       mapRecord.removeMapEntry(mapEntry);
     }
 
@@ -2195,10 +2131,11 @@ public class DefaultProjectSpecificAlgorithmHandler implements
       case FIX_ERROR_PATH:
 
         MapRecord reviewRecord = null;
-        MapRecord newRecord = getCurrentMapRecordForUser(mapRecords, mapUser);
+        final MapRecord newRecord =
+            getCurrentMapRecordForUser(mapRecords, mapUser);
 
         // check for the appropriate map records
-        for (MapRecord mr : mapRecords) {
+        for (final MapRecord mr : mapRecords) {
           if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
             reviewRecord = mr;
           }
@@ -2236,7 +2173,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         // and therefore reflected in the audit trail
         newRecords.clear();
         MappingService mappingService = new MappingServiceJpa();
-        for (Long id : trackingRecord.getMapRecordIds()) {
+        for (final Long id : trackingRecord.getMapRecordIds()) {
           newRecords.add(mappingService.getMapRecord(id));
         }
         mappingService.close();
@@ -2255,12 +2192,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements
    * @return the current map record for user
    */
   @SuppressWarnings("static-method")
-  public MapRecord getCurrentMapRecordForUser(Set<MapRecord> mapRecords,
+  private MapRecord getCurrentMapRecordForUser(Set<MapRecord> mapRecords,
     MapUser mapUser) {
 
     MapRecord mapRecord = null;
 
-    for (MapRecord mr : mapRecords) {
+    for (final MapRecord mr : mapRecords) {
       if (mr.getOwner().equals(mapUser)) {
 
         // if there are multiple records on this tracking record
@@ -2295,7 +2232,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     MappingService mappingService = new MappingServiceJpa();
 
     // get the record revisions
-    List<MapRecord> revisions =
+    final List<MapRecord> revisions =
         mappingService.getMapRecordRevisions(mapRecord.getId()).getMapRecords();
 
     // ensure revisions are sorted by descending timestamp
@@ -2320,7 +2257,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     // cycle over records until the previously
     // published/ready-for-publication
     // state record is found
-    for (MapRecord revision : revisions) {
+    for (final MapRecord revision : revisions) {
       if (revision.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)
           || revision.getWorkflowStatus().equals(
               WorkflowStatus.READY_FOR_PUBLICATION)) {
@@ -2345,7 +2282,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
   @SuppressWarnings("static-method")
   public WorkflowStatus getWorkflowStatus(Set<MapRecord> mapRecords) {
     WorkflowStatus workflowStatus = WorkflowStatus.NEW;
-    for (MapRecord mr : mapRecords) {
+    for (final MapRecord mr : mapRecords) {
       if (mr.getWorkflowStatus().compareTo(workflowStatus) > 0)
         workflowStatus = mr.getWorkflowStatus();
     }
@@ -2361,7 +2298,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
   @SuppressWarnings("static-method")
   public Set<MapUser> getMapUsers(Set<MapRecord> mapRecords) {
     Set<MapUser> mapUsers = new HashSet<>();
-    for (MapRecord mr : mapRecords) {
+    for (final MapRecord mr : mapRecords) {
       mapUsers.add(mr.getOwner());
     }
     return mapUsers;

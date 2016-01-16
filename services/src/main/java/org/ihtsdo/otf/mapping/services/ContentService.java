@@ -492,8 +492,8 @@ public interface ContentService extends RootService {
    * @param rootId the root id
    * @throws Exception the exception
    */
-  public void cycleCheck(String terminology,
-    String terminologyVersion, String typeId, String rootId) throws Exception;
+  public void cycleCheck(String terminology, String terminologyVersion,
+    String typeId, String rootId) throws Exception;
 
   /**
    * Gets the transaction per operation.
@@ -573,6 +573,19 @@ public interface ContentService extends RootService {
    */
   public TreePositionList getTreePositions(String terminologyId,
     String terminology, String terminologyVersion) throws Exception;
+
+  /**
+   * Is descendant of.
+   *
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param version the version
+   * @param ancestorId the ancestor id
+   * @return the tree position list
+   * @throws Exception the exception
+   */
+  public boolean isDescendantOf(String terminologyId, String terminology,
+    String version, String ancestorId) throws Exception;
 
   /**
    * Find concepts modified since date.
@@ -669,7 +682,6 @@ public interface ContentService extends RootService {
   public DescriptionList getAllActiveDescriptions(String terminology,
     String terminologyVersion) throws Exception;
 
- 
   /**
    * Gets all concepts.
    *
@@ -678,8 +690,8 @@ public interface ContentService extends RootService {
    * @return the concepts
    * @throws Exception the exception
    */
-  public LanguageRefSetMemberList getAllActiveLanguageRefSetMembers(String terminology,
-    String terminologyVersion) throws Exception;
+  public LanguageRefSetMemberList getAllActiveLanguageRefSetMembers(
+    String terminology, String terminologyVersion) throws Exception;
 
   /**
    * Gets the all relationship terminology ids.
@@ -727,7 +739,6 @@ public interface ContentService extends RootService {
    */
   public ConceptList getConcepts() throws Exception;
 
- 
   /**
    * Gets the tree position with descendants.
    *
@@ -759,6 +770,5 @@ public interface ContentService extends RootService {
    */
   public ComplexMapRefSetMemberList getComplexMapRefSetMembersForRefSetId(
     String refSetId) throws Exception;
-
 
 }
