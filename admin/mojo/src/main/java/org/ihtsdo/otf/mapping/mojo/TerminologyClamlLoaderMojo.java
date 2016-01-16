@@ -166,7 +166,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 
       // creating tree positions
       // first get isaRelType from metadata
-      MetadataService metadataService = new MetadataServiceJpa();
+      final MetadataService metadataService = new MetadataServiceJpa();
       Map<String, String> hierRelTypeMap =
           metadataService.getHierarchicalRelationshipTypes(terminology,
               terminologyVersion);
@@ -175,7 +175,8 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 
       // Let the service create its own transaction.
       for (String root : roots) {
-        getLog().info("Start creating tree positions " + root + ", " + isaRelType);
+        getLog().info(
+            "Start creating tree positions " + root + ", " + isaRelType);
         contentService.computeTreePositions(terminology, terminologyVersion,
             isaRelType, root);
       }

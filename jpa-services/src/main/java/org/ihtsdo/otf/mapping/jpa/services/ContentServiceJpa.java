@@ -1980,6 +1980,20 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     return treePositionList;
   }
 
+  @Override
+  public boolean isDescendantOf(String terminologyId, String terminology,
+    String terminologyVersion, String ancestorId) throws Exception {
+    final long ct =
+        (long) manager
+            .createQuery(
+                "select count(tp) ct from TreePositionJpa tp where terminologyVersion = :terminologyVersion and terminology = :terminology and terminologyId = :terminologyId and ancestorPath like :path")
+            .setParameter("path", "%~" + ancestorId + "~%")
+            .setParameter("terminology", terminology)
+            .setParameter("terminologyVersion", terminologyVersion)
+            .setParameter("terminologyId", terminologyId).getSingleResult();
+    return ct > 0;
+  }
+
   /*
    * (non-Javadoc)
    * 
