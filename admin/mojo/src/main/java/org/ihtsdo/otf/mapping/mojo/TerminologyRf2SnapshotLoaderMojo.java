@@ -334,15 +334,16 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
         closeAllSortedFiles();
 
         // Create tree positions
-        MetadataService metadataService = new MetadataServiceJpa();
+        final MetadataService metadataService = new MetadataServiceJpa();
         Map<String, String> hierRelTypeMap =
             metadataService.getHierarchicalRelationshipTypes(terminology,
                 version);
         String isaRelType =
             hierRelTypeMap.keySet().iterator().next().toString();
-        metadataService.close();
-        ContentService contentService = new ContentServiceJpa();
         getLog().info("  Start creating tree positions.");
+        metadataService.close();
+
+        final ContentService contentService = new ContentServiceJpa();
 
         // Walk up tree to the root
         // ASSUMPTION: single root
