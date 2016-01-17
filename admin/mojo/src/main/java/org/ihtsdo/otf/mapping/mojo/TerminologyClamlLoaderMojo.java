@@ -1159,7 +1159,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       getLog().info(
           "        Creating concept " + childCode + " from "
               + parentConcept.getTerminologyId());
-      final Concept childConcept = new ConceptJpa();
+      Concept childConcept = new ConceptJpa();
       childConcept =
           helper.createNewActiveConcept(childCode, terminology,
               terminologyVersion, parentConcept.getDefaultPreferredName() + " "
