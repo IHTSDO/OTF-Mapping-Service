@@ -585,6 +585,8 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
             // Persist now, but commit at the end after all descriptions are
             // added
             contentService.addConcept(concept);
+            getLog().info("  ADD CONCEPT = " + concept);
+
             conceptMap.put(code, concept);
           }
 
@@ -707,6 +709,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
           // Record class level dagger/asterisk info as refset member
           if (classUsage != null) {
             getLog().info("  Class " + code + " has usage " + classUsage);
+            getLog().info("    id = " + concept.getId());
             final SimpleRefSetMember member = new SimpleRefSetMemberJpa();
             member.setConcept(concept);
             member.setActive(true);
@@ -718,9 +721,12 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
                 .toString());
             member.setTerminologyVersion(terminologyVersion);
             member.setRefSetId(conceptMap.get(classUsage).getTerminologyId());
-            // Need to add it because CASCADE is not in force
-            contentService.addSimpleRefSetMember(member);
             concept.addSimpleRefSetMember(member);
+            if (concept.getId() != null) {
+              // Add member
+              getLog().info("  ADD MEMBER = " + member);
+              contentService.addSimpleRefSetMember(member);
+            }
           }
 
           // reset variables at the end of each
@@ -1169,7 +1175,25 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
             + childConcept.getTerminologyId() + " already in map");
 
       conceptMap.put(childConcept.getTerminologyId(), childConcept);
+      getLog().info("  ADD CONCEPT2 = " + childConcept);
       contentService.addConcept(childConcept);
+
+      // ADD mod concept asterisk stuff
+      for (final SimpleRefSetMember member : modConcept
+          .getSimpleRefSetMembers()) {
+        final SimpleRefSetMember copy = new SimpleRefSetMemberJpa();
+        copy.setActive(member.isActive());
+        copy.setConcept(childConcept);
+        copy.setEffectiveTime(member.getEffectiveTime());
+        copy.setModuleId(member.getModuleId());
+        copy.setRefSetId(member.getRefSetId());
+        copy.setTerminology(member.getTerminology());
+        copy.setTerminologyVersion(member.getTerminologyVersion());
+        copy.setTerminologyId(member.getTerminologyId());
+        getLog().info("  ADD MEMBER2 = " + copy);
+        contentService.addSimpleRefSetMember(copy);
+      }
+
       // add relationship
       helper.createIsaRelationship(parentConcept, childConcept, ("" + relId),
           terminology, terminologyVersion, effectiveTime);
