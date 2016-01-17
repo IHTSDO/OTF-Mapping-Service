@@ -525,7 +525,13 @@ public class ClamlMetadataHelper {
     concept.setTerminology(terminology);
     concept.setTerminologyVersion(terminologyVersion);
     concept.setEffectiveTime(dt.parse(effectiveTime));
-    concept.setDefaultPreferredName(defaultPreferredName);
+    // If this is the fifth digit below a 4th digit placeholder, clean text
+    if (terminologyId.length() == 6) {
+      concept.setDefaultPreferredName(defaultPreferredName.replaceAll(
+          "- PLACEHOLDER 4th digit", ""));
+    } else {
+      concept.setDefaultPreferredName(defaultPreferredName);
+    }
     concept.setActive(true);
     // default definition status
     if (conceptMap.containsKey("defaultDefinitionStatus"))
