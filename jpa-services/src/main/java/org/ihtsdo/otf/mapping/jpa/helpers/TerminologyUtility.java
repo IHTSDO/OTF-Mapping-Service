@@ -54,11 +54,15 @@ public class TerminologyUtility {
    */
   public static boolean isAsteriskCode(Concept concept, ContentService service)
     throws Exception {
+    if (concept == null) {
+      return false;
+    }
     // Lazy initialize asterisk refset
     if (!asteriskRefsetIdMap.containsKey(concept.getTerminology()
         + concept.getTerminologyVersion())) {
       initDaggerAsterisk(concept, service);
     }
+
     for (final SimpleRefSetMember member : concept.getSimpleRefSetMembers()) {
       if (member.getRefSetId().equals(
           asteriskRefsetIdMap.get(concept.getTerminology()
@@ -80,6 +84,9 @@ public class TerminologyUtility {
   public static boolean isDaggerCode(Concept concept, ContentService service)
     throws Exception {
     // Lazy initialize dagger refset
+    if (concept == null) {
+      return false;
+    }
     if (!daggerRefsetIdMap.containsKey(concept.getTerminology()
         + concept.getTerminologyVersion())) {
       initDaggerAsterisk(concept, service);
@@ -106,6 +113,9 @@ public class TerminologyUtility {
    */
   public static boolean isDaggerForAsterisk(Concept asterisk, Concept dagger,
     ContentService service) throws Exception {
+    if (asterisk == null) {
+      return false;
+    }
     // Lazy initialize asterisk to dagger rel type id
     if (!asteriskToDaggerIdMap.containsKey(asterisk.getTerminology()
         + asterisk.getTerminologyVersion())) {

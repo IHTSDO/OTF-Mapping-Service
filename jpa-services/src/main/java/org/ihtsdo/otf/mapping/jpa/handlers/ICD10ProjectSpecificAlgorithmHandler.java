@@ -220,8 +220,9 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         //
         System.out
             .println("  semantic check - dagger/asterisk in preferred rubric");
-        if (TerminologyUtility.isDaggerCode(concepts.get(1).get(0),
-            contentService)) {
+        if (concepts.get(1).get(0) != null
+            && TerminologyUtility.isDaggerCode(concepts.get(1).get(0),
+                contentService)) {
           // iterate through descriptions/relationships and see if there is an
           // asterisk code
           String asteriskCode = null;
@@ -262,7 +263,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         System.out.println("  semantic check - open/closed fracture");
         final List<Concept> children =
             TerminologyUtility.getActiveChildren(concepts.get(1).get(0));
-        if (concepts.get(1).get(0).getTerminologyId().length() == 5
+        if (concepts.get(1).get(0) != null
+            && concepts.get(1).get(0).getTerminologyId().length() == 5
             && children.size() > 1
             && (children.get(0).getDefaultPreferredName().endsWith("open") || children
                 .get(0).getDefaultPreferredName().endsWith("open"))) {
@@ -280,7 +282,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         // mapping events), or used as secondary codes.
         //
         System.out.println("  semantic check - primary map to XX");
-        if (mapRecord.getMapEntries().size() > 1
+        if (concepts.get(1).get(0) != null
+            && mapRecord.getMapEntries().size() > 1
             && concepts.get(1).get(0).getTerminologyId().matches("^[VWXY].*")) {
           System.out.println("    ERROR");
           result.addError("Remap, Chapter XX codes should either be on their "
@@ -299,8 +302,9 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         // GUIDANCE: Review to consider a second code or the advice.
         //
         System.out.println("  semantic check - causative agent code");
-        if (mapRecord.getConceptName().toLowerCase()
-            .matches(".*(infection|infectious|bacterial).*")
+        if (concepts.get(1).get(0) != null
+            && mapRecord.getConceptName().toLowerCase()
+                .matches(".*(infection|infectious|bacterial).*")
             && hasUseAdditional(concepts.get(1).get(0))
             && !TerminologyUtility.hasAdvice(mapRecord.getMapEntries().get(0),
                 "POSSIBLE REQUIREMENT FOR CAUSATIVE AGENT CODE")) {
@@ -320,18 +324,20 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         System.out.println("  semantic check - 4 digit M code without advice");
         // check each code
         for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
-          final Concept concept = concepts.get(i + 1).get(0);
-          if (concept.getTerminologyId().startsWith("M")
-              && concept.getTerminologyId().length() == 5
-              && TerminologyUtility.hasActiveChildren(concept)
-              && !TerminologyUtility.hasAdvice(
-                  mapRecord.getMapEntries().get(i),
-                  "FIFTH CHARACTER REQUIRED TO FURTHER SPECIFY THE SITE")) {
-            System.out.println("    WARNING");
-            result
-                .addWarning("4 digit M code entry may require 5th digit or \"FIFTH "
-                    + "CHARACTER REQUIRED TO FURTHER SPECIFY THE SITE\" advice");
-            break;
+          if (concepts.get(i + 1).get(0) != null) {
+            final Concept concept = concepts.get(i + 1).get(0);
+            if (concept.getTerminologyId().startsWith("M")
+                && concept.getTerminologyId().length() == 5
+                && TerminologyUtility.hasActiveChildren(concept)
+                && !TerminologyUtility.hasAdvice(
+                    mapRecord.getMapEntries().get(i),
+                    "FIFTH CHARACTER REQUIRED TO FURTHER SPECIFY THE SITE")) {
+              System.out.println("    WARNING");
+              result
+                  .addWarning("4 digit M code entry may require 5th digit or \"FIFTH "
+                      + "CHARACTER REQUIRED TO FURTHER SPECIFY THE SITE\" advice");
+              break;
+            }
           }
         }
 
@@ -348,13 +354,15 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
             contentService.isDescendantOf(mapRecord.getConceptId(),
                 mapProject.getSourceTerminology(),
                 mapProject.getSourceTerminologyVersion(), "75478009");
-        if (mapRecord.getMapEntries().size() == 1 && isPoisoning) {
+        if (concepts.get(1).get(0) != null
+            && mapRecord.getMapEntries().size() == 1 && isPoisoning) {
           System.out.println("    ERROR");
           result
               .addError("Remap, poisoning requires an external cause code from the TEIL3.ASC index");
         }
         // Validate external cause code presence and not primary position
-        else if (mapRecord.getMapEntries().size() > 1 && isPoisoning) {
+        else if (concepts.get(1).get(0) != null
+            && mapRecord.getMapEntries().size() > 1 && isPoisoning) {
 
           // cause code in primary position
           if (getIcd10ExternalCauseCodes().contains(
@@ -396,20 +404,21 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         System.out.println("  semantic check - current patient age");
         for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
           final Concept concept = concepts.get(i + 1).get(0);
-          final MapEntry entry = mapRecord.getMapEntries().get(i);
+          if (concept != null) {
+            final MapEntry entry = mapRecord.getMapEntries().get(i);
 
-          if (Arrays.asList(
-              new String[] {
-                  "J40", "J20.0", "J20.1", "J20.2", "J20.3", "J20.4", "J20.5",
-                  "J20.6", "J20.7", "J20.8", "J20.9", "A50.2"
-              }).contains(concept.getTerminologyId())
-              && !entry.getRule().contains("Current chronological age")) {
-            System.out.println("    WARNING");
-            result
-                .addWarning("Consider adding a \"Current chronological age\" rule to entry "
-                    + i);
+            if (Arrays.asList(
+                new String[] {
+                    "J40", "J20.0", "J20.1", "J20.2", "J20.3", "J20.4",
+                    "J20.5", "J20.6", "J20.7", "J20.8", "J20.9", "A50.2"
+                }).contains(concept.getTerminologyId())
+                && !entry.getRule().contains("Current chronological age")) {
+              System.out.println("    WARNING");
+              result
+                  .addWarning("Consider adding a \"Current chronological age\" rule to entry "
+                      + i);
+            }
           }
-
         }
 
         //
