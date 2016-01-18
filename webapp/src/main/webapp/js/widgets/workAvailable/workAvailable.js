@@ -33,10 +33,10 @@ angular
       $scope.availableQAPage = 1;
 
       // initial titles
-      $scope.availableWorkTitle = "Concepts";
-      $scope.availableConflictsTitle = "Conflicts";
-      $scope.availableReviewWorkTitle = "Review";
-      $scope.availableQAWorkTitle = "QA";
+      $scope.availableWorkTitle = 'Concepts';
+      $scope.availableConflictsTitle = 'Conflicts';
+      $scope.availableReviewWorkTitle = 'Review';
+      $scope.availableQAWorkTitle = 'QA';
 
       // retrieve focus project, current user, and current role
       $scope.focusProject = localStorageService.get('focusProject');
@@ -83,7 +83,7 @@ angular
       // coupled with $watch below, this avoids premature work fetching
       $scope.$on('localStorageModule.notification.setFocusProject', function(
         event, parameters) {
-        console.debug("WorkAvailableCtrl:  Detected change in focus project");
+        console.debug('WorkAvailableCtrl:  Detected change in focus project');
         $scope.focusProject = parameters.focusProject;
       });
 
@@ -91,7 +91,7 @@ angular
       $scope.$on('assignedListWidget.notification.unassignWork', function(
         event, parameters) {
         console
-          .debug("WorkAvailableCtrl:  Detected unassign work notification");
+          .debug('WorkAvailableCtrl:  Detected unassign work notification');
         console
           .debug($scope.queryAvailableWork, $scope.queryAvailableConflicts);
         $scope.retrieveAvailableWork(1, $scope.queryAvailableWork);
@@ -107,7 +107,7 @@ angular
       $scope.$on('mapProjectWidget.notification.workflowComputed',
         function(event, parameters) {
           console
-            .debug("WorkAvailableCtrl:  Detected recomputation of workflow");
+            .debug('WorkAvailableCtrl:  Detected recomputation of workflow');
           $scope.retrieveAvailableWork($scope.availableWorkPage);
           $scope.retrieveAvailableQAWork($scope.availableQAWorkPage);
           if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Admin') {
@@ -119,7 +119,7 @@ angular
       // on creation of qa work, refresh the available work widget
       $scope.$on('qaCheckWidget.notification.qaWorkCreated', function(event,
         parameters) {
-        console.debug("WorkAvailableCtrl:  Detected new qa work");
+        console.debug('WorkAvailableCtrl:  Detected new qa work');
         $scope.retrieveAvailableQAWork($scope.availableQAWorkPage);
       });
 
@@ -196,14 +196,14 @@ angular
 
         $rootScope.glassPane++;
         $http({
-          url : root_reporting + "qaLabel/qaLabels",
-          dataType : "json",
-          method : "GET",
+          url : root_reporting + 'qaLabel/qaLabels',
+          dataType : 'json',
+          method : 'GET',
           headers : {
-            "Content-Type" : "application/json"
+            'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          console.debug("Success in getting qa labels.");
+          console.debug('Success in getting qa labels.');
 
           $rootScope.glassPane--;
           for (var i = 0; i < data.searchResult.length; i++) {
@@ -238,31 +238,31 @@ angular
 
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
-          "startIndex" : (page - 1) * $scope.itemsPerPage,
-          "maxResults" : $scope.itemsPerPage,
-          "sortField" : 'sortKey',
-          "queryRestriction" : null
+          'startIndex' : (page - 1) * $scope.itemsPerPage,
+          'maxResults' : $scope.itemsPerPage,
+          'sortField' : 'sortKey',
+          'queryRestriction' : null
         };
 
         $rootScope.glassPane++;
 
         $http(
           {
-            url : root_workflow + "project/id/" + $scope.focusProject.id
-              + "/user/id/" + user.userName + "/query/"
-              + (query == null ? "null" : encodeURIComponent(query))
-              + "/availableConflicts",
-            dataType : "json",
+            url : root_workflow + 'project/id/' + $scope.focusProject.id
+              + '/user/id/' + user.userName + '/query/'
+              + (query == null ? 'null' : encodeURIComponent(query))
+              + '/availableConflicts',
+            dataType : 'json',
             data : pfsParameterObj,
-            method : "POST",
+            method : 'POST',
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
           }).success(
           function(data) {
             $rootScope.glassPane--;
 
-            console.debug("Retrieve conflicts", data);
+            console.debug('Retrieve conflicts', data);
 
             $scope.availableConflicts = data.searchResult;
 
@@ -272,7 +272,7 @@ angular
               / $scope.itemsPerPage);
 
             // set title
-            $scope.tabs[1].title = "Conflicts (" + data.totalCount + ")";
+            $scope.tabs[1].title = 'Conflicts (' + data.totalCount + ')';
           }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
 
@@ -304,25 +304,25 @@ angular
 
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
-          "startIndex" : (page - 1) * $scope.itemsPerPage,
-          "maxResults" : $scope.itemsPerPage,
-          "sortField" : 'sortKey',
-          "queryRestriction" : null
+          'startIndex' : (page - 1) * $scope.itemsPerPage,
+          'maxResults' : $scope.itemsPerPage,
+          'sortField' : 'sortKey',
+          'queryRestriction' : null
         };
 
         $rootScope.glassPane++;
 
         $http(
           {
-            url : root_workflow + "project/id/" + $scope.focusProject.id
-              + "/user/id/" + user.userName + "/query/"
-              + (query == null ? "null" : encodeURIComponent(query))
-              + "/availableConcepts",
-            dataType : "json",
+            url : root_workflow + 'project/id/' + $scope.focusProject.id
+              + '/user/id/' + user.userName + '/query/'
+              + (query == null ? 'null' : encodeURIComponent(query))
+              + '/availableConcepts',
+            dataType : 'json',
             data : pfsParameterObj,
-            method : "POST",
+            method : 'POST',
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
           }).success(
           function(data) {
@@ -338,7 +338,7 @@ angular
               / $scope.itemsPerPage);
 
             // set title
-            $scope.tabs[0].title = "Concepts (" + data.totalCount + ")";
+            $scope.tabs[0].title = 'Concepts (' + data.totalCount + ')';
             console.debug($scope.numAvailableWorkPages);
             $scope.availableCount = data.totalCount;
             console.debug(data.totalCount);
@@ -369,25 +369,25 @@ angular
         // construct a paging/filtering/sorting object
         // if page is null, get all results
         var pfsParameterObj = {
-          "startIndex" : (page - 1) * $scope.itemsPerPage,
-          "maxResults" : $scope.itemsPerPage,
-          "sortField" : 'sortKey',
-          "queryRestriction" : null
+          'startIndex' : (page - 1) * $scope.itemsPerPage,
+          'maxResults' : $scope.itemsPerPage,
+          'sortField' : 'sortKey',
+          'queryRestriction' : null
         };
 
         $rootScope.glassPane++;
 
         $http(
           {
-            url : root_workflow + "project/id/" + $scope.focusProject.id
-              + "/query/"
-              + (query == null ? "null" : encodeURIComponent(query))
-              + "/availableQAWork",
-            dataType : "json",
+            url : root_workflow + 'project/id/' + $scope.focusProject.id
+              + '/query/'
+              + (query == null ? 'null' : encodeURIComponent(query))
+              + '/availableQAWork',
+            dataType : 'json',
             data : pfsParameterObj,
-            method : "POST",
+            method : 'POST',
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
           }).success(
           function(data) {
@@ -403,7 +403,7 @@ angular
               / $scope.itemsPerPage);
 
             // set title
-            $scope.tabs[3].title = "QA (" + data.totalCount + ")";
+            $scope.tabs[3].title = 'QA (' + data.totalCount + ')';
             console.debug($scope.numAvailableQAWorkPages);
 
             // set labels
@@ -434,14 +434,14 @@ angular
         // call
         $http(
           {
-            url : root_workflow + "unassign/project/id/"
-              + $scope.focusProject.id + "/concept/id/" + conceptId
-              + "/user/id/qa",
-            dataType : "json",
+            url : root_workflow + 'unassign/project/id/'
+              + $scope.focusProject.id + '/concept/id/' + conceptId
+              + '/user/id/qa',
+            dataType : 'json',
             data : null,
-            method : "POST",
+            method : 'POST',
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
           }).success(function(data) {
 
@@ -477,24 +477,24 @@ angular
         // construct a blank paging/filtering/sorting object
         // unnecessary construction, but left in for possible future use
         var pfsParameterObj = {
-          "startIndex" : -1,
-          "maxResults" : -1,
-          "sortField" : 'sortKey',
-          "queryRestriction" : null
+          'startIndex' : -1,
+          'maxResults' : -1,
+          'sortField' : 'sortKey',
+          'queryRestriction' : null
         };
 
         // first, get the currently available work (refresh)
         $http(
           {
-            url : root_workflow + "project/id/" + $scope.focusProject.id
-              + "/query/"
-              + (query == null ? "null" : encodeURIComponent(query))
-              + "/availableQAWork",
-            dataType : "json",
+            url : root_workflow + 'project/id/' + $scope.focusProject.id
+              + '/query/'
+              + (query == null ? 'null' : encodeURIComponent(query))
+              + '/availableQAWork',
+            dataType : 'json',
             data : pfsParameterObj,
-            method : "POST",
+            method : 'POST',
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
           }).success(
           function(data) {
@@ -511,13 +511,13 @@ angular
                 // TODO Get qa user name from either previously
                 // retrieved metadata
                 // or a separate REST call
-                url : root_workflow + "unassign/project/id/"
-                  + $scope.focusProject.id + "/user/id/qa/batch",
-                dataType : "json",
+                url : root_workflow + 'unassign/project/id/'
+                  + $scope.focusProject.id + '/user/id/qa/batch',
+                dataType : 'json',
                 data : workToUnassign,
-                method : "POST",
+                method : 'POST',
                 headers : {
-                  "Content-Type" : "application/json"
+                  'Content-Type' : 'application/json'
                 }
               }).success(function(data) {
 
@@ -560,31 +560,31 @@ angular
 
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
-          "startIndex" : (page - 1) * $scope.itemsPerPage,
-          "maxResults" : $scope.itemsPerPage,
-          "sortField" : 'sortKey',
-          "queryRestriction" : null
+          'startIndex' : (page - 1) * $scope.itemsPerPage,
+          'maxResults' : $scope.itemsPerPage,
+          'sortField' : 'sortKey',
+          'queryRestriction' : null
         };
 
         $rootScope.glassPane++;
 
         $http(
           {
-            url : root_workflow + "project/id/" + $scope.focusProject.id
-              + "/user/id/" + user.userName + "/query/"
-              + (query == null ? "null" : encodeURIComponent(query))
-              + "/availableReviewWork",
-            dataType : "json",
+            url : root_workflow + 'project/id/' + $scope.focusProject.id
+              + '/user/id/' + user.userName + '/query/'
+              + (query == null ? 'null' : encodeURIComponent(query))
+              + '/availableReviewWork',
+            dataType : 'json',
             data : pfsParameterObj,
-            method : "POST",
+            method : 'POST',
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
           }).success(
           function(data) {
             $rootScope.glassPane--;
 
-            console.debug("Retrieve reviews", data);
+            console.debug('Retrieve reviews', data);
 
             $scope.availableReviewWork = data.searchResult;
 
@@ -594,7 +594,7 @@ angular
               / $scope.itemsPerPage);
 
             // set title
-            $scope.tabs[2].title = "Review (" + data.totalCount + ")";
+            $scope.tabs[2].title = 'Review (' + data.totalCount + ')';
           }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
 
@@ -632,12 +632,12 @@ angular
 
         $http(
           {
-            url : root_workflow + "assign/project/id/" + $scope.focusProject.id
-              + "/concept/id/" + trackingRecord.terminologyId + "/user/id/"
+            url : root_workflow + 'assign/project/id/' + $scope.focusProject.id
+              + '/concept/id/' + trackingRecord.terminologyId + '/user/id/'
               + mapUser.userName,
-            method : "POST",
+            method : 'POST',
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
           }).success(
           function(data) {
@@ -670,20 +670,20 @@ angular
       // assign a batch of records to the current user
       $scope.assignBatch = function(mapUser, batchSize, query) {
 
-        console.debug("workAvailable, assignBatch:", mapUser, batchSize, query);
+        console.debug('workAvailable, assignBatch:', mapUser, batchSize, query);
 
         // set query to null string if not provided
         if (query == undefined)
           query == null;
 
         if (mapUser == null || mapUser == undefined) {
-          $scope.error = "Work recipient must be selected from list.";
+          $scope.error = 'Work recipient must be selected from list.';
           return;
         }
         ;
 
         if (batchSize > $scope.availableCount) {
-          $scope.error = "Batch size is greater than available number of concepts.";
+          $scope.error = 'Batch size is greater than available number of concepts.';
           return;
         } else {
           $scope.error = null;
@@ -691,29 +691,29 @@ angular
 
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
-          "startIndex" : ($scope.availableWorkPage - 1) * $scope.itemsPerPage,
-          "maxResults" : batchSize,
-          "sortField" : 'sortKey',
-          "queryRestriction" : null
+          'startIndex' : ($scope.availableWorkPage - 1) * $scope.itemsPerPage,
+          'maxResults' : batchSize,
+          'sortField' : 'sortKey',
+          'queryRestriction' : null
         };
 
         $rootScope.glassPane++;
         $http(
           {
-            url : root_workflow + "project/id/" + $scope.focusProject.id
-              + "/user/id/" + mapUser.userName + "/query/"
-              + (query == null ? 'null' : query) + "/availableConcepts",
-            dataType : "json",
+            url : root_workflow + 'project/id/' + $scope.focusProject.id
+              + '/user/id/' + mapUser.userName + '/query/'
+              + (query == null ? 'null' : query) + '/availableConcepts',
+            dataType : 'json',
             data : pfsParameterObj,
-            method : "POST",
+            method : 'POST',
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
           })
           .success(
             function(data) {
 
-              console.debug("Claim batch:  Checking against viewed concepts");
+              console.debug('Claim batch:  Checking against viewed concepts');
 
               var trackingRecords = data.searchResult;
               var conceptListValid = true;
@@ -728,7 +728,7 @@ angular
                 for (var i = 0; i < $scope.itemsPerPage && i < batchSize; i++) {
                   if (trackingRecords[i].id != $scope.availableWork[i].id) {
                     $scope.retrieveAvailableWork($scope.availableWorkPage, query);
-                    alert("The list of available concepts has changed.  Please check the refreshed list and try again");
+                    alert('The list of available concepts has changed.  Please check the refreshed list and try again');
 		      $rootScope.glassPane--;
 		    return;
                     conceptListValid = false;
@@ -737,7 +737,7 @@ angular
               }
 
               if (conceptListValid == true) {
-                console.debug("Claiming batch of size: " + batchSize);
+                console.debug('Claiming batch of size: ' + batchSize);
 
                 var terminologyIds = [];
                 for (var i = 0; i < trackingRecords.length; i++) {
@@ -747,17 +747,17 @@ angular
                     + trackingRecords[i].terminologyId);
                 }
 
-                console.debug("Calling batch assignment API");
+                console.debug('Calling batch assignment API');
 
                 $http(
                   {
-                    url : root_workflow + "assignBatch/project/id/"
-                      + $scope.focusProject.id + "/user/id/" + mapUser.userName,
-                    dataType : "json",
+                    url : root_workflow + 'assignBatch/project/id/'
+                      + $scope.focusProject.id + '/user/id/' + mapUser.userName,
+                    dataType : 'json',
                     data : terminologyIds,
-                    method : "POST",
+                    method : 'POST',
                     headers : {
-                      "Content-Type" : "application/json"
+                      'Content-Type' : 'application/json'
                     }
                   })
                   .success(
@@ -780,10 +780,10 @@ angular
 
                       $rootScope.handleHttpError(data, status, headers, config);
                       console
-                        .debug("Could not retrieve available work when assigning batch.");
+                        .debug('Could not retrieve available work when assigning batch.');
                     });
               } else {
-                console.debug("Unexpected error in assigning batch");
+                console.debug('Unexpected error in assigning batch');
               }
             }).error(function(data, status, headers, config) {
             $rootScope.glassPane--;
@@ -796,7 +796,7 @@ angular
       // assign a batch of conflicts to the current user
       $scope.assignBatchConflict = function(mapUser, batchSize, query) {
 
-        console.debug("workAvailable, assignBatchConflict", mapUser, batchSize,
+        console.debug('workAvailable, assignBatchConflict', mapUser, batchSize,
           query);
 
         // set query to null string if not provided
@@ -804,35 +804,35 @@ angular
           query == null;
 
         if (mapUser == null || mapUser == undefined) {
-          $scope.errorConflict = "Work recipient must be selected from list.";
+          $scope.errorConflict = 'Work recipient must be selected from list.';
           return;
         }
 
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
-          "startIndex" : ($scope.availableWorkPage - 1) * $scope.itemsPerPage,
-          "maxResults" : batchSize,
-          "sortField" : 'sortKey',
-          "queryRestriction" : null
+          'startIndex' : ($scope.availableWorkPage - 1) * $scope.itemsPerPage,
+          'maxResults' : batchSize,
+          'sortField' : 'sortKey',
+          'queryRestriction' : null
         };
 
         $rootScope.glassPane++;
         $http(
           {
-            url : root_workflow + "project/id/" + $scope.focusProject.id
-              + "/user/id/" + mapUser.userName + "/query/"
-              + (query == null ? 'null' : query) + "/availableConflicts",
-            dataType : "json",
+            url : root_workflow + 'project/id/' + $scope.focusProject.id
+              + '/user/id/' + mapUser.userName + '/query/'
+              + (query == null ? 'null' : query) + '/availableConflicts',
+            dataType : 'json',
             data : pfsParameterObj,
-            method : "POST",
+            method : 'POST',
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
           })
           .success(
             function(data) {
 
-              console.debug("Claim batch:  Checking against viewed conflicts");
+              console.debug('Claim batch:  Checking against viewed conflicts');
 
               var trackingRecords = data.searchResult;
               var conceptListValid = true;
@@ -850,7 +850,7 @@ angular
                   console.debug($scope.availableWork[i]);
                   if (trackingRecords[i].id != $scope.availableWork[i].id) {
                     $scope.retrieveAvailableWork($scope.availableWorkPage, query);
-                    alert("The available conflicts list has changed since loading.  Please review the new available conflicts and try again.");
+                    alert('The available conflicts list has changed since loading.  Please review the new available conflicts and try again.');
                     $scope.isConceptListOpen = false;
                     conceptListValid = false;
                   }
@@ -858,7 +858,7 @@ angular
               }
 
               if (conceptListValid == true) {
-                console.debug("Claiming conflict batch of size: " + batchSize);
+                console.debug('Claiming conflict batch of size: ' + batchSize);
 
                 var terminologyIds = [];
                 for (var i = 0; i < trackingRecords.length; i++) {
@@ -868,17 +868,17 @@ angular
                     + trackingRecords[i].terminologyId);
                 }
 
-                console.debug("Calling batch assignment API");
+                console.debug('Calling batch assignment API');
 
                 $http(
                   {
-                    url : root_workflow + "assignBatch/project/id/"
-                      + $scope.focusProject.id + "/user/id/" + mapUser.userName,
-                    dataType : "json",
+                    url : root_workflow + 'assignBatch/project/id/'
+                      + $scope.focusProject.id + '/user/id/' + mapUser.userName,
+                    dataType : 'json',
                     data : terminologyIds,
-                    method : "POST",
+                    method : 'POST',
                     headers : {
-                      "Content-Type" : "application/json"
+                      'Content-Type' : 'application/json'
                     }
                   })
                   .success(
@@ -901,11 +901,11 @@ angular
 
                       $rootScope.handleHttpError(data, status, headers, config);
                       console
-                        .debug("Could not retrieve available work when assigning batch.");
+                        .debug('Could not retrieve available work when assigning batch.');
                     });
               } else {
                 $rootScope.glassPane--;
-                console.debug("Unexpected error in assigning batch");
+                console.debug('Unexpected error in assigning batch');
               }
             }).error(function(data, status, headers, config) {
             $rootScope.glassPane--;
@@ -923,36 +923,36 @@ angular
           query == null;
 
         if (mapUser == null || mapUser == undefined) {
-          $scope.errorReview = "Work recipient must be selected from list.";
+          $scope.errorReview = 'Work recipient must be selected from list.';
           return;
         }
 
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
-          "startIndex" : ($scope.availableWorkPage - 1) * $scope.itemsPerPage,
-          "maxResults" : batchSize,
-          "sortField" : 'sortKey',
-          "queryRestriction" : null
+          'startIndex' : ($scope.availableWorkPage - 1) * $scope.itemsPerPage,
+          'maxResults' : batchSize,
+          'sortField' : 'sortKey',
+          'queryRestriction' : null
         };
 
         $rootScope.glassPane++;
         $http(
           {
-            url : root_workflow + "project/id/" + $scope.focusProject.id
-              + "/user/id/" + mapUser.userName + "/query/"
-              + (query == null ? 'null' : query) + "/availableReviewWork",
-            dataType : "json",
+            url : root_workflow + 'project/id/' + $scope.focusProject.id
+              + '/user/id/' + mapUser.userName + '/query/'
+              + (query == null ? 'null' : query) + '/availableReviewWork',
+            dataType : 'json',
             data : pfsParameterObj,
-            method : "POST",
+            method : 'POST',
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
           })
           .success(
             function(data) {
 
               console
-                .debug("Claim batch:  Checking against viewed review work");
+                .debug('Claim batch:  Checking against viewed review work');
 
               var trackingRecords = data.searchResult;
               var conceptListValid = true;
@@ -966,7 +966,7 @@ angular
 
                   if (trackingRecords[i].id != $scope.availableReviewWork[i].id) {
                     $scope.retrieveAvailableWork($scope.availableWorkPage, query);
-                    alert("The list of available review work has changed.  Please check the refreshed list and try again.");
+                    alert('The list of available review work has changed.  Please check the refreshed list and try again.');
                     $scope.isConceptListOpen = false;
                     conceptListValid = false;
                   }
@@ -974,7 +974,7 @@ angular
               }
 
               if (conceptListValid == true) {
-                console.debug("Claiming review work batch of size: "
+                console.debug('Claiming review work batch of size: '
                   + batchSize);
 
                 var terminologyIds = [];
@@ -985,17 +985,17 @@ angular
                     + trackingRecords[i].terminologyId);
                 }
 
-                console.debug("Calling batch assignment API");
+                console.debug('Calling batch assignment API');
 
                 $http(
                   {
-                    url : root_workflow + "assignBatch/project/id/"
-                      + $scope.focusProject.id + "/user/id/" + mapUser.userName,
-                    dataType : "json",
+                    url : root_workflow + 'assignBatch/project/id/'
+                      + $scope.focusProject.id + '/user/id/' + mapUser.userName,
+                    dataType : 'json',
                     data : terminologyIds,
-                    method : "POST",
+                    method : 'POST',
                     headers : {
-                      "Content-Type" : "application/json"
+                      'Content-Type' : 'application/json'
                     }
                   })
                   .success(
@@ -1018,11 +1018,11 @@ angular
 
                       $rootScope.handleHttpError(data, status, headers, config);
                       console
-                        .debug("Could not retrieve available review work when assigning batch.");
+                        .debug('Could not retrieve available review work when assigning batch.');
                     });
               } else {
                 $rootScope.glassPane--;
-                console.debug("Unexpected error in assigning review batch");
+                console.debug('Unexpected error in assigning review batch');
               }
             }).error(function(data, status, headers, config) {
             $rootScope.glassPane--;
@@ -1040,35 +1040,35 @@ angular
           query == null;
 
         if (mapUser == null || mapUser == undefined) {
-          $scope.errorReview = "Work recipient must be selected from list.";
+          $scope.errorReview = 'Work recipient must be selected from list.';
           return;
         }
 
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
-          "startIndex" : ($scope.availableQAWorkPage - 1) * $scope.itemsPerPage,
-          "maxResults" : batchSize,
-          "sortField" : 'sortKey',
-          "queryRestriction" : null
+          'startIndex' : ($scope.availableQAWorkPage - 1) * $scope.itemsPerPage,
+          'maxResults' : batchSize,
+          'sortField' : 'sortKey',
+          'queryRestriction' : null
         };
 
         $rootScope.glassPane++;
         $http(
           {
-            url : root_workflow + "project/id/" + $scope.focusProject.id
-              + "/query/" + (query == null ? 'null' : query)
-              + "/availableQAWork",
-            dataType : "json",
+            url : root_workflow + 'project/id/' + $scope.focusProject.id
+              + '/query/' + (query == null ? 'null' : query)
+              + '/availableQAWork',
+            dataType : 'json',
             data : pfsParameterObj,
-            method : "POST",
+            method : 'POST',
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
           })
           .success(
             function(data) {
 
-              console.debug("Claim batch:  Checking against viewed qa work");
+              console.debug('Claim batch:  Checking against viewed qa work');
 
               var trackingRecords = data.searchResult;
               var conceptListValid = true;
@@ -1082,7 +1082,7 @@ angular
 
                   if (trackingRecords[i].id != $scope.availableQAWork[i].id) {
                     retrieveAvailableQAWork($scope.availableQAWorkPage, query);
-                    alert("The list of available QA work has changed.  Please check the refreshed list and try again.");
+                    alert('The list of available QA work has changed.  Please check the refreshed list and try again.');
                     $scope.isConceptListOpen = false;
                     conceptListValid = false;
                   }
@@ -1090,7 +1090,7 @@ angular
               }
 
               if (conceptListValid == true) {
-                console.debug("Claiming qa work batch of size: " + batchSize);
+                console.debug('Claiming qa work batch of size: ' + batchSize);
 
                 var terminologyIds = [];
                 for (var i = 0; i < trackingRecords.length; i++) {
@@ -1100,17 +1100,17 @@ angular
                     + trackingRecords[i].terminologyId);
                 }
 
-                console.debug("Calling batch assignment API");
+                console.debug('Calling batch assignment API');
 
                 $http(
                   {
-                    url : root_workflow + "assignBatch/project/id/"
-                      + $scope.focusProject.id + "/user/id/" + mapUser.userName,
-                    dataType : "json",
+                    url : root_workflow + 'assignBatch/project/id/'
+                      + $scope.focusProject.id + '/user/id/' + mapUser.userName,
+                    dataType : 'json',
                     data : terminologyIds,
-                    method : "POST",
+                    method : 'POST',
                     headers : {
-                      "Content-Type" : "application/json"
+                      'Content-Type' : 'application/json'
                     }
                   })
                   .success(
@@ -1133,10 +1133,10 @@ angular
 
                       $rootScope.handleHttpError(data, status, headers, config);
                       console
-                        .debug("Could not retrieve available qa work when assigning batch.");
+                        .debug('Could not retrieve available qa work when assigning batch.');
                     });
               } else {
-                console.debug("Unexpected error in assigning qa batch");
+                console.debug('Unexpected error in assigning qa batch');
                 $rootScope.glassPane--;
               }
             }).error(function(data, status, headers, config) {

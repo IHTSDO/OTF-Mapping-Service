@@ -14,8 +14,7 @@ angular
             templateUrl : 'js/widgets/editedList/editedList.html',
             edit : {}
           });
-    })
-  .controller(
+    }).controller(
     'editedListCtrl',
     function($scope, $rootScope, $http, $location, localStorageService) {
 
@@ -30,41 +29,24 @@ angular
       $scope.editedRecordsPage = 1;
 
       // watch for project change
-      $scope.$on('localStorageModule.notification.setFocusProject', function(
-        event, parameters) {
-        console
-          .debug("editedListWidgetCtrl:  Detected change in focus project");
+      $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
         $scope.focusProject = parameters.focusProject;
       });
 
-      $scope
-        .$on(
-          'availableWork.notification.editWork',
-          function(event, parameters) {
-
-            console
-              .debug("editedListCtrl: Detected editWork notification from availableWork widget");
-            $scope.editWork(parameters.editedWork);
-
-          });
+      $scope.$on('availableWork.notification.editWork', function(event, parameters) {
+        $scope.editWork(parameters.editedWork);
+      });
 
       // on any change of focusProject, retrieve new available work
       $scope.userToken = localStorageService.get('userToken');
       $scope.$watch([ 'focusProject', 'userToken' ], function() {
-        console.debug('editedListCtrl:  Detected project set/change');
-
         if ($scope.focusProject != null && $scope.userToken != null) {
-
           $http.defaults.headers.common.Authorization = $scope.userToken;
-
         }
       });
 
       // called by user-click, not automatically loaded
       $scope.retrieveEditedWork = function(page, queryTerms) {
-
-        console.debug("Retrieving edited work", page, queryTerms);
-
         if (queryTerms == undefined)
           queryTerms = null;
 
@@ -73,45 +55,40 @@ angular
 
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
-          "startIndex" : (page - 1) * $scope.recordsPerPage,
-          "maxResults" : $scope.recordsPerPage,
-          "sortField" : 'lastModified',
-          "queryRestriction" : queryTerms
+          'startIndex' : (page - 1) * $scope.recordsPerPage,
+          'maxResults' : $scope.recordsPerPage,
+          'sortField' : 'lastModified',
+          'queryRestriction' : queryTerms
         };
 
         $rootScope.glassPane++;
 
         $http(
           {
-            url : root_mapping + "record/project/id/" + $scope.focusProject.id
-              + "/user/id/" + $scope.user.userName + "/edited",
-            dataType : "json",
+            url : root_mapping + 'record/project/id/' + $scope.focusProject.id + '/user/id/'
+              + $scope.user.userName + '/edited',
+            dataType : 'json',
             data : pfsParameterObj,
-            method : "POST",
+            method : 'POST',
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
-          }).success(
-          function(data) {
-            $rootScope.glassPane--;
+          }).success(function(data) {
+          $rootScope.glassPane--;
 
-            $scope.recordPage = page;
-            $scope.nRecords = data.totalCount;
-            $scope.numRecordPages = Math.ceil($scope.nRecords
-              / $scope.recordsPerPage);
+          $scope.recordPage = page;
+          $scope.nRecords = data.totalCount;
+          $scope.numRecordPages = Math.ceil($scope.nRecords / $scope.recordsPerPage);
 
-            $scope.editedRecords = data.mapRecord;
+          $scope.editedRecords = data.mapRecord;
 
-            for (var i = 0; i < $scope.editedRecords.length; i++) {
-              $scope.editedRecords[i].isCollapsed = true;
-            }
+          for (var i = 0; i < $scope.editedRecords.length; i++) {
+            $scope.editedRecords[i].isCollapsed = true;
+          }
 
-            $scope.searchPerformed = true;
+          $scope.searchPerformed = true;
 
-            console.debug("Edited records:");
-            console.debug($scope.editedRecords);
-
-          }).error(function(data, status, headers, config) {
+        }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
           $rootScope.handleHttpError(data, status, headers, config);
         });
@@ -122,7 +99,7 @@ angular
 
         // if no entries, return null
         if (record.mapEntry.length == 0) {
-          return "";
+          return '';
         }
 
         // if only one entry, display the full entry summary
@@ -140,18 +117,17 @@ angular
             }
             ;
           }
-          return "" + maxGroup + " groups, " + record.mapEntry.length
-            + " entries";
+          return '' + maxGroup + ' groups, ' + record.mapEntry.length + ' entries';
 
         } else {
-          return "" + record.mapEntry.length + " entries";
+          return '' + record.mapEntry.length + ' entries';
         }
         ;
       };
 
       $scope.getEntrySummary = function(entry) {
 
-        var entrySummary = "";
+        var entrySummary = '';
 
         // first get the rule
         entrySummary += $scope.getRuleSummary(entry);
@@ -171,7 +147,7 @@ angular
           ;
           // otherwise return the target code and preferred name
         } else {
-          entrySummary += entry.targetId + " " + entry.targetName;
+          entrySummary += entry.targetId + ' ' + entry.targetName;
         }
         ;
 
@@ -182,30 +158,25 @@ angular
       // Returns a summary string for the entry rule type
       $scope.getRuleSummary = function(entry) {
 
-        var ruleSummary = "";
+        var ruleSummary = '';
 
         // first, rule summary
         if ($scope.focusProject.ruleBased == true) {
-          if (entry.rule.toUpperCase().indexOf("TRUE") != -1)
-            ruleSummary += "[TRUE] ";
-          else if (entry.rule.toUpperCase().indexOf("FEMALE") != -1)
-            ruleSummary += "[FEMALE] ";
-          else if (entry.rule.toUpperCase().indexOf("MALE") != -1)
-            ruleSummary += "[MALE] ";
-          else if (entry.rule.toUpperCase().indexOf("AGE") != -1) {
+          if (entry.rule.toUpperCase().indexOf('TRUE') != -1)
+            ruleSummary += '[TRUE] ';
+          else if (entry.rule.toUpperCase().indexOf('FEMALE') != -1)
+            ruleSummary += '[FEMALE] ';
+          else if (entry.rule.toUpperCase().indexOf('MALE') != -1)
+            ruleSummary += '[MALE] ';
+          else if (entry.rule.toUpperCase().indexOf('AGE') != -1) {
 
             var lowerBound = entry.rule.match(/(>= \d+ [a-zA-Z]*)/);
             var upperBound = entry.rule.match(/(< \d+ [a-zA-Z]*)/);
-
-            console.debug(lowerBound);
-            console.debug(upperBound);
-
             ruleSummary += '[AGE ';
 
             if (lowerBound != null && lowerBound != '' && lowerBound.length > 0) {
               ruleSummary += lowerBound[0];
-              if (upperBound != null && upperBound != ''
-                && upperBound.length > 0)
+              if (upperBound != null && upperBound != '' && upperBound.length > 0)
                 ruleSummary += ' AND ';
             }
             if (upperBound != null && upperBound != '' && upperBound.length > 0)
@@ -225,7 +196,7 @@ angular
       };
 
       $scope.gotoConcept = function(terminologyId) {
-        $location.path("#/record/conceptId/" + terminologyId);
+        $location.path('#/record/conceptId/' + terminologyId);
       };
 
     });

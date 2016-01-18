@@ -51,7 +51,16 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @throws Exception the exception
    */
   public ValidationResult validateTargetCodes(MapRecord mapRecord)
-      throws Exception;
+    throws Exception;
+
+  /**
+   * Checks if is target code valid for this project.
+   * 
+   * @param terminologyId the terminology id
+   * @return true, if is target code valid
+   * @throws Exception the exception
+   */
+  public boolean isTargetCodeValid(String terminologyId) throws Exception;
 
   /**
    * Validate semantic checks.
@@ -61,7 +70,7 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @throws Exception the exception
    */
   public ValidationResult validateSemanticChecks(MapRecord mapRecord)
-      throws Exception;
+    throws Exception;
 
   /**
    * Compute map advice and map relations. Must be overwritten for each project
@@ -96,16 +105,9 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
   public ValidationResult compareMapRecords(MapRecord record1, MapRecord record2);
 
   /**
-   * Checks if is target code valid for this project.
-   * 
-   * @param terminologyId the terminology id
-   * @return true, if is target code valid
-   * @throws Exception the exception
-   */
-  public boolean isTargetCodeValid(String terminologyId) throws Exception;
-
-  /**
-   * Compute target terminology notes.
+   * Compute target terminology notes. These notes are passed back when looking
+   * through a destination terminology hierarchy. It's a way of providing extra
+   * information/context.
    * 
    * @param treePositions the tree positions
    * @throws Exception the exception
@@ -146,6 +148,15 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
   public Set<MapRecord> assignFromScratch(TrackingRecord trackingRecord,
     Set<MapRecord> mapRecords, Concept concept, MapUser mapUser)
     throws Exception;
+
+  /**
+   * Called after "assign from scratch" to give handlers the opportunity to
+   * attach notes or map principles to the.
+   *
+   * @param mapRecord the map record
+   * @throws Exception the exception
+   */
+  public void computeIdentifyAlgorithms(MapRecord mapRecord) throws Exception;
 
   /**
    * Unassign a map record from a user, performing any necessary workflow

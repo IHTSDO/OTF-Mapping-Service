@@ -24,14 +24,14 @@ angular
       // watch for entry change
       $scope.$on('mapRecordWidget.notification.changeSelectedEntry', function(
         event, parameters) {
-        console.debug("MapEntryWidget: Detected change in selected entry",
+        console.debug('MapEntryWidget: Detected change in selected entry',
           parameters.entry);
         console.debug(parameters);
         $scope.entry = parameters.entry;
         $scope.record = parameters.record;
         $scope.project = parameters.project;
 
-        console.debug("MapEntryWidget: mapRecord = ", $scope.record);
+        console.debug('MapEntryWidget: mapRecord = ', $scope.record);
 
         // get the allowable advices
         $scope.allowableAdvices = getAllowableAdvices(parameters.entry,
@@ -59,16 +59,16 @@ angular
           'mapRecordWidget.notification.deleteSelectedEntry',
           function(event, parameters) {
             console
-              .debug("MapEntryWidget: Detected delete notification from MapRecordWidget");
+              .debug('MapEntryWidget: Detected delete notification from MapRecordWidget');
             console.debug(parameters);
 
             // if the currently viewed entry is the one being viewed,
             // clear the
             // displayed entry
             if (($scope.entry.localId === parameters.entry.localId
-              && $scope.entry.localId != null && $scope.entry.localId != "")
+              && $scope.entry.localId != null && $scope.entry.localId != '')
               || ($scope.entry.id === parameters.entry.id
-                && $scope.entry.id != null && $scope.entry.id != "")) {
+                && $scope.entry.id != null && $scope.entry.id != '')) {
               $scope.entry = null;
             }
 
@@ -77,7 +77,7 @@ angular
       // local variables
       $scope.isTargetOpen = true;
       $scope.isParametersOpen = true;
-      $scope.localErrorRule = "";
+      $scope.localErrorRule = '';
 
       $scope.$watch('userToken', function() {
 
@@ -102,11 +102,11 @@ angular
 
       $scope.setTarget = function(targetCode) {
 
-        $scope.getValidTargetError = "";
+        $scope.getValidTargetError = '';
 
         // if target code is empty, compute parameters and return
         if (targetCode == null || targetCode == undefined || targetCode === '') {
-          console.debug("Setting to empty target");
+          console.debug('Setting to empty target');
           $scope.entry.targetId = '';
           $scope.entry.targetName = 'No target';
           $scope.computeParameters(true);
@@ -117,11 +117,11 @@ angular
 
         $http(
           {
-            url : root_mapping + "project/id/" + $scope.project.id
-              + "/concept/" + targetCode + "/isValid",
-            method : "GET",
+            url : root_mapping + 'project/id/' + $scope.project.id
+              + '/concept/' + targetCode + '/isValid',
+            method : 'GET',
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
           }).success(function(data) {
           $rootScope.glassPane--;
@@ -137,7 +137,7 @@ angular
 
           } else {
 
-            $scope.getValidTargetError = targetCode + " is not a valid target";
+            $scope.getValidTargetError = targetCode + ' is not a valid target';
             $scope.entry.targetName = null;
 
           }
@@ -155,7 +155,7 @@ angular
           'terminologyBrowser.selectConcept',
           function(event, parameters) {
             console
-              .debug("MapEntryWidget: Detected selectConcept from terminologyBrowser");
+              .debug('MapEntryWidget: Detected selectConcept from terminologyBrowser');
             console.debug(parameters);
 
             // get the relative position of the inside of the map entry widget
@@ -187,7 +187,7 @@ angular
           });
 
       $scope.clearTargetConcept = function(entry) {
-        console.debug("clearTargetConcept() called");
+        console.debug('clearTargetConcept() called');
         entry.targetId = null;
         entry.targetName = null;
         entry.mapRelation = null;
@@ -224,12 +224,12 @@ angular
 
         $rootScope.glassPane++;
         $http({
-          url : root_mapping + "relation/compute",
-          dataType : "json",
+          url : root_mapping + 'relation/compute',
+          dataType : 'json',
           data : entry,
-          method : "POST",
+          method : 'POST',
           headers : {
-            "Content-Type" : "application/json"
+            'Content-Type' : 'application/json'
           }
         }).success(
           function(data) {
@@ -238,7 +238,7 @@ angular
 
               entry.mapRelation = data;
 
-              console.debug("MapRelation computed: ", entry.mapRelation);
+              console.debug('MapRelation computed: ', entry.mapRelation);
 
               // get the allowable advices and relations
               $scope.allowableAdvices = getAllowableAdvices(entry,
@@ -252,7 +252,7 @@ angular
               deferred.resolve(entry);
             } else {
               $rootScope.glassPane--;
-              console.debug("No map relation computed for this entry");
+              console.debug('No map relation computed for this entry');
               deferred.resolve(entry);
             }
           }).error(function(data, status, headers, config) {
@@ -278,12 +278,12 @@ angular
         $rootScope.glassPane++;
 
         $http({
-          url : root_mapping + "advice/compute",
-          dataType : "json",
+          url : root_mapping + 'advice/compute',
+          dataType : 'json',
           data : entry,
-          method : "POST",
+          method : 'POST',
           headers : {
-            "Content-Type" : "application/json"
+            'Content-Type' : 'application/json'
           }
         }).success(
           function(data) {
@@ -292,7 +292,7 @@ angular
 
               entry.mapAdvice = data.mapAdvice;
 
-              console.debug("Map advices computed: ", entry.mapAdvice);
+              console.debug('Map advices computed: ', entry.mapAdvice);
 
               // get the allowable advices and relations
               $scope.allowableAdvices = getAllowableAdvices(entry,
@@ -305,7 +305,7 @@ angular
               deferred.resolve(entry);
             } else {
               $rootScope.glassPane--;
-              console.debug("No map advice computed");
+              console.debug('No map advice computed');
               deferred.resolve(entry);
             }
           }).error(function(data, status, headers, config) {
@@ -329,7 +329,7 @@ angular
       $scope.openRuleConstructor = function() {
 
         // clear any error regarding rule construction
-        $scope.localErrorRule = "";
+        $scope.localErrorRule = '';
 
         var modalInstance = $modal.open({
           templateUrl : 'partials/rule-modal.html',
@@ -351,7 +351,7 @@ angular
             // error
             if (rule == null || rule == undefined || rule === '') {
               rule = 'TRUE';
-              $scope.localErrorRule = "Invalid rule constructed, setting rule to TRUE";
+              $scope.localErrorRule = 'Invalid rule constructed, setting rule to TRUE';
             }
 
             $scope.entry.rule = rule;
@@ -365,17 +365,17 @@ angular
       // Returns a summary string for the entry rule type
       $scope.getRuleSummary = function(entry) {
 
-        var ruleSummary = "";
+        var ruleSummary = '';
 
         // first, rule summary
         if ($scope.project.ruleBased == true) {
-          if (entry.rule.toUpperCase().indexOf("TRUE") != -1)
-            ruleSummary += "[TRUE] ";
-          else if (entry.rule.toUpperCase().indexOf("FEMALE") != -1)
-            ruleSummary += "[FEMALE] ";
-          else if (entry.rule.toUpperCase().indexOf("MALE") != -1)
-            ruleSummary += "[MALE] ";
-          else if (entry.rule.toUpperCase().indexOf("AGE") != -1) {
+          if (entry.rule.toUpperCase().indexOf('TRUE') != -1)
+            ruleSummary += '[TRUE] ';
+          else if (entry.rule.toUpperCase().indexOf('FEMALE') != -1)
+            ruleSummary += '[FEMALE] ';
+          else if (entry.rule.toUpperCase().indexOf('MALE') != -1)
+            ruleSummary += '[MALE] ';
+          else if (entry.rule.toUpperCase().indexOf('AGE') != -1) {
 
             var lowerBound = entry.rule.match(/(>= \d+ [a-zA-Z]*)/);
             var upperBound = entry.rule.match(/(< \d+ [a-zA-Z]*)/);
@@ -406,13 +406,13 @@ angular
         $scope.ruleError = '';
 
         $scope.customAgeRange = {
-          "name" : "",
-          "lowerValue" : "",
-          "lowerInclusive" : "false",
-          "lowerUnits" : "years",
-          "upperValue" : "",
-          "upperInclusive" : "false",
-          "upperUnits" : "years"
+          'name' : '',
+          'lowerValue' : '',
+          'lowerInclusive' : 'false',
+          'lowerUnits' : 'years',
+          'upperValue' : '',
+          'upperInclusive' : 'false',
+          'upperUnits' : 'years'
         };
 
         $scope.presetAgeRanges = presetAgeRanges;
@@ -460,32 +460,32 @@ angular
         // supplied)
         $scope.constructRule = function(ruleCategory, ageRange) {
 
-          console.debug("Constructing rule", ruleCategory, ageRange);
+          console.debug('Constructing rule', ruleCategory, ageRange);
 
           // clear the rule
-          $scope.rule = "";
+          $scope.rule = '';
 
           // clear the rule error
-          $scope.ruleError = "";
+          $scope.ruleError = '';
 
           // if a true rule
-          if (ruleCategory === "TRUE") {
-            $scope.rule = "TRUE";
+          if (ruleCategory === 'TRUE') {
+            $scope.rule = 'TRUE';
           }
 
           // if a male gender rule
-          else if (ruleCategory === "Gender - Male") {
-            $scope.rule = "IFA 248153007 | Male (finding) |";
+          else if (ruleCategory === 'Gender - Male') {
+            $scope.rule = 'IFA 248153007 | Male (finding) |';
           }
 
           // if a female gender rule
-          else if (ruleCategory === "Gender - Female") {
-            $scope.rule = "IFA 248152002 | Female (finding) |";
+          else if (ruleCategory === 'Gender - Female') {
+            $scope.rule = 'IFA 248152002 | Female (finding) |';
           }
 
           // if an age range rule
-          else if (ruleCategory === "Age - Chronological"
-            || ruleCategory === "Age - At Onset") {
+          else if (ruleCategory === 'Age - Chronological'
+            || ruleCategory === 'Age - At Onset') {
 
             // if age range not yet specified, do not construct rule
             if (ageRange == null || ageRange == undefined)
@@ -493,18 +493,18 @@ angular
 
             // determine if lower and upper values are complete by checking
             // for null values
-            var lowerValueValid = ageRange.lowerValue != "-1"
+            var lowerValueValid = ageRange.lowerValue != '-1'
               && ageRange.lowerValue != undefined
-              && ageRange.lowerValue != null && ageRange.lowerValue != "";
-            var upperValueValid = ageRange.upperValue != "-1"
+              && ageRange.lowerValue != null && ageRange.lowerValue != '';
+            var upperValueValid = ageRange.upperValue != '-1'
               && ageRange.upperValue != undefined
-              && ageRange.lowerValue != null && ageRange.upperValue != "";
+              && ageRange.lowerValue != null && ageRange.upperValue != '';
 
             // stop if neither value has been fully specified
             if (!lowerValueValid && !upperValueValid)
               return;
 
-            console.debug("Validating age range", lowerValueValid,
+            console.debug('Validating age range', lowerValueValid,
               upperValueValid);
 
             // initialize calculated values (in days)
@@ -516,73 +516,73 @@ angular
             if (lowerValueValid) {
 
               switch (ageRange.lowerUnits) {
-              case "days":
+              case 'days':
                 lowerValue = parseFloat(ageRange.lowerValue, 10);
                 break;
-              case "months":
+              case 'months':
                 lowerValue = parseFloat(ageRange.lowerValue, 10) * 30;
                 break;
-              case "years":
+              case 'years':
                 lowerValue = parseFloat(ageRange.lowerValue, 10) * 365;
                 break;
               default:
-                $scope.ruleError += "Unexpected error determining lower units\n";
+                $scope.ruleError += 'Unexpected error determining lower units\n';
               }
 
               if (lowerValue <= 0) {
-                $scope.ruleError = "Lower bound value must be greater than zero\n";
+                $scope.ruleError = 'Lower bound value must be greater than zero\n';
                 return;
               }
             }
             if (upperValueValid) {
 
               switch (ageRange.upperUnits) {
-              case "days":
+              case 'days':
                 upperValue = parseFloat(ageRange.upperValue, 10)
                 break;
-              case "months":
+              case 'months':
                 upperValue = parseFloat(ageRange.upperValue, 10) * 30;
                 break;
-              case "years":
+              case 'years':
                 upperValue = parseFloat(ageRange.upperValue, 10) * 365;
                 break;
               default:
-                $scope.ruleError += "Unexpected error determining upper units\n";
+                $scope.ruleError += 'Unexpected error determining upper units\n';
               }
 
               if (upperValue <= 0) {
-                $scope.ruleError = "Upper bound value must be greater than zero\n";
+                $scope.ruleError = 'Upper bound value must be greater than zero\n';
                 return;
               }
             }
 
-            console.debug("Values", lowerValue, upperValue);
+            console.debug('Values', lowerValue, upperValue);
 
             // if both specified, check that upper value is greater than
             // lower value
             if (lowerValueValid && upperValueValid && lowerValue >= upperValue) {
-              $scope.ruleError += "Upper bound value must be greater than lower bound value";
+              $scope.ruleError += 'Upper bound value must be greater than lower bound value';
             }
 
             // base text for both lower and upper value sections
-            var ruleText = (ruleCategory === "Age - Chronological") ? "IFA 424144002 | Current chronological age (observable entity)"
-              : "IFA 445518008 | Age at onset of clinical finding (observable entity)";
+            var ruleText = (ruleCategory === 'Age - Chronological') ? 'IFA 424144002 | Current chronological age (observable entity)'
+              : 'IFA 445518008 | Age at onset of clinical finding (observable entity)';
 
             if (lowerValueValid) {
-              $scope.rule += ruleText + " | "
-                + (ageRange.lowerInclusive == true ? ">=" : ">") + " "
-                + parseFloat(ageRange.lowerValue, 10).toFixed(1) + " "
+              $scope.rule += ruleText + ' | '
+                + (ageRange.lowerInclusive == true ? '>=' : '>') + ' '
+                + parseFloat(ageRange.lowerValue, 10).toFixed(1) + ' '
                 + ageRange.lowerUnits;
             }
 
             if (lowerValueValid && upperValueValid) {
-              $scope.rule += " AND ";
+              $scope.rule += ' AND ';
             }
 
             if (upperValueValid) {
-              $scope.rule += ruleText + " | "
-                + (ageRange.upperInclusive == true ? "<=" : "<") + " "
-                + parseFloat(ageRange.upperValue, 10).toFixed(1) + " "
+              $scope.rule += ruleText + ' | '
+                + (ageRange.upperInclusive == true ? '<=' : '<') + ' '
+                + parseFloat(ageRange.upperValue, 10).toFixed(1) + ' '
                 + ageRange.upperUnits;
 
             }
@@ -598,34 +598,34 @@ angular
 
           // set the preset age range strings
           for (var i = 0; i < $scope.presetAgeRanges.length; i++) {
-            var presetAgeRangeStr = $scope.presetAgeRanges[i].name + ", ";
+            var presetAgeRangeStr = $scope.presetAgeRanges[i].name + ', ';
 
             if ($scope.presetAgeRanges[i].lowerValue != null
-              && $scope.presetAgeRanges[i].lowerValue != "-1") {
-              presetAgeRangeStr += ($scope.presetAgeRanges[i].lowerInclusive == true ? ">="
-                : ">")
-                + " "
+              && $scope.presetAgeRanges[i].lowerValue != '-1') {
+              presetAgeRangeStr += ($scope.presetAgeRanges[i].lowerInclusive == true ? '>='
+                : '>')
+                + ' '
                 + $scope.presetAgeRanges[i].lowerValue
-                + " "
+                + ' '
                 + $scope.presetAgeRanges[i].lowerUnits;
             }
 
             if ($scope.presetAgeRanges[i].lowerValue != null
-              && $scope.presetAgeRanges[i].lowerValue != "-1"
+              && $scope.presetAgeRanges[i].lowerValue != '-1'
               && $scope.presetAgeRanges[i].upperValue != null
-              && $scope.presetAgeRanges[i].upperValue != "-1") {
+              && $scope.presetAgeRanges[i].upperValue != '-1') {
 
-              presetAgeRangeStr += " and ";
+              presetAgeRangeStr += ' and ';
             }
 
             if ($scope.presetAgeRanges[i].upperValue != null
-              && $scope.presetAgeRanges[i].upperValue != "-1") {
+              && $scope.presetAgeRanges[i].upperValue != '-1') {
 
-              presetAgeRangeStr += ($scope.presetAgeRanges[i].upperInclusive == true ? "<="
-                : "<")
-                + " "
+              presetAgeRangeStr += ($scope.presetAgeRanges[i].upperInclusive == true ? '<='
+                : '<')
+                + ' '
                 + $scope.presetAgeRanges[i].upperValue
-                + " "
+                + ' '
                 + $scope.presetAgeRanges[i].upperUnits;
             }
 
@@ -647,11 +647,11 @@ angular
         console.debug('ADDING ADVICE');
         // check if advice valid
         if (advice == '') {
-          $scope.errorAddAdvice = "Advice cannot be empty";
+          $scope.errorAddAdvice = 'Advice cannot be empty';
         } else if (advice == null) {
-          $scope.errorAddAdvice = "This advice is not found in allowable advices for this project";
+          $scope.errorAddAdvice = 'This advice is not found in allowable advices for this project';
         } else {
-          $scope.errorAddAdvice = "";
+          $scope.errorAddAdvice = '';
 
           // check if this advice is already present
           var advicePresent = false;
@@ -661,11 +661,11 @@ angular
           }
 
           if (advicePresent == true) {
-            $scope.errorAddAdvice = "This advice " + advice.detail
-              + " is already attached to this entry";
+            $scope.errorAddAdvice = 'This advice ' + advice.detail
+              + ' is already attached to this entry';
           } else {
             $scope.entry['mapAdvice'].push(advice);
-            $scope.adviceInput = "?";
+            $scope.adviceInput = '?';
           }
         }
 
@@ -677,7 +677,7 @@ angular
 
         var confirmRemove = true;
         if (advice.isComputed == true) {
-          confirmRemove = confirm("The advice you are removing was automatically computed for this entry.  Are you sure you want to do this?");
+          confirmRemove = confirm('The advice you are removing was automatically computed for this entry.  Are you sure you want to do this?');
         }
 
         if (confirmRemove) {
@@ -727,7 +727,7 @@ angular
       $scope.setNullTarget = function() {
         // open glass pane (setNullTarget1)
         $rootScope.glassPane++;
-        $scope.entry.targetId = "";
+        $scope.entry.targetId = '';
         $scope.entry.targetName = 'No target';
         $scope.computeParameters(true);
         // close glass pane (setNullTarget1)
@@ -743,12 +743,12 @@ angular
       $scope.computeParameters = function(ignoreNullValues) {
 
         var targetNotNull = $scope.entry.targetId != null
-          && $scope.entry.targetId != undefined && $scope.entry.targetId != "";
+          && $scope.entry.targetId != undefined && $scope.entry.targetId != '';
         var relationNotNull = $scope.entry.mapRelation != null
           && $scope.entry.mapRelation != undefined
-          && $scope.entry.mapRelation != "";
+          && $scope.entry.mapRelation != '';
 
-        console.debug("Computing parameters", targetNotNull, relationNotNull);
+        console.debug('Computing parameters', targetNotNull, relationNotNull);
 
         // either target or relation must be non-null to compute
         // relation/advice
@@ -764,7 +764,7 @@ angular
 
           // set these to null for consistency
         } else {
-          console.debug("Setting parameters to null");
+          console.debug('Setting parameters to null');
           $scope.entry.targetId = null;
           $scope.entry.mapRelation = null;
         }
@@ -779,7 +779,7 @@ angular
 
         // if target is null (i.e. not valid or empty), return empty list
         if (entry.targetId != null) {
-          var nullTarget = (entry.targetId === "");
+          var nullTarget = (entry.targetId === '');
 
           for (var i = 0; i < advices.length; i++) {
 
@@ -822,18 +822,18 @@ angular
         // return an empty list, otherwise calculate
         if (entry.targetId != null) {
 
-          var nullTarget = entry.targetId === "";
+          var nullTarget = entry.targetId === '';
 
           for (var i = 0; i < relations.length; i++) {
 
             if (relations[i].isComputed == false) {
 
-              // console.debug(" Not computed");
+              // console.debug(' Not computed');
 
               if ((nullTarget == true && relations[i].isAllowableForNullTarget == true)
                 || (nullTarget == false && relations[i].isAllowableForNullTarget == false)) {
 
-                // console.debug(" Valid");
+                // console.debug(' Valid');
 
                 // handle a specific case where the name is more descriptive
                 // than
@@ -862,7 +862,7 @@ angular
 
       function removeJsonElement(array, elem) {
 
-        console.debug("Removing element");
+        console.debug('Removing element');
         var newArray = [];
         for (var i = 0; i < array.length; i++) {
           if (array[i].id != elem.id) {

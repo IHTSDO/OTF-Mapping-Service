@@ -2,6 +2,8 @@ package org.ihtsdo.otf.mapping.jpa.handlers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -11,18 +13,20 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceListJpa;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
-import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
+import org.ihtsdo.otf.mapping.jpa.MapNoteJpa;
 import org.ihtsdo.otf.mapping.jpa.helpers.TerminologyUtility;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
+import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
+import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Description;
@@ -165,233 +169,263 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       return result;
     }
 
-    final ContentService service = new ContentServiceJpa();
+    final ContentService contentService = new ContentServiceJpa();
     try {
       final String terminology = mapProject.getDestinationTerminology();
       final String version = mapProject.getDestinationTerminologyVersion();
 
       // Collect concepts in entry order, null if it doesn't exist
-      final List<Concept> concepts = new ArrayList<>();
+      // group by mapGroup
+      Map<Integer, List<Concept>> concepts = new HashMap<>();
       for (final MapEntry entry : mapRecord.getMapEntries()) {
-        concepts.add(service.getConcept(entry.getTargetId(), terminology,
-            version));
+        if (!concepts.containsKey(entry.getMapGroup())) {
+          concepts.put(entry.getMapGroup(), new ArrayList<Concept>());
+        }
+        concepts.get(entry.getMapGroup())
+            .add(
+                contentService.getConcept(entry.getTargetId(), terminology,
+                    version));
       }
 
-      //
-      // PREDICATE: primary map target is an asterisk code with secondary map
-      // code
-      // as a dagger code.
-      // GUIDANCE: Switch order of codes (this was eventually automated)
-      //
-      Logger.getLogger(getClass()).debug(
-          "  semantic check - dagger/asterisk order");
-      if (mapRecord.getMapEntries().size() == 2
-          && TerminologyUtility.isDaggerForAsterisk(concepts.get(0),
-              concepts.get(1), service)) {
-        Logger.getLogger(getClass()).debug("    WARNING");
-        result.addWarning("Primary asterisk with secondary dagger"
-            + " code, consider switching order.");
-      }
+      // Only process these rules if these is a single entry per group
+      if (concepts.keySet().size() == mapRecord.getMapEntries().size()) {
 
-      //
-      // PREDICATE: primary map target is a dagger code with an asterisk
-      // reference in the preferred rubric AND there is no secondary code
-      // matching that asterisk code
-      // GUIDANCE: Add the secondary code
-      //
-      Logger.getLogger(getClass()).debug(
-          "  semantic check - dagger/asterisk in preferred rubric");
-      if (TerminologyUtility.isDaggerCode(concepts.get(0), service)) {
-        // iterate through descriptions/relationships and see if there is an
-        // asterisk code
-        String asteriskCode = null;
-        for (final Description desc : concepts.get(0).getDescriptions()) {
-          for (final Relationship rel : concepts.get(0).getRelationships()) {
-            // the relationship terminologyId will match the description id
-            if (rel.getTerminologyId()
-                .startsWith(desc.getTerminologyId() + "~")) {
-              asteriskCode = rel.getDestinationConcept().getTerminologyId();
+        //
+        // PREDICATE: primary map target is an asterisk code with secondary map
+        // code as a dagger code.
+        // GUIDANCE: Switch order of codes (this was eventually automated)
+        //
+        System.out.println("  semantic check - dagger/asterisk order");
+        if (mapRecord.getMapEntries().size() == 2
+            && TerminologyUtility.isDaggerForAsterisk(concepts.get(1).get(0),
+                concepts.get(2).get(0), contentService)) {
+          System.out.println("    WARNING");
+          result.addWarning("Primary asterisk with secondary dagger"
+              + " code, consider switching order.");
+        }
+
+        //
+        // PREDICATE: primary map target is a dagger code with an asterisk
+        // reference in the preferred rubric AND there is no secondary code
+        // matching that asterisk code
+        // GUIDANCE: Add the secondary code
+        //
+        System.out
+            .println("  semantic check - dagger/asterisk in preferred rubric");
+        if (TerminologyUtility.isDaggerCode(concepts.get(1).get(0),
+            contentService)) {
+          // iterate through descriptions/relationships and see if there is an
+          // asterisk code
+          String asteriskCode = null;
+          for (final Description desc : concepts.get(1).get(0)
+              .getDescriptions()) {
+            for (final Relationship rel : concepts.get(1).get(0)
+                .getRelationships()) {
+              // the relationship terminologyId will match the description id
+              if (rel.getTerminologyId().startsWith(
+                  desc.getTerminologyId() + "~")) {
+                asteriskCode = rel.getDestinationConcept().getTerminologyId();
+              }
+            }
+          }
+          if (asteriskCode != null) {
+            // if there is no secondary code matching asterisk
+            if (concepts.size() == 1
+                || !concepts.get(2).get(0).getTerminologyId()
+                    .equals(asteriskCode)) {
+              System.out.println("    ERROR");
+              result
+                  .addError("Primary dagger code should have a secondary asterisk code mapping indicated by the preferred rubric.");
             }
           }
         }
-        if (asteriskCode != null) {
-          // if there is no secondary code matching asterisk
-          if (concepts.size() == 1
-              || !concepts.get(1).getTerminologyId().equals(asteriskCode)) {
-            Logger.getLogger(getClass()).debug("    ERROR");
-            result
-                .addError("Primary dagger code should have a secondary asterisk code mapping indicated by the preferred rubric.");
-          }
+
+        //
+        // PREDICATE: primary map target is a 4th digit ICD code having a fifth
+        // digit
+        // option of 0 (open) or 1 (closed).
+        // GUIDANCE: Remap to 5 digits and consider “MAPPED FOLLOWING WHO
+        // GUIDANCE" if SNOMED does not indicate open or closed"
+        //
+        System.out.println("  semantic check - open/closed fracture");
+        final List<Concept> children =
+            TerminologyUtility.getActiveChildren(concepts.get(1).get(0));
+        if (concepts.get(1).get(0).getTerminologyId().length() == 5
+            && children.size() > 1
+            && (children.get(0).getDefaultPreferredName().endsWith("open") || children
+                .get(0).getDefaultPreferredName().endsWith("open"))) {
+          System.out.println("    ERROR");
+          result
+              .addError("Remap to 5 digits and add \"MAPPED FOLLOWING WHO GUIDANCE\" "
+                  + "advice if SNOMED does not indicate open or closed");
+
         }
-      }
 
-      //
-      // PREDICATE: primary map target is a 4th digit ICD code having a fifth
-      // digit
-      // option of 0 (open) or 1 (closed).
-      // GUIDANCE: Remap to 5 digits and consider “MAPPED FOLLOWING WHO
-      // GUIDANCE" if SNOMED does not indicate open or closed"
-      //
-      Logger.getLogger(getClass()).debug(
-          "  semantic check - open/closed fracture");
-      final List<Concept> children =
-          TerminologyUtility.getActiveChildren(concepts.get(0));
-      if (concepts.get(0).getTerminologyId().length() == 5
-          && children.size() > 1
-          && (children.get(0).getDefaultPreferredName().endsWith("open") || children
-              .get(0).getDefaultPreferredName().endsWith("open"))) {
-        Logger.getLogger(getClass()).debug("    ERROR");
-        result
-            .addError("Remap to 5 digits and add \"MAPPED FOLLOWING WHO GUIDANCE\" "
-                + "advice if SNOMED does not indicate open or closed");
-
-      }
-
-      //
-      // PREDICATE: primary map target is a Chapter XX code and there is a non
-      // Chapter XX secondary code (e.g. V, W, X, or Y code)
-      // GUIDANCE: Remap, Chapter XX codes should either be on their own (when
-      // mapping events), or used as secondary codes.
-      //
-      Logger.getLogger(getClass())
-          .debug("  semantic check - primary map to XX");
-      if (mapRecord.getMapEntries().size() > 1
-          && concepts.get(0).getTerminologyId().matches("^[VWXY].*")) {
-        Logger.getLogger(getClass()).debug("    ERROR");
-        result.addError("Remap, Chapter XX codes should either be on their "
-            + "own, or used as secondary codes.");
-      }
-
-      //
-      // PREDICATE: primary map target has a coding hint matching one of these
-      // patterns: “Use additional code, if desired, to identify infectious
-      // agent or disease”, “Use additional code (B95-B97), if desired, to
-      // identify infectious agent”, “Use additional code (B95-B96), if desired,
-      // to identify bacterial agent” AND does not have “POSSIBLE REQUIREMENT
-      // FOR CAUSATIVE AGENT CODE” and contains the words “infection”,
-      // “infectious”, or “bacterial”.
-      // GUIDANCE: Review to consider a second code or the advice.
-      //
-      Logger.getLogger(getClass()).debug(
-          "  semantic check - causative agent code");
-      if (mapRecord.getConceptName().matches(
-          ".*\\b(infection|infectious|bacterial)\\b.*")
-          && hasUseAdditional(concepts.get(0))
-          && !TerminologyUtility.hasAdvice(mapRecord.getMapEntries().get(0),
-              "POSSIBLE REQUIREMENT FOR CAUSATIVE AGENT CODE")) {
-        Logger.getLogger(getClass()).debug("    WARNING");
-        result.addWarning("Primary map entry may requre \"POSSIBLE "
-            + "REQUIREMENT FOR CAUSATIVE AGENT CODE\" advice");
-      }
-
-      //
-      // PREDICATE: map target is a 4 digit in Chapter XIII, Diseases of the
-      // Musculskeletal System and Connective Tissue (for which there is a
-      // codable 5th level) and there is no “FIFTH CHARACTER REQUIRED TO FURTHER
-      // SPECIFY THE SITE” advice.
-      // GUIDANCE: Consider adding a 5th digit, or adding the advice
-      //
-      Logger.getLogger(getClass()).debug(
-          "  semantic check - 4 digit M code without advice");
-      // check each code
-      for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
-        final Concept concept = concepts.get(i);
-        if (concept.getTerminologyId().startsWith("M")
-            && concept.getTerminologyId().length() == 5
-            && TerminologyUtility.hasActiveChildren(concept)
-            && !TerminologyUtility.hasAdvice(mapRecord.getMapEntries().get(i),
-                "FIFTH CHARACTER REQUIRED TO FURTHER SPECIFY THE SITE")) {
-          Logger.getLogger(getClass()).debug("    WARNING");
-          result.addWarning("4 digit M code entry may require \"FIFTH "
-              + "CHARACTER REQUIRED TO FURTHER SPECIFY THE SITE\" advice");
-          break;
+        //
+        // PREDICATE: primary map target is a Chapter XX code and there is a non
+        // Chapter XX secondary code (e.g. V, W, X, or Y code)
+        // GUIDANCE: Remap, Chapter XX codes should either be on their own (when
+        // mapping events), or used as secondary codes.
+        //
+        System.out.println("  semantic check - primary map to XX");
+        if (mapRecord.getMapEntries().size() > 1
+            && concepts.get(1).get(0).getTerminologyId().matches("^[VWXY].*")) {
+          System.out.println("    ERROR");
+          result.addError("Remap, Chapter XX codes should either be on their "
+              + "own, or used as secondary codes.");
         }
-      }
 
-      //
-      // GUIDANCE: SNOMED CT concept to map is a poisoning concept (descendant
-      // of “Poisoning” 75478009) and there is not a secondary (or higher) map
-      // target from the list of external cause codes applicable to poisonings
-      // (as derived from columns 2,3, and 5 from TEIL3.ASC index file).
-      // GUIDANCE: Remap to include the (required) external cause code.
-      //
-      Logger.getLogger(getClass()).debug(
-          "  semantic check - poisoning external cause code");
-      boolean isPoisoning =
-          service.isDescendantOf(mapRecord.getConceptId(),
-              mapProject.getSourceTerminology(),
-              mapProject.getSourceTerminology(), "75478009");
-      if (mapRecord.getMapEntries().size() == 1 && isPoisoning) {
-        Logger.getLogger(getClass()).debug("    ERROR");
-        result
-            .addError("Poisoning requires an external cause code from the TEIL3.ASC index");
-      } else if (mapRecord.getMapEntries().size() > 1 && isPoisoning) {
-        boolean found = false;
-        for (int i = 1; i < mapRecord.getMapEntries().size(); i++) {
-          final String targetId =
-              mapRecord.getMapEntries().get(i).getTargetId();
-          if (getIcd10ExternalCauseCodes().contains(targetId)) {
-            found = true;
+        //
+        // PREDICATE: primary map target has a coding hint matching one of these
+        // patterns: “Use additional code, if desired, to identify infectious
+        // agent or disease”, “Use additional code (B95-B97), if desired, to
+        // identify infectious agent”, “Use additional code (B95-B96), if
+        // desired,
+        // to identify bacterial agent” AND does not have “POSSIBLE REQUIREMENT
+        // FOR CAUSATIVE AGENT CODE” and contains the words “infection”,
+        // “infectious”, or “bacterial”.
+        // GUIDANCE: Review to consider a second code or the advice.
+        //
+        System.out.println("  semantic check - causative agent code");
+        if (mapRecord.getConceptName().matches(
+            ".*\\b(infection|infectious|bacterial)\\b.*")
+            && hasUseAdditional(concepts.get(1).get(0))
+            && !TerminologyUtility.hasAdvice(mapRecord.getMapEntries().get(0),
+                "POSSIBLE REQUIREMENT FOR CAUSATIVE AGENT CODE")) {
+          System.out.println("    WARNING");
+          result.addWarning("Primary map entry may requre \"POSSIBLE "
+              + "REQUIREMENT FOR CAUSATIVE AGENT CODE\" advice");
+        }
+
+        //
+        // PREDICATE: map target is a 4 digit in Chapter XIII, Diseases of the
+        // Musculskeletal System and Connective Tissue (for which there is a
+        // codable 5th level) and there is no “FIFTH CHARACTER REQUIRED TO
+        // FURTHER
+        // SPECIFY THE SITE” advice.
+        // GUIDANCE: Consider adding a 5th digit, or adding the advice
+        //
+        System.out.println("  semantic check - 4 digit M code without advice");
+        // check each code
+        for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
+          final Concept concept = concepts.get(i + 1).get(0);
+          if (concept.getTerminologyId().startsWith("M")
+              && concept.getTerminologyId().length() == 5
+              && TerminologyUtility.hasActiveChildren(concept)
+              && !TerminologyUtility.hasAdvice(
+                  mapRecord.getMapEntries().get(i),
+                  "FIFTH CHARACTER REQUIRED TO FURTHER SPECIFY THE SITE")) {
+            System.out.println("    WARNING");
+            result.addWarning("4 digit M code entry may require \"FIFTH "
+                + "CHARACTER REQUIRED TO FURTHER SPECIFY THE SITE\" advice");
             break;
           }
         }
-        if (!found) {
-          // check each of higher map entries looking for code in the valid
-          // index list
-          // Unfortunately index data is not loaded, so we need a static list.
-          Logger.getLogger(getClass()).debug("    ERROR");
+
+        //
+        // PREDICATE: SNOMED CT concept to map is a poisoning concept
+        // (descendant
+        // of “Poisoning” 75478009) and there is not a secondary (or higher) map
+        // target from the list of external cause codes applicable to poisonings
+        // (as derived from columns 2,3, and 5 from TEIL3.ASC index file).
+        // GUIDANCE: Remap to include the (required) external cause code.
+        //
+        System.out.println("  semantic check - poisoning external cause code");
+        boolean isPoisoning =
+            contentService.isDescendantOf(mapRecord.getConceptId(),
+                mapProject.getSourceTerminology(),
+                mapProject.getSourceTerminology(), "75478009");
+        if (mapRecord.getMapEntries().size() == 1 && isPoisoning) {
+          System.out.println("    ERROR");
           result
               .addError("Poisoning requires an external cause code from the TEIL3.ASC index");
         }
-      }
+        // Validate external cause code presence and not primary position
+        else if (mapRecord.getMapEntries().size() > 1 && isPoisoning) {
 
-      //
-      // PREDICATE: J40, J20.0, J20.1, J20.2, J20.3, J20.4, J20.5, J20.6, J20.7,
-      // J20.8, J20.9, A50.2
-      // and no "current patient age" rule
-      // GUIDANCE: Recommend using a "current patient age" map rule
-      //
-      Logger.getLogger(getClass()).debug(
-          "  semantic check - current patient age");
-      for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
-        final Concept concept = concepts.get(i);
-        final MapEntry entry = mapRecord.getMapEntries().get(i);
+          // cause code in primary position
+          if (getIcd10ExternalCauseCodes().contains(
+              mapRecord.getMapEntries().get(0).getTargetId())) {
+            System.out.println("    ERROR");
+            result
+                .addError("Poisoning requires an external cause code in a secondary position");
+          }
 
-        if (Arrays.asList(
-            new String[] {
-                "J40", "J20.0", "J20.1", "J20.2", "J20.3", "J20.4", "J20.5",
-                "J20.6", "J20.7", "J20.8", "J20.9", "A50.2"
-            }).contains(concept.getTerminologyId())
-            && !entry.getRule().contains("Current chronological age")) {
-          Logger.getLogger(getClass()).debug("    WARNING");
+          else {
+            boolean found = false;
+            for (int i = 1; i < mapRecord.getMapEntries().size(); i++) {
+              final String targetId =
+                  mapRecord.getMapEntries().get(i).getTargetId();
+              if (getIcd10ExternalCauseCodes().contains(targetId)) {
+                found = true;
+                break;
+              }
+            }
+            if (!found) {
+              // check each of higher map entries looking for code in the valid
+              // index list
+              // Unfortunately index data is not loaded, so we need a static
+              // list.
+              System.out.println("    ERROR");
+              result
+                  .addError("Poisoning requires an external cause code from the TEIL3.ASC index");
+            }
+          }
+        }
+
+        //
+        // PREDICATE: J40, J20.0, J20.1, J20.2, J20.3, J20.4, J20.5, J20.6,
+        // J20.7,
+        // J20.8, J20.9, A50.2
+        // and no "current patient age" rule
+        // GUIDANCE: Recommend using a "current patient age" map rule
+        //
+        System.out.println("  semantic check - current patient age");
+        for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
+          final Concept concept = concepts.get(i + 1).get(0);
+          final MapEntry entry = mapRecord.getMapEntries().get(i);
+
+          if (Arrays.asList(
+              new String[] {
+                  "J40", "J20.0", "J20.1", "J20.2", "J20.3", "J20.4", "J20.5",
+                  "J20.6", "J20.7", "J20.8", "J20.9", "A50.2"
+              }).contains(concept.getTerminologyId())
+              && !entry.getRule().contains("Current chronological age")) {
+            System.out.println("    WARNING");
+            result
+                .addWarning("Consider adding a \"Current chronological age\" rule to entry "
+                    + i);
+          }
+
+        }
+
+        //
+        // PREDICATE: All descendants of Tumor Stage finding: SCTID: 385356007
+        // should be mapped to NC
+        // GUIDANCE: require map to NC
+        //
+        System.out.println("  semantic check - tumor stage finding");
+        boolean isTumorStageFinding =
+            contentService.isDescendantOf(mapRecord.getConceptId(),
+                mapProject.getSourceTerminology(),
+                mapProject.getSourceTerminology(), "385356007");
+        if (isTumorStageFinding && concepts.get(0) != null) {
+          System.out.println("    WARNING");
           result
-              .addWarning("Consider adding a \"Current chronological age\" rule to entry "
-                  + i);
+              .addWarning("Generally, descendants of tumor stage finding are mapped to NC");
         }
 
       }
 
-      //
-      // PREDICATE: All descendants of Tumor Stage finding: SCTID: 404684003
-      // should be mapped to NC
-      // GUIDANCE: require map to NC
-      //
-      Logger.getLogger(getClass()).debug(
-          "  semantic check - poisoning external cause code");
-      boolean isTumorStageFinding =
-          service.isDescendantOf(mapRecord.getConceptId(),
-              mapProject.getSourceTerminology(),
-              mapProject.getSourceTerminology(), "404684003");
-      if (isTumorStageFinding && concepts.get(0) != null) {
-        Logger.getLogger(getClass()).debug("    ERROR");
-        result
-            .addError("Descendants of tumor stage finding must always be mapped to NC");
+      // Handle multi-entry group rules here
+      else {
+        // n/a
       }
 
     } catch (Exception e) {
       throw e;
     } finally {
-      service.close();
+      contentService.close();
     }
     return result;
   }
@@ -496,116 +530,202 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
   @Override
   public MapAdviceList computeMapAdvice(MapRecord mapRecord, MapEntry mapEntry)
     throws Exception {
+    System.out.println("Computing map advice");
 
-    List<MapAdvice> advices = new ArrayList<>(mapEntry.getMapAdvices());
+    final List<MapAdvice> advices = new ArrayList<>(mapEntry.getMapAdvices());
+    final ContentService contentService = new ContentServiceJpa();
 
-    // get hierarchical rel
-    final MetadataServiceJpa metadataService = new MetadataServiceJpa();
-    Map<String, String> hierarchicalRelationshipTypeMap =
-        metadataService.getHierarchicalRelationshipTypes(
-            mapProject.getDestinationTerminology(),
-            mapProject.getDestinationTerminologyVersion());
-    if (hierarchicalRelationshipTypeMap.keySet().size() > 1) {
-      metadataService.close();
-      throw new IllegalStateException(
-          "Map project source terminology has too many hierarchical relationship types - "
-              + mapProject.getDestinationTerminology());
-    }
-    if (hierarchicalRelationshipTypeMap.keySet().size() < 1) {
-      metadataService.close();
-      throw new IllegalStateException(
-          "Map project source terminology has too few hierarchical relationship types - "
-              + mapProject.getDestinationTerminology());
-    }
-    metadataService.close();
+    try {
+      //
+      // PREDICATE: W00-Y34 except X34,X59,Y06,Y07,Y35,Y36 without
+      // "POSSIBLE REQUIREMENT TO IDENTIFY PLACE OF OCCURRENCE" advice
+      // ACTION: add the advice
+      //
+      final String adviceP03 =
+          "POSSIBLE REQUIREMENT TO IDENTIFY PLACE OF OCCURRENCE";
+      System.out.println("Checking principle 03");
+      if (mapEntry.getTargetId().matches("(W..|X..|Y[0-2].|Y3[0-4]).*")
+          && !mapEntry.getTargetId().equals("Y06")
+          && !mapEntry.getTargetId().equals("Y07")
+          && !mapEntry.getTargetId().equals("Y35")
+          && !mapEntry.getTargetId().equals("Y36")
+          && !mapEntry.getTargetId().equals("X34")
+          && !mapEntry.getTargetId().equals("X59")
+          && !TerminologyUtility.hasAdvice(mapEntry, adviceP03)) {
+        System.out.println(" - FOUND");
+        advices.add(TerminologyUtility.getAdvice(mapProject, adviceP03));
+      }
 
-    final ContentServiceJpa contentService = new ContentServiceJpa();
-    // find number of descendants
-    SearchResultList results =
-        contentService.findDescendantConcepts(mapRecord.getConceptId(),
-            mapProject.getDestinationTerminology(),
-            mapProject.getDestinationTerminologyVersion(), null);
-    contentService.close();
-    if (results.getTotalCount() > 10) {
-      for (final MapAdvice advice : mapProject.getMapAdvices()) {
-        if (advice.getName().toLowerCase()
-            .equals("DESCENDANTS NOT EXHAUSTIVELY MAPPED".toLowerCase())) {
-          advices.add(advice);
-          // System.out.println("Found advice: " + advice.toString());
+      //
+      // PREDICATE: Map target is in the range C00-D48 and does not have the
+      // advice "POSSIBLE REQUIREMENT FOR MORPHOLOGY CODE"
+      // ACTION: add the advice
+      //
+      final String adviceP05 = "POSSIBLE REQUIREMENT FOR MORPHOLOGY CODE";
+      System.out.println("Checking principle 05");
+      if (mapEntry.getTargetId().matches("(C..|D[0-3].|D4[0-8]).*")
+          && !TerminologyUtility.hasAdvice(mapEntry, adviceP05)) {
+        System.out.println(" - FOUND");
+        advices.add(TerminologyUtility.getAdvice(mapProject, adviceP05));
+      } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP05)) {
+        System.out.println(" - FOUND2");
+        advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP05));
+      }
+
+      //
+      // PREDICATE: Primary map target is T31 or T32 and does not have the
+      // advice
+      // "USE AS PRIMARY CODE ONLY IF SITE OF BURN UNSPECIFIED, OTHERWISE USE AS A SUPPLEMENTARY CODE WITH CATEGORIES T20-T29 (Burns)"
+      // ACTION: add the advice
+      //
+      final String adviceP06 =
+          "USE AS PRIMARY CODE ONLY IF SITE OF BURN UNSPECIFIED, OTHERWISE USE AS A SUPPLEMENTARY CODE WITH CATEGORIES T20-T29 (Burns)";
+      System.out.println("Checking principle 06");
+      if (mapEntry.getTargetId().matches("(T31|T32).*")
+          && mapEntry.getMapGroup() == 1 && mapEntry.getMapPriority() == 1
+          && !TerminologyUtility.hasAdvice(mapEntry, adviceP06)) {
+        System.out.println(" - FOUND");
+        advices.add(TerminologyUtility.getAdvice(mapProject, adviceP06));
+      }
+
+      //
+      // PREDICATE: Primary chapter XX code without advice
+      // "THIS IS AN EXTERNAL CAUSE CODE FOR USE IN A SECONDARY POSITION"
+      // ACTION: add the advice
+      //
+      final String adviceP07 =
+          "THIS IS AN EXTERNAL CAUSE CODE FOR USE IN A SECONDARY POSITION";
+      System.out.println("Checking principle 03");
+      if (mapEntry.getTargetId().matches("^[VWXY].*")
+          && mapEntry.getMapGroup() == 1 && mapEntry.getMapPriority() == 1
+          && !TerminologyUtility.hasAdvice(mapEntry, adviceP07)) {
+        System.out.println(" - FOUND");
+        advices.add(TerminologyUtility.getAdvice(mapProject, adviceP07));
+      }
+
+      //
+      // PREDICATE: Primary target is a poisoning code and there is a secondary
+      // code indicating undetermined intent and the SNOMED concept does not
+      // indicate intent and the entry does not have the advice
+      // "MAPPED FOLLOWING WHO GUIDANCE"
+      // ACTION:
+      //
+      final String adviceP21a = "MAPPED FOLLOWING WHO GUIDANCE";
+      boolean isPoisoning =
+          contentService.isDescendantOf(mapRecord.getConceptId(),
+              mapProject.getSourceTerminology(),
+              mapProject.getSourceTerminology(), "75478009");
+      if (isPoisoning && mapEntry.getMapGroup() > 1
+          && mapEntry.getMapPriority() == 1
+          && mapEntry.getTargetId().matches("^[VWXY].*")
+          && !TerminologyUtility.hasAdvice(mapEntry, adviceP21a)) {
+        System.out.println(" - FOUND");
+        advices.add(TerminologyUtility.getAdvice(mapProject, adviceP21a));
+      }
+
+      //
+      // PREDICATE: primary code has advice
+      // "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE"
+      // and there is a secondary code from chapter XX
+      // ACTION: remove the advice
+      //
+      final String adviceP23 =
+          "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE";
+      if (TerminologyUtility.hasAdvice(mapEntry, adviceP23)
+          && mapEntry.getMapRecord().getMapEntries().size() > 1) {
+        for (int i = 1; i < mapEntry.getMapRecord().getMapEntries().size(); i++) {
+          // If external cause code found, move on
+          if (mapEntry.getMapRecord().getMapEntries().get(i).getTargetId()
+              .matches("^[VWXY].*")) {
+            advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP23));
+            break;
+          }
         }
       }
-    }
 
-    MapAdviceList mapAdviceList = new MapAdviceListJpa();
-    mapAdviceList.setMapAdvices(advices);
-    return mapAdviceList;
+      MapAdviceList mapAdviceList = new MapAdviceListJpa();
+      mapAdviceList.setMapAdvices(advices);
+      return mapAdviceList;
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      contentService.close();
+    }
   }
 
   /* see superclass */
   @Override
   public boolean isTargetCodeValid(String terminologyId) throws Exception {
 
-    // check that code has at least three characters, that the second
-    // character
-    // is a number, and does not contain a dash
-    if (!terminologyId.matches(".[0-9].*") || terminologyId.contains("-")) { // "(.*?[0-9]){3,}")
-      // ||
-      // terminologyId.contains("-"))
-      // {
-      return false;
-    }
+    final ContentService contentService = new ContentServiceJpa();
 
-    // SPECIFIC CASE: for M14.__, codes with fifth digit are not assignable
-    if (terminologyId.toUpperCase().startsWith("M14")
-        && terminologyId.length() == 6)
-      return false;
+    try {
+      // check that code has at least three characters, that the second
+      // character
+      // is a number, and does not contain a dash
+      if (!terminologyId.matches(".[0-9].*") || terminologyId.contains("-")) { // "(.*?[0-9]){3,}")
+        // ||
+        // terminologyId.contains("-"))
+        // {
+        return false;
+      }
 
-    // open the content service
-    ContentService contentService = new ContentServiceJpa();
+      // SPECIFIC CASE: for M14.__, codes with fifth digit are not assignable
+      if (terminologyId.toUpperCase().startsWith("M14")
+          && terminologyId.length() == 6)
+        return false;
 
-    // if a three digit code
-    if (terminologyId.matches(".[0-9].")) {
+      // open the content service
 
-      // SPECIFIC CASE for W00-W19, X00-X09, Y10-Y34, fourth digit not required,
-      // return true for codes with 3 or more digits
-      if (terminologyId.toUpperCase().matches("W..|X..|Y[0-2].|Y3[0-4]")
-          && !terminologyId.toUpperCase().equals("Y06")
-          && !terminologyId.toUpperCase().equals("Y07")
-          && !terminologyId.toUpperCase().equals("Y35")
-          && !terminologyId.toUpperCase().equals("Y36")
-          && !terminologyId.toUpperCase().equals("X34")
-          && !terminologyId.toUpperCase().equals("X59"))
-        return true;
+      // if a three digit code
+      if (terminologyId.matches(".[0-9].")) {
 
-      // otherwise, if 3-digit code has children, return false
-      TreePositionList tpList =
-          contentService.getTreePositions(terminologyId,
+        // SPECIFIC CASE for W00-W19, X00-X09, Y10-Y34, fourth digit not
+        // required,
+        // return true for codes with 3 or more digits
+        if (terminologyId.toUpperCase().matches("W..|X..|Y[0-2].|Y3[0-4]")
+            && !terminologyId.toUpperCase().equals("Y06")
+            && !terminologyId.toUpperCase().equals("Y07")
+            && !terminologyId.toUpperCase().equals("Y35")
+            && !terminologyId.toUpperCase().equals("Y36")
+            && !terminologyId.toUpperCase().equals("X34")
+            && !terminologyId.toUpperCase().equals("X59"))
+          return true;
+
+        // otherwise, if 3-digit code has children, return false
+        TreePositionList tpList =
+            contentService.getTreePositions(terminologyId,
+                mapProject.getDestinationTerminology(),
+                mapProject.getDestinationTerminologyVersion());
+        if (tpList.getCount() == 0) {
+          contentService.close();
+          return false;
+        }
+
+        if (tpList.getTreePositions().get(0).getChildrenCount() > 0) {
+          contentService.close();
+          return false;
+        }
+      }
+
+      // verify concept exists in database
+      final Concept concept =
+          contentService.getConcept(terminologyId,
               mapProject.getDestinationTerminology(),
               mapProject.getDestinationTerminologyVersion());
-      if (tpList.getCount() == 0) {
-        contentService.close();
+
+      contentService.close();
+      if (concept == null) {
         return false;
       }
 
-      if (tpList.getTreePositions().get(0).getChildrenCount() > 0) {
-        contentService.close();
-        return false;
-      }
+      // otherwise, return true
+      return true;
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      contentService.close();
     }
-
-    // verify concept exists in database
-    Concept concept =
-        contentService.getConcept(terminologyId,
-            mapProject.getDestinationTerminology(),
-            mapProject.getDestinationTerminologyVersion());
-
-    contentService.close();
-    if (concept == null) {
-      return false;
-    }
-
-    // otherwise, return true
-    return true;
   }
 
   /* see superclass */
@@ -615,50 +735,53 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
     Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info(
         "Computing target terminology notes.");
-
-    // open the metadata service and get the relationship types
-    MetadataService metadataService = new MetadataServiceJpa();
-    Map<String, String> simpleRefSets =
-        metadataService.getSimpleRefSets(
-            mapProject.getDestinationTerminology(),
-            mapProject.getDestinationTerminologyVersion());
-
-    // find the dagger-to-asterisk and asterisk-to-dagger types
-    String asteriskRefSetId = null;
-    String daggerRefSetId = null;
-
-    for (final String key : simpleRefSets.keySet()) {
-      if (simpleRefSets.get(key).equals("Asterisk refset"))
-        asteriskRefSetId = key;
-      if (simpleRefSets.get(key).equals("Dagger refset"))
-        daggerRefSetId = key;
-    }
-
-    if (asteriskRefSetId == null)
-      Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).warn(
-          "Could not find Asterisk refset");
-
-    if (daggerRefSetId == null)
-      Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).warn(
-          "Could not find Dagger refset");
-
-    Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info(
-        "  Asterisk to dagger relationship type found: " + asteriskRefSetId);
-
-    Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info(
-        "  Dagger to asterisk relationship type found: " + daggerRefSetId);
-
-    // open one content service to handle all concept retrieval
+    final MetadataService metadataService = new MetadataServiceJpa();
+    final// open one content service to handle all concept retrieval
     ContentService contentService = new ContentServiceJpa();
+    try {
+      // open the metadata service and get the relationship types
+      Map<String, String> simpleRefSets =
+          metadataService.getSimpleRefSets(
+              mapProject.getDestinationTerminology(),
+              mapProject.getDestinationTerminologyVersion());
 
-    // for each tree position initially passed in, call the recursive helper
-    for (final TreePosition tp : treePositionList.getTreePositions()) {
+      // find the dagger-to-asterisk and asterisk-to-dagger types
+      String asteriskRefSetId = null;
+      String daggerRefSetId = null;
 
-      computeTargetTerminologyNotesHelper(tp, contentService, asteriskRefSetId,
-          daggerRefSetId);
+      for (final String key : simpleRefSets.keySet()) {
+        if (simpleRefSets.get(key).equals("Asterisk refset"))
+          asteriskRefSetId = key;
+        if (simpleRefSets.get(key).equals("Dagger refset"))
+          daggerRefSetId = key;
+      }
+
+      if (asteriskRefSetId == null)
+        Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).warn(
+            "Could not find Asterisk refset");
+
+      if (daggerRefSetId == null)
+        Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).warn(
+            "Could not find Dagger refset");
+
+      Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info(
+          "  Asterisk to dagger relationship type found: " + asteriskRefSetId);
+
+      Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info(
+          "  Dagger to asterisk relationship type found: " + daggerRefSetId);
+
+      // for each tree position initially passed in, call the recursive helper
+      for (final TreePosition tp : treePositionList.getTreePositions()) {
+
+        computeTargetTerminologyNotesHelper(tp, contentService,
+            asteriskRefSetId, daggerRefSetId);
+      }
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      metadataService.close();
+      contentService.close();
     }
-    metadataService.close();
-    contentService.close();
   }
 
   /**
@@ -935,12 +1058,112 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
     return null;
   }
 
+  /* see superclass */
+  @Override
+  public void computeIdentifyAlgorithms(MapRecord mapRecord) throws Exception {
+    System.out.println("Compute identify algorithm");
+    // Attach a NOTE if the criteria for the algorithm is met
+    final List<String> notes = new ArrayList<>();
+    final ContentService contentService = new ContentServiceJpa();
+    try {
+
+      //
+      // PREDICATE: SNOMED CT concept is a descendant of "Allergic Disposition"
+      // 609328004
+      // TODO: consider other possible ancestors
+      // RESULT: principle 19
+      //
+      boolean isAllergy =
+          contentService.isDescendantOf(mapRecord.getConceptId(),
+              mapProject.getSourceTerminology(),
+              mapProject.getSourceTerminology(), "609328004");
+      System.out.println("Checking principle 19");
+      if (isAllergy) {
+        System.out.println("  - TRUE");
+        notes.add("IDENTIFIED as a case of Principle 19 (allergy)");
+      }
+
+      //
+      // PREDICATE: SNOMED CT concept is a descendant of "Poisoning" 75478009
+      // RESULT: principle 21
+      //
+      System.out.println("Checking principle 21");
+      boolean isPoisoning =
+          contentService.isDescendantOf(mapRecord.getConceptId(),
+              mapProject.getSourceTerminology(),
+              mapProject.getSourceTerminology(), "75478009");
+      if (isPoisoning) {
+        System.out.println("  - TRU");
+        notes
+            .add("IDENTIFIED as a case of Principle 21 (poisoning - external cause)");
+        notes
+            .add("IDENTIFIED as a case of Principle 27 (poisoning - sequencing of codes)");
+      }
+
+      //
+      // PREDICATE: SNOMED CT concept contains "and/or"
+      // RESULT: principle 31
+      //
+      System.out.println("Checking principle 31");
+      if (mapRecord.getConceptName().toLowerCase().contains("and/or")) {
+        System.out.println("  - TRUE");
+        notes.add("IDENTIFIED as a case of Principle 31 (and/or)");
+      }
+
+      //
+      // PREDICATE: SNOMED CT concept is descendant of "Animal Bite Wound"
+      // 399907009
+      // RESULT: principle 32
+      //
+      System.out.println("Checking principle 32");
+      boolean isAnimalBite =
+          contentService.isDescendantOf(mapRecord.getConceptId(),
+              mapProject.getSourceTerminology(),
+              mapProject.getSourceTerminology(), "399907009");
+      if (isAnimalBite) {
+        System.out.println("  - TRUE");
+        notes.add("IDENTIFIED as a case of Principle 32 (animal bite)");
+      }
+
+      //
+      // PREDICATE: SNOMED CT concept contains "postoperative" or "postsurgical"
+      // and also contains "complication.*procedure"
+      // RESULT: principle 37
+      //
+      System.out.println("Checking principle 37");
+      if (mapRecord.getConceptName().toLowerCase().contains("postoperative")
+          || mapRecord.getConceptName().toLowerCase().contains("postsurgical")
+          || mapRecord.getConceptName().toLowerCase()
+              .matches(".*complication.*procedure.*")) {
+        System.out.println("  - TRUE");
+        notes
+            .add("IDENTIFIED as a case of Principle 37 (postoperative complications)");
+      }
+
+      // Add the note if it exists
+      if (notes.size() > 0) {
+        for (final String note : notes) {
+          MapNote mapNote = new MapNoteJpa();
+          mapNote.setNote(note);
+          mapNote.setTimestamp(new Date());
+          final MapUser user = TerminologyUtility.getLoaderUser();
+          mapNote.setUser(user != null ? user : mapRecord.getLastModifiedBy());
+          mapRecord.addMapNote(mapNote);
+        }
+      }
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      contentService.close();
+    }
+  }
+
   /**
    * Returns the icd10 external cause codes.
    *
    * @return the icd10 external cause codes
    */
-  public static Set<String> getIcd10ExternalCauseCodes() {
+  private static Set<String> getIcd10ExternalCauseCodes() {
     if (icd10ExternalCauseCodes == null) {
       // These codes come from columns 2/3/5 of the TEIL3.ASC index table
       icd10ExternalCauseCodes.addAll(Arrays.asList(new String[] {
@@ -977,7 +1200,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
    * @return true, if successful
    */
   @SuppressWarnings("static-method")
-  public boolean hasUseAdditional(Concept concept) {
+  private boolean hasUseAdditional(Concept concept) {
     for (final Description desc : concept.getDescriptions()) {
       if (desc
           .getTerm()

@@ -43,7 +43,7 @@ angular
       $scope.$on('localStorageModule.notification.setFocusProject', function(
         event, parameters) {
         console
-          .debug("MapProjectWidgetCtrl:  Detected change in focus project");
+          .debug('MapProjectWidgetCtrl:  Detected change in focus project');
         $scope.focusProject = parameters.focusProject;
       });
 
@@ -61,7 +61,7 @@ angular
               // retrieve the definitions
               $scope.definitions = $scope.focusProject.reportDefinition;
 
-              console.debug("QA Check definitions: ", $scope.definitions);
+              console.debug('QA Check definitions: ', $scope.definitions);
 
             }
           });
@@ -72,22 +72,22 @@ angular
 
         // construct a PFS object
         var pfsParameterObj = {
-          "startIndex" : (page - 1) * $scope.itemsPerPage,
-          "maxResults" : $scope.itemsPerPage,
-          "sortField" : null,
-          "queryRestriction" : null
+          'startIndex' : (page - 1) * $scope.itemsPerPage,
+          'maxResults' : $scope.itemsPerPage,
+          'sortField' : null,
+          'queryRestriction' : null
         };
 
         // obtain the reports
         $http(
           {
-            url : root_reporting + "reportResult/id/" + reportResult.id
-              + "/items",
-            dataType : "json",
+            url : root_reporting + 'reportResult/id/' + reportResult.id
+              + '/items',
+            dataType : 'json',
             data : pfsParameterObj,
-            method : "POST",
+            method : 'POST',
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
           }).success(
           function(data) {
@@ -109,19 +109,19 @@ angular
       $scope.generateNewReport = function(reportDefinition) {
         $rootScope.glassPane++;
 
-        console.debug("generateNewReport", reportDefinition);
+        console.debug('generateNewReport', reportDefinition);
 
         // obtain the record
         $http(
           {
-            url : root_reporting + "report/generate/project/id/"
-              + $scope.focusProject.id + "/user/id/"
+            url : root_reporting + 'report/generate/project/id/'
+              + $scope.focusProject.id + '/user/id/'
               + $scope.currentUser.userName,
-            method : "POST",
-            dataType : "json",
+            method : 'POST',
+            dataType : 'json',
             data : reportDefinition,
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
           }).success(function(data) {
           $rootScope.glassPane--;
@@ -136,12 +136,12 @@ angular
           // set the report displayed and get the result items for each report
           // result
           $scope.reportDisplayed = data;
-          console.debug("Displayed report", $scope.reportDisplayed);
+          console.debug('Displayed report', $scope.reportDisplayed);
           for (var i = 0; i < $scope.reportDisplayed.results.length; i++) {
             $scope.getResultItems($scope.reportDisplayed.results[i]);
           }
 
-          $scope.definitionMsg = "Successfully generated new qa check";
+          $scope.definitionMsg = 'Successfully generated new qa check';
 
           // if ($scope.reportDisplayed.results.length > 0) {
           // reportResult = $scope.getResultItems(
@@ -156,24 +156,24 @@ angular
       $scope.exportReport = function(report) {
         $rootScope.glassPane++;
         $http({
-          url : root_reporting + "report/export/" + $scope.reportDisplayed.id,
-          dataType : "json",
-          method : "GET",
+          url : root_reporting + 'report/export/' + $scope.reportDisplayed.id,
+          dataType : 'json',
+          method : 'GET',
           headers : {
-            "Content-Type" : "application/json"
+            'Content-Type' : 'application/json'
           },
           responseType : 'arraybuffer'
         }).success(function(data) {
-          $scope.definitionMsg = "Successfully exported report";
+          $scope.definitionMsg = 'Successfully exported report';
           var blob = new Blob([ data ], {
-            type : "application/vnd.ms-excel"
+            type : 'application/vnd.ms-excel'
           });
 
           // hack to download store a file having its URL
           var fileURL = URL.createObjectURL(blob);
           var a = document.createElement('a');
           a.href = fileURL;
-          a.target = "_blank";
+          a.target = '_blank';
           a.download = getReportFileName(report);
           document.body.appendChild(a);
           $rootScope.glassPane--;
@@ -186,28 +186,28 @@ angular
       };
 
       var getReportFileName = function(report) {
-        var date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-        return report.name + "." + date + ".xls";
+        var date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        return report.name + '.' + date + '.xls';
       };
 
       $scope.addToQAWorkflow = function(report) {
         $rootScope.glassPane++;
 
-        console.debug("addToQAWorkflow", report);
+        console.debug('addToQAWorkflow', report);
 
         $http({
-          url : root_workflow + "createQAWork",
-          method : "POST",
-          dataType : "json",
+          url : root_workflow + 'createQAWork',
+          method : 'POST',
+          dataType : 'json',
           data : $scope.reportDisplayed.id,
           headers : {
-            "Content-Type" : "application/json"
+            'Content-Type' : 'application/json'
           }
         }).success(function(data) {
           $rootScope.glassPane--;
           $rootScope.$broadcast('qaCheckWidget.notification.qaWorkCreated');
           $scope.reportDisplayed = null;
-          $scope.definitionMsg = "Successfully added concepts to qa workflow";
+          $scope.definitionMsg = 'Successfully added concepts to qa workflow';
         }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
           $rootScope.handleHttpError(data, status, headers, config);
