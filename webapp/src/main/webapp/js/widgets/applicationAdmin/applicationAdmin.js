@@ -2052,7 +2052,7 @@ angular
           }).error(function(data, status, headers, config) {
             $rootScope.glassPane--;
             definition.testReportSuccess = false;
-            definition.testReportError = data.replace(/'/g, '');
+            definition.testReportError = data.replace(/"/g, '');
 
           });
 
@@ -2281,7 +2281,7 @@ angular
           }).error(function(data, status, headers, config) {
             $rootScope.glassPane--;
             definition.testQaSuccess = false;
-            definition.testQaError = data.replace(/'/g, '');
+            definition.testQaError = data.replace(/"/g, '');
           });
 
         };
