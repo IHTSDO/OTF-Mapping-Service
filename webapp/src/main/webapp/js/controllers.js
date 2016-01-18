@@ -461,7 +461,7 @@ mapProjectAppControllers.controller('LoginCtrl', [
 
       $scope.mapUser = localStorageService.get('currentUser');
 
-      // If there's a user, attempt to log in
+      // If there is a user, attempt to log in
       if ($scope.mapUser) {
         $scope.userToken = localStorageService.get('userToken');
         // set default header to contain userToken
