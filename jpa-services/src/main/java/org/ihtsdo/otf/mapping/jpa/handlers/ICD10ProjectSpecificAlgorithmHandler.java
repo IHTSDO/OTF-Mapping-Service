@@ -190,8 +190,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           concept.getRelationships().size();
           concept.getInverseRelationships().size();
           concept.getSimpleRefSetMembers().size();
-          concepts.get(entry.getMapGroup()).add(concept);
         }
+        concepts.get(entry.getMapGroup()).add(concept);
 
       }
 
