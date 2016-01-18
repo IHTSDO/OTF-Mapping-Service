@@ -99,7 +99,7 @@
             <i ng-click="goEditRecord(result.id)"
               class="glyphicon glyphicon-saved"></i>
           </a>
-          <!-- If lead has claimed their own previous work for review, don't allow clicking -->
+          <!-- If lead has claimed their own previous work for review, do not allow clicking -->
           <a disabled title='You have claimed this concept for Lead Review'
             ng-show="result.terminologyVersion === 'REVIEW_NEW'
 						|| result.terminologyVersion === 'REVIEW_IN_PROGRESS'">

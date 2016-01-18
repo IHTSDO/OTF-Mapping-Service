@@ -592,7 +592,7 @@ angular
           mapError = errorMessage;
         }
 
-        // if the conversation hasn't yet been started
+        // if the conversation has not yet been started
         if (currentConversation == '') {
 
           // create first feedback thread to go into the feedback conversation
@@ -708,7 +708,7 @@ angular
           }
         }
 
-        // if the conversation hasn't yet been started
+        // if the conversation has not yet been started
         if (currentConversation == null || currentConversation == '') {
 
           // create first feedback item to go into the feedback conversation
