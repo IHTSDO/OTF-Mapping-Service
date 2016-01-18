@@ -356,9 +356,9 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
                 mapProject.getSourceTerminologyVersion(), "75478009");
         if (concepts.get(1).get(0) != null
             && mapRecord.getMapEntries().size() == 1 && isPoisoning) {
-          System.out.println("    ERROR");
+          System.out.println("    WARNING");
           result
-              .addError("Remap, poisoning requires an external cause code from the TEIL3.ASC index");
+              .addWarning("Remap, poisoning requires an external cause code from the TEIL3.ASC index");
         }
         // Validate external cause code presence and not primary position
         else if (concepts.get(1).get(0) != null
@@ -577,8 +577,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       //
       final String adviceP03 = "POSSIBLE REQUIREMENT FOR PLACE OF OCCURRENCE";
       System.out.println("Checking principle 03");
-      if (mapEntry.getMapGroup() != 1
-          && mapEntry.getTargetId().matches("(W..|X..|Y[0-2].|Y3[0-4]).*")
+      if (mapEntry.getTargetId().matches("(W..|X..|Y[0-2].|Y3[0-4]).*")
           && !mapEntry.getTargetId().equals("Y06")
           && !mapEntry.getTargetId().equals("Y07")
           && !mapEntry.getTargetId().equals("Y35")
