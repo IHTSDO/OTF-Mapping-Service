@@ -185,11 +185,14 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
             contentService
                 .getConcept(entry.getTargetId(), terminology, version);
         // Lazy initialize
-        concept.getDescriptions().size();
-        concept.getRelationships().size();
-        concept.getInverseRelationships().size();
-        concept.getSimpleRefSetMembers().size();
-        concepts.get(entry.getMapGroup()).add(concept);
+        if (concept != null) {
+          concept.getDescriptions().size();
+          concept.getRelationships().size();
+          concept.getInverseRelationships().size();
+          concept.getSimpleRefSetMembers().size();
+          concepts.get(entry.getMapGroup()).add(concept);
+        }
+
       }
 
       // Only process these rules if these is a single entry per group
@@ -243,7 +246,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
                     .equals(asteriskCode)) {
               System.out.println("    ERROR");
               result
-                  .addError("Remap, primary dagger code should have a secondary asterisk code mapping indicated by the preferred rubric.");
+                  .addError("Remap, primary dagger code should have a secondary asterisk code mapping indicated by the preferred rubric ("
+                      + asteriskCode + ")");
             }
           }
         }
@@ -295,8 +299,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         // GUIDANCE: Review to consider a second code or the advice.
         //
         System.out.println("  semantic check - causative agent code");
-        if (mapRecord.getConceptName().toLowerCase().matches(
-            ".*\\b(infection|infectious|bacterial)\\b.*")
+        if (mapRecord.getConceptName().toLowerCase()
+            .matches(".*(infection|infectious|bacterial).*")
             && hasUseAdditional(concepts.get(1).get(0))
             && !TerminologyUtility.hasAdvice(mapRecord.getMapEntries().get(0),
                 "POSSIBLE REQUIREMENT FOR CAUSATIVE AGENT CODE")) {
@@ -418,7 +422,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
             contentService.isDescendantOf(mapRecord.getConceptId(),
                 mapProject.getSourceTerminology(),
                 mapProject.getSourceTerminologyVersion(), "385356007");
-        if (isTumorStageFinding && concepts.get(0) != null) {
+        if (isTumorStageFinding && concepts.get(1).get(0) != null) {
           System.out.println("    WARNING");
           result
               .addWarning("Generally, descendants of tumor stage finding are mapped to NC");
@@ -1250,12 +1254,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       if (desc
           .getTerm()
           .startsWith(
-              "Use additional code, if desired, to identify infectious agent or disease")) {
-        return true;
-      } else if (desc
-          .getTerm()
-          .startsWith(
-              "Use additional code (B95-B97), if desired, to identify bacterial agent")) {
+              "Use additional code (B95-B98), if desired, to identify infectious agent")) {
         return true;
       } else if (desc
           .getTerm()
