@@ -35,8 +35,7 @@ angular
   })
   .controller(
     'projectRecordsCtrl',
-    function($scope, $rootScope, $http, $routeParams, $location, $modal,
-      localStorageService, $sce) {
+    function($scope, $rootScope, $http, $routeParams, $location, $modal, localStorageService, $sce) {
 
       $scope.page = 'records';
 
@@ -49,9 +48,9 @@ angular
       $scope.mapAdvicesPresent = false;
 
       // error variables
-      $scope.errorProject = "";
-      $scope.errorConcept = "";
-      $scope.errorRecords = "";
+      $scope.errorProject = '';
+      $scope.errorConcept = '';
+      $scope.errorRecords = '';
 
       // pagination variables
       $scope.recordsPerPage = 10;
@@ -63,9 +62,8 @@ angular
       $scope.conversation = null;
 
       // watch for changes to focus project
-      $scope.$on('localStorageModule.notification.setFocusProject', function(
-        event, parameters) {
-        console.debug("ProjectRecordCtrl:  Detected change in focus project",
+      $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
+        console.debug('ProjectRecordCtrl:  Detected change in focus project',
           parameters.focusProject);
         $scope.focusProject = parameters.focusProject;
         $scope.getRecordsForProject();
@@ -73,7 +71,7 @@ angular
 
       // retrieve the current global variables
       $scope.focusProject = localStorageService.get('focusProject');
-      $scope.mapProjects = localStorageService.get("mapProjects");
+      $scope.mapProjects = localStorageService.get('mapProjects');
       $scope.currentUser = localStorageService.get('currentUser');
       $scope.currentRole = localStorageService.get('currentRole');
       $scope.preferences = localStorageService.get('preferences');
@@ -82,8 +80,7 @@ angular
       $scope.userToken = localStorageService.get('userToken');
       $scope.$watch([ 'focusProject', 'userToken' ], function() {
 
-        console.debug('Detected project or user change', $scope.focusProject,
-          $scope.userToken);
+        console.debug('Detected project or user change', $scope.focusProject, $scope.userToken);
 
         // need both focus project and user token set before executing main
         // functions
@@ -123,15 +120,12 @@ angular
 
         var query_url;
         if ($scope.currentRole === 'Viewer') {
-          query_url = root_mapping + "record/project/id/"
-            + $scope.project.objectId + "/published";
-        } else if ($scope.currentRole === 'Specialist'
-          || $scope.currentRole === 'Lead'
+          query_url = root_mapping + 'record/project/id/' + $scope.project.objectId + '/published';
+        } else if ($scope.currentRole === 'Specialist' || $scope.currentRole === 'Lead'
           || $scope.currentRole === 'Administrator') {
-          query_url = root_mapping + "record/project/id/"
-            + $scope.project.objectId;
+          query_url = root_mapping + 'record/project/id/' + $scope.project.objectId;
         } else {
-          console.debug("ERROR: Invalid role detected in retrieveRecords()");
+          console.debug('ERROR: Invalid role detected in retrieveRecords()');
         }
 
         $rootScope.glassPane++;
@@ -139,25 +133,23 @@ angular
         // retrieve map records
         $http({
           url : query_url,
-          dataType : "json",
+          dataType : 'json',
           data : pfsParameterObj,
-          method : "POST",
+          method : 'POST',
           headers : {
-            "Content-Type" : "application/json"
+            'Content-Type' : 'application/json'
           }
-        }).success(
-          function(data) {
+        }).success(function(data) {
 
-            $rootScope.glassPane--;
-            $scope.records = data.mapRecord;
-            $scope.statusRecordLoad = "";
+          $rootScope.glassPane--;
+          $scope.records = data.mapRecord;
+          $scope.statusRecordLoad = '';
 
-            // set pagination variables
-            $scope.nRecords = data.totalCount;
-            $scope.numRecordPages = Math.ceil(data.totalCount
-              / $scope.recordsPerPage);
+          // set pagination variables
+          $scope.nRecords = data.totalCount;
+          $scope.numRecordPages = Math.ceil(data.totalCount / $scope.recordsPerPage);
 
-          }).error(function(data, status, headers, config) {
+        }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
           $rootScope.handleHttpError(data, status, headers, config);
         }).then(function(data) {
@@ -182,11 +174,11 @@ angular
           ;
 
           // check relation syle flags
-          if ($scope.project.mapRelationStyle === "MAP_CATEGORY_STYLE") {
+          if ($scope.project.mapRelationStyle === 'MAP_CATEGORY_STYLE') {
             applyMapCategoryStyle();
           }
 
-          if ($scope.project.mapRelationStyle === "RELATIONSHIP_STYLE") {
+          if ($scope.project.mapRelationStyle === 'RELATIONSHIP_STYLE') {
             applyRelationshipStyle();
           }
 
@@ -202,10 +194,10 @@ angular
       function constructPfsParameterObj(page) {
 
         return {
-          "startIndex" : (page - 1) * $scope.recordsPerPage,
-          "maxResults" : $scope.recordsPerPage,
-          "sortField" : null,
-          "queryRestriction" : $scope.query
+          'startIndex' : (page - 1) * $scope.recordsPerPage,
+          'maxResults' : $scope.recordsPerPage,
+          'sortField' : null,
+          'queryRestriction' : $scope.query
         }; // assigning simply to $scope.query when null produces undefined
 
       }
@@ -225,13 +217,12 @@ angular
 
           $http(
             {
-              url : root_mapping + "concept/id/"
-                + $scope.records[index].conceptId + "/"
-                + "unmappedDescendants/project/id/" + $scope.project.id,
-              dataType : "json",
-              method : "GET",
+              url : root_mapping + 'concept/id/' + $scope.records[index].conceptId + '/'
+                + 'unmappedDescendants/project/id/' + $scope.project.id,
+              dataType : 'json',
+              method : 'GET',
               headers : {
-                "Content-Type" : "application/json"
+                'Content-Type' : 'application/json'
               }
             }).success(function(data) {
             if (data.count > 0)
@@ -248,16 +239,15 @@ angular
       function applyMapCategoryStyle() {
 
         // set the category display text
-        $scope.mapRelationStyleText = "Map Category Style";
+        $scope.mapRelationStyleText = 'Map Category Style';
 
-        // Cycle over all entries. If targetId is blank, show relationName as
+        // Cycle over all entries. If targetId is blank, show relation name as
         // the target name
         for (var i = 0; i < $scope.records.length; i++) {
           for (var j = 0; j < $scope.records[i].mapEntry.length; j++) {
 
-            if ($scope.records[i].mapEntry[j].targetId === "") {
-              $scope.records[i].mapEntry[j].targetName = "\""
-                + $scope.records[i].mapEntry[j].relationName + "\"";
+            if ($scope.records[i].mapEntry[j].targetId === '') {
+              $scope.records[i].mapEntry[j].targetName = $scope.records[i].mapEntry[j].mapRelation.name;
             }
           }
         }
@@ -266,23 +256,21 @@ angular
 
       function applyRelationshipStyle() {
 
-        $scope.mapRelationStyleText = "Relationship Style";
+        $scope.mapRelationStyleText = 'Relationship Style';
 
         // Cycle over all entries. Add the relation name to the advice list
         for (var i = 0; i < $scope.records.length; i++) {
           for (var j = 0; j < $scope.records[i].mapEntry.length; j++) {
-            if ($scope.records[i].mapEntry[j].targetId === "") {
+            if ($scope.records[i].mapEntry[j].targetId === '') {
               // get the object for easy handling
               var jsonObj = $scope.records[i].mapEntry[j].mapAdvice;
 
               // add the serialized advice
               jsonObj.push({
-                "id" : "0",
-                "name" : "\"" + $scope.records[i].mapEntry[j].mapRelationName
-                  + "\"",
-                "detail" : "\"" + $scope.records[i].mapEntry[j].mapRelationName
-                  + "\"",
-                "objectId" : "0"
+                'id' : '0',
+                'name' : $scope.records[i].mapEntry[j].mapRelation.name,
+                'detail' : $scope.records[i].mapEntry[j].mapRelation.name,
+                'objectId' : '0'
               });
 
               $scope.records[i].mapEntry[j].mapAdvice = jsonObj;
@@ -294,66 +282,61 @@ angular
 
       $scope.logout = function() {
         $rootScope.glassPane++;
-        $http(
-          {
-            url : root_security + "logout/user/id/"
-              + $scope.currentUser.userName,
-            method : "POST",
-            headers : {
-              "Content-Type" : "text/plain"
-            // save userToken from authentication
-            }
-          }).success(function(data) {
+        $http({
+          url : root_security + 'logout/user/id/' + $scope.currentUser.userName,
+          method : 'POST',
+          headers : {
+            'Content-Type' : 'text/plain'
+          // save userToken from authentication
+          }
+        }).success(function(data) {
           $rootScope.glassPane--;
-          $location.path("/");
+          $location.path('/');
         }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
-          $location.path("/");
+          $location.path('/');
           $rootScope.handleHttpError(data, status, headers, config);
         });
 
       }
-      
+
       // function to change project from the header
       $scope.changeFocusProject = function(mapProject) {
         $scope.focusProject = mapProject;
-        console.debug("changing project to " + $scope.focusProject.name);
+        console.debug('changing project to ' + $scope.focusProject.name);
 
         // update and broadcast the new focus project
         localStorageService.add('focusProject', $scope.focusProject);
-        $rootScope.$broadcast(
-          'localStorageModule.notification.setFocusProject', {
-            key : 'focusProject',
-            focusProject : $scope.focusProject
-          });
+        $rootScope.$broadcast('localStorageModule.notification.setFocusProject', {
+          key : 'focusProject',
+          focusProject : $scope.focusProject
+        });
 
         // update the user preferences
         $scope.preferences.lastMapProjectId = $scope.focusProject.id;
         localStorageService.add('preferences', $scope.preferences);
-        $rootScope.$broadcast(
-          'localStorageModule.notification.setUserPreferences', {
-            key : 'userPreferences',
-            userPreferences : $scope.preferences
-          });
+        $rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {
+          key : 'userPreferences',
+          userPreferences : $scope.preferences
+        });
 
       };
 
       $scope.goToHelp = function() {
         var path;
         if ($scope.page != 'mainDashboard') {
-          path = "help/" + $scope.page + "Help.html";
+          path = 'help/' + $scope.page + 'Help.html';
         } else {
-          path = "help/" + $scope.currentRole + "DashboardHelp.html";
+          path = 'help/' + $scope.currentRole + 'DashboardHelp.html';
         }
-        console.debug("go to help page " + path);
+        console.debug('go to help page ' + path);
         // redirect page
         $location.path(path);
       };
 
       $scope.isEditable = function(record) {
 
-        if (($scope.currentRole === 'Specialist'
-          || $scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator')
+        if (($scope.currentRole === 'Specialist' || $scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator')
           && (record.workflowStatus === 'PUBLISHED' || record.workflowStatus === 'READY_FOR_PUBLICATION')) {
 
           return true;
@@ -366,7 +349,7 @@ angular
 
       $scope.editRecord = function(record) {
 
-        console.debug("EditRecord()");
+        console.debug('EditRecord()');
         console.debug(record);
 
         // check if this record is assigned to the user and not in a publication
@@ -376,57 +359,54 @@ angular
           && record.workflowStatus != 'READY_FOR_PUBLICATION') {
 
           // go to the edit page
-          $location.path("/record/recordId/" + id);
+          $location.path('/record/recordId/' + id);
 
           // otherwise, assign this record along the FIX_ERROR_PATH
         } else {
 
           $rootScope.glassPane++;
 
-          console
-            .debug("Edit record clicked, assigning record along FIX_ERROR_PATH");
-          $http(
-            {
-              url : root_workflow + "assignFromRecord/user/id/"
-                + $scope.currentUser.userName,
-              method : "POST",
-              dataType : 'json',
-              data : record,
-              headers : {
-                "Content-Type" : "application/json"
-              }
-            }).success(
-            function(data) {
-              console.debug('Assignment successful');
-              $http(
-                {
-                  url : root_workflow + "record/project/id/"
-                    + $scope.focusProject.id + "/concept/id/"
-                    + record.conceptId + "/user/id/"
-                    + $scope.currentUser.userName,
-                  method : "GET",
-                  dataType : 'json',
-                  data : record,
-                  headers : {
-                    "Content-Type" : "application/json"
-                  }
-                }).success(function(data) {
+          console.debug('Edit record clicked, assigning record along FIX_ERROR_PATH');
+          $http({
+            url : root_workflow + 'assignFromRecord/user/id/' + $scope.currentUser.userName,
+            method : 'POST',
+            dataType : 'json',
+            data : record,
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          })
+            .success(
+              function(data) {
+                console.debug('Assignment successful');
+                $http(
+                  {
+                    url : root_workflow + 'record/project/id/' + $scope.focusProject.id
+                      + '/concept/id/' + record.conceptId + '/user/id/'
+                      + $scope.currentUser.userName,
+                    method : 'GET',
+                    dataType : 'json',
+                    data : record,
+                    headers : {
+                      'Content-Type' : 'application/json'
+                    }
+                  }).success(function(data) {
 
-                $rootScope.glassPane--;
+                  $rootScope.glassPane--;
 
-                // open the record edit view
-                $location.path("/record/recordId/" + data.id);
+                  // open the record edit view
+                  $location.path('/record/recordId/' + data.id);
+                }).error(function(data, status, headers, config) {
+                  $rootScope.glassPane--;
+
+                  $rootScope.handleHttpError(data, status, headers, config);
+                });
+
               }).error(function(data, status, headers, config) {
-                $rootScope.glassPane--;
+              $rootScope.glassPane--;
 
-                $rootScope.handleHttpError(data, status, headers, config);
-              });
-
-            }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
-
-            $rootScope.handleHttpError(data, status, headers, config);
-          });
+              $rootScope.handleHttpError(data, status, headers, config);
+            });
         }
       };
 
@@ -450,27 +430,26 @@ angular
 
       $scope.openViewerFeedbackModal = function(lrecord, currentUser) {
 
-        console.debug("openViewerFeedbackModal with ", lrecord, currentUser);
+        console.debug('openViewerFeedbackModal with ', lrecord, currentUser);
 
-        var modalInstance = $modal
-          .open({
-            templateUrl : 'js/widgets/projectRecords/projectRecordsViewerFeedback.html',
-            controller : ViewerFeedbackModalCtrl,
-            resolve : {
-              record : function() {
-                return lrecord;
-              },
-              currentUser : function() {
-                return currentUser;
-              }
+        var modalInstance = $modal.open({
+          templateUrl : 'js/widgets/projectRecords/projectRecordsViewerFeedback.html',
+          controller : ViewerFeedbackModalCtrl,
+          resolve : {
+            record : function() {
+              return lrecord;
+            },
+            currentUser : function() {
+              return currentUser;
             }
-          });
+          }
+        });
 
       };
 
       var ViewerFeedbackModalCtrl = function($scope, $modalInstance, record) {
 
-        console.debug("Entered modal control", record);
+        console.debug('Entered modal control', record);
 
         $scope.record = record;
         $scope.project = localStorageService.get('focusProject');
@@ -479,24 +458,22 @@ angular
         $scope.feedbackInput = '';
 
         $scope.sendFeedback = function(record, feedbackMessage, name, email) {
-          console.debug("Sending feedback email", record);
+          console.debug('Sending feedback email', record);
 
-          if (feedbackMessage == null || feedbackMessage == undefined
-            || feedbackMessage === '') {
-            window.alert("The feedback field cannot be blank. ");
+          if (feedbackMessage == null || feedbackMessage == undefined || feedbackMessage === '') {
+            window.alert('The feedback field cannot be blank. ');
             return;
           }
 
           if ($scope.currentUser.userName === 'guest'
-            && (name == null || name == undefined || name === ''
-              || email == null || email == undefined || email === '')) {
-            window.alert("Name and email must be provided.");
+            && (name == null || name == undefined || name === '' || email == null
+              || email == undefined || email === '')) {
+            window.alert('Name and email must be provided.');
             return;
           }
 
-          if ($scope.currentUser.userName === 'guest'
-            && validateEmail(email) == false) {
-            window.alert("Invalid email address provided.");
+          if ($scope.currentUser.userName === 'guest' && validateEmail(email) == false) {
+            window.alert('Invalid email address provided.');
             return;
           }
 
@@ -505,21 +482,21 @@ angular
 
           $rootScope.glassPane++;
           $http({
-            url : root_workflow + "message",
-            dataType : "json",
-            method : "POST",
+            url : root_workflow + 'message',
+            dataType : 'json',
+            method : 'POST',
             data : sList,
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
 
           }).success(function(data) {
-            console.debug("success to sendFeedbackEmail.");
+            console.debug('success to sendFeedbackEmail.');
             $rootScope.glassPane--;
             $modalInstance.close();
           }).error(function(data, status, headers, config) {
             $modalInstance.close();
-            $scope.recordError = "Error sending feedback email.";
+            $scope.recordError = 'Error sending feedback email.';
             $rootScope.glassPane--;
             $rootScope.handleHttpError(data, status, headers, config);
           });
@@ -539,8 +516,8 @@ angular
 
           menubar : false,
           statusbar : false,
-          plugins : "autolink autoresize link image charmap searchreplace lists paste",
-          toolbar : "undo redo | styleselect lists | bold italic underline strikethrough | charmap link image",
+          plugins : 'autolink autoresize link image charmap searchreplace lists paste',
+          toolbar : 'undo redo | styleselect lists | bold italic underline strikethrough | charmap link image',
 
           setup : function(ed) {
 

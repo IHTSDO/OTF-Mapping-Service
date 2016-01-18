@@ -1,14 +1,11 @@
 package org.ihtsdo.otf.mapping.rest;
 
-import java.util.Calendar;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.ws.rs.ext.Provider;
 
 import org.apache.log4j.Logger;
-import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
-import org.ihtsdo.otf.mapping.services.SecurityService;
 
 import com.sun.jersey.api.model.AbstractResourceModelContext;
 import com.sun.jersey.api.model.AbstractResourceModelListener;
@@ -36,23 +33,23 @@ public class InitializationListener implements AbstractResourceModelListener {
   @Override
   public void onLoaded(AbstractResourceModelContext modelContext) {
     // AUthenticate guest user
-    try {
-      SecurityService service = new SecurityServiceJpa();
-      service.authenticate("guest", "guest");
-      service.close();
-    } catch (Exception e) {
-      e.printStackTrace();
-      // do nothing
-    }
-
-    // Set up a timer task to run at 2AM every day
-    TimerTask task = new ComputeCompareFinishedRecordsTask();
-    timer = new Timer();
-    Calendar today = Calendar.getInstance();
-    today.set(Calendar.HOUR_OF_DAY, 2);
-    today.set(Calendar.MINUTE, 0);
-    today.set(Calendar.SECOND, 0);
-    timer.scheduleAtFixedRate(task, today.getTime(), 24 * 60 * 60 * 1000);
+    // try {
+    // SecurityService service = new SecurityServiceJpa();
+    // service.authenticate("guest", "guest");
+    // service.close();
+    // } catch (Exception e) {
+    // e.printStackTrace();
+    // // do nothing
+    // }
+    //
+    // // Set up a timer task to run at 2AM every day
+    // TimerTask task = new ComputeCompareFinishedRecordsTask();
+    // timer = new Timer();
+    // Calendar today = Calendar.getInstance();
+    // today.set(Calendar.HOUR_OF_DAY, 2);
+    // today.set(Calendar.MINUTE, 0);
+    // today.set(Calendar.SECOND, 0);
+    // timer.scheduleAtFixedRate(task, today.getTime(), 24 * 60 * 60 * 1000);
   }
 
   /**

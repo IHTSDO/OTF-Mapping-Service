@@ -2627,13 +2627,7 @@ public class MappingServiceRest extends RootServiceRest {
 
     // log call
     Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /record/project/id/" + mapProjectId.toString()
-            + " with PfsParameter: " + "\n" + "     Index/Results = "
-            + Integer.toString(pfsParameter.getStartIndex()) + "/"
-            + Integer.toString(pfsParameter.getMaxResults()) + "\n"
-            + "     Sort field    = " + pfsParameter.getSortField()
-            + "     Filter String = " + pfsParameter.getQueryRestriction());
-
+        "RESTful call (Mapping): /record/project/id/" + mapProjectId.toString());
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
@@ -2696,12 +2690,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
     // log call
     Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /record/project/id/" + mapProjectId.toString()
-            + " with PfsParameter: " + "\n" + "     Index/Results = "
-            + Integer.toString(pfsParameter.getStartIndex()) + "/"
-            + Integer.toString(pfsParameter.getMaxResults()) + "\n"
-            + "     Sort field    = " + pfsParameter.getSortField()
-            + "     Filter String = " + pfsParameter.getQueryRestriction());
+        "RESTful call (Mapping): /record/project/id/" + mapProjectId.toString());
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
@@ -3127,7 +3116,7 @@ public class MappingServiceRest extends RootServiceRest {
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public TreePositionList getTreePositionWithDescendantsForConceptAndMapProjecct(
+  public TreePositionList getTreePositionWithDescendantsForConceptAndMapProject(
     @ApiParam(value = "Concept terminology id, e.g. 22298006", required = true) @PathParam("terminologyId") String terminologyId,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("mapProjectId") Long mapProjectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken

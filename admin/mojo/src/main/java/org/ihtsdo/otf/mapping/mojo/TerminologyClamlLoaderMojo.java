@@ -585,7 +585,6 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
             // Persist now, but commit at the end after all descriptions are
             // added
             contentService.addConcept(concept);
-            getLog().info("  ADD CONCEPT = " + concept);
 
             conceptMap.put(code, concept);
           }
@@ -724,7 +723,6 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
             concept.addSimpleRefSetMember(member);
             if (concept.getId() != null) {
               // Add member
-              getLog().info("  ADD MEMBER = " + member);
               contentService.addSimpleRefSetMember(member);
             }
           }
@@ -1175,7 +1173,6 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
             + childConcept.getTerminologyId() + " already in map");
 
       conceptMap.put(childConcept.getTerminologyId(), childConcept);
-      getLog().info("  ADD CONCEPT2 = " + childConcept);
       contentService.addConcept(childConcept);
 
       // ADD mod concept asterisk stuff
@@ -1190,7 +1187,6 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
         copy.setTerminology(member.getTerminology());
         copy.setTerminologyVersion(member.getTerminologyVersion());
         copy.setTerminologyId(member.getTerminologyId());
-        getLog().info("  ADD MEMBER2 = " + copy);
         contentService.addSimpleRefSetMember(copy);
       }
 

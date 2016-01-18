@@ -17,10 +17,10 @@ angular.module('ui.highlight', []).filter(
         search = search.toString();
         if (caseSensitive) {
           return text.split(search).join(
-            '<span class="ui-match">' + search + '</span>');
+            '<span class='ui-match'>' + search + '</span>');
         } else {
           return text.replace(new RegExp(search, 'gi'),
-            '<span class="ui-match">$&</span>');
+            '<span class='ui-match'>$&</span>');
         }
       } else {
         return text;

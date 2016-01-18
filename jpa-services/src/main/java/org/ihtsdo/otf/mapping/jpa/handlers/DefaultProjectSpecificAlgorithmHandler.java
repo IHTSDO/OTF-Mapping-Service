@@ -1172,11 +1172,22 @@ public class DefaultProjectSpecificAlgorithmHandler implements
             "assignFromScratch called with erroneous Workflow Path.");
     }
 
+    // For new or QA new, perform identification algorithm
+    if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.NEW)
+        || mapRecord.getWorkflowStatus().equals(WorkflowStatus.QA_NEW)) {
+      computeIdentifyAlgorithms(mapRecord);
+    }
+
     // add this record to the tracking record
     newRecords.add(mapRecord);
 
     // return the modified record set
     return newRecords;
+  }
+
+  @Override
+  public void computeIdentifyAlgorithms(MapRecord mapRecord) throws Exception {
+    // Default behavior is to do nothing
   }
 
   /**
