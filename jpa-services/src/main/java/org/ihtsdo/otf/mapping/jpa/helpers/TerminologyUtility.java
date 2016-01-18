@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
@@ -54,22 +55,14 @@ public class TerminologyUtility {
   public static boolean isAsteriskCode(Concept concept, ContentService service)
     throws Exception {
     // Lazy initialize asterisk refset
-    if (!asteriskRefsetIdMap.containsKey(concept.getTerminology())) {
-      SearchResultList list =
-          service.findConceptsForQuery(
-              "defaultPreferredName:\"Asterisk refset\" " + " AND termnology:"
-                  + concept.getTerminology() + " AND version:"
-                  + concept.getTerminologyVersion(), null);
-      if (list.getCount() == 1) {
-        asteriskRefsetIdMap.put(concept.getTerminology(), list
-            .getSearchResults().get(0).getTerminologyId());
-      } else {
-        throw new Exception("Unexpected count for asterisk refsets");
-      }
+    if (!asteriskRefsetIdMap.containsKey(concept.getTerminology()
+        + concept.getTerminologyVersion())) {
+      initDaggerAsterisk(concept, service);
     }
     for (final SimpleRefSetMember member : concept.getSimpleRefSetMembers()) {
       if (member.getRefSetId().equals(
-          asteriskRefsetIdMap.get(concept.getTerminology()))) {
+          asteriskRefsetIdMap.get(concept.getTerminology()
+              + concept.getTerminologyVersion()))) {
         return true;
       }
     }
@@ -87,22 +80,14 @@ public class TerminologyUtility {
   public static boolean isDaggerCode(Concept concept, ContentService service)
     throws Exception {
     // Lazy initialize dagger refset
-    if (!daggerRefsetIdMap.containsKey(concept.getTerminology())) {
-      final SearchResultList list =
-          service.findConceptsForQuery(
-              "defaultPreferredName:\"Dagger refset\" " + " AND termnology:"
-                  + concept.getTerminology() + " AND version:"
-                  + concept.getTerminologyVersion(), null);
-      if (list.getCount() == 1) {
-        daggerRefsetIdMap.put(concept.getTerminology(), list.getSearchResults()
-            .get(0).getTerminologyId());
-      } else {
-        throw new Exception("Unexpected count for dagger refsets");
-      }
+    if (!daggerRefsetIdMap.containsKey(concept.getTerminology()
+        + concept.getTerminologyVersion())) {
+      initDaggerAsterisk(concept, service);
     }
     for (final SimpleRefSetMember member : concept.getSimpleRefSetMembers()) {
       if (member.getRefSetId().equals(
-          daggerRefsetIdMap.get(concept.getTerminology()))) {
+          daggerRefsetIdMap.get(concept.getTerminology()
+              + concept.getTerminologyVersion()))) {
         return true;
       }
     }
@@ -122,25 +107,15 @@ public class TerminologyUtility {
   public static boolean isDaggerForAsterisk(Concept asterisk, Concept dagger,
     ContentService service) throws Exception {
     // Lazy initialize asterisk to dagger rel type id
-    if (!asteriskToDaggerIdMap.containsKey(asterisk.getTerminology())) {
-      SearchResultList list =
-          service.findConceptsForQuery(
-              "defaultPreferredName:\"Asterisk to dagger\" "
-                  + " AND termnology:" + asterisk.getTerminology()
-                  + " AND version:" + asterisk.getTerminologyVersion(), null);
-      if (list.getCount() == 1) {
-        asteriskToDaggerIdMap.put(asterisk.getTerminology(), list
-            .getSearchResults().get(0).getTerminologyId());
-      } else {
-        throw new Exception(
-            "Unexpected count for asterisk-to-dagger relationship types");
-      }
-
+    if (!asteriskToDaggerIdMap.containsKey(asterisk.getTerminology()
+        + asterisk.getTerminologyVersion())) {
+      initDaggerAsterisk(asterisk, service);
     }
     // Assume concept is an asterisk concept
     for (Relationship rel : asterisk.getRelationships()) {
       if (rel.getTypeId().equals(
-          Long.valueOf(asteriskToDaggerIdMap.get(asterisk.getTerminology())))
+          Long.valueOf(asteriskToDaggerIdMap.get(asterisk.getTerminology()
+              + asterisk.getTerminologyVersion())))
           && rel.getDestinationConcept().getTerminologyId()
               .equals(dagger.getTerminologyId())) {
         return true;
@@ -148,6 +123,49 @@ public class TerminologyUtility {
     }
 
     return false;
+  }
+
+  /**
+   * Inits the dagger asterisk.
+   *
+   * @param concept the concept
+   * @param service the service
+   * @throws Exception
+   */
+  private static void initDaggerAsterisk(Concept concept, ContentService service)
+    throws Exception {
+    final SearchResultList list =
+        service.findConceptsForQuery(
+            "(defaultPreferredName:asterisk OR defaultPreferredName:dagger) "
+                + " AND terminology:" + concept.getTerminology()
+                + " AND terminologyVersion:" + concept.getTerminologyVersion(),
+            null);
+    final String key =
+        concept.getTerminology() + concept.getTerminologyVersion();
+    for (final SearchResult result : list.getSearchResults()) {
+      System.out.println("ASTERISK: " + result);
+      if (result.getValue().equals("Asterisk refset")) {
+        asteriskRefsetIdMap.put(key, list.getSearchResults().get(0)
+            .getTerminologyId());
+      } else if (result.getValue().equals("Dagger refset")) {
+        daggerRefsetIdMap.put(key, list.getSearchResults().get(0)
+            .getTerminologyId());
+      } else if (result.getValue().equals("Asterisk to dagger")) {
+        asteriskToDaggerIdMap.put(key, list.getSearchResults().get(0)
+            .getTerminologyId());
+      }
+    }
+    if (!asteriskToDaggerIdMap.containsKey(key)) {
+      throw new Exception(
+          "Unable to find 'Asterisk to dagger' relationship type for " + key);
+    }
+    if (!asteriskRefsetIdMap.containsKey(key)) {
+      throw new Exception("Unable to find asterisk refset for " + key);
+    }
+    if (!daggerRefsetIdMap.containsKey(key)) {
+      throw new Exception("Unable to find dagger refset for " + key);
+    }
+
   }
 
   /**
@@ -166,9 +184,9 @@ public class TerminologyUtility {
         getHierarchicalType(concept.getTerminology(),
             concept.getTerminologyVersion());
     final List<Concept> results = new ArrayList<>();
-    for (Relationship rel : concept.getInverseRelationships()) {
+    for (Relationship rel : concept.getRelationships()) {
       if (rel.getTypeId().equals(isaType) && rel.isActive()) {
-        results.add(rel.getSourceConcept());
+        results.add(rel.getDestinationConcept());
       }
     }
     return results;
@@ -191,9 +209,9 @@ public class TerminologyUtility {
         getHierarchicalType(concept.getTerminology(),
             concept.getTerminologyVersion());
     final List<Concept> results = new ArrayList<>();
-    for (Relationship rel : concept.getRelationships()) {
+    for (Relationship rel : concept.getInverseRelationships()) {
       if (rel.getTypeId().equals(isaType) && rel.isActive()) {
-        results.add(rel.getDestinationConcept());
+        results.add(rel.getSourceConcept());
       }
     }
     return results;
@@ -215,7 +233,7 @@ public class TerminologyUtility {
     final Long isaType =
         getHierarchicalType(concept.getTerminology(),
             concept.getTerminologyVersion());
-    for (Relationship rel : concept.getRelationships()) {
+    for (Relationship rel : concept.getInverseRelationships()) {
       if (rel.getTypeId().equals(isaType) && rel.isActive()) {
         return true;
       }
@@ -247,7 +265,7 @@ public class TerminologyUtility {
         service.close();
       }
     }
-    return isaRelTypes.get(terminology);
+    return isaRelTypes.get(terminology + version);
   }
 
   /**
