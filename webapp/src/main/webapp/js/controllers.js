@@ -20,7 +20,7 @@ mapProjectAppControllers
     // specifically
     // implemented for authorization failures.
     $rootScope.handleHttpError = function(data, status, headers, config) {
-      $rootScope.globalError = data.replace(/'/g, '');
+      $rootScope.globalError = data.replace(/"/g, '');
       if (status == '401') {
         $location.path('/');
       }
@@ -295,7 +295,7 @@ mapProjectAppControllers.controller('LoginCtrl', [
                             }
                           }).success(function(data) {
 
-                          $scope.role = data.replace(/'/g, '');
+                          $scope.role = data.replace(/"/g, '');
                           if ($scope.role === 'VIEWER')
                             $scope.role = 'Viewer';
                           else if ($scope.role === 'SPECIALIST')
@@ -357,7 +357,7 @@ mapProjectAppControllers.controller('LoginCtrl', [
               });
           }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
-          $rootScope.globalError = data.replace(/'/g, '');
+          $rootScope.globalError = data.replace(/"/g, '');
 
           $rootScope.handleHttpError(data, status, headers, config);
         }).then(function(data) {
