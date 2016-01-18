@@ -176,15 +176,20 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
       // Collect concepts in entry order, null if it doesn't exist
       // group by mapGroup
-      Map<Integer, List<Concept>> concepts = new HashMap<>();
+      final Map<Integer, List<Concept>> concepts = new HashMap<>();
       for (final MapEntry entry : mapRecord.getMapEntries()) {
         if (!concepts.containsKey(entry.getMapGroup())) {
           concepts.put(entry.getMapGroup(), new ArrayList<Concept>());
         }
-        concepts.get(entry.getMapGroup())
-            .add(
-                contentService.getConcept(entry.getTargetId(), terminology,
-                    version));
+        final Concept concept =
+            contentService
+                .getConcept(entry.getTargetId(), terminology, version);
+        // Lazy initialize
+        concept.getDescriptions().size();
+        concept.getRelationships().size();
+        concept.getInverseRelationships().size();
+        concept.getSimpleRefSetMembers().size();
+        concepts.get(entry.getMapGroup()).add(concept);
       }
 
       // Only process these rules if these is a single entry per group
@@ -228,14 +233,17 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
               }
             }
           }
+          System.out.println("  ASTERISK code - " + asteriskCode);
+
           if (asteriskCode != null) {
+            System.out.println("    concepts = " + concepts);
             // if there is no secondary code matching asterisk
-            if (concepts.size() == 1
+            if (concepts.keySet().size() == 1
                 || !concepts.get(2).get(0).getTerminologyId()
                     .equals(asteriskCode)) {
               System.out.println("    ERROR");
               result
-                  .addError("Primary dagger code should have a secondary asterisk code mapping indicated by the preferred rubric.");
+                  .addError("Remap, primary dagger code should have a secondary asterisk code mapping indicated by the preferred rubric.");
             }
           }
         }
@@ -316,8 +324,9 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
                   mapRecord.getMapEntries().get(i),
                   "FIFTH CHARACTER REQUIRED TO FURTHER SPECIFY THE SITE")) {
             System.out.println("    WARNING");
-            result.addWarning("4 digit M code entry may require \"FIFTH "
-                + "CHARACTER REQUIRED TO FURTHER SPECIFY THE SITE\" advice");
+            result
+                .addWarning("4 digit M code entry may require 5th digit or \"FIFTH "
+                    + "CHARACTER REQUIRED TO FURTHER SPECIFY THE SITE\" advice");
             break;
           }
         }
@@ -338,7 +347,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         if (mapRecord.getMapEntries().size() == 1 && isPoisoning) {
           System.out.println("    ERROR");
           result
-              .addError("Poisoning requires an external cause code from the TEIL3.ASC index");
+              .addError("Remap, oisoning requires an external cause code from the TEIL3.ASC index");
         }
         // Validate external cause code presence and not primary position
         else if (mapRecord.getMapEntries().size() > 1 && isPoisoning) {
@@ -348,7 +357,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
               mapRecord.getMapEntries().get(0).getTargetId())) {
             System.out.println("    ERROR");
             result
-                .addError("Poisoning requires an external cause code in a secondary position");
+                .addError("Remap, poisoning requires an external cause code in a secondary position");
           }
 
           else {
@@ -368,7 +377,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
               // list.
               System.out.println("    ERROR");
               result
-                  .addError("Poisoning requires an external cause code from the TEIL3.ASC index");
+                  .addError("Remap, poisoning requires an external cause code from the TEIL3.ASC index");
             }
           }
         }
@@ -694,8 +703,6 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           && terminologyId.length() == 6)
         return false;
 
-      // open the content service
-
       // if a three digit code
       if (terminologyId.matches(".[0-9].")) {
 
@@ -708,32 +715,51 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
             && !terminologyId.toUpperCase().equals("Y35")
             && !terminologyId.toUpperCase().equals("Y36")
             && !terminologyId.toUpperCase().equals("X34")
-            && !terminologyId.toUpperCase().equals("X59"))
-          return true;
-
-        // otherwise, if 3-digit code has children, return false
-        TreePositionList tpList =
-            contentService.getTreePositions(terminologyId,
-                mapProject.getDestinationTerminology(),
-                mapProject.getDestinationTerminologyVersion());
-        if (tpList.getCount() == 0) {
-          contentService.close();
-          return false;
+            && !terminologyId.toUpperCase().equals("X59")) {
+          // n/a
         }
 
-        if (tpList.getTreePositions().get(0).getChildrenCount() > 0) {
-          contentService.close();
-          return false;
+        // Check other 3 digit codes
+        else {
+
+          // otherwise, if 3-digit code has children, return false
+          TreePositionList tpList =
+              contentService.getTreePositions(terminologyId,
+                  mapProject.getDestinationTerminology(),
+                  mapProject.getDestinationTerminologyVersion());
+          if (tpList.getCount() == 0) {
+            return false;
+          }
+
+          if (tpList.getTreePositions().get(0).getChildrenCount() > 0) {
+            return false;
+          }
         }
       }
 
+      // if a four digit code disall
+      else if (terminologyId.matches(".[0-9].\\..")) {
+
+        // SPECIFIC CASE for W00-W19, X00-X09, Y10-Y34, fourth digit not
+        // required,
+        // return true for codes with 3 or more digits
+        if (terminologyId.toUpperCase().matches("(W..|X..|Y[0-2].|Y3[0-4])..")
+            && !terminologyId.toUpperCase().startsWith("Y06")
+            && !terminologyId.toUpperCase().startsWith("Y07")
+            && !terminologyId.toUpperCase().startsWith("Y35")
+            && !terminologyId.toUpperCase().startsWith("Y36")
+            && !terminologyId.toUpperCase().startsWith("X34")
+            && !terminologyId.toUpperCase().startsWith("X59")) {
+          return false;
+        }
+
+      }
       // verify concept exists in database
       final Concept concept =
           contentService.getConcept(terminologyId,
               mapProject.getDestinationTerminology(),
               mapProject.getDestinationTerminologyVersion());
 
-      contentService.close();
       if (concept == null) {
         return false;
       }
