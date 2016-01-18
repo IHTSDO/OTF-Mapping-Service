@@ -671,8 +671,8 @@ mapProjectAppDashboards
               data = new String(data);
 
               // strip quotes off of data
-              while (data.indexOf('\'') != -1) {
-                data = data.replace('\'', '');
+              while (data.indexOf('\"') != -1) {
+                data = data.replace('\"', '');
               }
 
               if (data === 'VIEWER')
