@@ -334,7 +334,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         boolean isPoisoning =
             contentService.isDescendantOf(mapRecord.getConceptId(),
                 mapProject.getSourceTerminology(),
-                mapProject.getSourceTerminology(), "75478009");
+                mapProject.getSourceTerminologyVersion(), "75478009");
         if (mapRecord.getMapEntries().size() == 1 && isPoisoning) {
           System.out.println("    ERROR");
           result
@@ -408,7 +408,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         boolean isTumorStageFinding =
             contentService.isDescendantOf(mapRecord.getConceptId(),
                 mapProject.getSourceTerminology(),
-                mapProject.getSourceTerminology(), "385356007");
+                mapProject.getSourceTerminologyVersion(), "385356007");
         if (isTumorStageFinding && concepts.get(0) != null) {
           System.out.println("    WARNING");
           result
@@ -536,15 +536,27 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
     final ContentService contentService = new ContentServiceJpa();
 
     try {
+
+      // Remove any advices that are purlely computed and keep only manually
+      // assigned ones
+      final List<MapAdvice> notComputed = new ArrayList<>();
+      for (final MapAdvice advice : advices) {
+        if (!advice.isComputed()) {
+          notComputed.add(advice);
+        }
+      }
+      advices.clear();
+      advices.addAll(notComputed);
+
       //
-      // PREDICATE: W00-Y34 except X34,X59,Y06,Y07,Y35,Y36 without
-      // "POSSIBLE REQUIREMENT TO IDENTIFY PLACE OF OCCURRENCE" advice
+      // PREDICATE: Non-primary W00-Y34 except X34,X59,Y06,Y07,Y35,Y36 without
+      // "POSSIBLE REQUIREMENT FOR PLACE OF OCCURRENCE" advice
       // ACTION: add the advice
       //
-      final String adviceP03 =
-          "POSSIBLE REQUIREMENT TO IDENTIFY PLACE OF OCCURRENCE";
+      final String adviceP03 = "POSSIBLE REQUIREMENT FOR PLACE OF OCCURRENCE";
       System.out.println("Checking principle 03");
-      if (mapEntry.getTargetId().matches("(W..|X..|Y[0-2].|Y3[0-4]).*")
+      if (mapEntry.getMapGroup() != 1
+          && mapEntry.getTargetId().matches("(W..|X..|Y[0-2].|Y3[0-4]).*")
           && !mapEntry.getTargetId().equals("Y06")
           && !mapEntry.getTargetId().equals("Y07")
           && !mapEntry.getTargetId().equals("Y35")
@@ -569,7 +581,11 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         advices.add(TerminologyUtility.getAdvice(mapProject, adviceP05));
       } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP05)) {
         System.out.println(" - FOUND2");
+        System.out.println("   - advices before: " + advices);
+        System.out.println("   - remove advice: "
+            + TerminologyUtility.getAdvice(mapProject, adviceP05));
         advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP05));
+        System.out.println("   - advices after: " + advices);
       }
 
       //
@@ -595,7 +611,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       //
       final String adviceP07 =
           "THIS IS AN EXTERNAL CAUSE CODE FOR USE IN A SECONDARY POSITION";
-      System.out.println("Checking principle 03");
+      System.out.println("Checking principle 07");
       if (mapEntry.getTargetId().matches("^[VWXY].*")
           && mapEntry.getMapGroup() == 1 && mapEntry.getMapPriority() == 1
           && !TerminologyUtility.hasAdvice(mapEntry, adviceP07)) {
@@ -611,10 +627,11 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       // ACTION:
       //
       final String adviceP21a = "MAPPED FOLLOWING WHO GUIDANCE";
+      System.out.println("Checking principle 21a");
       boolean isPoisoning =
           contentService.isDescendantOf(mapRecord.getConceptId(),
               mapProject.getSourceTerminology(),
-              mapProject.getSourceTerminology(), "75478009");
+              mapProject.getSourceTerminologyVersion(), "75478009");
       if (isPoisoning && mapEntry.getMapGroup() > 1
           && mapEntry.getMapPriority() == 1
           && mapEntry.getTargetId().matches("^[VWXY].*")
@@ -631,12 +648,14 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       //
       final String adviceP23 =
           "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE";
+      System.out.println("Checking principle 23");
       if (TerminologyUtility.hasAdvice(mapEntry, adviceP23)
-          && mapEntry.getMapRecord().getMapEntries().size() > 1) {
-        for (int i = 1; i < mapEntry.getMapRecord().getMapEntries().size(); i++) {
+          && mapRecord.getMapEntries().size() > 1) {
+        for (int i = 1; i < mapRecord.getMapEntries().size(); i++) {
           // If external cause code found, move on
-          if (mapEntry.getMapRecord().getMapEntries().get(i).getTargetId()
+          if (mapRecord.getMapEntries().get(i).getTargetId()
               .matches("^[VWXY].*")) {
+            System.out.println(" - FOUND");
             advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP23));
             break;
           }
@@ -1076,7 +1095,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       boolean isAllergy =
           contentService.isDescendantOf(mapRecord.getConceptId(),
               mapProject.getSourceTerminology(),
-              mapProject.getSourceTerminology(), "609328004");
+              mapProject.getSourceTerminologyVersion(), "609328004");
       System.out.println("Checking principle 19");
       if (isAllergy) {
         System.out.println("  - TRUE");
@@ -1091,7 +1110,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       boolean isPoisoning =
           contentService.isDescendantOf(mapRecord.getConceptId(),
               mapProject.getSourceTerminology(),
-              mapProject.getSourceTerminology(), "75478009");
+              mapProject.getSourceTerminologyVersion(), "75478009");
       if (isPoisoning) {
         System.out.println("  - TRU");
         notes
@@ -1119,7 +1138,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       boolean isAnimalBite =
           contentService.isDescendantOf(mapRecord.getConceptId(),
               mapProject.getSourceTerminology(),
-              mapProject.getSourceTerminology(), "399907009");
+              mapProject.getSourceTerminologyVersion(), "399907009");
       if (isAnimalBite) {
         System.out.println("  - TRUE");
         notes.add("IDENTIFIED as a case of Principle 32 (animal bite)");
