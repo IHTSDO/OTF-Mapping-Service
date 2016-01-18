@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -82,7 +81,8 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
                 return (int) i;
               } else {
                 i = fields1[5].compareTo(fields2[5]);
-                //i = (Long.parseLong(fields1[5]) - Long.parseLong(fields2[5]));
+                // i = (Long.parseLong(fields1[5]) -
+                // Long.parseLong(fields2[5]));
                 if (i != 0) {
                   return (int) i;
                 } else {
@@ -235,7 +235,6 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
         complexMapRefSetMember.setMapBlockAdvice(null); // no default
 
         // Terminology attributes
-        Logger.getLogger(FileSorter.class).info("refsetId = " + refsetId);
         complexMapRefSetMember.setTerminology(mapProjectMap.get(refsetId)
             .getSourceTerminology());
         complexMapRefSetMember.setTerminologyVersion(mapProjectMap

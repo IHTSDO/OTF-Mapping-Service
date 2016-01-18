@@ -844,9 +844,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
         }
 
         // try to set the default target name
-        Logger.getLogger(MappingServiceJpa.class).info(
-            "Ensuring blank target properly set for map entry "
-                + mapEntry.getId());
         mapEntry.setTargetId("");
         mapEntry.setTargetName(algorithmHandler
             .getDefaultTargetNameForBlankTarget());

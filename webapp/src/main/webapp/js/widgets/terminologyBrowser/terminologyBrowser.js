@@ -33,7 +33,7 @@ angular
       $scope.relTypes = {};
 
       // initialize search variables
-      $scope.query = ""; // the query input
+      $scope.query = ''; // the query input
       $scope.searchBackAllowed = false; // whether the back button is displayed
       $scope.searchForwardAllowed = false; // whether the forward button is
       // displayed
@@ -49,13 +49,13 @@ angular
           'localStorageModule.notification.setFocusProject',
           function(event, parameters) {
             console
-              .debug("TerminologyBrowserWidgetCtrl:  Detected change in focus project");
+              .debug('TerminologyBrowserWidgetCtrl:  Detected change in focus project');
             $scope.focusProject = parameters.focusProject;
           });
 
       $scope.$on('mapEntryWidget.notification.clearTargetConcept', function(
         event, parameters) {
-        $scope.query = "";
+        $scope.query = '';
       });
 
       // REQUIRED WATCH VARIABLES: focusProject, userToken. None others needed.
@@ -64,13 +64,13 @@ angular
           [ 'focusProject', 'userToken' ],
           function() {
 
-            console.debug("TB: WATCH", $scope.focusProject, $scope.userToken);
+            console.debug('TB: WATCH', $scope.focusProject, $scope.userToken);
 
             if ($scope.focusProject != null && $scope.userToken != null) {
 
               $scope.terminology = $scope.focusProject.destinationTerminology;
               $scope.terminologyVersion = $scope.focusProject.destinationTerminologyVersion;
-              $scope.model.title = $scope.terminology + " Terminology Browser";
+              $scope.model.title = $scope.terminology + ' Terminology Browser';
 
               $http.defaults.headers.common.Authorization = $scope.userToken;
 
@@ -85,7 +85,7 @@ angular
        */
       function initTruncationWells(node) {
 
-        console.debug("initializing truncation wells");
+        console.debug('initializing truncation wells');
 
         // if the first time this has been viewed, close the truncation wells
         for (var i = 0; i < node.descGroups.length; i++) {
@@ -95,7 +95,7 @@ angular
             if (node.descGroups[i].treePositionDescriptions[j].isCollapsed == null
               || node.descGroups[i].treePositionDescriptions[j].isCollapsed == undefined) {
 
-              console.debug("Set truncation well to false for "
+              console.debug('Set truncation well to false for '
                 + node.descGroups[i].treePositionDescriptions[j].name);
 
               node.descGroups[i].treePositionDescriptions[j].isCollapsed = true;
@@ -110,14 +110,14 @@ angular
 
         $http(
           {
-            url : root_mapping + "treePosition/project/id/"
+            url : root_mapping + 'treePosition/project/id/'
               + $scope.focusProject.id,
-            method : "GET",
+            method : 'GET',
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
           }).success(function(response) {
-          console.debug("HTTP RESPONSE");
+          console.debug('HTTP RESPONSE');
           console.debug(response);
           $scope.terminologyTree = response.treePosition;
           for (var i = 0; i < $scope.terminologyTree; i++) {
@@ -132,30 +132,30 @@ angular
       // function to get the root nodes with query
       $scope.getRootTreeWithQuery = function(isNewSearch) {
 
-        console.debug("QUERYING: " + $scope.query);
+        console.debug('QUERYING: ' + $scope.query);
         // Bail on an empty search
-        if ($scope.query == "") {
+        if ($scope.query == '') {
           return;
         }
         // bail on only whitespace search
-        if (new RegExp("^\s+$").test($scope.query)) {
+        if (new RegExp('^\s+$').test($scope.query)) {
           return;
         }
-        $scope.searchStatus = "Searching...";
+        $scope.searchStatus = 'Searching...';
         $scope.terminologyTree = [];
         $http(
           {
-            url : root_mapping + "treePosition/project/id/"
-              + $scope.focusProject.id + "/query/"
+            url : root_mapping + 'treePosition/project/id/'
+              + $scope.focusProject.id + '/query/'
               + encodeURIComponent($scope.query),
-            method : "GET",
+            method : 'GET',
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
           })
           .success(
             function(response) {
-              console.debug("Query successful with response:");
+              console.debug('Query successful with response:');
               console.debug(response);
 
               // limit result count to 10 root tree positions
@@ -164,7 +164,7 @@ angular
               }
 
               $scope.expandAll($scope.terminologyTree);
-              $scope.searchStatus = "";
+              $scope.searchStatus = '';
 
               if (isNewSearch == true) {
 
@@ -187,7 +187,7 @@ angular
 
                 // remove any elements past the search stack position
                 for (var i = $scope.searchStackPosition + 1; i < $scope.searchStack.length; i++) {
-                  $scope.searchStack[i] = "";
+                  $scope.searchStack[i] = '';
                 }
                 ;
 
@@ -199,7 +199,7 @@ angular
                 // do nothing, no need to modify results
               }
 
-              console.debug($scope.searchStackPosition + " - "
+              console.debug($scope.searchStackPosition + ' - '
                 + $scope.searchStackResults);
 
               // set the variables for back/forward
@@ -223,7 +223,7 @@ angular
 
         // if query is not populated or undefined, get the root trees, otherwise
         // get query results
-        if ($scope.query == undefined || $scope.query === "")
+        if ($scope.query == undefined || $scope.query === '')
           $scope.getRootTree();
         else
           $scope.getRootTreeWithQuery(false);
@@ -233,13 +233,13 @@ angular
       $scope.gotoReferencedConcept = function(referencedConcept) {
 
         $scope.query = referencedConcept.terminologyId;
-        console.debug("Setting query string to " + $scope.query);
+        console.debug('Setting query string to ' + $scope.query);
         $scope.getRootTreeWithQuery(true);
       };
 
       $scope.getLocalTree = function(terminologyId) {
 
-        console.debug("Called getLocalTree with terminologyId = "
+        console.debug('Called getLocalTree with terminologyId = '
           + terminologyId);
 
         var deferred = $q.defer();
@@ -247,14 +247,14 @@ angular
         $timeout(function() {
           $http(
             {
-              url : root_mapping + "treePosition/project/id/"
-                + $scope.focusProject.id + "/concept/id/" + terminologyId,
-              method : "GET",
+              url : root_mapping + 'treePosition/project/id/'
+                + $scope.focusProject.id + '/concept/id/' + terminologyId,
+              method : 'GET',
               headers : {
-                "Content-Type" : "application/json"
+                'Content-Type' : 'application/json'
               }
             }).success(function(response) {
-            console.debug("HTTP RESPONSE");
+            console.debug('HTTP RESPONSE');
             deferred.resolve(response);
           }).error(function(data, status, headers, config) {
             $rootScope.handleHttpError(data, status, headers, config);
@@ -272,7 +272,7 @@ angular
 
         for (var i = 0; i < treePositions.length; i++) {
 
-          console.debug("Expanding for ", treePositions[i]);
+          console.debug('Expanding for ', treePositions[i]);
 
           // initialize the truncation wells
           initTruncationWells(treePositions[i]);
@@ -285,12 +285,12 @@ angular
           // if the node exactly matches a query
           if (treePositions[i].terminologyId.toUpperCase() === $scope.query
             .toUpperCase()) {
-            console.debug("Exact match for query");
+            console.debug('Exact match for query');
 
             // load the concept detalis
             $scope.getConceptDetails(treePositions[i]);
 
-            console.debug("Expanding children")
+            console.debug('Expanding children')
             console.debug(treePositions[i].children);
 
             /*
@@ -299,7 +299,7 @@ angular
              * 
              * treePositions[i].children[j].isOpen = true; }
              * 
-             * console.debug("After expanding children")
+             * console.debug('After expanding children')
              * console.debug(treePositions[i].children);
              */
 
@@ -310,7 +310,7 @@ angular
           // if a child node reports that this is in direct path of a requested
           // concept id, get details
           else if ($scope.expandAll(treePositions[i].children) == true) {
-            console.debug("This node reports exact match among descendants");
+            console.debug('This node reports exact match among descendants');
 
             // if this is a root node, simply return false to avoid expanding
             // this node
@@ -332,7 +332,7 @@ angular
 
       $scope.toggleChildren = function(node) {
 
-        console.debug("getChildren called with " + node.terminologyId);
+        console.debug('getChildren called with ' + node.terminologyId);
 
         node.isOpen = !node.isOpen;
 
@@ -432,8 +432,8 @@ angular
 
       function formatDescription(description, relTypes, concept) {
 
-        console.debug("Formatting description: " + description.terminologyId
-          + " - " + description.term);
+        console.debug('Formatting description: ' + description.terminologyId
+          + ' - ' + description.term);
         console.debug('relTypes');
         console.debug(relTypes);
         var relationshipsForDescription = [];
@@ -449,13 +449,13 @@ angular
               .indexOf(description.terminologyId));
           if (concept.relationship[i].terminologyId
             .indexOf(description.terminologyId) == 0) {
-            console.debug("    Found relationship: "
+            console.debug('    Found relationship: '
               + concept.relationship[i].terminologyId);
             relationshipsForDescription.push(concept.relationship[i]);
           }
         }
 
-        console.debug("Found these relationships: ");
+        console.debug('Found these relationships: ');
         console.debug(relationshipsForDescription);
 
         if (relationshipsForDescription.length > 0) {
@@ -469,14 +469,14 @@ angular
             // if a asterisk-to-dagger, add a †
             if (relTypes[relationshipsForDescription[i].typeId]
               .indexOf('Asterisk') == 0) {
-              console.debug("†");
-              referencedConcept.relType = "†";
+              console.debug('†');
+              referencedConcept.relType = '†';
             }
             // if a dagger-to-asterik, add a *
             if (relTypes[relationshipsForDescription[i].typeId]
               .indexOf('Dagger') == 0) {
-              console.debug("*");
-              referencedConcept.relType = "*";
+              console.debug('*');
+              referencedConcept.relType = '*';
             }
             description.referencedConcepts.push(referencedConcept);
 
