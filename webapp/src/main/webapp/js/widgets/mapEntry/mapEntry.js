@@ -13,8 +13,8 @@ angular
   })
   .controller(
     'mapEntryWidgetCtrl',
-    function($scope, $rootScope, $q, $http, $routeParams, $modal, $location,
-      $anchorScroll, localStorageService) {
+    function($scope, $rootScope, $q, $http, $routeParams, $modal, $location, $anchorScroll,
+      localStorageService) {
 
       // for this widget, the only local storage service variable used is
       // user
@@ -22,16 +22,10 @@ angular
       $scope.userToken = localStorageService.get('userToken');
 
       // watch for entry change
-      $scope.$on('mapRecordWidget.notification.changeSelectedEntry', function(
-        event, parameters) {
-        console.debug('MapEntryWidget: Detected change in selected entry',
-          parameters.entry);
-        console.debug(parameters);
+      $scope.$on('mapRecordWidget.notification.changeSelectedEntry', function(event, parameters) {
         $scope.entry = parameters.entry;
         $scope.record = parameters.record;
         $scope.project = parameters.project;
-
-        console.debug('MapEntryWidget: mapRecord = ', $scope.record);
 
         // get the allowable advices
         $scope.allowableAdvices = getAllowableAdvices(parameters.entry,
@@ -46,33 +40,21 @@ angular
           $scope.entry.rule = null;
 
         // compute relation and advice IFF a target or entry has
-        // been set
-        // attempt to autocompute the map relation, then update the
-        // entry
+        // been set attempt to autocompute the map relation, then update the entry
         $scope.computeParameters(false);
 
       });
 
       // watch for entry deletion from map record page
-      $scope
-        .$on(
-          'mapRecordWidget.notification.deleteSelectedEntry',
-          function(event, parameters) {
-            console
-              .debug('MapEntryWidget: Detected delete notification from MapRecordWidget');
-            console.debug(parameters);
+      $scope.$on('mapRecordWidget.notification.deleteSelectedEntry', function(event, parameters) {
+        // if the currently viewed entry is the one being viewed,
+        // clear the displayed entry
+        if (($scope.entry.localId && $scope.entry.localId == parameters.entry.localId)
+          || ($scope.entry.id && $scope.entry.id == parameters.entry.id)) {
+          $scope.entry = null;
+        }
 
-            // if the currently viewed entry is the one being viewed,
-            // clear the
-            // displayed entry
-            if (($scope.entry.localId === parameters.entry.localId
-              && $scope.entry.localId != null && $scope.entry.localId != '')
-              || ($scope.entry.id === parameters.entry.id
-                && $scope.entry.id != null && $scope.entry.id != '')) {
-              $scope.entry = null;
-            }
-
-          });
+      });
 
       // local variables
       $scope.isTargetOpen = true;
@@ -91,13 +73,12 @@ angular
 
       // broadcasts an update from the map entry to the map record widget
       function updateEntry() {
-        $rootScope.$broadcast(
-          'mapEntryWidget.notification.modifySelectedEntry', {
-            action : 'save',
-            entry : angular.copy($scope.entry),
-            record : $scope.record,
-            project : $scope.project
-          });
+        $rootScope.$broadcast('mapEntryWidget.notification.modifySelectedEntry', {
+          action : 'save',
+          entry : angular.copy($scope.entry),
+          record : $scope.record,
+          project : $scope.project
+        });
       }
 
       $scope.setTarget = function(targetCode) {
@@ -106,7 +87,6 @@ angular
 
         // if target code is empty, compute parameters and return
         if (targetCode == null || targetCode == undefined || targetCode === '') {
-          console.debug('Setting to empty target');
           $scope.entry.targetId = '';
           $scope.entry.targetName = 'No target';
           $scope.computeParameters(true);
@@ -117,8 +97,8 @@ angular
 
         $http(
           {
-            url : root_mapping + 'project/id/' + $scope.project.id
-              + '/concept/' + targetCode + '/isValid',
+            url : root_mapping + 'project/id/' + $scope.project.id + '/concept/' + targetCode
+              + '/isValid',
             method : 'GET',
             headers : {
               'Content-Type' : 'application/json'
@@ -150,44 +130,34 @@ angular
       };
 
       // watch for concept selection from terminology browser
-      $scope
-        .$on(
-          'terminologyBrowser.selectConcept',
-          function(event, parameters) {
-            console
-              .debug('MapEntryWidget: Detected selectConcept from terminologyBrowser');
-            console.debug(parameters);
+      $scope.$on('terminologyBrowser.selectConcept', function(event, parameters) {
+        // get the relative position of the inside of the map entry widget
 
-            // get the relative position of the inside of the map entry widget
+        var rect = document.getElementById('mapEntryWidgetTop').getBoundingClientRect();
 
-            var rect = document.getElementById('mapEntryWidgetTop')
-              .getBoundingClientRect();
+        // scroll to (mapEntry left, mapEntry top + scroll offset -
+        // header/widget header width)
+        window.scrollTo(rect.left, rect.top + window.pageYOffset - 90);
 
-            // scroll to (mapEntry left, mapEntry top + scroll offset -
-            // header/widget header width)
-            window.scrollTo(rect.left, rect.top + window.pageYOffset - 90);
+        $scope.entry.targetId = parameters.concept.terminologyId;
+        $scope.entry.targetName = parameters.concept.defaultPreferredName;
 
-            $scope.entry.targetId = parameters.concept.terminologyId;
-            $scope.entry.targetName = parameters.concept.defaultPreferredName;
+        // clear the relation and advices
+        $scope.entry.mapRelation = null;
+        $scope.entry.mapAdvice = [];
 
-            // clear the relation and advices
-            $scope.entry.mapRelation = null;
-            $scope.entry.mapAdvice = [];
+        // attempt to autocompute the map relation, then update the
+        // entry
+        $scope.computeParameters(false);
 
-            // attempt to autocompute the map relation, then update the
-            // entry
-            $scope.computeParameters(false);
-
-            // get the allowable advices and relations
-            $scope.allowableAdvices = getAllowableAdvices($scope.entry,
-              $scope.project.mapAdvice);
-            sortByKey($scope.allowableAdvices, 'detail');
-            $scope.allowableMapRelations = getAllowableRelations($scope.entry,
-              $scope.project.mapRelation);
-          });
+        // get the allowable advices and relations
+        $scope.allowableAdvices = getAllowableAdvices($scope.entry, $scope.project.mapAdvice);
+        sortByKey($scope.allowableAdvices, 'detail');
+        $scope.allowableMapRelations = getAllowableRelations($scope.entry,
+          $scope.project.mapRelation);
+      });
 
       $scope.clearTargetConcept = function(entry) {
-        console.debug('clearTargetConcept() called');
         entry.targetId = null;
         entry.targetName = null;
         entry.mapRelation = null;
@@ -196,8 +166,7 @@ angular
         $rootScope.$broadcast('mapEntryWidget.notification.clearTargetConcept');
 
         // get the allowable advices and relations
-        $scope.allowableAdvices = getAllowableAdvices($scope.entry,
-          $scope.project.mapAdvice);
+        $scope.allowableAdvices = getAllowableAdvices($scope.entry, $scope.project.mapAdvice);
         sortByKey($scope.allowableAdvices, 'detail');
         $scope.allowableMapRelations = getAllowableRelations($scope.entry,
           $scope.project.mapRelation);
@@ -215,18 +184,32 @@ angular
       };
 
       function computeRelation(entry) {
-
         var deferred = $q.defer();
 
         // ensure mapRelation is deserializable
         if (entry.mapRelation === '' || entry.mapRelation === undefined)
           entry.mapRelation = null;
 
+        // Fake the ID of this entry with -1 id, copy, then set it back
+        // This is hacky, but we do not have a good way to send 2 objects
+        // and the entry may not have an id yet because it could be new.
+        var copy = angular.copy($scope.record);
+        // Find the matching localId and replace it and set the id to -1
+        console.debug("compute relation", $scope.record, entry);
+        for (var i = 0;i < copy.mapEntry.length; i++) {
+          if (entry.localId == copy.mapEntry[i].localId) {
+            var entryCopy = angular.copy(entry);
+            entryCopy.id = -1;
+            copy.mapEntry.splice(i,1,entryCopy);
+          }
+        }
+        console.debug("  copy",copy);
+               
         $rootScope.glassPane++;
         $http({
           url : root_mapping + 'relation/compute',
           dataType : 'json',
-          data : entry,
+          data : copy,
           method : 'POST',
           headers : {
             'Content-Type' : 'application/json'
@@ -237,12 +220,8 @@ angular
             if (data) {
 
               entry.mapRelation = data;
-
-              console.debug('MapRelation computed: ', entry.mapRelation);
-
               // get the allowable advices and relations
-              $scope.allowableAdvices = getAllowableAdvices(entry,
-                $scope.project.mapAdvice);
+              $scope.allowableAdvices = getAllowableAdvices(entry, $scope.project.mapAdvice);
               sortByKey($scope.allowableAdvices, 'detail');
               $scope.allowableMapRelations = getAllowableRelations(entry,
                 $scope.project.mapRelation);
@@ -252,7 +231,6 @@ angular
               deferred.resolve(entry);
             } else {
               $rootScope.glassPane--;
-              console.debug('No map relation computed for this entry');
               deferred.resolve(entry);
             }
           }).error(function(data, status, headers, config) {
@@ -268,7 +246,7 @@ angular
       }
 
       function computeAdvice(entry) {
-
+        console.debug("compute advice", entry);
         var deferred = $q.defer();
 
         // ensure mapAdvice is deserializable
@@ -277,45 +255,47 @@ angular
 
         $rootScope.glassPane++;
 
+        // Fake the ID of this entry with -1 id, copy, then set it back
+        // This is hacky, but we do not have a good way to send 2 objects
+        // and the entry may not have an id yet because it could be new.
+        var copy = angular.copy($scope.record);
+        // Find the matching localId and replace it and set the id to -1
+        console.debug("compute relation", $scope.record, entry);
+        for (var i = 0;i < copy.mapEntry.length; i++) {
+          if (entry.localId == copy.mapEntry[i].localId) {
+            var entryCopy = angular.copy(entry);
+            entryCopy.id = -1;
+            copy.mapEntry.splice(i,1,entryCopy);
+          }
+        }
+        console.debug("  copy",copy);
+        
         $http({
           url : root_mapping + 'advice/compute',
           dataType : 'json',
-          data : entry,
+          data : copy,
           method : 'POST',
           headers : {
             'Content-Type' : 'application/json'
           }
         }).success(
           function(data) {
-
+            console.debug("  data = ", data);
             if (data) {
-
               entry.mapAdvice = data.mapAdvice;
-
-              console.debug('Map advices computed: ', entry.mapAdvice);
-
               // get the allowable advices and relations
-              $scope.allowableAdvices = getAllowableAdvices(entry,
-                $scope.project.mapAdvice);
+              $scope.allowableAdvices = getAllowableAdvices(entry, $scope.project.mapAdvice);
               sortByKey($scope.allowableAdvices, 'detail');
               $scope.allowableMapRelations = getAllowableRelations(entry,
                 $scope.project.mapRelation);
-              $rootScope.glassPane--;
-              // return the promise
-              deferred.resolve(entry);
-            } else {
-              $rootScope.glassPane--;
-              console.debug('No map advice computed');
-              deferred.resolve(entry);
             }
+            $rootScope.glassPane--;
+            deferred.resolve(entry);
+
           }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
-
           $rootScope.handleHttpError(data, status, headers, config);
-
-          // reject the promise
           deferred.reject();
-
         });
 
         return deferred.promise;
@@ -344,22 +324,21 @@ angular
           }
         });
 
-        modalInstance.result
-          .then(function(rule) {
+        modalInstance.result.then(function(rule) {
 
-            // set to true if rule returned with no value and display an
-            // error
-            if (rule == null || rule == undefined || rule === '') {
-              rule = 'TRUE';
-              $scope.localErrorRule = 'Invalid rule constructed, setting rule to TRUE';
-            }
+          // set to true if rule returned with no value and display an
+          // error
+          if (rule == null || rule == undefined || rule === '') {
+            rule = 'TRUE';
+            $scope.localErrorRule = 'Invalid rule constructed, setting rule to TRUE';
+          }
 
-            $scope.entry.rule = rule;
-            $scope.entry.ruleSummary = $scope.getRuleSummary($scope.entry);
+          $scope.entry.rule = rule;
+          $scope.entry.ruleSummary = $scope.getRuleSummary($scope.entry);
 
-            // compute relation and advice (if any), then update entry
-            $scope.computeParameters(false);
-          });
+          // compute relation and advice (if any), then update entry
+          $scope.computeParameters(false);
+        });
       };
 
       // Returns a summary string for the entry rule type
@@ -384,8 +363,7 @@ angular
 
             if (lowerBound != null && lowerBound != '' && lowerBound.length > 0) {
               ruleSummary += lowerBound[0];
-              if (upperBound != null && upperBound != ''
-                && upperBound.length > 0)
+              if (upperBound != null && upperBound != '' && upperBound.length > 0)
                 ruleSummary += ' AND ';
             }
             if (upperBound != null && upperBound != '' && upperBound.length > 0)
@@ -400,8 +378,7 @@ angular
       };
 
       // controller for the modal
-      var RuleConstructorModalCtrl = function($scope, $http, $modalInstance,
-        presetAgeRanges, entry) {
+      var RuleConstructorModalCtrl = function($scope, $http, $modalInstance, presetAgeRanges, entry) {
 
         $scope.ruleError = '';
 
@@ -418,9 +395,6 @@ angular
         $scope.presetAgeRanges = presetAgeRanges;
 
         initializePresetAgeRanges();
-
-        console.debug($scope.presetAgeRanges);
-        console.debug(entry.rule);
 
         $scope.ruleCategories = [ 'TRUE', 'Gender - Male', 'Gender - Female',
           'Age - Chronological', 'Age - At Onset' ];
@@ -459,9 +433,6 @@ angular
         // construct actual text of rule based on category and age range (if
         // supplied)
         $scope.constructRule = function(ruleCategory, ageRange) {
-
-          console.debug('Constructing rule', ruleCategory, ageRange);
-
           // clear the rule
           $scope.rule = '';
 
@@ -484,8 +455,7 @@ angular
           }
 
           // if an age range rule
-          else if (ruleCategory === 'Age - Chronological'
-            || ruleCategory === 'Age - At Onset') {
+          else if (ruleCategory === 'Age - Chronological' || ruleCategory === 'Age - At Onset') {
 
             // if age range not yet specified, do not construct rule
             if (ageRange == null || ageRange == undefined)
@@ -493,19 +463,14 @@ angular
 
             // determine if lower and upper values are complete by checking
             // for null values
-            var lowerValueValid = ageRange.lowerValue != '-1'
-              && ageRange.lowerValue != undefined
+            var lowerValueValid = ageRange.lowerValue != '-1' && ageRange.lowerValue != undefined
               && ageRange.lowerValue != null && ageRange.lowerValue != '';
-            var upperValueValid = ageRange.upperValue != '-1'
-              && ageRange.upperValue != undefined
+            var upperValueValid = ageRange.upperValue != '-1' && ageRange.upperValue != undefined
               && ageRange.lowerValue != null && ageRange.upperValue != '';
 
             // stop if neither value has been fully specified
             if (!lowerValueValid && !upperValueValid)
               return;
-
-            console.debug('Validating age range', lowerValueValid,
-              upperValueValid);
 
             // initialize calculated values (in days)
             var lowerValue = -1;
@@ -556,8 +521,6 @@ angular
               }
             }
 
-            console.debug('Values', lowerValue, upperValue);
-
             // if both specified, check that upper value is greater than
             // lower value
             if (lowerValueValid && upperValueValid && lowerValue >= upperValue) {
@@ -569,10 +532,8 @@ angular
               : 'IFA 445518008 | Age at onset of clinical finding (observable entity)';
 
             if (lowerValueValid) {
-              $scope.rule += ruleText + ' | '
-                + (ageRange.lowerInclusive == true ? '>=' : '>') + ' '
-                + parseFloat(ageRange.lowerValue, 10).toFixed(1) + ' '
-                + ageRange.lowerUnits;
+              $scope.rule += ruleText + ' | ' + (ageRange.lowerInclusive == true ? '>=' : '>')
+                + ' ' + parseFloat(ageRange.lowerValue, 10).toFixed(1) + ' ' + ageRange.lowerUnits;
             }
 
             if (lowerValueValid && upperValueValid) {
@@ -580,10 +541,8 @@ angular
             }
 
             if (upperValueValid) {
-              $scope.rule += ruleText + ' | '
-                + (ageRange.upperInclusive == true ? '<=' : '<') + ' '
-                + parseFloat(ageRange.upperValue, 10).toFixed(1) + ' '
-                + ageRange.upperUnits;
+              $scope.rule += ruleText + ' | ' + (ageRange.upperInclusive == true ? '<=' : '<')
+                + ' ' + parseFloat(ageRange.upperValue, 10).toFixed(1) + ' ' + ageRange.upperUnits;
 
             }
           } else
@@ -602,11 +561,8 @@ angular
 
             if ($scope.presetAgeRanges[i].lowerValue != null
               && $scope.presetAgeRanges[i].lowerValue != '-1') {
-              presetAgeRangeStr += ($scope.presetAgeRanges[i].lowerInclusive == true ? '>='
-                : '>')
-                + ' '
-                + $scope.presetAgeRanges[i].lowerValue
-                + ' '
+              presetAgeRangeStr += ($scope.presetAgeRanges[i].lowerInclusive == true ? '>=' : '>')
+                + ' ' + $scope.presetAgeRanges[i].lowerValue + ' '
                 + $scope.presetAgeRanges[i].lowerUnits;
             }
 
@@ -621,11 +577,8 @@ angular
             if ($scope.presetAgeRanges[i].upperValue != null
               && $scope.presetAgeRanges[i].upperValue != '-1') {
 
-              presetAgeRangeStr += ($scope.presetAgeRanges[i].upperInclusive == true ? '<='
-                : '<')
-                + ' '
-                + $scope.presetAgeRanges[i].upperValue
-                + ' '
+              presetAgeRangeStr += ($scope.presetAgeRanges[i].upperInclusive == true ? '<=' : '<')
+                + ' ' + $scope.presetAgeRanges[i].upperValue + ' '
                 + $scope.presetAgeRanges[i].upperUnits;
             }
 
@@ -644,7 +597,6 @@ angular
       // validates and adds advice to a map entry
       $scope.addEntryAdvice = function(entry, advice) {
 
-        console.debug('ADDING ADVICE');
         // check if advice valid
         if (advice == '') {
           $scope.errorAddAdvice = 'Advice cannot be empty';
@@ -681,21 +633,7 @@ angular
         }
 
         if (confirmRemove) {
-
-          console.debug('Removing advice:');
-          console.debug(advice);
-          console.debug('Advices found:');
-          for (var i = 0; i < entry['mapAdvice'].length; i++) {
-            console.debug(entry['mapAdvice'][i]);
-          }
-
           entry.mapAdvice = removeJsonElement(entry.mapAdvice, advice);
-
-          console.debug('Advices after removal:');
-          for (var i = 0; i < entry['mapAdvice'].length; i++) {
-            console.debug(entry['mapAdvice'][i]);
-          }
-
           updateEntry();
         }
 
@@ -742,29 +680,23 @@ angular
        */
       $scope.computeParameters = function(ignoreNullValues) {
 
-        var targetNotNull = $scope.entry.targetId != null
-          && $scope.entry.targetId != undefined && $scope.entry.targetId != '';
+        var targetNotNull = $scope.entry.targetId != null && $scope.entry.targetId != undefined
+          && $scope.entry.targetId != '';
         var relationNotNull = $scope.entry.mapRelation != null
-          && $scope.entry.mapRelation != undefined
-          && $scope.entry.mapRelation != '';
-
-        console.debug('Computing parameters', targetNotNull, relationNotNull);
+          && $scope.entry.mapRelation != undefined && $scope.entry.mapRelation != '';
 
         // either target or relation must be non-null to compute
         // relation/advice
         if (targetNotNull || relationNotNull || ignoreNullValues) {
 
           computeRelation($scope.entry).then(function() {
-            console.debug('Relation computed');
             computeAdvice($scope.entry).then(function() {
-              console.debug('Advice computed');
               updateEntry();
             });
           });
 
           // set these to null for consistency
         } else {
-          console.debug('Setting parameters to null');
           $scope.entry.targetId = null;
           $scope.entry.mapRelation = null;
         }
@@ -828,16 +760,11 @@ angular
 
             if (relations[i].isComputed == false) {
 
-              // console.debug(' Not computed');
-
               if ((nullTarget == true && relations[i].isAllowableForNullTarget == true)
                 || (nullTarget == false && relations[i].isAllowableForNullTarget == false)) {
 
-                // console.debug(' Valid');
-
                 // handle a specific case where the name is more descriptive
-                // than
-                // the abbreviation
+                // than the abbreviation
                 relations[i].displayName = (relations[i].abbreviation === 'none' ? relations[i].name
                   : relations[i].abbreviation);
 
@@ -861,8 +788,6 @@ angular
       ;
 
       function removeJsonElement(array, elem) {
-
-        console.debug('Removing element');
         var newArray = [];
         for (var i = 0; i < array.length; i++) {
           if (array[i].id != elem.id) {

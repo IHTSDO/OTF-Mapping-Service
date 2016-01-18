@@ -4,6 +4,7 @@
 package org.ihtsdo.otf.mapping.jpa.helpers;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -174,7 +175,7 @@ public class TerminologyUtility {
   }
 
   /**
-   * Returns the active parent children;
+   * Returns the active parent children;.
    *
    * @param concept the concept
    * @return the active child concepts
@@ -301,6 +302,22 @@ public class TerminologyUtility {
       }
     }
     return loader;
+
+  }
+
+  /**
+   * Comparator for mapGroup/mapPriority
+   */
+  public static class MapEntryComparator implements Comparator<MapEntry> {
+
+    /* see superclass */
+    @Override
+    public int compare(MapEntry o1, MapEntry o2) {
+      if (o1.getMapGroup() != o2.getMapGroup()) {
+        return o1.getMapGroup() - o2.getMapGroup();
+      }
+      return o1.getMapPriority() - o2.getMapPriority();
+    }
 
   }
 }

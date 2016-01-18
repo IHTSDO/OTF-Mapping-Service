@@ -1986,7 +1986,11 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     final long ct =
         (long) manager
             .createQuery(
-                "select count(tp) from TreePositionJpa tp where terminologyVersion = :terminologyVersion and terminology = :terminology and terminologyId = :terminologyId and ancestorPath like :path")
+                "select count(tp) from TreePositionJpa tp "
+                    + "where terminologyVersion = :terminologyVersion "
+                    + "and terminology = :terminology "
+                    + "and terminologyId = :terminologyId "
+                    + "and ancestorPath like :path")
             .setParameter("path", "%~" + ancestorId + "~%")
             .setParameter("terminology", terminology)
             .setParameter("terminologyVersion", terminologyVersion)
