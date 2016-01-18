@@ -295,7 +295,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         // GUIDANCE: Review to consider a second code or the advice.
         //
         System.out.println("  semantic check - causative agent code");
-        if (mapRecord.getConceptName().matches(
+        if (mapRecord.getConceptName().toLowerCase().matches(
             ".*\\b(infection|infectious|bacterial)\\b.*")
             && hasUseAdditional(concepts.get(1).get(0))
             && !TerminologyUtility.hasAdvice(mapRecord.getMapEntries().get(0),
@@ -347,7 +347,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         if (mapRecord.getMapEntries().size() == 1 && isPoisoning) {
           System.out.println("    ERROR");
           result
-              .addError("Remap, oisoning requires an external cause code from the TEIL3.ASC index");
+              .addError("Remap, poisoning requires an external cause code from the TEIL3.ASC index");
         }
         // Validate external cause code presence and not primary position
         else if (mapRecord.getMapEntries().size() > 1 && isPoisoning) {
