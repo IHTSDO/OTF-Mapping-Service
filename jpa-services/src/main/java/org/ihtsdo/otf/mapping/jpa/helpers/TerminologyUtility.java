@@ -9,13 +9,17 @@ import java.util.List;
 import java.util.Map;
 
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
+import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
+import org.ihtsdo.otf.mapping.model.MapProject;
+import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Relationship;
 import org.ihtsdo.otf.mapping.rf2.SimpleRefSetMember;
 import org.ihtsdo.otf.mapping.services.ContentService;
+import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 
 /**
@@ -34,6 +38,9 @@ public class TerminologyUtility {
 
   /** The isa rel types. */
   private static Map<String, Long> isaRelTypes = new HashMap<>();
+
+  /** The loader. */
+  private static MapUser loader = null;
 
   /**
    * Indicates whether or not asterisk code is the case.
@@ -257,6 +264,43 @@ public class TerminologyUtility {
     }
     return false;
   }
-  
- 
+
+  /**
+   * Returns the matching advice.
+   *
+   * @param project the project
+   * @param advice the advice
+   * @return the matching advice
+   * @throws Exception the exception
+   */
+  public static MapAdvice getAdvice(MapProject project, String advice)
+    throws Exception {
+    for (final MapAdvice mapAdvice : project.getMapAdvices()) {
+      if (mapAdvice.getName().equals(advice)) {
+        return mapAdvice;
+      }
+    }
+    throw new Exception("Unalbe to find advice - " + advice);
+  }
+
+  /**
+   * Returns the loader user.
+   *
+   * @return the loader user
+   * @throws Exception the exception
+   */
+  public static MapUser getLoaderUser() throws Exception {
+    if (loader == null) {
+      final MappingService service = new MappingServiceJpa();
+      try {
+        loader = service.getMapUser("loader");
+      } catch (Exception e) {
+        throw e;
+      } finally {
+        service.close();
+      }
+    }
+    return loader;
+
+  }
 }

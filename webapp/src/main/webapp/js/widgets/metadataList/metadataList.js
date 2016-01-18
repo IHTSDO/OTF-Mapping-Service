@@ -24,11 +24,11 @@ angular.module('mapProjectApp.widgets.metadataList', [ 'adf.provider' ])
       get : function(terminology) {
         var deferred = $q.defer();
         $http({
-          url : root_metadata + "metadata/terminology/id/" + terminology,
-          dataType : "json",
-          method : "GET",
+          url : root_metadata + 'metadata/terminology/id/' + terminology,
+          dataType : 'json',
+          method : 'GET',
           headers : {
-            "Content-Type" : "application/json"
+            'Content-Type' : 'application/json'
           }
         }).success(function(data) {
           if (data) {
@@ -69,11 +69,11 @@ angular.module('mapProjectApp.widgets.metadataList', [ 'adf.provider' ])
 
         // get available terminologies
         $http({
-          url : root_metadata + "terminology/terminologies/latest",
-          dataType : "json",
-          method : "GET",
+          url : root_metadata + 'terminology/terminologies/latest',
+          dataType : 'json',
+          method : 'GET',
           headers : {
-            "Content-Type" : "application/json"
+            'Content-Type' : 'application/json'
           }
         }).success(function(data) {
           for ( var index in data.keyValuePair) {
@@ -89,7 +89,7 @@ angular.module('mapProjectApp.widgets.metadataList', [ 'adf.provider' ])
       // watch for project change
       $scope.$on('localStorageModule.notification.setFocusProject', function(
         event, parameters) {
-        console.debug("metadataCtrl:  Detected change in focus project");
+        console.debug('metadataCtrl:  Detected change in focus project');
         $scope.terminology = parameters.focusProject.sourceTerminology;
       });
 

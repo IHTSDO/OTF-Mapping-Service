@@ -21,7 +21,7 @@ angular.module('mapProjectApp.widgets.recordSummary', [ 'adf.provider' ])
       // watch for updates from the map record widget
       $rootScope.$on('mapRecordWidget.notification.recordChanged', function(
         event, parameters) {
-        console.debug("Received record", parameters.record);
+        console.debug('Received record', parameters.record);
         $scope.record = parameters.record;
       });
 

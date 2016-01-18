@@ -155,12 +155,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
     Logger.getLogger(WorkflowServiceRest.class).info(
         "RESTful call (Workflow): /project/id/" + mapProjectId.toString()
-            + "/user/id/" + userName + "/availableConcepts"
-            + " with PfsParameter: " + "\n" + "     Index/Results = "
-            + Integer.toString(pfsParameter.getStartIndex()) + "/"
-            + Integer.toString(pfsParameter.getMaxResults()) + "\n"
-            + "     Sort field    = " + pfsParameter.getSortField()
-            + "     Filter String = " + pfsParameter.getQueryRestriction());
+            + "/user/id/" + userName + "/availableConcepts");
 
     String project = "";
     String user = null;
@@ -255,12 +250,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
     Logger.getLogger(WorkflowServiceRest.class).info(
         "RESTful call (Workflow): /project/id/" + mapProjectId.toString()
-            + "/user/id/" + userName + "/assignedConcepts"
-            + " with PfsParameter: " + "\n" + "     Index/Results = "
-            + Integer.toString(pfsParameter.getStartIndex()) + "/"
-            + Integer.toString(pfsParameter.getMaxResults()) + "\n"
-            + "     Sort field    = " + pfsParameter.getSortField()
-            + "     Filter String = " + pfsParameter.getQueryRestriction());
+            + "/user/id/" + userName + "/assignedConcepts");
 
     String project = "";
     String user = null;
@@ -319,12 +309,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
     Logger.getLogger(WorkflowServiceRest.class).info(
         "RESTful call (Workflow): /project/id/" + mapProjectId.toString()
-            + "/user/id" + userName + "/availableConflicts"
-            + " with PfsParameter: " + "\n" + "     Index/Results = "
-            + Integer.toString(pfsParameter.getStartIndex()) + "/"
-            + Integer.toString(pfsParameter.getMaxResults()) + "\n"
-            + "     Sort field    = " + pfsParameter.getSortField()
-            + "     Filter String = " + pfsParameter.getQueryRestriction());
+            + "/user/id" + userName + "/availableConflicts");
 
     String project = "";
     String user = null;
@@ -384,13 +369,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
     Logger.getLogger(WorkflowServiceRest.class).info(
         "RESTful call (Workflow): /project/id/" + mapProjectId.toString()
-            + "/user/id/" + userName + "/assignedConflicts"
-            + " with PfsParameter: " + "\n" + "     Index/Results = "
-            + Integer.toString(pfsParameter.getStartIndex()) + "/"
-            + Integer.toString(pfsParameter.getMaxResults()) + "\n"
-            + "     Sort field    = " + pfsParameter.getSortField()
-            + "     Filter String = " + pfsParameter.getQueryRestriction());
-
+            + "/user/id/" + userName + "/assignedConflicts");
     String project = "";
     String user = null;
 
@@ -449,12 +428,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
     Logger.getLogger(WorkflowServiceRest.class).info(
         "RESTful call (Workflow): /project/id/" + mapProjectId.toString()
-            + "/user/id" + userName + "/availableReviewWork"
-            + " with PfsParameter: " + "\n" + "     Index/Results = "
-            + Integer.toString(pfsParameter.getStartIndex()) + "/"
-            + Integer.toString(pfsParameter.getMaxResults()) + "\n"
-            + "     Sort field    = " + pfsParameter.getSortField()
-            + "     Filter String = " + pfsParameter.getQueryRestriction());
+            + "/user/id" + userName + "/availableReviewWork");
 
     String project = "";
     String user = null;
@@ -512,12 +486,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
     Logger.getLogger(WorkflowServiceRest.class).info(
         "RESTful call (Workflow): /project/id/" + mapProjectId.toString()
-            + "/availableQAWork" + " with PfsParameter: " + "\n"
-            + "     Index/Results = "
-            + Integer.toString(pfsParameter.getStartIndex()) + "/"
-            + Integer.toString(pfsParameter.getMaxResults()) + "\n"
-            + "     Sort field    = " + pfsParameter.getSortField()
-            + "     Filter String = " + pfsParameter.getQueryRestriction());
+            + "/availableQAWork");
 
     String project = "";
     // all qa work will have user "qa"
@@ -577,12 +546,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
     Logger.getLogger(WorkflowServiceRest.class).info(
         "RESTful call (Workflow): /project/id/" + mapProjectId.toString()
-            + "/user/id/" + userName + "/assignedReviewWork"
-            + " with PfsParameter: " + "\n" + "     Index/Results = "
-            + Integer.toString(pfsParameter.getStartIndex()) + "/"
-            + Integer.toString(pfsParameter.getMaxResults()) + "\n"
-            + "     Sort field    = " + pfsParameter.getSortField()
-            + "     Filter String = " + pfsParameter.getQueryRestriction());
+            + "/user/id/" + userName + "/assignedReviewWork");
 
     String project = "";
     String user = null;
@@ -642,12 +606,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
     Logger.getLogger(WorkflowServiceRest.class).info(
         "RESTful call (Workflow): /project/id/" + mapProjectId.toString()
-            + "/user/id/" + userName + "/assignedQAWork"
-            + " with PfsParameter: " + "\n" + "     Index/Results = "
-            + Integer.toString(pfsParameter.getStartIndex()) + "/"
-            + Integer.toString(pfsParameter.getMaxResults()) + "\n"
-            + "     Sort field    = " + pfsParameter.getSortField()
-            + "     Filter String = " + pfsParameter.getQueryRestriction());
+            + "/user/id/" + userName + "/assignedQAWork");
 
     String project = "";
     String user = null;
@@ -1414,8 +1373,8 @@ public class WorkflowServiceRest extends RootServiceRest {
 
       return null;
     } catch (Exception e) {
-      handleException(e, "trying to get an assigned map record", user,
-          project, terminologyId);
+      handleException(e, "trying to get an assigned map record", user, project,
+          terminologyId);
       return null;
     } finally {
       mappingService.close();
@@ -1708,10 +1667,11 @@ public class WorkflowServiceRest extends RootServiceRest {
       final FeedbackConversation conversation =
           workflowService.getFeedbackConversation(mapRecordId);
 
-      // authorize call
-      authorizeProject(conversation.getMapProjectId(), authToken,
-          MapUserRole.VIEWER, "get feedback conversation", securityService);
-
+      if (conversation != null) {
+        // authorize call
+        authorizeProject(conversation.getMapProjectId(), authToken,
+            MapUserRole.VIEWER, "get feedback conversation", securityService);
+      }
       return conversation;
     } catch (Exception e) {
       handleException(e, "trying to get the feedback conversation");
@@ -1755,11 +1715,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     Logger.getLogger(MappingServiceRest.class).info(
         "RESTful call (Mapping): /conversation/project/id/"
             + mapProjectId.toString() + " userName: " + userName + " query: "
-            + query + " with PfsParameter: " + "\n" + "     Index/Results = "
-            + Integer.toString(pfsParameter.getStartIndex()) + "/"
-            + Integer.toString(pfsParameter.getMaxResults()) + "\n"
-            + "     Sort field    = " + pfsParameter.getSortField()
-            + "     Filter String = " + pfsParameter.getQueryRestriction());
+            + query);
 
     String user = null;
     final WorkflowService workflowService = new WorkflowServiceJpa();
@@ -1775,8 +1731,8 @@ public class WorkflowServiceRest extends RootServiceRest {
       return feedbackConversationList;
     } catch (Exception e) {
       handleException(e,
-          "trying to get the feedback conversations for a map project",
-          user, mapProjectId.toString(), "");
+          "trying to get the feedback conversations for a map project", user,
+          mapProjectId.toString(), "");
       return null;
     } finally {
       workflowService.close();

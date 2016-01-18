@@ -36,7 +36,7 @@ angular
           'localStorageModule.notification.setFocusProject',
           function(event, parameters) {
             window
-              .alert("The project and terminology cannot be changed on the index viewer.");
+              .alert('The project and terminology cannot be changed on the index viewer.');
           });
 
       // on any change of focusProject, set headers
@@ -59,16 +59,16 @@ angular
         $rootScope.glassPane++;
         $http(
           {
-            url : root_content + "index/"
-              + $scope.focusProject.destinationTerminology + "/"
+            url : root_content + 'index/'
+              + $scope.focusProject.destinationTerminology + '/'
               + $scope.focusProject.destinationTerminologyVersion,
-            dataType : "json",
-            method : "GET",
+            dataType : 'json',
+            method : 'GET',
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-          console.debug("Success in getting viewable indexes.");
+          console.debug('Success in getting viewable indexes.');
           for (var i = 0; i < data.searchResult.length; i++) {
             $scope.domains.push(data.searchResult[i].value);
           }
@@ -86,10 +86,10 @@ angular
 
       // parses the text from a link and calls the search method
       $scope.performSearchFromLink = function(searchText) {
-        console.debug("searchText:", searchText);
+        console.debug('searchText:', searchText);
 
         $scope.allCheckBox = false;
-        var res = searchText.split(",");
+        var res = searchText.split(',');
         if (res.length == 1) {
           $scope.performAggregatedSearch(res[0], 'undefined', 'undefined');
           $scope.searchField = res[0];
@@ -114,16 +114,16 @@ angular
       $scope.performAggregatedSearch = function(searchField, subSearchField,
         subSubSearchField) {
 
-        console.debug(searchField + " " + subSearchField + " "
+        console.debug(searchField + ' ' + subSearchField + ' '
           + subSubSearchField);
 
         if (searchField == null || searchField == '') {
-          window.alert("The first search box must not be empty");
+          window.alert('The first search box must not be empty');
           return;
         }
         if (searchField == '*' && subSearchField == '*'
           && subSubSearchField == '*') {
-          window.alert("Oh behave - That search isn't useful!");
+          window.alert('Oh behave - That search isn't useful!');
           return;
         }
         if (subSearchField == '' || subSearchField == null) {
@@ -133,20 +133,20 @@ angular
           subSubSearchField = 'undefined';
         }
 
-        var url = root_content + "index/"
-          + $scope.focusProject.destinationTerminology + "/"
-          + $scope.focusProject.destinationTerminologyVersion + "/"
-          + $scope.selectedDomain + "/search/" + searchField + "/subSearch/"
-          + subSearchField + "/subSubSearch/" + subSubSearchField + "/"
+        var url = root_content + 'index/'
+          + $scope.focusProject.destinationTerminology + '/'
+          + $scope.focusProject.destinationTerminologyVersion + '/'
+          + $scope.selectedDomain + '/search/' + searchField + '/subSearch/'
+          + subSearchField + '/subSubSearch/' + subSubSearchField + '/'
           + $scope.allCheckBox;
 
         $rootScope.glassPane++;
         $http({
           url : url,
-          dataType : "json",
-          method : "GET",
+          dataType : 'json',
+          method : 'GET',
           headers : {
-            "Content-Type" : "application/json"
+            'Content-Type' : 'application/json'
           }
         })
           .success(
@@ -155,7 +155,7 @@ angular
 
               $scope.nResults = data.totalCount;
               if ($scope.nResults > 0) {
-                $scope.searchResultsLabel = "1 of " + $scope.nResults;
+                $scope.searchResultsLabel = '1 of ' + $scope.nResults;
                 $scope.mainTermLabel = $scope.results[0].value2;
                 $scope.searchResultsIndex = 0;
 
@@ -171,7 +171,7 @@ angular
                   $scope.setForwardButtonsDisplayed(true);
                 }
               } else {
-                window.alert("No Matching Search Results.");
+                window.alert('No Matching Search Results.');
               }
               $rootScope.glassPane--;
 
@@ -188,18 +188,18 @@ angular
         $rootScope.glassPane++;
         $http(
           {
-            url : root_content + "index/"
-              + $scope.focusProject.destinationTerminology + "/"
-              + $scope.focusProject.destinationTerminologyVersion + "/"
+            url : root_content + 'index/'
+              + $scope.focusProject.destinationTerminology + '/'
+              + $scope.focusProject.destinationTerminologyVersion + '/'
               + domain,
-            dataType : "json",
-            method : "GET",
+            dataType : 'json',
+            method : 'GET',
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
           }).success(
           function(data) {
-            console.debug("Success in getting viewable pages for index.");
+            console.debug('Success in getting viewable pages for index.');
             $scope.indexPages = [];
             for (var i = 0; i < data.searchResult.length; i++) {
               $scope.indexPages.push(data.searchResult[i].value);
@@ -216,10 +216,10 @@ angular
             // when needed
             for (var i = 0; i < $scope.indexPages.length; i++) {
               $rootScope.glassPane++;
-              var url = "indexViewerData/"
-                + $scope.focusProject.destinationTerminology + "/"
-                + $scope.focusProject.destinationTerminologyVersion + "/html/"
-                + $scope.selectedDomain + "/" + $scope.indexPages[i] + ".html"
+              var url = 'indexViewerData/'
+                + $scope.focusProject.destinationTerminology + '/'
+                + $scope.focusProject.destinationTerminologyVersion + '/html/'
+                + $scope.selectedDomain + '/' + $scope.indexPages[i] + '.html'
 
               $http.get(url, {
                 cache : $templateCache
@@ -263,17 +263,17 @@ angular
 
         $scope.selectedPage = pageName;
 
-        $scope.tUrl = "indexViewerData/"
-          + $scope.focusProject.destinationTerminology + "/"
-          + $scope.focusProject.destinationTerminologyVersion + "/html/"
-          + $scope.selectedDomain + "/" + pageName + ".html";
+        $scope.tUrl = 'indexViewerData/'
+          + $scope.focusProject.destinationTerminology + '/'
+          + $scope.focusProject.destinationTerminologyVersion + '/html/'
+          + $scope.selectedDomain + '/' + pageName + '.html';
 
       };
 
       $scope.goFirstResult = function() {
         console.debug('goFirstResult called', $scope.searchResultsIndex);
         $scope.goToElement($scope.results[0].value);
-        $scope.searchResultsLabel = "1 of " + $scope.nResults;
+        $scope.searchResultsLabel = '1 of ' + $scope.nResults;
         $scope.mainTermLabel = $scope.results[0].value2;
         $scope.setBackwardButtonsDisplayed(false);
         $scope.setForwardButtonsDisplayed(true);
@@ -281,7 +281,7 @@ angular
 
       $scope.goPreviousResult = function() {
         console.debug('goPreviousResult called', $scope.searchResultsIndex);
-        $scope.searchResultsLabel = $scope.searchResultsIndex + " of "
+        $scope.searchResultsLabel = $scope.searchResultsIndex + ' of '
           + $scope.nResults;
         $scope.searchResultsIndex--;
         $scope.goToElement($scope.results[$scope.searchResultsIndex].value);
@@ -294,7 +294,7 @@ angular
       $scope.goNextResult = function() {
         console.debug('goNextResult called', $scope.searchResultsIndex);
         $scope.searchResultsIndex++;
-        $scope.searchResultsLabel = ($scope.searchResultsIndex + 1) + " of "
+        $scope.searchResultsLabel = ($scope.searchResultsIndex + 1) + ' of '
           + $scope.nResults;
         $scope.mainTermLabel = $scope.results[$scope.searchResultsIndex].value2;
         $scope.goToElement($scope.results[$scope.searchResultsIndex].value);
@@ -306,7 +306,7 @@ angular
       $scope.goLastResult = function() {
         console.debug('goLastResult called', $scope.searchResultsIndex);
         $scope.goToElement($scope.results[$scope.results.length - 1].value);
-        $scope.searchResultsLabel = $scope.nResults + " of " + $scope.nResults;
+        $scope.searchResultsLabel = $scope.nResults + ' of ' + $scope.nResults;
         $scope.mainTermLabel = $scope.results[$scope.results.length - 1].value2;
         $scope.setForwardButtonsDisplayed(false);
         $scope.setBackwardButtonsDisplayed(true);
@@ -324,7 +324,7 @@ angular
 
       $scope.$on('$locationChangeStart', function(ev, newUrl, oldUrl) {
         // prevent reloading because it messes up the scrolling
-        if (newUrl.indexOf("Help") == -1) {
+        if (newUrl.indexOf('Help') == -1) {
           ev.preventDefault();
           // if the Help page, allow the default reloading response
         }
@@ -344,7 +344,7 @@ angular
       $scope.set_style = function(indexTab) {
         if (indexTab == $scope.selectedPage) {
           return {
-            color : "red"
+            color : 'red'
           }
         }
       };

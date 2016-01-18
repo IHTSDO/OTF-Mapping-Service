@@ -3,7 +3,9 @@
 
 <p></p>
 
-<a href="#/project/details"><h3>{{project.name}}</h3></a>
+<a href="#/project/details">
+  <h3>{{project.name}}</h3>
+</a>
 <p></p>
 
 <p>{{errorRecords}}</p>
@@ -22,24 +24,25 @@
 
 <div ng-repeat="record in records" ng-class-odd="'odd'" ng-class-even="'even'">
   <h4>
-    {{record.conceptName}}, <a href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}</a>
+    {{record.conceptName}},
+    <a href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}</a>
   </h4>
 
   <div style="float: right; width: 3%;">
-       
-    <a title="Submit Feedback" ng-show="currentRole === 'Viewer'"  ng-click="openViewerFeedbackModal(record, currentUser.userName)"><i
-      class="glyphicon glyphicon glyphicon-comment"></i></a>
-    
-    <a title="Edit" ng-show="isEditable(record)" ng-click="editRecord(record)"><i
-      class="glyphicon glyphicon glyphicon-pencil"></i></a>
+
+    <a title="Submit Feedback" ng-show="currentRole === 'Viewer'"
+      ng-click="openViewerFeedbackModal(record, currentUser.userName)">
+      <i class="glyphicon glyphicon glyphicon-comment"></i>
+    </a>
+
+    <a title="Edit" ng-show="isEditable(record)" ng-click="editRecord(record)">
+      <i class="glyphicon glyphicon glyphicon-pencil"></i>
+    </a>
   </div>
 
   <div otf-map-record-wide record="record" project="focusProject"
     show-title="false"></div>
 </div>
-
-
-
 
 <div ng-include src="'./partials/footer.html'"></div>
 
