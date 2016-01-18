@@ -808,7 +808,7 @@ angular
         // assign the current user to the lastModifiedBy field
         $scope.record.lastModifiedBy = $scope.user;
 
-        // if only displaying record again, don't make rest call
+        // if only displaying record again, do not make rest call
         // if ($rootScope.currentPageDirty == false &&
         // !returnBack)
         // return;
@@ -1024,7 +1024,7 @@ angular
           }
         }
 
-        // if the conversation hasn't yet been started
+        // if the conversation has not yet been started
         if ($scope.conversation == null || $scope.conversation == '') {
 
           // create first feedback item to go into the

@@ -447,7 +447,7 @@ angular
         };
 
         // element-specific functions for filtering
-        // don't want to search id or objectId
+        // do not want to search id or objectId
 
         function containsUserFilter(element) {
 
