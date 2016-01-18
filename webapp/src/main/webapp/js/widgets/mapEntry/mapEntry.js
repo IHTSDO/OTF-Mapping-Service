@@ -62,9 +62,7 @@ angular
       $scope.localErrorRule = '';
 
       $scope.$watch('userToken', function() {
-
         $http.defaults.headers.common.Authorization = $scope.userToken;
-
       });
 
       // ///////////////////////////////////////
@@ -94,7 +92,7 @@ angular
         }
 
         $rootScope.glassPane++;
-
+        console.debug("check if code is valid",$scope.project.id,targetCode);
         $http(
           {
             url : root_mapping + 'project/id/' + $scope.project.id + '/concept/' + targetCode
@@ -104,6 +102,7 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
+            console.debug("  data = ",data);
           $rootScope.glassPane--;
 
           // if target found and valid
@@ -195,17 +194,16 @@ angular
         // and the entry may not have an id yet because it could be new.
         var copy = angular.copy($scope.record);
         // Find the matching localId and replace it and set the id to -1
-        console.debug("compute relation", $scope.record, entry);
-        for (var i = 0;i < copy.mapEntry.length; i++) {
+        for (var i = 0; i < copy.mapEntry.length; i++) {
           if (entry.localId == copy.mapEntry[i].localId) {
             var entryCopy = angular.copy(entry);
             entryCopy.id = -1;
-            copy.mapEntry.splice(i,1,entryCopy);
+            copy.mapEntry.splice(i, 1, entryCopy);
           }
         }
-        console.debug("  copy",copy);
-               
+
         $rootScope.glassPane++;
+        console.debug("compute map relations", copy);
         $http({
           url : root_mapping + 'relation/compute',
           dataType : 'json',
@@ -216,6 +214,7 @@ angular
           }
         }).success(
           function(data) {
+            console.debug("  data = ",data);
 
             if (data) {
 
@@ -246,7 +245,6 @@ angular
       }
 
       function computeAdvice(entry) {
-        console.debug("compute advice", entry);
         var deferred = $q.defer();
 
         // ensure mapAdvice is deserializable
@@ -260,16 +258,15 @@ angular
         // and the entry may not have an id yet because it could be new.
         var copy = angular.copy($scope.record);
         // Find the matching localId and replace it and set the id to -1
-        console.debug("compute relation", $scope.record, entry);
-        for (var i = 0;i < copy.mapEntry.length; i++) {
+        for (var i = 0; i < copy.mapEntry.length; i++) {
           if (entry.localId == copy.mapEntry[i].localId) {
             var entryCopy = angular.copy(entry);
             entryCopy.id = -1;
-            copy.mapEntry.splice(i,1,entryCopy);
+            copy.mapEntry.splice(i, 1, entryCopy);
           }
         }
-        console.debug("  copy",copy);
-        
+
+        console.debug("compute map advice", copy);
         $http({
           url : root_mapping + 'advice/compute',
           dataType : 'json',
@@ -280,7 +277,7 @@ angular
           }
         }).success(
           function(data) {
-            console.debug("  data = ", data);
+            console.debug("  data = ",data);
             if (data) {
               entry.mapAdvice = data.mapAdvice;
               // get the allowable advices and relations
@@ -381,7 +378,6 @@ angular
       var RuleConstructorModalCtrl = function($scope, $http, $modalInstance, presetAgeRanges, entry) {
 
         $scope.ruleError = '';
-
         $scope.customAgeRange = {
           'name' : '',
           'lowerValue' : '',
@@ -391,7 +387,6 @@ angular
           'upperInclusive' : 'false',
           'upperUnits' : 'years'
         };
-
         $scope.presetAgeRanges = presetAgeRanges;
 
         initializePresetAgeRanges();
