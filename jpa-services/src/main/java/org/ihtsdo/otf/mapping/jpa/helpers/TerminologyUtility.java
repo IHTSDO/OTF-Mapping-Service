@@ -185,7 +185,7 @@ public class TerminologyUtility {
   public static List<Concept> getActiveParents(Concept concept)
     throws Exception {
     if (concept == null) {
-      throw new Exception("Unexpected null concept passed to getActiveParents.");
+      return null;
     }
     final Long isaType =
         getHierarchicalType(concept.getTerminology(),
@@ -209,8 +209,7 @@ public class TerminologyUtility {
   public static List<Concept> getActiveChildren(Concept concept)
     throws Exception {
     if (concept == null) {
-      throw new Exception(
-          "Unexpected null concept passed to getActiveChildren.");
+      return null;
     }
     final Long isaType =
         getHierarchicalType(concept.getTerminology(),
@@ -234,8 +233,7 @@ public class TerminologyUtility {
    */
   public static boolean hasActiveChildren(Concept concept) throws Exception {
     if (concept == null) {
-      throw new Exception(
-          "Unexpected null concept passed to getActiveChildren.");
+      return false;
     }
     final Long isaType =
         getHierarchicalType(concept.getTerminology(),
