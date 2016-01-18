@@ -145,14 +145,11 @@ public class TerminologyUtility {
     for (final SearchResult result : list.getSearchResults()) {
       System.out.println("ASTERISK: " + result);
       if (result.getValue().equals("Asterisk refset")) {
-        asteriskRefsetIdMap.put(key, list.getSearchResults().get(0)
-            .getTerminologyId());
+        asteriskRefsetIdMap.put(key, result.getTerminologyId());
       } else if (result.getValue().equals("Dagger refset")) {
-        daggerRefsetIdMap.put(key, list.getSearchResults().get(0)
-            .getTerminologyId());
+        daggerRefsetIdMap.put(key, result.getTerminologyId());
       } else if (result.getValue().equals("Asterisk to dagger")) {
-        asteriskToDaggerIdMap.put(key, list.getSearchResults().get(0)
-            .getTerminologyId());
+        asteriskToDaggerIdMap.put(key, result.getTerminologyId());
       }
     }
     if (!asteriskToDaggerIdMap.containsKey(key)) {
