@@ -60,7 +60,8 @@ public class TerminologyUtility {
     // Lazy initialize asterisk refset
     if (!asteriskRefsetIdMap.containsKey(concept.getTerminology()
         + concept.getTerminologyVersion())) {
-      initDaggerAsterisk(concept, service);
+      initDaggerAsterisk(concept.getTerminology(),
+          concept.getTerminologyVersion(), service);
     }
 
     for (final SimpleRefSetMember member : concept.getSimpleRefSetMembers()) {
@@ -89,7 +90,8 @@ public class TerminologyUtility {
     }
     if (!daggerRefsetIdMap.containsKey(concept.getTerminology()
         + concept.getTerminologyVersion())) {
-      initDaggerAsterisk(concept, service);
+      initDaggerAsterisk(concept.getTerminology(),
+          concept.getTerminologyVersion(), service);
     }
     for (final SimpleRefSetMember member : concept.getSimpleRefSetMembers()) {
       if (member.getRefSetId().equals(
@@ -119,7 +121,8 @@ public class TerminologyUtility {
     // Lazy initialize asterisk to dagger rel type id
     if (!asteriskToDaggerIdMap.containsKey(asterisk.getTerminology()
         + asterisk.getTerminologyVersion())) {
-      initDaggerAsterisk(asterisk, service);
+      initDaggerAsterisk(asterisk.getTerminology(),
+          asterisk.getTerminologyVersion(), service);
     }
     // Assume concept is an asterisk concept
     for (Relationship rel : asterisk.getRelationships()) {
@@ -138,20 +141,19 @@ public class TerminologyUtility {
   /**
    * Inits the dagger asterisk.
    *
-   * @param concept the concept
+   * @param terminology the terminology
+   * @param version the version
    * @param service the service
-   * @throws Exception
+   * @throws Exception the exception
    */
-  private static void initDaggerAsterisk(Concept concept, ContentService service)
-    throws Exception {
+  private static void initDaggerAsterisk(String terminology, String version,
+    ContentService service) throws Exception {
     final SearchResultList list =
         service.findConceptsForQuery(
             "(defaultPreferredName:asterisk OR defaultPreferredName:dagger) "
-                + " AND terminology:" + concept.getTerminology()
-                + " AND terminologyVersion:" + concept.getTerminologyVersion(),
-            null);
-    final String key =
-        concept.getTerminology() + concept.getTerminologyVersion();
+                + " AND terminology:" + terminology
+                + " AND terminologyVersion:" + version, null);
+    final String key = terminology + version;
     for (final SearchResult result : list.getSearchResults()) {
       System.out.println("ASTERISK: " + result);
       if (result.getValue().equals("Asterisk refset")) {
