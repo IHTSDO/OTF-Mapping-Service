@@ -575,12 +575,12 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       final String adviceP03 = "POSSIBLE REQUIREMENT FOR PLACE OF OCCURRENCE";
       System.out.println("Checking principle 03");
       if (mapEntry.getTargetId().matches("(W..|X..|Y[0-2].|Y3[0-4]).*")
-          && !mapEntry.getTargetId().equals("Y06")
-          && !mapEntry.getTargetId().equals("Y07")
-          && !mapEntry.getTargetId().equals("Y35")
-          && !mapEntry.getTargetId().equals("Y36")
-          && !mapEntry.getTargetId().equals("X34")
-          && !mapEntry.getTargetId().equals("X59")
+          && !mapEntry.getTargetId().startsWith("Y06")
+          && !mapEntry.getTargetId().startsWith("Y07")
+          && !mapEntry.getTargetId().startsWith("Y35")
+          && !mapEntry.getTargetId().startsWith("Y36")
+          && !mapEntry.getTargetId().startsWith("X34")
+          && !mapEntry.getTargetId().startsWith("X59")
           && !TerminologyUtility.hasAdvice(mapEntry, adviceP03)) {
         System.out.println(" - FOUND");
         advices.add(TerminologyUtility.getAdvice(mapProject, adviceP03));
@@ -719,12 +719,12 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         // required,
         // return true for codes with 3 or more digits
         if (terminologyId.toUpperCase().matches("W..|X..|Y[0-2].|Y3[0-4]")
-            && !terminologyId.toUpperCase().equals("Y06")
-            && !terminologyId.toUpperCase().equals("Y07")
-            && !terminologyId.toUpperCase().equals("Y35")
-            && !terminologyId.toUpperCase().equals("Y36")
-            && !terminologyId.toUpperCase().equals("X34")
-            && !terminologyId.toUpperCase().equals("X59")) {
+            && !terminologyId.toUpperCase().startsWith("Y06")
+            && !terminologyId.toUpperCase().startsWith("Y07")
+            && !terminologyId.toUpperCase().startsWith("Y35")
+            && !terminologyId.toUpperCase().startsWith("Y36")
+            && !terminologyId.toUpperCase().startsWith("X34")
+            && !terminologyId.toUpperCase().startsWith("X59")) {
           // n/a
         }
 
@@ -865,6 +865,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
             mapProject.getDestinationTerminologyVersion());
 
     // cycle over the simple ref set members
+    // Add dagger/asterisk
     for (final SimpleRefSetMember simpleRefSetMember : concept
         .getSimpleRefSetMembers()) {
       Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info(
