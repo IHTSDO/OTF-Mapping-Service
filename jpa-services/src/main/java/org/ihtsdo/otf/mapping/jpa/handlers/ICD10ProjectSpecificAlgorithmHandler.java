@@ -2,7 +2,6 @@ package org.ihtsdo.otf.mapping.jpa.handlers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -16,17 +15,15 @@ import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
-import org.ihtsdo.otf.mapping.jpa.MapNoteJpa;
 import org.ihtsdo.otf.mapping.jpa.helpers.TerminologyUtility;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
-import org.ihtsdo.otf.mapping.model.MapNote;
+import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
-import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Description;
@@ -1120,9 +1117,19 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
   public void computeIdentifyAlgorithms(MapRecord mapRecord) throws Exception {
     System.out.println("Compute identify algorithm");
     // Attach a NOTE if the criteria for the algorithm is met
-    final List<String> notes = new ArrayList<>();
+    final List<MapPrinciple> principles = new ArrayList<>();
     final ContentService contentService = new ContentServiceJpa();
     try {
+
+      final Map<String, MapPrinciple> principleMap = new HashMap<>();
+      for (final MapPrinciple principle : mapProject.getMapPrinciples()) {
+        String id = principle.getPrincipleId();
+        // Strip leading zero
+        if (id.startsWith("0")) {
+          id = id.substring(1);
+        }
+        principleMap.put(id, principle);
+      }
 
       //
       // PREDICATE: SNOMED CT concept is a descendant of "Allergic Disposition"
@@ -1137,7 +1144,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       System.out.println("Checking principle 19");
       if (isAllergy) {
         System.out.println("  - TRUE");
-        notes.add("IDENTIFIED as a case of Principle 19 (allergy)");
+        principles.add(principleMap.get("19"));
       }
 
       //
@@ -1150,11 +1157,9 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
               mapProject.getSourceTerminology(),
               mapProject.getSourceTerminologyVersion(), "75478009");
       if (isPoisoning) {
-        System.out.println("  - TRU");
-        notes
-            .add("IDENTIFIED as a case of Principle 21 (poisoning - external cause)");
-        notes
-            .add("IDENTIFIED as a case of Principle 27 (poisoning - sequencing of codes)");
+        System.out.println("  - TRUE");
+        principles.add(principleMap.get("21"));
+        principles.add(principleMap.get("27"));
       }
 
       //
@@ -1164,7 +1169,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       System.out.println("Checking principle 31");
       if (mapRecord.getConceptName().toLowerCase().contains("and/or")) {
         System.out.println("  - TRUE");
-        notes.add("IDENTIFIED as a case of Principle 31 (and/or)");
+        principles.add(principleMap.get("31"));
       }
 
       //
@@ -1179,7 +1184,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
               mapProject.getSourceTerminologyVersion(), "399907009");
       if (isAnimalBite) {
         System.out.println("  - TRUE");
-        notes.add("IDENTIFIED as a case of Principle 32 (animal bite)");
+        principles.add(principleMap.get("32"));
       }
 
       //
@@ -1193,20 +1198,12 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           || mapRecord.getConceptName().toLowerCase()
               .matches(".*complication.*procedure.*")) {
         System.out.println("  - TRUE");
-        notes
-            .add("IDENTIFIED as a case of Principle 37 (postoperative complications)");
+        principles.add(principleMap.get("37"));
       }
 
       // Add the note if it exists
-      if (notes.size() > 0) {
-        for (final String note : notes) {
-          MapNote mapNote = new MapNoteJpa();
-          mapNote.setNote(note);
-          mapNote.setTimestamp(new Date());
-          final MapUser user = TerminologyUtility.getLoaderUser();
-          mapNote.setUser(user != null ? user : mapRecord.getLastModifiedBy());
-          mapRecord.addMapNote(mapNote);
-        }
+      if (principles.size() > 0) {
+        mapRecord.getMapPrinciples().addAll(principles);
       }
     } catch (Exception e) {
       throw e;
