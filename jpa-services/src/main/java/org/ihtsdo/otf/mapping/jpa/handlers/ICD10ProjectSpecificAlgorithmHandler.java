@@ -62,7 +62,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
   private boolean qaTrueRuleInGroup = false;
 
   /** The icd10 external cause codes. */
-  private static Set<String> icd10ExternalCauseCodes = null;
+  private static Map<String, Set<String>> externalCauseCodesMap =
+      new HashMap<>();
 
   /**
    * The parser.
@@ -554,6 +555,11 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
     try {
 
+      final Concept concept =
+          contentService.getConcept(mapEntry.getTargetId(),
+              mapProject.getDestinationTerminology(),
+              mapProject.getDestinationTerminologyVersion());
+
       // Remove any advices that are purlely computed and keep only manually
       // assigned ones
       final List<MapAdvice> notComputed = new ArrayList<>();
@@ -564,6 +570,31 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       }
       advices.clear();
       advices.addAll(notComputed);
+
+      //
+      // PREDICATE: asterisk code is used and it does not have
+      // THIS CODE MAY BE USED IN THE PRIMARY POSITION WHEN THE MANIFESTATION IS
+      // THE PRIMARY FOCUS OF CARE
+      // advice.
+      // ACTION: add the advice if not present, remove the advice if not
+      // asterisk code
+      // primary or secondary - any position
+      System.out.println("Checking asterisk code");
+      final String asteriskAdvice =
+          "THIS CODE MAY BE USED IN THE PRIMARY POSITION WHEN THE MANIFESTATION IS THE PRIMARY FOCUS OF CARE";
+      // If asterisk code
+      if (TerminologyUtility.isAsteriskCode(concept, contentService)) {
+        System.out.println("  FOUND - adding");
+        if (!TerminologyUtility.hasAdvice(mapEntry, asteriskAdvice)) {
+          advices.add(TerminologyUtility.getAdvice(mapProject, asteriskAdvice));
+        }
+      }
+      // otherwise if advice present
+      else if (TerminologyUtility.hasAdvice(mapEntry, asteriskAdvice)) {
+        System.out.println("  FOUND - removing");
+        advices
+            .remove(TerminologyUtility.getAdvice(mapProject, asteriskAdvice));
+      }
 
       //
       // PREDICATE: Non-primary W00-Y34 except X34,X59,Y06,Y07,Y35,Y36 without
@@ -582,6 +613,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           && !TerminologyUtility.hasAdvice(mapEntry, adviceP03)) {
         System.out.println(" - FOUND");
         advices.add(TerminologyUtility.getAdvice(mapProject, adviceP03));
+      } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP03)) {
+        advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP03));
       }
 
       //
@@ -1212,16 +1245,70 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
   }
 
   /**
-   * Returns the icd10 external cause codes.
-   *
-   * @return the icd10 external cause codes
+   * Returns the icd10 accidental poisoning codes. For descendants of 72431002
+   * (accidental poisoning)
+   * @return the icd10 accidental poisoning codes
    */
-  private static Set<String> getIcd10ExternalCauseCodes() {
-    if (icd10ExternalCauseCodes == null) {
+  private static Set<String> getIcd10AccidentalPoisoningCodes() {
+    final String key = "accidental";
+    if (!externalCauseCodesMap.containsKey(key)) {
+      final Set<String> accidentalCodes = new HashSet<>();
       // These codes come from columns 2/3/5 of the TEIL3.ASC index table
-      icd10ExternalCauseCodes.addAll(Arrays.asList(new String[] {
-          "X40", "X41", "X42", "X43", "X44", "X45", "X46", "X47", "X48", "X49",
-          "X60", "X61", "X62", "X63", "X64", "X65", "X66", "X67", "X68", "X69",
+      accidentalCodes.addAll(Arrays.asList(new String[] {
+          "X40", "X41", "X42", "X43", "X44", "X45", "X46", "X47", "X48", "X49"
+      }));
+      externalCauseCodesMap.put(key, accidentalCodes);
+    }
+    return externalCauseCodesMap.get(key);
+  }
+
+  /**
+   * Returns the icd10 intentional poisoning codes. For descendants of 410061008
+   * (intensional poisoining)
+   * @return the icd10 intentional poisoning codes
+   */
+  private static Set<String> getIcd10IntentionalPoisoningCodes() {
+    final String key = "intentional";
+    if (!externalCauseCodesMap.containsKey(key)) {
+      final Set<String> intentionalCodes = new HashSet<>();
+      // These codes come from columns 2/3/5 of the TEIL3.ASC index table
+      intentionalCodes.addAll(Arrays.asList(new String[] {
+          "X60", "X61", "X62", "X63", "X66", "X65", "X66", "X67", "X68", "X69"
+      }));
+      externalCauseCodesMap.put(key, intentionalCodes);
+    }
+    return externalCauseCodesMap.get(key);
+  }
+
+  /**
+   * Returns the icd10 undetermined poisoning codes. For descendants of
+   * 269736006 (poisoning of undetermined intent)
+   * @return the icd10 undetermined poisoning codes
+   */
+  private static Set<String> getIcd10UndeterminedPoisoningCodes() {
+    final String key = "undetermined";
+    if (!externalCauseCodesMap.containsKey(key)) {
+      final Set<String> undeterminedCodes = new HashSet<>();
+      // These codes come from columns 2/3/5 of the TEIL3.ASC index table
+      undeterminedCodes.addAll(Arrays.asList(new String[] {
+          "Y10", "Y11", "Y12", "Y13", "Y16", "Y15", "Y16", "Y17", "Y18", "Y19"
+      }));
+      externalCauseCodesMap.put(key, undeterminedCodes);
+    }
+    return externalCauseCodesMap.get(key);
+  }
+
+  /**
+   * Returns the icd10 adverse effect poisoning codes. For descendants of
+   * 281647001 (adverse reaction)
+   * @return the icd10 adverse effect poisoning codes
+   */
+  private static Set<String> getIcd10AdverseEffectPoisoningCodes() {
+    final String key = "adverseEffect";
+    if (!externalCauseCodesMap.containsKey(key)) {
+      final Set<String> adverseEffectCodes = new HashSet<>();
+      // These codes come from columns 2/3/5 of the TEIL3.ASC index table
+      adverseEffectCodes.addAll(Arrays.asList(new String[] {
           "Y40.0", "Y40.1", "Y40.3", "Y40.5", "Y40.6", "Y40.7", "Y40.8",
           "Y40.9", "Y41.0", "Y41.1", "Y41.2", "Y41.3", "Y41.4", "Y41.5",
           "Y41.8", "Y41.9", "Y42.2", "Y42.3", "Y42.4", "Y42.5", "Y42.6",
@@ -1241,9 +1328,9 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           "Y56.3", "Y56.4", "Y56.5", "Y56.6", "Y57.0", "Y57.1", "Y57.2",
           "Y57.3", "Y57.5", "Y57.6", "Y57.7", "Y57.8", "Y59.3"
       }));
-
+      externalCauseCodesMap.put(key, adverseEffectCodes);
     }
-    return icd10ExternalCauseCodes;
+    return externalCauseCodesMap.get(key);
   }
 
   /**
@@ -1255,15 +1342,9 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
   @SuppressWarnings("static-method")
   private boolean hasUseAdditional(Concept concept) {
     for (final Description desc : concept.getDescriptions()) {
-      if (desc
-          .getTerm()
-          .startsWith(
-              "Use additional code (B95-B98), if desired, to identify infectious agent")) {
+      if (desc.getTerm().matches("Use additional code.*infectious agent")) {
         return true;
-      } else if (desc
-          .getTerm()
-          .startsWith(
-              "Use additional code (B95-B96), if desired, to identify bacterial agent")) {
+      } else if (desc.getTerm().matches("Use additional code.*bacterial agent")) {
         return true;
       }
 
