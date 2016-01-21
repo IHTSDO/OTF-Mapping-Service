@@ -2390,7 +2390,6 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
         if (rel.getTerminologyId().startsWith(desc.getTerminologyId() + "~")) {
 
-          // // System.out.println("     Matches!");
 
           // Non-persisted objects, so remove this description from
           // list, modify it, and re-add it
@@ -2402,37 +2401,21 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
           referencedConcept.setTerminologyId(rel.getDestinationConcept()
               .getTerminologyId());
 
+          // if no label, just use terminology id
+          // if label present, use label as display name
           String displayName =
               (rel.getLabel() == null ? rel.getDestinationConcept()
-                  .getTerminologyId() : // if
-                  // no
-                  // label,
-                  // just
-                  // use
-                  // terminology
-                  // id
-                  rel.getLabel()); // if label present, use label as
-          // display name
+                  .getTerminologyId() :
+              rel.getLabel()); 
 
-          // // System.out.println("      Destination Concept: "
-          // + rel.getDestinationConcept().getTerminologyId()
-          // + " with label "
-          // + rel.getDestinationConcept().getLabel());
 
-          // switch on relationship type to add any additional
-          // information
+          // switch on relationship type to add any additional information
           String relType = relTypes.get(rel.getTypeId().toString());
-
-          // // System.out.println("      Relationship type: "
-          // + rel.getTypeId().toString() + ", "
-          // + relTypes.get(rel.getTypeId().toString()));
 
           // if asterisk-to-dagger, add †
           if (relType.indexOf("Asterisk") == 0) {
-            // // System.out.println("           ASTERISK");
             displayName += " *";
           } else if (relType.indexOf("Dagger") == 0) {
-            // // System.out.println("           DAGGER");
             displayName += " \u2020";
           }
 
