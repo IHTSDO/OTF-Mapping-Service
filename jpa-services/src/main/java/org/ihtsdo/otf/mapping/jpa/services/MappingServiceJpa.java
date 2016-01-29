@@ -91,7 +91,9 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.model.MapUserPreferences;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
+import org.ihtsdo.otf.mapping.rf2.SimpleMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
+import org.ihtsdo.otf.mapping.rf2.jpa.ComplexMapRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
@@ -2284,13 +2286,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
   // / Services for Map Project Creation
   // ///////////////////////////////////////
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#createMapRecordsForMapProject
-   * (java.lang.Long, org.ihtsdo.otf.mapping.helpers.WorkflowStatus)
-   */
+  /* see superclass */
   @Override
   public void createMapRecordsForMapProject(Long mapProjectId,
     WorkflowStatus workflowStatus) throws Exception {
@@ -2316,24 +2312,40 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       loaderUser.setEmail("none");
       loaderUser = addMapUser(loaderUser);
     }
+    List<ComplexMapRefSetMember> members = new ArrayList<>();
 
-    // retrieve all complex map ref set members for mapProject
-    javax.persistence.Query query =
-        manager.createQuery("select r from ComplexMapRefSetMemberJpa r "
-            + "where r.refSetId = :refSetId order by r.concept.id, "
-            + "r.mapBlock, r.mapGroup, r.mapPriority");
-    query.setParameter("refSetId", mapProject.getRefSetId());
-    List<ComplexMapRefSetMember> complexMapRefSetMembers = new ArrayList<>();
-    for (Object member : query.getResultList()) {
-      ComplexMapRefSetMember refSetMember = (ComplexMapRefSetMember) member;
-      complexMapRefSetMembers.add(refSetMember);
+    // IF map project uses "simple", then construct a query from a simple map
+    if (mapProject.getMapRefsetPattern() == MapRefsetPattern.SimpleMap) {
+      // else retrieve all complex map ref set members for mapProject
+      javax.persistence.Query query =
+          manager.createQuery("select r from SimpleMapRefSetMemberJpa r "
+              + "where r.refSetId = :refSetId");
+      query.setParameter("refSetId", mapProject.getRefSetId());
+      for (Object member : query.getResultList()) {
+        final SimpleMapRefSetMember simpleMember =
+            (SimpleMapRefSetMember) member;
+        final ComplexMapRefSetMember complexMember =
+            new ComplexMapRefSetMemberJpa(simpleMember);
+        members.add(complexMember);
+      }
     }
 
-    Logger.getLogger(MappingServiceJpa.class).warn(
-        "  " + complexMapRefSetMembers.size()
-            + " complex map refset members found (some skipped)");
-    createMapRecordsForMapProject(mapProjectId, loaderUser,
-        complexMapRefSetMembers, workflowStatus);
+    // else retrieve all complex map ref set members for mapProject
+    else {
+      javax.persistence.Query query =
+          manager.createQuery("select r from ComplexMapRefSetMemberJpa r "
+              + "where r.refSetId = :refSetId order by r.concept.id, "
+              + "r.mapBlock, r.mapGroup, r.mapPriority");
+      query.setParameter("refSetId", mapProject.getRefSetId());
+      for (Object member : query.getResultList()) {
+        ComplexMapRefSetMember refSetMember = (ComplexMapRefSetMember) member;
+        members.add(refSetMember);
+      }
+    }
+
+    // Create the map records
+    createMapRecordsForMapProject(mapProjectId, loaderUser, members,
+        workflowStatus);
   }
 
   // ONLY FOR TESTING PURPOSES

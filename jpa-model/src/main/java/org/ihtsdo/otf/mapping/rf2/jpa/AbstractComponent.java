@@ -54,6 +54,29 @@ public abstract class AbstractComponent implements Component {
   private String terminologyVersion;
 
   /**
+   * Instantiates an empty {@link AbstractComponent}.
+   */
+  public AbstractComponent() {
+    // n/a
+  }
+
+  /**
+   * Instantiates a {@link AbstractComponent} from the specified parameters.
+   *
+   * @param comp the comp
+   */
+  public AbstractComponent(Component comp) {
+    this.id = comp.getId();
+    this.effectiveTime = comp.getEffectiveTime();
+    this.active = comp.isActive();
+    this.moduleId = comp.getModuleId();
+    this.terminology = comp.getTerminology();
+    this.terminologyId = comp.getTerminologyId();
+    this.terminologyVersion = comp.getTerminologyVersion();
+
+  }
+
+  /**
    * Generalized field for any additional value that needs to be attached to a
    * component
    */
