@@ -1,6 +1,7 @@
 package org.ihtsdo.otf.mapping.services;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.ComplexMapRefSetMemberList;
@@ -586,6 +587,19 @@ public interface ContentService extends RootService {
    */
   public boolean isDescendantOf(String terminologyId, String terminology,
     String version, String ancestorId) throws Exception;
+
+  /**
+   * Indicates whether or not descendant of is the case.
+   *
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param version the version
+   * @param ancestorIds the ancestor ids
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   * @throws Exception the exception
+   */
+  public boolean isDescendantOf(String terminologyId, String terminology,
+    String version, List<String> ancestorIds) throws Exception;
 
   /**
    * Find concepts modified since date.

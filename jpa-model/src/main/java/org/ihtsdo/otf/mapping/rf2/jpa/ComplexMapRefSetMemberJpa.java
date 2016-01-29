@@ -5,6 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
+import org.ihtsdo.otf.mapping.rf2.SimpleMapRefSetMember;
 
 /**
  * JPA enabled implementation of {@link ComplexMapRefSetMember}.
@@ -50,6 +51,32 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
   /** the correlation id. */
   @Column(nullable = false)
   private Long mapRelationId;
+
+  /**
+   * Instantiates an empty {@link ComplexMapRefSetMemberJpa}.
+   */
+  public ComplexMapRefSetMemberJpa() {
+    super();
+  }
+
+  /**
+   * Instantiates a {@link ComplexMapRefSetMemberJpa} from the specified
+   * parameters.
+   *
+   * @param member the member
+   */
+  public ComplexMapRefSetMemberJpa(SimpleMapRefSetMember member) {
+    super(member);
+    this.mapBlock = 0;
+    this.mapBlockRule = null;
+    this.mapBlockAdvice = null;
+    this.mapGroup = 0;
+    this.mapPriority = 0;
+    this.mapRule = null;
+    this.mapAdvice = null;
+    this.mapTarget = member.getMapTarget();
+    this.mapRelationId = 0L;
+  }
 
   /**
    * returns the mapBlock.
