@@ -45,7 +45,7 @@
   </properties>
 
   <profiles>
-    
+
     <profile>
       <id>CreateMapAdmin</id>
       <build>
@@ -222,6 +222,33 @@
                 </goals>
                 <configuration>
                   <inputFile>${input.file}</inputFile>
+                  <terminology>${terminology}</terminology>
+                  <version>${version}</version>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- Load GMDN -Drun.config=.. must also be specified. -->
+    <profile>
+      <id>GMDN</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>load-gmdn</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>load-gmdn</goal>
+                </goals>
+                <configuration>
+                  <inputDir>${input.dir}</inputDir>
                   <terminology>${terminology}</terminology>
                   <version>${version}</version>
                 </configuration>

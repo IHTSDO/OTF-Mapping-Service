@@ -1980,6 +1980,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     return treePositionList;
   }
 
+  /* see superclass */
   @Override
   public boolean isDescendantOf(String terminologyId, String terminology,
     String terminologyVersion, String ancestorId) throws Exception {
@@ -1993,6 +1994,41 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
                     + "and ancestorPath like :path")
             .setParameter("path", "%~" + ancestorId + "~%")
             .setParameter("terminology", terminology)
+            .setParameter("terminologyVersion", terminologyVersion)
+            .setParameter("terminologyId", terminologyId).getSingleResult();
+    return ct > 0;
+  }
+
+  /* see superclass */
+  @Override
+  public boolean isDescendantOf(String terminologyId, String terminology,
+    String terminologyVersion, List<String> ancestorIds) throws Exception {
+
+    // Build clauses - this will probably fail with too many ids
+    StringBuilder sb = new StringBuilder();
+    sb.append("and (");
+    boolean seen = false;
+    for (int i = 1; i <= ancestorIds.size(); i++) {
+      if (seen) {
+        sb.append(" or ");
+      }
+      seen = true;
+      sb.append("ancestorPath like :path" + i);
+    }
+    sb.append(")");
+    
+    final javax.persistence.Query query =
+        manager.createQuery("select count(tp) from TreePositionJpa tp "
+            + "where terminologyVersion = :terminologyVersion "
+            + "and terminology = :terminology "
+            + "and terminologyId = :terminologyId " + sb.toString());
+
+    // Build parameters
+    for (int i = 1; i <= ancestorIds.size(); i++) {
+      query.setParameter("path" + i, "%~" + ancestorIds.get(i) + "~%");
+    }
+    final long ct =
+        (long) query.setParameter("terminology", terminology)
             .setParameter("terminologyVersion", terminologyVersion)
             .setParameter("terminologyId", terminologyId).getSingleResult();
     return ct > 0;
@@ -2390,7 +2426,6 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
         if (rel.getTerminologyId().startsWith(desc.getTerminologyId() + "~")) {
 
-
           // Non-persisted objects, so remove this description from
           // list, modify it, and re-add it
           descGroup.removeTreePositionDescription(tpDesc);
@@ -2405,9 +2440,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
           // if label present, use label as display name
           String displayName =
               (rel.getLabel() == null ? rel.getDestinationConcept()
-                  .getTerminologyId() :
-              rel.getLabel()); 
-
+                  .getTerminologyId() : rel.getLabel());
 
           // switch on relationship type to add any additional information
           String relType = relTypes.get(rel.getTypeId().toString());
