@@ -226,7 +226,7 @@ public class ConfigUtility {
     throws Exception {
     // avoid sending mail if disabled
     final Properties details = ConfigUtility.getConfigProperties();
-    
+
     String from = details.getProperty("mail.smtp.user");
     if ("false".equals(details.getProperty("mail.enabled"))) {
       // do nothing
