@@ -405,6 +405,10 @@ public class ConfigUtility {
                 return i;
               } else {
                 i = Integer.parseInt(fields1[7]) - Integer.parseInt(fields2[7]);
+                // Handle simple case
+                if (fields1.length == 8) {
+                  return i;
+                }
                 if (i != 0) {
                   return i;
                 } else {
@@ -464,6 +468,9 @@ public class ConfigUtility {
           return i;
         } else {
           i = Integer.parseInt(fields1[7]) - Integer.parseInt(fields2[7]);
+          if (fields1.length == 8) {
+            return i;
+          }
           if (i != 0) {
             return i;
           } else {
