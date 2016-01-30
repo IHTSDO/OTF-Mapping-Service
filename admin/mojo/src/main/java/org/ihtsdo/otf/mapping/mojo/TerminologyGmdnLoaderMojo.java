@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.io.PushbackInputStream;
 import java.io.Reader;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -18,12 +19,12 @@ import java.util.Stack;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.helpers.GmdnMetadataHelper;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
-import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.rf2.Component;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Description;
@@ -32,7 +33,6 @@ import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.DescriptionJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.RelationshipJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
-import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -88,7 +88,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
   Map<String, Concept> conceptMap;
 
   /** The roots. */
-  List<String> roots = null;
+  List<String> roots = new ArrayList<>();
 
   /** The content service. */
   ContentService contentService;
@@ -198,7 +198,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
       //
 
       // Prep SAX parser
-      getLog().info("Process collectiveterm file");
+      getLog().info("  Process collectiveterm file");
       factory = SAXParserFactory.newInstance();
       factory.setValidating(false);
       saxParser = factory.newSAXParser();
@@ -220,7 +220,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
       //
 
       // Prep SAX parser
-      getLog().info("Process termcollectiveterm file");
+      getLog().info("  Process termcollectiveterm file");
       factory = SAXParserFactory.newInstance();
       factory.setValidating(false);
       saxParser = factory.newSAXParser();
@@ -242,7 +242,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
       //
 
       // Prep SAX parser
-      getLog().info("Process cttreenode file");
+      getLog().info("  Process cttreenode file");
       factory = SAXParserFactory.newInstance();
       factory.setValidating(false);
       saxParser = factory.newSAXParser();
@@ -262,24 +262,13 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
       // Commit when finished
       contentService.commit();
 
-      // Create tree positions
-      // - get isaRelType from metadata
-      final MetadataService metadataService = new MetadataServiceJpa();
-      final Map<String, String> hierRelTypeMap =
-          metadataService
-              .getHierarchicalRelationshipTypes(terminology, version);
-      final String isaRelType =
-          hierRelTypeMap.keySet().iterator().next().toString();
-      metadataService.close();
-
       // Let the service create its own transaction.
+      final String isaRelType = conceptMap.get("isa").getTerminologyId();
       for (final String root : roots) {
-        getLog().info(
-            "Start creating tree positions " + root + ", " + isaRelType);
+        getLog().info("Create tree positions for " + root + ", " + isaRelType);
         contentService.computeTreePositions(terminology, version, isaRelType,
             root);
       }
-      contentService.close();
 
       getLog().info("Done ...");
 
@@ -442,7 +431,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
         if (qName.equalsIgnoreCase("term")) {
           // Add the concept
           // CASCADE will handle descriptions
-          getLog().info("    concept = " + concept);
+          getLog().debug("    concept = " + concept);
           contentService.addConcept(concept);
         }
 
@@ -582,7 +571,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
         if (qName.equalsIgnoreCase("collectiveterm")) {
           // Add the concept
           // CASCADE will handle descriptions
-          getLog().info("   concept = " + concept);
+          getLog().debug("   concept = " + concept);
           contentService.addConcept(concept);
         }
 
@@ -693,7 +682,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
         if (qName.equalsIgnoreCase("termcollectiveterm")) {
           // Add the relationship
           // the concepts on either end must already be added
-          getLog().info("    rel = " + relationship);
+          getLog().debug("    rel = " + relationship);
           contentService.addRelationship(relationship);
         }
 
@@ -786,6 +775,12 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
         else if (qName.equalsIgnoreCase("parentnodeID")) {
           if (chars != null && !chars.toString().trim().isEmpty()) {
             nodeChdParMap.put(cttreenodeID, chars.toString().trim());
+          } else {
+            final String rootTerm = nodeTermMap.get(cttreenodeID);
+            final String rootCode = conceptMap.get(rootTerm).getTerminologyId();
+            Logger.getLogger(getClass()).info(
+                "    ROOT = " + rootTerm + ", " + rootCode);
+            roots.add(rootCode);
           }
         }
 
