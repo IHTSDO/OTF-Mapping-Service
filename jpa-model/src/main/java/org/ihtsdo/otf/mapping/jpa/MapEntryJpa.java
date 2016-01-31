@@ -76,7 +76,7 @@ public class MapEntryJpa implements MapEntry {
   @Column(nullable = false)
   private int mapPriority;
 
-  /**  The map relation. */
+  /** The map relation. */
   @OneToOne(targetEntity = MapRelationJpa.class, fetch = FetchType.EAGER)
   @IndexedEmbedded(targetElement = MapRelationJpa.class)
   private MapRelation mapRelation;
@@ -134,8 +134,6 @@ public class MapEntryJpa implements MapEntry {
    */
   public MapEntryJpa(MapEntry mapEntry, boolean keepIds) {
     super();
-
-    // System.out.println("Deep copying entry.");
 
     // copy id, otherwise leave null
     if (keepIds) {
@@ -583,8 +581,6 @@ public class MapEntryJpa implements MapEntry {
     } else if (me.getMapRelation() != null) {
       return false;
     }
-
-    // System.out.println("  Relations equal");
     // advices must be identical
     if (this.mapAdvices == null && me.getMapAdvices() != null) {
       return false;
@@ -599,10 +595,6 @@ public class MapEntryJpa implements MapEntry {
           return false;
       }
     }
-
-    // System.out.println("  Advices equal");
-
-    // System.out.println("Entries equivalent.");
 
     return true;
   }

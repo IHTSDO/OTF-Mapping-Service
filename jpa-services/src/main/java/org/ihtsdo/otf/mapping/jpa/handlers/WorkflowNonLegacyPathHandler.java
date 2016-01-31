@@ -137,23 +137,11 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
     // Terminal State: No tracking record
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.jpa.handlers.AbstractWorkflowPathHandler#
-   * validateTrackingRecordForActionAndUser
-   * (org.ihtsdo.otf.mapping.workflow.TrackingRecord,
-   * org.ihtsdo.otf.mapping.helpers.WorkflowAction,
-   * org.ihtsdo.otf.mapping.model.MapUser)
-   */
+
   /* see superclass */
-  @SuppressWarnings("unused")
   @Override
   public ValidationResult validateTrackingRecordForActionAndUser(
     TrackingRecord tr, WorkflowAction action, MapUser user) throws Exception {
-
-    System.out.println("TrackingRecord " + tr.getUserAndWorkflowStatusPairs());
-    System.out.println("  User/action  " + user.getUserName() + "/" + action);
 
     // throw exception if action or user are undefined
     if (action == null)
@@ -167,7 +155,6 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
     if (!result.isValid()) {
       result
           .addError("Could not validate action for user due to workflow errors.");
-      System.out.println("  " + result.toString());
       return result;
     }
 
@@ -213,8 +200,6 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
     // Minimum role : Specialist
     else if (state.equals(initialState)) {
 
-      System.out.println("initial");
-
       // check record
       if (currentRecord != null) {
         result.addError("User's record does not meet requirements");
@@ -237,8 +222,6 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
     // Minimum role : Specialist
     else if (state.equals(firstSpecialistEditingState)) {
 
-      System.out.println("firstspecialist");
-
       // check role
       if (!userRole.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
         result.addError("User does not have required role");
@@ -246,8 +229,6 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
 
       // check record
       if (currentRecord == null) {
-
-        System.out.println("No record");
 
         // check action
         if (!action.equals(WorkflowAction.ASSIGN_FROM_SCRATCH)) {
@@ -263,8 +244,6 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
                 WorkflowStatus.EDITING_IN_PROGRESS)
             && !currentRecord.getWorkflowStatus().equals(
                 WorkflowStatus.EDITING_DONE)) {
-
-          System.out.println("  Matches");
 
           result.addError("User's record does not meet requirements");
         }
@@ -285,8 +264,6 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
       // Minimum role : Specialist
 
     } else if (state.equals(secondSpecialistEditingState)) {
-
-      System.out.println("Second specialist");
 
       // check record
       if (currentRecord == null) {
@@ -323,8 +300,6 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
       // Permissible actions: FINISH_EDITING, SAVE_FOR_LATER, UNASSGIN
       // Minimum role : Specialist
     } else if (state.equals(conflictDetectedState)) {
-
-      System.out.println("Conflict detected");
 
       // case 1: Lead claiming conflict for review
       if (currentRecord == null) {
@@ -370,8 +345,6 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
       // Minimum role : Lead
     } else if (state.equals(leadEditingState)) {
 
-      System.out.println("Lead editing");
-
       // check record
       if (currentRecord == null) {
         result.addError("User must have a record");
@@ -400,7 +373,6 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
       // Minimum role : Lead
     } else if (state.equals(leadFinishedState)) {
 
-      System.out.println("Lead finished");
       // check record
       if (currentRecord == null) {
         result.addError("User must have a record");

@@ -4,7 +4,7 @@
 
 <table style="margin-top: 10px;">
   <tr>
-    <td style="padding: 5px";>Filter concepts:</td>
+    <td style="padding: 5px;">Filter concepts:</td>
     <td style="padding: 5px;">
       <form>
         <input id="assignedSearch" ng-model="queryAssigned">
@@ -20,14 +20,14 @@
     <td>
       <form>
         <input type="radio" ng-model="assignedWorkType" value="ALL"
-          ng-change="retrieveAssignedWork(1, queryAssigned, assignedWorkType)">All</input>
+          ng-change="retrieveAssignedWork(1, queryAssigned, assignedWorkType)">All
         <input type="radio" ng-model="assignedWorkType" value="NEW"
-          ng-change="retrieveAssignedWork(1, queryAssigned, assignedWorkType)">New</input>
+          ng-change="retrieveAssignedWork(1, queryAssigned, assignedWorkType)">New
         <input type="radio" ng-model="assignedWorkType"
           value="EDITING_IN_PROGRESS"
-          ng-change="retrieveAssignedWork(1, queryAssigned, assignedWorkType)">Editing</input>
+          ng-change="retrieveAssignedWork(1, queryAssigned, assignedWorkType)">Editing
         <input type="radio" ng-model="assignedWorkType" value="EDITING_DONE"
-          ng-change="retrieveAssignedWork(1, queryAssigned, assignedWorkType)">Finished</input>
+          ng-change="retrieveAssignedWork(1, queryAssigned, assignedWorkType)">Finished
       </form>
     </td>
   </tr>
@@ -120,7 +120,7 @@
 
         <td style="width: 3%; padding: 5px;">
           <!-- Display a checkmark if this record has previously been edited -->
-          <a style:"display:inline" title='Finish this concept'
+          <a style="display: inline" title='Finish this concept'
             ng-show="result.terminologyVersion === 'EDITING_IN_PROGRESS' && assignedWorkType === 'EDITING_IN_PROGRESS'">
             <i ng-click="finishOrPublish(result)" class="glyphicon glyphicon-ok"></i>
           </a>
@@ -158,7 +158,7 @@
 
 <table style="margin-top: 10px; margin-bottom: 10px;">
   <tr>
-    <td style="padding: 5px";>Filter concepts:</td>
+    <td style="padding: 5px;">Filter concepts:</td>
     <td style="padding: 5px;">
       <form>
         <input id="conflictSearch" ng-model="queryConflict">
@@ -174,15 +174,15 @@
     <td>
       <form>
         <input type="radio" ng-model="assignedConflictType" value="ALL"
-          ng-change="retrieveAssignedConflicts(1, queryAssigned, assignedConflictType)">All</input>
+          ng-change="retrieveAssignedConflicts(1, queryAssigned, assignedConflictType)">All
         <input type="radio" ng-model="assignedConflictType" value="CONFLICT_NEW"
-          ng-change="retrieveAssignedConflicts(1, queryAssigned, assignedConflictType)">New</input>
+          ng-change="retrieveAssignedConflicts(1, queryAssigned, assignedConflictType)">New
         <input type="radio" ng-model="assignedConflictType"
           value="CONFLICT_IN_PROGRESS"
-          ng-change="retrieveAssignedConflicts(1, queryAssigned, assignedConflictType)">Editing</input>
+          ng-change="retrieveAssignedConflicts(1, queryAssigned, assignedConflictType)">Editing
         <input type="radio" ng-model="assignedConflictType"
           value="CONFLICT_RESOLVED"
-          ng-change="retrieveAssignedConflicts(1, queryAssigned, assignedConflictType)">Resolved</input>
+          ng-change="retrieveAssignedConflicts(1, queryAssigned, assignedConflictType)">Resolved
       </form>
     </td>
   </tr>
@@ -264,12 +264,12 @@
         <td style="width: 14%; padding: 5px;">{{result.terminologyId}}</td>
         <td style="width: 3%; padding: 5px;">
           <!-- Display a checkmark to finish if in progress -->
-          <a style:"display:inline" title='Resolve this conflict'
+          <a style="display: inline" title='Resolve this conflict'
             ng-show="result.terminologyVersion === 'CONFLICT_IN_PROGRESS' && assignedConflictType === 'CONFLICT_IN_PROGRESS'">
             <i ng-click="finishOrPublish(result)" class="glyphicon glyphicon-ok"></i>
           </a>
           <!-- Display a checkmark to publish if this record is resolved -->
-          <a style:"display:inline" title='Publish this resolved conflict'
+          <a style="display: inline" title='Publish this resolved conflict'
             ng-show="result.terminologyVersion === 'CONFLICT_RESOLVED' && assignedConflictType === 'CONFLICT_RESOLVED'">
             <i ng-click="finishOrPublish(result)" class="glyphicon glyphicon-ok"></i>
           </a>
@@ -293,17 +293,12 @@
     concepts matched the search.</div>
 </div>
 
-</div>
-
-
 </tab> <tab heading="{{tabs[2].title}}" active="tabs[2].active" select="setTab(2)"
   ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
 
-
-
 <table style="margin-top: 10px; margin-bottom: 10px;">
   <tr>
-    <td style="padding: 5px";>Filter concepts:</td>
+    <td style="padding: 5px;">Filter concepts:</td>
     <td style="padding: 5px;">
       <form>
         <input id="reviewSearch" ng-model="queryReviewWork">
@@ -319,15 +314,15 @@
     <td>
       <form>
         <input type="radio" ng-model="assignedReviewWorkType" value="ALL"
-          ng-change="retrieveAssignedReviewWork(1, queryAssigned, assignedReviewWorkType)">All</input>
+          ng-change="retrieveAssignedReviewWork(1, queryAssigned, assignedReviewWorkType)">All
         <input type="radio" ng-model="assignedReviewWorkType" value="REVIEW_NEW"
-          ng-change="retrieveAssignedReviewWork(1, queryAssigned, assignedReviewWorkType)">New</input>
+          ng-change="retrieveAssignedReviewWork(1, queryAssigned, assignedReviewWorkType)">New
         <input type="radio" ng-model="assignedReviewWorkType"
           value="REVIEW_IN_PROGRESS"
-          ng-change="retrieveAssignedReviewWork(1, queryAssigned, assignedReviewWorkType)">Editing</input>
+          ng-change="retrieveAssignedReviewWork(1, queryAssigned, assignedReviewWorkType)">Editing
         <input type="radio" ng-model="assignedReviewWorkType"
           value="REVIEW_RESOLVED"
-          ng-change="retrieveAssignedReviewWork(1, queryAssigned, assignedReviewWorkType)">Resolved</input>
+          ng-change="retrieveAssignedReviewWork(1, queryAssigned, assignedReviewWorkType)">Resolved
       </form>
     </td>
   </tr>
@@ -405,12 +400,12 @@
 
         <td style="width: 3%; padding: 5px;">
           <!-- Display a checkmark if this record has previously been edited -->
-          <a style:"display:inline" title='Finish this review work'
+          <a style="display: inline" title='Finish this review work'
             ng-show="result.terminologyVersion === 'REVIEW_IN_PROGRESS' && assignedReviewWorkType === 'REVIEW_IN_PROGRESS'">
             <i ng-click="finishOrPublish(result)" class="glyphicon glyphicon-ok"></i>
           </a>
           <!-- Display a checkmark if this record has previously resolved -->
-          <a style:"display:inline" title='Publish this resolved review work'
+          <a style="display: inline" title='Publish this resolved review work'
             ng-show="result.terminologyVersion === 'REVIEW_RESOLVED' && assignedReviewWorkType === 'REVIEW_RESOLVED'">
             <i ng-click="finishOrPublish(result)" class="glyphicon glyphicon-ok"></i>
           </a>
@@ -448,7 +443,7 @@
     </td>
   </tr>
   <tr>
-    <td style="padding: 5px";>Filter concepts:</td>
+    <td style="padding: 5px;">Filter concepts:</td>
     <td style="padding: 5px;">
       <form>
         <input id="assignedForUserSearch" ng-model="queryAssignedForUser">
@@ -464,15 +459,15 @@
     <td>
       <form>
         <input type="radio" ng-model="assignedWorkForUserType" value="ALL"
-          ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssigned, assignedWorkForUserType)">All</input>
+          ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssigned, assignedWorkForUserType)">All
         <input type="radio" ng-model="assignedWorkForUserType" value="NEW"
-          ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssigned, assignedWorkForUserType)">New</input>
+          ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssigned, assignedWorkForUserType)">New
         <input type="radio" ng-model="assignedWorkForUserType"
           value="EDITING_IN_PROGRESS"
-          ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssigned, assignedWorkForUserType)">Editing</input>
+          ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssigned, assignedWorkForUserType)">Editing
         <input type="radio" ng-model="assignedWorkForUserType"
           value="EDITING_DONE"
-          ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssigned, assignedWorkForUserType)">Finished</input>
+          ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssigned, assignedWorkForUserType)">Finished
       </form>
     </td>
   </tr>
@@ -504,17 +499,10 @@
           <i
             class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i>
         </a></th>
-
     </tr>
-    </tr>
-
   </thead>
-
   <tbody>
-
     <tr ng-repeat="result in assignedRecordsForUser">
-
-
       <td style="width: 12%; padding: 5px;">
         <a href="#/record/conceptId/{{result.terminologyId}}">{{result.terminologyId}}</a>
       </td>
@@ -555,13 +543,13 @@
     <td>
       <form>
         <input type="radio" ng-model="assignedQAWorkType" value="ALL"
-          ng-change="retrieveAssignedQAWork(1, queryAssigned, assignedQAWorkType)">All</input>
+          ng-change="retrieveAssignedQAWork(1, queryAssigned, assignedQAWorkType)">All
         <input type="radio" ng-model="assignedQAWorkType" value="QA_NEW"
-          ng-change="retrieveAssignedQAWork(1, queryAssigned, assignedQAWorkType)">New</input>
+          ng-change="retrieveAssignedQAWork(1, queryAssigned, assignedQAWorkType)">New
         <input type="radio" ng-model="assignedQAWorkType" value="QA_IN_PROGRESS"
-          ng-change="retrieveAssignedQAWork(1, queryAssigned, assignedQAWorkType)">Editing</input>
+          ng-change="retrieveAssignedQAWork(1, queryAssigned, assignedQAWorkType)">Editing
         <input type="radio" ng-model="assignedQAWorkType" value="QA_RESOLVED"
-          ng-change="retrieveAssignedQAWork(1, queryAssigned, assignedQAWorkType)">Resolved</input>
+          ng-change="retrieveAssignedQAWork(1, queryAssigned, assignedQAWorkType)">Resolved
       </form>
     </td>
   </tr>
@@ -639,12 +627,12 @@
 
         <td style="width: 3%; padding: 5px;">
           <!-- Display a checkmark if this record has previously been edited -->
-          <a style:"display:inline" title='Finish this QA work'
+          <a style="display:inline" title='Finish this QA work'
             ng-show="result.terminologyVersion === 'QA_IN_PROGRESS' && assignedQAWorkType === 'QA_IN_PROGRESS'">
             <i ng-click="finishOrPublish(result)" class="glyphicon glyphicon-ok"></i>
           </a>
           <!-- Display a checkmark if this record has previously resolved -->
-          <a style:"display:inline" title='Publish this resolved QA work'
+          <a style="display:inline" title='Publish this resolved QA work'
             ng-show="result.terminologyVersion === 'QA_RESOLVED' && assignedQAWorkType === 'QA_RESOLVED'">
             <i ng-click="finishOrPublish(result)" class="glyphicon glyphicon-ok"></i>
           </a>

@@ -304,8 +304,8 @@
                 </goals>
                 <configuration>
                   <inputFile>${input.file}</inputFile>
-                  <memberFlag>${members.flag}</memberFlag>
-                  <recordFlag>${records.flag}</recordFlag>
+                  <memberFlag>${member.flag}</memberFlag>
+                  <recordFlag>${record.flag}</recordFlag>
                 </configuration>
               </execution>
             </executions>

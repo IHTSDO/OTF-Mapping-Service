@@ -87,8 +87,6 @@ public class WorkflowActionReviewProjectPathTest {
   @BeforeClass
   public static void init() throws Exception {
 
-    System.out.println("Initialization");
-
     // instantiate the services
     contentService = new ContentServiceJpa();
     mappingService = new MappingServiceJpa();
@@ -847,8 +845,6 @@ public class WorkflowActionReviewProjectPathTest {
   @AfterClass
   public static void cleanup() throws Exception {
 
-    System.out.println("Cleanup.");
-
     workflowService.clearWorkflowForMapProject(mapProject);
     workflowService.close();
 
@@ -874,8 +870,6 @@ public class WorkflowActionReviewProjectPathTest {
    */
   @SuppressWarnings("static-method")
   private void getTrackingRecord() throws Exception {
-    System.out.println("Getting tracking record for project "
-        + mapProject.getId() + " and concept " + concept.getTerminologyId());
     workflowService.computeWorkflow(mapProject);
     Thread.sleep(1000);
     trackingRecord = workflowService.getTrackingRecord(mapProject, concept);
@@ -888,7 +882,6 @@ public class WorkflowActionReviewProjectPathTest {
    */
   @SuppressWarnings("static-method")
   private void clearMapRecords() throws Exception {
-    System.out.println("Clearing map records.");
     for (MapRecord mr : mappingService.getMapRecords().getIterable()) {
       mappingService.removeMapRecord(mr.getId());
     }

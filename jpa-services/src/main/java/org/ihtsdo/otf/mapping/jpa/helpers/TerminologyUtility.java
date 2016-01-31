@@ -155,7 +155,6 @@ public class TerminologyUtility {
                 + " AND terminologyVersion:" + version, null);
     final String key = terminology + version;
     for (final SearchResult result : list.getSearchResults()) {
-      System.out.println("ASTERISK: " + result);
       if (result.getValue().equals("Asterisk refset")) {
         asteriskRefsetIdMap.put(key, result.getTerminologyId());
       } else if (result.getValue().equals("Dagger refset")) {

@@ -168,7 +168,6 @@ angular
             } else if (parameters.assignType === 'review') {
               // set the tab
               $scope.setTab(2);
-              ;
 
               // retrieve the work
               $scope.retrieveAssignedReviewWork($scope.assignedReviewWorkPage,
@@ -316,11 +315,12 @@ angular
         $scope.assignedWorkType = assignedWorkType;
 
         // ensure query is set to null if undefined
-        if (query == undefined)
-          query = null;
+        var lquery = query;
+        if (lquery == undefined)
+          lquery = null;
 
         // reset the search input box if null
-        if (query == null) {
+        if (lquery == null) {
           $scope.searchPerformed = false;
         } else {
           $scope.searchPerformed = true;
@@ -396,11 +396,12 @@ angular
         $scope.queryQaWork = query;
 
         // ensure query is set to null if undefined
-        if (query == undefined)
-          query = null;
+        var lquery = query;
+        if (lquery == undefined)
+          lquery = null;
 
         // reset the search input box if null
-        if (query == null) {
+        if (lquery == null) {
           $scope.searchPerformed = false;
         } else {
           $scope.searchPerformed = true;
@@ -463,11 +464,12 @@ angular
         $scope.queryReviewWork = query;
 
         // ensure query is set to null if undefined
-        if (query == undefined)
-          query = null;
+        var lquery = query;
+        if (lquery == undefined)
+          lquery = null;
 
         // reset the search input box if null
-        if (query == null) {
+        if (lquery == null) {
           $scope.searchPerformed = false;
         } else {
           $scope.searchPerformed = true;
@@ -600,7 +602,6 @@ angular
         $scope.assignedRecordsPerPage = assignedRecordsPerPage;
         $scope.numRecordPages = Math.ceil($scope.nAssignedRecords / assignedRecordsPerPage);
       }
-      ;
 
       // on notification, update assigned work
       $scope.assignWork = function(newRecords) {
@@ -769,7 +770,7 @@ angular
           if (mapUser.userName === $scope.currentUser.userName)
             $rootScope.$broadcast('assignedListWidget.notification.unassignWork');
 
-        })
+        });
 
       };
 
@@ -798,7 +799,6 @@ angular
           return ((x < y) ? -1 : ((x > y) ? 1 : 0));
         });
       }
-      ;
 
       $scope.goEditRecord = function(id) {
         var path = '/record/recordId/' + id;
@@ -835,7 +835,7 @@ angular
         records.push(searchResult);
 
         $scope.openFinishOrPublishModal(records);
-      }
+      };
 
       /**
        * Function to open finish or publish modal. Argument: workflowStatus: The
@@ -880,7 +880,10 @@ angular
         $http(
           {
             url : root_workflow + 'project/id/' + $scope.focusProject.id + '/user/id/'
-              + $scope.currentUser.userName + '/query/null/' + apiWorkflowText, // set above based on
+              + $scope.currentUser.userName + '/query/null/' + apiWorkflowText, // set
+                                                                                // above
+                                                                                // based
+                                                                                // on
             // specified workflow
             // status
             dataType : 'json',

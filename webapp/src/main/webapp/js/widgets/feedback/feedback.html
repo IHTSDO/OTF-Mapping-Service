@@ -3,7 +3,7 @@
   <input ng-model="query"> <input type="submit" value="Search"
     ng-click="retrieveFeedback(1, feedbackType, reviewedType, resolvedType, query)">
   <input type="submit" value="Reset" ng-click="resetSearch()">
-  &nbsp&nbsp{{nRecords}} results, page {{recordPage}} of {{numRecordPages}}
+  &nbsp;&nbsp;{{nRecords}} results, page {{recordPage}} of {{numRecordPages}}
 </form>
 
 <pagination total-items="nRecords" page="recordPage" max-size="recordsPerPage"

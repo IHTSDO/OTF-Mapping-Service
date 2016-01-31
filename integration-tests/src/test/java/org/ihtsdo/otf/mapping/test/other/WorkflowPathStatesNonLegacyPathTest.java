@@ -79,8 +79,6 @@ public class WorkflowPathStatesNonLegacyPathTest {
   @BeforeClass
   public static void init() throws Exception {
 
-    System.out.println("Initialization");
-
     // instantiate the services
     contentService = new ContentServiceJpa();
     mappingService = new MappingServiceJpa();
@@ -345,9 +343,6 @@ public class WorkflowPathStatesNonLegacyPathTest {
    */
   private void getTrackingRecord(WorkflowStatusCombination combination)
     throws Exception {
-    System.out.println("Computing tracking record for combination: "
-        + combination.toString());
-
     // reset the records
     resetRecords();
 

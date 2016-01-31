@@ -284,7 +284,6 @@ angular
                 $rootScope.handleHttpError(data, status, headers, config);
               });
             }
-            ;
 
           }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
@@ -471,9 +470,8 @@ angular
           if ($scope.groups1.indexOf(parseInt($scope.record1.mapEntry[i].mapGroup, 10)) == -1) {
             $scope.groups1.push(parseInt($scope.record1.mapEntry[i].mapGroup, 10));
           }
-          ;
+
         }
-        ;
 
         // if no groups found, add a default group
         if ($scope.groups1.length == 0)
@@ -487,9 +485,8 @@ angular
             if ($scope.groups2.indexOf(parseInt($scope.record2.mapEntry[i].mapGroup, 10)) == -1) {
               $scope.groups2.push(parseInt($scope.record2.mapEntry[i].mapGroup, 10));
             }
-            ;
+
           }
-          ;
 
           // if no groups found, add a default group
           if ($scope.groups2.length == 0)
@@ -497,7 +494,6 @@ angular
         }
 
       }
-      ;
 
       // /////////////////////
       // Utility Functions //
@@ -511,7 +507,6 @@ angular
           return ((x < y) ? -1 : ((x > y) ? 1 : 0));
         });
       }
-      ;
 
       function setAccordianTitle(id, term) {
         if ($scope.record2 == null && $scope.record1 != null
@@ -523,7 +518,6 @@ angular
           $scope.model.title = 'Compare Records: ' + id + '  ' + term;
         }
       }
-      ;
 
       $scope.populateMapRecord = function(record) {
 
@@ -833,12 +827,11 @@ angular
                   recordText += '                ';
                 recordText += entry.mapAdvice[k].name + '<br>';
               }
-              ;
+
             }
           }
-          ;
+
         }
-        ;
 
         recordText += '<br>';
 
@@ -875,7 +868,6 @@ angular
 
         return recordText;
       }
-      ;
 
       function getEntriesByGroup(record) {
 
@@ -913,7 +905,6 @@ angular
 
         return entries;
       }
-      ;
 
       $scope.toggleFalseConflict = function() {
 
@@ -1053,7 +1044,6 @@ angular
         }
         return;
       }
-      ;
 
       function organizeUsers(arr) {
         // remove Current user
@@ -1081,5 +1071,5 @@ angular
           return ((x < y) ? -1 : ((x > y) ? 1 : 0));
         });
       }
-      ;
+
     });
