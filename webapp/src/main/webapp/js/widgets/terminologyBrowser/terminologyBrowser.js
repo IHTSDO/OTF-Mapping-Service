@@ -85,7 +85,7 @@ angular
 
       // function to get the root nodes
       $scope.getRootTree = function() {
-        console.debug("get root tree");
+        console.debug('get root tree');
         $rootScope.glassPane++;
         $http({
           url : root_mapping + 'treePosition/project/id/' + $scope.focusProject.id,
@@ -94,7 +94,7 @@ angular
             'Content-Type' : 'application/json'
           }
         }).success(function(response) {
-          console.debug("  tree = " + response.date);
+          console.debug('  tree = ' + response.date);
           $rootScope.glassPane--;
           $scope.terminologyTree = response.treePosition;
           for (var i = 0; i < $scope.terminologyTree; i++) {
@@ -120,7 +120,7 @@ angular
         }
         $scope.searchStatus = 'Searching...';
         $scope.terminologyTree = [];
-        console.debug("get root tree with query", $scope.query);
+        console.debug('get root tree with query', $scope.query);
         $rootScope.glassPane++;
         $http(
           {
@@ -133,7 +133,7 @@ angular
           })
           .success(
             function(response) {
-              console.debug("  result = ", response.data);
+              console.debug('  result = ', response.data);
               $rootScope.glassPane--;
 
               // limit result count to 10 root tree positions
@@ -212,7 +212,7 @@ angular
         var deferred = $q.defer();
         $timeout(function() {
           $rootScope.glassPane++;
-          console.debug("get local tree", terminologyId);
+          console.debug('get local tree', terminologyId);
           $http(
             {
               url : root_mapping + 'treePosition/project/id/' + $scope.focusProject.id
@@ -222,7 +222,7 @@ angular
                 'Content-Type' : 'application/json'
               }
             }).success(function(response) {
-            console.debug("  tree = ", response.data);
+            console.debug('  tree = ', response.data);
             $rootScope.glassPane--;
             deferred.resolve(response);
           }).error(function(data, status, headers, config) {
