@@ -2520,7 +2520,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
         }
 
         // Skip concept exclusion rules
-        if (refSetMember.getMapRule().matches("IFA\\s\\d*\\s\\|.*\\s\\|")) {
+        if (refSetMember.getMapRule() != null
+            && refSetMember.getMapRule().matches("IFA\\s\\d*\\s\\|.*\\s\\|")) {
           if (refSetMember.getMapAdvice().contains(
               "MAP IS CONTEXT DEPENDENT FOR GENDER")
               && !refSetMember.getMapRule().matches("AND IFA")) {
@@ -2551,11 +2552,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
         // if no concept for this ref set member, skip
         if (concept == null) {
           continue;
-          /*
-           * throw new NoResultException(
-           * "    Concept is unexpectedly missing for " +
-           * refSetMember.getTerminologyId());
-           */
         }
 
         // if different concept than previous ref set member, create
@@ -2649,7 +2645,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
         mapEntry.setMapRelation(mapRelationIdMap.get(refSetMember
             .getMapRelationId().toString()));
         String rule = refSetMember.getMapRule();
-        if (rule.equals("OTHERWISE TRUE"))
+        if (rule != null && rule.equals("OTHERWISE TRUE"))
           rule = "TRUE";
         mapEntry.setRule(rule);
         mapEntry.setMapBlock(refSetMember.getMapBlock());
@@ -3239,7 +3235,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       boolean foundRevisionRecord = false; // the original published work
 
       for (Long originId : mapRecord.getOriginIds()) {
-        System.out.println("Getting origin id:  " + originId);
         MapRecord mr = getMapRecord(originId);
 
         // This try/catch block is here to prevent problems
@@ -3282,8 +3277,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
         || mapRecord.getWorkflowStatus().equals(WorkflowStatus.QA_NEW)
         || mapRecord.getWorkflowStatus().equals(WorkflowStatus.QA_IN_PROGRESS)
         || mapRecord.getWorkflowStatus().equals(WorkflowStatus.QA_RESOLVED)) {
-
-      System.out.println("Getting origin id for REVIEW_PROJECT record");
 
       WorkflowService workflowService = new WorkflowServiceJpa();
 
@@ -3329,7 +3322,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
         // work
 
         for (Long originId : mapRecord.getOriginIds()) {
-          System.out.println("Getting origin id:  " + originId);
           MapRecord mr = getMapRecord(originId);
 
           // As with other try blocks in this section, this

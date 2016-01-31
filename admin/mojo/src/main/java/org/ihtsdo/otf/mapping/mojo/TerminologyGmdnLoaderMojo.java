@@ -437,7 +437,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
 
         // </termID> - set the description terminology id
         else if (qName.equalsIgnoreCase("termID")) {
-          description.setTerminologyId("term-" + chars.toString().trim());
+          description.setTerminologyId(chars.toString().trim());
 
           // Use the "termID" as the key
           conceptMap.put(chars.toString().trim(), concept);
@@ -578,7 +578,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
         // </collectivetermID> - set the description terminology id
         else if (qName.equalsIgnoreCase("collectivetermID")) {
           description.setTerminologyId("ct-" + chars.toString().trim());
-
+          
           // Ue the "collectiveTermID" as the key
           conceptMap.put(chars.toString().trim(), concept);
         }

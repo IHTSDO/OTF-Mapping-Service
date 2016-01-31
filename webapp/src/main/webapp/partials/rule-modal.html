@@ -1,90 +1,102 @@
 <div class="modal-header">
-	<h3>Rule Constructor</h3>
+  <h3>Rule Constructor</h3>
 </div>
 
 <div class="modal-body">
 
-	<h4>Select Rule Category</h4>
-	<select ng-model="ruleCategory" ng-selected="ruleCategory"
-		ng-change="constructRule(ruleCategory, null)"
-		ng-options="category as category for category in ruleCategories"></select>
+  <h4>Select Rule Category</h4>
+  <select ng-model="ruleCategory" ng-selected="ruleCategory"
+    ng-change="constructRule(ruleCategory, null)"
+    ng-options="category as category for category in ruleCategories"></select>
 
-	<div
-		ng-show="ruleCategory === 'Age - Chronological' || ruleCategory === 'Age - At Onset'">
-		<hr>
+  <div
+    ng-show="ruleCategory === 'Age - Chronological' || ruleCategory === 'Age - At Onset'">
+    <hr>
 
 
-		<div ng-show="ruleCategory === 'Age - Chronological'">
-			<h4>Enter age range</h4>
+    <div ng-show="ruleCategory === 'Age - Chronological'">
+      <h4>Enter age range</h4>
 
-			<table class="table">
-				<thead>
-					<tr>
-						<th>Bound</th>
-						<th>Operator</th>
-						<th>Value</th>
-						<th>Units</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td>Lower</td>
-						<td><select ng-model="customAgeRange.lowerInclusive"
-							ng-change="constructRule(ruleCategory, customAgeRange)">
-								<option value=false selected="selected">>=</option>
-								<option value=true>></option>
-						</select></td>
-						<td><input style="width: 50px;"
-							ng-model="customAgeRange.lowerValue"
-							ng-change="constructRule(ruleCategory, customAgeRange)"></td>
-						<td><select ng-model="customAgeRange.lowerUnits"
-							ng-change="constructRule(ruleCategory, customAgeRange)">
-								<option value="days">days</option>
-								<option value="years" selected="selected">years</option>
-						</select></td>
-					</tr>
-					<td>Upper</td>
-					<td><select ng-model="customAgeRange.upperInclusive"
-						ng-change="constructRule(ruleCategory, customAgeRange)">
-							<option value="false" selected="selected"><</option>
-							<option value="true"><=</option>
-					</select></td>
-					<td><input style="width: 50px;" ng-model="customAgeRange.upperValue"
-						ng-change="constructRule(ruleCategory, customAgeRange)"></td>
-					<td><select ng-model="customAgeRange.upperUnits"
-						ng-change="constructRule(ruleCategory, customAgeRange)">
-							<option value="days">days</option>
-							<option value="years" selected="selected">years</option>
-					</select></td>
-					</tr>
-				</tbody>
-			</table>
-			
-			<div class="alert alert-danger" ng-show="ruleError.length > 0">{{ruleError}}</div>
-		</div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Bound</th>
+            <th>Operator</th>
+            <th>Value</th>
+            <th>Units</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Lower</td>
+            <td>
+              <select ng-model="customAgeRange.lowerInclusive"
+                ng-change="constructRule(ruleCategory, customAgeRange)">
+                <option value=false selected="selected">>=</option>
+                <option value=true>></option>
+              </select>
+            </td>
+            <td>
+              <input style="width: 50px;" ng-model="customAgeRange.lowerValue"
+                ng-change="constructRule(ruleCategory, customAgeRange)">
+            </td>
+            <td>
+              <select ng-model="customAgeRange.lowerUnits"
+                ng-change="constructRule(ruleCategory, customAgeRange)">
+                <option value="days">days</option>
+                <option value="years" selected="selected">years</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td>Upper</td>
+            <td>
+              <select ng-model="customAgeRange.upperInclusive"
+                ng-change="constructRule(ruleCategory, customAgeRange)">
+                <option value="false" selected="selected"></option>
+                <option value="true">=</option>
+              </select>
+            </td>
+            <td>
+              <input style="width: 50px;" ng-model="customAgeRange.upperValue"
+                ng-change="constructRule(ruleCategory, customAgeRange)">
+            </td>
+            <td>
+              <select ng-model="customAgeRange.upperUnits"
+                ng-change="constructRule(ruleCategory, customAgeRange)">
+                <option value="days">days</option>
+                <option value="years" selected="selected">years</option>
+              </select>
+            </td>
+          </tr>
+        </tbody>
+      </table>
 
-		<div ng-show="ruleCategory === 'Age - At Onset'">
-			<h4>Select from preset age ranges</h4>
+      <div class="alert alert-danger" ng-show="ruleError.length > 0">{{ruleError}}</div>
+    </div>
 
-			<select ng-model="presetAgeRange"
-				ng-change="constructRule(ruleCategory, presetAgeRange)"
-				ng-options="presetAgeRange as presetAgeRange.stringName for presetAgeRange in presetAgeRanges"></select>
-		</div>
+    <div ng-show="ruleCategory === 'Age - At Onset'">
+      <h4>Select from preset age ranges</h4>
 
-	</div>
-	<!-- END chronological age select -->
+      <select ng-model="presetAgeRange"
+        ng-change="constructRule(ruleCategory, presetAgeRange)"
+        ng-options="presetAgeRange as presetAgeRange.stringName for presetAgeRange in presetAgeRanges"></select>
+    </div>
 
-	<div ng-show="rule.length > 0">
-		<hr>
-		<h3>Rule Preview:</h3>
-		<blockquote>{{rule}}</blockquote>
-	</div>
+  </div>
+  <!-- END chronological age select -->
+
+  <div ng-show="rule.length > 0">
+    <hr>
+    <h3>Rule Preview:</h3>
+    <blockquote>{{rule}}</blockquote>
+  </div>
 
 </div>
 <!--  end of modal-body -->
 
 <div class="modal-footer">
-	<button ng-show="ruleError.length == 0" class="btn btn-primary" ng-click="saveRule(rule)">Add
-		Rule</button>
-	<button class="btn btn-warning" ng-click="cancelRule(rule)">Cancel</button>
+  <button ng-show="ruleError.length == 0" class="btn btn-primary"
+    ng-click="saveRule(rule)">Add Rule</button>
+  <button class="btn btn-warning" ng-click="cancelRule(rule)">Cancel</button>
 </div>

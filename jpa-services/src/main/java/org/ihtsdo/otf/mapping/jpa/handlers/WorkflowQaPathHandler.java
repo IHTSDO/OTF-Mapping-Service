@@ -84,15 +84,6 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
     // final state: no tracking record, one READY_FOR_PUBLICATION record
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.jpa.handlers.AbstractWorkflowPathHandler#
-   * validateTrackingRecordForActionAndUser
-   * (org.ihtsdo.otf.mapping.workflow.TrackingRecord,
-   * org.ihtsdo.otf.mapping.helpers.WorkflowAction,
-   * org.ihtsdo.otf.mapping.model.MapUser)
-   */
   /* see superclass */
   @Override
   public ValidationResult validateTrackingRecordForActionAndUser(
@@ -103,10 +94,7 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
     if (!result.isValid()) {
       result
           .addError("Could not validate action for user due to workflow errors.");
-      System.out.println("  " + tr.getUserAndWorkflowStatusPairs() + " - "
-          + action + " - " + user);
-      System.out.println("  "
-          + this.getWorkflowCombinationForTrackingRecord(tr).toString());
+
       return result;
     }
 

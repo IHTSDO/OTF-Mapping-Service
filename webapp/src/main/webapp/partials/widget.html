@@ -1,13 +1,18 @@
 <div class="widget panel panel-default">
   <div class="panel-heading">
     <h3 class="panel-title">
-      {{definition.title}} <span class="pull-right" ng-if="editMode"> <!-- change widget location -->
-        <a href="" title="change widget location"> <i class="fa fa-arrows"></i>
-      </a> <!-- open edit mode (currently disabled) <a href="" title="edit widget configuration"
-        ng-click="edit()"> <i class="fa fa-cog"></i>--> </a> <!-- remove widget -->
-        <a href="" title="remove widget" ng-click="close()"> <i
-          class="fa fa-times"></i>
-      </a>
+      {{definition.title}}
+      <span class="pull-right" ng-if="editMode">
+        <!-- change widget location -->
+        <a href="" title="change widget location">
+          <i class="fa fa-arrows"></i>
+        </a>
+        <!-- open edit mode (currently disabled) <a href="" title="edit widget configuration"
+        ng-click="edit()"> <i class="fa fa-cog"></i> </a> -->
+        <!-- remove widget -->
+        <a href="" title="remove widget" ng-click="close()">
+          <i class="fa fa-times"></i>
+        </a>
       </span>
     </h3>
   </div>

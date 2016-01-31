@@ -29,8 +29,6 @@ public class ICD9CMProjectSpecificAlgorithmHandler extends
   public ValidationResult validateTargetCodes(MapRecord mapRecord)
     throws Exception {
 
-    // System.out.println("Validating target codes");
-
     ValidationResult validationResult = new ValidationResultJpa();
     ContentService contentService = new ContentServiceJpa();
 

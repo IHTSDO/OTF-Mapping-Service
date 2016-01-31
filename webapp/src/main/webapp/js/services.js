@@ -3,7 +3,6 @@
 var mapProjectAppServices = angular.module('mapProjectAppServices', []);
 
 /* Services */
-mapProjectAppServices.service('utilityService', function($q, $http,
-  localStorageService) {
-
+mapProjectAppServices.service('utilityService', function($q, $http, localStorageService) {
+  // n/a
 })
