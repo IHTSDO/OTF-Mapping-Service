@@ -66,7 +66,6 @@ import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
-import org.ihtsdo.otf.mapping.helpers.TreePositionListJpa;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.helpers.WorkflowType;
@@ -126,11 +125,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.RootService#initializeFieldNames()
-   */
+  /* see superclass */
   @Override
   public synchronized void initializeFieldNames() throws Exception {
     mapRecordFieldNames = new HashSet<>();
@@ -146,7 +141,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     Set<String> indexedClassNames =
         fullTextEntityManager.getSearchFactory().getStatistics()
             .getIndexedClassNames();
-    for (String indexClass : indexedClassNames) {
+    for (final String indexClass : indexedClassNames) {
       Set<String> fieldNames = null;
       if (indexClass.indexOf("MapRecordJpa") != -1) {
         Logger.getLogger(ContentServiceJpa.class).info(
@@ -160,7 +155,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       if (fieldNames != null) {
         IndexReader indexReader = indexReaderAccessor.open(indexClass);
         try {
-          for (FieldInfo info : ReaderUtil.getMergedFieldInfos(indexReader)) {
+          for (final FieldInfo info : ReaderUtil
+              .getMergedFieldInfos(indexReader)) {
             fieldNames.add(info.name);
           }
         } finally {
@@ -222,13 +218,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return m;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#getMapProjectForRefSetId
-   * (java.lang.String)
-   */
+  /* see superclass */
   @Override
   public MapProject getMapProjectForRefSetId(String refSetId) throws Exception {
 
@@ -269,7 +259,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     mapProjects = query.getResultList();
 
     // force instantiation of lazy collections
-    for (MapProject mapProject : mapProjects) {
+    for (final MapProject mapProject : mapProjects) {
       handleMapProjectLazyInitialization(mapProject);
     }
 
@@ -331,7 +321,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     Logger.getLogger(this.getClass()).debug(
         Integer.toString(m.size()) + " map projects retrieved");
 
-    for (MapProject mp : m) {
+    for (final MapProject mp : m) {
       s.addSearchResult(new SearchResultJpa(mp.getId(), mp.getRefSetId()
           .toString(), mp.getName(), ""));
     }
@@ -508,13 +498,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return (MapUser) query.getSingleResult();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#getMapUser(java.lang.String
-   * )
-   */
+  /* see superclass */
   @Override
   public MapUser getMapUser(String userName) throws Exception {
 
@@ -538,15 +522,15 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     List<MapProject> mpListReturn = new ArrayList<>();
 
     // iterate and check for presence of mapUser as specialist
-    for (MapProject mp : mpList.getMapProjects()) {
+    for (final MapProject mp : mpList.getMapProjects()) {
 
-      for (MapUser ms : mp.getMapSpecialists()) {
+      for (final MapUser ms : mp.getMapSpecialists()) {
         if (ms.equals(mapUser)) {
           mpListReturn.add(mp);
         }
       }
 
-      for (MapUser ms : mp.getMapLeads()) {
+      for (final MapUser ms : mp.getMapLeads()) {
         if (ms.equals(mapUser)) {
           mpListReturn.add(mp);
         }
@@ -554,7 +538,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     }
 
     // force instantiation of lazy collections
-    for (MapProject mapProject : mpListReturn) {
+    for (final MapProject mapProject : mpListReturn) {
       handleMapProjectLazyInitialization(mapProject);
     }
 
@@ -602,7 +586,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     if (getTransactionPerOperation()) {
       // remove specialist from all these projects
       tx.begin();
-      for (MapProject mp : projects) {
+      for (final MapProject mp : projects) {
         mp.removeMapLead(mu);
         mp.removeMapSpecialist(mu);
         manager.merge(mp);
@@ -619,7 +603,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       tx.commit();
 
     } else {
-      for (MapProject mp : projects) {
+      for (final MapProject mp : projects) {
         mp.removeMapLead(mu);
         mp.removeMapSpecialist(mu);
         manager.merge(mp);
@@ -673,7 +657,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     mapRecords = query.getResultList();
     MapRecordListJpa mapRecordList = new MapRecordListJpa();
 
-    for (MapRecord mr : mapRecordList.getIterable()) {
+    for (final MapRecord mr : mapRecordList.getIterable()) {
       this.handleMapRecordLazyInitialization(mr);
     }
 
@@ -752,7 +736,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       Logger.getLogger(this.getClass()).debug(
           Integer.toString(mapRecords.size()) + " map records retrieved");
 
-      for (MapRecord mapRecord : mapRecords) {
+      for (final MapRecord mapRecord : mapRecords) {
         s.addSearchResult(new SearchResultJpa(mapRecord.getId(), mapRecord
             .getConceptId().toString(), mapRecord.getConceptName(), ""));
       }
@@ -818,8 +802,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
   /**
    * Update a map record.
-   * 
+   *
    * @param mapRecord the map record to be updated
+   * @throws Exception the exception
    */
   @Override
   public void updateMapRecord(MapRecord mapRecord) throws Exception {
@@ -835,7 +820,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     // Algorithm Handler only instantiated if required
     // Warning message used to store any errors for logging/email
     ProjectSpecificAlgorithmHandler algorithmHandler = null;
-    for (MapEntry mapEntry : mapRecord.getMapEntries()) {
+    for (final MapEntry mapEntry : mapRecord.getMapEntries()) {
       if (mapEntry.getTargetId() == null || mapEntry.getTargetId().isEmpty()) {
 
         // get handler if not already instantiated
@@ -897,12 +882,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#getMapRecordRevisions(
-   * java.lang.Long)
-   */
+  /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
   public MapRecordList getMapRecordRevisions(Long mapRecordId) {
@@ -925,19 +905,14 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     // construct the map
     MapRecordListJpa mapRecordList = new MapRecordListJpa();
     mapRecordList.setMapRecords(revisions);
-    for (MapRecord mapRecord : revisions) {
+    for (final MapRecord mapRecord : revisions) {
       handleMapRecordLazyInitialization(mapRecord);
     }
     mapRecordList.setTotalCount(revisions.size());
     return mapRecordList;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#
-   * getMapRecordRevisionsForConcept(java.lang.String)
-   */
+  /* see superclass */
   @Override
   public MapRecordList getMapRecordRevisionsForConcept(String conceptId,
     Long mapProjectId) {
@@ -965,7 +940,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     MapRecordListJpa mapRecordList = new MapRecordListJpa();
     Set<Long> usedRecordIds = new HashSet<>();
     List<MapRecord> mostRecentHistoricalRecords = new ArrayList<>();
-    for (MapRecord mapRecord : revisions) {
+    for (final MapRecord mapRecord : revisions) {
       if (!usedRecordIds.contains(mapRecord.getId())) {
         handleMapRecordLazyInitialization(mapRecord);
         usedRecordIds.add(mapRecord.getId());
@@ -977,13 +952,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return mapRecordList;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#getRecentlyEditedMapRecords
-   * (org.ihtsdo.otf.mapping.model.MapUser)
-   */
+  /* see superclass */
   @SuppressWarnings({
     "unchecked"
   })
@@ -1055,9 +1024,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
     // only add one copy -- note this results in uneven page sizes
     List<MapRecord> uniqueRecords = new ArrayList<>();
-    for (MapRecord mapRecord : editedRecords) {
+    for (final MapRecord mapRecord : editedRecords) {
       boolean recordExists = false;
-      for (MapRecord mr : uniqueRecords) {
+      for (final MapRecord mr : uniqueRecords) {
         if (mr.getId().equals(mapRecord.getId()))
           recordExists = true;
       }
@@ -1066,7 +1035,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     }
 
     // handle all lazy initializations
-    for (MapRecord mapRecord : uniqueRecords) {
+    for (final MapRecord mapRecord : uniqueRecords) {
       handleMapRecordLazyInitialization(mapRecord);
     }
     mapRecordList.setMapRecords(uniqueRecords);
@@ -1100,7 +1069,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     // Try query
     query.setParameter("conceptId", terminologyId);
     mapRecords = query.getResultList();
-    for (MapRecord mapRecord : mapRecords) {
+    for (final MapRecord mapRecord : mapRecords) {
       handleMapRecordLazyInitialization(mapRecord);
     }
 
@@ -1110,13 +1079,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return mapRecordList;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#getMapRecordsForMapProject
-   * (java.lang.Long)
-   */
+  /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
   public MapRecordList getMapRecordsForMapProject(Long mapProjectId)
@@ -1131,12 +1094,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return mapRecordList;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#
-   * getMapRecordForProjectAndConcept(java.lang.Long, java.lang.String)
-   */
+  /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
   public MapRecordList getMapRecordsForProjectAndConcept(Long mapProjectId,
@@ -1149,7 +1107,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
             .setParameter("mapProjectId", mapProjectId)
             .setParameter("conceptId", terminologyId).getResultList();
     MapRecordList mapRecordList = new MapRecordListJpa();
-    for (MapRecord mapRecord : mapRecords) {
+    for (final MapRecord mapRecord : mapRecords) {
       handleMapRecordLazyInitialization(mapRecord);
     }
     mapRecordList.setMapRecords(mapRecords);
@@ -1158,13 +1116,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#getMapRecordsForMapProject
-   * (java.lang.Long, org.ihtsdo.otf.mapping.helpers.PfsParameter)
-   */
+  /* see superclass */
   @Override
   @SuppressWarnings("unchecked")
   public MapRecordList getPublishedAndReadyForPublicationMapRecordsForMapProject(
@@ -1239,7 +1191,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     Logger.getLogger(this.getClass()).debug(
         Integer.toString(mapRecords.size()) + " records retrieved");
 
-    for (MapRecord mapRecord : mapRecords) {
+    for (final MapRecord mapRecord : mapRecords) {
       handleMapRecordLazyInitialization(mapRecord);
     }
 
@@ -1254,13 +1206,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#getMapRecordsForMapProject
-   * (java.lang.Long, org.ihtsdo.otf.mapping.helpers.PfsParameter)
-   */
+  /* see superclass */
   @Override
   @SuppressWarnings("unchecked")
   public MapRecordList getPublishedMapRecordsForMapProject(Long mapProjectId,
@@ -1323,7 +1269,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       Logger.getLogger(this.getClass()).debug(
           Integer.toString(mapRecords.size()) + " records retrieved");
 
-      for (MapRecord mapRecord : mapRecords) {
+      for (final MapRecord mapRecord : mapRecords) {
         handleMapRecordLazyInitialization(mapRecord);
       }
 
@@ -1462,7 +1408,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       }
     }
 
-    for (String s : parsedTerms) {
+    for (final String s : parsedTerms) {
       Logger.getLogger(MappingServiceJpa.class).debug("  " + s);
     }
 
@@ -1546,13 +1492,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#findConceptsInScope(org.
-   * ihtsdo.otf.mapping.model.MapProject)
-   */
+  /* see superclass */
   @Override
   public SearchResultList findConceptsInScope(Long mapProjectId,
     PfsParameter pfsParameter) throws Exception {
@@ -1574,7 +1514,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       Logger.getLogger(this.getClass()).info(
           "  Project not using scope descendants flag - "
               + project.getScopeConcepts());
-      for (String conceptId : project.getScopeConcepts()) {
+      for (final String conceptId : project.getScopeConcepts()) {
         Concept c =
             contentService.getConcept(conceptId, terminology,
                 terminologyVersion);
@@ -1600,7 +1540,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       Logger.getLogger(this.getClass()).info(
           "  Project using scope descendants flag");
       // for each scope concept, get descendants
-      for (String terminologyId : project.getScopeConcepts()) {
+      for (final String terminologyId : project.getScopeConcepts()) {
         SearchResultList descendants =
             contentService.findDescendantConcepts(terminologyId, terminology,
                 terminologyVersion, pfsParameter);
@@ -1610,7 +1550,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
                 + descendants.getTotalCount() + " descendants ("
                 + descendants.getCount() + " from getCount)");
         // cycle over descendants
-        for (SearchResult sr : descendants.getSearchResults()) {
+        for (final SearchResult sr : descendants.getSearchResults()) {
           conceptsInScope.addSearchResult(sr);
         }
       }
@@ -1626,7 +1566,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
     // remove those excluded from scope
     SearchResultList finalConceptsInScope = new SearchResultListJpa();
-    for (SearchResult sr : conceptsInScope.getSearchResults()) {
+    for (final SearchResult sr : conceptsInScope.getSearchResults()) {
       if (!excludedResultList.contains(sr)) {
         finalConceptsInScope.addSearchResult(sr);
       }
@@ -1647,13 +1587,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#findUnmappedConceptsInScope
-   * (org.ihtsdo.otf.mapping.model.MapProject)
-   */
+  /* see superclass */
   @Override
   public SearchResultList findUnmappedConceptsInScope(Long mapProjectId,
     PfsParameter pfsParameter) throws Exception {
@@ -1671,7 +1605,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     // project
     //
     Set<String> mappedConcepts = new HashSet<>();
-    for (MapRecord mapRecord : getMapRecordsForMapProject(mapProjectId)
+    for (final MapRecord mapRecord : getMapRecordsForMapProject(mapProjectId)
         .getIterable()) {
       if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)
           || mapRecord.getWorkflowStatus().equals(
@@ -1685,7 +1619,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     //
     ContentService contentService = new ContentServiceJpa();
     SearchResultList unmappedConceptsInScope = new SearchResultListJpa();
-    for (SearchResult sr : conceptsInScope.getSearchResults()) {
+    for (final SearchResult sr : conceptsInScope.getSearchResults()) {
 
       if (!mappedConcepts.contains(sr.getTerminologyId())) {
         unmappedConceptsInScope.addSearchResult(sr);
@@ -1702,12 +1636,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return unmappedConceptsInScope;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#
-   * findMappedConceptsOutOfScopeBounds(java.lang.Long)
-   */
+  /* see superclass */
   @Override
   public SearchResultList findMappedConceptsOutOfScopeBounds(Long mapProjectId,
     PfsParameter pfsParameter) throws Exception {
@@ -1717,7 +1646,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
         getMapRecordsForMapProject(mapProjectId).getMapRecords();
     ContentService contentService = new ContentServiceJpa();
 
-    for (MapRecord record : mapRecordList) {
+    for (final MapRecord record : mapRecordList) {
       Concept c =
           contentService.getConcept(record.getConceptId(),
               project.getSourceTerminology(),
@@ -1737,13 +1666,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return mappedConceptsOutOfBounds;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#findConceptsExcludedFromScope
-   * (org.ihtsdo.otf.mapping.model.MapProject)
-   */
+  /* see superclass */
   @Override
   public SearchResultList findConceptsExcludedFromScope(Long mapProjectId,
     PfsParameter pfsParameter) throws Exception {
@@ -1755,7 +1678,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     String terminologyVersion = project.getSourceTerminologyVersion();
 
     // add specified excluded concepts
-    for (String conceptId : project.getScopeExcludedConcepts()) {
+    for (final String conceptId : project.getScopeExcludedConcepts()) {
       Concept c =
           contentService.getConcept(conceptId, terminology, terminologyVersion);
       if (c != null) {
@@ -1773,13 +1696,13 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     if (project.isScopeExcludedDescendantsFlag()) {
 
       // for each excluded scope concept, get descendants
-      for (String terminologyId : project.getScopeExcludedConcepts()) {
+      for (final String terminologyId : project.getScopeExcludedConcepts()) {
         SearchResultList descendants =
             contentService.findDescendantConcepts(terminologyId, terminology,
                 terminologyVersion, null);
 
         // cycle over descendants
-        for (SearchResult sr : descendants.getSearchResults()) {
+        for (final SearchResult sr : descendants.getSearchResults()) {
           conceptsExcludedFromScope.addSearchResult(sr);
         }
       }
@@ -1796,19 +1719,13 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#isConceptInScope(org.ihtsdo
-   * .otf.mapping.rf2.Concept, org.ihtsdo.otf.mapping.model.MapProject)
-   */
+  /* see superclass */
   @Override
   public boolean isConceptInScope(String conceptId, Long mapProjectId)
     throws Exception {
     MapProject project = getMapProject(mapProjectId);
     // if directly matches preset scope concept return true
-    for (String c : project.getScopeConcepts()) {
+    for (final String c : project.getScopeConcepts()) {
       if (c.equals(conceptId))
         return true;
     }
@@ -1817,9 +1734,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       return false;
 
     ContentService contentService = new ContentServiceJpa();
-    for (TreePosition tp : contentService.getTreePositionsWithDescendants(
-        conceptId, project.getSourceTerminology(),
-        project.getSourceTerminologyVersion()).getIterable()) {
+    for (final TreePosition tp : contentService
+        .getTreePositionsWithDescendants(conceptId,
+            project.getSourceTerminology(),
+            project.getSourceTerminologyVersion()).getIterable()) {
       String ancestorPath = tp.getAncestorPath();
       if (project.isScopeExcludedDescendantsFlag()
           && ancestorPath.contains(conceptId)) {
@@ -1834,20 +1752,13 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return false;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#isConceptExcludedFromScope
-   * (org.ihtsdo.otf.mapping.rf2.Concept,
-   * org.ihtsdo.otf.mapping.model.MapProject)
-   */
+  /* see superclass */
   @Override
   public boolean isConceptExcludedFromScope(String conceptId, Long mapProjectId)
     throws Exception {
     MapProject project = getMapProject(mapProjectId);
     // if directly matches preset scope concept return true
-    for (String c : project.getScopeExcludedConcepts()) {
+    for (final String c : project.getScopeExcludedConcepts()) {
       if (c.equals(conceptId))
         return true;
     }
@@ -1856,9 +1767,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       return false;
 
     ContentService contentService = new ContentServiceJpa();
-    for (TreePosition tp : contentService.getTreePositionsWithDescendants(
-        conceptId, project.getSourceTerminology(),
-        project.getSourceTerminologyVersion()).getIterable()) {
+    for (final TreePosition tp : contentService
+        .getTreePositionsWithDescendants(conceptId,
+            project.getSourceTerminology(),
+            project.getSourceTerminologyVersion()).getIterable()) {
       String ancestorPath = tp.getAncestorPath();
       if (project.isScopeDescendantsFlag() && ancestorPath.contains(conceptId)) {
         continue;
@@ -1873,27 +1785,22 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return false;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#isConceptOutOfScopeBounds
-   * (java.lang.String, java.lang.Long)
-   */
+  /* see superclass */
   @Override
   public boolean isConceptOutOfScopeBounds(String conceptId, Long mapProjectId)
     throws Exception {
     MapProject project = getMapProject(mapProjectId);
     // if directly matches preset scope concept return false
-    for (String c : project.getScopeConcepts()) {
+    for (final String c : project.getScopeConcepts()) {
       if (c.equals(conceptId))
         return false;
     }
 
     ContentService contentService = new ContentServiceJpa();
-    for (TreePosition tp : contentService.getTreePositionsWithDescendants(
-        conceptId, project.getSourceTerminology(),
-        project.getSourceTerminologyVersion()).getIterable()) {
+    for (final TreePosition tp : contentService
+        .getTreePositionsWithDescendants(conceptId,
+            project.getSourceTerminology(),
+            project.getSourceTerminologyVersion()).getIterable()) {
       String ancestorPath = tp.getAncestorPath();
       if (project.isScopeDescendantsFlag() && ancestorPath.contains(conceptId)) {
         return false;
@@ -1950,7 +1857,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     if (descendants.getCount() < project.getPropagationDescendantThreshold()) {
 
       // cycle over descendants
-      for (SearchResult sr : descendants.getSearchResults()) {
+      for (final SearchResult sr : descendants.getSearchResults()) {
 
         // if descendant has no associated map records, add to list
         if (getMapRecordsForConcept(sr.getTerminologyId()).getTotalCount() == 0) {
@@ -1975,13 +1882,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
   // Addition services ///
   // //////////////////////////
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#addMapPrinciple(org.ihtsdo
-   * .otf.mapping.model.MapPrinciple)
-   */
+  /* see superclass */
   @Override
   public MapPrinciple addMapPrinciple(MapPrinciple mapPrinciple) {
     if (getTransactionPerOperation()) {
@@ -1996,13 +1897,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return mapPrinciple;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#addMapAdvice(org.ihtsdo.
-   * otf.mapping.model.MapAdvice)
-   */
+  /* see superclass */
   @Override
   public MapAdvice addMapAdvice(MapAdvice mapAdvice) {
     if (getTransactionPerOperation()) {
@@ -2018,13 +1913,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return mapAdvice;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#addMapRelation(org.ihtsdo.
-   * otf.mapping.model.MapRelation)
-   */
+  /* see superclass */
   @Override
   public MapRelation addMapRelation(MapRelation mapRelation) {
     if (getTransactionPerOperation()) {
@@ -2043,12 +1932,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
   // Update services ///
   // //////////////////////////
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#updateMapPrinciple(org
-   * .ihtsdo .otf.mapping.model.MapPrinciple)
-   */
+  /* see superclass */
   @Override
   public void updateMapPrinciple(MapPrinciple mapPrinciple) {
     if (getTransactionPerOperation()) {
@@ -2063,13 +1947,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#updateMapAdvice(org.ihtsdo
-   * .otf.mapping.model.MapAdvice)
-   */
+  /* see superclass */
   @Override
   public void updateMapAdvice(MapAdvice mapAdvice) {
     if (getTransactionPerOperation()) {
@@ -2085,12 +1963,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#updateMapRelation(org.
-   * ihtsdo .otf.mapping.model.MapRelation)
-   */
+  /* see superclass */
   @Override
   public void updateMapRelation(MapRelation mapRelation) {
     if (getTransactionPerOperation()) {
@@ -2110,12 +1983,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
   // Removal services ///
   // //////////////////////////
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#removeMapPrinciple(java
-   * .lang.Long)
-   */
+  /* see superclass */
   @Override
   public void removeMapPrinciple(Long mapPrincipleId) {
     if (getTransactionPerOperation()) {
@@ -2138,13 +2006,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#removeMapAdvice(java.lang
-   * .Long)
-   */
+  /* see superclass */
   @Override
   public void removeMapAdvice(Long mapAdviceId) {
     if (getTransactionPerOperation()) {
@@ -2167,12 +2029,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#removeMapRelation(java
-   * .lang.Long)
-   */
+  /* see superclass */
   @Override
   public void removeMapRelation(Long mapRelationId) {
     if (getTransactionPerOperation()) {
@@ -2195,13 +2052,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#getMapPrinciple(java.lang
-   * .Long)
-   */
+  /* see superclass */
   @Override
   public MapPrinciple getMapPrinciple(Long id) throws Exception {
 
@@ -2211,11 +2062,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return (MapPrinciple) query.getSingleResult();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#getMapPrinciples()
-   */
+  /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
   public MapPrincipleList getMapPrinciples() {
@@ -2234,11 +2081,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#getMapAdvices()
-   */
+  /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
   public MapAdviceList getMapAdvices() {
@@ -2255,11 +2098,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return mapAdviceList;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#getMapRelations()
-   */
+  /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
   public MapRelationList getMapRelations() {
@@ -2282,6 +2121,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
   // / Services for Map Project Creation
   // ///////////////////////////////////////
 
+  /* see superclass */
   /* see superclass */
   @Override
   public void createMapRecordsForMapProject(Long mapProjectId,
@@ -2317,7 +2157,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
           manager.createQuery("select r from SimpleMapRefSetMemberJpa r "
               + "where r.refSetId = :refSetId");
       query.setParameter("refSetId", mapProject.getRefSetId());
-      for (Object member : query.getResultList()) {
+      for (final Object member : query.getResultList()) {
         final SimpleMapRefSetMember simpleMember =
             (SimpleMapRefSetMember) member;
         final ComplexMapRefSetMember complexMember =
@@ -2333,7 +2173,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
               + "where r.refSetId = :refSetId order by r.concept.id, "
               + "r.mapBlock, r.mapGroup, r.mapPriority");
       query.setParameter("refSetId", mapProject.getRefSetId());
-      for (Object member : query.getResultList()) {
+      for (final Object member : query.getResultList()) {
         ComplexMapRefSetMember refSetMember = (ComplexMapRefSetMember) member;
         members.add(refSetMember);
       }
@@ -2345,12 +2185,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
   }
 
   // ONLY FOR TESTING PURPOSES
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#
-   * removeMapRecordsForMapProjectId (java.lang.Long)
-   */
+
+  /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
   public Long removeMapRecordsForMapProject(Long mapProjectId) {
@@ -2365,10 +2201,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
                 "select m from MapRecordJpa m where m.mapProjectId = :mapProjectId")
             .setParameter("mapProjectId", mapProjectId).getResultList();
 
-    for (MapRecord record : records) {
+    for (final MapRecord record : records) {
 
       // delete notes
-      for (MapNote note : record.getMapNotes()) {
+      for (final MapNote note : record.getMapNotes()) {
         if (manager.contains(note)) {
           manager.remove(note);
         } else {
@@ -2378,7 +2214,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       record.setMapNotes(null);
 
       // delete entries
-      for (MapEntry entry : record.getMapEntries()) {
+      for (final MapEntry entry : record.getMapEntries()) {
 
         // remove advices
         entry.setMapAdvices(null);
@@ -2429,13 +2265,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
         complexMapRefSetMembers, workflowStatus, -1.0f);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#createMapRecordsForMapProject
-   * (java.lang.Long, java.util.List)
-   */
+  /* see superclass */
   @Override
   public void createMapRecordsForMapProject(Long mapProjectId, MapUser mapUser,
     List<ComplexMapRefSetMember> complexMapRefSetMembers,
@@ -2466,7 +2296,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     // use the map relation id->name mapping to construct a hash set of
     // MapRelations
     Map<String, MapRelation> mapRelationIdMap = new HashMap<>();
-    for (MapRelation mapRelation : getMapRelations().getIterable()) {
+    for (final MapRelation mapRelation : getMapRelations().getIterable()) {
       mapRelationIdMap.put(mapRelation.getTerminologyId(), mapRelation);
     }
 
@@ -2506,7 +2336,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
         throw new Exception("Loader user could not be found");
       }
 
-      for (ComplexMapRefSetMember refSetMember : complexMapRefSetMembers) {
+      for (final ComplexMapRefSetMember refSetMember : complexMapRefSetMembers) {
 
         // Skip inactive cases
         if (!refSetMember.isActive()) {
@@ -2664,7 +2494,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
         Logger.getLogger(this.getClass()).debug("      Setting map advice");
         if (refSetMember.getMapAdvice() != null
             && !refSetMember.getMapAdvice().equals("")) {
-          for (MapAdvice ma : mapAdvices.getIterable()) {
+          for (final MapAdvice ma : mapAdvices.getIterable()) {
             if (refSetMember.getMapAdvice().indexOf(ma.getName()) != -1
                 && !ma.getName().equals(relationName)) {
               mapEntry.addMapAdvice(ma);
@@ -2695,35 +2525,19 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#getTransactionPerOperation
-   * ()
-   */
+  /* see superclass */
   @Override
   public boolean getTransactionPerOperation() {
     return transactionPerOperation;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#setTransactionPerOperation
-   * (boolean)
-   */
+  /* see superclass */
   @Override
   public void setTransactionPerOperation(boolean transactionPerOperation) {
     this.transactionPerOperation = transactionPerOperation;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#beginTransaction()
-   */
+  /* see superclass */
   @Override
   public void beginTransaction() {
 
@@ -2738,11 +2552,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     tx.begin();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#commit()
-   */
+  /* see superclass */
   @Override
   public void commit() {
 
@@ -2761,11 +2571,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
   // AGE RANGE FUNCTIONS
   // ////////////////////////
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#getMapAgeRanges()
-   */
+  /* see superclass */
   @Override
   @SuppressWarnings("unchecked")
   public MapAgeRangeList getMapAgeRanges() {
@@ -2780,13 +2586,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return m;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#addMapAgeRange(org.ihtsdo
-   * .otf.mapping.model.MapAgeRange)
-   */
+  /* see superclass */
   @Override
   public MapAgeRange addMapAgeRange(MapAgeRange mapAgeRange) {
     if (getTransactionPerOperation()) {
@@ -2803,12 +2603,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return mapAgeRange;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#removeMapAgeRange(java
-   * .lang.Long)
-   */
+  /* see superclass */
   @Override
   public void removeMapAgeRange(Long mapAgeRangeId) {
     if (getTransactionPerOperation()) {
@@ -2831,12 +2626,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#updateMapAgeRange(org.
-   * ihtsdo .otf.mapping.model.MapAgeRange)
-   */
+  /* see superclass */
   @Override
   public void updateMapAgeRange(MapAgeRange mapAgeRange) {
     if (getTransactionPerOperation()) {
@@ -2854,12 +2644,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
   // MAP USER PREFERENCES FUNCTIONS
   // /////////////////////////////////////
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#getMapUserPreferences(
-   * java.lang.String)
-   */
+  /* see superclass */
   @Override
   public MapUserPreferences getMapUserPreferences(String userName)
     throws Exception {
@@ -2884,14 +2669,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       m = new MapUserPreferencesJpa();
       m.setMapUser(mapUser); // set the map user
       MapProjectList mapProjects = getMapProjects();
-      m.setLastMapProjectId(mapProjects.getIterable().iterator().next().getId()); // set
-                                                                                  // a
-                                                                                  // default
-                                                                                  // project
-                                                                                  // to
-                                                                                  // 1st
-                                                                                  // project
-                                                                                  // found
+      // set a default project to 1st project found
+      m.setLastMapProjectId(mapProjects.getIterable().iterator().next().getId());
 
       // add object
       addMapUserPreferences(m);
@@ -2926,12 +2705,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return mapUserPreferencesList;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#addMapUserPreferences(
-   * org.ihtsdo.otf.mapping.model.MapUserPreferences)
-   */
+  /* see superclass */
   @Override
   public MapUserPreferences addMapUserPreferences(
     MapUserPreferences mapUserPreferences) {
@@ -2949,13 +2723,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return mapUserPreferences;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#removeMapUserPreferences
-   * (java.lang.Long)
-   */
+  /* see superclass */
   @Override
   public void removeMapUserPreferences(Long mapUserPreferencesId) {
     if (getTransactionPerOperation()) {
@@ -2980,13 +2748,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#updateMapUserPreferences
-   * (org.ihtsdo .otf.mapping.model.MapUserPreferences)
-   */
+  /* see superclass */
   @Override
   public void updateMapUserPreferences(MapUserPreferences mapUserPreferences) {
     if (getTransactionPerOperation()) {
@@ -3000,13 +2762,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#getMapUserRole(java.lang
-   * .String, java.lang.Long)
-   */
+  /* see superclass */
   @Override
   public MapUserRole getMapUserRoleForMapProject(String userName,
     Long mapProjectId) throws Exception {
@@ -3038,13 +2794,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return MapUserRole.VIEWER;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#
-   * getProjectSpecificAlgorithmHandler
-   * (org.ihtsdo.otf.mapping.model.MapProject)
-   */
+  /* see superclass */
   @Override
   @XmlTransient
   public ProjectSpecificAlgorithmHandler getProjectSpecificAlgorithmHandler(
@@ -3060,28 +2810,17 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
   }
 
-  /**
-   * Sets the valid field for tree positions, given a map project id.
-   * 
-   * @param treePositions the tree positions
-   * @param mapProjectId the map project id
-   * @return the revised list of tree positions
-   * @throws Exception the exception
-   */
+  /* see superclass */
   @Override
-  public TreePositionList setTreePositionValidCodes(
-    List<TreePosition> treePositions, Long mapProjectId) throws Exception {
+  public TreePositionList setTreePositionValidCodes(MapProject mapProject,
+    TreePositionList treePositions, ProjectSpecificAlgorithmHandler handler)
+    throws Exception {
     // get the map project and its algorithm handler
-    MapProject mapProject = getMapProject(mapProjectId);
-    ProjectSpecificAlgorithmHandler algorithmHandler =
-        getProjectSpecificAlgorithmHandler(mapProject);
 
-    setTreePositionValidCodesHelper(treePositions, algorithmHandler);
+    // Helper function to unravel TreePositionList -> List<TreePosition>
+    setTreePositionValidCodesHelper(treePositions.getTreePositions(), handler);
 
-    TreePositionListJpa treePositionList = new TreePositionListJpa();
-    treePositionList.setTreePositions(treePositions);
-    treePositionList.setTotalCount(treePositions.size());
-    return treePositionList;
+    return treePositions;
   }
 
   /**
@@ -3094,55 +2833,30 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
    * @param algorithmHandler the algorithm handler
    * @throws Exception the exception
    */
-  public void setTreePositionValidCodesHelper(List<TreePosition> treePositions,
+  private void setTreePositionValidCodesHelper(
+    List<TreePosition> treePositions,
     ProjectSpecificAlgorithmHandler algorithmHandler) throws Exception {
-
     // cycle over all tree positions and check target code, recursively
     // cycle over children
-    for (TreePosition tp : treePositions) {
-
+    for (final TreePosition tp : treePositions) {
       tp.setValid(algorithmHandler.isTargetCodeValid(tp.getTerminologyId()));
-
       setTreePositionValidCodesHelper(tp.getChildren(), algorithmHandler);
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#
-   * setTreePositionTerminologyNotes(java.util.List, java.lang.Long)
-   */
+  /* see superclass */
   @Override
   public TreePositionList setTreePositionTerminologyNotes(
-    List<TreePosition> treePositions, Long mapProjectId) throws Exception {
-
-    Logger.getLogger(MappingServiceJpa.class).info(
-        "Setting tree position terminology notes");
-
-    // get the map project and its algorithm handler
-    MapProject mapProject = getMapProject(mapProjectId);
-    ProjectSpecificAlgorithmHandler algorithmHandler =
-        getProjectSpecificAlgorithmHandler(mapProject);
-
-    // construct the tree position list
-    TreePositionListJpa treePositionList = new TreePositionListJpa();
-    treePositionList.setTreePositions(treePositions);
-    treePositionList.setTotalCount(treePositions.size());
+    MapProject mapProject, TreePositionList treePositions,
+    ProjectSpecificAlgorithmHandler handler) throws Exception {
 
     // compute the target terminology notes
-    algorithmHandler.computeTargetTerminologyNotes(treePositionList);
+    handler.computeTargetTerminologyNotes(treePositions.getTreePositions());
 
-    return treePositionList;
+    return treePositions;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#getOriginMapRecordsForConflict
-   * (java.lang.Long)
-   */
+  /* see superclass */
   @SuppressWarnings("unused")
   @Override
   public MapRecordList getOriginMapRecordsForConflict(Long mapRecordId)
@@ -3189,7 +2903,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       // in
       // audit history)
       try {
-        for (Long originId : mapRecord.getOriginIds()) {
+        for (final Long originId : mapRecord.getOriginIds()) {
           MapRecord mr = getMapRecord(originId);
           if (mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED)) {
             conflictRecords.addMapRecord(getMapRecord(originId));
@@ -3226,7 +2940,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       // work
       boolean foundRevisionRecord = false; // the original published work
 
-      for (Long originId : mapRecord.getOriginIds()) {
+      for (final Long originId : mapRecord.getOriginIds()) {
         MapRecord mr = getMapRecord(originId);
 
         // This try/catch block is here to prevent problems
@@ -3279,7 +2993,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       if (tr.getWorkflowPath().equals(WorkflowPath.REVIEW_PROJECT_PATH)
           || tr.getWorkflowPath().equals(WorkflowPath.QA_PATH)) {
 
-        for (Long originId : mapRecord.getOriginIds()) {
+        for (final Long originId : mapRecord.getOriginIds()) {
 
           try {
             MapRecord mr =
@@ -3313,7 +3027,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
         boolean foundRevisionRecord = false; // the original published
         // work
 
-        for (Long originId : mapRecord.getOriginIds()) {
+        for (final Long originId : mapRecord.getOriginIds()) {
           MapRecord mr = getMapRecord(originId);
 
           // As with other try blocks in this section, this
@@ -3366,7 +3080,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
   @SuppressWarnings("static-method")
   private void validateUserAndRole(MapProject mapProject) throws Exception {
     Map<MapUser, String> userToRoleMap = new HashMap<>();
-    for (MapUser user : mapProject.getMapLeads()) {
+    for (final MapUser user : mapProject.getMapLeads()) {
       // if user is already in map, throw exception
       if (userToRoleMap.containsKey(user))
         throw new IllegalStateException("Error: User " + user.getName()
@@ -3374,7 +3088,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       else
         userToRoleMap.put(user, "lead");
     }
-    for (MapUser user : mapProject.getMapSpecialists()) {
+    for (final MapUser user : mapProject.getMapSpecialists()) {
       // if user is already in map, throw exception
       if (userToRoleMap.containsKey(user))
         throw new IllegalStateException("Error: User " + user.getName()
@@ -3400,7 +3114,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     mapRecord.getOriginIds().size();
     mapRecord.getLabels().size();
     mapRecord.getReasonsForConflict().size();
-    for (MapEntry mapEntry : mapRecord.getMapEntries()) {
+    for (final MapEntry mapEntry : mapRecord.getMapEntries()) {
       if (mapEntry.getMapRelation() != null)
         mapEntry.getMapRelation().getName();
       mapEntry.getMapAdvices().size();
@@ -3430,13 +3144,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#checkMapGroupsForMapProject
-   * (org.ihtsdo.otf.mapping.model.MapProject)
-   */
+  /* see superclass */
   @Override
   public void checkMapGroupsForMapProject(MapProject mapProject,
     boolean updateRecords) throws Exception {
@@ -3473,13 +3181,13 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     int nMapEntriesRemoved = 0;
 
     // cycle over all map records for this project
-    for (MapRecord mr : mapRecordsInProject.getIterable()) {
+    for (final MapRecord mr : mapRecordsInProject.getIterable()) {
       Map<Integer, List<MapEntry>> entriesByGroup = new HashMap<>();
 
       boolean mapRecordAltered = false;
 
       // sort entries by group
-      for (MapEntry me : mr.getMapEntries()) {
+      for (final MapEntry me : mr.getMapEntries()) {
         // get the cached entries
         List<MapEntry> entries = entriesByGroup.get(me.getMapGroup());
 
@@ -3505,7 +3213,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
           // cycle over entries in this group
           boolean isValidGroup = false;
-          for (MapEntry entry : entries) {
+          for (final MapEntry entry : entries) {
             if (entry.getTargetId() != null && !entry.getTargetId().equals(""))
               isValidGroup = true;
           }
@@ -3515,7 +3223,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
             mapRecordAltered = true;
 
-            for (MapEntry entry : entries) {
+            for (final MapEntry entry : entries) {
               mr.removeMapEntry(entry);
               nMapEntriesRemoved++;
             }
@@ -3554,7 +3262,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     // ////////////////////////////////////////////
 
     // cycle over all records
-    for (MapRecord mapRecord : mapRecordsInProject.getIterable()) {
+    for (final MapRecord mapRecord : mapRecordsInProject.getIterable()) {
 
       // create a map representing oldGroup -> newGroup
       List<Integer> mapGroupsFound = new ArrayList<>();
@@ -3563,7 +3271,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       Map<Integer, Integer> mapGroupRemapping = new HashMap<>();
 
       // find the existing groups
-      for (MapEntry mapEntry : mapRecord.getMapEntries()) {
+      for (final MapEntry mapEntry : mapRecord.getMapEntries()) {
 
         // if this group not already present, add to list
         if (!mapGroupsFound.contains(mapEntry.getMapGroup()))
@@ -3639,7 +3347,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
                   + mapRecord.getConceptName());
 
           String mapLogStr = "";
-          for (Integer i : mapGroupRemapping.keySet()) {
+          for (final Integer i : mapGroupRemapping.keySet()) {
             mapLogStr += " " + i + "->" + mapGroupRemapping.get(i);
           }
 
@@ -3652,7 +3360,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
           this.handleMapRecordLazyInitialization(mapRecord);
 
-          for (MapEntry me : mapRecord.getMapEntries()) {
+          for (final MapEntry me : mapRecord.getMapEntries()) {
             if (mapGroupRemapping.containsKey(me.getMapGroup())) {
               me.setMapGroup(mapGroupRemapping.get(me.getMapGroup()));
             }
@@ -3682,6 +3390,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
             + nRecordsRemapped + " with group errors");
   }
 
+  /* see superclass */
   @Override
   public void removeMapAdviceFromEnvironment(MapAdvice mapAdvice)
     throws Exception {
@@ -3701,12 +3410,12 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     // remove map advice from all map entries, found via map records
     beginTransaction();
 
-    for (MapRecord mr : getMapRecords().getIterable()) {
+    for (final MapRecord mr : getMapRecords().getIterable()) {
 
       adviceRemoved = false;
 
       // cycle over entries
-      for (MapEntry me : mr.getMapEntries()) {
+      for (final MapEntry me : mr.getMapEntries()) {
 
         if (me.getMapAdvices().contains(mapAdvice)) {
           me.removeMapAdvice(mapAdvice);
@@ -3731,7 +3440,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     beginTransaction();
     nAdviceRemoved = 0;
 
-    for (MapProject mp : getMapProjects().getIterable()) {
+    for (final MapProject mp : getMapProjects().getIterable()) {
 
       adviceRemoved = false;
 
@@ -3753,18 +3462,14 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#getMapProjectMetadata()
-   */
+  /* see superclass */
   @Override
   public Map<String, Map<String, String>> getMapProjectMetadata()
     throws Exception {
     Map<String, Map<String, String>> idNameMapList = new HashMap<>();
 
     Map<String, String> workflowNameMap = new HashMap<>();
-    for (WorkflowType type : WorkflowType.values()) {
+    for (final WorkflowType type : WorkflowType.values()) {
       workflowNameMap.put(type.name(), type.getDisplayName());
     }
     if (workflowNameMap.size() > 0) {
@@ -3772,7 +3477,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     }
 
     Map<String, String> relationStyleNameMap = new HashMap<>();
-    for (RelationStyle type : RelationStyle.values()) {
+    for (final RelationStyle type : RelationStyle.values()) {
       relationStyleNameMap.put(type.name(), type.getDisplayName());
     }
     if (relationStyleNameMap.size() > 0) {
@@ -3780,7 +3485,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     }
 
     Map<String, String> mapRefsetPatternNameMap = new HashMap<>();
-    for (MapRefsetPattern type : MapRefsetPattern.values()) {
+    for (final MapRefsetPattern type : MapRefsetPattern.values()) {
       mapRefsetPatternNameMap.put(type.name(), type.getDisplayName());
     }
     if (mapRefsetPatternNameMap.size() > 0) {
@@ -3803,6 +3508,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return idNameMapList;
   }
 
+  /* see superclass */
   @Override
   public SearchResultList getScopeConceptsForMapProject(MapProject mapProject,
     PfsParameter pfsParameter) throws Exception {
@@ -3837,7 +3543,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
     // for each concept id in sublist, get the
     ContentService contentService = new ContentServiceJpa();
-    for (String conceptId : scopeConcepts) {
+    for (final String conceptId : scopeConcepts) {
 
       SearchResult searchResult = new SearchResultJpa();
       searchResult.setTerminology(mapProject.getSourceTerminology());
@@ -3863,11 +3569,12 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return searchResultList;
   }
 
+  /* see superclass */
   @Override
   public SearchResultList getScopeExcludedConceptsForMapProject(
     MapProject mapProject, PfsParameter pfsParameter) throws Exception {
 
-    SearchResultList searchResultList = new SearchResultListJpa();
+    final SearchResultList searchResultList = new SearchResultListJpa();
 
     PfsParameter localPfsParameter = pfsParameter;
 
@@ -3898,8 +3605,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     scopeExcludedConcepts = scopeExcludedConcepts.subList(startIndex, endIndex);
 
     // for each concept id in sublist, get the concept name
-    ContentService contentService = new ContentServiceJpa();
-    for (String conceptId : scopeExcludedConcepts) {
+    final ContentService contentService = new ContentServiceJpa();
+    for (final String conceptId : scopeExcludedConcepts) {
 
       SearchResult searchResult = new SearchResultJpa();
       searchResult.setTerminology(mapProject.getSourceTerminology());
