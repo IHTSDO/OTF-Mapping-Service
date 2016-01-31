@@ -17,8 +17,7 @@ mapProjectAppControllers
   .run(function($rootScope, $http, localStorageService, $location) {
 
     // global function to handle any type of error. Currently only
-    // specifically
-    // implemented for authorization failures.
+    // specifically implemented for authorization failures.
     $rootScope.handleHttpError = function(data, status, headers, config) {
       $rootScope.globalError = data.replace(/"/g, '');
       if (status == '401') {
@@ -41,6 +40,7 @@ mapProjectAppControllers
     // global function to reset the global error
     $rootScope.resetGlobalError = function() {
       $rootScope.globalError = '';
+      $rootScope.globalLongError = '';
     };
 
     // global variable to display a glass pane (if non-zero) preventing user
