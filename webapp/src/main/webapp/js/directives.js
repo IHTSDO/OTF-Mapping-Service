@@ -64,7 +64,7 @@ angular.module('dynamicSortableTree', []).directive('dynamicSortableTree',
         if (getView && typeof getView === 'function') {
           var templateUrl = getView(ngModelItem);
           if (templateUrl) {
-            element.html("<div ng-include src='" + templateUrl + "'></div>");
+            element.html('<div ng-include src="' + templateUrl + '"></div>');
           }
 
           $compile(element.contents())(scope);

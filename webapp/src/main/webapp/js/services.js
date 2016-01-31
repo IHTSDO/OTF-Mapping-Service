@@ -32,7 +32,7 @@ mapProjectApp
           }
 
           // Add a * to the filter if set and doesn't contain a :
-          if (query.indexOf("(") == -1 && query.indexOf(":") == -1 && query.indexOf("\"") == -1) {
+          if (query.indexOf('(') == -1 && query.indexOf(':') == -1 && query.indexOf('"') == -1) {
             var query2 = query.concat('*');
             return encodeURIComponent(query2);
           }
@@ -46,10 +46,10 @@ mapProjectApp
           }
 
           // Add a * to the filter if set and doesn't contain a :
-          if (pfs.queryRestriction && pfs.queryRestriction.indexOf(":") == -1
-            && pfs.queryRestriction.indexOf("\"") == -1) {
+          if (pfs.queryRestriction && pfs.queryRestriction.indexOf(':') == -1
+            && pfs.queryRestriction.indexOf('"') == -1) {
             var pfs2 = angular.copy(pfs);
-            pfs2.queryRestriction += "*";
+            pfs2.queryRestriction += '*';
             return pfs2;
           }
           return pfs;
@@ -69,14 +69,14 @@ mapProjectApp
         this.handleError = function(message) {
           console.debug('Handle error: ', message);
           if (message && message.length > 120) {
-            $rootScope.globalError = "Unexpected error, click the icon to view attached full error";
+            $rootScope.globalError = 'Unexpected error, click the icon to view attached full error';
             $rootScope.globalLongError = message;
           } else {
             $rootScope.globalError = message;
           }
           // handle no message
           if ($rootScope.globalError) {
-            $rootScope.globalError = "Unexpected server side error.";
+            $rootScope.globalError = 'Unexpected server side error.';
           }
           // If authtoken expired, relogin
           if ($rootScope.globalError && $rootScope.globalError.indexOf('AuthToken') != -1) {

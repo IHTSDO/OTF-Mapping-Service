@@ -183,7 +183,7 @@ angular
             // this is good to show messages right away
             // if there are problems
             $rootScope.glassPane++;
-            console.debug("Validate record on select", $scope.record);
+            console.debug('Validate record on select', $scope.record);
             $http({
               url : root_mapping + 'validation/record/validate',
               dataType : 'json',
@@ -193,7 +193,7 @@ angular
                 'Content-Type' : 'application/json'
               }
             }).success(function(data) {
-              console.debug("  data = ", data);
+              console.debug('  data = ', data);
               $rootScope.glassPane--;
               $scope.validationResult = data;
             }).error(function(data, status, headers, config) {
@@ -238,7 +238,7 @@ angular
 
         function retrieveRecord() {
           // obtain the record
-          console.debug("Get record", $routeParams.recordId);
+          console.debug('Get record', $routeParams.recordId);
           $http({
             url : root_mapping + 'record/id/' + $routeParams.recordId,
             dataType : 'json',
@@ -248,7 +248,7 @@ angular
             }
           }).success(
             function(data) {
-              console.debug("  data = ", data);
+              console.debug('  data = ', data);
               $scope.record = data;
 
               // verify that all entries on this record with no
@@ -273,7 +273,7 @@ angular
                   $scope.role);
               } else {
                 // obtain the record concept
-                console.debug("get concept", $scope.record.conceptId);
+                console.debug('get concept', $scope.record.conceptId);
                 $http(
                   {
                     url : root_content + 'concept/id/' + $scope.project.sourceTerminology + '/'
@@ -284,7 +284,7 @@ angular
                       'Content-Type' : 'application/json'
                     }
                   }).success(function(data) {
-                  console.debug("  data = ", data);
+                  console.debug('  data = ', data);
                   $scope.concept = data;
                   $scope.conceptBrowserUrl = $scope.getBrowserUrl();
                   // initialize the dynamic tooltip on the Save/Next button
@@ -298,7 +298,7 @@ angular
                 initializeGroupsTree();
 
                 // add code to get feedback conversations
-                console.debug("Get feedback conversation for record", $scope.record.id);
+                console.debug('Get feedback conversation for record', $scope.record.id);
                 $http({
                   url : root_workflow + 'conversation/id/' + $scope.record.id,
                   dataType : 'json',
@@ -307,7 +307,7 @@ angular
                     'Content-Type' : 'application/json'
                   }
                 }).success(function(data) {
-                  console.debug("  data = ", data);
+                  console.debug('  data = ', data);
                   $scope.conversation = data;
                   initializeReturnRecipients();
                 }).error(function(data, status, headers, config) {
@@ -319,7 +319,7 @@ angular
         }
 
         function setIndexViewerStatus() {
-          console.debug("Get index viewer status", $scope.project.destinationTerminology);
+          console.debug('Get index viewer status', $scope.project.destinationTerminology);
           $http(
             {
               url : root_content + 'index/' + $scope.project.destinationTerminology + '/'
@@ -330,7 +330,7 @@ angular
                 'Content-Type' : 'application/json'
               }
             }).success(function(data) {
-            console.debug("  data = ", data);
+            console.debug('  data = ', data);
             if (data.searchResult.length > 0) {
               $scope.indexViewerExists = true;
             } else {
@@ -434,7 +434,7 @@ angular
 
           // validate the record
           $rootScope.glassPane++;
-          console.debug("Validate on finish", $scope.record);
+          console.debug('Validate on finish', $scope.record);
           $http({
             url : root_mapping + 'validation/record/validate',
             dataType : 'json',
@@ -445,7 +445,7 @@ angular
             }
           })
             .success(function(data) {
-              console.debug("  data = " + data);
+              console.debug('  data = ' + data);
               $rootScope.glassPane--;
               $scope.validationResult = data;
             })
@@ -490,7 +490,7 @@ angular
                     $scope.record.lastModifiedBy = $scope.user;
 
                     $rootScope.glassPane++;
-                    console.debug("Finish record", $scope.record);
+                    console.debug('Finish record', $scope.record);
                     $http({
                       url : root_workflow + 'finish',
                       dataType : 'json',
@@ -501,7 +501,7 @@ angular
                       }
                     })
                       .success(function(data) {
-                        console.debug("  data = ", data);
+                        console.debug('  data = ', data);
                         $scope.recordSuccess = 'Record saved.';
                         $scope.recordError = '';
 
@@ -581,7 +581,7 @@ angular
 
             // get the assigned work list
             $rootScope.glassPane++;
-            console.debug("Get assigned concepts", $scope.project.id);
+            console.debug('Get assigned concepts', $scope.project.id);
             $http(
               {
                 url : root_workflow + 'project/id/' + $scope.project.id + '/user/id/'
@@ -595,7 +595,7 @@ angular
                 }
               }).success(
               function(data) {
-                console.debug("  data = ", data);
+                console.debug('  data = ', data);
                 $rootScope.glassPane--;
 
                 var assignedWork = data.searchResult;
@@ -642,7 +642,7 @@ angular
 
             // get the assigned conflicts
             $rootScope.glassPane++;
-            console.debug("get assigned conflicts", $scope.project.id);
+            console.debug('get assigned conflicts', $scope.project.id);
             $http(
               {
                 url : root_workflow + 'project/id/' + $scope.project.id + '/user/id/'
@@ -656,7 +656,7 @@ angular
                 }
               }).success(
               function(data) {
-                console.debug("  data = ", data);
+                console.debug('  data = ', data);
                 $rootScope.glassPane--;
 
                 var assignedWork = data.searchResult;
@@ -707,7 +707,7 @@ angular
             };
             // get the assigned review work
             $rootScope.glassPane++;
-            console.debug("get assigned review work", $scope.project.id);
+            console.debug('get assigned review work', $scope.project.id);
             $http(
               {
                 url : root_workflow + 'project/id/' + $scope.project.id + '/user/id/'
@@ -721,7 +721,7 @@ angular
                 }
               }).success(
               function(data) {
-                console.debug("  data = ", data);
+                console.debug('  data = ', data);
                 $rootScope.glassPane--;
 
                 var assignedWork = data.searchResult;
@@ -762,7 +762,7 @@ angular
             };
             // get the assigned review work
             $rootScope.glassPane++;
-            console.debug("get assigned qa work", $scope.project.id);
+            console.debug('get assigned qa work', $scope.project.id);
             $http(
               {
                 url : root_workflow + 'project/id/' + $scope.project.id + '/user/id/'
@@ -776,7 +776,7 @@ angular
                 }
               }).success(
               function(data) {
-                console.debug("  data = ", data);
+                console.debug('  data = ', data);
                 $rootScope.glassPane--;
 
                 var assignedWork = data.searchResult;
@@ -826,7 +826,7 @@ angular
           // return;
 
           $rootScope.glassPane++;
-          console.debug("save record", $scope.record);
+          console.debug('save record', $scope.record);
           $http({
             url : root_workflow + 'save',
             dataType : 'json',
@@ -836,7 +836,7 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-            console.debug("  data = ", data);
+            console.debug('  data = ', data);
 
             // user has successfully saved
             // record, page is no longer 'dirty'
@@ -864,7 +864,7 @@ angular
         $scope.cancelMapRecord = function() {
 
           $rootScope.glassPane++;
-          console.debug("cancel editing", $scope.record);
+          console.debug('cancel editing', $scope.record);
           $http({
             url : root_workflow + 'cancel',
             dataType : 'json',
@@ -1063,7 +1063,7 @@ angular
               'userName' : record.owner.userName
             };
 
-            console.debug("add conversation", feedbackConversation);
+            console.debug('add conversation', feedbackConversation);
             $http({
               url : root_workflow + 'conversation/add',
               dataType : 'json',
@@ -1073,7 +1073,7 @@ angular
                 'Content-Type' : 'application/json'
               }
             }).success(function(data) {
-              console.debug("  data = ", data);
+              console.debug('  data = ', data);
               $scope.conversation = feedbackConversation;
             }).error(function(data, status, headers, config) {
               $scope.recordError = 'Error adding new feedback conversation.';
@@ -1097,7 +1097,7 @@ angular
             localFeedback.push(feedback);
             $scope.conversation.feedback = localFeedback;
 
-            console.debug("update conversation", $scope.conversation);
+            console.debug('update conversation', $scope.conversation);
             $http({
               url : root_workflow + 'conversation/update',
               dataType : 'json',
@@ -1107,7 +1107,7 @@ angular
                 'Content-Type' : 'application/json'
               }
             }).success(function(data) {
-              console.debug("  data = ", data);
+              console.debug('  data = ', data);
             }).error(function(data, status, headers, config) {
               $scope.recordError = 'Error updating feedback conversation.';
               $rootScope.handleHttpError(data, status, headers, config);
@@ -1517,7 +1517,7 @@ angular
           }
 
           if (needToUpdate == true) {
-            console.debug("update conversation", $scope.conversation);
+            console.debug('update conversation', $scope.conversation);
             $http({
               url : root_workflow + 'conversation/update',
               dataType : 'json',
@@ -1527,7 +1527,7 @@ angular
                 'Content-Type' : 'application/json'
               }
             }).success(function(data) {
-              console.debug("  data = ", data);
+              console.debug('  data = ', data);
             }).error(function(data, status, headers, config) {
               $scope.recordError = 'Error updating feedback conversation.';
               $rootScope.handleHttpError(data, status, headers, config);
