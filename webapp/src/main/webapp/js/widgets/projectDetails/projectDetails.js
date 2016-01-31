@@ -49,7 +49,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
 // selection
 .filter('elementFilter', function() {
   return function(elementList, elementsToCheck) {
-    var out = [];
+    var out = new Array();
     if (elementList == undefined || elementsToCheck == undefined)
       return out;
     for (var i = 0; i < elementList.length; i++) {
@@ -131,6 +131,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       $scope.$watch([ 'focusProject', 'userToken' ], function() {
 
         if ($scope.focusProject != null && $scope.userToken != null) {
+          // n/a
         }
         $http.defaults.headers.common.Authorization = $scope.userToken;
         $scope.go();
@@ -267,13 +268,14 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         $scope.selectedWorkflowType = $scope.getSelectedWorkflowType();
 
         /*
-                 * // determine if this project has a principles document if
-                 * ($scope.focusProject.destinationTerminology == 'ICD10') {
-                 * $scope.focusProject.mapPrincipleDocumentPath = 'doc/';
-                 * $scope.focusProject.mapPrincipleDocument = 'ICD10_MappingPersonnelHandbook.docx';
-                 * $scope.focusProject.mapPrincipleDocumentName = 'Mapping Personnel Handbook'; }
-                 * else { $scope.focusProject.mapPrincipleDocument = null; }
-                 */
+         * // determine if this project has a principles document if
+         * ($scope.focusProject.destinationTerminology == 'ICD10') {
+         * $scope.focusProject.mapPrincipleDocumentPath = 'doc/';
+         * $scope.focusProject.mapPrincipleDocument =
+         * 'ICD10_MappingPersonnelHandbook.docx';
+         * $scope.focusProject.mapPrincipleDocumentName = 'Mapping Personnel
+         * Handbook'; } else { $scope.focusProject.mapPrincipleDocument = null; }
+         */
 
         // set the scope maps
         $scope.scopeMap = {};
@@ -511,7 +513,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         // otherwise return false
         return false;
       }
-      ;
 
       function containsRelationFilter(element) {
 
@@ -533,7 +534,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         // otherwise return false
         return false;
       }
-      ;
 
       function containsPrincipleFilter(element) {
 
@@ -562,7 +562,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         // otherwise return false
         return false;
       }
-      ;
 
       function containsScopeConceptFilter(element) {
 
@@ -622,7 +621,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         // otherwise return false
         return false;
       }
-      ;
 
       function containsQACheckDefinitionFilter(element) {
 
@@ -642,7 +640,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         // otherwise return false
         return false;
       }
-      ;
 
       // helper function to sort a JSON array by field
 
@@ -861,7 +858,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           console.debug('success to addNewLead');
 
           // copy the newly updated object with id
-          user = data;
+          var user = data;
 
           $scope.mapUsers.push(user);
           localStorageService.add('mapUsers', $scope.mapUsers);
@@ -1686,6 +1683,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             url : root_mapping + 'upload/' + $scope.focusProject.id,
             file : $file,
             progress : function(e) {
+              // n/a
             }
           }).error(function(data, status, headers, config) {
             // file is not uploaded
