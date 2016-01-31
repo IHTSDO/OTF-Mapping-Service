@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.helpers;
 
+import java.util.List;
 import java.util.Set;
 
 import org.ihtsdo.otf.mapping.model.MapEntry;
@@ -9,6 +10,7 @@ import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
+import org.ihtsdo.otf.mapping.rf2.TreePosition;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
 /**
@@ -112,7 +114,7 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @param treePositions the tree positions
    * @throws Exception the exception
    */
-  public void computeTargetTerminologyNotes(TreePositionList treePositions)
+  public void computeTargetTerminologyNotes(List<TreePosition> treePositions)
     throws Exception;
 
   /**

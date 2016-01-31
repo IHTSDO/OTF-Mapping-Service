@@ -22,32 +22,35 @@ public class GmdnProjectSpecificAlgorithmHandler extends
   public boolean isTargetCodeValid(String terminologyId) throws Exception {
     final ContentService contentService = new ContentServiceJpa();
 
+    // fast
+    return true;
+    
     // Cache the "Term" term type - valid codes require it
-    cacheTermType(contentService, mapProject.getDestinationTerminology(),
-        mapProject.getDestinationTerminologyVersion());
-
-    try {
-      // Concept must exist
-      final Concept concept =
-          contentService.getConcept(terminologyId,
-              mapProject.getDestinationTerminology(),
-              mapProject.getDestinationTerminologyVersion());
-
-      // If there is a concept and it has a "term" description it's valid
-      if (concept != null) {
-        for (final Description desc : concept.getDescriptions()) {
-          if (desc.getTypeId().equals(termType)) {
-            return true;
-          }
-        }
-      }
-      return false;
-
-    } catch (Exception e) {
-      throw e;
-    } finally {
-      contentService.close();
-    }
+    // cacheTermType(contentService, mapProject.getDestinationTerminology(),
+    // mapProject.getDestinationTerminologyVersion());
+    //
+    // try {
+    // // Concept must exist
+    // final Concept concept =
+    // contentService.getConcept(terminologyId,
+    // mapProject.getDestinationTerminology(),
+    // mapProject.getDestinationTerminologyVersion());
+    //
+    // // If there is a concept and it has a "term" description it's valid
+    // if (concept != null) {
+    // for (final Description desc : concept.getDescriptions()) {
+    // if (desc.getTypeId().equals(termType)) {
+    // return true;
+    // }
+    // }
+    // }
+    // return false;
+    //
+    // } catch (Exception e) {
+    // throw e;
+    // } finally {
+    // contentService.close();
+    // }
   }
 
   /**

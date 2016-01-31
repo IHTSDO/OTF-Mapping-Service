@@ -991,7 +991,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     tx = manager.getTransaction();
 
     // retrieve this simple map ref set member
-    final SimpleMapRefSetMember mu = manager.find(SimpleMapRefSetMemberJpa.class, id);
+    final SimpleMapRefSetMember mu =
+        manager.find(SimpleMapRefSetMemberJpa.class, id);
 
     if (getTransactionPerOperation()) {
 
@@ -1112,7 +1113,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
     final FullTextEntityManager fullTextEntityManager =
         Search.getFullTextEntityManager(manager);
-    final SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
+    final SearchFactory searchFactory =
+        fullTextEntityManager.getSearchFactory();
     Query luceneQuery;
 
     try {
@@ -1178,7 +1180,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
     // construct the search results
     for (final Concept c : concepts) {
-      final  SearchResult sr = new SearchResultJpa();
+      final SearchResult sr = new SearchResultJpa();
       sr.setId(c.getId());
       sr.setTerminologyId(c.getTerminologyId());
       sr.setTerminology(c.getTerminology());
@@ -1369,7 +1371,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
             + ", isaRelTypeId = " + typeId);
 
     // initialize global variables
-    final EntityTransaction computeTreePositionTransaction = manager.getTransaction();
+    final EntityTransaction computeTreePositionTransaction =
+        manager.getTransaction();
     int computeTreePositionCommitCt = 5000;
     computeTreePositionTotalCount = 0;
     computeTreePositionMaxMemoryUsage = 0L;
@@ -1377,7 +1380,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     computeTreePositionValidationResult = new ValidationResultJpa();
 
     // get the root concept
-    final Concept rootConcept = getConcept(rootId, terminology, terminologyVersion);
+    final Concept rootConcept =
+        getConcept(rootId, terminology, terminologyVersion);
 
     // begin the transaction
     computeTreePositionTransaction.begin();
@@ -1423,7 +1427,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     throws Exception {
 
     // Get all relationships
-     Map<Long, Set<Long>> localParChd = parChd;
+    Map<Long, Set<Long>> localParChd = parChd;
     if (localParChd == null) {
       Logger.getLogger(this.getClass()).info(
           "  Loading relationships " + typeId);
@@ -1603,7 +1607,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
             + ", isaRelTypeId = " + typeId);
 
     // get the root concept
-    final Concept rootConcept = getConcept(rootId, terminology, terminologyVersion);
+    final Concept rootConcept =
+        getConcept(rootId, terminology, terminologyVersion);
 
     // begin the recursive computation
     computeTreePositionsHelper(null, rootConcept, Long.valueOf(typeId), "", 0,
@@ -1999,23 +2004,24 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     Map<String, String> relTypes) throws Exception {
 
     // get the concept for this tree position
-    Concept concept =
+    final Concept concept =
         getConcept(treePosition.getTerminologyId(),
             treePosition.getTerminology(), treePosition.getTerminologyVersion());
 
-    // map of Type -> Description Groups
+    // map of Type -> Description type Groups
     // e.g. there "Inclusion" -> all inclusion description groups
-    Map<String, TreePositionDescriptionGroup> descGroups = new HashMap<>();
+    final Map<String, TreePositionDescriptionGroup> descGroups =
+        new HashMap<>();
 
     // cycle over all descriptions
     for (final Description desc : concept.getDescriptions()) {
-      String descType = desc.getTypeId().toString();
+      final String descType = desc.getTypeId().toString();
 
       // get or create the description group for this description type
       TreePositionDescriptionGroup descGroup = null;
-      if (descGroups.get(descType) != null)
+      if (descGroups.containsKey(descType)) {
         descGroup = descGroups.get(descType);
-      else {
+      } else {
 
         descGroup = new TreePositionDescriptionGroupJpa();
         descGroup.setName(descTypes.get(descType));
@@ -2046,46 +2052,50 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       // check for references
       // find any relationship where terminology id starts with the
       // description's terminology id
-      for (final Relationship rel : concept.getRelationships()) {
-        if (rel.getTerminologyId().startsWith(desc.getTerminologyId() + "~")) {
+      // TODO: make this part of project specific algorithm handler
+      // only ICD10 cares about dagger/asterisk and "references" relationships
+      if (treePosition.getTerminology().equals("ICD10")) {
+        for (final Relationship rel : concept.getRelationships()) {
+          if (rel.getTerminologyId().startsWith(desc.getTerminologyId() + "~")) {
 
-          // Non-persisted objects, so remove this description from
-          // list, modify it, and re-add it
-          descGroup.removeTreePositionDescription(tpDesc);
+            // Non-persisted objects, so remove this description from
+            // list, modify it, and re-add it
+            descGroup.removeTreePositionDescription(tpDesc);
 
-          // create the referenced concept object
-          TreePositionReferencedConcept referencedConcept =
-              new TreePositionReferencedConceptJpa();
-          referencedConcept.setTerminologyId(rel.getDestinationConcept()
-              .getTerminologyId());
+            // create the referenced concept object
+            final TreePositionReferencedConcept referencedConcept =
+                new TreePositionReferencedConceptJpa();
+            referencedConcept.setTerminologyId(rel.getDestinationConcept()
+                .getTerminologyId());
 
-          // if no label, just use terminology id
-          // if label present, use label as display name
-          String displayName =
-              (rel.getLabel() == null ? rel.getDestinationConcept()
-                  .getTerminologyId() : rel.getLabel());
+            // if no label, just use terminology id
+            // if label present, use label as display name
+            String displayName =
+                (rel.getLabel() == null ? rel.getDestinationConcept()
+                    .getTerminologyId() : rel.getLabel());
 
-          // switch on relationship type to add any additional information
-          String relType = relTypes.get(rel.getTypeId().toString());
+            // switch on relationship type to add any additional information
+            final String relType = relTypes.get(rel.getTypeId().toString());
 
-          // if asterisk-to-dagger, add †
-          if (relType.indexOf("Asterisk") == 0) {
-            displayName += " *";
-          } else if (relType.indexOf("Dagger") == 0) {
-            displayName += " \u2020";
+            // if asterisk-to-dagger, add †
+            if (relType.indexOf("Asterisk") == 0) {
+              displayName += " *";
+            } else if (relType.indexOf("Dagger") == 0) {
+              displayName += " \u2020";
+            }
+
+            referencedConcept.setDisplayName(displayName);
+
+            tpDesc.addReferencedConcept(referencedConcept);
+
+            // add or re-add the tree position description (was removed
+            // earlier if existed)
+            descGroup.addTreePositionDescription(tpDesc);
+
+            // replace the existing desc group
+            descGroups.put(descGroup.getTypeId(), descGroup);
+
           }
-
-          referencedConcept.setDisplayName(displayName);
-
-          tpDesc.addReferencedConcept(referencedConcept);
-
-          // add or re-add the tree position description (was removed
-          // earlier if existed)
-          descGroup.addTreePositionDescription(tpDesc);
-
-          // replace the existing desc group
-          descGroups.put(descGroup.getTypeId(), descGroup);
-
         }
       }
     }
