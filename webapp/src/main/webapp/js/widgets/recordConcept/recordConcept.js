@@ -231,14 +231,7 @@ angular
         }).error(function(data, status, headers, config) {
           $rootScope.handleHttpError(data, status, headers, config);
         }).then(function() {
-          // check relation style flags
-          /*
-                     * if ($scope.focusProject.mapRelationStyle === 'MAP_CATEGORY_STYLE') {
-                     * applyMapCategoryStyle(); }
-                     * 
-                     * if ($scope.focusProject.mapRelationStyle === 'RELATIONSHIP_STYLE') {
-                     * applyRelationshipStyle(); }
-                     */
+          // n/a
         });
       };
 
@@ -472,7 +465,7 @@ angular
           }
         }
       }
-      ;
+      
 
       function applyRelationshipStyle() {
         // Cycle over all entries. Add the relation name to the advice
@@ -500,7 +493,7 @@ angular
           }
         }
       }
-      ;
+      
 
       // change the focus project to the project associated with a
       // specified
@@ -568,6 +561,7 @@ angular
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
+          // n/a
         }).error(function(data) {
           if (response.indexOf('HTTP Status 401') != -1) {
             $rootScope.globalError = 'Authorization failed.  Please log in again.';
@@ -593,7 +587,7 @@ angular
         $scope.model.title = terminology + ' Concept ' + conceptId + ': ' + defaultPreferredName;
 
       }
-      ;
+      
 
       // opens SNOMED CT browser
       $scope.getBrowserUrl = function() {

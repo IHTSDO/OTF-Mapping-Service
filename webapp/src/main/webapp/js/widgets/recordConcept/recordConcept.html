@@ -4,7 +4,7 @@
 <!--  No map records for this project -->
 <div ng-show="recordsInProjectNotFound == true && historicalRecords.length == 0">
   <h4>
-    <img src="img/warning-circle_25px.png">&nbspNo Map Records exist for
+    <img src="img/warning-circle_25px.png">&nbsp;No Map Records exist for
     {{focusProject.name}}
   </h4>
 </div>
@@ -17,28 +17,28 @@
       Records</button>
     <button class="btn btn-sm btn-primary" ng-click="openConceptBrowser()">SNOMED
       CT Browser</button>
-    <div style="display: inline" class="dropdown"
+    <span style="display: inline" class="dropdown"
       ng-show="concept.relationship.length > 0">
       <button class="dropdown-toggle btn btn-sm btn-primary">Parents</button>
       <ul class="dropdown-menu">
-        <strong>Parents</strong>
+        <b>Parents</b>
         <li
           ng-repeat="relationship in concept.relationship | orderBy:'destinationConceptPreferredName'">
           <a href="#/record/conceptId/{{relationship.destinationConceptId}}">{{relationship.destinationConceptId}}:
             {{relationship.destinationConceptPreferredName}}</a>
         </li>
       </ul>
-    </div>
-    <div style="display: inline" class="dropdown"
+    </span>
+    <span style="display: inline" class="dropdown"
       ng-show="concept.children.length > 0">
       <button class="dropdown-toggle btn btn-sm btn-primary">Children</button>
       <ul class="dropdown-menu">
-        <strong>Children</strong>
+        <b>Children</b>
         <li ng-repeat="concept in concept.children | orderBy: 'value'"><a
             href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}:
             {{concept.value}}</a></li>
       </ul>
-    </div>
+    </span>
   </h4>
 
   <accordion close-others="false"> <accordion-group is-open="true">
@@ -54,7 +54,7 @@
 
 
     <div ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
-      Owner: {{record.owner.name}}&nbsp
+      Owner: {{record.owner.name}}&nbsp;
       <a title="Edit" ng-show="isEditable(record) == true"
         ng-click="editRecord(record)">
         <i class="glyphicon glyphicon glyphicon-pencil pull-right"></i>
@@ -109,7 +109,7 @@
       ng-class-even="'even'">
 
       <div ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
-        Owner: {{record.owner.name}}&nbsp
+        Owner: {{record.owner.name}}&nbsp;
         <a title="Edit" ng-show="isEditable(record) == true"
           ng-click="editRecord(record)">
           <i class="glyphicon glyphicon glyphicon-pencil pull-right"></i>
