@@ -25,23 +25,32 @@
 
 <div style="float: right; width: 40%; padding: 10px;">
   <a title="Go to first search result" ng-show="firstArrow"
-    ng-click="goFirstResult()"><i class="glyphicon glyphicon-backward"></i></a>
+    ng-click="goFirstResult()">
+    <i class="glyphicon glyphicon-backward"></i>
+  </a>
   <a title="Go to previous search result" ng-show="previousArrow"
-    ng-click="goPreviousResult()"><i
-    class="glyphicon glyphicon-step-backward"></i></a> {{searchResultsLabel}} <a
-    title="Go to next search result" ng-show="nextArrow"
-    ng-click="goNextResult()"><i class="glyphicon glyphicon-step-forward"></i></a>
+    ng-click="goPreviousResult()">
+    <i class="glyphicon glyphicon-step-backward"></i>
+  </a>
+  {{searchResultsLabel}}
+  <a title="Go to next search result" ng-show="nextArrow"
+    ng-click="goNextResult()">
+    <i class="glyphicon glyphicon-step-forward"></i>
+  </a>
   <a title="Go to last search result" ng-show="lastArrow"
-    ng-click="goLastResult()"><i class="glyphicon glyphicon-forward"></i></a>
+    ng-click="goLastResult()">
+    <i class="glyphicon glyphicon-forward"></i>
+  </a>
 </div>
 
 <div>
-  <tabset> <tab ng-repeat="domain in domains  | orderBy: 'toString()'" heading="{{domain}}"
-    ng-click="retrieveIndexPages(domain);"> </tab></tabset>
+  <tabset> <tab ng-repeat="domain in domains  | orderBy: 'toString()'"
+    heading="{{domain}}" ng-click="retrieveIndexPages(domain);"> </tab></tabset>
 </div>
 
 <div align="center" style="padding: 10px;">
-  <div style="display: inline; padding: 8px;" ng-repeat="indexTab in indexPages  | orderBy: 'toString()'">
+  <div style="display: inline; padding: 8px;"
+    ng-repeat="indexTab in indexPages  | orderBy: 'toString()'">
     <a ng-style="set_style(indexTab)" ng-click="updateUrl(indexTab)">{{indexTab}}</a>
   </div>
 </div>
