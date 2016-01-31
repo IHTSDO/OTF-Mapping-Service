@@ -1508,8 +1508,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     complexMapRefSetMember.setMapPriority(mapEntry.getMapPriority());
     complexMapRefSetMember.setMapRule(mapProject.isRuleBased() ? mapEntry
         .getRule() : "");
-    complexMapRefSetMember.setMapRelationId(new Long(mapEntry.getMapRelation()
-        .getTerminologyId()));
+    if (mapEntry.getMapRelation() != null) {
+      complexMapRefSetMember.setMapRelationId(Long.valueOf(mapEntry
+          .getMapRelation().getTerminologyId()));
+    }
     complexMapRefSetMember.setMapTarget(mapEntry.getTargetId() == null ? ""
         : mapEntry.getTargetId());
 
@@ -1532,8 +1534,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     }
 
     // check for context dependent advice
-    if (mapEntry.getRule().startsWith("IFA") && mapEntry.getTargetId() != null
-        && !mapEntry.getTargetId().isEmpty()) {
+    if (mapEntry.getRule() != null && mapEntry.getRule().startsWith("IFA")
+        && mapEntry.getTargetId() != null && !mapEntry.getTargetId().isEmpty()) {
 
       // if not a gender rule, add the advice
       if (!mapEntry.getRule().contains("| Male (finding) |")
