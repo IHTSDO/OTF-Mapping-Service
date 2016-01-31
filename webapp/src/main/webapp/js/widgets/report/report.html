@@ -108,10 +108,12 @@
           <tr ng-repeat="result in reportDisplayed.results">
             <td>
               <a ng-click="toggleResultItems(result, result.page)">
-                [
-                <i
-                  ng-class="{'glyphicon-minus': !result.isCollapsed, 'glyphicon-plus': result.isCollapsed}"></i>
-                ]
+                <span class="nobreak">
+                  [
+                  <i
+                    ng-class="{'glyphicon-minus': !result.isCollapsed, 'glyphicon-plus': result.isCollapsed}"></i>
+                  ]
+                </span>
               </a>
             </td>
             <td>{{result.ct}}</td>
