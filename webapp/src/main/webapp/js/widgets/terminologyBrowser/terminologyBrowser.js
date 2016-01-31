@@ -227,6 +227,7 @@ angular
         var deferred = $q.defer();
 
         $timeout(function() {
+          $rootScope.glassPane++;
           $http(
             {
               url : root_mapping + 'treePosition/project/id/' + $scope.focusProject.id
@@ -237,8 +238,10 @@ angular
               }
             }).success(function(response) {
             console.debug('HTTP RESPONSE');
+            $rootScope.glassPane--;
             deferred.resolve(response);
           }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
             $rootScope.handleHttpError(data, status, headers, config);
           });
 
