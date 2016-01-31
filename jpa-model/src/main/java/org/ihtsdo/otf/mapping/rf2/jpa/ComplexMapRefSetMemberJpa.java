@@ -70,8 +70,8 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
     this.mapBlock = 0;
     this.mapBlockRule = null;
     this.mapBlockAdvice = null;
-    this.mapGroup = 0;
-    this.mapPriority = 0;
+    this.mapGroup = 1;
+    this.mapPriority = 1;
     this.mapRule = null;
     this.mapAdvice = null;
     this.mapTarget = member.getMapTarget();
