@@ -1492,10 +1492,6 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
         for (int i = 0; i < ancestorCount; i++)
           loggerPrefix += "  ";
 
-        // Logger.get// Logger(ContentServiceJpa.class).info(loggerPrefix +
-        // "Computing position for concept " + concept.getTerminologyId() +
-        // ", " + concept.getDefaultPreferredName());;
-
         tp.setAncestorPath(ancestorPath);
         tp.setTerminology(concept.getTerminology());
         tp.setTerminologyVersion(concept.getTerminologyVersion());
@@ -1920,11 +1916,6 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     // initialize the result set
     final List<TreePosition> fullTreePositions = new ArrayList<>();
 
-    for (final TreePosition queriedTreePosition : queriedTreePositions) {
-      Logger.getLogger(ContentServiceJpa.class).info(
-          queriedTreePosition.toString());
-    }
-
     // for each query result, construct the full tree (i.e. up to root, and
     // including children if exact match)
     for (final TreePosition queriedTreePosition : queriedTreePositions) {
@@ -1950,9 +1941,6 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
         /*
          * existingTreePosition .addChildren(fullTreePosition.getChildren());
-         * 
-         * Logger.getLogger(ContentServiceJpa.class).info( "  Added " +
-         * fullTreePosition.getChildren().size() + " children:");
          */
 
         fullTreePositions.set(fullTreePositions.indexOf(fullTreePosition),
@@ -2303,8 +2291,6 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
         while (namesIter.hasNext()) {
 
           String fieldName = namesIter.next();
-          Logger.getLogger(ContentServiceJpa.class).info(
-              "  field name: " + fieldName);
 
           fullQuery += fieldName + ":" + parsedTerms.get(i);
           if (namesIter.hasNext())
