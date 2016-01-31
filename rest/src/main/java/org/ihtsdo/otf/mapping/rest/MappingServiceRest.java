@@ -65,6 +65,7 @@ import org.ihtsdo.otf.mapping.jpa.MapUserPreferencesJpa;
 import org.ihtsdo.otf.mapping.jpa.helpers.TerminologyUtility;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
@@ -80,6 +81,7 @@ import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.Relationship;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
+import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
@@ -3122,6 +3124,8 @@ public class MappingServiceRest extends RootServiceRest {
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     final ContentService contentService = new ContentServiceJpa();
+    final MetadataService metadataService = new MetadataServiceJpa();
+
     try {
       // authorize call
       user =
@@ -3136,7 +3140,18 @@ public class MappingServiceRest extends RootServiceRest {
           contentService.getTreePositionsWithChildren(terminologyId,
               mapProject.getDestinationTerminology(),
               mapProject.getDestinationTerminologyVersion());
-      contentService.computeTreePositionInformation(treePositions);
+
+      final String terminology =
+          treePositions.getTreePositions().get(0).getTerminology();
+      final String terminologyVersion =
+          treePositions.getTreePositions().get(0).getTerminologyVersion();
+      final Map<String, String> descTypes =
+          metadataService.getDescriptionTypes(terminology, terminologyVersion);
+      final Map<String, String> relTypes =
+          metadataService.getRelationshipTypes(terminology, terminologyVersion);
+
+      contentService.computeTreePositionInformation(treePositions, descTypes,
+          relTypes);
 
       // set the valid codes using mapping service
 
@@ -3151,6 +3166,7 @@ public class MappingServiceRest extends RootServiceRest {
           user, mapProjectId.toString(), terminologyId);
       return null;
     } finally {
+      metadataService.close();
       contentService.close();
       mappingService.close();
       securityService.close();
@@ -3183,6 +3199,7 @@ public class MappingServiceRest extends RootServiceRest {
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     final ContentService contentService = new ContentServiceJpa();
+    final MetadataService metadataService = new MetadataServiceJpa();
     try {
       // authorize call
       user =
@@ -3198,8 +3215,18 @@ public class MappingServiceRest extends RootServiceRest {
           contentService.getRootTreePositions(
               mapProject.getDestinationTerminology(),
               mapProject.getDestinationTerminologyVersion());
-            
-      contentService.computeTreePositionInformation(treePositions);
+
+      final String terminology =
+          treePositions.getTreePositions().get(0).getTerminology();
+      final String terminologyVersion =
+          treePositions.getTreePositions().get(0).getTerminologyVersion();
+      final Map<String, String> descTypes =
+          metadataService.getDescriptionTypes(terminology, terminologyVersion);
+      final Map<String, String> relTypes =
+          metadataService.getRelationshipTypes(terminology, terminologyVersion);
+
+      contentService.computeTreePositionInformation(treePositions, descTypes,
+          relTypes);
 
       mappingService.setTreePositionValidCodes(
           treePositions.getTreePositions(), mapProjectId);
@@ -3211,6 +3238,7 @@ public class MappingServiceRest extends RootServiceRest {
           mapProjectId.toString(), "");
       return null;
     } finally {
+      metadataService.close();
       mappingService.close();
       contentService.close();
       securityService.close();
@@ -3244,6 +3272,7 @@ public class MappingServiceRest extends RootServiceRest {
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     final ContentService contentService = new ContentServiceJpa();
+    final MetadataService metadataService = new MetadataServiceJpa();
     try {
       // authorize call
       user =
@@ -3257,7 +3286,18 @@ public class MappingServiceRest extends RootServiceRest {
           contentService.getTreePositionGraphForQuery(
               mapProject.getDestinationTerminology(),
               mapProject.getDestinationTerminologyVersion(), query);
-      contentService.computeTreePositionInformation(treePositions);
+
+      final String terminology =
+          treePositions.getTreePositions().get(0).getTerminology();
+      final String terminologyVersion =
+          treePositions.getTreePositions().get(0).getTerminologyVersion();
+      final Map<String, String> descTypes =
+          metadataService.getDescriptionTypes(terminology, terminologyVersion);
+      final Map<String, String> relTypes =
+          metadataService.getRelationshipTypes(terminology, terminologyVersion);
+
+      contentService.computeTreePositionInformation(treePositions, descTypes,
+          relTypes);
 
       // set the valid codes using mapping service
 
@@ -3273,6 +3313,7 @@ public class MappingServiceRest extends RootServiceRest {
           user, mapProjectId.toString(), "");
       return null;
     } finally {
+      metadataService.close();
       mappingService.close();
       contentService.close();
       securityService.close();
