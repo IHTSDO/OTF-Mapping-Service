@@ -3140,7 +3140,11 @@ public class MappingServiceRest extends RootServiceRest {
           contentService.getTreePositionsWithChildren(terminologyId,
               mapProject.getDestinationTerminology(),
               mapProject.getDestinationTerminologyVersion());
-      Logger.getLogger(getClass()).info("  treepos count = " + treePositions.getTotalCount());
+      Logger.getLogger(getClass()).info(
+          "  treepos count = " + treePositions.getTotalCount());
+      if (treePositions.getCount() == 0) {
+        return new TreePositionListJpa();
+      }
 
       final String terminology =
           treePositions.getTreePositions().get(0).getTerminology();
@@ -3219,7 +3223,11 @@ public class MappingServiceRest extends RootServiceRest {
           contentService.getRootTreePositions(
               mapProject.getDestinationTerminology(),
               mapProject.getDestinationTerminologyVersion());
-      Logger.getLogger(getClass()).info("  treepos count = " + treePositions.getTotalCount());
+      Logger.getLogger(getClass()).info(
+          "  treepos count = " + treePositions.getTotalCount());
+      if (treePositions.getCount() == 0) {
+        return new TreePositionListJpa();
+      }
 
       final String terminology =
           treePositions.getTreePositions().get(0).getTerminology();
@@ -3294,7 +3302,11 @@ public class MappingServiceRest extends RootServiceRest {
           contentService.getTreePositionGraphForQuery(
               mapProject.getDestinationTerminology(),
               mapProject.getDestinationTerminologyVersion(), query);
-      Logger.getLogger(getClass()).info("  treepos count = " + treePositions.getTotalCount());
+      Logger.getLogger(getClass()).info(
+          "  treepos count = " + treePositions.getTotalCount());
+      if (treePositions.getCount() == 0) {
+        return new TreePositionListJpa();
+      }
 
       final String terminology =
           treePositions.getTreePositions().get(0).getTerminology();
