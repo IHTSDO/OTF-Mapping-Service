@@ -576,6 +576,14 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
               mapProject.getDestinationTerminology(),
               mapProject.getDestinationTerminologyVersion());
 
+      // lazy initialize
+      if (concept != null) {
+        concept.getDescriptions().size();
+        concept.getRelationships().size();
+        concept.getInverseRelationships().size();
+        concept.getSimpleRefSetMembers().size();
+      }
+
       // Remove any advices that are purlely computed and keep only manually
       // assigned ones
       final List<MapAdvice> notComputed = new ArrayList<>();

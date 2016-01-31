@@ -166,7 +166,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
           new GmdnMetadataHelper(terminology, version,
               dateFormat2.format(effectiveTime), contentService);
       conceptMap = helper.createMetadata();
-      
+
       // Initialize par/chd maps
       chdParMap = new HashMap<>();
       parChildrenMap = new HashMap<>();
@@ -438,7 +438,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
 
         // </termID> - set the description terminology id
         else if (qName.equalsIgnoreCase("termID")) {
-          description.setTerminologyId("term-"+chars.toString().trim());
+          description.setTerminologyId("term-" + chars.toString().trim());
 
           // Use the "termID" as the key
           conceptMap.put(chars.toString().trim(), concept);
@@ -459,7 +459,8 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
               "defaultCaseSignificance").getTerminologyId()));
           ivd.setLanguageCode("en");
           ivd.setConcept(concept);
-          Logger.getLogger(getClass()).debug("    description = " + description);
+          Logger.getLogger(getClass())
+              .debug("    description = " + description);
           concept.addDescription(ivd);
           ivd.setActive(true);
           ivd.setTerm(chars.toString().trim());
@@ -481,7 +482,8 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
               "defaultCaseSignificance").getTerminologyId()));
           definition.setLanguageCode("en");
           definition.setConcept(concept);
-          Logger.getLogger(getClass()).debug("    description = " + description);
+          Logger.getLogger(getClass())
+              .debug("    description = " + description);
           concept.addDescription(definition);
           definition.setActive(true);
           definition.setTerm(chars.toString().trim());
@@ -591,7 +593,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
 
         // </collectivetermID> - set the description terminology id
         else if (qName.equalsIgnoreCase("collectivetermID")) {
-          description.setTerminologyId("ct-"+chars.toString().trim());
+          description.setTerminologyId("ct-" + chars.toString().trim());
 
           // Ue the "collectiveTermID" as the key
           conceptMap.put(chars.toString().trim(), concept);
@@ -618,7 +620,8 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
               "defaultCaseSignificance").getTerminologyId()));
           definition.setLanguageCode("en");
           definition.setConcept(concept);
-          Logger.getLogger(getClass()).debug("    description = " + description);
+          Logger.getLogger(getClass())
+              .debug("    description = " + description);
           concept.addDescription(definition);
           definition.setActive(true);
           definition.setTerm(chars.toString().trim());
@@ -799,7 +802,8 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
             final String rootTerm = nodeTermMap.get(cttreenodeID);
             final String rootCode = conceptMap.get(rootTerm).getTerminologyId();
             Logger.getLogger(getClass()).info(
-                "    ROOT = " + rootTerm + ", " + rootCode);
+                "    ROOT = " + rootTerm
+                    + (rootTerm.equals(rootCode) ? "" : ", " + rootCode));
             roots.add(rootCode);
           }
         }
