@@ -448,9 +448,19 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
           concept.setTerminologyId(chars.toString().trim());
         }
 
-        // </termIsIVD> - set the label
+        // </termIsIVD> - add a description so we can show in the detail
         else if (qName.equalsIgnoreCase("termIsIVD")) {
-          concept.setLabel(chars.toString().trim());
+          final Description ivd = new DescriptionJpa();
+          setCommonFields(ivd);
+          ivd.setTypeId(Long.parseLong(conceptMap.get("ivdTerm")
+              .getTerminologyId()));
+          ivd.setCaseSignificanceId(Long.parseLong(conceptMap.get(
+              "defaultCaseSignificance").getTerminologyId()));
+          ivd.setLanguageCode("en");
+          ivd.setConcept(concept);
+          concept.addDescription(ivd);
+          ivd.setActive(true);
+          ivd.setTerm(chars.toString().trim());
         }
 
         // </termName> - set the name
@@ -577,7 +587,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
 
         // </collectivetermID> - set the description terminology id
         else if (qName.equalsIgnoreCase("collectivetermID")) {
-          description.setTerminologyId("ct-" + chars.toString().trim());
+          description.setTerminologyId(chars.toString().trim());
 
           // Ue the "collectiveTermID" as the key
           conceptMap.put(chars.toString().trim(), concept);
@@ -585,7 +595,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
 
         // </code> - set the concept terminology id
         else if (qName.equalsIgnoreCase("code")) {
-          concept.setTerminologyId("ct-" + chars.toString().trim());
+          concept.setTerminologyId(chars.toString().trim());
         }
 
         // </name> - set the name
@@ -766,16 +776,21 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
           cttreenodeID = chars.toString().trim();
         }
 
-        // </collectivetermID>
+        // </collectivetermID> - id of child collective term
         else if (qName.equalsIgnoreCase("collectivetermID")) {
+          // Map the cttreenode
           nodeTermMap.put(cttreenodeID, chars.toString().trim());
         }
 
-        // </parentnodeID>
+        // </parentnodeID> - id of the parent tree node
         else if (qName.equalsIgnoreCase("parentnodeID")) {
+          // If chars, not a root node
           if (chars != null && !chars.toString().trim().isEmpty()) {
+            // add chd node (this) and parent node reference
             nodeChdParMap.put(cttreenodeID, chars.toString().trim());
-          } else {
+          }
+          // else a root node
+          else {
             final String rootTerm = nodeTermMap.get(cttreenodeID);
             final String rootCode = conceptMap.get(rootTerm).getTerminologyId();
             Logger.getLogger(getClass()).info(
@@ -826,7 +841,8 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
     component.setTerminology(terminology);
     component.setTerminologyVersion(version);
     // An id is required due to unique constraints on components
-    component.setTerminologyId(String.valueOf(++idCt));
+    // make a fake id
+    component.setTerminologyId(String.valueOf("gmdn-" + (++idCt)));
   }
 
 }
