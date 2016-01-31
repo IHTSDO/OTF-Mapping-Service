@@ -70,10 +70,8 @@ angular
         }
       });
 
-      /**
-       * Helper function to ensure all the collapsible truncated information is
-       * initially not expanded
-       */
+      // Helper function to ensure all the collapsible truncated information is
+      // initially not expanded
       function initTruncationWells(node) {
 
         console.debug('initializing truncation wells');
