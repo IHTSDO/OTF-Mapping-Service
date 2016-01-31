@@ -86,6 +86,7 @@ angular
       // function to get the root nodes
       $scope.getRootTree = function() {
         console.debug("get root tree");
+        $rootScope.glassPane++;
         $http({
           url : root_mapping + 'treePosition/project/id/' + $scope.focusProject.id,
           method : 'GET',
@@ -94,12 +95,14 @@ angular
           }
         }).success(function(response) {
           console.debug("  tree = " + response.date);
+          $rootScope.glassPane--;
           $scope.terminologyTree = response.treePosition;
           for (var i = 0; i < $scope.terminologyTree; i++) {
             $scope.terminologyTree[i].isOpen = false;
             $scope.terminologyTree[i].isConceptOpen = false;
           }
         }).error(function(data, status, headers, config) {
+          $rootScope.glassPane--;
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
@@ -118,6 +121,7 @@ angular
         $scope.searchStatus = 'Searching...';
         $scope.terminologyTree = [];
         console.debug("get root tree with query", $scope.query);
+        $rootScope.glassPane++;
         $http(
           {
             url : root_mapping + 'treePosition/project/id/' + $scope.focusProject.id + '/query/'
@@ -130,6 +134,7 @@ angular
           .success(
             function(response) {
               console.debug("  result = ", response.data);
+              $rootScope.glassPane--;
 
               // limit result count to 10 root tree positions
               for (var x = 0; x < response.treePosition.length && x < 10; x++) {
@@ -176,6 +181,7 @@ angular
                 : false;
 
             }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
             $rootScope.handleHttpError(data, status, headers, config);
           });
       };
