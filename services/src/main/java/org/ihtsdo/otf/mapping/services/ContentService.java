@@ -2,6 +2,7 @@ package org.ihtsdo.otf.mapping.services;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.ComplexMapRefSetMemberList;
@@ -647,9 +648,12 @@ public interface ContentService extends RootService {
    * Compute tree position concept information.
    *
    * @param tpList the tp list
+   * @param descTypes the desc types
+   * @param relTypes the rel types
    * @throws Exception the exception
    */
-  public void computeTreePositionInformation(TreePositionList tpList)
+  public void computeTreePositionInformation(TreePositionList tpList,
+    Map<String, String> descTypes, Map<String, String> relTypes)
     throws Exception;
 
   /**

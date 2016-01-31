@@ -79,7 +79,6 @@ import org.ihtsdo.otf.mapping.rf2.jpa.SimpleMapRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.SimpleRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
-import org.ihtsdo.otf.mapping.services.MetadataService;
 
 /**
  * The Content Services for the Jpa model.
@@ -1960,22 +1959,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
   /* see superclass */
   @Override
-  public void computeTreePositionInformation(TreePositionList tpList)
+  public void computeTreePositionInformation(TreePositionList tpList,
+    Map<String, String> descTypes, Map<String, String> relTypes)
     throws Exception {
 
     // if results are found, retrieve metadata and compute information
     if (tpList.getCount() > 0) {
 
-      String terminology = tpList.getTreePositions().get(0).getTerminology();
-      String terminologyVersion =
-          tpList.getTreePositions().get(0).getTerminologyVersion();
-
-      MetadataService metadataService = new MetadataServiceJpa();
-      Map<String, String> descTypes =
-          metadataService.getDescriptionTypes(terminology, terminologyVersion);
-      Map<String, String> relTypes =
-          metadataService.getRelationshipTypes(terminology, terminologyVersion);
-      metadataService.close();
       for (final TreePosition tp : tpList.getTreePositions())
         computeTreePositionInformationHelper(tp, descTypes, relTypes);
     }
