@@ -1254,7 +1254,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     } else if (pattern == MapRefsetPattern.SimpleMap) {
       if (humanReadableWriter != null) {
         humanReadableWriter
-            .write("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\treferencedComponentName\r\n");
+            .write("id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\treferencedComponentName\tmapTarget\tmapTargetName\r\n");
         humanReadableWriter.flush();
       }
     }
@@ -1282,7 +1282,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
       // switch line on map relation style
       String entryLine = null;
-      if (mapProject.getMapRefsetPattern().equals(MapRefsetPattern.ExtendedMap)) {
+      if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ExtendedMap) {
         entryLine =
             member.getTerminologyId()
                 + "\t"
@@ -1320,8 +1320,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
         // ComplexMap style is identical to ExtendedMap
         // with the exception of the terminating map relation terminology id
-      } else if (mapProject.getMapRefsetPattern().equals(
-          MapRefsetPattern.ComplexMap)) {
+      } else if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ComplexMap) {
         entryLine =
             member.getTerminologyId() // the UUID
                 + "\t"
@@ -1357,17 +1356,26 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       }
 
       // Simple
-      else if (mapProject.getMapRefsetPattern().equals(
-          MapRefsetPattern.SimpleMap)) {
+      else if (mapProject.getMapRefsetPattern() == MapRefsetPattern.SimpleMap) {
         entryLine =
             member.getTerminologyId() // the UUID
-                + "\t" + effectiveTime + "\t"
+                + "\t"
+                + effectiveTime
+                + "\t"
                 + (member.isActive() ? "1" : "0")
-                + "\t" + moduleId + "\t" + member.getRefSetId()
+                + "\t"
+                + moduleId
+                + "\t"
+                + member.getRefSetId()
                 + "\t"
                 + member.getConcept().getTerminologyId()
                 + "\t"
-                + member.getConcept().getDefaultPreferredName();
+                + member.getConcept().getDefaultPreferredName()
+                + "\t"
+                + member.getMapTarget()
+                + "\t"
+                + (targetConcept != null ? targetConcept
+                    .getDefaultPreferredName() : "");
       }
 
       entryLine += "\r\n";
@@ -1807,7 +1815,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     String entryLine = "";
 
     // switch line on map relation style
-    if (mapProject.getMapRefsetPattern().equals(MapRefsetPattern.ExtendedMap)) {
+    if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ExtendedMap) {
       entryLine =
           member.getTerminologyId() // the UUID
               + "\t"
@@ -1832,8 +1840,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     // ComplexMap style is identical to ExtendedMap
     // with the exception of the terminating map relation terminology id
-    else if (mapProject.getMapRefsetPattern().equals(
-        MapRefsetPattern.ComplexMap)) {
+    else if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ComplexMap) {
       entryLine =
           member.getTerminologyId() // the UUID
               + "\t"
@@ -1853,8 +1860,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               + member.getMapTarget() + "\t" + member.getMapRelationId();
 
       // Simple map
-    } else if (mapProject.getMapRefsetPattern().equals(
-        MapRefsetPattern.SimpleMap)) {
+    } else if (mapProject.getMapRefsetPattern() == MapRefsetPattern.SimpleMap) {
       entryLine =
           member.getTerminologyId() // the UUID
               + "\t"
