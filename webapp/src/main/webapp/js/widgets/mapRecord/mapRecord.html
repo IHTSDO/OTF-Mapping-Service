@@ -56,7 +56,8 @@
         </div>
         Map Group {{group.mapGroup}}
 
-        <div data-nodrag style="display: inline; float: right; width: 3%;">
+        <div ng-show="project.mapRefsetPattern != 'SimpleMap'" data-nodrag
+          style="display: inline; float: right; width: 3%;">
           <i class="glyphicon glyphicon-remove" ng-click="deleteMapGroup(group)"></i>
         </div>
       </div>
@@ -70,7 +71,8 @@
             </div>
             <a data-nodrag ng-click="selectMapEntry(entry)">{{getEntrySummary(entry)}}</a>
             <div data-nodrag style="display: inline; float: right; width: 3%;">
-              <i class="glyphicon glyphicon-remove"
+              <i ng-show="project.mapRefsetPattern != 'SimpleMap'"
+                class="glyphicon glyphicon-remove"
                 ng-click="deleteMapEntry(entry)"></i>
             </div>
           </div>
