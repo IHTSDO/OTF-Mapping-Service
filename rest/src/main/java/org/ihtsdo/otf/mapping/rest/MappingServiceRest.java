@@ -3150,15 +3150,18 @@ public class MappingServiceRest extends RootServiceRest {
       final Map<String, String> relTypes =
           metadataService.getRelationshipTypes(terminology, terminologyVersion);
 
+      // Calculate info for tree position information panel
       contentService.computeTreePositionInformation(treePositions, descTypes,
           relTypes);
 
-      // set the valid codes using mapping service
-
-      mappingService.setTreePositionValidCodes(
-          treePositions.getTreePositions(), mapProjectId);
-      mappingService.setTreePositionTerminologyNotes(
-          treePositions.getTreePositions(), mapProjectId);
+      // Determine whether code is valid (e.g. whether it should be a link)
+      final ProjectSpecificAlgorithmHandler handler =
+          mappingService.getProjectSpecificAlgorithmHandler(mapProject);
+      mappingService.setTreePositionValidCodes(mapProject, treePositions,
+          handler);
+      // Compute any additional project specific handler info
+      mappingService.setTreePositionTerminologyNotes(mapProject, treePositions,
+          handler);
 
       return treePositions;
     } catch (Exception e) {
@@ -3228,8 +3231,10 @@ public class MappingServiceRest extends RootServiceRest {
       contentService.computeTreePositionInformation(treePositions, descTypes,
           relTypes);
 
-      mappingService.setTreePositionValidCodes(
-          treePositions.getTreePositions(), mapProjectId);
+      final ProjectSpecificAlgorithmHandler handler =
+          mappingService.getProjectSpecificAlgorithmHandler(mapProject);
+      mappingService.setTreePositionValidCodes(mapProject, treePositions,
+          handler);
 
       return treePositions;
     } catch (Exception e) {
@@ -3267,7 +3272,8 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
 
     Logger.getLogger(getClass()).info(
-        "RESTful call (Mapping): /treePosition/project/id/" + mapProjectId);
+        "RESTful call (Mapping): /treePosition/project/id/" + mapProjectId
+            + "/query/" + query);
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
@@ -3286,6 +3292,8 @@ public class MappingServiceRest extends RootServiceRest {
           contentService.getTreePositionGraphForQuery(
               mapProject.getDestinationTerminology(),
               mapProject.getDestinationTerminologyVersion(), query);
+      Logger.getLogger(getClass()).info(
+          "  tree positions = " + treePositions.getTotalCount());
 
       final String terminology =
           treePositions.getTreePositions().get(0).getTerminology();
@@ -3300,11 +3308,12 @@ public class MappingServiceRest extends RootServiceRest {
           relTypes);
 
       // set the valid codes using mapping service
-
-      mappingService.setTreePositionValidCodes(
-          treePositions.getTreePositions(), mapProjectId);
-      mappingService.setTreePositionTerminologyNotes(
-          treePositions.getTreePositions(), mapProjectId);
+      final ProjectSpecificAlgorithmHandler handler =
+          mappingService.getProjectSpecificAlgorithmHandler(mapProject);
+      mappingService.setTreePositionValidCodes(mapProject, treePositions,
+          handler);
+      mappingService.setTreePositionTerminologyNotes(mapProject, treePositions,
+          handler);
 
       return treePositions;
 

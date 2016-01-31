@@ -29,7 +29,6 @@ import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.model.MapUserPreferences;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
-import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
 /**
  * Generically represents a service for interacting with mapping objects.
@@ -108,7 +107,7 @@ public interface MappingService extends RootService {
    * @throws Exception the exception
    */
   public MapUserList getMapUsers() throws Exception;
-  
+
   /**
    * Returns the map users for team.
    *
@@ -654,26 +653,30 @@ public interface MappingService extends RootService {
   /**
    * Given a list of tree positions and a map project id, sets the valid codes
    * for each node.
-   * 
+   *
+   * @param mapProject the map project
    * @param treePositions the tree positions
-   * @param mapProjectId the map project id
+   * @param handler the handler
    * @return the list
    * @throws Exception the exception
    */
-  public TreePositionList setTreePositionValidCodes(
-    List<TreePosition> treePositions, Long mapProjectId) throws Exception;
+  public TreePositionList setTreePositionValidCodes(MapProject mapProject,
+    TreePositionList treePositions, ProjectSpecificAlgorithmHandler handler)
+    throws Exception;
 
   /**
    * Computes any display notes for tree position, depending on project
    * algorithm handler.
    *
+   * @param mapProject the map project
    * @param treePositions the tree positions
-   * @param mapProjectId the map project id
+   * @param handler the handler
    * @return the tree position list
    * @throws Exception the exception
    */
   public TreePositionList setTreePositionTerminologyNotes(
-    List<TreePosition> treePositions, Long mapProjectId) throws Exception;
+    MapProject mapProject, TreePositionList treePositions,
+    ProjectSpecificAlgorithmHandler handler) throws Exception;
 
   /**
    * Given a map record, returns the origin map records giving rise to a
