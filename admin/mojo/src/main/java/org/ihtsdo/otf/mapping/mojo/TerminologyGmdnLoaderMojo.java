@@ -113,7 +113,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
   @Override
   public void execute() throws MojoExecutionException {
     getLog().info("Starting loading Claml terminology");
-    getLog().info("  inputDir = inputDir");
+    getLog().info("  inputDir = " + inputDir);
     getLog().info("  terminology = " + terminology);
     getLog().info("  version = " + version);
 
@@ -445,7 +445,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
 
         // </termCode> - set the concept terminology id
         else if (qName.equalsIgnoreCase("termCode")) {
-          concept.setTerminologyId("term-" + chars.toString().trim());
+          concept.setTerminologyId(chars.toString().trim());
         }
 
         // </termIsIVD> - set the label
@@ -578,7 +578,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
         // </collectivetermID> - set the description terminology id
         else if (qName.equalsIgnoreCase("collectivetermID")) {
           description.setTerminologyId("ct-" + chars.toString().trim());
-          
+
           // Ue the "collectiveTermID" as the key
           conceptMap.put(chars.toString().trim(), concept);
         }

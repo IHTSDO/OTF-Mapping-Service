@@ -166,7 +166,7 @@ angular
           $rootScope.glassPane--;
           $rootScope.handleHttpError(data, status, headers, config);
         });
-      }
+      };
 
       var ShowDeltaModalCtrl = function($scope, $http, $modalInstance, terminology, version) {
 
@@ -214,13 +214,14 @@ angular
       };
 
       $scope.openConceptBrowser = function() {
+        var myWindow = null;
         if ($scope.currentUser.userName === 'guest')
-          var myWindow = window.open('http://browser.ihtsdotools.org/index.html?perspective=full'
+          myWindow = window.open('http://browser.ihtsdotools.org/index.html?perspective=full'
             + '&edition=en-edition'
             + '&server=https://browser-aws-1.ihtsdotools.org/&langRefset=900000000000509007'
             + '&acceptLicense=true');
         else
-          var myWindow = window
+          myWindow = window
             .open(
               'http://dailybuild.ihtsdotools.org/index.html?perspective=full&diagrammingMarkupEnabled=true&acceptLicense=true',
               'browserWindow');
@@ -257,5 +258,5 @@ angular
           $scope.indexViewerExists = false;
         });
       }
-      ;
+
     });
