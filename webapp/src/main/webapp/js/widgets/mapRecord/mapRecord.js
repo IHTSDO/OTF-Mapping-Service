@@ -25,7 +25,7 @@ angular
       '$sce',
       '$modal',
       '$window',
-      localStorageService,
+      'localStorageService',
       function($scope, $rootScope, $http, $routeParams, $location, $sce, $modal, $window,
         localStorageService) {
 
@@ -104,7 +104,6 @@ angular
             $scope.dragging = false;
           },
           dropped : function(event) {
-            console.log(event);
             $scope.saveGroups();
           },
         };
