@@ -56,7 +56,7 @@ angular
           'startIndex' : (page - 1) * $scope.recordsPerPage,
           'maxResults' : $scope.recordsPerPage,
           'sortField' : 'lastModified',
-          'queryRestriction' : queryTerms ? queryTerms : ""
+          'queryRestriction' : queryTerms ? queryTerms : ''
         };
 
         $rootScope.glassPane++;

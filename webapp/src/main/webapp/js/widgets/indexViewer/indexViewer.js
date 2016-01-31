@@ -58,7 +58,6 @@ angular.module('mapProjectApp.widgets.indexViewer', [ 'adf.provider' ]).config(
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-        console.debug('Success in getting viewable indexes.');
         for (var i = 0; i < data.searchResult.length; i++) {
           $scope.domains.push(data.searchResult[i].value);
         }
@@ -76,7 +75,6 @@ angular.module('mapProjectApp.widgets.indexViewer', [ 'adf.provider' ]).config(
 
     // parses the text from a link and calls the search method
     $scope.performSearchFromLink = function(searchText) {
-      console.debug('searchText:', searchText);
 
       $scope.allCheckBox = false;
       var res = searchText.split(',');
@@ -105,7 +103,6 @@ angular.module('mapProjectApp.widgets.indexViewer', [ 'adf.provider' ]).config(
       var searchField = psearchField;
       var subSearchField = psubSearchField;
       var subSubSearchField = psubSubSearchField;
-      console.debug(searchField + ' ' + subSearchField + ' ' + subSubSearchField);
 
       if (searchField == null || searchField == '') {
         window.alert('The first search box must not be empty');
@@ -200,12 +197,13 @@ angular.module('mapProjectApp.widgets.indexViewer', [ 'adf.provider' ]).config(
             $rootScope.glassPane++;
             var url = 'indexViewerData/' + $scope.focusProject.destinationTerminology + '/'
               + $scope.focusProject.destinationTerminologyVersion + '/html/'
-              + $scope.selectedDomain + '/' + $scope.indexPages[i] + '.html'
+              + $scope.selectedDomain + '/' + $scope.indexPages[i] + '.html';
 
             $http.get(url, {
               cache : $templateCache
-            }).then(function(result) {
-              console.log(result);
+            }).then(
+            // Success
+            function(result) {
               $templateCache.put(url, result);
               $rootScope.glassPane--;
             });
@@ -251,7 +249,6 @@ angular.module('mapProjectApp.widgets.indexViewer', [ 'adf.provider' ]).config(
     };
 
     $scope.goFirstResult = function() {
-      console.debug('goFirstResult called', $scope.searchResultsIndex);
       $scope.goToElement($scope.results[0].value);
       $scope.searchResultsLabel = '1 of ' + $scope.nResults;
       $scope.mainTermLabel = $scope.results[0].value2;
@@ -260,7 +257,6 @@ angular.module('mapProjectApp.widgets.indexViewer', [ 'adf.provider' ]).config(
     };
 
     $scope.goPreviousResult = function() {
-      console.debug('goPreviousResult called', $scope.searchResultsIndex);
       $scope.searchResultsLabel = $scope.searchResultsIndex + ' of ' + $scope.nResults;
       $scope.searchResultsIndex--;
       $scope.goToElement($scope.results[$scope.searchResultsIndex].value);
@@ -271,7 +267,6 @@ angular.module('mapProjectApp.widgets.indexViewer', [ 'adf.provider' ]).config(
     };
 
     $scope.goNextResult = function() {
-      console.debug('goNextResult called', $scope.searchResultsIndex);
       $scope.searchResultsIndex++;
       $scope.searchResultsLabel = ($scope.searchResultsIndex + 1) + ' of ' + $scope.nResults;
       $scope.mainTermLabel = $scope.results[$scope.searchResultsIndex].value2;
@@ -282,7 +277,6 @@ angular.module('mapProjectApp.widgets.indexViewer', [ 'adf.provider' ]).config(
     };
 
     $scope.goLastResult = function() {
-      console.debug('goLastResult called', $scope.searchResultsIndex);
       $scope.goToElement($scope.results[$scope.results.length - 1].value);
       $scope.searchResultsLabel = $scope.nResults + ' of ' + $scope.nResults;
       $scope.mainTermLabel = $scope.results[$scope.results.length - 1].value2;
@@ -311,19 +305,15 @@ angular.module('mapProjectApp.widgets.indexViewer', [ 'adf.provider' ]).config(
 
     // called when ng-include completes loading an html page
     $rootScope.$on('$includeContentLoaded', function() {
-
-      console.debug('includeContentLoaded', $scope.eID);
       $location.hash($scope.eID);
-
       $anchorScroll();
-
     });
 
     $scope.set_style = function(indexTab) {
       if (indexTab == $scope.selectedPage) {
         return {
           color : 'red'
-        }
+        };
       }
     };
   });
