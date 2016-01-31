@@ -22,44 +22,60 @@
     ng-click="deleteAdminProject()">Delete Project {{adminProject.id}}</button>
 
   <hr>
-  <table class="table table-bordered" cellpadding=5>
+  <table class="table table-bordered" style="padding: 5px;">
     <tbody>
       <tr>
-        <td width="18%"><div tooltip-placement="right"
+        <td width="18%">
+          <div tooltip-placement="right"
             tooltip="Display name of this map project.">
             <b>Name</b>
-          </div></td>
-        <td width="82%"><textarea style="width: 33%"
-            ng-change="setEditingPerformed()" ng-model="adminProject.name"></textarea>
+          </div>
+        </td>
+        <td width="82%">
+          <textarea style="width: 33%" ng-change="setEditingPerformed()"
+            ng-model="adminProject.name"></textarea>
       </tr>
       <tr>
-        <td width="18%"><div tooltip-placement="right"
+        <td width="18%">
+          <div tooltip-placement="right"
             tooltip="Abbreviation and version information for the terminology this map adminProject is mapping from.">
             <b>Source Terminology</b>
-          </div></td>
-        <td width="82%"><textarea style="width: 33%"
-            ng-change="setEditingPerformed()"
-            ng-model="adminProject.sourceTerminology"></textarea>, <textarea
-            style="width: 33%" ng-model="adminProject.sourceTerminologyVersion"></textarea></td>
+          </div>
+        </td>
+        <td width="82%">
+          <textarea style="width: 33%" ng-change="setEditingPerformed()"
+            ng-model="adminProject.sourceTerminology"></textarea>
+          ,
+          <textarea style="width: 33%"
+            ng-model="adminProject.sourceTerminologyVersion"></textarea>
+        </td>
       </tr>
       <tr>
-        <td width="18%"><div tooltip-placement="right"
+        <td width="18%">
+          <div tooltip-placement="right"
             tooltip="Abbreviation and version information for the terminology this map adminProject is mapping to.">
             <b>Destination Terminology</b>
-          </div></td>
-        <td width="82%"><textarea style="width: 33%"
-            ng-change="setEditingPerformed()"
-            ng-model="adminProject.destinationTerminology"></textarea>, <textarea
-            style="width: 33%" ng-change="setEditingPerformed()"
-            ng-model="adminProject.destinationTerminologyVersion"></textarea></td>
+          </div>
+        </td>
+        <td width="82%">
+          <textarea style="width: 33%" ng-change="setEditingPerformed()"
+            ng-model="adminProject.destinationTerminology"></textarea>
+          ,
+          <textarea style="width: 33%" ng-change="setEditingPerformed()"
+            ng-model="adminProject.destinationTerminologyVersion"></textarea>
+        </td>
       </tr>
       <tr>
-        <td width="18%"><div tooltip-placement="right"
+        <td width="18%">
+          <div tooltip-placement="right"
             tooltip="The RF2 metadata concept identifier and preferred name representing this map adminProject.">
             <b>Ref Set</b>
-          </div></td>
-        <td width="82%"><textarea style="width: 33%"
-            ng-change="setEditingPerformed()" ng-model="adminProject.refSetName"></textarea>,
+          </div>
+        </td>
+        <td width="82%">
+          <textarea style="width: 33%" ng-change="setEditingPerformed()"
+            ng-model="adminProject.refSetName"></textarea>
+          ,
           <textarea style="width: 33%"
             ng-change="checkRefSetId();setEditingPerformed()"
             ng-model="adminProject.refSetId"></textarea>
@@ -67,60 +83,85 @@
             ng-show="isDuplicateRefSetId == true">Duplicate Ref Set Id!</div>
           <div class="alert alert-warning" style="display: inline"
             ng-show="adminProject.refSetId == null || adminProject.refSetId.length == 0">You
-            must specify a Ref Set Id</div></td>
+            must specify a Ref Set Id</div>
+        </td>
       </tr>
       <tr>
-        <td><div tooltip-placement="right"
+        <td>
+          <div tooltip-placement="right"
             tooltip="A true/false indicator of whether this mapping data has been published.">
             <b>Published</b>
-          </div></td>
-        <td><select ng-model="adminProject.published"
-          ng-change="setEditingPerformed()"
-          ng-options="item for item in [true, false]">
-        </select></td>
+          </div>
+        </td>
+        <td>
+          <select ng-model="adminProject.published"
+            ng-change="setEditingPerformed()"
+            ng-options="item for item in [true, false]">
+          </select>
+        </td>
       </tr>
       <tr>
-        <td><div tooltip-placement="right"
+        <td>
+          <div tooltip-placement="right"
             tooltip="A true/false indicator of whether this map adminProject has multiple mappings for the same source concept.">
             <b>Group Structure</b>
-          </div></td>
-        <td><select ng-model="adminProject.groupStructure"
-          ng-change="setEditingPerformed()"
-          ng-options="item for item in [true, false]"></td>
+          </div>
+        </td>
+        <td>
+          <select ng-model="adminProject.groupStructure"
+            ng-change="setEditingPerformed()"
+            ng-options="item for item in [true, false]"></select>
+        </td>
       </tr>
       <tr>
-        <td><div tooltip-placement="right"
+        <td>
+          <div tooltip-placement="right"
             tooltip="A true/false indicator of whether this map adminProject uses rules other than TRUE">
             <b>Rule Based</b>
-          </div></td>
-        <td><select ng-model="adminProject.ruleBased"
-          ng-change="setEditingPerformed()"
-          ng-options="item for item in [true, false]">
-        </select></td>
+          </div>
+        </td>
+        <td>
+          <select ng-model="adminProject.ruleBased"
+            ng-change="setEditingPerformed()"
+            ng-options="item for item in [true, false]">
+          </select>
+        </td>
       </tr>
       <tr>
-        <td><div tooltip-placement="right"
+        <td>
+          <div tooltip-placement="right"
             tooltip="The method by which this adminProject uses the map relation (i.e. map record based, relationship based)">
             <b>Relation Style</b>
-          </div></td>
-        <td><textarea ng-change="setEditingPerformed()" style="width: 33%"
-            ng-model="adminProject.mapRelationStyle"></textarea></td>
+          </div>
+        </td>
+        <td>
+          <textarea ng-change="setEditingPerformed()" style="width: 33%"
+            ng-model="adminProject.mapRelationStyle"></textarea>
+        </td>
       </tr>
       <tr>
-        <td><div tooltip-placement="right"
+        <td>
+          <div tooltip-placement="right"
             tooltip="The type of mapping this adminProject uses (i.e. simple, complex, extended)">
             <b>Map Type</b>
-          </div></td>
-        <td><textarea ng-change="setEditingPerformed()" style="width: 33%"
-            ng-model="adminProject.mapRefsetPattern"></textarea></td>
+          </div>
+        </td>
+        <td>
+          <textarea ng-change="setEditingPerformed()" style="width: 33%"
+            ng-model="adminProject.mapRefsetPattern"></textarea>
+        </td>
       </tr>
       <tr>
-        <td><div tooltip-placement="right"
+        <td>
+          <div tooltip-placement="right"
             tooltip="The type of workflow this adminProject uses (i.e. conflict, review)">
             <b>Workflow Type</b>
-          </div></td>
-        <td><textarea ng-change="setEditingPerformed()" style="width: 33%"
-            ng-model="adminProject.workflowType"></textarea></td>
+          </div>
+        </td>
+        <td>
+          <textarea ng-change="setEditingPerformed()" style="width: 33%"
+            ng-model="adminProject.workflowType"></textarea>
+        </td>
 
       </tr>
     </tbody>

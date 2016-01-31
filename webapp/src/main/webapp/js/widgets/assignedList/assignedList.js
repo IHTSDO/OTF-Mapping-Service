@@ -305,8 +305,8 @@ angular
         });
       };
 
-      $scope.retrieveAssignedWork = function(page, query, assignedWorkType) {
-
+      $scope.retrieveAssignedWork = function(page, pquery, assignedWorkType) {
+        var query = pquery;
         // set the scope variables
         // this is necessary due to some frustrating non-functional two-way
         // binding
@@ -315,12 +315,11 @@ angular
         $scope.assignedWorkType = assignedWorkType;
 
         // ensure query is set to null if undefined
-        var lquery = query;
-        if (lquery == undefined)
-          lquery = null;
+        if (query == undefined)
+          query = null;
 
         // reset the search input box if null
-        if (lquery == null) {
+        if (query == null) {
           $scope.searchPerformed = false;
         } else {
           $scope.searchPerformed = true;
@@ -389,19 +388,19 @@ angular
         });
       };
 
-      $scope.retrieveAssignedQAWork = function(page, query, assignedWorkType) {
+      $scope.retrieveAssignedQAWork = function(page, pquery, assignedWorkType) {
+        var query = pquery;
         // hard set the PFS variables
         $scope.assignedQaWorkPage = page;
         $scope.assignedQaWorkType = assignedWorkType;
         $scope.queryQaWork = query;
 
         // ensure query is set to null if undefined
-        var lquery = query;
-        if (lquery == undefined)
-          lquery = null;
+        if (query == undefined)
+          query = null;
 
         // reset the search input box if null
-        if (lquery == null) {
+        if (query == null) {
           $scope.searchPerformed = false;
         } else {
           $scope.searchPerformed = true;
@@ -456,7 +455,8 @@ angular
         });
       };
 
-      $scope.retrieveAssignedReviewWork = function(page, query, assignedWorkType) {
+      $scope.retrieveAssignedReviewWork = function(page, pquery, assignedWorkType) {
+        var query = pquery;
 
         // hard set the PFS variables
         $scope.assignedReviewWorkPage = page;
@@ -464,12 +464,11 @@ angular
         $scope.queryReviewWork = query;
 
         // ensure query is set to null if undefined
-        var lquery = query;
-        if (lquery == undefined)
-          lquery = null;
+        if (query == undefined)
+          query = null;
 
         // reset the search input box if null
-        if (lquery == null) {
+        if (query == null) {
           $scope.searchPerformed = false;
         } else {
           $scope.searchPerformed = true;

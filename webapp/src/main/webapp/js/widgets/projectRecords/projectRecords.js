@@ -118,7 +118,7 @@ angular
         // construct html parameters parameter
         var pfsParameterObj = constructPfsParameterObj(page);
 
-        var query_url;
+        var query_url = null;
         if ($scope.currentRole === 'Viewer') {
           query_url = root_mapping + 'record/project/id/' + $scope.project.objectId + '/published';
         } else if ($scope.currentRole === 'Specialist' || $scope.currentRole === 'Lead'
@@ -169,9 +169,8 @@ angular
                 $scope.mapAdvicesPresent = true;
               }
             }
-            ;
+
           }
-          ;
 
           // check relation syle flags
           if ($scope.project.mapRelationStyle === 'MAP_CATEGORY_STYLE') {
@@ -234,7 +233,6 @@ angular
         }
 
       }
-      ;
 
       function applyMapCategoryStyle() {
 
@@ -252,7 +250,6 @@ angular
           }
         }
       }
-      ;
 
       function applyRelationshipStyle() {
 
@@ -278,7 +275,6 @@ angular
           }
         }
       }
-      ;
 
       $scope.logout = function() {
         $rootScope.glassPane++;
@@ -298,7 +294,7 @@ angular
           $rootScope.handleHttpError(data, status, headers, config);
         });
 
-      }
+      };
 
       // function to change project from the header
       $scope.changeFocusProject = function(mapProject) {
@@ -410,7 +406,8 @@ angular
         }
       };
 
-      $scope.truncate = function(string, length) {
+      $scope.truncate = function(string, plength) {
+        var length = plength;
         if (length == null)
           length = 100;
         if (string.length > length)
@@ -419,7 +416,8 @@ angular
           return string;
       };
 
-      $scope.truncated = function(string, length) {
+      $scope.truncated = function(string, plength) {
+        var length = plength;
         if (length == null)
           length = 100;
         if (string.length > length)
