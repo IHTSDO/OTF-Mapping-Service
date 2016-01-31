@@ -76,7 +76,6 @@ public class WorkflowPathStatesFixErrorPathTest {
   @BeforeClass
   public static void init() throws Exception {
 
-    System.out.println("Initialization");
 
     // instantiate the services
     contentService = new ContentServiceJpa();
@@ -334,8 +333,6 @@ public class WorkflowPathStatesFixErrorPathTest {
    */
   private void getTrackingRecord(WorkflowStatusCombination combination)
     throws Exception {
-    System.out.println("Computing tracking record for combination: "
-        + combination.toString());
 
     // reset the records
     resetRecords();

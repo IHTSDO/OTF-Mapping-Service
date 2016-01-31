@@ -2451,8 +2451,6 @@ public class MappingServiceRest extends RootServiceRest {
           mr.setMapNotes(null);
         }
 
-        // System.out.println(projectRole + " " + mr.toString());
-
         switch (mr.getWorkflowStatus()) {
 
         // any role can see published
@@ -2548,8 +2546,6 @@ public class MappingServiceRest extends RootServiceRest {
         if (!projectRole.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
           mr.setMapNotes(null);
         }
-
-        // System.out.println(projectRole + " " + mr.toString());
 
         switch (mr.getWorkflowStatus()) {
 
@@ -2911,7 +2907,6 @@ public class MappingServiceRest extends RootServiceRest {
       Collections.sort(mapRecord.getMapEntries(),
           new TerminologyUtility.MapEntryComparator());
 
-      System.out.println("ENTRIES = " + mapRecord.getMapEntries());
       final MapRelation mapRelation =
           algorithmHandler.computeMapRelation(mapRecord, mapEntry);
       return mapRelation;
@@ -2979,7 +2974,6 @@ public class MappingServiceRest extends RootServiceRest {
       Collections.sort(mapRecord.getMapEntries(),
           new TerminologyUtility.MapEntryComparator());
 
-      System.out.println("ENTRIES = " + mapRecord.getMapEntries());
       final MapAdviceList mapAdviceList =
           algorithmHandler.computeMapAdvice(mapRecord, mapEntry);
       return mapAdviceList;

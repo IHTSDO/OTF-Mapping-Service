@@ -36,7 +36,7 @@ mapProjectAppControllers
       $location.path('/' + currentRole.toLowerCase() + '/dash');
       window.scrollTo(0, 0);
 
-    }
+    };
 
     // global function to reset the global error
     $rootScope.resetGlobalError = function() {
@@ -112,7 +112,7 @@ mapProjectAppControllers.controller('LoginCtrl', [
       $scope.role = 'Viewer';
       $scope.password = 'guest';
       $scope.go(autologinLocation, refSetId);
-    }
+    };
 
     // login button directs to next page based on role selected
     $scope.go = function(autologinLocation, refSetId) {
@@ -308,7 +308,7 @@ mapProjectAppControllers.controller('LoginCtrl', [
                             $scope.role = 'Could not determine role';
 
                           if (autologinLocation) {
-                            path = autologinLocation
+                            path = autologinLocation;
                           } else if ($scope.role.toLowerCase() == 'specialist') {
                             path = '/specialist/dash';
                             $scope.role = 'Specialist';
@@ -381,7 +381,6 @@ mapProjectAppControllers.controller('LoginCtrl', [
           });
         });
       }
-      ;
 
     };
 

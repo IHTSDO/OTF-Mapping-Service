@@ -1,9 +1,10 @@
 <form>
   <input type="text" id="editQueryInput" ng-model="queryTerms">
-  <button type="submit" style:"padding-top:10px;" class="btn btn-sm btn-primary"
+  <button type="submit" style="padding-top: 10px;"
+    class="btn btn-sm btn-primary"
     ng-click="retrieveEditedWork(editedRecordsPage, queryTerms)">Search</button>
-  <button type="submit" style:"padding-top:10px;" class="btn btn-sm btn-primary"
-    ng-click="clearSearch(); queryTerms = ''">Reset</button>
+  <button type="submit" style="padding-top: 10px;"
+    class="btn btn-sm btn-primary" ng-click="clearSearch(); queryTerms = ''">Reset</button>
   <a>
     <i class="glyphicon glyphicon-info-sign" tooltip-placement="top"
       tooltip="You may search by concept id or terms in the concept's name (e.g. closed fracture, 704020004, ...). Only exact phrases will match, e.g. 'phalanx thumb' will not match the phrase 'phalanx of thumb'.  AND/OR/NOT operators are not supported."></i>
@@ -21,14 +22,16 @@
 
 <table class="table" ng-show="editedRecords.length > 0">
   <thead>
-    <th>Date Edited</th>
-    <th>Concept Id</th>
-    <th>Concept Name</th>
+    <tr>
+      <th>Date Edited</th>
+      <th>Concept Id</th>
+      <th>Concept Name</th>
+    </tr>
   </thead>
   <tbody>
     <tr ng-repeat="record in editedRecords">
       <td style="width: 10%">{{record.lastModified | date: 'MM/dd/yyyy'}}</td>
-      <td style="width: 10%"'>
+      <td style="width: 10%">
         <a href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}</a>
       </td>
       <td style="width: 80%">

@@ -47,8 +47,6 @@ angular
 
       // called by user-click, not automatically loaded
       $scope.retrieveEditedWork = function(page, queryTerms) {
-        if (queryTerms == undefined)
-          queryTerms = null;
 
         // set the page
         $scope.editedRecordsPage = page;
@@ -58,7 +56,7 @@ angular
           'startIndex' : (page - 1) * $scope.recordsPerPage,
           'maxResults' : $scope.recordsPerPage,
           'sortField' : 'lastModified',
-          'queryRestriction' : queryTerms
+          'queryRestriction' : queryTerms ? queryTerms : ""
         };
 
         $rootScope.glassPane++;
@@ -115,14 +113,12 @@ angular
             if (record.mapEntry[i].mapGroup > maxGroup) {
               maxGroup = record.mapEntry[i].mapGroup;
             }
-            ;
           }
           return '' + maxGroup + ' groups, ' + record.mapEntry.length + ' entries';
 
         } else {
           return '' + record.mapEntry.length + ' entries';
         }
-        ;
       };
 
       $scope.getEntrySummary = function(entry) {
@@ -144,12 +140,10 @@ angular
             entrySummary += entry.mapRelation.abbreviation;
 
           }
-          ;
           // otherwise return the target code and preferred name
         } else {
           entrySummary += entry.targetId + ' ' + entry.targetName;
         }
-        ;
 
         return entrySummary;
 

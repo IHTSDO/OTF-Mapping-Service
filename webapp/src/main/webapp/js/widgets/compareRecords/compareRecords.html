@@ -36,10 +36,10 @@
     <form style="margin-top: 8px; margin-left: 4px;">
       <table>
         <tr>
-          <form method="post">
+          <td>
             <textarea id="tinymce-feedback1" ui-tinymce="tinymceOptions"
               ng-model="feedbackComment1"></textarea>
-          </form>
+          </td>
         </tr>
         <tr>
           <td>Error Message:&nbsp;</td>
@@ -93,10 +93,10 @@
     <form style="margin-top: 8px; margin-left: 4px;">
       <table>
         <tr>
-          <form method="post">
+          <td>
             <textarea id="tinymce-feedback2" ui-tinymce="tinymceOptions"
               ng-model="feedbackComment2"></textarea>
-          </form>
+          </td>
         </tr>
         <tr>
           <td>Error Message:&nbsp;</td>
@@ -183,8 +183,8 @@
     <div ng-show="validationResult.warnings.length > 0">
       <div ng-repeat="result in validationResult.warnings">
         <div
-          ng-class="{'alert alert-warning' : !isFalseConflict, 'alert alert-success' : isFalseConflict} role="
-          alert" style="padding: 5px; margin-top: 9px; margin-bottom: 0px">
+          ng-class="{'alert alert-warning' : !isFalseConflict, 'alert alert-success' : isFalseConflict}"
+          style="padding: 5px; margin-top: 9px; margin-bottom: 0px">
           <span ng-show="isFalseConflict">[Warning Ignored] </span>
           {{result}}
         </div>

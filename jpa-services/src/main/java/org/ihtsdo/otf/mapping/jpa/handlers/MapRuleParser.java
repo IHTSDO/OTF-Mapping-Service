@@ -7,11 +7,8 @@ package org.ihtsdo.otf.mapping.jpa.handlers;
  * the code is regenerated.
  */
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Stack;
 
 /**
@@ -1220,36 +1217,6 @@ public class MapRuleParser {
       }
 
       return y == this.ja[mid] ? this.a[mid] : null;
-    }
-  }
-
-  /**
-   * Application entry point - test patterns with this.
-   *
-   * @param args the command line arguments
-   * @throws IOException Signals that an I/O exception has occurred.
-   */
-  public static void main(String[] args) throws IOException {
-
-    MapRuleParser parser = new MapRuleParser();
-
-    try {
-      BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-      String line;
-      while ((line = in.readLine()) != null) {
-        boolean isMatch =
-            parser.parse(new ByteArrayInputStream(line.getBytes()));
-
-        System.out.println(String.format("Is '%1$s' a valid map rule?", line));
-        System.out.println(isMatch ? "Yes" : "No");
-
-        String[] tokens = line.split(" AND ");
-        for (String token : tokens) {
-          System.out.println("." + token + ".");
-        }
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 

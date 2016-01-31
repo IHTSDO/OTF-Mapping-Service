@@ -473,7 +473,6 @@ angular
           // otherwise return false
           return false;
         }
-        ;
 
         function containsAdviceFilter(element) {
 
@@ -493,7 +492,6 @@ angular
           // otherwise return false
           return false;
         }
-        ;
 
         function containsReportDefinitionFilter(element) {
           // check if advice filter is empty
@@ -510,7 +508,6 @@ angular
           // otherwise return false
           return false;
         }
-        ;
 
         function containsQaDefinitionFilter(element) {
 
@@ -528,7 +525,6 @@ angular
           // otherwise return false
           return false;
         }
-        ;
 
         function containsRelationFilter(element) {
 
@@ -548,7 +544,6 @@ angular
           // otherwise return false
           return false;
         }
-        ;
 
         function containsPrincipleFilter(element) {
 
@@ -576,7 +571,7 @@ angular
           // otherwise return false
           return false;
         }
-        ;
+        
 
         function reportDefinitionUsedInProjects(definition) {
           for (var i = 0; i < $scope.mapProjects.length; i++) {
@@ -587,7 +582,7 @@ angular
           }
           return false;
         }
-        ;
+       
 
         function initializeMapProjectMetadata() {
           if ($scope.mapProjectMetadata != null) {
@@ -708,7 +703,7 @@ angular
             }
           }
         }
-        ;
+        
 
         // indicates if any unsaved user
         $scope.userInEditingPerformed = function() {
@@ -926,7 +921,7 @@ angular
                   && editingPerformed[i].name == definition.name) {
                   editingPerformed.splice(i, 1);
                 }
-                ;
+                
               }
 
               // replace this definition with the new data
@@ -947,7 +942,7 @@ angular
             }).error(function(data, status, headers, config) {
             $rootScope.handleHttpError(data, status, headers, config);
           });
-        }
+        };
 
         // reverts reportDefinition to last saved state
         $scope.revertUnsavedReportDefinitions = function() {
@@ -1558,6 +1553,7 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
+            // n/a
           }).error(function(data, status, headers, config) {
             $scope.recordError = 'Error adding new map relation for the application.';
             $rootScope.handleHttpError(data, status, headers, config);
@@ -1751,7 +1747,7 @@ angular
           });
         };
 
-        // Delete age range 
+        // Delete age range
         $scope.deleteAgeRange = function(ageRange) {
           if (confirm('Are you sure that you want to delete an age range?') == false)
             return;
@@ -2123,7 +2119,7 @@ angular
               $rootScope.handleHttpError(data, status, headers, config);
             }).then(function() {
               $rootScope.glassPane--;
-            })
+            });
 
           });
         };
@@ -2171,7 +2167,7 @@ angular
               $rootScope.handleHttpError(data, status, headers, config);
             }).then(function() {
               $rootScope.glassPane--;
-            })
+            });
 
           });
         };
@@ -2674,6 +2670,7 @@ angular
               url : root_mapping + 'upload/' + $scope.focusProject.id,
               file : $file,
               progress : function(e) {
+                // n/a
               }
             }).then(function(data, status, headers, config) {
               // file is uploaded successfully
