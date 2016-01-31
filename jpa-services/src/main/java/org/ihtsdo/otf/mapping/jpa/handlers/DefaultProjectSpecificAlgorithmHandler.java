@@ -13,7 +13,6 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
-import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
@@ -27,6 +26,7 @@ import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
+import org.ihtsdo.otf.mapping.rf2.TreePosition;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
@@ -2317,7 +2317,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
   /* see superclass */
   @Override
-  public void computeTargetTerminologyNotes(TreePositionList treePositions)
+  public void computeTargetTerminologyNotes(List<TreePosition> treePositions)
     throws Exception {
 
     // DO NOTHING -- Override in project specific handlers if necessary

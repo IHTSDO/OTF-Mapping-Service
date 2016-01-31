@@ -826,7 +826,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
   /* see superclass */
   @Override
-  public void computeTargetTerminologyNotes(TreePositionList treePositionList)
+  public void computeTargetTerminologyNotes(List<TreePosition> treePositionList)
     throws Exception {
 
     Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info(
@@ -867,7 +867,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           "  Dagger to asterisk relationship type found: " + daggerRefSetId);
 
       // for each tree position initially passed in, call the recursive helper
-      for (final TreePosition tp : treePositionList.getTreePositions()) {
+      for (final TreePosition tp : treePositionList) {
 
         computeTargetTerminologyNotesHelper(tp, contentService,
             asteriskRefSetId, daggerRefSetId);
