@@ -401,8 +401,8 @@ public class ConfigUtility {
               return i;
             } else {
               // Handle simple case - compare referencedComponentId (will be unique)
-              if (fields1.length == 7) {
-                return fields1[6].compareTo(fields2[6]);
+              if (fields1.length == 6) {
+                return 0;
               }
               i = Integer.parseInt(fields1[6]) - Integer.parseInt(fields2[6]);
               if (i != 0) {
@@ -467,9 +467,9 @@ public class ConfigUtility {
         if (i != 0) {
           return i;
         } else {
-          // handle simple human readable case - compare referencedComponentId
+          // handle simple human readable case 
           if (fields1.length == 9) {
-            return fields1[6].compareTo(fields2[6]);
+            return 0;
           }
           i = Integer.parseInt(fields1[7]) - Integer.parseInt(fields2[7]);
           if (i != 0) {
