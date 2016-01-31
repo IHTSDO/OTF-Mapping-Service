@@ -211,18 +211,18 @@ public class GmdnMetadataHelper {
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Collective Term", effectiveTime, "meta");
     conceptMap.put("collectiveTerm", collectiveTermConcept);
-    contentService.addConcept(termConcept);
+    contentService.addConcept(collectiveTermConcept);
 
     final Concept definitionTermConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Definition Term", effectiveTime, "meta");
     conceptMap.put("definitionTerm", definitionTermConcept);
-    contentService.addConcept(termConcept);
+    contentService.addConcept(definitionTermConcept);
 
     final Concept ivdTermConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "IVD Term", effectiveTime, "meta");
-    conceptMap.put("ivdTerm", definitionTermConcept);
+    conceptMap.put("ivdTerm", ivdTermConcept);
     contentService.addConcept(termConcept);
 
     createIsaRelationship(metadataConcept, descriptionTypeConcept,
