@@ -132,7 +132,7 @@
       <!-- padding -->
       <div class="col-md-1 col-xs-0"></div>
       <div class="col-md-10 col-xs-12" id="errorMsg"
-        class="border-error alert-error" ng-show="error.message.length > 0">
+        class="border-error alert-error" ng-show="globalError">
         <h4 class="alert alert-danger alert-error">
           {{globalError}}
           <span style="display: inline; float: right;">
@@ -143,7 +143,8 @@
               ng-click="globalErrorExpand = !globalErrorExpand;"></i>
             <i class="glyphicon glyphicon-remove" ng-click="resetGlobalError()"></i>
           </span>
-          <span class="intro-text" ng-show="error.longMessage && error.expand">
+          <span class="intro-text"
+            ng-show="globalLongMessage && globalErrorExpand">
             <br />{{globalLongMessage}}
           </span>
         </h4>
