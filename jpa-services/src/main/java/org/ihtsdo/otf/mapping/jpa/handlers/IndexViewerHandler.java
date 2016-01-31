@@ -230,7 +230,6 @@ public class IndexViewerHandler {
     // Prep query
     parser.setAllowLeadingWildcard(true);
     parser.setDefaultOperator(Operator.AND);
-    // System.out.println("QUERY: " + query);
     TopDocs hits = null;
     Query q = parser.parse(query);
     hits = searcher.search(q, maxHits);

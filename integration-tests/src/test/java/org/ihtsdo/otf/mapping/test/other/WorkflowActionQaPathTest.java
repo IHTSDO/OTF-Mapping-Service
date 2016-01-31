@@ -100,8 +100,6 @@ public class WorkflowActionQaPathTest {
     // instantiate the workflow handler
     handler = new WorkflowQaPathHandler();
 
-    System.out.println(handler.getWorkflowStatusCombinations());
-
     // ensure database is clean
     for (Concept c : contentService.getConcepts().getIterable()) {
       for (Relationship r : c.getRelationships()) {
@@ -345,7 +343,6 @@ public class WorkflowActionQaPathTest {
 
       // Test: viewer
       ValidationResult result = testAllActionsForUser(viewer);
-      System.out.println("result=" + result);
       // all actions except cancel should fail
       for (WorkflowAction action : WorkflowAction.values()) {
         switch (action) {
@@ -598,8 +595,6 @@ public class WorkflowActionQaPathTest {
   @AfterClass
   public static void cleanup() throws Exception {
 
-    System.out.println("Cleanup.");
-
     workflowService.clearWorkflowForMapProject(mapProject);
     workflowService.close();
 
@@ -627,8 +622,6 @@ public class WorkflowActionQaPathTest {
    */
   @SuppressWarnings("static-method")
   private void getTrackingRecord() throws Exception {
-    System.out.println("Getting tracking record for project "
-        + mapProject.getId() + " and concept " + concept.getTerminologyId());
     workflowService.computeWorkflow(mapProject);
     Thread.sleep(1000);
     trackingRecord = workflowService.getTrackingRecord(mapProject, concept);
@@ -641,7 +634,6 @@ public class WorkflowActionQaPathTest {
    */
   @SuppressWarnings("static-method")
   private void clearMapRecords() throws Exception {
-    System.out.println("Clearing map records.");
     for (MapRecord mr : mappingService.getMapRecords().getIterable()) {
       mappingService.removeMapRecord(mr.getId());
     }
@@ -667,10 +659,8 @@ public class WorkflowActionQaPathTest {
           handler.validateTrackingRecordForActionAndUser(trackingRecord,
               action, user);
       if (actionResult.isValid()) {
-        System.out.println(action + " valid");
         result.addMessage(action.toString());
       } else {
-        System.out.println(action + " invalid -- " + actionResult.toString());
         result.addError(action.toString());
       }
     }

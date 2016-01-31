@@ -76,8 +76,6 @@ public class WorkflowPathStatesReviewProjectPathTest {
   @BeforeClass
   public static void init() throws Exception {
 
-    System.out.println("Initialization");
-
     // instantiate the services
     contentService = new ContentServiceJpa();
     mappingService = new MappingServiceJpa();
@@ -334,8 +332,6 @@ public class WorkflowPathStatesReviewProjectPathTest {
    */
   private void getTrackingRecord(WorkflowStatusCombination combination)
     throws Exception {
-    System.out.println("Computing tracking record for combination: "
-        + combination.toString());
 
     // reset the records
     resetRecords();

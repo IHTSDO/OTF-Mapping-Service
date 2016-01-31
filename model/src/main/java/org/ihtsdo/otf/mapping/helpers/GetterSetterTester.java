@@ -83,6 +83,7 @@ public class GetterSetterTester {
   private Set<String> includes = null;
 
   /** If true, output trace information. */
+  @SuppressWarnings("unused")
   private boolean verbose = false;
 
   /**
@@ -213,9 +214,6 @@ public class GetterSetterTester {
     throws InvocationTargetException, IllegalArgumentException,
     IllegalAccessException, SecurityException, ClassNotFoundException,
     NoSuchMethodException, InstantiationException {
-    if (this.verbose)
-      System.out.println("Testing " + get.getDeclaringClass().getName() + "."
-          + get.getName());
     Object proxy = makeProxy(argType);
     try {
       set.invoke(this.obj, new Object[] {

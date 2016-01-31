@@ -121,18 +121,18 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
   public synchronized void initializeFieldNames() throws Exception {
     treePositionFieldNames = new HashSet<>();
     conceptFieldNames = new HashSet<>();
-    Map<String, Set<String>> fieldNamesMap = new HashMap<>();
+    final Map<String, Set<String>> fieldNamesMap = new HashMap<>();
     fieldNamesMap.put("TreePositionJpa", treePositionFieldNames);
     fieldNamesMap.put("ConceptJpa", conceptFieldNames);
-    EntityManager manager = factory.createEntityManager();
-    FullTextEntityManager fullTextEntityManager =
+    final EntityManager manager = factory.createEntityManager();
+    final FullTextEntityManager fullTextEntityManager =
         org.hibernate.search.jpa.Search.getFullTextEntityManager(manager);
-    IndexReaderAccessor indexReaderAccessor =
+    final IndexReaderAccessor indexReaderAccessor =
         fullTextEntityManager.getSearchFactory().getIndexReaderAccessor();
-    Set<String> indexedClassNames =
+    final Set<String> indexedClassNames =
         fullTextEntityManager.getSearchFactory().getStatistics()
             .getIndexedClassNames();
-    for (String indexClass : indexedClassNames) {
+    for (final String indexClass : indexedClassNames) {
       Set<String> fieldNames = null;
       if (indexClass.indexOf("TreePositionJpa") != -1) {
         Logger.getLogger(ContentServiceJpa.class).info(
@@ -144,9 +144,10 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
         fieldNames = fieldNamesMap.get("ConceptJpa");
       }
       if (fieldNames != null) {
-        IndexReader indexReader = indexReaderAccessor.open(indexClass);
+        final IndexReader indexReader = indexReaderAccessor.open(indexClass);
         try {
-          for (FieldInfo info : ReaderUtil.getMergedFieldInfos(indexReader)) {
+          for (final FieldInfo info : ReaderUtil
+              .getMergedFieldInfos(indexReader)) {
             fieldNames.add(info.name);
           }
         } finally {
@@ -163,11 +164,11 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
   public ConceptList getConcepts() throws Exception {
     List<Concept> m = null;
 
-    javax.persistence.Query query =
+    final javax.persistence.Query query =
         manager.createQuery("select m from ConceptJpa m");
 
     m = query.getResultList();
-    ConceptListJpa ConceptList = new ConceptListJpa();
+    final ConceptListJpa ConceptList = new ConceptListJpa();
     ConceptList.setConcepts(m);
     ConceptList.setTotalCount(m.size());
     return ConceptList;
@@ -176,15 +177,14 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
   /* see superclass */
   @Override
   public Concept getConcept(Long id) throws Exception {
-    Concept c = manager.find(ConceptJpa.class, id);
-    return c;
+    return manager.find(ConceptJpa.class, id);
   }
 
   /* see superclass */
   @Override
   public Concept getConcept(String terminologyId, String terminology,
     String terminologyVersion) throws Exception {
-    javax.persistence.Query query =
+    final javax.persistence.Query query =
         manager
             .createQuery("select c from ConceptJpa c where terminologyId = :terminologyId and terminologyVersion = :terminologyVersion and terminology = :terminology");
     /*
@@ -195,8 +195,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       query.setParameter("terminologyId", terminologyId);
       query.setParameter("terminology", terminology);
       query.setParameter("terminologyVersion", terminologyVersion);
-      Concept c = (Concept) query.getSingleResult();
-      return c;
+      return (Concept) query.getSingleResult();
     } catch (NoResultException e) {
       Logger.getLogger(ContentServiceJpa.class).debug(
           "Concept query for terminologyId = " + terminologyId
@@ -211,7 +210,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
   @Override
   public ConceptList getAllConcepts(String terminology,
     String terminologyVersion) {
-    javax.persistence.Query query =
+    final javax.persistence.Query query =
         manager
             .createQuery("select c from ConceptJpa c where terminologyVersion = :terminologyVersion and terminology = :terminology");
     /*
@@ -221,8 +220,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     try {
       query.setParameter("terminology", terminology);
       query.setParameter("terminologyVersion", terminologyVersion);
-      List<Concept> concepts = query.getResultList();
-      ConceptList conceptList = new ConceptListJpa();
+      final List<Concept> concepts = query.getResultList();
+      final ConceptList conceptList = new ConceptListJpa();
       conceptList.setConcepts(concepts);
       return conceptList;
     } catch (NoResultException e) {
@@ -240,7 +239,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
   @Override
   public RelationshipList getAllActiveRelationships(String terminology,
     String terminologyVersion) {
-    javax.persistence.Query query =
+    final javax.persistence.Query query =
         manager
             .createQuery("select r from RelationshipJpa r where active = 1 "
                 + " and terminologyVersion = :terminologyVersion and terminology = :terminology");
@@ -251,8 +250,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     try {
       query.setParameter("terminology", terminology);
       query.setParameter("terminologyVersion", terminologyVersion);
-      List<Relationship> relationships = query.getResultList();
-      RelationshipList relationshipList = new RelationshipListJpa();
+      final List<Relationship> relationships = query.getResultList();
+      final RelationshipList relationshipList = new RelationshipListJpa();
       relationshipList.setRelationships(relationships);
       return relationshipList;
     } catch (NoResultException e) {
@@ -270,7 +269,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
   @Override
   public DescriptionList getAllActiveDescriptions(String terminology,
     String terminologyVersion) {
-    javax.persistence.Query query =
+    final javax.persistence.Query query =
         manager
             .createQuery("select d from DescriptionJpa d where active = 1 "
                 + " and terminologyVersion = :terminologyVersion and terminology = :terminology");
@@ -281,8 +280,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     try {
       query.setParameter("terminology", terminology);
       query.setParameter("terminologyVersion", terminologyVersion);
-      List<Description> descriptions = query.getResultList();
-      DescriptionList descriptionList = new DescriptionListJpa();
+      final List<Description> descriptions = query.getResultList();
+      final DescriptionList descriptionList = new DescriptionListJpa();
       descriptionList.setDescriptions(descriptions);
       return descriptionList;
     } catch (NoResultException e) {
@@ -300,7 +299,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
   @Override
   public LanguageRefSetMemberList getAllActiveLanguageRefSetMembers(
     String terminology, String terminologyVersion) {
-    javax.persistence.Query query =
+    final javax.persistence.Query query =
         manager
             .createQuery("select l from LanguageRefSetMemberJpa l where active = 1"
                 + " and terminologyVersion = :terminologyVersion and terminology = :terminology");
@@ -311,8 +310,9 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     try {
       query.setParameter("terminology", terminology);
       query.setParameter("terminologyVersion", terminologyVersion);
-      List<LanguageRefSetMember> languageRefSetMembers = query.getResultList();
-      LanguageRefSetMemberList languageRefSetMemberList =
+      final List<LanguageRefSetMember> languageRefSetMembers =
+          query.getResultList();
+      final LanguageRefSetMemberList languageRefSetMemberList =
           new LanguageRefSetMemberListJpa();
       languageRefSetMemberList.setLanguageRefSetMembers(languageRefSetMembers);
       return languageRefSetMemberList;
@@ -363,7 +363,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     tx = manager.getTransaction();
 
     // retrieve this concept
-    TreePosition tp = manager.find(TreePositionJpa.class, id);
+    final TreePosition tp = manager.find(TreePositionJpa.class, id);
 
     if (getTransactionPerOperation()) {
 
@@ -393,7 +393,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     tx = manager.getTransaction();
 
     // retrieve this concept
-    Concept mu = manager.find(ConceptJpa.class, id);
+    final Concept mu = manager.find(ConceptJpa.class, id);
 
     if (getTransactionPerOperation()) {
 
@@ -419,15 +419,14 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
   /* see superclass */
   @Override
   public Description getDescription(Long id) throws Exception {
-    Description c = manager.find(DescriptionJpa.class, id);
-    return c;
+    return manager.find(DescriptionJpa.class, id);
   }
 
   /* see superclass */
   @Override
   public Description getDescription(String terminologyId, String terminology,
     String terminologyVersion) throws Exception {
-    javax.persistence.Query query =
+    final javax.persistence.Query query =
         manager
             .createQuery("select c from DescriptionJpa c where terminologyId = :terminologyId and terminologyVersion = :terminologyVersion and terminology = :terminology");
     /*
@@ -435,11 +434,10 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
      * result are returned, log error and set result to null
      */
     try {
-
       query.setParameter("terminologyId", terminologyId);
       query.setParameter("terminology", terminology);
       query.setParameter("terminologyVersion", terminologyVersion);
-      Description description = (Description) query.getSingleResult();
+      final Description description = (Description) query.getSingleResult();
       return description;
     } catch (NoResultException e) {
       Logger.getLogger(ContentServiceJpa.class).warn(
@@ -488,8 +486,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     tx = manager.getTransaction();
 
     // retrieve this description
-    Description mu = manager.find(DescriptionJpa.class, id);
-
+    final Description mu = manager.find(DescriptionJpa.class, id);
     if (getTransactionPerOperation()) {
 
       // remove description
@@ -522,7 +519,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
   @Override
   public Long getRelationshipId(String terminologyId, String terminology,
     String terminologyVersion) throws Exception {
-    javax.persistence.Query query =
+    final javax.persistence.Query query =
         manager
             .createQuery(
                 "select r.id from RelationshipJpa r where terminologyId=:terminologyId and terminology=:terminology and terminologyVersion=:terminologyVersion")
@@ -531,8 +528,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
             .setParameter("terminologyVersion", terminologyVersion);
 
     try {
-      Long relationshipId = (Long) query.getSingleResult();
-      return relationshipId;
+      return (Long) query.getSingleResult();
     } catch (NoResultException e) {
       Logger.getLogger(ContentServiceJpa.class).debug(
           "Could not find relationship id for" + terminologyId
@@ -554,7 +550,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
   @Override
   public Relationship getRelationship(String terminologyId, String terminology,
     String terminologyVersion) throws Exception {
-    javax.persistence.Query query =
+    final javax.persistence.Query query =
         manager
             .createQuery("select c from RelationshipJpa c where terminologyId = :terminologyId and terminologyVersion = :terminologyVersion and terminology = :terminology");
     /*
@@ -565,8 +561,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       query.setParameter("terminologyId", terminologyId);
       query.setParameter("terminology", terminology);
       query.setParameter("terminologyVersion", terminologyVersion);
-      Relationship c = (Relationship) query.getSingleResult();
-      return c;
+      return (Relationship) query.getSingleResult();
     } catch (Exception e) {
       e.printStackTrace();
       Logger.getLogger(ContentServiceJpa.class).debug(
@@ -615,7 +610,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     tx = manager.getTransaction();
 
     // retrieve this relationship
-    Relationship mu = manager.find(RelationshipJpa.class, id);
+    final Relationship mu = manager.find(RelationshipJpa.class, id);
 
     if (getTransactionPerOperation()) {
 
@@ -642,9 +637,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
   @Override
   public AttributeValueRefSetMember getAttributeValueRefSetMember(Long id)
     throws Exception {
-    AttributeValueRefSetMember c =
-        manager.find(AttributeValueRefSetMemberJpa.class, id);
-    return c;
+    return manager.find(AttributeValueRefSetMemberJpa.class, id);
   }
 
   /* see superclass */
@@ -652,7 +645,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
   public AttributeValueRefSetMember getAttributeValueRefSetMember(
     String terminologyId, String terminology, String terminologyVersion)
     throws Exception {
-    javax.persistence.Query query =
+    final javax.persistence.Query query =
         manager
             .createQuery("select c from AttributeValueRefSetMemberJpa c where terminologyId = :terminologyId and terminologyVersion = :terminologyVersion and terminology = :terminology");
     /*
@@ -663,9 +656,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       query.setParameter("terminologyId", terminologyId);
       query.setParameter("terminology", terminology);
       query.setParameter("terminologyVersion", terminologyVersion);
-      AttributeValueRefSetMember c =
-          (AttributeValueRefSetMember) query.getSingleResult();
-      return c;
+      return (AttributeValueRefSetMember) query.getSingleResult();
     } catch (NoResultException e) {
       return null;
       /*
@@ -716,7 +707,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     tx = manager.getTransaction();
 
     // retrieve this map specialist
-    AttributeValueRefSetMember mu =
+    final AttributeValueRefSetMember mu =
         manager.find(AttributeValueRefSetMemberJpa.class, id);
 
     if (getTransactionPerOperation()) {
@@ -744,16 +735,14 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
   @Override
   public ComplexMapRefSetMember getComplexMapRefSetMember(Long id)
     throws Exception {
-    ComplexMapRefSetMember c =
-        manager.find(ComplexMapRefSetMemberJpa.class, id);
-    return c;
+    return manager.find(ComplexMapRefSetMemberJpa.class, id);
   }
 
   /* see superclass */
   @Override
   public ComplexMapRefSetMember getComplexMapRefSetMember(String terminologyId,
     String terminology, String terminologyVersion) throws Exception {
-    javax.persistence.Query query =
+    final javax.persistence.Query query =
         manager
             .createQuery("select c from ComplexMapRefSetMemberJpa c where terminologyId = :terminologyId and terminologyVersion = :terminologyVersion and terminology = :terminology");
     /*
@@ -764,9 +753,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       query.setParameter("terminologyId", terminologyId);
       query.setParameter("terminology", terminology);
       query.setParameter("terminologyVersion", terminologyVersion);
-      ComplexMapRefSetMember c =
-          (ComplexMapRefSetMember) query.getSingleResult();
-      return c;
+      return (ComplexMapRefSetMember) query.getSingleResult();
     } catch (NoResultException e) {
       return null;
       /*
@@ -817,7 +804,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     tx = manager.getTransaction();
 
     // retrieve this complex map ref set member
-    ComplexMapRefSetMember mu =
+    final ComplexMapRefSetMember mu =
         manager.find(ComplexMapRefSetMemberJpa.class, id);
 
     if (getTransactionPerOperation()) {
@@ -852,7 +839,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
   @Override
   public LanguageRefSetMember getLanguageRefSetMember(String terminologyId,
     String terminology, String terminologyVersion) throws Exception {
-    javax.persistence.Query query =
+    final javax.persistence.Query query =
         manager
             .createQuery("select c from LanguageRefSetMemberJpa c where terminologyId = :terminologyId and terminologyVersion = :terminologyVersion and terminology = :terminology");
     /*
@@ -863,8 +850,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       query.setParameter("terminologyId", terminologyId);
       query.setParameter("terminology", terminology);
       query.setParameter("terminologyVersion", terminologyVersion);
-      LanguageRefSetMember c = (LanguageRefSetMember) query.getSingleResult();
-      return c;
+      return (LanguageRefSetMember) query.getSingleResult();
     } catch (NoResultException e) {
       return null;
       /*
@@ -915,7 +901,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     tx = manager.getTransaction();
 
     // retrieve this language ref set member
-    LanguageRefSetMember mu = manager.find(LanguageRefSetMemberJpa.class, id);
+    final LanguageRefSetMember mu =
+        manager.find(LanguageRefSetMemberJpa.class, id);
 
     if (getTransactionPerOperation()) {
 
@@ -942,15 +929,14 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
   @Override
   public SimpleMapRefSetMember getSimpleMapRefSetMember(Long id)
     throws Exception {
-    SimpleMapRefSetMember c = manager.find(SimpleMapRefSetMemberJpa.class, id);
-    return c;
+    return manager.find(SimpleMapRefSetMemberJpa.class, id);
   }
 
   /* see superclass */
   @Override
   public SimpleMapRefSetMember getSimpleMapRefSetMember(String terminologyId,
     String terminology, String terminologyVersion) throws Exception {
-    javax.persistence.Query query =
+    final javax.persistence.Query query =
         manager
             .createQuery("select c from SimpleMapRefSetMemberJpa c where terminologyId = :terminologyId and terminologyVersion = :terminologyVersion and terminology = :terminology");
     /*
@@ -961,16 +947,9 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       query.setParameter("terminologyId", terminologyId);
       query.setParameter("terminology", terminology);
       query.setParameter("terminologyVersion", terminologyVersion);
-      SimpleMapRefSetMember c = (SimpleMapRefSetMember) query.getSingleResult();
-      return c;
+      return (SimpleMapRefSetMember) query.getSingleResult();
     } catch (NoResultException e) {
       return null;
-      /*
-       * throw new LocalException(
-       * "SimpleMapRefSetMember query for terminologyId = " + terminologyId +
-       * ", terminology = " + terminology + ", terminologyVersion = " +
-       * terminologyVersion + " returned no results!", e);
-       */
     }
   }
 
@@ -1013,7 +992,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     tx = manager.getTransaction();
 
     // retrieve this simple map ref set member
-    SimpleMapRefSetMember mu = manager.find(SimpleMapRefSetMemberJpa.class, id);
+    final SimpleMapRefSetMember mu = manager.find(SimpleMapRefSetMemberJpa.class, id);
 
     if (getTransactionPerOperation()) {
 
@@ -1039,15 +1018,14 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
   /* see superclass */
   @Override
   public SimpleRefSetMember getSimpleRefSetMember(Long id) throws Exception {
-    SimpleRefSetMember c = manager.find(SimpleRefSetMemberJpa.class, id);
-    return c;
+    return manager.find(SimpleRefSetMemberJpa.class, id);
   }
 
   /* see superclass */
   @Override
   public SimpleRefSetMember getSimpleRefSetMember(String terminologyId,
     String terminology, String terminologyVersion) throws Exception {
-    javax.persistence.Query query =
+    final javax.persistence.Query query =
         manager
             .createQuery("select c from SimpleRefSetMemberJpa c where terminologyId = :terminologyId and terminologyVersion = :terminologyVersion and terminology = :terminology");
     /*
@@ -1058,16 +1036,9 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       query.setParameter("terminologyId", terminologyId);
       query.setParameter("terminology", terminology);
       query.setParameter("terminologyVersion", terminologyVersion);
-      SimpleRefSetMember c = (SimpleRefSetMember) query.getSingleResult();
-      return c;
+      return (SimpleRefSetMember) query.getSingleResult();
     } catch (NoResultException e) {
       return null;
-      /*
-       * throw new LocalException(
-       * "SimpleRefSetMember query for terminologyId = " + terminologyId +
-       * ", terminology = " + terminology + ", terminologyVersion = " +
-       * terminologyVersion + " returned no results!", e);
-       */
     }
   }
 
@@ -1110,7 +1081,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     tx = manager.getTransaction();
 
     // retrieve this simple ref set member
-    SimpleRefSetMember mu = manager.find(SimpleRefSetMemberJpa.class, id);
+    final SimpleRefSetMember mu = manager.find(SimpleRefSetMemberJpa.class, id);
 
     if (getTransactionPerOperation()) {
 
@@ -1138,18 +1109,18 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
   public SearchResultList findConceptsForQuery(String searchString,
     PfsParameter pfsParameter) throws Exception {
 
-    SearchResultList results = new SearchResultListJpa();
+    final SearchResultList results = new SearchResultListJpa();
 
-    FullTextEntityManager fullTextEntityManager =
+    final FullTextEntityManager fullTextEntityManager =
         Search.getFullTextEntityManager(manager);
-    SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
+    final SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
     Query luceneQuery;
 
     try {
 
       // if the field is not indicated in the URL
       if (searchString.indexOf(':') == -1) {
-        MultiFieldQueryParser queryParser =
+        final MultiFieldQueryParser queryParser =
             new MultiFieldQueryParser(Version.LUCENE_36,
                 conceptFieldNames.toArray(new String[0]),
                 searchFactory.getAnalyzer(ConceptJpa.class));
@@ -1158,7 +1129,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
         // index field is indicated in the URL with a ':' separating
         // field and value
       } else {
-        QueryParser queryParser =
+        final QueryParser queryParser =
             new QueryParser(Version.LUCENE_36, "summary",
                 searchFactory.getAnalyzer(ConceptJpa.class));
         luceneQuery = queryParser.parse(searchString);
@@ -1168,7 +1139,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
           "The specified search terms cannot be parsed.  Please check syntax and try again.");
     }
 
-    FullTextQuery fullTextQuery =
+    final FullTextQuery fullTextQuery =
         fullTextEntityManager
             .createFullTextQuery(luceneQuery, ConceptJpa.class);
 
@@ -1204,11 +1175,11 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
     // execute the query
     @SuppressWarnings("unchecked")
-    List<Concept> concepts = fullTextQuery.getResultList();
+    final List<Concept> concepts = fullTextQuery.getResultList();
 
     // construct the search results
-    for (Concept c : concepts) {
-      SearchResult sr = new SearchResultJpa();
+    for (final Concept c : concepts) {
+      final  SearchResult sr = new SearchResultJpa();
       sr.setId(c.getId());
       sr.setTerminologyId(c.getTerminologyId());
       sr.setTerminology(c.getTerminology());
@@ -1236,7 +1207,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
         "findDescendantConcepts called: " + terminologyId + ", " + terminology
             + ", " + terminologyVersion);
 
-    SearchResultList searchResultList = new SearchResultListJpa();
+    final SearchResultList searchResultList = new SearchResultListJpa();
 
     javax.persistence.Query query =
         manager
@@ -1247,7 +1218,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
     // get the first tree position
     query.setMaxResults(1);
-    List<String> ancestorPaths = query.getResultList();
+    final List<String> ancestorPaths = query.getResultList();
 
     // skip construction if no ancestor path was found
     if (ancestorPaths.size() != 0) {
@@ -1266,7 +1237,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
               + "and tp.terminologyVersion = c.terminologyVersion "
               + "and tp.ancestorPath like '" + ancestorPath + "%'");
 
-      List<Concept> concepts = query.getResultList();
+      final List<Concept> concepts = query.getResultList();
 
       // set the total count of descendant concepts
       searchResultList.setTotalCount(concepts.size());
@@ -1314,8 +1285,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       }
 
       // construct the search results
-      for (Concept c : concepts.subList(startIndex, toIndex)) {
-        SearchResult searchResult = new SearchResultJpa();
+      for (final Concept c : concepts.subList(startIndex, toIndex)) {
+        final SearchResult searchResult = new SearchResultJpa();
         searchResult.setId(c.getId());
         searchResult.setTerminologyId(c.getTerminologyId());
         searchResult.setTerminology(c.getTerminology());
@@ -1338,7 +1309,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
         "getDescendantConceptsCount called: " + terminologyId + ", "
             + terminology + ", " + terminologyVersion);
 
-    javax.persistence.Query query =
+    final javax.persistence.Query query =
         manager
             .createQuery("select tp.descendantCount from TreePositionJpa tp "
                 + "where tp.terminologyId = :terminologyId "
@@ -1350,7 +1321,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     query.setMaxResults(1);
 
     @SuppressWarnings("unchecked")
-    List<Object> results = query.getResultList();
+    final List<Object> results = query.getResultList();
     if (results.size() > 0) {
       return Integer.parseInt(results.get(0).toString());
     } else {
@@ -1367,7 +1338,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     if (getTransactionPerOperation()) {
       tx.begin();
 
-      javax.persistence.Query query =
+      final javax.persistence.Query query =
           manager
               .createQuery("DELETE From TreePositionJpa c where terminology = :terminology and terminologyVersion = :terminologyVersion");
       query.setParameter("terminology", terminology);
@@ -1378,7 +1349,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       tx.commit();
 
     } else {
-      javax.persistence.Query query =
+      final javax.persistence.Query query =
           manager
               .createQuery("DELETE From TreePositionJpa c where terminology = :terminology and terminologyVersion = :terminologyVersion");
       query.setParameter("terminology", terminology);
@@ -1399,7 +1370,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
             + ", isaRelTypeId = " + typeId);
 
     // initialize global variables
-    EntityTransaction computeTreePositionTransaction = manager.getTransaction();
+    final EntityTransaction computeTreePositionTransaction = manager.getTransaction();
     int computeTreePositionCommitCt = 5000;
     computeTreePositionTotalCount = 0;
     computeTreePositionMaxMemoryUsage = 0L;
@@ -1407,7 +1378,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     computeTreePositionValidationResult = new ValidationResultJpa();
 
     // get the root concept
-    Concept rootConcept = getConcept(rootId, terminology, terminologyVersion);
+    final Concept rootConcept = getConcept(rootId, terminology, terminologyVersion);
 
     // begin the transaction
     computeTreePositionTransaction.begin();
@@ -1453,14 +1424,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     throws Exception {
 
     // Get all relationships
-    Map<Long, Set<Long>> localParChd = parChd;
+     Map<Long, Set<Long>> localParChd = parChd;
     if (localParChd == null) {
       Logger.getLogger(this.getClass()).info(
           "  Loading relationships " + typeId);
       localParChd = new HashMap<>();
-      System.out.println("concept=" + concept);
       @SuppressWarnings("unchecked")
-      List<Relationship> relationships =
+      final List<Relationship> relationships =
           manager
               .createQuery(
                   "select r from RelationshipJpa r where "
@@ -1472,14 +1442,14 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
               .setParameter("terminologyVersion",
                   concept.getTerminologyVersion()).getResultList();
       int ct = 0;
-      for (Relationship r : relationships) {
+      for (final Relationship r : relationships) {
         ct++;
         final Concept sourceConcept = r.getSourceConcept();
         final Concept destinationConcept = r.getDestinationConcept();
         if (!localParChd.containsKey(destinationConcept.getId())) {
           localParChd.put(destinationConcept.getId(), new HashSet<Long>());
         }
-        Set<Long> children = localParChd.get(destinationConcept.getId());
+        final Set<Long> children = localParChd.get(destinationConcept.getId());
         children.add(sourceConcept.getId());
       }
       Logger.getLogger(this.getClass()).info("    count = " + ct);
@@ -1492,8 +1462,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     if (concept.isActive()) {
 
       // extract the ancestor terminology ids
-      Set<String> ancestors = new HashSet<>();
-      for (String ancestor : ancestorPath.split("~"))
+      final Set<String> ancestors = new HashSet<>();
+      for (final String ancestor : ancestorPath.split("~"))
         ancestors.add(ancestor);
 
       // if ancestor path contains this terminology id, a child/ancestor cycle
@@ -1548,7 +1518,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
         // iterate over the child terminology ids
         // this iteration is entirely local and depends on no managed
         // objects
-        for (Long childConceptId : localParChd.get(concept.getId())) {
+        for (final Long childConceptId : localParChd.get(concept.getId())) {
 
           // call helper function on child concept
           // add the results to the local descendant set
@@ -1638,7 +1608,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
             + ", isaRelTypeId = " + typeId);
 
     // get the root concept
-    Concept rootConcept = getConcept(rootId, terminology, terminologyVersion);
+    final Concept rootConcept = getConcept(rootId, terminology, terminologyVersion);
 
     // begin the recursive computation
     computeTreePositionsHelper(null, rootConcept, Long.valueOf(typeId), "", 0,
@@ -1651,14 +1621,14 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
   @Override
   public TreePositionList getRootTreePositions(String terminology,
     String terminologyVersion) throws Exception {
-    List<TreePosition> treePositions =
+    final List<TreePosition> treePositions =
         manager
             .createQuery(
                 "select tp from TreePositionJpa tp where ancestorPath = '' and terminologyVersion = :terminologyVersion and terminology = :terminology")
             .setParameter("terminology", terminology)
             .setParameter("terminologyVersion", terminologyVersion)
             .getResultList();
-    TreePositionListJpa treePositionList = new TreePositionListJpa();
+    final TreePositionListJpa treePositionList = new TreePositionListJpa();
     treePositionList.setTreePositions(treePositions);
     treePositionList.setTotalCount(treePositions.size());
     return treePositionList;
@@ -1674,7 +1644,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
   @SuppressWarnings("unchecked")
   private TreePositionList getChildTreePositions(TreePosition treePosition)
     throws Exception {
-    List<TreePosition> treePositions =
+    final List<TreePosition> treePositions =
         manager
             .createQuery(
                 "select tp from TreePositionJpa tp where ancestorPath = :ancestorPath and terminology = :terminology and terminologyVersion = :terminologyVersion")
@@ -1686,7 +1656,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
             .setParameter("terminology", treePosition.getTerminology())
             .setParameter("terminologyVersion",
                 treePosition.getTerminologyVersion()).getResultList();
-    TreePositionListJpa treePositionList = new TreePositionListJpa();
+    final TreePositionListJpa treePositionList = new TreePositionListJpa();
     treePositionList.setTreePositions(treePositions);
     treePositionList.setTotalCount(treePositions.size());
     return treePositionList;
@@ -1698,14 +1668,14 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     String terminology, String terminologyVersion) throws Exception {
 
     @SuppressWarnings("unchecked")
-    List<TreePosition> treePositions =
+    final List<TreePosition> treePositions =
         manager
             .createQuery(
                 "select tp from TreePositionJpa tp where terminologyVersion = :terminologyVersion and terminology = :terminology and terminologyId = :terminologyId")
             .setParameter("terminology", terminology)
             .setParameter("terminologyVersion", terminologyVersion)
             .setParameter("terminologyId", terminologyId).getResultList();
-    TreePositionListJpa treePositionList = new TreePositionListJpa();
+    final TreePositionListJpa treePositionList = new TreePositionListJpa();
     treePositionList.setTreePositions(treePositions);
     treePositionList.setTotalCount(treePositions.size());
 
@@ -1787,7 +1757,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
         new TreePositionListJpa();
 
     // for each tree position
-    for (TreePosition treePosition : treePositionList.getTreePositions()) {
+    for (final TreePosition treePosition : treePositionList.getTreePositions()) {
 
       treePositionsWithDescendants
           .addTreePosition(getTreePositionWithDescendants(treePosition));
@@ -1820,7 +1790,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
             .setParameter("terminologyId", terminologyId).setMaxResults(1)
             .getResultList();
     // for each tree position
-    for (TreePosition treePosition : treePositions) {
+    for (final TreePosition treePosition : treePositions) {
       return getTreePositionWithDescendants(treePosition);
     }
     return null;
@@ -1835,7 +1805,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
       TreePositionList tpChildren = getChildTreePositions(tp);
 
-      for (TreePosition tpChild : tpChildren.getTreePositions()) {
+      for (final TreePosition tpChild : tpChildren.getTreePositions()) {
         tp.addChild(getTreePositionWithDescendants(tpChild));
       }
     }
@@ -1870,7 +1840,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       boolean ancestorFound = false;
 
       // cycle over the tree positions for this ancestor
-      for (TreePosition tp : getTreePositions(ancestors[i],
+      for (final TreePosition tp : getTreePositions(ancestors[i],
           treePosition.getTerminology(), treePosition.getTerminologyVersion())
           .getTreePositions()) {
 
@@ -1895,7 +1865,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     // if all tree positions to root have been found, construct the final
     // tree
     // position
-    for (TreePosition tp : ancestorTreePositions) {
+    for (final TreePosition tp : ancestorTreePositions) {
 
       // if this persisted tree position does not have this id as a child,
       // add
@@ -1918,50 +1888,46 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     String terminologyVersion, String query) throws Exception {
 
     // construct the query
-    String fullQuery =
+    final String fullQuery =
         constructTreePositionQuery(terminology, terminologyVersion, query);
 
     Logger.getLogger(ContentServiceJpa.class).info("Full query: " + fullQuery);
 
     // execute the full text query
-    FullTextEntityManager fullTextEntityManager =
+    final FullTextEntityManager fullTextEntityManager =
         Search.getFullTextEntityManager(manager);
 
-    SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
+    final SearchFactory searchFactory =
+        fullTextEntityManager.getSearchFactory();
     Query luceneQuery;
-
     try {
-
-      QueryParser queryParser =
+      final QueryParser queryParser =
           new QueryParser(Version.LUCENE_36, "summary",
               searchFactory.getAnalyzer(TreePositionJpa.class));
       luceneQuery = queryParser.parse(fullQuery);
-
     } catch (ParseException e) {
       throw new LocalException(
           "The specified search terms cannot be parsed.  Please check syntax and try again.");
     }
 
-    org.hibernate.search.jpa.FullTextQuery ftquery =
+    final org.hibernate.search.jpa.FullTextQuery ftquery =
         fullTextEntityManager.createFullTextQuery(luceneQuery,
             TreePositionJpa.class);
 
     // retrieve the query results
-    List<TreePosition> queriedTreePositions = ftquery.getResultList();
+    final List<TreePosition> queriedTreePositions = ftquery.getResultList();
 
     // initialize the result set
-    List<TreePosition> fullTreePositions = new ArrayList<>();
+    final List<TreePosition> fullTreePositions = new ArrayList<>();
 
-    Logger.getLogger(ContentServiceJpa.class).info(
-        "Found " + queriedTreePositions.size() + " results:");
-    for (TreePosition queriedTreePosition : queriedTreePositions) {
+    for (final TreePosition queriedTreePosition : queriedTreePositions) {
       Logger.getLogger(ContentServiceJpa.class).info(
           queriedTreePosition.toString());
     }
 
     // for each query result, construct the full tree (i.e. up to root, and
     // including children if exact match)
-    for (TreePosition queriedTreePosition : queriedTreePositions) {
+    for (final TreePosition queriedTreePosition : queriedTreePositions) {
 
       // if the query is an exact match for the terminology id of this
       // tree position, attach children
@@ -1972,24 +1938,15 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
       }
 
-      TreePosition fullTreePosition =
+      final TreePosition fullTreePosition =
           constructRootTreePosition(queriedTreePosition);
 
-      Logger.getLogger(ContentServiceJpa.class).info(
-          "Checking root " + fullTreePosition.getTerminologyId());
-
       // if this root is already present in the final list, add this
-      // position's
-      // children to existing root
+      // position's children to existing root
       if (fullTreePositions.contains(fullTreePosition)) {
 
-        TreePosition existingTreePosition =
+        final TreePosition existingTreePosition =
             fullTreePositions.get(fullTreePositions.indexOf(fullTreePosition));
-
-        Logger.getLogger(ContentServiceJpa.class).info(
-            "Found existing root at position "
-                + fullTreePositions.indexOf(fullTreePosition) + " with "
-                + existingTreePosition.getChildren().size());
 
         /*
          * existingTreePosition .addChildren(fullTreePosition.getChildren());
@@ -1997,9 +1954,6 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
          * Logger.getLogger(ContentServiceJpa.class).info( "  Added " +
          * fullTreePosition.getChildren().size() + " children:");
          */
-        for (TreePosition tp : fullTreePosition.getChildren()) {
-          Logger.getLogger(ContentServiceJpa.class).info(tp.getTerminologyId());
-        }
 
         fullTreePositions.set(fullTreePositions.indexOf(fullTreePosition),
             existingTreePosition);
@@ -2010,7 +1964,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       }
     }
 
-    TreePositionListJpa treePositionList = new TreePositionListJpa();
+    final TreePositionListJpa treePositionList = new TreePositionListJpa();
     treePositionList.setTreePositions(fullTreePositions);
     treePositionList.setTotalCount(fullTreePositions.size());
     return treePositionList;
@@ -2034,7 +1988,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       Map<String, String> relTypes =
           metadataService.getRelationshipTypes(terminology, terminologyVersion);
       metadataService.close();
-      for (TreePosition tp : tpList.getTreePositions())
+      for (final TreePosition tp : tpList.getTreePositions())
         computeTreePositionInformationHelper(tp, descTypes, relTypes);
     }
 
@@ -2066,12 +2020,6 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     TreePosition treePosition, Map<String, String> descTypes,
     Map<String, String> relTypes) throws Exception {
 
-    // // System.out.println("");
-    // // System.out.println("***************************");
-    // //
-    // System.out.println("Computing information for tree position, concept: "
-    // + treePosition.getTerminologyId());
-    // // System.out.println("***************************");
     // get the concept for this tree position
     Concept concept =
         getConcept(treePosition.getTerminologyId(),
@@ -2082,12 +2030,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     Map<String, TreePositionDescriptionGroup> descGroups = new HashMap<>();
 
     // cycle over all descriptions
-    for (Description desc : concept.getDescriptions()) {
-
-      // // System.out.println("  Checking description: "
-      // + desc.getTerminologyId() + ", " + desc.getTypeId() + ", "
-      // + desc.getTerm());
-
+    for (final Description desc : concept.getDescriptions()) {
       String descType = desc.getTypeId().toString();
 
       // get or create the description group for this description type
@@ -2095,8 +2038,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       if (descGroups.get(descType) != null)
         descGroup = descGroups.get(descType);
       else {
-        // // System.out.println("    Creating descGroup:  "
-        // + descTypes.get(descType));
+
         descGroup = new TreePositionDescriptionGroupJpa();
         descGroup.setName(descTypes.get(descType));
         descGroup.setTypeId(descType);
@@ -2105,7 +2047,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       // get or create the tree position description for this description
       // term
       TreePositionDescription tpDesc = null;
-      for (TreePositionDescription tpd : descGroup
+      for (final TreePositionDescription tpd : descGroup
           .getTreePositionDescriptions()) {
         if (tpd.getName().equals(desc.getTerm()))
           tpDesc = tpd;
@@ -2113,8 +2055,6 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
       // if no description found, create a new one
       if (tpDesc == null) {
-        // // System.out.println("    Creating tpDesc:  " +
-        // desc.getTerm());
         tpDesc = new TreePositionDescriptionJpa();
         tpDesc.setName(desc.getTerm());
       }
@@ -2128,11 +2068,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       // check for references
       // find any relationship where terminology id starts with the
       // description's terminology id
-      for (Relationship rel : concept.getRelationships()) {
-
-        // // System.out.println("  Checking relationship "
-        // + rel.getTerminologyId() + ", " + rel.getTypeId());
-
+      for (final Relationship rel : concept.getRelationships()) {
         if (rel.getTerminologyId().startsWith(desc.getTerminologyId() + "~")) {
 
           // Non-persisted objects, so remove this description from
@@ -2180,7 +2116,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
     // calculate information for all children
     if (treePosition.getChildrenCount() > 0) {
-      for (TreePosition tp : treePosition.getChildren()) {
+      for (final TreePosition tp : treePosition.getChildren()) {
         computeTreePositionInformationHelper(tp, descTypes, relTypes);
       }
     }
@@ -2315,7 +2251,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       }
     }
 
-    for (String s : parsedTerms) {
+    for (final String s : parsedTerms) {
       Logger.getLogger(ContentServiceJpa.class).debug("  " + s);
     }
 
@@ -2433,8 +2369,6 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     Date localDate = date;
     if (localDate == null) {
       localDate = tempDate;
-    } else {
-      // System.out.println("Date input = " + date.toString());
     }
 
     FullTextEntityManager fullTextEntityManager =
@@ -2612,7 +2546,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     TreePositionList treePositionList =
         this.getTreePositions(terminologyId, terminology, terminologyVersion);
 
-    for (TreePosition tp : treePositionList.getTreePositions()) {
+    for (final TreePosition tp : treePositionList.getTreePositions()) {
       tp.setChildren(this.getChildTreePositions(tp).getTreePositions());
     }
 

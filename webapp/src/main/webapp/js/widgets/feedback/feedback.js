@@ -75,9 +75,12 @@ angular
             }
           });
 
-      $scope.retrieveFeedback = function(page, feedbackType, reviewedType,
-        resolvedType, query) {
+      $scope.retrieveFeedback = function(ppage, feedbackType, reviewedType,
+        resolvedType, pquery) {
 
+        var query = pquery;
+        var page = ppage;
+        
         $scope.feedbackType = feedbackType;
         $scope.resolvedType = resolvedType;
         $scope.reviewedType = reviewedType;
@@ -194,8 +197,7 @@ angular
           $rootScope.handleHttpError(data, status, headers, config);
         });
       }
-      ;
-
+      
       $scope.goFeedbackConversations = function(id) {
         var path = '/conversation/recordId/' + id;
         // redirect page
