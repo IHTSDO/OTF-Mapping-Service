@@ -400,15 +400,15 @@ public class ConfigUtility {
             if (i != 0) {
               return i;
             } else {
+              // Handle simple case
+              if (fields1.length == 7) {
+                return fields1[6].compareTo(fields2[6]);
+              }
               i = Integer.parseInt(fields1[6]) - Integer.parseInt(fields2[6]);
               if (i != 0) {
                 return i;
               } else {
                 i = Integer.parseInt(fields1[7]) - Integer.parseInt(fields2[7]);
-                // Handle simple case
-                if (fields1.length == 8) {
-                  return i;
-                }
                 if (i != 0) {
                   return i;
                 } else {
@@ -467,10 +467,10 @@ public class ConfigUtility {
         if (i != 0) {
           return i;
         } else {
-          i = Integer.parseInt(fields1[7]) - Integer.parseInt(fields2[7]);
-          if (fields1.length == 8) {
-            return i;
+          if (fields1.length == 7) {
+            return fields1[6].compareTo(fields2[6]);
           }
+          i = Integer.parseInt(fields1[7]) - Integer.parseInt(fields2[7]);
           if (i != 0) {
             return i;
           } else {
