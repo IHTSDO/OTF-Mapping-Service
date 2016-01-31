@@ -1178,8 +1178,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     fullQuery +=
         " AND (workflowStatus:'PUBLISHED' OR workflowStatus:'READY_FOR_PUBLICATION')";
 
-    Logger.getLogger(MappingServiceJpa.class).info(fullQuery);
-
     FullTextEntityManager fullTextEntityManager =
         Search.getFullTextEntityManager(manager);
 
@@ -1274,8 +1272,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
             pfsParameter == null ? new PfsParameterJpa() : pfsParameter);
 
     fullQuery += " AND workflowStatus:'PUBLISHED'";
-
-    Logger.getLogger(MappingServiceJpa.class).info(fullQuery);
 
     FullTextEntityManager fullTextEntityManager =
         Search.getFullTextEntityManager(manager);
