@@ -3198,6 +3198,7 @@ public class MappingServiceRest extends RootServiceRest {
           contentService.getRootTreePositions(
               mapProject.getDestinationTerminology(),
               mapProject.getDestinationTerminologyVersion());
+            
       contentService.computeTreePositionInformation(treePositions);
 
       mappingService.setTreePositionValidCodes(
