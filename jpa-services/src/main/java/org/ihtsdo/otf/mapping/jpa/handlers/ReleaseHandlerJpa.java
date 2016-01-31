@@ -228,7 +228,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     //
 
     // check for supported ref set pattern
-    if (EnumSet.of(MapRefsetPattern.ComplexMap, MapRefsetPattern.ExtendedMap,
+    if (!EnumSet.of(MapRefsetPattern.ComplexMap, MapRefsetPattern.ExtendedMap,
         MapRefsetPattern.SimpleMap).contains(mapProject.getMapRefsetPattern())) {
       throw new Exception("Unsupported map refset pattern - "
           + mapProject.getMapRefsetPattern());
@@ -375,7 +375,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     Logger.getLogger(getClass()).info("  Processing release");
     // cycle over the map records marked for publishing
     int ct = 0;
-    final Map<String, ComplexMapRefSetMember> activeMembersMap = new HashMap<>();
+    final Map<String, ComplexMapRefSetMember> activeMembersMap =
+        new HashMap<>();
     for (final MapRecord mapRecord : mapRecords) {
       Logger.getLogger(getClass()).info(
           "    Processing record for " + mapRecord.getConceptId());
@@ -2308,28 +2309,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         member.setRefSetId(fields[4]);
         // conceptId
 
-        // ComplexMap unique attributes
-        member.setMapGroup(Integer.parseInt(fields[6]));
-        member.setMapPriority(Integer.parseInt(fields[7]));
-        member.setMapRule(fields[8]);
-        member.setMapAdvice(fields[9]);
-        member.setMapTarget(fields[10]);
-        if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ComplexMap) {
-          member.setMapRelationId(Long.valueOf(fields[11]));
-        } else if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ExtendedMap) {
-          member.setMapRelationId(Long.valueOf(fields[12]));
-
-        } else {
-          throw new Exception("Unsupported map type "
-              + mapProject.getMapRefsetPattern());
-        }
-
-        // ComplexMap unique attributes NOT set by file (mapBlock
-        // elements) - set defaults
-        member.setMapBlock(0);
-        member.setMapBlockRule(null);
-        member.setMapBlockAdvice(null);
-
         // Terminology attributes
         member.setTerminology(terminology);
         member.setTerminologyVersion(version);
@@ -2337,6 +2316,38 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         // set Concept
         final Concept concept =
             contentService.getConcept(fields[5], terminology, version);
+
+        if (mapProject.getMapRefsetPattern() != MapRefsetPattern.SimpleMap) {
+
+          // ComplexMap unique attributes
+          member.setMapGroup(Integer.parseInt(fields[6]));
+          member.setMapPriority(Integer.parseInt(fields[7]));
+          member.setMapRule(fields[8]);
+          member.setMapAdvice(fields[9]);
+          member.setMapTarget(fields[10]);
+          if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ComplexMap) {
+            member.setMapRelationId(Long.valueOf(fields[11]));
+          } else if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ExtendedMap) {
+            member.setMapRelationId(Long.valueOf(fields[12]));
+
+          } else {
+            throw new Exception("Unsupported map type "
+                + mapProject.getMapRefsetPattern());
+          }
+          // ComplexMap unique attributes NOT set by file (mapBlock
+          // elements) - set defaults
+          member.setMapBlock(0);
+          member.setMapBlockRule(null);
+          member.setMapBlockAdvice(null);
+
+        } else {
+          member.setMapGroup(1);
+          member.setMapPriority(1);
+          member.setMapRule(null);
+          member.setMapAdvice(null);
+          member.setMapTarget(fields[6]);
+          member.setMapRelationId(null);
+        }
 
         // regularly log at intervals
         if (++objectCt % 5000 == 0) {
