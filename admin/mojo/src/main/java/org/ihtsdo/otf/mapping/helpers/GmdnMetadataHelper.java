@@ -84,8 +84,8 @@ public class GmdnMetadataHelper {
   public Map<String, Concept> createMetadata() throws Exception {
     conceptMap = new HashMap<>();
 
-    // terminology id counter, start at 1
-    int metadataCounter = 1;
+    // terminology id counter, start at 100000 - needs to be higher than GMDN ids
+    int metadataCounter = 100000;
 
     //
     // Create concepts representing defaults needed to create
@@ -214,8 +214,14 @@ public class GmdnMetadataHelper {
 
     final Concept definitionTermConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
-            terminologyVersion, "Collective Term", effectiveTime, "meta");
+            terminologyVersion, "Definition Term", effectiveTime, "meta");
     conceptMap.put("definitionTerm", definitionTermConcept);
+    contentService.addConcept(termConcept);
+
+    final Concept ivdTermConcept =
+        createNewActiveConcept("" + metadataCounter++, terminology,
+            terminologyVersion, "IVD Term", effectiveTime, "meta");
+    conceptMap.put("ivdTerm", definitionTermConcept);
     contentService.addConcept(termConcept);
 
     createIsaRelationship(metadataConcept, descriptionTypeConcept, new Integer(
@@ -232,6 +238,10 @@ public class GmdnMetadataHelper {
     createIsaRelationship(descriptionTypeConcept, definitionTermConcept,
         new Integer(metadataCounter++).toString(), terminology,
         terminologyVersion, effectiveTime);
+
+    createIsaRelationship(descriptionTypeConcept, ivdTermConcept, new Integer(
+        metadataCounter++).toString(), terminology, terminologyVersion,
+        effectiveTime);
 
     //
     // Relationship types
@@ -371,7 +381,7 @@ public class GmdnMetadataHelper {
    * @return the concept
    * @throws Exception the exception
    */
-  public Concept createNewActiveConcept(String terminologyId,
+  private Concept createNewActiveConcept(String terminologyId,
     String terminology, String terminologyVersion, String defaultPreferredName,
     String effectiveTime, String descriptionType) throws Exception {
 
