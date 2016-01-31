@@ -122,7 +122,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
 
       // watch for focus project change
       $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
-        console.debug('MapProjectDetailCtrl: Detected change in focus project');
         $scope.focusProject = parameters.focusProject;
       });
 
@@ -138,9 +137,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       });
 
       $scope.go = function() {
-
         console.debug('Formatting project details');
-
         $http({
           url : root_mapping + 'advice/advices',
           dataType : 'json',
@@ -149,6 +146,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
+          console.debug('  advices = ' + data);
           $scope.mapAdvices = data.mapAdvice;
           localStorageService.add('mapAdvices', data.mapAdvice);
           $rootScope.$broadcast('localStorageModule.notification.setMapAdvices', {
@@ -304,10 +302,8 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       };
 
       $scope.goMapRecords = function() {
-        console.debug($scope.role);
-
-        var path = '/project/records';
         // redirect page
+        var path = '/project/records';
         $location.path(path);
       };
 
@@ -330,7 +326,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       // - returns artificial page via slice
 
       $scope.getPagedAdvices = function(page, filter) {
-        console.debug('getPagedAdvices', filter, $scope.focusProject);
         $scope.adviceFilter = filter;
         $scope.pagedAdvice = $scope.sortByKey($scope.focusProject.mapAdvice, 'name').filter(
           containsAdviceFilter);
@@ -356,7 +351,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         $scope.pagedPrinciple = $scope.pagedPrinciple.slice((page - 1) * $scope.pageSize, page
           * $scope.pageSize);
 
-        console.debug($scope.pagedPrinciple);
       };
 
       $scope.getPagedReportDefinitions = function(page, filter) {
@@ -374,7 +368,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         $scope.pagedReportDefinition = $scope.pagedReportDefinition.slice((page - 1)
           * $scope.pageSize, page * $scope.pageSize);
 
-        console.debug('pagedReportDefinition', $scope.pagedReportDefinition);
       };
 
       $scope.getPagedQACheckDefinitions = function(page, filter) {
@@ -385,7 +378,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         $scope.pagedQACheckDefinition = $scope.pagedQACheckDefinition.slice((page - 1)
           * $scope.pageSize, page * $scope.pageSize);
 
-        console.debug('pagedQACheckDefinition', $scope.pagedQACheckDefinition);
       };
 
       $scope.getPagedScopeConcepts = function(page) {
@@ -410,6 +402,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
+          console.debug('  scope concepts = ' + data);
           $rootScope.glassPane--;
           $scope.pagedScopeConcept = data.searchResult;
           $scope.pagedScopeConceptCount = data.totalCount;
@@ -422,7 +415,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
 
       $scope.getPagedScopeExcludedConcepts = function(page, filter) {
         console.debug('Called paged scope concept for page ' + page);
-
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
           'startIndex' : page == -1 ? -1 : (page - 1) * $scope.pageSize,
@@ -432,7 +424,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         };
 
         $rootScope.glassPane++;
-
         $http({
           url : root_mapping + 'project/id/' + $scope.focusProject.id + '/scopeExcludedConcepts',
           dataType : 'json',
@@ -442,6 +433,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
+          console.debug('  scope excluded = ' + data);
           $rootScope.glassPane--;
           $scope.pagedScopeExcludedConcept = data.searchResult;
           $scope.pagedScopeExcludedConceptCount = data.totalCount;
@@ -494,9 +486,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       // do not want to search id or objectId
 
       function containsAdviceFilter(element) {
-
-        console.debug('Checking advice: ', $scope.adviceFilter);
-
         // check if advice filter is empty
         if ($scope.adviceFilter === '' || $scope.adviceFilter == null)
           return true;
@@ -515,9 +504,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       }
 
       function containsRelationFilter(element) {
-
-        console.debug('Checking relation: ', $scope.relationFilter);
-
         // check if relation filter is empty
         if ($scope.relationFilter === '' || $scope.relationFilter == null)
           return true;
@@ -604,9 +590,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       }
 
       function containsReportDefinitionFilter(element) {
-
-        console.debug('Checking report definition: ', $scope.reportDefinitionFilter);
-
         // check if reportDefinition filter is empty
         if ($scope.reportDefinitionFilter === '' || $scope.reportDefinitionFilter == null)
           return true;
@@ -623,8 +606,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       }
 
       function containsQACheckDefinitionFilter(element) {
-
-        console.debug('Checking qa check definition: ', $scope.qaCheckDefinitionFilter);
 
         // check if qaCheckDefinition filter is empty
         if ($scope.qaCheckDefinitionFilter === '' || $scope.qaCheckDefinitionFilter == null)
@@ -665,7 +646,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       // function to change project from the header
       $scope.changeFocusProject = function(mapProject) {
         $scope.focusProject = mapProject;
-        console.debug('changing project to ' + $scope.focusProject.name);
 
         // update and broadcast the new focus project
         localStorageService.add('focusProject', $scope.focusProject);
@@ -691,7 +671,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         } else {
           path = 'help/' + $scope.currentRole + 'DashboardHelp.html';
         }
-        console.debug('go to help page ' + path);
         // redirect page
         $location.path(path);
       };
@@ -714,7 +693,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       };
 
       $scope.getSelectedMapRelationStyle = function() {
-        console.debug('in getSelectedMapRelationStyle');
         for (var j = 0; j < $scope.allowableMapRelationStyles.length; j++) {
           if ($scope.focusProject.mapRelationStyle === $scope.allowableMapRelationStyles[j].name)
             return $scope.allowableMapRelationStyles[j];
@@ -735,7 +713,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       };
 
       $scope.getSelectedMapType = function() {
-        console.debug('in getSelectedMapType');
         for (var j = 0; j < $scope.allowableMapTypes.length; j++) {
           if ($scope.focusProject.mapRefsetPattern === $scope.allowableMapTypes[j].name)
             return $scope.allowableMapTypes[j];
@@ -756,7 +733,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       };
 
       $scope.getSelectedWorkflowType = function() {
-        console.debug('in getSelectedWorkflowType');
         for (var j = 0; j < $scope.allowableWorkflowTypes.length; j++) {
           if ($scope.focusProject.workflowType === $scope.allowableWorkflowTypes[j].name)
             return $scope.allowableWorkflowTypes[j];
@@ -778,7 +754,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       };
 
       $scope.deleteLead = function(lead) {
-        console.debug('in deleteLead');
         for (var j = 0; j < $scope.focusProject.mapLead.length; j++) {
           if (lead.userName === $scope.focusProject.mapLead[j].userName) {
             $scope.focusProject.mapLead.splice(j, 1);
@@ -794,7 +769,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       };
 
       $scope.addLead = function(user) {
-        console.debug('in addLead');
         for (var i = 0; i < $scope.focusProject.mapSpecialist.length; i++) {
           if ($scope.focusProject.mapSpecialist[i].name == user.name) {
             confirm('User ' + user.name
@@ -816,13 +790,11 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
 
         // check role
         if (role != 'Specialist' && role != 'Lead') {
-          console.debug('addNewMapUser called with invalid role: ', role);
           return;
         }
 
         // check user non-null
         if (user == null || user == undefined) {
-          console.debug('addNewMapUser called with null user');
           return;
         }
 
@@ -855,8 +827,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          console.debug('success to addNewLead');
-
           // copy the newly updated object with id
           var user = data;
 
@@ -879,7 +849,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       };
 
       $scope.deleteSpecialist = function(specialist) {
-        console.debug('in deleteSpecialist');
         for (var j = 0; j < $scope.focusProject.mapSpecialist.length; j++) {
           if (specialist.userName === $scope.focusProject.mapSpecialist[j].userName) {
             $scope.focusProject.mapSpecialist.splice(j, 1);
@@ -895,7 +864,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       };
 
       $scope.addSpecialist = function(user) {
-        console.debug('in addSpecialist');
         for (var i = 0; i < $scope.focusProject.mapLead.length; i++) {
           if ($scope.focusProject.mapLead[i].name == user.name) {
             confirm('User ' + user.name
@@ -915,7 +883,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       };
 
       $scope.deleteAdvice = function(advice) {
-        console.debug('in deleteAdvice');
         for (var j = 0; j < $scope.focusProject.mapAdvice.length; j++) {
           if (advice.name === $scope.focusProject.mapAdvice[j].name) {
             $scope.focusProject.mapAdvice.splice(j, 1);
@@ -934,7 +901,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       };
 
       $scope.addAdvice = function(advice) {
-        console.debug('in addAdvice');
         $scope.focusProject.mapAdvice.push(advice);
         // update and broadcast the updated focus
         // project
@@ -958,7 +924,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          console.debug('success to updateMapAdvice');
+          console.debug('  success');
         }).error(function(data, status, headers, config) {
           $scope.recordError = 'Error updating map advice.';
           $rootScope.handleHttpError(data, status, headers, config);
@@ -1027,7 +993,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           }
         }).success(function(data) {
           $rootScope.glassPane--;
-          console.debug('success to addMapAdvice');
+          console.debug('  success');
 
           // add the new advice to the available list
           $scope.mapAdvices.push(data);
@@ -1049,7 +1015,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       };
 
       $scope.deleteRelation = function(relation) {
-        console.debug('in deleteRelation');
         for (var j = 0; j < $scope.focusProject.mapRelation.length; j++) {
           if (relation.name === $scope.focusProject.mapRelation[j].name) {
             $scope.focusProject.mapRelation.splice(j, 1);
@@ -1067,7 +1032,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       };
 
       $scope.addRelation = function(relation) {
-        console.debug('in addRelation');
         $scope.focusProject.mapRelation.push(relation);
         // update and broadcast the updated focus
         // project
@@ -1096,9 +1060,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
 
         .success(function(data) {
           $rootScope.glassPane--;
-
-          console.debug('success to addMapRelation');
-
+          console.debug('  success');
           // add new relations to the sets
           $scope.mapRelations.push(data);
           $scope.allowableMapRelations.push(data);
@@ -1118,7 +1080,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       };
 
       $scope.deleteReportDefinition = function(reportDefinition) {
-        console.debug('in deleteReportDefinition');
         for (var j = 0; j < $scope.focusProject.reportDefinition.length; j++) {
           if (reportDefinition.name === $scope.focusProject.reportDefinition[j].name) {
             $scope.focusProject.reportDefinition.splice(j, 1);
@@ -1136,8 +1097,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       };
 
       $scope.deleteQACheckDefinition = function(qaCheckDefinition) {
-        console.debug('in deleteQACheckDefinition');
-
         // check the local qaCheck set
         for (var j = 0; j < $scope.focusProject.qaCheckDefinition.length; j++) {
           if (qaCheckDefinition.id === $scope.focusProject.qaCheckDefinition[j].id) {
@@ -1164,7 +1123,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       };
 
       $scope.addReportDefinition = function(reportDefinition) {
-        console.debug('in addReportDefinition', reportDefinition);
         $scope.focusProject.reportDefinition.push(reportDefinition);
         console.debug($scope.focusProject.reportDefinition);
         // update and broadcast the updated focus
@@ -1179,10 +1137,8 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       };
 
       $scope.addQACheckDefinition = function(qaCheckDefinition) {
-        console.debug('in addQACheckDefinition', qaCheckDefinition);
         $scope.focusProject.qaCheckDefinition.push(qaCheckDefinition);
         $scope.focusProject.reportDefinition.push(qaCheckDefinition);
-        console.debug($scope.focusProject.qaCheckDefinition);
         // update and broadcast the updated focus
         // project
         localStorageService.set('focusProject', $scope.focusProject);
@@ -1195,7 +1151,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       };
 
       $scope.deletePrinciple = function(principle) {
-        console.debug('in deletePrinciple');
         for (var j = 0; j < $scope.focusProject.mapPrinciple.length; j++) {
           if (principle.name === $scope.focusProject.mapPrinciple[j].name) {
             $scope.focusProject.mapPrinciple.splice(j, 1);
@@ -1213,7 +1168,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       };
 
       $scope.addPrinciple = function(principle) {
-        console.debug('in addPrinciple');
         $scope.focusProject.mapPrinciple.push(principle);
         // update and broadcast the updated focus
         // project
@@ -1227,7 +1181,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       };
 
       $scope.updatePrinciple = function(principle) {
-        console.debug('in  updatePrinciple');
+        console.debug('in  updatePrinciple', principle);
         $http({
           url : root_mapping + 'principle/update',
           dataType : 'json',
@@ -1237,7 +1191,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          console.debug('success to updateMapPrinciple');
+          console.debug('  success');
         }).error(function(data, status, headers, config) {
           $scope.recordError = 'Error updating map principle.';
           $rootScope.handleHttpError(data, status, headers, config);
@@ -1286,7 +1240,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       };
 
       $scope.submitNewMapPrinciple = function(principle) {
-        console.debug('in submitNewMapPrinciple');
+        console.debug('in submitNewMapPrinciple', principle);
 
         $rootScope.glassPane++;
         $http({
@@ -1297,12 +1251,9 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           headers : {
             'Content-Type' : 'application/json'
           }
-        })
-
-        .success(function(data) {
+        }).success(function(data) {
           $rootScope.glassPane--;
-
-          console.debug('success to addMapPrinciple');
+          console.debug('  success');
 
           // add principle to the local sets
           $scope.mapPrinciples.push(data);
@@ -1323,7 +1274,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       };
 
       $scope.deleteAgeRange = function(ageRange) {
-        console.debug('in deleteAgeRange');
         for (var j = 0; j < $scope.focusProject.mapAgeRange.length; j++) {
           if (ageRange.name === $scope.focusProject.mapAgeRange[j].name) {
             $scope.focusProject.mapAgeRange.splice(j, 1);
@@ -1340,7 +1290,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       };
 
       $scope.addAgeRange = function(ageRange) {
-        console.debug('in addAgeRange');
         $scope.focusProject.mapAgeRange.push(ageRange);
         // update and broadcast the updated focus
         // project
@@ -1353,8 +1302,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       };
 
       $scope.submitNewMapAgeRange = function(ageRange) {
-        console.debug('in submitNewMapAgeRange');
-
+        console.debug('in submitNewMapAgeRange', ageRange);
         $rootScope.glassPane++;
 
         $http({
@@ -1366,10 +1314,8 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-
           $rootScope.glassPane--;
-
-          console.debug('success to addMapAgeRange');
+          console.debug('  success');
 
           // add principle to the local sets
           $scope.mapAgeRanges.push(data);
@@ -1397,7 +1343,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       };
 
       $scope.deleteErrorMessage = function(message) {
-        console.debug('in deleteErrorMessage ');
         for (var j = 0; j < $scope.focusProject.errorMessages.length; j++) {
           if (message === $scope.focusProject.errorMessages[j]) {
             $scope.focusProject.errorMessages.splice(j, 1);
@@ -1419,8 +1364,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
 
       // remove a single concept (using the [x] button)
       $scope.removeScopeIncludedConcept = function(scopeConcept, currentPage) {
-
-        console.debug('in removeScopeIncludedConcept');
+        console.debug('in removeScopeIncludedConcept', scopeConcept, currentPage);
         $rootScope.glassPane++;
 
         $http({
@@ -1431,8 +1375,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             'Content-Type' : 'text/plain'
           }
         }).success(function(data) {
-          console.debug('success to removeScopeExcludedConcepts');
-
+          console.debug('  success');
           $rootScope.glassPane--;
 
           // re-page the scope concepts
@@ -1447,11 +1390,9 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
 
       // remove a single/batch of excluded concepts
       $scope.removeScopeIncludedConcepts = function(scopeConceptsUnsplit) {
-        console.debug('in removeScopeIncludedConcepts');
+        console.debug('in removeScopeIncludedConcepts', scopeConceptsUnsplit);
         $rootScope.glassPane++;
-
         var scopeConcepts = scopeConceptsUnsplit.split(/,\s*|\s+/);
-
         $http({
           url : root_mapping + 'project/id/' + $scope.focusProject.id + '/scopeConcepts/remove',
           dataType : 'json',
@@ -1461,10 +1402,8 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          console.debug('success to removeScopeExcludedConcepts');
-
+          console.debug('  success');
           $rootScope.glassPane--;
-
           $scope.getPagedScopeConcepts(1);
 
         }).error(function(data, status, headers, config) {
@@ -1476,7 +1415,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
 
       // submit a single/batch of concepts for addition
       $scope.submitNewScopeIncludedConcepts = function(scopeConceptsUnsplit) {
-        console.debug('in submitNewScopeIncludedConcept');
+        console.debug('in submitNewScopeIncludedConcept', scopeConceptsUnsplit);
 
         $rootScope.glassPane++;
 
@@ -1492,8 +1431,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           }
         }).success(function(data) {
           $rootScope.glassPane--;
-          console.debug('success to addScopeIncludedConcepts');
-
+          console.debug('  success');
           $scope.resetScopeConceptFilter();
 
         }).error(function(data, status, headers, config) {
@@ -1508,8 +1446,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
 
       // remove a single concept (using the [x] button)
       $scope.removeScopeExcludedConcept = function(scopeExcludedConcept, currentPage) {
-
-        console.debug('in removeScopeExcludedConcept');
+        console.debug('in removeScopeExcludedConcept', scopeExcludedConcept, currentPage);
         $rootScope.glassPane++;
 
         $http(
@@ -1523,8 +1460,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-          console.debug('success to removeScopeExcludedConcepts');
-
+          console.debug('  success');
           $rootScope.glassPane--;
 
           $scope.getPagedScopeExcludedConcepts(currentPage);
@@ -1536,11 +1472,10 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
 
       // remove a single/batch of excluded concepts
       $scope.removeScopeExcludedConcepts = function(scopeExcludedConceptsUnsplit) {
-        console.debug('in removeScopeExcludedConcepts');
+        console.debug('in removeScopeExcludedConcepts', scopeExcludedConceptsUnsplit);
         $rootScope.glassPane++;
 
         var scopeExcludedConcepts = scopeExcludedConceptsUnsplit.split(/,\s*|\s+/);
-
         $http(
           {
             url : root_mapping + 'project/id/' + $scope.focusProject.id
@@ -1552,9 +1487,8 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
               'Content-Type' : 'application/json'
             }
           }).success(function() {
-
           $rootScope.glassPane--;
-
+          console.debug('  success');
           $scope.getPagedScopeExcludedConcepts(1);
 
         }).error(function(data, status, headers, config) {
@@ -1566,12 +1500,10 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
 
       // submit a single/batch of concepts for addition
       $scope.submitNewScopeExcludedConcepts = function(scopeExcludedConceptsUnsplit) {
-        console.debug('in submitNewScopeExcludedConcept');
+        console.debug('in submitNewScopeExcludedConcept',scopeExcludedConceptsUnsplit);
 
         $rootScope.glassPane++;
-
         var scopeExcludedConcepts = scopeExcludedConceptsUnsplit.split(/,\s*|\s+/);
-
         $http(
           {
             url : root_mapping + 'project/id/' + $scope.focusProject.id
@@ -1583,6 +1515,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
+            console.debug('  success');
           $rootScope.glassPane--;
           $scope.getPagedScopeExcludedConcepts(1);
         }).error(function(data, status, headers, config) {
@@ -1617,7 +1550,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       // /////////////////////////////////////
 
       $scope.resetModel = function() {
-        console.debug('in resetModel');
         angular.copy($scope.focusProjectBeforeChanges, $scope.focusProject);
 
         $scope.resetAdviceFilter();
@@ -1633,7 +1565,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
        * projects
        */
       $scope.updateMapProject = function() {
-
+        console.debug('Update map project');
         // first, add the modified project to the cache
         localStorageService.add('focusProject', $scope.focusProject);
 
@@ -1650,8 +1582,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          console.debug('success to updateMapProject');
-
+          console.debug('  success');
           $rootScope.glassPane--;
 
           // update the cached project list
@@ -1686,15 +1617,12 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
               // n/a
             }
           }).error(function(data, status, headers, config) {
-            // file is not uploaded
-            // successfully
-            console.log('error', data);
+            // file is not uploaded successfully
             $scope.recordError = 'Error updating map project.';
             $rootScope.handleHttpError(data, status, headers, config);
             $rootScope.glassPane--;
           }).success(function(data) {
-            // file is uploaded
-            // successfully
+            // file is uploaded successfully
             confirm('The mapping principle handbook file upload is complete.');
             $rootScope.glassPane--;
             $scope.focusProject.mapPrincipleSourceDocument = data.substring(1, data.length - 1);

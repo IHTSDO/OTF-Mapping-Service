@@ -103,7 +103,7 @@ angular
           }
 
           $rootScope.glassPane++;
-          console.debug("check if code is valid", $scope.project.id, targetCode);
+          console.debug('check if code is valid', $scope.project.id, targetCode);
           $http(
             {
               url : root_mapping + 'project/id/' + $scope.project.id + '/concept/' + targetCode
@@ -113,7 +113,7 @@ angular
                 'Content-Type' : 'application/json'
               }
             }).success(function(data) {
-            console.debug("  data = ", data);
+            console.debug('  data = ', data);
             $rootScope.glassPane--;
 
             // if target found and valid
@@ -214,7 +214,7 @@ angular
           }
 
           $rootScope.glassPane++;
-          console.debug("compute map relations", copy);
+          console.debug('compute map relations', copy);
           $http({
             url : root_mapping + 'relation/compute',
             dataType : 'json',
@@ -225,7 +225,7 @@ angular
             }
           }).success(
             function(data) {
-              console.debug("  data = ", data);
+              console.debug('  data = ', data);
 
               if (data) {
 
@@ -277,7 +277,7 @@ angular
             }
           }
 
-          console.debug("compute map advice", copy);
+          console.debug('compute map advice', copy);
           $http({
             url : root_mapping + 'advice/compute',
             dataType : 'json',
@@ -288,7 +288,7 @@ angular
             }
           }).success(
             function(data) {
-              console.debug("  data = ", data);
+              console.debug('  data = ', data);
               if (data) {
                 entry.mapAdvice = data.mapAdvice;
                 // get the allowable advices and relations
