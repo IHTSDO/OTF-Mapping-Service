@@ -101,8 +101,10 @@ angular.module('mapProjectApp.widgets.indexViewer', [ 'adf.provider' ]).config(
       }
     };
 
-    $scope.performAggregatedSearch = function(searchField, subSearchField, subSubSearchField) {
-
+    $scope.performAggregatedSearch = function(psearchField, psubSearchField, psubSubSearchField) {
+      var searchField = psearchField;
+      var subSearchField = psubSearchField;
+      var subSubSearchField = psubSubSearchField;
       console.debug(searchField + ' ' + subSearchField + ' ' + subSubSearchField);
 
       if (searchField == null || searchField == '') {
