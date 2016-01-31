@@ -84,8 +84,9 @@ public class GmdnMetadataHelper {
   public Map<String, Concept> createMetadata() throws Exception {
     conceptMap = new HashMap<>();
 
-    // terminology id counter, start at 100000 - needs to be higher than GMDN ids
-    int metadataCounter = 100000;
+    // terminology id counter, start at 100000000 - needs to be higher than GMDN
+    // ids
+    long metadataCounter = 100000000;
 
     //
     // Create concepts representing defaults needed to create
@@ -224,23 +225,23 @@ public class GmdnMetadataHelper {
     conceptMap.put("ivdTerm", definitionTermConcept);
     contentService.addConcept(termConcept);
 
-    createIsaRelationship(metadataConcept, descriptionTypeConcept, new Integer(
-        metadataCounter++).toString(), terminology, terminologyVersion,
+    createIsaRelationship(metadataConcept, descriptionTypeConcept,
+        String.valueOf(metadataCounter++), terminology, terminologyVersion,
         effectiveTime);
 
-    createIsaRelationship(descriptionTypeConcept, termConcept, new Integer(
-        metadataCounter++).toString(), terminology, terminologyVersion,
+    createIsaRelationship(descriptionTypeConcept, termConcept,
+        String.valueOf(metadataCounter++), terminology, terminologyVersion,
         effectiveTime);
     createIsaRelationship(descriptionTypeConcept, collectiveTermConcept,
-        new Integer(metadataCounter++).toString(), terminology,
-        terminologyVersion, effectiveTime);
+        String.valueOf(metadataCounter++), terminology, terminologyVersion,
+        effectiveTime);
 
     createIsaRelationship(descriptionTypeConcept, definitionTermConcept,
-        new Integer(metadataCounter++).toString(), terminology,
-        terminologyVersion, effectiveTime);
+        String.valueOf(metadataCounter++), terminology, terminologyVersion,
+        effectiveTime);
 
-    createIsaRelationship(descriptionTypeConcept, ivdTermConcept, new Integer(
-        metadataCounter++).toString(), terminology, terminologyVersion,
+    createIsaRelationship(descriptionTypeConcept, ivdTermConcept,
+        String.valueOf(metadataCounter++), terminology, terminologyVersion,
         effectiveTime);
 
     //
@@ -255,8 +256,8 @@ public class GmdnMetadataHelper {
     createIsaRelationship(metadataConcept, relationshipTypeConcept, ""
         + metadataCounter++, terminology, terminologyVersion, effectiveTime);
 
-    createIsaRelationship(relationshipTypeConcept, isaConcept, new Integer(
-        metadataCounter++).toString(), terminology, terminologyVersion,
+    createIsaRelationship(relationshipTypeConcept, isaConcept,
+        String.valueOf(metadataCounter++), terminology, terminologyVersion,
         effectiveTime);
 
     //
@@ -300,12 +301,12 @@ public class GmdnMetadataHelper {
     conceptMap.put("modifier", modifierConcept);
     contentService.addConcept(modifierConcept);
 
-    createIsaRelationship(metadataConcept, modifierConcept, new Integer(
-        metadataCounter++).toString(), terminology, terminologyVersion,
+    createIsaRelationship(metadataConcept, modifierConcept,
+        String.valueOf(metadataCounter++), terminology, terminologyVersion,
         effectiveTime);
 
-    createIsaRelationship(modifierConcept, defaultModifierConcept, new Integer(
-        metadataCounter++).toString(), terminology, terminologyVersion,
+    createIsaRelationship(modifierConcept, defaultModifierConcept,
+        String.valueOf(metadataCounter++), terminology, terminologyVersion,
         effectiveTime);
 
     //
@@ -333,12 +334,12 @@ public class GmdnMetadataHelper {
     conceptMap.put("module", moduleConcept);
     contentService.addConcept(moduleConcept);
 
-    createIsaRelationship(metadataConcept, moduleConcept, new Integer(
-        metadataCounter++).toString(), terminology, terminologyVersion,
+    createIsaRelationship(metadataConcept, moduleConcept,
+        String.valueOf(metadataCounter++), terminology, terminologyVersion,
         effectiveTime);
 
-    createIsaRelationship(moduleConcept, defaultModuleConcept, new Integer(
-        metadataCounter++).toString(), terminology, terminologyVersion,
+    createIsaRelationship(moduleConcept, defaultModuleConcept,
+        String.valueOf(metadataCounter++), terminology, terminologyVersion,
         effectiveTime);
 
     //
@@ -357,8 +358,8 @@ public class GmdnMetadataHelper {
     // conceptMap.put("simpleRefsets", simpleRefsetsConcept);
     // contentService.addConcept(simpleRefsetsConcept);
 
-    createIsaRelationship(metadataConcept, refsetsConcept, new Integer(
-        metadataCounter++).toString(), terminology, terminologyVersion,
+    createIsaRelationship(metadataConcept, refsetsConcept,
+        String.valueOf(metadataCounter++), terminology, terminologyVersion,
         effectiveTime);
 
     // createIsaRelationship(refsetsConcept, simpleRefsetsConcept, new Integer(

@@ -103,7 +103,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
   /** The helper. */
   GmdnMetadataHelper helper;
 
-  /** The id ct. */
+  /** The id ct for id assignment (descriptions and relationships). */
   int idCt = 1000;
 
   /**
@@ -112,7 +112,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
    */
   @Override
   public void execute() throws MojoExecutionException {
-    getLog().info("Starting loading Claml terminology");
+    getLog().info("Starting loading GMDN terminology");
     getLog().info("  inputDir = " + inputDir);
     getLog().info("  terminology = " + terminology);
     getLog().info("  version = " + version);
@@ -166,7 +166,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
           new GmdnMetadataHelper(terminology, version,
               dateFormat2.format(effectiveTime), contentService);
       conceptMap = helper.createMetadata();
-
+      
       // Initialize par/chd maps
       chdParMap = new HashMap<>();
       parChildrenMap = new HashMap<>();
@@ -416,6 +416,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
         description.setActive(true);
 
         // connect concept and description
+        Logger.getLogger(getClass()).debug("    description = " + description);
         concept.addDescription(description);
         description.setConcept(concept);
       }
@@ -431,13 +432,13 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
         if (qName.equalsIgnoreCase("term")) {
           // Add the concept
           // CASCADE will handle descriptions
-          getLog().debug("    concept = " + concept);
+          Logger.getLogger(getClass()).debug("    concept = " + concept);
           contentService.addConcept(concept);
         }
 
         // </termID> - set the description terminology id
         else if (qName.equalsIgnoreCase("termID")) {
-          description.setTerminologyId(chars.toString().trim());
+          description.setTerminologyId("term-"+chars.toString().trim());
 
           // Use the "termID" as the key
           conceptMap.put(chars.toString().trim(), concept);
@@ -458,6 +459,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
               "defaultCaseSignificance").getTerminologyId()));
           ivd.setLanguageCode("en");
           ivd.setConcept(concept);
+          Logger.getLogger(getClass()).debug("    description = " + description);
           concept.addDescription(ivd);
           ivd.setActive(true);
           ivd.setTerm(chars.toString().trim());
@@ -479,6 +481,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
               "defaultCaseSignificance").getTerminologyId()));
           definition.setLanguageCode("en");
           definition.setConcept(concept);
+          Logger.getLogger(getClass()).debug("    description = " + description);
           concept.addDescription(definition);
           definition.setActive(true);
           definition.setTerm(chars.toString().trim());
@@ -566,6 +569,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
         description.setActive(true);
 
         // connect concept and description
+        Logger.getLogger(getClass()).debug("    description = " + description);
         concept.addDescription(description);
         description.setConcept(concept);
       }
@@ -581,13 +585,13 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
         if (qName.equalsIgnoreCase("collectiveterm")) {
           // Add the concept
           // CASCADE will handle descriptions
-          getLog().debug("   concept = " + concept);
+          Logger.getLogger(getClass()).debug("    concept = " + concept);
           contentService.addConcept(concept);
         }
 
         // </collectivetermID> - set the description terminology id
         else if (qName.equalsIgnoreCase("collectivetermID")) {
-          description.setTerminologyId(chars.toString().trim());
+          description.setTerminologyId("ct-"+chars.toString().trim());
 
           // Ue the "collectiveTermID" as the key
           conceptMap.put(chars.toString().trim(), concept);
@@ -614,6 +618,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
               "defaultCaseSignificance").getTerminologyId()));
           definition.setLanguageCode("en");
           definition.setConcept(concept);
+          Logger.getLogger(getClass()).debug("    description = " + description);
           concept.addDescription(definition);
           definition.setActive(true);
           definition.setTerm(chars.toString().trim());
@@ -692,7 +697,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
         if (qName.equalsIgnoreCase("termcollectiveterm")) {
           // Add the relationship
           // the concepts on either end must already be added
-          getLog().debug("    rel = " + relationship);
+          Logger.getLogger(getClass()).debug("    rel = " + relationship);
           contentService.addRelationship(relationship);
         }
 
@@ -820,8 +825,9 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
         try {
           helper.createIsaRelationship(
               conceptMap.get(nodeTermMap.get(parNode)),
-              conceptMap.get(nodeTermMap.get(chdNode)), String.valueOf(++idCt),
-              terminology, version, dateFormat2.format(effectiveTime));
+              conceptMap.get(nodeTermMap.get(chdNode)),
+              "gmdn-" + String.valueOf(++idCt), terminology, version,
+              dateFormat2.format(effectiveTime));
         } catch (Exception e) {
           throw new SAXException(e);
         }

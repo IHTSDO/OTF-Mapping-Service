@@ -127,15 +127,31 @@
   </noscript>
   <div class="container">
 
-    <div id="globalError" class="border-error alert-error"
-      ng-show="globalError.length > 0">
-      <h4 class="alert alert-danger alert-error">
-        {{globalError}}
-        <span style="display: inline; float: right; width: 3%;">
-          <i class="glyphicon glyphicon-remove" ng-click="resetGlobalError()"></i>
-        </span>
-      </h4>
+    <!-- Error handling -->
+    <div class="row">
+      <!-- padding -->
+      <div class="col-md-1 col-xs-0"></div>
+      <div class="col-md-10 col-xs-12" id="errorMsg"
+        class="border-error alert-error" ng-show="error.message.length > 0">
+        <h4 class="alert alert-danger alert-error">
+          {{globalError}}
+          <span style="display: inline; float: right;">
+
+            <i class="glyphicon glyphicon-icon-attach"
+              ng-show="globallongMessage"
+              title="{{globalErrorExpand ? 'Show' : 'Hide'}} long eror"
+              ng-click="globalErrorExpand = !globalErrorExpand;"></i>
+            <i class="glyphicon glyphicon-remove" ng-click="resetGlobalError()"></i>
+          </span>
+          <span class="intro-text" ng-show="error.longMessage && error.expand">
+            <br />{{globalLongMessage}}
+          </span>
+        </h4>
+      </div>
+      <!-- padding -->
+      <div class="col-md-1 col-xs-0"></div>
     </div>
+
     <div ng-view style="margin-top: 10px;"></div>
     <div ng-show="glassPane > 0" class="top-layer"></div>
   </div>
