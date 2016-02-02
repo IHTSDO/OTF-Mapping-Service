@@ -295,8 +295,10 @@ angular
 
         else
           return 'http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1='
-            + $scope.conversation.terminologyId
-            + '&diagrammingMarkupEnabled=true&acceptLicense=true';
+          + $scope.conversation.terminologyId + '&edition=en-edition'
+          + '&server=https://browser-aws-1.ihtsdotools.org/&langRefset=900000000000509007'
+          + '&acceptLicense=true';
+
       };
 
       $scope.openConceptBrowser = function() {
