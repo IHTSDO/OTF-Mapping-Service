@@ -45,14 +45,6 @@ public class IndexViewerHandler {
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.ContentService#performAggregatedSearch(
-   * java.lang.String, java.lang.String, java.lang.String, java.lang.String,
-   * java.lang.String)
-   */
   /**
    * Find index entries.
    *
@@ -71,13 +63,13 @@ public class IndexViewerHandler {
     String subSearchField, String subSubSearchField, boolean allFlag)
     throws Exception {
 
-    SearchResultList searchResultList = new SearchResultListJpa();
+    final SearchResultList searchResultList = new SearchResultListJpa();
 
     List<String> mainSearchResults = new ArrayList<>();
-    List<String> subSearchResults = new ArrayList<>();
-    List<String> subSubSearchResults = new ArrayList<>();
+    final List<String> subSearchResults = new ArrayList<>();
+    final List<String> subSubSearchResults = new ArrayList<>();
 
-    Properties config = ConfigUtility.getConfigProperties();
+    final Properties config = ConfigUtility.getConfigProperties();
 
     if (allFlag) {
       config.setProperty("index.viewer.searchStartLevel", "0");
@@ -107,7 +99,7 @@ public class IndexViewerHandler {
 
     if (subSearchField == null || subSearchField.equals("undefined")
         || subSearchField.equals("")) {
-      for (String result : mainSearchResults) {
+      for (final String result : mainSearchResults) {
         SearchResult searchResult = new SearchResultJpa();
         searchResult.setValue(result);
         searchResult.setValue2(linkToLabelMap.get(result));
@@ -130,7 +122,7 @@ public class IndexViewerHandler {
 
     if (subSubSearchField == null || subSubSearchField.equals("undefined")
         || subSubSearchField.equals("")) {
-      for (String result : subSearchResults) {
+      for (final String result : subSearchResults) {
         SearchResult searchResult = new SearchResultJpa();
         searchResult.setValue(result);
         searchResult.setValue2(linkToLabelMap.get(result));
@@ -151,7 +143,7 @@ public class IndexViewerHandler {
       }
     }
 
-    for (String result : subSubSearchResults) {
+    for (final String result : subSubSearchResults) {
       SearchResult searchResult = new SearchResultJpa();
       searchResult.setValue(result);
       searchResult.setValue2(linkToLabelMap.get(result));
@@ -184,18 +176,18 @@ public class IndexViewerHandler {
     Logger.getLogger(this.getClass()).info("  domain = " + domain);
     Logger.getLogger(this.getClass()).info("  searchStr = " + searchStr);
 
-    Properties config = ConfigUtility.getConfigProperties();
-    String prop = config.getProperty("index.viewer.data");
+    final Properties config = ConfigUtility.getConfigProperties();
+    final String prop = config.getProperty("index.viewer.data");
     if (prop == null) {
       return new ArrayList<>();
     }
-    String indexesDir =
+    final String indexesDir =
         prop + "/" + terminology + "/" + terminologyVersion + "/lucene/"
             + domain;
 
-    List<String> searchResults = new ArrayList<>();
+    final List<String> searchResults = new ArrayList<>();
     // configure
-    File selectedDomainDir = new File(indexesDir);
+    final File selectedDomainDir = new File(indexesDir);
     String query = searchStr + " " + getLevelConstraint(startLevel, endLevel);
     if (requireHasChild)
       query = query + " hasChild:true";
@@ -210,31 +202,31 @@ public class IndexViewerHandler {
 
     // Open index
     Logger.getLogger(this.getClass()).info("  Open index reader");
-    Directory dir = FSDirectory.open(selectedDomainDir);
-    IndexReader reader = IndexReader.open(dir);
+    final Directory dir = FSDirectory.open(selectedDomainDir);
+    final IndexReader reader = IndexReader.open(dir);
 
     // Prep searcher
     Logger.getLogger(this.getClass()).info("  Prep searcher");
-    IndexSearcher searcher = new IndexSearcher(reader);
-    String defaultField = "title";
-    Map<String, Analyzer> fieldAnalyzers = new HashMap<>();
+    final IndexSearcher searcher = new IndexSearcher(reader);
+    final String defaultField = "title";
+    final Map<String, Analyzer> fieldAnalyzers = new HashMap<>();
     fieldAnalyzers.put("code", new KeywordAnalyzer());
-    PerFieldAnalyzerWrapper analyzer =
+    final PerFieldAnalyzerWrapper analyzer =
         new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_36),
             fieldAnalyzers);
 
     Logger.getLogger(this.getClass()).info("  Prep searcher");
-    QueryParser parser =
+    final QueryParser parser =
         new QueryParser(Version.LUCENE_36, defaultField, analyzer);
 
     // Prep query
     parser.setAllowLeadingWildcard(true);
     parser.setDefaultOperator(Operator.AND);
     TopDocs hits = null;
-    Query q = parser.parse(query);
+    final Query q = parser.parse(query);
     hits = searcher.search(q, maxHits);
 
-    ScoreDoc[] scoreDocs = hits.scoreDocs;
+    final ScoreDoc[] scoreDocs = hits.scoreDocs;
     for (int n = 0; n < scoreDocs.length; ++n) {
       final ScoreDoc sd = scoreDocs[n];
       final Document d = searcher.doc(sd.doc);
@@ -305,17 +297,17 @@ public class IndexViewerHandler {
     // Local directory
     String dataDir =
         ConfigUtility.getConfigProperties().getProperty("index.viewer.data");
-    for (File termDir : new File(dataDir).listFiles()) {
+    for (final File termDir : new File(dataDir).listFiles()) {
       // Find terminology directory
       if (termDir.getName().equals(terminology)) {
-        for (File versionDir : termDir.listFiles()) {
+        for (final File versionDir : termDir.listFiles()) {
           // Find version directory
           if (versionDir.getName().equals(terminologyVersion)) {
-            for (File typeDir : versionDir.listFiles()) {
+            for (final File typeDir : versionDir.listFiles()) {
               // find html directory
               if (typeDir.getName().equals("html")) {
                 // find domain directories
-                for (File domainDir : typeDir.listFiles()) {
+                for (final File domainDir : typeDir.listFiles()) {
                   SearchResult searchResult = new SearchResultJpa();
                   searchResult.setValue(domainDir.getName());
                   searchResultList.addSearchResult(searchResult);
@@ -352,29 +344,29 @@ public class IndexViewerHandler {
   public SearchResultList getIndexPagesForIndex(String terminology,
     String terminologyVersion, String index) throws Exception {
 
-    SearchResultList searchResultList = new SearchResultListJpa();
+    final SearchResultList searchResultList = new SearchResultListJpa();
 
     // Local directory
-    String dataDir =
+    final String dataDir =
         ConfigUtility.getConfigProperties().getProperty("index.viewer.data");
 
-    for (File termDir : new File(dataDir).listFiles()) {
+    for (final File termDir : new File(dataDir).listFiles()) {
       // Find terminology directory
       if (termDir.getName().equals(terminology)) {
-        for (File versionDir : termDir.listFiles()) {
+        for (final File versionDir : termDir.listFiles()) {
           // find version directory
           if (versionDir.getName().equals(terminologyVersion)) {
-            for (File typeDir : versionDir.listFiles()) {
+            for (final File typeDir : versionDir.listFiles()) {
               // find html directory
               if (typeDir.getName().equals("html")) {
-                for (File domainDir : typeDir.listFiles()) {
+                for (final File domainDir : typeDir.listFiles()) {
                   // find domain directory
                   if (domainDir.getName().equals(index)) {
                     Logger.getLogger(ContentServiceJpa.class).info(
                         "  Pages for index domain found: "
                             + domainDir.getName());
                     // find pages
-                    for (File pageFile : domainDir.listFiles()) {
+                    for (final File pageFile : domainDir.listFiles()) {
                       SearchResult searchResult = new SearchResultJpa();
                       searchResult.setValue(pageFile.getName().substring(0,
                           pageFile.getName().indexOf('.')));
@@ -388,7 +380,6 @@ public class IndexViewerHandler {
         }
       }
     }
-
     return searchResultList;
   }
 

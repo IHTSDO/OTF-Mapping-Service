@@ -323,8 +323,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
         //
         // PREDICATE: SNOMED CT concept to map is a poisoning concept
-        // (descendant
-        // of “Poisoning” 75478009) and there is not a secondary (or higher) map
+        // (descendant of “Poisoning” 75478009 or "Adverse reaction to drug"
+        // 62014003) and there is not a secondary (or higher) map
         // target from the list of external cause codes applicable to poisonings
         // (as derived from columns 2,3, and 5 from TEIL3.ASC index file).
         // GUIDANCE: Remap to include the (required) external cause code.
@@ -332,7 +332,10 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         boolean isPoisoning =
             contentService.isDescendantOf(mapRecord.getConceptId(),
                 mapProject.getSourceTerminology(),
-                mapProject.getSourceTerminologyVersion(), "75478009");
+                mapProject.getSourceTerminologyVersion(),
+                Arrays.asList(new String[] {
+                    "75478009", "62014003"
+                }));
         if (concepts.get(1).get(0) != null
             && mapRecord.getMapEntries().size() == 1 && isPoisoning) {
           result
@@ -387,8 +390,16 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
             }
 
-            // adverse effect
-            // TODO: need to know whether this is hierarchical or text
+            // adverse reaction
+            else if (mapRecord.getConceptName().toLowerCase()
+                .contains("adverse")
+                && mapRecord.getConceptName().toLowerCase()
+                    .contains("reaction")) {
+              type = "adverse reaction";
+              column = "adverse reaction";
+              cmpCodes = getIcd10AdverseEffectPoisoningCodes();
+
+            }
 
             boolean found = false;
             for (int i = 1; i < mapRecord.getMapEntries().size(); i++) {
