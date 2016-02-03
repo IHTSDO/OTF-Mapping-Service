@@ -679,17 +679,6 @@ public interface MappingService extends RootService {
     ProjectSpecificAlgorithmHandler handler) throws Exception;
 
   /**
-   * Given a map record, returns the origin map records giving rise to a
-   * conflict.
-   * 
-   * @param mapRecordId the map record id of the conflict resolution record
-   * @return the records in conflict
-   * @throws Exception the exception
-   */
-  public MapRecordList getOriginMapRecordsForConflict(Long mapRecordId)
-    throws Exception;
-
-  /**
    * Gets the map user preferences.
    * 
    * @param userName the user name
