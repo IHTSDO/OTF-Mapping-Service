@@ -919,8 +919,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         }
         break;
 
-      case CONSENSUS_PATH:
-        break;
       case LEGACY_PATH:
         break;
       case NON_LEGACY_PATH:
@@ -1131,8 +1129,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
         break;
 
-      case CONSENSUS_PATH:
-        break;
+   
       case LEGACY_PATH:
         break;
       case QA_PATH:
@@ -1427,8 +1424,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
               "Unexpected error attempt to unassign a QA record.  Contact an administrator.");
         }
         break;
-      case CONSENSUS_PATH:
-        break;
+   
 
       default:
         break;
@@ -1456,12 +1452,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     mapRecord.setReasonsForConflict(new HashSet<String>());
 
     switch (trackingRecord.getWorkflowPath()) {
-      case CONSENSUS_PATH:
-        // do nothing
-        break;
-      case DRIP_FEED_REVIEW_PATH:
-        // do nothing
-        break;
+   
       case FIX_ERROR_PATH:
         Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
             "FIX_ERROR_PATH - Called Publish on resolved review");
@@ -2041,10 +2032,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         }
 
         break;
-      case CONSENSUS_PATH:
-        Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
-            "CONSENSUS_PATH");
-        break;
+  
       default:
         throw new Exception("finishEditing: Unexpected workflow path");
     }
@@ -2082,8 +2070,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     }
 
     switch (trackingRecord.getWorkflowPath()) {
-      case CONSENSUS_PATH:
-        break;
 
       // review project and fix error paths behave identically
       case REVIEW_PROJECT_PATH:
