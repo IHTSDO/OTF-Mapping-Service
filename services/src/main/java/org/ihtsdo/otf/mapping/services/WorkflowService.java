@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.FeedbackConversationList;
 import org.ihtsdo.otf.mapping.helpers.FeedbackList;
+import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapUserList;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
@@ -28,7 +29,7 @@ import org.ihtsdo.otf.mapping.workflow.WorkflowException;
  * Generically represents a service for answering questions and performing
  * actions related to workflow management.
  */
-public interface WorkflowService extends RootService {
+public interface WorkflowService extends MappingService {
 
   /**
    * Gets the workflow tracking record.
@@ -531,6 +532,17 @@ public interface WorkflowService extends RootService {
    */
   public void sendFeedbackEmail(String name, String email, String conceptId,
     String conceptName, String refSetId, String feedbackMessage)
+    throws Exception;
+
+  /**
+   * Given a map record, returns the origin map records giving rise to a
+   * conflict.
+   * 
+   * @param mapRecordId the map record id of the conflict resolution record
+   * @return the records in conflict
+   * @throws Exception the exception
+   */
+  public MapRecordList getOriginMapRecordsForConflict(Long mapRecordId)
     throws Exception;
 
 }
