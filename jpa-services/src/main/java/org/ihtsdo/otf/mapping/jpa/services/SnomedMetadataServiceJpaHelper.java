@@ -29,13 +29,6 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements
   /** The Constant isaRelationshipType. */
   private final static String isaRelationshipType = "116680003";
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getAllMetadata(java.lang
-   * .String, java.lang.String)
-   */
   @Override
   public Map<String, Map<String, String>> getAllMetadata(String terminology,
     String version) {
@@ -43,13 +36,6 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements
     return null;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getModules(java.lang.String
-   * , java.lang.String)
-   */
   @Override
   public Map<String, String> getModules(String terminology, String version)
     throws Exception {
@@ -73,13 +59,6 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements
     return map;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getAttributeValueRefSets
-   * (java.lang.String, java.lang.String)
-   */
   @Override
   public Map<String, String> getAttributeValueRefSets(String terminology,
     String version) throws NumberFormatException, Exception {
@@ -103,13 +82,6 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements
     return map;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getComplexMapRefSets(java
-   * .lang.String, java.lang.String)
-   */
   @Override
   public Map<String, String> getComplexMapRefSets(String terminology,
     String version) throws NumberFormatException, Exception {
@@ -136,13 +108,6 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getLanguageRefSets(java
-   * .lang.String, java.lang.String)
-   */
   @Override
   public Map<String, String> getLanguageRefSets(String terminology,
     String version) throws NumberFormatException, Exception {
@@ -166,13 +131,6 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements
     return map;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getSimpleMapRefSets(java
-   * .lang.String, java.lang.String)
-   */
   @Override
   public Map<String, String> getSimpleMapRefSets(String terminology,
     String version) throws NumberFormatException, Exception {
@@ -196,13 +154,6 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements
     return map;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getSimpleRefSets(java.lang
-   * .String, java.lang.String)
-   */
   @Override
   public Map<String, String> getSimpleRefSets(String terminology, String version)
     throws NumberFormatException, Exception {
@@ -226,13 +177,6 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements
     return map;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getMapRelations(java.lang
-   * .String, java.lang.String)
-   */
   @Override
   public Map<String, String> getMapRelations(String terminology, String version)
     throws NumberFormatException, Exception {
@@ -276,13 +220,6 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements
     return map;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getDefinitionStatuses(java
-   * .lang.String, java.lang.String)
-   */
   @Override
   public Map<String, String> getDefinitionStatuses(String terminology,
     String version) throws NumberFormatException, Exception {
@@ -306,13 +243,6 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements
     return map;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getDescriptionTypes(java
-   * .lang.String, java.lang.String)
-   */
   @Override
   public Map<String, String> getDescriptionTypes(String terminology,
     String version) throws NumberFormatException, Exception {
@@ -336,13 +266,6 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements
     return map;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getCaseSignificances(java
-   * .lang.String, java.lang.String)
-   */
   @Override
   public Map<String, String> getCaseSignificances(String terminology,
     String version) throws NumberFormatException, Exception {
@@ -366,13 +289,6 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements
     return map;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getRelationshipTypes(java
-   * .lang.String, java.lang.String)
-   */
   @Override
   public Map<String, String> getRelationshipTypes(String terminology,
     String version) throws NumberFormatException, Exception {
@@ -396,12 +312,6 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements
     return map;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MetadataService#
-   * getHierarchicalRelationshipTypes(java.lang.String, java.lang.String)
-   */
   @Override
   public Map<String, String> getHierarchicalRelationshipTypes(
     String terminology, String version) throws NumberFormatException, Exception {
@@ -418,12 +328,6 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements
     return map;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MetadataService#
-   * getRelationshipCharacteristicTypes(java.lang.String, java.lang.String)
-   */
   @Override
   public Map<String, String> getRelationshipCharacteristicTypes(
     String terminology, String version) throws NumberFormatException, Exception {
@@ -447,13 +351,6 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements
     return map;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getRelationshipModifiers
-   * (java.lang.String, java.lang.String)
-   */
   @Override
   public Map<String, String> getRelationshipModifiers(String terminology,
     String version) throws NumberFormatException, Exception {
@@ -477,73 +374,35 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements
     return map;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.jpa.services.RootServiceJpa#close()
-   */
   @Override
   public void close() {
     // no-op - this is just helper class
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MetadataService#getTerminologies()
-   */
   @Override
   public List<String> getTerminologies() {
     // no-op - this is just helper class
     return null;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getVersions(java.lang.String
-   * )
-   */
   @Override
   public List<String> getVersions(String terminology) {
     // no-op - this is just helper class
     return null;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getLatestVersion(java.lang
-   * .String)
-   */
   @Override
   public String getLatestVersion(String terminology) {
     // no-op - this is just helper class
     return null;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getPreviousVersion(java
-   * .lang.String)
-   */
   @Override
   public String getPreviousVersion(String terminology) {
     // no-op - this is just helper class
     return null;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getTerminologyLatestVersions
-   * ()
-   */
   @Override
   public Map<String, String> getTerminologyLatestVersions() {
     // no-op - this is just helper class
@@ -570,16 +429,6 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements
             terminologyVersion);
     return GraphHelper.getDescendantConcepts(concept, typeId);
 
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.RootService#initializeFieldNames()
-   */
-  @Override
-  public void initializeFieldNames() throws Exception {
-    // no need
   }
 
 }

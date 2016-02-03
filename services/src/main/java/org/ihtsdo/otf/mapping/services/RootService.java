@@ -20,13 +20,6 @@ public interface RootService {
   public void closeFactory() throws Exception;
 
   /**
-   * Initialize field names.
-   *
-   * @throws Exception the exception
-   */
-  public void initializeFieldNames() throws Exception;
-
-  /**
    * Gets the transaction per operation.
    *
    * @return the transaction per operation

@@ -507,8 +507,4 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     return map;
   }
 
-  @Override
-  public void initializeFieldNames() throws Exception {
-    // no need
-  }
 }
