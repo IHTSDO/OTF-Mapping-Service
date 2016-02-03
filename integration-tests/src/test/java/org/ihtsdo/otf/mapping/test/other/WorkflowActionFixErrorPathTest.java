@@ -75,9 +75,6 @@ public class WorkflowActionFixErrorPathTest {
   /** The content service. */
   private static ContentService contentService;
 
-  /** The mapping service. */
-  private static MappingService mappingService;
-
   /** The workflow service. */
   private static WorkflowService workflowService;
 
@@ -95,7 +92,6 @@ public class WorkflowActionFixErrorPathTest {
 
     // instantiate the services
     contentService = new ContentServiceJpa();
-    mappingService = new MappingServiceJpa();
     workflowService = new WorkflowServiceJpa();
 
     // instantiate the workflow handler
@@ -105,14 +101,14 @@ public class WorkflowActionFixErrorPathTest {
     for (Concept c : contentService.getConcepts().getIterable())
       contentService.removeConcept(c.getId());
 
-    for (MapProject mp : mappingService.getMapProjects().getIterable())
-      mappingService.removeMapProject(mp.getId());
+    for (MapProject mp : workflowService.getMapProjects().getIterable())
+      workflowService.removeMapProject(mp.getId());
 
-    for (MapUser mu : mappingService.getMapUsers().getIterable()) {
+    for (MapUser mu : workflowService.getMapUsers().getIterable()) {
       if (!mu.getUserName().equals("guest")
           && !mu.getUserName().equals("loader")
           && !mu.getUserName().equals("qa")) {
-        mappingService.removeMapUser(mu.getId());
+        workflowService.removeMapUser(mu.getId());
       }
     }
 
@@ -136,23 +132,23 @@ public class WorkflowActionFixErrorPathTest {
     viewer.setEmail("none");
     viewer.setName("Viewer");
     viewer.setUserName("view");
-    mappingService.addMapUser(viewer);
+    workflowService.addMapUser(viewer);
 
     specialist = new MapUserJpa();
     specialist.setApplicationRole(MapUserRole.VIEWER);
     specialist.setEmail("none");
     specialist.setName("Specialist");
     specialist.setUserName("spec");
-    mappingService.addMapUser(specialist);
+    workflowService.addMapUser(specialist);
 
     lead = new MapUserJpa();
     lead.setApplicationRole(MapUserRole.VIEWER);
     lead.setEmail("none");
     lead.setName("Lead");
     lead.setUserName("lead");
-    mappingService.addMapUser(lead);
+    workflowService.addMapUser(lead);
 
-    loader = mappingService.getMapUser("loader");
+    loader = workflowService.getMapUser("loader");
 
     // instantiate the project
     mapProject = new MapProjectJpa();
@@ -175,7 +171,7 @@ public class WorkflowActionFixErrorPathTest {
     mapProject.addMapSpecialist(specialist);
     mapProject.addMapLead(lead);
     mapProject.addScopeConcept("1");
-    mappingService.addMapProject(mapProject);
+    workflowService.addMapProject(mapProject);
 
     // compute the workflow
     workflowService.computeWorkflow(mapProject);
@@ -199,10 +195,10 @@ public class WorkflowActionFixErrorPathTest {
 
       // create revision and specialist record
       revisionRecord = createRecord(loader, WorkflowStatus.REVISION);
-      mappingService.addMapRecord(revisionRecord);
+      workflowService.addMapRecord(revisionRecord);
 
       specRecord = createRecord(specialist, status);
-      mappingService.addMapRecord(specRecord);
+      workflowService.addMapRecord(specRecord);
 
       // compute workflow
       getTrackingRecord();
@@ -331,10 +327,10 @@ public class WorkflowActionFixErrorPathTest {
 
     // create revision and specialist record
     revisionRecord = createRecord(loader, WorkflowStatus.REVISION);
-    mappingService.addMapRecord(revisionRecord);
+    workflowService.addMapRecord(revisionRecord);
 
     specRecord = createRecord(specialist, WorkflowStatus.REVIEW_NEEDED);
-    mappingService.addMapRecord(specRecord);
+    workflowService.addMapRecord(specRecord);
 
     // compute workflow
     getTrackingRecord();
@@ -466,13 +462,13 @@ public class WorkflowActionFixErrorPathTest {
 
       // create revision, specialist, and lead record
       revisionRecord = createRecord(loader, WorkflowStatus.REVISION);
-      mappingService.addMapRecord(revisionRecord);
+      workflowService.addMapRecord(revisionRecord);
 
       specRecord = createRecord(specialist, WorkflowStatus.REVIEW_NEEDED);
-      mappingService.addMapRecord(specRecord);
+      workflowService.addMapRecord(specRecord);
 
       leadRecord = createRecord(lead, status);
-      mappingService.addMapRecord(leadRecord);
+      workflowService.addMapRecord(leadRecord);
 
       // compute workflow
       getTrackingRecord();
@@ -602,13 +598,13 @@ public class WorkflowActionFixErrorPathTest {
 
     // create revision, specialist, and lead record
     revisionRecord = createRecord(loader, WorkflowStatus.REVISION);
-    mappingService.addMapRecord(revisionRecord);
+    workflowService.addMapRecord(revisionRecord);
 
     specRecord = createRecord(specialist, WorkflowStatus.REVIEW_NEEDED);
-    mappingService.addMapRecord(specRecord);
+    workflowService.addMapRecord(specRecord);
 
     leadRecord = createRecord(lead, WorkflowStatus.REVIEW_RESOLVED);
-    mappingService.addMapRecord(leadRecord);
+    workflowService.addMapRecord(leadRecord);
 
     // compute workflow
     getTrackingRecord();
@@ -733,19 +729,18 @@ public class WorkflowActionFixErrorPathTest {
   public static void cleanup() throws Exception {
 
     workflowService.clearWorkflowForMapProject(mapProject);
-    workflowService.close();
 
     if (revisionRecord != null)
-      mappingService.removeMapRecord(revisionRecord.getId());
+      workflowService.removeMapRecord(revisionRecord.getId());
     if (specRecord != null)
-      mappingService.removeMapRecord(specRecord.getId());
+      workflowService.removeMapRecord(specRecord.getId());
     if (leadRecord != null)
-      mappingService.removeMapRecord(leadRecord.getId());
+      workflowService.removeMapRecord(leadRecord.getId());
 
-    mappingService.removeMapProject(mapProject.getId());
-    mappingService.removeMapUser(specialist.getId());
-    mappingService.removeMapUser(lead.getId());
-    mappingService.close();
+    workflowService.removeMapProject(mapProject.getId());
+    workflowService.removeMapUser(specialist.getId());
+    workflowService.removeMapUser(lead.getId());
+    workflowService.close();
 
     contentService.removeConcept(concept.getId());
     contentService.close();
@@ -771,8 +766,8 @@ public class WorkflowActionFixErrorPathTest {
    */
   @SuppressWarnings("static-method")
   private void clearMapRecords() throws Exception {
-    for (MapRecord mr : mappingService.getMapRecords().getIterable()) {
-      mappingService.removeMapRecord(mr.getId());
+    for (MapRecord mr : workflowService.getMapRecords().getIterable()) {
+      workflowService.removeMapRecord(mr.getId());
     }
     revisionRecord = null;
     specRecord = null;

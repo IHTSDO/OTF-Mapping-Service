@@ -6,10 +6,8 @@ import java.util.Properties;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
-import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
@@ -50,15 +48,13 @@ public class QAWorkflow extends AbstractMojo {
 
     try {
 
-      MappingService mappingService = new MappingServiceJpa();
-      WorkflowService workflowService = new WorkflowServiceJpa();
-
+      final WorkflowService workflowService = new WorkflowServiceJpa();
       List<MapProject> mapProjects = new ArrayList<>();
 
       if (refsetId == null) {
-        mapProjects = mappingService.getMapProjects().getMapProjects();
+        mapProjects = workflowService.getMapProjects().getMapProjects();
       } else {
-        for (MapProject mapProject : mappingService.getMapProjects()
+        for (MapProject mapProject : workflowService.getMapProjects()
             .getIterable()) {
           for (String id : refsetId.split(",")) {
             if (mapProject.getRefSetId().equals(id)) {
@@ -122,7 +118,6 @@ public class QAWorkflow extends AbstractMojo {
 
       }
 
-      mappingService.close();
       workflowService.close();
 
       getLog().info("Done ...");

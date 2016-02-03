@@ -38,7 +38,6 @@ import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
-import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ReportServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
@@ -49,7 +48,6 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.reports.Report;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
-import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.ReportService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
@@ -105,21 +103,19 @@ public class WorkflowServiceRest extends RootServiceRest {
     String project = "";
 
     final WorkflowService workflowService = new WorkflowServiceJpa();
-    final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
       user =
           authorizeProject(mapProjectId, authToken, MapUserRole.ADMINISTRATOR,
               "compute workflow", securityService);
 
-      final MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
       workflowService.computeWorkflow(mapProject);
       return;
     } catch (Exception e) {
       handleException(e, "trying to compute workflow", user, project, "");
     } finally {
-      mappingService.close();
       workflowService.close();
       securityService.close();
     }
@@ -160,7 +156,6 @@ public class WorkflowServiceRest extends RootServiceRest {
     String project = "";
     String user = null;
 
-    final MappingService mappingService = new MappingServiceJpa();
     final WorkflowService workflowService = new WorkflowServiceJpa();
     final ContentService contentService = new ContentServiceJpa();
     try {
@@ -170,9 +165,9 @@ public class WorkflowServiceRest extends RootServiceRest {
               "find available concepts", securityService);
 
       // get the project and user
-      final MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
-      final MapUser mapUser = mappingService.getMapUser(userName);
+      final MapUser mapUser = workflowService.getMapUser(userName);
       user = mapUser.getUserName();
 
       // get the workflow tracking records
@@ -213,7 +208,6 @@ public class WorkflowServiceRest extends RootServiceRest {
       handleException(e, "trying to find available work", user, project, "");
       return null;
     } finally {
-      mappingService.close();
       contentService.close();
       workflowService.close();
       securityService.close();
@@ -255,7 +249,6 @@ public class WorkflowServiceRest extends RootServiceRest {
     String project = "";
     String user = null;
 
-    final MappingService mappingService = new MappingServiceJpa();
     final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
@@ -264,9 +257,9 @@ public class WorkflowServiceRest extends RootServiceRest {
               "find assigned concepts", securityService);
 
       // get the project and user
-      final MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
-      final MapUser mapUser = mappingService.getMapUser(userName);
+      final MapUser mapUser = workflowService.getMapUser(userName);
       user = mapUser.getUserName();
 
       // get the workflow tracking records
@@ -276,7 +269,6 @@ public class WorkflowServiceRest extends RootServiceRest {
       handleException(e, "trying to find assigned concepts", user, project, "");
       return null;
     } finally {
-      mappingService.close();
       workflowService.close();
       securityService.close();
     }
@@ -314,7 +306,6 @@ public class WorkflowServiceRest extends RootServiceRest {
     String project = "";
     String user = null;
 
-    final MappingService mappingService = new MappingServiceJpa();
     final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
@@ -323,9 +314,9 @@ public class WorkflowServiceRest extends RootServiceRest {
               "find available conflicts", securityService);
 
       // get the project and user
-      final MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
-      final MapUser mapUser = mappingService.getMapUser(userName);
+      final MapUser mapUser = workflowService.getMapUser(userName);
       user = mapUser.getUserName();
 
       // get the workflow tracking records
@@ -336,7 +327,6 @@ public class WorkflowServiceRest extends RootServiceRest {
           "");
       return null;
     } finally {
-      mappingService.close();
       workflowService.close();
       securityService.close();
     }
@@ -373,7 +363,6 @@ public class WorkflowServiceRest extends RootServiceRest {
     String project = "";
     String user = null;
 
-    final MappingService mappingService = new MappingServiceJpa();
     final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
@@ -382,9 +371,9 @@ public class WorkflowServiceRest extends RootServiceRest {
               "find assigned conflicts", securityService);
 
       // get the project and user
-      final MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
-      final MapUser mapUser = mappingService.getMapUser(userName);
+      final MapUser mapUser = workflowService.getMapUser(userName);
       user = mapUser.getUserName();
 
       // get the map records
@@ -395,7 +384,6 @@ public class WorkflowServiceRest extends RootServiceRest {
       handleException(e, "trying to find assigned conflicts", user, project, "");
       return null;
     } finally {
-      mappingService.close();
       workflowService.close();
       securityService.close();
     }
@@ -433,7 +421,6 @@ public class WorkflowServiceRest extends RootServiceRest {
     String project = "";
     String user = null;
 
-    final MappingService mappingService = new MappingServiceJpa();
     final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
@@ -442,9 +429,9 @@ public class WorkflowServiceRest extends RootServiceRest {
               "find available review work ", securityService);
 
       // get the project and user
-      final MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
-      final MapUser mapUser = mappingService.getMapUser(userName);
+      final MapUser mapUser = workflowService.getMapUser(userName);
       user = mapUser.getUserName();
 
       // get the workflow tracking records
@@ -455,7 +442,6 @@ public class WorkflowServiceRest extends RootServiceRest {
           "");
       return null;
     } finally {
-      mappingService.close();
       workflowService.close();
       securityService.close();
     }
@@ -492,7 +478,6 @@ public class WorkflowServiceRest extends RootServiceRest {
     // all qa work will have user "qa"
     String user = "qa";
 
-    final MappingService mappingService = new MappingServiceJpa();
     final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
@@ -501,9 +486,9 @@ public class WorkflowServiceRest extends RootServiceRest {
               "find available qa work ", securityService);
 
       // get the project and user
-      final MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
-      final MapUser mapUser = mappingService.getMapUser(user);
+      final MapUser mapUser = workflowService.getMapUser(user);
       user = mapUser.getUserName();
 
       // get the workflow tracking records
@@ -513,7 +498,6 @@ public class WorkflowServiceRest extends RootServiceRest {
       handleException(e, "trying to find available qa work", user, project, "");
       return null;
     } finally {
-      mappingService.close();
       workflowService.close();
       securityService.close();
     }
@@ -551,7 +535,6 @@ public class WorkflowServiceRest extends RootServiceRest {
     String project = "";
     String user = null;
 
-    final MappingService mappingService = new MappingServiceJpa();
     final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
@@ -560,9 +543,9 @@ public class WorkflowServiceRest extends RootServiceRest {
               "find assigned review work ", securityService);
 
       // get the project and user
-      final MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
-      final MapUser mapUser = mappingService.getMapUser(userName);
+      final MapUser mapUser = workflowService.getMapUser(userName);
       user = mapUser.getUserName();
 
       // get the map records
@@ -573,7 +556,6 @@ public class WorkflowServiceRest extends RootServiceRest {
           "");
       return null;
     } finally {
-      mappingService.close();
       workflowService.close();
       securityService.close();
     }
@@ -611,7 +593,6 @@ public class WorkflowServiceRest extends RootServiceRest {
     String project = "";
     String user = null;
 
-    final MappingService mappingService = new MappingServiceJpa();
     final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
@@ -620,9 +601,9 @@ public class WorkflowServiceRest extends RootServiceRest {
               "find assigned qa work ", securityService);
 
       // get the project and user
-      final MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
-      final MapUser mapUser = mappingService.getMapUser(userName);
+      final MapUser mapUser = workflowService.getMapUser(userName);
       user = mapUser.getUserName();
 
       // get the map records
@@ -633,7 +614,6 @@ public class WorkflowServiceRest extends RootServiceRest {
       handleException(e, "trying to find assigned qa work", user, project, "");
       return null;
     } finally {
-      mappingService.close();
       workflowService.close();
       securityService.close();
     }
@@ -665,7 +645,6 @@ public class WorkflowServiceRest extends RootServiceRest {
     String project = "";
 
     final WorkflowService workflowService = new WorkflowServiceJpa();
-    final MappingService mappingService = new MappingServiceJpa();
     final ContentService contentService = new ContentServiceJpa();
     try {
       // authorize call
@@ -673,9 +652,9 @@ public class WorkflowServiceRest extends RootServiceRest {
           MapUserRole.SPECIALIST, "assign concept from record", securityService);
 
       final MapProject mapProject =
-          mappingService.getMapProject(mapRecord.getMapProjectId());
+          workflowService.getMapProject(mapRecord.getMapProjectId());
       project = mapProject.getName();
-      final MapUser mapUser = mappingService.getMapUser(userName);
+      final MapUser mapUser = workflowService.getMapUser(userName);
       final Concept concept =
           contentService.getConcept(mapRecord.getConceptId(),
               mapProject.getSourceTerminology(),
@@ -688,7 +667,6 @@ public class WorkflowServiceRest extends RootServiceRest {
       handleException(e, "trying to assign concept from a map record",
           userName, project, mapRecord.getId().toString());
     } finally {
-      mappingService.close();
       workflowService.close();
       contentService.close();
       securityService.close();
@@ -722,16 +700,15 @@ public class WorkflowServiceRest extends RootServiceRest {
     String project = "";
 
     final WorkflowService workflowService = new WorkflowServiceJpa();
-    final MappingService mappingService = new MappingServiceJpa();
     final ContentService contentService = new ContentServiceJpa();
     try {
       // authorize call
       authorizeProject(mapProjectId, authToken, MapUserRole.SPECIALIST,
           "assign concept", securityService);
 
-      final MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
-      MapUser mapUser = mappingService.getMapUser(userName);
+      MapUser mapUser = workflowService.getMapUser(userName);
       Concept concept =
           contentService.getConcept(terminologyId,
               mapProject.getSourceTerminology(),
@@ -744,7 +721,6 @@ public class WorkflowServiceRest extends RootServiceRest {
       handleException(e, "trying to assign work", userName, project,
           terminologyId);
     } finally {
-      mappingService.close();
       workflowService.close();
       contentService.close();
       securityService.close();
@@ -780,16 +756,15 @@ public class WorkflowServiceRest extends RootServiceRest {
     String project = "";
 
     final WorkflowService workflowService = new WorkflowServiceJpa();
-    final MappingService mappingService = new MappingServiceJpa();
     final ContentService contentService = new ContentServiceJpa();
     try {
       // authorize call
       authorizeProject(mapProjectId, authToken, MapUserRole.SPECIALIST,
           "assign Batch", securityService);
 
-      final MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
-      final MapUser mapUser = mappingService.getMapUser(userName);
+      final MapUser mapUser = workflowService.getMapUser(userName);
 
       for (final String terminologyId : terminologyIds) {
         Logger.getLogger(WorkflowServiceRest.class).info(
@@ -818,7 +793,6 @@ public class WorkflowServiceRest extends RootServiceRest {
       handleException(e, "trying to assign a batch", userName, project,
           terminologyIds.toString());
     } finally {
-      mappingService.close();
       workflowService.close();
       contentService.close();
       securityService.close();
@@ -855,7 +829,6 @@ public class WorkflowServiceRest extends RootServiceRest {
 
     String project = "";
     final WorkflowService workflowService = new WorkflowServiceJpa();
-    final MappingService mappingService = new MappingServiceJpa();
     final ContentService contentService = new ContentServiceJpa();
 
     try {
@@ -863,9 +836,9 @@ public class WorkflowServiceRest extends RootServiceRest {
       authorizeProject(mapProjectId, authToken, MapUserRole.SPECIALIST,
           "unassign concept", securityService);
 
-      final MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
-      final MapUser mapUser = mappingService.getMapUser(userName);
+      final MapUser mapUser = workflowService.getMapUser(userName);
       final Concept concept =
           contentService.getConcept(terminologyId,
               mapProject.getSourceTerminology(),
@@ -880,7 +853,6 @@ public class WorkflowServiceRest extends RootServiceRest {
           terminologyId);
       return null;
     } finally {
-      mappingService.close();
       workflowService.close();
       contentService.close();
       securityService.close();
@@ -916,7 +888,6 @@ public class WorkflowServiceRest extends RootServiceRest {
     String project = "";
 
     final WorkflowService workflowService = new WorkflowServiceJpa();
-    final MappingService mappingService = new MappingServiceJpa();
     final ContentService contentService = new ContentServiceJpa();
     try {
 
@@ -925,9 +896,9 @@ public class WorkflowServiceRest extends RootServiceRest {
           "unassign Batch", securityService);
 
       // get the project and user
-      final MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
-      final MapUser mapUser = mappingService.getMapUser(userName);
+      final MapUser mapUser = workflowService.getMapUser(userName);
 
       for (final String terminologyId : terminologyIds) {
 
@@ -943,7 +914,6 @@ public class WorkflowServiceRest extends RootServiceRest {
       handleException(e, "trying to unassign work batch", userName, project,
           terminologyIds.toString());
     } finally {
-      mappingService.close();
       workflowService.close();
       contentService.close();
       securityService.close();
@@ -974,7 +944,6 @@ public class WorkflowServiceRest extends RootServiceRest {
 
     String user = null;
     String project = "";
-    final MappingService mappingService = new MappingServiceJpa();
     final ContentService contentService = new ContentServiceJpa();
     final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
@@ -984,7 +953,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
       // get the map project and map user
       final MapProject mapProject =
-          mappingService.getMapProject(mapRecord.getMapProjectId());
+          workflowService.getMapProject(mapRecord.getMapProjectId());
       project = mapProject.getName();
       final MapUser mapUser = mapRecord.getOwner();
       user = mapUser.getUserName();
@@ -1003,7 +972,6 @@ public class WorkflowServiceRest extends RootServiceRest {
       handleException(e, "trying to finish work", user, project, mapRecord
           .getId().toString());
     } finally {
-      mappingService.close();
       workflowService.close();
       contentService.close();
       securityService.close();
@@ -1036,7 +1004,6 @@ public class WorkflowServiceRest extends RootServiceRest {
 
     String user = null;
     String project = "";
-    final MappingService mappingService = new MappingServiceJpa();
     final ContentService contentService = new ContentServiceJpa();
     final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
@@ -1046,7 +1013,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
       // get the map project and map user
       final MapProject mapProject =
-          mappingService.getMapProject(mapRecord.getMapProjectId());
+          workflowService.getMapProject(mapRecord.getMapProjectId());
       project = mapProject.getName();
       final MapUser mapUser = mapRecord.getOwner();
       user = mapUser.getUserName();
@@ -1065,7 +1032,6 @@ public class WorkflowServiceRest extends RootServiceRest {
       handleException(e, "trying to publish work", user, project, mapRecord
           .getId().toString());
     } finally {
-      mappingService.close();
       workflowService.close();
       contentService.close();
       securityService.close();
@@ -1097,7 +1063,6 @@ public class WorkflowServiceRest extends RootServiceRest {
 
     String user = null;
     String project = "";
-    final MappingService mappingService = new MappingServiceJpa();
     final ContentService contentService = new ContentServiceJpa();
     final WorkflowService workflowService = new WorkflowServiceJpa();
 
@@ -1115,7 +1080,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
       // get the map project and map user
       final MapProject mapProject =
-          mappingService.getMapProject(mapRecord.getMapProjectId());
+          workflowService.getMapProject(mapRecord.getMapProjectId());
       project = mapProject.getName();
       final MapUser mapUser = mapRecord.getOwner();
       user = mapUser.getUserName();
@@ -1134,7 +1099,6 @@ public class WorkflowServiceRest extends RootServiceRest {
       handleException(e, "trying to save work", user, project, mapRecord
           .getId().toString());
     } finally {
-      mappingService.close();
       workflowService.close();
       contentService.close();
       securityService.close();
@@ -1168,7 +1132,6 @@ public class WorkflowServiceRest extends RootServiceRest {
     String project = "";
     // open the services
     final ContentService contentService = new ContentServiceJpa();
-    final MappingService mappingService = new MappingServiceJpa();
     final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
@@ -1177,7 +1140,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
       // get the map project and concept
       final MapProject mapProject =
-          mappingService.getMapProject(mapRecord.getMapProjectId());
+          workflowService.getMapProject(mapRecord.getMapProjectId());
       project = mapProject.getName();
       final Concept concept =
           contentService.getConcept(mapRecord.getConceptId(),
@@ -1191,7 +1154,6 @@ public class WorkflowServiceRest extends RootServiceRest {
       handleException(e, "trying to cancel editing a map record", userName,
           project, mapRecord.getId().toString());
     } finally {
-      mappingService.close();
       workflowService.close();
       contentService.close();
       securityService.close();
@@ -1225,7 +1187,6 @@ public class WorkflowServiceRest extends RootServiceRest {
     String project = "";
     // open the services
     final ContentService contentService = new ContentServiceJpa();
-    final MappingService mappingService = new MappingServiceJpa();
     final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
@@ -1234,7 +1195,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
       // get the map project and concept
       final MapProject mapProject =
-          mappingService.getMapProject(mapRecord.getMapProjectId());
+          workflowService.getMapProject(mapRecord.getMapProjectId());
       project = mapProject.getName();
       final Concept concept =
           contentService.getConcept(mapRecord.getConceptId(),
@@ -1243,7 +1204,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
       // find the qa user
       MapUser mapUser = null;
-      for (final MapUser user : mappingService.getMapUsers().getMapUsers()) {
+      for (final MapUser user : workflowService.getMapUsers().getMapUsers()) {
         if (user.getUserName().equals("qa"))
           mapUser = user;
       }
@@ -1256,7 +1217,6 @@ public class WorkflowServiceRest extends RootServiceRest {
       handleException(e, "trying to create a qa map record", userName, project,
           mapRecord.getId().toString());
     } finally {
-      mappingService.close();
       workflowService.close();
       contentService.close();
       securityService.close();
@@ -1343,7 +1303,6 @@ public class WorkflowServiceRest extends RootServiceRest {
 
     String user = null;
     String project = "";
-    final MappingService mappingService = new MappingServiceJpa();
     final ContentService contentService = new ContentServiceJpa();
     final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
@@ -1351,9 +1310,9 @@ public class WorkflowServiceRest extends RootServiceRest {
       authorizeProject(mapProjectId, authToken, MapUserRole.SPECIALIST,
           "get assigned record for concept and userk", securityService);
 
-      final MapUser mapUser = mappingService.getMapUser(userName);
+      final MapUser mapUser = workflowService.getMapUser(userName);
       user = mapUser.getUserName();
-      final MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
 
       final Concept concept =
@@ -1377,7 +1336,6 @@ public class WorkflowServiceRest extends RootServiceRest {
           terminologyId);
       return null;
     } finally {
-      mappingService.close();
       workflowService.close();
       contentService.close();
       securityService.close();
@@ -1407,14 +1365,13 @@ public class WorkflowServiceRest extends RootServiceRest {
     Logger.getLogger(WorkflowServiceRest.class).info(
         "RESTful call (Workflow): /record/id/" + recordId + "/sFalseConflict");
 
-    final MappingService mappingService = new MappingServiceJpa();
     final WorkflowService workflowService = new WorkflowServiceJpa();
 
-    final MapRecord mapRecord = mappingService.getMapRecord(recordId);
-    final MapProject mapProject =
-        mappingService.getMapProject(mapRecord.getMapProjectId());
-
     try {
+      final MapRecord mapRecord = workflowService.getMapRecord(recordId);
+      final MapProject mapProject =
+          workflowService.getMapProject(mapRecord.getMapProjectId());
+
       // authorize call
       authorizeProject(mapProject.getId(), authToken, MapUserRole.SPECIALIST,
           "is map record false conflict", securityService);
@@ -1438,7 +1395,6 @@ public class WorkflowServiceRest extends RootServiceRest {
     } catch (Exception e) {
       handleException(e, "trying to get flag for false conflict");
     } finally {
-      mappingService.close();
       workflowService.close();
       securityService.close();
     }
@@ -1521,14 +1477,13 @@ public class WorkflowServiceRest extends RootServiceRest {
         "RESTful call (Workflow): /record/id/" + recordId
             + "/setFalseConflict/" + isFalseConflict);
 
-    MappingService mappingService = new MappingServiceJpa();
-    WorkflowService workflowService = new WorkflowServiceJpa();
-
-    MapRecord mapRecord = mappingService.getMapRecord(recordId);
-    MapProject mapProject =
-        mappingService.getMapProject(mapRecord.getMapProjectId());
+    final WorkflowService workflowService = new WorkflowServiceJpa();
 
     try {
+      final MapRecord mapRecord = workflowService.getMapRecord(recordId);
+      final MapProject mapProject =
+          workflowService.getMapProject(mapRecord.getMapProjectId());
+
       // authorize call
       authorizeProject(mapProject.getId(), authToken, MapUserRole.LEAD,
           "set map record false conflict", securityService);
@@ -1565,7 +1520,7 @@ public class WorkflowServiceRest extends RootServiceRest {
         recordIds.add(recordId);
 
         // add the specialist records for this conflict
-        for (final MapRecord mr : mappingService
+        for (final MapRecord mr : workflowService
             .getOriginMapRecordsForConflict(recordId).getIterable()) {
           recordIds.add(mr.getId());
         }
@@ -1590,7 +1545,6 @@ public class WorkflowServiceRest extends RootServiceRest {
       handleException(e, "trying to set flag for false conflict");
     } finally {
       workflowService.close();
-      mappingService.close();
       securityService.close();
     }
   }
@@ -1712,8 +1666,8 @@ public class WorkflowServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /conversation/project/id/"
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Workflow): /conversation/project/id/"
             + mapProjectId.toString() + " userName: " + userName + " query: "
             + query);
 
@@ -1762,8 +1716,8 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /record/concept/id/" + conceptId);
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Workflow): /record/concept/id/" + conceptId);
 
     String user = null;
     final WorkflowService workflowService = new WorkflowServiceJpa();
@@ -1814,13 +1768,12 @@ public class WorkflowServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /assign/project/id/" + mapProjectId
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Workflow): /assign/project/id/" + mapProjectId
             + "/fixErrorPath with ids: " + terminologyIds.toString());
 
     String user = null;
     // open workflow and content services
-    final MappingService mappingService = new MappingServiceJpa();
     final WorkflowService workflowService = new WorkflowServiceJpa();
     final ContentService contentService = new ContentServiceJpa();
     // execute the service call
@@ -1829,8 +1782,8 @@ public class WorkflowServiceRest extends RootServiceRest {
       authorizeProject(mapProjectId, authToken, MapUserRole.SPECIALIST,
           "assign Batch To Fix Error Path", securityService);
 
-      final MapProject mapProject = mappingService.getMapProject(mapProjectId);
-      final MapUser mapUser = mappingService.getMapUser(userName);
+      final MapProject mapProject = workflowService.getMapProject(mapProjectId);
+      final MapUser mapUser = workflowService.getMapUser(userName);
 
       if (mapUser == null)
         throw new LocalException("The user could not be found");
@@ -1843,7 +1796,7 @@ public class WorkflowServiceRest extends RootServiceRest {
       for (final String terminologyId : terminologyIds) {
 
         final MapRecordList mrList =
-            mappingService.getMapRecordsForProjectAndConcept(mapProjectId,
+            workflowService.getMapRecordsForProjectAndConcept(mapProjectId,
                 terminologyId);
 
         // first check: records getd
@@ -1873,8 +1826,6 @@ public class WorkflowServiceRest extends RootServiceRest {
 
         mapRecords.add(mapRecord);
       }
-
-      // close the mapping service
 
       // cycle over all eligible map records
       for (final MapRecord mapRecord : mapRecords) {
@@ -1918,7 +1869,6 @@ public class WorkflowServiceRest extends RootServiceRest {
       return null;
     } finally {
       workflowService.close();
-      mappingService.close();
       contentService.close();
       securityService.close();
     }
