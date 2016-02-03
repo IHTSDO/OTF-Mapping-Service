@@ -33,6 +33,7 @@ angular
 
       // initialize search variables
       $scope.query = ''; // the query input
+      $scope.treeQuery = '';
       $scope.searchBackAllowed = false; // whether the back button is displayed
       $scope.searchForwardAllowed = false; // whether the forward button is
       // displayed
@@ -49,6 +50,7 @@ angular
 
       $scope.$on('mapEntryWidget.notification.clearTargetConcept', function(event, parameters) {
         $scope.query = '';
+        $scope.treeQuery = '';
       });
 
       // REQUIRED WATCH VARIABLES: focusProject, userToken. None others needed.
@@ -83,6 +85,34 @@ angular
         }
       }
 
+      // Handler for the "Search" button
+      // Perform a search - list or tree depending on the state
+      $scope.search = function() {
+        // Query is implied
+        if (!$scope.query) {
+          return;
+        }
+
+        // bail on only whitespace search
+        if (new RegExp('^\s+$').test($scope.query)) {
+          return;
+        }
+        // Perform tree search
+        $scope.query = $scope.treeQuery;
+        getRootTreeWithQuery(true);
+
+      };
+
+      // Handler for the "Reset" button
+      // Perform a search - list or tree depending on the state
+      $scope.clearSearch = function() {
+        $scope.query = '';
+
+        // Get root tree
+        $scope.treeQuery = '';
+        getRootTree();
+      };
+
       // function to get the root nodes
       $scope.getRootTree = function() {
         console.debug('get root tree');
@@ -111,21 +141,21 @@ angular
       $scope.getRootTreeWithQuery = function(isNewSearch) {
 
         // Bail on an empty search
-        if ($scope.query == '') {
+        if ($scope.treeQuery == '') {
           return;
         }
         // bail on only whitespace search
-        if (new RegExp('^\s+$').test($scope.query)) {
+        if (new RegExp('^\s+$').test($scope.treeQuery)) {
           return;
         }
         $scope.searchStatus = 'Searching...';
         $scope.terminologyTree = [];
-        console.debug('get root tree with query', $scope.query);
+        console.debug('get root tree with query', $scope.treeQuery);
         $rootScope.glassPane++;
         $http(
           {
             url : root_mapping + 'treePosition/project/id/' + $scope.focusProject.id + '/query/'
-              + encodeURIComponent($scope.query),
+              + encodeURIComponent($scope.treeQuery),
             method : 'GET',
             headers : {
               'Content-Type' : 'application/json'
@@ -161,7 +191,7 @@ angular
                 }
 
                 // add the query to the stack
-                $scope.searchStack[$scope.searchStackPosition] = $scope.query;
+                $scope.searchStack[$scope.searchStackPosition] = $scope.treeQuery;
 
                 // remove any elements past the search stack position
                 for (var i = $scope.searchStackPosition + 1; i < $scope.searchStack.length; i++) {
@@ -192,19 +222,20 @@ angular
         $scope.searchStackPosition += positionChange;
         if ($scope.searchStackPosition < 0)
           $scope.searchStackPosition = 0;
-        $scope.query = $scope.searchStack[$scope.searchStackPosition];
+        $scope.treeQuery = $scope.searchStack[$scope.searchStackPosition];
 
         // if query is not populated or undefined, get the root trees, otherwise
         // get query results
-        if ($scope.query == undefined || $scope.query === '')
+        if (!$scope.treeQuery) {
           $scope.getRootTree();
-        else
+        } else {
           $scope.getRootTreeWithQuery(false);
+        }
 
       };
 
       $scope.gotoReferencedConcept = function(referencedConcept) {
-        $scope.query = referencedConcept.terminologyId;
+        $scope.treeQuery = referencedConcept.terminologyId;
         $scope.getRootTreeWithQuery(true);
       };
 
@@ -249,7 +280,7 @@ angular
           }
 
           // if the node exactly matches a query
-          if (treePositions[i].terminologyId.toUpperCase() === $scope.query.toUpperCase()) {
+          if (treePositions[i].terminologyId.toUpperCase() === $scope.treeQuery.toUpperCase()) {
             // load the concept detalis
             $scope.getConceptDetails(treePositions[i]);
 
