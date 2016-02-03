@@ -17,6 +17,7 @@ import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatusCombination;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.services.MappingService;
@@ -372,6 +373,10 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
 	public Set<MapRecord> processWorkflowAction(TrackingRecord trackingRecord, WorkflowAction workflowAction,
 			MapUser mapUser, Set<MapRecord> mapRecords, MapRecord mapRecord) throws Exception {
 
+		Logger.getLogger(WorkflowServiceJpa.class)
+		.info("NON_LEGACY_PATH: Processing workflow action by " + mapUser.getName() + ":  " + workflowAction.toString());
+
+		
 		// the set of records returned after processing
 		Set<MapRecord> newRecords = new HashSet<>(mapRecords);
 
@@ -395,14 +400,14 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
 							"WorkflowNonLegacyPathHandlerException - assignFromScratch:  Two users already assigned");
 				}
 
-				mapRecord.setWorkflowStatus(WorkflowStatus.NEW);
+				newRecord.setWorkflowStatus(WorkflowStatus.NEW);
 				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("NON_LEGACY_PATH: NEW");
 
 				// otherwise, if this is a tracking record with conflict
 				// detected, add a CONFLICT_NEW record
 			} else if (getWorkflowStatusFromMapRecords(mapRecords).equals(WorkflowStatus.CONFLICT_DETECTED)) {
 
-				mapRecord.setWorkflowStatus(WorkflowStatus.CONFLICT_NEW);
+				newRecord.setWorkflowStatus(WorkflowStatus.CONFLICT_NEW);
 
 				// instantiate a default project specific handler for comparison
 				// TODO Decide behavior -- move this into this handler
@@ -416,13 +421,14 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
 
 				// get the origin ids from the tracking record
 				for (final MapRecord mr : newRecords) {
-					mapRecord.addOrigin(mr.getId());
+					newRecord.addOrigin(mr.getId());
 				}
 				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("NON_LEGACY_PATH: CONFLICT_NEW");
 
 			} else {
 				throw new Exception("ASSIGN_FROM_SCRATCH on NON_LEGACY_PATH failed.");
 			}
+			
 
 			newRecords.add(newRecord);
 			break;
@@ -697,6 +703,11 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
 		default:
 			throw new Exception("NON_LEGACY_PATH received unknown workflow action: " + workflowAction);
 			
+		}
+		
+		Logger.getLogger(this.getClass()).debug("NON_LEGACY_PATH records after completion");
+		for (MapRecord mr : newRecords) {
+			Logger.getLogger(this.getClass()).debug("  " + mr.toString());
 		}
 
 		return newRecords;

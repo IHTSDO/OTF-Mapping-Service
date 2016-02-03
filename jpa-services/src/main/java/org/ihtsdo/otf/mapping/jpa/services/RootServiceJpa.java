@@ -13,6 +13,7 @@ import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
+import org.ihtsdo.otf.mapping.jpa.helpers.IndexUtility;
 import org.ihtsdo.otf.mapping.services.RootService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
