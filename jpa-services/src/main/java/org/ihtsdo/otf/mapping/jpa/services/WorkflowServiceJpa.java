@@ -104,11 +104,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.RootService#initializeFieldNames()
-   */
   /* see superclass */
   @Override
   public synchronized void initializeFieldNames() throws Exception {
@@ -170,12 +165,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.WorkflowService#addTrackingRecord
-   * (org.ihtsdo.otf.mapping.workflow.TrackingRecord)
-   */
   /* see superclass */
   @Override
   public TrackingRecord addTrackingRecord(TrackingRecord trackingRecord)
@@ -193,12 +182,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     return trackingRecord;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.WorkflowService#removeTrackingRecord
-   * (java.lang.Long)
-   */
   /* see superclass */
   @Override
   public void removeTrackingRecord(Long trackingRecordId) throws Exception {
@@ -227,12 +210,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.WorkflowService#updateTrackingRecord
-   * (org.ihtsdo.otf.mapping.workflow.TrackingRecord)
-   */
+ 
   /* see superclass */
   @Override
   public void updateTrackingRecord(TrackingRecord record) throws Exception {
@@ -246,11 +224,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.WorkflowService#getTrackingRecords ()
-   */
+
   /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
@@ -264,14 +238,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     return trackingRecordList;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.WorkflowService#
-   * getTrackingRecordForMapProjectAndConcept
-   * (org.ihtsdo.otf.mapping.model.MapProject,
-   * org.ihtsdo.otf.mapping.rf2.Concept)
-   */
   /* see superclass */
   @Override
   public TrackingRecord getTrackingRecordForMapProjectAndConcept(
@@ -292,13 +258,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.WorkflowService#
-   * getTrackingRecordForMapProjectAndConcept
-   * (org.ihtsdo.otf.mapping.model.MapProject, java.lang.String)
-   */
+
   /* see superclass */
   @Override
   public TrackingRecord getTrackingRecordForMapProjectAndConcept(
@@ -319,12 +279,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.WorkflowService#
-   * getTrackingRecordsForMapProject (org.ihtsdo.otf.mapping.model.MapProject)
-   */
   /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
@@ -343,13 +297,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     return trackingRecordList;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.WorkflowService#getTrackingRecord
-   * (org.ihtsdo.otf.mapping.model.MapProject,
-   * org.ihtsdo.otf.mapping.rf2.Concept)
-   */
   /* see superclass */
   @Override
   public TrackingRecord getTrackingRecord(MapProject mapProject, Concept concept)
@@ -365,12 +312,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     return (TrackingRecord) query.getSingleResult();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.WorkflowService#addWorkflowException
-   * (org.ihtsdo.otf.mapping.workflow.WorkflowException)
-   */
   /* see superclass */
   @Override
   public WorkflowException addWorkflowException(WorkflowException trackingRecord)
@@ -388,13 +329,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     return trackingRecord;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.WorkflowService#removeWorkflowException
-   * (java.lang.Long)
-   */
   /* see superclass */
   @Override
   public void removeWorkflowException(Long trackingRecordId) throws Exception {
@@ -423,13 +357,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.WorkflowService#updateWorkflowException
-   * (org.ihtsdo.otf.mapping.workflow.WorkflowException)
-   */
+
   /* see superclass */
   @Override
   public void updateWorkflowException(WorkflowException workflowException)
@@ -444,19 +372,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.WorkflowService#getWorkflowException(org
-   * .ihtsdo.otf.mapping.model.MapProject, java.lang.String)
-   */
   /* see superclass */
   @Override
   public WorkflowException getWorkflowException(MapProject mapProject,
     String terminologyId) {
 
-    javax.persistence.Query query =
+    final javax.persistence.Query query =
         manager
             .createQuery(
                 "select we from WorkflowExceptionJpa we where mapProjectId = :mapProjectId"
@@ -515,8 +436,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
     // list of escape terms (i.e. quotes, operators) to be fed into query
     // untouched
-    String escapeTerms = "\\+|\\-|\"|\\(|\\)";
-    String booleanTerms = "and|AND|or|OR|not|NOT";
+    final String escapeTerms = "\\+|\\-|\"|\\(|\\)";
+    final String booleanTerms = "and|AND|or|OR|not|NOT";
 
     // first cycle over the string to add artificial breaks before and after
     // control characters
@@ -534,11 +455,11 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     queryStrMod = queryStrMod.trim();
 
     // split the string by white space and single-character operators
-    String[] terms = queryStrMod.split("\\s+");
+    final String[] terms = queryStrMod.split("\\s+");
 
     // merge items between quotation marks
     boolean exprInQuotes = false;
-    List<String> parsedTerms = new ArrayList<>();
+    final List<String> parsedTerms = new ArrayList<>();
     String currentTerm = "";
 
     // cycle over terms to identify quoted (i.e. non-parsed) terms
@@ -639,7 +560,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         fullQuery += "(";
 
         // add fielded query for each indexed term, separated by OR
-        Iterator<String> namesIter = fields.iterator();
+        final Iterator<String> namesIter = fields.iterator();
         while (namesIter.hasNext()) {
           fullQuery += namesIter.next() + ":" + parsedTerms.get(i);
           if (namesIter.hasNext())
@@ -674,22 +595,14 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     return fullQuery;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.WorkflowService#findAvailableWork(org.ihtsdo
-   * .otf.mapping.model.MapProject, org.ihtsdo.otf.mapping.model.MapUser,
-   * java.lang.String, org.ihtsdo.otf.mapping.helpers.PfsParameter)
-   */
   /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
   public SearchResultList findAvailableWork(MapProject mapProject,
-    MapUser mapUser, String query, PfsParameter pfsParameter) throws Exception {
-    SearchResultList availableWork = new SearchResultListJpa();
+    final MapUser mapUser, String query, PfsParameter pfsParameter) throws Exception {
+    final SearchResultList availableWork = new SearchResultListJpa();
 
-    FullTextEntityManager fullTextEntityManager =
+    final FullTextEntityManager fullTextEntityManager =
         Search.getFullTextEntityManager(manager);
 
     SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
@@ -789,13 +702,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     return availableWork;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.WorkflowService#getAvailableConflicts
-   * (org.ihtsdo.otf.mapping.model.MapProject,
-   * org.ihtsdo.otf.mapping.model.MapUser)
-   */
   /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
@@ -877,14 +783,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     return availableConflicts;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.WorkflowService#findAvailableQAWork(org
-   * .ihtsdo.otf.mapping.model.MapProject, org.ihtsdo.otf.mapping.model.MapUser,
-   * java.lang.String, org.ihtsdo.otf.mapping.helpers.PfsParameter)
-   */
   /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
@@ -1040,13 +938,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     return availableQAWork;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.WorkflowService#getAvailableReviewWork
-   * (org.ihtsdo.otf.mapping.model.MapProject,
-   * org.ihtsdo.otf.mapping.model.MapUser)
-   */
+
   /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
@@ -1132,14 +1024,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     return availableReviewWork;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.WorkflowService#findAssignedWork(org.ihtsdo
-   * .otf.mapping.model.MapProject, org.ihtsdo.otf.mapping.model.MapUser,
-   * java.lang.String, org.ihtsdo.otf.mapping.helpers.PfsParameter)
-   */
   /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
@@ -1265,10 +1149,10 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
       ftquery.setSort(new Sort(new SortField("sortKey", SortField.STRING)));
     }
 
-    List<TrackingRecord> results = ftquery.getResultList();
-    MappingService mappingService = new MappingServiceJpa();
+    final List<TrackingRecord> results = ftquery.getResultList();
+    final MappingService mappingService = new MappingServiceJpa();
 
-    for (TrackingRecord tr : results) {
+    for (final TrackingRecord tr : results) {
 
       // instantiate the result list
       SearchResult result = new SearchResultJpa();
@@ -1282,7 +1166,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
       // SEE BELOW/MAP-617
       WorkflowStatus mapLeadAlternateRecordStatus = null;
 
-      for (MapRecord mr : mapRecords) {
+      for (final MapRecord mr : mapRecords) {
 
         if (mr.getOwner().equals(mapUser)) {
 
@@ -1342,13 +1226,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     return assignedWork;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.WorkflowService#getAssignedConflicts(
-   * org.ihtsdo.otf.mapping.model.MapProject,
-   * org.ihtsdo.otf.mapping.model.MapUser)
-   */
+
   /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
@@ -1453,14 +1331,14 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
     List<TrackingRecord> results = ftquery.getResultList();
     MappingService mappingService = new MappingServiceJpa();
-    for (TrackingRecord tr : results) {
+    for (final TrackingRecord tr : results) {
       SearchResult result = new SearchResultJpa();
 
       Set<MapRecord> mapRecords = this.getMapRecordsForTrackingRecord(tr);
 
       // get the map record assigned to this user
       MapRecord mapRecord = null;
-      for (MapRecord mr : mapRecords) {
+      for (final MapRecord mr : mapRecords) {
 
         try {
           if (mr.getOwner().equals(mapUser))
@@ -1499,15 +1377,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     return assignedConflicts;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.WorkflowService#findAssignedReviewWork(
-   * org.ihtsdo.otf.mapping.model.MapProject,
-   * org.ihtsdo.otf.mapping.model.MapUser, java.lang.String,
-   * org.ihtsdo.otf.mapping.helpers.PfsParameter)
-   */
+
   /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
@@ -1610,14 +1480,14 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
     List<TrackingRecord> results = ftquery.getResultList();
     MappingService mappingService = new MappingServiceJpa();
-    for (TrackingRecord tr : results) {
+    for (final TrackingRecord tr : results) {
       SearchResult result = new SearchResultJpa();
 
       Set<MapRecord> mapRecords = this.getMapRecordsForTrackingRecord(tr);
 
       // get the map record assigned to this user
       MapRecord mapRecord = null;
-      for (MapRecord mr : mapRecords) {
+      for (final MapRecord mr : mapRecords) {
 
         if (mr.getOwner().equals(mapUser)) {
 
@@ -1655,14 +1525,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     return assignedReviewWork;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.WorkflowService#findAssignedQAWork(org.
-   * ihtsdo.otf.mapping.model.MapProject, org.ihtsdo.otf.mapping.model.MapUser,
-   * java.lang.String, org.ihtsdo.otf.mapping.helpers.PfsParameter)
-   */
   /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
@@ -1745,10 +1607,10 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     } else {
       // remove tracking records that don't have a map record with a label
       // matching the query
-      for (TrackingRecord tr : allResults) {
+      for (final TrackingRecord tr : allResults) {
         boolean labelFound = false;
-        for (MapRecord record : getMapRecordsForTrackingRecord(tr)) {
-          for (String label : record.getLabels()) {
+        for (final MapRecord record : getMapRecordsForTrackingRecord(tr)) {
+          for (final String label : record.getLabels()) {
             if (label.equals(query)) {
               labelFound = true;
             }
@@ -1814,7 +1676,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
       }
     }
 
-    for (TrackingRecord tr : results.subList(startIndex, toIndex)) {
+    for (final TrackingRecord tr : results.subList(startIndex, toIndex)) {
 
       SearchResult result = new SearchResultJpa();
 
@@ -1822,7 +1684,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
       // get the map record assigned to this user
       MapRecord mapRecord = null;
-      for (MapRecord mr : mapRecords) {
+      for (final MapRecord mr : mapRecords) {
 
         if (mr.getOwner().equals(mapUser)) {
 
@@ -1848,8 +1710,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
       result.setTerminologyId(mapRecord.getConceptId());
       result.setValue(mapRecord.getConceptName());
       StringBuffer labelBuffer = new StringBuffer();
-      for (MapRecord record : getMapRecordsForTrackingRecord(tr)) {
-        for (String label : record.getLabels()) {
+      for (final MapRecord record : getMapRecordsForTrackingRecord(tr)) {
+        for (final String label : record.getLabels()) {
           if (labelBuffer.indexOf(label) == -1)
             labelBuffer.append(";").append(label);
         }
@@ -1863,13 +1725,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     return assignedReviewWork;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.WorkflowService#createQAWork(org.ihtsdo
-   * .otf.mapping.reports.Report)
-   */
+
   /* see superclass */
   @Override
   public void createQAWork(Report report) throws Exception {
@@ -1880,7 +1736,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     }
 
     Set<String> conceptIds = new HashSet<>();
-    for (ReportResultItem resultItem : report.getResults().get(0)
+    for (final ReportResultItem resultItem : report.getResults().get(0)
         .getReportResultItems()) {
       conceptIds.add(resultItem.getItemId());
     }
@@ -1895,13 +1751,13 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
     // find the qa user
     MapUser mapUser = null;
-    for (MapUser user : mappingService.getMapUsers().getMapUsers()) {
+    for (final MapUser user : mappingService.getMapUsers().getMapUsers()) {
       if (user.getUserName().equals("qa"))
         mapUser = user;
     }
     mappingService.close();
 
-    for (String conceptId : conceptIds) {
+    for (final String conceptId : conceptIds) {
 
       Concept concept =
           contentService.getConcept(conceptId,
@@ -1916,7 +1772,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
       recordList.getMapRecords().size();
       mappingService.close();
 
-      for (MapRecord mapRecord : recordList.getMapRecords()) {
+      for (final MapRecord mapRecord : recordList.getMapRecords()) {
         // set the label on the record
         mapRecord.addLabel(report.getReportDefinition().getName());
 
@@ -2030,7 +1886,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         message.append("Records involved:\n");
         message.append("  " + "id\tUser\tWorkflowStatus\n");
 
-        for (MapRecord mr : getMapRecordsForTrackingRecord(trackingRecord)) {
+        for (final MapRecord mr : getMapRecordsForTrackingRecord(trackingRecord)) {
           message.append("  " + mr.getId().toString() + "\t"
               + mr.getOwner().getUserName() + "\t"
               + mr.getWorkflowStatus().toString() + "\n");
@@ -2039,7 +1895,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
         message.append("Errors reported:\n");
 
-        for (String error : result.getErrors()) {
+        for (final String error : result.getErrors()) {
           message.append("  " + error + "\n");
         }
 
@@ -2071,7 +1927,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     // if the record passed in updates an existing record, replace it in the
     // set
     if (mapRecord != null && mapRecord.getId() != null) {
-      for (MapRecord mr : mapRecords) {
+      for (final MapRecord mr : mapRecords) {
         if (mr.getId().equals(mapRecord.getId())) {
 
           Logger.getLogger(WorkflowService.class).info(
@@ -2222,8 +2078,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
             && !trackingRecord.getUserAndWorkflowStatusPairs().contains(
                 WorkflowStatus.CONFLICT_DETECTED.toString())) {
           MappingService service = new MappingServiceJpa();
-          for (MapUser user : service.getMapUsersForTeam(mapUser.getTeam())
-              .getMapUsers()) {
+          for (final MapUser user : service.getMapUsersForTeam(
+              mapUser.getTeam()).getMapUsers()) {
             if (trackingRecord.getAssignedUserNames().contains(
                 user.getUserName())) {
               service.close();
@@ -2373,7 +2229,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     trackingRecord.setUserAndWorkflowStatusPairs(null);
 
     // recalculate the pointer fields
-    for (MapRecord mr : syncedRecords) {
+    for (final MapRecord mr : syncedRecords) {
       trackingRecord.addMapRecordId(mr.getId());
       trackingRecord.addAssignedUserName(mr.getOwner().getUserName());
       trackingRecord.addUserAndWorkflowStatusPair(mr.getOwner().getUserName(),
@@ -2447,7 +2303,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
     // detach the currently persisted map records from the workflow service
     // to avoid overwrite by retrieval of existing records
-    for (MapRecord mr : mapRecords) {
+    for (final MapRecord mr : mapRecords) {
       manager.detach(mr);
       newRecords.add(mr);
     }
@@ -2457,13 +2313,13 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
     // retrieve the old (existing) records
     if (trackingRecord.getMapRecordIds() != null) {
-      for (Long id : trackingRecord.getMapRecordIds()) {
+      for (final Long id : trackingRecord.getMapRecordIds()) {
         oldRecords.add(mappingService.getMapRecord(id));
       }
     }
 
     // cycle over new records to check for additions or updates
-    for (MapRecord mr : newRecords) {
+    for (final MapRecord mr : newRecords) {
       if (getMapRecordInSet(oldRecords, mr.getId()) == null) {
 
         // deep copy the detached record into a new
@@ -2508,7 +2364,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     }
 
     // cycle over old records to check for deletions
-    for (MapRecord mr : oldRecords) {
+    for (final MapRecord mr : oldRecords) {
 
       // if old record is not in the new record set, delete it
       if (getMapRecordInSet(syncedRecords, mr.getId()) == null) {
@@ -2539,20 +2395,13 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     if (mapRecordId == null)
       return null;
 
-    for (MapRecord mr : mapRecords) {
+    for (final MapRecord mr : mapRecords) {
       if (mapRecordId.equals(mr.getId()))
         return mr;
     }
     return null;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.WorkflowService#computeWorkflow(org.ihtsdo
-   * .otf.mapping.model.MapProject)
-   */
   /* see superclass */
   @Override
   public void computeWorkflow(MapProject mapProject) throws Exception {
@@ -2579,7 +2428,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
     // construct a hashset of concepts in scope
     Set<String> conceptIds = new HashSet<>();
-    for (SearchResult sr : conceptsInScope.getIterable()) {
+    for (final SearchResult sr : conceptsInScope.getIterable()) {
       conceptIds.add(sr.getTerminologyId());
     }
 
@@ -2598,7 +2447,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
     // cycle over the map records, and remove concept ids if a map record is
     // publication-ready
-    for (MapRecord mapRecord : mapRecords.getIterable()) {
+    for (final MapRecord mapRecord : mapRecords.getIterable()) {
 
       // if this map record is published, skip and remove this concept
       if (mapRecord.getWorkflowStatus().equals(
@@ -2637,7 +2486,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     beginTransaction();
 
     // construct the tracking records for unmapped concepts
-    for (String terminologyId : conceptIds) {
+    for (final String terminologyId : conceptIds) {
 
       // retrieve the concept for this result
       Concept concept =
@@ -2689,7 +2538,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
       // add any existing map records to this tracking record
       Set<MapRecord> mapRecordsForTrackingRecord = new HashSet<>();
       if (unpublishedRecords.containsKey(trackingRecord.getTerminologyId())) {
-        for (MapRecord mr : unpublishedRecords.get(trackingRecord
+        for (final MapRecord mr : unpublishedRecords.get(trackingRecord
             .getTerminologyId())) {
           Logger.getLogger(WorkflowServiceJpa.class).info(
               "    Adding existing map record " + mr.getId() + ", owned by "
@@ -2710,7 +2559,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
       // check if QA record is present
       boolean revisionRecordPresent = false;
       boolean qaRecordPresent = false;
-      for (MapRecord mr : mapRecordsForTrackingRecord) {
+      for (final MapRecord mr : mapRecordsForTrackingRecord) {
         if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION))
           revisionRecordPresent = true;
         if (mr.getWorkflowStatus().equals(WorkflowStatus.QA_NEEDED)
@@ -2777,13 +2626,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     Logger.getLogger(WorkflowServiceJpa.class).info("Done.");
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.WorkflowService#clearWorkflowForMapProject
-   * (org.ihtsdo.otf.mapping.model.MapProject)
-   */
+ 
   /* see superclass */
   @Override
   public void clearWorkflowForMapProject(MapProject mapProject)
@@ -2797,7 +2640,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
       beginTransaction();
     }
 
-    for (TrackingRecord tr : getTrackingRecordsForMapProject(mapProject)
+    for (final TrackingRecord tr : getTrackingRecordsForMapProject(mapProject)
         .getTrackingRecords()) {
 
       removeTrackingRecord(tr.getId());
@@ -2826,13 +2669,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
   // Utility functions
   // //////////////////////////
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.WorkflowService#
-   * getMapRecordsForTrackingRecord
-   * (org.ihtsdo.otf.mapping.workflow.TrackingRecord)
-   */
   /* see superclass */
   @Override
   public Set<MapRecord> getMapRecordsForTrackingRecord(
@@ -2840,7 +2676,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     Set<MapRecord> mapRecords = new HashSet<>();
     MappingService mappingService = new MappingServiceJpa();
     if (trackingRecord != null && trackingRecord.getMapRecordIds() != null) {
-      for (Long id : trackingRecord.getMapRecordIds()) {
+      for (final Long id : trackingRecord.getMapRecordIds()) {
         mapRecords.add(mappingService.getMapRecord(id));
       }
     }
@@ -2848,13 +2684,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     return mapRecords;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.WorkflowService#
-   * getMapUsersForTrackingRecord
-   * (org.ihtsdo.otf.mapping.workflow.TrackingRecord)
-   */
+ 
   /* see superclass */
   @Override
   public MapUserList getMapUsersForTrackingRecord(TrackingRecord trackingRecord)
@@ -2862,13 +2692,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     return getMapUsersFromMapRecords(getMapRecordsForTrackingRecord(trackingRecord));
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.WorkflowService#
-   * getWorkflowStatusForTrackingRecord
-   * (org.ihtsdo.otf.mapping.workflow.TrackingRecord)
-   */
+ 
   /* see superclass */
   @Override
   public WorkflowStatus getWorkflowStatusForTrackingRecord(
@@ -2876,13 +2700,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     return getWorkflowStatusFromMapRecords(getMapRecordsForTrackingRecord(trackingRecord));
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.WorkflowService#
-   * getLowestWorkflowStatusForTrackingRecord
-   * (org.ihtsdo.otf.mapping.workflow.TrackingRecord)
-   */
+
   /* see superclass */
   @Override
   public WorkflowStatus getLowestWorkflowStatusForTrackingRecord(
@@ -2890,66 +2708,41 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     return getLowestWorkflowStatusFromMapRecords(getMapRecordsForTrackingRecord(trackingRecord));
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.WorkflowService#getMapUsersFromMapRecords
-   * (java.util.Set)
-   */
   /* see superclass */
   @Override
   public MapUserList getMapUsersFromMapRecords(Set<MapRecord> mapRecords) {
     MapUserList mapUserList = new MapUserListJpa();
-    for (MapRecord mr : mapRecords) {
+    for (final MapRecord mr : mapRecords) {
       mapUserList.addMapUser(mr.getOwner());
     }
     return mapUserList;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.WorkflowService#
-   * getWorkflowStatusFromMapRecords(java.util.Set)
-   */
+ 
   /* see superclass */
   @Override
   public WorkflowStatus getWorkflowStatusFromMapRecords(
     Set<MapRecord> mapRecords) {
     WorkflowStatus workflowStatus = WorkflowStatus.NEW;
-    for (MapRecord mr : mapRecords) {
+    for (final MapRecord mr : mapRecords) {
       if (mr.getWorkflowStatus().compareTo(workflowStatus) > 0)
         workflowStatus = mr.getWorkflowStatus();
     }
     return workflowStatus;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.WorkflowService#
-   * getLowestWorkflowStatusFromMapRecords(java.util.Set)
-   */
   /* see superclass */
   @Override
   public WorkflowStatus getLowestWorkflowStatusFromMapRecords(
     Set<MapRecord> mapRecords) {
     WorkflowStatus workflowStatus = WorkflowStatus.REVISION;
-    for (MapRecord mr : mapRecords) {
+    for (final MapRecord mr : mapRecords) {
       if (mr.getWorkflowStatus().compareTo(workflowStatus) < 0)
         workflowStatus = mr.getWorkflowStatus();
     }
     return workflowStatus;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.WorkflowService#computeWorkflowStatusErrors
-   * (org.ihtsdo.otf.mapping.model.MapProject)
-   */
   /* see superclass */
   @Override
   public List<String> computeWorkflowStatusErrors(MapProject mapProject)
@@ -2980,7 +2773,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     // construct a set of terminology ids for which a tracking record exists
     Set<String> terminologyIdsWithTrackingRecord = new HashSet<>();
 
-    for (TrackingRecord trackingRecord : trackingRecords.getTrackingRecords()) {
+    for (final TrackingRecord trackingRecord : trackingRecords
+        .getTrackingRecords()) {
 
       terminologyIdsWithTrackingRecord.add(trackingRecord.getTerminologyId());
 
@@ -3027,8 +2821,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
     // second, check all records for non-publication ready content without
     // tracking record, skip inactive concepts
-    ContentService contentService = new ContentServiceJpa();
-    for (MapRecord mapRecord : mappingService.getMapRecordsForMapProject(
+    final ContentService contentService = new ContentServiceJpa();
+    for (final MapRecord mapRecord : mappingService.getMapRecordsForMapProject(
         mapProject.getId()).getMapRecords()) {
 
       // if not publication ready
@@ -3036,7 +2830,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
           WorkflowStatus.READY_FOR_PUBLICATION)
           && !mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)) {
 
-        Concept concept =
+        final Concept concept =
             contentService.getConcept(mapRecord.getConceptId(),
                 mapProject.getSourceTerminology(),
                 mapProject.getSourceTerminologyVersion());
@@ -3059,25 +2853,18 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.WorkflowService#computeUntrackedMapRecords
-   * (org.ihtsdo.otf.mapping.model.MapProject)
-   */
   /* see superclass */
   @Override
   public void computeUntrackedMapRecords(MapProject mapProject)
     throws Exception {
 
-    MappingService mappingService = new MappingServiceJpa();
+    final MappingService mappingService = new MappingServiceJpa();
 
     Logger.getLogger(WorkflowServiceJpa.class).info(
         "Retrieving map records for project " + mapProject.getId() + ", "
             + mapProject.getName());
 
-    MapRecordList mapRecordsInProject =
+    final MapRecordList mapRecordsInProject =
         mappingService.getMapRecordsForMapProject(mapProject.getId());
 
     Logger.getLogger(WorkflowServiceJpa.class).info(
@@ -3088,11 +2875,11 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     int nMessageInterval =
         (int) Math.floor(mapRecordsInProject.getCount() / 10);
 
-    Set<MapRecord> recordsUntracked = new HashSet<>();
+    final Set<MapRecord> recordsUntracked = new HashSet<>();
 
-    for (MapRecord mr : mapRecordsInProject.getIterable()) {
+    for (final MapRecord mr : mapRecordsInProject.getIterable()) {
 
-      TrackingRecord tr =
+      final TrackingRecord tr =
           this.getTrackingRecordForMapProjectAndConcept(mapProject,
               mr.getConceptId());
 
@@ -3143,11 +2930,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     return feedback;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.WorkflowService#getFeedbacks()
-   */
+ 
   /* see superclass */
   @Override
   @SuppressWarnings("unchecked")
@@ -3165,12 +2948,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     return feedbackList;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#addFeedbackConversation
-   * (org.ihtsdo.otf.mapping.model.FeedbackConversation)
-   */
   /* see superclass */
   @Override
   public FeedbackConversation addFeedbackConversation(
@@ -3191,13 +2968,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     return conversation;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.WorkflowService#updateFeedbackConversation
-   * (org.ihtsdo.otf.mapping.model.FeedbackConversation)
-   */
   /* see superclass */
   @Override
   public void updateFeedbackConversation(FeedbackConversation conversation) {
@@ -3218,13 +2988,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.WorkflowService#getFeedbackConversation
-   * (java.lang.Long)
-   */
   /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
@@ -3259,22 +3022,16 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
   private void handleFeedbackConversationLazyInitialization(
     FeedbackConversation feedbackConversation) {
     // handle all lazy initializations
-    for (Feedback feedback : feedbackConversation.getFeedbacks()) {
+    for (final Feedback feedback : feedbackConversation.getFeedbacks()) {
       feedback.getSender().getName();
-      for (MapUser recipient : feedback.getRecipients())
+      for (final MapUser recipient : feedback.getRecipients())
         recipient.getName();
-      for (MapUser viewedBy : feedback.getViewedBy())
+      for (final MapUser viewedBy : feedback.getViewedBy())
         viewedBy.getName();
     }
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.WorkflowService#
-   * getFeedbackConversationsForConcept(java.lang.Long, java.lang.String)
-   */
   /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
@@ -3296,7 +3053,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
             .setParameter("terminologyId", terminologyId);
 
     List<FeedbackConversation> feedbackConversations = query.getResultList();
-    for (FeedbackConversation feedbackConversation : feedbackConversations) {
+    for (final FeedbackConversation feedbackConversation : feedbackConversations) {
       handleFeedbackConversationLazyInitialization(feedbackConversation);
     }
 
@@ -3311,13 +3068,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     return feedbackConversationList;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.WorkflowService#
-   * findFeedbackConversationsForProject(java.lang.Long, java.lang.String,
-   * org.ihtsdo.otf.mapping.helpers.PfsParameter)
-   */
   /* see superclass */
   @SuppressWarnings({
     "unchecked"
@@ -3409,12 +3159,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
     if (pfsParameter != null && query.contains("viewed")) {
       List<FeedbackConversation> conversationsToKeep = new ArrayList<>();
-      for (FeedbackConversation fc : feedbackConversations) {
+      for (final FeedbackConversation fc : feedbackConversations) {
         if (query.contains("viewed:false")) {
-          for (Feedback feedback : fc.getFeedbacks()) {
+          for (final Feedback feedback : fc.getFeedbacks()) {
             Set<MapUser> alreadyViewedBy = feedback.getViewedBy();
             boolean found = false;
-            for (MapUser user : alreadyViewedBy) {
+            for (final MapUser user : alreadyViewedBy) {
               if (user.getUserName().equals(userName))
                 found = true;
             }
@@ -3424,9 +3174,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         }
         if (query.contains("viewed:true")) {
           boolean found = false;
-          for (Feedback feedback : fc.getFeedbacks()) {
+          for (final Feedback feedback : fc.getFeedbacks()) {
             Set<MapUser> alreadyViewedBy = feedback.getViewedBy();
-            for (MapUser user : alreadyViewedBy) {
+            for (final MapUser user : alreadyViewedBy) {
               if (user.getUserName().equals(userName)) {
                 found = true;
                 break;
@@ -3453,7 +3203,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         Integer.toString(feedbackConversations.size())
             + " feedbackConversations retrieved");
 
-    for (FeedbackConversation feedbackConversation : feedbackConversations) {
+    for (final FeedbackConversation feedbackConversation : feedbackConversations) {
       handleFeedbackConversationLazyInitialization(feedbackConversation);
     }
 
@@ -3469,12 +3219,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.WorkflowService#
-   * getFeedbackConversationsForRecord(java.lang.Long)
-   */
   /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
@@ -3488,7 +3232,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
             .setParameter("mapRecordId", mapRecordId);
 
     List<FeedbackConversation> feedbackConversations = query.getResultList();
-    for (FeedbackConversation feedbackConversation : feedbackConversations) {
+    for (final FeedbackConversation feedbackConversation : feedbackConversations) {
       handleFeedbackConversationLazyInitialization(feedbackConversation);
     }
 
@@ -3503,13 +3247,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     return feedbackConversationList;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.WorkflowService#getFeedbackErrorsForRecord
-   * (org.ihtsdo.otf.mapping.model.MapRecord)
-   */
+
   /* see superclass */
   @Override
   public FeedbackList getFeedbackErrorsForRecord(MapRecord mapRecord)
@@ -3522,8 +3260,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         this.getFeedbackConversationsForRecord(mapRecord.getId());
 
     // cycle over feedbacks
-    for (FeedbackConversation conversation : conversations.getIterable()) {
-      for (Feedback feedback : conversation.getFeedbacks()) {
+    for (final FeedbackConversation conversation : conversations.getIterable()) {
+      for (final Feedback feedback : conversation.getFeedbacks()) {
         if (feedback.getIsError()) {
           feedbacksWithError.add(feedback);
 
@@ -3536,14 +3274,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     return feedbackList;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.WorkflowService#sendFeedbackEmail(java.
-   * lang.String, java.lang.String, java.lang.String, java.lang.String,
-   * java.lang.String, java.lang.String)
-   */
   /* see superclass */
   @Override
   public void sendFeedbackEmail(String name, String email, String conceptId,
@@ -3585,7 +3315,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     message.append("  Records involved:\n");
     message.append("    " + "id\tUser\tWorkflowStatus\n");
 
-    for (MapRecord mr : getMapRecordsForTrackingRecord(trackingRecord)) {
+    for (final MapRecord mr : getMapRecordsForTrackingRecord(trackingRecord)) {
       message.append("    " + mr.getId().toString() + "\t"
           + mr.getOwner().getUserName() + "\t"
           + mr.getWorkflowStatus().toString() + "\n");
@@ -3593,7 +3323,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
     message.append("  Errors reported:\n");
 
-    for (String error : result.getErrors()) {
+    for (final String error : result.getErrors()) {
       message.append("    " + error + "\n");
     }
 

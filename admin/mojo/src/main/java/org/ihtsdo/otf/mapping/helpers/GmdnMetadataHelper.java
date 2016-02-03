@@ -229,9 +229,14 @@ public class GmdnMetadataHelper {
         String.valueOf(metadataCounter++), terminology, terminologyVersion,
         effectiveTime);
 
+    createIsaRelationship(descriptionTypeConcept, metaConcept,
+        String.valueOf(metadataCounter++), terminology, terminologyVersion,
+        effectiveTime);
+
     createIsaRelationship(descriptionTypeConcept, termConcept,
         String.valueOf(metadataCounter++), terminology, terminologyVersion,
         effectiveTime);
+
     createIsaRelationship(descriptionTypeConcept, collectiveTermConcept,
         String.valueOf(metadataCounter++), terminology, terminologyVersion,
         effectiveTime);

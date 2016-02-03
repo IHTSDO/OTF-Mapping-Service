@@ -1110,74 +1110,86 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     PfsParameter pfsParameter) throws Exception {
 
     final SearchResultList results = new SearchResultListJpa();
+    /**
+     * List<Refset> list = (List<Refset>) getQueryResults(query == null ||
+     * query.isEmpty() ? "id:[* TO *] AND provisional:false" : query +
+     * " AND provisional:false", RefsetJpa.class, RefsetJpa.class, pfs,
+     * totalCt);
+     */
+    //
+    // final FullTextEntityManager fullTextEntityManager =
+    // Search.getFullTextEntityManager(manager);
+    // final SearchFactory searchFactory =
+    // fullTextEntityManager.getSearchFactory();
+    // Query luceneQuery;
+    //
+    // try {
+    //
+    // // if the field is not indicated in the URL
+    // if (searchString.indexOf(':') == -1) {
+    // final MultiFieldQueryParser queryParser =
+    // new MultiFieldQueryParser(Version.LUCENE_36,
+    // conceptFieldNames.toArray(new String[0]),
+    // searchFactory.getAnalyzer(ConceptJpa.class));
+    // queryParser.setAllowLeadingWildcard(false);
+    // luceneQuery = queryParser.parse(searchString);
+    // // index field is indicated in the URL with a ':' separating
+    // // field and value
+    // } else {
+    // final QueryParser queryParser =
+    // new QueryParser(Version.LUCENE_36, "summary",
+    // searchFactory.getAnalyzer(ConceptJpa.class));
+    // luceneQuery = queryParser.parse(searchString);
+    // }
+    // } catch (ParseException e) {
+    // throw new LocalException(
+    // "The specified search terms cannot be parsed.  Please check syntax and try again.");
+    // }
+    //
+    // final FullTextQuery fullTextQuery =
+    // fullTextEntityManager
+    // .createFullTextQuery(luceneQuery, ConceptJpa.class);
+    //
+    // // set paging/filtering/sorting if indicated
+    // if (pfsParameter != null) {
+    //
+    // // if start index and max results are set, set paging
+    // if (pfsParameter.getStartIndex() != -1
+    // && pfsParameter.getMaxResults() != -1) {
+    // fullTextQuery.setFirstResult(pfsParameter.getStartIndex());
+    // fullTextQuery.setMaxResults(pfsParameter.getMaxResults());
+    // }
+    //
+    // // if sort field is specified, set sort key
+    // if (pfsParameter.getSortField() != null
+    // && !pfsParameter.getSortField().isEmpty()) {
+    //
+    // // check that specified sort field exists on Concept and is
+    // // a string
+    // if (Concept.class.getDeclaredField(pfsParameter.getSortField())
+    // .getType().equals(String.class)) {
+    // fullTextQuery.setSort(new Sort(new SortField(pfsParameter
+    // .getSortField(), SortField.STRING)));
+    //
+    // } else {
+    // throw new Exception(
+    // "Concept query specified a field that does not exist or is not a string");
+    // }
+    //
+    // }
+    //
+    // }
+    //
+    // // execute the query
+    // @SuppressWarnings("unchecked")
+    // final List<Concept> concepts = fullTextQuery.getResultList();
 
-    final FullTextEntityManager fullTextEntityManager =
-        Search.getFullTextEntityManager(manager);
-    final SearchFactory searchFactory =
-        fullTextEntityManager.getSearchFactory();
-    Query luceneQuery;
-
-    try {
-
-      // if the field is not indicated in the URL
-      if (searchString.indexOf(':') == -1) {
-        final MultiFieldQueryParser queryParser =
-            new MultiFieldQueryParser(Version.LUCENE_36,
-                conceptFieldNames.toArray(new String[0]),
-                searchFactory.getAnalyzer(ConceptJpa.class));
-        queryParser.setAllowLeadingWildcard(false);
-        luceneQuery = queryParser.parse(searchString);
-        // index field is indicated in the URL with a ':' separating
-        // field and value
-      } else {
-        final QueryParser queryParser =
-            new QueryParser(Version.LUCENE_36, "summary",
-                searchFactory.getAnalyzer(ConceptJpa.class));
-        luceneQuery = queryParser.parse(searchString);
-      }
-    } catch (ParseException e) {
-      throw new LocalException(
-          "The specified search terms cannot be parsed.  Please check syntax and try again.");
-    }
-
-    final FullTextQuery fullTextQuery =
-        fullTextEntityManager
-            .createFullTextQuery(luceneQuery, ConceptJpa.class);
-
-    // set paging/filtering/sorting if indicated
-    if (pfsParameter != null) {
-
-      // if start index and max results are set, set paging
-      if (pfsParameter.getStartIndex() != -1
-          && pfsParameter.getMaxResults() != -1) {
-        fullTextQuery.setFirstResult(pfsParameter.getStartIndex());
-        fullTextQuery.setMaxResults(pfsParameter.getMaxResults());
-      }
-
-      // if sort field is specified, set sort key
-      if (pfsParameter.getSortField() != null
-          && !pfsParameter.getSortField().isEmpty()) {
-
-        // check that specified sort field exists on Concept and is
-        // a string
-        if (Concept.class.getDeclaredField(pfsParameter.getSortField())
-            .getType().equals(String.class)) {
-          fullTextQuery.setSort(new Sort(new SortField(pfsParameter
-              .getSortField(), SortField.STRING)));
-
-        } else {
-          throw new Exception(
-              "Concept query specified a field that does not exist or is not a string");
-        }
-
-      }
-
-    }
-
-    // execute the query
+    int[] totalCt = new int[1];
     @SuppressWarnings("unchecked")
-    final List<Concept> concepts = fullTextQuery.getResultList();
-
+    List<Concept> concepts =
+        (List<Concept>) getQueryResults(searchString == null ? ""
+            : searchString, ConceptJpa.class, ConceptJpa.class, pfsParameter,
+            totalCt);
     // construct the search results
     for (final Concept c : concepts) {
       final SearchResult sr = new SearchResultJpa();
@@ -1188,12 +1200,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       sr.setValue(c.getDefaultPreferredName());
       results.addSearchResult(sr);
     }
-
-    fullTextEntityManager.close();
-
-    // closing fullTextEntityManager closes manager as well, recreate
-    manager = factory.createEntityManager();
-
+    results.setTotalCount(totalCt[0]);
     return results;
   }
 

@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2016 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.io.BufferedInputStream;
@@ -12,8 +15,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
 import javax.xml.parsers.SAXParser;
@@ -657,6 +662,15 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
    */
   class TermCollectiveTermHandler extends BaseHandler {
 
+    /** The chd. */
+    private String chd = null;
+
+    /** The par. */
+    private String par = null;
+
+    /** The chd par map. */
+    private Map<String, Set<String>> parChdMap = new HashMap<>();
+
     /** The relationship. */
     private Relationship relationship = null;
 
@@ -676,17 +690,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
 
       // Create new concept and description
       if (qName.equalsIgnoreCase("termcollectiveterm")) {
-        // create and configure rel
-        relationship = new RelationshipJpa();
-        setCommonFields(relationship);
-        relationship.setActive(true);
-        relationship.setCharacteristicTypeId(Long.parseLong(conceptMap.get(
-            "defaultCharacteristicType").getTerminologyId()));
-        relationship.setModifierId(Long.parseLong(conceptMap.get(
-            "defaultModifier").getTerminologyId()));
-        relationship.setRelationshipGroup(null);
-        relationship.setTypeId(Long.parseLong(conceptMap.get("isa")
-            .getTerminologyId()));
+        // n/a
       }
     }
 
@@ -698,31 +702,20 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
 
         // Encountered </collectiveterm> - put concept into map add desc
         if (qName.equalsIgnoreCase("termcollectiveterm")) {
-          // Add the relationship
-          // the concepts on either end must already be added
-          Logger.getLogger(getClass()).debug("    rel = " + relationship);
-          contentService.addRelationship(relationship);
+          if (!parChdMap.containsKey(par)) {
+            parChdMap.put(par, new HashSet<String>());
+          }
+          parChdMap.get(par).add(chd);
         }
 
         // </termID> - set the term id
         else if (qName.equalsIgnoreCase("termID")) {
-          final Concept source = conceptMap.get(chars.toString().trim());
-          if (source == null) {
-            throw new Exception("source concept is missing - "
-                + chars.toString().trim());
-          }
-          relationship.setSourceConcept(source);
+          chd = chars.toString().trim();
         }
 
         // </collectivetermID> - set the description terminology id
         else if (qName.equalsIgnoreCase("collectivetermID")) {
-          final Concept destination = conceptMap.get(chars.toString().trim());
-          if (destination == null) {
-            throw new Exception("destination concept is missing - "
-                + chars.toString().trim());
-          }
-          relationship.setDestinationConcept(conceptMap.get(chars.toString()
-              .trim()));
+          par = chars.toString().trim();
         }
 
       } catch (Exception e) {
@@ -736,7 +729,156 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
     /* see superclass */
     @Override
     public void endDocument() throws SAXException {
-      // n/a
+      try {
+        // Handle adding relationships at the end, because we can
+        // introduce intermediate levels if a level has to many
+        // children
+        final Set<String> origParChd = parChdMap.keySet();
+        for (final String par : origParChd) {
+
+          // If > 100, create intermediate layers
+          if (parChdMap.get(par).size() > 100) {
+
+            // Set up the index for the intermediate layer
+            int idx = 1;
+            // count up to 100 for each case
+            int ct = 0;
+            // Get original children
+            final Set<String> oldChd = parChdMap.get(par);
+            // Replace parent map with placehoder for new children
+            parChdMap.put(par, new HashSet<String>());
+            // Set up code for first intermediate layer
+            String newChd = ("00" + idx).substring(("00" + idx).length() - 4);
+            String newChdStart = null;
+            String newChdEnd = null;
+
+            // Iterate through original children
+            for (final String chd : oldChd) {
+              // Get first start word
+              if (newChdStart == null) {
+                newChdStart =
+                    conceptMap.get(chd).getDefaultPreferredName().split(" ")[0]
+                        .toLowerCase();
+              }
+
+              // Every 100 entries, create a new intermediate child
+              if (++ct % 100 == 0) {
+                // Get first word of the last child concept
+                newChdEnd =
+                    conceptMap.get(chd).getDefaultPreferredName().split(" ")[0]
+                        .toLowerCase();
+                // add the concept
+                addIntermediateConcept(par, newChd, newChdStart, newChdEnd,
+                    contentService);
+
+                idx++;
+                newChd = ("00" + idx).substring(("00" + idx).length() - 4);
+                newChdStart = null;
+
+              }
+              // Wire intermediate layer to original child
+              parChdMap.get(newChd).add(chd);
+            }
+
+            // Last batch
+            if (++ct % 100 == 0) {
+              idx++;
+              newChd = ("00" + idx).substring(("00" + idx).length() - 4);
+              // Get first word of the last child concept
+              newChdEnd =
+                  conceptMap.get(chd).getDefaultPreferredName().split(" ")[0]
+                      .toLowerCase();
+              // add the concept
+              addIntermediateConcept(par, newChd, newChdStart, newChdEnd,
+                  contentService);
+
+              newChdStart = null;
+
+            }
+          }
+        }
+
+        // Now, we're ready to create relationships
+        // with the revised parChdMap
+        for (final String par : parChdMap.keySet()) {
+          for (final String chd : parChdMap.get(par)) {
+
+            // create and configure rel
+            relationship = new RelationshipJpa();
+            setCommonFields(relationship);
+            relationship.setActive(true);
+            relationship.setCharacteristicTypeId(Long.parseLong(conceptMap.get(
+                "defaultCharacteristicType").getTerminologyId()));
+            relationship.setModifierId(Long.parseLong(conceptMap.get(
+                "defaultModifier").getTerminologyId()));
+            relationship.setRelationshipGroup(null);
+            relationship.setTypeId(Long.parseLong(conceptMap.get("isa")
+                .getTerminologyId()));
+
+            final Concept source = conceptMap.get(chd);
+            if (source == null) {
+              throw new Exception("source concept is missing - " + chd);
+            }
+            relationship.setSourceConcept(source);
+
+            final Concept destination = conceptMap.get(par);
+            if (destination == null) {
+              throw new Exception("destination concept is missing - " + par);
+            }
+            relationship.setDestinationConcept(destination);
+
+            // Add the relationship
+            // the concepts on either end must already be added
+            Logger.getLogger(getClass()).debug("    rel = " + relationship);
+            contentService.addRelationship(relationship);
+          }
+        }
+      } catch (Exception e) {
+        throw new SAXException(e);
+      }
+    }
+
+    /**
+     * Adds the intermediate concept.
+     *
+     * @param par the par
+     * @param newChd the new chd
+     * @param newChdStart the new chd start
+     * @param newChdEnd the new chd end
+     * @param contentService the content service
+     * @throws Exception the exception
+     */
+    private void addIntermediateConcept(String par, String newChd,
+      String newChdStart, String newChdEnd, ContentService contentService)
+      throws Exception {
+      // Add a new concept for this
+      final Concept concept = new ConceptJpa();
+      setCommonFields(concept);
+      concept.setDefinitionStatusId(Long.parseLong(conceptMap.get(
+          "defaultDefinitionStatus").getTerminologyId()));
+      concept.setTerminologyId(par + "." + newChd);
+      concept.setDefaultPreferredName(newChdStart + " - " + newChdEnd);
+
+      // create and configure description
+      final Description description = new DescriptionJpa();
+      setCommonFields(description);
+      description.setTypeId(Long.parseLong(conceptMap.get("term")
+          .getTerminologyId()));
+      description.setCaseSignificanceId(Long.parseLong(conceptMap.get(
+          "defaultCaseSignificance").getTerminologyId()));
+      description.setLanguageCode("en");
+      description.setActive(true);
+      description.setTerminologyId(par + "." + newChd);
+      description.setTerm(newChdStart + " - " + newChdEnd);
+
+      Logger.getLogger(getClass()).debug("    concept = " + concept);
+
+      contentService.addConcept(concept);
+
+      conceptMap.put(newChd, concept);
+
+      parChdMap.put(newChd, new HashSet<String>());
+      parChdMap.get(par).add(newChd);
     }
 
   }
