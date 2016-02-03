@@ -34,11 +34,8 @@ public class RootServiceEdgeCasesTest {
   @Before
   public void setup() throws Exception {
     service = new RootServiceJpa() {
-      @Override
-      public void initializeFieldNames() throws Exception {
-        // do nothing
-      }
-    };
+      // n/a
+     };
   }
 
   /**
