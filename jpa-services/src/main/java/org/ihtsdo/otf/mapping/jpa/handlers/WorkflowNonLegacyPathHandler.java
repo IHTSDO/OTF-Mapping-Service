@@ -18,6 +18,7 @@ import org.ihtsdo.otf.mapping.helpers.WorkflowStatusCombination;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
+import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.services.MappingService;
@@ -371,12 +372,11 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
 
 	@Override
 	public Set<MapRecord> processWorkflowAction(TrackingRecord trackingRecord, WorkflowAction workflowAction,
-			MapUser mapUser, Set<MapRecord> mapRecords, MapRecord mapRecord) throws Exception {
+			MapProject mapProject, MapUser mapUser, Set<MapRecord> mapRecords, MapRecord mapRecord) throws Exception {
 
-		Logger.getLogger(WorkflowServiceJpa.class)
-		.info("NON_LEGACY_PATH: Processing workflow action by " + mapUser.getName() + ":  " + workflowAction.toString());
+		Logger.getLogger(WorkflowServiceJpa.class).info("NON_LEGACY_PATH: Processing workflow action by "
+				+ mapUser.getName() + ":  " + workflowAction.toString());
 
-		
 		// the set of records returned after processing
 		Set<MapRecord> newRecords = new HashSet<>(mapRecords);
 
@@ -401,7 +401,7 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
 				}
 
 				newRecord.setWorkflowStatus(WorkflowStatus.NEW);
-				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("NON_LEGACY_PATH: NEW");
+				Logger.getLogger(WorkflowNonLegacyPathHandler.class).info("NON_LEGACY_PATH: NEW");
 
 				// otherwise, if this is a tracking record with conflict
 				// detected, add a CONFLICT_NEW record
@@ -409,10 +409,9 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
 
 				newRecord.setWorkflowStatus(WorkflowStatus.CONFLICT_NEW);
 
-				// instantiate a default project specific handler for comparison
-				// TODO Decide behavior -- move this into this handler
-				// specifically? utility class?
-				ProjectSpecificAlgorithmHandler handler = new DefaultProjectSpecificAlgorithmHandler();
+				ProjectSpecificAlgorithmHandler handler = (ProjectSpecificAlgorithmHandler) Class
+						.forName(mapProject.getProjectSpecificAlgorithmHandlerClass()).newInstance();
+				handler.setMapProject(mapProject);
 
 				MapRecord mapRecord1 = (MapRecord) mapRecords.toArray()[0];
 				MapRecord mapRecord2 = (MapRecord) mapRecords.toArray()[1];
@@ -423,12 +422,11 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
 				for (final MapRecord mr : newRecords) {
 					newRecord.addOrigin(mr.getId());
 				}
-				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("NON_LEGACY_PATH: CONFLICT_NEW");
+				Logger.getLogger(WorkflowNonLegacyPathHandler.class).info("NON_LEGACY_PATH: CONFLICT_NEW");
 
 			} else {
 				throw new Exception("ASSIGN_FROM_SCRATCH on NON_LEGACY_PATH failed.");
 			}
-			
 
 			newRecords.add(newRecord);
 			break;
@@ -439,7 +437,7 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
 
 			/** The unassign. */
 		case UNASSIGN:
-			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("Unassign: NON_LEGACY_PATH");
+			Logger.getLogger(WorkflowNonLegacyPathHandler.class).info("Unassign: NON_LEGACY_PATH");
 
 			MapRecord assignedRecord = getCurrentMapRecordForUser(newRecords, mapUser);
 
@@ -480,214 +478,202 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
 
 		/** The finish editing. */
 		case FINISH_EDITING:
-			 // case 1: A specialist is finished with a record
-	        if (getWorkflowStatusFromMapRecords(mapRecords).compareTo(
-	            WorkflowStatus.CONFLICT_DETECTED) <= 0) {
+			// case 1: A specialist is finished with a record
+			if (getWorkflowStatusFromMapRecords(mapRecords).compareTo(WorkflowStatus.CONFLICT_DETECTED) <= 0) {
 
-	          Logger
-	              .getLogger(DefaultProjectSpecificAlgorithmHandler.class)
-	              .info(
-	                  "NON_LEGACY_PATH - New finished record, checking for other records");
+				Logger.getLogger(WorkflowNonLegacyPathHandler.class)
+						.info("NON_LEGACY_PATH - New finished record, checking for other records");
 
-	          // set this record to EDITING_DONE
-	          mapRecord.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
+				// set this record to EDITING_DONE
+				mapRecord.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
 
-	          // check if two specialists have completed work (lowest workflow
-	          // status is EDITING_DONE, highest workflow status is
-	          // CONFLICT_DETECTED)
-	          if (getLowestWorkflowStatusFromMapRecords(mapRecords).compareTo(
-	              WorkflowStatus.EDITING_DONE) >= 0
-	              && mapRecords.size() == 2) {
+				// check if two specialists have completed work (lowest workflow
+				// status is EDITING_DONE, highest workflow status is
+				// CONFLICT_DETECTED)
+				if (getLowestWorkflowStatusFromMapRecords(mapRecords).compareTo(WorkflowStatus.EDITING_DONE) >= 0
+						&& mapRecords.size() == 2) {
 
-	            Logger.getLogger(this.getClass())
-	                .info("NON_LEGACY_PATH - Two records found");
+					Logger.getLogger(this.getClass()).info("NON_LEGACY_PATH - Two records found");
 
-	            final Iterator<MapRecord> recordIter = mapRecords.iterator();
-	            final MapRecord mapRecord1 = recordIter.next();
-	            final MapRecord mapRecord2 = recordIter.next();
-	            
-	            // TODO Decide how to do comparisons
-	            final ValidationResult validationResult =
-	                (new DefaultProjectSpecificAlgorithmHandler()).compareMapRecords(mapRecord1, mapRecord2);
+					final Iterator<MapRecord> recordIter = mapRecords.iterator();
+					final MapRecord mapRecord1 = recordIter.next();
+					final MapRecord mapRecord2 = recordIter.next();
 
-	            // if map records validation is successful, publish
-	            if (validationResult.isValid()) {
+					ProjectSpecificAlgorithmHandler handler = (ProjectSpecificAlgorithmHandler) Class
+							.forName(mapProject.getProjectSpecificAlgorithmHandlerClass()).newInstance();
+					handler.setMapProject(mapProject);
 
-	              Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
-	                  .info("NON_LEGACY_PATH - No conflicts detected.");
+					// TODO Decide how to do comparisons
+					final ValidationResult validationResult = handler.compareMapRecords(mapRecord1, mapRecord2);
 
-	              newRecords = this.processWorkflowAction(trackingRecord, WorkflowAction.PUBLISH, mapUser, mapRecords, null);
+					// if map records validation is successful, publish
+					if (validationResult.isValid()) {
 
-	            } else {
+						Logger.getLogger(WorkflowNonLegacyPathHandler.class)
+								.info("NON_LEGACY_PATH - No conflicts detected.");
 
-	              Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
-	                  .info("NON_LEGACY_PATH - Conflicts detected");
+						newRecords = processWorkflowAction(trackingRecord, WorkflowAction.PUBLISH, mapProject, mapUser,
+								mapRecords, null);
 
-	              // conflict detected, change workflow status of all
-	              // records (if not a lead's existing conflict record)
-	              // and
-	              // update records
-	              for (final MapRecord mr : newRecords) {
-	                if (mr.getWorkflowStatus().compareTo(
-	                    WorkflowStatus.CONFLICT_DETECTED) <= 0)
-	                  mr.setWorkflowStatus(WorkflowStatus.CONFLICT_DETECTED);
-	              }
-	            }
-	            // otherwise, only one specialist has finished work, do
-	            // nothing else
-	          } else {
-	            Logger
-	                .getLogger(DefaultProjectSpecificAlgorithmHandler.class)
-	                .info(
-	                    "NON_LEGACY_PATH - Only this specialist has completed work");
-	          }
+					} else {
 
-	          // case 2: A lead is finished with a conflict resolution
-	          // Determined by workflow status of:
-	          // CONFLICT_NEW (i.e. conflict was resolved immediately)
-	          // CONFLICT_IN_PROGRESS (i.e. conflict had been previously saved
-	          // for later)
-	          // CONFLICT_RESOLVED (i.e. conflict marked resolved, but lead
-	          // revisited)
-	        } else if (mapRecord.getWorkflowStatus().equals(
-	            WorkflowStatus.CONFLICT_NEW)
-	            || mapRecord.getWorkflowStatus().equals(
-	                WorkflowStatus.CONFLICT_IN_PROGRESS)
-	            || mapRecord.getWorkflowStatus().equals(
-	                WorkflowStatus.CONFLICT_RESOLVED)) {
+						Logger.getLogger(WorkflowNonLegacyPathHandler.class)
+								.info("NON_LEGACY_PATH - Conflicts detected");
 
-	          Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
-	              "NON_LEGACY_PATH - Conflict resolution detected");
+						// conflict detected, change workflow status of all
+						// records (if not a lead's existing conflict record)
+						// and
+						// update records
+						for (final MapRecord mr : newRecords) {
+							if (mr.getWorkflowStatus().compareTo(WorkflowStatus.CONFLICT_DETECTED) <= 0)
+								mr.setWorkflowStatus(WorkflowStatus.CONFLICT_DETECTED);
+						}
+					}
+					// otherwise, only one specialist has finished work, do
+					// nothing else
+				} else {
+					Logger.getLogger(WorkflowNonLegacyPathHandler.class)
+							.info("NON_LEGACY_PATH - Only this specialist has completed work");
+				}
 
-	          // set the lead's record to CONFLICT_RESOLVED
-	          mapRecord.setWorkflowStatus(WorkflowStatus.CONFLICT_RESOLVED);
+				// case 2: A lead is finished with a conflict resolution
+				// Determined by workflow status of:
+				// CONFLICT_NEW (i.e. conflict was resolved immediately)
+				// CONFLICT_IN_PROGRESS (i.e. conflict had been previously saved
+				// for later)
+				// CONFLICT_RESOLVED (i.e. conflict marked resolved, but lead
+				// revisited)
+			} else if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_NEW)
+					|| mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_IN_PROGRESS)
+					|| mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_RESOLVED)) {
 
-	        } else {
-	          throw new Exception(
-	              "finishEditing failed! Invalid workflow status combination on record(s)");
-	        }
-	        break;
+				Logger.getLogger(getClass()).info("NON_LEGACY_PATH - Conflict resolution detected");
+
+				// set the lead's record to CONFLICT_RESOLVED
+				mapRecord.setWorkflowStatus(WorkflowStatus.CONFLICT_RESOLVED);
+
+			} else {
+				throw new Exception("finishEditing failed! Invalid workflow status combination on record(s)");
+			}
+			break;
 
 		/** The publish */
 		case PUBLISH:
-		
-			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
-		            "NON_LEGACY_PATH - Publishing resolved conflict");
 
-		        // Requirements for NON_LEGACY_PATH publish action
-		        // - 2 records marked EDITING_DONE
-		        // *OR*
-		        // - 1 record marked CONFLICT_RESOLVED
-		        // - 2 records marked CONFLICT_DETECTED
+			Logger.getLogger(WorkflowNonLegacyPathHandler.class).info("NON_LEGACY_PATH - Publishing resolved conflict");
 
-		        // if two map records, must be two EDITING_DONE or CONFLICT_DETECTED
-		        // records
-		        // with publish called by finishEditing
-		        if (mapRecords.size() == 2) {
+			// Requirements for NON_LEGACY_PATH publish action
+			// - 2 records marked EDITING_DONE
+			// *OR*
+			// - 1 record marked CONFLICT_RESOLVED
+			// - 2 records marked CONFLICT_DETECTED
 
-		          // check assumption: records are both marked EDITING_DONE or
-		          // CONFLICT_DETECTED
-		          for (final MapRecord mr : mapRecords) {
-		            if (!mr.getWorkflowStatus().equals(WorkflowStatus.EDITING_DONE)
-		                && !mr.getWorkflowStatus().equals(
-		                    WorkflowStatus.CONFLICT_DETECTED))
-		              throw new Exception(
-		                  "Publish called, expected two matching specialist records marked EDITING_DONE or CONFLICT_DETECTED, but found record with status "
-		                      + mr.getWorkflowStatus().toString());
-		          }
+			// if two map records, must be two EDITING_DONE or CONFLICT_DETECTED
+			// records
+			// with publish called by finishEditing
+			if (mapRecords.size() == 2) {
 
-		          // check assumption: records are not in conflict
-		          // note that this duplicates the call in finishEditing
-		          Iterator<MapRecord> iter = mapRecords.iterator();
-		          MapRecord mapRecord1 = iter.next();
-		          MapRecord mapRecord2 = iter.next();
-		          
-		          // TODO Another comparison call using default project specific handler -- decide behavior
-		          if (!(new DefaultProjectSpecificAlgorithmHandler()).compareMapRecords(mapRecord1, mapRecord2).isValid()) {
-		            throw new Exception(
-		                "Publish called for two matching specialist records, but the records did not pass comparator validation checks");
-		          }
+				// check assumption: records are both marked EDITING_DONE or
+				// CONFLICT_DETECTED
+				for (final MapRecord mr : mapRecords) {
+					if (!mr.getWorkflowStatus().equals(WorkflowStatus.EDITING_DONE)
+							&& !mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED))
+						throw new Exception(
+								"Publish called, expected two matching specialist records marked EDITING_DONE or CONFLICT_DETECTED, but found record with status "
+										+ mr.getWorkflowStatus().toString());
+				}
 
-		          // deep copy the record and mark the new record
-		          // READY_FOR_PUBLICATION
-		          MapRecord publishedRecord = new MapRecordJpa(mapRecord, false);
-		          publishedRecord.setOwner(mapUser);
-		          publishedRecord.setLastModifiedBy(mapUser);
-		          publishedRecord.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+				// check assumption: records are not in conflict
+				// note that this duplicates the call in finishEditing
+				Iterator<MapRecord> iter = mapRecords.iterator();
+				MapRecord mapRecord1 = iter.next();
+				MapRecord mapRecord2 = iter.next();
 
-		          // construct and set the new origin ids
-		          final Set<Long> originIds = new HashSet<>();
-		          originIds.add(mapRecord1.getId());
-		          originIds.add(mapRecord2.getId());
-		          originIds.addAll(mapRecord1.getOriginIds());
-		          originIds.addAll(mapRecord2.getOriginIds());
-		          publishedRecord.setOriginIds(originIds);
+				ProjectSpecificAlgorithmHandler handler = (ProjectSpecificAlgorithmHandler) Class
+						.forName(mapProject.getProjectSpecificAlgorithmHandlerClass()).newInstance();
+				handler.setMapProject(mapProject);
 
-		          // clear the records and add a single record owned by
-		          // this user -- note that this will remove any existing
-		          // conflict records
-		          newRecords.clear();
-		          newRecords.add(publishedRecord);
+				// TODO Another comparison call using default project specific
+				// handler -- decide behavior
+				if (!handler.compareMapRecords(mapRecord1, mapRecord2).isValid()) {
+					throw new Exception(
+							"Publish called for two matching specialist records, but the records did not pass comparator validation checks");
+				}
 
-		          Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
-		              "publish- NON_LEGACY_PATH - Creating READY_FOR_PUBLICATION record "
-		                  + publishedRecord.toString());
+				// deep copy the record and mark the new record
+				// READY_FOR_PUBLICATION
+				MapRecord publishedRecord = new MapRecordJpa(mapRecord, false);
+				publishedRecord.setOwner(mapUser);
+				publishedRecord.setLastModifiedBy(mapUser);
+				publishedRecord.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
 
-		        } else if (mapRecords.size() == 3) {
+				// construct and set the new origin ids
+				final Set<Long> originIds = new HashSet<>();
+				originIds.add(mapRecord1.getId());
+				originIds.add(mapRecord2.getId());
+				originIds.addAll(mapRecord1.getOriginIds());
+				originIds.addAll(mapRecord2.getOriginIds());
+				publishedRecord.setOriginIds(originIds);
 
-		          // Check assumption: owned record is CONFLICT_RESOLVED
-		          if (!mapRecord.getWorkflowStatus().equals(
-		              WorkflowStatus.CONFLICT_RESOLVED)) {
-		            throw new Exception(
-		                "Publish called on NON_LEGACY_PATH for map record not marked as CONFLICT_RESOLVED");
-		          }
+				// clear the records and add a single record owned by
+				// this user -- note that this will remove any existing
+				// conflict records
+				newRecords.clear();
+				newRecords.add(publishedRecord);
 
-		          // Check assumption: two CONFLICT_DETECTED records
-		          int nConflictRecords = 0;
-		          for (final MapRecord mr : mapRecords) {
-		            if (mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED))
-		              nConflictRecords++;
-		          }
+				Logger.getLogger(WorkflowNonLegacyPathHandler.class)
+						.info("publish- NON_LEGACY_PATH - Creating READY_FOR_PUBLICATION record "
+								+ publishedRecord.toString());
 
-		          if (nConflictRecords != 2) {
-		            throw new Exception(
-		                "Bad workflow state for concept "
-		                    + mapRecord.getConceptId()
-		                    + ":  CONFLICT_RESOLVED is not accompanied by two CONFLICT_DETECTED records");
-		          }
+			} else if (mapRecords.size() == 3) {
 
-		          // cycle over the previously existing records
-		          for (final MapRecord mr : mapRecords) {
+				// Check assumption: owned record is CONFLICT_RESOLVED
+				if (!mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_RESOLVED)) {
+					throw new Exception(
+							"Publish called on NON_LEGACY_PATH for map record not marked as CONFLICT_RESOLVED");
+				}
 
-		            // remove the CONFLICT_DETECTED records from the revised set
-		            if (mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED)) {
-		              newRecords.remove(mr);
+				// Check assumption: two CONFLICT_DETECTED records
+				int nConflictRecords = 0;
+				for (final MapRecord mr : mapRecords) {
+					if (mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED))
+						nConflictRecords++;
+				}
 
-		              // set the CONFLICT_NEW or CONFLICT_IN_PROGRESS record
-		              // to
-		              // READY_FOR_PUBLICATION
-		              // and update
-		            } else {
-		              mr.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
-		            }
-		          }
+				if (nConflictRecords != 2) {
+					throw new Exception("Bad workflow state for concept " + mapRecord.getConceptId()
+							+ ":  CONFLICT_RESOLVED is not accompanied by two CONFLICT_DETECTED records");
+				}
 
-		          // otherwise, bad workflow state, throw exception
-		        } else {
-		          throw new Exception("Bad workflow state for concept "
-		              + mapRecord.getConceptId()
-		              + ":  Expected either two or three records, but found "
-		              + mapRecords.size());
-		        }
-			
+				// cycle over the previously existing records
+				for (final MapRecord mr : mapRecords) {
+
+					// remove the CONFLICT_DETECTED records from the revised set
+					if (mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED)) {
+						newRecords.remove(mr);
+
+						// set the CONFLICT_NEW or CONFLICT_IN_PROGRESS record
+						// to READY_FOR_PUBLICATION and update
+					} else {
+						mr.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+					}
+				}
+
+				// otherwise, bad workflow state, throw exception
+			} else {
+				throw new Exception("Bad workflow state for concept " + mapRecord.getConceptId()
+						+ ":  Expected either two or three records, but found " + mapRecords.size());
+			}
+
 			break;
 
 		/** Cancel work */
 		case CANCEL:
-		    // re-retrieve the records for this tracking record and return those
-	        // used to ensure no spurious alterations from serialization are saved
-	        // and therefore reflected in the audit trail
-	      
+			// re-retrieve the records for this tracking record and return those
+			// used to ensure no spurious alterations from serialization are
+			// saved
+			// and therefore reflected in the audit trail
+
 			newRecords.clear();
 			MappingService mappingService = new MappingServiceJpa();
 			for (final Long id : trackingRecord.getMapRecordIds()) {
@@ -702,15 +688,21 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
 
 		default:
 			throw new Exception("NON_LEGACY_PATH received unknown workflow action: " + workflowAction);
-			
+
 		}
-		
+
 		Logger.getLogger(this.getClass()).debug("NON_LEGACY_PATH records after completion");
 		for (MapRecord mr : newRecords) {
 			Logger.getLogger(this.getClass()).debug("  " + mr.toString());
 		}
 
 		return newRecords;
+	}
+
+	@Override
+	public String getName() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
