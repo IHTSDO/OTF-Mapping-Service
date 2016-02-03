@@ -748,7 +748,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
             // Replace parent map with placehoder for new children
             parChdMap.put(par, new HashSet<String>());
             // Set up code for first intermediate layer
-            String newChd = ("00" + idx).substring(("00" + idx).length() - 4);
+            String newChd = ("00" + idx).substring(("00" + idx).length() - 3);
             String newChdStart = null;
             String newChdEnd = null;
 
@@ -772,7 +772,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
                     contentService);
 
                 idx++;
-                newChd = ("00" + idx).substring(("00" + idx).length() - 4);
+                newChd = ("00" + idx).substring(("00" + idx).length() - 3);
                 newChdStart = null;
 
               }
