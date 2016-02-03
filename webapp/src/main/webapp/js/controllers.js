@@ -14,12 +14,13 @@ var root_security = root_url + 'security/';
 var root_reporting = root_url + 'reporting/';
 
 mapProjectAppControllers
-  .run(function($rootScope, $http, localStorageService, $location) {
+  .run(function($rootScope, $http, localStorageService, $location, utilService) {
 
     // global function to handle any type of error. Currently only
     // specifically implemented for authorization failures.
     $rootScope.handleHttpError = function(data, status, headers, config) {
-      $rootScope.globalError = data.replace(/"/g, '');
+      // $rootScope.globalError = data.replace(/"/g, '');
+      utilService.handleError(data.replace(/"/g, '');
       if (status == '401') {
         $location.path('/');
       }
