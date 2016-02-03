@@ -1281,7 +1281,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         }
       }
     }
-
+/**
+ 	TODO Remove this comment section once workflow handlers fully enabled
+ 	
     // switch on workflow action
     switch (workflowAction) {
       case CREATE_QA_RECORD:
@@ -1555,7 +1557,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         break;
       default:
         throw new Exception("Unknown action requested.");
-    }
+    }*/
 
     Logger.getLogger(WorkflowServiceJpa.class).info("Synchronizing...");
 
