@@ -31,5 +31,7 @@ public interface WorkflowPathHandler {
   public ValidationResult validateTrackingRecordForActionAndUser(
     TrackingRecord trackingRecord, WorkflowAction action, MapUser mapUser)
     throws Exception;
+  
+  public String getName();
 
 }

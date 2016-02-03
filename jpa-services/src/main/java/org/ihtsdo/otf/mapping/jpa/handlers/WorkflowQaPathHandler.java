@@ -216,4 +216,10 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
     return result;
   }
 
+@Override
+public String getName() {
+	// TODO Auto-generated method stub
+	return null;
+}
+
 }
