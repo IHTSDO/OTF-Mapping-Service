@@ -13,6 +13,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -73,11 +74,12 @@ public class IndexUtility {
           new Class<?>[] {
               ConceptJpa.class, MapProjectJpa.class, MapRecordJpa.class,
               TreePositionJpa.class, TrackingRecordJpa.class,
-              FeedbackConversationJpa.class, FeedbackJpa.class, ReportJpa.class, MapAdviceJpa.class,
-              MapUserJpa.class, MapRelationJpa.class, MapPrincipleJpa.class,
-              ReportDefinitionJpa.class, ReportResultJpa.class, DescriptionJpa.class,
-              RelationshipJpa.class
-              
+              FeedbackConversationJpa.class, FeedbackJpa.class,
+              ReportJpa.class, MapAdviceJpa.class, MapUserJpa.class,
+              MapRelationJpa.class, MapPrincipleJpa.class,
+              ReportDefinitionJpa.class, ReportResultJpa.class,
+              DescriptionJpa.class, RelationshipJpa.class
+
           };
       for (Class<?> clazz : classes) {
         stringFieldNames.put(clazz,
@@ -103,10 +105,6 @@ public class IndexUtility {
     boolean stringOnly) throws Exception {
 
     // If already initialized, return computed values
-    System.out.println("stringOnly=" + stringOnly);
-    System.out.println("clazz=" + clazz);
-    System.out.println("stringFieldNames=" + stringFieldNames);
-
     if (stringOnly && stringFieldNames.containsKey(clazz)) {
       return stringFieldNames.get(clazz);
     }
@@ -190,9 +188,12 @@ public class IndexUtility {
           jpaType = f.getAnnotation(ManyToMany.class).targetEntity();
         } else if (f.isAnnotationPresent(ManyToOne.class)) {
           jpaType = f.getAnnotation(ManyToOne.class).targetEntity();
+        } else if (f.isAnnotationPresent(OneToOne.class)) {
+          jpaType = f.getAnnotation(OneToOne.class).targetEntity();
         } else {
-          throw new Exception(
-              "Unable to determine jpa type, @IndexedEmbedded must be used with @OneToMany, @ManyToOne, or @ManyToMany ");
+          throw new Exception("Unable to determine jpa type, @IndexedEmbedded "
+              + "must be used with @OneToMany, @ManyToOne, or @ManyToMany - "
+              + clazz + ", " + f.getName());
 
         }
 
