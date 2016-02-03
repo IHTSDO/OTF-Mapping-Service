@@ -550,9 +550,14 @@ public class WorkflowServiceJpa extends RootServiceJpa implements WorkflowServic
 				+ " OR userAndWorkflowStatusPairs:REVIEW_NEEDED_*"
 				+ " OR userAndWorkflowStatusPairs:REVIEW_RESOLVED_*)");
 
+    
+    final PfsParameter pfs = new PfsParameterJpa(pfsParameter);
+    pfs.setQueryRestriction(null);
 		int[] totalCt = new int[1];
-		final List<TrackingRecord> results = (List<TrackingRecord>) getQueryResults(sb.toString(),
-				TrackingRecordJpa.class, TrackingRecordJpa.class, pfsParameter, totalCt);
+    final List<TrackingRecord> results =
+        (List<TrackingRecord>) getQueryResults(sb.toString(),
+            TrackingRecordJpa.class, TrackingRecordJpa.class, pfs,
+            totalCt);
 		assignedWork.setTotalCount(totalCt[0]);
 
 		for (final TrackingRecord tr : results) {
@@ -662,9 +667,13 @@ public class WorkflowServiceJpa extends RootServiceJpa implements WorkflowServic
 			break;
 		}
 
+    final PfsParameter pfs = new PfsParameterJpa(pfsParameter);
+    pfs.setQueryRestriction(null);
 		int[] totalCt = new int[1];
-		final List<TrackingRecord> results = (List<TrackingRecord>) getQueryResults(sb.toString(),
-				TrackingRecordJpa.class, TrackingRecordJpa.class, pfsParameter, totalCt);
+    final List<TrackingRecord> results =
+        (List<TrackingRecord>) getQueryResults(sb.toString(),
+            TrackingRecordJpa.class, TrackingRecordJpa.class, pfs,
+            totalCt);
 		assignedConflicts.setTotalCount(totalCt[0]);
 
 		for (final TrackingRecord tr : results) {
@@ -742,9 +751,13 @@ public class WorkflowServiceJpa extends RootServiceJpa implements WorkflowServic
 			break;
 		}
 
+    final PfsParameter pfs = new PfsParameterJpa(pfsParameter);
+    pfs.setQueryRestriction(null);
 		int[] totalCt = new int[1];
-		final List<TrackingRecord> results = (List<TrackingRecord>) getQueryResults(sb.toString(),
-				TrackingRecordJpa.class, TrackingRecordJpa.class, pfsParameter, totalCt);
+    final List<TrackingRecord> results =
+        (List<TrackingRecord>) getQueryResults(sb.toString(),
+            TrackingRecordJpa.class, TrackingRecordJpa.class, pfs,
+            totalCt);
 		assignedReviewWork.setTotalCount(totalCt[0]);
 
 		for (final TrackingRecord tr : results) {
