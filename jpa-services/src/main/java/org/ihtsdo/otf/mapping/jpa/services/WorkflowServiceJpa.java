@@ -324,7 +324,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     final SearchResultList availableWork = new SearchResultListJpa();
 
     final StringBuilder sb = new StringBuilder();
-    if (query != null) {
+    if (query != null && !query.isEmpty() && !query.equals("null")) {
       sb.append(query).append(" AND ");
     }
     sb.append("mapProjectId:" + mapProject.getId());
@@ -404,7 +404,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     }
 
     final StringBuilder sb = new StringBuilder();
-    if (query != null) {
+    if (query != null && !query.isEmpty() && !query.equals("null")) {
       sb.append(query).append(" AND ");
     }
     sb.append("mapProjectId:" + mapProject.getId());
@@ -443,7 +443,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     SearchResultList availableQAWork = new SearchResultListJpa();
 
     final StringBuilder sb = new StringBuilder();
-    if (query != null) {
+    if (query != null && !query.isEmpty() && !query.equals("null")) {
       sb.append(query).append(" AND ");
     }
     sb.append("mapProjectId:" + mapProject.getId());
@@ -492,7 +492,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     SearchResultList availableReviewWork = new SearchResultListJpa();
 
     final StringBuilder sb = new StringBuilder();
-    if (query != null) {
+    if (query != null && !query.isEmpty() && !query.equals("null")) {
       sb.append(query).append(" AND ");
     }
     sb.append("mapProjectId:" + mapProject.getId());
@@ -539,7 +539,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
     SearchResultList assignedWork = new SearchResultListJpa();
 
     final StringBuilder sb = new StringBuilder();
-    if (query != null) {
+    if (query != null && !query.isEmpty() && !query.equals("null")) {
       sb.append(query).append(" AND ");
     }
     sb.append("mapProjectId:" + mapProject.getId());
@@ -688,7 +688,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
       return assignedConflicts;
 
     final StringBuilder sb = new StringBuilder();
-    if (query != null) {
+    if (query != null && !query.isEmpty() && !query.equals("null")) {
       sb.append(query).append(" AND ");
     }
     sb.append("mapProjectId:" + mapProject.getId());
@@ -780,7 +780,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
     SearchResultList assignedReviewWork = new SearchResultListJpa();
     final StringBuilder sb = new StringBuilder();
-    if (query != null) {
+    if (query != null && !query.isEmpty() && !query.equals("null")) {
       sb.append(query).append(" AND ");
     }
     sb.append("mapProjectId:" + mapProject.getId());
