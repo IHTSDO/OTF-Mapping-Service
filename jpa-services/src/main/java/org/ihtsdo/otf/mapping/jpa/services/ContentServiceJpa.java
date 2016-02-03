@@ -1671,7 +1671,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
     // Build parameters
     for (int i = 1; i <= ancestorIds.size(); i++) {
-      query.setParameter("path" + i, "%~" + ancestorIds.get(i) + "~%");
+      query.setParameter("path" + i, "%~" + ancestorIds.get(i-1) + "~%");
     }
     final long ct =
         (long) query.setParameter("terminology", terminology)

@@ -597,10 +597,13 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         + " OR userAndWorkflowStatusPairs:REVIEW_NEEDED_*"
         + " OR userAndWorkflowStatusPairs:REVIEW_RESOLVED_*)");
 
+    
+    final PfsParameter pfs = new PfsParameterJpa(pfsParameter);
+    pfs.setQueryRestriction(null);
     int[] totalCt = new int[1];
     final List<TrackingRecord> results =
         (List<TrackingRecord>) getQueryResults(sb.toString(),
-            TrackingRecordJpa.class, TrackingRecordJpa.class, pfsParameter,
+            TrackingRecordJpa.class, TrackingRecordJpa.class, pfs,
             totalCt);
     assignedWork.setTotalCount(totalCt[0]);
 
@@ -724,10 +727,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         break;
     }
 
+    final PfsParameter pfs = new PfsParameterJpa(pfsParameter);
+    pfs.setQueryRestriction(null);
     int[] totalCt = new int[1];
     final List<TrackingRecord> results =
         (List<TrackingRecord>) getQueryResults(sb.toString(),
-            TrackingRecordJpa.class, TrackingRecordJpa.class, pfsParameter,
+            TrackingRecordJpa.class, TrackingRecordJpa.class, pfs,
             totalCt);
     assignedConflicts.setTotalCount(totalCt[0]);
 
@@ -817,10 +822,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
         break;
     }
 
+    final PfsParameter pfs = new PfsParameterJpa(pfsParameter);
+    pfs.setQueryRestriction(null);
     int[] totalCt = new int[1];
     final List<TrackingRecord> results =
         (List<TrackingRecord>) getQueryResults(sb.toString(),
-            TrackingRecordJpa.class, TrackingRecordJpa.class, pfsParameter,
+            TrackingRecordJpa.class, TrackingRecordJpa.class, pfs,
             totalCt);
     assignedReviewWork.setTotalCount(totalCt[0]);
 
