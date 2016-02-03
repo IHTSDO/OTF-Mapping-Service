@@ -35,11 +35,19 @@ import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa;
+import org.ihtsdo.otf.mapping.jpa.FeedbackJpa;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
+import org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
+import org.ihtsdo.otf.mapping.jpa.MapRelationJpa;
+import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
+import org.ihtsdo.otf.mapping.reports.ReportDefinitionJpa;
 import org.ihtsdo.otf.mapping.reports.ReportJpa;
+import org.ihtsdo.otf.mapping.reports.ReportResultJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
+import org.ihtsdo.otf.mapping.rf2.jpa.DescriptionJpa;
+import org.ihtsdo.otf.mapping.rf2.jpa.RelationshipJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecordJpa;
 
@@ -65,7 +73,11 @@ public class IndexUtility {
           new Class<?>[] {
               ConceptJpa.class, MapProjectJpa.class, MapRecordJpa.class,
               TreePositionJpa.class, TrackingRecordJpa.class,
-              FeedbackConversationJpa.class, ReportJpa.class, MapAdviceJpa.class
+              FeedbackConversationJpa.class, FeedbackJpa.class, ReportJpa.class, MapAdviceJpa.class,
+              MapUserJpa.class, MapRelationJpa.class, MapPrincipleJpa.class,
+              ReportDefinitionJpa.class, ReportResultJpa.class, DescriptionJpa.class,
+              RelationshipJpa.class
+              
           };
       for (Class<?> clazz : classes) {
         stringFieldNames.put(clazz,
