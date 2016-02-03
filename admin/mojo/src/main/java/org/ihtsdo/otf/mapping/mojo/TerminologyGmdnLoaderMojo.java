@@ -733,7 +733,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
         // Handle adding relationships at the end, because we can
         // introduce intermediate levels if a level has to many
         // children
-        final Set<String> origParChd = parChdMap.keySet();
+        final Set<String> origParChd = new HashSet<>(parChdMap.keySet());
         for (final String par : origParChd) {
 
           // If > 100, create intermediate layers
@@ -749,6 +749,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
             parChdMap.put(par, new HashSet<String>());
             // Set up code for first intermediate layer
             String newChd = ("00" + idx).substring(("00" + idx).length() - 3);
+            parChdMap.put(newChd, new HashSet<String>());
             String newChdStart = null;
             String newChdEnd = null;
 
@@ -773,6 +774,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
 
                 idx++;
                 newChd = ("00" + idx).substring(("00" + idx).length() - 3);
+                parChdMap.put(newChd, new HashSet<String>());
                 newChdStart = null;
 
               }
@@ -783,7 +785,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
             // Last batch
             if (++ct % 100 == 0) {
               idx++;
-              newChd = ("00" + idx).substring(("00" + idx).length() - 4);
+              newChd = ("00" + idx).substring(("00" + idx).length() - 3);
               // Get first word of the last child concept
               newChdEnd =
                   conceptMap.get(chd).getDefaultPreferredName().split(" ")[0]
