@@ -67,6 +67,7 @@ import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapEntry;
@@ -83,6 +84,7 @@ import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
+import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 import com.sun.jersey.core.header.FormDataContentDisposition;
@@ -3417,7 +3419,7 @@ public class MappingServiceRest extends RootServiceRest {
         "RESTful call (Mapping): /record/id/" + mapRecordId
             + "/conflictOrigins");
     String user = null;
-    final MappingService mappingService = new MappingServiceJpa();
+    final WorkflowService mappingService = new WorkflowServiceJpa();
     try {
       final MapRecord mapRecord = mappingService.getMapRecord(mapRecordId);
 

@@ -78,14 +78,14 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
 
     try {
 
-      MappingService mappingService = new MappingServiceJpa();
-      Set<MapProject> mapProjects = new HashSet<>();
+      final WorkflowService workflowService = new WorkflowServiceJpa();
+      final Set<MapProject> mapProjects = new HashSet<>();
 
       // For empty refsetid, compute all
       if (refsetId == null || refsetId.isEmpty()) {
-        mapProjects.addAll(mappingService.getMapProjects().getMapProjects());
+        mapProjects.addAll(workflowService.getMapProjects().getMapProjects());
       } else {
-        for (MapProject mapProject : mappingService.getMapProjects()
+        for (MapProject mapProject : workflowService.getMapProjects()
             .getIterable()) {
           for (String id : refsetId.split(",")) {
             if (mapProject.getRefSetId().equals(id)) {
@@ -94,9 +94,6 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
           }
         }
       }
-
-      // Get the current workflow and extract concepts for comparison
-      WorkflowService workflowService = new WorkflowServiceJpa();
 
       // Compute workflow
       for (MapProject mapProject : mapProjects) {
@@ -172,7 +169,6 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
               + "\t'Concepts Removed' refers to concepts with unfinished editing that were removed from scope, i.e. are no longer referred to in the drip feed";
 
       getLog().info("done ...");
-      mappingService.close();
       workflowService.close();
 
       // if notification requested, send email
