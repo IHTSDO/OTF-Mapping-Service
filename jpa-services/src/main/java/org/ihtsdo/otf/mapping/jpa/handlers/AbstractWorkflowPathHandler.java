@@ -1,13 +1,18 @@
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapRecordListJpa;
+import org.ihtsdo.otf.mapping.helpers.MapUserList;
+import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
@@ -17,6 +22,7 @@ import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPathState;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatusCombination;
+import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
@@ -25,6 +31,7 @@ import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
+import org.ihtsdo.otf.mapping.workflow.TrackingRecordJpa;
 
 /**
  * Abstract implementation of {@link WorkflowPathHandler}.
@@ -308,6 +315,34 @@ public abstract class AbstractWorkflowPathHandler implements WorkflowPathHandler
 	 * @return the current map record for user
 	 */
 	@SuppressWarnings("static-method")
+	public MapRecord getCurrentMapRecordForUser(Set<MapRecord> records, MapUser mapUser) {
+		MapRecord assignedRecord = null;
+		for (MapRecord mr : records) {
+
+			// publication-ready and REVISION records cannot be current records
+			if (!mr.getWorkflowStatus().equals(WorkflowStatus.READY_FOR_PUBLICATION)
+					&& !mr.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)
+					&& !mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
+
+				// if user owns this record
+				if (mr.getOwner().equals(mapUser)) {
+
+					// if assigned record is null, set to this record
+					if (assignedRecord == null) {
+						assignedRecord = mr;
+					}
+
+					// otherwise, if this workflow status is higher, set to this
+					// record
+					else if (mr.getWorkflowStatus().compareTo(assignedRecord.getWorkflowStatus()) > 0)
+						assignedRecord = mr;
+				}
+			}
+		}
+		return assignedRecord;
+	}
+	
+	@SuppressWarnings("static-method")
 	public MapRecord getCurrentMapRecordForUser(MapRecordList records, MapUser mapUser) {
 		MapRecord assignedRecord = null;
 		for (MapRecord mr : records.getMapRecords()) {
@@ -422,10 +457,67 @@ public abstract class AbstractWorkflowPathHandler implements WorkflowPathHandler
 
 		return null;
 	}
-	
-	public void processWorkflowAction(MapProject mapProject, Concept concept,
-		    MapUser mapUser, MapRecord mapRecord, WorkflowAction workflowAction)
-		    throws Exception {
-	
+
+	/**
+	 * Process workflow action.
+	 *
+	 * @param trackingRecord
+	 *            the tracking record for a specified project and concept
+	 * @param mapRecords
+	 *            all map records associated with the tracking record, if any
+	 * @param mapUser
+	 *            the map user performing the workflow action
+	 * @param mapRecord
+	 *            the single map record associated with the workflow action, if
+	 *            any
+	 * @throws Exception
+	 *             the exception
+	 */
+	public Set<MapRecord> processWorkflowAction(TrackingRecord trackingRecord, WorkflowAction workflowAction,
+			MapUser mapUser, Set<MapRecord> mapRecords, MapRecord mapRecord) throws Exception {
+		return mapRecords;
 	}
+
+	// //////////////////////////
+	// Utility functions
+	// //////////////////////////
+
+
+	public MapUserList getMapUsersFromMapRecords(Set<MapRecord> mapRecords) {
+		MapUserList mapUserList = new MapUserListJpa();
+		for (final MapRecord mr : mapRecords) {
+			mapUserList.addMapUser(mr.getOwner());
+		}
+		return mapUserList;
+	}
+
+	public WorkflowStatus getWorkflowStatusFromMapRecords(Set<MapRecord> mapRecords) {
+		WorkflowStatus workflowStatus = WorkflowStatus.NEW;
+		for (final MapRecord mr : mapRecords) {
+			if (mr.getWorkflowStatus().compareTo(workflowStatus) > 0)
+				workflowStatus = mr.getWorkflowStatus();
+		}
+		return workflowStatus;
+	}
+
+	public WorkflowStatus getLowestWorkflowStatusFromMapRecords(Set<MapRecord> mapRecords) {
+		WorkflowStatus workflowStatus = WorkflowStatus.REVISION;
+		for (final MapRecord mr : mapRecords) {
+			if (mr.getWorkflowStatus().compareTo(workflowStatus) < 0)
+				workflowStatus = mr.getWorkflowStatus();
+		}
+		return workflowStatus;
+	}
+
+	protected MapRecord createMapRecordForTrackingRecordAndUser(TrackingRecord trackingRecord, MapUser mapUser) {
+		final MapRecord mapRecord = new MapRecordJpa();
+		mapRecord.setMapProjectId(trackingRecord.getMapProjectId());
+		mapRecord.setConceptId(trackingRecord.getTerminologyId());
+		mapRecord.setConceptName(trackingRecord.getDefaultPreferredName());
+		mapRecord.setOwner(mapUser);
+		mapRecord.setLastModifiedBy(mapUser);
+
+		return mapRecord;
+	}
+
 }
