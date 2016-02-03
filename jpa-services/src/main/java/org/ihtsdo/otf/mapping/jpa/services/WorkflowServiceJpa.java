@@ -303,7 +303,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements WorkflowServic
 		final SearchResultList availableWork = new SearchResultListJpa();
 
 		final StringBuilder sb = new StringBuilder();
-    if (query != null && !query.isEmpty() && !query.equals("null")) {
+		if (query != null && !query.isEmpty() && !query.equals("null")) {
 			sb.append(query).append(" AND ");
 		}
 		sb.append("mapProjectId:" + mapProject.getId());
@@ -378,7 +378,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements WorkflowServic
 		}
 
 		final StringBuilder sb = new StringBuilder();
-    if (query != null && !query.isEmpty() && !query.equals("null")) {
+		if (query != null && !query.isEmpty() && !query.equals("null")) {
 			sb.append(query).append(" AND ");
 		}
 		sb.append("mapProjectId:" + mapProject.getId());
@@ -415,7 +415,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements WorkflowServic
 		SearchResultList availableQAWork = new SearchResultListJpa();
 
 		final StringBuilder sb = new StringBuilder();
-    if (query != null && !query.isEmpty() && !query.equals("null")) {
+		if (query != null && !query.isEmpty() && !query.equals("null")) {
 			sb.append(query).append(" AND ");
 		}
 		sb.append("mapProjectId:" + mapProject.getId());
@@ -461,7 +461,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements WorkflowServic
 		SearchResultList availableReviewWork = new SearchResultListJpa();
 
 		final StringBuilder sb = new StringBuilder();
-    if (query != null && !query.isEmpty() && !query.equals("null")) {
+		if (query != null && !query.isEmpty() && !query.equals("null")) {
 			sb.append(query).append(" AND ");
 		}
 		sb.append("mapProjectId:" + mapProject.getId());
@@ -506,7 +506,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements WorkflowServic
 		SearchResultList assignedWork = new SearchResultListJpa();
 
 		final StringBuilder sb = new StringBuilder();
-    if (query != null && !query.isEmpty() && !query.equals("null")) {
+		if (query != null && !query.isEmpty() && !query.equals("null")) {
 			sb.append(query).append(" AND ");
 		}
 		sb.append("mapProjectId:" + mapProject.getId());
@@ -634,7 +634,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements WorkflowServic
 			return assignedConflicts;
 
 		final StringBuilder sb = new StringBuilder();
-    if (query != null && !query.isEmpty() && !query.equals("null")) {
+		if (query != null && !query.isEmpty() && !query.equals("null")) {
 			sb.append(query).append(" AND ");
 		}
 		sb.append("mapProjectId:" + mapProject.getId());
@@ -713,7 +713,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements WorkflowServic
 
 		SearchResultList assignedReviewWork = new SearchResultListJpa();
 		final StringBuilder sb = new StringBuilder();
-    if (query != null && !query.isEmpty() && !query.equals("null")) {
+		if (query != null && !query.isEmpty() && !query.equals("null")) {
 			sb.append(query).append(" AND ");
 		}
 		sb.append("mapProjectId:" + mapProject.getId());
@@ -1070,7 +1070,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements WorkflowServic
 
 		// declare the workflow handler
 		AbstractWorkflowPathHandler handler = null;
-		
+
 		// if no tracking record, create one (NOTE: Must be FIX_ERROR or QA
 		// path)
 		if (trackingRecord == null) {
@@ -1208,8 +1208,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements WorkflowServic
 		}
 
 		// process the workflow action
-		// handler.processWorkflowAction(trackingRecord, mapRecords, mapUser,
-		// mapRecord);
+		mapRecords = handler.processWorkflowAction(trackingRecord, workflowAction, mapUser, mapRecords, mapRecord);
 
 		Logger.getLogger(WorkflowServiceJpa.class).info("Synchronizing...");
 
