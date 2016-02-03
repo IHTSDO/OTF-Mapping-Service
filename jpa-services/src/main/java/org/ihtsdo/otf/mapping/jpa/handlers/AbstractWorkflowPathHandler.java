@@ -468,7 +468,7 @@ public abstract class AbstractWorkflowPathHandler implements WorkflowPathHandler
 	 * @throws Exception
 	 *             the exception
 	 */
-	public Set<MapRecord> processWorkflowAction(TrackingRecord trackingRecord, WorkflowAction workflowAction,
+	public Set<MapRecord> processWorkflowAction(TrackingRecord trackingRecord, WorkflowAction workflowAction, MapProject mapProject,
 			MapUser mapUser, Set<MapRecord> mapRecords, MapRecord mapRecord) throws Exception {
 		return mapRecords;
 	}
