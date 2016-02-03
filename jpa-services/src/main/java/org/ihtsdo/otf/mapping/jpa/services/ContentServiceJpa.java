@@ -1833,7 +1833,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
     // construct the query
     final StringBuilder sb = new StringBuilder();
-    if (query != null) {
+    if (query != null && !query.isEmpty() && !query.equals("null")) {
       sb.append(query).append(" AND ");
     }
     sb.append("terminology:" + terminology + " AND terminologyVersion:"
