@@ -7,30 +7,17 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
 
 import org.apache.log4j.Logger;
-import org.apache.lucene.index.FieldInfo;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.queryParser.MultiFieldQueryParser;
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.SortField;
-import org.apache.lucene.util.ReaderUtil;
-import org.apache.lucene.util.Version;
 import org.hibernate.search.SearchFactory;
-import org.hibernate.search.indexes.IndexReaderAccessor;
 import org.hibernate.search.jpa.FullTextEntityManager;
-import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.ihtsdo.otf.mapping.helpers.ComplexMapRefSetMemberList;
@@ -41,7 +28,6 @@ import org.ihtsdo.otf.mapping.helpers.DescriptionList;
 import org.ihtsdo.otf.mapping.helpers.DescriptionListJpa;
 import org.ihtsdo.otf.mapping.helpers.LanguageRefSetMemberList;
 import org.ihtsdo.otf.mapping.helpers.LanguageRefSetMemberListJpa;
-import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.RelationshipList;
@@ -97,12 +83,6 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
   /** The compute tree position validation result. */
   ValidationResult computeTreePositionValidationResult;
 
-  /** The tree position field names. */
-  private static Set<String> treePositionFieldNames;
-
-  /** The concept field names. */
-  private static Set<String> conceptFieldNames;
-
   /**
    * Instantiates an empty {@link ContentServiceJpa}.
    * 
@@ -110,51 +90,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
    */
   public ContentServiceJpa() throws Exception {
     super();
-    if (treePositionFieldNames == null) {
-      initializeFieldNames();
-    }
-  }
 
-  /* see superclass */
-  @Override
-  public synchronized void initializeFieldNames() throws Exception {
-    treePositionFieldNames = new HashSet<>();
-    conceptFieldNames = new HashSet<>();
-    final Map<String, Set<String>> fieldNamesMap = new HashMap<>();
-    fieldNamesMap.put("TreePositionJpa", treePositionFieldNames);
-    fieldNamesMap.put("ConceptJpa", conceptFieldNames);
-    final EntityManager manager = factory.createEntityManager();
-    final FullTextEntityManager fullTextEntityManager =
-        org.hibernate.search.jpa.Search.getFullTextEntityManager(manager);
-    final IndexReaderAccessor indexReaderAccessor =
-        fullTextEntityManager.getSearchFactory().getIndexReaderAccessor();
-    final Set<String> indexedClassNames =
-        fullTextEntityManager.getSearchFactory().getStatistics()
-            .getIndexedClassNames();
-    for (final String indexClass : indexedClassNames) {
-      Set<String> fieldNames = null;
-      if (indexClass.indexOf("TreePositionJpa") != -1) {
-        Logger.getLogger(ContentServiceJpa.class).info(
-            "FOUND TreePositionJpa index");
-        fieldNames = fieldNamesMap.get("TreePositionJpa");
-      } else if (indexClass.indexOf("ConceptJpa") != -1) {
-        Logger.getLogger(ContentServiceJpa.class)
-            .info("FOUND ConceptJpa index");
-        fieldNames = fieldNamesMap.get("ConceptJpa");
-      }
-      if (fieldNames != null) {
-        final IndexReader indexReader = indexReaderAccessor.open(indexClass);
-        try {
-          for (final FieldInfo info : ReaderUtil
-              .getMergedFieldInfos(indexReader)) {
-            fieldNames.add(info.name);
-          }
-        } finally {
-          indexReaderAccessor.close(indexReader);
-        }
-      }
-    }
-    fullTextEntityManager.close();
   }
 
   /* see superclass */
@@ -1190,6 +1126,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
         (List<Concept>) getQueryResults(searchString == null ? ""
             : searchString, ConceptJpa.class, ConceptJpa.class, pfsParameter,
             totalCt);
+
     // construct the search results
     for (final Concept c : concepts) {
       final SearchResult sr = new SearchResultJpa();
@@ -1895,34 +1832,19 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     String terminologyVersion, String query) throws Exception {
 
     // construct the query
-    final String fullQuery =
-        constructTreePositionQuery(terminology, terminologyVersion, query);
-
-    Logger.getLogger(ContentServiceJpa.class).info("Full query: " + fullQuery);
-
-    // execute the full text query
-    final FullTextEntityManager fullTextEntityManager =
-        Search.getFullTextEntityManager(manager);
-
-    final SearchFactory searchFactory =
-        fullTextEntityManager.getSearchFactory();
-    Query luceneQuery;
-    try {
-      final QueryParser queryParser =
-          new QueryParser(Version.LUCENE_36, "summary",
-              searchFactory.getAnalyzer(TreePositionJpa.class));
-      luceneQuery = queryParser.parse(fullQuery);
-    } catch (ParseException e) {
-      throw new LocalException(
-          "The specified search terms cannot be parsed.  Please check syntax and try again.");
+    final StringBuilder sb = new StringBuilder();
+    if (query != null) {
+      sb.append(query).append(" AND ");
     }
-
-    final org.hibernate.search.jpa.FullTextQuery ftquery =
-        fullTextEntityManager.createFullTextQuery(luceneQuery,
-            TreePositionJpa.class);
+    sb.append("terminology:" + terminology + " AND terminologyVersion:"
+        + terminologyVersion);
 
     // retrieve the query results
-    final List<TreePosition> queriedTreePositions = ftquery.getResultList();
+    final int[] totalCt = new int[1];
+    final List<TreePosition> queriedTreePositions =
+        (List<TreePosition>) getQueryResults(sb.toString(),
+            TreePositionJpa.class, TreePositionJpa.class,
+            new PfsParameterJpa(), totalCt);
 
     // initialize the result set
     final List<TreePosition> fullTreePositions = new ArrayList<>();
@@ -2117,222 +2039,6 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     }
 
     return treePosition;
-  }
-
-  /**
-   * Helper function for map record query construction using both fielded terms
-   * and unfielded terms.
-   * 
-   * @param terminology the terminology
-   * @param terminologyVersion the terminology version
-   * @param query the query
-   * @return the full lucene query text
-   * @throws Exception the exception
-   */
-  private static String constructTreePositionQuery(String terminology,
-    String terminologyVersion, String query) throws Exception {
-
-    String fullQuery;
-
-    // if no filter supplied, return query based on map project id only
-    if (query == null || query.equals("")) {
-      fullQuery =
-          "terminology:" + terminology + " AND terminologyVersion:"
-              + terminologyVersion;
-      return fullQuery;
-    }
-
-    // Pre-treatment: Find any lower-case boolean operators and set to
-    // uppercase
-
-    // //////////////////
-    // Basic algorithm:
-    //
-    // 1) add whitespace breaks to operators
-    // 2) split query on whitespace
-    // 3) cycle over terms in split query to find quoted material, add each
-    // term/quoted term to parsed terms\
-    // a) special case: quoted term after a :
-    // 3) cycle over terms in parsed terms
-    // a) if an operator/parantheses, pass through unchanged (send to upper
-    // case
-    // for boolean)
-    // b) if a fielded query (i.e. field:value), pass through unchanged
-    // c) if not, construct query on all fields with this term
-
-    // list of escape terms (i.e. quotes, operators) to be fed into query
-    // untouched
-    String escapeTerms = "\\+|\\-|\"|\\(|\\)";
-    String booleanTerms = "and|AND|or|OR|not|NOT";
-
-    // first cycle over the string to add artificial breaks before and after
-    // control characters
-    final String queryStr = query;
-
-    // pad the beginning to ensure capture of dash character
-    // terminology ids may contain terms like D55-D59, which should be
-    // preserved whole
-    // but we still want to capture lucene negation term, e.g. -D55
-    String queryStrMod = queryStr;
-
-    queryStrMod = queryStrMod.replace("(", " ( ");
-    queryStrMod = queryStrMod.replace(")", " ) ");
-    queryStrMod = queryStrMod.replace("\"", " \" ");
-    queryStrMod = queryStrMod.replace("+", " + ");
-    queryStrMod = queryStrMod.replace(" -", " - "); // note extra space on
-    // this term, see
-    // above
-
-    // remove any leading or trailing whitespace (otherwise first/last null
-    // term
-    // bug)
-    queryStrMod = queryStrMod.trim();
-
-    // split the string by white space and single-character operators
-    String[] terms = queryStrMod.split("\\s+");
-
-    // merge items between quotation marks
-    boolean exprInQuotes = false;
-    List<String> parsedTerms = new ArrayList<>();
-    String currentTerm = "";
-
-    // cycle over terms to identify quoted (i.e. non-parsed) terms
-    for (int i = 0; i < terms.length; i++) {
-
-      // if an open quote is detected
-      if (terms[i].equals("\"")) {
-
-        if (exprInQuotes) {
-
-          // special case check: fielded term. Impossible for first
-          // term to be
-          // fielded.
-          if (parsedTerms.size() == 0) {
-            parsedTerms.add("\"" + currentTerm + "\"");
-          } else {
-            String lastParsedTerm = parsedTerms.get(parsedTerms.size() - 1);
-
-            // if last parsed term ended with a colon, append this
-            // term to the
-            // last parsed term
-            if (lastParsedTerm.endsWith(":")) {
-              parsedTerms.set(parsedTerms.size() - 1, lastParsedTerm + "\""
-                  + currentTerm + "\"");
-            } else {
-              parsedTerms.add("\"" + currentTerm + "\"");
-            }
-          }
-
-          // reset current term
-          currentTerm = "";
-          exprInQuotes = false;
-
-        } else {
-          exprInQuotes = true;
-        }
-
-        // if no quote detected
-      } else {
-
-        // if inside quotes, continue building term
-        if (exprInQuotes) {
-          currentTerm =
-              currentTerm == "" ? terms[i] : currentTerm + " " + terms[i];
-
-          // otherwise, add to parsed list
-        } else {
-          parsedTerms.add(terms[i]);
-        }
-      }
-    }
-
-    for (final String s : parsedTerms) {
-      Logger.getLogger(ContentServiceJpa.class).debug("  " + s);
-    }
-
-    // cycle over terms to construct query
-    fullQuery = "";
-
-    for (int i = 0; i < parsedTerms.size(); i++) {
-
-      // if not the first term AND the last term was not an escape term
-      // add whitespace separator
-      if (i != 0 && !parsedTerms.get(i - 1).matches(escapeTerms)) {
-
-        fullQuery += " ";
-      }
-      /*
-       * fullQuery += (i == 0 ? // check for first term "" : // -> if first
-       * character, add nothing parsedTerms.get(i-1).matches(escapeTerms) ? //
-       * check if last term was an escape character "": // -> if last term was
-       * an escape character, add nothing " "); // -> otherwise, add a
-       * separating space
-       */
-
-      // if an escape character/sequence, add this term unmodified
-      if (parsedTerms.get(i).matches(escapeTerms)) {
-
-        fullQuery += parsedTerms.get(i);
-
-        // else if a boolean character, add this term in upper-case form
-        // (i.e.
-        // lucene format)
-      } else if (parsedTerms.get(i).matches(booleanTerms)) {
-
-        fullQuery += parsedTerms.get(i).toUpperCase();
-
-        // else if already a field-specific query term, add this term
-        // unmodified
-      } else if (parsedTerms.get(i).contains(":")) {
-
-        fullQuery += parsedTerms.get(i);
-
-        // otherwise, treat as unfielded query term
-      } else {
-
-        // open parenthetical term
-        fullQuery += "(";
-
-        // add fielded query for each indexed term, separated by OR
-        Iterator<String> namesIter = treePositionFieldNames.iterator();
-        while (namesIter.hasNext()) {
-
-          String fieldName = namesIter.next();
-
-          fullQuery += fieldName + ":" + parsedTerms.get(i);
-          if (namesIter.hasNext())
-            fullQuery += " OR ";
-        }
-
-        // close parenthetical term
-        fullQuery += ")";
-      }
-
-      // if further terms remain in the sequence
-      if (!(i == parsedTerms.size() - 1)) {
-
-        // Add a separating OR iff:
-        // - this term is not an escape character
-        // - this term is not a boolean term
-        // - next term is not a boolean term
-        if (!parsedTerms.get(i).matches(escapeTerms)
-            && !parsedTerms.get(i).matches(booleanTerms)
-            && !parsedTerms.get(i + 1).matches(booleanTerms)) {
-
-          fullQuery += " OR";
-        }
-      }
-    }
-
-    // add parantheses and map project constraint
-    fullQuery =
-        "(" + fullQuery + ")" + " AND terminology:" + terminology
-            + " AND terminologyVersion:" + terminologyVersion;
-
-    Logger.getLogger(ContentServiceJpa.class).debug("Full query: " + fullQuery);
-
-    return fullQuery;
-
   }
 
   /* see superclass */

@@ -26,6 +26,20 @@ public class PfsParameterJpa implements PfsParameter {
   }
 
   /**
+   * Instantiates a {@link PfsParameterJpa} from the specified parameters.
+   *
+   * @param pfs the pfs
+   */
+  public PfsParameterJpa(PfsParameter pfs) {
+    if (pfs != null) {
+      maxResults = pfs.getMaxResults();
+      startIndex = pfs.getStartIndex();
+      queryRestriction = pfs.getQueryRestriction();
+      sortField = pfs.getSortField();
+    }
+  }
+
+  /**
    * Returns the maximum number of results
    * @return the maximum number of results
    */
