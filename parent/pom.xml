@@ -227,7 +227,7 @@
         <artifactId>cglib</artifactId>
         <version>${cglib.version}</version>
       </dependency>
-      
+
       <!-- Sending email -->
       <dependency>
         <groupId>com.sun.mail</groupId>
@@ -248,6 +248,14 @@
         <artifactId>poi</artifactId>
         <version>${apache.poi}</version>
       </dependency>
+
+      <!-- Apache commons-lang3 - for FastDateTime -->
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>3.3.2</version>
+      </dependency>
+
 
     </dependencies>
   </dependencyManagement>
