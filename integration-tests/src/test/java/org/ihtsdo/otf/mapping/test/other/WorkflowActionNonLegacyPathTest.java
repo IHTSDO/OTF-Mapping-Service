@@ -1,6 +1,7 @@
 package org.ihtsdo.otf.mapping.test.other;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -19,7 +20,6 @@ import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowNonLegacyPathHandler;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
-import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapProject;
@@ -29,7 +29,6 @@ import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
-import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 import org.junit.AfterClass;
@@ -1250,6 +1249,12 @@ public class WorkflowActionNonLegacyPathTest {
     }
   }
 
+  /**
+   * Test normal workflow with conflict.
+   *
+   * @throws Exception the exception
+   */
+  @SuppressWarnings("unused")
   @Test
   public void testNormalWorkflowWithConflict() throws Exception {
 
@@ -1428,8 +1433,8 @@ public class WorkflowActionNonLegacyPathTest {
    */
   @SuppressWarnings("static-method")
   private void clearMapRecords() throws Exception {
-    for (MapRecord mr : mappingService.getMapRecords().getIterable()) {
-      mappingService.removeMapRecord(mr.getId());
+    for (MapRecord mr : workflowService.getMapRecords().getIterable()) {
+      workflowService.removeMapRecord(mr.getId());
     }
     specRecord = null;
     specRecord2 = null;
