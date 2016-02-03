@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
+import java.util.List;
 import java.util.Properties;
 
 import javax.persistence.EntityManager;
@@ -8,6 +9,11 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 
 import org.apache.log4j.Logger;
+import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.queryParser.QueryParser;
+import org.hibernate.search.jpa.FullTextQuery;
+import org.ihtsdo.otf.mapping.helpers.PfsParameter;
+import org.ihtsdo.otf.mapping.jpa.helpers.IndexUtility;
 import org.ihtsdo.otf.mapping.services.RootService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
@@ -169,6 +175,46 @@ public abstract class RootServiceJpa implements RootService {
     if (manager.isOpen()) {
       manager.close();
     }
+  }
+
+  /**
+   * Returns the query results.
+   *
+   * @param <T> the
+   * @param query the query
+   * @param fieldNamesKey the field names key
+   * @param clazz the clazz
+   * @param pfs the pfs
+   * @param totalCt the total ct
+   * @return the query results
+   * @throws Exception the exception
+   */
+  public <T> List<?> getQueryResults(String query, Class<?> fieldNamesKey,
+    Class<T> clazz, PfsParameter pfs, int[] totalCt) throws Exception {
+
+    if (query == null || query.isEmpty()) {
+      throw new Exception("Unexpected empty query.");
+    }
+
+    FullTextQuery fullTextQuery = null;
+    try {
+      fullTextQuery =
+          IndexUtility.applyPfsToLuceneQuery(clazz, fieldNamesKey, query, pfs,
+              manager);
+    } catch (ParseException e) {
+      // If parse exception, try a literal query
+      StringBuilder escapedQuery = new StringBuilder();
+      if (query != null && !query.isEmpty()) {
+        escapedQuery.append(QueryParser.escape(query));
+      }
+      fullTextQuery =
+          IndexUtility.applyPfsToLuceneQuery(clazz, fieldNamesKey,
+              escapedQuery.toString(), pfs, manager);
+    }
+
+    totalCt[0] = fullTextQuery.getResultSize();
+    return fullTextQuery.getResultList();
+
   }
 
 }
