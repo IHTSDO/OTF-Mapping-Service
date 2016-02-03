@@ -508,7 +508,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements WorkflowServic
 		final StringBuilder sb = new StringBuilder();
 		if (query != null && !query.isEmpty() && !query.equals("null")) {
 			sb.append(query).append(" AND ");
-		}
+		}	
 		sb.append("mapProjectId:" + mapProject.getId());
 
 		// add the query terms specific to findAssignedWork
@@ -1208,7 +1208,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements WorkflowServic
 		}
 
 		// process the workflow action
-		mapRecords = handler.processWorkflowAction(trackingRecord, workflowAction, mapUser, mapRecords, mapRecord);
+		mapRecords = handler.processWorkflowAction(trackingRecord, workflowAction, mapProject, mapUser, mapRecords, mapRecord);
 
 		Logger.getLogger(WorkflowServiceJpa.class).info("Synchronizing...");
 
@@ -1369,8 +1369,10 @@ public class WorkflowServiceJpa extends RootServiceJpa implements WorkflowServic
 		}
 
 		// close the service
+		mappingService.clear();
 		mappingService.close();
 
+		
 		return syncedRecords;
 
 	}

@@ -333,4 +333,10 @@ public class WorkflowReviewProjectPathHandler extends
 
     return result;
   }
+
+@Override
+public String getName() {
+	// TODO Auto-generated method stub
+	return null;
+}
 }
