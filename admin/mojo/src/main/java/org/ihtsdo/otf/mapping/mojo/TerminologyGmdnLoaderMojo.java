@@ -437,8 +437,8 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
         if (qName.equalsIgnoreCase("term")) {
           // Add the concept
           // CASCADE will handle descriptions
-          Logger.getLogger(getClass()).debug("    concept = " + concept);
           contentService.addConcept(concept);
+          Logger.getLogger(getClass()).debug("    concept = " + concept);
         }
 
         // </termID> - set the description terminology id
@@ -592,8 +592,8 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
         if (qName.equalsIgnoreCase("collectiveterm")) {
           // Add the concept
           // CASCADE will handle descriptions
-          Logger.getLogger(getClass()).debug("    concept = " + concept);
           contentService.addConcept(concept);
+          Logger.getLogger(getClass()).debug("    concept = " + concept);
         }
 
         // </collectivetermID> - set the description terminology id
@@ -740,17 +740,20 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
           if (parChdMap.get(par).size() > 100) {
 
             // Set up the index for the intermediate layer
-            int idx = 1;
+            int idx = 0;
             // count up to 100 for each case
             int ct = 0;
             // Get original children
             final Set<String> oldChd = parChdMap.get(par);
-            // Replace parent map with placehoder for new children
             parChdMap.put(par, new HashSet<String>());
-            // Set up code for first intermediate layer
-            String newChd = ("00" + idx).substring(("00" + idx).length() - 3);
+
+            // Increment counter and prep for the first 100
+            idx++;
+            String newChd =
+                par + "." + ("00" + idx).substring(("00" + idx).length() - 3);
             parChdMap.put(newChd, new HashSet<String>());
-            String newChdStart = null;
+            parChdMap.get(par).add(newChd);
+            String newChdStart = "aa";
             String newChdEnd = null;
 
             // Iterate through original children
@@ -768,33 +771,42 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
                 newChdEnd =
                     conceptMap.get(chd).getDefaultPreferredName().split(" ")[0]
                         .toLowerCase();
-                // add the concept
-                addIntermediateConcept(par, newChd, newChdStart, newChdEnd,
-                    contentService);
-
-                idx++;
-                newChd = ("00" + idx).substring(("00" + idx).length() - 3);
-                parChdMap.put(newChd, new HashSet<String>());
                 newChdStart = null;
+
+                // add the concept - need to wait until the end
+                // so we know the name of the condept
+                Concept concept =
+                    addIntermediateConcept(par, newChd, newChdStart, newChdEnd,
+                        contentService);
+                conceptMap.put(newChd, concept);
+
+                // Increment counter and prep for the next 100
+                idx++;
+                newChd =
+                    par + "."
+                        + ("00" + idx).substring(("00" + idx).length() - 3);
+                parChdMap.put(newChd, new HashSet<String>());
+                Logger.getLogger(getClass()).debug(
+                    "REL " + par + " -> " + newChd);
+                parChdMap.get(par).add(newChd);
 
               }
               // Wire intermediate layer to original child
+              Logger.getLogger(getClass())
+                  .debug("REL " + newChd + " -> " + chd);
               parChdMap.get(newChd).add(chd);
             }
 
-            // Last batch
-            if (++ct % 100 == 0) {
-              idx++;
-              newChd = ("00" + idx).substring(("00" + idx).length() - 3);
-              // Get first word of the last child concept
-              newChdEnd =
-                  conceptMap.get(chd).getDefaultPreferredName().split(" ")[0]
-                      .toLowerCase();
-              // add the concept
-              addIntermediateConcept(par, newChd, newChdStart, newChdEnd,
-                  contentService);
+            // Add last concept
+            if (!conceptMap.containsKey(newChd)) {
+              newChdEnd = "zz";
 
-              newChdStart = null;
+              // add the concept - need to wait until the end
+              // so we know the name of the condept
+              Concept concept =
+                  addIntermediateConcept(par, newChd, newChdStart, newChdEnd,
+                      contentService);
+              conceptMap.put(newChd, concept);
 
             }
           }
@@ -848,9 +860,10 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
      * @param newChdStart the new chd start
      * @param newChdEnd the new chd end
      * @param contentService the content service
+     * @return the concept
      * @throws Exception the exception
      */
-    private void addIntermediateConcept(String par, String newChd,
+    private Concept addIntermediateConcept(String par, String newChd,
       String newChdStart, String newChdEnd, ContentService contentService)
       throws Exception {
       // Add a new concept for this
@@ -858,7 +871,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
       setCommonFields(concept);
       concept.setDefinitionStatusId(Long.parseLong(conceptMap.get(
           "defaultDefinitionStatus").getTerminologyId()));
-      concept.setTerminologyId(par + "." + newChd);
+      concept.setTerminologyId(newChd);
       concept.setDefaultPreferredName(newChdStart + " - " + newChdEnd);
 
       // create and configure description
@@ -870,17 +883,13 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
           "defaultCaseSignificance").getTerminologyId()));
       description.setLanguageCode("en");
       description.setActive(true);
-      description.setTerminologyId(par + "." + newChd);
+      description.setTerminologyId(newChd);
       description.setTerm(newChdStart + " - " + newChdEnd);
 
+      contentService.addConcept(concept);
       Logger.getLogger(getClass()).debug("    concept = " + concept);
 
-      contentService.addConcept(concept);
-
-      conceptMap.put(newChd, concept);
-
-      parChdMap.put(newChd, new HashSet<String>());
-      parChdMap.get(par).add(newChd);
+      return concept;
     }
 
   }
