@@ -1079,20 +1079,27 @@ public class MappingServiceRest extends RootServiceRest {
     // log call
     Logger.getLogger(MappingServiceRest.class).info(
         "RESTful call (Mapping): /user/add");
-    String user = null;
+    String userName = null;
     final MappingService mappingService = new MappingServiceJpa();
 
     try {
       // authorize call
-      user =
+      userName =
           authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "add a user",
               securityService);
 
+      // Check if user already exists and send better message
+      for (final MapUser user : mappingService.getMapUsers().getMapUsers()) {
+        if (user.getName().equals(mapUser.getName())) {
+          throw new LocalException("This map user already exists: "
+              + user.getName());
+        }
+      }
       mappingService.addMapUser(mapUser);
       return mapUser;
 
     } catch (Exception e) {
-      handleException(e, "trying to add a user", user, "", "");
+      handleException(e, "trying to add a user", userName, "", "");
       return null;
     } finally {
       mappingService.close();
@@ -1257,6 +1264,15 @@ public class MappingServiceRest extends RootServiceRest {
       user =
           authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "add map advice",
               securityService);
+
+      // Check if advice already exists and send better message
+      for (final MapAdvice advice : mappingService.getMapAdvices()
+          .getMapAdvices()) {
+        if (advice.getName().equals(mapAdvice.getName())) {
+          throw new LocalException("This map advice already exists: "
+              + advice.getName());
+        }
+      }
 
       mappingService.addMapAdvice(mapAdvice);
       return mapAdvice;
@@ -1430,6 +1446,15 @@ public class MappingServiceRest extends RootServiceRest {
           authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
               "add map age range", securityService);
 
+      // Check if age range already exists and send better message
+      for (final MapAgeRange range : mappingService.getMapAgeRanges()
+          .getMapAgeRanges()) {
+        if (range.getName().equals(range.getName())) {
+          throw new LocalException("This map age range already exists: "
+              + range.getName());
+        }
+      }
+
       mappingService.addMapAgeRange(mapAgeRange);
       return mapAgeRange;
 
@@ -1598,6 +1623,15 @@ public class MappingServiceRest extends RootServiceRest {
       user =
           authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
               "add map relation", securityService);
+
+      // Check if relation already exists and send better message
+      for (final MapRelation relation : mappingService.getMapRelations()
+          .getMapRelations()) {
+        if (relation.getName().equals(mapRelation.getName())) {
+          throw new LocalException("This map relation already exists: "
+              + relation.getName());
+        }
+      }
 
       mappingService.addMapRelation(mapRelation);
       return mapRelation;
@@ -1816,6 +1850,16 @@ public class MappingServiceRest extends RootServiceRest {
       user =
           authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
               "add map principle", securityService);
+
+      // Check if principle already exists and send better message
+      for (final MapPrinciple principle : mappingService.getMapPrinciples()
+          .getMapPrinciples()) {
+        if (principle.getName().equals(mapPrinciple.getName())
+            && principle.getPrincipleId().equals(mapPrinciple.getPrincipleId())) {
+          throw new LocalException("This map principle already exists: "
+              + principle.getPrincipleId() + ", " + principle.getName());
+        }
+      }
 
       final MapPrinciple result = mappingService.addMapPrinciple(mapPrinciple);
       return result;

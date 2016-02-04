@@ -1,5 +1,9 @@
 package org.ihtsdo.otf.mapping.services;
 
+import java.util.List;
+
+import org.ihtsdo.otf.mapping.helpers.PfsParameter;
+
 /**
  * Generically represents a service, with common functionality.
  */
@@ -70,4 +74,17 @@ public interface RootService {
    */
   public void clear() throws Exception;
 
+  /**
+   * Apply pfs to list.
+   *
+   * @param <T> the
+   * @param list the list
+   * @param clazz the clazz
+   * @param totalCt the total ct
+   * @param pfs the pfs
+   * @return the list
+   * @throws Exception the exception
+   */
+  public <T> List<T> applyPfsToList(List<T> list, Class<T> clazz,
+    int[] totalCt, PfsParameter pfs) throws Exception;
 }
