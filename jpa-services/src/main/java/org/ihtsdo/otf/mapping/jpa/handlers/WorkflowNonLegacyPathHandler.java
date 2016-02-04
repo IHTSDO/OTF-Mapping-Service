@@ -612,7 +612,7 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
 
 				// deep copy the record and mark the new record
 				// READY_FOR_PUBLICATION
-				MapRecord publishedRecord = new MapRecordJpa(mapRecord, false);
+				MapRecord publishedRecord = new MapRecordJpa(mapRecord1, false);
 				publishedRecord.setOwner(mapUser);
 				publishedRecord.setLastModifiedBy(mapUser);
 				publishedRecord.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
@@ -900,24 +900,20 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
 				break;
 			case "EDITING_DONE":
 				sb.append(" AND (userAndWorkflowStatusPairs:EDITING_DONE_" + mapUser.getUserName()
-						+ " OR userAndWorkflowStatusPairs:CONFLICT_DETECTED_" + mapUser.getUserName()
-						+ " OR userAndWorkflowStatusPairs:REVIEW_NEEDED_" + mapUser.getUserName() + ")");
+						+ " OR userAndWorkflowStatusPairs:CONFLICT_DETECTED_" + mapUser.getUserName() + ")");
 				break;
 			default:
 				sb.append(" AND (userAndWorkflowStatusPairs:NEW_" + mapUser.getUserName()
 						+ " OR userAndWorkflowStatusPairs:EDITING_IN_PROGRESS_" + mapUser.getUserName()
 						+ " OR userAndWorkflowStatusPairs:EDITING_DONE_" + mapUser.getUserName()
-						+ " OR userAndWorkflowStatusPairs:CONFLICT_DETECTED_" + mapUser.getUserName()
-						+ " OR userAndWorkflowStatusPairs:REVIEW_NEEDED_" + mapUser.getUserName() + ")");
+						+ " OR userAndWorkflowStatusPairs:CONFLICT_DETECTED_" + mapUser.getUserName() + ")");
 				break;
 			}
 
 			// add terms to exclude concepts that a lead has claimed
 			sb.append(" AND NOT (userAndWorkflowStatusPairs:CONFLICT_NEW_*"
 					+ " OR userAndWorkflowStatusPairs:CONFLICT_IN_PROGRESS_*"
-					+ " OR userAndWorkflowStatusPairs:CONFLICT_RESOLVED_*"
-					+ " OR userAndWorkflowStatusPairs:REVIEW_NEW_*" + " OR userAndWorkflowStatusPairs:REVIEW_NEEDED_*"
-					+ " OR userAndWorkflowStatusPairs:REVIEW_RESOLVED_*)");
+					+ " OR userAndWorkflowStatusPairs:CONFLICT_RESOLVED_*)");
 
 			// TODO Have Brian help with brain problems regarding method
 			// visibility
@@ -945,9 +941,7 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
 						// if this lead has review or conflict work, set the
 						// flag
 						if (mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_NEW)
-								|| mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_IN_PROGRESS)
-								|| mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW)
-								|| mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_IN_PROGRESS)) {
+								|| mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_IN_PROGRESS)) {
 
 							mapLeadAlternateRecordStatus = mr.getWorkflowStatus();
 
@@ -958,6 +952,7 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
 							// able
 							// to
 							// serve as dual roles
+							// TODO This should be removed
 						} else if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
 							// do nothing
 
