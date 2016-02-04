@@ -297,6 +297,10 @@ public class IndexViewerHandler {
     // Local directory
     String dataDir =
         ConfigUtility.getConfigProperties().getProperty("index.viewer.data");
+    
+    if (dataDir == null || dataDir.isEmpty()) {
+    	return searchResultList;
+    }
     for (final File termDir : new File(dataDir).listFiles()) {
       // Find terminology directory
       if (termDir.getName().equals(terminology)) {
