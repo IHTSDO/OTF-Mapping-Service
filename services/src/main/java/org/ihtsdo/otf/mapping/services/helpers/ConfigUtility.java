@@ -251,6 +251,19 @@ public class ConfigUtility {
   }
 
   /**
+   * Capitalize.
+   *
+   * @param value the value
+   * @return the string
+   */
+  public static String capitalize(String value) {
+    if (value == null) {
+      return value;
+    }
+    return value.substring(0, 1).toUpperCase() + value.substring(1);
+  }
+
+  /**
    * SMTPAuthenticator.
    */
   public static class SMTPAuthenticator extends javax.mail.Authenticator {
@@ -400,7 +413,8 @@ public class ConfigUtility {
             if (i != 0) {
               return i;
             } else {
-              // Handle simple case - compare referencedComponentId (will be unique)
+              // Handle simple case - compare referencedComponentId (will be
+              // unique)
               if (fields1.length == 6) {
                 return 0;
               }
@@ -467,7 +481,7 @@ public class ConfigUtility {
         if (i != 0) {
           return i;
         } else {
-          // handle simple human readable case 
+          // handle simple human readable case
           if (fields1.length == 9) {
             return 0;
           }
