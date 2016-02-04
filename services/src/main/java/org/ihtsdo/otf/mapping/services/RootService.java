@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 
-// TODO: Auto-generated Javadoc
 /**
  * Generically represents a service, with common functionality.
  */
@@ -84,20 +83,17 @@ public interface RootService {
 	 */
 	public void clear() throws Exception;
 
-	
-	/**
-	 * Gets the query results.
-	 *
-	 * @param <T> the generic type
-	 * @param query the query
-	 * @param fieldNamesKey the field names key
-	 * @param clazz the clazz
-	 * @param pfs the pfs
-	 * @param totalCt the total ct
-	 * @return the query results
-	 * @throws Exception the exception
-	 */
-	public <T> List<?> getQueryResults(String query, Class<?> fieldNamesKey, Class<T> clazz, PfsParameter pfs,
-			int[] totalCt) throws Exception;
-
+  /**
+   * Apply pfs to list.
+   *
+   * @param <T> the
+   * @param list the list
+   * @param clazz the clazz
+   * @param totalCt the total ct
+   * @param pfs the pfs
+   * @return the list
+   * @throws Exception the exception
+   */
+  public <T> List<T> applyPfsToList(List<T> list, Class<T> clazz,
+    int[] totalCt, PfsParameter pfs) throws Exception;
 }
