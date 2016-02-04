@@ -196,7 +196,7 @@ public abstract class RootServiceJpa implements RootService {
    */
   @Override
   public <T> List<?> getQueryResults(String query, Class<?> fieldNamesKey,
-    Class<T> clazz, PfsParameter pfs, int[] totalCt) throws Exception {
+    Class<?> clazz, PfsParameter pfs, int[] totalCt) throws Exception {
 
     if (query == null || query.isEmpty()) {
       throw new Exception("Unexpected empty query.");
