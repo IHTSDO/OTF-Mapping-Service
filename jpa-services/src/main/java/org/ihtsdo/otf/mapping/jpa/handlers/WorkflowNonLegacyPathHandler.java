@@ -3,12 +3,19 @@ package org.ihtsdo.otf.mapping.jpa.handlers;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
+import org.ihtsdo.otf.mapping.helpers.PfsParameter;
+import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
+import org.ihtsdo.otf.mapping.helpers.SearchResult;
+import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
+import org.ihtsdo.otf.mapping.helpers.SearchResultList;
+import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
@@ -17,12 +24,15 @@ import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatusCombination;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.services.MappingService;
+import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
+import org.ihtsdo.otf.mapping.workflow.TrackingRecordJpa;
 
 /**
  * Workflow path handler for "non legacy path".
@@ -374,8 +384,8 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
 	public Set<MapRecord> processWorkflowAction(TrackingRecord trackingRecord, WorkflowAction workflowAction,
 			MapProject mapProject, MapUser mapUser, Set<MapRecord> mapRecords, MapRecord mapRecord) throws Exception {
 
-		Logger.getLogger(WorkflowServiceJpa.class).info("NON_LEGACY_PATH: Processing workflow action by "
-				+ mapUser.getName() + ":  " + workflowAction.toString());
+		Logger.getLogger(this.getClass()).info("NON_LEGACY_PATH: Processing workflow action by " + mapUser.getName()
+				+ ":  " + workflowAction.toString());
 
 		// the set of records returned after processing
 		Set<MapRecord> newRecords = new HashSet<>(mapRecords);
@@ -416,7 +426,7 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
 				MapRecord mapRecord1 = (MapRecord) mapRecords.toArray()[0];
 				MapRecord mapRecord2 = (MapRecord) mapRecords.toArray()[1];
 				ValidationResult validationResult = handler.compareMapRecords(mapRecord1, mapRecord2);
-				mapRecord.setReasonsForConflict(validationResult.getConciseErrors());
+				newRecord.setReasonsForConflict(validationResult.getConciseErrors());
 
 				// get the origin ids from the tracking record
 				for (final MapRecord mr : newRecords) {
@@ -454,7 +464,7 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
 			// (2) a specialist's record is now not in conflict, and should
 			// be
 			// reverted to EDITING_DONE
-			if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED)) {
+			if (assignedRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED)) {
 
 				for (final MapRecord mr : newRecords) {
 
@@ -469,7 +479,7 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
 
 		/** The save for later. */
 		case SAVE_FOR_LATER:
-			MapRecord recordToSave = this.getCurrentMapRecordForUser(mapRecords, mapUser);
+			MapRecord recordToSave = this.getCurrentMapRecordForUser(newRecords, mapUser);
 			if (recordToSave.getWorkflowStatus().equals(WorkflowStatus.NEW))
 				recordToSave.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
 			if (recordToSave.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_NEW))
@@ -701,8 +711,300 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
 
 	@Override
 	public String getName() {
-		// TODO Auto-generated method stub
-		return null;
+		return "NON_LEGACY_PATH";
+	}
+
+	@Override
+	public SearchResultList findAvailableWork(MapProject mapProject, MapUser mapUser, MapUserRole userRole,
+			String query, PfsParameter pfsParameter, WorkflowService workflowService) throws Exception {
+		
+		Logger.getLogger(this.getClass()).info(getName() + ": findAvailableWork for project " + mapProject.getName() + " and user " + mapUser.getUserName());
+		
+		final SearchResultList availableWork = new SearchResultListJpa();
+
+		final StringBuilder sb = new StringBuilder();
+
+		if (query != null && !query.isEmpty() && !query.equals("null")) {
+			sb.append(query).append(" AND ");
+		}
+		sb.append("mapProjectId:" + mapProject.getId() + " AND workflowPath:" + getName());
+
+		// add the query terms specific to findAvailableWork
+		// - must be NON_LEGACY PATH
+		// - any tracking record with no assigned users is by definition
+		// available
+		// - any tracking record with one assigned user on NON_LEGACY_PATH
+		// with workflowstatus NEW, EDITING_IN_PROGRESS, or EDITING_DONE.
+		// Assigned user must not be this user
+		
+		switch (userRole) {
+		
+		case LEAD:
+			sb.append(" AND userAndWorkflowStatusPairs:CONFLICT_DETECTED_*");
+			sb.append(" AND NOT (" + "userAndWorkflowStatusPairs:CONFLICT_NEW_* OR "
+					+ "userAndWorkflowStatusPairs:CONFLICT_IN_PROGRESS_* OR "
+					+ "userAndWorkflowStatusPairs:CONFLICT_RESOLVED_*)");
+			break;
+	
+		case SPECIALIST:
+			// Handle "team" based assignment
+			if (mapProject.isTeamBased() && mapUser.getTeam() != null && !mapUser.getTeam().isEmpty()) {
+				// Use "AND NOT" clauses for all members matching my user's
+				// team.
+				sb.append(" AND (assignedUserCount:0 OR (assignedUserCount:1 ");
+				for (final MapUser user : workflowService.getMapUsersForTeam(mapUser.getTeam()).getMapUsers()) {
+					sb.append(" AND NOT assignedUserNames:" + user.getUserName());
+				}
+				sb.append(") )");
+			} else {
+				sb.append(" AND (assignedUserCount:0 OR " + "(assignedUserCount:1 AND NOT assignedUserNames:"
+						+ mapUser.getUserName() + "))");
+			}
+			break;
+	
+		default:
+			throw new Exception(getName() + ", findAvailableWork: invalid project role " + userRole);
+		
+		}
+
+	
+		int[] totalCt = new int[1];
+		@SuppressWarnings("unchecked")
+		final List<TrackingRecord> results = (List<TrackingRecord>) ((RootServiceJpa) workflowService).getQueryResults(
+				sb.toString(), TrackingRecordJpa.class, TrackingRecordJpa.class, pfsParameter, totalCt);
+
+		availableWork.setTotalCount(totalCt[0]);
+		for (final TrackingRecord tr : results) {
+			final SearchResult result = new SearchResultJpa();
+			result.setTerminologyId(tr.getTerminologyId());
+			result.setValue(tr.getDefaultPreferredName());
+			result.setId(tr.getId());
+			availableWork.addSearchResult(result);
+		}
+
+		return availableWork;
+
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public SearchResultList findAssignedWork(MapProject mapProject, MapUser mapUser, MapUserRole userRole, String query,
+			PfsParameter pfsParameter, WorkflowService workflowService) throws Exception {
+
+		Logger.getLogger(this.getClass()).info(getName() + ": findAssignedWork for project " + mapProject.getName() + " and user " + mapUser.getUserName());
+		
+		// instantiate the assigned work search results
+		SearchResultList assignedWork = new SearchResultListJpa();
+
+		// build the initial query
+		final StringBuilder sb = new StringBuilder();
+		if (query != null && !query.isEmpty() && !query.equals("null")) {
+			sb.append(query).append(" AND ");
+		}
+		sb.append("mapProjectId:" + mapProject.getId() + " AND workflowPath:" + getName());
+
+		// determine the query restrictions, type and pfs parameter
+		final String type = pfsParameter.getQueryRestriction() != null ? pfsParameter.getQueryRestriction() : "";
+		final List<TrackingRecord> results;
+		final PfsParameter pfs = new PfsParameterJpa(pfsParameter);
+		pfs.setQueryRestriction(null);
+		int[] totalCt = new int[1];
+
+		// switch on user role (Specialist or Lead)
+		switch (userRole) {
+
+		// for lead-level work, get assigned conflicts
+		case LEAD:
+
+			switch (type) {
+			case "CONFLICT_NEW":
+				sb.append(" AND userAndWorkflowStatusPairs:CONFLICT_NEW_" + mapUser.getUserName());
+				break;
+			case "CONFLICT_IN_PROGRESS":
+				sb.append(" AND userAndWorkflowStatusPairs:CONFLICT_IN_PROGRESS_" + mapUser.getUserName());
+				break;
+			case "CONFLICT_RESOLVED":
+				sb.append(" AND userAndWorkflowStatusPairs:CONFLICT_RESOLVED_" + mapUser.getUserName());
+				break;
+			default:
+				sb.append(" AND (userAndWorkflowStatusPairs:CONFLICT_NEW_" + mapUser.getUserName()
+						+ " OR userAndWorkflowStatusPairs:CONFLICT_IN_PROGRESS_" + mapUser.getUserName()
+						+ " OR userAndWorkflowStatusPairs:CONFLICT_RESOLVED_" + mapUser.getUserName() + ")");
+				break;
+			}
+
+			results = (List<TrackingRecord>) ((RootServiceJpa) workflowService).getQueryResults(sb.toString(),
+					TrackingRecordJpa.class, TrackingRecordJpa.class, pfs, totalCt);
+			assignedWork.setTotalCount(totalCt[0]);
+
+			for (final TrackingRecord tr : results) {
+				final SearchResult result = new SearchResultJpa();
+
+				final Set<MapRecord> mapRecords = workflowService.getMapRecordsForTrackingRecord(tr);
+
+				// get the map record assigned to this user
+				MapRecord mapRecord = null;
+				for (final MapRecord mr : mapRecords) {
+					if (mr.getOwner().equals(mapUser)) {
+
+						// SEE MAP-617:
+						// Lower level record may exist with same owner,
+						// only
+						// add if actually a conflict
+
+						if (mr.getWorkflowStatus().compareTo(WorkflowStatus.CONFLICT_DETECTED) < 0) {
+							// do nothing, this is the specialist level work
+						} else {
+							mapRecord = mr;
+						}
+					}
+				}
+
+				if (mapRecord == null) {
+					throw new Exception("Failed to retrieve assigned conflicts:  no map record found for user "
+							+ mapUser.getUserName() + " and concept " + tr.getTerminologyId());
+				} else {
+					result.setTerminologyId(mapRecord.getConceptId());
+					result.setValue(mapRecord.getConceptName());
+					result.setTerminology(mapRecord.getLastModified().toString());
+					result.setTerminologyVersion(mapRecord.getWorkflowStatus().toString());
+					result.setId(mapRecord.getId());
+					assignedWork.addSearchResult(result);
+				}
+			}
+
+			break;
+
+		// for specialist-level work, get assigned work
+		case SPECIALIST:
+
+			// add the query terms specific to findAssignedWork
+			// - user and workflowStatus must exist in a pair of form:
+			// workflowStatus_userName, e.g. NEW_dmo or
+			// EDITING_IN_PROGRESS_kli
+			// - modify search term based on pfs parameter query restriction
+			// field
+			// * default: NEW, EDITING_IN_PROGRESS,
+			// EDITING_DONE/CONFLICT_DETECTED
+			// * NEW: NEW
+			// * EDITED: EDITING_IN_PROGRESS, EDITING_DONE/CONFLICT_DETECTED
+
+			// add terms based on query restriction
+			switch (type) {
+			case "NEW":
+				sb.append(" AND userAndWorkflowStatusPairs:NEW_" + mapUser.getUserName());
+				break;
+			case "EDITING_IN_PROGRESS":
+				sb.append(" AND (userAndWorkflowStatusPairs:EDITING_IN_PROGRESS_" + mapUser.getUserName()
+						+ " OR userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_" + mapUser.getUserName() + ")");
+				break;
+			case "EDITING_DONE":
+				sb.append(" AND (userAndWorkflowStatusPairs:EDITING_DONE_" + mapUser.getUserName()
+						+ " OR userAndWorkflowStatusPairs:CONFLICT_DETECTED_" + mapUser.getUserName()
+						+ " OR userAndWorkflowStatusPairs:REVIEW_NEEDED_" + mapUser.getUserName() + ")");
+				break;
+			default:
+				sb.append(" AND (userAndWorkflowStatusPairs:NEW_" + mapUser.getUserName()
+						+ " OR userAndWorkflowStatusPairs:EDITING_IN_PROGRESS_" + mapUser.getUserName()
+						+ " OR userAndWorkflowStatusPairs:EDITING_DONE_" + mapUser.getUserName()
+						+ " OR userAndWorkflowStatusPairs:CONFLICT_DETECTED_" + mapUser.getUserName()
+						+ " OR userAndWorkflowStatusPairs:REVIEW_NEEDED_" + mapUser.getUserName() + ")");
+				break;
+			}
+
+			// add terms to exclude concepts that a lead has claimed
+			sb.append(" AND NOT (userAndWorkflowStatusPairs:CONFLICT_NEW_*"
+					+ " OR userAndWorkflowStatusPairs:CONFLICT_IN_PROGRESS_*"
+					+ " OR userAndWorkflowStatusPairs:CONFLICT_RESOLVED_*"
+					+ " OR userAndWorkflowStatusPairs:REVIEW_NEW_*" + " OR userAndWorkflowStatusPairs:REVIEW_NEEDED_*"
+					+ " OR userAndWorkflowStatusPairs:REVIEW_RESOLVED_*)");
+
+			// TODO Have Brian help with brain problems regarding method
+			// visibility
+			results = (List<TrackingRecord>) workflowService.getQueryResults(sb.toString(), TrackingRecordJpa.class,
+					TrackingRecordJpa.class, pfs, totalCt);
+			assignedWork.setTotalCount(totalCt[0]);
+
+			for (final TrackingRecord tr : results) {
+
+				// instantiate the result list
+				final SearchResult result = new SearchResultJpa();
+
+				// get the map records associated with this tracking record
+				final Set<MapRecord> mapRecords = workflowService.getMapRecordsForTrackingRecord(tr);
+
+				// get the map record assigned to this user
+				MapRecord mapRecord = null;
+
+				// SEE BELOW/MAP-617
+				WorkflowStatus mapLeadAlternateRecordStatus = null;
+				for (final MapRecord mr : mapRecords) {
+
+					if (mr.getOwner().equals(mapUser)) {
+
+						// if this lead has review or conflict work, set the
+						// flag
+						if (mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_NEW)
+								|| mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_IN_PROGRESS)
+								|| mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW)
+								|| mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_IN_PROGRESS)) {
+
+							mapLeadAlternateRecordStatus = mr.getWorkflowStatus();
+
+							// added to prevent user from getting REVISION
+							// record
+							// back on FIX_ERROR_PATH
+							// yet another problem related to leads being
+							// able
+							// to
+							// serve as dual roles
+						} else if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
+							// do nothing
+
+							// otherwise, this is the
+							// specialist/concept-level
+							// work
+						} else {
+							mapRecord = mr;
+						}
+					}
+				}
+
+				// if no record and no review or conflict work was found,
+				// throw
+				// error
+				if (mapRecord == null) {
+					throw new Exception("Failed to retrieve assigned work:  no map record found for user "
+							+ mapUser.getUserName() + " and concept " + tr.getTerminologyId());
+
+				} else {
+
+					// alter the workflow status if a higher-level record
+					// exists
+					// for
+					// this user
+					if (mapLeadAlternateRecordStatus != null) {
+
+						Logger.getLogger(WorkflowServiceJpa.class)
+								.info("Setting alternate record status: " + mapLeadAlternateRecordStatus);
+						mapRecord.setWorkflowStatus(mapLeadAlternateRecordStatus);
+					}
+					// create the search result
+					result.setTerminologyId(mapRecord.getConceptId());
+					result.setValue(mapRecord.getConceptName());
+					result.setTerminology(mapRecord.getLastModified().toString());
+					result.setTerminologyVersion(mapRecord.getWorkflowStatus().toString());
+					result.setId(mapRecord.getId());
+					assignedWork.addSearchResult(result);
+				}
+
+			}
+			break;
+		default:
+			throw new Exception("Cannot retrieve work for NON_LEGACY_PATH for user role " + userRole);
+		}
+
+		return assignedWork;
 	}
 
 }
