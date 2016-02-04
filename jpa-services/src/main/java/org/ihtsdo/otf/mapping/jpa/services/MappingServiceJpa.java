@@ -1955,6 +1955,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
           // set the owner and lastModifiedBy user fields to
           // loaderUser
           mapRecord.setOwner(mapUser);
+          mapRecord.setLastModified(refSetMember.getEffectiveTime().getTime());
           mapRecord.setLastModifiedBy(mapUser);
 
           // random determine workflow state
@@ -2410,7 +2411,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
     return treePositions;
   }
-
 
   /**
    * Validate that a single user cannot have more than one role on a particular
