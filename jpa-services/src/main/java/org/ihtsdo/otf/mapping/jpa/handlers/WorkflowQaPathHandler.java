@@ -5,6 +5,8 @@ import java.util.HashSet;
 
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
+import org.ihtsdo.otf.mapping.helpers.PfsParameter;
+import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
@@ -12,9 +14,11 @@ import org.ihtsdo.otf.mapping.helpers.WorkflowPathState;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatusCombination;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
+import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.services.MappingService;
+import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
 /**
@@ -218,6 +222,20 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
 
 @Override
 public String getName() {
+	// TODO Auto-generated method stub
+	return null;
+}
+
+@Override
+public SearchResultList findAvailableWork(MapProject mapProject, MapUser mapUser, MapUserRole userRole, String query,
+		PfsParameter pfsParameter, WorkflowService workflowService) throws Exception {
+	// TODO Auto-generated method stub
+	return null;
+}
+
+@Override
+public SearchResultList findAssignedWork(MapProject mapProject, MapUser mapUser, MapUserRole userRole, String query,
+		PfsParameter pfsParameter, WorkflowService workflowService) throws Exception {
 	// TODO Auto-generated method stub
 	return null;
 }
