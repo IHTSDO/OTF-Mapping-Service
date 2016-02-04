@@ -231,7 +231,7 @@ public class MapRecordRf2SimpleMapLoaderMojo extends AbstractMojo {
           }
           // If blank last field
           if (fields.length == 6) {
-            member.setMapTarget(null);
+            member.setMapTarget("");
           } else {
             member.setMapTarget(fields[6]);
           }
