@@ -1122,8 +1122,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
     int[] totalCt = new int[1];
     @SuppressWarnings("unchecked")
-    List<Concept> concepts =
-        (List<Concept>) getQueryResults(searchString == null ? ""
+    List<Concept> concepts = (List<Concept>)
+        getQueryResults(searchString == null ? ""
             : searchString, ConceptJpa.class, ConceptJpa.class, pfsParameter,
             totalCt);
 
