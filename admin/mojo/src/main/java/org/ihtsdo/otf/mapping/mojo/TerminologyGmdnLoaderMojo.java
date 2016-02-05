@@ -391,6 +391,9 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
     /** The term id. */
     private String termId = null;
 
+    /** The ivd. */
+    private boolean ivd = false;
+
     /**
      * Instantiates a new local handler.
      */
@@ -440,10 +443,14 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
         if (qName.equalsIgnoreCase("term")) {
           // Add the concept (if active)
           // CASCADE will handle descriptions
-          if (concept.isActive()) {
+          if (concept.isActive() && ivd) {
             // Use the "termID" as the key
             conceptMap.put(termId, concept);
             contentService.addConcept(concept);
+            
+            // reset ivd
+            ivd = false;
+
           }
           Logger.getLogger(getClass()).debug("    concept = " + concept);
         }
@@ -462,20 +469,25 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
         // </termIsIVD> - add a description so we can show in the detail
         else if (qName.equalsIgnoreCase("termIsIVD")) {
           if (!chars.toString().trim().isEmpty()) {
-            final Description ivd = new DescriptionJpa();
-            setCommonFields(ivd);
-            ivd.setTypeId(Long.parseLong(conceptMap.get("ivdTerm")
+            final Description ivdDesc = new DescriptionJpa();
+            setCommonFields(ivdDesc);
+            ivdDesc.setTypeId(Long.parseLong(conceptMap.get("ivdTerm")
                 .getTerminologyId()));
-            ivd.setCaseSignificanceId(Long.parseLong(conceptMap.get(
+            ivdDesc.setCaseSignificanceId(Long.parseLong(conceptMap.get(
                 "defaultCaseSignificance").getTerminologyId()));
-            ivd.setLanguageCode("en");
-            ivd.setConcept(concept);
+            ivdDesc.setLanguageCode("en");
+            ivdDesc.setConcept(concept);
             Logger.getLogger(getClass()).debug(
                 "    description = " + description);
-            concept.addDescription(ivd);
-            ivd.setActive(true);
-            ivd.setTerm(chars.toString().trim());
+            concept.addDescription(ivdDesc);
+            ivdDesc.setActive(true);
+            ivdDesc.setTerm(chars.toString().trim());
+
+            if (chars.toString().trim().equals("IVD")) {
+              ivd = true;
+            }
           }
+
         }
 
         // </termName> - set the name
