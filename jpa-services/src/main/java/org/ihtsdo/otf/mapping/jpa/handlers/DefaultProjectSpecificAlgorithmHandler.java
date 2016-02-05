@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -16,19 +15,13 @@ import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
-import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
-import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
-import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
-import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
-import org.ihtsdo.otf.mapping.services.MappingService;
-import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
 /**
  * Reference implementation of {@link ProjectSpecificAlgorithmHandler}.
@@ -868,6 +861,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
    * @return the workflow tracking record
    * @throws Exception the exception
    */
+  /*
   @Override
   public Set<MapRecord> assignFromInitialRecord(TrackingRecord trackingRecord,
     Set<MapRecord> mapRecords, MapRecord mapRecord, MapUser mapUser)
@@ -975,6 +969,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
     return newRecords;
   }
+  */
 
   /**
    * Assign a map user to a concept for this project
@@ -995,6 +990,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
    * @return the workflow tracking record
    * @throws Exception the exception
    */
+  /**
   @Override
   public Set<MapRecord> assignFromScratch(TrackingRecord trackingRecord,
     Set<MapRecord> mapRecords, Concept concept, MapUser mapUser)
@@ -1066,13 +1062,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         if (getWorkflowStatus(mapRecords).equals(WorkflowStatus.REVIEW_NEEDED)) {
           // check that one record exists and is not owned by this user
           if (mapRecords.size() == 1) {
-            /*
-             * Removed this, see MAP-617 if
-             * (mapRecords.iterator().next().getOwner().equals(mapUser)) throw
-             * new Exception(
-             * "  Cannot assign review record, user attempting to review own work"
-             * );
-             */
+          
           } else {
             throw new Exception("  Expected exactly one map record");
           }
@@ -1181,6 +1171,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     // return the modified record set
     return newRecords;
   }
+  */
 
   @Override
   public void computeIdentifyAlgorithms(MapRecord mapRecord) throws Exception {
@@ -1200,7 +1191,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
    * @return the workflow tracking record
    * @throws Exception the exception
    */
-  @Override
+  /*@Override
   public Set<MapRecord> unassign(TrackingRecord trackingRecord,
     Set<MapRecord> mapRecords, MapUser mapUser) throws Exception {
 
@@ -1434,7 +1425,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
   }
 
-  /* see superclass */
+   see superclass 
   @Override
   public Set<MapRecord> publish(TrackingRecord trackingRecord,
     Set<MapRecord> mapRecords, MapUser mapUser) throws Exception {
@@ -1698,7 +1689,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
   }
 
-  /**
+  *//**
    * Updates workflow information when a specialist or lead clicks "Finished"
    * Expects the tracking record to be detached from persistence environment.
    * 
@@ -1707,7 +1698,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
    * @param mapUser the map user
    * @return the workflow tracking record
    * @throws Exception the exception
-   */
+   *//*
   @Override
   public Set<MapRecord> finishEditing(TrackingRecord trackingRecord,
     Set<MapRecord> mapRecords, MapUser mapUser) throws Exception {
@@ -2041,7 +2032,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
   }
 
-  /* see superclass */
+   see superclass 
   @Override
   public Set<MapRecord> saveForLater(TrackingRecord trackingRecord,
     Set<MapRecord> mapRecords, MapUser mapUser) throws Exception {
@@ -2104,7 +2095,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     return newRecords;
   }
 
-  /**
+  *//**
    * Cancel work on a map record.
    * 
    * Only use-case is for the FIX_ERROR_PATH where a new map record has been
@@ -2115,7 +2106,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
    * @param mapUser the map user
    * @return the sets the
    * @throws Exception the exception
-   */
+   *//*
   @Override
   public Set<MapRecord> cancelWork(TrackingRecord trackingRecord,
     Set<MapRecord> mapRecords, MapUser mapUser) throws Exception {
@@ -2180,127 +2171,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     // return the modified records
     return newRecords;
   }
-
-  /**
-   * Returns the current map record for user.
-   * 
-   * @param mapRecords the map records
-   * @param mapUser the map user
-   * @return the current map record for user
-   */
-  @SuppressWarnings("static-method")
-  private MapRecord getCurrentMapRecordForUser(Set<MapRecord> mapRecords,
-    MapUser mapUser) {
-
-    MapRecord mapRecord = null;
-
-    for (final MapRecord mr : mapRecords) {
-      if (mr.getOwner().equals(mapUser)) {
-
-        // if there are multiple records on this tracking record
-        // for a particular user, return the one with highest workflow status
-
-        // EXCEPTION: Never return a REVISION record
-        if (!mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
-          if (mapRecord != null) {
-            if (mr.getWorkflowStatus().compareTo(mapRecord.getWorkflowStatus()) > 0)
-              mapRecord = mr;
-          } else {
-            mapRecord = mr;
-          }
-        }
-      }
-    }
-    return mapRecord;
-  }
-
-  /**
-   * Returns the previously published/ready-for-publicatoin version of map
-   * record.
-   * 
-   * @param mapRecord the map record
-   * @return the previously publication-ready version of map record
-   * @throws Exception the exception
-   */
-  @SuppressWarnings("static-method")
-  public MapRecord getPreviouslyPublishedVersionOfMapRecord(MapRecord mapRecord)
-    throws Exception {
-
-    MappingService mappingService = new MappingServiceJpa();
-
-    // get the record revisions
-    final List<MapRecord> revisions =
-        mappingService.getMapRecordRevisions(mapRecord.getId()).getMapRecords();
-
-    // ensure revisions are sorted by descending timestamp
-    Collections.sort(revisions, new Comparator<MapRecord>() {
-      @Override
-      public int compare(MapRecord mr1, MapRecord mr2) {
-        return mr2.getLastModified().compareTo(mr1.getLastModified());
-      }
-    });
-
-    // check assumption: last revision exists, at least two records must be
-    // present
-    if (revisions.size() < 2) {
-      mappingService.close();
-      throw new Exception(
-          "Attempted to get the previously published version of map record with id "
-              + mapRecord.getId() + ", " + mapRecord.getOwner().getName()
-              + ", and concept id " + mapRecord.getConceptId()
-              + ", but no previous revisions exist.");
-    }
-
-    // cycle over records until the previously
-    // published/ready-for-publication
-    // state record is found
-    for (final MapRecord revision : revisions) {
-      if (revision.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)
-          || revision.getWorkflowStatus().equals(
-              WorkflowStatus.READY_FOR_PUBLICATION)) {
-        mappingService.close();
-        return revision;
-      }
-    }
-
-    mappingService.close();
-    throw new Exception(
-        "Could not retrieve previously published state of map record for concept "
-            + mapRecord.getConceptId() + ", " + mapRecord.getConceptName());
-
-  }
-
-  /**
-   * Returns the workflow status.
-   * 
-   * @param mapRecords the map records
-   * @return the workflow status
-   */
-  @SuppressWarnings("static-method")
-  public WorkflowStatus getWorkflowStatus(Set<MapRecord> mapRecords) {
-    WorkflowStatus workflowStatus = WorkflowStatus.NEW;
-    for (final MapRecord mr : mapRecords) {
-      if (mr.getWorkflowStatus().compareTo(workflowStatus) > 0)
-        workflowStatus = mr.getWorkflowStatus();
-    }
-    return workflowStatus;
-  }
-
-  /**
-   * Returns the map users.
-   * 
-   * @param mapRecords the map records
-   * @return the map users
-   */
-  @SuppressWarnings("static-method")
-  public Set<MapUser> getMapUsers(Set<MapRecord> mapRecords) {
-    Set<MapUser> mapUsers = new HashSet<>();
-    for (final MapRecord mr : mapRecords) {
-      mapUsers.add(mr.getOwner());
-    }
-    return mapUsers;
-  }
-
+*/
+ 
   /* see superclass */
   @Override
   public void computeTargetTerminologyNotes(List<TreePosition> treePositions)
