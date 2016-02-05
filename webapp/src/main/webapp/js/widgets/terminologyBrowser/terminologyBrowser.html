@@ -35,7 +35,7 @@
       <li class="list-group-item" ng-repeat="result in pagedSearchResults"
         ng-click="selectResult(result)"
         ng-class="{selected: result.terminologyId == selectedResult.terminologyId}">
-        <span style="width: 100px;">{{result.terminologyId}}: </span> <span>{{result.value}}</span>
+        {{result.value}} ({{result.terminologyId}})</span>
       </li>
     </ul>
   </div>

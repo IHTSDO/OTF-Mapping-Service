@@ -113,7 +113,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
     super();
     if (workflowHandlerMap == null) {
       throw new Exception(
-          "Import refset handlers did not properly initialize, serious error.");
+          "Workflow handlers did not properly initialize, serious error.");
     }
 
   }
