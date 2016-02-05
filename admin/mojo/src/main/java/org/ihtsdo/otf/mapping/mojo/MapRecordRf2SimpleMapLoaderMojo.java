@@ -229,7 +229,12 @@ public class MapRecordRf2SimpleMapLoaderMojo extends AbstractMojo {
             // + member.getTerminologyId()
             // + " references non-existent concept " + fields[5]);
           }
-          member.setMapTarget(fields[6]);
+          // If blank last field
+          if (fields.length == 6) {
+            member.setMapTarget("");
+          } else {
+            member.setMapTarget(fields[6]);
+          }
 
           members.add(member);
         }
