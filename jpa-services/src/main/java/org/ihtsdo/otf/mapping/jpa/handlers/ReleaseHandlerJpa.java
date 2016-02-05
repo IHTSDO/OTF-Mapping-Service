@@ -572,7 +572,20 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
                   + member.getConcept().getTerminologyId() + " - " + result);
             }
           }
-          activeMembersMap.put(member.getTerminologyId(), member);
+
+          // Skip lines for SimpleMap where the map target is empty
+          // These are just placeholders for managing scope
+          // NOTE: if there is a need to have a simple map with blank targets
+          // this could be coded in some other way, like "NOCODE" instead of
+          // blank
+          if (mapProject.getMapRefsetPattern() == MapRefsetPattern.SimpleMap
+              && member.getMapTarget().isEmpty()) {
+            // do not add it
+          }
+          // else, do
+          else {
+            activeMembersMap.put(member.getTerminologyId(), member);
+          }
         }
       }
 
@@ -1107,6 +1120,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       if (!member.isActive()) {
         throw new Exception("Unexpected inactive member " + member);
       }
+
       // collect lines
       lines.add(getOutputLine(member, false));
     }
