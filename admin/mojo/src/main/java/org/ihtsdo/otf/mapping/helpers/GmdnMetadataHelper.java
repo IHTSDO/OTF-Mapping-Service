@@ -221,7 +221,7 @@ public class GmdnMetadataHelper {
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "IVD Term", effectiveTime, "meta");
     conceptMap.put("ivdTerm", ivdTermConcept);
-    contentService.addConcept(termConcept);
+    contentService.addConcept(ivdTermConcept);
 
     createIsaRelationship(metadataConcept, descriptionTypeConcept,
         String.valueOf(metadataCounter++), terminology, terminologyVersion,
