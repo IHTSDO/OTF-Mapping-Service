@@ -685,8 +685,9 @@ public interface WorkflowService extends MappingService {
 	 *
 	 * @param name the name
 	 * @return the workflow path handler
+	 * @throws Exception 
 	 */
-	public WorkflowPathHandler getWorkflowPathHandler(String name);
+	public WorkflowPathHandler getWorkflowPathHandler(String name) throws Exception;
 
 	/**
 	 * Gets the previously published version of map record.

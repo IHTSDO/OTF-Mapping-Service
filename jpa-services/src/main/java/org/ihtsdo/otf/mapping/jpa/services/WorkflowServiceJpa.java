@@ -2468,4 +2468,11 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements WorkflowSer
 				+ mapRecord.getConceptId() + ", " + mapRecord.getConceptName());
 
 	}
+
+	@Override
+	public WorkflowPathHandler getWorkflowPathHandler(String name) throws Exception {
+		String handlerClass = ConfigUtility.getConfigProperties().getProperty("workflow.path.handler." + name + ".class");
+		
+		return (WorkflowPathHandler) Class.forName(handlerClass).newInstance();
+	}
 }
