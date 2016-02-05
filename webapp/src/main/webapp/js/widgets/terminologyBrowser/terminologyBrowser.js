@@ -1,7 +1,7 @@
 'use strict';
 
-angular
-  .module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ])
+angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ])
+''
   .config(function(dashboardProvider) {
 
     dashboardProvider.widget('terminologyBrowser', {
@@ -19,7 +19,8 @@ angular
 
   .controller(
     'terminologyBrowserWidgetCtrl',
-    function($scope, $rootScope, $q, $timeout, $http, $routeParams, $location, localStorageService) {
+    function($scope, $rootScope, $q, $timeout, $http, $routeParams, $location, localStorageService,
+      gpService) {
 
       $scope.focusProject = localStorageService.get('focusProject');
       $scope.userToken = localStorageService.get('userToken');
@@ -32,14 +33,30 @@ angular
       $scope.relTypes = {};
 
       // initialize search variables
-      $scope.query = ''; // the query input
+      // the query input
+      $scope.query = '';
       $scope.treeQuery = '';
-      $scope.searchBackAllowed = false; // whether the back button is displayed
-      $scope.searchForwardAllowed = false; // whether the forward button is
+      $scope.searchResults = [];
+      $scope.selectedResult = null;
+
+      // Paging
+      $scope.pageSize = 10;
+      $scope.paging['search'] = {
+        page : 1,
+        filter : '',
+        sortField : null
+      };
+
+      // whether the back button is displayed
+      $scope.searchBackAllowed = false;
+      // whether the forward button is
+      $scope.searchForwardAllowed = false;
       // displayed
-      $scope.searchStack = []; // an array of search terms from query input
-      $scope.searchStackPosition = 0; // the current position in the stack
-      $scope.searchStackResults = 0; // the number of results currently in the
+      // an array of search terms from query input
+      $scope.searchStack = [];
+      // the current position in the stack $scope.searchStackPosition = 0;
+      // the number of results currently in the
+      $scope.searchStackResults = 0;
       // array (may be less than array length)
 
       // watch for project change and modify the local variable if necessary
@@ -97,20 +114,58 @@ angular
         if (new RegExp('^\s+$').test($scope.query)) {
           return;
         }
-        // Perform tree search
-        $scope.query = $scope.treeQuery;
-        getRootTreeWithQuery(true);
 
+        // TODO: hack: fix this, need a configurable project setting
+        // or some characteristic about the destination terminology
+        // ideally we would define a "default" mode for the project
+        // and the user could switch if they were having a problem
+        if ($scope.focusProject.destinationTerminology == 'GMDN') {
+          $scope.performSearch($scope.query);
+        } else {
+          // Perform tree search
+          $scope.treeQuery = $scope.query;
+          $scope.getRootTreeWithQuery(true);
+        }
       };
 
-      // Handler for the "Reset" button
+      // Handler for the 'Reset' button
       // Perform a search - list or tree depending on the state
       $scope.clearSearch = function() {
         $scope.query = '';
+        $scope.searchResults = [];
 
         // Get root tree
         $scope.treeQuery = '';
-        getRootTree();
+        $scope.getRootTree();
+      };
+
+      // Search a terminologyId in the tree
+      $scope.selectResult = function(result) {
+        $scope.selectedResult = result;
+        $scope.treeQuery = result.terminologyId;
+        $scope.getRootTreeWithQuery(true);
+      };
+
+      // Perform a query search for a list
+      $scope.performSearch = function(query) {
+        var t = $scope.focusProject.destinationTerminology;
+        var v = $scope.focusProject.destinationTerminologyVersion;
+        var lquery = query + ' AND terminology:' + t + ' AND terminologyVersionn:' + v;
+        console.debug('get concepts for query', lquery);
+
+        gpService.increment();
+        $http.get(root_content + 'concept/query/' + encodeURIComponent(query)).then(
+        // Success
+        function(data) {
+          console.debug('  concepts = ', data.searchResult);
+          $scope.searchResults = data.searchResult;
+          gpService.decrement();
+        },
+        // error
+        function(data) {
+          gpService.decrement();
+          $rootScope.handleHttpError(data);
+        });
       };
 
       // function to get the root nodes
