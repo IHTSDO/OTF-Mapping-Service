@@ -19,7 +19,7 @@ mapProjectAppControllers
     // global function to handle any type of error. Currently only
     // specifically implemented for authorization failures.
     $rootScope.handleHttpError = function(data, status, headers, config) {
-       //$rootScope.globalError = data.replace(/"/g, '');
+      // $rootScope.globalError = data.replace(/"/g, '');
       utilService.handleError(data.replace(/"/g, ''));
       if (status == '401') {
         $location.path('/');
@@ -53,8 +53,6 @@ mapProjectAppControllers
     // check if local storage service can be accessed
     if (localStorageService.isSupported() == false) {
       $rootScope.globalError = 'It appears your browsers security settings will prevent the tool from functioning correctly.  Check that cookies are enabled and/or that your browser allows setting local data, then reload this page.';
-    } else {
-      console.debug('LocalStorageService reports success');
     }
 
     // variable to indicate whether the current page is 'dirty'
