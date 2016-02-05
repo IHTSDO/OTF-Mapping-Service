@@ -447,12 +447,11 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
             // Use the "termID" as the key
             conceptMap.put(termId, concept);
             contentService.addConcept(concept);
-            
-            // reset ivd
-            ivd = false;
+            Logger.getLogger(getClass()).debug("    concept = " + concept);
 
           }
-          Logger.getLogger(getClass()).debug("    concept = " + concept);
+          // reset ivd
+          ivd = false;
         }
 
         // </termID> - set the description terminology id
