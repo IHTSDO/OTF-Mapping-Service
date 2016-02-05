@@ -823,7 +823,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
             }
 
             // Create relationship
-            Logger.getLogger(getClass()).info(
+            Logger.getLogger(getClass()).debug(
                 "REL " + chd + ":" + chdConcept.getTerminologyId() + " => "
                     + par + ":" + parConcept.getTerminologyId());
             helper.createIsaRelationship(parConcept, chdConcept, "gmdn-"
@@ -947,7 +947,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
           if (!parId.isEmpty()) {
             // add chd node (this) and parent node reference
             Logger.getLogger(getClass())
-                .info("REL3 " + nodeId + " => " + parId);
+                .debug("REL " + nodeId + " => " + parId);
             nodeChdParMap.put(nodeId, parId);
           }
           // else a root node
