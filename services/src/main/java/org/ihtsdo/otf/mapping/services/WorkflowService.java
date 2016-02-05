@@ -23,6 +23,7 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.reports.Report;
 import org.ihtsdo.otf.mapping.rf2.Concept;
+import org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 import org.ihtsdo.otf.mapping.workflow.WorkflowException;
 
@@ -678,6 +679,14 @@ public interface WorkflowService extends MappingService {
 	public SearchResultList findAssignedWork(MapProject mapProject, MapUser mapUser, MapUserRole userRole, String query,
 			PfsParameter pfsParameter) throws Exception;
 
+	
+	/**
+	 * Returns the workflow path handler.
+	 *
+	 * @param name the name
+	 * @return the workflow path handler
+	 */
+	public WorkflowPathHandler getWorkflowPathHandler(String name);
 
 	/**
 	 * Gets the previously published version of map record.

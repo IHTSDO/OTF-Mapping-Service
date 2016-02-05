@@ -2,9 +2,7 @@ package org.ihtsdo.otf.mapping.helpers;
 
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Description;
@@ -223,7 +221,7 @@ public class GmdnMetadataHelper {
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "IVD Term", effectiveTime, "meta");
     conceptMap.put("ivdTerm", ivdTermConcept);
-    contentService.addConcept(termConcept);
+    contentService.addConcept(ivdTermConcept);
 
     createIsaRelationship(metadataConcept, descriptionTypeConcept,
         String.valueOf(metadataCounter++), terminology, terminologyVersion,
@@ -471,9 +469,7 @@ public class GmdnMetadataHelper {
     relationship.setSourceConcept(childConcept);
     // default "isa" type
     relationship.setTypeId(new Long(conceptMap.get("isa").getTerminologyId()));
-    final Set<Relationship> rels = new HashSet<>();
-    rels.add(relationship);
-    childConcept.setRelationships(rels);
+    childConcept.addRelationship(relationship);
   }
 
 }
