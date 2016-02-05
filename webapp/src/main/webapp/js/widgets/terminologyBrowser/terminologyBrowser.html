@@ -1,4 +1,4 @@
-<form>
+<span style="margin-bottom: 5px;">
   <input ng-model="query">
   <button ng-show="query" ng-click="search()">Search</button>
   <button ng-show="query" ng-click="clearSearch()">Reset</button>
@@ -8,7 +8,7 @@
   <button ng-show="searchForwardAllowed == true" ng-click="changeSearch(1)">
     <i class="glyphicon glyphicon-arrow-right"></i>
   </button>
-</form>
+</span>
 
 <p></p>
 {{searchStatus}}
@@ -34,15 +34,15 @@
     <table ng-show="searchResults.length > 0" class="table">
       <thead class="table-select-row">
         <tr>
-          <th class="col-md-3 col-xs-3">Concept Id</th>
+          <th class="col-md-3 col-xs-3">Id</th>
           <th class="col-md-9 col-xs-9">Name</th>
         </tr>
       </thead>
       <tbody>
         <tr ng-repeat="result in searchResults" ng-click="selectResult(result)"
-          ng-class="{selected: result.terminologyId == concept.terminologyId}">
+          ng-class="{selected: result.terminologyId == selectedResult.terminologyId}">
           <td>{{result.terminologyId}}</td>
-          <td>{{result.name}}</td>
+          <td>{{result.value}}</td>
         </tr>
       </tbody>
     </table>
