@@ -275,11 +275,26 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
 		final List<TrackingRecord> results = (List<TrackingRecord>) workflowService.getQueryResults(sb.toString(),
 				TrackingRecordJpa.class, TrackingRecordJpa.class, pfsParameter, totalCt);
 		availableWork.setTotalCount(totalCt[0]);
-		for (TrackingRecord tr : results) {
-			SearchResult result = new SearchResultJpa();
+
+		for (final TrackingRecord tr : results) {
+			final SearchResult result = new SearchResultJpa();
+			final Set<MapRecord> mapRecords = workflowService.getMapRecordsForTrackingRecord(tr);
+
+			StringBuffer labelBuffer = new StringBuffer();
+			for (final MapRecord mr : mapRecords) {
+
+				// extract all labels for this tracking record
+				for (final String label : mr.getLabels()) {
+					if (labelBuffer.indexOf(label) == -1)
+						labelBuffer.append(";").append(label);
+				}
+			}
+
+			// construct the search result
 			result.setTerminologyId(tr.getTerminologyId());
 			result.setValue(tr.getDefaultPreferredName());
 			result.setId(tr.getId());
+			result.setValue2(labelBuffer.toString());
 			availableWork.addSearchResult(result);
 		}
 		return availableWork;
@@ -337,10 +352,18 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
 			// get the map record assigned to this user -- note: can only be one
 			// if QA Path properly used
 			MapRecord mapRecord = null;
+			StringBuffer labelBuffer = new StringBuffer();
 			for (final MapRecord mr : mapRecords) {
 				if (mr.getOwner().equals(mapUser)) {
 					mapRecord = mr;
 				}
+
+				// extract all labels for this tracking record
+				for (final String label : mr.getLabels()) {
+					if (labelBuffer.indexOf(label) == -1)
+						labelBuffer.append(";").append(label);
+				}
+
 			}
 
 			if (mapRecord == null) {
@@ -349,6 +372,7 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
 			}
 			result.setTerminologyId(mapRecord.getConceptId());
 			result.setValue(mapRecord.getConceptName());
+			result.setValue2(labelBuffer.toString());
 			result.setTerminology(mapRecord.getLastModified().toString());
 			result.setTerminologyVersion(mapRecord.getWorkflowStatus().toString());
 			result.setId(mapRecord.getId());
