@@ -1077,14 +1077,15 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements WorkflowSer
 
 			Logger.getLogger(this.getClass()).info("Creating new tracking record");
 
-			// create a tracking record for this concept with no records or users
+			// create a tracking record for this concept with no records or
+			// users
 			trackingRecord = new TrackingRecordJpa();
 			trackingRecord.setMapProjectId(mapProject.getId());
 			trackingRecord.setTerminology(concept.getTerminology());
 			trackingRecord.setTerminologyVersion(concept.getTerminologyVersion());
 			trackingRecord.setTerminologyId(concept.getTerminologyId());
 			trackingRecord.setDefaultPreferredName(concept.getDefaultPreferredName());
-		
+
 			// get the tree positions for this concept and set the sort key //
 			// to
 			// the first retrieved
@@ -1137,11 +1138,9 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements WorkflowSer
 		if (handler == null) {
 			throw new Exception("Could not determine workflow handler");
 		}
-		
-		// validate the tracking record by its handler
-		result = handler.validateTrackingRecordForActionAndUser(trackingRecord, workflowAction,
-				mapUser);
 
+		// validate the tracking record by its handler
+		result = handler.validateTrackingRecordForActionAndUser(trackingRecord, workflowAction, mapUser);
 
 		// validation only run on retrieved tracking records (not constructed
 		// ones)
@@ -1305,55 +1304,63 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements WorkflowSer
 		// detach the currently persisted map records from the workflow service
 		// to avoid overwrite by retrieval of existing records
 		for (final MapRecord mr : mapRecords) {
+			Logger.getLogger(this.getClass())
+					.info("  Map record attached: " + mr.getId() + ", " + mr.getWorkflowStatus());
+
 			manager.detach(mr);
 			newRecords.add(mr);
+
+			// ensure that all map records with ids are on the tracking record
+			// NOTE: This was added after workflow refactoring to ensure that
+			// FIX_ERROR_PATH and QA_PATH records were properly retrieved from 
+			// the database, despite the tracking record not yet
+			// "containing" these records
+			if (mr.getId() != null) {
+				// map record ids is a set, simply add (no worry about
+				// duplicates)
+				trackingRecord.addMapRecordId(mr.getId());
+			}
 		}
 
 		// retrieve the old (existing) records
 		if (trackingRecord.getMapRecordIds() != null) {
 			for (final Long id : trackingRecord.getMapRecordIds()) {
-				oldRecords.add(getMapRecord(id));
+				MapRecord oldRecord = getMapRecord(id);
+				oldRecords.add(oldRecord);
+				Logger.getLogger(this.getClass()).info("  Existing record retrieved: " + oldRecord.getId());
 			}
 		}
 
 		// cycle over new records to check for additions or updates
 		for (final MapRecord mr : newRecords) {
-			if (getMapRecordInSet(oldRecords, mr.getId()) == null) {
 
+			Logger.getLogger(WorkflowServiceJpa.class).info("  Checking attached record: " + mr.getId());
+			if (mr.getId() == null) {
+
+				Logger.getLogger(WorkflowServiceJpa.class).info("    Add record");
 				// deep copy the detached record into a new
 				// persistence-environment record
 				// this routine also duplicates child collections to avoid
 				// detached object errors
 				MapRecord newRecord = new MapRecordJpa(mr, false);
 
-				/*
-				 * Logger.getLogger(WorkflowServiceJpa.class).info(
-				 * "Adding record: " + newRecord.toString());
-				 */
 				// add the record to the database
-
 				addMapRecord(newRecord);
 
 				// add the record to the return list
 				syncedRecords.add(newRecord);
+
 			}
 
 			// otherwise, check for update
 			else {
 				// if the old map record is changed, update it
-				/*
-				 * Logger.getLogger(WorkflowServiceJpa.class).info(
-				 * "New record: " + mr.toString());
-				 * Logger.getLogger(WorkflowServiceJpa.class).info(
-				 * "Old record: " + getMapRecordInSet(oldRecords,
-				 * mr.getId()).toString());
-				 */
 
 				if (!mr.isEquivalent(getMapRecordInSet(oldRecords, mr.getId()))) {
-					Logger.getLogger(WorkflowServiceJpa.class).info("  Changed: UPDATING");
+					Logger.getLogger(WorkflowServiceJpa.class).info("    Update record");
 					updateMapRecord(mr);
 				} else {
-					Logger.getLogger(WorkflowServiceJpa.class).info("  No change: NOT UPDATING");
+					Logger.getLogger(WorkflowServiceJpa.class).info("    Record unchanged");
 				}
 
 				syncedRecords.add(mr);
@@ -1363,11 +1370,14 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements WorkflowSer
 		// cycle over old records to check for deletions
 		for (final MapRecord mr : oldRecords) {
 
+			Logger.getLogger(this.getClass()).info("  Checking for deleted records: " + mr.getId());
 			// if old record is not in the new record set, delete it
 			if (getMapRecordInSet(syncedRecords, mr.getId()) == null) {
 
-				Logger.getLogger(WorkflowServiceJpa.class).info("Deleting record " + mr.getId());
+				Logger.getLogger(WorkflowServiceJpa.class).info("    Delete record");
 				removeMapRecord(mr.getId());
+			} else {
+				Logger.getLogger(WorkflowServiceJpa.class).info("    Record exists");
 			}
 		}
 
@@ -2418,5 +2428,44 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements WorkflowSer
 		}
 
 		return handler.findAssignedWork(mapProject, mapUser, userRole, query, pfsParameter, this);
+	}
+
+	@Override
+	@SuppressWarnings("static-method")
+	public MapRecord getPreviouslyPublishedVersionOfMapRecord(MapRecord mapRecord) throws Exception {
+
+		// get the record revisions
+		final List<MapRecord> revisions = getMapRecordRevisions(mapRecord.getId()).getMapRecords();
+
+		// ensure revisions are sorted by descending timestamp
+		Collections.sort(revisions, new Comparator<MapRecord>() {
+			@Override
+			public int compare(MapRecord mr1, MapRecord mr2) {
+				return mr2.getLastModified().compareTo(mr1.getLastModified());
+			}
+		});
+
+		// check assumption: last revision exists, at least two records must be
+		// present
+		if (revisions.size() < 2) {
+			throw new Exception("Attempted to get the previously published version of map record with id "
+					+ mapRecord.getId() + ", " + mapRecord.getOwner().getName() + ", and concept id "
+					+ mapRecord.getConceptId() + ", but no previous revisions exist.");
+		}
+
+		// cycle over records until the previously
+		// published/ready-for-publication
+		// state record is found
+		for (final MapRecord revision : revisions) {
+			if (revision.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)
+					|| revision.getWorkflowStatus().equals(WorkflowStatus.READY_FOR_PUBLICATION)) {
+
+				return revision;
+			}
+		}
+
+		throw new Exception("Could not retrieve previously published state of map record for concept "
+				+ mapRecord.getConceptId() + ", " + mapRecord.getConceptName());
+
 	}
 }
