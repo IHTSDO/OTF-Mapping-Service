@@ -1065,6 +1065,9 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements WorkflowSer
 			// do nothing (leave trackingRecord null)
 		}
 
+		// declare the validation result for existing tracking records
+		ValidationResult result = null;
+
 		// declare the workflow handler
 		AbstractWorkflowPathHandler handler = null;
 
@@ -1072,15 +1075,16 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements WorkflowSer
 		// path)
 		if (trackingRecord == null) {
 
-			// create a new tracking record for both paths
+			Logger.getLogger(this.getClass()).info("Creating new tracking record");
+
+			// create a tracking record for this concept with no records or users
 			trackingRecord = new TrackingRecordJpa();
 			trackingRecord.setMapProjectId(mapProject.getId());
 			trackingRecord.setTerminology(concept.getTerminology());
 			trackingRecord.setTerminologyVersion(concept.getTerminologyVersion());
 			trackingRecord.setTerminologyId(concept.getTerminologyId());
 			trackingRecord.setDefaultPreferredName(concept.getDefaultPreferredName());
-			trackingRecord.addMapRecordId(mapRecord.getId());
-
+		
 			// get the tree positions for this concept and set the sort key //
 			// to
 			// the first retrieved
@@ -1116,6 +1120,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements WorkflowSer
 						.newInstance();
 				trackingRecord.setWorkflowPath(WorkflowPath.FIX_ERROR_PATH);
 			}
+
 		}
 		// otherwise, instantiate based on tracking record
 		else {
@@ -1126,17 +1131,21 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements WorkflowSer
 					.forName(ConfigUtility.getConfigProperties()
 							.getProperty("workflow.path.handler." + trackingRecord.getWorkflowPath() + ".class"))
 					.newInstance();
+
 		}
 
 		if (handler == null) {
 			throw new Exception("Could not determine workflow handler");
 		}
-
+		
 		// validate the tracking record by its handler
-		ValidationResult result = handler.validateTrackingRecordForActionAndUser(trackingRecord, workflowAction,
+		result = handler.validateTrackingRecordForActionAndUser(trackingRecord, workflowAction,
 				mapUser);
 
-		if (!result.isValid()) {
+
+		// validation only run on retrieved tracking records (not constructed
+		// ones)
+		if (result != null && !result.isValid()) {
 
 			Logger.getLogger(WorkflowServiceJpa.class).info(result.toString());
 
@@ -2387,15 +2396,14 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements WorkflowSer
 			throw new Exception("findAvailableWork: could not determine workflow type for project");
 
 		}
-		
+
 		return handler.findAvailableWork(mapProject, mapUser, userRole, query, pfsParameter, this);
 	}
-	
+
 	@Override
-	public SearchResultList findAssignedWork(MapProject mapProject, MapUser mapUser, MapUserRole userRole,
-			String query, PfsParameter pfsParameter) throws Exception {
-		
-	
+	public SearchResultList findAssignedWork(MapProject mapProject, MapUser mapUser, MapUserRole userRole, String query,
+			PfsParameter pfsParameter) throws Exception {
+
 		WorkflowPathHandler handler = null;
 		switch (mapProject.getWorkflowType()) {
 		case CONFLICT_PROJECT:
@@ -2408,7 +2416,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements WorkflowSer
 			throw new Exception("findAssignedWork: could not determine workflow type for project");
 
 		}
-		
+
 		return handler.findAssignedWork(mapProject, mapUser, userRole, query, pfsParameter, this);
 	}
 }
