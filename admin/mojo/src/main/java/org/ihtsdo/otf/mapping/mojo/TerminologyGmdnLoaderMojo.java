@@ -787,17 +787,13 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
             for (final String chd : origChd) {
               // Get first start word
               if (newChdStart == null) {
-                newChdStart =
-                    conceptMap.get(chd).getDefaultPreferredName()
-                        .split("[^a-zA-Z0-9]")[0].toLowerCase();
+                newChdStart = conceptMap.get(chd).getTerminologyId();
               }
 
               // Every 100 entries, create a new intermediate child
               if (++ct % 100 == 0) {
                 // Get first word of the last child concept
-                newChdEnd =
-                    conceptMap.get(chd).getDefaultPreferredName()
-                        .split("[^a-zA-Z0-9]")[0].toLowerCase();
+                newChdEnd = conceptMap.get(chd).getTerminologyId();
 
                 // add the concept - need to wait until the end
                 // so we know the name of the condept
@@ -851,7 +847,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
             }
 
             // Create relationship
-            Logger.getLogger(getClass()).info(
+            Logger.getLogger(getClass()).debug(
                 "REL " + chd + ":" + chdConcept.getTerminologyId() + " => "
                     + par + ":" + parConcept.getTerminologyId());
             helper.createIsaRelationship(parConcept, chdConcept, "gmdn-"
@@ -1012,7 +1008,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
           final Concept parConcept = conceptMap.get(par);
           // Only if chd/par concepts are active
           if (chdConcept != null && parConcept != null) {
-            Logger.getLogger(getClass()).info(
+            Logger.getLogger(getClass()).debug(
                 "REL2 " + chd + ":" + chdConcept.getTerminologyId() + " => "
                     + par + ":" + parConcept.getTerminologyId());
             helper.createIsaRelationship(
