@@ -67,9 +67,12 @@ public class GmdnProjectSpecificAlgorithmHandler extends
     // lazy initialize
     if (termType == null) {
       final MetadataService service = new MetadataServiceJpa();
+      System.out.println("A="
+          + service.getDescriptionTypes(terminology, version));
       try {
         for (final Map.Entry<String, String> entry : service
             .getDescriptionTypes(terminology, version).entrySet()) {
+          System.out.println("B=" + entry.getKey() + ", " + entry.getValue());
           if (entry.getValue().equals("Term")) {
             termType = Long.valueOf(entry.getKey());
           }
