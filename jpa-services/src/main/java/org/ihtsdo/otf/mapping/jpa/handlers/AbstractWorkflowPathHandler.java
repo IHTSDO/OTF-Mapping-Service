@@ -120,6 +120,7 @@ public abstract class AbstractWorkflowPathHandler implements WorkflowPathHandler
 	 * @see org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler#
 	 * validateTrackingRecord(org.ihtsdo.otf.mapping.workflow.TrackingRecord)
 	 */
+	/* see superclass */
 	@Override
 	public ValidationResult validateTrackingRecord(TrackingRecord trackingRecord) throws Exception {
 
@@ -229,6 +230,7 @@ public abstract class AbstractWorkflowPathHandler implements WorkflowPathHandler
 	 * org.ihtsdo.otf.mapping.helpers.WorkflowAction,
 	 * org.ihtsdo.otf.mapping.model.MapUser)
 	 */
+	/* see superclass */
 	@Override
 	public ValidationResult validateTrackingRecordForActionAndUser(TrackingRecord trackingRecord, WorkflowAction action,
 			MapUser mapUser) throws Exception {
@@ -337,6 +339,13 @@ public abstract class AbstractWorkflowPathHandler implements WorkflowPathHandler
 		return assignedRecord;
 	}
 	
+	/**
+	 * Returns the current map record for user.
+	 *
+	 * @param records the records
+	 * @param mapUser the map user
+	 * @return the current map record for user
+	 */
 	@SuppressWarnings("static-method")
 	public MapRecord getCurrentMapRecordForUser(MapRecordList records, MapUser mapUser) {
 		MapRecord assignedRecord = null;
@@ -441,13 +450,24 @@ public abstract class AbstractWorkflowPathHandler implements WorkflowPathHandler
 	 * @throws Exception
 	 *             the exception
 	 */
-	public SearchResultList findAvailableWork(MapProject mapProject, final MapUser mapUser, String query,
+	@SuppressWarnings("static-method")
+  public SearchResultList findAvailableWork(MapProject mapProject, final MapUser mapUser, String query,
 			PfsParameter pfsParameter) throws Exception {
-
 		return null;
 	}
 
-	public SearchResultList findAssignedWork(MapProject mapProject, final MapUser mapUser, String query,
+	/**
+	 * Find assigned work.
+	 *
+	 * @param mapProject the map project
+	 * @param mapUser the map user
+	 * @param query the query
+	 * @param pfsParameter the pfs parameter
+	 * @return the search result list
+	 * @throws Exception the exception
+	 */
+	@SuppressWarnings("static-method")
+  public SearchResultList findAssignedWork(MapProject mapProject, final MapUser mapUser, String query,
 			PfsParameter pfsParameter) throws Exception {
 
 		return null;
@@ -456,17 +476,15 @@ public abstract class AbstractWorkflowPathHandler implements WorkflowPathHandler
 	/**
 	 * Process workflow action.
 	 *
-	 * @param trackingRecord
-	 *            the tracking record for a specified project and concept
-	 * @param mapRecords
-	 *            all map records associated with the tracking record, if any
-	 * @param mapUser
-	 *            the map user performing the workflow action
-	 * @param mapRecord
-	 *            the single map record associated with the workflow action, if
+	 * @param trackingRecord            the tracking record for a specified project and concept
+	 * @param workflowAction the workflow action
+	 * @param mapProject the map project
+	 * @param mapUser            the map user performing the workflow action
+	 * @param mapRecords            all map records associated with the tracking record, if any
+	 * @param mapRecord            the single map record associated with the workflow action, if
 	 *            any
-	 * @throws Exception
-	 *             the exception
+	 * @return the sets the
+	 * @throws Exception             the exception
 	 */
 	@Override
 	public Set<MapRecord> processWorkflowAction(TrackingRecord trackingRecord, WorkflowAction workflowAction, MapProject mapProject,
@@ -479,7 +497,14 @@ public abstract class AbstractWorkflowPathHandler implements WorkflowPathHandler
 	// //////////////////////////
 
 
-	public MapUserList getMapUsersFromMapRecords(Set<MapRecord> mapRecords) {
+	/**
+	 * Returns the map users from map records.
+	 *
+	 * @param mapRecords the map records
+	 * @return the map users from map records
+	 */
+	@SuppressWarnings("static-method")
+  public MapUserList getMapUsersFromMapRecords(Set<MapRecord> mapRecords) {
 		MapUserList mapUserList = new MapUserListJpa();
 		for (final MapRecord mr : mapRecords) {
 			mapUserList.addMapUser(mr.getOwner());
@@ -487,7 +512,14 @@ public abstract class AbstractWorkflowPathHandler implements WorkflowPathHandler
 		return mapUserList;
 	}
 
-	public WorkflowStatus getWorkflowStatusFromMapRecords(Set<MapRecord> mapRecords) {
+	/**
+	 * Returns the workflow status from map records.
+	 *
+	 * @param mapRecords the map records
+	 * @return the workflow status from map records
+	 */
+	@SuppressWarnings("static-method")
+  public WorkflowStatus getWorkflowStatusFromMapRecords(Set<MapRecord> mapRecords) {
 		WorkflowStatus workflowStatus = WorkflowStatus.NEW;
 		for (final MapRecord mr : mapRecords) {
 			if (mr.getWorkflowStatus().compareTo(workflowStatus) > 0)
@@ -496,7 +528,14 @@ public abstract class AbstractWorkflowPathHandler implements WorkflowPathHandler
 		return workflowStatus;
 	}
 
-	public WorkflowStatus getLowestWorkflowStatusFromMapRecords(Set<MapRecord> mapRecords) {
+	/**
+	 * Returns the lowest workflow status from map records.
+	 *
+	 * @param mapRecords the map records
+	 * @return the lowest workflow status from map records
+	 */
+	@SuppressWarnings("static-method")
+  public WorkflowStatus getLowestWorkflowStatusFromMapRecords(Set<MapRecord> mapRecords) {
 		WorkflowStatus workflowStatus = WorkflowStatus.REVISION;
 		for (final MapRecord mr : mapRecords) {
 			if (mr.getWorkflowStatus().compareTo(workflowStatus) < 0)
@@ -505,7 +544,15 @@ public abstract class AbstractWorkflowPathHandler implements WorkflowPathHandler
 		return workflowStatus;
 	}
 
-	protected MapRecord createMapRecordForTrackingRecordAndUser(TrackingRecord trackingRecord, MapUser mapUser) {
+	/**
+	 * Creates the map record for tracking record and user.
+	 *
+	 * @param trackingRecord the tracking record
+	 * @param mapUser the map user
+	 * @return the map record
+	 */
+	@SuppressWarnings("static-method")
+  protected MapRecord createMapRecordForTrackingRecordAndUser(TrackingRecord trackingRecord, MapUser mapUser) {
 		final MapRecord mapRecord = new MapRecordJpa();
 		mapRecord.setMapProjectId(trackingRecord.getMapProjectId());
 		mapRecord.setConceptId(trackingRecord.getTerminologyId());
