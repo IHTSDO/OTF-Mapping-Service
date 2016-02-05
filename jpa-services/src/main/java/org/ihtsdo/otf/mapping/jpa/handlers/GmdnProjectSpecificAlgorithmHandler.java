@@ -3,6 +3,9 @@ package org.ihtsdo.otf.mapping.jpa.handlers;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
+import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
+import org.ihtsdo.otf.mapping.rf2.Concept;
+import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.services.ContentService;
 
 /**
@@ -18,37 +21,34 @@ public class GmdnProjectSpecificAlgorithmHandler extends
   @Override
   public boolean isTargetCodeValid(String terminologyId) throws Exception {
 
-    // fast
-    return true;
-
-    // final ContentService contentService = new ContentServiceJpa();
+    final ContentService contentService = new ContentServiceJpa();
 
     // Cache the "Term" term type - valid codes require it
-    // cacheTermType(contentService, mapProject.getDestinationTerminology(),
-    // mapProject.getDestinationTerminologyVersion());
-    //
-    // try {
-    // // Concept must exist
-    // final Concept concept =
-    // contentService.getConcept(terminologyId,
-    // mapProject.getDestinationTerminology(),
-    // mapProject.getDestinationTerminologyVersion());
-    //
-    // // If there is a concept and it has a "term" description it's valid
-    // if (concept != null) {
-    // for (final Description desc : concept.getDescriptions()) {
-    // if (desc.getTypeId().equals(termType)) {
-    // return true;
-    // }
-    // }
-    // }
-    // return false;
-    //
-    // } catch (Exception e) {
-    // throw e;
-    // } finally {
-    // contentService.close();
-    // }
+    cacheTermType(contentService, mapProject.getDestinationTerminology(),
+        mapProject.getDestinationTerminologyVersion());
+
+    try {
+      // Concept must exist
+      final Concept concept =
+          contentService.getConcept(terminologyId,
+              mapProject.getDestinationTerminology(),
+              mapProject.getDestinationTerminologyVersion());
+
+      // If there is a concept and it has a "term" description it's valid
+      if (concept != null) {
+        for (final Description desc : concept.getDescriptions()) {
+          if (desc.getTypeId().equals(termType)) {
+            return true;
+          }
+        }
+      }
+      return false;
+
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      contentService.close();
+    }
   }
 
   /**
@@ -59,7 +59,6 @@ public class GmdnProjectSpecificAlgorithmHandler extends
    * @param version the version
    * @throws Exception the exception
    */
-  @SuppressWarnings("unused")
   private static void cacheTermType(ContentService contentService,
     String terminology, String version) throws Exception {
     // lazy initialize
