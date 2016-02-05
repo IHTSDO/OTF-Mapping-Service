@@ -7,11 +7,8 @@ import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
-import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
-import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
-import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
 /**
  * Represents a collection of project specific algorithms that can override
@@ -117,39 +114,6 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
   public void computeTargetTerminologyNotes(List<TreePosition> treePositions)
     throws Exception;
 
-  /**
-   * Assign a new map record from existing record, performing any necessary
-   * workflow actions
-   * 
-   * Default Behavior: - Create a new record with origin ids set to the existing
-   * record (and its antecedents) - Add the record to the tracking record -
-   * Return the tracking record.
-   * 
-   * @param trackingRecord the tracking record
-   * @param mapRecords the map records
-   * @param mapRecord the map record
-   * @param mapUser the map user
-   * @return the workflow tracking record
-   * @throws Exception the exception
-   */
-  public Set<MapRecord> assignFromInitialRecord(TrackingRecord trackingRecord,
-    Set<MapRecord> mapRecords, MapRecord mapRecord, MapUser mapUser)
-    throws Exception;
-
-  /**
-   * Assign a map record from scratch, performing any necessary workflow
-   * actions.
-   * 
-   * @param trackingRecord the tracking record
-   * @param mapRecords the map records
-   * @param concept the concept
-   * @param mapUser the map user
-   * @return the workflow tracking record
-   * @throws Exception the exception
-   */
-  public Set<MapRecord> assignFromScratch(TrackingRecord trackingRecord,
-    Set<MapRecord> mapRecords, Concept concept, MapUser mapUser)
-    throws Exception;
 
   /**
    * Called after "assign from scratch" to give handlers the opportunity to
@@ -160,70 +124,7 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    */
   public void computeIdentifyAlgorithms(MapRecord mapRecord) throws Exception;
 
-  /**
-   * Unassign a map record from a user, performing any necessary workflow
-   * actions.
-   * 
-   * @param trackingRecord the tracking record
-   * @param mapRecords the map records
-   * @param mapUser the map user
-   * @return the workflow tracking record
-   * @throws Exception the exception
-   */
-  public Set<MapRecord> unassign(TrackingRecord trackingRecord,
-    Set<MapRecord> mapRecords, MapUser mapUser) throws Exception;
-
-  /**
-   * Set a user's editing on a map record to finished, performing any necessary
-   * workflow actions.
-   * 
-   * @param trackingRecord the tracking record
-   * @param mapRecords the map records
-   * @param mapUser the map user
-   * @return the workflow tracking record
-   * @throws Exception the exception
-   */
-  public Set<MapRecord> finishEditing(TrackingRecord trackingRecord,
-    Set<MapRecord> mapRecords, MapUser mapUser) throws Exception;
-
-  /**
-   * Performs workflow actions necessary when a map user wishes to save a record
-   * for further editing.
-   * 
-   * @param trackingRecord the tracking record
-   * @param mapRecords the map records
-   * @param mapUser the map user
-   * @return the workflow tracking record
-   * @throws Exception the exception
-   */
-  public Set<MapRecord> saveForLater(TrackingRecord trackingRecord,
-    Set<MapRecord> mapRecords, MapUser mapUser) throws Exception;
-
-  /**
-   * Cancel work.
-   * 
-   * @param trackingRecord the tracking record
-   * @param mapRecords the map records
-   * @param mapUser the map user
-   * @return the sets the
-   * @throws Exception the exception
-   */
-  public Set<MapRecord> cancelWork(TrackingRecord trackingRecord,
-    Set<MapRecord> mapRecords, MapUser mapUser) throws Exception;
-
-  /**
-   * Performs any workflow actions necessary when a user sends a record to
-   * publication.
-   * 
-   * @param trackingRecord the tracking record
-   * @param mapRecords the map records
-   * @param mapUser the map user
-   * @return the published records.
-   * @throws Exception the exception
-   */
-  public Set<MapRecord> publish(TrackingRecord trackingRecord,
-    Set<MapRecord> mapRecords, MapUser mapUser) throws Exception;
-
+  
   /**
    * Returns the dependent modules.
    *

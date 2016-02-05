@@ -307,6 +307,7 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
 		return "FIX_ERROR_PATH";
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public SearchResultList findAvailableWork(MapProject mapProject, MapUser mapUser, MapUserRole userRole,
 			String query, PfsParameter pfsParameter, WorkflowService workflowService) throws Exception {
@@ -334,6 +335,23 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
 			break;
 		default:
 			throw new Exception(getName() + ", findAvailableWork: invalid project role " + userRole);
+		}
+
+		// determine the query restrictions, type and pfs parameter
+		final List<TrackingRecord> results;
+		final PfsParameter pfs = new PfsParameterJpa(pfsParameter);
+		int[] totalCt = new int[1];
+
+		results = (List<TrackingRecord>) workflowService.getQueryResults(sb.toString(), TrackingRecordJpa.class,
+				TrackingRecordJpa.class, pfs, totalCt);
+		availableWork.setTotalCount(totalCt[0]);
+
+		for (TrackingRecord tr : results) {
+			SearchResult result = new SearchResultJpa();
+			result.setTerminologyId(tr.getTerminologyId());
+			result.setValue(tr.getDefaultPreferredName());
+			result.setId(tr.getId());
+			availableWork.addSearchResult(result);
 		}
 
 		return availableWork;
@@ -409,8 +427,8 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
 
 			// exclude records where review is in progress by this user
 			sb.append(" AND NOT (userAndWorkflowStatusPairs:REVIEW_NEW_" + mapUser.getUserName()
-					+ " userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_" + mapUser.getUserName()
-					+ " userAndWorkflowStatusPairs:REVIEW_RESOLVED_" + mapUser.getUserName() + ")");
+					+ " OR userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_" + mapUser.getUserName()
+					+ " OR userAndWorkflowStatusPairs:REVIEW_RESOLVED_" + mapUser.getUserName() + ")");
 			break;
 
 		default:
@@ -418,13 +436,28 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
 		}
 
 		results = (List<TrackingRecord>) workflowService.getQueryResults(sb.toString(), TrackingRecordJpa.class,
-				TrackingRecordJpa.class, pfsParameter, totalCt);
+				TrackingRecordJpa.class, pfs, totalCt);
 		assignedWork.setTotalCount(totalCt[0]);
+
 		for (TrackingRecord tr : results) {
+
+			MapRecord mapRecord = null;
+			for (final MapRecord mr : workflowService.getMapRecordsForTrackingRecord(tr)) {
+				// ignore REVISION record
+				if (mr.getOwner().equals(mapUser) && !mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
+
+					// get highest workflow status record
+					if (mapRecord == null || mapRecord.getWorkflowStatus().compareTo(mr.getWorkflowStatus()) < 0) {
+						mapRecord = mr;
+					}
+				}
+			}
 			SearchResult result = new SearchResultJpa();
-			result.setTerminologyId(tr.getTerminologyId());
-			result.setValue(tr.getDefaultPreferredName());
-			result.setId(tr.getId());
+			result.setTerminology(mapRecord.getLastModified().toString());
+			result.setTerminologyVersion(mapRecord.getWorkflowStatus().toString());
+			result.setTerminologyId(mapRecord.getConceptId());
+			result.setValue(mapRecord.getConceptName());
+			result.setId(mapRecord.getId());
 			assignedWork.addSearchResult(result);
 		}
 		return assignedWork;
@@ -444,6 +477,7 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
 		MapRecord revisionRecord = null;
 		MapRecord editingRecord = null;
 		MapRecord reviewRecord = null;
+		MapRecord newRecord = null;
 
 		switch (workflowAction) {
 		case ASSIGN_FROM_INITIAL_RECORD:
@@ -457,7 +491,7 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
 					|| mapRecord.getWorkflowStatus().equals(WorkflowStatus.READY_FOR_PUBLICATION)) {
 
 				// deep copy the map record
-				final MapRecord newRecord = new MapRecordJpa(mapRecord, false);
+				newRecord = new MapRecordJpa(mapRecord, false);
 
 				// set origin ids
 				newRecord.addOrigin(mapRecord.getId());
@@ -467,6 +501,9 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
 				newRecord.setOwner(mapUser);
 				newRecord.setLastModifiedBy(mapUser);
 				newRecord.setWorkflowStatus(WorkflowStatus.NEW);
+				
+				// clear the set of records (eliminate the publication-ready record)
+				newRecords.clear();
 
 				// add the record to the list
 				newRecords.add(newRecord);
@@ -477,10 +514,26 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
 				mapRecord.setWorkflowStatus(WorkflowStatus.REVISION);
 				newRecords.add(mapRecord);
 
+			} else {
+				throw new Exception(getName() + ", " + workflowAction + ": Attempted to fix errors on non-publication-ready record");
 			}
 			break;
+		case ASSIGN_FROM_SCRATCH:
+
+			newRecord = this.createMapRecordForTrackingRecordAndUser(trackingRecord, mapUser);
+			newRecord.setWorkflowStatus(WorkflowStatus.REVIEW_NEW);
+
+			// find the map record needing review
+			for (MapRecord mr : newRecords) {
+				if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED)) {
+					newRecord.addOrigin(mr.getId());
+				}
+			}
+
+			newRecords.add(newRecord);
+			break;
 		case CANCEL:
-			final MapRecord newRecord = getCurrentMapRecordForUser(mapRecords, mapUser);
+			newRecord = getCurrentMapRecordForUser(mapRecords, mapUser);
 
 			// check for the appropriate map records
 			for (final MapRecord mr : mapRecords) {
@@ -675,8 +728,8 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
 				// retrieve the workflow status of the revision record
 				WorkflowService workflowService = new WorkflowServiceJpa();
 				try {
-					revisionRecord.setWorkflowStatus(
-							workflowService.getMapRecord(revisionRecord.getId()).getWorkflowStatus());
+					MapRecord prevRecord = workflowService.getPreviouslyPublishedVersionOfMapRecord(revisionRecord);
+					revisionRecord.setWorkflowStatus(prevRecord.getWorkflowStatus());
 				} catch (Exception e) {
 					throw e;
 				} finally {
@@ -698,7 +751,7 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
 
 			break;
 		default:
-			break;
+			throw new Exception(getName() + ", " + workflowAction + ": Action not permitted for path");
 
 		}
 
