@@ -136,6 +136,10 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
       $scope.searchResults = [];
       $scope.pagedSearchResults = [];
 
+      $scope.searchStack = [];
+      $scope.searchStackPosition = 0;
+      $scope.searchStackResults = 0;
+
       // Get root tree
       $scope.treeQuery = '';
       $scope.getRootTree();
@@ -179,6 +183,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
         // If just 1 result, leave results blank, set tree query and search
         // the root tree
         else if (response.data.searchResult.length == 1) {
+          $scope.searchResults = [];
           $scope.treeQuery = $scope.query;
           $scope.getRootTreeWithQuery(true);
         }
@@ -271,7 +276,6 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
 
     // Manage the search stack
     $scope.manageStack = function(query) {
-      console.debug('manage stack', query);
       // update the position counter
       $scope.searchStackPosition++;
 
@@ -300,10 +304,6 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
       // set the variables for back/forward
       $scope.searchBackAllowed = $scope.searchStackPosition > 0;
       $scope.searchForwardAllowed = $scope.searchStackPosition < $scope.searchStackResults;
-      console.debug('  stack = ', $scope.searchStack);
-      console.debug('  stack position = ', $scope.searchStackPosition);
-      console.debug('  search back = ', $scope.searchBackAllowed);
-      console.debug('  search fwd = ', $scope.searchForwardAllowed);
 
     };
 
@@ -316,6 +316,9 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
       if ($scope.searchStackPosition < 0)
         $scope.searchStackPosition = 0;
       $scope.query = $scope.searchStack[$scope.searchStackPosition];
+      // set the variables for back/forward
+      $scope.searchBackAllowed = $scope.searchStackPosition > 0;
+      $scope.searchForwardAllowed = $scope.searchStackPosition < $scope.searchStackResults;
 
       // if query is not populated or undefined, get the root trees, otherwise
       // get query results
