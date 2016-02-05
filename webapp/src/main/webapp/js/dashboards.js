@@ -707,16 +707,12 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
         // if row has columns defined
         if ($scope.model.rows[i].hasOwnProperty('columns')) {
 
-          console.debug('row has columns');
-
           // cycle over columns
           for (var j = 0; j < $scope.model.rows[i].columns.length; j++) {
 
             // if column has widgets
             // defined
             if ($scope.model.rows[i].columns[j].hasOwnProperty('widgets')) {
-
-              console.debug('column has widgets');
 
               // add the number of
               // widgets to count
@@ -1199,19 +1195,13 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function($scope, $r
         // if row has columns defined
         if ($scope.model.rows[i].hasOwnProperty('columns')) {
 
-          console.debug('row has columns');
-
           // cycle over columns
           for (var j = 0; j < $scope.model.rows[i].columns.length; j++) {
 
-            // if column has widgets
-            // defined
+            // if column has widgets  defined
             if ($scope.model.rows[i].columns[j].hasOwnProperty('widgets')) {
 
-              console.debug('column has widgets');
-
-              // add the number of
-              // widgets to count
+              // add the number of widgets to count
               widgetCt += $scope.model.rows[i].columns[j].widgets.length;
             }
           }

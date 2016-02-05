@@ -13,6 +13,8 @@ import java.io.PushbackInputStream;
 import java.io.Reader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,10 +35,8 @@ import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.rf2.Component;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Description;
-import org.ihtsdo.otf.mapping.rf2.Relationship;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.DescriptionJpa;
-import org.ihtsdo.otf.mapping.rf2.jpa.RelationshipJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -388,6 +388,12 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
     /** The description. */
     private Description description = null;
 
+    /** The term id. */
+    private String termId = null;
+
+    /** The ivd. */
+    private boolean ivd = false;
+
     /**
      * Instantiates a new local handler.
      */
@@ -435,18 +441,23 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
 
         // Encountered </term> - put concept into map add desc
         if (qName.equalsIgnoreCase("term")) {
-          // Add the concept
+          // Add the concept (if active)
           // CASCADE will handle descriptions
-          contentService.addConcept(concept);
-          Logger.getLogger(getClass()).debug("    concept = " + concept);
+          if (concept.isActive() && ivd) {
+            // Use the "termID" as the key
+            conceptMap.put(termId, concept);
+            contentService.addConcept(concept);
+            Logger.getLogger(getClass()).debug("    concept = " + concept);
+
+          }
+          // reset ivd
+          ivd = false;
         }
 
         // </termID> - set the description terminology id
         else if (qName.equalsIgnoreCase("termID")) {
           description.setTerminologyId("term-" + chars.toString().trim());
-
-          // Use the "termID" as the key
-          conceptMap.put(chars.toString().trim(), concept);
+          termId = chars.toString().trim();
         }
 
         // </termCode> - set the concept terminology id
@@ -456,19 +467,26 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
 
         // </termIsIVD> - add a description so we can show in the detail
         else if (qName.equalsIgnoreCase("termIsIVD")) {
-          final Description ivd = new DescriptionJpa();
-          setCommonFields(ivd);
-          ivd.setTypeId(Long.parseLong(conceptMap.get("ivdTerm")
-              .getTerminologyId()));
-          ivd.setCaseSignificanceId(Long.parseLong(conceptMap.get(
-              "defaultCaseSignificance").getTerminologyId()));
-          ivd.setLanguageCode("en");
-          ivd.setConcept(concept);
-          Logger.getLogger(getClass())
-              .debug("    description = " + description);
-          concept.addDescription(ivd);
-          ivd.setActive(true);
-          ivd.setTerm(chars.toString().trim());
+          if (!chars.toString().trim().isEmpty()) {
+            final Description ivdDesc = new DescriptionJpa();
+            setCommonFields(ivdDesc);
+            ivdDesc.setTypeId(Long.parseLong(conceptMap.get("ivdTerm")
+                .getTerminologyId()));
+            ivdDesc.setCaseSignificanceId(Long.parseLong(conceptMap.get(
+                "defaultCaseSignificance").getTerminologyId()));
+            ivdDesc.setLanguageCode("en");
+            ivdDesc.setConcept(concept);
+            Logger.getLogger(getClass()).debug(
+                "    description = " + description);
+            concept.addDescription(ivdDesc);
+            ivdDesc.setActive(true);
+            ivdDesc.setTerm(chars.toString().trim());
+
+            if (chars.toString().trim().equals("IVD")) {
+              ivd = true;
+            }
+          }
+
         }
 
         // </termName> - set the name
@@ -543,6 +561,9 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
     /** The description. */
     private Description description = null;
 
+    /** The term id. */
+    private String termId = null;
+
     /**
      * Instantiates an empty {@link CollectiveTermHandler}.
      */
@@ -590,18 +611,20 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
 
         // Encountered </collectiveterm> - put concept into map add desc
         if (qName.equalsIgnoreCase("collectiveterm")) {
-          // Add the concept
+          // Add the concept i
           // CASCADE will handle descriptions
-          contentService.addConcept(concept);
+          if (concept.isActive()) {
+            contentService.addConcept(concept);
+            conceptMap.put(termId, concept);
+          }
+
           Logger.getLogger(getClass()).debug("    concept = " + concept);
         }
 
         // </collectivetermID> - set the description terminology id
         else if (qName.equalsIgnoreCase("collectivetermID")) {
           description.setTerminologyId("ct-" + chars.toString().trim());
-
-          // Ue the "collectiveTermID" as the key
-          conceptMap.put(chars.toString().trim(), concept);
+          termId = chars.toString().trim();
         }
 
         // </code> - set the concept terminology id
@@ -662,17 +685,14 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
    */
   class TermCollectiveTermHandler extends BaseHandler {
 
-    /** The chd. */
-    private String chd = null;
+    /** The chd id. */
+    private String chdId = null;
 
-    /** The par. */
-    private String par = null;
+    /** The par id. */
+    private String parId = null;
 
     /** The chd par map. */
     private Map<String, Set<String>> parChdMap = new HashMap<>();
-
-    /** The relationship. */
-    private Relationship relationship = null;
 
     /**
      * Instantiates an empty {@link TermCollectiveTermHandler}.
@@ -700,22 +720,28 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
       throws SAXException {
       try {
 
-        // Encountered </collectiveterm> - put concept into map add desc
+        // Encountered </termcollectiveterm> - put
         if (qName.equalsIgnoreCase("termcollectiveterm")) {
-          if (!parChdMap.containsKey(par)) {
-            parChdMap.put(par, new HashSet<String>());
+
+          // If par and chd exist (e.g. are active), proceed
+          if (conceptMap.containsKey(parId) && conceptMap.containsKey(chdId)) {
+            if (!parChdMap.containsKey(parId)) {
+              parChdMap.put(parId, new HashSet<String>());
+            }
+            parChdMap.get(parId).add(chdId);
           }
-          parChdMap.get(par).add(chd);
         }
 
         // </termID> - set the term id
         else if (qName.equalsIgnoreCase("termID")) {
-          chd = chars.toString().trim();
+          // the id
+          chdId = chars.toString().trim();
         }
 
         // </collectivetermID> - set the description terminology id
         else if (qName.equalsIgnoreCase("collectivetermID")) {
-          par = chars.toString().trim();
+          // the id
+          parId = chars.toString().trim();
         }
 
       } catch (Exception e) {
@@ -744,7 +770,19 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
             // count up to 100 for each case
             int ct = 0;
             // Get original children
-            final Set<String> oldChd = parChdMap.get(par);
+            final List<String> origChd = new ArrayList<>(parChdMap.get(par));
+            // Sort this by code numerically
+            Collections.sort(origChd, new Comparator<String>() {
+              @Override
+              public int compare(String o1, String o2) {
+                int id1 =
+                    Integer.parseInt(conceptMap.get(o1).getTerminologyId());
+                int id2 =
+                    Integer.parseInt(conceptMap.get(o2).getTerminologyId());
+                return id1 - id2;
+              }
+            });
+
             parChdMap.put(par, new HashSet<String>());
 
             // Increment counter and prep for the first 100
@@ -753,25 +791,20 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
                 par + "." + ("00" + idx).substring(("00" + idx).length() - 3);
             parChdMap.put(newChd, new HashSet<String>());
             parChdMap.get(par).add(newChd);
-            String newChdStart = "aa";
+            String newChdStart = "START";
             String newChdEnd = null;
 
             // Iterate through original children
-            for (final String chd : oldChd) {
+            for (final String chd : origChd) {
               // Get first start word
               if (newChdStart == null) {
-                newChdStart =
-                    conceptMap.get(chd).getDefaultPreferredName().split(" ")[0]
-                        .toLowerCase();
+                newChdStart = conceptMap.get(chd).getTerminologyId();
               }
 
               // Every 100 entries, create a new intermediate child
               if (++ct % 100 == 0) {
                 // Get first word of the last child concept
-                newChdEnd =
-                    conceptMap.get(chd).getDefaultPreferredName().split(" ")[0]
-                        .toLowerCase();
-                newChdStart = null;
+                newChdEnd = conceptMap.get(chd).getTerminologyId();
 
                 // add the concept - need to wait until the end
                 // so we know the name of the condept
@@ -782,24 +815,21 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
 
                 // Increment counter and prep for the next 100
                 idx++;
+                newChdStart = null;
                 newChd =
                     par + "."
                         + ("00" + idx).substring(("00" + idx).length() - 3);
                 parChdMap.put(newChd, new HashSet<String>());
-                Logger.getLogger(getClass()).debug(
-                    "REL " + par + " -> " + newChd);
                 parChdMap.get(par).add(newChd);
 
               }
               // Wire intermediate layer to original child
-              Logger.getLogger(getClass())
-                  .debug("REL " + newChd + " -> " + chd);
               parChdMap.get(newChd).add(chd);
             }
 
             // Add last concept
             if (!conceptMap.containsKey(newChd)) {
-              newChdEnd = "zz";
+              newChdEnd = "END";
 
               // add the concept - need to wait until the end
               // so we know the name of the condept
@@ -817,34 +847,24 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
         for (final String par : parChdMap.keySet()) {
           for (final String chd : parChdMap.get(par)) {
 
-            // create and configure rel
-            relationship = new RelationshipJpa();
-            setCommonFields(relationship);
-            relationship.setActive(true);
-            relationship.setCharacteristicTypeId(Long.parseLong(conceptMap.get(
-                "defaultCharacteristicType").getTerminologyId()));
-            relationship.setModifierId(Long.parseLong(conceptMap.get(
-                "defaultModifier").getTerminologyId()));
-            relationship.setRelationshipGroup(null);
-            relationship.setTypeId(Long.parseLong(conceptMap.get("isa")
-                .getTerminologyId()));
-
-            final Concept source = conceptMap.get(chd);
-            if (source == null) {
+            final Concept chdConcept = conceptMap.get(chd);
+            if (chdConcept == null) {
               throw new Exception("source concept is missing - " + chd);
             }
-            relationship.setSourceConcept(source);
 
-            final Concept destination = conceptMap.get(par);
-            if (destination == null) {
+            final Concept parConcept = conceptMap.get(par);
+            if (parConcept == null) {
               throw new Exception("destination concept is missing - " + par);
             }
-            relationship.setDestinationConcept(destination);
 
-            // Add the relationship
-            // the concepts on either end must already be added
-            Logger.getLogger(getClass()).debug("    rel = " + relationship);
-            contentService.addRelationship(relationship);
+            // Create relationship
+            Logger.getLogger(getClass()).debug(
+                "REL " + chd + ":" + chdConcept.getTerminologyId() + " => "
+                    + par + ":" + parConcept.getTerminologyId());
+            helper.createIsaRelationship(parConcept, chdConcept, "gmdn-"
+                + String.valueOf(++idCt), terminology, version,
+                dateFormat2.format(effectiveTime));
+
           }
         }
       } catch (Exception e) {
@@ -906,8 +926,14 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
     /** Map of cttreenodeID => parent cttreenodeID. */
     private Map<String, String> nodeChdParMap = new HashMap<>();
 
-    /** The cttreenode id. */
-    private String cttreenodeID = null;
+    /** The node id. */
+    private String nodeId = null;
+
+    /** The parent id. */
+    private String parId = null;
+
+    /** The term id. */
+    private String termId = null;
 
     /**
      * Instantiates an empty {@link CtTreeNodeHandler}.
@@ -934,25 +960,32 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
 
         // </cttreenodeID>
         if (qName.equalsIgnoreCase("cttreenodeID")) {
-          cttreenodeID = chars.toString().trim();
+          nodeId = chars.toString().trim();
         }
 
         // </collectivetermID> - id of child collective term
         else if (qName.equalsIgnoreCase("collectivetermID")) {
-          // Map the cttreenode
-          nodeTermMap.put(cttreenodeID, chars.toString().trim());
+          termId = chars.toString().trim();
         }
 
         // </parentnodeID> - id of the parent tree node
         else if (qName.equalsIgnoreCase("parentnodeID")) {
+          parId = chars == null ? "" : chars.toString().trim();
+        }
+
+        // </cttreenode> - end tag
+        else if (qName.equalsIgnoreCase("cttreenode")) {
+          // Map the cttreenode
+          nodeTermMap.put(nodeId, termId);
+
           // If chars, not a root node
-          if (chars != null && !chars.toString().trim().isEmpty()) {
+          if (!parId.isEmpty()) {
             // add chd node (this) and parent node reference
-            nodeChdParMap.put(cttreenodeID, chars.toString().trim());
+            nodeChdParMap.put(nodeId, parId);
           }
           // else a root node
           else {
-            final String rootTerm = nodeTermMap.get(cttreenodeID);
+            final String rootTerm = nodeTermMap.get(nodeId);
             final String rootCode = conceptMap.get(rootTerm).getTerminologyId();
             Logger.getLogger(getClass()).info(
                 "    ROOT = " + rootTerm
@@ -980,11 +1013,21 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
 
         // Create the relationship
         try {
-          helper.createIsaRelationship(
-              conceptMap.get(nodeTermMap.get(parNode)),
-              conceptMap.get(nodeTermMap.get(chdNode)),
-              "gmdn-" + String.valueOf(++idCt), terminology, version,
-              dateFormat2.format(effectiveTime));
+          final String chd = nodeTermMap.get(chdNode);
+          final String par = nodeTermMap.get(parNode);
+          final Concept chdConcept = conceptMap.get(chd);
+          final Concept parConcept = conceptMap.get(par);
+          // Only if chd/par concepts are active
+          if (chdConcept != null && parConcept != null) {
+            Logger.getLogger(getClass()).debug(
+                "REL2 " + chd + ":" + chdConcept.getTerminologyId() + " => "
+                    + par + ":" + parConcept.getTerminologyId());
+            helper.createIsaRelationship(
+                conceptMap.get(nodeTermMap.get(parNode)),
+                conceptMap.get(nodeTermMap.get(chdNode)),
+                "gmdn-" + String.valueOf(++idCt), terminology, version,
+                dateFormat2.format(effectiveTime));
+          }
         } catch (Exception e) {
           throw new SAXException(e);
         }
@@ -1001,6 +1044,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
   void setCommonFields(Component component) {
     component.setModuleId(Long.valueOf(conceptMap.get("defaultModule")
         .getTerminologyId()));
+    component.setActive(true);
     component.setTerminology(terminology);
     component.setTerminologyVersion(version);
     // An id is required due to unique constraints on components

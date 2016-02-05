@@ -19,7 +19,7 @@ mapProjectAppControllers
     // global function to handle any type of error. Currently only
     // specifically implemented for authorization failures.
     $rootScope.handleHttpError = function(data, status, headers, config) {
-       //$rootScope.globalError = data.replace(/"/g, '');
+      // $rootScope.globalError = data.replace(/"/g, '');
       utilService.handleError(data.replace(/"/g, ''));
       if (status == '401') {
         $location.path('/');
@@ -30,8 +30,6 @@ mapProjectAppControllers
     // global function to handle an error that returns user to dashboard
     // currently used for improper viewing of records in editing
     $rootScope.handleReturnToDashboardError = function(errorString, currentRole) {
-      console.debug('Error requiring return to dashboard', errorString, currentRole);
-      console.debug('Attemptingn to redirect to ', '/' + currentRole.toLowerCase() + '/dash');
       $rootScope.globalError = errorString;
       $location.path('/' + currentRole.toLowerCase() + '/dash');
       window.scrollTo(0, 0);
@@ -50,14 +48,11 @@ mapProjectAppControllers
 
     // global variable, contains user-viewable error text displayed one very
     // page if not empty
-    console.debug('rootScope: resetting global error');
     $rootScope.resetGlobalError();
 
     // check if local storage service can be accessed
     if (localStorageService.isSupported() == false) {
       $rootScope.globalError = 'It appears your browsers security settings will prevent the tool from functioning correctly.  Check that cookies are enabled and/or that your browser allows setting local data, then reload this page.';
-    } else {
-      console.debug('LocalStorageService reports success');
     }
 
     // variable to indicate whether the current page is 'dirty'
@@ -74,9 +69,6 @@ mapProjectAppControllers
       .$on(
         '$locationChangeStart',
         function(event) {
-
-          console.log('$locationChangeStart changed!', $rootScope.currentPageDirty);
-
           if ($rootScope.currentPageDirty == true) {
             if (!confirm('Are you sure you want to leave this page? Any data you have entered will be lost.')) {
               event.preventDefault();
@@ -388,7 +380,6 @@ mapProjectAppControllers.controller('LoginCtrl', [
     // function to change project from the header
     $scope.changeFocusProject = function(mapProject) {
       $scope.focusProject = mapProject;
-      console.debug('changing project to ' + $scope.focusProject.name);
       // update and broadcast the new focus project
       localStorageService.add('focusProject', $scope.focusProject);
       $rootScope.$broadcast('localStorageModule.notification.setFocusProject', {
@@ -413,7 +404,6 @@ mapProjectAppControllers.controller('LoginCtrl', [
       } else {
         path = 'help/' + $scope.currentRole + 'DashboardHelp.html';
       }
-      console.debug('go to help page ' + path);
 
       // redirect page
       $location.path(path);
@@ -457,8 +447,6 @@ mapProjectAppControllers.controller('LoginCtrl', [
     // Otherwise, checked if we are logged in
     // If so, proceed to location, otherwise call 'goGuest'
     else {
-      console.debug('Autologin initiated ' + localStorageService.get('currentUser'));
-
       $scope.mapUser = localStorageService.get('currentUser');
 
       // If there is a user, attempt to log in
@@ -466,8 +454,6 @@ mapProjectAppControllers.controller('LoginCtrl', [
         $scope.userToken = localStorageService.get('userToken');
         // set default header to contain userToken
         $http.defaults.headers.common.Authorization = $scope.userToken;
-
-        console.debug('  attempting to see if user is still logged in');
 
         // Make a call to test if we're logged in and to get preferences
         $http({
@@ -478,7 +464,6 @@ mapProjectAppControllers.controller('LoginCtrl', [
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          console.debug(' user is already logged in');
           // set scope preferences object
           $scope.preferences = data;
           $scope.preferences.lastLogin = new Date().getTime();
@@ -497,14 +482,12 @@ mapProjectAppControllers.controller('LoginCtrl', [
           $location.path($location.path().replace('/autologin', ''));
 
         }).error(function(data, status, headers, config) {
-          console.debug('  user is no longer logged in');
 
           // call go guest and set the focus project (via param?)
           $scope.goGuest($location.path().replace('/autologin', ''), $routeParams.refSetId);
         });
 
       } else {
-        console.debug('  no user is logged in');
 
         // call go guest and set the focus project (via param?)
         $scope.goGuest('record/conceptId/' + $routeParams.conceptId, $routeParams.refSetId);
