@@ -1,7 +1,7 @@
 'use strict';
 
-angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ])
-''
+angular
+  .module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ])
   .config(function(dashboardProvider) {
 
     dashboardProvider.widget('terminologyBrowser', {
@@ -20,7 +20,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ])
   .controller(
     'terminologyBrowserWidgetCtrl',
     function($scope, $rootScope, $q, $timeout, $http, $routeParams, $location, localStorageService,
-      gpService) {
+      utilService, gpService) {
 
       $scope.focusProject = localStorageService.get('focusProject');
       $scope.userToken = localStorageService.get('userToken');
@@ -40,7 +40,9 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ])
       $scope.selectedResult = null;
 
       // Paging
-      $scope.pageSize = 10;
+      $scope.pageSize = 5;
+      $scope.pagedSearchResults = [];
+      $scope.paging = {};
       $scope.paging['search'] = {
         page : 1,
         filter : '',
@@ -90,12 +92,9 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ])
       function initTruncationWells(node) {
         // if the first time this has been viewed, close the truncation wells
         for (var i = 0; i < node.descGroups.length; i++) {
-          console.debug(node.descGroups[i]);
           for (var j = 0; j < node.descGroups[i].treePositionDescriptions.length; j++) {
             if (node.descGroups[i].treePositionDescriptions[j].isCollapsed == null
               || node.descGroups[i].treePositionDescriptions[j].isCollapsed == undefined) {
-              console.debug('Set truncation well to false for '
-                + node.descGroups[i].treePositionDescriptions[j].name);
               node.descGroups[i].treePositionDescriptions[j].isCollapsed = true;
             }
           }
@@ -133,6 +132,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ])
       $scope.clearSearch = function() {
         $scope.query = '';
         $scope.searchResults = [];
+        $scope.pagedSearchResults = [];
 
         // Get root tree
         $scope.treeQuery = '';
@@ -146,19 +146,26 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ])
         $scope.getRootTreeWithQuery(true);
       };
 
+      // Page search results
+      $scope.getPagedSearchResults = function() {
+        $scope.pagedSearchResults = utilService.getPagedArray($scope.searchResults,
+          $scope.paging['search'], $scope.pageSize);
+      };
+
       // Perform a query search for a list
       $scope.performSearch = function(query) {
         var t = $scope.focusProject.destinationTerminology;
         var v = $scope.focusProject.destinationTerminologyVersion;
-        var lquery = query + ' AND terminology:' + t + ' AND terminologyVersionn:' + v;
+        var lquery = query + ' AND terminology:' + t + ' AND terminologyVersion:' + v;
         console.debug('get concepts for query', lquery);
 
         gpService.increment();
-        $http.get(root_content + 'concept/query/' + encodeURIComponent(query)).then(
+        $http.get(root_content + 'concept/query/' + encodeURIComponent(lquery)).then(
         // Success
-        function(data) {
-          console.debug('  concepts = ', data.searchResult);
-          $scope.searchResults = data.searchResult;
+        function(response) {
+          console.debug('  concepts = ', response.data.searchResult);
+          $scope.searchResults = response.data.searchResult;
+          $scope.getPagedSearchResults();
           gpService.decrement();
         },
         // error
