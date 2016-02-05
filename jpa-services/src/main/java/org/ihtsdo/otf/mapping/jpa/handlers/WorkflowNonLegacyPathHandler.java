@@ -384,7 +384,7 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
 	public Set<MapRecord> processWorkflowAction(TrackingRecord trackingRecord, WorkflowAction workflowAction,
 			MapProject mapProject, MapUser mapUser, Set<MapRecord> mapRecords, MapRecord mapRecord) throws Exception {
 
-		Logger.getLogger(this.getClass()).info("NON_LEGACY_PATH: Processing workflow action by " + mapUser.getName()
+		Logger.getLogger(this.getClass()).info(getName() + ": Processing workflow action by " + mapUser.getName()
 				+ ":  " + workflowAction.toString());
 
 		// the set of records returned after processing
@@ -895,8 +895,7 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
 				sb.append(" AND userAndWorkflowStatusPairs:NEW_" + mapUser.getUserName());
 				break;
 			case "EDITING_IN_PROGRESS":
-				sb.append(" AND (userAndWorkflowStatusPairs:EDITING_IN_PROGRESS_" + mapUser.getUserName()
-						+ " OR userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_" + mapUser.getUserName() + ")");
+				sb.append(" AND userAndWorkflowStatusPairs:EDITING_IN_PROGRESS_" + mapUser.getUserName());
 				break;
 			case "EDITING_DONE":
 				sb.append(" AND (userAndWorkflowStatusPairs:EDITING_DONE_" + mapUser.getUserName()
@@ -915,9 +914,7 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
 					+ " OR userAndWorkflowStatusPairs:CONFLICT_IN_PROGRESS_*"
 					+ " OR userAndWorkflowStatusPairs:CONFLICT_RESOLVED_*)");
 
-			// TODO Have Brian help with brain problems regarding method
-			// visibility
-			results = (List<TrackingRecord>) workflowService.getQueryResults(sb.toString(), TrackingRecordJpa.class,
+				results = (List<TrackingRecord>) workflowService.getQueryResults(sb.toString(), TrackingRecordJpa.class,
 					TrackingRecordJpa.class, pfs, totalCt);
 			assignedWork.setTotalCount(totalCt[0]);
 

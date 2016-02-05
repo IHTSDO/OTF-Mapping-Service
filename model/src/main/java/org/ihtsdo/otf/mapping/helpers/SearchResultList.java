@@ -2,6 +2,7 @@ package org.ihtsdo.otf.mapping.helpers;
 
 import java.util.List;
 
+// TODO: Auto-generated Javadoc
 /**
  * Represents a sortable list of {@link SearchResult} objects.
  */
@@ -34,5 +35,12 @@ public interface SearchResultList extends ResultList<SearchResult> {
    * @param searchResults the search results
    */
   public void setSearchResults(List<SearchResult> searchResults);
+
+	/**
+	 * Adds the search results.
+	 *
+	 * @param searchResultList the search result list
+	 */
+	public void addSearchResults(SearchResultList searchResultList);
 
 }
