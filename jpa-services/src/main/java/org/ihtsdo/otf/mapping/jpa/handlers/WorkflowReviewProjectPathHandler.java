@@ -20,8 +20,8 @@ import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPathState;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatusCombination;
+import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
-import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -339,6 +339,8 @@ public class WorkflowReviewProjectPathHandler extends AbstractWorkflowPathHandle
 
 		switch (userRole) {
 
+		// REVIEW_NEEDED record with no REVIEW_NEW, REVIEW_IN_PROGRESS, or
+		// REVIEW_RESOLVED
 		case LEAD:
 			sb.append(" AND userAndWorkflowStatusPairs:REVIEW_NEEDED_*");
 
@@ -348,6 +350,7 @@ public class WorkflowReviewProjectPathHandler extends AbstractWorkflowPathHandle
 					+ " OR userAndWorkflowStatusPairs:REVIEW_RESOLVED_*" + ")");
 			break;
 
+		// any concept with no assigned users
 		case SPECIALIST:
 			sb.append(" AND assignedUserCount:0");
 			break;
@@ -355,21 +358,6 @@ public class WorkflowReviewProjectPathHandler extends AbstractWorkflowPathHandle
 			throw new Exception(getName() + ", findAvailableWork: invalid project role " + userRole);
 
 		}
-		// add the query terms specific to findAvailableReviewWork
-		// - a user (any) and workflowStatus pair of REVIEW_NEEDED_userName
-		// exists
-		// - the REVIEW_NEEDED pair is not for this user (i.e. user can't review
-		// their own work, UNLESS there is only one lead on the project
-		// - user and workflowStatus pairs of
-		// CONFLICT_NEW/CONFLICT_IN_PROGRESS_userName does not exist
-
-		// must have a REVIEW_NEEDED tag with any user
-		sb.append(" AND userAndWorkflowStatusPairs:REVIEW_NEEDED_*");
-
-		// there must not be an already claimed review record
-		sb.append(" AND NOT (userAndWorkflowStatusPairs:REVIEW_NEW_*"
-				+ " OR userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_*"
-				+ " OR userAndWorkflowStatusPairs:REVIEW_RESOLVED_*" + ")");
 
 		int[] totalCt = new int[1];
 		final List<TrackingRecord> results = (List<TrackingRecord>) workflowService.getQueryResults(sb.toString(),
@@ -395,9 +383,8 @@ public class WorkflowReviewProjectPathHandler extends AbstractWorkflowPathHandle
 			sb.append(query).append(" AND ");
 		}
 		sb.append("mapProjectId:" + mapProject.getId() + " AND workflowPath:" + getName());
-		
+
 		final String type = pfsParameter.getQueryRestriction() != null ? pfsParameter.getQueryRestriction() : "";
-		
 
 		switch (userRole) {
 		case LEAD:
@@ -431,8 +418,10 @@ public class WorkflowReviewProjectPathHandler extends AbstractWorkflowPathHandle
 			// add the query terms specific to findAssignedWork
 			// - user and workflowStatus must exist in a pair of form:
 			// workflowStatus_userName, e.g. NEW_dmo or EDITING_IN_PROGRESS_kli
-			// - modify search term based on pfs parameter query restriction field
-			// * default: NEW, EDITING_IN_PROGRESS, EDITING_DONE/CONFLICT_DETECTED
+			// - modify search term based on pfs parameter query restriction
+			// field
+			// * default: NEW, EDITING_IN_PROGRESS,
+			// EDITING_DONE/CONFLICT_DETECTED
 			// * NEW: NEW
 			// * EDITED: EDITING_IN_PROGRESS, EDITING_DONE/CONFLICT_DETECTED
 
@@ -445,7 +434,7 @@ public class WorkflowReviewProjectPathHandler extends AbstractWorkflowPathHandle
 				sb.append(" AND userAndWorkflowStatusPairs:EDITING_IN_PROGRESS_" + mapUser.getUserName());
 				break;
 			case "EDITING_DONE":
-				sb.append(" AND userAndWorkflowStatusPairs:REVIEW_NEEDED_" + mapUser.getUserName() + ")");
+				sb.append(" AND userAndWorkflowStatusPairs:REVIEW_NEEDED_" + mapUser.getUserName());
 				break;
 			default:
 				sb.append(" AND (userAndWorkflowStatusPairs:NEW_" + mapUser.getUserName()
@@ -455,85 +444,12 @@ public class WorkflowReviewProjectPathHandler extends AbstractWorkflowPathHandle
 			}
 
 			// add terms to exclude concepts that a lead has claimed
-			sb.append(" AND NOT userAndWorkflowStatusPairs:REVIEW_NEW_*"
-					+ " OR userAndWorkflowStatusPairs:REVIEW_NEEDED_*"
+			sb.append(" AND NOT (userAndWorkflowStatusPairs:REVIEW_NEW_*"
 					+ " OR userAndWorkflowStatusPairs:REVIEW_RESOLVED_*)");
 
-			final PfsParameter pfs = new PfsParameterJpa(pfsParameter);
-			pfs.setQueryRestriction(null);
-			int[] totalCt = new int[1];
-			final List<TrackingRecord> results = (List<TrackingRecord>) workflowService.getQueryResults(sb.toString(),
-					TrackingRecordJpa.class, TrackingRecordJpa.class, pfs, totalCt);
-			assignedWork.setTotalCount(totalCt[0]);
-
-			for (final TrackingRecord tr : results) {
-
-				// instantiate the result list
-				final SearchResult result = new SearchResultJpa();
-
-				// get the map records associated with this tracking record
-				final Set<MapRecord> mapRecords = workflowService.getMapRecordsForTrackingRecord(tr);
-
-				// get the map record assigned to this user
-				MapRecord mapRecord = null;
-
-				// SEE BELOW/MAP-617
-				WorkflowStatus mapLeadAlternateRecordStatus = null;
-				for (final MapRecord mr : mapRecords) {
-
-					if (mr.getOwner().equals(mapUser)) {
-
-						// if this lead has review or conflict work, set the flag
-						if (mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_NEW)
-								|| mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_IN_PROGRESS)
-								|| mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW)
-								|| mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_IN_PROGRESS)) {
-
-							mapLeadAlternateRecordStatus = mr.getWorkflowStatus();
-
-							// added to prevent user from getting REVISION record
-							// back on FIX_ERROR_PATH
-							// yet another problem related to leads being able to
-							// serve as dual roles
-						} else if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
-							// do nothing
-
-							// otherwise, this is the specialist/concept-level work
-						} else {
-							mapRecord = mr;
-						}
-					}
-				}
-
-				// if no record and no review or conflict work was found, throw
-				// error
-				if (mapRecord == null) {
-					throw new Exception("Failed to retrieve assigned work:  no map record found for user "
-							+ mapUser.getUserName() + " and concept " + tr.getTerminologyId());
-
-				} else {
-
-					// alter the workflow status if a higher-level record exists for
-					// this user
-					if (mapLeadAlternateRecordStatus != null) {
-
-						Logger.getLogger(WorkflowServiceJpa.class)
-								.info("Setting alternate record status: " + mapLeadAlternateRecordStatus);
-						mapRecord.setWorkflowStatus(mapLeadAlternateRecordStatus);
-					}
-					// create the search result
-					result.setTerminologyId(mapRecord.getConceptId());
-					result.setValue(mapRecord.getConceptName());
-					result.setTerminology(mapRecord.getLastModified().toString());
-					result.setTerminologyVersion(mapRecord.getWorkflowStatus().toString());
-					result.setId(mapRecord.getId());
-					assignedWork.addSearchResult(result);
-				}
-			}
 			break;
 		default:
 			throw new Exception(getName() + ", findAssignedWork: invalid project role " + userRole);
-
 		}
 
 		final PfsParameter pfs = new PfsParameterJpa(pfsParameter);
@@ -543,7 +459,9 @@ public class WorkflowReviewProjectPathHandler extends AbstractWorkflowPathHandle
 				TrackingRecordJpa.class, TrackingRecordJpa.class, pfs, totalCt);
 		assignedWork.setTotalCount(totalCt[0]);
 
-		for (final TrackingRecord tr : results) {
+		for (final TrackingRecord tr : results)
+
+		{
 			final SearchResult result = new SearchResultJpa();
 
 			final Set<MapRecord> mapRecords = workflowService.getMapRecordsForTrackingRecord(tr);
@@ -553,20 +471,7 @@ public class WorkflowReviewProjectPathHandler extends AbstractWorkflowPathHandle
 			for (final MapRecord mr : mapRecords) {
 
 				if (mr.getOwner().equals(mapUser)) {
-
-					// check for the case where REVIEW work is both specialist
-					// and
-					// lead level for same user
-					if (mr.getWorkflowStatus().compareTo(WorkflowStatus.REVIEW_NEW) < 0) {
-						// do nothing, this is the specialist level work
-
-					} else if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
-						// do nothing
-
-					} else {
-						// add the record
-						mapRecord = mr;
-					}
+					mapRecord = mr;
 				}
 			}
 
@@ -582,12 +487,176 @@ public class WorkflowReviewProjectPathHandler extends AbstractWorkflowPathHandle
 			assignedWork.addSearchResult(result);
 		}
 		return assignedWork;
+
 	}
 
 	@Override
 	public Set<MapRecord> processWorkflowAction(TrackingRecord trackingRecord, WorkflowAction workflowAction,
 			MapProject mapProject, MapUser mapUser, Set<MapRecord> mapRecords, MapRecord mapRecord) throws Exception {
-		return null;
+		Logger.getLogger(this.getClass()).info(
+				getName() + ": Processing workflow action by " + mapUser.getName() + ":  " + workflowAction.toString());
+
+		// the set of records returned after processing
+		Set<MapRecord> newRecords = new HashSet<>(mapRecords);
+
+		switch (workflowAction) {
+		case ASSIGN_FROM_SCRATCH:
+
+			// create new record
+			MapRecord newRecord = createMapRecordForTrackingRecordAndUser(trackingRecord, mapUser);
+
+			// check for LEAD assignment
+			if (getWorkflowStatusFromMapRecords(mapRecords).equals(WorkflowStatus.REVIEW_NEEDED)) {
+				// check that one record exists and is not owned by this user
+				if (mapRecords.size() != 1) {
+					throw new Exception("  Expected exactly one map record");
+				}
+
+				// set origin id to the existing record
+				newRecord.addOrigin(mapRecords.iterator().next().getId());
+
+				// set workflow status to review needed
+				newRecord.setWorkflowStatus(WorkflowStatus.REVIEW_NEW);
+			}
+
+			// check for SPECIALIST assignment
+			else if (mapRecords.size() == 0) {
+
+				// set workflow status to new
+				newRecord.setWorkflowStatus(WorkflowStatus.NEW);
+
+			} else {
+				throw new Exception(
+						"ASSIGN_FROM_SCRATCH on REVIEW_PROJECT_PATH failed for concept " + mapRecord.getConceptId());
+			}
+
+			newRecords.add(newRecord);
+			break;
+		case CANCEL:
+			// re-retrieve records from database to return to original state
+			// and ensure no spurious audit trail entries
+			newRecords.clear();
+			MappingService mappingService = new MappingServiceJpa();
+			for (final Long id : trackingRecord.getMapRecordIds()) {
+				newRecords.add(mappingService.getMapRecord(id));
+			}
+			mappingService.close();
+			break;
+		case FINISH_EDITING:
+
+			switch (mapRecord.getWorkflowStatus()) {
+
+			// case 1: specialist finishes a map record
+			case REVIEW_NEEDED:
+			case EDITING_IN_PROGRESS:
+			case NEW:
+
+				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
+						.info("FinishEditing: REVIEW_PROJECT_PATH, Specialist level work");
+
+				// check assumptions
+				// - should only be one record
+				if (mapRecords.size() != 1) {
+					throw new Exception(
+							"FINISH called at initial editing level on REVIEW_PROJECT_PATH where more than one record exists");
+				}
+
+				// mark as REVIEW_NEEDED
+				mapRecord.setWorkflowStatus(WorkflowStatus.REVIEW_NEEDED);
+
+				break;
+
+			case REVIEW_RESOLVED:
+			case REVIEW_IN_PROGRESS:
+			case REVIEW_NEW:
+
+				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
+						.info("FinishEditing: REVIEW_PROJECT_PATH, Lead level work");
+
+				// check assumptions
+				// - should be two map records, this one and one marked
+				// REVIEW_NEEDED
+
+				// check assumption: only two records
+				if (mapRecords.size() != 2)
+					throw new Exception(
+							"FINISH called at review editing level on REVIEW_PROJECT_PATH without exactly two map records");
+
+				// check assumption: review needed record present
+				MapRecord reviewRecord = null;
+				for (final MapRecord mr : mapRecords) {
+					if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED))
+						reviewRecord = mr;
+				}
+
+				if (reviewRecord == null)
+					throw new Exception(
+							"FINISH called at review editing level on REVIEW_PROJECT_PATH, but could not locate REVIEW_NEEDED record");
+
+				// mark as REVIEW_RESOLVED
+				mapRecord.setWorkflowStatus(WorkflowStatus.REVIEW_RESOLVED);
+
+				break;
+
+			default:
+				throw new Exception(
+						"Called finish on map record with invalid workflow status along REVIEW_PROJECT_PATH");
+			}
+			break;
+		case PUBLISH:
+			// Requirements for REVIEW_PROJECT_PATH
+			// - 1 record marked REVIEW_NEEDED
+			// - 1 record marked REVIEW_RESOLVED
+
+			// check assumption: owned record is marked resolved
+			if (!mapRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_RESOLVED)) {
+				throw new Exception(
+						"Publish called on REVIEW_PROJECT_PATH for map record not marked as REVIEW_RESOLVED");
+			}
+
+			// check assumption: record requiring review is present
+			MapRecord reviewNeededRecord = null;
+			for (final MapRecord mr : newRecords) {
+				if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED))
+					reviewNeededRecord = mr;
+			}
+
+			if (reviewNeededRecord == null) {
+				throw new Exception("Publish called on REVIEW_PROJECT_PATH, but no REVIEW_NEEDED record found");
+			}
+
+			// remove the review needed record
+			newRecords.remove(reviewNeededRecord);
+
+			// set the lead's record to READY_FOR_PUBLICATION
+			mapRecord.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+
+			break;
+		case SAVE_FOR_LATER:
+			if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.NEW))
+				mapRecord.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
+			if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW))
+				mapRecord.setWorkflowStatus(WorkflowStatus.REVIEW_IN_PROGRESS);
+
+			break;
+		case UNASSIGN:
+			// find the highest level map record assigned to this user and
+			// remove
+			MapRecord recordToRemove = null;
+			for (MapRecord mr : newRecords) {
+				if (mr.getOwner().equals(mapUser) && (recordToRemove == null
+						|| recordToRemove.getWorkflowStatus().compareTo(mr.getWorkflowStatus()) < 0)) {
+					recordToRemove = mr;
+				}
+			}
+			newRecords.remove(recordToRemove);
+			break;
+		default:
+			throw new Exception(getName() + ": Illegal workflow action requested -- " + workflowAction);
+
+		}
+
+		return newRecords;
 	}
 
 }

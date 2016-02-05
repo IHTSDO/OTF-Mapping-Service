@@ -27,16 +27,20 @@ import org.ihtsdo.otf.mapping.helpers.FeedbackConversationListJpa;
 import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
+import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
+import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
+import org.ihtsdo.otf.mapping.helpers.WorkflowType;
 import org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
+import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowFixErrorPathHandler;
 import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowQaPathHandler;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ReportServiceJpa;
@@ -261,10 +265,49 @@ public class WorkflowServiceRest extends RootServiceRest {
 			final MapUser mapUser = workflowService.getMapUser(userName);
 			user = mapUser.getUserName();
 
-			// get the workflow tracking records
-			SearchResultList results = workflowService.findAssignedWork(mapProject, mapUser, MapUserRole.SPECIALIST, query,
-					pfsParameter);
-			return results;
+			// get ALL review work for review project
+			SearchResultList assignedWork = workflowService.findAssignedWork(mapProject, mapUser,
+					MapUserRole.SPECIALIST, query, pfsParameter);
+
+			return assignedWork;
+
+		/*	WorkflowPathHandler fixErrorHandler = new WorkflowFixErrorPathHandler();
+
+			// SPECIAL CASE:
+			// Need to retrieve all normal work and Fix Error work
+			// work, page/sort together
+
+			// create pfs parameter object with only query restrictions
+			PfsParameter pfsLocal = new PfsParameterJpa();
+			pfsLocal.setQueryRestriction(pfsParameter.getQueryRestriction());
+			pfsLocal.setSortField(pfsParameter.getSortField());
+
+			// get and add ALL fix error work for this project
+			availableWork.addSearchResults(fixErrorHandler.findAssignedWork(mapProject, mapUser, MapUserRole.SPECIALIST,
+					query, pfsLocal, workflowService));
+
+			// create list of SearchResultJpas
+			// NOTE: This could be cleaned up with better typing
+			// currently cannot convert List<SearchResultJpa> to
+			// List<SearchResult>
+			List<SearchResultJpa> results = new ArrayList<>();
+			for (SearchResult sr : availableWork.getSearchResults()) {
+				results.add((SearchResultJpa) sr);
+			}
+			// apply paging and sorting to combined results
+			pfsLocal = new PfsParameterJpa(pfsParameter);
+			pfsLocal.setQueryRestriction(null);
+			pfsLocal.setSortField(null);
+			int[] totalCt = new int[1];
+			results = workflowService.applyPfsToList(results, SearchResultJpa.class, totalCt, pfsLocal);
+
+			availableWork.setSearchResults(new ArrayList<SearchResult>());
+			for (SearchResult sr : results) {
+				availableWork.addSearchResult(sr);
+			}
+
+			return availableWork;*/
+
 		} catch (Exception e) {
 			handleException(e, "trying to find assigned concepts", user, project, "");
 			return null;
@@ -558,8 +601,56 @@ public class WorkflowServiceRest extends RootServiceRest {
 			final MapUser mapUser = workflowService.getMapUser(userName);
 			user = mapUser.getUserName();
 
-			// get the map records
-			return workflowService.findAssignedWork(mapProject, mapUser, MapUserRole.LEAD, query, pfsParameter);
+			if (mapProject.getWorkflowType().equals(WorkflowType.REVIEW_PROJECT)) {
+				SearchResultList assignedWork = workflowService.findAssignedWork(mapProject, mapUser, MapUserRole.LEAD,
+						query, pfsParameter);
+				return assignedWork;
+			}
+
+			return new SearchResultListJpa();
+			/*
+			 * WorkflowPathHandler fixErrorHandler = new
+			 * WorkflowFixErrorPathHandler();
+			 * 
+			 * // SPECIAL CASE: // If a review project, need to retrieve all QA
+			 * work and Review // work, page/sort together if
+			 * (mapProject.getWorkflowType().equals(WorkflowType.REVIEW_PROJECT)
+			 * ) {
+			 * 
+			 * // create pfs parameter object with only query restrictions
+			 * PfsParameter pfsLocal = new PfsParameterJpa();
+			 * pfsLocal.setQueryRestriction(pfsParameter.getQueryRestriction());
+			 * pfsLocal.setSortField(pfsParameter.getSortField()); // get ALL
+			 * review work for review project SearchResultList reviewWork =
+			 * workflowService.findAssignedWork(mapProject, mapUser,
+			 * MapUserRole.LEAD, query, pfsLocal);
+			 * 
+			 * // get and add ALL fix error work for this project
+			 * reviewWork.addSearchResults(fixErrorHandler.findAssignedWork(
+			 * mapProject, mapUser, MapUserRole.LEAD, query, pfsLocal,
+			 * workflowService));
+			 * 
+			 * // create list of SearchResultJpas List<SearchResultJpa> results
+			 * = new ArrayList<>(); for (SearchResult sr :
+			 * reviewWork.getSearchResults()) { results.add((SearchResultJpa)
+			 * sr); } // apply paging and sorting to combined results pfsLocal =
+			 * new PfsParameterJpa(pfsParameter);
+			 * pfsLocal.setQueryRestriction(null); pfsLocal.setSortField(null);
+			 * int[] totalCt = new int[1]; results =
+			 * workflowService.applyPfsToList(results, SearchResultJpa.class,
+			 * totalCt, pfsLocal);
+			 * 
+			 * reviewWork.setSearchResults(new ArrayList<SearchResult>()); for
+			 * (SearchResult sr : results) { reviewWork.addSearchResult(sr); }
+			 * 
+			 * return reviewWork; }
+			 * 
+			 * // otherwise, simply return the results of the fix error handler
+			 * // workflow else { return
+			 * fixErrorHandler.findAssignedWork(mapProject, mapUser,
+			 * MapUserRole.LEAD, query, pfsParameter, workflowService); }
+			 */
+
 		} catch (Exception e) {
 			handleException(e, "trying to find assigned review work", user, project, "");
 			return null;
