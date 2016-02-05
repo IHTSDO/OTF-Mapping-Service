@@ -22,6 +22,7 @@ import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatusCombination;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -53,7 +54,7 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
 
 		setWorkflowPath(WorkflowPath.QA_PATH);
 
-		setEmptyWorkflowAllowed(false);
+		setEmptyWorkflowAllowed(true);
 
 		// STATE: Initial state has no tracking record
 		// Only valid action is CREATE_QA_RECORD
@@ -366,22 +367,14 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
 		Set<MapRecord> newRecords = new HashSet<>(mapRecords);
 
 		switch (workflowAction) {
-		case ASSIGN_FROM_INITIAL_RECORD:
+		case CREATE_QA_RECORD:
 			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("assignFromInitialRecord:  QA_PATH");
 
-			// case 1 : User claims a PUBLISHED or READY_FOR_PUBLICATION record
-			// to start qa on.
 			if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)
 					|| mapRecord.getWorkflowStatus().equals(WorkflowStatus.READY_FOR_PUBLICATION)) {
 
-				// check that only one record exists for this tracking record
-				if (!(trackingRecord.getMapRecordIds().size() == 1)) {
-					throw new Exception(
-							"DefaultProjectSpecificHandlerException - assignFromInitialRecord: More than one record exists for QA_PATH assignment.");
-				}
-
 				// deep copy the map record
-				final MapRecord newRecord = new MapRecordJpa(mapRecord, false);
+				MapRecord newRecord = new MapRecordJpa(mapRecord, false);
 
 				// set origin ids
 				newRecord.addOrigin(mapRecord.getId());
@@ -401,25 +394,30 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
 				// new records
 				mapRecord.setWorkflowStatus(WorkflowStatus.REVISION);
 				newRecords.add(mapRecord);
-
+			} else {
+				throw new Exception(getName() + ", " + workflowAction + ": Cannot QA non-publication-ready record");
 			}
-
 			break;
 		case ASSIGN_FROM_SCRATCH:
 			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("Assigning concept along QA_PATH");
 
+			MapRecord qaRecord = createMapRecordForTrackingRecordAndUser(trackingRecord, mapUser);
+
+			// set workflow status to QA_NEW
+			qaRecord.setWorkflowStatus(WorkflowStatus.QA_NEW);
+
 			// set origin id and copy labels
-			for (final MapRecord record : newRecords) {
-				// if
-				// (record.getWorkflowStatus().equals(WorkflowStatus.REVISION))
-				// mapRecord.addOrigin(record.getId());
+			for (MapRecord record : mapRecords) {
+
+				// copy from the QA_NEEDED record
 				if (record.getWorkflowStatus().equals(WorkflowStatus.QA_NEEDED)) {
-					record.setLabels(record.getLabels());
-					record.addOrigin(record.getId());
-					// set workflow status to review new
-					record.setWorkflowStatus(WorkflowStatus.QA_NEW);
+					qaRecord.setLabels(record.getLabels());
+					qaRecord.addOrigin(record.getId());
 				}
 			}
+
+			// add the users QA record to the set
+			newRecords.add(qaRecord);
 
 			break;
 		case CANCEL:
@@ -431,18 +429,132 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
 			mappingService.close();
 			break;
 
-		case CREATE_QA_RECORD:
-			break;
 		case FINISH_EDITING:
+			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("QA_PATH");
+
+			// a lead has finished reviewing a QA
+			if (newRecords.size() == 3) {
+
+				// assumption check: should be exactly three records
+				// 1) original published record, marked REVISION
+				// 2) specialist (QA) record, marked QA_NEEDED
+				// 3) lead's record, marked QA_NEW or QA_IN_PROGRESS
+
+				MapRecord originalRecord = null;
+				MapRecord modifiedRecord = null;
+				MapRecord leadRecord = null;
+
+				for (MapRecord mr : newRecords) {
+					if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION))
+						originalRecord = mr;
+					if (mr.getWorkflowStatus().equals(WorkflowStatus.QA_NEEDED))
+						modifiedRecord = mr;
+					if (mr.getWorkflowStatus().equals(WorkflowStatus.QA_NEW)
+							|| mr.getWorkflowStatus().equals(WorkflowStatus.QA_IN_PROGRESS)
+							|| mr.getWorkflowStatus().equals(WorkflowStatus.QA_RESOLVED))
+						leadRecord = mr;
+				}
+
+				if (originalRecord == null)
+					throw new Exception(
+							"QA_PATH: User finished reviewing work, but could not find previously published record");
+
+				if (modifiedRecord == null)
+					throw new Exception(
+							"QA_PATH: User finished reviewing work, but could not find the specialist's (QA) record");
+
+				if (leadRecord == null)
+					throw new Exception("QA_PATH: User finished reviewing work, but could not find their record.");
+
+				leadRecord.setWorkflowStatus(WorkflowStatus.QA_RESOLVED);
+
+			} else {
+				throw new Exception("Unexpected error along QA_PATH, invalid number of records passed in");
+			}
 			break;
 		case PUBLISH:
+			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
+					.info("QA_PATH - Called Publish on resolved qa");
+
+			// Requirements for QA_PATH publish action
+			// - 1 record marked REVISION
+			// - 1 record marked QA_NEEDED
+			// - 1 record marked QA_RESOLVED
+
+			// check assumption: owned record is QA_RESOLVED
+			if (!mapRecord.getWorkflowStatus().equals(WorkflowStatus.QA_RESOLVED))
+				throw new Exception("Publish called on QA_PATH for map record not marked as QA_RESOLVED");
+
+			mapRecord.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+
+			newRecords.clear();
+			newRecords.add(mapRecord);
 			break;
 		case SAVE_FOR_LATER:
+			if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.QA_NEW))
+				mapRecord.setWorkflowStatus(WorkflowStatus.QA_IN_PROGRESS);
+
 			break;
 		case UNASSIGN:
+			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("Unassign:  QA_PATH");
+
+			MapRecord revisionRecord = null;
+			MapRecord qaNeededRecord = null;
+			MapRecord editRecord = null;
+			for (MapRecord mr : mapRecords) {
+				if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION))
+					revisionRecord = mr;
+				else if (mr.getWorkflowStatus().equals(WorkflowStatus.QA_NEEDED))
+					qaNeededRecord = mr;
+				else if (mr.getWorkflowStatus().equals(WorkflowStatus.QA_IN_PROGRESS)
+						|| mr.getWorkflowStatus().equals(WorkflowStatus.QA_RESOLVED)
+						|| mr.getWorkflowStatus().equals(WorkflowStatus.QA_NEW))
+					editRecord = mr;
+			}
+
+			if (revisionRecord == null)
+				throw new Exception(
+						"Attempted to unassign a published revision record, but no such previously published record exists!");
+
+			// Case 1: A lead unassigns themselves from reviewing a fixed
+			// error, delete the lead's record, no other action required
+			if (editRecord != null) {
+				newRecords.remove(editRecord);
+
+			}
+			// Case 2: The concept is removed from QA, and unassigned from
+			// the qa user
+			else if (qaNeededRecord != null) {
+
+				// clear the record set
+				newRecords.clear();
+
+				WorkflowService workflowService = new WorkflowServiceJpa();
+
+				try {
+
+					// get the previously published version of the revision
+					// record
+					revisionRecord.setWorkflowStatus(workflowService
+							.getPreviouslyPublishedVersionOfMapRecord(revisionRecord).getWorkflowStatus());
+
+					// remove all records and re-add the revision record
+					newRecords.clear();
+					newRecords.add(revisionRecord);
+
+				} catch (Exception e) {
+					throw e;
+				} finally {
+					workflowService.close();
+				}
+			} else {
+
+				throw new Exception("Unexpected error attempt to unassign a QA record.  Contact an administrator.");
+			}
+
 			break;
 		default:
-			break;
+			throw new Exception(getName() + ": Unexpected workfow action " + workflowAction);
 		}
 
 		return newRecords;
