@@ -27,8 +27,10 @@ import org.ihtsdo.otf.mapping.helpers.FeedbackConversationListJpa;
 import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
+import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
+import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
@@ -38,6 +40,7 @@ import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.helpers.WorkflowType;
 import org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
+import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowFixErrorPathHandler;
 import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowQaPathHandler;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ReportServiceJpa;
@@ -262,48 +265,48 @@ public class WorkflowServiceRest extends RootServiceRest {
 			final MapUser mapUser = workflowService.getMapUser(userName);
 			user = mapUser.getUserName();
 
-			// get ALL review work for review project
+			// create PfsParameter from query restriction passed
+			PfsParameter localPfs = new PfsParameterJpa();
+			localPfs.setQueryRestriction(pfsParameter.getQueryRestriction());
+			localPfs.setSortField(pfsParameter.getSortField());
+
+			// get ALL FixErrorPath work at specialist level for the project
+			WorkflowPathHandler fixErrorHandler = new WorkflowFixErrorPathHandler();
+			SearchResultList fixErrorWork = fixErrorHandler.findAssignedWork(mapProject, mapUser,
+					MapUserRole.SPECIALIST, query, localPfs, workflowService);
+
+			// get ALL assigned work at specialist level for project
 			SearchResultList assignedWork = workflowService.findAssignedWork(mapProject, mapUser,
-					MapUserRole.SPECIALIST, query, pfsParameter);
+					MapUserRole.SPECIALIST, query, localPfs);
 
-			return assignedWork;
+			// concatenate the results
+			assignedWork.addSearchResults(fixErrorWork);
 
-		/*	WorkflowPathHandler fixErrorHandler = new WorkflowFixErrorPathHandler();
-
-			// SPECIAL CASE:
-			// Need to retrieve all normal work and Fix Error work
-			// work, page/sort together
-
-			// create pfs parameter object with only query restrictions
-			PfsParameter pfsLocal = new PfsParameterJpa();
-			pfsLocal.setQueryRestriction(pfsParameter.getQueryRestriction());
-			pfsLocal.setSortField(pfsParameter.getSortField());
-
-			// get and add ALL fix error work for this project
-			availableWork.addSearchResults(fixErrorHandler.findAssignedWork(mapProject, mapUser, MapUserRole.SPECIALIST,
-					query, pfsLocal, workflowService));
+			// apply paging
+			int[] totalCt = new int[1];
+			localPfs = new PfsParameterJpa(pfsParameter);
+			localPfs.setQueryRestriction("");
+			localPfs.setSortField("");
 
 			// create list of SearchResultJpas
 			// NOTE: This could be cleaned up with better typing
 			// currently cannot convert List<SearchResultJpa> to
 			// List<SearchResult>
 			List<SearchResultJpa> results = new ArrayList<>();
-			for (SearchResult sr : availableWork.getSearchResults()) {
+			for (SearchResult sr : assignedWork.getSearchResults()) {
 				results.add((SearchResultJpa) sr);
 			}
-			// apply paging and sorting to combined results
-			pfsLocal = new PfsParameterJpa(pfsParameter);
-			pfsLocal.setQueryRestriction(null);
-			pfsLocal.setSortField(null);
-			int[] totalCt = new int[1];
-			results = workflowService.applyPfsToList(results, SearchResultJpa.class, totalCt, pfsLocal);
 
-			availableWork.setSearchResults(new ArrayList<SearchResult>());
+			// apply paging to the list
+			results = workflowService.applyPfsToList(results, SearchResultJpa.class, totalCt, localPfs);
+
+			// reconstruct the assignedWork search result list
+			assignedWork.setSearchResults(new ArrayList<SearchResult>());
 			for (SearchResult sr : results) {
-				availableWork.addSearchResult(sr);
+				assignedWork.addSearchResult(sr);
 			}
 
-			return availableWork;*/
+			return assignedWork;
 
 		} catch (Exception e) {
 			handleException(e, "trying to find assigned concepts", user, project, "");
@@ -477,8 +480,47 @@ public class WorkflowServiceRest extends RootServiceRest {
 			final MapUser mapUser = workflowService.getMapUser(userName);
 			user = mapUser.getUserName();
 
-			// get the workflow tracking records
-			return workflowService.findAvailableWork(mapProject, mapUser, MapUserRole.LEAD, query, pfsParameter);
+			PfsParameter localPfs = new PfsParameterJpa();
+			localPfs.setQueryRestriction(pfsParameter.getQueryRestriction());
+			localPfs.setSortField(pfsParameter.getSortField());
+
+			// get ALL FixErrorPath work at specialist level for the project
+			WorkflowPathHandler fixErrorHandler = new WorkflowFixErrorPathHandler();
+			SearchResultList fixErrorWork = fixErrorHandler.findAvailableWork(mapProject, mapUser, MapUserRole.LEAD,
+					query, localPfs, workflowService);
+
+			// get ALL normal workflow work at lead level
+			SearchResultList availableWork = workflowService.findAvailableWork(mapProject, mapUser, MapUserRole.LEAD,
+					query, pfsParameter);
+
+			// combine the results
+			availableWork.addSearchResults(fixErrorWork);
+
+			// apply paging
+			int[] totalCt = new int[1];
+			localPfs = new PfsParameterJpa(pfsParameter);
+			localPfs.setQueryRestriction("");
+			localPfs.setSortField("");
+
+			// create list of SearchResultJpas
+			// NOTE: This could be cleaned up with better typing
+			// currently cannot convert List<SearchResultJpa> to
+			// List<SearchResult>
+			List<SearchResultJpa> results = new ArrayList<>();
+			for (SearchResult sr : availableWork.getSearchResults()) {
+				results.add((SearchResultJpa) sr);
+			}
+
+			// apply paging to the list
+			results = workflowService.applyPfsToList(results, SearchResultJpa.class, totalCt, localPfs);
+
+			// reconstruct the assignedWork search result list
+			availableWork.setSearchResults(new ArrayList<SearchResult>());
+			for (SearchResult sr : results) {
+				availableWork.addSearchResult(sr);
+			}
+
+			return availableWork;
 		} catch (Exception e) {
 			handleException(e, "trying to find available review work", user, project, "");
 			return null;
@@ -598,55 +640,48 @@ public class WorkflowServiceRest extends RootServiceRest {
 			final MapUser mapUser = workflowService.getMapUser(userName);
 			user = mapUser.getUserName();
 
+			PfsParameter localPfs = new PfsParameterJpa();
+			localPfs.setSortField(pfsParameter.getSortField());
+			localPfs.setQueryRestriction(pfsParameter.getQueryRestriction());
+
+			// get ALL FixErrorPath work at specialist level for the project
+			WorkflowPathHandler fixErrorHandler = new WorkflowFixErrorPathHandler();
+			SearchResultList assignedWork = fixErrorHandler.findAssignedWork(mapProject, mapUser, MapUserRole.LEAD,
+					query, localPfs, workflowService);
+
+			// if a review project, get all normal workflow work and combine
 			if (mapProject.getWorkflowType().equals(WorkflowType.REVIEW_PROJECT)) {
-				SearchResultList assignedWork = workflowService.findAssignedWork(mapProject, mapUser, MapUserRole.LEAD,
-						query, pfsParameter);
-				return assignedWork;
+				SearchResultList reviewProjectWork = workflowService.findAssignedWork(mapProject, mapUser,
+						MapUserRole.LEAD, query, pfsParameter);
+				assignedWork.addSearchResults(reviewProjectWork);
+
 			}
 
-			return new SearchResultListJpa();
-			/*
-			 * WorkflowPathHandler fixErrorHandler = new
-			 * WorkflowFixErrorPathHandler();
-			 * 
-			 * // SPECIAL CASE: // If a review project, need to retrieve all QA
-			 * work and Review // work, page/sort together if
-			 * (mapProject.getWorkflowType().equals(WorkflowType.REVIEW_PROJECT)
-			 * ) {
-			 * 
-			 * // create pfs parameter object with only query restrictions
-			 * PfsParameter pfsLocal = new PfsParameterJpa();
-			 * pfsLocal.setQueryRestriction(pfsParameter.getQueryRestriction());
-			 * pfsLocal.setSortField(pfsParameter.getSortField()); // get ALL
-			 * review work for review project SearchResultList reviewWork =
-			 * workflowService.findAssignedWork(mapProject, mapUser,
-			 * MapUserRole.LEAD, query, pfsLocal);
-			 * 
-			 * // get and add ALL fix error work for this project
-			 * reviewWork.addSearchResults(fixErrorHandler.findAssignedWork(
-			 * mapProject, mapUser, MapUserRole.LEAD, query, pfsLocal,
-			 * workflowService));
-			 * 
-			 * // create list of SearchResultJpas List<SearchResultJpa> results
-			 * = new ArrayList<>(); for (SearchResult sr :
-			 * reviewWork.getSearchResults()) { results.add((SearchResultJpa)
-			 * sr); } // apply paging and sorting to combined results pfsLocal =
-			 * new PfsParameterJpa(pfsParameter);
-			 * pfsLocal.setQueryRestriction(null); pfsLocal.setSortField(null);
-			 * int[] totalCt = new int[1]; results =
-			 * workflowService.applyPfsToList(results, SearchResultJpa.class,
-			 * totalCt, pfsLocal);
-			 * 
-			 * reviewWork.setSearchResults(new ArrayList<SearchResult>()); for
-			 * (SearchResult sr : results) { reviewWork.addSearchResult(sr); }
-			 * 
-			 * return reviewWork; }
-			 * 
-			 * // otherwise, simply return the results of the fix error handler
-			 * // workflow else { return
-			 * fixErrorHandler.findAssignedWork(mapProject, mapUser,
-			 * MapUserRole.LEAD, query, pfsParameter, workflowService); }
-			 */
+			// apply paging
+			int[] totalCt = new int[1];
+			localPfs = new PfsParameterJpa(pfsParameter);
+			localPfs.setQueryRestriction("");
+			localPfs.setSortField("");
+
+			// create list of SearchResultJpas
+			// NOTE: This could be cleaned up with better typing
+			// currently cannot convert List<SearchResultJpa> to
+			// List<SearchResult>
+			List<SearchResultJpa> results = new ArrayList<>();
+			for (SearchResult sr : assignedWork.getSearchResults()) {
+				results.add((SearchResultJpa) sr);
+			}
+
+			// apply paging to the list
+			results = workflowService.applyPfsToList(results, SearchResultJpa.class, totalCt, localPfs);
+
+			// reconstruct the assignedWork search result list
+			assignedWork.setSearchResults(new ArrayList<SearchResult>());
+			for (SearchResult sr : results) {
+				assignedWork.addSearchResult(sr);
+			}
+
+			return assignedWork;
 
 		} catch (Exception e) {
 			handleException(e, "trying to find assigned review work", user, project, "");
