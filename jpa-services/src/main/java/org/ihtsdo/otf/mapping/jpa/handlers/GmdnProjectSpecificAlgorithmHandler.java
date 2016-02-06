@@ -37,11 +37,10 @@ public class GmdnProjectSpecificAlgorithmHandler extends
               mapProject.getDestinationTerminology(),
               mapProject.getDestinationTerminologyVersion());
 
-      // If there is an "ivd" with "IVD" as the value
-      // Only "terms" have IVD descriptions.
+      // Only concepts with "term" description types
       if (concept != null) {
         for (final Description desc : concept.getDescriptions()) {
-          if (desc.getTypeId().equals(ivdType) && desc.getTerm().equals("IVD")) {
+          if (desc.getTypeId().equals(termType)) {
             return true;
           }
         }
@@ -67,12 +66,9 @@ public class GmdnProjectSpecificAlgorithmHandler extends
     // lazy initialize
     if (termType == null) {
       final MetadataService service = new MetadataServiceJpa();
-      System.out.println("A="
-          + service.getDescriptionTypes(terminology, version));
       try {
         for (final Map.Entry<String, String> entry : service
             .getDescriptionTypes(terminology, version).entrySet()) {
-          System.out.println("B=" + entry.getKey() + ", " + entry.getValue());
           if (entry.getValue().equals("Term")) {
             termType = Long.valueOf(entry.getKey());
           }
