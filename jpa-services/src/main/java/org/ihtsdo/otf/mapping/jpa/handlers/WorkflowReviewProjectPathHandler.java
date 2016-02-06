@@ -458,9 +458,7 @@ public class WorkflowReviewProjectPathHandler extends AbstractWorkflowPathHandle
 				TrackingRecordJpa.class, TrackingRecordJpa.class, pfs, totalCt);
 		assignedWork.setTotalCount(totalCt[0]);
 
-		for (final TrackingRecord tr : results)
-
-		{
+		for (final TrackingRecord tr : results)	{
 			final SearchResult result = new SearchResultJpa();
 
 			final Set<MapRecord> mapRecords = workflowService.getMapRecordsForTrackingRecord(tr);
@@ -468,8 +466,9 @@ public class WorkflowReviewProjectPathHandler extends AbstractWorkflowPathHandle
 			// get the map record assigned to this user
 			MapRecord mapRecord = null;
 			for (final MapRecord mr : mapRecords) {
-
-				if (mr.getOwner().equals(mapUser)) {
+				
+				// find highest-level workflow status (i.e. user can review themselves and want REVIEW_X record)
+				if (mr.getOwner().equals(mapUser) && (mapRecord == null || mapRecord.getWorkflowStatus().compareTo(mr.getWorkflowStatus()) < 0)) {
 					mapRecord = mr;
 				}
 			}
