@@ -833,8 +833,12 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
 				break;
 			}
 
-			results = (List<TrackingRecord>) ((RootServiceJpa) workflowService).getQueryResults(sb.toString(),
-					TrackingRecordJpa.class, TrackingRecordJpa.class, pfs, totalCt);
+			results = (List<TrackingRecord>) workflowService.getQueryResults(
+					sb.toString(),
+					TrackingRecordJpa.class, 
+					TrackingRecordJpa.class, 
+					pfs, 
+					totalCt);
 			assignedWork.setTotalCount(totalCt[0]);
 
 			for (final TrackingRecord tr : results) {
