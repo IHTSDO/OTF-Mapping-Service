@@ -221,7 +221,7 @@ public abstract class RootServiceJpa implements RootService {
     totalCt[0] = fullTextQuery.getResultSize();
     
     // TODO REmove after debugging
-    Logger.getLogger(this.getClass()).info("  Query " + query + "\n   Results:" + fullTextQuery.getResultList().size() + "/" + totalCt[0]);
+    Logger.getLogger(this.getClass()).info("  getQueryResults:\n  Query: " + query + "\n   Results:" + fullTextQuery.getResultList().size() + "/" + totalCt[0]);
     return fullTextQuery.getResultList();
 
   }

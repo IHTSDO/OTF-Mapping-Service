@@ -27,6 +27,7 @@ import org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 import org.ihtsdo.otf.mapping.workflow.WorkflowException;
 
+// TODO: Auto-generated Javadoc
 /**
  * Generically represents a service for answering questions and performing
  * actions related to workflow management.
@@ -638,53 +639,42 @@ public interface WorkflowService extends MappingService {
 			String feedbackMessage) throws Exception;
 
 	/**
-	 * Given a map record, returns the origin map records giving rise to a
-	 * conflict.
-	 * 
+	 * Gets the origin map records for conflict.
+	 *
 	 * @param mapRecordId
-	 *            the map record id of the conflict resolution record
-	 * @return the records in conflict
+	 *            the map record id
+	 * @return the origin map records for conflict
 	 * @throws Exception
 	 *             the exception
 	 */
 	public MapRecordList getOriginMapRecordsForConflict(Long mapRecordId) throws Exception;
 
+	
 	/**
 	 * Find available work.
 	 *
-	 * @param mapProject
-	 *            the map project
-	 * @param mapUser
-	 *            the map user
-	 * @param userRole
-	 *            the user role
-	 * @param query
-	 *            the query
-	 * @param pfsParameter
-	 *            the pfs parameter
+	 * @param mapProject the map project
+	 * @param mapUser the map user
+	 * @param userRole the user role
+	 * @param query the query
+	 * @param pfsParameter the pfs parameter
 	 * @return the search result list
-	 * @throws Exception
-	 *             the exception
+	 * @throws Exception the exception
 	 */
 	public SearchResultList findAvailableWork(MapProject mapProject, MapUser mapUser, MapUserRole userRole,
 			String query, PfsParameter pfsParameter) throws Exception;
 
+	
 	/**
 	 * Find assigned work.
 	 *
-	 * @param mapProject
-	 *            the map project
-	 * @param mapUser
-	 *            the map user
-	 * @param userRole
-	 *            the user role
-	 * @param query
-	 *            the query
-	 * @param pfsParameter
-	 *            the pfs parameter
+	 * @param mapProject the map project
+	 * @param mapUser the map user
+	 * @param userRole the user role
+	 * @param query the query
+	 * @param pfsParameter the pfs parameter
 	 * @return the search result list
-	 * @throws Exception
-	 *             the exception
+	 * @throws Exception the exception
 	 */
 	public SearchResultList findAssignedWork(MapProject mapProject, MapUser mapUser, MapUserRole userRole, String query,
 			PfsParameter pfsParameter) throws Exception;
@@ -695,6 +685,17 @@ public interface WorkflowService extends MappingService {
 	 *
 	 * @param name the name
 	 * @return the workflow path handler
+	 * @throws Exception 
 	 */
-	public WorkflowPathHandler getWorkflowPathHandler(String name);
+	public WorkflowPathHandler getWorkflowPathHandler(String name) throws Exception;
+
+	/**
+	 * Gets the previously published version of map record.
+	 *
+	 * @param mapRecord the map record
+	 * @return the previously published version of map record
+	 * @throws Exception the exception
+	 */
+	public MapRecord getPreviouslyPublishedVersionOfMapRecord(MapRecord mapRecord) throws Exception;
+
 }
