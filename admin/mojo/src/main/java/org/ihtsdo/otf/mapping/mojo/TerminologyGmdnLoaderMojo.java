@@ -392,6 +392,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
     private String termId = null;
 
     /** The ivd. */
+    @SuppressWarnings("unused")
     private boolean ivd = false;
 
     /**
@@ -443,7 +444,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
         if (qName.equalsIgnoreCase("term")) {
           // Add the concept (if active)
           // CASCADE will handle descriptions
-          if (concept.isActive() && ivd) {
+          if (concept.isActive()) {
             // Use the "termID" as the key
             conceptMap.put(termId, concept);
             contentService.addConcept(concept);
