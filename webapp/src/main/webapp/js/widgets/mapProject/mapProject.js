@@ -218,7 +218,7 @@ angular
         if ($scope.currentUser.userName === 'guest')
           myWindow = window.open('http://browser.ihtsdotools.org/index.html?perspective=full'
             + '&edition=en-edition'
-            + '&server=https://browser-aws-1.ihtsdotools.org/&langRefset=900000000000509007'
+            + '&server=https://browser-aws-1.ihtsdotools.org/api/snomed/&langRefset=900000000000509007'
             + '&acceptLicense=true');
         else
           myWindow = window
