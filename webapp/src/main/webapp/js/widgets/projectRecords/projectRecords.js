@@ -35,7 +35,7 @@ angular
   })
   .controller(
     'projectRecordsCtrl',
-    function($scope, $rootScope, $http, $routeParams, $location, $modal, localStorageService, $sce) {
+    function($scope, $rootScope, $http, $routeParams, $location, $modal, $q, localStorageService, $sce) {
 
       $scope.page = 'records';
 
@@ -529,6 +529,127 @@ angular
             });
           }
         };
+        
+       
       };
+      
+
+
+      var QaRecordsCtrl = function($scope, $modalInstance, $q, nRecords, projectId, pfs) {
+
+        console.debug('Entered modal control', nRecords, projectId, pfs);
+        
+        $scope.isRunning = false;
+        
+        $scope.qaSucceeded = 0;
+    	$scope.qaFailed = 0;
+    	$scope.qaSkipped = 0;
+    	$scope.qaComplete = 0;
+    	$scope.qaTotal = nRecords;
+    	
+    	 $scope.cancel = function() {
+             $modalInstance.dismiss('cancel');
+           };	
+        
+        // helper function (with promise) to assign a single record to QA
+        function qaRecord(record, label) {
+        	
+        	var deferred = $q.defer();
+        	
+        	// if stop request detected, reject
+        	if (!$scope.isRunning) {
+        		deferred.reject();
+        	} else {
+        		
+        		if (!record.labels) {
+        			record.labels = [];
+        		}
+        		record.labels.push(label);
+	        	
+	        	$http.post(root_workflow + 'createQARecord', record).then(function() {
+	        		deferred.resolve();
+	        	}, function() {
+	        		deferred.reject();
+	        	});
+        	}
+        	return deferred.promise;
+        }
+        
+        $scope.stopQaRecords = function() {
+        	console.debug('Stopping QA Records...');
+        	$scope.isRunning = false;
+        };
+
+        // 
+        $scope.qaRecords = function(label) {
+        	
+        	$scope.isRunning = true;
+        	
+        	$http.post(root_mapping + 'record/project/id/' + projectId, pfs).then(function(response) {
+        		var records = response.data.mapRecord;
+        		
+        		for (var i = 0; i < records.length; i++) {
+        			if ($scope.isRunning) {
+	        			qaRecord(records[i], label).then(function() {
+	        				$scope.qaSucceeded++;
+	        			}, function(error) {
+	        				$scope.qaFailed++;
+	        			}).finally(function() {
+	        				$scope.qaComplete++;
+	        				if ($scope.qaComplete == $scope.qaTotal) {
+	        					$scope.isRunning = false;
+	        				}
+	        			});
+        			} else {
+        				$scope.qaSkipped++;
+        				$scope.qaComplete++;
+        				if ($scope.qaComplete == $scope.qaTotal) {
+        					$scope.isRunning = false;
+        				}
+        			}
+        		};
+        		
+        			
+        	}, function(error) {
+        		$scope.error = "Error retrieving map records";
+        	});
+        };
+        
+        $scope.cancelError = function() {
+        	$scope.error = null;
+        };
+
+    };
+    
+    $scope.qaRecords = function() {
+
+        console.debug('openQaRecordsModal');
+
+        var modalInstance = $modal.open({
+          templateUrl : 'js/widgets/projectRecords/qa-records.html',
+          controller : QaRecordsCtrl,
+          resolve : {
+        	nRecords : function() {
+        		return $scope.nRecords;
+        	},
+        	projectId : function() {
+        		return $scope.projectId;
+        	},
+            pfs : function() {
+            	return  {
+            			startIndex: -1,
+            			maxResults: -1,
+            			queryRestriction: $scope.query,
+            			sortField: null
+            	
+            	};
+            }
+          }
+        });
+       
+
+      };
+
+
 
     });
