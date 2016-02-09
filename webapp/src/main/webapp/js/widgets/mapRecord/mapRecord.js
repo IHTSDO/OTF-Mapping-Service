@@ -1466,17 +1466,8 @@ angular
         };
 
         $scope.getBrowserUrl = function() {
-          if ($scope.currentUser.userName === 'guest') {
-            return 'http://browser.ihtsdotools.org/index.html?perspective=full&conceptId1='
-              + $scope.conversation.terminologyId + '&edition=en-edition'
-              + '&server=https://browser-aws-1.ihtsdotools.org/api/snomed&langRefset=900000000000509007'
-              + '&acceptLicense=true';
-
-          } else {
-            return 'http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1='
-            + $scope.conversation.terminologyId + '&diagrammingMarkupEnabled=true&acceptLicense=true';
-          }
-          
+          return 'http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1='
+            + $scope.record.conceptId + '&diagrammingMarkupEnabled=true&acceptLicense=true';
         };
 
         $scope.openConceptBrowser = function() {
