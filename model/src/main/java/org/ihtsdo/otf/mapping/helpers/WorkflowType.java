@@ -5,6 +5,12 @@ package org.ihtsdo.otf.mapping.helpers;
  */
 public enum WorkflowType {
 
+  /** Simplest possible workflow, single user edits with no review */
+	SIMPLE_PATH("Simple Workflow Path"),
+	
+	/** Specialist work compared with existing record, possible lead review */
+	LEGACY_PATH("Legacy Workflow Path"),
+	
   /** Two specialists map, lead reviews conflicts. */
   CONFLICT_PROJECT("Conflict Project"),
 

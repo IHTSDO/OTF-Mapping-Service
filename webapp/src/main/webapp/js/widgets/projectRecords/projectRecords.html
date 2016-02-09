@@ -13,46 +13,93 @@
 
 <p>
 <form>
-	<input ng-model="searchParameters.query"> <a style="margin-left: 5px; margin-right: 10px;" ng-click="toggleAdvancedSearch()"> <i class="glyphicon glyphicon-cog"></i></a><input type="submit" value="Search"
-		ng-click="retrieveRecords(1)"> <input type="submit"
-		value="Reset" ng-click="resetSearch()"> &nbsp&nbsp
-	{{nRecords}} results, page {{recordPage}} of {{numRecordPages}}
+	<input ng-model="searchParameters.query"> <a
+		style="margin-left: 5px; margin-right: 10px;"
+		ng-click="toggleAdvancedSearch()"> <i
+		class="glyphicon glyphicon-cog"></i></a><input type="submit"
+		value="Search" ng-click="retrieveRecords(1)"> <input
+		type="submit" value="Reset" ng-click="resetSearch()"> <input
+		type="submit" style="margin-left: 5px; margin-right: 5px"
+		value="QA Records" ng-show="nRecords < 200" ng-click="qaRecords()">
+	&nbsp&nbsp {{nRecords}} results, page {{searchParameters.page}} of
+	{{numRecordPages}}
 
 	<div ng-show="searchParameters.advancedMode">
+
+
 		<hr>
-		<div class="row">
-			<div class="col-md-3">
-			{{focusProject.sourceTerminology}} Concept Id
-			<input style="width: 95%" ng-model="searchParameters.ancestorId">
+		<div class="row" style="padding: 5px;">
+			<div class="col-md-2" style="padding-right: 0px;">
+				{{focusProject.sourceTerminology}} Concept Id <i
+					class="glyphicon glyphicon-remove pull-right"
+					ng-click="searchParameters.ancestorId = null"
+					ng-show="searchParameters.ancestorId"></i>
 			</div>
-			<div class="col-md-3">
-			{{focusProject.sourceTerminology}} Type
-			<select ng-options="root.terminologyId as root.defaultPreferredName for root in searchParameters.roots | orderBy:'defaultPreferredName'" style="width: 95%" ng-model="searchParameters.rootId"></select>>
+			<div class="col-md-10">
+				<input ng-model="searchParameters.ancestorId">
 			</div>
-			<div class="col-md-3">
-			{{focusProject.destinationTerminology}} Target Id
-			<input style="width: 95%" ng-model="searchParameters.targetId">
+		</div>
+		<div class="row" style="padding: 5px;">
+			<div class="col-md-2" style="padding-right: 0px;">
+				{{focusProject.sourceTerminology}} Type <i
+					class="glyphicon glyphicon-remove pull-right"
+					ng-click="searchParameters.rootId = null"
+					ng-show="searchParameters.rootId"></i>
 			</div>
-			<div class="col-md-3">
-			{{focusProject.destinationTerminology}} Target Name
-			<input style="width: 95%" ng-model="searchParameters.targetName">
+
+			<div class="col-md-10">
+				<select
+					ng-options="root.terminologyId as root.defaultPreferredName for root in searchParameters.roots | orderBy:'defaultPreferredName'"
+					ng-model="searchParameters.rootId"></select>
+			</div>
+		</div>
+		<div class="row" style="padding: 5px;">
+			<div class="col-md-2" style="padding-right: 0px;">
+				{{focusProject.destinationTerminology}} Target Id <i
+					class="glyphicon glyphicon-remove pull-right"
+					ng-click="searchParameters.targetId = null"
+					ng-show="searchParameters.targetId"></i>
+			</div>
+			<div class="col-md-10">
+				<input ng-model="searchParameters.targetId">
+			</div>
+		</div>
+		<div class="row" style="padding: 5px;">
+			<div class="col-md-2" style="padding-right: 0px;">
+				{{focusProject.destinationTerminology}} Target Name<i
+					class="glyphicon glyphicon-remove pull-right"
+					ng-click="searchParameters.targetName = null"
+					ng-show="searchParameters.targetName"></i>
+			</div>
+			<div class="col-md-10">
+				<input ng-model="searchParameters.targetName">
+			</div>
+		</div>
+
+		<div class="row" style="padding: 5px;">
+			<div class="col-md-2" style="padding-right: 0px;">Map Advice<i
+					class="glyphicon glyphicon-remove pull-right"
+					ng-click="searchParameters.adviceName = null"
+					ng-show="searchParameters.adviceName"></i></div>
+			<div class="col-md-10">
+				<select style="width: 15%"
+					ng-model="searchParameters.adviceContained"
+					ng-options="o.val as o.key for o in [{ key: 'contains', val: true }, { key: 'does not contain', val: false }]">
+				</select> <select style="width: 83%" ng-model="searchParameters.adviceName"
+					style="width: 98%;"
+					ng-options="mapAdvice.name as mapAdvice.name for mapAdvice in searchParameters.advices"></select>
 			</div>
 		</div>
 	</div>
-
 </form>
 
 
 
+<pagination total-items="nRecords" page="searchParameters.page"
+	max-size="10" class="pagination-sm" boundary-links="true" rotate="true"
+	num-pages="numRecordPages" on-select-page="retrieveRecords(page)"></pagination>
 
 
-<pagination total-items="nRecords" page="recordPage"
-	max-size="recordsPerPage" class="pagination-sm" boundary-links="true"
-	rotate="true" num-pages="numRecordPages"
-	on-select-page="retrieveRecords(page)"></pagination>
-	
-	<button class="btn btn-primary btn-sm"
-	ng-show="nRecords < 200" ng-click="qaRecords()">QA Records</button>
 
 <div ng-repeat="record in records" ng-class-odd="'odd'"
 	ng-class-even="'even'">
