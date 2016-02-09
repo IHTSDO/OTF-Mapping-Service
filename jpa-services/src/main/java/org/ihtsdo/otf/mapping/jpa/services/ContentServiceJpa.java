@@ -1565,16 +1565,30 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
   @Override
   public TreePositionList getRootTreePositions(String terminology,
     String terminologyVersion) throws Exception {
-    final List<TreePosition> treePositions =
+   List<TreePosition> treePositions =
         manager
             .createQuery(
                 "select tp from TreePositionJpa tp where ancestorPath = '' and terminologyVersion = :terminologyVersion and terminology = :terminology")
             .setParameter("terminology", terminology)
             .setParameter("terminologyVersion", terminologyVersion)
             .getResultList();
+    
+    // if only one result (single root), use the children of that concept instead
+   if (treePositions.size() == 1) {
+    treePositions =  manager
+            .createQuery(
+                    "select tp from TreePositionJpa tp where ancestorPath = '" + treePositions.iterator().next().getTerminologyId() + "' and terminologyVersion = :terminologyVersion and terminology = :terminology")
+                .setParameter("terminology", terminology)
+                .setParameter("terminologyVersion", terminologyVersion)
+                .getResultList();
+   }
     final TreePositionListJpa treePositionList = new TreePositionListJpa();
     treePositionList.setTreePositions(treePositions);
     treePositionList.setTotalCount(treePositions.size());
+    
+    
+
+    
     return treePositionList;
   }
 

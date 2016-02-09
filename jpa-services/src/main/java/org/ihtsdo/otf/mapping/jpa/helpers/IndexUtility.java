@@ -383,7 +383,7 @@ public class IndexUtility {
     if (pfs != null) {
       if (pfs.getQueryRestriction() != null
           && !pfs.getQueryRestriction().isEmpty()) {
-        pfsQuery.append(" AND " + pfs.getQueryRestriction());
+        pfsQuery.append((query == null || query.isEmpty() ? "" : " AND ") + pfs.getQueryRestriction());
       }
     }
 
