@@ -14,7 +14,7 @@ var root_security = root_url + 'security/';
 var root_reporting = root_url + 'reporting/';
 
 mapProjectAppControllers
-  .run(function($rootScope, $http, localStorageService, $location) {
+  .run(function($rootScope, $http, localStorageService, $location, utilService) {
 
     // global function to handle any type of error. Currently only
     // specifically implemented for authorization failures.
@@ -371,6 +371,15 @@ mapProjectAppControllers.controller('LoginCtrl', [
           }).error(function(data, status, headers, config) {
 
             $rootScope.handleHttpError(data, status, headers, config);
+          });
+          
+          
+          // get the map record indexed fields for advanced searching
+          $http.get(root_mapping + 'mapRecord/indexedFields').then(function(response) {
+        	  localStorageService.add('mapRecordIndexedFields', response);
+          }, function(data, status, headers, config) {
+
+        	 $rootScope.handleHttpError(data, status, headers, config); 
           });
         });
       }

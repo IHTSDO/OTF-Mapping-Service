@@ -4,7 +4,7 @@
 <p></p>
 
 <h3>
-  <a href="#/project/details">{{project.name}}</a>
+	<a href="#/project/details">{{project.name}}</a>
 </h3>
 
 <p></p>
@@ -13,38 +13,67 @@
 
 <p>
 <form>
-  <input ng-model="query"> <input type="submit" value="Search"
-    ng-click="retrieveRecords(1)"> <input type="submit" value="Reset"
-    ng-click="resetSearch()"> &nbsp&nbsp {{nRecords}} results, page
-  {{recordPage}} of {{numRecordPages}}
+	<input ng-model="searchParameters.query"> <a style="margin-left: 5px; margin-right: 10px;" ng-click="toggleAdvancedSearch()"> <i class="glyphicon glyphicon-cog"></i></a><input type="submit" value="Search"
+		ng-click="retrieveRecords(1)"> <input type="submit"
+		value="Reset" ng-click="resetSearch()"> &nbsp&nbsp
+	{{nRecords}} results, page {{recordPage}} of {{numRecordPages}}
+
+	<div ng-show="searchParameters.advancedMode">
+		<hr>
+		<div class="row">
+			<div class="col-md-3">
+			{{focusProject.sourceTerminology}} Concept Id
+			<input style="width: 95%" ng-model="searchParameters.ancestorId">
+			</div>
+			<div class="col-md-3">
+			{{focusProject.sourceTerminology}} Type
+			<select ng-options="root.terminologyId as root.defaultPreferredName for root in searchParameters.roots | orderBy:'defaultPreferredName'" style="width: 95%" ng-model="searchParameters.rootId"></select>>
+			</div>
+			<div class="col-md-3">
+			{{focusProject.destinationTerminology}} Target Id
+			<input style="width: 95%" ng-model="searchParameters.targetId">
+			</div>
+			<div class="col-md-3">
+			{{focusProject.destinationTerminology}} Target Name
+			<input style="width: 95%" ng-model="searchParameters.targetName">
+			</div>
+		</div>
+	</div>
+
 </form>
 
-<button class="btn btn-primary btn-sm pull-right" ng-show="nRecords < 200" ng-click="qaRecords()">QA Records</button>
 
-<pagination total-items="nRecords" page="recordPage" max-size="recordsPerPage"
-  class="pagination-sm" boundary-links="true" rotate="true"
-  num-pages="numRecordPages" on-select-page="retrieveRecords(page)"></pagination>
 
-<div ng-repeat="record in records" ng-class-odd="'odd'" ng-class-even="'even'">
-  <h4>
-    {{record.conceptName}},
-    <a href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}</a>
-  </h4>
 
-  <div style="float: right; width: 3%;">
 
-    <a title="Submit Feedback" ng-show="currentRole === 'Viewer'"
-      ng-click="openViewerFeedbackModal(record, currentUser.userName)">
-      <i class="glyphicon glyphicon glyphicon-comment"></i>
-    </a>
+<pagination total-items="nRecords" page="recordPage"
+	max-size="recordsPerPage" class="pagination-sm" boundary-links="true"
+	rotate="true" num-pages="numRecordPages"
+	on-select-page="retrieveRecords(page)"></pagination>
+	
+	<button class="btn btn-primary btn-sm"
+	ng-show="nRecords < 200" ng-click="qaRecords()">QA Records</button>
 
-    <a title="Edit" ng-show="isEditable(record)" ng-click="editRecord(record)">
-      <i class="glyphicon glyphicon glyphicon-pencil"></i>
-    </a>
-  </div>
+<div ng-repeat="record in records" ng-class-odd="'odd'"
+	ng-class-even="'even'">
+	<h4>
+		{{record.conceptName}}, <a
+			href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}</a>
+	</h4>
 
-  <div otf-map-record-wide record="record" project="focusProject"
-    show-title="false"></div>
+	<div style="float: right; width: 3%;">
+
+		<a title="Submit Feedback" ng-show="currentRole === 'Viewer'"
+			ng-click="openViewerFeedbackModal(record, currentUser.userName)">
+			<i class="glyphicon glyphicon glyphicon-comment"></i>
+		</a> <a title="Edit" ng-show="isEditable(record)"
+			ng-click="editRecord(record)"> <i
+			class="glyphicon glyphicon glyphicon-pencil"></i>
+		</a>
+	</div>
+
+	<div otf-map-record-wide record="record" project="focusProject"
+		show-title="false"></div>
 </div>
 
 <div ng-include src="'./partials/footer.html'"></div>
