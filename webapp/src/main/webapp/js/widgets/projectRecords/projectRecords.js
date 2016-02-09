@@ -84,7 +84,9 @@ angular
           $http.defaults.headers.common.Authorization = $scope.userToken;
           $scope.projectId = $scope.focusProject.id;
           $scope.getRecordsForProject();
-          $scope.getRootTrees();
+          $scope.initializeSearchParameters();
+   
+          
         }
       });
 
@@ -101,20 +103,15 @@ angular
         return $sce.trustAsHtml(html_code);
       };
 
-      // function to clear input box and return to initial view
-      $scope.resetSearch = function() {
-        $scope.searchParameters.query = null;
-        $scope.searchParameters.targetId = null;
-        $scope.searchParameters.targetName =  null;
-        $scope.searchParameters.conceptType = null;
-        $scope.searchParameters.ancestorId = null;
-        $scope.retrieveRecords(1);
-      };
 
       // function to retrieve records for a specified page
       $scope.retrieveRecords = function(page) {
 
-        console.debug('Retrieving records');
+        console.debug('Retrieving records', page);
+        
+        $rootScope.resetGlobalError();
+        
+        // clear the error
 
         // construct html parameters parameter
         var pfsParameterObj = $scope.getPfsFromSearchParameters(page);
@@ -124,7 +121,7 @@ angular
         + $scope.project.objectId
         + '/ancestor/' + ($scope.searchParameters.ancestorId && $scope.searchParameters.advancedMode ? $scope.searchParameters.ancestorId : 'null')
         + '/root/' + ($scope.searchParameters.rootId && $scope.searchParameters.advancedMode ? $scope.searchParameters.rootId : 'null')
-        + '/query/' + ($scope.searchParameters.query && $scope.searchParameters.advancedMode ? $scope.searchParameters.query : 'null');
+        + '/query/' + ($scope.searchParameters.query ? $scope.searchParameters.query : 'null');
     
         
         console.debug('  pfs', pfsParameterObj);
@@ -636,13 +633,33 @@ angular
     		rootId : null,
     		targetId : null,
     		targetName: null,
+    		adviceContained: true,
+    		adviceName : null,
     		
     		// search display data
-    		roots: []
+    		roots: [],   // source terminology root concepts
+    		advices: []  // map advices
+    };
+    
+
+    // function to clear input box and return to initial view
+    $scope.resetSearch = function() {
+      $scope.searchParameters.query = null;
+      $scope.searchParameters.page = 1;
+      $scope.searchParameters.targetId = null;
+      $scope.searchParameters.targetName =  null;
+      $scope.searchParameters.rootId = null;
+      $scope.searchParameters.ancestorId = null;
+      $scope.searchParameters.adviceName = null;
+      $scope.searchParameters.adviceContained = true;
+
+      $scope.retrieveRecords(1);
     };
     
     // on load, get the root trees for the terminology
-    $scope.getRootTrees = function() {
+    $scope.initializeSearchParameters = function() {
+    	
+    	
 	    console.debug('Getting root trees');
 	    $rootScope.glassPane++;
 	    $http.get( root_mapping + 'treePosition/project/id/' + $scope.focusProject.id + '/source').then(function(response) {
@@ -654,8 +671,19 @@ angular
 	          $rootScope.handleHttpError(data, status, headers, config);
 	    	
 	    });
+	    
+	    $rootScope.glassPane++;
+	    $http.get( root_mapping + 'advice/advices').then(function(response) {
+	    	$rootScope.glassPane--;
+	    	console.debug('Map advices', response)
+	    	$scope.searchParameters.advices = response.data.mapAdvice;
+	    }, function(data, status, headers, config) {
+	    	$rootScope.glassPane--;
+	          $rootScope.handleHttpError(data, status, headers, config);
+	    });
+	    
     }
-
+    
 
     // toggle advanced search
     $scope.toggleAdvancedSearch = function() {
@@ -665,13 +693,15 @@ angular
    
     }
     
-    $scope.getPfsFromSearchParameters = function() {
+    $scope.getPfsFromSearchParameters = function(page) {
+    	
+    	$scope.searchParameters.page = page;
     	
     	console.debug('Getting pfs from search parameters', $scope.searchParameters);
     	var pfs = {
     	'startIndex' : ($scope.searchParameters.page - 1) * $scope.searchParameters.recordsPerPage,
         'maxResults' : $scope.searchParameters.recordsPerPage,
-        'sortField' : null,
+        'sortField' : 'conceptId',
         'queryRestriction' : ''
     	}
     	
@@ -689,6 +719,11 @@ angular
     		// check target name
     		if ($scope.searchParameters.targetName && $scope.searchParameters.targetName.length > 0) {
     			queryRestrictions.push('mapEntries.targetName:' + $scope.searchParameters.targetName);
+    		}
+    		
+    		// check map advices
+    		if ($scope.searchParameters.adviceName) {
+    			queryRestrictions.push(($scope.searchParameters.adviceContained ? '' : 'NOT ') + 'mapEntries.mapAdvices.name:"' + $scope.searchParameters.adviceName + '"');
     		}
     		
     		console.debug('Fielded search results:' + queryRestrictions);
