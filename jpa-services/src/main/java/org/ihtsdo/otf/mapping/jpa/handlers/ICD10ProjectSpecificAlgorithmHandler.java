@@ -640,9 +640,10 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           && !mapEntry.getTargetId().startsWith("Y35")
           && !mapEntry.getTargetId().startsWith("Y36")
           && !mapEntry.getTargetId().startsWith("X34")
-          && !mapEntry.getTargetId().startsWith("X59")
-          && !TerminologyUtility.hasAdvice(mapEntry, adviceP03)) {
-        advices.add(TerminologyUtility.getAdvice(mapProject, adviceP03));
+          && !mapEntry.getTargetId().startsWith("X59")) {
+        if (!TerminologyUtility.hasAdvice(mapEntry, adviceP03)) {
+          advices.add(TerminologyUtility.getAdvice(mapProject, adviceP03));
+        }
       } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP03)) {
         advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP03));
       }
@@ -653,9 +654,10 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       // ACTION: add the advice
       //
       final String adviceP05 = "POSSIBLE REQUIREMENT FOR MORPHOLOGY CODE";
-      if (mapEntry.getTargetId().matches("(C..|D[0-3].|D4[0-8]).*")
-          && !TerminologyUtility.hasAdvice(mapEntry, adviceP05)) {
-        advices.add(TerminologyUtility.getAdvice(mapProject, adviceP05));
+      if (mapEntry.getTargetId().matches("(C..|D[0-3].|D4[0-8]).*")) {
+        if (!TerminologyUtility.hasAdvice(mapEntry, adviceP05)) {
+          advices.add(TerminologyUtility.getAdvice(mapProject, adviceP05));
+        }
       } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP05)) {
         advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP05));
       }
