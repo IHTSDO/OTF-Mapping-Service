@@ -465,6 +465,7 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
               (ProjectSpecificAlgorithmHandler) Class.forName(
                   mapProject.getProjectSpecificAlgorithmHandlerClass())
                   .newInstance();
+          handler.setMapProject(mapProject);
           handler.computeIdentifyAlgorithms(newRecord);
 
         }
