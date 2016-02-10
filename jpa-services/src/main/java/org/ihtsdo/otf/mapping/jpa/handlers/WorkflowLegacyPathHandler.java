@@ -22,6 +22,7 @@ import org.ihtsdo.otf.mapping.helpers.WorkflowPathState;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatusCombination;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -68,14 +69,14 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
 
     // STATE: Initial initialState has published legacy record
     initialState = new WorkflowPathState("Initial State");
-    firstSpecialistEditingState.addWorkflowCombination(
+    initialState.addWorkflowCombination(
         new WorkflowStatusCombination(Arrays.asList(WorkflowStatus.PUBLISHED)));
     trackingRecordStateToActionMap.put(initialState,
         new HashSet<>(Arrays.asList(WorkflowAction.ASSIGN_FROM_SCRATCH)));
 
     // STATE: Legacy record is in revision, One specialist has claimed work
     firstSpecialistEditingState =
-        new WorkflowPathState("First Specialist Work");
+        new WorkflowPathState("First Specialist Editing");
     firstSpecialistEditingState
         .addWorkflowCombination(new WorkflowStatusCombination(
             Arrays.asList(WorkflowStatus.REVISION, WorkflowStatus.NEW)));
@@ -88,6 +89,7 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
             WorkflowAction.SAVE_FOR_LATER, WorkflowAction.UNASSIGN)));
 
     // STATE: Legacy record is in revision, first user has finished work
+    firstSpecialistConflictState = new WorkflowPathState("Conflict Between Specialist and Legacy");
     firstSpecialistConflictState
         .addWorkflowCombination(new WorkflowStatusCombination(Arrays
             .asList(WorkflowStatus.REVISION, WorkflowStatus.EDITING_DONE)));
@@ -99,7 +101,7 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
     // STATE: Legacy record is in revision and in conflict with first
     // specialist's work, second specialist has claimed work
     secondSpecialistEditingState =
-        new WorkflowPathState("Second Specialist Work");
+        new WorkflowPathState("Second Specialist Editing");
     secondSpecialistEditingState.addWorkflowCombination(
         new WorkflowStatusCombination(Arrays.asList(WorkflowStatus.REVISION,
             WorkflowStatus.EDITING_DONE, WorkflowStatus.NEW)));
@@ -117,7 +119,7 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
 
     // STATE: Legacy record is in revision, two specialists have completed
     // work in conflict
-    conflictDetectedState = new WorkflowPathState("Conflict Detected");
+    conflictDetectedState = new WorkflowPathState("Conflict Detected Between Specialists");
     conflictDetectedState.addWorkflowCombination(new WorkflowStatusCombination(
         Arrays.asList(WorkflowStatus.REVISION, WorkflowStatus.CONFLICT_DETECTED,
             WorkflowStatus.CONFLICT_DETECTED)));
@@ -448,6 +450,22 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
         throw new Exception(getName()
             + ", findAvailableWork: invalid project role " + userRole);
 
+    } 
+    
+    int[] totalCt = new int[1];
+    @SuppressWarnings("unchecked")
+    final List<TrackingRecord> results =
+        (List<TrackingRecord>) workflowService
+            .getQueryResults(sb.toString(), TrackingRecordJpa.class,
+                TrackingRecordJpa.class, pfsParameter, totalCt);
+
+    availableWork.setTotalCount(totalCt[0]);
+    for (final TrackingRecord tr : results) {
+      final SearchResult result = new SearchResultJpa();
+      result.setTerminologyId(tr.getTerminologyId());
+      result.setValue(tr.getDefaultPreferredName());
+      result.setId(tr.getId());
+      availableWork.addSearchResult(result);
     }
 
     return availableWork;
@@ -855,6 +873,11 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
 
   public String getLegacyUserName() {
     return "legacy";
+  }
+  
+  @Override
+  public boolean isMapRecordInWorkflow(MapRecord mapRecord) {
+    return !mapRecord.getWorkflowStatus().equals(WorkflowStatus.READY_FOR_PUBLICATION);
   }
 
 }
