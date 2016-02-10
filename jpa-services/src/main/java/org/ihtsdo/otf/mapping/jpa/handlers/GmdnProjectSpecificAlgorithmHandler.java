@@ -18,9 +18,6 @@ public class GmdnProjectSpecificAlgorithmHandler extends
   /** The term type. */
   private static Long termType = null;
 
-  /** The ivd type. */
-  private static Long ivdType = null;
-
   /* see superclass */
   @Override
   public boolean isTargetCodeValid(String terminologyId) throws Exception {
@@ -71,9 +68,6 @@ public class GmdnProjectSpecificAlgorithmHandler extends
             .getDescriptionTypes(terminology, version).entrySet()) {
           if (entry.getValue().equals("Term")) {
             termType = Long.valueOf(entry.getKey());
-          }
-          if (entry.getValue().equals("IVD Term")) {
-            ivdType = Long.valueOf(entry.getKey());
           }
         }
 

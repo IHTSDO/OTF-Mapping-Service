@@ -1466,14 +1466,8 @@ angular
         };
 
         $scope.getBrowserUrl = function() {
-          if ($scope.user.userName === 'guest')
-            return 'http://browser.ihtsdotools.org/index.html?perspective=full&conceptId1='
-              + $scope.concept.terminologyId + '&edition=en-edition'
-              + '&server=https://browser-aws-1.ihtsdotools.org/&langRefset=900000000000509007'
-              + '&acceptLicense=true';
-          else
-            return 'http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1='
-              + $scope.concept.terminologyId + '&diagrammingMarkupEnabled=true&acceptLicense=true';
+          return 'http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1='
+            + $scope.record.conceptId + '&diagrammingMarkupEnabled=true&acceptLicense=true';
         };
 
         $scope.openConceptBrowser = function() {
