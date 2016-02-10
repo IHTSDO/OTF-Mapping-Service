@@ -245,10 +245,9 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
         //
         // PREDICATE: primary map target is a 4th digit ICD code having a fifth
-        // digit
-        // option of 0 (open) or 1 (closed).
+        // digit option of 0 (open) or 1 (closed).
         // GUIDANCE: Remap to 5 digits and consider “MAPPED FOLLOWING WHO
-        // GUIDANCE" if SNOMED does not indicate open or closed"
+        // GUIDANCE" if SNOMED does not indicate open or "closed"
         //
         final List<Concept> children =
             TerminologyUtility.getActiveChildren(concepts.get(1).get(0));
@@ -256,10 +255,26 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
             && concepts.get(1).get(0).getTerminologyId().length() == 5
             && children.size() > 1
             && (children.get(0).getDefaultPreferredName().endsWith("open") || children
-                .get(0).getDefaultPreferredName().endsWith("open"))) {
+                .get(0).getDefaultPreferredName().endsWith("closed"))) {
           result
               .addError("Remap to 5 digits and add \"MAPPED FOLLOWING WHO GUIDANCE\" "
                   + "advice if SNOMED does not indicate open or closed");
+
+        }
+
+        //
+        // PREDICATE: primary map target is a 5th digit ICD code for "open"
+        // where SNOMED doesn't indicate "open" or "closed".
+        // GUIDANCE: Remap to "open" and add MAPPED FOLLOWING WHO GUIDANCE
+        //
+        if (concepts.get(1).get(0) != null
+            && concepts.get(1).get(0).getTerminologyId().length() == 6
+            && concepts.get(1).get(0).getDefaultPreferredName()
+                .endsWith("open")
+            && !mapRecord.getConceptName().toLowerCase().contains(" open")
+            && !mapRecord.getConceptName().toLowerCase().contains(" closed")) {
+          result.addWarning("Remap fracture to \"closed\" and "
+              + "add \"MAPPED FOLLOWING WHO GUIDANCE\" advice");
 
         }
 
@@ -629,7 +644,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       }
 
       //
-      // PREDICATE: Non-primary W00-Y34 except X34,X59,Y06,Y07,Y35,Y36 without
+      // PREDICATE: W00-Y34 except X34,X59,Y06,Y07,Y35,Y36 without
       // "POSSIBLE REQUIREMENT FOR PLACE OF OCCURRENCE" advice
       // ACTION: add the advice
       //
@@ -640,9 +655,10 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           && !mapEntry.getTargetId().startsWith("Y35")
           && !mapEntry.getTargetId().startsWith("Y36")
           && !mapEntry.getTargetId().startsWith("X34")
-          && !mapEntry.getTargetId().startsWith("X59")
-          && !TerminologyUtility.hasAdvice(mapEntry, adviceP03)) {
-        advices.add(TerminologyUtility.getAdvice(mapProject, adviceP03));
+          && !mapEntry.getTargetId().startsWith("X59")) {
+        if (!TerminologyUtility.hasAdvice(mapEntry, adviceP03)) {
+          advices.add(TerminologyUtility.getAdvice(mapProject, adviceP03));
+        }
       } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP03)) {
         advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP03));
       }
@@ -653,9 +669,10 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       // ACTION: add the advice
       //
       final String adviceP05 = "POSSIBLE REQUIREMENT FOR MORPHOLOGY CODE";
-      if (mapEntry.getTargetId().matches("(C..|D[0-3].|D4[0-8]).*")
-          && !TerminologyUtility.hasAdvice(mapEntry, adviceP05)) {
-        advices.add(TerminologyUtility.getAdvice(mapProject, adviceP05));
+      if (mapEntry.getTargetId().matches("(C..|D[0-3].|D4[0-8]).*")) {
+        if (!TerminologyUtility.hasAdvice(mapEntry, adviceP05)) {
+          advices.add(TerminologyUtility.getAdvice(mapProject, adviceP05));
+        }
       } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP05)) {
         advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP05));
       }
@@ -714,13 +731,53 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       }
 
       //
+      // PREDICATE: Fracture mapped to "closed" and SNOMED does not
+      // indicate open or closed.
+      // ACTION: "add MAPPED FOLLOWING WHO GUIDANCE" advice
+      //
+      if (mapEntry.getMapGroup() == 1 && mapEntry.getMapPriority() == 1
+          && !mapRecord.getConceptName().toLowerCase().contains(" open")
+          && !mapRecord.getConceptName().toLowerCase().contains(" closed")
+          && mapEntry.getTargetName().endsWith("open")
+          && !TerminologyUtility.hasAdvice(mapEntry, adviceP21a)) {
+        advices.add(TerminologyUtility.getAdvice(mapProject, adviceP21a));
+      }
+
+      final String adviceP23 =
+          "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE";
+      //
+      // PREDICATE: S or T code without advice
+      // "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE"
+      // and without secondary external cause code
+      // ACTION: add the advice
+      //
+      if ((mapEntry.getTargetId().startsWith("S") || mapEntry.getTargetId()
+          .startsWith("T"))
+          && !TerminologyUtility.hasAdvice(mapEntry, adviceP23)) {
+        if (mapRecord.getMapEntries().size() == 1) {
+          advices.add(TerminologyUtility.getAdvice(mapProject, adviceP23));
+        } else {
+          boolean found = false;
+          for (int i = 1; i < mapRecord.getMapEntries().size(); i++) {
+            // If external cause code found, set flag
+            if (mapRecord.getMapEntries().get(i).getTargetId()
+                .matches("^[VWXY].*")) {
+              found = true;
+              break;
+            }
+          }
+          if (!found) {
+            advices.add(TerminologyUtility.getAdvice(mapProject, adviceP23));
+          }
+        }
+      }
+
+      //
       // PREDICATE: primary code has advice
       // "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE"
       // and there is a secondary code from chapter XX
       // ACTION: remove the advice
       //
-      final String adviceP23 =
-          "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE";
       if (TerminologyUtility.hasAdvice(mapEntry, adviceP23)
           && mapRecord.getMapEntries().size() > 1) {
         for (int i = 1; i < mapRecord.getMapEntries().size(); i++) {
@@ -1244,7 +1301,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         principles.add(principleMap.get("37"));
       }
 
-      // Add the note if it exists
+      // Add the principle if it exists
       if (principles.size() > 0) {
         mapRecord.getMapPrinciples().addAll(principles);
       }
@@ -1367,9 +1424,10 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
   @SuppressWarnings("static-method")
   private boolean hasUseAdditional(Concept concept) {
     for (final Description desc : concept.getDescriptions()) {
-      if (desc.getTerm().matches("Use additional code.*infectious agent")) {
+      if (desc.getTerm().matches("Use additional code.*infectious agent.*")) {
         return true;
-      } else if (desc.getTerm().matches("Use additional code.*bacterial agent")) {
+      } else if (desc.getTerm().matches(
+          "Use additional code.*bacterial agent.*")) {
         return true;
       }
 

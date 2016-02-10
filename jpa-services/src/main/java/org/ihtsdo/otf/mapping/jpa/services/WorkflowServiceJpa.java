@@ -1048,7 +1048,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements WorkflowSer
 
 		setTransactionPerOperation(true);
 
-		// instantiate the algorithm handler for this project\
+		// instantiate the algorithm handler for this project
 		ProjectSpecificAlgorithmHandler algorithmHandler = (ProjectSpecificAlgorithmHandler) Class
 				.forName(mapProject.getProjectSpecificAlgorithmHandlerClass()).newInstance();
 		algorithmHandler.setMapProject(mapProject);
@@ -1198,12 +1198,9 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements WorkflowSer
 
 		// if the record passed in updates an existing record, replace it in the
 		// set
-		if (mapRecord != null && mapRecord.getId() != null)
-
-		{
+		if (mapRecord != null && mapRecord.getId() != null)		{
 			for (final MapRecord mr : mapRecords) {
 				if (mr.getId().equals(mapRecord.getId())) {
-
 					mapRecords.remove(mr);
 					mapRecords.add(mapRecord);
 					break;
@@ -1227,9 +1224,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements WorkflowSer
 		trackingRecord.setUserAndWorkflowStatusPairs(null);
 
 		// recalculate the pointer fields
-		for (MapRecord mr : syncedRecords)
-
-		{
+		for (MapRecord mr : syncedRecords)		{
 			trackingRecord.addMapRecordId(mr.getId());
 			trackingRecord.addAssignedUserName(mr.getOwner().getUserName());
 			trackingRecord.addUserAndWorkflowStatusPair(mr.getOwner().getUserName(), mr.getWorkflowStatus().toString());
@@ -1238,9 +1233,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements WorkflowSer
 		Logger.getLogger(WorkflowServiceJpa.class).info("Revised tracking record: " + trackingRecord.toString());
 
 		// if the tracking record is ready for removal, delete it
-		if ((
-
-		getWorkflowStatusForTrackingRecord(trackingRecord).equals(WorkflowStatus.READY_FOR_PUBLICATION)
+		if ((getWorkflowStatusForTrackingRecord(trackingRecord).equals(WorkflowStatus.READY_FOR_PUBLICATION)
 				|| getWorkflowStatusForTrackingRecord(trackingRecord).equals(WorkflowStatus.PUBLISHED))
 				&& trackingRecord.getMapRecordIds().size() == 1) {
 

@@ -990,8 +990,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
     final StringBuilder sb = new StringBuilder();
     sb.append("mapProjectId:" + mapProjectId).append(
-        " AND (workflowStatus:'PUBLISHED' OR "
-            + "workflowStatus:'READY_FOR_PUBLICATION')");
+        " AND (workflowStatus:PUBLISHED OR "
+            + "workflowStatus:READY_FOR_PUBLICATION)");
 
     final PfsParameter pfs = new PfsParameterJpa(pfsParameter);
     if (pfs.getSortField() == null || pfs.getSortField().isEmpty()) {
@@ -1001,7 +1001,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     int[] totalCt = new int[1];
     final List<MapRecord> mapRecords =
         (List<MapRecord>) getQueryResults(sb.toString(), MapRecordJpa.class,
-            MapRecordJpa.class, pfsParameter, totalCt);
+            MapRecordJpa.class, pfs, totalCt);
 
     for (final MapRecord mapRecord : mapRecords) {
       handleMapRecordLazyInitialization(mapRecord);
@@ -1034,7 +1034,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     int[] totalCt = new int[1];
     final List<MapRecord> mapRecords =
         (List<MapRecord>) getQueryResults(sb.toString(), MapRecordJpa.class,
-            MapRecordJpa.class, pfsParameter, totalCt);
+            MapRecordJpa.class, pfs, totalCt);
 
     for (final MapRecord mapRecord : mapRecords) {
       handleMapRecordLazyInitialization(mapRecord);
