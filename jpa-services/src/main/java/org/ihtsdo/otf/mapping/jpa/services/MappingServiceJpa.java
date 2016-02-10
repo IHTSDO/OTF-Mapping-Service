@@ -613,6 +613,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       list.addSearchResult(new SearchResultJpa(mapRecord.getId(), mapRecord
           .getConceptId().toString(), mapRecord.getConceptName(), ""));
     }
+    
+    list.setTotalCount(totalCt[0]);
 
     // Sort by ID
     list.sortBy(new Comparator<SearchResult>() {

@@ -4,6 +4,9 @@ package org.ihtsdo.otf.mapping.helpers;
  * Enums for workflow paths
  */
 public enum WorkflowPath {
+	
+	/** The simple path */
+	SIMPLE_PATH,
 
   /** The non legacy path. */
   NON_LEGACY_PATH,

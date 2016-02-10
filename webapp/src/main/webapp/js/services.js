@@ -5,9 +5,10 @@ mapProjectApp
   .service(
     'utilService',
     [
+      '$rootScope',
       '$location',
       '$anchorScroll',
-      function($location, $anchorScroll) {
+      function($rootScope, $location, $anchorScroll) {
         console.debug('configure utilService');
         // declare the error
         this.error = {
@@ -75,7 +76,7 @@ mapProjectApp
             $rootScope.globalError = message;
           }
           // handle no message
-          if ($rootScope.globalError) {
+          if (!$rootScope.globalError) {
             $rootScope.globalError = 'Unexpected server side error.';
           }
           // If authtoken expired, relogin
