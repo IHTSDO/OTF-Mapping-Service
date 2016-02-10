@@ -528,7 +528,7 @@ public class ClamlMetadataHelper {
     // If this is the fifth digit below a 4th digit placeholder, clean text
     if (terminologyId.length() == 6) {
       concept.setDefaultPreferredName(defaultPreferredName.replaceAll(
-          "- PLACEHOLDER 4th digit", ""));
+          "- PLACEHOLDER 4th digit ", ""));
     } else {
       concept.setDefaultPreferredName(defaultPreferredName);
     }
@@ -553,7 +553,12 @@ public class ClamlMetadataHelper {
           .getTerminologyId()));
     desc.setTerminology(terminology);
     desc.setTerminologyVersion(terminologyVersion);
-    desc.setTerm(defaultPreferredName);
+    if (terminologyId.length() == 6) {
+      desc.setTerm(defaultPreferredName.replaceAll(
+          "- PLACEHOLDER 4th digit ", ""));
+    } else {
+      desc.setTerm(defaultPreferredName);
+    }
     desc.setConcept(concept);
     // default case significance
     if (conceptMap.containsKey("defaultCaseSignificance"))
