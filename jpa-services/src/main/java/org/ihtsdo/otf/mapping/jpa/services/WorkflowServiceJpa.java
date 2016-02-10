@@ -1542,6 +1542,9 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
 
     // open the services
     ContentService contentService = new ContentServiceJpa();
+    
+    // get the workflow handler for this project
+    WorkflowPathHandler workflowHandler = this.getWorkflowPathHandler(mapProject.getWorkflowType().toString());
 
     // get the concepts in scope
     SearchResultList conceptsInScope =
@@ -1569,11 +1572,9 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
     // publication-ready
     for (final MapRecord mapRecord : mapRecords.getIterable()) {
 
-      // if this map record is published, skip and remove this concept
-      if (mapRecord.getWorkflowStatus().equals(
-          WorkflowStatus.READY_FOR_PUBLICATION)
-          || mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)) {
-
+      // if this map record is not eligible for insertion into workflow
+      // skip it and remove th econcept id from the set
+      if (!workflowHandler.isMapRecordInWorkflow(mapRecord)) {
         conceptIds.remove(mapRecord.getConceptId());
       }
 
@@ -1884,36 +1885,13 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
 
     // construct a set of terminology ids for which a tracking record exists
     Set<String> terminologyIdsWithTrackingRecord = new HashSet<>();
+    
+    WorkflowPathHandler handler = getWorkflowPathHandler(mapProject.getWorkflowType().toString());
 
     for (final TrackingRecord trackingRecord : trackingRecords
         .getTrackingRecords()) {
 
       terminologyIdsWithTrackingRecord.add(trackingRecord.getTerminologyId());
-
-      // instantiate the handler based on tracking record workflow type
-      AbstractWorkflowPathHandler handler = null;
-      switch (trackingRecord.getWorkflowPath()) {
-        case FIX_ERROR_PATH:
-          handler = fixErrorHandler;
-          break;
-        case LEGACY_PATH:
-          break;
-        case NON_LEGACY_PATH:
-          handler = nonLegacyHandler;
-          break;
-        case QA_PATH:
-          handler = qaHandler;
-          break;
-        case REVIEW_PROJECT_PATH:
-          handler = reviewHandler;
-          break;
-        default:
-          results
-              .add("ERROR: Could not determine workflow handler from tracking record for concept "
-                  + trackingRecord.getTerminologyId()
-                  + " for path: "
-                  + trackingRecord.getWorkflowPath().toString());
-      }
 
       ValidationResult result = handler.validateTrackingRecord(trackingRecord);
 
@@ -1933,10 +1911,8 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
     for (final MapRecord mapRecord : getMapRecordsForMapProject(
         mapProject.getId()).getMapRecords()) {
 
-      // if not publication ready
-      if (!mapRecord.getWorkflowStatus().equals(
-          WorkflowStatus.READY_FOR_PUBLICATION)
-          && !mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)) {
+      // if eligible for workflow
+      if (handler.isMapRecordInWorkflow(mapRecord)) {
 
         final Concept concept =
             contentService.getConcept(mapRecord.getConceptId(),
