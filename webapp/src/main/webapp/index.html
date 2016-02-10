@@ -137,15 +137,15 @@
           {{globalError}}
           <span style="display: inline; float: right;">
 
-            <i class="glyphicon glyphicon-icon-attach"
-              ng-show="globallongMessage"
-              title="{{globalErrorExpand ? 'Show' : 'Hide'}} long eror"
+            <i class="glyphicon glyphicon-tags" style="margin-right: 15px"
+              ng-show="globalLongError"
+              title="{{globalErrorExpand ? 'Hide' : 'Show'}} long eror"
               ng-click="globalErrorExpand = !globalErrorExpand;"></i>
             <i class="glyphicon glyphicon-remove" ng-click="resetGlobalError()"></i>
           </span>
           <span class="intro-text"
-            ng-show="globalLongMessage && globalErrorExpand">
-            <br />{{globalLongMessage}}
+            ng-show="globalLongError && globalErrorExpand">
+            <br />{{globalLongError}}
           </span>
         </h4>
       </div>

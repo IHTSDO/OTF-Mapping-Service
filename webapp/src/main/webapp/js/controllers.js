@@ -372,6 +372,15 @@ mapProjectAppControllers.controller('LoginCtrl', [
 
             $rootScope.handleHttpError(data, status, headers, config);
           });
+          
+          
+          // get the map record indexed fields for advanced searching
+          $http.get(root_mapping + 'mapRecord/indexedFields').then(function(response) {
+        	  localStorageService.add('mapRecordIndexedFields', response);
+          }, function(data, status, headers, config) {
+
+        	 $rootScope.handleHttpError(data, status, headers, config); 
+          });
         });
       }
 

@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
@@ -46,8 +47,11 @@ import org.ihtsdo.otf.mapping.helpers.MapRecordListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapRelationListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
+import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
+import org.ihtsdo.otf.mapping.helpers.SearchResult;
+import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
@@ -136,32 +140,34 @@ public class MappingServiceRest extends RootServiceRest {
   })
   public MapProjectListJpa getMapProjects(
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping):  /project/projects");
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping):  /project/projects");
     final MappingService mappingService = new MappingServiceJpa();
     String user = null;
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.VIEWER, "get map projects",
-              securityService);
+      user = authorizeApp(authToken, MapUserRole.VIEWER, "get map projects",
+          securityService);
 
       // instantiate list of projects to return
       final MapProjectListJpa mapProjects = new MapProjectListJpa();
 
-      // cycle over projects and verify that this user can view each project
+      // cycle over projects and verify that this user can view each
+      // project
       for (final MapProject mapProject : mappingService.getMapProjects()
           .getMapProjects()) {
 
-        // if this user has a role of VIEWER or above for this project (i.e. is
+        // if this user has a role of VIEWER or above for this project
+        // (i.e. is
         // not NONE)
-        if (!securityService.getMapProjectRoleForToken(authToken,
-            mapProject.getId()).equals(MapUserRole.NONE)
-            || mapProject.isPublic()) {
+        if (!securityService
+            .getMapProjectRoleForToken(authToken, mapProject.getId())
+            .equals(MapUserRole.NONE) || mapProject.isPublic()) {
 
-          // do not serialize the scope concepts or excludes (retrieval
+          // do not serialize the scope concepts or excludes
+          // (retrieval
           // optimization)
           mapProject.setScopeConcepts(null);
           mapProject.setScopeExcludedConcepts(null);
@@ -211,18 +217,17 @@ public class MappingServiceRest extends RootServiceRest {
   public MapProject getMapProject(
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /project/id/" + mapProjectId.toString());
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /project/id/" + mapProjectId.toString());
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.VIEWER, "get the map project",
-              securityService);
+      user = authorizeApp(authToken, MapUserRole.VIEWER, "get the map project",
+          securityService);
 
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
       mapProject.getScopeConcepts().size();
@@ -261,11 +266,11 @@ public class MappingServiceRest extends RootServiceRest {
   public MapProject addMapProject(
     @ApiParam(value = "Map project, in JSON or XML POST data", required = true) MapProjectJpa mapProject,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /project/add");
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /project/add");
 
     String user = null;
     String project = "";
@@ -273,9 +278,8 @@ public class MappingServiceRest extends RootServiceRest {
 
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-              "add a map project", securityService);
+      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+          "add a map project", securityService);
       // check that project specific handler exists as a class
 
       try {
@@ -316,20 +320,19 @@ public class MappingServiceRest extends RootServiceRest {
   public void updateMapProject(
     @ApiParam(value = "Map project, in JSON or XML POST data", required = true) MapProjectJpa mapProject,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /project/update");
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /project/update");
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
 
     try {
       // authorize call
-      user =
-          authorizeProject(mapProject.getId(), authToken, MapUserRole.LEAD,
-              "update a map project", securityService);
+      user = authorizeProject(mapProject.getId(), authToken, MapUserRole.LEAD,
+          "update a map project", securityService);
 
       // check that project specific handler exists as a class
       try {
@@ -340,16 +343,18 @@ public class MappingServiceRest extends RootServiceRest {
                 + mapProject.getProjectSpecificAlgorithmHandlerClass());
       }
 
-      // scope includes and excludes are transient, and must be added to project
+      // scope includes and excludes are transient, and must be added to
+      // project
       // before update from webapp
       final MapProject mapProjectFromDatabase =
           mappingService.getMapProject(mapProject.getId());
 
-      // set the scope concepts and excludes to the contents of the database
+      // set the scope concepts and excludes to the contents of the
+      // database
       // prior to update
       mapProject.setScopeConcepts(mapProjectFromDatabase.getScopeConcepts());
-      mapProject.setScopeExcludedConcepts(mapProjectFromDatabase
-          .getScopeExcludedConcepts());
+      mapProject.setScopeExcludedConcepts(
+          mapProjectFromDatabase.getScopeExcludedConcepts());
 
       // update the project and close the service
       mappingService.updateMapProject(mapProject);
@@ -376,7 +381,7 @@ public class MappingServiceRest extends RootServiceRest {
   public void removeMapProject(
     @ApiParam(value = "Map project, in JSON or XML POST data", required = true) MapProjectJpa mapProject,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
     Logger.getLogger(MappingServiceRest.class).info(
@@ -387,9 +392,8 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-              "update a map project", securityService);
+      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+          "update a map project", securityService);
 
       mappingService.removeMapProject(mapProject.getId());
 
@@ -419,17 +423,16 @@ public class MappingServiceRest extends RootServiceRest {
   public SearchResultList findMapProjectsForQuery(
     @ApiParam(value = "Query, e.g. 'SNOMED to ICD10'", required = true) @PathParam("String") String query,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /project/query/" + query);
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /project/query/" + query);
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.VIEWER, "find map projects",
-              securityService);
+      user = authorizeApp(authToken, MapUserRole.VIEWER, "find map projects",
+          securityService);
 
       final SearchResultList searchResultList =
           mappingService.findMapProjectsForQuery(query, new PfsParameterJpa());
@@ -461,18 +464,17 @@ public class MappingServiceRest extends RootServiceRest {
   public MapProjectListJpa getMapProjectsForUser(
     @ApiParam(value = "Username (can be specialist, lead, or admin)", required = true) @PathParam("username") String mapUserName,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /project/user/id/" + mapUserName);
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /project/user/id/" + mapUserName);
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
 
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.VIEWER,
-              "get map projects for user", securityService);
+      user = authorizeApp(authToken, MapUserRole.VIEWER,
+          "get map projects for user", securityService);
 
       final MapUser mapLead = mappingService.getMapUser(mapUserName);
       final MapProjectListJpa mapProjects =
@@ -525,18 +527,17 @@ public class MappingServiceRest extends RootServiceRest {
   })
   public MapUserListJpa getMapUsers(
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /user/users");
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /user/users");
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
 
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.VIEWER, "get map users",
-              securityService);
+      user = authorizeApp(authToken, MapUserRole.VIEWER, "get map users",
+          securityService);
 
       final MapUserListJpa mapLeads =
           (MapUserListJpa) mappingService.getMapUsers();
@@ -576,7 +577,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Map project id", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Paging/filtering/sorting object", required = true) PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     Logger.getLogger(MappingServiceRest.class).info(
         "RESTful call (Mapping):  /project/id/" + projectId + "/scopeConcepts");
@@ -586,21 +587,19 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeProject(projectId, authToken, MapUserRole.VIEWER,
-              "get scope concepts", securityService);
+      user = authorizeProject(projectId, authToken, MapUserRole.VIEWER,
+          "get scope concepts", securityService);
 
       final MapProject mapProject = mappingService.getMapProject(projectId);
 
-      final SearchResultList results =
-          mappingService
-              .getScopeConceptsForMapProject(mapProject, pfsParameter);
+      final SearchResultList results = mappingService
+          .getScopeConceptsForMapProject(mapProject, pfsParameter);
 
       return results;
 
     } catch (Exception e) {
-      this.handleException(e, "trying to get scope concepts", user,
-          projectName, "");
+      this.handleException(e, "trying to get scope concepts", user, projectName,
+          "");
       return null;
     } finally {
       mappingService.close();
@@ -623,7 +622,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Concept to add, e.g. 100073004", required = true) String terminologyId,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     Logger.getLogger(MappingServiceRest.class).info(
         "RESTful call (Mapping):  /project/id/" + projectId + "/scopeConcepts");
@@ -633,9 +632,8 @@ public class MappingServiceRest extends RootServiceRest {
 
     try {
       // authorize call
-      user =
-          authorizeProject(projectId, authToken, MapUserRole.LEAD,
-              "add scope concept to project", securityService);
+      user = authorizeProject(projectId, authToken, MapUserRole.LEAD,
+          "add scope concept to project", securityService);
 
       final MapProject mapProject = mappingService.getMapProject(projectId);
 
@@ -668,7 +666,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "List of concepts to add, e.g. {'100073004', '100075006'", required = true) List<String> terminologyIds,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     Logger.getLogger(MappingServiceRest.class).info(
         "RESTful call (Mapping):  /project/id/" + projectId + "/scopeConcepts");
@@ -678,9 +676,8 @@ public class MappingServiceRest extends RootServiceRest {
 
     try {
       // authorize call
-      user =
-          authorizeProject(projectId, authToken, MapUserRole.LEAD,
-              "add scope concepts to project", securityService);
+      user = authorizeProject(projectId, authToken, MapUserRole.LEAD,
+          "add scope concepts to project", securityService);
 
       final MapProject mapProject = mappingService.getMapProject(projectId);
 
@@ -713,7 +710,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Concept to remove, e.g. 100075006", required = true) String terminologyId,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     Logger.getLogger(MappingServiceRest.class).info(
         "RESTful call (Mapping):  /project/id/" + projectId + "/scopeConcepts");
@@ -723,9 +720,8 @@ public class MappingServiceRest extends RootServiceRest {
 
     try {
       // authorize call
-      user =
-          authorizeProject(projectId, authToken, MapUserRole.LEAD,
-              "remove scope concept from project", securityService);
+      user = authorizeProject(projectId, authToken, MapUserRole.LEAD,
+          "remove scope concept from project", securityService);
 
       final MapProject mapProject = mappingService.getMapProject(projectId);
 
@@ -759,7 +755,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "List of concepts to remove, e.g. {'100073004', '100075006'", required = true) List<String> terminologyIds,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     Logger.getLogger(MappingServiceRest.class).info(
         "RESTful call (Mapping):  /project/id/" + projectId + "/scopeConcepts");
@@ -769,9 +765,8 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeProject(projectId, authToken, MapUserRole.LEAD,
-              "remove scope concepts from project", securityService);
+      user = authorizeProject(projectId, authToken, MapUserRole.LEAD,
+          "remove scope concepts from project", securityService);
 
       final MapProject mapProject = mappingService.getMapProject(projectId);
       for (final String terminologyId : terminologyIds) {
@@ -807,24 +802,22 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Map project id", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Paging/filtering/sorting object", required = true) PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping):  /project/id/" + projectId
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping):  /project/id/" + projectId
             + "/scopeExcludedConcepts");
     String projectName = "";
     String user = "";
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeProject(projectId, authToken, MapUserRole.VIEWER,
-              "get scope concepts for projects", securityService);
+      user = authorizeProject(projectId, authToken, MapUserRole.VIEWER,
+          "get scope concepts for projects", securityService);
 
       final MapProject mapProject = mappingService.getMapProject(projectId);
-      final SearchResultList results =
-          mappingService.getScopeExcludedConceptsForMapProject(mapProject,
-              pfsParameter);
+      final SearchResultList results = mappingService
+          .getScopeExcludedConceptsForMapProject(mapProject, pfsParameter);
       return results;
 
     } catch (Exception e) {
@@ -852,10 +845,10 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Concept to add, e.g. 100073004", required = true) String terminologyId,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping):  /project/id/" + projectId
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping):  /project/id/" + projectId
             + "/scopeExcludedConcepts/add");
     String projectName = "";
     String user = "";
@@ -863,18 +856,16 @@ public class MappingServiceRest extends RootServiceRest {
 
     try {
       // authorize call
-      user =
-          authorizeProject(projectId, authToken, MapUserRole.LEAD,
-              "add scope excluded concept to projects", securityService);
+      user = authorizeProject(projectId, authToken, MapUserRole.LEAD,
+          "add scope excluded concept to projects", securityService);
 
       final MapProject mapProject = mappingService.getMapProject(projectId);
       mapProject.addScopeExcludedConcept(terminologyId);
       mappingService.updateMapProject(mapProject);
 
     } catch (Exception e) {
-      this.handleException(e,
-          "trying to add scope excluded concept to project", user, projectName,
-          "");
+      this.handleException(e, "trying to add scope excluded concept to project",
+          user, projectName, "");
     } finally {
       mappingService.close();
       securityService.close();
@@ -896,10 +887,10 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "List of concepts to add, e.g. {'100073004', '100075006'", required = true) List<String> terminologyIds,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping):  /project/id/" + projectId
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping):  /project/id/" + projectId
             + "/scopeExcludedConcepts/add");
     String projectName = "";
     String user = "";
@@ -907,9 +898,8 @@ public class MappingServiceRest extends RootServiceRest {
 
     try {
       // authorize call
-      user =
-          authorizeProject(projectId, authToken, MapUserRole.LEAD,
-              "add scope excluded concepts to projects", securityService);
+      user = authorizeProject(projectId, authToken, MapUserRole.LEAD,
+          "add scope excluded concepts to projects", securityService);
 
       final MapProject mapProject = mappingService.getMapProject(projectId);
       for (final String terminologyId : terminologyIds) {
@@ -918,9 +908,8 @@ public class MappingServiceRest extends RootServiceRest {
       mappingService.updateMapProject(mapProject);
 
     } catch (Exception e) {
-      this.handleException(e,
-          "trying to add scope excluded concept to project", user, projectName,
-          "");
+      this.handleException(e, "trying to add scope excluded concept to project",
+          user, projectName, "");
     } finally {
       mappingService.close();
       securityService.close();
@@ -942,10 +931,10 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Concept to remove, e.g. 100075006", required = true) String terminologyId,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping):  /project/id/" + projectId
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping):  /project/id/" + projectId
             + "/scopeExcludedConcept/remove");
     String projectName = "";
     String user = "";
@@ -953,9 +942,8 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeProject(projectId, authToken, MapUserRole.LEAD,
-              "remove scope excluded concept from projects", securityService);
+      user = authorizeProject(projectId, authToken, MapUserRole.LEAD,
+          "remove scope excluded concept from projects", securityService);
 
       final MapProject mapProject = mappingService.getMapProject(projectId);
       mapProject.removeScopeExcludedConcept(terminologyId);
@@ -986,19 +974,18 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "List of concepts to remove, e.g. {'100073004', '100075006'", required = true) List<String> terminologyIds,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping):  /project/id/" + projectId
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping):  /project/id/" + projectId
             + "/scopeExcludedConcepts/remove");
     String projectName = "";
     String user = "";
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeProject(projectId, authToken, MapUserRole.LEAD,
-              "remove scope excluded concept from projects", securityService);
+      user = authorizeProject(projectId, authToken, MapUserRole.LEAD,
+          "remove scope excluded concept from projects", securityService);
 
       final MapProject mapProject = mappingService.getMapProject(projectId);
       projectName = mapProject.getName();
@@ -1034,10 +1021,10 @@ public class MappingServiceRest extends RootServiceRest {
   public MapUser getMapUser(
     @ApiParam(value = "Username (can be specialist, lead, or admin)", required = true) @PathParam("username") String mapUserName,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): user/id/" + mapUserName);
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): user/id/" + mapUserName);
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
@@ -1074,25 +1061,24 @@ public class MappingServiceRest extends RootServiceRest {
   public MapUser addMapUser(
     @ApiParam(value = "User, in JSON or XML POST data", required = true) MapUserJpa mapUser,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /user/add");
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /user/add");
     String userName = null;
     final MappingService mappingService = new MappingServiceJpa();
 
     try {
       // authorize call
-      userName =
-          authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "add a user",
-              securityService);
+      userName = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+          "add a user", securityService);
 
       // Check if user already exists and send better message
       for (final MapUser user : mappingService.getMapUsers().getMapUsers()) {
         if (user.getName().equals(mapUser.getName())) {
-          throw new LocalException("This map user already exists: "
-              + user.getName());
+          throw new LocalException(
+              "This map user already exists: " + user.getName());
         }
       }
       mappingService.addMapUser(mapUser);
@@ -1123,19 +1109,18 @@ public class MappingServiceRest extends RootServiceRest {
   public void updateMapUser(
     @ApiParam(value = "User, in JSON or XML POST data", required = true) MapUserJpa mapUser,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /user/update");
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /user/update");
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "update a user",
-              securityService);
+      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "update a user",
+          securityService);
 
       mappingService.updateMapUser(mapUser);
 
@@ -1160,7 +1145,7 @@ public class MappingServiceRest extends RootServiceRest {
   public void removeMapUser(
     @ApiParam(value = "Map project, in JSON or XML POST data", required = true) MapUserJpa mapUser,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
     Logger.getLogger(MappingServiceRest.class).info(
@@ -1170,9 +1155,8 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "remove a user",
-              securityService);
+      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "remove a user",
+          securityService);
 
       mappingService.removeMapUser(mapUser.getId());
 
@@ -1194,6 +1178,7 @@ public class MappingServiceRest extends RootServiceRest {
    * @return the map advices
    * @throws Exception the exception
    */
+
   @GET
   @Path("/advice/advices")
   @ApiOperation(value = "Get all mapping advices", notes = "Gets a list of all map advices.", response = MapAdviceListJpa.class)
@@ -1202,18 +1187,17 @@ public class MappingServiceRest extends RootServiceRest {
   })
   public MapAdviceListJpa getMapAdvices(
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /advice/advices");
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /advice/advices");
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.VIEWER, "get map advices",
-              securityService);
+      user = authorizeApp(authToken, MapUserRole.VIEWER, "get map advices",
+          securityService);
 
       final MapAdviceListJpa mapAdvices =
           (MapAdviceListJpa) mappingService.getMapAdvices();
@@ -1251,26 +1235,25 @@ public class MappingServiceRest extends RootServiceRest {
   public MapAdvice addMapAdvice(
     @ApiParam(value = "Map advice, in JSON or XML POST data", required = true) MapAdviceJpa mapAdvice,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /advice/add");
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /advice/add");
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "add map advice",
-              securityService);
+      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+          "add map advice", securityService);
 
       // Check if advice already exists and send better message
       for (final MapAdvice advice : mappingService.getMapAdvices()
           .getMapAdvices()) {
         if (advice.getName().equals(mapAdvice.getName())) {
-          throw new LocalException("This map advice already exists: "
-              + advice.getName());
+          throw new LocalException(
+              "This map advice already exists: " + advice.getName());
         }
       }
 
@@ -1302,19 +1285,18 @@ public class MappingServiceRest extends RootServiceRest {
   public void updateMapAdvice(
     @ApiParam(value = "Map advice, in JSON or XML POST data", required = true) MapAdviceJpa mapAdvice,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /advice/update");
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /advice/update");
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-              "update map advice", securityService);
+      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+          "update map advice", securityService);
 
       mappingService.updateMapAdvice(mapAdvice);
     } catch (Exception e) {
@@ -1338,26 +1320,24 @@ public class MappingServiceRest extends RootServiceRest {
   public void removeMapAdvice(
     @ApiParam(value = "Map advice, in JSON or XML POST data", required = true) MapAdviceJpa mapAdvice,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /advice/delete for user "
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /advice/delete for user "
             + mapAdvice.getName());
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-              "remove map advice", securityService);
+      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+          "remove map advice", securityService);
 
       mappingService.removeMapAdvice(mapAdvice.getId());
     } catch (Exception e) {
-      LocalException le =
-          new LocalException(
-              "Unable to delete map advice. This is likely because the advice is being used by a map project or map entry");
+      LocalException le = new LocalException(
+          "Unable to delete map advice. This is likely because the advice is being used by a map project or map entry");
       handleException(le, "", user, "", "");
     } finally {
       mappingService.close();
@@ -1375,6 +1355,7 @@ public class MappingServiceRest extends RootServiceRest {
    * @return the map age ranges
    * @throws Exception the exception
    */
+
   @GET
   @Path("/ageRange/ageRanges")
   @ApiOperation(value = "Get all mapping age ranges", notes = "Gets a list of all mapping age ranges.", response = MapAgeRangeListJpa.class)
@@ -1383,18 +1364,17 @@ public class MappingServiceRest extends RootServiceRest {
   })
   public MapAgeRangeListJpa getMapAgeRanges(
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /ageRange/ageRanges");
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /ageRange/ageRanges");
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.VIEWER, "get age ranges",
-              securityService);
+      user = authorizeApp(authToken, MapUserRole.VIEWER, "get age ranges",
+          securityService);
 
       final MapAgeRangeListJpa mapAgeRanges =
           (MapAgeRangeListJpa) mappingService.getMapAgeRanges();
@@ -1432,26 +1412,25 @@ public class MappingServiceRest extends RootServiceRest {
   public MapAgeRange addMapAgeRange(
     @ApiParam(value = "Age range, in JSON or XML POST data", required = true) MapAgeRangeJpa mapAgeRange,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /ageRange/add");
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /ageRange/add");
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-              "add map age range", securityService);
+      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+          "add map age range", securityService);
 
       // Check if age range already exists and send better message
       for (final MapAgeRange range : mappingService.getMapAgeRanges()
           .getMapAgeRanges()) {
         if (range.getName().equals(range.getName())) {
-          throw new LocalException("This map age range already exists: "
-              + range.getName());
+          throw new LocalException(
+              "This map age range already exists: " + range.getName());
         }
       }
 
@@ -1483,19 +1462,18 @@ public class MappingServiceRest extends RootServiceRest {
   public void updateMapAgeRange(
     @ApiParam(value = "Age range, in JSON or XML POST data", required = true) MapAgeRangeJpa mapAgeRange,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /ageRange/update");
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /ageRange/update");
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-              "udpate age range", securityService);
+      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+          "udpate age range", securityService);
 
       mappingService.updateMapAgeRange(mapAgeRange);
     } catch (Exception e) {
@@ -1519,20 +1497,19 @@ public class MappingServiceRest extends RootServiceRest {
   public void removeMapAgeRange(
     @ApiParam(value = "Age range, in JSON or XML POST data", required = true) MapAgeRangeJpa mapAgeRange,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /ageRange/delete for user "
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /ageRange/delete for user "
             + mapAgeRange.getName());
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-              "remove age range", securityService);
+      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+          "remove age range", securityService);
 
       mappingService.removeMapAgeRange(mapAgeRange.getId());
     } catch (Exception e) {
@@ -1562,18 +1539,17 @@ public class MappingServiceRest extends RootServiceRest {
   })
   public MapRelationListJpa getMapRelations(
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /relation/relations");
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /relation/relations");
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.VIEWER, "get map relations",
-              securityService);
+      user = authorizeApp(authToken, MapUserRole.VIEWER, "get map relations",
+          securityService);
 
       final MapRelationListJpa mapRelations =
           (MapRelationListJpa) mappingService.getMapRelations();
@@ -1610,26 +1586,25 @@ public class MappingServiceRest extends RootServiceRest {
   public MapRelation addMapRelation(
     @ApiParam(value = "Map relation, in JSON or XML POST data", required = true) MapRelationJpa mapRelation,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /relation/add");
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /relation/add");
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-              "add map relation", securityService);
+      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+          "add map relation", securityService);
 
       // Check if relation already exists and send better message
       for (final MapRelation relation : mappingService.getMapRelations()
           .getMapRelations()) {
         if (relation.getName().equals(mapRelation.getName())) {
-          throw new LocalException("This map relation already exists: "
-              + relation.getName());
+          throw new LocalException(
+              "This map relation already exists: " + relation.getName());
         }
       }
 
@@ -1661,19 +1636,18 @@ public class MappingServiceRest extends RootServiceRest {
   public void updateMapRelation(
     @ApiParam(value = "Map relation, in JSON or XML POST data", required = true) MapRelationJpa mapRelation,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /relation/update");
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /relation/update");
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-              "update map relation", securityService);
+      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+          "update map relation", securityService);
 
       mappingService.updateMapRelation(mapRelation);
     } catch (Exception e) {
@@ -1697,26 +1671,24 @@ public class MappingServiceRest extends RootServiceRest {
   public void removeMapRelation(
     @ApiParam(value = "Map relation, in JSON or XML POST data", required = true) MapRelationJpa mapRelation,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /relation/delete for user "
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /relation/delete for user "
             + mapRelation.getName());
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-              "remove map relation", securityService);
+      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+          "remove map relation", securityService);
 
       mappingService.removeMapRelation(mapRelation.getId());
     } catch (Exception e) {
-      LocalException le =
-          new LocalException(
-              "Unable to delete map relation. This is likely because the relation is being used by a map project or map entry");
+      LocalException le = new LocalException(
+          "Unable to delete map relation. This is likely because the relation is being used by a map project or map entry");
       handleException(le, "", user, "", "");
     } finally {
       mappingService.close();
@@ -1743,18 +1715,17 @@ public class MappingServiceRest extends RootServiceRest {
   })
   public MapPrincipleListJpa getMapPrinciples(
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /principle/principles");
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /principle/principles");
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.VIEWER, "get map principles",
-              securityService);
+      user = authorizeApp(authToken, MapUserRole.VIEWER, "get map principles",
+          securityService);
 
       final MapPrincipleListJpa mapPrinciples =
           (MapPrincipleListJpa) mappingService.getMapPrinciples();
@@ -1791,7 +1762,7 @@ public class MappingServiceRest extends RootServiceRest {
   public MapPrinciple getMapPrinciple(
     @ApiParam(value = "Map principle identifer", required = true) @PathParam("id") Long mapPrincipleId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
     Logger.getLogger(MappingServiceRest.class).info(
@@ -1801,9 +1772,8 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.VIEWER, "get map principle",
-              securityService);
+      user = authorizeApp(authToken, MapUserRole.VIEWER, "get map principle",
+          securityService);
 
       final MapPrinciple mapPrinciple =
           mappingService.getMapPrinciple(mapPrincipleId);
@@ -1837,25 +1807,24 @@ public class MappingServiceRest extends RootServiceRest {
   public MapPrinciple addMapPrinciple(
     @ApiParam(value = "Map principle, in JSON or XML POST data", required = true) MapPrincipleJpa mapPrinciple,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /principle/add");
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /principle/add");
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-              "add map principle", securityService);
+      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+          "add map principle", securityService);
 
       // Check if principle already exists and send better message
       for (final MapPrinciple principle : mappingService.getMapPrinciples()
           .getMapPrinciples()) {
-        if (principle.getName().equals(mapPrinciple.getName())
-            && principle.getPrincipleId().equals(mapPrinciple.getPrincipleId())) {
+        if (principle.getName().equals(mapPrinciple.getName()) && principle
+            .getPrincipleId().equals(mapPrinciple.getPrincipleId())) {
           throw new LocalException("This map principle already exists: "
               + principle.getPrincipleId() + ", " + principle.getName());
         }
@@ -1889,19 +1858,18 @@ public class MappingServiceRest extends RootServiceRest {
   public void updateMapPrinciple(
     @ApiParam(value = "Map principle, in JSON or XML POST data", required = true) MapPrincipleJpa mapPrinciple,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /principle/update");
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /principle/update");
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-              "update map principle", securityService);
+      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+          "update map principle", securityService);
 
       mappingService.updateMapPrinciple(mapPrinciple);
 
@@ -1926,27 +1894,25 @@ public class MappingServiceRest extends RootServiceRest {
   public void removeMapPrinciple(
     @ApiParam(value = "Map principle, in JSON or XML POST data", required = true) MapPrincipleJpa principle,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /principle/delete for id "
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /principle/delete for id "
             + principle.getId().toString());
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-              "remove map principle", securityService);
+      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+          "remove map principle", securityService);
 
       mappingService.removeMapPrinciple(principle.getId());
 
     } catch (Exception e) {
-      LocalException le =
-          new LocalException(
-              "Unable to delete map principle. This is likely because the principle is being used by a map project or map record");
+      LocalException le = new LocalException(
+          "Unable to delete map principle. This is likely because the principle is being used by a map project or map record");
       handleException(le, "", user, "", "");
     } finally {
       mappingService.close();
@@ -1975,22 +1941,22 @@ public class MappingServiceRest extends RootServiceRest {
   public MapUserPreferences getMapUserPreferences(
     @ApiParam(value = "Username (can be specialist, lead, or admin)", required = true) @PathParam("username") String username,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call:  /userPreferences/user/id/" + username);
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call:  /userPreferences/user/id/" + username);
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.VIEWER, "get map user prefs",
-              securityService);
+      user = authorizeApp(authToken, MapUserRole.VIEWER, "get map user prefs",
+          securityService);
       return mappingService.getMapUserPreferences(username);
 
     } catch (Exception e) {
-      handleException(e, "trying to get the map user preferences", user, "", "");
+      handleException(e, "trying to get the map user preferences", user, "",
+          "");
       return null;
     } finally {
       mappingService.close();
@@ -2018,19 +1984,18 @@ public class MappingServiceRest extends RootServiceRest {
   public MapUserPreferences addMapUserPreferences(
     @ApiParam(value = "User preferences, in JSON or XML POST data", required = true) MapUserPreferencesJpa mapUserPreferences,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /userPreferences/add");
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /userPreferences/add");
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-              "add map user prefs", securityService);
+      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+          "add map user prefs", securityService);
 
       return mappingService.addMapUserPreferences(mapUserPreferences);
 
@@ -2060,20 +2025,19 @@ public class MappingServiceRest extends RootServiceRest {
   public void updateMapUserPreferences(
     @ApiParam(value = "User preferences, in JSON or XML POST data", required = true) MapUserPreferencesJpa mapUserPreferences,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /userPreferences/update with \n"
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /userPreferences/update with \n"
             + mapUserPreferences.toString());
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.VIEWER, "update map user prefs",
-              securityService);
+      user = authorizeApp(authToken, MapUserRole.VIEWER,
+          "update map user prefs", securityService);
 
       mappingService.updateMapUserPreferences(mapUserPreferences);
 
@@ -2100,20 +2064,19 @@ public class MappingServiceRest extends RootServiceRest {
   public void removeMapUserPreferences(
     @ApiParam(value = "User preferences, in JSON or XML POST data", required = true) MapUserPreferencesJpa mapUserPreferences,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /userPreferences/remove for id "
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /userPreferences/remove for id "
             + mapUserPreferences.getId().toString());
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.VIEWER, "remove map user prefs",
-              securityService);
+      user = authorizeApp(authToken, MapUserRole.VIEWER,
+          "remove map user prefs", securityService);
 
       mappingService.removeMapUserPreferences(mapUserPreferences.getId());
 
@@ -2150,10 +2113,10 @@ public class MappingServiceRest extends RootServiceRest {
   public MapRecord getMapRecord(
     @ApiParam(value = "Map record id", required = true) @PathParam("id") Long mapRecordId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /record/id/"
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /record/id/"
             + (mapRecordId == null ? "" : mapRecordId.toString()));
 
     String user = null;
@@ -2164,13 +2127,13 @@ public class MappingServiceRest extends RootServiceRest {
       mapRecord = mappingService.getMapRecord(mapRecordId);
 
       // authorize call
-      user =
-          authorizeProject(mapRecord.getMapProjectId(), authToken,
-              MapUserRole.VIEWER, "get map record", securityService);
+      user = authorizeProject(mapRecord.getMapProjectId(), authToken,
+          MapUserRole.VIEWER, "get map record", securityService);
 
       // remove notes if this is not a specialist or above
-      if (!securityService.getMapProjectRoleForToken(authToken,
-          mapRecord.getMapProjectId()).hasPrivilegesOf(MapUserRole.SPECIALIST)) {
+      if (!securityService
+          .getMapProjectRoleForToken(authToken, mapRecord.getMapProjectId())
+          .hasPrivilegesOf(MapUserRole.SPECIALIST)) {
         mapRecord.setMapNotes(null);
       }
 
@@ -2206,24 +2169,23 @@ public class MappingServiceRest extends RootServiceRest {
   public MapRecord addMapRecord(
     @ApiParam(value = "Map record, in JSON or XML POST data", required = true) MapRecordJpa mapRecord,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /record/add");
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /record/add");
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeProject(mapRecord.getMapProjectId(), authToken,
-              MapUserRole.SPECIALIST, "add map record", securityService);
+      user = authorizeProject(mapRecord.getMapProjectId(), authToken,
+          MapUserRole.SPECIALIST, "add map record", securityService);
 
       return mappingService.addMapRecord(mapRecord);
     } catch (Exception e) {
-      handleException(e, "trying to add a map record", user, mapRecord
-          .getMapProjectId().toString(), mapRecord.getId().toString());
+      handleException(e, "trying to add a map record", user,
+          mapRecord.getMapProjectId().toString(), mapRecord.getId().toString());
       return null;
     } finally {
       mappingService.close();
@@ -2247,25 +2209,24 @@ public class MappingServiceRest extends RootServiceRest {
   public void updateMapRecord(
     @ApiParam(value = "Map record, in JSON or XML POST data", required = true) MapRecordJpa mapRecord,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /record/update");
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /record/update");
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeProject(mapRecord.getMapProjectId(), authToken,
-              MapUserRole.SPECIALIST, "update map record", securityService);
+      user = authorizeProject(mapRecord.getMapProjectId(), authToken,
+          MapUserRole.SPECIALIST, "update map record", securityService);
 
       mappingService.updateMapRecord(mapRecord);
 
     } catch (Exception e) {
-      handleException(e, "trying to update the map record", user, mapRecord
-          .getMapProjectId().toString(), mapRecord.getId().toString());
+      handleException(e, "trying to update the map record", user,
+          mapRecord.getMapProjectId().toString(), mapRecord.getId().toString());
     } finally {
       mappingService.close();
       securityService.close();
@@ -2289,27 +2250,26 @@ public class MappingServiceRest extends RootServiceRest {
   public Response removeMapRecord(
     @ApiParam(value = "Map record, in JSON or XML POST data", required = true) MapRecordJpa mapRecord,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /record/delete with map record id = "
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /record/delete with map record id = "
             + mapRecord.toString());
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeProject(mapRecord.getMapProjectId(), authToken,
-              MapUserRole.ADMINISTRATOR, "remove map record", securityService);
+      user = authorizeProject(mapRecord.getMapProjectId(), authToken,
+          MapUserRole.ADMINISTRATOR, "remove map record", securityService);
 
       mappingService.removeMapRecord(mapRecord.getId());
 
       return null;
     } catch (Exception e) {
-      handleException(e, "trying to delete the map record", user, mapRecord
-          .getMapProjectId().toString(), "");
+      handleException(e, "trying to delete the map record", user,
+          mapRecord.getMapProjectId().toString(), "");
       return null;
     } finally {
       mappingService.close();
@@ -2336,11 +2296,11 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Terminology ids, in JSON or XML POST data", required = true) List<String> terminologyIds,
     @ApiParam(value = "Map project id", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /record/records/delete/project/id/"
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /record/records/delete/project/id/"
             + projectId + "/batch with string argument " + terminologyIds);
 
     String user = null;
@@ -2350,10 +2310,9 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeProject(projectId, authToken, MapUserRole.ADMINISTRATOR,
-              "remove map records for project and terminology ids",
-              securityService);
+      user = authorizeProject(projectId, authToken, MapUserRole.ADMINISTRATOR,
+          "remove map records for project and terminology ids",
+          securityService);
 
       // validation report to return errors and warnings
       final ValidationResult validationResult = new ValidationResultJpa();
@@ -2372,28 +2331,27 @@ public class MappingServiceRest extends RootServiceRest {
       int nRecordsRemoved = 0;
       int nScopeConceptsRemoved = 0;
 
-      validationResult.addMessage(terminologyIds.size()
-          + " concepts selected for map record removal");
+      validationResult.addMessage(
+          terminologyIds.size() + " concepts selected for map record removal");
 
       // cycle over the terminology ids
       for (final String terminologyId : terminologyIdsToRemove) {
 
         // get all map records for this project and concept
-        final MapRecordList mapRecordList =
-            mappingService.getMapRecordsForProjectAndConcept(projectId,
-                terminologyId);
+        final MapRecordList mapRecordList = mappingService
+            .getMapRecordsForProjectAndConcept(projectId, terminologyId);
 
         // check if map records exist
         if (mapRecordList.getCount() == 0) {
           Logger.getLogger(MappingServiceRest.class).warn(
               "No records found for project for concept id " + terminologyId);
-          validationResult.addWarning("No records found for concept "
-              + terminologyId);
+          validationResult
+              .addWarning("No records found for concept " + terminologyId);
         } else {
           for (final MapRecord mapRecord : mapRecordList.getMapRecords()) {
-            Logger.getLogger(MappingServiceRest.class).info(
-                "Removing map record " + mapRecord.getId() + " for concept "
-                    + mapRecord.getConceptId() + ", "
+            Logger.getLogger(MappingServiceRest.class)
+                .info("Removing map record " + mapRecord.getId()
+                    + " for concept " + mapRecord.getConceptId() + ", "
                     + mapRecord.getConceptName());
 
             // remove the map record
@@ -2404,7 +2362,8 @@ public class MappingServiceRest extends RootServiceRest {
           }
         }
 
-        // if a non-descendant-based project (i.e. enumerated scope), remove
+        // if a non-descendant-based project (i.e. enumerated scope),
+        // remove
         // scope concept
         if (!mapProject.isScopeDescendantsFlag()) {
 
@@ -2422,8 +2381,8 @@ public class MappingServiceRest extends RootServiceRest {
       }
 
       // add the counter information to the validation result
-      validationResult.addMessage(nRecordsRemoved
-          + " records successfully removed");
+      validationResult
+          .addMessage(nRecordsRemoved + " records successfully removed");
 
       // if scope concepts were removed, add a success message
       if (!mapProject.isScopeDescendantsFlag()) {
@@ -2435,8 +2394,8 @@ public class MappingServiceRest extends RootServiceRest {
       return validationResult;
 
     } catch (Exception e) {
-      handleException(e, "trying to delete map records by terminology id",
-          user, terminologyIds.toString(), projectName);
+      handleException(e, "trying to delete map records by terminology id", user,
+          terminologyIds.toString(), projectName);
       return null;
     } finally {
       mappingService.close();
@@ -2464,35 +2423,32 @@ public class MappingServiceRest extends RootServiceRest {
   public MapRecordListJpa getMapRecordsForConceptId(
     @ApiParam(value = "Concept id", required = true) @PathParam("conceptId") String conceptId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /record/concept/id/" + conceptId);
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /record/concept/id/" + conceptId);
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.VIEWER,
-              "get map records for concept", securityService);
+      user = authorizeApp(authToken, MapUserRole.VIEWER,
+          "get map records for concept", securityService);
 
       final MapRecordListJpa mapRecordList =
           (MapRecordListJpa) mappingService.getMapRecordsForConcept(conceptId);
 
       // return records that this user does not have permission to see
-      final MapUser mapUser =
-          mappingService.getMapUser(securityService
-              .getUsernameForToken(authToken));
+      final MapUser mapUser = mappingService
+          .getMapUser(securityService.getUsernameForToken(authToken));
       final List<MapRecord> mapRecords = new ArrayList<>();
 
       // cycle over records and determine if this user can see them
       for (final MapRecord mr : mapRecordList.getMapRecords()) {
 
         // get the user's role for this record's project
-        final MapUserRole projectRole =
-            securityService.getMapProjectRoleForToken(authToken,
-                mr.getMapProjectId());
+        final MapUserRole projectRole = securityService
+            .getMapProjectRoleForToken(authToken, mr.getMapProjectId());
 
         // remove notes if this is not a specialist or above
         if (!projectRole.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
@@ -2501,7 +2457,7 @@ public class MappingServiceRest extends RootServiceRest {
 
         switch (mr.getWorkflowStatus()) {
 
-        // any role can see published
+          // any role can see published
           case PUBLISHED:
             mapRecords.add(mr);
             break;
@@ -2529,8 +2485,8 @@ public class MappingServiceRest extends RootServiceRest {
 
       return mapRecordList;
     } catch (Exception e) {
-      handleException(e, "trying to find records by the given concept id",
-          user, "", conceptId);
+      handleException(e, "trying to find records by the given concept id", user,
+          "", conceptId);
       return null;
     } finally {
       mappingService.close();
@@ -2558,37 +2514,33 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Concept id", required = true) @PathParam("conceptId") String conceptId,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /record/concept/id/" + conceptId
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /record/concept/id/" + conceptId
             + "/project/id/" + mapProjectId + "/historical");
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.VIEWER,
-              "get map records for historical concept", securityService);
+      user = authorizeApp(authToken, MapUserRole.VIEWER,
+          "get map records for historical concept", securityService);
 
-      final MapRecordListJpa mapRecordList =
-          (MapRecordListJpa) mappingService.getMapRecordRevisionsForConcept(
-              conceptId, mapProjectId);
+      final MapRecordListJpa mapRecordList = (MapRecordListJpa) mappingService
+          .getMapRecordRevisionsForConcept(conceptId, mapProjectId);
 
       // return records that this user does not have permission to see
-      final MapUser mapUser =
-          mappingService.getMapUser(securityService
-              .getUsernameForToken(authToken));
+      final MapUser mapUser = mappingService
+          .getMapUser(securityService.getUsernameForToken(authToken));
       final List<MapRecord> mapRecords = new ArrayList<>();
 
       // cycle over records and determine if this user can see them
       for (final MapRecord mr : mapRecordList.getMapRecords()) {
 
         // get the user's role for this record's project
-        final MapUserRole projectRole =
-            securityService.getMapProjectRoleForToken(authToken,
-                mr.getMapProjectId());
+        final MapUserRole projectRole = securityService
+            .getMapProjectRoleForToken(authToken, mr.getMapProjectId());
 
         // remove notes if this is not a specialist or above
         if (!projectRole.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
@@ -2597,7 +2549,7 @@ public class MappingServiceRest extends RootServiceRest {
 
         switch (mr.getWorkflowStatus()) {
 
-        // any role can see published
+          // any role can see published
           case PUBLISHED:
             mapRecords.add(mr);
             break;
@@ -2626,8 +2578,8 @@ public class MappingServiceRest extends RootServiceRest {
       return mapRecordList;
     } catch (Exception e) {
       handleException(e,
-          "trying to find historical records by the given concept id", user,
-          "", conceptId);
+          "trying to find historical records by the given concept id", user, "",
+          conceptId);
       return null;
     } finally {
       mappingService.close();
@@ -2647,7 +2599,7 @@ public class MappingServiceRest extends RootServiceRest {
    * @throws Exception the exception
    */
   @POST
-  @Path("/record/project/id/{id:[0-9][0-9]*}")
+  @Path("/record/project/id/{id:[0-9][0-9]*}/ancestor/{ancestorId}/root/{rootId}/query/{query}")
   @ApiOperation(value = "Get published map records by project id", notes = "Gets a list of map records for the specified map project id that have a workflow status of PUBLISHED or READY_FOR_PUBLICATION.", response = MapRecordListJpa.class)
   @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
@@ -2656,47 +2608,219 @@ public class MappingServiceRest extends RootServiceRest {
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   @CookieParam(value = "userInfo")
-  public MapRecordListJpa getPublishedAndReadyForPublicationMapRecordsForMapProject(
+  public MapRecordListJpa getMapRecordsForMapProjectAndQuery(
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
+    @ApiParam(value = "Ancestor concept (inclusive) to restrict search results to", required = true) @PathParam("ancestorId") String ancestorId,
+    @ApiParam(value = "Concept type (e", required = false) @PathParam("rootId") String rootId,
+    @ApiParam(value = "Search query string", required = false) @PathParam("query") String query,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
     Logger.getLogger(MappingServiceRest.class)
-        .info(
-            "RESTful call (Mapping): /record/project/id/"
-                + mapProjectId.toString());
+        .info("RESTful call (Mapping): /record/project/id/" + mapProjectId
+            + "/ancestor/" + ancestorId + "/root/" + rootId + "/query/"
+            + query);
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
-    try {
-      // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.VIEWER,
-              "get published and publication ready records for project",
-              securityService);
 
-      final MapRecordListJpa mapRecordList =
-          (MapRecordListJpa) mappingService
-              .getPublishedAndReadyForPublicationMapRecordsForMapProject(
-                  mapProjectId, pfsParameter);
+    // declare content service (may not be used)
+    ContentService contentService = null;
+
+    try {
+
+      // authorize call
+      user = authorizeApp(authToken, MapUserRole.VIEWER,
+          "find map records for map project and query", securityService);
+
+      // instantiate the list to be returned
+      MapRecordListJpa mapRecordList = new MapRecordListJpa();
+
+      // create local pfs parameter for query restriction modification
+      PfsParameter pfsLocal = new PfsParameterJpa(pfsParameter);
+
+      // if query string text is "null", convert to actual null value
+      String queryLocal = query.equals("null") ? null : query;
+
+      // local ancestor and root id, sanitized
+      String ancestorIdLocal = ancestorId != null && !ancestorId.isEmpty()
+          && !ancestorId.equals("null") ? ancestorId : null;
+      String rootIdLocal =
+          rootId != null && !rootId.isEmpty() && !rootId.equals("null") ? rootId
+              : null;
+
+      // the revised query restriction (local variable for convenience)
+      String queryRestriction = pfsLocal.getQueryRestriction();
+
+      // if query restriction supplied, add an AND
+      if (queryRestriction != null && !queryRestriction.isEmpty()) {
+        queryRestriction += " AND ";
+      }
+
+      // add the map project restriction
+      queryRestriction += "mapProjectId:" + mapProjectId;
+
+      // add the role-specific workflow restrictions
       final MapUserRole role =
           securityService.getMapProjectRoleForToken(authToken, mapProjectId);
+      if (role.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
+        queryRestriction +=
+            " AND (workflowStatus:PUBLISHED OR workflowStatus:READY_FOR_PUBLICATION)";
+      } else {
+        queryRestriction += " AND workflowStatus:PUBLISHED";
+      }
 
-      for (final MapRecord mr : mapRecordList.getMapRecords()) {
-        // remove notes if this is not a specialist or above
-        if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
+      // set the pfs query restriction
+      pfsLocal.setQueryRestriction(queryRestriction);
+
+      // declare search results list
+      SearchResultList searchResults;
+
+      // the set of concept ids to restrict results to
+      Set<String> eligibleConcepts = new HashSet<>();
+
+      // perform a "lookup" query to see number of results resulting from a
+      // non-straight Lucene PFS query
+      if (ancestorIdLocal != null || rootIdLocal != null) {
+
+        // execute single-result query to get size of possible results
+        pfsLocal.setStartIndex(0);
+        pfsLocal.setMaxResults(1);
+
+        searchResults =
+            mappingService.findMapRecordsForQuery(queryLocal, pfsLocal);
+
+        // if too broad, throw local exception (passed to user)
+        if (searchResults.getTotalCount() > 500) {
+          throw new LocalException(
+              "Search too broad (found " + searchResults.getTotalCount()
+                  + " potential matches). Refine the search and try again.");
+        }
+
+        MapProject project = mappingService.getMapProject(mapProjectId);
+
+        // if ancestor id specified, get all descendants of ancestor
+        if (ancestorIdLocal != null) {
+
+          if (contentService == null) {
+            contentService = new ContentServiceJpa();
+          }
+          SearchResultList descendants = contentService.findDescendantConcepts(
+              ancestorId, project.getSourceTerminology(),
+              project.getSourceTerminologyVersion(), null);
+
+          for (SearchResult descendant : descendants.getSearchResults()) {
+            eligibleConcepts.add(descendant.getTerminologyId());
+          }
+
+          // add the concept itself
+          eligibleConcepts.add(ancestorId);
+
+        }
+
+        // if a root id specified, get all descendants of root concept
+        if (rootIdLocal != null) {
+
+          if (contentService == null) {
+            contentService = new ContentServiceJpa();
+          }
+          SearchResultList descendants = contentService.findDescendantConcepts(
+              rootId, project.getSourceTerminology(),
+              project.getSourceTerminologyVersion(), null);
+
+          Set<String> ancestorIds = new HashSet<>();
+
+          // extract the concept ids
+          for (SearchResult descendant : descendants.getSearchResults()) {
+            ancestorIds.add(descendant.getTerminologyId());
+
+          }
+          ancestorIds.add(rootId); // add concept itself
+
+          // if ancestor concept was specified, perform an intersection
+          if (ancestorIdLocal != null) {
+            eligibleConcepts.retainAll(ancestorIds);
+          }
+
+          // otherwise simply use the ancestor ids
+          else {
+            eligibleConcepts = ancestorIds;
+          }
+        }
+
+        Logger.getLogger(getClass())
+            .info("  Number of eligible descendant concepts: "
+                + eligibleConcepts.size());
+
+        // perform the lucene search
+        searchResults =
+            mappingService.findMapRecordsForQuery(queryLocal, pfsLocal);
+
+        List<MapRecordJpa> results = new ArrayList<>();
+
+        // retrieve the records
+        for (SearchResult sr : searchResults.getSearchResults()) {
+
+          // if no descendant constraints OR this is an eligible concept, add to
+          // the results list
+          if (eligibleConcepts.contains(sr.getTerminologyId())) {
+            results.add((MapRecordJpa) mappingService.getMapRecord(sr.getId()));
+          }
+        }
+
+        int[] totalCt = new int[1];
+        pfsLocal = new PfsParameterJpa(pfsParameter);
+        pfsLocal.setQueryRestriction("");
+        pfsLocal.setSortField("");
+
+        // apply paging to the list
+        results = mappingService.applyPfsToList(results, MapRecordJpa.class,
+            totalCt, pfsLocal);
+
+        // set the list and total count
+        for (MapRecord mr : results) {
+          mapRecordList.addMapRecord(mr);
+        }
+        mapRecordList.setTotalCount(totalCt[0]);
+
+      }
+
+      // otherwise, perform a straightforward query
+      else {
+
+        // perform the lucene search
+        searchResults =
+            mappingService.findMapRecordsForQuery(queryLocal, pfsLocal);
+
+        // retrieve the records
+        for (SearchResult sr : searchResults.getSearchResults()) {
+          mapRecordList.addMapRecord(mappingService.getMapRecord(sr.getId()));
+        }
+
+        // set the total count
+        mapRecordList.setTotalCount(searchResults.getTotalCount());
+      }
+
+      // remove notes if this is not a specialist or above
+      if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
+        for (final MapRecord mr : mapRecordList.getMapRecords()) {
           mr.setMapNotes(null);
         }
       }
       return mapRecordList;
     } catch (Exception e) {
-      handleException(e, "trying to get the map records for a map project",
-          user, mapProjectId.toString(), "");
+      handleException(e,
+          "trying to get the map records for a map project and query", user,
+          mapProjectId.toString(), "");
       return null;
     } finally {
       mappingService.close();
       securityService.close();
+
+      if (contentService != null) {
+        contentService.close();
+      }
     }
 
   }
@@ -2726,25 +2850,22 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
     // log call
     Logger.getLogger(MappingServiceRest.class)
-        .info(
-            "RESTful call (Mapping): /record/project/id/"
-                + mapProjectId.toString());
+        .info("RESTful call (Mapping): /record/project/id/"
+            + mapProjectId.toString());
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     // execute the service call
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.VIEWER,
-              "get published records for project", securityService);
+      user = authorizeApp(authToken, MapUserRole.VIEWER,
+          "get published records for project", securityService);
 
-      final MapRecordListJpa mapRecordList =
-          (MapRecordListJpa) mappingService
-              .getPublishedMapRecordsForMapProject(mapProjectId, pfsParameter);
+      final MapRecordListJpa mapRecordList = (MapRecordListJpa) mappingService
+          .getPublishedMapRecordsForMapProject(mapProjectId, pfsParameter);
 
       final MapUserRole role =
           securityService.getMapProjectRoleForToken(authToken, mapProjectId);
@@ -2790,7 +2911,7 @@ public class MappingServiceRest extends RootServiceRest {
   public MapRecordList getMapRecordRevisions(
     @ApiParam(value = "Map record id, e.g. 28123", required = true) @PathParam("id") Long mapRecordId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
     Logger.getLogger(MappingServiceRest.class).info(
@@ -2804,12 +2925,10 @@ public class MappingServiceRest extends RootServiceRest {
           securityService.getMapProjectRoleForToken(authToken, mapRecordId);
       user = securityService.getUsernameForToken(authToken);
       if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-        throw new WebApplicationException(
-            Response
-                .status(401)
-                .entity(
-                    "User does not have permissions to get the map record revisions.")
-                .build());
+        throw new WebApplicationException(Response.status(401)
+            .entity(
+                "User does not have permissions to get the map record revisions.")
+            .build());
 
       final MapRecordList revisions =
           mappingService.getMapRecordRevisions(mapRecordId);
@@ -2853,7 +2972,7 @@ public class MappingServiceRest extends RootServiceRest {
   public MapRecord getMapRecordHistorical(
     @ApiParam(value = "Map record id, e.g. 28123", required = true) @PathParam("id") Long mapRecordId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
     Logger.getLogger(MappingServiceRest.class).info(
@@ -2863,23 +2982,20 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.VIEWER,
-              "get historical map records for project", securityService);
+      user = authorizeApp(authToken, MapUserRole.VIEWER,
+          "get historical map records for project", securityService);
 
       // try getting the current record
       MapRecord mapRecord = mappingService.getMapRecord(mapRecordId);
 
       // if no current record, look for revisions
       if (mapRecord == null) {
-        mapRecord =
-            mappingService.getMapRecordRevisions(mapRecordId).getMapRecords()
-                .get(0);
+        mapRecord = mappingService.getMapRecordRevisions(mapRecordId)
+            .getMapRecords().get(0);
       }
 
-      final MapUserRole role =
-          securityService.getMapProjectRoleForToken(authToken,
-              mapRecord.getMapProjectId());
+      final MapUserRole role = securityService
+          .getMapProjectRoleForToken(authToken, mapRecord.getMapProjectId());
       if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
         mapRecord.setMapNotes(null);
       }
@@ -2887,8 +3003,7 @@ public class MappingServiceRest extends RootServiceRest {
       return mapRecord;
 
     } catch (Exception e) {
-      handleException(
-          e,
+      handleException(e,
           "trying to get the map record potentially using historical revisions",
           user, "", mapRecordId.toString());
       return null;
@@ -2923,27 +3038,28 @@ public class MappingServiceRest extends RootServiceRest {
   public MapRelation computeMapRelation(
     @ApiParam(value = "Map record, in JSON or XML POST data", required = true) MapRecordJpa mapRecord,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /relation/compute");
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /relation/compute");
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeProject(mapRecord.getMapProjectId(), authToken,
-              MapUserRole.SPECIALIST, "compute map relation", securityService);
+      user = authorizeProject(mapRecord.getMapProjectId(), authToken,
+          MapUserRole.SPECIALIST, "compute map relation", securityService);
 
       final ProjectSpecificAlgorithmHandler algorithmHandler =
-          mappingService.getProjectSpecificAlgorithmHandler(mappingService
-              .getMapProject(mapRecord.getMapProjectId()));
+          mappingService.getProjectSpecificAlgorithmHandler(
+              mappingService.getMapProject(mapRecord.getMapProjectId()));
 
-      // We need the full in-memory (and unsaved) representation of the map
+      // We need the full in-memory (and unsaved) representation of the
+      // map
       // record.
-      // The entry in question is (hackishly identified by having an id of -1);
+      // The entry in question is (hackishly identified by having an id of
+      // -1);
       MapEntry mapEntry = null;
       for (final MapEntry entry : mapRecord.getMapEntries()) {
         if (entry.getId() != null && entry.getId() == -1) {
@@ -2990,27 +3106,28 @@ public class MappingServiceRest extends RootServiceRest {
   public MapAdviceList computeMapAdvice(
     @ApiParam(value = "Map entry, in JSON or XML POST data", required = true) MapRecordJpa mapRecord,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // call log
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /advice/compute");
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /advice/compute");
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeProject(mapRecord.getMapProjectId(), authToken,
-              MapUserRole.SPECIALIST, "compute map advice", securityService);
+      user = authorizeProject(mapRecord.getMapProjectId(), authToken,
+          MapUserRole.SPECIALIST, "compute map advice", securityService);
 
       final ProjectSpecificAlgorithmHandler algorithmHandler =
-          mappingService.getProjectSpecificAlgorithmHandler(mappingService
-              .getMapProject(mapRecord.getMapProjectId()));
+          mappingService.getProjectSpecificAlgorithmHandler(
+              mappingService.getMapProject(mapRecord.getMapProjectId()));
 
-      // We need the full in-memory (and unsaved) representation of the map
+      // We need the full in-memory (and unsaved) representation of the
+      // map
       // record.
-      // The entry in question is (hackishly identified by having an id of -1);
+      // The entry in question is (hackishly identified by having an id of
+      // -1);
       MapEntry mapEntry = null;
       for (final MapEntry entry : mapRecord.getMapEntries()) {
         if (entry.getId() != null && entry.getId() == -1) {
@@ -3049,6 +3166,7 @@ public class MappingServiceRest extends RootServiceRest {
    * @return result the role
    * @throws Exception the exception
    */
+
   @GET
   @Path("/userRole/user/id/{username}/project/id/{id:[0-9][0-9]*}")
   @Produces({
@@ -3059,10 +3177,10 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Username (can be specialist, lead, or admin)", required = true) @PathParam("username") String username,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call:  /userRole/user/id" + username + "/project/id/"
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call:  /userRole/user/id" + username + "/project/id/"
             + mapProjectId);
 
     final MappingService mappingService = new MappingServiceJpa();
@@ -3106,24 +3224,22 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Concept terminology id, e.g. 22298006", required = true) @PathParam("id") String terminologyId,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /concept/id/" + terminologyId + "/project/id/"
-            + mapProjectId);
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /concept/id/" + terminologyId
+            + "/project/id/" + mapProjectId);
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.VIEWER,
-              "get unmapped descendants for concept", securityService);
+      user = authorizeApp(authToken, MapUserRole.VIEWER,
+          "get unmapped descendants for concept", securityService);
 
-      final SearchResultList results =
-          mappingService.findUnmappedDescendantsForConcept(terminologyId,
-              mapProjectId, null);
+      final SearchResultList results = mappingService
+          .findUnmappedDescendantsForConcept(terminologyId, mapProjectId, null);
 
       return results;
 
@@ -3150,6 +3266,7 @@ public class MappingServiceRest extends RootServiceRest {
    * @return the search result list
    * @throws Exception the exception
    */
+
   @GET
   @Path("/treePosition/project/id/{mapProjectId}/concept/id/{terminologyId}")
   @ApiOperation(value = "Gets project-specific tree positions with desendants", notes = "Gets a list of tree positions and their descendants for the specified parameters. Sets flags for valid targets and assigns any terminology notes based on project.", response = TreePositionListJpa.class)
@@ -3163,8 +3280,8 @@ public class MappingServiceRest extends RootServiceRest {
 
   ) throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /treePosition/project/id/"
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /treePosition/project/id/"
             + mapProjectId.toString() + "/concept/id/" + terminologyId);
 
     String user = null;
@@ -3174,10 +3291,9 @@ public class MappingServiceRest extends RootServiceRest {
 
     try {
       // authorize call
-      user =
-          authorizeProject(mapProjectId, authToken, MapUserRole.VIEWER,
-              "get tree positions with descendants for concept and project",
-              securityService);
+      user = authorizeProject(mapProjectId, authToken, MapUserRole.VIEWER,
+          "get tree positions with descendants for concept and project",
+          securityService);
 
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
 
@@ -3186,8 +3302,8 @@ public class MappingServiceRest extends RootServiceRest {
           contentService.getTreePositionsWithChildren(terminologyId,
               mapProject.getDestinationTerminology(),
               mapProject.getDestinationTerminologyVersion());
-      Logger.getLogger(getClass()).info(
-          "  treepos count = " + treePositions.getTotalCount());
+      Logger.getLogger(getClass())
+          .info("  treepos count = " + treePositions.getTotalCount());
       if (treePositions.getCount() == 0) {
         return new TreePositionListJpa();
       }
@@ -3205,7 +3321,8 @@ public class MappingServiceRest extends RootServiceRest {
       contentService.computeTreePositionInformation(treePositions, descTypes,
           relTypes);
 
-      // Determine whether code is valid (e.g. whether it should be a link)
+      // Determine whether code is valid (e.g. whether it should be a
+      // link)
       final ProjectSpecificAlgorithmHandler handler =
           mappingService.getProjectSpecificAlgorithmHandler(mapProject);
       mappingService.setTreePositionValidCodes(mapProject, treePositions,
@@ -3244,10 +3361,10 @@ public class MappingServiceRest extends RootServiceRest {
   public TreePositionList getDestinationRootTreePositionsForMapProject(
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long mapProjectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /treePosition/project/id/"
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /treePosition/project/id/"
             + mapProjectId.toString());
 
     String user = null;
@@ -3256,21 +3373,94 @@ public class MappingServiceRest extends RootServiceRest {
     final MetadataService metadataService = new MetadataServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeProject(mapProjectId, authToken, MapUserRole.VIEWER,
-              "get destination root tree positions for project",
-              securityService);
+      user = authorizeProject(mapProjectId, authToken, MapUserRole.VIEWER,
+          "get destination root tree positions for project", securityService);
+
+      // set the valid codes using mapping service
+      final MapProject mapProject = mappingService.getMapProject(mapProjectId);
+
+      // get the root tree positions from content service
+      final TreePositionList treePositions = contentService
+          .getRootTreePositions(mapProject.getDestinationTerminology(),
+              mapProject.getDestinationTerminologyVersion());
+      Logger.getLogger(getClass())
+          .info("  treepos count = " + treePositions.getTotalCount());
+      if (treePositions.getCount() == 0) {
+        return new TreePositionListJpa();
+      }
+
+      final String terminology =
+          treePositions.getTreePositions().get(0).getTerminology();
+      final String terminologyVersion =
+          treePositions.getTreePositions().get(0).getTerminologyVersion();
+      final Map<String, String> descTypes =
+          metadataService.getDescriptionTypes(terminology, terminologyVersion);
+      final Map<String, String> relTypes =
+          metadataService.getRelationshipTypes(terminology, terminologyVersion);
+
+      contentService.computeTreePositionInformation(treePositions, descTypes,
+          relTypes);
+
+      final ProjectSpecificAlgorithmHandler handler =
+          mappingService.getProjectSpecificAlgorithmHandler(mapProject);
+      mappingService.setTreePositionValidCodes(mapProject, treePositions,
+          handler);
+
+      return treePositions;
+    } catch (Exception e) {
+      handleException(e,
+          "trying to get the root tree positions for a terminology", user,
+          mapProjectId.toString(), "");
+      return null;
+    } finally {
+      metadataService.close();
+      mappingService.close();
+      contentService.close();
+      securityService.close();
+    }
+  }
+
+  /**
+   * Gets the root-level tree positions for a given terminology and version.
+   *
+   * @param mapProjectId the map project id
+   * @param authToken the auth token
+   * @return the search result list
+   * @throws Exception the exception
+   */
+  @GET
+  @Path("/treePosition/project/id/{projectId}/source")
+  @ApiOperation(value = "Get source terminology root tree positions", notes = "Gets a list of tree positions at the root of the terminology.", response = TreePositionListJpa.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public TreePositionList getSourceRootTreePositionsForMapProject(
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long mapProjectId,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+      throws Exception {
+
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /treePosition/project/id/"
+            + mapProjectId.toString());
+
+    String user = null;
+    final MappingService mappingService = new MappingServiceJpa();
+    final ContentService contentService = new ContentServiceJpa();
+    final MetadataService metadataService = new MetadataServiceJpa();
+    try {
+      // authorize call
+      user = authorizeProject(mapProjectId, authToken, MapUserRole.VIEWER,
+          "get destination root tree positions for project", securityService);
 
       // set the valid codes using mapping service
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
 
       // get the root tree positions from content service
       final TreePositionList treePositions =
-          contentService.getRootTreePositions(
-              mapProject.getDestinationTerminology(),
-              mapProject.getDestinationTerminologyVersion());
-      Logger.getLogger(getClass()).info(
-          "  treepos count = " + treePositions.getTotalCount());
+          contentService.getRootTreePositions(mapProject.getSourceTerminology(),
+              mapProject.getSourceTerminologyVersion());
+      Logger.getLogger(getClass())
+          .info("  treepos count = " + treePositions.getTotalCount());
       if (treePositions.getCount() == 0) {
         return new TreePositionListJpa();
       }
@@ -3325,10 +3515,10 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Terminology browser query, e.g. 'cholera'", required = true) @PathParam("query") String query,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long mapProjectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(getClass()).info(
-        "RESTful call (Mapping): /treePosition/project/id/" + mapProjectId
+    Logger.getLogger(getClass())
+        .info("RESTful call (Mapping): /treePosition/project/id/" + mapProjectId
             + "/query/" + query);
 
     String user = null;
@@ -3337,19 +3527,17 @@ public class MappingServiceRest extends RootServiceRest {
     final MetadataService metadataService = new MetadataServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeProject(mapProjectId, authToken, MapUserRole.VIEWER,
-              "get tree position graphs for query", securityService);
+      user = authorizeProject(mapProjectId, authToken, MapUserRole.VIEWER,
+          "get tree position graphs for query", securityService);
 
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
 
       // get the tree positions from concept service
-      final TreePositionList treePositions =
-          contentService.getTreePositionGraphForQuery(
-              mapProject.getDestinationTerminology(),
+      final TreePositionList treePositions = contentService
+          .getTreePositionGraphForQuery(mapProject.getDestinationTerminology(),
               mapProject.getDestinationTerminologyVersion(), query);
-      Logger.getLogger(getClass()).info(
-          "  treepos count = " + treePositions.getTotalCount());
+      Logger.getLogger(getClass())
+          .info("  treepos count = " + treePositions.getTotalCount());
       if (treePositions.getCount() == 0) {
         return new TreePositionListJpa();
       }
@@ -3414,19 +3602,18 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Username (can be specialist, lead, or admin)", required = true) @PathParam("username") String username,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /record/project/id/" + mapProjectId
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /record/project/id/" + mapProjectId
             + "/user/id" + username + "/edited");
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeProject(mapProjectId, authToken, MapUserRole.VIEWER,
-              "get map records edited by map user", securityService);
+      user = authorizeProject(mapProjectId, authToken, MapUserRole.VIEWER,
+          "get map records edited by map user", securityService);
 
       final MapRecordListJpa recordList =
           (MapRecordListJpa) mappingService.getRecentlyEditedMapRecords(
@@ -3457,10 +3644,10 @@ public class MappingServiceRest extends RootServiceRest {
   public MapRecordList getOriginMapRecordsForConflict(
     @ApiParam(value = "Map record id, e.g. 28123", required = true) @PathParam("id") Long mapRecordId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /record/id/" + mapRecordId
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /record/id/" + mapRecordId
             + "/conflictOrigins");
     String user = null;
     final WorkflowService mappingService = new WorkflowServiceJpa();
@@ -3468,10 +3655,9 @@ public class MappingServiceRest extends RootServiceRest {
       final MapRecord mapRecord = mappingService.getMapRecord(mapRecordId);
 
       // authorize call
-      user =
-          authorizeProject(mapRecord.getMapProjectId(), authToken,
-              MapUserRole.SPECIALIST, "get origin records for conflict",
-              securityService);
+      user = authorizeProject(mapRecord.getMapProjectId(), authToken,
+          MapUserRole.SPECIALIST, "get origin records for conflict",
+          securityService);
 
       return mappingService.getOriginMapRecordsForConflict(mapRecordId);
 
@@ -3510,7 +3696,7 @@ public class MappingServiceRest extends RootServiceRest {
   public ValidationResult validateMapRecord(
     @ApiParam(value = "Map record, in JSON or XML POST data", required = true) MapRecordJpa mapRecord,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     Logger.getLogger(MappingServiceRest.class).info(
         "RESTful call (Mapping): /validation/record/validate for map record id = "
@@ -3522,9 +3708,8 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.VIEWER, "validate map record",
-              securityService);
+      user = authorizeApp(authToken, MapUserRole.VIEWER, "validate map record",
+          securityService);
 
       final MapProject mapProject =
           mappingService.getMapProject(mapRecord.getMapProjectId());
@@ -3535,8 +3720,8 @@ public class MappingServiceRest extends RootServiceRest {
           algorithmHandler.validateRecord(mapRecord);
       return validationResult;
     } catch (Exception e) {
-      handleException(e, "trying to validate a map record", user, mapRecord
-          .getMapProjectId().toString(), mapRecord.getId().toString());
+      handleException(e, "trying to validate a map record", user,
+          mapRecord.getMapProjectId().toString(), mapRecord.getId().toString());
       return null;
     } finally {
       mappingService.close();
@@ -3563,9 +3748,9 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Map record id, e.g. 28123", required = true) @PathParam("recordId1") Long mapRecordId1,
     @ApiParam(value = "Map record id, e.g. 28124", required = true) @PathParam("recordId2") Long mapRecordId2,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /validation/record/id/" + mapRecordId1
+      throws Exception {
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /validation/record/id/" + mapRecordId1
             + "record/id/" + mapRecordId1 + "/compare");
 
     String user = null;
@@ -3576,9 +3761,8 @@ public class MappingServiceRest extends RootServiceRest {
       final MapRecord mapRecord2 = mappingService.getMapRecord(mapRecordId2);
 
       // authorize call
-      user =
-          authorizeProject(mapRecord1.getMapProjectId(), authToken,
-              MapUserRole.VIEWER, "compareMapRecords", securityService);
+      user = authorizeProject(mapRecord1.getMapProjectId(), authToken,
+          MapUserRole.VIEWER, "compareMapRecords", securityService);
 
       final MapProject mapProject =
           mappingService.getMapProject(mapRecord1.getMapProjectId());
@@ -3618,19 +3802,18 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("mapProjectId") Long mapProjectId,
     @ApiParam(value = "Concept terminology id, e.g. 22298006", required = true) @PathParam("terminologyId") String terminologyId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /project/id/" + mapProjectId + "/concept/"
-            + terminologyId + "/isValid");
+      throws Exception {
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /project/id/" + mapProjectId
+            + "/concept/" + terminologyId + "/isValid");
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     final ContentService contentService = new ContentServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeProject(mapProjectId, authToken, MapUserRole.VIEWER,
-              "is target code valid", securityService);
+      user = authorizeProject(mapProjectId, authToken, MapUserRole.VIEWER,
+          "is target code valid", securityService);
 
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
       final ProjectSpecificAlgorithmHandler algorithmHandler =
@@ -3638,10 +3821,9 @@ public class MappingServiceRest extends RootServiceRest {
       boolean isValid = algorithmHandler.isTargetCodeValid(terminologyId);
 
       if (isValid) {
-        final Concept c =
-            contentService.getConcept(terminologyId,
-                mapProject.getDestinationTerminology(),
-                mapProject.getDestinationTerminologyVersion());
+        final Concept c = contentService.getConcept(terminologyId,
+            mapProject.getDestinationTerminology(),
+            mapProject.getDestinationTerminologyVersion());
         // Empty descriptions/relationships
         c.setDescriptions(new HashSet<Description>());
         c.setRelationships(new HashSet<Relationship>());
@@ -3686,9 +3868,8 @@ public class MappingServiceRest extends RootServiceRest {
     MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeProject(mapProjectId, authToken, MapUserRole.LEAD,
-              "upload handbook file", securityService);
+      user = authorizeProject(mapProjectId, authToken, MapUserRole.LEAD,
+          "upload handbook file", securityService);
 
       // get destination directory for uploaded file
       final Properties config = ConfigUtility.getConfigProperties();
@@ -3713,29 +3894,24 @@ public class MappingServiceRest extends RootServiceRest {
       final String date = dt.format(new Date());
       String extension = "";
       if (contentDispositionHeader.getFileName().indexOf(".") != -1) {
-        extension =
-            contentDispositionHeader.getFileName().substring(
-                contentDispositionHeader.getFileName().lastIndexOf("."));
+        extension = contentDispositionHeader.getFileName()
+            .substring(contentDispositionHeader.getFileName().lastIndexOf("."));
       }
-      final String fileName =
-          contentDispositionHeader
-              .getFileName()
-              .substring(0,
-                  contentDispositionHeader.getFileName().lastIndexOf("."))
-              .replaceAll(" ", "_");
+      final String fileName = contentDispositionHeader.getFileName()
+          .substring(0, contentDispositionHeader.getFileName().lastIndexOf("."))
+          .replaceAll(" ", "_");
       final File file =
           new File(dir, mapProjectId + "/" + fileName + extension);
-      final File archiveFile =
-          new File(archiveDir, mapProjectId + "/" + fileName + "." + date
-              + extension);
+      final File archiveFile = new File(archiveDir,
+          mapProjectId + "/" + fileName + "." + date + extension);
 
       // save the file to the server
       saveFile(fileInputStream, file.getAbsolutePath());
       copyFile(file, archiveFile);
 
       // update project
-      mapProject.setMapPrincipleSourceDocument(mapProjectId + "/" + fileName
-          + extension);
+      mapProject.setMapPrincipleSourceDocument(
+          mapProjectId + "/" + fileName + extension);
       updateMapProject((MapProjectJpa) mapProject, authToken);
 
       return Response.status(200).entity(mapProjectId + "/" + file.getName())
@@ -3765,18 +3941,17 @@ public class MappingServiceRest extends RootServiceRest {
   })
   public KeyValuePairLists getMapProjectMetadata(
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /mapProject/metadata");
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /mapProject/metadata");
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeApp(authToken, MapUserRole.VIEWER,
-              "get map project metadata", securityService);
+      user = authorizeApp(authToken, MapUserRole.VIEWER,
+          "get map project metadata", securityService);
 
       // call jpa service and get complex map return type
       final Map<String, Map<String, String>> mapOfMaps =
@@ -3794,16 +3969,16 @@ public class MappingServiceRest extends RootServiceRest {
         keyValuePairList.setName(metadataType);
         for (final Map.Entry<String, String> pairEntry : metadataPairs
             .entrySet()) {
-          final KeyValuePair keyValuePair =
-              new KeyValuePair(pairEntry.getKey().toString(),
-                  pairEntry.getValue());
+          final KeyValuePair keyValuePair = new KeyValuePair(
+              pairEntry.getKey().toString(), pairEntry.getValue());
           keyValuePairList.addKeyValuePair(keyValuePair);
         }
         keyValuePairLists.addKeyValuePairList(keyValuePairList);
       }
       return keyValuePairLists;
     } catch (Exception e) {
-      handleException(e, "trying to get the map project metadata", user, "", "");
+      handleException(e, "trying to get the map project metadata", user, "",
+          "");
       return null;
     } finally {
       mappingService.close();
@@ -3818,7 +3993,8 @@ public class MappingServiceRest extends RootServiceRest {
    * @param serverLocation the server location
    */
   @SuppressWarnings("static-method")
-  private void saveFile(InputStream uploadedInputStream, String serverLocation) {
+  private void saveFile(InputStream uploadedInputStream,
+    String serverLocation) {
     OutputStream outputStream = null;
     try {
       outputStream = new FileOutputStream(new File(serverLocation));
