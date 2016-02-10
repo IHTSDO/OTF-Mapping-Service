@@ -719,8 +719,6 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
             if (concept.getId() != null) {
               // Add member
               contentService.addSimpleRefSetMember(member);
-              System.out.println("X = " + concept.getTerminologyId() + ", "
-                  + classUsage);
               conceptUsageMap.put(concept.getTerminologyId(), classUsage);
             }
           }
@@ -1196,8 +1194,6 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
         // a little different, but does occupy the spot
         conceptUsageMap.put(childConcept.getTerminologyId(),
             member.getRefSetId());
-        System.out.println("Y = " + childConcept.getTerminologyId() + ", "
-            + classUsage);
       }
 
       // If child doesn't have usage but parent does,
@@ -1206,8 +1202,6 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
           && conceptUsageMap.containsKey(parentConcept.getTerminologyId())) {
         final String usage =
             conceptUsageMap.get(parentConcept.getTerminologyId());
-        System.out.println("Z = " + childConcept.getTerminologyId() + ", "
-            + usage);
         final SimpleRefSetMember member = new SimpleRefSetMemberJpa();
         member.setConcept(childConcept);
         member.setActive(true);
