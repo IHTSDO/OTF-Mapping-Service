@@ -1950,6 +1950,8 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
 
     Logger.getLogger(WorkflowServiceJpa.class).info(
         "  " + mapRecordsInProject.getCount() + " retrieved");
+    
+    WorkflowPathHandler handler = getWorkflowPathHandler(mapProject.getWorkflowType().toString());
 
     // set the reporting interval based on number of tracking records
     int nObjects = 0;
@@ -1967,9 +1969,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
       // if no tracking record, check that this is a publication ready map
       // record
       if (tr == null) {
-        if (!mr.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)
-            && !mr.getWorkflowStatus().equals(
-                WorkflowStatus.READY_FOR_PUBLICATION)) {
+        if (handler.isMapRecordInWorkflow(mr)) {
           recordsUntracked.add(mr);
         }
 
