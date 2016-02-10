@@ -1232,13 +1232,15 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
     try {
 
       final Map<String, MapPrinciple> principleMap = new HashMap<>();
-      for (final MapPrinciple principle : mapProject.getMapPrinciples()) {
-        String id = principle.getPrincipleId();
-        // Strip leading zero
-        if (id.startsWith("0")) {
-          id = id.substring(1);
+      if (mapProject.getMapPrinciples() != null) {
+        for (final MapPrinciple principle : mapProject.getMapPrinciples()) {
+          String id = principle.getPrincipleId();
+          // Strip leading zero
+          if (id.startsWith("0")) {
+            id = id.substring(1);
+          }
+          principleMap.put(id, principle);
         }
-        principleMap.put(id, principle);
       }
 
       //
