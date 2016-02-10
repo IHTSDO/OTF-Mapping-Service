@@ -146,3 +146,4 @@ mapProjectAppDirectives.directive('droppable', function() {
     }
   };
 });
+
