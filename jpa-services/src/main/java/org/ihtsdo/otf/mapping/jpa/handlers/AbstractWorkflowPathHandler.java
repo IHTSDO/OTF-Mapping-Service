@@ -113,6 +113,17 @@ public abstract class AbstractWorkflowPathHandler implements WorkflowPathHandler
 		}
 		return combinations;
 	}
+	
+	@Override
+	public boolean isMapRecordInWorkflow(MapRecord mapRecord) {
+	  
+	  // default:  Published or Publication-Ready map records are not in workflow
+	  // override in workflow handlers if desired (e.g. legacy path)
+	
+	  return !mapRecord.getWorkflowStatus().equals(
+          WorkflowStatus.READY_FOR_PUBLICATION)
+          && !mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED);
+	}
 
 	/*
 	 * (non-Javadoc)
