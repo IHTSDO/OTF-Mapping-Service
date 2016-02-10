@@ -102,8 +102,10 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
   Map<String, String> chdParMap;
 
   /** Indicates subclass relationships NOTE: this assumes a single superclass */
-
   Map<String, Boolean> parChildrenMap;
+
+  /** The concept usage map. */
+  Map<String, String> conceptUsageMap = new HashMap<>();
 
   /** The helper. */
   ClamlMetadataHelper helper;
@@ -698,13 +700,6 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 
           }
 
-          // If concept indicates modifiedby tag, add related children
-          // also check subClassToModifierMap to see if
-          // modifiers need to be created for this concept
-          if (qName.equalsIgnoreCase("class") && code.indexOf("-") == -1) {
-            modifierHelper(code);
-          }
-
           // Record class level dagger/asterisk info as refset member
           if (classUsage != null) {
             getLog().info("  Class " + code + " has usage " + classUsage);
@@ -724,7 +719,17 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
             if (concept.getId() != null) {
               // Add member
               contentService.addSimpleRefSetMember(member);
+              System.out.println("X = " + concept.getTerminologyId() + ", "
+                  + classUsage);
+              conceptUsageMap.put(concept.getTerminologyId(), classUsage);
             }
+          }
+
+          // If concept indicates modifiedby tag, add related children
+          // also check subClassToModifierMap to see if
+          // modifiers need to be created for this concept
+          if (qName.equalsIgnoreCase("class") && code.indexOf("-") == -1) {
+            modifierHelper(code);
           }
 
           // reset variables at the end of each
@@ -1188,6 +1193,34 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
         copy.setTerminologyVersion(member.getTerminologyVersion());
         copy.setTerminologyId(member.getTerminologyId());
         contentService.addSimpleRefSetMember(copy);
+        // a little different, but does occupy the spot
+        conceptUsageMap.put(childConcept.getTerminologyId(),
+            member.getRefSetId());
+        System.out.println("Y = " + childConcept.getTerminologyId() + ", "
+            + classUsage);
+      }
+
+      // If child doesn't have usage but parent does,
+      // Copy parents here
+      if (!conceptUsageMap.containsKey(childConcept.getTerminologyId())
+          && conceptUsageMap.containsKey(parentConcept.getTerminologyId())) {
+        final String usage =
+            conceptUsageMap.get(parentConcept.getTerminologyId());
+        System.out.println("Z = " + childConcept.getTerminologyId() + ", "
+            + usage);
+        final SimpleRefSetMember member = new SimpleRefSetMemberJpa();
+        member.setConcept(childConcept);
+        member.setActive(true);
+        member.setEffectiveTime(dateFormat.parse(effectiveTime));
+        member.setModuleId(new Long(conceptMap.get("defaultModule")
+            .getTerminologyId()));
+        member.setTerminology(terminology);
+        member.setTerminologyId(new Integer(refSetMemberCounter++).toString());
+        member.setTerminologyVersion(terminologyVersion);
+        member.setRefSetId(conceptMap.get(usage).getTerminologyId());
+        childConcept.addSimpleRefSetMember(member);
+        contentService.addSimpleRefSetMember(member);
+        conceptUsageMap.put(childConcept.getTerminologyId(), usage);
       }
 
       // add relationship
