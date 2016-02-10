@@ -1248,6 +1248,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
       throw new Exception("Could not determine workflow handler");
     }
 
+
     // validate the tracking record by its handler
     result =
         handler.validateTrackingRecordForActionAndUser(trackingRecord,
