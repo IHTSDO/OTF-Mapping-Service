@@ -14,7 +14,7 @@ var root_security = root_url + 'security/';
 var root_reporting = root_url + 'reporting/';
 
 mapProjectAppControllers
-  .run(function($rootScope, $http, localStorageService, $location) {
+  .run(function($rootScope, $http, localStorageService, $location, utilService) {
 
     // global function to handle any type of error. Currently only
     // specifically implemented for authorization failures.
