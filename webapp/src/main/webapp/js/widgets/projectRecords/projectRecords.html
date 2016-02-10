@@ -4,7 +4,7 @@
 <p></p>
 
 <h3>
-	<a href="#/project/details">{{project.name}}</a>
+  <a href="#/project/details">{{project.name}}</a>
 </h3>
 
 <p></p>
@@ -13,114 +13,114 @@
 
 <p>
 <form>
-	<input ng-model="searchParameters.query"> <a
-		style="margin-left: 5px; margin-right: 10px;"
-		ng-click="toggleAdvancedSearch()"> <i
-		class="glyphicon glyphicon-cog"></i></a><input type="submit"
-		value="Search" ng-click="retrieveRecords(1)"> <input
-		type="submit" value="Reset" ng-click="resetSearch()"> <input
-		type="submit" style="margin-left: 5px; margin-right: 5px"
-		value="QA Records" ng-show="nRecords < 200" ng-click="qaRecords()">
-	&nbsp&nbsp {{nRecords}} results, page {{searchParameters.page}} of
-	{{numRecordPages}}
+  <input ng-model="searchParameters.query">
+  <a style="margin-left: 5px; margin-right: 10px;"
+    ng-click="toggleAdvancedSearch()">
+    <i class="glyphicon glyphicon-cog"></i>
+  </a>
+  <input type="submit" value="Search" ng-click="retrieveRecords(1)"> <input
+    type="submit" value="Reset" ng-click="resetSearch()"> <input
+    type="submit" style="margin-left: 5px; margin-right: 5px" value="QA Records"
+    ng-show="nRecords < 200" ng-click="qaRecords()"> &nbsp;&nbsp;
+  {{nRecords}} results, page {{searchParameters.page}} of {{numRecordPages}}
 
-	<div ng-show="searchParameters.advancedMode">
+  <div ng-show="searchParameters.advancedMode">
 
 
-		<hr>
-		<div class="row" style="padding: 5px;">
-			<div class="col-md-2" style="padding-right: 0px;">
-				{{focusProject.sourceTerminology}} Concept Id <i
-					class="glyphicon glyphicon-remove pull-right"
-					ng-click="searchParameters.ancestorId = null"
-					ng-show="searchParameters.ancestorId"></i>
-			</div>
-			<div class="col-md-10">
-				<input ng-model="searchParameters.ancestorId">
-			</div>
-		</div>
-		<div class="row" style="padding: 5px;">
-			<div class="col-md-2" style="padding-right: 0px;">
-				{{focusProject.sourceTerminology}} Type <i
-					class="glyphicon glyphicon-remove pull-right"
-					ng-click="searchParameters.rootId = null"
-					ng-show="searchParameters.rootId"></i>
-			</div>
+    <hr>
+    <div class="row" style="padding: 5px;">
+      <div class="col-md-2" style="padding-right: 0px;">
+        {{focusProject.sourceTerminology}} Concept Id
+        <i class="glyphicon glyphicon-remove pull-right"
+          ng-click="searchParameters.ancestorId = null"
+          ng-show="searchParameters.ancestorId"></i>
+      </div>
+      <div class="col-md-10">
+        <input ng-model="searchParameters.ancestorId">
+      </div>
+    </div>
+    <div class="row" style="padding: 5px;">
+      <div class="col-md-2" style="padding-right: 0px;">
+        {{focusProject.sourceTerminology}} Type
+        <i class="glyphicon glyphicon-remove pull-right"
+          ng-click="searchParameters.rootId = null"
+          ng-show="searchParameters.rootId"></i>
+      </div>
 
-			<div class="col-md-10">
-				<select
-					ng-options="root.terminologyId as root.defaultPreferredName for root in searchParameters.roots | orderBy:'defaultPreferredName'"
-					ng-model="searchParameters.rootId"></select>
-			</div>
-		</div>
-		<div class="row" style="padding: 5px;">
-			<div class="col-md-2" style="padding-right: 0px;">
-				{{focusProject.destinationTerminology}} Target Id <i
-					class="glyphicon glyphicon-remove pull-right"
-					ng-click="searchParameters.targetId = null"
-					ng-show="searchParameters.targetId"></i>
-			</div>
-			<div class="col-md-10">
-				<input ng-model="searchParameters.targetId">
-			</div>
-		</div>
-		<div class="row" style="padding: 5px;">
-			<div class="col-md-2" style="padding-right: 0px;">
-				{{focusProject.destinationTerminology}} Target Name<i
-					class="glyphicon glyphicon-remove pull-right"
-					ng-click="searchParameters.targetName = null"
-					ng-show="searchParameters.targetName"></i>
-			</div>
-			<div class="col-md-10">
-				<input ng-model="searchParameters.targetName">
-			</div>
-		</div>
+      <div class="col-md-10">
+        <select
+          ng-options="root.terminologyId as root.defaultPreferredName for root in searchParameters.roots | orderBy:'defaultPreferredName'"
+          ng-model="searchParameters.rootId"></select>
+      </div>
+    </div>
+    <div class="row" style="padding: 5px;">
+      <div class="col-md-2" style="padding-right: 0px;">
+        {{focusProject.destinationTerminology}} Target Id
+        <i class="glyphicon glyphicon-remove pull-right"
+          ng-click="searchParameters.targetId = null"
+          ng-show="searchParameters.targetId"></i>
+      </div>
+      <div class="col-md-10">
+        <input ng-model="searchParameters.targetId">
+      </div>
+    </div>
+    <div class="row" style="padding: 5px;">
+      <div class="col-md-2" style="padding-right: 0px;">
+        {{focusProject.destinationTerminology}} Target Name
+        <i class="glyphicon glyphicon-remove pull-right"
+          ng-click="searchParameters.targetName = null"
+          ng-show="searchParameters.targetName"></i>
+      </div>
+      <div class="col-md-10">
+        <input ng-model="searchParameters.targetName">
+      </div>
+    </div>
 
-		<div class="row" style="padding: 5px;">
-			<div class="col-md-2" style="padding-right: 0px;">Map Advice<i
-					class="glyphicon glyphicon-remove pull-right"
-					ng-click="searchParameters.adviceName = null"
-					ng-show="searchParameters.adviceName"></i></div>
-			<div class="col-md-10">
-				<select style="width: 15%"
-					ng-model="searchParameters.adviceContained"
-					ng-options="o.val as o.key for o in [{ key: 'contains', val: true }, { key: 'does not contain', val: false }]">
-				</select> <select style="width: 83%" ng-model="searchParameters.adviceName"
-					style="width: 98%;"
-					ng-options="mapAdvice.name as mapAdvice.name for mapAdvice in searchParameters.advices"></select>
-			</div>
-		</div>
-	</div>
+    <div class="row" style="padding: 5px;">
+      <div class="col-md-2" style="padding-right: 0px;">
+        Map Advice
+        <i class="glyphicon glyphicon-remove pull-right"
+          ng-click="searchParameters.adviceName = null"
+          ng-show="searchParameters.adviceName"></i>
+      </div>
+      <div class="col-md-10">
+        <select style="width: 15%" ng-model="searchParameters.adviceContained"
+          ng-options="o.val as o.key for o in [{ key: 'contains', val: true }, { key: 'does not contain', val: false }]">
+        </select> <select style="width: 83%" ng-model="searchParameters.adviceName"
+          style="width: 98%;"
+          ng-options="mapAdvice.name as mapAdvice.name for mapAdvice in searchParameters.advices"></select>
+      </div>
+    </div>
+  </div>
 </form>
 
 
 
-<pagination total-items="nRecords" page="searchParameters.page"
-	max-size="10" class="pagination-sm" boundary-links="true" rotate="true"
-	num-pages="numRecordPages" on-select-page="retrieveRecords(page)"></pagination>
+<pagination total-items="nRecords" page="searchParameters.page" max-size="10"
+  class="pagination-sm" boundary-links="true" rotate="true"
+  num-pages="numRecordPages" on-select-page="retrieveRecords(page)"></pagination>
 
 
 
-<div ng-repeat="record in records" ng-class-odd="'odd'"
-	ng-class-even="'even'">
-	<h4>
-		{{record.conceptName}}, <a
-			href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}</a>
-	</h4>
+<div ng-repeat="record in records" ng-class-odd="'odd'" ng-class-even="'even'">
+  <h4>
+    {{record.conceptName}},
+    <a href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}</a>
+  </h4>
 
-	<div style="float: right; width: 3%;">
+  <div style="float: right; width: 3%;">
 
-		<a title="Submit Feedback" ng-show="currentRole === 'Viewer'"
-			ng-click="openViewerFeedbackModal(record, currentUser.userName)">
-			<i class="glyphicon glyphicon glyphicon-comment"></i>
-		</a> <a title="Edit" ng-show="isEditable(record)"
-			ng-click="editRecord(record)"> <i
-			class="glyphicon glyphicon glyphicon-pencil"></i>
-		</a>
-	</div>
+    <a title="Submit Feedback" ng-show="currentRole === 'Viewer'"
+      ng-click="openViewerFeedbackModal(record, currentUser.userName)">
+      <i class="glyphicon glyphicon glyphicon-comment"></i>
+    </a>
+    <a title="Edit" ng-show="isEditable(record)" ng-click="editRecord(record)">
+      <i class="glyphicon glyphicon glyphicon-pencil"></i>
+    </a>
+  </div>
 
-	<div otf-map-record-wide record="record" project="focusProject"
-		show-title="false"></div>
+  <div otf-map-record-wide record="record" project="focusProject"
+    show-title="false"></div>
 </div>
 
 <div ng-include src="'./partials/footer.html'"></div>
