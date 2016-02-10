@@ -15,11 +15,12 @@
 <form>
   <input ng-model="query"> <input type="submit" value="Search"
     ng-click="retrieveRecords(1)"> <input type="submit" value="Reset"
-    ng-click="resetSearch()"> &nbsp&nbsp {{nRecords}} results, page
+    ng-click="resetSearch()"> &nbsp;&nbsp; {{nRecords}} results, page
   {{recordPage}} of {{numRecordPages}}
 </form>
 
-<button class="btn btn-primary btn-sm pull-right" ng-show="nRecords < 200" ng-click="qaRecords()">QA Records</button>
+<button class="btn btn-primary btn-sm pull-right" ng-show="nRecords < 200"
+  ng-click="qaRecords()">QA Records</button>
 
 <pagination total-items="nRecords" page="recordPage" max-size="recordsPerPage"
   class="pagination-sm" boundary-links="true" rotate="true"
