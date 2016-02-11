@@ -442,9 +442,9 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
 
         // Encountered </term> - put concept into map add desc
         if (qName.equalsIgnoreCase("term")) {
-          // Add the concept (if active)
+          // Add the concept (if active) - also if obsolete
           // CASCADE will handle descriptions
-          if (concept.isActive()) {
+          if (concept.isActive() || !concept.isActive()) {
             // Use the "termID" as the key
             conceptMap.put(termId, concept);
             contentService.addConcept(concept);
@@ -612,9 +612,9 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
 
         // Encountered </collectiveterm> - put concept into map add desc
         if (qName.equalsIgnoreCase("collectiveterm")) {
-          // Add the concept i
+          // Add the concept if active (or if obsolete)
           // CASCADE will handle descriptions
-          if (concept.isActive()) {
+          if (concept.isActive() || !concept.isActive()) {
             contentService.addConcept(concept);
             conceptMap.put(termId, concept);
           }
