@@ -206,6 +206,8 @@ angular.module('mapProjectApp.widgets.indexViewer', [ 'adf.provider' ]).config(
             function(result) {
               $templateCache.put(url, result);
               $rootScope.glassPane--;
+            }, function(result) {
+              $rootScope.glassPane--;
             });
           }
 
