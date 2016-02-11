@@ -2757,7 +2757,7 @@ public class MappingServiceRest extends RootServiceRest {
             mappingService.findMapRecordsForQuery(queryLocal, pfsLocal);
 
         // if too broad, throw local exception (passed to user)
-        if (searchResults.getTotalCount() > 500) {
+        if (searchResults.getTotalCount() > 1000) {
           throw new LocalException("Search too broad (found "
               + searchResults.getTotalCount()
               + " potential matches). Refine the search and try again.");
