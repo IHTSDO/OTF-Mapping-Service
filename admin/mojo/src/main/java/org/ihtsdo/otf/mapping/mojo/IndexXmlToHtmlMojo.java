@@ -494,7 +494,7 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
 
       // Handle writing the "see" tag
       else if (key.equals("see")) {
-        out.println(" &mdash; <i>see</i> <a href=\"\" ng-click=\"performSearchFromLink('"
+        out.println(" &mdash; <i>see</i> <a ng-click=\"performSearchFromLink('"
             + data.get(key) + "')\"" + ">" + data.get(key) + "</a>");
       }
 
