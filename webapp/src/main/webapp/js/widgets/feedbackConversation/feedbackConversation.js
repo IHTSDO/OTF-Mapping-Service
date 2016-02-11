@@ -451,8 +451,8 @@ angular
       function setIndexViewerStatus() {
         $http(
           {
-            url : root_content + 'index/' + $scope.project.destinationTerminology + '/'
-              + $scope.project.destinationTerminologyVersion,
+            url : root_content + 'index/' + $scope.focusProject.destinationTerminology + '/'
+              + $scope.focusProject.destinationTerminologyVersion,
             dataType : 'json',
             method : 'GET',
             headers : {
