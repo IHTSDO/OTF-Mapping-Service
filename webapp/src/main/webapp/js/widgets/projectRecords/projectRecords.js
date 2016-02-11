@@ -35,7 +35,8 @@ angular
   })
   .controller(
     'projectRecordsCtrl',
-    function($scope, $rootScope, $http, $routeParams, $location, $modal, $q, localStorageService, $sce) {
+    function($scope, $rootScope, $http, $routeParams, $location, $modal, $q, localStorageService,
+      $sce) {
 
       $scope.page = 'records';
 
@@ -51,7 +52,7 @@ angular
       $scope.errorProject = '';
       $scope.errorConcept = '';
       $scope.errorRecords = '';
-  
+
       // for collapse directive
       $scope.isCollapsed = true;
 
@@ -85,8 +86,7 @@ angular
           $scope.projectId = $scope.focusProject.id;
           $scope.getRecordsForProject();
           $scope.initializeSearchParameters();
-   
-          
+
         }
       });
 
@@ -103,27 +103,29 @@ angular
         return $sce.trustAsHtml(html_code);
       };
 
-
       // function to retrieve records for a specified page
       $scope.retrieveRecords = function(page) {
 
         console.debug('Retrieving records', page);
-        
+
         $rootScope.resetGlobalError();
-        
+
         // clear the error
 
         // construct html parameters parameter
         var pfsParameterObj = $scope.getPfsFromSearchParameters(page);
-       
 
-        var query_url = root_mapping + 'record/project/id/' 
-        + $scope.project.objectId
-        + '/ancestor/' + ($scope.searchParameters.ancestorId && $scope.searchParameters.advancedMode ? $scope.searchParameters.ancestorId : 'null')
-        + '/root/' + ($scope.searchParameters.rootId && $scope.searchParameters.advancedMode ? $scope.searchParameters.rootId : 'null')
-        + '/query/' + ($scope.searchParameters.query ? $scope.searchParameters.query : 'null');
-    
-        
+        var query_url = root_mapping
+          + 'record/project/id/'
+          + $scope.project.objectId
+          + '/ancestor/'
+          + ($scope.searchParameters.ancestorId && $scope.searchParameters.advancedMode ? $scope.searchParameters.ancestorId
+            : 'null')
+          + '/root/'
+          + ($scope.searchParameters.rootId && $scope.searchParameters.advancedMode ? $scope.searchParameters.rootId
+            : 'null') + '/query/'
+          + ($scope.searchParameters.query ? $scope.searchParameters.query : 'null');
+
         console.debug('  pfs', pfsParameterObj);
 
         $rootScope.glassPane++;
@@ -137,17 +139,19 @@ angular
           headers : {
             'Content-Type' : 'application/json'
           }
-        }).success(function(data) {
+        }).success(
+          function(data) {
 
-          $rootScope.glassPane--;
-          $scope.records = data.mapRecord;
-          $scope.statusRecordLoad = '';
+            $rootScope.glassPane--;
+            $scope.records = data.mapRecord;
+            $scope.statusRecordLoad = '';
 
-          // set pagination variables
-          $scope.nRecords = data.totalCount;
-          $scope.numRecordPages = Math.ceil(data.totalCount / $scope.searchParameters.recordsPerPage);
+            // set pagination variables
+            $scope.nRecords = data.totalCount;
+            $scope.numRecordPages = Math.ceil(data.totalCount
+              / $scope.searchParameters.recordsPerPage);
 
-        }).error(function(data, status, headers, config) {
+          }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
           $rootScope.handleHttpError(data, status, headers, config);
         }).then(function(data) {
@@ -195,7 +199,8 @@ angular
           'maxResults' : searchParameters.recordsPerPage,
           'sortField' : null,
           'queryRestriction' : $scope.searchParameters.query
-        }; // assigning simply to $scope.searchParameters.query when null produces undefined
+        }; // assigning simply to $scope.searchParameters.query when null
+        // produces undefined
 
       }
 
@@ -527,217 +532,208 @@ angular
             });
           }
         };
-        
-       
-      };
-      
 
+      };
 
       var QaRecordsCtrl = function($scope, $modalInstance, $q, nRecords, projectId, pfs) {
 
         console.debug('Entered modal control', nRecords, projectId, pfs);
-        
+
         $scope.isRunning = false;
-        
+
         $scope.qaSucceeded = 0;
-    	$scope.qaFailed = 0;
-    	$scope.qaSkipped = 0;
-    	$scope.qaComplete = 0;
-    	$scope.qaTotal = nRecords;
-    	
-    	 $scope.cancel = function() {
-             $modalInstance.dismiss('cancel');
-           };	
-        
+        $scope.qaFailed = 0;
+        $scope.qaSkipped = 0;
+        $scope.qaComplete = 0;
+        $scope.qaTotal = nRecords;
+
+        $scope.cancel = function() {
+          $modalInstance.dismiss('cancel');
+        };
+
         // helper function (with promise) to assign a single record to QA
         function qaRecord(record, label) {
-        	
-        	var deferred = $q.defer();
-        	
-        	// if stop request detected, reject
-        	if (!$scope.isRunning) {
-        		deferred.reject();
-        	} else {
-        		
-        		if (!record.labels) {
-        			record.labels = [];
-        		}
-        		record.labels.push(label);
-	        	
-	        	$http.post(root_workflow + 'createQARecord', record).then(function() {
-	        		deferred.resolve();
-	        	}, function() {
-	        		deferred.reject();
-	        	});
-        	}
-        	return deferred.promise;
+
+          var deferred = $q.defer();
+
+          // if stop request detected, reject
+          if (!$scope.isRunning) {
+            deferred.reject();
+          } else {
+
+            if (!record.labels) {
+              record.labels = [];
+            }
+            record.labels.push(label);
+
+            $http.post(root_workflow + 'createQARecord', record).then(function() {
+              deferred.resolve();
+            }, function() {
+              deferred.reject();
+            });
+          }
+          return deferred.promise;
         }
-        
+
         $scope.stopQaRecords = function() {
-        	console.debug('Stopping QA Records...');
-        	$scope.isRunning = false;
+          console.debug('Stopping QA Records...');
+          $scope.isRunning = false;
         };
 
         // 
         $scope.qaRecords = function(label) {
-        	
-        	$scope.isRunning = true;
-        	
-        	$http.post(root_mapping + 'record/project/id/' + projectId, pfs).then(function(response) {
-        		var records = response.data.mapRecord;
-        		
-        		for (var i = 0; i < records.length; i++) {
-        			if ($scope.isRunning) {
-	        			qaRecord(records[i], label).then(function() {
-	        				$scope.qaSucceeded++;
-	        			}, function(error) {
-	        				$scope.qaFailed++;
-	        			}).finally(function() {
-	        				$scope.qaComplete++;
-	        				if ($scope.qaComplete == $scope.qaTotal) {
-	        					$scope.isRunning = false;
-	        				}
-	        			});
-        			} else {
-        				$scope.qaSkipped++;
-        				$scope.qaComplete++;
-        				if ($scope.qaComplete == $scope.qaTotal) {
-        					$scope.isRunning = false;
-        				}
-        			}
-        		};
-        		
-        			
-        	}, function(error) {
-        		$scope.error = "Error retrieving map records";
-        	});
+
+          $scope.isRunning = true;
+
+          $http.post(root_mapping + 'record/project/id/' + projectId, pfs).then(function(response) {
+            var records = response.data.mapRecord;
+
+            for (var i = 0; i < records.length; i++) {
+              if ($scope.isRunning) {
+                qaRecord(records[i], label).then(function() {
+                  $scope.qaSucceeded++;
+                }, function(error) {
+                  $scope.qaFailed++;
+                })['finally'](function() {
+                  $scope.qaComplete++;
+                  if ($scope.qaComplete == $scope.qaTotal) {
+                    $scope.isRunning = false;
+                  }
+                });
+              } else {
+                $scope.qaSkipped++;
+                $scope.qaComplete++;
+                if ($scope.qaComplete == $scope.qaTotal) {
+                  $scope.isRunning = false;
+                }
+              }
+            }
+
+          }, function(error) {
+            $scope.error = "Error retrieving map records";
+          });
         };
-        
+
         $scope.cancelError = function() {
-        	$scope.error = null;
+          $scope.error = null;
         };
 
-    };
-    
-    ////////////////////////////////
-    // Advanced Search Components
-    ////////////////////////////////
-    $scope.searchParameters = {
-    		query : '',
-    		page : 1,
-    		recordsPerPage: 10,
-    		advancedMode: false,
-    		
-    		// advanced options
-    		ancestorId : null,
-    		rootId : null,
-    		targetId : null,
-    		targetName: null,
-    		adviceContained: true,
-    		adviceName : null,
-    		
-    		// search display data
-    		roots: [],   // source terminology root concepts
-    		advices: []  // map advices
-    };
-    
+      };
 
-    // function to clear input box and return to initial view
-    $scope.resetSearch = function() {
-      $scope.searchParameters.query = null;
-      $scope.searchParameters.page = 1;
-      $scope.searchParameters.targetId = null;
-      $scope.searchParameters.targetName =  null;
-      $scope.searchParameters.rootId = null;
-      $scope.searchParameters.ancestorId = null;
-      $scope.searchParameters.adviceName = null;
-      $scope.searchParameters.adviceContained = true;
+      // //////////////////////////////
+      // Advanced Search Components
+      // //////////////////////////////
+      $scope.searchParameters = {
+        query : '',
+        page : 1,
+        recordsPerPage : 10,
+        advancedMode : false,
 
-      $scope.retrieveRecords(1);
-    };
-    
-    // on load, get the root trees for the terminology
-    $scope.initializeSearchParameters = function() {
-    	
-    	
-	    console.debug('Getting root trees');
-	    $rootScope.glassPane++;
-	    $http.get( root_mapping + 'treePosition/project/id/' + $scope.focusProject.id + '/source').then(function(response) {
-	    	$rootScope.glassPane--;
-	    	console.debug('Root trees', response)
-	    	$scope.searchParameters.roots = response.data.treePosition;
-	    },function(data, status, headers, config) {
-	    	$rootScope.glassPane--;
-	          $rootScope.handleHttpError(data, status, headers, config);
-	    	
-	    });
-	    
-	    $rootScope.glassPane++;
-	    $http.get( root_mapping + 'advice/advices').then(function(response) {
-	    	$rootScope.glassPane--;
-	    	console.debug('Map advices', response)
-	    	$scope.searchParameters.advices = response.data.mapAdvice;
-	    }, function(data, status, headers, config) {
-	    	$rootScope.glassPane--;
-	          $rootScope.handleHttpError(data, status, headers, config);
-	    });
-	    
-    }
-    
+        // advanced options
+        ancestorId : null,
+        rootId : null,
+        targetId : null,
+        targetName : null,
+        adviceContained : true,
+        adviceName : null,
 
-    // toggle advanced search
-    $scope.toggleAdvancedSearch = function() {
-    	
-    	// set the display flag
-    	$scope.searchParameters.advancedMode = !$scope.searchParameters.advancedMode;
-   
-    }
-    
-    $scope.getPfsFromSearchParameters = function(page) {
-    	
-    	$scope.searchParameters.page = page;
-    	
-    	console.debug('Getting pfs from search parameters', $scope.searchParameters);
-    	var pfs = {
-    	'startIndex' : ($scope.searchParameters.page - 1) * $scope.searchParameters.recordsPerPage,
-        'maxResults' : $scope.searchParameters.recordsPerPage,
-        'sortField' : 'conceptId',
-        'queryRestriction' : ''
-    	}
-    	
-    	if ($scope.searchParameters.advancedMode) {
-    		
-    		console.debug('Advanced search mode specified');
-    		
-    		var queryRestrictions = [];
-    		
-    		// check target id
-    		if ($scope.searchParameters.targetId && $scope.searchParameters.targetId.length > 0) {
-    			queryRestrictions.push('mapEntries.targetId:' + $scope.searchParameters.targetId);
-    		}
-    		
-    		// check target name
-    		if ($scope.searchParameters.targetName && $scope.searchParameters.targetName.length > 0) {
-    			queryRestrictions.push('mapEntries.targetName:' + $scope.searchParameters.targetName);
-    		}
-    		
-    		// check map advices
-    		if ($scope.searchParameters.adviceName) {
-    			queryRestrictions.push(($scope.searchParameters.adviceContained ? '' : 'NOT ') + 'mapEntries.mapAdvices.name:"' + $scope.searchParameters.adviceName + '"');
-    		}
-    		
-    		console.debug('Fielded search results:' + queryRestrictions);
-    		
-    		for (var i = 0; i < queryRestrictions.length; i++) {
-    			pfs.queryRestriction += (pfs.queryRestriction.length > 0 ? ' AND ' : '') + queryRestrictions[i];
-    		}
-    	
-    	}
-    	
-    	return pfs;
-    }
-    
-    $scope.qaRecords = function() {
+        // search display data
+        roots : [], // source terminology root concepts
+        advices : []
+      // map advices
+      };
+
+      // function to clear input box and return to initial view
+      $scope.resetSearch = function() {
+        $scope.searchParameters.query = null;
+        $scope.searchParameters.page = 1;
+        $scope.searchParameters.targetId = null;
+        $scope.searchParameters.targetName = null;
+        $scope.searchParameters.rootId = null;
+        $scope.searchParameters.ancestorId = null;
+        $scope.searchParameters.adviceName = null;
+        $scope.searchParameters.adviceContained = true;
+
+        $scope.retrieveRecords(1);
+      };
+
+      // on load, get the root trees for the terminology
+      $scope.initializeSearchParameters = function() {
+
+        console.debug('Getting root trees');
+        $rootScope.glassPane++;
+        $http.get(root_mapping + 'treePosition/project/id/' + $scope.focusProject.id + '/source')
+          .then(function(response) {
+            $rootScope.glassPane--;
+            console.debug('Root trees', response);
+            $scope.searchParameters.roots = response.data.treePosition;
+          }, function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(data, status, headers, config);
+
+          });
+
+        $rootScope.glassPane++;
+        $http.get(root_mapping + 'advice/advices').then(function(response) {
+          $rootScope.glassPane--;
+          console.debug('Map advices', response);
+          $scope.searchParameters.advices = response.data.mapAdvice;
+        }, function(data, status, headers, config) {
+          $rootScope.glassPane--;
+          $rootScope.handleHttpError(data, status, headers, config);
+        });
+
+      };
+
+      // toggle advanced search
+      $scope.toggleAdvancedSearch = function() {
+        // set the display flag
+        $scope.searchParameters.advancedMode = !$scope.searchParameters.advancedMode;
+      };
+
+      $scope.getPfsFromSearchParameters = function(page) {
+        $scope.searchParameters.page = page;
+        console.debug('Getting pfs from search parameters', $scope.searchParameters);
+        var pfs = {
+          'startIndex' : ($scope.searchParameters.page - 1)
+            * $scope.searchParameters.recordsPerPage,
+          'maxResults' : $scope.searchParameters.recordsPerPage,
+          'sortField' : 'conceptId',
+          'queryRestriction' : ''
+        };
+
+        if ($scope.searchParameters.advancedMode) {
+          console.debug('Advanced search mode specified');
+          var queryRestrictions = [];
+          // check target id
+          if ($scope.searchParameters.targetId && $scope.searchParameters.targetId.length > 0) {
+            queryRestrictions.push('mapEntries.targetId:' + $scope.searchParameters.targetId);
+          }
+
+          // check target name
+          if ($scope.searchParameters.targetName && $scope.searchParameters.targetName.length > 0) {
+            queryRestrictions.push('mapEntries.targetName:' + $scope.searchParameters.targetName);
+          }
+
+          // check map advices
+          if ($scope.searchParameters.adviceName) {
+            queryRestrictions.push(($scope.searchParameters.adviceContained ? '' : 'NOT ')
+              + 'mapEntries.mapAdvices.name:"' + $scope.searchParameters.adviceName + '"');
+          }
+
+          console.debug('Fielded search results:' + queryRestrictions);
+
+          for (var i = 0; i < queryRestrictions.length; i++) {
+            pfs.queryRestriction += (pfs.queryRestriction.length > 0 ? ' AND ' : '')
+              + queryRestrictions[i];
+          }
+
+        }
+
+        return pfs;
+      };
+
+      $scope.qaRecords = function() {
 
         console.debug('openQaRecordsModal');
 
@@ -745,27 +741,24 @@ angular
           templateUrl : 'js/widgets/projectRecords/qa-records.html',
           controller : QaRecordsCtrl,
           resolve : {
-        	nRecords : function() {
-        		return $scope.nRecords;
-        	},
-        	projectId : function() {
-        		return $scope.projectId;
-        	},
+            nRecords : function() {
+              return $scope.nRecords;
+            },
+            projectId : function() {
+              return $scope.projectId;
+            },
             pfs : function() {
-            	return  {
-            			startIndex: -1,
-            			maxResults: -1,
-            			queryRestriction: $scope.searchParameters.query,
-            			sortField: null
-            	
-            	};
+              return {
+                startIndex : -1,
+                maxResults : -1,
+                queryRestriction : $scope.searchParameters.query,
+                sortField : null
+
+              };
             }
           }
         });
-       
 
       };
-
-
 
     });

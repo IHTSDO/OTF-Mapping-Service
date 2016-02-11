@@ -115,8 +115,6 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function($sc
     console.debug('Revised preferences: ', $scope.preferences.dashboardModels);
   };
 
-  console.debug('CONTROLLER MODEL');
-  console.debug($scope.model);
 
   $scope.$on('adfDashboardChanged', function(event, name, model) {
     console.debug('Dashboard change detected by mainDashboard', model);
@@ -425,8 +423,6 @@ mapProjectAppDashboards.controller('FeedbackConversationsDashboardCtrl', functio
     console.debug('Revised preferences: ', $scope.preferences.dashboardModels);
   };
 
-  console.debug('CONTROLLER MODEL');
-  console.debug($scope.model);
 
   $scope.$on('adfDashboardChanged', function(event, name, model) {
     console.debug('Dashboard change detected by mainDashboard', model);

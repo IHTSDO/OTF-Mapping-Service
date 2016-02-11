@@ -198,11 +198,11 @@ public abstract class RootServiceJpa implements RootService {
   public <T> List<?> getQueryResults(String query, Class<?> fieldNamesKey,
     Class<?> clazz, PfsParameter pfs, int[] totalCt) throws Exception {
 
-  
-    // TODO Removed this to allow blank queries for map records, discuss if this impacts other areas of application 
+    // TODO Removed this to allow blank queries for map records, discuss if this
+    // impacts other areas of application
     if (query == null || query.isEmpty()) {
-    	Logger.getLogger(this.getClass()).info("Empty query supplied");
-      //throw new Exception("Unexpected empty query.");
+      Logger.getLogger(this.getClass()).info("Empty query supplied");
+      // throw new Exception("Unexpected empty query.");
     }
 
     FullTextQuery fullTextQuery = null;
@@ -220,16 +220,16 @@ public abstract class RootServiceJpa implements RootService {
           IndexUtility.applyPfsToLuceneQuery(clazz, fieldNamesKey,
               escapedQuery.toString(), pfs, manager);
     }
-    
+
     if (pfs != null && pfs.getQueryRestriction() != null) {
-    
-	Logger.getLogger(getClass()).info(pfs.getQueryRestriction().substring(Math.max(0, pfs.getQueryRestriction().length() - 100)));
+
+      Logger.getLogger(getClass()).info(
+          pfs.getQueryRestriction().substring(
+              Math.max(0, pfs.getQueryRestriction().length() - 100)));
     }
 
     totalCt[0] = fullTextQuery.getResultSize();
-    
-    // TODO REmove after debugging
-    Logger.getLogger(this.getClass()).info("  getQueryResults:\n  Query: " + query + "\n   Results:" + fullTextQuery.getResultList().size() + "/" + totalCt[0]);
+
     return fullTextQuery.getResultList();
 
   }
@@ -329,5 +329,14 @@ public abstract class RootServiceJpa implements RootService {
     }
 
     return result;
+  }
+
+  /**
+   * Returns the entity manager.
+   *
+   * @return the entity manager
+   */
+  public EntityManager getEntityManager() {
+    return manager;
   }
 }
