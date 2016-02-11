@@ -322,7 +322,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
             && !TerminologyUtility.hasAdvice(mapRecord.getMapEntries().get(0),
                 "POSSIBLE REQUIREMENT FOR CAUSATIVE AGENT CODE")) {
           result.addWarning("Primary map target may requre \"POSSIBLE "
-              + "REQUIREMENT FOR CAUSATIVE AGENT CODE\" advice");
+              + "REQUIREMENT FOR CAUSATIVE AGENT CODE\" "
+              + "advice or a causative agent code.");
         }
 
         //
@@ -820,9 +821,9 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           boolean found = false;
           for (int i = 1; i < mapRecord.getMapEntries().size(); i++) {
             // If external cause code found, set flag
-            if (mapRecord.getMapEntries().get(i).getTargetId() != null &&
-                mapRecord.getMapEntries().get(i).getTargetId()
-                .matches("^[VWXY].*")) {
+            if (mapRecord.getMapEntries().get(i).getTargetId() != null
+                && mapRecord.getMapEntries().get(i).getTargetId()
+                    .matches("^[VWXY].*")) {
               found = true;
               break;
             }
@@ -845,9 +846,9 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           && mapRecord.getMapEntries().size() > 1) {
         for (int i = 1; i < mapRecord.getMapEntries().size(); i++) {
           // If external cause code found, move on
-          if (mapRecord.getMapEntries().get(i).getTargetId() != null &&
-              mapRecord.getMapEntries().get(i).getTargetId()
-              .matches("^[VWXY].*")) {
+          if (mapRecord.getMapEntries().get(i).getTargetId() != null
+              && mapRecord.getMapEntries().get(i).getTargetId()
+                  .matches("^[VWXY].*")) {
             advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP23));
             break;
           }
@@ -1305,20 +1306,24 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           contentService.isDescendantOf(mapRecord.getConceptId(),
               mapProject.getSourceTerminology(),
               mapProject.getSourceTerminologyVersion(), "399907009");
-      if (isAnimalBite) {
+      boolean isArthropodBite =
+          contentService.isDescendantOf(mapRecord.getConceptId(),
+              mapProject.getSourceTerminology(),
+              mapProject.getSourceTerminologyVersion(), "409985002");
+      if (isAnimalBite && !isArthropodBite) {
         principles.add(principleMap.get("32"));
       }
 
       //
       // PREDICATE: SNOMED CT concept contains "postoperative" or "postsurgical"
       // and also contains "complication.*procedure"
-      // RESULT: principle 37
+      // RESULT: principle 38
       //
       if (mapRecord.getConceptName().toLowerCase().contains("postoperative")
           || mapRecord.getConceptName().toLowerCase().contains("postsurgical")
           || mapRecord.getConceptName().toLowerCase()
               .matches(".*complication.*procedure.*")) {
-        principles.add(principleMap.get("37"));
+        principles.add(principleMap.get("38"));
       }
 
       // Add the principle if it exists
