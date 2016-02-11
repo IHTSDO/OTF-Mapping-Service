@@ -6,8 +6,13 @@ package org.ihtsdo.otf.mapping.jpa.helpers;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
@@ -226,6 +231,70 @@ public class TerminologyUtility {
   }
 
   /**
+   * Returns the descendant concepts.
+   *
+   * @param concept the root concept
+   * @return the descendant concepts
+   * @throws Exception the exception
+   */
+  public static List<Concept> getActiveDescendants(Concept concept)
+    throws Exception {
+
+    Queue<Concept> conceptQueue = new LinkedList<>();
+    Set<Concept> conceptSet = new HashSet<>();
+
+    final Long typeId =
+        getHierarchicalType(concept.getTerminology(),
+            concept.getTerminologyVersion());
+    // if non-null result, seed the queue with this concept
+    if (concept != null) {
+      conceptQueue.add(concept);
+    }
+
+    // while concepts remain to be checked, continue
+    while (!conceptQueue.isEmpty()) {
+
+      // retrieve this concept
+      Concept c = conceptQueue.poll();
+
+      // if concept is active
+      if (c.isActive()) {
+
+        // relationship set and iterator
+        Set<Relationship> invRelationships = c.getInverseRelationships();
+        Iterator<Relationship> invRelIterator = invRelationships.iterator();
+
+        // iterate over inverse relationships
+        while (invRelIterator.hasNext()) {
+
+          // get relationship
+          Relationship rel = invRelIterator.next();
+
+          // if relationship is active, typeId equals the provided typeId, and
+          // the source concept is active
+          if (rel.isActive() && rel.getTypeId().equals(new Long(typeId))
+              && rel.getSourceConcept().isActive()) {
+
+            // get source concept from inverse relationship (i.e. child of
+            // concept)
+            Concept sourceConcept = rel.getSourceConcept();
+
+            // if set does not contain the source concept, add it to set and
+            // queue
+            if (!conceptSet.contains(sourceConcept)) {
+              conceptSet.add(sourceConcept);
+              conceptQueue.add(sourceConcept);
+
+            }
+          }
+        }
+      }
+    }
+
+    return new ArrayList<>(conceptSet);
+  }
+
+  /**
    * Indicates whether the specified concept has active children.
    *
    * @param concept the concept
@@ -282,7 +351,9 @@ public class TerminologyUtility {
    * @return true, if successful
    */
   public static boolean hasAdvice(MapEntry entry, String advice) {
-    if (entry == null) { return false; }
+    if (entry == null) {
+      return false;
+    }
     for (final MapAdvice mapAdvice : entry.getMapAdvices()) {
       if (mapAdvice.getName().equals(advice)) {
         return true;
