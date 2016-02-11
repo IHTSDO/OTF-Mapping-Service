@@ -789,4 +789,17 @@ public interface ContentService extends RootService {
   public ComplexMapRefSetMemberList getComplexMapRefSetMembersForRefSetId(
     String refSetId) throws Exception;
 
+  /**
+   * Indicates whether or not concept is descendant along a hierarchical path
+   *
+   * @param ancestorPath the ancestor path
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   * @throws Exception the exception
+   */
+  public boolean isDescendantOfPath(String ancestorPath, String terminologyId,
+    String terminology, String terminologyVersion) throws Exception;
+
 }

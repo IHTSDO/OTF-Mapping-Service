@@ -1355,48 +1355,17 @@ public class MappingServiceJpa extends RootServiceJpa
     return true;
   }
 
-  /**
-   * Given a concept, returns a list of descendant concepts that have no
-   * associated map record.
-   * 
-   * @param terminologyId the terminology id
-   * @param mapProjectId the map project id
-   * @param pfsParameter the pfs parameter
-   * @return the list of unmapped descendant concepts
-   * @throws Exception the exception
-   */
-  @Override
-  public SearchResultList findUnmappedDescendantsForConcept(
-    String terminologyId, Long mapProjectId, PfsParameter pfsParameter)
+    
+    @Override
+    public SearchResultList findUnmappedDescendantsForConcept(
+      String terminologyId, Long mapProjectId, PfsParameter pfsParameter)
       throws Exception {
 
-    MapProject project = getMapProject(mapProjectId);
-    SearchResultList unmappedDescendants = new SearchResultListJpa();
-    MetadataService metadataService = new MetadataServiceJpa();
-<<<<<<< HEAD
-    Map<String, String> hierarchicalRelationshipTypeMap = metadataService
-        .getHierarchicalRelationshipTypes(project.getSourceTerminology(),
-            project.getSourceTerminologyVersion());
-    if (hierarchicalRelationshipTypeMap.keySet().size() > 1) {
-      throw new IllegalStateException(
-          "Map project source terminology has too many hierarchical relationship types - "
-              + project.getSourceTerminology());
-    }
-    if (hierarchicalRelationshipTypeMap.keySet().size() < 1) {
-      throw new IllegalStateException(
-          "Map project source terminology has too few hierarchical relationship types - "
-              + project.getSourceTerminology());
-    }
+      MapProject project = getMapProject(mapProjectId);
+      SearchResultList unmappedDescendants = new SearchResultListJpa();
 
-    // get descendants -- no pfsParameter, want all results
-    ContentService contentService = new ContentServiceJpa();
-    SearchResultList descendants = contentService.findDescendantConcepts(
-        terminologyId, project.getSourceTerminology(),
-        project.getSourceTerminologyVersion(), null);
-=======
-    ContentService contentService = new ContentServiceJpa();
-    try {
       // get hierarchical rel
+      MetadataService metadataService = new MetadataServiceJpa();
       Map<String, String> hierarchicalRelationshipTypeMap =
           metadataService.getHierarchicalRelationshipTypes(
               project.getSourceTerminology(),
@@ -1411,9 +1380,9 @@ public class MappingServiceJpa extends RootServiceJpa
             "Map project source terminology has too few hierarchical relationship types - "
                 + project.getSourceTerminology());
       }
->>>>>>> cccb2e149ff65f8b1bd552e17503618f3c138e9d
 
       // get descendants -- no pfsParameter, want all results
+      ContentService contentService = new ContentServiceJpa();
       SearchResultList descendants =
           contentService.findDescendantConcepts(terminologyId,
               project.getSourceTerminology(),
@@ -1424,31 +1393,22 @@ public class MappingServiceJpa extends RootServiceJpa
       if (descendants.getCount() < project.getPropagationDescendantThreshold()) {
 
         // cycle over descendants
-        for (final SearchResult sr : descendants.getSearchResults()) {
+        for (SearchResult sr : descendants.getSearchResults()) {
 
-<<<<<<< HEAD
-        // if descendant has no associated map records, add to list
-        if (getMapRecordsForConcept(sr.getTerminologyId())
-            .getTotalCount() == 0) {
-          unmappedDescendants.addSearchResult(sr);
-=======
           // if descendant has no associated map records, add to list
           if (getMapRecordsForConcept(sr.getTerminologyId()).getTotalCount() == 0) {
             unmappedDescendants.addSearchResult(sr);
           }
->>>>>>> cccb2e149ff65f8b1bd552e17503618f3c138e9d
         }
       }
-    } catch (Exception e) {
-      throw e;
-    } finally {
+
       // close managers
       contentService.close();
       metadataService.close();
-    }
-    return unmappedDescendants;
 
-  }
+      return unmappedDescendants;
+
+    }
 
   // //////////////////////////////
   // Services to be implemented //
