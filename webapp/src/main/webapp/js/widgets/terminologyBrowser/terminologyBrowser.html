@@ -23,12 +23,13 @@
   <div ng-show="searchResults.length > 0" style="margin-bottom: 5px;">
 
     <span style="display: block;">
-      <pagination items-per-page="pageSize" max-size="5" boundary-links="true"
-        class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;"
-        first-text="&laquo;" last-text="&raquo;"
-        ng-show="searchResults.length > pageSize"
-        total-items="searchResults.length" ng-model="paging['search'].page"
-        ng-change="getPagedSearchResults()"></pagination>
+
+      <pagination total-items="searchResults.length" previous-text="&lsaquo;"
+        next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
+        page="paging['search'].page" max-size="5" class="pagination-sm"
+        boundary-links="true" rotate="true"
+        on-select-page="getPagedSearchResults()"></pagination>
+
     </span>
 
     <ul class="list-group" ng-show="searchResults.length > 0">

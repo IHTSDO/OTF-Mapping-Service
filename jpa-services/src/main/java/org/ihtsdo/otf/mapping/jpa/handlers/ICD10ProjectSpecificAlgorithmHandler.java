@@ -1284,7 +1284,11 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           contentService.isDescendantOf(mapRecord.getConceptId(),
               mapProject.getSourceTerminology(),
               mapProject.getSourceTerminologyVersion(), "75478009");
-      if (isPoisoning) {
+      boolean isAlcoholIntoxication =
+          contentService.isDescendantOf(mapRecord.getConceptId(),
+              mapProject.getSourceTerminology(),
+              mapProject.getSourceTerminologyVersion(), "25702006");
+      if (isPoisoning && !isAlcoholIntoxication) {
         principles.add(principleMap.get("21"));
         principles.add(principleMap.get("27"));
       }
