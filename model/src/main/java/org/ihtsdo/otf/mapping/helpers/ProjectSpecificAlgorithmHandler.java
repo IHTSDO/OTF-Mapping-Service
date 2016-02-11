@@ -1,6 +1,7 @@
 package org.ihtsdo.otf.mapping.helpers;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.ihtsdo.otf.mapping.model.MapEntry;
@@ -114,7 +115,6 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
   public void computeTargetTerminologyNotes(List<TreePosition> treePositions)
     throws Exception;
 
-
   /**
    * Called after "assign from scratch" to give handlers the opportunity to
    * attach notes or map principles to the.
@@ -124,7 +124,6 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    */
   public void computeIdentifyAlgorithms(MapRecord mapRecord) throws Exception;
 
-  
   /**
    * Returns the dependent modules.
    *
@@ -162,5 +161,16 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    *
    * @return the default target name for blank target
    */
-  String getDefaultTargetNameForBlankTarget();
+  public String getDefaultTargetNameForBlankTarget();
+
+  /**
+   * For terminologies that decorate codes with additional information this
+   * supplies a map from the code to the additional information. For example
+   * "asterisk" codes in ICD10.
+   *
+   * @return the all terminology notes
+   * @throws Exception the exception
+   */
+  public Map<String, String> getAllTerminologyNotes() throws Exception;
+
 }

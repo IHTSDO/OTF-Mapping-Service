@@ -531,7 +531,8 @@ angular
           $rootScope.handleHttpError(data, status, headers, config);
         });
 
-      }
+      };
+      
       // function to change project from the header
       $scope.changeFocusProject = function(mapProject) {
         $scope.focusProject = mapProject;
