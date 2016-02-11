@@ -2646,10 +2646,6 @@ public class MappingServiceRest extends RootServiceRest {
       // if query string text is "null", convert to actual null value
       String queryLocal = query.equals("null") ? null : query;
 
-      // local ancestor id, sanitized
-      String ancestorIdLocal = ancestorId != null && !ancestorId.isEmpty()
-          && !ancestorId.equals("null") ? ancestorId : null;
-
       // the revised query restriction (local variable for convenience)
       String queryRestriction = pfsLocal.getQueryRestriction();
 
@@ -2677,16 +2673,23 @@ public class MappingServiceRest extends RootServiceRest {
       SearchResultList searchResults;
 
       // if ancestor id specified, need to retrieve all results
-      if (ancestorId != null) {
+      if (ancestorId != null && !ancestorId.isEmpty()
+          && !ancestorId.equals("null")) {
         pfsLocal.setStartIndex(-1);
         pfsLocal.setMaxResults(-1);
 
         // perform lucene search
         searchResults =
             mappingService.findMapRecordsForQuery(queryLocal, pfsLocal);
-
-        MapProject mapProject = mappingService.getMapProject(mapProjectId);
         
+        Logger.getLogger(getClass()).info("Ancestor records search -- records matching before descendant check: " + searchResults.getTotalCount());
+        
+        if (searchResults.getTotalCount() > 500) {
+          throw new LocalException(searchResults.getTotalCount() + " potential matches for ancestor search. Narrow your search and try again.");
+        }
+ 
+        MapProject mapProject = mappingService.getMapProject(mapProjectId);
+
         contentService = new ContentServiceJpa();
 
         // get the tree positions for the concept in question
@@ -2694,47 +2697,66 @@ public class MappingServiceRest extends RootServiceRest {
             mapProject.getSourceTerminology(),
             mapProject.getSourceTerminologyVersion());
 
-        SearchResultList eligibleResults = new SearchResultListJpa();
-        
-        // determine which results are for descendant concepts
-        for (SearchResult sr : searchResults.getSearchResults()) {
-          
-          // cycle over all paths to the ancestor concept
-          for (TreePosition tp : tpList.getTreePositions()) {
-            
-            // if this terminology is a descendant
-            if (contentService.isDescendantOfPath(tp.getAncestorPath(),
-                sr.getTerminologyId(), tp.getTerminology(),
-                tp.getTerminologyVersion())) {
-              
-              // add to eligible results
-              eligibleResults.addSearchResult(sr);
-              
-              // stop cycling over tree positions
-              break;
-
-            }
-          }
+        if (tpList.getCount() == 0) {
+          throw new LocalException("Cannot search for map records for descendants of concept " + ancestorId + ", no tree positions found");
         }
         
+        TreePosition tp = tpList.getTreePositions().get(0);
+        String path = (tp.getAncestorPath().isEmpty() ? "" : tp.getAncestorPath() + "~") + tp.getTerminologyId();
+            
+        Logger.getLogger(getClass()).info("Searching for map records for descendants of path " + path);
+        
+        SearchResultList eligibleResults = new SearchResultListJpa();
+
+        // determine which results are for descendant concepts
+        for (SearchResult sr : searchResults.getSearchResults()) {
+
+            // if this terminology is a descendant OR is the concept itself
+            if (sr.getTerminologyId().equals(ancestorId) || contentService.isDescendantOfPath(path, sr.getTerminologyId(), tp.getTerminology(),
+                tp.getTerminologyVersion())) {
+
+              // add to eligible results
+              eligibleResults.addSearchResult(sr);
+
+          }
+        }
+
         // close the content service
         contentService.close();
-        
+
         // set search results total count to number of eligible results
         searchResults.setTotalCount(eligibleResults.getCount());
         
-        // workaround for typing problems between List<SearchResultJpa> and List<SearchResult>
+        Logger.getLogger(getClass()).info("  " + searchResults.getTotalCount() + " map records found");
+
+        // workaround for typing problems between List<SearchResultJpa> and
+        // List<SearchResult>
         List<SearchResultJpa> results = new ArrayList<>();
         for (SearchResult sr : eligibleResults.getSearchResults()) {
-            results.add((SearchResultJpa) sr);
+          results.add((SearchResultJpa) sr);
         }
 
         // apply paging to the list -- note: use original pfs
         final int[] totalCt = new int[1];
-        results = mappingService.applyPfsToList(results, SearchResultJpa.class, totalCt, pfsParameter);
+        pfsLocal.setMaxResults(pfsParameter.getMaxResults());
+        pfsLocal.setStartIndex(pfsParameter.getStartIndex());
+        pfsLocal.setQueryRestriction(null);
+
+        // check for sort field requests requiring special handling
+        // due to field inconsistency between MapRecord and SearchResult
+        if (pfsLocal.getSortField() != null && pfsLocal.getSortField().toLowerCase().equals("conceptid")) {
+          pfsLocal.setSortField("terminologyId");
+        } else if (pfsLocal.getSortField() != null && pfsLocal.getSortField().toLowerCase()
+            .equals("conceptname")) {
+          pfsLocal.setSortField("value");
+        }
+
+        results = mappingService.applyPfsToList(results, SearchResultJpa.class,
+            totalCt, pfsLocal);
 
         // reconstruct the assignedWork search result list
         searchResults.setSearchResults(new ArrayList<SearchResult>(results));
+        
       }
 
       // otherwise, use default paging
