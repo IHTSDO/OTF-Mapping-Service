@@ -1875,6 +1875,14 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
       // Simple map
     } else if (mapProject.getMapRefsetPattern() == MapRefsetPattern.SimpleMap) {
+      
+      // For simple map, avoid writing entries with blank maps
+      // these are placeholders to better manage scope.
+      if (member.getConcept() == null
+          || member.getConcept().getTerminology() == null
+          || member.getConcept().getTerminology().isEmpty()) {
+        return "";
+      }
       entryLine =
           member.getTerminologyId() // the UUID
               + "\t"
@@ -1886,9 +1894,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               + member.getRefSetId()
               + "\t"
               + member.getConcept().getTerminologyId();
-      entryLine += "\r\n";
     }
 
+    entryLine += "\r\n";
     return entryLine;
 
   }

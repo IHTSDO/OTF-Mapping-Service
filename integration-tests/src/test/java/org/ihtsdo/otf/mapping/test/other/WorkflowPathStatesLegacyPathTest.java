@@ -25,7 +25,6 @@ import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler;
-import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -35,16 +34,28 @@ import org.junit.Test;
  */
 public class WorkflowPathStatesLegacyPathTest {
 
+  /** The ws. */
   static WorkflowService ws;
 
+  /** The cs. */
   static ContentService cs;
 
+  /** The map project. */
   static MapProject mapProject;
 
-  static MapUser mapUser1, mapUser2, mapUser3;
+  /** The map user3. */
+  static MapUser mapUser1;
 
+  /** The map user2. */
+  static MapUser mapUser2;
+
+  /** The map user3. */
+  static MapUser mapUser3;
+
+  /** The pfs. */
   static PfsParameter pfs;
 
+  /** The wph. */
   static WorkflowPathHandler wph;
 
   /**
@@ -68,53 +79,56 @@ public class WorkflowPathStatesLegacyPathTest {
 
     wph = ws.getWorkflowPathHandler(mapProject.getWorkflowType().toString());
 
-
   }
-/*
-  private static void clearWorkflow() throws Exception {
 
-    for (TrackingRecord tr : ws.getTrackingRecordsForMapProject(mapProject)
-        .getTrackingRecords()) {
-      for (Long mrId : tr.getMapRecordIds()) {
-        MapRecord mr = ws.getMapRecord(mrId);
-        if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
-          mr.setWorkflowStatus(WorkflowStatus.PUBLISHED);
-          ws.updateMapRecord(mr);
-        } else {
-          ws.removeMapRecord(mr.getId());
-        }
-      }
-    }
-    ws.computeWorkflow(mapProject);
-    ws.clear();
-  }
-*/
+  /*
+   * private static void clearWorkflow() throws Exception {
+   * 
+   * for (TrackingRecord tr : ws.getTrackingRecordsForMapProject(mapProject)
+   * .getTrackingRecords()) { for (Long mrId : tr.getMapRecordIds()) { MapRecord
+   * mr = ws.getMapRecord(mrId); if
+   * (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
+   * mr.setWorkflowStatus(WorkflowStatus.PUBLISHED); ws.updateMapRecord(mr); }
+   * else { ws.removeMapRecord(mr.getId()); } } }
+   * ws.computeWorkflow(mapProject); ws.clear(); }
+   */
+  /**
+   * Test normal workflow legacy specialist no conflict.
+   *
+   * @throws Exception the exception
+   */
   @Test
   public void testNormalWorkflowLegacySpecialistNoConflict() throws Exception {
-    
-    Logger.getLogger(this.getClass()).info("---------------------------------------------------");
-    Logger.getLogger(this.getClass()).info("Normal workflow: No Conflict, Legacy and Specialist");
-    Logger.getLogger(this.getClass()).info("---------------------------------------------------");  
-    
+
+    Logger.getLogger(this.getClass()).info(
+        "---------------------------------------------------");
+    Logger.getLogger(this.getClass()).info(
+        "Normal workflow: No Conflict, Legacy and Specialist");
+    Logger.getLogger(this.getClass()).info(
+        "---------------------------------------------------");
+
     SearchResultList list;
 
     // find available work
-    list = ws.findAvailableWork(mapProject, mapUser1, MapUserRole.SPECIALIST,
-        null, pfs);
+    list =
+        ws.findAvailableWork(mapProject, mapUser1, MapUserRole.SPECIALIST,
+            null, pfs);
     assertTrue(list.getCount() > 0);
 
     SearchResult firstResult = list.getSearchResults().get(0);
-    Concept concept = cs.getConcept(firstResult.getTerminologyId(),
-        mapProject.getSourceTerminology(),
-        mapProject.getSourceTerminologyVersion());
+    Concept concept =
+        cs.getConcept(firstResult.getTerminologyId(),
+            mapProject.getSourceTerminology(),
+            mapProject.getSourceTerminologyVersion());
 
     // assign work to mapUser1
     ws.processWorkflowAction(mapProject, concept, mapUser1, null,
         WorkflowAction.ASSIGN_FROM_SCRATCH);
 
     // find assigned work for mapUser1
-    list = ws.findAssignedWork(mapProject, mapUser1, MapUserRole.SPECIALIST,
-        null, pfs);
+    list =
+        ws.findAssignedWork(mapProject, mapUser1, MapUserRole.SPECIALIST, null,
+            pfs);
     assertTrue(list.getCount() > 0);
 
     // get the map record for the user
@@ -138,84 +152,100 @@ public class WorkflowPathStatesLegacyPathTest {
     duplicateRecord.setWorkflowStatus(mr1.getWorkflowStatus());
 
     // assert records are equivalent
-    ValidationResult result = ws.getProjectSpecificAlgorithmHandler(mapProject)
-        .compareMapRecords(legacyRecord, duplicateRecord);
+    ValidationResult result =
+        ws.getProjectSpecificAlgorithmHandler(mapProject).compareMapRecords(
+            legacyRecord, duplicateRecord);
     assertTrue(result.isValid());
 
     // finish work for mapUser1 -- make sure to copy map record into new
     // persistent object
     // or it is overwritten by subsequent retrieval
-    ws.processWorkflowAction(mapProject, concept, mapUser1,
-        new MapRecordJpa(duplicateRecord, true), WorkflowAction.FINISH_EDITING);
+    ws.processWorkflowAction(mapProject, concept, mapUser1, new MapRecordJpa(
+        duplicateRecord, true), WorkflowAction.FINISH_EDITING);
 
     // re-retrieve concept/project records, should only be 1, and it should be
     // publication ready
-    MapRecordList finalRecords = ws.getMapRecordsForProjectAndConcept(
-        mr1.getMapProjectId(), mr1.getConceptId());
+    MapRecordList finalRecords =
+        ws.getMapRecordsForProjectAndConcept(mr1.getMapProjectId(),
+            mr1.getConceptId());
     assertTrue(finalRecords.getCount() == 1);
     assertTrue(finalRecords.getMapRecords().get(0).getWorkflowStatus()
         .equals(WorkflowStatus.READY_FOR_PUBLICATION));
 
   }
 
+  /**
+   * Test normal workflow two specialist no conflict.
+   *
+   * @throws Exception the exception
+   */
   @Test
   public void testNormalWorkflowTwoSpecialistNoConflict() throws Exception {
-    
-    Logger.getLogger(this.getClass()).info("--------------------------------------------------");
-    Logger.getLogger(this.getClass()).info("Normal workflow: Two Specialists, No Conflict");
-    Logger.getLogger(this.getClass()).info("--------------------------------------------------");  
+
+    Logger.getLogger(this.getClass()).info(
+        "--------------------------------------------------");
+    Logger.getLogger(this.getClass()).info(
+        "Normal workflow: Two Specialists, No Conflict");
+    Logger.getLogger(this.getClass()).info(
+        "--------------------------------------------------");
     SearchResultList list;
 
     // find available work
-    list = ws.findAvailableWork(mapProject, mapUser1, MapUserRole.SPECIALIST,
-        null, pfs);
+    list =
+        ws.findAvailableWork(mapProject, mapUser1, MapUserRole.SPECIALIST,
+            null, pfs);
     assertTrue(list.getCount() > 0);
 
     SearchResult firstResult = list.getSearchResults().get(0);
-    Concept concept = cs.getConcept(firstResult.getTerminologyId(),
-        mapProject.getSourceTerminology(),
-        mapProject.getSourceTerminologyVersion());
+    Concept concept =
+        cs.getConcept(firstResult.getTerminologyId(),
+            mapProject.getSourceTerminology(),
+            mapProject.getSourceTerminologyVersion());
 
     // assign work to mapUser1
     ws.processWorkflowAction(mapProject, concept, mapUser1, null,
         WorkflowAction.ASSIGN_FROM_SCRATCH);
 
     // find assigned work for mapUser1
-    list = ws.findAssignedWork(mapProject, mapUser1, MapUserRole.SPECIALIST,
-        null, pfs);
+    list =
+        ws.findAssignedWork(mapProject, mapUser1, MapUserRole.SPECIALIST, null,
+            pfs);
     assertTrue(list.getCount() > 0);
 
     // get the map record for the user
     MapRecord mr1 = ws.getMapRecord(list.getSearchResults().get(0).getId());
 
     // finish work for mapUser1
-    ws.processWorkflowAction(mapProject, concept, mapUser1,
-        new MapRecordJpa(mr1, true), WorkflowAction.FINISH_EDITING);
+    ws.processWorkflowAction(mapProject, concept, mapUser1, new MapRecordJpa(
+        mr1, true), WorkflowAction.FINISH_EDITING);
 
     // find available work for mapUser2
-    list = ws.findAvailableWork(mapProject, mapUser2, MapUserRole.SPECIALIST,
-        null, pfs);
+    list =
+        ws.findAvailableWork(mapProject, mapUser2, MapUserRole.SPECIALIST,
+            null, pfs);
 
     // assign work to mapUser1
     ws.processWorkflowAction(mapProject, concept, mapUser2, null,
         WorkflowAction.ASSIGN_FROM_SCRATCH);
 
     // find assigned work for mapUser1
-    list = ws.findAssignedWork(mapProject, mapUser2, MapUserRole.SPECIALIST,
-        null, pfs);
+    list =
+        ws.findAssignedWork(mapProject, mapUser2, MapUserRole.SPECIALIST, null,
+            pfs);
     assertTrue(list.getCount() > 0);
 
     // get the map record for the user
     MapRecord mr2 = ws.getMapRecord(list.getSearchResults().get(0).getId());
 
     // finish work for mapUser1
-    ws.processWorkflowAction(mapProject, concept, mapUser1,
-        new MapRecordJpa(mr2, true), WorkflowAction.FINISH_EDITING);
+    ws.processWorkflowAction(mapProject, concept, mapUser1, new MapRecordJpa(
+        mr2, true), WorkflowAction.FINISH_EDITING);
 
     // re-retrieve concept/project records, should only be 1, and it should be
     // publication ready
-    MapRecordList finalRecords = ws.getMapRecordsForProjectAndConcept(
-        mr1.getMapProjectId(), mr1.getConceptId());
+    MapRecordList finalRecords =
+        ws.getMapRecordsForProjectAndConcept(mr1.getMapProjectId(),
+            mr1.getConceptId());
     assertTrue(finalRecords.getCount() == 1);
     assertTrue(finalRecords.getMapRecords().get(0).getWorkflowStatus()
         .equals(WorkflowStatus.READY_FOR_PUBLICATION));

@@ -3,7 +3,6 @@
  */
 package org.ihtsdo.otf.mapping.jpa.services;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -17,12 +16,8 @@ import java.util.Set;
 import javax.persistence.NoResultException;
 
 import org.apache.log4j.Logger;
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.queryParser.QueryParser;
-import org.apache.lucene.search.Query;
 import org.apache.lucene.util.Version;
 import org.hibernate.CacheMode;
-import org.hibernate.search.SearchFactory;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.helpers.FeedbackConversationList;
@@ -39,9 +34,7 @@ import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
-import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
-import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.helpers.TrackingRecordList;
 import org.ihtsdo.otf.mapping.helpers.TrackingRecordListJpa;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
@@ -317,7 +310,6 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
     }
   }
 
-
   /* see superclass */
   @Override
   public void createQAWork(Report report) throws Exception {
@@ -499,7 +491,6 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
     if (handler == null) {
       throw new Exception("Could not determine workflow handler");
     }
-
 
     // validate the tracking record by its handler
     result =
@@ -794,9 +785,10 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
 
     // open the services
     ContentService contentService = new ContentServiceJpa();
-    
+
     // get the workflow handler for this project
-    WorkflowPathHandler workflowHandler = this.getWorkflowPathHandler(mapProject.getWorkflowType().toString());
+    WorkflowPathHandler workflowHandler =
+        this.getWorkflowPathHandler(mapProject.getWorkflowType().toString());
 
     // get the concepts in scope
     SearchResultList conceptsInScope =
@@ -959,10 +951,14 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
             WorkflowType.REVIEW_PROJECT))
           trackingRecord.setWorkflowPath(WorkflowPath.REVIEW_PROJECT_PATH);
         else {
-          trackingRecord.setWorkflowPath(WorkflowPath.valueOf(mapProject.getWorkflowType().toString()));
-          /*throw new Exception("Could not set workflow path from workflow type "
-              + mapProject.getWorkflowType() + " for records "
-              + trackingRecord.getMapRecordIds().toString());*/
+          trackingRecord.setWorkflowPath(WorkflowPath.valueOf(mapProject
+              .getWorkflowType().toString()));
+          /*
+           * throw new
+           * Exception("Could not set workflow path from workflow type " +
+           * mapProject.getWorkflowType() + " for records " +
+           * trackingRecord.getMapRecordIds().toString());
+           */
         }
       }
 
@@ -1113,6 +1109,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
   }
 
   /* see superclass */
+  @SuppressWarnings("unused")
   @Override
   public List<String> computeWorkflowStatusErrors(MapProject mapProject)
     throws Exception {
@@ -1138,8 +1135,9 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
 
     // construct a set of terminology ids for which a tracking record exists
     Set<String> terminologyIdsWithTrackingRecord = new HashSet<>();
-    
-    WorkflowPathHandler handler = getWorkflowPathHandler(mapProject.getWorkflowType().toString());
+
+    WorkflowPathHandler handler =
+        getWorkflowPathHandler(mapProject.getWorkflowType().toString());
 
     for (final TrackingRecord trackingRecord : trackingRecords
         .getTrackingRecords()) {
@@ -1203,8 +1201,9 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
 
     Logger.getLogger(WorkflowServiceJpa.class).info(
         "  " + mapRecordsInProject.getCount() + " retrieved");
-    
-    WorkflowPathHandler handler = getWorkflowPathHandler(mapProject.getWorkflowType().toString());
+
+    WorkflowPathHandler handler =
+        getWorkflowPathHandler(mapProject.getWorkflowType().toString());
 
     // set the reporting interval based on number of tracking records
     int nObjects = 0;
@@ -1845,12 +1844,15 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
         handler = new WorkflowReviewProjectPathHandler();
         break;
       default:
-        handler = this.getWorkflowPathHandler(mapProject.getWorkflowType().toString());
+        handler =
+            this.getWorkflowPathHandler(mapProject.getWorkflowType().toString());
         break;
     }
 
     if (handler == null) {
-      throw new Exception("Could not retrieve workflow handler for workflow type " + mapProject.getWorkflowType());
+      throw new Exception(
+          "Could not retrieve workflow handler for workflow type "
+              + mapProject.getWorkflowType());
     }
     return handler.findAvailableWork(mapProject, mapUser, userRole, query,
         pfsParameter, this);
@@ -1862,8 +1864,9 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
     PfsParameter pfsParameter) throws Exception {
 
     WorkflowPathHandler handler = null;
-    
-    // TODO Get rid of switch cases once workflow type and workflow path are aligned
+
+    // TODO Get rid of switch cases once workflow type and workflow path are
+    // aligned
     switch (mapProject.getWorkflowType()) {
       case CONFLICT_PROJECT:
         handler = new WorkflowNonLegacyPathHandler();
@@ -1872,12 +1875,15 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
         handler = new WorkflowReviewProjectPathHandler();
         break;
       default:
-        handler = this.getWorkflowPathHandler(mapProject.getWorkflowType().toString());
+        handler =
+            this.getWorkflowPathHandler(mapProject.getWorkflowType().toString());
         break;
     }
 
     if (handler == null) {
-      throw new Exception("Could not retrieve workflow handler for workflow type " + mapProject.getWorkflowType());
+      throw new Exception(
+          "Could not retrieve workflow handler for workflow type "
+              + mapProject.getWorkflowType());
     }
     return handler.findAssignedWork(mapProject, mapUser, userRole, query,
         pfsParameter, this);
