@@ -61,6 +61,8 @@ mapProjectAppControllers
     // - mapRecord.html
     // - compareRecords.html
     $rootScope.currentPageDirty = false;
+    
+    $rootScope.title = 'IHTSDO Mapping';
 
     // root watcher to check for page changes, reload events, window closes,
     // etc
@@ -372,15 +374,7 @@ mapProjectAppControllers.controller('LoginCtrl', [
 
             $rootScope.handleHttpError(data, status, headers, config);
           });
-          
-          
-          // get the map record indexed fields for advanced searching
-          $http.get(root_mapping + 'mapRecord/indexedFields').then(function(response) {
-        	  localStorageService.add('mapRecordIndexedFields', response);
-          }, function(data, status, headers, config) {
 
-        	 $rootScope.handleHttpError(data, status, headers, config); 
-          });
         });
       }
 
