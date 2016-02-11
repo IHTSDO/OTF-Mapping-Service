@@ -365,7 +365,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
           boolean hasAdvice =
               TerminologyUtility.hasAdvice(mapRecord.getMapEntries().get(0),
-                  "POSSIBLE REQUIREMENT FOR EXTERNAL CAUSE CODE");
+                  "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE");
           boolean hasExternalCauseCode = false;
           boolean hasOtherExternalCauseCode = false;
           for (final MapEntry entry : mapRecord.getMapEntries()) {
@@ -382,7 +382,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
             result
                 .addError("Code range T90.0 through T98.3 must have either an "
                     + "external cause code from range Y85.0 - Y89.9 or "
-                    + "advice \"POSSIBLE REQUIREMENT FOR EXTERNAL CAUSE CODE\"");
+                    + "advice \"POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE\"");
           }
         }
 
@@ -395,12 +395,14 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         // GUIDANCE: Remap to include the (required) external cause code.
         //
         boolean isPoisoning =
-            contentService.isDescendantOf(mapRecord.getConceptId(),
-                mapProject.getSourceTerminology(),
-                mapProject.getSourceTerminologyVersion(),
-                Arrays.asList(new String[] {
-                    "75478009", "62014003"
-                }));
+            mapRecord.getConceptId().equals("75478009")
+                || mapRecord.getConceptId().equals("62014003")
+                || contentService.isDescendantOf(mapRecord.getConceptId(),
+                    mapProject.getSourceTerminology(),
+                    mapProject.getSourceTerminologyVersion(),
+                    Arrays.asList(new String[] {
+                        "75478009", "62014003"
+                    }));
         if (concepts.get(1).get(0) != null
             && mapRecord.getMapEntries().size() == 1 && isPoisoning) {
           result
@@ -518,9 +520,10 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         // GUIDANCE: require map to NC
         //
         boolean isTumorStageFinding =
-            contentService.isDescendantOf(mapRecord.getConceptId(),
-                mapProject.getSourceTerminology(),
-                mapProject.getSourceTerminologyVersion(), "385356007");
+            mapRecord.getConceptId().equals("385356007")
+                || contentService.isDescendantOf(mapRecord.getConceptId(),
+                    mapProject.getSourceTerminology(),
+                    mapProject.getSourceTerminologyVersion(), "385356007");
         if (isTumorStageFinding && concepts.get(1).get(0) != null) {
           result
               .addWarning("Generally, descendants of tumor stage finding are mapped to NC");
@@ -674,6 +677,14 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       advices.addAll(notComputed);
 
       //
+      // Define advices and boolean flags
+      //
+      final String externalCauseCodeAdvice =
+          "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE";
+      final boolean hasExternalCauseCodeAdvice =
+          TerminologyUtility.hasAdvice(mapEntry, externalCauseCodeAdvice);
+
+      //
       // PREDICATE: asterisk code is used and it does not have
       // THIS CODE MAY BE USED IN THE PRIMARY POSITION WHEN THE MANIFESTATION IS
       // THE PRIMARY FOCUS OF CARE
@@ -766,9 +777,10 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       //
       final String adviceP21a = "MAPPED FOLLOWING WHO GUIDANCE";
       boolean isPoisoning =
-          contentService.isDescendantOf(mapRecord.getConceptId(),
-              mapProject.getSourceTerminology(),
-              mapProject.getSourceTerminologyVersion(), "75478009");
+          mapRecord.getConceptId().equals("75478009")
+              || contentService.isDescendantOf(mapRecord.getConceptId(),
+                  mapProject.getSourceTerminology(),
+                  mapProject.getSourceTerminologyVersion(), "75478009");
       if (isPoisoning
           && !mapRecord.getConceptName().toLowerCase().matches("adverse")
           && !mapRecord.getConceptName().toLowerCase().matches("unintentional")
@@ -804,8 +816,6 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP21a));
       }
 
-      final String adviceP23 =
-          "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE";
       //
       // PREDICATE: S or T code without advice
       // "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE"
@@ -815,8 +825,9 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       if ((mapEntry.getTargetId().startsWith("S") || mapEntry.getTargetId()
           .startsWith("T"))) {
         if (mapRecord.getMapEntries().size() == 1
-            && !TerminologyUtility.hasAdvice(mapEntry, adviceP23)) {
-          advices.add(TerminologyUtility.getAdvice(mapProject, adviceP23));
+            && !hasExternalCauseCodeAdvice) {
+          advices.add(TerminologyUtility.getAdvice(mapProject,
+              externalCauseCodeAdvice));
         } else {
           boolean found = false;
           for (int i = 1; i < mapRecord.getMapEntries().size(); i++) {
@@ -828,29 +839,16 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
               break;
             }
           }
-          if (!found && !TerminologyUtility.hasAdvice(mapEntry, adviceP23)) {
-            advices.add(TerminologyUtility.getAdvice(mapProject, adviceP23));
-          } else if (found && TerminologyUtility.hasAdvice(mapEntry, adviceP23)) {
-            advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP23));
-          }
-        }
-      }
-
-      //
-      // PREDICATE: primary code has advice
-      // "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE"
-      // and there is a secondary code from chapter XX
-      // ACTION: remove the advice
-      //
-      if (TerminologyUtility.hasAdvice(mapEntry, adviceP23)
-          && mapRecord.getMapEntries().size() > 1) {
-        for (int i = 1; i < mapRecord.getMapEntries().size(); i++) {
-          // If external cause code found, move on
-          if (mapRecord.getMapEntries().get(i).getTargetId() != null
-              && mapRecord.getMapEntries().get(i).getTargetId()
-                  .matches("^[VWXY].*")) {
-            advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP23));
-            break;
+          if (!found
+              && !TerminologyUtility.hasAdvice(mapEntry,
+                  externalCauseCodeAdvice)) {
+            advices.add(TerminologyUtility.getAdvice(mapProject,
+                externalCauseCodeAdvice));
+          } else if (found
+              && TerminologyUtility
+                  .hasAdvice(mapEntry, externalCauseCodeAdvice)) {
+            advices.remove(TerminologyUtility.getAdvice(mapProject,
+                externalCauseCodeAdvice));
           }
         }
       }
@@ -867,6 +865,66 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           && mapEntry.getTargetId().matches("^Y9[0-8].*")
           && !TerminologyUtility.hasAdvice(mapEntry, y90Advice)) {
         advices.add(TerminologyUtility.getAdvice(mapProject, y90Advice));
+      }
+
+      //
+      // PREDICATE: If a concept and/or ICD-10 code description contains the
+      // word "hereditary" then it shouldn't have advice for external cause
+      // code.
+      //
+      if (hasExternalCauseCodeAdvice
+          && (mapRecord.getConceptName().toLowerCase().contains("hereditary") || mapEntry
+              .getTargetName().toLowerCase().contains("hereditary"))) {
+        advices.remove(TerminologyUtility.getAdvice(mapProject,
+            externalCauseCodeAdvice));
+
+      }
+
+      //
+      // PREDICATE: Code range I20.0 through I25.9 and I60.0 through I69.8
+      // should not have advice POSSIBLE REQUIREMENT FOR ADDITIONAL CODE TO
+      // FULLY DESCRIBE THE DISEASE OR CONDITION.
+      //
+
+      //
+      // PREDICATE: Any code from category E10, Insulin-dependent diabetes
+      // mellitus, should not have advice POSSIBLE REQUIREMENT FOR EXTERNAL
+      // CAUSE CODE.
+      //
+      if (hasExternalCauseCodeAdvice
+          && mapEntry.getTargetId().startsWith("E10")) {
+        advices.remove(TerminologyUtility.getAdvice(mapProject,
+            externalCauseCodeAdvice));
+      }
+
+      //
+      // PREDICATE: Any code from category E12, Malnutrition-related diabetes
+      // mellitus, should not have advice POSSIBLE REQUIREMENT FOR EXTERNAL
+      // CAUSE CODE.
+      //
+      if (hasExternalCauseCodeAdvice
+          && mapEntry.getTargetId().startsWith("E12")) {
+        advices.remove(TerminologyUtility.getAdvice(mapProject,
+            externalCauseCodeAdvice));
+      }
+
+      //
+      // PREDICATE: primary code has advice
+      // "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE"
+      // and there is a secondary code from chapter XX
+      // ACTION: remove the advice
+      //
+      if (hasExternalCauseCodeAdvice && mapRecord.getMapEntries().size() > 1) {
+        for (int i = 1; i < mapRecord.getMapEntries().size(); i++) {
+          // If external cause code found, move on
+          if (mapRecord.getMapEntries().get(i).getTargetId() != null
+              && mapRecord.getMapEntries().get(i).getTargetId()
+                  .matches("^[VWXY].*")) {
+            advices.remove(TerminologyUtility.getAdvice(mapProject,
+                externalCauseCodeAdvice));
+            break;
+          }
+        }
       }
 
       MapAdviceList mapAdviceList = new MapAdviceListJpa();
@@ -1269,9 +1327,10 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       // RESULT: principle 19
       //
       boolean isAllergy =
-          contentService.isDescendantOf(mapRecord.getConceptId(),
-              mapProject.getSourceTerminology(),
-              mapProject.getSourceTerminologyVersion(), "609328004");
+          mapRecord.getConceptId().equals("609328004")
+              || contentService.isDescendantOf(mapRecord.getConceptId(),
+                  mapProject.getSourceTerminology(),
+                  mapProject.getSourceTerminologyVersion(), "609328004");
       if (isAllergy) {
         principles.add(principleMap.get("19"));
       }
@@ -1281,10 +1340,16 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       // RESULT: principle 21
       //
       boolean isPoisoning =
-          contentService.isDescendantOf(mapRecord.getConceptId(),
-              mapProject.getSourceTerminology(),
-              mapProject.getSourceTerminologyVersion(), "75478009");
-      if (isPoisoning) {
+          mapRecord.getConceptId().equals("75478009")
+              || contentService.isDescendantOf(mapRecord.getConceptId(),
+                  mapProject.getSourceTerminology(),
+                  mapProject.getSourceTerminologyVersion(), "75478009");
+      boolean isAlcoholIntoxication =
+          mapRecord.getConceptId().equals("25702006")
+              || contentService.isDescendantOf(mapRecord.getConceptId(),
+                  mapProject.getSourceTerminology(),
+                  mapProject.getSourceTerminologyVersion(), "25702006");
+      if (isPoisoning && !isAlcoholIntoxication) {
         principles.add(principleMap.get("21"));
         principles.add(principleMap.get("27"));
       }
@@ -1303,13 +1368,15 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       // RESULT: principle 32
       //
       boolean isAnimalBite =
-          contentService.isDescendantOf(mapRecord.getConceptId(),
-              mapProject.getSourceTerminology(),
-              mapProject.getSourceTerminologyVersion(), "399907009");
+          mapRecord.getConceptId().equals("399907009")
+              || contentService.isDescendantOf(mapRecord.getConceptId(),
+                  mapProject.getSourceTerminology(),
+                  mapProject.getSourceTerminologyVersion(), "399907009");
       boolean isArthropodBite =
-          contentService.isDescendantOf(mapRecord.getConceptId(),
-              mapProject.getSourceTerminology(),
-              mapProject.getSourceTerminologyVersion(), "409985002");
+          mapRecord.getConceptId().equals("409985002")
+              || contentService.isDescendantOf(mapRecord.getConceptId(),
+                  mapProject.getSourceTerminology(),
+                  mapProject.getSourceTerminologyVersion(), "409985002");
       if (isAnimalBite && !isArthropodBite) {
         principles.add(principleMap.get("32"));
       }
