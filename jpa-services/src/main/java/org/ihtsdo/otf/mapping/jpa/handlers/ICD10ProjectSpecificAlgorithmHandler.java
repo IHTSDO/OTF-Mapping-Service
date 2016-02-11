@@ -820,7 +820,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           boolean found = false;
           for (int i = 1; i < mapRecord.getMapEntries().size(); i++) {
             // If external cause code found, set flag
-            if (mapRecord.getMapEntries().get(i) != null &&
+            if (mapRecord.getMapEntries().get(i).getTargetId() != null &&
                 mapRecord.getMapEntries().get(i).getTargetId()
                 .matches("^[VWXY].*")) {
               found = true;
@@ -829,7 +829,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           }
           if (!found && !TerminologyUtility.hasAdvice(mapEntry, adviceP23)) {
             advices.add(TerminologyUtility.getAdvice(mapProject, adviceP23));
-          } else {
+          } else if (found && TerminologyUtility.hasAdvice(mapEntry, adviceP23)) {
             advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP23));
           }
         }
@@ -845,7 +845,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           && mapRecord.getMapEntries().size() > 1) {
         for (int i = 1; i < mapRecord.getMapEntries().size(); i++) {
           // If external cause code found, move on
-          if (mapRecord.getMapEntries().get(i) != null &&
+          if (mapRecord.getMapEntries().get(i).getTargetId() != null &&
               mapRecord.getMapEntries().get(i).getTargetId()
               .matches("^[VWXY].*")) {
             advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP23));
