@@ -81,30 +81,37 @@ endif
 
 /bin/rm -rf *zip /tmp/{xx,yy}.$$.json
 
-echo "    Load the delta ... `/bin/date`"
-cd $MAPPING_CODE/admin/loader
-mvn install -PRF2-delta -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT \
-  -Dlast.publication.date=$SNOMEDCT_VERSION \
-  -Dinput.dir=$dir | sed 's/^/      /'
-if ($status != 0) then
-    echo "ERROR processing delta data"
-    exit 1
-endif
+# continue only if delta concepts file is not empty
+if (`grep -v effectiveTime *Concept*txt | wc -l` > 0) then
 
-echo "    Remove SNOMEDCT tree positions ... `/bin/date`"
-cd $MAPPING_CODE/admin/remover
-mvn install -PTreepos -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT -Dversion=latest | sed 's/^/      /'
-if ($status != 0) then
-    echo "ERROR removing tree positions"
-    exit 1
-endif
+	echo "    Load the delta ... `/bin/date`"
+	cd $MAPPING_CODE/admin/loader
+	mvn install -PRF2-delta -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT \
+	  -Dlast.publication.date=$SNOMEDCT_VERSION \
+	  -Dinput.dir=$dir | sed 's/^/      /'
+	if ($status != 0) then
+	    echo "ERROR processing delta data"
+	    exit 1
+	endif
+	
+	echo "    Remove SNOMEDCT tree positions ... `/bin/date`"
+	cd $MAPPING_CODE/admin/remover
+	mvn install -PTreepos -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT -Dversion=latest | sed 's/^/      /'
+	if ($status != 0) then
+	    echo "ERROR removing tree positions"
+	    exit 1
+	endif
 
-echo "    Generate SNOMEDCT tree positions ... `/bin/date`"
-cd $MAPPING_CODE/admin/loader
-mvn install -PTreepos -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT -Dversion=latest -Droot.ids=138875005 | sed 's/^/      /'
-if ($status != 0) then
-    echo "ERROR computing tree positions"
-    exit 1
+	echo "    Generate SNOMEDCT tree positions ... `/bin/date`"
+	cd $MAPPING_CODE/admin/loader
+	mvn install -PTreepos -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT -Dversion=latest -Droot.ids=138875005 | sed 's/^/      /'
+	if ($status != 0) then
+	    echo "ERROR computing tree positions"
+	    exit 1
+	endif
+
+else
+    echo "Concepts file is empty"
 endif
 
 echo "    Compute workflow ...`/bin/date`"
