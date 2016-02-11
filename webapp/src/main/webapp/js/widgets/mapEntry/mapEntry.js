@@ -81,21 +81,22 @@ angular
         // //////////////////////////////////////
 
         // broadcasts an update from the map entry to the map record widget
-        function updateEntry() {
+        function updateEntry(entry) {
+          console.debug("update entry", entry);
           $rootScope.$broadcast('mapEntryWidget.notification.modifySelectedEntry', {
             action : 'save',
-            entry : angular.copy($scope.entry),
+            entry : angular.copy(entry),
             record : $scope.record,
             project : $scope.project
           });
         }
 
         $scope.setTarget = function(targetCode) {
-
+          console.debug("set target", targetCode);
           $scope.getValidTargetError = '';
 
           // if target code is empty, compute parameters and return
-          if (targetCode == null || targetCode == undefined || targetCode === '') {
+          if (!targetCode) {
             $scope.entry.targetId = '';
             $scope.entry.targetName = 'No target';
             $scope.computeParameters(true);
@@ -141,6 +142,7 @@ angular
 
         // watch for concept selection from terminology browser
         $scope.$on('terminologyBrowser.selectConcept', function(event, parameters) {
+          console.debug("select concept", parameters);
           // get the relative position of the inside of the map entry widget
 
           var rect = document.getElementById('mapEntryWidgetTop').getBoundingClientRect();
@@ -190,7 +192,7 @@ angular
           $scope.computeParameters(false);
 
           // update the entry
-          updateEntry();
+          updateEntry($scope.entry);
         };
 
         function computeRelation(entry) {
@@ -255,12 +257,33 @@ angular
           return deferred.promise;
         }
 
+        // Computes advices (if any) for each entry, then update entry
+        function computeAdvices(record) {
+          console.debug('compute advices', record);
+          console.debug(' scope entry', $scope.entry);
+          for (var i = 0; i < record.mapEntry.length; i++) {
+            var entry = record.mapEntry[i];
+            // Use the scoped entry if the local id matches
+            if (entry.localId == $scope.entry.localId) {
+              entry = $scope.entry;
+            }
+            computeAdvice(entry).then(
+            // Success
+            function(data) {
+              updateEntry(data);
+            });
+          }
+        }
+
+        // Computes map advice
         function computeAdvice(entry) {
+          console.debug("compute advice", entry);
           var deferred = $q.defer();
 
           // ensure mapAdvice is deserializable
-          if (entry.mapAdvice === '' || entry.mapAdvice === undefined)
+          if (entry.mapAdvice === '' || entry.mapAdvice === undefined) {
             entry.mapAdvice = [];
+          }
 
           $rootScope.glassPane++;
 
@@ -291,11 +314,13 @@ angular
               console.debug('  data = ', data);
               if (data) {
                 entry.mapAdvice = data.mapAdvice;
-                // get the allowable advices and relations
-                $scope.allowableAdvices = getAllowableAdvices(entry, $scope.project.mapAdvice);
-                sortByKey($scope.allowableAdvices, 'detail');
-                $scope.allowableMapRelations = getAllowableRelations(entry,
-                  $scope.project.mapRelation);
+                // get the allowable advices and relations for this entry
+                if (entry.localId == $scope.entry.localId) {
+                  $scope.allowableAdvices = getAllowableAdvices(entry, $scope.project.mapAdvice);
+                  sortByKey($scope.allowableAdvices, 'detail');
+                  $scope.allowableMapRelations = getAllowableRelations(entry,
+                    $scope.project.mapRelation);
+                }
               }
               $rootScope.glassPane--;
               deferred.resolve(entry);
@@ -635,7 +660,7 @@ angular
             }
           }
 
-          updateEntry();
+          updateEntry($scope.entry);
         };
 
         // removes advice from a map entry
@@ -648,7 +673,7 @@ angular
 
           if (confirmRemove) {
             entry.mapAdvice = removeJsonElement(entry.mapAdvice, advice);
-            updateEntry();
+            updateEntry($scope.entry);
           }
 
         };
@@ -663,11 +688,8 @@ angular
           // clear advice on relation change
           $scope.entry.mapAdvice = [];
 
-          // compute advice (if any), then update entry
-          computeAdvice($scope.entry).then(function() {
-            updateEntry();
-          });
-
+          // compute advices
+          computeAdvices($scope.record);
         };
 
         $scope.clearMapRelation = function(mapRelation) {
@@ -694,19 +716,14 @@ angular
          */
         $scope.computeParameters = function(ignoreNullValues) {
 
-          var targetNotNull = $scope.entry.targetId != null && $scope.entry.targetId != undefined
-            && $scope.entry.targetId != '';
-          var relationNotNull = $scope.entry.mapRelation != null
-            && $scope.entry.mapRelation != undefined && $scope.entry.mapRelation != '';
-
           // either target or relation must be non-null to compute
           // relation/advice
-          if (targetNotNull || relationNotNull || ignoreNullValues) {
+          if ($scope.entry.targetId || $scope.entry.mapRelation || ignoreNullValues) {
 
-            computeRelation($scope.entry).then(function() {
-              computeAdvice($scope.entry).then(function() {
-                updateEntry();
-              });
+            computeRelation($scope.entry).then(
+            // Success
+            function() {
+              computeAdvices($scope.record);
             });
 
             // set these to null for consistency
