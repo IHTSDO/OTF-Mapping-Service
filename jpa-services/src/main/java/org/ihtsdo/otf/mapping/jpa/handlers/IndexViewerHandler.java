@@ -92,10 +92,14 @@ public class IndexViewerHandler {
     int endLevel =
         Integer.parseInt(config.getProperty("index.viewer.searchEndLevel"));
     mainSearchResults =
+      performCodeSearch(terminology, terminologyVersion, domain, searchField);
+    if (mainSearchResults.size() == 0) {
+      mainSearchResults =
         performSearch(terminology, terminologyVersion, domain, searchField,
             startLevel, endLevel, null, (subSearchField != null
                 && !subSearchField.equals("undefined") && !subSearchField
                 .equals("")));
+    }
 
     if (subSearchField == null || subSearchField.equals("undefined")
         || subSearchField.equals("")) {
@@ -257,6 +261,31 @@ public class IndexViewerHandler {
     return searchResults;
   }
 
+  
+  /**
+   * Perform code search.
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @param domain the domain
+   * @param code the code
+   * @return the list
+   * @throws Exception the exception
+   */
+  private List<String> performCodeSearch(String terminology,
+      String terminologyVersion, String domain, String code)
+      throws Exception {
+      Logger.getLogger(this.getClass()).info("Perform index code search ");
+      Logger.getLogger(this.getClass()).info("  terminology = " + terminology);
+      Logger.getLogger(this.getClass()).info("  domain = " + domain);
+      Logger.getLogger(this.getClass()).info("  code = " + code);
+
+      return performSearch(terminology, terminologyVersion, domain, 
+          code.contains("code:") ? code : "code:" + code,
+         0, 2, null, false); 
+
+    }
+  
   /**
    * Returns the level constraint.
    *
@@ -303,7 +332,7 @@ public class IndexViewerHandler {
     }
     for (final File termDir : new File(dataDir).listFiles()) {
       // Find terminology directory
-      if (termDir.getName().equals(terminology)) {
+      if (termDir.getName().toLowerCase().equals(terminology.toLowerCase())) {
         for (final File versionDir : termDir.listFiles()) {
           // Find version directory
           if (versionDir.getName().equals(terminologyVersion)) {
