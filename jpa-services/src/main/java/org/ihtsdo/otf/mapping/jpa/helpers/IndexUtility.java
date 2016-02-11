@@ -52,8 +52,11 @@ import org.ihtsdo.otf.mapping.rf2.jpa.RelationshipJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecordJpa;
 
+// TODO: Auto-generated Javadoc
 /**
  * Performs utility functions relating to Lucene indexes and Hibernate Search.
+ *
+ * @author ${author}
  */
 public class IndexUtility {
 
@@ -358,9 +361,10 @@ public class IndexUtility {
 
     return nameAnalyzedPairs;
   }
-
+  
+  
   /**
-   * Apply pfs to lucene query2.
+   * Apply pfs to lucene query.
    *
    * @param clazz the clazz
    * @param fieldNamesKey the field names key
@@ -373,6 +377,25 @@ public class IndexUtility {
   public static FullTextQuery applyPfsToLuceneQuery(Class<?> clazz,
     Class<?> fieldNamesKey, String query, PfsParameter pfs,
     EntityManager manager) throws Exception {
+    
+    return applyPfsToLuceneQuery(clazz, fieldNamesKey, query, pfs, manager, true);
+  }
+
+  /**
+   * Apply pfs to lucene query2.
+   *
+   * @param clazz the clazz
+   * @param fieldNamesKey the field names key
+   * @param query the query
+   * @param pfs the pfs
+   * @param manager the manager
+   * @param logQuery whether to log the query
+   * @return the full text query
+   * @throws Exception the exception
+   */
+  public static FullTextQuery applyPfsToLuceneQuery(Class<?> clazz,
+    Class<?> fieldNamesKey, String query, PfsParameter pfs,
+    EntityManager manager, boolean logQuery) throws Exception {
 
     FullTextQuery fullTextQuery = null;
 
@@ -397,7 +420,9 @@ public class IndexUtility {
         new MultiFieldQueryParser(Version.LUCENE_36,
             IndexUtility.getIndexedFieldNames(fieldNamesKey, true).toArray(
                 new String[] {}), searchFactory.getAnalyzer(clazz));
-    Logger.getLogger(IndexUtility.class).info("  query = " + pfsQuery);
+    if (logQuery) {
+      Logger.getLogger(IndexUtility.class).info("  query = " + pfsQuery);
+    }
     luceneQuery = queryParser.parse(pfsQuery.toString());
 
     // Validate query terms

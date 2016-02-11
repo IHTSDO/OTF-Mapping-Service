@@ -46,9 +46,7 @@ import org.ihtsdo.otf.mapping.helpers.WorkflowType;
 import org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.handlers.AbstractWorkflowPathHandler;
-import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowFixErrorPathHandler;
 import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowNonLegacyPathHandler;
-import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowQaPathHandler;
 import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowReviewProjectPathHandler;
 import org.ihtsdo.otf.mapping.model.Feedback;
 import org.ihtsdo.otf.mapping.model.FeedbackConversation;
@@ -1119,15 +1117,6 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
     Logger.getLogger(WorkflowServiceJpa.class).info(
         "Retrieving tracking records for project " + mapProject.getId() + ", "
             + mapProject.getName());
-
-    // instantiate a copy of all workflow handlers
-    WorkflowNonLegacyPathHandler nonLegacyHandler =
-        new WorkflowNonLegacyPathHandler();
-    WorkflowFixErrorPathHandler fixErrorHandler =
-        new WorkflowFixErrorPathHandler();
-    WorkflowQaPathHandler qaHandler = new WorkflowQaPathHandler();
-    WorkflowReviewProjectPathHandler reviewHandler =
-        new WorkflowReviewProjectPathHandler();
 
     // get all the tracking records for this project
     TrackingRecordList trackingRecords =
