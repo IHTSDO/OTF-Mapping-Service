@@ -15,6 +15,7 @@ a {
 
 .glyphicon {
 	cursor: pointer;
+	min-width: 15px; 
 }
 
 .term-browser-icon {
