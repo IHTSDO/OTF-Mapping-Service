@@ -1873,6 +1873,7 @@ mapProjectAppDashboards.controller('IndexViewerDashboardCtrl', function($rootSco
   $scope.focusProject = localStorageService.get('focusProject');
 
   $scope.page = 'indexViewerDashboard';
+  $rootScope.title = $scope.focusProject.destinationTerminology + ' Index Viewer';
 
   console.debug('in indexViewerDashboardCtrl');
 
