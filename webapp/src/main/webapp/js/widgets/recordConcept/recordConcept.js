@@ -40,6 +40,10 @@ angular
       $scope.currentRole = localStorageService.get('currentRole');
       $scope.preferences = localStorageService.get('preferences');
       $scope.userToken = localStorageService.get('userToken');
+      
+      // flag indicating if index viewer is available for dest terminology
+      $scope.indexViewerExists = false;
+
 
       // watch for changes to focus project
       $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
@@ -60,6 +64,8 @@ angular
           $http.defaults.headers.common.Authorization = $scope.userToken;
           console.debug($scope.mapProjects);
           $scope.go();
+          
+          setIndexViewerStatus();
         }
       });
 
@@ -606,6 +612,37 @@ angular
         window.open($scope.getBrowserUrl(), 'browserWindow');
       };
 
+      $scope.openIndexViewer = function() {
+        console.debug('page location is', window.location.href);
+        var currentUrl = window.location.href;
+        var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
+        var newUrl = baseUrl + '/index/viewer';
+        var myWindow = window.open(newUrl, 'indexViewerWindow');
+        myWindow.focus();
+      };
+      
+      function setIndexViewerStatus() {
+        $http(
+          {
+            url : root_content + 'index/' + $scope.focusProject.destinationTerminology + '/'
+              + $scope.focusProject.destinationTerminologyVersion,
+            dataType : 'json',
+            method : 'GET',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+          console.debug('Success in getting viewable indexes.');
+          if (data.searchResult.length > 0) {
+            $scope.indexViewerExists = true;
+          } else {
+            $scope.indexViewerExists = false;
+          }
+        }).error(function(data, status, headers, config) {
+          $scope.indexViewerExists = false;
+        });
+      }
+      
       $scope.openViewerFeedbackModal = function(lrecord, currentUser) {
 
         console.debug('openViewerFeedbackModal with ', lrecord, currentUser);
