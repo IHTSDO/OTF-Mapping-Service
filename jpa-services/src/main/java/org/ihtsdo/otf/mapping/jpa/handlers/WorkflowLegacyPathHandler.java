@@ -89,12 +89,13 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
             WorkflowAction.SAVE_FOR_LATER, WorkflowAction.UNASSIGN)));
 
     // STATE: Legacy record is in revision, first user has finished work
-    firstSpecialistConflictState = new WorkflowPathState("Conflict Between Specialist and Legacy");
+    firstSpecialistConflictState =
+        new WorkflowPathState("Conflict Between Specialist and Legacy");
     firstSpecialistConflictState
         .addWorkflowCombination(new WorkflowStatusCombination(Arrays
             .asList(WorkflowStatus.REVISION, WorkflowStatus.EDITING_DONE)));
     trackingRecordStateToActionMap.put(firstSpecialistConflictState,
-        new HashSet<>(Arrays.asList(WorkflowAction.ASSIGN_FROM_INITIAL_RECORD,
+        new HashSet<>(Arrays.asList(WorkflowAction.ASSIGN_FROM_SCRATCH,
             WorkflowAction.FINISH_EDITING, WorkflowAction.SAVE_FOR_LATER,
             WorkflowAction.UNASSIGN)));
 
@@ -108,7 +109,7 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
     secondSpecialistEditingState.addWorkflowCombination(
         new WorkflowStatusCombination(Arrays.asList(WorkflowStatus.REVISION,
             WorkflowStatus.EDITING_DONE, WorkflowStatus.EDITING_IN_PROGRESS)));
-    firstSpecialistEditingState.addWorkflowCombination(
+    secondSpecialistEditingState.addWorkflowCombination(
         new WorkflowStatusCombination(Arrays.asList(WorkflowStatus.REVISION,
             WorkflowStatus.CONFLICT_DETECTED,
             WorkflowStatus.CONFLICT_DETECTED)));
@@ -119,7 +120,8 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
 
     // STATE: Legacy record is in revision, two specialists have completed
     // work in conflict
-    conflictDetectedState = new WorkflowPathState("Conflict Detected Between Specialists");
+    conflictDetectedState =
+        new WorkflowPathState("Conflict Detected Between Specialists");
     conflictDetectedState.addWorkflowCombination(new WorkflowStatusCombination(
         Arrays.asList(WorkflowStatus.REVISION, WorkflowStatus.CONFLICT_DETECTED,
             WorkflowStatus.CONFLICT_DETECTED)));
@@ -199,12 +201,14 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
     // fifth, basic check that workflow state is in the map
     if (!trackingRecordStateToActionMap.containsKey(state)) {
       result.addError("Invalid state/could not determine state");
+      return result;
     }
 
     // sixth, basic check that the workflow action is permitted for this
     // state
     if (!trackingRecordStateToActionMap.get(state).contains(action)) {
       result.addError("Workflow action not permitted for state");
+      return result;
     }
 
     // /////////////////////////////////
@@ -306,6 +310,7 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
 
       switch (currentRecord.getWorkflowStatus()) {
         case CONFLICT_DETECTED:
+        case EDITING_DONE:
         case EDITING_IN_PROGRESS:
         case NEW:
           // do nothing, valid
@@ -450,14 +455,14 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
         throw new Exception(getName()
             + ", findAvailableWork: invalid project role " + userRole);
 
-    } 
-    
+    }
+
     int[] totalCt = new int[1];
     @SuppressWarnings("unchecked")
     final List<TrackingRecord> results =
-        (List<TrackingRecord>) workflowService
-            .getQueryResults(sb.toString(), TrackingRecordJpa.class,
-                TrackingRecordJpa.class, pfsParameter, totalCt);
+        (List<TrackingRecord>) workflowService.getQueryResults(sb.toString(),
+            TrackingRecordJpa.class, TrackingRecordJpa.class, pfsParameter,
+            totalCt);
 
     availableWork.setTotalCount(totalCt[0]);
     for (final TrackingRecord tr : results) {
@@ -664,8 +669,7 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
         break;
       default:
         throw new Exception(
-            "Cannot retrieve work for LEGACY_PATH for user role "
-                + userRole);
+            "Cannot retrieve work for LEGACY_PATH for user role " + userRole);
     }
 
     return assignedWork;
@@ -695,8 +699,12 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
     MapRecord newRecord = null;
 
     // extract legacy and user records
-    MapRecord legacyRecord =
-        getCurrentMapRecordForUserName(newRecords, getLegacyUserName());
+    MapRecord legacyRecord = null;
+    for (MapRecord mr : newRecords) {
+      if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
+        legacyRecord = mr;
+      }
+    }
     MapRecord userRecord =
         getCurrentMapRecordForUserName(newRecords, mapUser.getUserName());
 
@@ -707,21 +715,19 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
             mapUser);
 
         // if legacy + two specialist records, conflict record
-        if (newRecords.size() == 3
-            && getWorkflowStatusFromMapRecords(newRecords)
-                .equals(WorkflowStatus.CONFLICT_DETECTED)) {
+        if (newRecords.size() == 3) {
           newRecord.setWorkflowStatus(WorkflowStatus.CONFLICT_NEW);
         }
 
-        // if legacy + one specialist record, check that record is in conflict
-        if (newRecords.size() == 2
-            && getWorkflowStatusFromMapRecords(newRecords)
-                .equals(WorkflowStatus.CONFLICT_DETECTED)) {
+        // if legacy + one specialist record, new specialist record
+        if (newRecords.size() == 2) {
           newRecord.setWorkflowStatus(WorkflowStatus.NEW);
         }
 
         // if legacy record only
         else if (newRecords.size() == 1) {
+          newRecords.iterator().next()
+              .setWorkflowStatus(WorkflowStatus.REVISION);
           newRecord.setWorkflowStatus(WorkflowStatus.NEW);
         }
 
@@ -730,8 +736,10 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
         // methods
         else {
           throw new Exception(
-              "Could not assign from scratch, bad workflow state");
+              "Could not assign from scratch, bad workflow status detected " + getWorkflowStatusFromMapRecords(newRecords) + ", from " + newRecords.size() + " records");
         }
+        newRecords.add(newRecord);
+
         break;
       case CANCEL:
         // re-retrieve the records for this tracking record and return those
@@ -754,21 +762,18 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
           case CONFLICT_IN_PROGRESS:
           case CONFLICT_NEW:
           case CONFLICT_RESOLVED:
-            userRecord.setWorkflowStatus(WorkflowStatus.CONFLICT_RESOLVED);
+            mapRecord.setWorkflowStatus(WorkflowStatus.CONFLICT_RESOLVED);
             break;
 
           // specialist record
           case CONFLICT_DETECTED:
+          case EDITING_DONE:
           case EDITING_IN_PROGRESS:
           case NEW:
 
             mappingService = new MappingServiceJpa();
-
             ProjectSpecificAlgorithmHandler handler =
                 mappingService.getProjectSpecificAlgorithmHandler(mapProject);
-            for (final Long id : trackingRecord.getMapRecordIds()) {
-              newRecords.add(mappingService.getMapRecord(id));
-            }
             mappingService.close();
 
             // find hte other specialist's record
@@ -786,17 +791,19 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
             if (secondSpecialistRecord == null) {
 
               ValidationResult validationResult =
-                  handler.compareMapRecords(userRecord, legacyRecord);
+                  handler.compareMapRecords(mapRecord, legacyRecord);
 
               if (validationResult.isValid()) {
                 Logger.getLogger(getClass()).info(
-                    "NON_LEGACY_PATH - No conflicts detected between specialist's work and legacy record, marking ready for publication.");
+                    "LEGACY_PATH - No conflicts detected between specialist's work and legacy record, marking ready for publication.");
 
                 newRecords.remove(legacyRecord);
-                userRecord
+                mapRecord
                     .setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
               } else {
-                userRecord.setWorkflowStatus(WorkflowStatus.CONFLICT_DETECTED);
+                Logger.getLogger(getClass()).info(
+                    "LEGACY_PATH - Conflicts detected between specialist's work and legacy record, marking ready for publication.");
+                mapRecord.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
               }
             }
             // otherwise, compare two specialist records
@@ -806,16 +813,17 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
 
               if (validationResult.isValid()) {
                 Logger.getLogger(getClass()).info(
-                    "NON_LEGACY_PATH - No conflicts detected between two specialist's work, marking ready for publication.");
+                    "LEGACY_PATH - No conflicts detected between two specialist's work, marking ready for publication.");
 
                 newRecords.remove(legacyRecord);
                 newRecords.remove(secondSpecialistRecord);
-                userRecord
+                mapRecord
                     .setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
               } else {
-                userRecord.setWorkflowStatus(WorkflowStatus.CONFLICT_DETECTED);
-                // Note that second specialist's record is already marked
-                // conflict detected
+                mapRecord.setWorkflowStatus(WorkflowStatus.CONFLICT_DETECTED);
+                secondSpecialistRecord
+                    .setWorkflowStatus(WorkflowStatus.CONFLICT_DETECTED);
+
               }
             }
             break;
@@ -874,10 +882,11 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
   public String getLegacyUserName() {
     return "legacy";
   }
-  
+
   @Override
   public boolean isMapRecordInWorkflow(MapRecord mapRecord) {
-    return !mapRecord.getWorkflowStatus().equals(WorkflowStatus.READY_FOR_PUBLICATION);
+    return !mapRecord.getWorkflowStatus()
+        .equals(WorkflowStatus.READY_FOR_PUBLICATION);
   }
 
 }

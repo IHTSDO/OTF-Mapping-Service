@@ -1712,6 +1712,9 @@ public class MappingServiceJpa extends RootServiceJpa
         loaderUser = addMapUser(loaderUser);
       }
     }
+    
+    Logger.getLogger(getClass()).info("Map records will be loaded and attributed to user: " + loaderUser.getUserName());
+    
     List<ComplexMapRefSetMember> members = new ArrayList<>();
 
     // IF map project uses "simple", then construct a query from a simple map
