@@ -46,6 +46,7 @@ import org.ihtsdo.otf.mapping.helpers.TreePositionReferencedConcept;
 import org.ihtsdo.otf.mapping.helpers.TreePositionReferencedConceptJpa;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
+import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.AttributeValueRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
@@ -65,6 +66,8 @@ import org.ihtsdo.otf.mapping.rf2.jpa.SimpleMapRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.SimpleRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
+import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
+import org.ihtsdo.otf.mapping.workflow.TrackingRecordJpa;
 
 /**
  * The Content Services for the Jpa model.
@@ -2225,5 +2228,26 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     list.setTotalCount(list.getCount());
     return list;
   }
+  
+  @Override
+  public boolean isDescendantOfPath(String ancestorPath, String terminologyId, String terminology, String terminologyVersion) throws Exception {
+
+    StringBuilder sb = new StringBuilder();
+    sb.append("ancestorPath:" + ancestorPath + "*");
+    sb.append(" AND terminologyId: " + terminology);
+    sb.append(" AND terminology:" + terminology);
+    sb.append(" AND terminologyVersion:" + terminologyVersion);
+        
+    PfsParameter pfs = new PfsParameterJpa();
+    pfs.setMaxResults(1);
+        
+    int[] totalCt = new int[1];
+    getQueryResults(sb.toString(), TrackingRecordJpa.class,
+                TrackingRecordJpa.class, pfs, totalCt);
+
+    return totalCt[0] > 0;
+  }
+  
+
 
 }
