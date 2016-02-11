@@ -113,6 +113,17 @@ public abstract class AbstractWorkflowPathHandler implements WorkflowPathHandler
 		}
 		return combinations;
 	}
+	
+	@Override
+	public boolean isMapRecordInWorkflow(MapRecord mapRecord) {
+	  
+	  // default:  Published or Publication-Ready map records are not in workflow
+	  // override in workflow handlers if desired (e.g. legacy path)
+	
+	  return !mapRecord.getWorkflowStatus().equals(
+          WorkflowStatus.READY_FOR_PUBLICATION)
+          && !mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED);
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -338,6 +349,44 @@ public abstract class AbstractWorkflowPathHandler implements WorkflowPathHandler
 		}
 		return assignedRecord;
 	}
+	
+	/**
+     * Returns the current map record for user.
+     * Yet another convenience function
+     * 
+     * @param records
+     *            the records
+     * @param mapUser
+     *            the map user
+     * @return the current map record for user
+     */
+    @SuppressWarnings("static-method")
+    public MapRecord getCurrentMapRecordForUserName(Set<MapRecord> records, String userName) {
+        MapRecord assignedRecord = null;
+        for (MapRecord mr : records) {
+
+            // publication-ready and REVISION records cannot be current records
+            if (!mr.getWorkflowStatus().equals(WorkflowStatus.READY_FOR_PUBLICATION)
+                    && !mr.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)
+                    && !mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
+
+                // if user owns this record
+                if (mr.getOwner().getUserName().equals(userName)) {
+
+                    // if assigned record is null, set to this record
+                    if (assignedRecord == null) {
+                        assignedRecord = mr;
+                    }
+
+                    // otherwise, if this workflow status is higher, set to this
+                    // record
+                    else if (mr.getWorkflowStatus().compareTo(assignedRecord.getWorkflowStatus()) > 0)
+                        assignedRecord = mr;
+                }
+            }
+        }
+        return assignedRecord;
+    }
 	
 	/**
 	 * Returns the current map record for user.

@@ -1384,53 +1384,29 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
     MapProject project = getMapProject(mapProjectId);
     SearchResultList unmappedDescendants = new SearchResultListJpa();
-    MetadataService metadataService = new MetadataServiceJpa();
+
+    // get descendants -- no pfsParameter, want all results
     ContentService contentService = new ContentServiceJpa();
-    try {
-      // get hierarchical rel
-      Map<String, String> hierarchicalRelationshipTypeMap =
-          metadataService.getHierarchicalRelationshipTypes(
-              project.getSourceTerminology(),
-              project.getSourceTerminologyVersion());
-      if (hierarchicalRelationshipTypeMap.keySet().size() > 1) {
-        throw new IllegalStateException(
-            "Map project source terminology has too many hierarchical relationship types - "
-                + project.getSourceTerminology());
-      }
-      if (hierarchicalRelationshipTypeMap.keySet().size() < 1) {
-        throw new IllegalStateException(
-            "Map project source terminology has too few hierarchical relationship types - "
-                + project.getSourceTerminology());
-      }
+    SearchResultList descendants =
+        contentService.findDescendantConcepts(terminologyId,
+            project.getSourceTerminology(),
+            project.getSourceTerminologyVersion(), null);
 
-      // get descendants -- no pfsParameter, want all results
-      SearchResultList descendants =
-          contentService.findDescendantConcepts(terminologyId,
-              project.getSourceTerminology(),
-              project.getSourceTerminologyVersion(), null);
+    // if number of descendants <= low-level concept threshold, treat as
+    // high-level concept and report no unmapped
+    if (descendants.getCount() < project.getPropagationDescendantThreshold()) {
 
-      // if number of descendants <= low-level concept threshold, treat as
-      // high-level concept and report no unmapped
-      if (descendants.getCount() < project.getPropagationDescendantThreshold()) {
+      // cycle over descendants
+      for (final SearchResult sr : descendants.getSearchResults()) {
 
-        // cycle over descendants
-        for (final SearchResult sr : descendants.getSearchResults()) {
-
-          // if descendant has no associated map records, add to list
-          if (getMapRecordsForConcept(sr.getTerminologyId()).getTotalCount() == 0) {
-            unmappedDescendants.addSearchResult(sr);
-          }
+        // if descendant has no associated map records, add to list
+        if (getMapRecordsForConcept(sr.getTerminologyId()).getTotalCount() == 0) {
+          unmappedDescendants.addSearchResult(sr);
         }
       }
-    } catch (Exception e) {
-      throw e;
-    } finally {
-      // close managers
-      contentService.close();
-      metadataService.close();
     }
+    contentService.close();
     return unmappedDescendants;
-
   }
 
   // //////////////////////////////
@@ -1696,17 +1672,42 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
     // get the loader user
     MapUser loaderUser;
-    try {
-      loaderUser = getMapUser("loader");
-    } catch (Exception e) {
-      // if loader user does not exist, add it
-      loaderUser = new MapUserJpa();
-      loaderUser.setApplicationRole(MapUserRole.VIEWER);
-      loaderUser.setUserName("loader");
-      loaderUser.setName("Loader Record");
-      loaderUser.setEmail("none");
-      loaderUser = addMapUser(loaderUser);
+
+    // use the 'legacy' user if a legacy path workflow project
+    if (mapProject.getWorkflowType().equals(WorkflowType.LEGACY_PATH)) {
+      try {
+        loaderUser = getMapUser("legacy");
+      } catch (Exception e) {
+        // if loader user does not exist, add it
+        loaderUser = new MapUserJpa();
+        loaderUser.setApplicationRole(MapUserRole.VIEWER);
+        loaderUser.setUserName("legacy");
+        loaderUser.setName("Legacy Record");
+        loaderUser.setEmail("none");
+        loaderUser = addMapUser(loaderUser);
+      }
     }
+
+    // otherwise, use the 'loader' user
+    else {
+
+      try {
+        loaderUser = getMapUser("loader");
+      } catch (Exception e) {
+        // if loader user does not exist, add it
+        loaderUser = new MapUserJpa();
+        loaderUser.setApplicationRole(MapUserRole.VIEWER);
+        loaderUser.setUserName("loader");
+        loaderUser.setName("Loader Record");
+        loaderUser.setEmail("none");
+        loaderUser = addMapUser(loaderUser);
+      }
+    }
+
+    Logger.getLogger(getClass()).info(
+        "Map records will be loaded and attributed to user: "
+            + loaderUser.getUserName());
+
     List<ComplexMapRefSetMember> members = new ArrayList<>();
 
     // IF map project uses "simple", then construct a query from a simple map
@@ -1857,21 +1858,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     Map<String, MapRelation> mapRelationIdMap = new HashMap<>();
     for (final MapRelation mapRelation : getMapRelations().getIterable()) {
       mapRelationIdMap.put(mapRelation.getTerminologyId(), mapRelation);
-    }
-
-    Map<String, String> hierarchicalRelationshipTypeMap =
-        metadataService.getHierarchicalRelationshipTypes(
-            mapProject.getSourceTerminology(),
-            mapProject.getSourceTerminologyVersion());
-    if (hierarchicalRelationshipTypeMap.keySet().size() > 1) {
-      throw new IllegalStateException(
-          "Map project source terminology has too many hierarchical relationship types - "
-              + mapProject.getSourceTerminology());
-    }
-    if (hierarchicalRelationshipTypeMap.keySet().size() < 1) {
-      throw new IllegalStateException(
-          "Map project source terminology has too few hierarchical relationship types - "
-              + mapProject.getSourceTerminology());
     }
 
     boolean prevTransactionPerOperationSetting = getTransactionPerOperation();
