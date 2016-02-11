@@ -142,6 +142,16 @@ public class DefaultProjectSpecificAlgorithmHandler implements
   @Override
   public ValidationResult compareMapRecords(MapRecord record1, MapRecord record2) {
     final ValidationResult validationResult = new ValidationResultJpa();
+    
+    if (record1 == null) {
+      validationResult.addError("First record not supplied to comparison routine");
+      return validationResult;
+    }
+    
+    if (record2 == null) {
+      validationResult.addError("Second record not supplied to comparison routine");
+      return validationResult;
+    }
 
     // compare mapProjectId
     if (!record1.getMapProjectId().equals(record2.getMapProjectId())) {
