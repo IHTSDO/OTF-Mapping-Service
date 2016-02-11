@@ -3,7 +3,6 @@
  */
 package org.ihtsdo.otf.mapping.jpa.services;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -17,12 +16,8 @@ import java.util.Set;
 import javax.persistence.NoResultException;
 
 import org.apache.log4j.Logger;
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.queryParser.QueryParser;
-import org.apache.lucene.search.Query;
 import org.apache.lucene.util.Version;
 import org.hibernate.CacheMode;
-import org.hibernate.search.SearchFactory;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.helpers.FeedbackConversationList;
@@ -39,9 +34,7 @@ import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
-import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
-import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.helpers.TrackingRecordList;
 import org.ihtsdo.otf.mapping.helpers.TrackingRecordListJpa;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
@@ -53,9 +46,7 @@ import org.ihtsdo.otf.mapping.helpers.WorkflowType;
 import org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.handlers.AbstractWorkflowPathHandler;
-import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowFixErrorPathHandler;
 import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowNonLegacyPathHandler;
-import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowQaPathHandler;
 import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowReviewProjectPathHandler;
 import org.ihtsdo.otf.mapping.model.Feedback;
 import org.ihtsdo.otf.mapping.model.FeedbackConversation;
@@ -1122,15 +1113,6 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
     Logger.getLogger(WorkflowServiceJpa.class).info(
         "Retrieving tracking records for project " + mapProject.getId() + ", "
             + mapProject.getName());
-
-    // instantiate a copy of all workflow handlers
-    WorkflowNonLegacyPathHandler nonLegacyHandler =
-        new WorkflowNonLegacyPathHandler();
-    WorkflowFixErrorPathHandler fixErrorHandler =
-        new WorkflowFixErrorPathHandler();
-    WorkflowQaPathHandler qaHandler = new WorkflowQaPathHandler();
-    WorkflowReviewProjectPathHandler reviewHandler =
-        new WorkflowReviewProjectPathHandler();
 
     // get all the tracking records for this project
     TrackingRecordList trackingRecords =
