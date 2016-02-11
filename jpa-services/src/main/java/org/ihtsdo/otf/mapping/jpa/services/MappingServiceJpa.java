@@ -1372,9 +1372,8 @@ public class MappingServiceJpa extends RootServiceJpa
 
     MapProject project = getMapProject(mapProjectId);
     SearchResultList unmappedDescendants = new SearchResultListJpa();
-
-    // get hierarchical rel
     MetadataService metadataService = new MetadataServiceJpa();
+<<<<<<< HEAD
     Map<String, String> hierarchicalRelationshipTypeMap = metadataService
         .getHierarchicalRelationshipTypes(project.getSourceTerminology(),
             project.getSourceTerminologyVersion());
@@ -1394,26 +1393,59 @@ public class MappingServiceJpa extends RootServiceJpa
     SearchResultList descendants = contentService.findDescendantConcepts(
         terminologyId, project.getSourceTerminology(),
         project.getSourceTerminologyVersion(), null);
+=======
+    ContentService contentService = new ContentServiceJpa();
+    try {
+      // get hierarchical rel
+      Map<String, String> hierarchicalRelationshipTypeMap =
+          metadataService.getHierarchicalRelationshipTypes(
+              project.getSourceTerminology(),
+              project.getSourceTerminologyVersion());
+      if (hierarchicalRelationshipTypeMap.keySet().size() > 1) {
+        throw new IllegalStateException(
+            "Map project source terminology has too many hierarchical relationship types - "
+                + project.getSourceTerminology());
+      }
+      if (hierarchicalRelationshipTypeMap.keySet().size() < 1) {
+        throw new IllegalStateException(
+            "Map project source terminology has too few hierarchical relationship types - "
+                + project.getSourceTerminology());
+      }
+>>>>>>> cccb2e149ff65f8b1bd552e17503618f3c138e9d
 
-    // if number of descendants <= low-level concept threshold, treat as
-    // high-level concept and report no unmapped
-    if (descendants.getCount() < project.getPropagationDescendantThreshold()) {
+      // get descendants -- no pfsParameter, want all results
+      SearchResultList descendants =
+          contentService.findDescendantConcepts(terminologyId,
+              project.getSourceTerminology(),
+              project.getSourceTerminologyVersion(), null);
 
-      // cycle over descendants
-      for (final SearchResult sr : descendants.getSearchResults()) {
+      // if number of descendants <= low-level concept threshold, treat as
+      // high-level concept and report no unmapped
+      if (descendants.getCount() < project.getPropagationDescendantThreshold()) {
 
+        // cycle over descendants
+        for (final SearchResult sr : descendants.getSearchResults()) {
+
+<<<<<<< HEAD
         // if descendant has no associated map records, add to list
         if (getMapRecordsForConcept(sr.getTerminologyId())
             .getTotalCount() == 0) {
           unmappedDescendants.addSearchResult(sr);
+=======
+          // if descendant has no associated map records, add to list
+          if (getMapRecordsForConcept(sr.getTerminologyId()).getTotalCount() == 0) {
+            unmappedDescendants.addSearchResult(sr);
+          }
+>>>>>>> cccb2e149ff65f8b1bd552e17503618f3c138e9d
         }
       }
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      // close managers
+      contentService.close();
+      metadataService.close();
     }
-
-    // close managers
-    contentService.close();
-    metadataService.close();
-
     return unmappedDescendants;
 
   }

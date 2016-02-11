@@ -27,7 +27,7 @@ angular
       '$window',
       'localStorageService',
       function($scope, $rootScope, $http, $routeParams, $location, $sce, $modal, $window,
-        localStorageService) {
+        localStorageService, utilService) {
 
         // ///////////////////////////////////
         // Map Record Controller Functions //
@@ -46,6 +46,7 @@ angular
         $scope.role = localStorageService.get('currentRole');
         $scope.userToken = localStorageService.get('userToken');
         $scope.conversation = null;
+        $scope.notes = {};
         $scope.mapLeads = $scope.project.mapLead;
         organizeUsers($scope.mapLeads);
 
@@ -215,11 +216,9 @@ angular
 
         // any time the record changes, broadcast it to the record
         // summary widget
-        $scope.$watch('record', function() {
-
-          broadcastRecord();
-
-        });
+//        $scope.$watch('record', function() {
+//          broadcastRecord();
+//        });
 
         function broadcastRecord() {
           $rootScope.$broadcast('mapRecordWidget.notification.recordChanged', {
@@ -1180,7 +1179,6 @@ angular
             if (parseInt($scope.record.mapEntry[i].mapGroup, 10) === parseInt(mapGroup, 10)) {
               entries.push($scope.record.mapEntry[i]);
             }
-            ;
           }
 
           return entries;
@@ -1208,7 +1206,8 @@ angular
             // otherwise return the target code and preferred
             // name
           } else {
-            entrySummary += entry.targetId + ' ' + entry.targetName;
+            var notes = $scope.notes[entry.targetId] ? $scope.notes[entry.targetId] : '';
+            entrySummary += entry.targetId + notes + ' ' + entry.targetName;
           }
 
           return entrySummary;
@@ -1591,9 +1590,32 @@ angular
           myWindow.focus();
         };
 
-        // ORder by principle id
+        // Order by principle id
         $scope.orderByPrincipleId = function(principle) {
           return parseInt(principle.principleId, 10) + 1;
         };
 
+        // look up the 'terminology notes' for the map project
+        $scope.initializeTerminologyNotes = function() {
+          $rootScope.glassPane++;
+          console.debug('initialize terminology notes', $scope.project);
+          $http.get(root_mapping + 'mapProject/' + $scope.project.id + '/notes').then(
+          // Success
+          function(response) {
+            for (var i = 0; i < response.data.keyValuePair.length; i++) {
+              var entry = response.data.keyValuePair[i];
+              $scope.notes[entry.key] = entry.value;
+            }
+            $rootScope.glassPane--;
+          },
+          // Error
+          function(response) {
+            $rootScope.glassPane--;
+            utilService.handleError(response.data);
+          });
+        };
+
+        // Initialize
+
+        $scope.initializeTerminologyNotes();
       } ]);

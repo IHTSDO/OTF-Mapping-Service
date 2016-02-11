@@ -22,7 +22,8 @@
         <form>
           {{project.destinationTerminology}}, <input style="width: 125px;"
             id="targetIdField" placeholder="Enter target code"
-            ng-blur="setTarget(entry.targetId)" ng-model="entry.targetId" />
+            ng-model="entry.targetId" />
+          <!-- disable this, <return> or "set" will do it: ng-blur="setTarget(entry.targetId)" -->
           <button type="submit" ng-click="setTarget(entry.targetId)">
             Set
             <span ng-show="entry.targetId == null || entry.targetId === ''">Empty

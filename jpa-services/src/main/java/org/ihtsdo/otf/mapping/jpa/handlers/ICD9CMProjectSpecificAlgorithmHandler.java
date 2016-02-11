@@ -1,6 +1,5 @@
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
-import org.ihtsdo.otf.mapping.helpers.GraphHelper;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.jpa.helpers.TerminologyUtility;
@@ -162,10 +161,7 @@ public class ICD9CMProjectSpecificAlgorithmHandler extends
       return false;
 
       // if concept exists, verify that it is a leaf node (no children)
-    } else if (GraphHelper.getChildConcepts(
-        concept,
-        TerminologyUtility.getHierarchicalType(concept.getTerminology(),
-            concept.getTerminologyVersion())).size() != 0) {
+    } else if (TerminologyUtility.getActiveChildren(concept).size() != 0) {
       contentService.close();
       return false;
 
