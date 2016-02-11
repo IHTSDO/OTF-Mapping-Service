@@ -282,6 +282,7 @@ public class TerminologyUtility {
    * @return true, if successful
    */
   public static boolean hasAdvice(MapEntry entry, String advice) {
+    if (entry == null) { return false; }
     for (final MapAdvice mapAdvice : entry.getMapAdvices()) {
       if (mapAdvice.getName().equals(advice)) {
         return true;

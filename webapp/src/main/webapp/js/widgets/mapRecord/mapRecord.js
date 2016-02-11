@@ -216,9 +216,9 @@ angular
 
         // any time the record changes, broadcast it to the record
         // summary widget
-        $scope.$watch('record', function() {
-          broadcastRecord();
-        });
+//        $scope.$watch('record', function() {
+//          broadcastRecord();
+//        });
 
         function broadcastRecord() {
           $rootScope.$broadcast('mapRecordWidget.notification.recordChanged', {
@@ -1206,7 +1206,6 @@ angular
             // otherwise return the target code and preferred
             // name
           } else {
-            console.debug("notes", entry.targetId, $scope.notes[entry.targetId], $scope.notes);
             var notes = $scope.notes[entry.targetId] ? $scope.notes[entry.targetId] : '';
             entrySummary += entry.targetId + notes + ' ' + entry.targetName;
           }
@@ -1596,15 +1595,15 @@ angular
           return parseInt(principle.principleId, 10) + 1;
         };
 
-        // look up the "terminology notes" for the map project
+        // look up the 'terminology notes' for the map project
         $scope.initializeTerminologyNotes = function() {
           $rootScope.glassPane++;
           console.debug('initialize terminology notes', $scope.project);
           $http.get(root_mapping + 'mapProject/' + $scope.project.id + '/notes').then(
           // Success
           function(response) {
-            console.debug(" notes = ", response.data, response.data.keyValuePair.length);
             for (var i = 0; i < response.data.keyValuePair.length; i++) {
+              var entry = response.data.keyValuePair[i];
               $scope.notes[entry.key] = entry.value;
             }
             $rootScope.glassPane--;

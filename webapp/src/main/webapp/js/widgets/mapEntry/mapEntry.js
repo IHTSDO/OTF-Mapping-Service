@@ -82,7 +82,7 @@ angular
 
         // broadcasts an update from the map entry to the map record widget
         function updateEntry(entry) {
-          console.debug("update entry", entry);
+          console.debug('update entry', entry);
           $rootScope.$broadcast('mapEntryWidget.notification.modifySelectedEntry', {
             action : 'save',
             entry : angular.copy(entry),
@@ -92,7 +92,7 @@ angular
         }
 
         $scope.setTarget = function(targetCode) {
-          console.debug("set target", targetCode);
+          console.debug('set target', targetCode);
           $scope.getValidTargetError = '';
 
           // if target code is empty, compute parameters and return
@@ -142,7 +142,7 @@ angular
 
         // watch for concept selection from terminology browser
         $scope.$on('terminologyBrowser.selectConcept', function(event, parameters) {
-          console.debug("select concept", parameters);
+          console.debug('select concept', parameters);
           // get the relative position of the inside of the map entry widget
 
           var rect = document.getElementById('mapEntryWidgetTop').getBoundingClientRect();
@@ -259,44 +259,55 @@ angular
 
         // Computes advices (if any) for each entry, then update entry
         function computeAdvices(record) {
-          console.debug('compute advices', record);
-          console.debug(' scope entry', $scope.entry);
           for (var i = 0; i < record.mapEntry.length; i++) {
             var entry = record.mapEntry[i];
-            // Use the scoped entry if the local id matches
-            if (entry.localId == $scope.entry.localId) {
+            // Use the scoped entry if the local id matches or if the actual id
+            // matches
+            if (entry.localId == $scope.entry.localId || entry.id == $scope.entry.id) {
               entry = $scope.entry;
             }
-            computeAdvice(entry).then(
+            computeAdvice(entry, i).then(
             // Success
             function(data) {
-              updateEntry(data);
+              // Only call updateEntry on the scope version
+              // other references point back to the record
+              // and so are inherently already updated
+              if (data.localId == $scope.entry.localId || data.id == $scope.entry.id) {
+                updateEntry(data);
+              }
             });
           }
         }
 
         // Computes map advice
-        function computeAdvice(entry) {
-          console.debug("compute advice", entry);
+        function computeAdvice(entry, index) {
           var deferred = $q.defer();
 
           // ensure mapAdvice is deserializable
-          if (entry.mapAdvice === '' || entry.mapAdvice === undefined) {
+          if (!entry.mapAdvice) {
             entry.mapAdvice = [];
           }
 
           $rootScope.glassPane++;
 
-          // Fake the ID of this entry with -1 id, copy, then set it back
-          // This is hacky, but we do not have a good way to send 2 objects
-          // and the entry may not have an id yet because it could be new.
+          // Replace in the record the entry being edited
+          // so the changes are reflected. All other entries
+          // are sync'd with map record dispaly.
           var copy = angular.copy($scope.record);
-          // Find the matching localId and replace it and set the id to -1
+          var entryCopy = angular.copy(entry);
+          entryCopy.id = -1;
+          copy.mapEntry.splice(index, 1, entryCopy);
+
+          // Also need to replace the scope record with the edited
+          // one in cases where we are checking other entries
           for (var i = 0; i < copy.mapEntry.length; i++) {
-            if (entry.localId == copy.mapEntry[i].localId) {
-              var entryCopy = angular.copy(entry);
+            // if localId or Id matches $scope record, replace it
+            if (copy.mapEntry[i].id == $scope.entry.id
+              || copy.mapEntry[i].localId == $scope.entry.localId) {
+              var entryCopy = angular.copy($scope.entry);
               entryCopy.id = -1;
               copy.mapEntry.splice(i, 1, entryCopy);
+              break;
             }
           }
 
@@ -315,7 +326,7 @@ angular
               if (data) {
                 entry.mapAdvice = data.mapAdvice;
                 // get the allowable advices and relations for this entry
-                if (entry.localId == $scope.entry.localId) {
+                if (entry.localId == $scope.entry.localId || entry.id == $scope.entry.id) {
                   $scope.allowableAdvices = getAllowableAdvices(entry, $scope.project.mapAdvice);
                   sortByKey($scope.allowableAdvices, 'detail');
                   $scope.allowableMapRelations = getAllowableRelations(entry,
