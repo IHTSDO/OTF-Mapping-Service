@@ -499,8 +499,8 @@ public class WorkflowServiceRest extends RootServiceRest {
 			// apply paging
 			int[] totalCt = new int[1];
 			localPfs = new PfsParameterJpa(pfsParameter);
-			localPfs.setQueryRestriction("");
-			localPfs.setSortField("");
+			localPfs.setQueryRestriction(null);
+			localPfs.setSortField(null);
 
 			// create list of SearchResultJpas
 			// NOTE: This could be cleaned up with better typing

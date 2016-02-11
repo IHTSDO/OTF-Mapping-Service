@@ -133,6 +133,7 @@ public class TreePositionJpa implements TreePosition {
    * @see org.ihtsdo.otf.mapping.rf2.TreePosition#getAncestorPath()
    */
   @Override
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public String getAncestorPath() {
     return ancestorPath;
   }
