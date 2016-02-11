@@ -19,7 +19,7 @@ mapProjectAppControllers
     // global function to handle any type of error. Currently only
     // specifically implemented for authorization failures.
     $rootScope.handleHttpError = function(data, status, headers, config) {
-      // $rootScope.globalError = data.replace(/"/g, '');   
+      // $rootScope.globalError = data.replace(/"/g, '');
       utilService.handleError(data.replace(/"/g, ''));
       if (status == '401') {
         $location.path('/');
@@ -372,15 +372,7 @@ mapProjectAppControllers.controller('LoginCtrl', [
 
             $rootScope.handleHttpError(data, status, headers, config);
           });
-          
-          
-          // get the map record indexed fields for advanced searching
-          $http.get(root_mapping + 'mapRecord/indexedFields').then(function(response) {
-        	  localStorageService.add('mapRecordIndexedFields', response);
-          }, function(data, status, headers, config) {
 
-        	 $rootScope.handleHttpError(data, status, headers, config); 
-          });
         });
       }
 

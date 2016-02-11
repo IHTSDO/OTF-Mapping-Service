@@ -321,7 +321,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
             && hasUseAdditional(concepts.get(1).get(0))
             && !TerminologyUtility.hasAdvice(mapRecord.getMapEntries().get(0),
                 "POSSIBLE REQUIREMENT FOR CAUSATIVE AGENT CODE")) {
-          result.addWarning("Primary map entry may requre \"POSSIBLE "
+          result.addWarning("Primary map target may requre \"POSSIBLE "
               + "REQUIREMENT FOR CAUSATIVE AGENT CODE\" advice");
         }
 
@@ -366,13 +366,18 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
               TerminologyUtility.hasAdvice(mapRecord.getMapEntries().get(0),
                   "POSSIBLE REQUIREMENT FOR EXTERNAL CAUSE CODE");
           boolean hasExternalCauseCode = false;
+          boolean hasOtherExternalCauseCode = false;
           for (final MapEntry entry : mapRecord.getMapEntries()) {
             if (entry.getTargetId().matches("^Y8[5-9].*")) {
               hasExternalCauseCode = true;
               break;
+            } else if (entry.getTargetId().matches("^[VWXY].*")) {
+              hasOtherExternalCauseCode = true;
             }
+
           }
-          if (!hasAdvice && !hasExternalCauseCode) {
+          if (hasOtherExternalCauseCode
+              || (!hasAdvice && !hasExternalCauseCode)) {
             result
                 .addError("Code range T90.0 through T98.3 must have either an "
                     + "external cause code from range Y85.0 - Y89.9 or "
@@ -783,16 +788,16 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       // ACTION: "add MAPPED FOLLOWING WHO GUIDANCE" advice
       //
       if (mapEntry.getMapGroup() == 1 && mapEntry.getMapPriority() == 1
-          && !mapRecord.getConceptName().toLowerCase().contains(" open")
-          && !mapRecord.getConceptName().toLowerCase().contains(" closed")
+          && !mapRecord.getConceptName().toLowerCase().contains("open")
+          && !mapRecord.getConceptName().toLowerCase().contains("closed")
           && mapEntry.getTargetName().endsWith("open")
           && !TerminologyUtility.hasAdvice(mapEntry, adviceP21a)) {
         advices.add(TerminologyUtility.getAdvice(mapProject, adviceP21a));
       }
 
       else if (mapEntry.getMapGroup() == 1 && mapEntry.getMapPriority() == 1
-          && !mapRecord.getConceptName().toLowerCase().contains(" open")
-          && !mapRecord.getConceptName().toLowerCase().contains(" closed")
+          && !mapRecord.getConceptName().toLowerCase().contains("open")
+          && !mapRecord.getConceptName().toLowerCase().contains("closed")
           && mapEntry.getTargetName().endsWith("closed")
           && TerminologyUtility.hasAdvice(mapEntry, adviceP21a)) {
         advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP21a));
@@ -815,7 +820,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           boolean found = false;
           for (int i = 1; i < mapRecord.getMapEntries().size(); i++) {
             // If external cause code found, set flag
-            if (mapRecord.getMapEntries().get(i).getTargetId()
+            if (mapRecord.getMapEntries().get(i) != null &&
+                mapRecord.getMapEntries().get(i).getTargetId()
                 .matches("^[VWXY].*")) {
               found = true;
               break;
@@ -839,7 +845,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           && mapRecord.getMapEntries().size() > 1) {
         for (int i = 1; i < mapRecord.getMapEntries().size(); i++) {
           // If external cause code found, move on
-          if (mapRecord.getMapEntries().get(i).getTargetId()
+          if (mapRecord.getMapEntries().get(i) != null &&
+              mapRecord.getMapEntries().get(i).getTargetId()
               .matches("^[VWXY].*")) {
             advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP23));
             break;
@@ -1454,6 +1461,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
    * @throws Exception the exception
    */
   private boolean hasUseAdditional(Concept concept) throws Exception {
+    System.out.println("has use additional" + concept.getTerminologyId() + ", "
+        + concept);
     for (final Description desc : concept.getDescriptions()) {
       if (desc.getTerm().matches("Use additional code.*infectious agent.*")) {
         return true;
@@ -1462,11 +1471,14 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         return true;
       }
     }
+    System.out.println(" no code itself");
 
     final List<Concept> parents = TerminologyUtility.getActiveParents(concept);
+    System.out.println("  parents = " + parents);
     for (final Concept parent : parents) {
       return hasUseAdditional(parent);
     }
+    System.out.println("  return false");
 
     return false;
   }

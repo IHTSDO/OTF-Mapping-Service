@@ -3213,6 +3213,11 @@ public class MappingServiceRest extends RootServiceRest {
         }
       }
 
+      // bail if not ready yet
+      if (mapEntry == null || mapEntry.getTargetId() == null) {
+        return new MapAdviceListJpa();
+      }
+
       // Make sure map entries are sorted by by mapGroup/mapPriority
       Collections.sort(mapRecord.getMapEntries(),
           new TerminologyUtility.MapEntryComparator());
