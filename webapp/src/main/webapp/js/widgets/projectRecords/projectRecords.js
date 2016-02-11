@@ -121,9 +121,14 @@ angular
           + '/ancestor/'
           + ($scope.searchParameters.ancestorId && $scope.searchParameters.advancedMode ? $scope.searchParameters.ancestorId
             : 'null')
+            
+            /*
+             Removed in favor of searching by ancestor alone
           + '/root/'
           + ($scope.searchParameters.rootId && $scope.searchParameters.advancedMode ? $scope.searchParameters.rootId
-            : 'null') + '/query/'
+            : 'null') */
+            
+            + '/query/'
           + ($scope.searchParameters.query ? $scope.searchParameters.query : 'null');
 
         console.debug('  pfs', pfsParameterObj);
@@ -698,7 +703,9 @@ angular
           'startIndex' : ($scope.searchParameters.page - 1)
             * $scope.searchParameters.recordsPerPage,
           'maxResults' : $scope.searchParameters.recordsPerPage,
-          'sortField' : 'conceptId',
+          
+          // NOTE: If query specified, do not sort by concept id (preserve result relevance)
+          'sortField' : $scope.searchParameters && $scope.searchParameters.query ? null : 'conceptId',
           'queryRestriction' : ''
         };
 
