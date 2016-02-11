@@ -100,7 +100,10 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     List<Concept> m = null;
 
     final javax.persistence.Query query =
-        manager.createQuery("select m from ConceptJpa m");
+        manager.createQuery("select m.concept from SimpleRefSetMemberJpa m "
+            + "where terminology = :terminology "
+            + "and terminologyVersion = :terminologyVersion "
+            + "and");
 
     m = query.getResultList();
     final ConceptListJpa ConceptList = new ConceptListJpa();

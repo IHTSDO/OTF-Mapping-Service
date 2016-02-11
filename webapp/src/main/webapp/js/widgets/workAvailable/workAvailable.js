@@ -652,7 +652,6 @@ angular
           $scope.error = 'Work recipient must be selected from list.';
           return;
         }
-        
 
         if (batchSize > $scope.availableCount) {
           $scope.error = 'Batch size is greater than available number of concepts.';
@@ -1112,6 +1111,5 @@ angular
           return ((x < y) ? -1 : ((x > y) ? 1 : 0));
         });
       }
-      ;
 
     });

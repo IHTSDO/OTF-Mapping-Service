@@ -613,7 +613,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       list.addSearchResult(new SearchResultJpa(mapRecord.getId(), mapRecord
           .getConceptId().toString(), mapRecord.getConceptName(), ""));
     }
-    
+
     list.setTotalCount(totalCt[0]);
 
     // Sort by ID
@@ -1384,49 +1384,51 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
     MapProject project = getMapProject(mapProjectId);
     SearchResultList unmappedDescendants = new SearchResultListJpa();
-
-    // get hierarchical rel
     MetadataService metadataService = new MetadataServiceJpa();
-    Map<String, String> hierarchicalRelationshipTypeMap =
-        metadataService.getHierarchicalRelationshipTypes(
-            project.getSourceTerminology(),
-            project.getSourceTerminologyVersion());
-    if (hierarchicalRelationshipTypeMap.keySet().size() > 1) {
-      throw new IllegalStateException(
-          "Map project source terminology has too many hierarchical relationship types - "
-              + project.getSourceTerminology());
-    }
-    if (hierarchicalRelationshipTypeMap.keySet().size() < 1) {
-      throw new IllegalStateException(
-          "Map project source terminology has too few hierarchical relationship types - "
-              + project.getSourceTerminology());
-    }
-
-    // get descendants -- no pfsParameter, want all results
     ContentService contentService = new ContentServiceJpa();
-    SearchResultList descendants =
-        contentService.findDescendantConcepts(terminologyId,
-            project.getSourceTerminology(),
-            project.getSourceTerminologyVersion(), null);
+    try {
+      // get hierarchical rel
+      Map<String, String> hierarchicalRelationshipTypeMap =
+          metadataService.getHierarchicalRelationshipTypes(
+              project.getSourceTerminology(),
+              project.getSourceTerminologyVersion());
+      if (hierarchicalRelationshipTypeMap.keySet().size() > 1) {
+        throw new IllegalStateException(
+            "Map project source terminology has too many hierarchical relationship types - "
+                + project.getSourceTerminology());
+      }
+      if (hierarchicalRelationshipTypeMap.keySet().size() < 1) {
+        throw new IllegalStateException(
+            "Map project source terminology has too few hierarchical relationship types - "
+                + project.getSourceTerminology());
+      }
 
-    // if number of descendants <= low-level concept threshold, treat as
-    // high-level concept and report no unmapped
-    if (descendants.getCount() < project.getPropagationDescendantThreshold()) {
+      // get descendants -- no pfsParameter, want all results
+      SearchResultList descendants =
+          contentService.findDescendantConcepts(terminologyId,
+              project.getSourceTerminology(),
+              project.getSourceTerminologyVersion(), null);
 
-      // cycle over descendants
-      for (final SearchResult sr : descendants.getSearchResults()) {
+      // if number of descendants <= low-level concept threshold, treat as
+      // high-level concept and report no unmapped
+      if (descendants.getCount() < project.getPropagationDescendantThreshold()) {
 
-        // if descendant has no associated map records, add to list
-        if (getMapRecordsForConcept(sr.getTerminologyId()).getTotalCount() == 0) {
-          unmappedDescendants.addSearchResult(sr);
+        // cycle over descendants
+        for (final SearchResult sr : descendants.getSearchResults()) {
+
+          // if descendant has no associated map records, add to list
+          if (getMapRecordsForConcept(sr.getTerminologyId()).getTotalCount() == 0) {
+            unmappedDescendants.addSearchResult(sr);
+          }
         }
       }
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      // close managers
+      contentService.close();
+      metadataService.close();
     }
-
-    // close managers
-    contentService.close();
-    metadataService.close();
-
     return unmappedDescendants;
 
   }

@@ -8,11 +8,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.persistence.EntityManager;
+
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceListJpa;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
-import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.jpa.helpers.TerminologyUtility;
@@ -28,7 +29,6 @@ import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.Relationship;
-import org.ihtsdo.otf.mapping.rf2.SimpleRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
@@ -64,6 +64,21 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
   /** The icd10 external cause codes. */
   private static Map<String, Set<String>> externalCauseCodesMap =
       new HashMap<>();
+
+  /** The dagger codes. */
+  private static Set<String> daggerCodes = new HashSet<>();
+
+  /** The asterisk codes. */
+  private static Set<String> asteriskCodes = new HashSet<>();
+
+  /** The valid3 digit codes. */
+  private static Set<String> valid3DigitCodes = new HashSet<>();
+
+  /** The asterisk ref set id. */
+  private static String asteriskRefSetId;
+
+  /** The dagger ref set id. */
+  private static String daggerRefSetId;
 
   /**
    * The parser.
@@ -160,6 +175,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
   @Override
   public ValidationResult validateSemanticChecks(MapRecord mapRecord)
     throws Exception {
+    cacheCodes();
     final ValidationResult result = new ValidationResultJpa();
 
     // Bail immediately if map has no entries (other QA will catch this)
@@ -190,8 +206,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           concept.getSimpleRefSetMembers().size();
         }
         concepts.get(entry.getMapGroup()).add(concept);
-
       }
+      final String primaryCode = concepts.get(1).get(0).getTerminologyId();
 
       // Only process these rules if these is a single entry per group
       if (concepts.keySet().size() == mapRecord.getMapEntries().size()) {
@@ -214,9 +230,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         // matching that asterisk code
         // GUIDANCE: Add the secondary code
         //
-        if (concepts.get(1).get(0) != null
-            && TerminologyUtility.isDaggerCode(concepts.get(1).get(0),
-                contentService)) {
+        if (concepts.get(1).get(0) != null && daggerCodes.contains(primaryCode)) {
+
           // iterate through descriptions/relationships and see if there is an
           // asterisk code
           String asteriskCode = null;
@@ -252,7 +267,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         final List<Concept> children =
             TerminologyUtility.getActiveChildren(concepts.get(1).get(0));
         if (concepts.get(1).get(0) != null
-            && concepts.get(1).get(0).getTerminologyId().length() == 5
+            && primaryCode.length() == 5
             && children.size() > 1
             && (children.get(0).getDefaultPreferredName().endsWith("open") || children
                 .get(0).getDefaultPreferredName().endsWith("closed"))) {
@@ -268,7 +283,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         // GUIDANCE: Remap to "open" and add MAPPED FOLLOWING WHO GUIDANCE
         //
         if (concepts.get(1).get(0) != null
-            && concepts.get(1).get(0).getTerminologyId().length() == 6
+            && primaryCode.length() == 6
             && concepts.get(1).get(0).getDefaultPreferredName()
                 .endsWith("open")
             && !mapRecord.getConceptName().toLowerCase().contains(" open")
@@ -286,7 +301,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         //
         if (concepts.get(1).get(0) != null
             && mapRecord.getMapEntries().size() > 1
-            && concepts.get(1).get(0).getTerminologyId().matches("^[VWXY].*")) {
+            && primaryCode.matches("^[VWXY].*")) {
           result.addError("Remap, Chapter XX codes should either be on their "
               + "own, or used as secondary codes.");
         }
@@ -306,7 +321,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
             && hasUseAdditional(concepts.get(1).get(0))
             && !TerminologyUtility.hasAdvice(mapRecord.getMapEntries().get(0),
                 "POSSIBLE REQUIREMENT FOR CAUSATIVE AGENT CODE")) {
-          result.addWarning("Primary map entry may requre \"POSSIBLE "
+          result.addWarning("Primary map target may requre \"POSSIBLE "
               + "REQUIREMENT FOR CAUSATIVE AGENT CODE\" advice");
         }
 
@@ -333,6 +348,40 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
                       + "CHARACTER REQUIRED TO FURTHER SPECIFY THE SITE\" advice");
               break;
             }
+          }
+        }
+
+        //
+        // PREDICATE: Code range T90.0 through T98.3 must have either an
+        // external cause code from range Y85.0 - Y89.9 or advice POSSIBLE
+        // REQUIREMENT FOR EXTERNAL CAUSE CODE.
+        //
+        if (primaryCode.matches("^T9[0-7].*")
+            || primaryCode.startsWith("T98.0")
+            || primaryCode.startsWith("T98.1")
+            || primaryCode.startsWith("T98.2")
+            || primaryCode.startsWith("T98.3")) {
+
+          boolean hasAdvice =
+              TerminologyUtility.hasAdvice(mapRecord.getMapEntries().get(0),
+                  "POSSIBLE REQUIREMENT FOR EXTERNAL CAUSE CODE");
+          boolean hasExternalCauseCode = false;
+          boolean hasOtherExternalCauseCode = false;
+          for (final MapEntry entry : mapRecord.getMapEntries()) {
+            if (entry.getTargetId().matches("^Y8[5-9].*")) {
+              hasExternalCauseCode = true;
+              break;
+            } else if (entry.getTargetId().matches("^[VWXY].*")) {
+              hasOtherExternalCauseCode = true;
+            }
+
+          }
+          if (hasOtherExternalCauseCode
+              || (!hasAdvice && !hasExternalCauseCode)) {
+            result
+                .addError("Code range T90.0 through T98.3 must have either an "
+                    + "external cause code from range Y85.0 - Y89.9 or "
+                    + "advice \"POSSIBLE REQUIREMENT FOR EXTERNAL CAUSE CODE\"");
           }
         }
 
@@ -591,7 +640,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
   @Override
   public MapAdviceList computeMapAdvice(MapRecord mapRecord, MapEntry mapEntry)
     throws Exception {
-
+    cacheCodes();
     final List<MapAdvice> advices = new ArrayList<>(mapEntry.getMapAdvices());
     final ContentService contentService = new ContentServiceJpa();
 
@@ -608,6 +657,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         concept.getRelationships().size();
         concept.getInverseRelationships().size();
         concept.getSimpleRefSetMembers().size();
+      } else {
+        return new MapAdviceListJpa();
       }
 
       // Remove any advices that are purlely computed and keep only manually
@@ -630,9 +681,10 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       // asterisk code
       // primary or secondary - any position
       final String asteriskAdvice =
-          "THIS CODE MAY BE USED IN THE PRIMARY POSITION WHEN THE MANIFESTATION IS THE PRIMARY FOCUS OF CARE";
+          "THIS CODE MAY BE USED IN THE PRIMARY POSITION "
+              + "WHEN THE MANIFESTATION IS THE PRIMARY FOCUS OF CARE";
       // If asterisk code
-      if (TerminologyUtility.isAsteriskCode(concept, contentService)) {
+      if (asteriskCodes.contains(concept.getTerminologyId())) {
         if (!TerminologyUtility.hasAdvice(mapEntry, asteriskAdvice)) {
           advices.add(TerminologyUtility.getAdvice(mapProject, asteriskAdvice));
         }
@@ -736,11 +788,19 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       // ACTION: "add MAPPED FOLLOWING WHO GUIDANCE" advice
       //
       if (mapEntry.getMapGroup() == 1 && mapEntry.getMapPriority() == 1
-          && !mapRecord.getConceptName().toLowerCase().contains(" open")
-          && !mapRecord.getConceptName().toLowerCase().contains(" closed")
+          && !mapRecord.getConceptName().toLowerCase().contains("open")
+          && !mapRecord.getConceptName().toLowerCase().contains("closed")
           && mapEntry.getTargetName().endsWith("open")
           && !TerminologyUtility.hasAdvice(mapEntry, adviceP21a)) {
         advices.add(TerminologyUtility.getAdvice(mapProject, adviceP21a));
+      }
+
+      else if (mapEntry.getMapGroup() == 1 && mapEntry.getMapPriority() == 1
+          && !mapRecord.getConceptName().toLowerCase().contains("open")
+          && !mapRecord.getConceptName().toLowerCase().contains("closed")
+          && mapEntry.getTargetName().endsWith("closed")
+          && TerminologyUtility.hasAdvice(mapEntry, adviceP21a)) {
+        advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP21a));
       }
 
       final String adviceP23 =
@@ -752,22 +812,25 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       // ACTION: add the advice
       //
       if ((mapEntry.getTargetId().startsWith("S") || mapEntry.getTargetId()
-          .startsWith("T"))
-          && !TerminologyUtility.hasAdvice(mapEntry, adviceP23)) {
-        if (mapRecord.getMapEntries().size() == 1) {
+          .startsWith("T"))) {
+        if (mapRecord.getMapEntries().size() == 1
+            && !TerminologyUtility.hasAdvice(mapEntry, adviceP23)) {
           advices.add(TerminologyUtility.getAdvice(mapProject, adviceP23));
         } else {
           boolean found = false;
           for (int i = 1; i < mapRecord.getMapEntries().size(); i++) {
             // If external cause code found, set flag
-            if (mapRecord.getMapEntries().get(i).getTargetId()
+            if (mapRecord.getMapEntries().get(i).getTargetId() != null &&
+                mapRecord.getMapEntries().get(i).getTargetId()
                 .matches("^[VWXY].*")) {
               found = true;
               break;
             }
           }
-          if (!found) {
+          if (!found && !TerminologyUtility.hasAdvice(mapEntry, adviceP23)) {
             advices.add(TerminologyUtility.getAdvice(mapProject, adviceP23));
+          } else if (found && TerminologyUtility.hasAdvice(mapEntry, adviceP23)) {
+            advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP23));
           }
         }
       }
@@ -782,12 +845,27 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           && mapRecord.getMapEntries().size() > 1) {
         for (int i = 1; i < mapRecord.getMapEntries().size(); i++) {
           // If external cause code found, move on
-          if (mapRecord.getMapEntries().get(i).getTargetId()
+          if (mapRecord.getMapEntries().get(i).getTargetId() != null &&
+              mapRecord.getMapEntries().get(i).getTargetId()
               .matches("^[VWXY].*")) {
             advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP23));
             break;
           }
         }
+      }
+
+      //
+      // PREDICATE: Y90.0 - Y98: If a code from this range is the single map
+      // target, then advice is to be applied THIS CODE IS NOT TO BE USED IN THE
+      // PRIMARY POSITION.
+      // ACTION: add the advice
+      //
+      final String y90Advice =
+          "THIS CODE IS NOT TO BE USED IN THE PRIMARY POSITION";
+      if (mapEntry.getMapGroup() == 1 && mapEntry.getMapPriority() == 1
+          && mapEntry.getTargetId().matches("^Y9[0-8].*")
+          && !TerminologyUtility.hasAdvice(mapEntry, y90Advice)) {
+        advices.add(TerminologyUtility.getAdvice(mapProject, y90Advice));
       }
 
       MapAdviceList mapAdviceList = new MapAdviceListJpa();
@@ -841,22 +919,15 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         // Check other 3 digit codes
         else {
 
-          // otherwise, if 3-digit code has children, return false
-          TreePositionList tpList =
-              contentService.getTreePositions(terminologyId,
-                  mapProject.getDestinationTerminology(),
-                  mapProject.getDestinationTerminologyVersion());
-          if (tpList.getCount() == 0) {
-            return false;
-          }
+          cacheCodes();
 
-          if (tpList.getTreePositions().get(0).getChildrenCount() > 0) {
-            return false;
-          }
+          // Is it a valid 3 digit code?
+          return valid3DigitCodes.contains(terminologyId);
+
         }
       }
 
-      // if a four digit code disall
+      // if a four digit code is all
       else if (terminologyId.matches(".[0-9].\\..")) {
 
         // SPECIFIC CASE for W00-W19, X00-X09, Y10-Y34, fourth digit not
@@ -899,67 +970,25 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
     Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info(
         "Computing target terminology notes.");
-    final MetadataService metadataService = new MetadataServiceJpa();
-    final// open one content service to handle all concept retrieval
-    ContentService contentService = new ContentServiceJpa();
-    try {
-      // open the metadata service and get the relationship types
-      Map<String, String> simpleRefSets =
-          metadataService.getSimpleRefSets(
-              mapProject.getDestinationTerminology(),
-              mapProject.getDestinationTerminologyVersion());
+    cacheCodes();
 
-      // find the dagger-to-asterisk and asterisk-to-dagger types
-      String asteriskRefSetId = null;
-      String daggerRefSetId = null;
-
-      for (final String key : simpleRefSets.keySet()) {
-        if (simpleRefSets.get(key).equals("Asterisk refset"))
-          asteriskRefSetId = key;
-        if (simpleRefSets.get(key).equals("Dagger refset"))
-          daggerRefSetId = key;
-      }
-
-      if (asteriskRefSetId == null)
-        Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).warn(
-            "Could not find Asterisk refset");
-
-      if (daggerRefSetId == null)
-        Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).warn(
-            "Could not find Dagger refset");
-
-      Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info(
-          "  Asterisk to dagger relationship type found: " + asteriskRefSetId);
-
-      Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info(
-          "  Dagger to asterisk relationship type found: " + daggerRefSetId);
-
-      // for each tree position initially passed in, call the recursive helper
-      for (final TreePosition tp : treePositionList) {
-
-        computeTargetTerminologyNotesHelper(tp, contentService,
-            asteriskRefSetId, daggerRefSetId);
-      }
-    } catch (Exception e) {
-      throw e;
-    } finally {
-      metadataService.close();
-      contentService.close();
+    // for each tree position initially passed in, call the recursive helper
+    for (final TreePosition tp : treePositionList) {
+      computeTargetTerminologyNotesHelper(tp, asteriskRefSetId, daggerRefSetId);
     }
+
   }
 
   /**
    * Compute target terminology notes helper.
    * 
    * @param treePosition the tree position
-   * @param contentService the content service
    * @param asteriskRefSetId the asterisk ref set id
    * @param daggerRefSetId the dagger ref set id
    * @throws Exception the exception
    */
   private void computeTargetTerminologyNotesHelper(TreePosition treePosition,
-    ContentService contentService, String asteriskRefSetId,
-    String daggerRefSetId) throws Exception {
+    String asteriskRefSetId, String daggerRefSetId) throws Exception {
 
     Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info(
         "Computing target terminology note for "
@@ -968,29 +997,18 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
     // initially set the note to an empty string
     treePosition.setTerminologyNote("");
 
-    // get the concept
-    Concept concept =
-        contentService.getConcept(treePosition.getTerminologyId(),
-            mapProject.getDestinationTerminology(),
-            mapProject.getDestinationTerminologyVersion());
-
-    // cycle over the simple ref set members
-    // Add dagger/asterisk
-    for (final SimpleRefSetMember simpleRefSetMember : concept
-        .getSimpleRefSetMembers()) {
-      Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info(
-          "   " + simpleRefSetMember.getRefSetId());
-      if (simpleRefSetMember.getRefSetId().equals(asteriskRefSetId))
-        treePosition.setTerminologyNote("*");
-      else if (simpleRefSetMember.getRefSetId().equals(daggerRefSetId))
-        treePosition.setTerminologyNote("\u2020");
+    // Simple lookup here
+    if (asteriskCodes.contains(treePosition.getTerminologyId())) {
+      treePosition.setTerminologyNote("*");
+    } else if (asteriskCodes.contains(treePosition.getTerminologyId())) {
+      treePosition.setTerminologyNote("\u2020");
     }
 
     // if this tree position has children, set their terminology notes
     // recursively
     for (final TreePosition child : treePosition.getChildren()) {
-      computeTargetTerminologyNotesHelper(child, contentService,
-          asteriskRefSetId, daggerRefSetId);
+      computeTargetTerminologyNotesHelper(child, asteriskRefSetId,
+          daggerRefSetId);
     }
 
   }
@@ -1314,6 +1332,24 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
     }
   }
 
+  /* see superclass */
+  @Override
+  public Map<String, String> getAllTerminologyNotes() throws Exception {
+    final Map<String, String> map = new HashMap<>();
+    cacheCodes();
+    for (final String code : asteriskCodes) {
+      if (this.isTargetCodeValid(code)) {
+        map.put(code, "*");
+      }
+    }
+    for (final String code : daggerCodes) {
+      if (this.isTargetCodeValid(code)) {
+        map.put(code, "\u2020");
+      }
+    }
+    return map;
+  }
+
   /**
    * Returns the icd10 accidental poisoning codes. For descendants of 72431002
    * (accidental poisoning)
@@ -1422,9 +1458,11 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
    *
    * @param concept the concept
    * @return true, if successful
+   * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
-  private boolean hasUseAdditional(Concept concept) {
+  private boolean hasUseAdditional(Concept concept) throws Exception {
+    System.out.println("has use additional" + concept.getTerminologyId() + ", "
+        + concept);
     for (final Description desc : concept.getDescriptions()) {
       if (desc.getTerm().matches("Use additional code.*infectious agent.*")) {
         return true;
@@ -1432,8 +1470,143 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           "Use additional code.*bacterial agent.*")) {
         return true;
       }
-
     }
+    System.out.println(" no code itself");
+
+    final List<Concept> parents = TerminologyUtility.getActiveParents(concept);
+    System.out.println("  parents = " + parents);
+    for (final Concept parent : parents) {
+      return hasUseAdditional(parent);
+    }
+    System.out.println("  return false");
+
     return false;
   }
+
+  /**
+   * Cache dagger, asterisk, and valid 3-digit codes.
+   *
+   * @throws Exception the exception
+   */
+  @SuppressWarnings({
+    "unchecked"
+  })
+  private void cacheCodes() throws Exception {
+
+    // lazy initialize
+    if (!asteriskCodes.isEmpty()) {
+      return;
+    }
+    final ContentServiceJpa contentService = new ContentServiceJpa();
+    final MetadataService metadataService = new MetadataServiceJpa();
+    final EntityManager manager = contentService.getEntityManager();
+    try {
+      // open the metadata service and get the relationship types
+      Map<String, String> simpleRefSets =
+          metadataService.getSimpleRefSets(
+              mapProject.getDestinationTerminology(),
+              mapProject.getDestinationTerminologyVersion());
+
+      // find the dagger/asterisk types
+      for (final String key : simpleRefSets.keySet()) {
+        if (simpleRefSets.get(key).equals("Asterisk refset"))
+          asteriskRefSetId = key;
+        if (simpleRefSets.get(key).equals("Dagger refset"))
+          daggerRefSetId = key;
+      }
+
+      if (asteriskRefSetId == null)
+        Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).warn(
+            "Could not find Asterisk refset");
+
+      if (daggerRefSetId == null)
+        Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).warn(
+            "Could not find Dagger refset");
+
+      // Look up asterisk codes
+      final javax.persistence.Query asteriskQuery =
+          manager.createQuery("select m.concept from SimpleRefSetMemberJpa m "
+              + "where m.terminology = :terminology "
+              + "and m.terminologyVersion = :terminologyVersion "
+              + "and m.refSetId = :refSetId ");
+      asteriskQuery.setParameter("terminology",
+          mapProject.getDestinationTerminology());
+      asteriskQuery.setParameter("terminologyVersion",
+          mapProject.getDestinationTerminologyVersion());
+      asteriskQuery.setParameter("refSetId", asteriskRefSetId);
+      List<Concept> concepts = asteriskQuery.getResultList();
+      for (final Concept concept : concepts) {
+        asteriskCodes.add(concept.getTerminologyId());
+      }
+
+      // Look up dagger codes
+      final javax.persistence.Query daggerQuery =
+          manager.createQuery("select m.concept from SimpleRefSetMemberJpa m "
+              + "where m.terminology = :terminology "
+              + "and m.terminologyVersion = :terminologyVersion "
+              + "and m.refSetId = :refSetId ");
+      daggerQuery.setParameter("terminology",
+          mapProject.getDestinationTerminology());
+      daggerQuery.setParameter("terminologyVersion",
+          mapProject.getDestinationTerminologyVersion());
+      daggerQuery.setParameter("refSetId", daggerRefSetId);
+      concepts = daggerQuery.getResultList();
+      for (final Concept concept : concepts) {
+        daggerCodes.add(concept.getTerminologyId());
+      }
+
+      // Look up valid 3 digit codes. This is actually just a manual list
+      // derived from this query:
+      // select terminologyId from concepts
+      // where terminology = 'ICD10'
+      // and terminologyVersion = '2010'
+      // and length(terminologyId) = 3
+      // and terminologyId NOT IN
+      // (select substring_index(ancestorPath, '~',-1)
+      // from tree_positions
+      // where terminology='ICD10'
+      // and terminologyVersion = '2010');
+      //
+      valid3DigitCodes.addAll(Arrays.asList(new String[] {
+          "A33", "A34", "A35", "A38", "A46", "A55", "A57", "A58", "A64", "A65",
+          "A70", "A78", "A86", "A89", "A90", "A91", "A94", "A99", "B03", "B04",
+          "B07", "B09", "B24", "B49", "B54", "B59", "B64", "B72", "B73", "B75",
+          "B79", "B80", "B86", "B89", "B91", "B92", "B99", "C01", "C07", "C12",
+          "C19", "C20", "C23", "C33", "C37", "C52", "C55", "C56", "C58", "C61",
+          "C64", "C65", "C66", "C73", "C97", "D24", "D27", "D34", "D45", "D62",
+          "D65", "D66", "D67", "D70", "D71", "D77", "E02", "E15", "E40", "E41",
+          "E42", "E43", "E45", "E46", "E52", "E54", "E58", "E59", "E60", "E65",
+          "E68", "E86", "E90", "F03", "F04", "F09", "F21", "F24", "F28", "F29",
+          "F39", "F54", "F55", "F59", "F61", "F69", "F82", "F83", "F88", "F89",
+          "F99", "G01", "G07", "G08", "G09", "G10", "G14", "G20", "G22", "G26",
+          "G35", "G64", "G92", "G98", "H46", "H55", "H71", "H82", "I00", "I10",
+          "I38", "I48", "I64", "I81", "I99", "J00", "J09", "J13", "J14", "J22",
+          "J36", "J40", "J42", "J46", "J47", "J60", "J61", "J64", "J65", "J80",
+          "J81", "J82", "J90", "J91", "K20", "K30", "K36", "K37", "L00", "L14",
+          "L22", "L26", "L42", "L45", "L52", "L80", "L82", "L83", "L84", "L86",
+          "L88", "L97", "N10", "N12", "N19", "N23", "N26", "N40", "N44", "N46",
+          "N47", "N61", "N62", "N63", "N72", "N86", "N96", "O11", "O13", "O16",
+          "O25", "O40", "O48", "O85", "O94", "O95", "P38", "P53", "P60", "P75",
+          "P77", "P90", "P93", "P95", "Q02", "R02", "R05", "R11", "R12", "R13",
+          "R14", "R15", "R17", "R18", "R21", "R31", "R32", "R33", "R34", "R35",
+          "R36", "R42", "R51", "R53", "R54", "R55", "R58", "R64", "R69", "R71",
+          "R72", "R75", "R80", "R81", "R91", "R92", "R95", "R98", "R99", "S16",
+          "S18", "S47", "T07", "T16", "T55", "T58", "T64", "T66", "T68", "T71",
+          "T96", "T97", "U88", "V98", "V99", "Y66", "Y69", "Y86", "Y95", "Y96",
+          "Y97", "Y98", "Z21", "Z33"
+      }));
+
+      // Report to log
+      Logger.getLogger(getClass()).info("  asterisk codes = " + asteriskCodes);
+      Logger.getLogger(getClass()).info("  dagger codes = " + daggerCodes);
+      Logger.getLogger(getClass()).info(
+          "  valid 3 digit codes = " + valid3DigitCodes);
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      contentService.close();
+      metadataService.close();
+    }
+  }
+
 }

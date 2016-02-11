@@ -1170,4 +1170,10 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     return "No target";
   }
 
+  /* see superclass */
+  @Override
+  public Map<String, String> getAllTerminologyNotes() throws Exception {
+    return new HashMap<>();
+  }
+
 }

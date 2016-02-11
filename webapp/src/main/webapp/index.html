@@ -142,7 +142,7 @@
               ng-show="globalLongError"
               title="{{globalErrorExpand ? 'Hide' : 'Show'}} long eror"
               ng-click="globalErrorExpand = !globalErrorExpand;"></i>
-            <i class="glyphicon glyphicon-remove" ng-click="resetGlobalError()"></i>
+            <i class="glyphicon glyphicon-remove" ng-click="globalError = '';"></i>
           </span>
           <span class="intro-text"
             ng-show="globalLongError && globalErrorExpand">
