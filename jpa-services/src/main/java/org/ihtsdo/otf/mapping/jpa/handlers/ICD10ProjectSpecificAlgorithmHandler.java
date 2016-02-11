@@ -681,7 +681,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       //
       final String externalCauseCodeAdvice =
           "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE";
-      final boolean hasExternalCauseCodeAdvice = hasExternalCauseCodeAdvice;
+      final boolean hasExternalCauseCodeAdvice =
+          TerminologyUtility.hasAdvice(mapEntry, externalCauseCodeAdvice);
 
       //
       // PREDICATE: asterisk code is used and it does not have
