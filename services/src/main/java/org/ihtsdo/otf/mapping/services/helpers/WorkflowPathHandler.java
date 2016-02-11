@@ -100,4 +100,12 @@ public interface WorkflowPathHandler extends Configurable {
     WorkflowAction workflowAction, MapProject mapProject, MapUser mapUser,
     Set<MapRecord> mapRecords, MapRecord mapRecord) throws Exception;
 
+  /**
+   * Indicates whether or not map record in eligible for insertion into workflow
+   *
+   * @param mapRecord the map record
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public boolean isMapRecordInWorkflow(MapRecord mapRecord);
+
 }
