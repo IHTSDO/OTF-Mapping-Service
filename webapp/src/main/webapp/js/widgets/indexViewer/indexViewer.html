@@ -19,7 +19,7 @@
 </form>
 
 
-<div style="float: left; width: 60%; padding: 10px;">
+<div style="float: left; width: 60%; padding: 10px; text-overflow: ellipsis; overflow: hidden;">
   <b>{{mainTermLabel}}</b>
 </div>
 
@@ -28,11 +28,17 @@
     ng-click="goFirstResult()">
     <i class="glyphicon glyphicon-backward"></i>
   </a>
+  <a ng-show="!firstArrow">
+    <i class="glyphicon glyphicon-invisible"></i>
+  </a>
   <a title="Go to previous search result" ng-show="previousArrow"
     ng-click="goPreviousResult()">
     <i class="glyphicon glyphicon-step-backward"></i>
   </a>
-  {{searchResultsLabel}}
+  <a ng-show="!previousArrow">
+    <i class="glyphicon glyphicon-invisible"></i>
+  </a>
+  <span style="width: 65px; display: inline-block;">{{searchResultsLabel}}</span>
   <a title="Go to next search result" ng-show="nextArrow"
     ng-click="goNextResult()">
     <i class="glyphicon glyphicon-step-forward"></i>
