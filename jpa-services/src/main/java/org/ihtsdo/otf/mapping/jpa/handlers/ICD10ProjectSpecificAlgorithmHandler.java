@@ -885,6 +885,14 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       // should not have advice POSSIBLE REQUIREMENT FOR ADDITIONAL CODE TO
       // FULLY DESCRIBE THE DISEASE OR CONDITION.
       //
+      if (TerminologyUtility.hasAdvice(mapEntry,
+          "POSSIBLE REQUIREMENT FOR ADDITIONAL CODE "
+              + "TO FULLY DESCRIBE THE DISEASE OR CONDITION")
+          && mapEntry.getTargetId().matches("^I2[0-5].*")) {
+        advices.remove(TerminologyUtility.getAdvice(mapProject,
+            "POSSIBLE REQUIREMENT FOR ADDITIONAL CODE "
+                + "TO FULLY DESCRIBE THE DISEASE OR CONDITION"));
+      }
 
       //
       // PREDICATE: Any code from category E10, Insulin-dependent diabetes
