@@ -12,7 +12,7 @@ import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 /**
- * Loads unpublished complex maps.
+ * Performs QA of the workflow
  * 
  * See admin/qa/pom.xml for a sample execution.
  * 
