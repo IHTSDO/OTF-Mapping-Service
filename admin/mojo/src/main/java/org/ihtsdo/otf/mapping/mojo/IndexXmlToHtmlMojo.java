@@ -745,6 +745,7 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
       out.println("<center><h3>" + documentTitle
           + "</h3><div style=\"width: 100%; background-color: #BBBBBB;\">"
           + data.get("title") + "</div></center><p>");
+      out.println("<div id=\"" + data.get("title") + "0\"></div>");
       // handle the case where header columns
       // were encountered outside "letter" tags
       if (headerHtml != null)

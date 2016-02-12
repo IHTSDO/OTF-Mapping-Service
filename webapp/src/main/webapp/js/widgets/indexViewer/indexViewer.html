@@ -57,7 +57,7 @@
 <div align="center" style="padding: 10px;">
   <div style="display: inline; padding: 8px;"
     ng-repeat="indexTab in indexPages  | orderBy: 'toString()'">
-    <a ng-style="set_style(indexTab)" ng-click="updateUrl(indexTab)">{{indexTab}}</a>
+    <a ng-style="set_style(indexTab)" ng-click="goToElement(indexTab + '0')">{{indexTab}}</a>
   </div>
 </div>
 
