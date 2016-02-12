@@ -108,11 +108,6 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
     secondSpecialistEditingState.addWorkflowCombination(
         new WorkflowStatusCombination(Arrays.asList(WorkflowStatus.REVISION,
             WorkflowStatus.EDITING_DONE, WorkflowStatus.EDITING_IN_PROGRESS)));
-    secondSpecialistEditingState.addWorkflowCombination(
-        new WorkflowStatusCombination(Arrays.asList(WorkflowStatus.REVISION,
-            WorkflowStatus.CONFLICT_DETECTED,
-            WorkflowStatus.CONFLICT_DETECTED)));
-
     trackingRecordStateToActionMap.put(secondSpecialistEditingState,
         new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING,
             WorkflowAction.SAVE_FOR_LATER, WorkflowAction.UNASSIGN)));
@@ -206,7 +201,7 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
     // sixth, basic check that the workflow action is permitted for this
     // state
     if (!trackingRecordStateToActionMap.get(state).contains(action)) {
-      result.addError("Workflow action not permitted for state");
+      result.addError("Workflow action " + action + " not permitted for state " + state.getWorkflowStateName());
       return result;
     }
 
@@ -375,10 +370,8 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
               .equals(WorkflowStatus.CONFLICT_IN_PROGRESS)) {
         result.addError("User's record not in correct workflow state");
       }
-    } else if (state.equals(conflictFinishedState)) {
-      result.addError("Invalid state/could not determine state");
     }
-
+    
     // STATE: Lead has finished work and record is ready for publication or
     // further edits
     else if (state.equals(conflictFinishedState)) {
@@ -719,7 +712,7 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
         }
 
         // if legacy + one specialist record, new specialist record
-        if (newRecords.size() == 2) {
+        else if (newRecords.size() == 2) {
           newRecord.setWorkflowStatus(WorkflowStatus.NEW);
         }
 
