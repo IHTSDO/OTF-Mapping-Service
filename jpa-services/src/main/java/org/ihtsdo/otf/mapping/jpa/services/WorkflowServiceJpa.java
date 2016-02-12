@@ -579,7 +579,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
 
     // clear the pointer fields (i.e. ids and names of mapping
     // objects)
-    trackingRecord.setMapRecordIds(null);
+    trackingRecord.setMapRecordIds(new HashSet<Long>());
     trackingRecord.setAssignedUserNames(null);
     trackingRecord.setUserAndWorkflowStatusPairs(null);
 
