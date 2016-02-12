@@ -364,7 +364,7 @@ public class IndexUtility {
   
   
   /**
-   * Apply pfs to lucene query.
+   * Apply pfs to lucene query. 
    *
    * @param clazz the clazz
    * @param fieldNamesKey the field names key
@@ -382,7 +382,7 @@ public class IndexUtility {
   }
 
   /**
-   * Apply pfs to lucene query2.
+   * Apply pfs to lucene query2, allows disabling of query log
    *
    * @param clazz the clazz
    * @param fieldNamesKey the field names key

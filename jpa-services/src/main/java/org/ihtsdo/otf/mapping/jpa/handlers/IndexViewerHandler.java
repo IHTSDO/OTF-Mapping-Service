@@ -2,6 +2,8 @@ package org.ihtsdo.otf.mapping.jpa.handlers;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +65,7 @@ public class IndexViewerHandler {
     String subSearchField, String subSubSearchField, boolean allFlag)
     throws Exception {
 
-    final SearchResultList searchResultList = new SearchResultListJpa();
+    SearchResultList searchResultList = new SearchResultListJpa();
 
     List<String> mainSearchResults = new ArrayList<>();
     final List<String> subSearchResults = new ArrayList<>();
@@ -109,7 +111,7 @@ public class IndexViewerHandler {
         searchResult.setValue2(linkToLabelMap.get(result));
         searchResultList.addSearchResult(searchResult);
       }
-      return searchResultList;
+      return sortSearchResultList(searchResultList);
     } else {
       startLevel =
           Integer.parseInt(config
@@ -132,7 +134,7 @@ public class IndexViewerHandler {
         searchResult.setValue2(linkToLabelMap.get(result));
         searchResultList.addSearchResult(searchResult);
       }
-      return searchResultList;
+      return sortSearchResultList(searchResultList);
     } else {
       startLevel =
           Integer.parseInt(config
@@ -153,10 +155,23 @@ public class IndexViewerHandler {
       searchResult.setValue2(linkToLabelMap.get(result));
       searchResultList.addSearchResult(searchResult);
     }
-    return searchResultList;
+    
+    return sortSearchResultList(searchResultList);
 
   }
 
+  private SearchResultList sortSearchResultList(SearchResultList list) {
+    // sort search results
+    List<SearchResult> searchResults = list.getSearchResults();
+    Collections.sort(searchResults, new Comparator<SearchResult>(){
+      public int compare(SearchResult o1, SearchResult o2){
+         return o1.getValue2().compareTo(o2.getValue2());
+      }
+    });
+    list.setSearchResults(searchResults);
+    return list;
+  }
+  
   /**
    * Performs the search.
    *
