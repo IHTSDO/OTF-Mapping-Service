@@ -1107,7 +1107,6 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
   }
 
   /* see superclass */
-  @SuppressWarnings("unused")
   @Override
   public List<String> computeWorkflowStatusErrors(MapProject mapProject)
     throws Exception {
