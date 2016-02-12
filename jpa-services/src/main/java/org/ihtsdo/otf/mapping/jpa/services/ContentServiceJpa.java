@@ -104,9 +104,7 @@ public class ContentServiceJpa extends RootServiceJpa
     List<Concept> m = null;
 
     final javax.persistence.Query query =
-        manager.createQuery("select m.concept from SimpleRefSetMemberJpa m "
-            + "where terminology = :terminology "
-            + "and terminologyVersion = :terminologyVersion " + "and");
+        manager.createQuery("select c from ConceptJpa c ");
 
     m = query.getResultList();
     final ConceptListJpa ConceptList = new ConceptListJpa();
@@ -2190,12 +2188,13 @@ public class ContentServiceJpa extends RootServiceJpa
     PfsParameter pfs = new PfsParameterJpa();
     pfs.setMaxResults(1);
 
+
     // get the full text query from index utility (note must be escaped due to ~ characters)
     FullTextQuery fullTextQuery = IndexUtility.applyPfsToLuceneQuery(TreePositionJpa.class,
         TreePositionJpa.class, sb.toString(), pfs, manager, false);
 
     int results = fullTextQuery.getResultSize();
-     
+    
     return results > 0;
 
   }

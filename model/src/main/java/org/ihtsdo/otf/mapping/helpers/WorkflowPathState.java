@@ -98,11 +98,10 @@ public class WorkflowPathState {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result =
-        prime
-            * result
-            + ((workflowCombinations == null) ? 0 : workflowCombinations
-                .hashCode());
+    result = prime * result + ((workflowCombinations == null) ? 0
+        : workflowCombinations.hashCode());
+    result = prime * result
+        + ((workflowStateName == null) ? 0 : workflowStateName.hashCode());
     return result;
   }
 
@@ -119,6 +118,11 @@ public class WorkflowPathState {
       if (other.workflowCombinations != null)
         return false;
     } else if (!workflowCombinations.equals(other.workflowCombinations))
+      return false;
+    if (workflowStateName == null) {
+      if (other.workflowStateName != null)
+        return false;
+    } else if (!workflowStateName.equals(other.workflowStateName))
       return false;
     return true;
   }
