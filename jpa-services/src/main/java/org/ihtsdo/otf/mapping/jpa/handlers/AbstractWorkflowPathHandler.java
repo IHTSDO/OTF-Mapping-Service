@@ -236,6 +236,7 @@ public abstract class AbstractWorkflowPathHandler
         }
       }
     } catch (Exception e) {
+      e.printStackTrace();
       result.addError("Unexpected error validating tracking record");
     }
 
