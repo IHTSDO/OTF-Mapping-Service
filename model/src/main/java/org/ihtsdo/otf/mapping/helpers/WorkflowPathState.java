@@ -100,34 +100,30 @@ public class WorkflowPathState {
     int result = 1;
     result = prime * result + ((workflowCombinations == null) ? 0
         : workflowCombinations.hashCode());
+    result = prime * result
+        + ((workflowStateName == null) ? 0 : workflowStateName.hashCode());
     return result;
   }
 
   @Override
   public boolean equals(Object obj) {
-    int i = 0;
     if (this == obj)
-
       return true;
-    System.out.println(i++);
     if (obj == null)
       return false;
-    System.out.println(i++);
     if (getClass() != obj.getClass())
       return false;
-    System.out.println(i++);
     WorkflowPathState other = (WorkflowPathState) obj;
     if (workflowCombinations == null) {
       if (other.workflowCombinations != null)
         return false;
-      System.out.println(i++);
     } else if (!workflowCombinations.equals(other.workflowCombinations))
-
-    {
-      System.out.println(i++);
       return false;
-    }
-    System.out.println(i++);
+    if (workflowStateName == null) {
+      if (other.workflowStateName != null)
+        return false;
+    } else if (!workflowStateName.equals(other.workflowStateName))
+      return false;
     return true;
   }
 

@@ -297,8 +297,6 @@ public abstract class AbstractWorkflowPathHandler
             .addWorkflowStatus(WorkflowStatus.valueOf(workflowStatus));
       }
     }
-    
-    System.out.println("Workflow Combination: " + workflowCombination.toString());
 
     return workflowCombination;
   }
@@ -482,7 +480,6 @@ public abstract class AbstractWorkflowPathHandler
   public WorkflowPathState getWorkflowStateForTrackingRecord(
     TrackingRecord trackingRecord) {
     WorkflowStatusCombination wc = getWorkflowCombinationForTrackingRecord(trackingRecord);
-    System.out.println("getWorkflowStateForTrackingRecord " + wc.toString());
     return getWorkflowStateForWorkflowCombination(wc);
   }
 
@@ -494,16 +491,9 @@ public abstract class AbstractWorkflowPathHandler
    */
   public WorkflowPathState getWorkflowPathStateForWorkflowStatusCombination(
     WorkflowStatusCombination combination) {
-
-    System.out.println("Checking combination " + combination.toString());
     for (WorkflowPathState state : trackingRecordStateToActionMap.keySet()) {
-      System.out.println("  Checking against " + state.getWorkflowStateName());
-      for (WorkflowStatusCombination wsc : state.getWorkflowCombinations()) {
-        System.out.println("    " + wsc.toString());
-      }
-      if (state.contains(combination)) {
-        System.out.println("  FOUND");
-        return state;
+     if (state.contains(combination)) {
+         return state;
       }
     }
 
