@@ -128,6 +128,11 @@
     show-title="false"></div>
 </div>
 
+
+<pagination total-items="nRecords" page="searchParameters.page" max-size="10"
+  class="pagination-sm" boundary-links="true" rotate="true"
+  num-pages="numRecordPages" on-select-page="retrieveRecords(page)"></pagination>
+  
 <div ng-include src="'./partials/footer.html'"></div>
 
 
