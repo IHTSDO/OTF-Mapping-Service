@@ -257,7 +257,7 @@ public abstract class AbstractWorkflowPathHandler
     TrackingRecord trackingRecord, WorkflowAction action, MapUser mapUser)
       throws Exception {
 
-    // NOTE: This function MUST be overwritten in
+    // NOTE: This function MUST be overwritten in workflow path handlers
     return null;
   }
 
