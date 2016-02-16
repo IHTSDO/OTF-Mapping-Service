@@ -354,13 +354,12 @@ public class WorkflowSimplePathHandler extends AbstractWorkflowPathHandler {
 
         switch (mapRecord.getWorkflowStatus()) {
 
-          
           case EDITING_DONE:
           case EDITING_IN_PROGRESS:
           case NEW:
 
-            Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
-                "FinishEditing: SIMPLE_PATH, Specialist level work");
+            Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
+                .info("FinishEditing: SIMPLE_PATH, Specialist level work");
 
             // check assumptions
             // - should only be one record
@@ -389,7 +388,7 @@ public class WorkflowSimplePathHandler extends AbstractWorkflowPathHandler {
           throw new Exception(
               "Publish called on SIMPLE_PATH for map record not marked as EDITING_DONE");
         }
-        
+
         // set the user's record to READY_FOR_PUBLICATION
         mapRecord.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
 
