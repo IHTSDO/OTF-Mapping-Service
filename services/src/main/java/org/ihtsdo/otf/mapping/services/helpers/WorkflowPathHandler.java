@@ -3,6 +3,7 @@ package org.ihtsdo.otf.mapping.services.helpers;
 import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.Configurable;
+import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
@@ -41,7 +42,7 @@ public interface WorkflowPathHandler extends Configurable {
    */
   public ValidationResult validateTrackingRecordForActionAndUser(
     TrackingRecord trackingRecord, WorkflowAction action, MapUser mapUser)
-    throws Exception;
+      throws Exception;
 
   /**
    * Find available work.
@@ -58,7 +59,7 @@ public interface WorkflowPathHandler extends Configurable {
   public SearchResultList findAvailableWork(MapProject mapProject,
     MapUser mapUser, MapUserRole userRole, String query,
     PfsParameter pfsParameter, WorkflowService workflowService)
-    throws Exception;
+      throws Exception;
 
   /**
    * Find assigned work.
@@ -75,7 +76,7 @@ public interface WorkflowPathHandler extends Configurable {
   public SearchResultList findAssignedWork(MapProject mapProject,
     MapUser mapUser, MapUserRole userRole, String query,
     PfsParameter pfsParameter, WorkflowService workflowService)
-    throws Exception;
+      throws Exception;
 
   /**
    * Gets the name.
@@ -107,5 +108,8 @@ public interface WorkflowPathHandler extends Configurable {
    * @return <code>true</code> if so, <code>false</code> otherwise
    */
   public boolean isMapRecordInWorkflow(MapRecord mapRecord);
+
+  public MapRecordList getOriginMapRecordsForMapRecord(MapRecord mapRecord,
+    WorkflowService workflowService) throws Exception;
 
 }

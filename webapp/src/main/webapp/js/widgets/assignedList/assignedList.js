@@ -931,6 +931,13 @@ angular
                 return $scope.currentUser;
               },
               action : function() {
+                
+                // catch simple workflow case
+                if ($scope.focusProject.workflowType === 'SIMPLE_PATH') {
+                  return 'publish';
+                }
+                
+                // otherwise, distinguish between lead work and specialist work
                 return (workflowStatus === 'CONFLICT_RESOLVED'
                   || workflowStatus === 'REVIEW_RESOLVED' || workflowStatus === 'QA_RESOLVED') ? 'publish'
                   : 'finish';
