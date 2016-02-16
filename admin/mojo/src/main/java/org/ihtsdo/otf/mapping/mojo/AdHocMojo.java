@@ -145,7 +145,7 @@ public class AdHocMojo extends AbstractMojo {
         for (MapEntry me : mr.getMapEntries()) {
 
           // if an icd10 assterisk code
-          if (isIcd10AsteriskCode(me.getTargetId(), asteriskConceptId)) {
+          if (me.getMapGroup() == 1 && isIcd10AsteriskCode(me.getTargetId(), asteriskConceptId)) {
 
             if (!me.getMapAdvices().contains(mapAdvice)) {
 
@@ -160,6 +160,14 @@ public class AdHocMojo extends AbstractMojo {
               nAdded++;
 
             }
+          } else if (me.getMapAdvices().contains(mapAdvice)) {
+            Logger.getLogger(AdHocMojo.class)
+            .info("Removing extraneous advice from map record " + mr.getId()
+                + " for concept " + mr.getConceptId() + ", map entry "
+                + me.getId() + " with target " + me.getTargetId());
+            
+            me.removeMapAdvice(mapAdvice);
+            recordChanged = true;
           }
         }
 
