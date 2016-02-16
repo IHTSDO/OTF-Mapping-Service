@@ -110,7 +110,7 @@ public class AdHocMojo extends AbstractMojo {
           "Found hibernate id for ICD10 asterisk refset: " + asteriskConceptId);
 
       Logger.getLogger(this.getClass())
-          .info("Cycling over published and publication-ready records...");
+          .info("Loading published and publication-ready records...");
 
       // count variables for log output
       int nTotal = 0;
@@ -119,6 +119,11 @@ public class AdHocMojo extends AbstractMojo {
       // cycle over all map records for project
       List<MapRecord> mapRecords =
           ws.getMapRecordsForMapProject(mapProject.getId()).getMapRecords();
+      
+      Logger.getLogger(this.getClass())
+      .info("Cycling over published and publication-ready records...");
+      
+      ws.beginTransaction();
 
       Iterator<MapRecord> iter = mapRecords.iterator();
 
