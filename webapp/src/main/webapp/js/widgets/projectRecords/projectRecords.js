@@ -697,7 +697,7 @@ angular
         $scope.qaComplete = 0;
         $scope.qaTotal = nRecords;
 
-               // Cancel
+        // Cancel
         $scope.cancel = function() {
           console.debug('Stopping QA Records...');
           $scope.isRunning = false;
@@ -711,10 +711,10 @@ angular
 
         // Create QA records
         $scope.qaRecords = function(label) {
-
           $scope.isRunning = true;
-
-          $http.post(root_mapping + 'record/project/id/' + projectId, pfs).then(function(response) {
+          $http.post(root_mapping + 'record/project/id/' + projectId + '/published', pfs).then(
+          // Success
+          function(response) {
             var records = response.data.mapRecord;
 
             for (var i = 0; i < records.length; i++) {
@@ -738,11 +738,13 @@ angular
               }
             }
 
-          }, function(error) {
+          },
+          // Error
+          function(error) {
             $scope.error = "Error retrieving map records";
           });
         };
-        
+
         // helper function (with promise) to assign a single record to QA
         function qaRecord(record, label) {
           var deferred = $q.defer();
