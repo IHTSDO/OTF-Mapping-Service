@@ -173,7 +173,7 @@ public class AdHocMojo extends AbstractMojo {
       Logger.getLogger(this.getClass()).info("Committing...");
 
       // execute the transaction
-      // ws.commit();
+      ws.commit();
 
       Logger.getLogger(this.getClass()).info("Finished");
 
