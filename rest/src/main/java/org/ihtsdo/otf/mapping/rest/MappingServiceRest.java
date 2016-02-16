@@ -90,6 +90,8 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
+import org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler;
+import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
@@ -3180,7 +3182,6 @@ public class MappingServiceRest extends RootServiceRest {
   // /////////////////////////
 
   /**
-   * TODO: Make this project specific
    * 
    * Given concept information, returns a ConceptList of descendant concepts
    * without associated map records.
@@ -3627,23 +3628,37 @@ public class MappingServiceRest extends RootServiceRest {
         .info("RESTful call (Mapping): /record/id/" + mapRecordId
             + "/conflictOrigins");
     String user = null;
-    final WorkflowService mappingService = new WorkflowServiceJpa();
+    final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
-      final MapRecord mapRecord = mappingService.getMapRecord(mapRecordId);
+      final MapRecord mapRecord = workflowService.getMapRecord(mapRecordId);
 
       // authorize call
       user = authorizeProject(mapRecord.getMapProjectId(), authToken,
           MapUserRole.SPECIALIST, "get origin records for conflict",
           securityService);
+      
+      // get the project
+      MapProject project = workflowService.getMapProject(mapRecord.getMapProjectId());
 
-      return mappingService.getOriginMapRecordsForConflict(mapRecordId);
+      // find the tracking record for this map record
+      TrackingRecord trackingRecord = workflowService.getTrackingRecordForMapProjectAndConcept(project, mapRecord.getConceptId());
+      
+      // instantiate workflow handler for this tracking record
+      WorkflowPathHandler handler = workflowService.getWorkflowPathHandler(trackingRecord.getWorkflowPath().toString());
+      
+      // get the origin map records
+      MapRecordList mapRecords = handler.getOriginMapRecordsForMapRecord(mapRecord, workflowService);
+   
+      return mapRecords;
+      
+      // return mappingService.getOriginMapRecordsForConflict(mapRecordId);
 
     } catch (Exception e) {
-      handleException(e, "trying to get origin records for conflict/review",
+      handleException(e, "trying to get origin records for user review",
           user, "", mapRecordId.toString());
       return null;
     } finally {
-      mappingService.close();
+      workflowService.close();
       securityService.close();
     }
 
@@ -4053,6 +4068,7 @@ public class MappingServiceRest extends RootServiceRest {
    * @param destFile the dest file
    * @throws IOException Signals that an I/O exception has occurred.
    */
+  @SuppressWarnings("resource")
   public static void copyFile(File sourceFile, File destFile)
     throws IOException {
     if (!destFile.exists()) {
