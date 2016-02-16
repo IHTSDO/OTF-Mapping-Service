@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,10 +24,12 @@ import org.ihtsdo.otf.mapping.helpers.ReportListJpa;
 import org.ihtsdo.otf.mapping.helpers.ReportQueryType;
 import org.ihtsdo.otf.mapping.helpers.ReportResultItemList;
 import org.ihtsdo.otf.mapping.helpers.ReportResultItemListJpa;
+import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
+import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.reports.Report;
 import org.ihtsdo.otf.mapping.reports.ReportDefinition;
@@ -1162,7 +1165,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
    * @throws Exception the exception
    */
   @SuppressWarnings({
-      "unchecked"
+    "unchecked"
   })
   private List<Object[]> executeQuery(String query, boolean nativeFlag)
     throws Exception {
@@ -1317,16 +1320,35 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
   /* see superclass */
   @Override
-  public SearchResultList getQALabels() {
+  public SearchResultList getQALabels(Long mapProjectId) throws Exception {
 
-    final ReportDefinitionList definitions = getQACheckDefinitions();
+    final MappingService service = new MappingServiceJpa();
+    try {
 
-    final SearchResultList searchResultList = new SearchResultListJpa();
-    for (final ReportDefinition def : definitions.getReportDefinitions()) {
-      searchResultList.addSearchResult(new SearchResultJpa(def.getId(), null,
-          def.getName(), ""));
+      final SearchResultList list =
+          service.findMapRecordsForQuery("mapProjectId:" + mapProjectId
+              + " AND workflowStatus:QA*", null);
+      final Set<String> labels = new HashSet<>();
+      for (final SearchResult result : list.getSearchResults()) {
+        final MapRecord record = service.getMapRecord(result.getId());
+        for (final String label : record.getLabels()) {
+          labels.add(label);
+        }
+      }
+
+      final SearchResultList results = new SearchResultListJpa();
+      for (final String label : labels) {
+        final SearchResult result = new SearchResultJpa();
+        result.setValue(label);
+        results.addSearchResult(result);
+      }
+
+      return results;
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      service.close();
     }
-    return searchResultList;
 
   }
 
