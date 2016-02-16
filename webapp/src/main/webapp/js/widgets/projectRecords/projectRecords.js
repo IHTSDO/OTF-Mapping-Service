@@ -706,7 +706,7 @@ angular
 
         // Close
         $scope.close = function() {
-          $modalInstance.close(refset);
+          $modalInstance.close();
         };
 
         // Create QA records

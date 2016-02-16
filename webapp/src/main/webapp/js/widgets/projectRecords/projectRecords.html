@@ -21,7 +21,7 @@
   <input type="submit" value="Search" ng-click="retrieveRecords(1)"> <input
     type="submit" value="Reset" ng-click="resetSearch()"> <input
     type="submit" style="margin-left: 5px; margin-right: 5px" value="QA Records"
-    ng-show="(currentRole === 'Specialist' || currentRole === 'Lead') && nRecords > 0 && nRecords < 500"
+    ng-show="(currentRole == 'Specialist' || currentRole == 'Lead') && nRecords > 0 && nRecords < 500"
     ng-click="openQaRecordsModal()"> &nbsp;&nbsp; {{nRecords}} results,
   page {{searchParameters.page}} of {{numRecordPages}}
 
