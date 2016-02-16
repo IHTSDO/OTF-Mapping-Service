@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
+import org.ihtsdo.otf.mapping.helpers.MapRecordListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
@@ -646,6 +647,48 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
     }
 
     return newRecords;
+  }
+  
+  @Override
+  public MapRecordList getOriginMapRecordsForMapRecord(MapRecord mapRecord,
+    WorkflowService workflowService) throws Exception {
+
+    MapRecordList originRecords = new MapRecordListJpa();
+
+   
+    boolean qaNeededFound = true;
+
+    for (final Long originId : mapRecord.getOriginIds()) {
+      MapRecord mr = workflowService.getMapRecord(originId);
+      try {
+     
+        if (mr.getWorkflowStatus().equals(WorkflowStatus.QA_NEEDED)) {
+         qaNeededFound = true;
+          originRecords.addMapRecord(workflowService.getMapRecord(originId));
+        }
+      } catch (Exception e) {
+        // if not a null pointer exception due to
+        // audited reference not presently in database,
+        // rethrow the exception
+        if (mr != null) {
+          throw new Exception(e);
+        }
+      }
+    }
+
+    if (originRecords.getCount() == 1) {
+      originRecords.setTotalCount(originRecords.getCount());
+      if (qaNeededFound == false) {
+        throw new Exception(
+            "Could not retrieve record needing review along QA Path");
+      }
+   
+      return originRecords;
+    } else {
+      throw new Exception(
+          "Expected two origin records for review but instead found "
+              + originRecords.getCount());
+    }
   }
 
 }
