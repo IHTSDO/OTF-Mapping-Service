@@ -480,15 +480,21 @@ public class WorkflowServiceRest extends RootServiceRest {
       localPfs.setQueryRestriction(pfsParameter.getQueryRestriction());
       localPfs.setSortField(pfsParameter.getSortField());
 
+      SearchResultList availableWork = new SearchResultListJpa();
+
       // get ALL FixErrorPath work at specialist level for the project
       WorkflowPathHandler fixErrorHandler = new WorkflowFixErrorPathHandler();
       SearchResultList fixErrorWork =
           fixErrorHandler.findAvailableWork(mapProject, mapUser,
               MapUserRole.LEAD, query, localPfs, workflowService);
 
-      // get ALL normal workflow work at lead level
-      SearchResultList availableWork = workflowService.findAvailableWork(
-          mapProject, mapUser, MapUserRole.LEAD, query, pfsParameter);
+      // if review project path, get normal work
+      if (mapProject.getWorkflowType().equals(WorkflowType.REVIEW_PROJECT)) {
+
+        // get ALL normal workflow work at lead level
+        availableWork = workflowService.findAvailableWork(mapProject, mapUser,
+            MapUserRole.LEAD, query, pfsParameter);
+      }
 
       // combine the results
       availableWork.addSearchResults(fixErrorWork);
@@ -649,9 +655,8 @@ public class WorkflowServiceRest extends RootServiceRest {
         SearchResultList reviewProjectWork = workflowService.findAssignedWork(
             mapProject, mapUser, MapUserRole.LEAD, query, pfsParameter);
         assignedWork.addSearchResults(reviewProjectWork);
-
       }
-
+      
       // apply paging
       int[] totalCt = new int[1];
       localPfs = new PfsParameterJpa(pfsParameter);
