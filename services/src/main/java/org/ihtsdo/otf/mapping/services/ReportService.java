@@ -265,16 +265,16 @@ public interface ReportService extends RootService {
     MapUser mapUser, Date startDate, Date endDate) throws Exception;
 
   /**
-   * Removes the reports for map project in the
-   * specified date range.  If a null start date is passed
-   * 01/01/1970 is used.  If a null end date is passed "now" is used.
+   * Removes the reports for map project in the specified date range. If a null
+   * start date is passed 01/01/1970 is used. If a null end date is passed "now"
+   * is used.
    *
    * @param mapProject the map project
    * @param startDate the start date
    * @param endDate the end date
    */
-  public void removeReportsForMapProject(MapProject mapProject,
-    Date startDate, Date endDate);
+  public void removeReportsForMapProject(MapProject mapProject, Date startDate,
+    Date endDate);
 
   /**
    * Gets the report result items for report result.
@@ -316,8 +316,10 @@ public interface ReportService extends RootService {
   /**
    * Returns the QA labels.
    *
+   * @param mapProjectId the map project id
    * @return the QA labels
+   * @throws Exception the exception
    */
-  public SearchResultList getQALabels();
+  public SearchResultList getQALabels(Long mapProjectId) throws Exception;
 
 }
