@@ -65,6 +65,8 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
+// TODO Reminder to Patrick to clean up logging after finish (e.g. .info -> .debug)
+
 /**
  * REST implementation for workflow service.
  */
