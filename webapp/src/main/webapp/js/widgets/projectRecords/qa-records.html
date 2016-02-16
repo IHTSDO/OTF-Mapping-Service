@@ -1,57 +1,43 @@
 <div class="modal-header">
-	<h3>QA Project Records</h3>
+  <h3>QA Project Records</h3>
 </div>
 
 <div class="modal-body">
+  <div class="row">
+    <div class="col-md-6">Enter label for QA records:</div>
+    <div class="col-md-6">
+      <input ng-model="qaLabel" size="30">
+      <button class="btn btn-primary btn-xs"
+        ng-show="!isRunning && qaSucceeded == 0 && qaFailed == 0"
+        ng-click="qaRecords(qaLabel)">
+        <i style="color: white" class="glyphicon glyphicon-play"></i>
+      </button>
+    </div>
+  </div>
 
+  <div class="row">
+    <div class="col-md-6">Finished: {{qaComplete}} / {{qaTotal}}</div>
+    <div class="col-md-6">
+      <div class="alert alert-success" ng-show="qaSucceeded > 0"
+        style="width: 100%">Successful: {{qaSucceeded}} records</div>
+      <div class="alert alert-warning" ng-show="qaSkipped > 0"
+        style="width: 100%">
+        Skipped: {{qaSkipped}} records
+        <div class="alert alert-danger" ng-show="qaFailed > 0"
+          style="width: 100%">Failed: {{qaFailed}} records</div>
+      </div>
+    </div>
 
-	<div class="row no-padding no-gutter">
-		<div class="col-md-4"><h4>Enter Label</h4></div>
-		<div class="col-md-2"></div>
-		<div class="col-md-6">
-			<h4>Finished: {{qaComplete}} /
-				{{qaTotal}}</h4></div>
-		</div>
-	</div>
+    <div class="row">&nbsp;</div>
 
-	<div class="row">
-		<div class="col-md-4">
-			<input ng-model="qaLabel" style="width: 90%; margin-left:20px;">
-		</div>
-		<div class="col-md-2">
+    <div class="alert alert-danger" ng-if="error">
+      {{error}}
+      <i class="pull-right glyphicon glyphicon-remove" ng-click="clearError()"></i>
+    </div>
+  </div>
+</div>
 
-			<button class="btn btn-primary btn-sm"
-				ng-show="!isRunning && qaSucceeded == 0 && qaFailed == 0"
-				ng-click="qaRecords(qaLabel)">
-				<i style="color: white" class="glyphicon glyphicon-play"></i>
-			</button>
-
-		</div>
-		<div class="col-md-6">
-
-			<div class="alert alert-success" ng-show="qaSucceeded > 0"
-				style="width: 100%">Successful: {{qaSucceeded}} records</div>
-			<div class="alert alert-warning" ng-show="qaSkipped > 0"
-				style="width: 100%">
-				Skipped: {{qaSkipped}} records
-				<div class="alert alert-danger" ng-show="qaFailed > 0"
-					style="width: 100%">Failed: {{qaFailed}} records</div>
-			</div>
-		</div>
-
-		<div class="row">
-			<div class="col-md-2"></div>
-			<div class="col-md-3"></div>
-			<div class="col-md-6"></div>
-		</div>
-
-		<div class="alert alert-danger" ng-if="error">
-			{{error}} <i class="pull-right glyphicon glyphicon-remove"
-				ng-click="cancelError()"></i>
-		</div>
-	</div>
-	<div class="modal-footer">
-
-		<button class="btn btn-primary" ng-show="qaComplete > 0" ng-click="cancelQaRecords()">Done</button>
-		<button class="btn btn-warning" ng-show="qaComplete == 0" ng-click="cancelQaRecords()">Cancel</button>
-	</div>
+<div class="modal-footer">
+  <button class="btn btn-primary" ng-show="qaComplete > 0" ng-click="close()">Close</button>
+  <button class="btn btn-warning" ng-show="qaComplete == 0" ng-click="cancel()">Cancel</button>
+</div>
