@@ -121,15 +121,15 @@ angular
           + '/ancestor/'
           + ($scope.searchParameters.ancestorId && $scope.searchParameters.advancedMode ? $scope.searchParameters.ancestorId
             : 'null')
-            
-            /*
-             Removed in favor of searching by ancestor alone
-          + '/root/'
-          + ($scope.searchParameters.rootId && $scope.searchParameters.advancedMode ? $scope.searchParameters.rootId
-            : 'null') */
-            
-            + '/query/'
-          + ($scope.searchParameters.query ? $scope.searchParameters.query : 'null');
+
+          /*
+           * Removed in favor of searching by ancestor alone + '/root/' +
+           * ($scope.searchParameters.rootId &&
+           * $scope.searchParameters.advancedMode ?
+           * $scope.searchParameters.rootId : 'null')
+           */
+
+          + '/query/' + ($scope.searchParameters.query ? $scope.searchParameters.query : 'null');
 
         console.debug('  pfs', pfsParameterObj);
 
@@ -540,91 +540,6 @@ angular
 
       };
 
-      var QaRecordsCtrl = function($scope, $modalInstance, $q, nRecords, projectId, pfs) {
-
-        console.debug('Entered modal control', nRecords, projectId, pfs);
-
-        $scope.isRunning = false;
-
-        $scope.qaSucceeded = 0;
-        $scope.qaFailed = 0;
-        $scope.qaSkipped = 0;
-        $scope.qaComplete = 0;
-        $scope.qaTotal = nRecords;
-
-        $scope.cancel = function() {
-          $modalInstance.dismiss('cancel');
-        };
-
-        // helper function (with promise) to assign a single record to QA
-        function qaRecord(record, label) {
-
-          var deferred = $q.defer();
-
-          // if stop request detected, reject
-          if (!$scope.isRunning) {
-            deferred.reject();
-          } else {
-
-            if (!record.labels) {
-              record.labels = [];
-            }
-            record.labels.push(label);
-
-            $http.post(root_workflow + 'createQARecord', record).then(function() {
-              deferred.resolve();
-            }, function() {
-              deferred.reject();
-            });
-          }
-          return deferred.promise;
-        }
-
-        $scope.stopQaRecords = function() {
-          console.debug('Stopping QA Records...');
-          $scope.isRunning = false;
-        };
-
-        // 
-        $scope.qaRecords = function(label) {
-
-          $scope.isRunning = true;
-
-          $http.post(root_mapping + 'record/project/id/' + projectId, pfs).then(function(response) {
-            var records = response.data.mapRecord;
-
-            for (var i = 0; i < records.length; i++) {
-              if ($scope.isRunning) {
-                qaRecord(records[i], label).then(function() {
-                  $scope.qaSucceeded++;
-                }, function(error) {
-                  $scope.qaFailed++;
-                })['finally'](function() {
-                  $scope.qaComplete++;
-                  if ($scope.qaComplete == $scope.qaTotal) {
-                    $scope.isRunning = false;
-                  }
-                });
-              } else {
-                $scope.qaSkipped++;
-                $scope.qaComplete++;
-                if ($scope.qaComplete == $scope.qaTotal) {
-                  $scope.isRunning = false;
-                }
-              }
-            }
-
-          }, function(error) {
-            $scope.error = "Error retrieving map records";
-          });
-        };
-
-        $scope.cancelError = function() {
-          $scope.error = null;
-        };
-
-      };
-
       // //////////////////////////////
       // Advanced Search Components
       // //////////////////////////////
@@ -703,9 +618,11 @@ angular
           'startIndex' : ($scope.searchParameters.page - 1)
             * $scope.searchParameters.recordsPerPage,
           'maxResults' : $scope.searchParameters.recordsPerPage,
-          
-          // NOTE: If query specified, do not sort by concept id (preserve result relevance)
-          'sortField' : $scope.searchParameters && $scope.searchParameters.query ? null : 'conceptId',
+
+          // NOTE: If query specified, do not sort by concept id (preserve
+          // result relevance)
+          'sortField' : $scope.searchParameters && $scope.searchParameters.query ? null
+            : 'conceptId',
           'queryRestriction' : ''
         };
 
@@ -740,8 +657,8 @@ angular
         return pfs;
       };
 
-      $scope.qaRecords = function() {
-
+      // Open the QA Records modal
+      $scope.openQaRecordsModal = function() {
         console.debug('openQaRecordsModal');
 
         var modalInstance = $modal.open({
@@ -765,6 +682,92 @@ angular
             }
           }
         });
+
+      };
+
+      // QA records modal controller
+      var QaRecordsCtrl = function($scope, $modalInstance, $q, nRecords, projectId, pfs) {
+        console.debug('Entered modal control', nRecords, projectId, pfs);
+
+        // Scope vars
+        $scope.isRunning = false;
+        $scope.qaSucceeded = 0;
+        $scope.qaFailed = 0;
+        $scope.qaSkipped = 0;
+        $scope.qaComplete = 0;
+        $scope.qaTotal = nRecords;
+
+               // Cancel
+        $scope.cancel = function() {
+          console.debug('Stopping QA Records...');
+          $scope.isRunning = false;
+          $modalInstance.dismiss('cancel');
+        };
+
+        // Close
+        $scope.close = function() {
+          $modalInstance.close(refset);
+        };
+
+        // Create QA records
+        $scope.qaRecords = function(label) {
+
+          $scope.isRunning = true;
+
+          $http.post(root_mapping + 'record/project/id/' + projectId, pfs).then(function(response) {
+            var records = response.data.mapRecord;
+
+            for (var i = 0; i < records.length; i++) {
+              if ($scope.isRunning) {
+                qaRecord(records[i], label).then(function() {
+                  $scope.qaSucceeded++;
+                }, function(error) {
+                  $scope.qaFailed++;
+                })['finally'](function() {
+                  $scope.qaComplete++;
+                  if ($scope.qaComplete == $scope.qaTotal) {
+                    $scope.isRunning = false;
+                  }
+                });
+              } else {
+                $scope.qaSkipped++;
+                $scope.qaComplete++;
+                if ($scope.qaComplete == $scope.qaTotal) {
+                  $scope.isRunning = false;
+                }
+              }
+            }
+
+          }, function(error) {
+            $scope.error = "Error retrieving map records";
+          });
+        };
+        
+        // helper function (with promise) to assign a single record to QA
+        function qaRecord(record, label) {
+          var deferred = $q.defer();
+          // if stop request detected, reject
+          if (!$scope.isRunning) {
+            deferred.reject();
+          } else {
+            if (!record.labels) {
+              record.labels = [];
+            }
+            record.labels.push(label);
+
+            $http.post(root_workflow + 'createQARecord', record).then(function() {
+              deferred.resolve();
+            }, function() {
+              deferred.reject();
+            });
+          }
+          return deferred.promise;
+        }
+
+        // Clear the error
+        $scope.clearError = function() {
+          $scope.error = null;
+        };
 
       };
 
