@@ -21,8 +21,9 @@
   <input type="submit" value="Search" ng-click="retrieveRecords(1)"> <input
     type="submit" value="Reset" ng-click="resetSearch()"> <input
     type="submit" style="margin-left: 5px; margin-right: 5px" value="QA Records"
-    ng-show="nRecords > 0 && nRecords < 500" ng-click="openQaRecordsModal()"> &nbsp;&nbsp;
-  {{nRecords}} results, page {{searchParameters.page}} of {{numRecordPages}}
+    ng-show="(currentRole === 'Specialist' || currentRole === 'Lead') && nRecords > 0 && nRecords < 500"
+    ng-click="openQaRecordsModal()"> &nbsp;&nbsp; {{nRecords}} results,
+  page {{searchParameters.page}} of {{numRecordPages}}
 
   <div ng-show="searchParameters.advancedMode">
 
@@ -39,7 +40,7 @@
         <input ng-model="searchParameters.ancestorId">
       </div>
     </div>
-    
+
     <!--  Removed in favor of restricting search to ancestor id alone
     <div class="row" style="padding: 5px;">
       <div class="col-md-2" style="padding-right: 0px;">
@@ -56,8 +57,8 @@
       </div>
     </div>
      -->
-     
-     
+
+
     <div class="row" style="padding: 5px;">
       <div class="col-md-2" style="padding-right: 0px;">
         {{focusProject.destinationTerminology}} Target Id
@@ -132,7 +133,7 @@
 <pagination total-items="nRecords" page="searchParameters.page" max-size="10"
   class="pagination-sm" boundary-links="true" rotate="true"
   num-pages="numRecordPages" on-select-page="retrieveRecords(page)"></pagination>
-  
+
 <div ng-include src="'./partials/footer.html'"></div>
 
 
