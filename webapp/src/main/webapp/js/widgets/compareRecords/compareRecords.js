@@ -192,7 +192,8 @@ angular
             } else if (data.totalCount == 2) {
 
               // if a conflict, just set the two records
-              if (data.mapRecord[0].workflowStatus === 'CONFLICT_DETECTED') {
+              // NOTE: Special case for Simple Path workflow where one record may be EDITING_DONE
+              if (data.mapRecord[0].workflowStatus === 'CONFLICT_DETECTED' || data.mapRecord[0].workflowStatus === 'CONFLICT_DETECTED') {
                 // set the origin records (i.e. the records in conflict)
                 $scope.record1 = data.mapRecord[0];
                 $scope.record1.displayName = $scope.record1.owner.name;

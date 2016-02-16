@@ -447,6 +447,29 @@
         </plugins>
       </build>
     </profile>
+    
+     <profile>
+      <id>AdHoc</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>ad-hoc</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>run-ad-hoc</goal>
+                </goals>
+                <configuration>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
 
   </profiles>
 </project>
