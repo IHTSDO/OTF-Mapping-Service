@@ -26,8 +26,11 @@
           <!-- set button is just a dummy, because of ng-blur -->
           <button type="submit">
             Set
-            <span ng-show="entry.targetId == null || entry.targetId === ''">Empty
-              Target</span>
+          </button>
+          <!-- set empty target needed -->
+          <button ng-show="entry.targetId == null || entry.targetId === ''"
+            type="submit" ng-click="setTarget(entry.targetId)">
+            Set Empty Target
           </button>
           <button type="reset" ng-show="entry.targetId != null"
             ng-click="clearTargetConcept(entry);mapRelationInput = null;getValidTargetError = null;">Clear</button>
