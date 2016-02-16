@@ -839,18 +839,20 @@ public class ReportServiceRest extends RootServiceRest {
 
   /**
    * Returns the QA labels.
-   * 
+   *
+   * @param mapProjectId the map project id
    * @param authToken the auth token
    * @return the QA labels
-   * @throws Exception
+   * @throws Exception the exception
    */
   @GET
-  @Path("/qaLabel/qaLabels")
+  @Path("/qaLabel/qaLabels/{mapProjectId}")
   @ApiOperation(value = "Gets all qa labels", notes = "Gets all qa labels.", response = ReportDefinitionJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public SearchResultList getQALabels(
+    @ApiParam(value = "Report id", required = true) @PathParam("mapProjectId") Long mapProjectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(MappingServiceRest.class).info(
@@ -864,7 +866,7 @@ public class ReportServiceRest extends RootServiceRest {
               securityService);
 
       // get the qaChecks
-      return reportService.getQALabels();
+      return reportService.getQALabels(mapProjectId);
 
     } catch (Exception e) {
       handleException(e, "trying to get qa labels", user, "", "");
