@@ -33,10 +33,14 @@ import org.ihtsdo.otf.mapping.services.WorkflowService;
  */
 public class AdHocMojo extends AbstractMojo {
 
-  ContentService cs = null;
+  /** The content service. */
+  ContentService contentService = null;
 
-  WorkflowService ws = null;
+  /** The workflow service. */
+  WorkflowService workflowService = null;
+  
 
+  /* see superclass */
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
     /**
@@ -47,15 +51,15 @@ public class AdHocMojo extends AbstractMojo {
     // codes in ICD10
 
     try {
-      cs = new ContentServiceJpa();
-      ws = new WorkflowServiceJpa();
+      contentService = new ContentServiceJpa();
+      workflowService = new WorkflowServiceJpa();
 
       // want a single commit
-      ws.setTransactionPerOperation(false);
+      workflowService.setTransactionPerOperation(false);
 
       // find ICD10 project
       MapProject mapProject = null;
-      for (MapProject p : ws.getMapProjects().getMapProjects()) {
+      for (MapProject p : workflowService.getMapProjects().getMapProjects()) {
         if (p.getRefSetId().equals("447562003")) {
           mapProject = p;
         }
@@ -65,15 +69,17 @@ public class AdHocMojo extends AbstractMojo {
         throw new MojoExecutionException(
             "Could not find map project for refset id 447562003");
       }
-      Logger.getLogger(this.getClass())
-          .info("Found map project " + mapProject.getName());
+      Logger.getLogger(this.getClass()).info(
+          "Found map project " + mapProject.getName());
 
       MapAdvice mapAdvice = null;
 
       // find the desired advice
-      for (MapAdvice m : ws.getMapAdvices().getMapAdvices()) {
-        if (m.getName().equals(
-            "THIS CODE MAY BE USED IN THE PRIMARY POSITION WHEN THE MANIFESTATION IS THE PRIMARY FOCUS OF CARE")) {
+      for (MapAdvice m : workflowService.getMapAdvices().getMapAdvices()) {
+        if (m
+            .getName()
+            .equals(
+                "THIS CODE MAY BE USED IN THE PRIMARY POSITION WHEN THE MANIFESTATION IS THE PRIMARY FOCUS OF CARE")) {
           mapAdvice = m;
         }
       }
@@ -82,17 +88,16 @@ public class AdHocMojo extends AbstractMojo {
         throw new MojoExecutionException(
             "Could not find map advice with name THIS CODE MAY BE USED IN THE PRIMARY POSITION WHEN THE MANIFESTATION IS THE PRIMARY FOCUS OF CARE");
       }
-      Logger.getLogger(this.getClass())
-          .info("Found map advice " + mapAdvice.getName());
+      Logger.getLogger(this.getClass()).info(
+          "Found map advice " + mapAdvice.getName());
 
       // find the ICD10 asterisk code
       String asteriskConceptId = null;
 
       PfsParameter pfs = new PfsParameterJpa();
-      pfs.setQueryRestriction(
-          "terminology:ICD10 AND terminologyVersion:2010 AND defaultPreferredName:\"Asterisk refset\"");
+      pfs.setQueryRestriction("terminology:ICD10 AND terminologyVersion:2010 AND defaultPreferredName:\"Asterisk refset\"");
       try {
-        SearchResultList searchResults = cs.findConceptsForQuery(null, pfs);
+        SearchResultList searchResults = contentService.findConceptsForQuery(null, pfs);
         if (searchResults.getCount() != 1) {
           throw new MojoFailureException(
               "Found multiple asterisk concepts for ICD10: "
@@ -102,15 +107,14 @@ public class AdHocMojo extends AbstractMojo {
             searchResults.getSearchResults().get(0).getTerminologyId();
       } catch (Exception e) {
         e.printStackTrace();
-        throw new MojoFailureException(
-            "Could not find asterisk code for ICD10");
+        throw new MojoFailureException("Could not find asterisk code for ICD10");
       }
 
       Logger.getLogger(this.getClass()).info(
           "Found hibernate id for ICD10 asterisk refset: " + asteriskConceptId);
 
-      Logger.getLogger(this.getClass())
-          .info("Cycling over published and publication-ready records...");
+      Logger.getLogger(this.getClass()).info(
+          "Cycling over published and publication-ready records...");
 
       // count variables for log output
       int nTotal = 0;
@@ -118,7 +122,7 @@ public class AdHocMojo extends AbstractMojo {
 
       // cycle over all map records for project
       List<MapRecord> mapRecords =
-          ws.getMapRecordsForMapProject(mapProject.getId()).getMapRecords();
+          workflowService.getMapRecordsForMapProject(mapProject.getId()).getMapRecords();
 
       Iterator<MapRecord> iter = mapRecords.iterator();
 
@@ -129,7 +133,8 @@ public class AdHocMojo extends AbstractMojo {
         boolean recordChanged = false;
 
         // skip non-published records
-        if (!mr.getWorkflowStatus().equals(WorkflowStatus.READY_FOR_PUBLICATION)
+        if (!mr.getWorkflowStatus()
+            .equals(WorkflowStatus.READY_FOR_PUBLICATION)
             && !mr.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)) {
           continue;
         }
@@ -144,8 +149,8 @@ public class AdHocMojo extends AbstractMojo {
 
             if (!me.getMapAdvices().contains(mapAdvice)) {
 
-              Logger.getLogger(AdHocMojo.class)
-                  .info("Adding missing advice to map record " + mr.getId()
+              Logger.getLogger(AdHocMojo.class).info(
+                  "Adding missing advice to map record " + mr.getId()
                       + " for concept " + mr.getConceptId() + ", map entry "
                       + me.getId() + " with target " + me.getTargetId());
 
@@ -159,15 +164,15 @@ public class AdHocMojo extends AbstractMojo {
         }
 
         if (recordChanged == true) {
-          ws.updateMapRecord(mr);
+          workflowService.updateMapRecord(mr);
         }
       }
 
-      Logger.getLogger(this.getClass())
-          .info("Checked " + nTotal + " published/publication-ready records ("
+      Logger.getLogger(this.getClass()).info(
+          "Checked " + nTotal + " published/publication-ready records ("
               + mapRecords.size() + " in project");
-      Logger.getLogger(this.getClass())
-          .info("Added missing advice to " + nAdded + " entries referencing "
+      Logger.getLogger(this.getClass()).info(
+          "Added missing advice to " + nAdded + " entries referencing "
               + icd10AsteriskCodes.size() + " asterisk code targets");
 
       Logger.getLogger(this.getClass()).info("Committing...");
@@ -182,8 +187,8 @@ public class AdHocMojo extends AbstractMojo {
       throw new MojoExecutionException("Ad-hoc mojo failed to complete", e);
     } finally {
       try {
-        cs.close();
-        ws.close();
+        contentService.close();
+        workflowService.close();
       } catch (Exception e) {
         e.printStackTrace();
         throw new MojoExecutionException(
@@ -195,8 +200,17 @@ public class AdHocMojo extends AbstractMojo {
 
   // because even in an adhoc lightweight mojo I felt the need to cache query
   // results
+  /** The icd10 asterisk codes. */
   Set<String> icd10AsteriskCodes = new HashSet<>();
 
+  /**
+   * Indicates whether or not icd10 asterisk code is the case.
+   *
+   * @param targetId the target id
+   * @param asteriskCode the asterisk code
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   * @throws Exception the exception
+   */
   private boolean isIcd10AsteriskCode(String targetId, String asteriskCode)
     throws Exception {
 
@@ -211,11 +225,11 @@ public class AdHocMojo extends AbstractMojo {
     }
 
     // otherwise get the concept
-    Concept c = cs.getConcept(targetId, "ICD10", "2010");
+    Concept c = contentService.getConcept(targetId, "ICD10", "2010");
 
     if (c == null) {
-      throw new MojoFailureException(
-          "Could not retrieve ICD10 concept " + targetId + ", aborting");
+      throw new MojoFailureException("Could not retrieve ICD10 concept "
+          + targetId + ", aborting");
     }
 
     for (SimpleRefSetMember srs : c.getSimpleRefSetMembers()) {
