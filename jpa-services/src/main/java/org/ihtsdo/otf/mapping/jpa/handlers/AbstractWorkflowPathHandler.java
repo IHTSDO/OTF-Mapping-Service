@@ -25,6 +25,7 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.services.MappingService;
+import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
@@ -236,6 +237,7 @@ public abstract class AbstractWorkflowPathHandler
         }
       }
     } catch (Exception e) {
+      e.printStackTrace();
       result.addError("Unexpected error validating tracking record");
     }
 
@@ -257,7 +259,7 @@ public abstract class AbstractWorkflowPathHandler
     TrackingRecord trackingRecord, WorkflowAction action, MapUser mapUser)
       throws Exception {
 
-    // NOTE: This function MUST be overwritten in
+    // NOTE: This function MUST be overwritten in workflow path handlers
     return null;
   }
 
@@ -555,6 +557,11 @@ public abstract class AbstractWorkflowPathHandler
     WorkflowAction workflowAction, MapProject mapProject, MapUser mapUser,
     Set<MapRecord> mapRecords, MapRecord mapRecord) throws Exception {
     return mapRecords;
+  }
+  
+  @Override
+  public MapRecordList getOriginMapRecordsForMapRecord(MapRecord mapRecord, WorkflowService workflowService) throws Exception {
+   throw new Exception("Workflow Path Handler  " + getName() + " does not support retrieving origin map records");
   }
 
   // //////////////////////////

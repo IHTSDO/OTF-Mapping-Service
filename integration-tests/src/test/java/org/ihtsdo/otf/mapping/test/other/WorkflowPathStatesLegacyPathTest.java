@@ -4,8 +4,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
