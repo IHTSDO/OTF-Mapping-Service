@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
+import org.ihtsdo.otf.mapping.helpers.MapRecordListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
@@ -709,6 +710,11 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
         // if legacy + two specialist records, conflict record
         if (newRecords.size() == 3) {
           newRecord.setWorkflowStatus(WorkflowStatus.CONFLICT_NEW);
+          
+          // add the origin ids
+          for (MapRecord mr : newRecords) {
+            newRecord.addOrigin(mr.getId());
+          }
         }
 
         // if legacy + one specialist record, new specialist record
@@ -879,6 +885,40 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
   public boolean isMapRecordInWorkflow(MapRecord mapRecord) {
     return !mapRecord.getWorkflowStatus()
         .equals(WorkflowStatus.READY_FOR_PUBLICATION);
+  }
+  
+  @Override
+  public MapRecordList getOriginMapRecordsForMapRecord(MapRecord mapRecord,
+    WorkflowService workflowService) throws Exception {
+
+    MapRecordList originRecords = new MapRecordListJpa();
+
+
+    for (final Long originId : mapRecord.getOriginIds()) {
+      MapRecord mr = workflowService.getMapRecord(originId);
+      try {
+        if (mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED)) {
+          originRecords.addMapRecord(workflowService.getMapRecord(originId));
+        }
+      } catch (Exception e) {
+        // if not a null pointer exception due to
+        // audited reference not presently in database,
+        // rethrow the exception
+        if (mr != null) {
+          throw new Exception(e);
+        }
+      }
+    }
+
+    if (originRecords.getCount() == 2) {
+      originRecords.setTotalCount(originRecords.getCount());
+      return originRecords;
+    } else {
+      throw new Exception(
+          "Expected two origin records for review but instead found "
+              + originRecords.getCount());
+    }
+
   }
 
 }
