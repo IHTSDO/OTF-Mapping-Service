@@ -127,7 +127,7 @@ public class AdHocMojo extends AbstractMojo {
       Logger.getLogger(this.getClass())
       .info("Cycling over published and publication-ready records...");
       
-      ws.beginTransaction();
+      workflowService.beginTransaction();
 
       Iterator<MapRecord> iter = mapRecords.iterator();
 
@@ -191,7 +191,7 @@ public class AdHocMojo extends AbstractMojo {
       Logger.getLogger(this.getClass()).info("Committing...");
 
       // execute the transaction
-      ws.commit();
+      workflowService.commit();
 
       Logger.getLogger(this.getClass()).info("Finished");
 
