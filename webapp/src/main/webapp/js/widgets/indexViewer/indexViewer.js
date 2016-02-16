@@ -12,7 +12,7 @@ angular.module('mapProjectApp.widgets.indexViewer', [ 'adf.provider' ]).config(
   }).controller(
   'indexViewerCtrl',
   function($scope, $rootScope, $http, $location, $modal, $sce, $anchorScroll, $templateCache,
-    $compile, localStorageService) {
+    $compile, $timeout, localStorageService, utilService) {
 
     // initialize as empty to indicate still initializing
     // database connection
@@ -32,6 +32,26 @@ angular.module('mapProjectApp.widgets.indexViewer', [ 'adf.provider' ]).config(
     $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
       window.alert('The project and terminology cannot be changed on the index viewer.');
     });
+
+    // put the selected target code in storage to trigger any listeners
+    $scope.selectTargetCode = function(targetCode) {
+      if (!targetCode) {
+        return;
+      }
+      console.debug('testing storage event');
+      localStorage.setItem('targetCode', targetCode);
+
+      $timeout(function() {
+        var val = localStorage.getItem('targetCode');
+        if (val) {
+          utilService.handleError('Target code not received by any listeners. The Mapping Tool is either not open or not in editing view');
+          localStorage.removeItem('targetCode');
+        } else {
+          window.blur();
+        }
+      }, 500);
+
+    };
 
     // on any change of focusProject, set headers
     $scope.currentUserToken = localStorageService.get('userToken');
