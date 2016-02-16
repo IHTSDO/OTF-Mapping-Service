@@ -89,7 +89,7 @@
 </div>
 <!-- </accordion-group> </accordion>  --></tab> <tab heading="{{tabs[1].title}}"
   active="tabs[1].active" select="setTab(1)"
-  ng-show="(currentRole === 'Lead' || currentRole === 'Administrator') && focusProject.workflowType === 'CONFLICT_PROJECT'">
+  ng-show="(currentRole === 'Lead' || currentRole === 'Administrator') && (focusProject.workflowType === 'CONFLICT_PROJECT' || focus.project.workflowType === 'LEGACY_PATH'">
 
 
 <table style="margin-top: 10px; margin-bottom: 10px;">
