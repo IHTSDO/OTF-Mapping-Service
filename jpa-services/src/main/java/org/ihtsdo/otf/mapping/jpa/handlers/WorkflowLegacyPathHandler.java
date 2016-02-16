@@ -859,7 +859,9 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
         }
 
         // if lead record, simply remove
-
+        else {
+          newRecords.remove(userRecord);
+        }
         break;
       default:
         break;
