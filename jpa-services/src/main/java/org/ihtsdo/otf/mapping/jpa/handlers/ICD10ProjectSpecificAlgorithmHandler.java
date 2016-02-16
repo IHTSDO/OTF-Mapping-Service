@@ -1345,6 +1345,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
       //
       // PREDICATE: SNOMED CT concept is a descendant of "Poisoning" 75478009
+      // and not 25508008 |Pathological drug intoxication (disorder)|
       // RESULT: principle 21
       //
       boolean isPoisoning =
@@ -1352,12 +1353,12 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
               || contentService.isDescendantOf(mapRecord.getConceptId(),
                   mapProject.getSourceTerminology(),
                   mapProject.getSourceTerminologyVersion(), "75478009");
-      boolean isAlcoholIntoxication =
-          mapRecord.getConceptId().equals("25702006")
+      boolean pathalogicIntoxication =
+          mapRecord.getConceptId().equals("25508008")
               || contentService.isDescendantOf(mapRecord.getConceptId(),
                   mapProject.getSourceTerminology(),
                   mapProject.getSourceTerminologyVersion(), "25702006");
-      if (isPoisoning && !isAlcoholIntoxication) {
+      if (isPoisoning && !pathalogicIntoxication) {
         principles.add(principleMap.get("21"));
         principles.add(principleMap.get("27"));
       }
