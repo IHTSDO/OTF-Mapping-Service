@@ -113,11 +113,17 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         name : 'RELATIONSHIP_STYLE'
       } ];
       $scope.allowableWorkflowTypes = [ {
-        displayName : 'Conflict Project',
+        displayName : 'Conflict workflow',
         name : 'CONFLICT_PROJECT'
       }, {
-        displayName : 'Review Project',
+        displayName : 'Review workflow',
         name : 'REVIEW_PROJECT'
+      }, {
+        displayName : 'Simple workflow',
+        name : 'SIMPLE_PATH'
+      }, {
+        displayName : 'Legacy workflow',
+        name : 'LEGACY_PATH'
       } ];
 
       // watch for focus project change
