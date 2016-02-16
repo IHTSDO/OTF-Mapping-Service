@@ -370,7 +370,7 @@ angular
 
         $rootScope.glassPane++;
         $http({
-          url : root_reporting + 'qaLabel/qaLabels',
+          url : root_reporting + 'qaLabel/qaLabels/' + $scope.focusProject.id,
           dataType : 'json',
           method : 'GET',
           headers : {
@@ -880,9 +880,9 @@ angular
           {
             url : root_workflow + 'project/id/' + $scope.focusProject.id + '/user/id/'
               + $scope.currentUser.userName + '/query/null/' + apiWorkflowText, // set
-                                                                                // above
-                                                                                // based
-                                                                                // on
+            // above
+            // based
+            // on
             // specified workflow
             // status
             dataType : 'json',
@@ -931,12 +931,12 @@ angular
                 return $scope.currentUser;
               },
               action : function() {
-                
+
                 // catch simple workflow case
                 if ($scope.focusProject.workflowType === 'SIMPLE_PATH') {
                   return 'publish';
                 }
-                
+
                 // otherwise, distinguish between lead work and specialist work
                 return (workflowStatus === 'CONFLICT_RESOLVED'
                   || workflowStatus === 'REVIEW_RESOLVED' || workflowStatus === 'QA_RESOLVED') ? 'publish'
