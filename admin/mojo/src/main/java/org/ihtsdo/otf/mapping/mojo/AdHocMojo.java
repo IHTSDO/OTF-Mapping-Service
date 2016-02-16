@@ -113,8 +113,8 @@ public class AdHocMojo extends AbstractMojo {
       Logger.getLogger(this.getClass()).info(
           "Found hibernate id for ICD10 asterisk refset: " + asteriskConceptId);
 
-      Logger.getLogger(this.getClass()).info(
-          "Cycling over published and publication-ready records...");
+      Logger.getLogger(this.getClass())
+          .info("Loading published and publication-ready records...");
 
       // count variables for log output
       int nTotal = 0;
@@ -123,6 +123,11 @@ public class AdHocMojo extends AbstractMojo {
       // cycle over all map records for project
       List<MapRecord> mapRecords =
           workflowService.getMapRecordsForMapProject(mapProject.getId()).getMapRecords();
+      
+      Logger.getLogger(this.getClass())
+      .info("Cycling over published and publication-ready records...");
+      
+      ws.beginTransaction();
 
       Iterator<MapRecord> iter = mapRecords.iterator();
 
@@ -145,7 +150,7 @@ public class AdHocMojo extends AbstractMojo {
         for (MapEntry me : mr.getMapEntries()) {
 
           // if an icd10 assterisk code
-          if (isIcd10AsteriskCode(me.getTargetId(), asteriskConceptId)) {
+          if (me.getMapGroup() == 1 && isIcd10AsteriskCode(me.getTargetId(), asteriskConceptId)) {
 
             if (!me.getMapAdvices().contains(mapAdvice)) {
 
@@ -160,6 +165,14 @@ public class AdHocMojo extends AbstractMojo {
               nAdded++;
 
             }
+          } else if (me.getMapAdvices().contains(mapAdvice)) {
+            Logger.getLogger(AdHocMojo.class)
+            .info("Removing extraneous advice from map record " + mr.getId()
+                + " for concept " + mr.getConceptId() + ", map entry "
+                + me.getId() + " with target " + me.getTargetId());
+            
+            me.removeMapAdvice(mapAdvice);
+            recordChanged = true;
           }
         }
 
@@ -178,7 +191,7 @@ public class AdHocMojo extends AbstractMojo {
       Logger.getLogger(this.getClass()).info("Committing...");
 
       // execute the transaction
-      // ws.commit();
+      ws.commit();
 
       Logger.getLogger(this.getClass()).info("Finished");
 
