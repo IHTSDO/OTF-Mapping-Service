@@ -25,6 +25,7 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.services.MappingService;
+import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
@@ -556,6 +557,11 @@ public abstract class AbstractWorkflowPathHandler
     WorkflowAction workflowAction, MapProject mapProject, MapUser mapUser,
     Set<MapRecord> mapRecords, MapRecord mapRecord) throws Exception {
     return mapRecords;
+  }
+  
+  @Override
+  public MapRecordList getOriginMapRecordsForMapRecord(MapRecord mapRecord, WorkflowService workflowService) throws Exception {
+   throw new Exception("Workflow Path Handler  " + getName() + " does not support retrieving origin map records");
   }
 
   // //////////////////////////
