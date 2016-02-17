@@ -254,16 +254,6 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
     return "QA_PATH";
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler#
-   * findAvailableWork(org.ihtsdo.otf.mapping.model.MapProject,
-   * org.ihtsdo.otf.mapping.model.MapUser,
-   * org.ihtsdo.otf.mapping.helpers.MapUserRole, java.lang.String,
-   * org.ihtsdo.otf.mapping.helpers.PfsParameter,
-   * org.ihtsdo.otf.mapping.services.WorkflowService)
-   */
   /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
