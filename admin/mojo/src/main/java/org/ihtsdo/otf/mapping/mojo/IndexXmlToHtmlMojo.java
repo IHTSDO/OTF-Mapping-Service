@@ -502,7 +502,7 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
 
       // Handle writing the "see" tag
       else if (key.equals("see")) {
-        out.println(" &mdash; <i>see</i> <a ng-click=\"performSearchFromLink('"
+        out.println(" &mdash; <i>see</i> <a ng-click=\"search('"
             + data.get(key) + "')\"" + ">" + data.get(key) + "</a>");
       }
 
@@ -510,7 +510,7 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
       else if (key.equals("seealso") && data.get(key).startsWith("subcategory")) {
         out.println(" &mdash; <i>see also</i> " + data.get(key));
       } else if (key.equals("seealso")) {
-        out.println(" &mdash; <i>see also</i> <a href=\"\" ng-click=\"performSearchFromLink('"
+        out.println(" &mdash; <i>see also</i> <a href=\"\" ng-click=\"search('"
             + data.get(key) + "')\"" + ">" + data.get(key) + "</a>");
       }
 
@@ -574,13 +574,13 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
 
       // handle see tag
       else if (key.equals("see")) {
-        out.println(" &mdash; <i>see</i> <a href=\"\" ng-click=\"performSearchFromLink('"
+        out.println(" &mdash; <i>see</i> <a href=\"\" ng-click=\"search('"
             + data.get(key) + "')\"" + ">" + data.get(key) + "</a>");
       }
 
       // handle seealso tag
       else if (key.equals("seealso")) {
-        out.println(" &mdash; <i>see also</i> <a href=\"\" ng-click=\"performSearchFromLink('"
+        out.println(" &mdash; <i>see also</i> <a href=\"\" ng-click=\"search('"
             + data.get(key) + "')\"" + ">" + data.get(key) + "</a>");
       }
 
@@ -636,13 +636,13 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
           }
         }
       } else if (key.equals("see")) {
-        out.println(" &mdash; <i>see</i> <a href=\"\" ng-click=\"performSearchFromLink('"
+        out.println(" &mdash; <i>see</i> <a href=\"\" ng-click=\"search('"
             + data.get(key) + "')\"" + ">" + data.get(key) + "</a>");
       } else if (key.equals("seealso")
           && data.get(key).startsWith("subcategory")) {
         out.println(" &mdash; <i>see also</i> " + data.get(key));
       } else if (key.equals("seealso")) {
-        out.println(" &mdash; <i>see also</i> <a href=\"\" ng-click=\"performSearchFromLink('"
+        out.println(" &mdash; <i>see also</i> <a href=\"\" ng-click=\"search('"
             + data.get(key) + "')\"" + ">" + data.get(key) + "</a>");
       } else if (key.equals("subcat")) {
         out.println(" &mdash; see subcategory " + data.get(key));
@@ -688,10 +688,10 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
           nemodInTitle = false;
         }
       } else if (key.equals("see")) {
-        out.println(" &mdash; <i>see</i> <a href=\"\" ng-click=\"performSearchFromLink('"
+        out.println(" &mdash; <i>see</i> <a href=\"\" ng-click=\"search('"
             + data.get(key) + "')\"" + ">" + data.get(key) + "</a>");
       } else if (key.equals("seealso")) {
-        out.println(" &mdash; <i>see also</i> <a href=\"\" ng-click=\"performSearchFromLink('"
+        out.println(" &mdash; <i>see also</i> <a href=\"\" ng-click=\"search('"
             + data.get(key) + "')\"" + ">" + data.get(key) + "</a>");
       } else if (key.equals("cell")) {
         while (++cellCt < cellIndex) {
