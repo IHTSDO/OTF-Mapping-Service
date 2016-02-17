@@ -256,139 +256,83 @@ public class MapRecordJpa implements MapRecord {
     return id.toString();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapRecord#getOwner()
-   */
+  /* see superclass */
   @Override
   @XmlElement(type = MapUserJpa.class, name = "owner")
   public MapUser getOwner() {
     return owner;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapRecord#setOwner(org.ihtsdo.otf.mapping.
-   * model.MapUser)
-   */
+  /* see superclass */
   @Override
   public void setOwner(MapUser owner) {
     this.owner = owner;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapRecord#getTimestamp()
-   */
+  /* see superclass */
   @Override
   public Long getTimestamp() {
     return timestamp;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapRecord#setTimestamp(java.lang.Long)
-   */
+  /* see superclass */
   @Override
   public void setTimestamp(Long timestamp) {
     this.timestamp = timestamp;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapRecord#getlastModifiedBy()
-   */
+  /* see superclass */
   @Override
   @XmlElement(type = MapUserJpa.class, name = "lastModifiedBy")
   public MapUser getLastModifiedBy() {
     return lastModifiedBy;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapRecord#setLastModifiedBy(org.ihtsdo.otf
-   * .mapping.model.MapUser)
-   */
+  /* see superclass */
   @Override
   public void setLastModifiedBy(MapUser mapUser) {
     this.lastModifiedBy = mapUser;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapRecord#getLastModified()
-   */
+  /* see superclass */
   @Override
   public Long getLastModified() {
     return this.lastModified;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapRecord#setLastModified(java.lang.Long)
-   */
+  /* see superclass */
   @Override
   public void setLastModified(Long lastModified) {
     this.lastModified = lastModified;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapRecord#getMapProjectId()
-   */
+  /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public Long getMapProjectId() {
     return mapProjectId;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapRecord#setMapProjectId(java.lang.Long)
-   */
+  /* see superclass */
   @Override
   public void setMapProjectId(Long mapProjectId) {
     this.mapProjectId = mapProjectId;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapRecord#getConceptId()
-   */
+  /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public String getConceptId() {
     return conceptId;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapRecord#setConceptId(java.lang.String)
-   */
+  /* see superclass */
   @Override
   public void setConceptId(String conceptId) {
     this.conceptId = conceptId;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapRecord#getConceptName()
-   */
+  /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   @Analyzer(definition = "noStopWord")
@@ -396,22 +340,13 @@ public class MapRecordJpa implements MapRecord {
     return this.conceptName;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapRecord#setConceptName(java.lang.String)
-   */
+  /* see superclass */
   @Override
   public void setConceptName(String conceptName) {
     this.conceptName = conceptName;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapRecord#getMapNotes()
-   */
+  /* see superclass */
   @Override
   @XmlElement(type = MapNoteJpa.class, name = "mapNote")
   public Set<MapNote> getMapNotes() {
@@ -420,45 +355,25 @@ public class MapRecordJpa implements MapRecord {
     return mapNotes;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapRecord#setMapNotes(java.util.Set)
-   */
+  /* see superclass */
   @Override
   public void setMapNotes(Set<MapNote> mapNotes) {
     this.mapNotes = mapNotes;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapRecord#addMapNote(org.ihtsdo.otf.mapping
-   * .model.MapNote)
-   */
+  /* see superclass */
   @Override
   public void addMapNote(MapNote mapNote) {
     mapNotes.add(mapNote);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapRecord#removeMapNote(org.ihtsdo.otf.mapping
-   * .model.MapNote)
-   */
+  /* see superclass */
   @Override
   public void removeMapNote(MapNote mapNote) {
     mapNotes.remove(mapNote);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapRecord#getMapEntries()
-   */
+  /* see superclass */
   @Override
   @XmlElement(type = MapEntryJpa.class, name = "mapEntry")
   public List<MapEntry> getMapEntries() {
@@ -467,11 +382,7 @@ public class MapRecordJpa implements MapRecord {
     return mapEntries;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapRecord#setMapEntries(java.util.List)
-   */
+  /* see superclass */
   @Override
   public void setMapEntries(List<MapEntry> mapEntries) {
     if (mapEntries == null)
@@ -480,13 +391,7 @@ public class MapRecordJpa implements MapRecord {
       this.mapEntries = mapEntries;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapRecord#addMapEntry(org.ihtsdo.otf.mapping
-   * .model.MapEntry)
-   */
+  /* see superclass */
   @Override
   public void addMapEntry(MapEntry mapEntry) {
     mapEntries.add(mapEntry);
@@ -508,173 +413,98 @@ public class MapRecordJpa implements MapRecord {
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapRecord#removeMapEntry(org.ihtsdo.otf.mapping
-   * .model.MapEntry)
-   */
+  /* see superclass */
   @Override
   public void removeMapEntry(MapEntry mapEntry) {
     mapEntries.remove(mapEntry);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapRecord#getMapPrinciples()
-   */
+  /* see superclass */
   @Override
   @XmlElement(type = MapPrincipleJpa.class, name = "mapPrinciple")
   public Set<MapPrinciple> getMapPrinciples() {
     return mapPrinciples;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapRecord#setMapPrinciples(java.util.Set)
-   */
+  /* see superclass */
   @Override
   public void setMapPrinciples(Set<MapPrinciple> mapPrinciples) {
     this.mapPrinciples = mapPrinciples;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapRecord#addMapPrinciple(org.ihtsdo.otf.mapping
-   * .model.MapPrinciple)
-   */
+  /* see superclass */
   @Override
   public void addMapPrinciple(MapPrinciple mapPrinciple) {
     mapPrinciples.add(mapPrinciple);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapRecord#removeMapPrinciple(org.ihtsdo.otf
-   * .mapping.model.MapPrinciple)
-   */
+  /* see superclass */
   @Override
   public void removeMapPrinciple(MapPrinciple mapPrinciple) {
     mapPrinciples.remove(mapPrinciple);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapRecord#getOriginIds()
-   */
+  /* see superclass */
   @Override
   public Set<Long> getOriginIds() {
     return originIds;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapRecord#setOriginIds(java.util.Set)
-   */
+  /* see superclass */
   @Override
   public void setOriginIds(Set<Long> originIds) {
     this.originIds = originIds;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapRecord#addOrigin(java.lang.Long)
-   */
+  /* see superclass */
   @Override
   public void addOrigin(Long origin) {
     this.originIds.add(origin);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapRecord#removeOrigin(java.lang.Long)
-   */
+  /* see superclass */
   @Override
   public void removeOrigin(Long origin) {
     originIds.remove(origin);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapRecord#isFlagForMapLeadReview()
-   */
+  /* see superclass */
   @Override
   public boolean isFlagForMapLeadReview() {
     return flagForMapLeadReview;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapRecord#setFlagForMapLeadReview(boolean)
-   */
+  /* see superclass */
   @Override
   public void setFlagForMapLeadReview(boolean flag) {
     flagForMapLeadReview = flag;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapRecord#isFlagForEditorialReview()
-   */
+  /* see superclass */
   @Override
   public boolean isFlagForEditorialReview() {
     return flagForEditorialReview;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapRecord#setFlagForEditorialReview(boolean)
-   */
+  /* see superclass */
   @Override
   public void setFlagForEditorialReview(boolean flag) {
     flagForEditorialReview = flag;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapRecord#isFlagForConsensusReview()
-   */
+  /* see superclass */
   @Override
   public boolean isFlagForConsensusReview() {
     return flagForConsensusReview;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapRecord#setFlagForConsensusReview(boolean)
-   */
+  /* see superclass */
   @Override
   public void setFlagForConsensusReview(boolean flag) {
     flagForConsensusReview = flag;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapRecord#isEquivalent(org.ihtsdo.otf.mapping
-   * .model.MapRecord)
-   */
+  /* see superclass */
   @Override
   public boolean isEquivalent(MapRecord mapRecord) {
 
@@ -760,54 +590,32 @@ public class MapRecordJpa implements MapRecord {
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapRecord#setWorkflowStatus(org.ihtsdo.otf
-   * .mapping.helpers.WorkflowStatus)
-   */
+  /* see superclass */
   @Override
   public void setWorkflowStatus(WorkflowStatus workflowStatus) {
     this.workflowStatus = workflowStatus;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapRecord#getWorkflowStatus()
-   */
+  /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   public WorkflowStatus getWorkflowStatus() {
     return workflowStatus;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapRecord#addOrigins(java.util.Set)
-   */
+  /* see superclass */
   @Override
   public void addOrigins(Set<Long> origins) {
     originIds.addAll(origins);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapRecord#isDiscrepancyReview()
-   */
+  /* see superclass */
   @Override
   public boolean isDiscrepancyReview() {
     return isDiscrepancyReview;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapRecord#setDiscrepancyReview(boolean)
-   */
+  /* see superclass */
   @Override
   public void setDiscrepancyReview(boolean isDiscrepancyReview) {
     this.isDiscrepancyReview = isDiscrepancyReview;
@@ -833,76 +641,43 @@ public class MapRecordJpa implements MapRecord {
     this.labels = labels;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapRecord#addLabel(java.lang.String)
-   */
+  /* see superclass */
   @Override
   public void addLabel(String label) {
     labels.add(label);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapRecord#removeLabel(java.lang.String)
-   */
+  /* see superclass */
   @Override
   public void removeLabel(String label) {
     labels.remove(label);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapRecord#getReasonsForConflict()
-   */
+  /* see superclass */
   @Override
   public Set<String> getReasonsForConflict() {
     return reasonsForConflict;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapRecord#setReasonsForConflict(java.util.Set)
-   */
+  /* see superclass */
   @Override
   public void setReasonsForConflict(Set<String> reasons) {
     this.reasonsForConflict = reasons;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapRecord#addReasonForConflict(java.lang.String
-   * )
-   */
+  /* see superclass */
   @Override
   public void addReasonForConflict(String reason) {
     reasonsForConflict.add(reason);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapRecord#removeReasonForConflict(java.lang
-   * .String)
-   */
+  /* see superclass */
   @Override
   public void removeReasonForConflict(String reason) {
     reasonsForConflict.remove(reason);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#hashCode()
-   */
+  /* see superclass */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -940,11 +715,7 @@ public class MapRecordJpa implements MapRecord {
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
+  /* see superclass */
   @Override
   public boolean equals(Object obj) {
     if (this == obj)
@@ -1030,11 +801,7 @@ public class MapRecordJpa implements MapRecord {
     return true;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
+  /* see superclass */
   @Override
   public String toString() {
     return "MapRecordJpa [id=" + id + ", owner=" + owner + ", timestamp="
