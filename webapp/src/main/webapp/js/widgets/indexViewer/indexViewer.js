@@ -38,7 +38,7 @@ angular
       });
 
       // put the selected target code in storage to trigger any listeners
-      $scope.selectTargetCode = function(targetCode) {
+      $scope.code = function(targetCode) {
         if (!targetCode) {
           return;
         }
