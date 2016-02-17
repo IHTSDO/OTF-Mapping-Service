@@ -2238,13 +2238,14 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     sb.append(" AND terminologyVersion:" + terminologyVersion);
 
     PfsParameter pfs = new PfsParameterJpa();
+    pfs.setStartIndex(0);
     pfs.setMaxResults(1);
 
     // get the full text query from index utility (note must be escaped due to ~
     // characters)
     FullTextQuery fullTextQuery =
         IndexUtility.applyPfsToLuceneQuery(TreePositionJpa.class,
-            TreePositionJpa.class, sb.toString(), pfs, manager, false);
+            TreePositionJpa.class, sb.toString(), pfs, manager, true);
 
     int results = fullTextQuery.getResultSize();
 
