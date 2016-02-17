@@ -260,6 +260,7 @@ angular.module('mapProjectApp.widgets.indexViewer', [ 'adf.provider' ]).config(
 
     // updates the url to switch to display a new html page in the index
     // viewer
+    
     $scope.updateUrl = function(pageName) {
 
       $scope.selectedPage = pageName;
@@ -267,6 +268,10 @@ angular.module('mapProjectApp.widgets.indexViewer', [ 'adf.provider' ]).config(
       $scope.tUrl = 'indexViewerData/' + $scope.focusProject.destinationTerminology + '/'
         + $scope.focusProject.destinationTerminologyVersion + '/html/' + $scope.selectedDomain
         + '/' + pageName + '.html';
+      $scope.testTemplates = [];
+      $scope.testTemplates.push($scope.tUrl);
+      
+      console.debug($scope.testTemplates);
 
     };
 

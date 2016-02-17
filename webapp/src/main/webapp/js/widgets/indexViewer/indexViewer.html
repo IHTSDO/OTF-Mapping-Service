@@ -1,19 +1,22 @@
 <script type="text/ng-template" id="templateId.html">
   <p>This is the content of the template</p>
 </script>
-<input type="text" ng-model="targetCodeTest"><button class="btn btn-primary" ng-click="selectTargetCode(targetCodeTest)">Test Storage Event</button>
+<input type="text" ng-model="targetCodeTest">
+<button class="btn btn-primary"
+	ng-click="selectTargetCode(targetCodeTest)">Test Storage Event</button>
 
 <hr>
 <form>
-  Search: <input id="searchField" ng-model="searchField" style="margin: 5px;">
-  <input id="subSearchField" ng-model="subSearchField" style="margin: 5px;">
-  <input id="subSubSearchField" ng-model="subSubSearchField"
-    style="margin: 5px;"> <input type="checkbox" ng-model="allCheckBox"
-    style="margin: 5px;"> All
-  <button class="btn btn-sm btn-primary" style="margin: 5px;"
-    ng-click="performAggregatedSearch(searchField, subSearchField, subSubSearchField);">Go</button>
-  <button class="btn btn-sm btn-primary"
-    ng-click="searchField = null; 
+	Search: <input id="searchField" ng-model="searchField"
+		style="margin: 5px;"> <input id="subSearchField"
+		ng-model="subSearchField" style="margin: 5px;"> <input
+		id="subSubSearchField" ng-model="subSubSearchField"
+		style="margin: 5px;"> <input type="checkbox"
+		ng-model="allCheckBox" style="margin: 5px;"> All
+	<button class="btn btn-sm btn-primary" style="margin: 5px;"
+		ng-click="performAggregatedSearch(searchField, subSearchField, subSubSearchField);">Go</button>
+	<button class="btn btn-sm btn-primary"
+		ng-click="searchField = null; 
               subSearchField = null; subSubSearchField = null; 
               mainTermLabel = ''; searchResultsLabel = '';
               firstArrow = false; previousArrow = false;
@@ -21,52 +24,53 @@
 </form>
 
 
-<div style="float: left; width: 60%; padding: 10px; text-overflow: ellipsis; overflow: hidden;">
-  <b>{{mainTermLabel}}</b>
+<div
+	style="float: left; width: 60%; padding: 10px; text-overflow: ellipsis; overflow: hidden;">
+	<b>{{mainTermLabel}}</b>
 </div>
 
 <div style="float: right; width: 40%; padding: 10px;">
-  <a title="Go to first search result" ng-show="firstArrow"
-    ng-click="goFirstResult()">
-    <i class="glyphicon glyphicon-backward"></i>
-  </a>
-  <a ng-show="!firstArrow">
-    <i class="glyphicon glyphicon-invisible"></i>
-  </a>
-  <a title="Go to previous search result" ng-show="previousArrow"
-    ng-click="goPreviousResult()">
-    <i class="glyphicon glyphicon-step-backward"></i>
-  </a>
-  <a ng-show="!previousArrow">
-    <i class="glyphicon glyphicon-invisible"></i>
-  </a>
-  <span style="width: 65px; display: inline-block;">{{searchResultsLabel}}</span>
-  <a title="Go to next search result" ng-show="nextArrow"
-    ng-click="goNextResult()">
-    <i class="glyphicon glyphicon-step-forward"></i>
-  </a>
-  <a title="Go to last search result" ng-show="lastArrow"
-    ng-click="goLastResult()">
-    <i class="glyphicon glyphicon-forward"></i>
-  </a>
+	<a title="Go to first search result" ng-show="firstArrow"
+		ng-click="goFirstResult()"> <i
+		class="glyphicon glyphicon-backward"></i>
+	</a> <a ng-show="!firstArrow"> <i class="glyphicon glyphicon-invisible"></i>
+	</a> <a title="Go to previous search result" ng-show="previousArrow"
+		ng-click="goPreviousResult()"> <i
+		class="glyphicon glyphicon-step-backward"></i>
+	</a> <a ng-show="!previousArrow"> <i
+		class="glyphicon glyphicon-invisible"></i>
+	</a> <span style="width: 65px; display: inline-block;">{{searchResultsLabel}}</span>
+	<a title="Go to next search result" ng-show="nextArrow"
+		ng-click="goNextResult()"> <i
+		class="glyphicon glyphicon-step-forward"></i>
+	</a> <a title="Go to last search result" ng-show="lastArrow"
+		ng-click="goLastResult()"> <i class="glyphicon glyphicon-forward"></i>
+	</a>
 </div>
 
 <div>
-  <tabset> <tab ng-repeat="domain in domains  | orderBy: 'toString()'"
-    heading="{{domain}}" ng-click="retrieveIndexPages(domain);"> </tab></tabset>
+	<tabset> <tab
+		ng-repeat="domain in domains  | orderBy: 'toString()'"
+		heading="{{domain}}" ng-click="retrieveIndexPages(domain);"> </tab></tabset>
 </div>
 
 <div align="center" style="padding: 10px;">
-  <div style="display: inline; padding: 8px;"
-    ng-repeat="indexTab in indexPages  | orderBy: 'toString()'">
-    <a ng-style="set_style(indexTab)" ng-click="updateUrl(indexTab)">{{indexTab}}</a>
-  </div>
+	<div style="display: inline; padding: 8px;"
+		ng-repeat="indexTab in indexPages  | orderBy: 'toString()'">
+		<a ng-style="set_style(indexTab)" ng-click="updateUrl(indexTab)">{{indexTab}}</a>
+	</div>
 </div>
+
 
 <div id="scrollArea" style="height: 500px;">
-  <div class="slide-animate" ng-include src="tUrl" autoscroll></div>
+	<div ng-static-include="indexViewerData/ICD10/2010/html/TEIL1/A.html"></div>
 </div>
 
+<div ng-repeat="template in testTemplates">
+	Cached template: {{template}}
+	<hr>
+	<div ng-static-include="template"></div>
+</div>
 
 
 
