@@ -7,11 +7,6 @@
     <div class="col-md-4">Enter label for QA records:</div>
     <div class="col-md-8">
       <input ng-model="qaLabel" size="40">
-      <button class="btn btn-primary btn-xs"
-        ng-show="!isRunning && qaSucceeded == 0 && qaFailed == 0"
-        ng-click="qaRecords(qaLabel)">
-        <i style="color: white" class="glyphicon glyphicon-play"></i>
-      </button>
     </div>
   </div>
 
@@ -38,6 +33,9 @@
 </div>
 
 <div class="modal-footer">
-  <button class="btn btn-primary" ng-show="qaComplete > 0" ng-click="close()">Close</button>
-  <button class="btn btn-warning" ng-show="qaComplete == 0" ng-click="cancel()">Cancel</button>
+  <button class="btn btn-primary btn-xs" ng-disabled="!qaLabel"
+    ng-show="!isRunning && qaSucceeded == 0 && qaFailed == 0"
+    ng-click="qaRecords(qaLabel)">Create QA Records</button>
+  <button class="btn btn-primary" ng-show="!isRunning" ng-click="close()">Close</button>
+  <button class="btn btn-warning" ng-show="isRunning" ng-click="cancel()">Cancel</button>
 </div>
