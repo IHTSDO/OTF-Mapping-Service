@@ -4,9 +4,9 @@
 
 <div class="modal-body">
   <div class="row">
-    <div class="col-md-6">Enter label for QA records:</div>
-    <div class="col-md-6">
-      <input ng-model="qaLabel" size="30">
+    <div class="col-md-4">Enter label for QA records:</div>
+    <div class="col-md-8">
+      <input ng-model="qaLabel" size="40">
       <button class="btn btn-primary btn-xs"
         ng-show="!isRunning && qaSucceeded == 0 && qaFailed == 0"
         ng-click="qaRecords(qaLabel)">
@@ -16,8 +16,8 @@
   </div>
 
   <div class="row">
-    <div class="col-md-6">Finished: {{qaComplete}} / {{qaTotal}}</div>
-    <div class="col-md-6">
+    <div class="col-md-4">Finished: {{qaComplete}} / {{qaTotal}}</div>
+    <div class="col-md-8">
       <div class="alert alert-success" ng-show="qaSucceeded > 0"
         style="width: 100%">Successful: {{qaSucceeded}} records</div>
       <div class="alert alert-warning" ng-show="qaSkipped > 0"

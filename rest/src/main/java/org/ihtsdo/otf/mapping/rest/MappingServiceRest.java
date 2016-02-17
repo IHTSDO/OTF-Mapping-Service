@@ -101,8 +101,6 @@ import com.wordnik.swagger.annotations.ApiParam;
 
 /**
  * REST implementation for mapping service.
- *
- * @author ${author}
  */
 @Path("/mapping")
 @Api(value = "/mapping", description = "Operations supporting map objects.")
@@ -2751,7 +2749,8 @@ public class MappingServiceRest extends RootServiceRest {
                   + " potential matches for ancestor search. Narrow your search and try again.");
         }
 
-        final MapProject mapProject = mappingService.getMapProject(mapProjectId);
+        final MapProject mapProject =
+            mappingService.getMapProject(mapProjectId);
 
         contentService = new ContentServiceJpa();
 
@@ -2775,15 +2774,16 @@ public class MappingServiceRest extends RootServiceRest {
         Logger.getLogger(getClass()).info(
             "Searching for map records for descendants of path " + path);
 
-        SearchResultList eligibleResults = new SearchResultListJpa();
+        final SearchResultList eligibleResults = new SearchResultListJpa();
 
         // determine which results are for descendant concepts
-        for (SearchResult sr : searchResults.getSearchResults()) {
+        for (final SearchResult sr : searchResults.getSearchResults()) {
 
           // if this terminology is a descendant OR is the concept itself
           if (sr.getTerminologyId().equals(ancestorId)
               || contentService.isDescendantOfPath(path, sr.getTerminologyId(),
-                  tp.getTerminology(), tp.getTerminologyVersion())) {
+                  mapProject.getSourceTerminology(),
+                  mapProject.getSourceTerminologyVersion())) {
 
             // add to eligible results
             eligibleResults.addSearchResult(sr);
