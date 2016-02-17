@@ -27,6 +27,7 @@ angular.module('mapProjectApp.widgets.indexViewer', [ 'adf.provider' ]).config(
     $scope.searchResultsIndex = 0;
     $scope.mainTermLabel = '';
     $scope.allCheckBox = false;
+    $scope.previousEID = 'A0';
 
     // watch for project change
     $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
@@ -133,6 +134,8 @@ angular.module('mapProjectApp.widgets.indexViewer', [ 'adf.provider' ]).config(
           'Content-Type' : 'application/json'
         }
       }).success(function(data) {
+        
+        // set new results
         $scope.results = data.searchResult;
 
         $scope.nResults = data.totalCount;
@@ -144,7 +147,7 @@ angular.module('mapProjectApp.widgets.indexViewer', [ 'adf.provider' ]).config(
           if ($scope.nResults > 0) {
             $scope.goToElement($scope.results[$scope.searchResultsIndex].value);
           }
-
+          
           $scope.setBackwardButtonsDisplayed(false);
           if ($scope.nResults == 1) {
             $scope.setForwardButtonsDisplayed(false);
@@ -220,13 +223,22 @@ angular.module('mapProjectApp.widgets.indexViewer', [ 'adf.provider' ]).config(
     // scrolling to the given eID on the correct html page
     $scope.goToElement = function(eID) {
 
+      // remove highlighting on previous result
+      $scope.removeHighlighting($scope.previousEID);
+            
       // if needing to switch to different html page
       if (eID.charAt(0) != $scope.selectedPage) {
         // parse the eID to find the name of the target html page
         $scope.selectedPage = eID.charAt(0);
         // switch to the target html page
         $scope.updateUrl($scope.selectedPage);
+        
+        if ($scope.results[eID]) {
+          $scope.applyHighlighting($scope.results[eID].value);
+        }
+        
         $scope.eID = eID;
+        $scope.previousEID = eID;
 
         // when the html page finishes loading the scrolling will happen
         // see $rootScope.$on('includeContentLoaded'...
@@ -234,9 +246,27 @@ angular.module('mapProjectApp.widgets.indexViewer', [ 'adf.provider' ]).config(
         // staying on same html page, so just scroll
         $location.hash(eID);
         $anchorScroll();
+        
+        $scope.applyHighlighting(eID);
+
+        $scope.previousEID = eID;
       }
 
     };
+    
+    // apply highlighting
+    $scope.applyHighlighting = function(eID) {
+      if (document.getElementById(eID) != null) {
+        document.getElementById(eID).style.backgroundColor = "yellow";            
+      }
+    }
+    
+    // remove highlighting
+    $scope.removeHighlighting = function(eID) {
+      if (document.getElementById(eID) != null) {
+        document.getElementById(eID).style.backgroundColor = "white";            
+      }
+    }
 
     // updates the url to switch to display a new html page in the index
     // viewer
@@ -251,6 +281,7 @@ angular.module('mapProjectApp.widgets.indexViewer', [ 'adf.provider' ]).config(
     };
 
     $scope.goFirstResult = function() {
+      $scope.searchResultsIndex = 0;
       $scope.goToElement($scope.results[0].value);
       $scope.searchResultsLabel = '1 of ' + $scope.nResults;
       $scope.mainTermLabel = $scope.results[0].value2;
@@ -279,6 +310,7 @@ angular.module('mapProjectApp.widgets.indexViewer', [ 'adf.provider' ]).config(
     };
 
     $scope.goLastResult = function() {
+      $scope.searchResultsIndex = $scope.results.length - 1;
       $scope.goToElement($scope.results[$scope.results.length - 1].value);
       $scope.searchResultsLabel = $scope.nResults + ' of ' + $scope.nResults;
       $scope.mainTermLabel = $scope.results[$scope.results.length - 1].value2;
