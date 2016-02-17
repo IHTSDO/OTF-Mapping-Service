@@ -447,10 +447,10 @@ public class IndexXmlToLuceneMojo extends AbstractMojo {
           Index.ANALYZED, TermVector.NO));
       doc.add(new Field("hasChild", String.valueOf(hasChild), Store.NO,
           Index.ANALYZED, TermVector.NO));
-      doc.add(new Field("title", data.get("title"), Store.NO, Index.ANALYZED,
+      doc.add(new Field("title", data.get("title"), Store.YES, Index.ANALYZED,
           TermVector.NO));
       if (data.get("nemod") != null)
-        doc.add(new Field("nemod", data.get("nemod"), Store.NO, Index.ANALYZED,
+        doc.add(new Field("nemod", data.get("nemod"), Store.YES, Index.ANALYZED,
             TermVector.NO));
       doc.add(new Field("label", data.get("title"), Store.YES,
           Index.NOT_ANALYZED, TermVector.NO));
@@ -459,7 +459,7 @@ public class IndexXmlToLuceneMojo extends AbstractMojo {
       doc.add(new Field("level", "0", Store.YES, Index.NOT_ANALYZED,
           TermVector.NO));
       if (data.get("code") != null)
-        doc.add(new Field("code", data.get("code"), Store.NO, Index.ANALYZED,
+        doc.add(new Field("code", data.get("code"), Store.YES, Index.ANALYZED,
             TermVector.NO));
       writer.addDocument(doc);
 
@@ -483,10 +483,10 @@ public class IndexXmlToLuceneMojo extends AbstractMojo {
           Index.ANALYZED, TermVector.NO));
       doc.add(new Field("hasChild", String.valueOf(hasChild), Store.NO,
           Index.ANALYZED, TermVector.NO));
-      doc.add(new Field("title", data.get("title"), Store.NO, Index.ANALYZED,
+      doc.add(new Field("title", data.get("title"), Store.YES, Index.ANALYZED,
           TermVector.NO));
       if (data.get("nemod") != null) {
-        doc.add(new Field("nemod", data.get("nemod"), Store.NO, Index.ANALYZED,
+        doc.add(new Field("nemod", data.get("nemod"), Store.YES, Index.ANALYZED,
             TermVector.NO));
       }
       String aname = data.get("aname");
@@ -497,7 +497,7 @@ public class IndexXmlToLuceneMojo extends AbstractMojo {
       doc.add(new Field("level", data.get("level"), Store.YES,
           Index.NOT_ANALYZED, TermVector.NO));
       if (data.get("code") != null)
-        doc.add(new Field("code", data.get("code"), Store.NO, Index.ANALYZED,
+        doc.add(new Field("code", data.get("code"), Store.YES, Index.ANALYZED,
             TermVector.NO));
       writer.addDocument(doc);
       addDictionaryWords();
