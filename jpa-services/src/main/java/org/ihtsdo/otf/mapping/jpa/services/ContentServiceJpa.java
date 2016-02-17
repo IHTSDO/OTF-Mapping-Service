@@ -15,6 +15,7 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
 
 import org.apache.log4j.Logger;
+import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
 import org.hibernate.search.SearchFactory;
 import org.hibernate.search.jpa.FullTextEntityManager;
@@ -2232,7 +2233,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     String terminology, String terminologyVersion) throws Exception {
 
     StringBuilder sb = new StringBuilder();
-    sb.append("ancestorPath:\"" + ancestorPath + "*\"");
+    sb.append("ancestorPath:" + QueryParser.escape(ancestorPath) + "*");
     sb.append(" AND terminologyId:" + terminologyId);
     sb.append(" AND terminology:" + terminology);
     sb.append(" AND terminologyVersion:" + terminologyVersion);
