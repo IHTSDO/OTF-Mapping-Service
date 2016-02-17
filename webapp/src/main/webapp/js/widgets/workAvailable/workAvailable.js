@@ -181,7 +181,7 @@ angular
 
         $rootScope.glassPane++;
         $http({
-          url : root_reporting + 'qaLabel/qaLabels',
+          url : root_reporting + 'qaLabel/qaLabels/' + $scope.focusProject.id,
           dataType : 'json',
           method : 'GET',
           headers : {
