@@ -205,6 +205,7 @@ mapProjectApp.directive('indexViewerPage', function($http, $templateCache, $comp
       }
 
       scope.$watch(attrs.template, function() {
+        console.debug('template', attrs.template);
         init();
       }, true);
 

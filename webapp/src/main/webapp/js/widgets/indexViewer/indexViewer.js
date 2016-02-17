@@ -299,6 +299,11 @@ angular
         }
 
       };
+      
+      $('#scrollArea').on('click', function($event) {
+    
+        console.debug($event.target);
+      });
 
       // apply highlighting
       $scope.applyHighlighting = function(eID) {
@@ -342,14 +347,18 @@ angular
 
         $scope.selectedPage = pageName;
 
-        $scope.tUrl = null;
+        // REMOVE IF AFTER TESTING
+        if ($scope.tUrl == null) {
 
         $scope.tUrl = 'indexViewerData/' + $scope.focusProject.destinationTerminology + '/'
           + $scope.focusProject.destinationTerminologyVersion + '/html/' + $scope.selectedDomain
           + '/' + pageName + '.html';
         $scope.testTemplates = [];
         $scope.testTemplates.push($scope.tUrl);
-
+        } else {
+          $scope.tUrl = null;
+        }
+        
         console.debug($scope.testTemplates);
 
       };
