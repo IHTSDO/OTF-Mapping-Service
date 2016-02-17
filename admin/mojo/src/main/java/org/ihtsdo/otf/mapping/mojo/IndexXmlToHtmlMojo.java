@@ -206,6 +206,9 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
 
     /** header string buffer */
     private StringBuilder headerHtml = null;
+    
+    /**  The open div. */
+    private boolean openDiv = false;
 
     /**
      * Instantiates a new local handler.
@@ -298,7 +301,7 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
 
       // Put character data into map
       data.put(qName.toLowerCase(), chars.toString().replaceAll("<", "&lt;")
-          .replaceAll(">", "&gt;"));
+          .replaceAll(">", "&gt;").replaceAll("'", "&apos;"));
 
       // If top-level title tag, set documentTitle
       if (qName.equalsIgnoreCase("title") && inTag.get("letter") == 0) {
@@ -463,8 +466,8 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
             + "<center><div style=\"text-align: left; width: 95%\">"
             + styledNote + "</div></center>");
       else
-        out.println("</p><p><center><div style=\"text-align: left; width: 95%\">"
-            + styledNote + "</div></center></p><p>");
+        out.println("<center><div style=\"text-align: left; width: 95%\">"
+            + styledNote + "</div></center>");
     }
 
     /**
@@ -477,7 +480,12 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
       if (key.equals("title")) {
         // Set the aname pointer and write it
         aname = letter + act;
-        out.println("</p><p><div id=\"" + aname + "\"></div>");
+        if (openDiv) {
+          out.println("</div>");
+          openDiv = false;
+        }
+        out.println("<div id=\"" + aname + "\">");
+        openDiv = true;
         out.println("<b>" + data.get(key) + "</b>");
 
         // Handle writing the title, including embedded nemod
@@ -527,6 +535,7 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
       } else {
         out.println(" " + data.get(key) + "");
       }
+
     }
 
     /**
@@ -541,9 +550,17 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
         cellCt = 1;
         cellIndex = 1;
         aname = letter + act;
-
+        
+        if (openDiv) {
+          out.println("</div>");
+          openDiv = false;
+        }
+        
         // write anchor and title
-        out.println("</td></tr><tr><td><div id=\"" + aname + "\"></div>");
+        out.println("</td></tr><tr><td>");
+        
+        out.println("<div id=\"" + aname + "\">");
+        openDiv = true;
         out.println(data.get(key));
 
         // handle embedded nemod in title
@@ -598,9 +615,13 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
      */
     private void writeTermInfo(String key) {
       if (key.equals("title")) {
-        aname = aname + "." + act;
-        out.println("</p><p>");
-        out.println("<div id=\"" + aname + "\"></div>");
+        aname = aname + "." + act;      
+        if (openDiv) {
+          out.println("</div>");
+          openDiv = false;
+        }
+        out.println("<div id=\"" + aname + "\">");
+        openDiv = true;
         out.println("- - - - - - - - - - - ".substring(0, level * 2)
             + data.get("title"));
         // out.println("<h" + hLevel + ">" + data.get(key) + "</h" +
@@ -637,6 +658,7 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
       } else {
         out.println(" " + data.get(key) + "");
       }
+
     }
 
     /**
@@ -648,8 +670,15 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
       if (key.equals("title")) {
         cellCt = 1;
         aname = aname + "." + act;
+        
+        if (openDiv) {
+          out.println("</div>");
+          openDiv = false;
+        }
         out.println("</td></tr><tr><td>");
-        out.println("<div id=\"" + aname + "\"></div>");
+        
+        out.println("<div id=\"" + aname + "\">");
+        openDiv = true;
         out.println("- - - - - - - - - - - ".substring(0, level * 2)
             + data.get("title"));
 
@@ -744,7 +773,8 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
       out.println("<html><head><style type=\"text/css\">p { margin-top:0 ;margin-bottom:0;}</style></head><body style=\"font-family: sans-serif;\">");
       out.println("<center><h3>" + documentTitle
           + "</h3><div style=\"width: 100%; background-color: #BBBBBB;\">"
-          + data.get("title") + "</div></center><p>");
+          + data.get("title") + "</div></center>");
+      out.println("<div id=\"" + data.get("title") + "0\"></div>");
       // handle the case where header columns
       // were encountered outside "letter" tags
       if (headerHtml != null)
@@ -757,6 +787,10 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
      */
     public void endHtml() {
       if (out != null) {
+        if (openDiv) {
+          out.println("</div>");
+          openDiv = false;
+        } 
         if (inTable)
           out.println("</td></tr></table>");
         out.println("</p></body></html>");
@@ -765,5 +799,6 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
     }
 
   }
+  
 
 }
