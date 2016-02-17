@@ -120,16 +120,8 @@ angular
           + $scope.project.objectId
           + '/ancestor/'
           + ($scope.searchParameters.ancestorId && $scope.searchParameters.advancedMode ? $scope.searchParameters.ancestorId
-            : 'null')
-
-          /*
-           * Removed in favor of searching by ancestor alone + '/root/' +
-           * ($scope.searchParameters.rootId &&
-           * $scope.searchParameters.advancedMode ?
-           * $scope.searchParameters.rootId : 'null')
-           */
-
-          + '/query/' + ($scope.searchParameters.query ? $scope.searchParameters.query : 'null');
+            : 'null') + '/query/'
+          + ($scope.searchParameters.query ? $scope.searchParameters.query : 'null');
 
         console.debug('  pfs', pfsParameterObj);
 
@@ -661,33 +653,40 @@ angular
       $scope.openQaRecordsModal = function() {
         console.debug('openQaRecordsModal');
 
-        var modalInstance = $modal.open({
-          templateUrl : 'js/widgets/projectRecords/qa-records.html',
-          controller : QaRecordsCtrl,
-          resolve : {
-            nRecords : function() {
-              return $scope.nRecords;
-            },
-            projectId : function() {
-              return $scope.projectId;
-            },
-            pfs : function() {
-              return {
-                startIndex : -1,
-                maxResults : -1,
-                queryRestriction : $scope.searchParameters.query,
-                sortField : null
-
-              };
+        var modalInstance = $modal
+          .open({
+            templateUrl : 'js/widgets/projectRecords/qa-records.html',
+            controller : QaRecordsCtrl,
+            resolve : {
+              nRecords : function() {
+                return $scope.nRecords;
+              },
+              projectId : function() {
+                return $scope.projectId;
+              },
+              pfs : function() {
+                return {
+                  startIndex : -1,
+                  maxResults : -1,
+                  queryRestriction : null,
+                  sortField : null
+                };
+              },
+              ancestorId : function() {
+                return $scope.searchParameters.ancestorId && $scope.searchParameters.advancedMode ? $scope.searchParameters.ancestorId
+                  : 'null';
+              },
+              query : function() {
+                return $scope.searchParameters.query;
+              }
             }
-          }
-        });
+          });
 
       };
 
       // QA records modal controller
       var QaRecordsCtrl = function($scope, $modalInstance, $q, nRecords, projectId, pfs) {
-        console.debug('Entered modal control', nRecords, projectId, pfs);
+        console.debug('Entered modal control', nRecords, projectId, pfs, ancestorId, query);
 
         // Scope vars
         $scope.isRunning = false;
@@ -712,7 +711,10 @@ angular
         // Create QA records
         $scope.qaRecords = function(label) {
           $scope.isRunning = true;
-          $http.post(root_mapping + 'record/project/id/' + projectId + '/published', pfs).then(
+
+          $http.post(
+            root_mapping + 'record/project/id/' + projectId + '/ancestor/' + ancestorId + '/query/'
+              + query, pfs).then(
           // Success
           function(response) {
             var records = response.data.mapRecord;
