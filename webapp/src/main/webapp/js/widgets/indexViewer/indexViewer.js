@@ -283,7 +283,7 @@ angular
           $scope.updateUrl($scope.selectedPage);
           if ($scope.results && $scope.results[eID]) {
             $scope.applyHighlighting($scope.results[eID].value);
-          }*/
+          }
           
           $scope.eID = eID;
           $scope.previousEID = eID;
