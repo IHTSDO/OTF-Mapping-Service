@@ -199,6 +199,8 @@ angular
             } else {
               $scope.setForwardButtonsDisplayed(true);
             }
+            
+            $scope.applyHighlighting($scope.results[0].value)
           } else {
             window.alert('No Matching Search Results.');
           }
@@ -268,6 +270,8 @@ angular
       // scrolling to the given eID on the correct html page
       $scope.goToElement = function(eID) {
 
+        console.debug('goToElement', eID);
+        
         // remove highlighting on previous result
         $scope.removeHighlighting($scope.previousEID);
 
@@ -277,7 +281,7 @@ angular
           $scope.selectedPage = eID.charAt(0);
           // switch to the target html page
           $scope.updateUrl($scope.selectedPage);
-          if ($scope.results[eID]) {
+          if ($scope.results && $scope.results[eID]) {
             $scope.applyHighlighting($scope.results[eID].value);
           }
           
@@ -318,7 +322,7 @@ angular
           document.getElementById(eID).style.backgroundColor = "white";            
         }
       }
-
+/*
       var timeElapsed = 0;
       var timeInterval = 100;
       var timer = $interval(function() {
@@ -338,7 +342,7 @@ angular
 
       $scope.stopTimer = function() {
         $interval.cancel(timer);
-      };
+      };*/
 
       // updates the url to switch to display a new html page in the index
       // viewer
@@ -348,16 +352,16 @@ angular
         $scope.selectedPage = pageName;
 
         // REMOVE IF AFTER TESTING
-        if ($scope.tUrl == null) {
+       // if ($scope.tUrl == null) {
 
         $scope.tUrl = 'indexViewerData/' + $scope.focusProject.destinationTerminology + '/'
           + $scope.focusProject.destinationTerminologyVersion + '/html/' + $scope.selectedDomain
           + '/' + pageName + '.html';
         $scope.testTemplates = [];
         $scope.testTemplates.push($scope.tUrl);
-        } else {
-          $scope.tUrl = null;
-        }
+      // } else {
+      //    $scope.tUrl = null;
+      //  }
         
         console.debug($scope.testTemplates);
 
@@ -383,6 +387,7 @@ angular
       };
 
       $scope.goNextResult = function() {
+        
         $scope.searchResultsIndex++;
         $scope.searchResultsLabel = ($scope.searchResultsIndex + 1) + ' of ' + $scope.nResults;
         $scope.mainTermLabel = $scope.results[$scope.searchResultsIndex].value2;
