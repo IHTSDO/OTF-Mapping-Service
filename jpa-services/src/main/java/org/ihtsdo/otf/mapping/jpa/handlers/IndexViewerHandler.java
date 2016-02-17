@@ -498,14 +498,13 @@ public class IndexViewerHandler {
   public String getDetailsAsHtmlForLink(String terminology,
     String terminologyVersion, String domain, String link) throws Exception {
 
-    String json = "";
-
     if (link == null || link.isEmpty()) {
       throw new Exception("Empty or null label cannot be parsed");
     }
 
     String sublink = link;
 
+    List<Document> documents = new ArrayList<>();
     while (sublink.length() > 0) {
 
       Logger.getLogger(getClass()).debug("Searching for link " + sublink);
@@ -514,11 +513,15 @@ public class IndexViewerHandler {
       Document d =
           getDocumentForLink(terminology, terminologyVersion, domain, sublink);
 
+      // insert before later links
+      documents.add(0, d);
+
       // construct the link text and add to details
       for (Fieldable field : d.getFields()) {
-        Logger.getLogger(getClass()).info("  " + field.name() + ": " + d.get(field.name()));
+        Logger.getLogger(getClass())
+            .info("  " + field.name() + ": " + d.get(field.name()));
       }
-  
+
       // truncate
       if (sublink.lastIndexOf(".") == -1) {
         sublink = "";
@@ -527,7 +530,42 @@ public class IndexViewerHandler {
       }
     }
 
-    return json;
+    String htmlFragment = "";
+
+    // cycle over documents in reverse order (top-down)
+    for (int i = 0; i < documents.size(); i++) {
+
+      Document d = documents.get(i);
+
+      // construct the link text and add to details
+      for (Fieldable field : d.getFields()) {
+        Logger.getLogger(getClass())
+            .info("  " + field.name() + ": " + d.get(field.name()));
+      }
+
+      // add indentation based on position
+      for (int j = 0; j < i; j++) {
+        htmlFragment += " - ";
+      }
+
+      // if the top level, bold the title
+      if (i == 0) {
+        htmlFragment += "<strong>" + d.get("title") + "</strong>";
+      } else {
+        htmlFragment += d.get("title");
+      }
+      
+      // if code present, add
+      if (d.get("code") != null) {
+        htmlFragment += "&nbsp;" + d.get("code");
+      }
+      
+      // add line break
+      htmlFragment += "<br>";
+      
+    }
+
+    return htmlFragment;
 
   }
 
