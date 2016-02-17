@@ -157,7 +157,6 @@ public class MapRecordJpa implements MapRecord {
   @CollectionTable(name = "map_records_labels", joinColumns = @JoinColumn(name = "id"))
   @Column(nullable = true)
   // treat labels as a single field called labels
-  @Field(bridge = @FieldBridge(impl = CollectionToCSVBridge.class))
   private Set<String> labels = new HashSet<>();
 
   /** The reasons for conflict for this map record. */
@@ -165,7 +164,6 @@ public class MapRecordJpa implements MapRecord {
   @CollectionTable(name = "map_records_reasons", joinColumns = @JoinColumn(name = "id"))
   @Column(nullable = true)
   // treat reasons as a single field called reasonsForConflict
-  @Field(bridge = @FieldBridge(impl = CollectionToCSVBridge.class))
   private Set<String> reasonsForConflict = new HashSet<>();
 
   /**
@@ -626,6 +624,7 @@ public class MapRecordJpa implements MapRecord {
    *
    * @return the labels
    */
+  @Field(bridge = @FieldBridge(impl = CollectionToCSVBridge.class))
   @Override
   public Set<String> getLabels() {
     return labels;
@@ -654,6 +653,7 @@ public class MapRecordJpa implements MapRecord {
   }
 
   /* see superclass */
+  @Field(bridge = @FieldBridge(impl = CollectionToCSVBridge.class))
   @Override
   public Set<String> getReasonsForConflict() {
     return reasonsForConflict;
