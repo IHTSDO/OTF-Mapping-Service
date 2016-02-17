@@ -162,7 +162,9 @@
                         SELECT terminologyId, defaultPreferredName
                         FROM
                         concepts a
-                        WHERE terminology != 'SNOMEDCT' AND NOT EXISTS
+                        WHERE terminology != 'SNOMEDCT'
+                          AND defaultPreferredName not like '% - %'
+                          AND NOT EXISTS
                         (SELECT * FROM descriptions b
                         WHERE a.id = b.concept_id
                         AND a.defaultPreferredName = b.term);
