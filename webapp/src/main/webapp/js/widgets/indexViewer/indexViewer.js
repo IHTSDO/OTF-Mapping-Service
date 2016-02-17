@@ -65,7 +65,7 @@ angular
         return $sce.trustAsHtml(html_code);
       };
 
-      $scope.getDetailsForLink = function(link) {
+      $scope.details = function(link) {
         if (!link) {
           return;
         }
@@ -122,7 +122,7 @@ angular
       };
 
       // parses the text from a link and calls the search method
-      $scope.performSearchFromLink = function(searchText) {
+      $scope.search = function(searchText) {
 
         $scope.allCheckBox = false;
         var res = searchText.split(',');
@@ -277,9 +277,9 @@ angular
           $scope.selectedPage = eID.charAt(0);
           // switch to the target html page
           $scope.updateUrl($scope.selectedPage);
-          if ($scope.results[eID]) {
+          /*if ($scope.results[eID]) {
             $scope.applyHighlighting($scope.results[eID].value);
-          }
+          }*/
           
           $scope.eID = eID;
           $scope.previousEID = eID;
