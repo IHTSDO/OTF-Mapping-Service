@@ -337,7 +337,6 @@ public class IndexXmlToLuceneMojo extends AbstractMojo {
         data.put("level", attributes.getValue("level"));
 
       }
-
     }
 
     /*
@@ -461,6 +460,12 @@ public class IndexXmlToLuceneMojo extends AbstractMojo {
       if (data.get("code") != null)
         doc.add(new Field("code", data.get("code"), Store.YES, Index.ANALYZED,
             TermVector.NO));
+      if (data.get("see") != null) {
+        doc.add(new Field("see", data.get("see"), Store.YES, Index.ANALYZED));
+      }
+      if (data.get("seealso") != null) {
+        doc.add(new Field("seealso", data.get("seealso"), Store.YES, Index.ANALYZED));
+      }
       writer.addDocument(doc);
 
       addDictionaryWords();
