@@ -38,7 +38,7 @@ angular
       });
 
       // put the selected target code in storage to trigger any listeners
-      $scope.selectTargetCode = function(targetCode) {
+      $scope.code = function(targetCode) {
         if (!targetCode) {
           return;
         }
@@ -65,7 +65,7 @@ angular
         return $sce.trustAsHtml(html_code);
       };
 
-      $scope.getDetailsForLink = function(link) {
+      $scope.details = function(link) {
         if (!link) {
           return;
         }
@@ -122,7 +122,7 @@ angular
       };
 
       // parses the text from a link and calls the search method
-      $scope.performSearchFromLink = function(searchText) {
+      $scope.search = function(searchText) {
 
         $scope.allCheckBox = false;
         var res = searchText.split(',');
@@ -283,7 +283,7 @@ angular
           $scope.updateUrl($scope.selectedPage);
           if ($scope.results && $scope.results[eID]) {
             $scope.applyHighlighting($scope.results[eID].value);
-          }
+          }*/
           
           $scope.eID = eID;
           $scope.previousEID = eID;
