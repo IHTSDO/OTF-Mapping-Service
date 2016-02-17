@@ -2232,7 +2232,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     String terminology, String terminologyVersion) throws Exception {
 
     StringBuilder sb = new StringBuilder();
-    sb.append("ancestorPath:" + ancestorPath + "*");
+    sb.append("ancestorPath:\"" + ancestorPath + "*\"");
     sb.append(" AND terminologyId:" + terminologyId);
     sb.append(" AND terminology:" + terminology);
     sb.append(" AND terminologyVersion:" + terminologyVersion);
