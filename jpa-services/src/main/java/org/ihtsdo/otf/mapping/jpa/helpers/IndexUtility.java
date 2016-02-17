@@ -52,11 +52,8 @@ import org.ihtsdo.otf.mapping.rf2.jpa.RelationshipJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecordJpa;
 
-// TODO: Auto-generated Javadoc
 /**
  * Performs utility functions relating to Lucene indexes and Hibernate Search.
- *
- * @author ${author}
  */
 public class IndexUtility {
 

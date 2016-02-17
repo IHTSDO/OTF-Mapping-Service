@@ -318,12 +318,13 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         // GUIDANCE: Review to consider a second code or the advice.
         //
         if (concepts.get(1).get(0) != null
-            && hasUseAdditional(concepts.get(1).get(0))
-            && !TerminologyUtility.hasAdvice(mapRecord.getMapEntries().get(0),
-                "POSSIBLE REQUIREMENT FOR CAUSATIVE AGENT CODE")) {
-          result.addWarning("Primary map target may requre \"POSSIBLE "
-              + "REQUIREMENT FOR CAUSATIVE AGENT CODE\" "
-              + "advice or a causative agent code.");
+            && concepts.get(1).get(0).getTerminologyId().matches("^T8[0-8].*")
+            && hasUseAdditional(concepts.get(1).get(0))) {
+          result
+              .addWarning("For T80-T88 with \"use additional code\" advice, "
+                  + "add \"POSSIBLE REQUIREMENT FOR CAUSATIVE AGENT CODE\" advice or a "
+                  + "secondary code unless the concept specifically says infection "
+                  + "is the cause of the complication.");
         }
 
         //
@@ -683,6 +684,54 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE";
       final boolean hasExternalCauseCodeAdvice =
           TerminologyUtility.hasAdvice(mapEntry, externalCauseCodeAdvice);
+
+      //
+      // PREDICATE: primary map target has a coding hint matching one of these
+      // patterns: “Use additional code, if desired, to identify infectious
+      // agent or disease”, “Use additional code (B95-B97), if desired, to
+      // identify infectious agent”, “Use additional code (B95-B96), if
+      // desired,
+      // to identify bacterial agent” AND does not have “POSSIBLE REQUIREMENT
+      // FOR CAUSATIVE AGENT CODE” and contains the words “infection”,
+      // “infectious”, or “bacterial”.
+      // Action: add the advice
+      //
+      final String causativeAgentAdvice =
+          "POSSIBLE REQUIREMENT FOR CAUSATIVE AGENT CODE";
+      // T80-T88 range is handled by validation check
+      if (!mapEntry.getTargetId().matches("^T8[0-8].*")
+          && hasUseAdditional(concept)) {
+
+        // Check for secondary code in range
+        boolean found = false;
+        for (int i = 1; i < mapRecord.getMapEntries().size(); i++) {
+          // If external cause code found, set flag
+          if (mapRecord.getMapEntries().get(i).getTargetId() != null
+              && mapRecord.getMapEntries().get(i).getTargetId()
+                  .matches("^B9[5-8].*")) {
+            found = true;
+            break;
+          }
+        }
+        // If not found and doesn't have advice, add it
+        if (found
+            && !TerminologyUtility.hasAdvice(mapEntry, causativeAgentAdvice)) {
+          advices.add(TerminologyUtility.getAdvice(mapProject,
+              causativeAgentAdvice));
+        }
+
+        // If found and has have advice, remove it
+        else if (found
+            && TerminologyUtility.hasAdvice(mapEntry, causativeAgentAdvice)) {
+          advices.remove(TerminologyUtility.getAdvice(mapProject,
+              causativeAgentAdvice));
+        }
+
+      }
+      // !TerminologyUtility.hasAdvice(mapEntry, causativeAgentAdvice)) {
+      // advices.add(TerminologyUtility.getAdvice(mapProject,
+      // causativeAgentAdvice));
+      // }
 
       //
       // PREDICATE: asterisk code is used and it does not have
@@ -1345,6 +1394,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
       //
       // PREDICATE: SNOMED CT concept is a descendant of "Poisoning" 75478009
+      // and not 25508008 |Pathological drug intoxication (disorder)|
       // RESULT: principle 21
       //
       boolean isPoisoning =
@@ -1352,12 +1402,12 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
               || contentService.isDescendantOf(mapRecord.getConceptId(),
                   mapProject.getSourceTerminology(),
                   mapProject.getSourceTerminologyVersion(), "75478009");
-      boolean isAlcoholIntoxication =
-          mapRecord.getConceptId().equals("25702006")
+      boolean pathalogicIntoxication =
+          mapRecord.getConceptId().equals("25508008")
               || contentService.isDescendantOf(mapRecord.getConceptId(),
                   mapProject.getSourceTerminology(),
                   mapProject.getSourceTerminologyVersion(), "25702006");
-      if (isPoisoning && !isAlcoholIntoxication) {
+      if (isPoisoning && !pathalogicIntoxication) {
         principles.add(principleMap.get("21"));
         principles.add(principleMap.get("27"));
       }
