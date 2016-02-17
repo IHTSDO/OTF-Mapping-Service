@@ -101,8 +101,6 @@ import com.wordnik.swagger.annotations.ApiParam;
 
 /**
  * REST implementation for mapping service.
- *
- * @author ${author}
  */
 @Path("/mapping")
 @Api(value = "/mapping", description = "Operations supporting map objects.")
