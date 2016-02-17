@@ -13,7 +13,7 @@ angular
   })
   .controller(
     'indexViewerCtrl',
-    function($scope, $rootScope, $http, $location, $modal, $sce, $anchorScroll, $templateCache,
+    function($scope, $rootScope, $http, $location, $modal, $sce, $interval, $anchorScroll, $templateCache,
       $compile, $timeout, localStorageService, utilService) {
 
       // initialize as empty to indicate still initializing
@@ -284,12 +284,35 @@ angular
 
       };
 
+      var timeElapsed = 0;
+      var timeInterval = 100;
+      var timer = $interval(function() {
+        var el = document.getElementById('A1');
+        if (el) {
+          console.debug('Finished after ' + timeElapsed + ' ms');
+          $scope.stopTimer();
+        } else {
+          console.debug('Element not present', timeElapsed);
+          if (timeElapsed > 10000) {
+            $scope.stopTimer();
+          }
+          timeElapsed += timeInterval;
+
+        }
+      }, timeInterval);
+
+      $scope.stopTimer = function() {
+        $interval.cancel(timer);
+      };
+
       // updates the url to switch to display a new html page in the index
       // viewer
 
       $scope.updateUrl = function(pageName) {
 
         $scope.selectedPage = pageName;
+
+        $scope.tUrl = null;
 
         $scope.tUrl = 'indexViewerData/' + $scope.focusProject.destinationTerminology + '/'
           + $scope.focusProject.destinationTerminologyVersion + '/html/' + $scope.selectedDomain
