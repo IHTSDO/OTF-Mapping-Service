@@ -486,7 +486,11 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
         }
         out.println("<div id=\"" + aname + "\">");
         openDiv = true;
+
+        out.println("<span uib-popover-html=\"details('"
+            + aname + "')\"" + ">");
         out.println("<b>" + data.get(key) + "</b>");
+        out.println("</span>");
 
         // Handle writing the title, including embedded nemod
         if (nemodInTitle && data.get("nemod") != null) {
@@ -628,8 +632,11 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
         }
         out.println("<div id=\"" + aname + "\">");
         openDiv = true;
+        out.println("<span uib-popover-html=\"details('"
+            + aname + "')\"" + ">");
         out.println("- - - - - - - - - - - ".substring(0, level * 2)
             + data.get("title"));
+        out.println("</span>");
         // out.println("<h" + hLevel + ">" + data.get(key) + "</h" +
         // hLevel + ">");
         if (nemodInTitle && data.get("nemod") != null) {
