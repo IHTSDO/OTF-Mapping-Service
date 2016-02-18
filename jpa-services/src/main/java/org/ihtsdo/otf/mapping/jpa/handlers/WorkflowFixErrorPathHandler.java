@@ -476,13 +476,10 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
             break;
         }
 
-        // exclude records where review is in progress by this user
-        sb.append(" AND NOT (userAndWorkflowStatusPairs:REVIEW_NEW_"
-            + mapUser.getUserName()
-            + " OR userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_"
-            + mapUser.getUserName()
-            + " OR userAndWorkflowStatusPairs:REVIEW_RESOLVED_"
-            + mapUser.getUserName() + ")");
+        // exclude records where review is in progress
+        sb.append(" AND NOT (userAndWorkflowStatusPairs:REVIEW_NEW_*"
+            + " OR userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_*"
+            + " OR userAndWorkflowStatusPairs:REVIEW_RESOLVED_*");
         break;
 
       default:
