@@ -82,7 +82,7 @@ var mapProjectApp = angular.module(
   });
 
 mapProjectApp.config([ '$routeProvider', function($routeProvider) {
-
+  
   // ////////////////////////////
   // DASHBOARDS
   // ////////////////////////////
@@ -165,50 +165,4 @@ mapProjectApp.config([ '$routeProvider', function($routeProvider) {
   });
 } ]);
 
-mapProjectApp.directive('indexViewerPage', function($http, $templateCache, $compile, utilService) {
 
-  return {
-    scope : false,
-    restrict : 'AE',
-    link : function(scope, elem, attrs) {
-      
-      console.debug('scope', scope);
-      console.debug('tUrl', scope.tUrl);
-
-      function init() {
-        
-        console.debug('Index Viewer init: ' + attrs.template);
-
-        // get the html template from attributes
-        var templatePath = attrs.template;
-
-        if (!templatePath) {
-          utilService.handleError("Index Viewer page template not defined");
-        }
-
-        // get the template from the cache
-        $http.get(templatePath, {
-          cache : $templateCache
-        }).success(function(response) {
-          // append the template to the element
-          var contents = elem.html(response).contents();
-
-          // compile the template
-          $compile(contents)(scope);
-
-          console.debug('compiled');
-        }).error(
-          function() {
-            utilService.handleError("Index Viewer page template not found in cache: "
-              + templatePath);
-          });
-      }
-
-      scope.$watch(attrs.template, function() {
-        console.debug('template', attrs.template);
-        init();
-      }, true);
-
-    }
-  };
-});
