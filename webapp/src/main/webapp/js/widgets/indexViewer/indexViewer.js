@@ -212,6 +212,14 @@ angular
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
+      
+      // retrieves the index url for a domain and page
+      $scope.getIndexPageUrl = function(domain, page) {
+        return 'indexViewerData/' + $scope.focusProject.destinationTerminology + '/'
+        + $scope.focusProject.destinationTerminologyVersion + '/html/'
+        + domain + '/' + page + '.html';
+
+      }
 
       // returns the set of titles of html pages for the given domain
       $scope.retrieveIndexPages = function(domain) {
@@ -248,6 +256,8 @@ angular
               var url = 'indexViewerData/' + $scope.focusProject.destinationTerminology + '/'
                 + $scope.focusProject.destinationTerminologyVersion + '/html/'
                 + $scope.selectedDomain + '/' + $scope.indexPages[i] + '.html';
+              
+              console.debug('Retrieving template for ', url);
 
               $http.get(url, {
                 cache : $templateCache
@@ -346,25 +356,23 @@ angular
 
       // updates the url to switch to display a new html page in the index
       // viewer
+      
+      $scope.pageTabs = [];
 
       $scope.updateUrl = function(pageName) {
 
         $scope.selectedPage = pageName;
-
-        // REMOVE IF AFTER TESTING
-       // if ($scope.tUrl == null) {
-
-        $scope.tUrl = 'indexViewerData/' + $scope.focusProject.destinationTerminology + '/'
-          + $scope.focusProject.destinationTerminologyVersion + '/html/' + $scope.selectedDomain
-          + '/' + pageName + '.html';
-        $scope.testTemplates = [];
-        $scope.testTemplates.push($scope.tUrl);
-      // } else {
-      //    $scope.tUrl = null;
-      //  }
         
-        console.debug($scope.testTemplates);
-
+        // TODO Move this elsewhere at some point
+        $scope.pageTabs = [];
+        angular.forEach($scope.indexPages, function(indexPage) {
+          var page = {
+            name : indexPage,
+            active : (pageName === indexPage)
+          }
+          $scope.pageTabs.push(page);
+        })
+      
       };
 
       $scope.goFirstResult = function() {
@@ -404,6 +412,7 @@ angular
         $scope.mainTermLabel = $scope.results[$scope.results.length - 1].value2;
         $scope.setForwardButtonsDisplayed(false);
         $scope.setBackwardButtonsDisplayed(true);
+
       };
 
       $scope.setBackwardButtonsDisplayed = function(b) {
