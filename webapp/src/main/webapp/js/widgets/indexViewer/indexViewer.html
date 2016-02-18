@@ -51,16 +51,30 @@
 	</a>
 </div>
 <div>
-  <tabset> <tab ng-repeat="domain in domains  | orderBy: 'toString()'" heading="{{domain}}"
-    ng-click="retrieveIndexPages(domain);"> </tab></tabset>
+	<tabset> <tab
+		ng-repeat="domain in domains  | orderBy: 'toString()'"
+		heading="{{domain}}" ng-click="retrieveIndexPages(domain);"> </tab></tabset>
 </div>
 
+<div>
+	<tabset justified="true"> <tab ng-repeat="page in pageTabs"
+		heading="{{page.name}}" select="updateUrl(indexTab)">
+	<hr>
+	<div id="scrollArea" style="height: 500px;">
+	{{selectedPage}}
+		<div class="slide-animate" ng-include
+			src="getIndexPageUrl(selectedDomain, page.name)" autoscroll></div>
+	</div>
+	</tab>
+</div>
+<!-- 
 <div align="center" style="padding: 10px;">
-  <div style="display: inline; padding: 8px;" ng-repeat="indexTab in indexPages  | orderBy: 'toString()'">
-    <a ng-style="set_style(indexTab)" ng-click="updateUrl(indexTab)">{{indexTab}}</a>
-  </div>
+	<div style="display: inline; padding: 8px;"
+		ng-repeat="indexTab in indexPages  | orderBy: 'toString()'">
+		<a ng-style="set_style(indexTab)" ng-click="updateUrl(indexTab)">{{indexTab}}</a>
+	</div>
 </div>
 
 <div id="scrollArea" style="height: 500px;">
-  <div class="slide-animate" ng-include src="tUrl" autoscroll></div>
-</div>
+	<div class="slide-animate" ng-include src="tUrl" autoscroll></div>
+</div> -->
