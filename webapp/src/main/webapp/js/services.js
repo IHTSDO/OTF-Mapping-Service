@@ -1,5 +1,18 @@
 'use strict';
 
+// TODO Test or remove later
+mapProjectApp.service('indexViewerService', [ 'rootScope',
+  function($rootScope, $templateCache) {
+    
+    this.addTemplate = function(name, template) {
+      
+    }
+    
+    this.getTemplate = function(name) {
+      
+    }
+}]);
+
 // Util service
 mapProjectApp
   .service(
