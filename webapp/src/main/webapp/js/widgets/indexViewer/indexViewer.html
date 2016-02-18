@@ -50,32 +50,17 @@
 		ng-click="goLastResult()"> <i class="glyphicon glyphicon-forward"></i>
 	</a>
 </div>
-
 <div>
-	<tabset> <tab
-		ng-repeat="domain in domains  | orderBy: 'toString()'"
-		heading="{{domain}}" ng-click="retrieveIndexPages(domain);"> </tab></tabset>
+  <tabset> <tab ng-repeat="domain in domains  | orderBy: 'toString()'" heading="{{domain}}"
+    ng-click="retrieveIndexPages(domain);"> </tab></tabset>
 </div>
 
 <div align="center" style="padding: 10px;">
-	<div style="display: inline; padding: 8px;"
-		ng-repeat="indexTab in indexPages  | orderBy: 'toString()'">
-		<a ng-style="set_style(indexTab)"
-			ng-click="goToElement(indexTab + '0')">{{indexTab}}</a>
-	</div>
+  <div style="display: inline; padding: 8px;" ng-repeat="indexTab in indexPages  | orderBy: 'toString()'">
+    <a ng-style="set_style(indexTab)" ng-click="updateUrl(indexTab)">{{indexTab}}</a>
+  </div>
 </div>
 
-<div class="row">
-	<div ng-show="true" class="col-md-6" id="scrollArea"
-		style="height: 500px;">
-		With ng-include: {{template}}
-		<div class="slide-animate" ng-include src="tUrl" autoscroll></div>
-	</div>
-	<div class="col-md-6" id="scrollArea" style="height: 500px">
-
-		<div ng-repeat="template in testTemplates">
-			With $compile: {{template}}
-			<div index-viewer-page template="{{template}}" autoscroll></div>
-		</div>
-	</div>
+<div id="scrollArea" style="height: 500px;">
+  <div class="slide-animate" ng-include src="tUrl" autoscroll></div>
 </div>
