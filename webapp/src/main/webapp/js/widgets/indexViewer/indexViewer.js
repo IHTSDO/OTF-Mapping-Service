@@ -201,16 +201,16 @@ angular
 
         // change the page
         $scope.changeTab(page);
-
-        // go to the element on the page, preventing reload
-        $rootScope.preventSingleReload = true;
-        $location.hash(result.value);
-        $anchorScroll(result.value);
-
-        // TODO Apply highlighting is inconsistent, only applied/removed every other search result
+        
+        // apply very short timeout to allow tab change
         $timeout(function() {
+          // go to the element on the page, preventing reload
+          $rootScope.preventSingleReload = true;
+          $location.hash(result.value);
+          
           $scope.applyHighlighting(result.value);
-        }, 250);
+          $anchorScroll(result.value);
+        }, 100);
         // update the current result
         $scope.currentResult = result;
       };
