@@ -683,7 +683,7 @@ angular
                     }
                   }
                 });
-                
+
                 // on close (success or fail), reload records
                 modalInstance.result.then(function() {
                   $scope.retrieveRecords(1);
@@ -729,7 +729,6 @@ angular
         $scope.cancel = function() {
           console.debug('Stopping QA Records...');
           $scope.isRunning = false;
-          $modalInstance.dismiss('cancel');
         };
 
         // Close
@@ -740,35 +739,34 @@ angular
         // Create QA records
         $scope.qaRecords = function(label) {
           $scope.isRunning = true;
+          $scope.qaSucceeded = 0;
+          $scope.qaFailed = 0;
+          $scope.qaSkipped = 0;
+          $scope.qaComplete = 0;
 
-          for (var i = 0; i < records.length; i++) {
-            if ($scope.isRunning) {
-              qaRecord(records[i], label).then(function() {
-                $scope.qaSucceeded++;
-              }, function(error) {
-                $scope.qaFailed++;
-              })['finally'](function() {
-                $scope.qaComplete++;
-                if ($scope.qaComplete == $scope.qaTotal) {
-                  $scope.isRunning = false;
-                }
-              });
-            } else {
-              $scope.qaSkipped++;
-              $scope.qaComplete++;
-              if ($scope.qaComplete == $scope.qaTotal) {
-                $scope.isRunning = false;
-              }
-            }
-          }
+          // call the recursive helper function
+          qaRecordsHelper(records, label, 0);
 
         };
+
+        // recursively sends records for qa
+        function qaRecordsHelper(records, label, index) {
+
+          if (index == records.length) {
+            return;
+          }
+
+          qaRecord(records[index], label)['finally'](function() {
+            qaRecordsHelper(records, label, index + 1);
+          });
+        }
 
         // helper function (with promise) to assign a single record to QA
         function qaRecord(record, label) {
           var deferred = $q.defer();
           // if stop request detected, reject
           if (!$scope.isRunning) {
+            $scope.qaSkipped++;
             deferred.reject();
           } else {
             if (!record.labels) {
@@ -777,11 +775,15 @@ angular
             record.labels.push(label);
 
             $http.post(root_workflow + 'createQARecord', record).then(function() {
+              $scope.qaSucceeded++;
               deferred.resolve();
             }, function() {
+              $scope.qaFailed++;
               deferred.reject();
             });
           }
+
+          $scope.qaComplete++; // really should be called submitted, but meh
           return deferred.promise;
         }
 
