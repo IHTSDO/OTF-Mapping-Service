@@ -345,9 +345,9 @@ angular
 
               };
 
-              // REMOVE THIS AFTER DEV WORK
-              // truncate pages for faster testing
-              domain.pages = domain.pages.slice(0, 3);
+             
+              // FOR DEV WORK ONLY: truncate pages for faster testing
+              // domain.pages = domain.pages.slice(0, 3);
 
               // push onto the domains array
               $scope.domains.push(domain);
