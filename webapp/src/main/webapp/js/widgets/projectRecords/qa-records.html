@@ -1,18 +1,19 @@
 <div class="modal-header">
-  <h3>QA Project Records</h3>
+  <h3>Submitting {{qaTotal}} Project Records to QA</h3>
 </div>
 
 <div class="modal-body">
   <div class="row">
-    <div class="col-md-4">Enter label for QA records:</div>
+    <div class="col-md-4">Enter label for QA records (required):</div>
     <div class="col-md-8">
       <input ng-model="qaLabel" size="40">
     </div>
   </div>
 
   <div class="row">
-    <div class="col-md-4">Finished: {{qaComplete}} / {{qaTotal}}</div>
+    <div class="col-md-4"></div>
     <div class="col-md-8">
+      <div class="alert alert-info" style="padding: 5px;" ng-show="qaComplete > 0">Submitted: {{qaComplete}} / {{qaTotal}} records</div>
       <div class="alert alert-success" ng-show="qaSucceeded > 0"
         style="width: 100%">Successful: {{qaSucceeded}} records</div>
       <div class="alert alert-warning" ng-show="qaSkipped > 0"
@@ -33,7 +34,7 @@
 </div>
 
 <div class="modal-footer">
-  <button class="btn btn-primary btn-xs" ng-disabled="!qaLabel"
+  <button class="btn btn-primary" ng-show="qaLabel && !isRunning"
     ng-show="!isRunning && qaSucceeded == 0 && qaFailed == 0"
     ng-click="qaRecords(qaLabel)">Create QA Records</button>
   <button class="btn btn-primary" ng-show="!isRunning" ng-click="close()">Close</button>
