@@ -107,7 +107,7 @@ angular
       ////////////////////////////////////////////
 
       $scope.performAggregatedSearch = function(searchField, subSearchField, subSubSearchField,
-        requireAll) {
+        searchAllLevels) {
 
         // check for wildcard-only searches
         if (searchField == '*' && subSearchField == '*' && subSubSearchField == '*') {
@@ -120,24 +120,11 @@ angular
           return;
         }
 
-        // check field requirements
-        if (requireAll) {
-
-          if (!subSubearchField) {
-            window.alert('The first search box must not be empty');
-            return;
-          }
-          if (!subSubSearchField) {
-            window.alert('The first search box must not be empty');
-            return;
-          }
-        }
-
         var url = root_content + 'index/' + $scope.focusProject.destinationTerminology + '/'
           + $scope.focusProject.destinationTerminologyVersion + '/' + $scope.selectedDomain.name
           + '/search/' + searchField + '/subSearch/'
           + (subSearchField ? subSearchField : 'undefined') + '/subSubSearch/'
-          + (subSubSearchField ? subSubSearchField : 'undefined') + '/' + $scope.allCheckBox;
+          + (subSubSearchField ? subSubSearchField : 'undefined') + '/' + searchAllLevels;
 
         $rootScope.glassPane++;
         $http({
@@ -249,6 +236,7 @@ angular
       $scope.removeHighlighting = function(eID) {
         if (document.getElementById(eID) != null) {
           document.getElementById(eID).style.backgroundColor = "white";
+        } else {
           console.error('Failed to remove highlighting on item with eid ' + eID);
         }
       };
