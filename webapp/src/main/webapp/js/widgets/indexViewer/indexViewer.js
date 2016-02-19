@@ -13,8 +13,8 @@ angular
   })
   .controller(
     'indexViewerCtrl',
-    function($scope, $rootScope, $sce, $http, $location, $anchorScroll, $q, $templateCache, $timeout,
-      localStorageService, utilService) {
+    function($scope, $rootScope, $sce, $http, $location, $anchorScroll, $q, $templateCache,
+      $timeout, localStorageService, utilService) {
 
       // the index domains, domain = { name : '', active : '', pages : ''}
       $scope.domains = [];
@@ -32,7 +32,7 @@ angular
       $scope.currentResult = null;
       $scope.searchResultsLabel = null;
       $scope.searchResultIndex = 0;
-      
+
       // details display
       $scope.detailsMode = false;
 
@@ -87,7 +87,7 @@ angular
         $scope.domainTabs.sort(function(a, b) {
           return a.name > b.name;
         });
-        
+
         // select the first domain and first page
         $scope.selectDomainTab($scope.domainTabs[0]);
         $scope.selectPageTab($scope.domainTabs[0].pageTabs[0]);
@@ -208,8 +208,9 @@ angular
         $anchorScroll(result.value);
 
         // TODO Apply highlighting is inconsistent, only applied/removed every other search result
-        $scope.applyHighlighting(result.value);
-
+        $timeout(function() {
+          $scope.applyHighlighting(result.value);
+        }, 250);
         // update the current result
         $scope.currentResult = result;
       };
@@ -220,7 +221,7 @@ angular
       };
 
       $scope.changeTab = function(tabName) {
-        
+
         angular.forEach($scope.domainTabs, function(domainTab) {
           if (domainTab.domain.name === $scope.selectedDomain.name) {
             angular.forEach(domainTab.pageTabs, function(pageTab) {
@@ -282,29 +283,13 @@ angular
           }, 500);
 
       };
-
-      $scope.detailsMap = {
-       
-      };
-      
-      var ct = 0;
-
       // retrieve popover details
-      // TODO Popover introduction dramatically slows compile time of each page, due to additional ng-scopes. Upgrade Angular and resolve this.
       $scope.details = function(link) {
+
+        $scope.indexTrail = null;
         if (!link) {
           return;
         }
-        
-        if ($scope.detailsMap.hasOwnProperty(link)) {
-         return $scope.detailsMap[link]; 
-        }
-        
-        if (++ct > 10) {
-          return;
-        }
-        
-        
 
         console
           .debug('testing details retrieval', $scope.focusProject, $scope.selectedDomain, link);
@@ -312,12 +297,14 @@ angular
           root_content + 'index/' + $scope.focusProject.destinationTerminology + '/'
             + $scope.focusProject.destinationTerminologyVersion + '/' + $scope.selectedDomain.name
             + '/details/' + link).then(function(response) {
-              
-              // substring to eliminate quotation marks
-              // TODO Use a real regular expression for this and stop being lazy
-              $scope.detailsMap[link] = response.data.substring(1, response.data.length -2);
 
-        }, function(error) {
+          // substring to eliminate quotation marks
+          // TODO Use a real regular expression for this and stop being lazy
+          $scope.indexTrail = response.data.substring(1, response.data.length - 2);
+
+        }, function(data, status, headers, config) {
+          $rootScope.glassPane--;
+          $rootScope.handleHttpError(data, status, headers, config);
         });
 
       };
