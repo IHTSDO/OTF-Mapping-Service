@@ -67,6 +67,8 @@ mapProjectAppControllers
     // root watcher to check for page changes, reload events, window closes,
     // etc
     // if on a 'dirty' page, prompt for confirmation from user
+    
+    // TODO RIGHT HERE IS THE THING OMG THE THING
     $rootScope
       .$on(
         '$locationChangeStart',
