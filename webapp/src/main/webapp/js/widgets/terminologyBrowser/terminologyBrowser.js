@@ -71,6 +71,22 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
       $scope.query = '';
       $scope.treeQuery = '';
     });
+    
+    // function called on storage listener event
+    function onStorageEvent(storageEvent) {
+      console.debug(storageEvent);
+      var targetCode = localStorage.getItem('targetCode');
+
+      // if target code is set, focus window, remove from storage, and set target
+      if (targetCode) {
+        localStorage.removeItem('targetCode');
+        $scope.query = targetCode;
+        $scope.search();
+      }
+    }
+
+    // add the storage listener
+    window.addEventListener('storage', onStorageEvent, false);
 
     // REQUIRED WATCH VARIABLES: focusProject, userToken. None others needed.
     $scope.$watch([ 'focusProject', 'userToken' ], function() {
