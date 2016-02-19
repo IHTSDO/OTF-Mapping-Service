@@ -561,6 +561,9 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
               "Publish called on QA_PATH for map record not marked as QA_RESOLVED");
 
         mapRecord.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+        
+        // clear labels
+        mapRecord.setLabels(new HashSet<String>());
 
         newRecords.clear();
         newRecords.add(mapRecord);
@@ -614,6 +617,9 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
             revisionRecord.setWorkflowStatus(workflowService
                 .getPreviouslyPublishedVersionOfMapRecord(revisionRecord)
                 .getWorkflowStatus());
+            
+            // clear any labels
+            revisionRecord.setLabels(new HashSet<String>());
 
             // remove all records and re-add the revision record
             newRecords.clear();
