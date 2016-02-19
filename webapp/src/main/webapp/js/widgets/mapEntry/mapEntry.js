@@ -59,21 +59,7 @@ angular
 
         });
 
-        // function called on storage listener event
-        function onStorageEvent(storageEvent) {
-          console.debug(storageEvent);
-          var targetCode = localStorage.getItem('targetCode');
-
-          // if target code is set, focus window, remove from storage, and set target
-          if (targetCode) {
-            $window.self.focus();
-            localStorage.removeItem('targetCode');
-            $scope.setTarget(targetCode);
-          }
-        }
-
-        // add the storage listener
-        window.addEventListener('storage', onStorageEvent, false);
+        
 
         // watch for entry deletion from map record page
         $scope.$on('mapRecordWidget.notification.deleteSelectedEntry', function(event, parameters) {
