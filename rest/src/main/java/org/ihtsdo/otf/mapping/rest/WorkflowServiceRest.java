@@ -66,6 +66,7 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
 // TODO Reminder to Patrick to clean up logging after finish (e.g. .info -> .debug)
+// TODO Ticket reminder: assign/unassign of review work does not refresh assigned concept in cases where the user is both specialist & lead (i.e. see it twice after assignment)
 
 /**
  * REST implementation for workflow service.

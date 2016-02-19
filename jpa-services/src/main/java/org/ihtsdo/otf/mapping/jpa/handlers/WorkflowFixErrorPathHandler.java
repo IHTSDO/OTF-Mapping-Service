@@ -462,7 +462,7 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
             sb.append(" AND userAndWorkflowStatusPairs:EDITING_IN_PROGRESS_"
                 + mapUser.getUserName());
             break;
-          case "REVIEW_NEEDED":
+          case "EDITING_DONE":
             sb.append(" AND userAndWorkflowStatusPairs:REVIEW_NEEDED_"
                 + mapUser.getUserName());
             break;
@@ -479,7 +479,7 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
         // exclude records where review is in progress
         sb.append(" AND NOT (userAndWorkflowStatusPairs:REVIEW_NEW_*"
             + " OR userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_*"
-            + " OR userAndWorkflowStatusPairs:REVIEW_RESOLVED_*");
+            + " OR userAndWorkflowStatusPairs:REVIEW_RESOLVED_*)");
         break;
 
       default:
