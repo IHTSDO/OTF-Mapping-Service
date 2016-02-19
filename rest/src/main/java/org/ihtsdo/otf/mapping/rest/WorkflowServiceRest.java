@@ -565,13 +565,12 @@ public class WorkflowServiceRest extends RootServiceRest {
             + "/availableQAWork");
 
     String project = "";
-    // all qa work will have user "qa"
-    String user = "qa";
+    String user = "qa"; // always the qa user for specialist level work
 
     final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
-      user = authorizeProject(mapProjectId, authToken, MapUserRole.SPECIALIST,
+     authorizeProject(mapProjectId, authToken, MapUserRole.SPECIALIST,
           "find available qa work ", securityService);
 
       // get the project and user
@@ -580,16 +579,14 @@ public class WorkflowServiceRest extends RootServiceRest {
       final MapUser mapUser = workflowService.getMapUser(user);
       user = mapUser.getUserName();
 
-      // SPECIAL CASE: Access QA Workflow Path directly
       WorkflowPathHandler handler = new WorkflowQaPathHandler();
       SearchResultList results = handler.findAvailableWork(mapProject, mapUser,
           MapUserRole.SPECIALIST, query, pfsParameter, workflowService);
+
       return results;
 
-      // get the workflow tracking records
-      // return workflowService.findAvailableQAWork(mapProject, mapUser,
-      // query, pfsParameter);
     } catch (Exception e) {
+      e.printStackTrace();
       handleException(e, "trying to find available qa work", user, project, "");
       return null;
     } finally {
@@ -723,7 +720,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
     Logger.getLogger(WorkflowServiceRest.class)
         .info("RESTful call (Workflow): /project/id/" + mapProjectId.toString()
-            + "/user/id/" + userName + "/assignedQAWork");
+            + "/user/id/" + userName + "/query/" + query + "/assignedQAWork");
 
     String project = "";
     String user = null;
@@ -739,14 +736,14 @@ public class WorkflowServiceRest extends RootServiceRest {
       project = mapProject.getName();
       final MapUser mapUser = workflowService.getMapUser(userName);
       user = mapUser.getUserName();
+      
       // SPECIAL CASE: Access QA Workflow Path directly
       WorkflowPathHandler handler = new WorkflowQaPathHandler();
       SearchResultList results = handler.findAssignedWork(mapProject, mapUser,
           MapUserRole.SPECIALIST, query, pfsParameter, workflowService);
       return results;
-      // get the map records
-      // return workflowService.findAssignedQAWork(mapProject, mapUser,
-      // query, pfsParameter);
+
+
 
     } catch (Exception e) {
       handleException(e, "trying to find assigned qa work", user, project, "");
