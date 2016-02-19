@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -63,25 +64,22 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
     // workflow states representing a record marked for qa and the original
     // published record
     qaNeededState = new WorkflowPathState("QA_NEEDED");
-    qaNeededState.addWorkflowCombination(new WorkflowStatusCombination(Arrays
-        .asList(WorkflowStatus.REVISION, WorkflowStatus.QA_NEEDED)));
-    trackingRecordStateToActionMap.put(
-        qaNeededState,
-        new HashSet<>(Arrays.asList(WorkflowAction.ASSIGN_FROM_SCRATCH,
-            WorkflowAction.UNASSIGN)));
+    qaNeededState.addWorkflowCombination(new WorkflowStatusCombination(
+        Arrays.asList(WorkflowStatus.REVISION, WorkflowStatus.QA_NEEDED)));
+    trackingRecordStateToActionMap.put(qaNeededState, new HashSet<>(Arrays
+        .asList(WorkflowAction.ASSIGN_FROM_SCRATCH, WorkflowAction.UNASSIGN)));
 
     // workflow states representing record marked for revision, specialist
     // work,
     // and lead QA (incomplete)
     editingState = new WorkflowPathState("QA_NEW/QA_IN_PROGRESS");
-    editingState.addWorkflowCombination(new WorkflowStatusCombination(Arrays
-        .asList(WorkflowStatus.REVISION, WorkflowStatus.QA_NEEDED,
-            WorkflowStatus.QA_NEW)));
-    editingState.addWorkflowCombination(new WorkflowStatusCombination(Arrays
-        .asList(WorkflowStatus.REVISION, WorkflowStatus.QA_NEEDED,
-            WorkflowStatus.QA_IN_PROGRESS)));
-    trackingRecordStateToActionMap.put(
-        editingState,
+    editingState.addWorkflowCombination(
+        new WorkflowStatusCombination(Arrays.asList(WorkflowStatus.REVISION,
+            WorkflowStatus.QA_NEEDED, WorkflowStatus.QA_NEW)));
+    editingState.addWorkflowCombination(
+        new WorkflowStatusCombination(Arrays.asList(WorkflowStatus.REVISION,
+            WorkflowStatus.QA_NEEDED, WorkflowStatus.QA_IN_PROGRESS)));
+    trackingRecordStateToActionMap.put(editingState,
         new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING,
             WorkflowAction.SAVE_FOR_LATER, WorkflowAction.UNASSIGN)));
 
@@ -89,14 +87,14 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
     // specialist work,
     // and lead QA (complete)
     finishedState = new WorkflowPathState("QA_RESOLVED");
-    finishedState.addWorkflowCombination(new WorkflowStatusCombination(Arrays
-        .asList(WorkflowStatus.REVISION, WorkflowStatus.QA_NEEDED,
-            WorkflowStatus.QA_RESOLVED)));
-    trackingRecordStateToActionMap.put(
-        finishedState,
-        new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING,
-            WorkflowAction.PUBLISH, WorkflowAction.SAVE_FOR_LATER,
-            WorkflowAction.UNASSIGN)));
+    finishedState.addWorkflowCombination(
+        new WorkflowStatusCombination(Arrays.asList(WorkflowStatus.REVISION,
+            WorkflowStatus.QA_NEEDED, WorkflowStatus.QA_RESOLVED)));
+    trackingRecordStateToActionMap
+        .put(finishedState,
+            new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING,
+                WorkflowAction.PUBLISH, WorkflowAction.SAVE_FOR_LATER,
+                WorkflowAction.UNASSIGN)));
 
     // final state: no tracking record, one READY_FOR_PUBLICATION record
   }
@@ -118,8 +116,8 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
     // first, validate the tracking record itself
     ValidationResult result = validateTrackingRecord(tr);
     if (!result.isValid()) {
-      result
-          .addError("Could not validate action for user due to workflow errors.");
+      result.addError(
+          "Could not validate action for user due to workflow errors.");
 
       return result;
     }
@@ -139,9 +137,8 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
 
     // get the user role for this map project
     MappingService mappingService = new MappingServiceJpa();
-    MapUserRole userRole =
-        mappingService.getMapUserRoleForMapProject(user.getUserName(),
-            tr.getMapProjectId());
+    MapUserRole userRole = mappingService
+        .getMapUserRoleForMapProject(user.getUserName(), tr.getMapProjectId());
     mappingService.close();
 
     // get the map records and workflow path state from the tracking
@@ -154,8 +151,8 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
     // Switch on workflow path state //
     // /////////////////////////////////
     if (state == null) {
-      result
-          .addError("Could not determine workflow path state for tracking record");
+      result.addError(
+          "Could not determine workflow path state for tracking record");
     }
 
     else if (state.equals(qaNeededState)) {
@@ -193,10 +190,10 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
       // check record
       if (currentRecord == null) {
         result.addError("User must have a record");
-      } else if (!currentRecord.getWorkflowStatus().equals(
-          WorkflowStatus.QA_NEW)
-          && !currentRecord.getWorkflowStatus().equals(
-              WorkflowStatus.QA_IN_PROGRESS)) {
+      } else if (!currentRecord.getWorkflowStatus()
+          .equals(WorkflowStatus.QA_NEW)
+          && !currentRecord.getWorkflowStatus()
+              .equals(WorkflowStatus.QA_IN_PROGRESS)) {
         result.addError("User's record does not meet requirements");
       }
 
@@ -216,8 +213,8 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
       // check record
       if (currentRecord == null) {
         result.addError("User must have a record");
-      } else if (!currentRecord.getWorkflowStatus().equals(
-          WorkflowStatus.QA_RESOLVED)) {
+      } else if (!currentRecord.getWorkflowStatus()
+          .equals(WorkflowStatus.QA_RESOLVED)) {
         result.addError("User's record does meet requirements");
       }
 
@@ -236,8 +233,8 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
     }
 
     if (result.getErrors().size() != 0) {
-      result.addError("Error occured in workflow state "
-          + state.getWorkflowStateName());
+      result.addError(
+          "Error occured in workflow state " + state.getWorkflowStateName());
     }
 
     return result;
@@ -260,19 +257,18 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
   public SearchResultList findAvailableWork(MapProject mapProject,
     MapUser mapUser, MapUserRole userRole, String query,
     PfsParameter pfsParameter, WorkflowService workflowService)
-    throws Exception {
-    Logger.getLogger(this.getClass()).info(
-        getName() + ": findAvailableWork for project " + mapProject.getName()
-            + " and user " + mapUser.getUserName());
+      throws Exception {
+    Logger.getLogger(this.getClass())
+        .info(getName() + ": findAvailableWork for project "
+            + mapProject.getName() + " and user " + mapUser.getUserName());
 
     SearchResultList availableWork = new SearchResultListJpa();
 
     final StringBuilder sb = new StringBuilder();
-    if (query != null && !query.isEmpty() && !query.equals("null")) {
-      sb.append(query).append(" AND ");
-    }
-    sb.append("mapProjectId:" + mapProject.getId()
-        + " AND workflowPath:QA_PATH");
+
+    // NOTE QA Path does not use normal queries, but rather filters by label
+    sb.append(
+        "mapProjectId:" + mapProject.getId() + " AND workflowPath:QA_PATH");
 
     // add the query terms specific to findAvailableReviewWork
     // - a user (any) and workflowStatus pair of QA_NEEDED_userName
@@ -290,10 +286,15 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
         + " OR userAndWorkflowStatusPairs:QA_IN_PROGRESS_*"
         + " OR userAndWorkflowStatusPairs:QA_RESOLVED_*" + ")");
 
+    // QA label searching requires retrieving all results
+    PfsParameter pfsLocal = new PfsParameterJpa(pfsParameter);
+    pfsLocal.setMaxResults(-1);
+    pfsLocal.setStartIndex(-1);
+
     int[] totalCt = new int[1];
     final List<TrackingRecord> results =
         (List<TrackingRecord>) workflowService.getQueryResults(sb.toString(),
-            TrackingRecordJpa.class, TrackingRecordJpa.class, pfsParameter,
+            TrackingRecordJpa.class, TrackingRecordJpa.class, pfsLocal,
             totalCt);
     availableWork.setTotalCount(totalCt[0]);
 
@@ -303,22 +304,53 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
           workflowService.getMapRecordsForTrackingRecord(tr);
 
       StringBuffer labelBuffer = new StringBuffer();
+      boolean hasLabel = false;
       for (final MapRecord mr : mapRecords) {
 
         // extract all labels for this tracking record
         for (final String label : mr.getLabels()) {
-          if (labelBuffer.indexOf(label) == -1)
+          if (labelBuffer.indexOf(label) == -1) {
             labelBuffer.append(";").append(label);
+          }
+          if (label.equals(query)) {
+            hasLabel = true;
+          }
         }
       }
 
-      // construct the search result
-      result.setTerminologyId(tr.getTerminologyId());
-      result.setValue(tr.getDefaultPreferredName());
-      result.setId(tr.getId());
-      result.setValue2(labelBuffer.toString());
-      availableWork.addSearchResult(result);
+      // if no label query supplied or this tracking record has the requested
+      // label
+      if (query == null || query.isEmpty() || query.equals("null")
+          || hasLabel == true) {
+
+        // construct the search result
+        result.setTerminologyId(tr.getTerminologyId());
+        result.setValue(tr.getDefaultPreferredName());
+        result.setId(tr.getId());
+        result.setValue2(labelBuffer.toString());
+        availableWork.addSearchResult(result);
+      }
     }
+
+    // construct local list for manual paging
+    List<SearchResultJpa> tempResults = new ArrayList<>();
+    for (SearchResult sr : availableWork.getSearchResults()) {
+      tempResults.add((SearchResultJpa) sr);
+    }
+
+    // apply paging to the list
+    pfsLocal = new PfsParameterJpa(pfsParameter);
+    pfsLocal.setQueryRestriction("");
+    pfsLocal.setSortField("");
+    tempResults = workflowService.applyPfsToList(tempResults,
+        SearchResultJpa.class, totalCt, pfsLocal);
+
+    // reconstruct the assignedWork search result list
+    availableWork.setSearchResults(new ArrayList<SearchResult>());
+    for (SearchResult sr : tempResults) {
+      availableWork.addSearchResult(sr);
+    }
+    availableWork.setTotalCount(totalCt[0]);
     return availableWork;
 
   }
@@ -329,19 +361,17 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
   public SearchResultList findAssignedWork(MapProject mapProject,
     MapUser mapUser, MapUserRole userRole, String query,
     PfsParameter pfsParameter, WorkflowService workflowService)
-    throws Exception {
+      throws Exception {
 
     SearchResultList assignedWork = new SearchResultListJpa();
     final StringBuilder sb = new StringBuilder();
-    if (query != null && !query.isEmpty() && !query.equals("null")) {
-      sb.append(query).append(" AND ");
-    }
+
+    // NOTE Qa Work does not use normal queries, instead filters by label
     sb.append("mapProjectId:" + mapProject.getId() + " AND workflowPath:"
         + getName());
 
-    final String type =
-        pfsParameter.getQueryRestriction() != null ? pfsParameter
-            .getQueryRestriction() : "";
+    final String type = pfsParameter.getQueryRestriction() != null
+        ? pfsParameter.getQueryRestriction() : "";
 
     if (!userRole.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
       throw new Exception("Specialist role or above required for QA Work");
@@ -350,8 +380,8 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
     // add terms based on query restriction
     switch (type) {
       case "QA_NEW":
-        sb.append(" AND userAndWorkflowStatusPairs:QA_NEW_"
-            + mapUser.getUserName());
+        sb.append(
+            " AND userAndWorkflowStatusPairs:QA_NEW_" + mapUser.getUserName());
 
         break;
       case "QA_IN_PROGRESS":
@@ -363,21 +393,22 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
             + mapUser.getUserName());
         break;
       default:
-        sb.append(" AND (userAndWorkflowStatusPairs:QA_NEW_"
-            + mapUser.getUserName()
-            + " OR userAndWorkflowStatusPairs:QA_IN_PROGRESS_"
-            + mapUser.getUserName()
-            + " OR userAndWorkflowStatusPairs:QA_RESOLVED_"
-            + mapUser.getUserName() + ")");
+        sb.append(
+            " AND (userAndWorkflowStatusPairs:QA_NEW_" + mapUser.getUserName()
+                + " OR userAndWorkflowStatusPairs:QA_IN_PROGRESS_"
+                + mapUser.getUserName()
+                + " OR userAndWorkflowStatusPairs:QA_RESOLVED_"
+                + mapUser.getUserName() + ")");
         break;
     }
 
-    final PfsParameter pfs = new PfsParameterJpa(pfsParameter);
-    pfs.setQueryRestriction(null);
+    PfsParameter pfsLocal = new PfsParameterJpa(pfsParameter);
+    pfsLocal.setQueryRestriction(null);
     int[] totalCt = new int[1];
     final List<TrackingRecord> results =
         (List<TrackingRecord>) workflowService.getQueryResults(sb.toString(),
-            TrackingRecordJpa.class, TrackingRecordJpa.class, pfs, totalCt);
+            TrackingRecordJpa.class, TrackingRecordJpa.class, pfsLocal,
+            totalCt);
     assignedWork.setTotalCount(totalCt[0]);
 
     for (final TrackingRecord tr : results) {
@@ -389,6 +420,7 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
       // if QA Path properly used
       MapRecord mapRecord = null;
       StringBuffer labelBuffer = new StringBuffer();
+      boolean hasLabel = false;
       for (final MapRecord mr : mapRecords) {
         if (mr.getOwner().equals(mapUser)) {
           mapRecord = mr;
@@ -396,8 +428,13 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
 
         // extract all labels for this tracking record
         for (final String label : mr.getLabels()) {
-          if (labelBuffer.indexOf(label) == -1)
+          if (labelBuffer.indexOf(label) == -1) {
             labelBuffer.append(";").append(label);
+          }
+          System.out.println(label + ", " + query + "," + label.equals(query));
+          if (label.equals(query)) {
+            hasLabel = true;
+          }
         }
 
       }
@@ -408,14 +445,40 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
                 + mapUser.getUserName() + " and concept "
                 + tr.getTerminologyId());
       }
-      result.setTerminologyId(mapRecord.getConceptId());
-      result.setValue(mapRecord.getConceptName());
-      result.setValue2(labelBuffer.toString());
-      result.setTerminology(mapRecord.getLastModified().toString());
-      result.setTerminologyVersion(mapRecord.getWorkflowStatus().toString());
-      result.setId(mapRecord.getId());
-      assignedWork.addSearchResult(result);
+      // if no label query supplied or this tracking record has the requested
+      // label
+      if (query == null || query.isEmpty() || query.equals("null") || hasLabel == true) {
+        result.setTerminologyId(mapRecord.getConceptId());
+        result.setValue(mapRecord.getConceptName());
+        result.setValue2(labelBuffer.toString());
+        result.setTerminology(mapRecord.getLastModified().toString());
+        result.setTerminologyVersion(mapRecord.getWorkflowStatus().toString());
+        result.setId(mapRecord.getId());
+        assignedWork.addSearchResult(result);
+      }
     }
+
+    // construct local list for manual paging
+    List<SearchResultJpa> tempResults = new ArrayList<>();
+    for (SearchResult sr : assignedWork.getSearchResults()) {
+      tempResults.add((SearchResultJpa) sr);
+    }
+
+    // apply paging to the list
+    // apply paging to the list
+    pfsLocal = new PfsParameterJpa(pfsParameter);
+    pfsLocal.setQueryRestriction("");
+    pfsLocal.setSortField("");
+    tempResults = workflowService.applyPfsToList(tempResults,
+        SearchResultJpa.class, totalCt, pfsLocal);
+
+    // reconstruct the assignedWork search result list
+    assignedWork.setSearchResults(new ArrayList<SearchResult>());
+    for (SearchResult sr : tempResults) {
+      assignedWork.addSearchResult(sr);
+    }
+    assignedWork.setTotalCount(totalCt[0]);
+
     return assignedWork;
   }
 
@@ -425,8 +488,8 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
     WorkflowAction workflowAction, MapProject mapProject, MapUser mapUser,
     Set<MapRecord> mapRecords, MapRecord mapRecord) throws Exception {
 
-    Logger.getLogger(this.getClass()).info(
-        getName() + ": Processing workflow action by " + mapUser.getName()
+    Logger.getLogger(this.getClass())
+        .info(getName() + ": Processing workflow action by " + mapUser.getName()
             + ":  " + workflowAction.toString());
 
     // the set of records returned after processing
@@ -434,12 +497,12 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
 
     switch (workflowAction) {
       case CREATE_QA_RECORD:
-        Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
-            "assignFromInitialRecord:  QA_PATH");
+        Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
+            .info("assignFromInitialRecord:  QA_PATH");
 
         if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)
-            || mapRecord.getWorkflowStatus().equals(
-                WorkflowStatus.READY_FOR_PUBLICATION)) {
+            || mapRecord.getWorkflowStatus()
+                .equals(WorkflowStatus.READY_FOR_PUBLICATION)) {
 
           // deep copy the map record
           MapRecord newRecord = new MapRecordJpa(mapRecord, false);
@@ -468,8 +531,8 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
         }
         break;
       case ASSIGN_FROM_SCRATCH:
-        Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
-            "Assigning concept along QA_PATH");
+        Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
+            .info("Assigning concept along QA_PATH");
 
         MapRecord qaRecord =
             createMapRecordForTrackingRecordAndUser(trackingRecord, mapUser);
@@ -501,8 +564,8 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
         break;
 
       case FINISH_EDITING:
-        Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
-            "QA_PATH");
+        Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
+            .info("QA_PATH");
 
         // a lead has finished reviewing a QA
         if (newRecords.size() == 3) {
@@ -547,8 +610,8 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
         }
         break;
       case PUBLISH:
-        Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
-            "QA_PATH - Called Publish on resolved qa");
+        Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
+            .info("QA_PATH - Called Publish on resolved qa");
 
         // Requirements for QA_PATH publish action
         // - 1 record marked REVISION
@@ -561,7 +624,7 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
               "Publish called on QA_PATH for map record not marked as QA_RESOLVED");
 
         mapRecord.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
-        
+
         // clear labels
         mapRecord.setLabels(new HashSet<String>());
 
@@ -574,8 +637,8 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
 
         break;
       case UNASSIGN:
-        Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
-            "Unassign:  QA_PATH");
+        Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
+            .info("Unassign:  QA_PATH");
 
         MapRecord revisionRecord = null;
         MapRecord qaNeededRecord = null;
@@ -617,7 +680,7 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
             revisionRecord.setWorkflowStatus(workflowService
                 .getPreviouslyPublishedVersionOfMapRecord(revisionRecord)
                 .getWorkflowStatus());
-            
+
             // clear any labels
             revisionRecord.setLabels(new HashSet<String>());
 
@@ -638,28 +701,27 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
 
         break;
       default:
-        throw new Exception(getName() + ": Unexpected workfow action "
-            + workflowAction);
+        throw new Exception(
+            getName() + ": Unexpected workfow action " + workflowAction);
     }
 
     return newRecords;
   }
-  
+
   @Override
   public MapRecordList getOriginMapRecordsForMapRecord(MapRecord mapRecord,
     WorkflowService workflowService) throws Exception {
 
     MapRecordList originRecords = new MapRecordListJpa();
 
-   
     boolean qaNeededFound = true;
 
     for (final Long originId : mapRecord.getOriginIds()) {
       MapRecord mr = workflowService.getMapRecord(originId);
       try {
-     
+
         if (mr.getWorkflowStatus().equals(WorkflowStatus.QA_NEEDED)) {
-         qaNeededFound = true;
+          qaNeededFound = true;
           originRecords.addMapRecord(workflowService.getMapRecord(originId));
         }
       } catch (Exception e) {
@@ -678,7 +740,7 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
         throw new Exception(
             "Could not retrieve record needing review along QA Path");
       }
-   
+
       return originRecords;
     } else {
       throw new Exception(
