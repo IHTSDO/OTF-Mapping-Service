@@ -2,6 +2,12 @@
   <p>This is the content of the template</p>
 </script>
 
+<style>
+	.hidden : {
+		visibility : hidden;
+	}
+</style>
+
 <!--  Target setting and popover details retrieval, remove entirely after testing complete
 <input type="text" ng-model="targetCodeTest"><button class="btn btn-sm btn-primary" ng-click="selectTargetCode(targetCodeTest)">Test Target Set</button>
 <input type="text" ng-model="linkTest"><button class="btn btn-sm btn-primary" ng-click="details(linkTest)">Test Details Retrieval</button>
@@ -9,6 +15,10 @@
  <div style="padding-left: 20px;" ng-bind-html="to_trusted(testDetailsResult)"></div>
 <hr>
  -->
+ 
+ <!-- 
+ // WCI IHTSDO OTF NOTE -- 02/18/16 changed ng-bind to bind-html-unsafe
+  -->
 <form>
 	Search: <input id="searchField" ng-model="searchField"
 		style="margin: 5px;"> <input id="subSearchField"
@@ -21,60 +31,74 @@
 	<button class="btn btn-sm btn-primary"
 		ng-click="searchField = null; 
               subSearchField = null; subSubSearchField = null; 
-              mainTermLabel = ''; searchResultsLabel = '';
-              firstArrow = false; previousArrow = false;
-              nextArrow = false; lastArrow = false;">Reset</button>
+              searchResults = null;">Reset</button>
+
+	<button class="btn btn-sm btn-primary" ng-click="details('A28.29.30')" popover="{{detailsMap['A28.29.30']}}"
+		popover-title="Index Trail"
+		type="button" class="btn btn-default">Popover Testing</button>
+		
+		{{testHtml}}
 </form>
 
 
 <div
 	style="float: left; width: 60%; padding: 10px; text-overflow: ellipsis; overflow: hidden;">
-	<b>{{mainTermLabel}}</b>
+	<b>{{searchResultsLabel}}</b>
 </div>
 
 <div style="float: right; width: 40%; padding: 10px;">
-	<a title="Go to first search result" ng-show="firstArrow"
-		ng-click="goFirstResult()"> <i
+	<div ng-show="searchResults">
+	{{searchResultIndex + 1}} of {{searchResults.length}} search results
+
+	<!-- First -->
+	<a title="Go to first search result" ng-click="goToSearchResult(0)"
+		ng-class="{'hidden' : searchResultIndex === 0}"> <i
 		class="glyphicon glyphicon-backward"></i>
-	</a> <a ng-show="!firstArrow"> <i class="glyphicon glyphicon-invisible"></i>
-	</a> <a title="Go to previous search result" ng-show="previousArrow"
-		ng-click="goPreviousResult()"> <i
+	</a>
+
+	<!-- Previous -->
+	<a title="Go to previous search result"
+		ng-class="{'hidden'  : searchResultIndex === 0}"
+		ng-click="goToSearchResult(searchResultIndex - 1)"> <i
 		class="glyphicon glyphicon-step-backward"></i>
-	</a> <a ng-show="!previousArrow"> <i
-		class="glyphicon glyphicon-invisible"></i>
-	</a> <span style="width: 65px; display: inline-block;">{{searchResultsLabel}}</span>
-	<a title="Go to next search result" ng-show="nextArrow"
-		ng-click="goNextResult()"> <i
+	</a>
+
+	<!-- Next -->
+	<a title="Go to next search result"
+		ng-class="{'hidden'  : searchResultIndex === searchResults.length - 1}"
+		ng-click="goToSearchResult(searchResultIndex + 1)"> <i
 		class="glyphicon glyphicon-step-forward"></i>
-	</a> <a title="Go to last search result" ng-show="lastArrow"
-		ng-click="goLastResult()"> <i class="glyphicon glyphicon-forward"></i>
+	</a>
+
+	<!-- Last -->
+	<a title="Go to last search result"
+		ng-class="{'hidden'  : searchResultIndex === searchResults.length - 1}"
+		ng-click="goToSearchResult(nResults - 1)"> <i
+		class="glyphicon glyphicon-forward"></i>
 	</a>
 </div>
-<div>
-	<tabset> <tab
-		ng-repeat="domain in domains  | orderBy: 'toString()'"
-		heading="{{domain}}" ng-click="retrieveIndexPages(domain);"> </tab></tabset>
+
 </div>
 
+
 <div>
-	<tabset justified="true"> <tab ng-repeat="page in pageTabs"
-		heading="{{page.name}}" select="updateUrl(indexTab)">
-	<hr>
+
+	<!-- Domains tabset -->
+	<tabset> <!--  Domain selection 	--> <tab
+		ng-repeat="domainTab in domainTabs  | orderBy: 'name'"
+		heading="{{domainTab.domain.name}}"
+		select="selectDomainTab(domainTab)"> <!-- Domain page tabset -->
+	<tabset> <!--  Domain page selection --> <tab
+		active="pageTab.active" ng-click="selectPage(pageTab.name)"
+		ng-repeat="pageTab in domainTab.pageTabs" heading="{{pageTab.name}}">
+
 	<div id="scrollArea" style="height: 500px;">
-	{{selectedPage}}
-		<div class="slide-animate" ng-include
-			src="getIndexPageUrl(selectedDomain, page.name)" autoscroll></div>
+		<div class="slide-animate" ng-include ng-click="selectPage(pageTab)"
+			src="getPageUrl(domainTab.domain.name, pageTab.name)" autoscroll></div>
 	</div>
-	</tab>
-</div>
-<!-- 
-<div align="center" style="padding: 10px;">
-	<div style="display: inline; padding: 8px;"
-		ng-repeat="indexTab in indexPages  | orderBy: 'toString()'">
-		<a ng-style="set_style(indexTab)" ng-click="updateUrl(indexTab)">{{indexTab}}</a>
-	</div>
+	<!--  End domain page tab --> </tab> <!--  End domain page tabset --> </tabset> <!--  End domain selection -->
+	</tab> <!--  End domains tabset --> </tabset>
+
 </div>
 
-<div id="scrollArea" style="height: 500px;">
-	<div class="slide-animate" ng-include src="tUrl" autoscroll></div>
-</div> -->
+
