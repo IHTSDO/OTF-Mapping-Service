@@ -107,16 +107,20 @@ angular
       ////////////////////////////////////////////
 
       $scope.performAggregatedSearch = function(searchField, subSearchField, subSubSearchField,
-        searchAllLevels) {
+        searchAllLevels, suppressAlerts) {
+
+        var deferred = $q.defer();
 
         // check for wildcard-only searches
         if (searchField == '*' && subSearchField == '*' && subSubSearchField == '*') {
           window.alert('Wildcard-only searches are not supported');
+          deferred.reject(null);
           return;
         }
 
         if (!searchField) {
           window.alert('The first search box must not be empty');
+          deferred.reject(null);
           return;
         }
 
@@ -147,8 +151,14 @@ angular
             // goto the first element
             $scope.goToElement($scope.searchResults[0]);
 
+            deferred.resolve();
+
           } else {
-            window.alert('No Matching Search Results.');
+            // show alert if not suppressed
+            if (!suppressAlerts) {
+              window.alert('No Matching Search Results.');
+            }
+            deferred.reject('no results');
           }
           $rootScope.glassPane--;
 
@@ -156,20 +166,11 @@ angular
           $rootScope.glassPane--;
           $scope.results = null;
           $rootScope.handleHttpError(data, status, headers, config);
+          deferred.reject();
         });
+
+        return deferred.promise;
       };
-
-      // helper function to find y-pos of element
-      function findPos(obj) {
-        var curtop = 0;
-        if (obj.offsetParent) {
-          do {
-            curtop += obj.offsetTop;
-          } while (obj = obj.offsetParent);
-          return [ curtop ];
-        }
-      }
-
       $scope.goToElement = function(result) {
 
         console.debug('Going to result', result);
@@ -184,17 +185,17 @@ angular
         }
 
         // parse the new search result to determine page
-        var page = result.value2.charAt(0);
+        var page = result.value.charAt(0);
 
         // change the page
         $scope.changeTab(page);
-        
+
         // apply very short timeout to allow tab change
         $timeout(function() {
           // go to the element on the page, preventing reload
           $rootScope.preventSingleReload = true;
           $location.hash(result.value);
-          
+
           $scope.applyHighlighting(result.value);
           $anchorScroll(result.value);
         }, 100);
@@ -247,7 +248,19 @@ angular
 
       // search from link
       $scope.search = function(searchStr) {
-        $scope.performAggregatedSearch(searchStr, null, null, false);
+        // attempt single term search
+        $scope.performAggregatedSearch(searchStr, null, null, false, true).then(function() {
+          // on success do nothing
+        }, function() {
+
+          // try to search sub levels if commas are present
+          var splitStr = searchStr.split(',');
+          if (splitStr.length === 2) {
+            $scope.performAggregatedSearch(splitStr[0], splitStr[1], null, false, false)
+          } else if (splitStr.length === 3) {
+            $scope.performAggregatedSearch(splitStr[0], splitStr[1], splitStr[2], false, false)
+          }
+        });
       };
 
       // put the selected target code in storage to trigger any listeners
