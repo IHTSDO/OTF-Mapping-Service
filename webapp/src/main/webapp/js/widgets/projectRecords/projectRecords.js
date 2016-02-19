@@ -53,6 +53,9 @@ angular
       $scope.errorConcept = '';
       $scope.errorRecords = '';
 
+      // maximum limit for QA access
+      $scope.qaRecordLimit = 500;
+
       // for collapse directive
       $scope.isCollapsed = true;
 
@@ -103,18 +106,13 @@ angular
         return $sce.trustAsHtml(html_code);
       };
 
-      // function to retrieve records for a specified page
-      $scope.retrieveRecords = function(page) {
-
-        console.debug('Retrieving records', page);
+      // Helper function to retrieve records based on scope variables and variable pfs
+      // Two uses currently: normal project records retrieval (paged) and qa record retrieval (unpaged)
+      $scope.retrieveRecordsHelper = function(pfs) {
 
         $rootScope.resetGlobalError();
 
-        // clear the error
-
-        // construct html parameters parameter
-        var pfsParameterObj = $scope.getPfsFromSearchParameters(page);
-
+        var deferred = $q.defer();
         var query_url = root_mapping
           + 'record/project/id/'
           + $scope.project.objectId
@@ -123,23 +121,38 @@ angular
             : 'null') + '/query/'
           + ($scope.searchParameters.query ? $scope.searchParameters.query : 'null');
 
-        console.debug('  pfs', pfsParameterObj);
+        console.debug('  pfs', pfs);
 
         $rootScope.glassPane++;
 
         // retrieve map records
-        $http({
-          url : query_url,
-          dataType : 'json',
-          data : pfsParameterObj,
-          method : 'POST',
-          headers : {
-            'Content-Type' : 'application/json'
+        $http.post(query_url, pfs).then(function(response) {
+          $rootScope.glassPane--;
+          if (!response || !response.data || !response.data.mapRecord) {
+            deferred.reject('Bad response');
+          } else {
+            deferred.resolve(response.data)
           }
-        }).success(
+        }, function(data, status, headers, config) {
+          $rootScope.glassPane--;
+          $rootScope.handleHttpError(data, status, headers, config);
+          deferred.reject('Bad request');
+        });
+        return deferred.promise;
+      };
+
+      // function to retrieve records for a specified page
+      $scope.retrieveRecords = function(page) {
+
+        console.debug('Retrieving records', page);
+
+        // construct html parameters parameter
+        var pfsParameterObj = $scope.getPfsFromSearchParameters(page);
+
+        // NOTE: Glass Pane and error handling are done in helper function
+        $scope.retrieveRecordsHelper(pfsParameterObj).then(
           function(data) {
 
-            $rootScope.glassPane--;
             $scope.records = data.mapRecord;
             $scope.statusRecordLoad = '';
 
@@ -148,43 +161,37 @@ angular
             $scope.numRecordPages = Math.ceil(data.totalCount
               / $scope.searchParameters.recordsPerPage);
 
-          }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
-          $rootScope.handleHttpError(data, status, headers, config);
-        }).then(function(data) {
+            // check if icon legends are necessary
+            $scope.unmappedDescendantsPresent = false;
+            $scope.mapNotesPresent = false;
+            $scope.mapAdvicesPresent = false;
 
-          // check if icon legends are necessary
-          $scope.unmappedDescendantsPresent = false;
-          $scope.mapNotesPresent = false;
-          $scope.mapAdvicesPresent = false;
-
-          // check if any notes or advices are present
-          for (var i = 0; i < $scope.records.length; i++) {
-            if ($scope.records[i].mapNote.length > 0) {
-              $scope.mapNotesPresent = true;
-            }
-            for (var j = 0; j < $scope.records[i].mapEntry.length; j++) {
-              if ($scope.records[i].mapEntry[j].mapAdvice.length > 0) {
-                $scope.mapAdvicesPresent = true;
+            // check if any notes or advices are present
+            for (var i = 0; i < $scope.records.length; i++) {
+              if ($scope.records[i].mapNote.length > 0) {
+                $scope.mapNotesPresent = true;
+              }
+              for (var j = 0; j < $scope.records[i].mapEntry.length; j++) {
+                if ($scope.records[i].mapEntry[j].mapAdvice.length > 0) {
+                  $scope.mapAdvicesPresent = true;
+                }
               }
             }
 
-          }
+            // check relation syle flags
+            if ($scope.project.mapRelationStyle === 'MAP_CATEGORY_STYLE') {
+              applyMapCategoryStyle();
+            }
 
-          // check relation syle flags
-          if ($scope.project.mapRelationStyle === 'MAP_CATEGORY_STYLE') {
-            applyMapCategoryStyle();
-          }
+            if ($scope.project.mapRelationStyle === 'RELATIONSHIP_STYLE') {
+              applyRelationshipStyle();
+            }
 
-          if ($scope.project.mapRelationStyle === 'RELATIONSHIP_STYLE') {
-            applyRelationshipStyle();
-          }
-
-          // get unmapped descendants (checking done in routine)
-          if ($scope.records.length > 0) {
-            getUnmappedDescendants(0);
-          }
-        });
+            // get unmapped descendants (checking done in routine)
+            if ($scope.records.length > 0) {
+              getUnmappedDescendants(0);
+            }
+          });
       };
 
       // Constructs a paging/filtering/sorting parameters object for RESTful
@@ -653,40 +660,62 @@ angular
       $scope.openQaRecordsModal = function() {
         console.debug('openQaRecordsModal');
 
-        var modalInstance = $modal
-          .open({
-            templateUrl : 'js/widgets/projectRecords/qa-records.html',
-            controller : QaRecordsCtrl,
-            resolve : {
-              nRecords : function() {
-                return $scope.nRecords;
-              },
-              projectId : function() {
-                return $scope.projectId;
-              },
-              pfs : function() {
-                return {
-                  startIndex : -1,
-                  maxResults : -1,
-                  queryRestriction : null,
-                  sortField : null
-                };
-              },
-              ancestorId : function() {
-                return $scope.searchParameters.ancestorId && $scope.searchParameters.advancedMode ? $scope.searchParameters.ancestorId
-                  : 'null';
-              },
-              query : function() {
-                return $scope.searchParameters.query;
+        var pfs = $scope.getPfsFromSearchParameters(1);
+        pfs.startIndex = -1;
+        pfs.maxResults = -1;
+        $scope
+          .retrieveRecordsHelper(pfs)
+          .then(
+            function(recordList) {
+              if (recordList.count !== $scope.nRecords) {
+                utilService
+                  .handleError('Mismatch between QA record retrieval and existing results. Aborting QA.');
+              } else {
+
+                var modalInstance = $modal.open({
+                  templateUrl : 'js/widgets/projectRecords/qa-records.html',
+                  controller : QaRecordsCtrl,
+                  resolve : {
+
+                    // used to confirm that unpaged search matches paged search results
+                    records : function() {
+                      return recordList.mapRecord;
+                    }
+                  }
+                });
+                
+                // on close (success or fail), reload records
+                modalInstance.result.then(function() {
+                  $scope.retrieveRecords(1);
+                }, function() {
+                  $scope.retrieveRecords(1);
+                })
               }
-            }
-          });
+            });
 
       };
 
       // QA records modal controller
-      var QaRecordsCtrl = function($scope, $modalInstance, $q, nRecords, projectId, pfs) {
-        console.debug('Entered modal control', nRecords, projectId, pfs, ancestorId, query);
+      var QaRecordsCtrl = function($scope, $modalInstance, $q, utilService, records) {
+        console.debug('Entered modal control', records);
+
+        if (records.length == 0) {
+          utilService.handleError('Failed to open QA Modal: No records specified for QA');
+          return;
+        }
+
+        if (records.length > $scope.qaRecordLimit) {
+          utilService.handleError('Failed to open QA Modal: Too many records specified for QA');
+          return;
+        }
+
+        // get the project id from the first record
+        var projectId = records[0].mapProjectId;
+
+        if (!projectId) {
+          utilService.handleError('Failed to open QA Modal: Could not determine map project');
+          return;
+        }
 
         // Scope vars
         $scope.isRunning = false;
@@ -694,7 +723,7 @@ angular
         $scope.qaFailed = 0;
         $scope.qaSkipped = 0;
         $scope.qaComplete = 0;
-        $scope.qaTotal = nRecords;
+        $scope.qaTotal = records.length;
 
         // Cancel
         $scope.cancel = function() {
@@ -712,39 +741,27 @@ angular
         $scope.qaRecords = function(label) {
           $scope.isRunning = true;
 
-          $http.post(
-            root_mapping + 'record/project/id/' + projectId + '/ancestor/' + ancestorId + '/query/'
-              + query, pfs).then(
-          // Success
-          function(response) {
-            var records = response.data.mapRecord;
-
-            for (var i = 0; i < records.length; i++) {
-              if ($scope.isRunning) {
-                qaRecord(records[i], label).then(function() {
-                  $scope.qaSucceeded++;
-                }, function(error) {
-                  $scope.qaFailed++;
-                })['finally'](function() {
-                  $scope.qaComplete++;
-                  if ($scope.qaComplete == $scope.qaTotal) {
-                    $scope.isRunning = false;
-                  }
-                });
-              } else {
-                $scope.qaSkipped++;
+          for (var i = 0; i < records.length; i++) {
+            if ($scope.isRunning) {
+              qaRecord(records[i], label).then(function() {
+                $scope.qaSucceeded++;
+              }, function(error) {
+                $scope.qaFailed++;
+              })['finally'](function() {
                 $scope.qaComplete++;
                 if ($scope.qaComplete == $scope.qaTotal) {
                   $scope.isRunning = false;
                 }
+              });
+            } else {
+              $scope.qaSkipped++;
+              $scope.qaComplete++;
+              if ($scope.qaComplete == $scope.qaTotal) {
+                $scope.isRunning = false;
               }
             }
+          }
 
-          },
-          // Error
-          function(error) {
-            $scope.error = "Error retrieving map records";
-          });
         };
 
         // helper function (with promise) to assign a single record to QA
