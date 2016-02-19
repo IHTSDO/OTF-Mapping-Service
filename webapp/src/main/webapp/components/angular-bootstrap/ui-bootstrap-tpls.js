@@ -3469,6 +3469,7 @@ angular.module("template/pagination/pagination.html", []).run(["$templateCache",
     "</ul>");
 }]);
 
+// WCI IHTSDO OTF NOTE -- 02/18/16 changed ng-bind to bind-html-unsafe
 angular.module("template/tooltip/tooltip-html-unsafe-popup.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("template/tooltip/tooltip-html-unsafe-popup.html",
     "<div class=\"tooltip {{placement}}\" ng-class=\"{ in: isOpen(), fade: animation() }\">\n" +
@@ -3494,7 +3495,7 @@ angular.module("template/popover/popover.html", []).run(["$templateCache", funct
     "\n" +
     "  <div class=\"popover-inner\">\n" +
     "      <h3 class=\"popover-title\" ng-bind=\"title\" ng-show=\"title\"></h3>\n" +
-    "      <div class=\"popover-content\" ng-bind=\"content\"></div>\n" +
+    "      <div class=\"popover-content\" bind-html-unsafe=\"content\"></div>\n" +
     "  </div>\n" +
     "</div>\n" +
     "");
