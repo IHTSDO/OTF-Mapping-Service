@@ -30,66 +30,48 @@
 
     <hr>
     <div class="row" style="padding: 5px;">
-      <div class="col-md-2" style="padding-right: 0px;">
+      <div class="col-md-3" style="padding-right: 0px;">
         {{focusProject.sourceTerminology}} Ancestor Id
         <i class="glyphicon glyphicon-remove pull-right"
           ng-click="searchParameters.ancestorId = null"
           ng-show="searchParameters.ancestorId"></i>
       </div>
-      <div class="col-md-10">
+      <div class="col-md-9">
         <input ng-model="searchParameters.ancestorId">
       </div>
     </div>
 
-    <!--  Removed in favor of restricting search to ancestor id alone
     <div class="row" style="padding: 5px;">
-      <div class="col-md-2" style="padding-right: 0px;">
-        {{focusProject.sourceTerminology}} Type
-        <i class="glyphicon glyphicon-remove pull-right"
-          ng-click="searchParameters.rootId = null"
-          ng-show="searchParameters.rootId"></i>
-      </div>
-
-      <div class="col-md-10">
-        <select
-          ng-options="root.terminologyId as root.defaultPreferredName for root in searchParameters.roots | orderBy:'defaultPreferredName'"
-          ng-model="searchParameters.rootId"></select>
-      </div>
-    </div>
-     -->
-
-
-    <div class="row" style="padding: 5px;">
-      <div class="col-md-2" style="padding-right: 0px;">
+      <div class="col-md-3" style="padding-right: 0px;">
         {{focusProject.destinationTerminology}} Target Id
         <i class="glyphicon glyphicon-remove pull-right"
           ng-click="searchParameters.targetId = null"
           ng-show="searchParameters.targetId"></i>
       </div>
-      <div class="col-md-10">
+      <div class="col-md-9">
         <input ng-model="searchParameters.targetId">
       </div>
     </div>
     <div class="row" style="padding: 5px;">
-      <div class="col-md-2" style="padding-right: 0px;">
+      <div class="col-md-3" style="padding-right: 0px;">
         {{focusProject.destinationTerminology}} Target Name
         <i class="glyphicon glyphicon-remove pull-right"
           ng-click="searchParameters.targetName = null"
           ng-show="searchParameters.targetName"></i>
       </div>
-      <div class="col-md-10">
+      <div class="col-md-9">
         <input ng-model="searchParameters.targetName">
       </div>
     </div>
 
     <div class="row" style="padding: 5px;">
-      <div class="col-md-2" style="padding-right: 0px;">
+      <div class="col-md-3" style="padding-right: 0px;">
         Map Advice
         <i class="glyphicon glyphicon-remove pull-right"
           ng-click="searchParameters.adviceName = null"
           ng-show="searchParameters.adviceName"></i>
       </div>
-      <div class="col-md-10">
+      <div class="col-md-9">
         <select style="width: 15%" ng-model="searchParameters.adviceContained"
           ng-options="o.val as o.key for o in [{ key: 'contains', val: true }, { key: 'does not contain', val: false }]">
         </select> <select style="width: 83%" ng-model="searchParameters.adviceName"
