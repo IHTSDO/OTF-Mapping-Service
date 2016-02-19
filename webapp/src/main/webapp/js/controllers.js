@@ -83,8 +83,18 @@ mapProjectAppControllers
               // this to true
               $rootScope.currentPageDirty = false;
             }
+          } 
+          
+          // request to prevent reload (currently indexViewer.js)
+          else if ($rootScope.preventSingleReload == true) {
+            
+            // prevent the default and set the flag to false
+            event.preventDefault();
+            $rootScope.preventSingleReload = false;
           }
-        });
+        } 
+        
+      );
 
   });
 

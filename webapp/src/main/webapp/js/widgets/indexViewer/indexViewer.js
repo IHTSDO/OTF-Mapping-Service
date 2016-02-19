@@ -200,16 +200,12 @@ angular
         // change the page
         $scope.changeTab(page);
 
-        // go to the element on the page
-        //$location.hash(result.value);
-        //$anchorScroll(result.value);
+        // go to the element on the page, preventing reload
+        $rootScope.preventSingleReload = true;
+        $location.hash(result.value);
+        $anchorScroll(result.value);
 
-        // get location of element
-        // var el = document.getElementById(result.value);
-        //var yOffset = findPos(el)
-        //window.scroll(0, yOffset);
-
-        // apply highlighting
+        // TODO Apply highlighting is inconsistent, only applied/removed every other search result
         $scope.applyHighlighting(result.value);
 
         // update the current result
@@ -292,6 +288,7 @@ angular
       var ct = 0;
 
       // retrieve popover details
+      // TODO Popover introduction dramatically slows compile time of each page, due to additional ng-scopes. Upgrade Angular and resolve this.
       $scope.details = function(link) {
         if (!link) {
           return;
@@ -314,9 +311,10 @@ angular
             + $scope.focusProject.destinationTerminologyVersion + '/' + $scope.selectedDomain.name
             + '/details/' + link).then(function(response) {
               
-              $scope.detailsMap[link] = response.data;
+              // substring to eliminate quotation marks
+              // TODO Use a real regular expression for this and stop being lazy
+              $scope.detailsMap[link] = response.data.substring(1, response.data.length -2);
 
-          $scope.testDetailsResult = response.data.replace(/^"(.+(?="$))"$/, '$1');
         }, function(error) {
         });
 
@@ -357,9 +355,9 @@ angular
 
               };
 
-              // TODO REMOVE THIS AFTER DEV WORK
+              // REMOVE THIS AFTER DEV WORK
               // truncate pages for faster testing
-              domain.pages = domain.pages.slice(0, 3);
+              // domain.pages = domain.pages.slice(0, 3);
 
               // push onto the domains array
               $scope.domains.push(domain);
