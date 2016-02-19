@@ -18,14 +18,6 @@
     </ul>
   </div>
 
-  <div ng-show="validationResult.warnings.length > 0">
-    <hr>
-    <span style="color: orange">Warnings:</span>
-    <ul>
-      <li ng-repeat="warning in validationResult.warnings">{{warning}}</li>
-    </ul>
-  </div>
-
   <hr>
 
   <div otf-map-record-narrow record="currentRecord" project="project"
