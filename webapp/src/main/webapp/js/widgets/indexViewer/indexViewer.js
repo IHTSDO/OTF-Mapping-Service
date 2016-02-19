@@ -76,7 +76,9 @@ angular
             domainTab.pageTabs.push(pageTab);
           });
 
-          domainTab.pageTabs.sort();
+          domainTab.pageTabs.sort(function(a, b) {
+            return a.name > b.name;
+          });
           domainTab.pageTabs[0].active = true;
           $scope.domainTabs.push(domainTab);
         });
@@ -357,7 +359,7 @@ angular
 
               // REMOVE THIS AFTER DEV WORK
               // truncate pages for faster testing
-              // domain.pages = domain.pages.slice(0, 3);
+              domain.pages = domain.pages.slice(0, 3);
 
               // push onto the domains array
               $scope.domains.push(domain);

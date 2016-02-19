@@ -42,7 +42,7 @@
 
 <div style="float: right; width: 40%; padding: 10px;">
 	<div ng-show="searchResults">
-	{{searchResultIndex + 1}} of {{searchResults.length}} search results
+	
 
 	<!-- First -->
 	<a title="Go to first search result" ng-click="goToSearchResult(0)"
@@ -56,6 +56,8 @@
 		ng-click="goToSearchResult(searchResultIndex - 1)"> <i
 		class="glyphicon glyphicon-step-backward"></i>
 	</a>
+	
+	{{searchResultIndex + 1}} of {{searchResults.length}} results
 
 	<!-- Next -->
 	<a title="Go to next search result"
