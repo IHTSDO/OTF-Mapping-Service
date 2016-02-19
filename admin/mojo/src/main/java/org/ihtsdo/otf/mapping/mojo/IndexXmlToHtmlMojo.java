@@ -489,7 +489,7 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
 
         out.println("<span popover-title=\"Index Trail\"  ng-click=\"details('" 
         + aname + 
-        "')\" popover=\"{{detailsMap['" + aname + "']}}\")\"" + ">");
+        "')\" popover=\"{{detailsMap['" + aname + "']}}\">");
         out.println("<b>" + data.get(key) + "</b>");
         out.println("</span>");
 
@@ -635,7 +635,7 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
         openDiv = true;
         out.println("<span popover-title=\"Index Trail\"  ng-click=\"details('" 
         + aname + 
-        "')\" popover=\"{{detailsMap['" + aname + "'\"']}}\")\"" + ">");
+        "')\" popover=\"{{detailsMap['" + aname + "']}}\">");
         out.println("- - - - - - - - - - - ".substring(0, level * 2)
             + data.get("title"));
         out.println("</span>");
