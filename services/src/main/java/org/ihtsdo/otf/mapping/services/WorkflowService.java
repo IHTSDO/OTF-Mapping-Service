@@ -26,7 +26,6 @@ import org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 import org.ihtsdo.otf.mapping.workflow.WorkflowException;
 
-// TODO: Auto-generated Javadoc
 /**
  * Generically represents a service for answering questions and performing
  * actions related to workflow management.

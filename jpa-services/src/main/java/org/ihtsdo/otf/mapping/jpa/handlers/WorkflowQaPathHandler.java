@@ -33,7 +33,6 @@ import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecordJpa;
 
-// TODO: Auto-generated Javadoc
 /**
  * Workflow path handler for "qa path".
  */
