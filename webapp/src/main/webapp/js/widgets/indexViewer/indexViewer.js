@@ -32,9 +32,7 @@ angular
       $scope.currentResult = null;
       $scope.searchResultsLabel = null;
       $scope.searchResultIndex = 0;
-
-      // details display
-      $scope.detailsMode = false;
+      $scope.indexTrail = null;
 
       // get the local storage variables
       $scope.currentUser = localStorageService.get('currentUser');
@@ -144,12 +142,8 @@ angular
           $scope.nResults = data.totalCount;
 
           if ($scope.nResults > 0) {
-            $scope.searchResultsLabel = '1 of ' + $scope.nResults;
             $scope.searchResultsLabel = $scope.searchResults[0].value2;
-            $scope.searchResultsIndex = 0;
-
-            // goto the first element
-            $scope.goToElement($scope.searchResults[0]);
+            $scope.goToSearchResult(0);
 
             deferred.resolve();
 
@@ -164,7 +158,7 @@ angular
 
         }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
-          $scope.results = null;
+          $scope.searchResults = null;
           $rootScope.handleHttpError(data, status, headers, config);
           deferred.reject();
         });
