@@ -558,8 +558,6 @@ public class MappingServiceJpaTest {
       fail("Retrieval - getMapProject(Long id): source terminology invalid");
     }
 
-    // TODO: get record (id)
-
     // QUERY TESTS
     SearchResultList results = new SearchResultListJpa();
 

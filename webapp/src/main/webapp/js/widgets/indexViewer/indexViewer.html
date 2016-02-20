@@ -40,7 +40,7 @@
 
 		<div
 			style="float: left; width: 60%; padding: 10px; text-overflow: ellipsis; overflow: hidden;">
-			<b>{{searchResultsLabel}}</b>
+			<!-- TODO Reenable this? <b>{{mainTermLabel}}</b> -->
 		</div>
 
 		<div style="float: right; width: 40%; padding: 10px;">
@@ -77,7 +77,8 @@
 		</div>
 	</div>
 	<div class="col-md-4 " style="padding-right:25px;" ng-show="indexTrail">
-		<div class="well" style="padding:0px;"ng-bind-html="to_trusted(indexTrail)"></div>
+		<div class="well" style="padding:0px;" ng-show="!indexTrail || indexTrail.length == 0"><em>Click any title to view the index trail.</em></div>
+		<div class="well" style="padding:0px;" ng-bind-html="to_trusted(indexTrail)"></div>
 	</div>
 </div>
 
@@ -91,7 +92,7 @@
 		select="selectDomainTab(domainTab)"> <!-- Domain page tabset -->
 	<tabset> <!--  Domain page selection --> <tab
 		active="pageTab.active" ng-click="selectPage(pageTab.name)"
-		ng-repeat="pageTab in domainTab.pageTabs" heading="{{pageTab.name}}">
+		ng-repeat="pageTab in domainTab.pageTabs | orderBy:'name'" heading="{{pageTab.name}}">
 
 	<div id="scrollArea" style="height: 500px;">
 		<div class="slide-animate" ng-include ng-click="selectPage(pageTab)"
