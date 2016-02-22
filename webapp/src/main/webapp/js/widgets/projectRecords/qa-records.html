@@ -13,7 +13,9 @@
   <div class="row">
     <div class="col-md-4"></div>
     <div class="col-md-8">
-      <div class="alert alert-info" style="padding: 5px;" ng-show="qaComplete > 0">Submitted: {{qaComplete}} / {{qaTotal}} records</div>
+      <div class="alert alert-info" style="padding: 5px;"
+        ng-show="qaComplete > 0">Submitted: {{qaComplete}} / {{qaTotal}}
+        records</div>
       <div class="alert alert-success" ng-show="qaSucceeded > 0"
         style="width: 100%">Successful: {{qaSucceeded}} records</div>
       <div class="alert alert-warning" ng-show="qaSkipped > 0"

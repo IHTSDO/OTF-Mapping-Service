@@ -21,24 +21,21 @@ angular
       $scope.focusProject = localStorageService.get('focusProject');
 
       $scope.currentUserToken = localStorageService.get('userToken');
-      $scope
-        .$watch(
-          [ 'focusProject', 'userToken' ],
-          function() {
+      $scope.$watch([ 'focusProject', 'userToken' ], function() {
 
-            if ($scope.focusProject != null && $scope.currentUserToken != null) {
+        if ($scope.focusProject != null && $scope.currentUserToken != null) {
 
-              $http.defaults.headers.common.Authorization = $scope.currentUserToken;
+          $http.defaults.headers.common.Authorization = $scope.currentUserToken;
 
-              console.debug('Project and users', $scope.focusProject,
-                $scope.focusProject.mapSpecialist, $scope.focusProject.mapLead);
+          console.debug('Project and users', $scope.focusProject,
+            $scope.focusProject.mapSpecialist, $scope.focusProject.mapLead);
 
-              // construct list of specialists and leads
-              $scope.projectUsers = $scope.focusProject.mapSpecialist
-                .concat($scope.focusProject.mapLead);
+          // construct list of specialists and leads
+          $scope.projectUsers = $scope.focusProject.mapSpecialist
+            .concat($scope.focusProject.mapLead);
 
-            }
-          });
+        }
+      });
 
       $scope.getRecord = function(id, createQA) {
 
@@ -99,16 +96,14 @@ angular
           headers : {
             'Content-Type' : 'application/json'
           }
-        }).success(
-          function(data) {
-            $rootScope.glassPane--;
+        }).success(function(data) {
+          $rootScope.glassPane--;
 
-            $scope.successMsg = 'Successfully deleted record '
-              + $scope.record.id;
+          $scope.successMsg = 'Successfully deleted record ' + $scope.record.id;
 
-            $scope.record = null;
+          $scope.record = null;
 
-          }).error(function(data, status, headers, config) {
+        }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
           $rootScope.handleHttpError(data, status, headers, config);
         });
@@ -128,16 +123,14 @@ angular
           headers : {
             'Content-Type' : 'application/json'
           }
-        }).success(
-          function(data) {
-            $rootScope.glassPane--;
+        }).success(function(data) {
+          $rootScope.glassPane--;
 
-            $scope.successMsg = 'Successfully updated record '
-              + $scope.record.id;
+          $scope.successMsg = 'Successfully updated record ' + $scope.record.id;
 
-            $scope.record = null;
+          $scope.record = null;
 
-          }).error(function(data, status, headers, config) {
+        }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
           $rootScope.handleHttpError(data, status, headers, config);
         });
@@ -148,16 +141,15 @@ angular
         if (confirm('ARE YOU ABSOLUTELY SURE?\n\n  Deleting records through this interface requires recomputing workflow and rerunning indexes, and may cause workflow problems for other records.') == false)
           return;
 
-        console.debug('Removing batch of records by terminologyId',
-          terminologyIdsUnsplit);
+        console.debug('Removing batch of records by terminologyId', terminologyIdsUnsplit);
 
         var terminologyIds = terminologyIdsUnsplit.split(/,\s*|\s+/);
 
         $rootScope.glassPane++;
         $http(
           {
-            url : root_mapping + 'record/records/delete/project/id/'
-              + $scope.focusProject.id + '/batch',
+            url : root_mapping + 'record/records/delete/project/id/' + $scope.focusProject.id
+              + '/batch',
             method : 'DELETE',
             dataType : 'json',
             data : terminologyIds,
@@ -184,16 +176,15 @@ angular
         if (confirm('ARE YOU ABSOLUTELY SURE? Any eligible concepts in this list will be re-inserted into the workflow') == false)
           return;
 
-        console.debug('Removing batch of records by terminologyId',
-          terminologyIdsUnsplit);
+        console.debug('Removing batch of records by terminologyId', terminologyIdsUnsplit);
 
         var terminologyIds = terminologyIdsUnsplit.split(/,\s*|\s+/);
 
         $rootScope.glassPane++;
         $http(
           {
-            url : root_workflow + 'assign/fixErrorPath/project/id/'
-              + $scope.focusProject.id + '/user/id/' + mapUser.userName,
+            url : root_workflow + 'assign/fixErrorPath/project/id/' + $scope.focusProject.id
+              + '/user/id/' + mapUser.userName,
             method : 'POST',
             dataType : 'json',
             data : terminologyIds,
