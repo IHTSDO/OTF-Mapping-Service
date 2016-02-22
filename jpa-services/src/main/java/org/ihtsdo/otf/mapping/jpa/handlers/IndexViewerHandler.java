@@ -156,10 +156,18 @@ public class IndexViewerHandler {
 
   }
 
+  /**
+   * Sort search result list.
+   *
+   * @param list the list
+   * @return the search result list
+   */
+  @SuppressWarnings("static-method")
   private SearchResultList sortSearchResultList(SearchResultList list) {
     // sort search results
     List<SearchResult> searchResults = list.getSearchResults();
     Collections.sort(searchResults, new Comparator<SearchResult>() {
+      @Override
       public int compare(SearchResult o1, SearchResult o2) {
         return o1.getValue2().compareTo(o2.getValue2());
       }
@@ -294,6 +302,16 @@ public class IndexViewerHandler {
 
   }
 
+  /**
+   * Returns the document for link.
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @param domain the domain
+   * @param linkStr the link str
+   * @return the document for link
+   * @throws Exception the exception
+   */
   private Document getDocumentForLink(String terminology,
     String terminologyVersion, String domain, String linkStr) throws Exception {
     Logger.getLogger(this.getClass()).info("Perform index link search ");
@@ -495,6 +513,16 @@ public class IndexViewerHandler {
     return searchResultList;
   }
 
+  /**
+   * Returns the details as html for link.
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @param domain the domain
+   * @param link the link
+   * @return the details as html for link
+   * @throws Exception the exception
+   */
   public String getDetailsAsHtmlForLink(String terminology,
     String terminologyVersion, String domain, String link) throws Exception {
 

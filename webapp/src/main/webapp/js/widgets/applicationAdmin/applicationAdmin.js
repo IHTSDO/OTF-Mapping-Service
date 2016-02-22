@@ -571,7 +571,6 @@ angular
           // otherwise return false
           return false;
         }
-        
 
         function reportDefinitionUsedInProjects(definition) {
           for (var i = 0; i < $scope.mapProjects.length; i++) {
@@ -582,7 +581,6 @@ angular
           }
           return false;
         }
-       
 
         function initializeMapProjectMetadata() {
           if ($scope.mapProjectMetadata != null) {
@@ -703,7 +701,6 @@ angular
             }
           }
         }
-        
 
         // indicates if any unsaved user
         $scope.userInEditingPerformed = function() {
@@ -921,7 +918,7 @@ angular
                   && editingPerformed[i].name == definition.name) {
                   editingPerformed.splice(i, 1);
                 }
-                
+
               }
 
               // replace this definition with the new data

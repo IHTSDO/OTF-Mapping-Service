@@ -100,9 +100,9 @@ angular
         $scope.selectedPage = pageTab.name;
       };
 
-      ////////////////////////////////////////////
+      // //////////////////////////////////////////
       // Searching, Navigation, and Highlighting
-      ////////////////////////////////////////////
+      // //////////////////////////////////////////
 
       $scope.performAggregatedSearch = function(searchField, subSearchField, subSubSearchField,
         searchAllLevels, suppressAlerts) {
@@ -236,9 +236,9 @@ angular
         }
       };
 
-      /////////////////////////////////////////
+      // ///////////////////////////////////////
       // Element Click Events
-      /////////////////////////////////////////
+      // ///////////////////////////////////////
 
       // search from link
       $scope.search = function(searchStr) {
@@ -250,9 +250,9 @@ angular
           // try to search sub levels if commas are present
           var splitStr = searchStr.split(',');
           if (splitStr.length === 2) {
-            $scope.performAggregatedSearch(splitStr[0], splitStr[1], null, false, false)
+            $scope.performAggregatedSearch(splitStr[0], splitStr[1], null, false, false);
           } else if (splitStr.length === 3) {
-            $scope.performAggregatedSearch(splitStr[0], splitStr[1], splitStr[2], false, false)
+            $scope.performAggregatedSearch(splitStr[0], splitStr[1], splitStr[2], false, false);
           }
         });
       };
@@ -291,22 +291,27 @@ angular
         $http.get(
           root_content + 'index/' + $scope.focusProject.destinationTerminology + '/'
             + $scope.focusProject.destinationTerminologyVersion + '/' + $scope.selectedDomain.name
-            + '/details/' + link).then(function(response) {
+            + '/details/' + link).then(
+          // Success
+          function(response) {
 
-          // substring to eliminate quotation marks
-          // TODO Use a real regular expression for this and stop being lazy
-          $scope.indexTrail = response.data.substring(1, response.data.length - 2);
+            // substring to eliminate quotation marks
+            // TODO Use a real regular expression for this and stop being lazy
+            $scope.indexTrail = response.data.substring(1, response.data.length - 2);
 
-        }, function(data, status, headers, config) {
-          $rootScope.glassPane--;
-          $rootScope.handleHttpError(data, status, headers, config);
-        });
+          },
+          // Error
+          function(response) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(response.data, response.status, response.headers,
+              response.config);
+          });
 
       };
 
-      /////////////////////////////////////////
+      // ///////////////////////////////////////
       // Initialization
-      /////////////////////////////////////////
+      // ///////////////////////////////////////
 
       $scope.initialize = function() {
         // get the domains
@@ -339,7 +344,6 @@ angular
 
               };
 
-             
               // FOR DEV WORK ONLY: truncate pages for faster testing
               // domain.pages = domain.pages.slice(0, 3);
 
@@ -415,13 +419,13 @@ angular
             cache : $templateCache
           }).then(
           // Success
-          function(result) {
-            $templateCache.put(url, result);
+          function(response) {
+            $templateCache.put(url, response);
             $rootScope.glassPane--;
           },
 
           // Error
-          function(result) {
+          function(response) {
             utilService.handleError('Error caching urls');
             $rootScope.glassPane--;
           });
@@ -429,9 +433,9 @@ angular
         });
       };
 
-      //////////////////////////////////
+      // ////////////////////////////////
       // Utility
-      //////////////////////////////////
+      // ////////////////////////////////
       $scope.to_trusted = function(html_code) {
         return $sce.trustAsHtml(html_code);
       };

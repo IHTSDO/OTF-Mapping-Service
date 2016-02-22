@@ -33,7 +33,8 @@
         No target</div>
       <div ng-show="entry.targetId.length > 0"
         style="vertical-align: top; width: 90%; display: inline-block; padding: 0px">
-        <em>{{entry.targetId}}</em> {{entry.targetName}}
+        <em>{{entry.targetId}}{{notes[entry.targetId]}}</em>
+        {{entry.targetName}}
       </div>
       <div
         style="vertical-align: top; width: 7%; display: inline-block; padding: 0px"></div>
@@ -102,10 +103,12 @@
   </ul>
 </div>
 
+<!-- Avoid showing warnings - they have already been addressed -->
+<!-- 
 <div ng-show="record.warnings.length > 0" style="color: orange;">
   Warnings:
   <ul>
     <li ng-repeat="warning in record.warnings">{{warning}}</li>
   </ul>
-
 </div>
+ -->
