@@ -147,7 +147,8 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
         new PushbackInputStream(new BufferedInputStream(inputStream), 3);
     byte[] bom = new byte[3];
     if (pushbackInputStream.read(bom) != -1) {
-      if (!(bom[0] == (byte) 0xEF && bom[1] == (byte) 0xBB && bom[2] == (byte) 0xBF)) {
+      if (!(bom[0] == (byte) 0xEF && bom[1] == (byte) 0xBB
+          && bom[2] == (byte) 0xBF)) {
         pushbackInputStream.unread(bom);
       }
     }
@@ -206,8 +207,8 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
 
     /** header string buffer */
     private StringBuilder headerHtml = null;
-    
-    /**  The open div. */
+
+    /** The open div. */
     private boolean openDiv = false;
 
     /**
@@ -257,7 +258,8 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
       }
 
       // Increment aname counter for new term
-      if (qName.equalsIgnoreCase("mainterm") || qName.equalsIgnoreCase("term")) {
+      if (qName.equalsIgnoreCase("mainterm")
+          || qName.equalsIgnoreCase("term")) {
         act++;
       }
 
@@ -266,9 +268,8 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
         cellIndex = Integer.parseInt(attributes.getValue("col"));
 
       // Handle missing end of table columns if starting a new term
-      if (inTable
-          && (qName.equalsIgnoreCase("term") || qName
-              .equalsIgnoreCase("mainTerm"))) {
+      if (inTable && (qName.equalsIgnoreCase("term")
+          || qName.equalsIgnoreCase("mainTerm"))) {
         if (cellCt == 1) {
           int x = colCt - 1;
           out.println("</td><td colspan=" + x + ">&nbsp;");
@@ -324,8 +325,10 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
 
         try {
           out =
-              new PrintWriter(new OutputStreamWriter(new FileOutputStream(
-                  new File(outputDir, data.get("title") + ".html")), "UTF-8"));
+              new PrintWriter(new OutputStreamWriter(
+                  new FileOutputStream(
+                      new File(outputDir, data.get("title") + ".html")),
+                  "UTF-8"));
           startHtml();
         } catch (UnsupportedEncodingException e) {
           throw new SAXException(e);
@@ -374,11 +377,9 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
       if ((qName.equalsIgnoreCase("title") || qName.equalsIgnoreCase("code")
           || qName.equalsIgnoreCase("manif")
           || qName.equalsIgnoreCase("etiology")
-          || qName.equalsIgnoreCase("nemod")
-          || qName.equalsIgnoreCase("subcat") || qName.equalsIgnoreCase("see")
-          || qName.equalsIgnoreCase("seeAlso") || qName
-            .equalsIgnoreCase("cell"))
-          && inTag.get("mainterm") > 0
+          || qName.equalsIgnoreCase("nemod") || qName.equalsIgnoreCase("subcat")
+          || qName.equalsIgnoreCase("see") || qName.equalsIgnoreCase("seeAlso")
+          || qName.equalsIgnoreCase("cell")) && inTag.get("mainterm") > 0
           && inTag.get("term") == 0) {
         if (inTable)
           writeMainTermTableInfo(qName.toLowerCase());
@@ -393,11 +394,9 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
       if ((qName.equalsIgnoreCase("title") || qName.equalsIgnoreCase("code")
           || qName.equalsIgnoreCase("manif")
           || qName.equalsIgnoreCase("etiology")
-          || qName.equalsIgnoreCase("subcat")
-          || qName.equalsIgnoreCase("nemod") || qName.equalsIgnoreCase("see")
-          || qName.equalsIgnoreCase("seeAlso") || qName
-            .equalsIgnoreCase("cell"))
-          && inTag.get("mainterm") > 0
+          || qName.equalsIgnoreCase("subcat") || qName.equalsIgnoreCase("nemod")
+          || qName.equalsIgnoreCase("see") || qName.equalsIgnoreCase("seeAlso")
+          || qName.equalsIgnoreCase("cell")) && inTag.get("mainterm") > 0
           && inTag.get("term") > 0) {
         if (inTable)
           writeTermTableInfo(qName.toLowerCase());
@@ -420,8 +419,8 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
       // Remove contents from tracking
       if (qName.equalsIgnoreCase("cell") || qName.equalsIgnoreCase("head")
           || qName.equalsIgnoreCase("code") || qName.equalsIgnoreCase("manif")
-          || qName.equalsIgnoreCase("etiology")
-          || qName.equalsIgnoreCase("see") || qName.equalsIgnoreCase("subcat")
+          || qName.equalsIgnoreCase("etiology") || qName.equalsIgnoreCase("see")
+          || qName.equalsIgnoreCase("subcat")
           || qName.equalsIgnoreCase("seeAlso")
           || (qName.equalsIgnoreCase("nemod") && !nemodInTitle))
         data.remove(qName.toLowerCase());
@@ -457,9 +456,8 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
       // Make multiple lines where appropriate
       styledNote =
           styledNote.replaceAll("([^\\.]*\\.)(\\s+\\d)", "$1<br><br>$2");
-      styledNote =
-          styledNote.replaceAll("([^\\.]+\\.\\s+[^\\.]+\\.)(\\s+)",
-              "$1<br><br>");
+      styledNote = styledNote.replaceAll("([^\\.]+\\.\\s+[^\\.]+\\.)(\\s+)",
+          "$1<br><br>");
       out.println("");
       if (inTable)
         out.println("</td></tr><tr><td colspan=\"" + colCt + "\">"
@@ -487,9 +485,7 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
         out.println("<div id=\"" + aname + "\">");
         openDiv = true;
 
-        out.println("<span ng-click=\"details('" 
-        + aname + 
-        "')\">");
+        out.println("<span ng-click=\"details('" + aname + "')\">");
         out.println("<b>" + data.get(key) + "</b>");
         out.println("</span>");
 
@@ -505,18 +501,23 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
         }
       }
 
-      // Handle writing the "see" tag
+      // Handle writing the "see" tag -- ensure apostrophes in search function
+      // are escaped to prevent parse errors
       else if (key.equals("see")) {
         out.println(" &mdash; <i>see</i> <a ng-click=\"search('"
-            + data.get(key) + "')\"" + ">" + data.get(key) + "</a>");
+            + data.get(key).replace("&apos", "\\&apos") + "')\"" + ">"
+            + data.get(key) + "</a>");
       }
 
-      // handle writing seealso tag
-      else if (key.equals("seealso") && data.get(key).startsWith("subcategory")) {
+      // handle writing seealso tag -- ensure apostrophes in search function
+      // are escaped to prevent parse errors
+      else if (key.equals("seealso")
+          && data.get(key).startsWith("subcategory")) {
         out.println(" &mdash; <i>see also</i> " + data.get(key));
       } else if (key.equals("seealso")) {
         out.println(" &mdash; <i>see also</i> <a href=\"\" ng-click=\"search('"
-            + data.get(key) + "')\"" + ">" + data.get(key) + "</a>");
+            + data.get(key).replace("&apos", "\\&apos") + "')\"" + ">"
+            + data.get(key) + "</a>");
       }
 
       // handle writing subcategory
@@ -534,9 +535,9 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
         // print after title
 
       } else if (key.equals("code")) {
-        //out.println(" " + data.get(key) + "");
-        out.println(" <a href=\"\" ng-click=\"code('"
-            + data.get(key) + "')\"" + ">" + data.get(key) + "</a>");
+        // out.println(" " + data.get(key) + "");
+        out.println(" <a href=\"\" ng-click=\"code('" + data.get(key) + "')\""
+            + ">" + data.get(key) + "</a>");
       } else if (key.equals("manif")) {
         out.println(" [" + data.get(key) + "]");
       } else {
@@ -557,15 +558,15 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
         cellCt = 1;
         cellIndex = 1;
         aname = letter + act;
-        
+
         if (openDiv) {
           out.println("</div>");
           openDiv = false;
         }
-        
+
         // write anchor and title
         out.println("</td></tr><tr><td>");
-        
+
         out.println("<div id=\"" + aname + "\">");
         openDiv = true;
         out.println(data.get(key));
@@ -582,13 +583,13 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
       // handle see tag
       else if (key.equals("see")) {
         out.println(" &mdash; <i>see</i> <a href=\"\" ng-click=\"search('"
-            + data.get(key) + "')\"" + ">" + data.get(key) + "</a>");
+            + data.get(key).replace("&apos", "\\&apos") + "')\"" + ">" + data.get(key) + "</a>");
       }
 
       // handle seealso tag
       else if (key.equals("seealso")) {
         out.println(" &mdash; <i>see also</i> <a href=\"\" ng-click=\"search('"
-            + data.get(key) + "')\"" + ">" + data.get(key) + "</a>");
+            + data.get(key).replace("&apos", "\\&apos") + "')\"" + ">" + data.get(key) + "</a>");
       }
 
       // handle cell tag - print blank cells if columns are skipped
@@ -599,9 +600,9 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
         String val = data.get(key);
         if (val.equals(""))
           val = "&nbsp;";
-        //out.println("</td><td>" + val);
-        out.println("</td><td>" + " <a href=\"\" ng-click=\"code('"
-            + val + "')\"" + ">" + val + "</a>");
+        // out.println("</td><td>" + val);
+        out.println("</td><td>" + " <a href=\"\" ng-click=\"code('" + val
+            + "')\"" + ">" + val + "</a>");
       }
 
       // Ignore nemod if within title
@@ -609,9 +610,9 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
         // print with title
 
       } else if (key.equals("code")) {
-        //out.println(" " + data.get(key) + "");
-        out.println(" <a href=\"\" ng-click=\"code('"
-            + data.get(key) + "')\"" + ">" + data.get(key) + "</a>");
+        // out.println(" " + data.get(key) + "");
+        out.println(" <a href=\"\" ng-click=\"code('" + data.get(key) + "')\""
+            + ">" + data.get(key) + "</a>");
       } else if (key.equals("manif")) {
         out.println(" [" + data.get(key) + "]");
       } else {
@@ -626,16 +627,14 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
      */
     private void writeTermInfo(String key) {
       if (key.equals("title")) {
-        aname = aname + "." + act;      
+        aname = aname + "." + act;
         if (openDiv) {
           out.println("</div>");
           openDiv = false;
         }
         out.println("<div id=\"" + aname + "\">");
         openDiv = true;
-        out.println("<span ng-click=\"details('" 
-        + aname + 
-        "')\">");
+        out.println("<span ng-click=\"details('" + aname + "')\">");
         out.println("- - - - - - - - - - - ".substring(0, level * 2)
             + data.get("title"));
         out.println("</span>");
@@ -652,13 +651,13 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
         }
       } else if (key.equals("see")) {
         out.println(" &mdash; <i>see</i> <a href=\"\" ng-click=\"search('"
-            + data.get(key) + "')\"" + ">" + data.get(key) + "</a>");
+            + data.get(key).replace("&apos", "\\&apos") + "')\"" + ">" + data.get(key) + "</a>");
       } else if (key.equals("seealso")
           && data.get(key).startsWith("subcategory")) {
         out.println(" &mdash; <i>see also</i> " + data.get(key));
       } else if (key.equals("seealso")) {
         out.println(" &mdash; <i>see also</i> <a href=\"\" ng-click=\"search('"
-            + data.get(key) + "')\"" + ">" + data.get(key) + "</a>");
+            + data.get(key).replace("&apos", "\\&apos") + "')\"" + ">" + data.get(key) + "</a>");
       } else if (key.equals("subcat")) {
         out.println(" &mdash; see subcategory " + data.get(key));
       } else if (key.equals("etiology")) {
@@ -667,9 +666,9 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
         // print with title
         // write the data associated with this tag.
       } else if (key.equals("code")) {
-        //out.println(" " + data.get(key) + "");
-        out.println(" <a href=\"\" ng-click=\"code('"
-            + data.get(key) + "')\"" + ">" + data.get(key) + "</a>");
+        // out.println(" " + data.get(key) + "");
+        out.println(" <a href=\"\" ng-click=\"code('" + data.get(key) + "')\""
+            + ">" + data.get(key) + "</a>");
       } else if (key.equals("manif")) {
         out.println(" [" + data.get(key) + "]");
       } else {
@@ -687,13 +686,13 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
       if (key.equals("title")) {
         cellCt = 1;
         aname = aname + "." + act;
-        
+
         if (openDiv) {
           out.println("</div>");
           openDiv = false;
         }
         out.println("</td></tr><tr><td>");
-        
+
         out.println("<div id=\"" + aname + "\">");
         openDiv = true;
         out.println("- - - - - - - - - - - ".substring(0, level * 2)
@@ -706,10 +705,10 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
         }
       } else if (key.equals("see")) {
         out.println(" &mdash; <i>see</i> <a href=\"\" ng-click=\"search('"
-            + data.get(key) + "')\"" + ">" + data.get(key) + "</a>");
+            + data.get(key).replace("&apos", "\\&apos") + "')\"" + ">" + data.get(key) + "</a>");
       } else if (key.equals("seealso")) {
         out.println(" &mdash; <i>see also</i> <a href=\"\" ng-click=\"search('"
-            + data.get(key) + "')\"" + ">" + data.get(key) + "</a>");
+            + data.get(key).replace("&apos", "\\&apos") + "')\"" + ">" + data.get(key) + "</a>");
       } else if (key.equals("cell")) {
         while (++cellCt < cellIndex) {
           out.println("</td><td>&nbsp;");
@@ -717,15 +716,15 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
         String val = data.get(key);
         if (val.equals(""))
           val = "&nbsp;";
-        //out.println("</td><td>" + val);
-        out.println("</td><td>" + " <a href=\"\" ng-click=\"code('"
-            + val + "')\"" + ">" + val + "</a>");
+        // out.println("</td><td>" + val);
+        out.println("</td><td>" + " <a href=\"\" ng-click=\"code('" + val
+            + "')\"" + ">" + val + "</a>");
       } else if (inTitle && key.equals("nemod")) {
         // print with title
       } else if (key.equals("code")) {
-        //out.println(" " + data.get(key) + "");
-        out.println(" <a href=\"\" ng-click=\"code('"
-            + data.get(key) + "')\"" + ">" + data.get(key) + "</a>");
+        // out.println(" " + data.get(key) + "");
+        out.println(" <a href=\"\" ng-click=\"code('" + data.get(key) + "')\""
+            + ">" + data.get(key) + "</a>");
       } else if (key.equals("manif")) {
         out.println(" [" + data.get(key) + "]");
       } else {
@@ -791,7 +790,8 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
      * Start html document.
      */
     private void startHtml() {
-      out.println("<html><head><style type=\"text/css\">p { margin-top:0 ;margin-bottom:0;}</style></head><body style=\"font-family: sans-serif;\">");
+      out.println(
+          "<html><head><style type=\"text/css\">p { margin-top:0 ;margin-bottom:0;}</style></head><body style=\"font-family: sans-serif;\">");
       out.println("<center><h3>" + documentTitle
           + "</h3><div style=\"width: 100%; background-color: #BBBBBB;\">"
           + data.get("title") + "</div></center>");
@@ -811,7 +811,7 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
         if (openDiv) {
           out.println("</div>");
           openDiv = false;
-        } 
+        }
         if (inTable)
           out.println("</td></tr></table>");
         out.println("</p></body></html>");
@@ -820,6 +820,5 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
     }
 
   }
-  
 
 }
