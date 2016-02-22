@@ -93,8 +93,7 @@ angular
           return;
         }
 
-        if ($scope.adminProject.refSetId == null
-          || $scope.adminProject.refSetId.length == 0) {
+        if ($scope.adminProject.refSetId == null || $scope.adminProject.refSetId.length == 0) {
           alert('You must specify a unique ref set id');
           return;
         }
@@ -111,33 +110,30 @@ angular
           headers : {
             'Content-Type' : 'application/json'
           }
-        }).success(
-          function(data) {
-            $rootScope.glassPane--;
+        }).success(function(data) {
+          $rootScope.glassPane--;
 
-            $scope.successMsg = 'Successfully updated project '
-              + $scope.adminProject.id;
+          $scope.successMsg = 'Successfully updated project ' + $scope.adminProject.id;
 
-            var mapProjects = [];
-            for (var i = 0; i < $scope.mapProjects.length; i++) {
-              if ($scope.mapProjects[i].id != $scope.adminProject.id) {
-                mapProjects.push($scope.mapProjects[i]);
-              } else {
-                mapProjects.push($scope.adminProject);
-              }
+          var mapProjects = [];
+          for (var i = 0; i < $scope.mapProjects.length; i++) {
+            if ($scope.mapProjects[i].id != $scope.adminProject.id) {
+              mapProjects.push($scope.mapProjects[i]);
+            } else {
+              mapProjects.push($scope.adminProject);
             }
-            $scope.mapProjects = mapProjects;
+          }
+          $scope.mapProjects = mapProjects;
 
-            localStorageService.add('mapProjects', $scope.mapProjects);
+          localStorageService.add('mapProjects', $scope.mapProjects);
 
-            // broadcast change
-            $rootScope.$broadcast(
-              'localStorageModule.notification.setMapProjects', {
-                key : 'mapProjects',
-                mapProjects : $scope.mapProjects
-              });
+          // broadcast change
+          $rootScope.$broadcast('localStorageModule.notification.setMapProjects', {
+            key : 'mapProjects',
+            mapProjects : $scope.mapProjects
+          });
 
-          }).error(function(data, status, headers, config) {
+        }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
           $rootScope.handleHttpError(data, status, headers, config);
         });
@@ -160,31 +156,28 @@ angular
           headers : {
             'Content-Type' : 'application/json'
           }
-        }).success(
-          function(data) {
-            $rootScope.glassPane--;
+        }).success(function(data) {
+          $rootScope.glassPane--;
 
-            // set the admin project to response
-            $scope.adminProject = data;
+          // set the admin project to response
+          $scope.adminProject = data;
 
-            // check ref set id
-            $scope.checkRefSetId();
+          // check ref set id
+          $scope.checkRefSetId();
 
-            $scope.successMsg = 'Successfully added project '
-              + $scope.adminProject.id;
+          $scope.successMsg = 'Successfully added project ' + $scope.adminProject.id;
 
-            // add to local projects and to cache
-            $scope.mapProjects.push(data);
-            localStorageService.add('mapProjects', $scope.mapProjects);
+          // add to local projects and to cache
+          $scope.mapProjects.push(data);
+          localStorageService.add('mapProjects', $scope.mapProjects);
 
-            // broadcast change
-            $rootScope.$broadcast(
-              'localStorageModule.notification.setMapProjects', {
-                key : 'mapProjects',
-                mapProjects : $scope.mapProjects
-              });
+          // broadcast change
+          $rootScope.$broadcast('localStorageModule.notification.setMapProjects', {
+            key : 'mapProjects',
+            mapProjects : $scope.mapProjects
+          });
 
-          }).error(function(data, status, headers, config) {
+        }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
           $rootScope.handleHttpError(data, status, headers, config);
         });
@@ -204,34 +197,31 @@ angular
           headers : {
             'Content-Type' : 'application/json'
           }
-        }).success(
-          function(data) {
-            $rootScope.glassPane--;
+        }).success(function(data) {
+          $rootScope.glassPane--;
 
-            $scope.successMsg = 'Successfully deleted project '
-              + $scope.adminProject.id;
+          $scope.successMsg = 'Successfully deleted project ' + $scope.adminProject.id;
 
-            var mapProjects = [];
-            for (var i = 0; i < $scope.mapProjects.length; i++) {
-              if ($scope.mapProjects[i].id != $scope.adminProject.id) {
-                mapProjects.push($scope.mapProjects[i]);
-              }
+          var mapProjects = [];
+          for (var i = 0; i < $scope.mapProjects.length; i++) {
+            if ($scope.mapProjects[i].id != $scope.adminProject.id) {
+              mapProjects.push($scope.mapProjects[i]);
             }
-            $scope.mapProjects = mapProjects;
+          }
+          $scope.mapProjects = mapProjects;
 
-            localStorageService.add('mapProjects', $scope.mapProjects);
+          localStorageService.add('mapProjects', $scope.mapProjects);
 
-            // broadcast change
-            $rootScope.$broadcast(
-              'localStorageModule.notification.setMapProjects', {
-                key : 'mapProjects',
-                mapProjects : $scope.mapProjects
-              });
+          // broadcast change
+          $rootScope.$broadcast('localStorageModule.notification.setMapProjects', {
+            key : 'mapProjects',
+            mapProjects : $scope.mapProjects
+          });
 
-            // clear the viewed project
-            $scope.adminProject = null;
+          // clear the viewed project
+          $scope.adminProject = null;
 
-          }).error(function(data, status, headers, config) {
+        }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
           $rootScope.handleHttpError(data, status, headers, config);
         });

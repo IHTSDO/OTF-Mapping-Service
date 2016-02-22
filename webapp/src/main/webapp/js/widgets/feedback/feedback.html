@@ -48,13 +48,13 @@
 
     <tbody>
       <tr ng-repeat="feedbackConversation in feedbackConversations">
-        <td ng-show="isFeedbackViewed(feedbackConversation) == false">
+        <td ng-show="!isFeedbackViewed(feedbackConversation)">
           <a title="Unviewed Feedback"
             href="#/conversation/recordId/{{feedbackConversation.mapRecordId}}">
             <i class="glyphicon glyphicon-eye-close pull-right"></i>
           </a>
         </td>
-        <td ng-show="isFeedbackViewed(feedbackConversation) == true"></td>
+        <td ng-show="isFeedbackViewed(feedbackConversation)"></td>
         <td>
           <!--  only show resolved checkbox if current user is owner of record, 
                    or if current user initiated the feedback conversation -->
@@ -69,7 +69,7 @@
           <span
             ng-show="feedbackConversation.userName != currentUser.userName &&
              			currentUser.userName != feedbackConversation.feedback[0].sender.userName &&
-             			feedbackConversation.resolved == true">
+             			feedbackConversation.resolved">
             <i class="glyphicon glyphicon-ok"></i>
           </span>
         </td>

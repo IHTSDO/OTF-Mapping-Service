@@ -931,7 +931,7 @@ angular
                 return $scope.currentUser;
               },
               action : function() {
-
+               
                 // catch simple workflow case
                 if ($scope.focusProject.workflowType === 'SIMPLE_PATH') {
                   return 'publish';

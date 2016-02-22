@@ -26,7 +26,7 @@ angular
       '$window',
       function($scope, $rootScope, $q, $http, $routeParams, $modal, $location, $anchorScroll,
         localStorageService, $window) {
-        
+
         console.debug($window);
 
         // for this widget, the only local storage service variable used is
@@ -58,8 +58,6 @@ angular
           $scope.computeParameters(false);
 
         });
-
-        
 
         // watch for entry deletion from map record page
         $scope.$on('mapRecordWidget.notification.deleteSelectedEntry', function(event, parameters) {
