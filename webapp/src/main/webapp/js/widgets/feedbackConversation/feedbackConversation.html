@@ -12,10 +12,11 @@
   <hr>
 </div>
 <div ng-show="record2 != null && record2.mapEntry.length>
-  0"> Record owned by: {{record2.owner.name}}
+  0">
+  Record owned by: {{record2.owner.name}}
   <span otf-map-record-wide record="record2" project="focusProject"
     show-title="false"></span>
-<hr>
+  <hr>
 </div>
 <!-- display items in feedback conversation -->
 <div ng-show="conversation.feedback.length > 0" style="margin-top: 3px;">

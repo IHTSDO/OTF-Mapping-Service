@@ -26,6 +26,7 @@ angular
       '$modal',
       '$window',
       'localStorageService',
+      'utilService',
       function($scope, $rootScope, $http, $routeParams, $location, $sce, $modal, $window,
         localStorageService, utilService) {
 
@@ -46,7 +47,6 @@ angular
         $scope.role = localStorageService.get('currentRole');
         $scope.userToken = localStorageService.get('userToken');
         $scope.conversation = null;
-        $scope.notes = {};
         $scope.mapLeads = $scope.project.mapLead;
         organizeUsers($scope.mapLeads);
 
@@ -216,9 +216,9 @@ angular
 
         // any time the record changes, broadcast it to the record
         // summary widget
-//        $scope.$watch('record', function() {
-//          broadcastRecord();
-//        });
+        // $scope.$watch('record', function() {
+        // broadcastRecord();
+        // });
 
         function broadcastRecord() {
           $rootScope.$broadcast('mapRecordWidget.notification.recordChanged', {
@@ -1206,7 +1206,8 @@ angular
             // otherwise return the target code and preferred
             // name
           } else {
-            var notes = $scope.notes[entry.targetId] ? $scope.notes[entry.targetId] : '';
+            var allNotes = utilService.getNotes($scope.project.id);
+            var notes = allNotes[entry.targetId] ? allNotes[entry.targetId] : '';
             entrySummary += entry.targetId + notes + ' ' + entry.targetName;
           }
 
@@ -1595,27 +1596,7 @@ angular
           return parseInt(principle.principleId, 10) + 1;
         };
 
-        // look up the 'terminology notes' for the map project
-        $scope.initializeTerminologyNotes = function() {
-          $rootScope.glassPane++;
-          console.debug('initialize terminology notes', $scope.project);
-          $http.get(root_mapping + 'mapProject/' + $scope.project.id + '/notes').then(
-          // Success
-          function(response) {
-            for (var i = 0; i < response.data.keyValuePair.length; i++) {
-              var entry = response.data.keyValuePair[i];
-              $scope.notes[entry.key] = entry.value;
-            }
-            $rootScope.glassPane--;
-          },
-          // Error
-          function(response) {
-            $rootScope.glassPane--;
-            utilService.handleError(response.data);
-          });
-        };
+        // Initialize terminology notes
+        utilService.initializeTerminologyNotes($scope.project.id);
 
-        // Initialize
-
-        $scope.initializeTerminologyNotes();
       } ]);

@@ -1506,7 +1506,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
 
       // submit a single/batch of concepts for addition
       $scope.submitNewScopeExcludedConcepts = function(scopeExcludedConceptsUnsplit) {
-        console.debug('in submitNewScopeExcludedConcept',scopeExcludedConceptsUnsplit);
+        console.debug('in submitNewScopeExcludedConcept', scopeExcludedConceptsUnsplit);
 
         $rootScope.glassPane++;
         var scopeExcludedConcepts = scopeExcludedConceptsUnsplit.split(/,\s*|\s+/);
@@ -1521,7 +1521,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-            console.debug('  success');
+          console.debug('  success');
           $rootScope.glassPane--;
           $scope.getPagedScopeExcludedConcepts(1);
         }).error(function(data, status, headers, config) {

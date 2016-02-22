@@ -38,18 +38,25 @@ import org.junit.Test;
  */
 public class WorkflowPathStatesSimplePathTest {
 
+  /** The ws. */
   static WorkflowService ws;
 
+  /** The cs. */
   static ContentService cs;
 
+  /** The concept. */
   static Concept concept;
 
+  /** The map project. */
   static MapProject mapProject;
 
+  /** The user. */
   static MapUser user;
 
+  /** The pfs. */
   static PfsParameter pfs;
 
+  /** The wph. */
   static WorkflowPathHandler wph;
 
   /**
@@ -62,9 +69,9 @@ public class WorkflowPathStatesSimplePathTest {
     ws = new WorkflowServiceJpa();
     cs = new ContentServiceJpa();
 
-    /////////////////////////
+    // ///////////////////////
     // Clear Objects
-    /////////////////////////
+    // ///////////////////////
 
     // clear all concepts
     for (Concept c : cs.getAllConcepts("st", "stv").getConcepts()) {
@@ -86,9 +93,9 @@ public class WorkflowPathStatesSimplePathTest {
       ws.removeMapUser(m.getId());
     }
 
-    /////////////////////////
+    // ///////////////////////
     // Construct Objects
-    ////////////////////////
+    // //////////////////////
 
     // create a concept
     concept = new ConceptJpa();
@@ -120,8 +127,9 @@ public class WorkflowPathStatesSimplePathTest {
     mapProject.setName("project");
     mapProject.addScopeConcept(concept.getTerminologyId());
     mapProject.setWorkflowType(WorkflowType.SIMPLE_PATH);
-    mapProject.setProjectSpecificAlgorithmHandlerClass(
-        DefaultProjectSpecificAlgorithmHandler.class.getCanonicalName());
+    mapProject
+        .setProjectSpecificAlgorithmHandlerClass(DefaultProjectSpecificAlgorithmHandler.class
+            .getCanonicalName());
     mapProject.addMapSpecialist(user);
 
     ws.addMapProject(mapProject);
@@ -133,6 +141,12 @@ public class WorkflowPathStatesSimplePathTest {
 
   }
 
+  /**
+   * Reset state.
+   *
+   * @throws Exception the exception
+   */
+  @SuppressWarnings("static-method")
   @Before
   public void resetState() throws Exception {
 
@@ -176,39 +190,47 @@ public class WorkflowPathStatesSimplePathTest {
    * else { ws.removeMapRecord(mr.getId()); } } }
    * ws.computeWorkflow(mapProject); ws.clear(); }
    */
+  /**
+   * Test normal workflow legacy specialist no conflict.
+   *
+   * @throws Exception the exception
+   */
   @Test
   public void testNormalWorkflowLegacySpecialistNoConflict() throws Exception {
 
-    Logger.getLogger(this.getClass())
-        .info("---------------------------------------------------");
+    Logger.getLogger(this.getClass()).info(
+        "---------------------------------------------------");
     Logger.getLogger(this.getClass()).info("Normal workflow");
-    Logger.getLogger(this.getClass())
-        .info("---------------------------------------------------");
+    Logger.getLogger(this.getClass()).info(
+        "---------------------------------------------------");
 
     SearchResultList list;
 
     // find available work
-    list = ws.findAvailableWork(mapProject, user, MapUserRole.SPECIALIST, null,
-        pfs);
+    list =
+        ws.findAvailableWork(mapProject, user, MapUserRole.SPECIALIST, null,
+            pfs);
     assertTrue(list.getCount() == 1);
 
     SearchResult firstResult = list.getSearchResults().get(0);
-    Concept concept = cs.getConcept(firstResult.getTerminologyId(),
-        mapProject.getSourceTerminology(),
-        mapProject.getSourceTerminologyVersion());
+    Concept concept =
+        cs.getConcept(firstResult.getTerminologyId(),
+            mapProject.getSourceTerminology(),
+            mapProject.getSourceTerminologyVersion());
 
     // assign work to user
     ws.processWorkflowAction(mapProject, concept, user, null,
         WorkflowAction.ASSIGN_FROM_SCRATCH);
 
     // find available work
-    list = ws.findAvailableWork(mapProject, user, MapUserRole.SPECIALIST, null,
-        pfs);
+    list =
+        ws.findAvailableWork(mapProject, user, MapUserRole.SPECIALIST, null,
+            pfs);
     assertTrue(list.getCount() == 0);
 
     // find assigned work for spec1User
-    list = ws.findAssignedWork(mapProject, user, MapUserRole.SPECIALIST, null,
-        pfs);
+    list =
+        ws.findAssignedWork(mapProject, user, MapUserRole.SPECIALIST, null, pfs);
     assertTrue(list.getCount() == 1);
 
     // get the map record for the user
@@ -220,18 +242,20 @@ public class WorkflowPathStatesSimplePathTest {
         WorkflowAction.UNASSIGN);
 
     // find available work
-    list = ws.findAvailableWork(mapProject, user, MapUserRole.SPECIALIST, null,
-        pfs);
+    list =
+        ws.findAvailableWork(mapProject, user, MapUserRole.SPECIALIST, null,
+            pfs);
     assertTrue(list.getCount() == 1);
 
     // find assigned work for spec1User
-    list = ws.findAssignedWork(mapProject, user, MapUserRole.SPECIALIST, null,
-        pfs);
+    list =
+        ws.findAssignedWork(mapProject, user, MapUserRole.SPECIALIST, null, pfs);
     assertTrue(list.getCount() == 0);
 
     // get the map records for this project and concept
-    MapRecordList mrList = ws.getMapRecordsForProjectAndConcept(
-        mapProject.getId(), concept.getTerminologyId());
+    MapRecordList mrList =
+        ws.getMapRecordsForProjectAndConcept(mapProject.getId(),
+            concept.getTerminologyId());
     assertTrue(mrList.getCount() == 0);
 
     // reassign work to user
@@ -239,81 +263,86 @@ public class WorkflowPathStatesSimplePathTest {
         WorkflowAction.ASSIGN_FROM_SCRATCH);
 
     // get the map record for the user
-    mrList = ws.getMapRecordsForProjectAndConcept(mapProject.getId(),
-        concept.getTerminologyId());
+    mrList =
+        ws.getMapRecordsForProjectAndConcept(mapProject.getId(),
+            concept.getTerminologyId());
     assertTrue(mrList.getCount() == 1);
     assertTrue(mrList.getMapRecords().get(0).getWorkflowStatus()
         .equals(WorkflowStatus.NEW));
 
     // save for later
-    ws.processWorkflowAction(mapProject, concept, user,
-        new MapRecordJpa(mrList.getMapRecords().get(0), true), WorkflowAction.SAVE_FOR_LATER);
+    ws.processWorkflowAction(mapProject, concept, user, new MapRecordJpa(mrList
+        .getMapRecords().get(0), true), WorkflowAction.SAVE_FOR_LATER);
 
     // find available work
-    list = ws.findAvailableWork(mapProject, user, MapUserRole.SPECIALIST, null,
-        pfs);
+    list =
+        ws.findAvailableWork(mapProject, user, MapUserRole.SPECIALIST, null,
+            pfs);
     assertTrue(list.getCount() == 0);
 
     // find assigned work for user
-    list = ws.findAssignedWork(mapProject, user, MapUserRole.SPECIALIST, null,
-        pfs);
+    list =
+        ws.findAssignedWork(mapProject, user, MapUserRole.SPECIALIST, null, pfs);
     assertTrue(list.getCount() == 1);
-    
+
     mr = ws.getMapRecord(list.getSearchResults().get(0).getId());
-    assertTrue(
-        mr.getWorkflowStatus().equals(WorkflowStatus.EDITING_IN_PROGRESS));
+    assertTrue(mr.getWorkflowStatus()
+        .equals(WorkflowStatus.EDITING_IN_PROGRESS));
 
     // finish work for user
-    ws.processWorkflowAction(mapProject, concept, user,
-        new MapRecordJpa(mr, true), WorkflowAction.FINISH_EDITING);
-
+    ws.processWorkflowAction(mapProject, concept, user, new MapRecordJpa(mr,
+        true), WorkflowAction.FINISH_EDITING);
 
     // find available work
-    list = ws.findAvailableWork(mapProject, user, MapUserRole.SPECIALIST, null,
-        pfs);
+    list =
+        ws.findAvailableWork(mapProject, user, MapUserRole.SPECIALIST, null,
+            pfs);
     assertTrue(list.getCount() == 0);
 
     // find assigned work for user
-    list = ws.findAssignedWork(mapProject, user, MapUserRole.SPECIALIST, null,
-        pfs);
+    list =
+        ws.findAssignedWork(mapProject, user, MapUserRole.SPECIALIST, null, pfs);
     assertTrue(list.getCount() == 1);
 
     mr = ws.getMapRecord(list.getSearchResults().get(0).getId());
     assertTrue(mr.getWorkflowStatus().equals(WorkflowStatus.EDITING_DONE));
 
     // finish work for user
-    ws.processWorkflowAction(mapProject, concept, user,
-        new MapRecordJpa(mr, true), WorkflowAction.FINISH_EDITING);
+    ws.processWorkflowAction(mapProject, concept, user, new MapRecordJpa(mr,
+        true), WorkflowAction.FINISH_EDITING);
 
     // find available work
-    list = ws.findAvailableWork(mapProject, user, MapUserRole.SPECIALIST, null,
-        pfs);
+    list =
+        ws.findAvailableWork(mapProject, user, MapUserRole.SPECIALIST, null,
+            pfs);
     assertTrue(list.getCount() == 0);
 
     // find assigned work for spec1User
-    list = ws.findAssignedWork(mapProject, user, MapUserRole.SPECIALIST, null,
-        pfs);
+    list =
+        ws.findAssignedWork(mapProject, user, MapUserRole.SPECIALIST, null, pfs);
     assertTrue(list.getCount() == 1);
 
     mr = ws.getMapRecord(list.getSearchResults().get(0).getId());
     assertTrue(mr.getWorkflowStatus().equals(WorkflowStatus.EDITING_DONE));
 
-    ws.processWorkflowAction(mapProject, concept, user,
-        new MapRecordJpa(mr, true), WorkflowAction.PUBLISH);
+    ws.processWorkflowAction(mapProject, concept, user, new MapRecordJpa(mr,
+        true), WorkflowAction.PUBLISH);
 
     // find available work
-    list = ws.findAvailableWork(mapProject, user, MapUserRole.SPECIALIST, null,
-        pfs);
+    list =
+        ws.findAvailableWork(mapProject, user, MapUserRole.SPECIALIST, null,
+            pfs);
     assertTrue(list.getCount() == 0);
 
     // find assigned work for spec1User
-    list = ws.findAssignedWork(mapProject, user, MapUserRole.SPECIALIST, null,
-        pfs);
+    list =
+        ws.findAssignedWork(mapProject, user, MapUserRole.SPECIALIST, null, pfs);
     assertTrue(list.getCount() == 0);
 
     // find the map record for this project and concept
-    mrList = ws.getMapRecordsForProjectAndConcept(mapProject.getId(),
-        concept.getTerminologyId());
+    mrList =
+        ws.getMapRecordsForProjectAndConcept(mapProject.getId(),
+            concept.getTerminologyId());
     assertTrue(mrList.getCount() == 1);
     assertTrue(mrList.getMapRecords().get(0).getWorkflowStatus()
         .equals(WorkflowStatus.READY_FOR_PUBLICATION));
