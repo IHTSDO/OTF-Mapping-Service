@@ -2313,7 +2313,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
   public MapUserRole getMapUserRoleForMapProject(String userName,
     Long mapProjectId) throws Exception {
 
-    Logger.getLogger(MappingServiceJpa.class).info(
+    Logger.getLogger(MappingServiceJpa.class).debug(
         "Finding user's role " + userName + " " + mapProjectId);
 
     // get the user and map project for parameters

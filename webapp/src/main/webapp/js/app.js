@@ -83,6 +83,9 @@ var mapProjectApp = angular.module(
 
 mapProjectApp.config([ '$routeProvider', function($routeProvider) {
   
+  // set the main application window name
+  window.name = 'mappingToolWindow';
+  
   // ////////////////////////////
   // DASHBOARDS
   // ////////////////////////////

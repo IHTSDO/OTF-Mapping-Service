@@ -678,7 +678,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
         MapRecord oldRecord = getMapRecord(id);
         oldRecords.add(oldRecord);
         Logger.getLogger(this.getClass())
-            .info("  Existing record retrieved: " + oldRecord.getId());
+            .debug("  Existing record retrieved: " + oldRecord.getId());
       }
     }
 
@@ -724,7 +724,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     for (final MapRecord mr : oldRecords) {
 
       Logger.getLogger(this.getClass())
-          .info("  Checking for deleted records: " + mr.getId());
+          .debug("  Checking for deleted records: " + mr.getId());
       // if old record is not in the new record set, delete it
       if (getMapRecordInSet(syncedRecords, mr.getId()) == null) {
 

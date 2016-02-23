@@ -434,7 +434,7 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
           if (labelBuffer.indexOf(label) == -1) {
             labelBuffer.append(";").append(label);
           }
-          System.out.println(label + ", " + query + "," + label.equals(query));
+       
           if (label.equals(query)) {
             hasLabel = true;
           }
