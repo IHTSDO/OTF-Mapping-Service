@@ -414,7 +414,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     // path)
     if (trackingRecord == null) {
 
-      Logger.getLogger(this.getClass()).info("Creating new tracking record");
+      Logger.getLogger(this.getClass()).debug("Creating new tracking record");
 
       // create a tracking record for this concept with no records or
       // users
@@ -470,7 +470,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     else {
 
       Logger.getLogger(WorkflowServiceJpa.class)
-          .info("  Tracking Record: " + trackingRecord.toString());
+          .debug("  Tracking Record: " + trackingRecord.toString());
 
       handler =
           (AbstractWorkflowPathHandler) Class
@@ -565,7 +565,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     mapRecords = handler.processWorkflowAction(trackingRecord, workflowAction,
         mapProject, mapUser, mapRecords, mapRecord);
 
-    Logger.getLogger(WorkflowServiceJpa.class).info("Synchronizing...");
+    Logger.getLogger(WorkflowServiceJpa.class).debug("Synchronizing...");
 
     // synchronize the map records via helper function
     Set<MapRecord> syncedRecords =
@@ -596,19 +596,19 @@ public class WorkflowServiceJpa extends MappingServiceJpa
         && trackingRecord.getMapRecordIds().size() == 1) {
 
       Logger.getLogger(WorkflowServiceJpa.class)
-          .info("  Publication ready, removing tracking record.");
+          .debug("  Publication ready, removing tracking record.");
       removeTrackingRecord(trackingRecord.getId());
 
       // else add the tracking record if new
     } else if (trackingRecord.getId() == null) {
       Logger.getLogger(WorkflowServiceJpa.class)
-          .info("  New workflow concept, adding tracking record.");
+          .debug("  New workflow concept, adding tracking record.");
       addTrackingRecord(trackingRecord);
 
       // otherwise update the tracking record
     } else {
       Logger.getLogger(WorkflowServiceJpa.class)
-          .info("  Still in workflow, updating tracking record.");
+          .debug("  Still in workflow, updating tracking record.");
       updateTrackingRecord(trackingRecord);
     }
 
@@ -654,7 +654,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     // detach the currently persisted map records from the workflow service
     // to avoid overwrite by retrieval of existing records
     for (final MapRecord mr : mapRecords) {
-      Logger.getLogger(this.getClass()).info("  Map record attached: "
+      Logger.getLogger(this.getClass()).debug("  Map record attached: "
           + mr.getId() + ", " + mr.getWorkflowStatus());
 
       manager.detach(mr);
@@ -678,7 +678,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
         MapRecord oldRecord = getMapRecord(id);
         oldRecords.add(oldRecord);
         Logger.getLogger(this.getClass())
-            .info("  Existing record retrieved: " + oldRecord.getId());
+            .debug("  Existing record retrieved: " + oldRecord.getId());
       }
     }
 
@@ -686,10 +686,10 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     for (final MapRecord mr : newRecords) {
 
       Logger.getLogger(WorkflowServiceJpa.class)
-          .info("  Checking attached record: " + mr.getId());
+          .debug("  Checking attached record: " + mr.getId());
       if (mr.getId() == null) {
 
-        Logger.getLogger(WorkflowServiceJpa.class).info("    Add record");
+        Logger.getLogger(WorkflowServiceJpa.class).debug("    Add record");
         // deep copy the detached record into a new
         // persistence-environment record
         // this routine also duplicates child collections to avoid
@@ -709,11 +709,11 @@ public class WorkflowServiceJpa extends MappingServiceJpa
         // if the old map record is changed, update it
 
         if (!mr.isEquivalent(getMapRecordInSet(oldRecords, mr.getId()))) {
-          Logger.getLogger(WorkflowServiceJpa.class).info("    Update record");
+          Logger.getLogger(WorkflowServiceJpa.class).debug("    Update record");
           updateMapRecord(mr);
         } else {
           Logger.getLogger(WorkflowServiceJpa.class)
-              .info("    Record unchanged");
+              .debug("    Record unchanged");
         }
 
         syncedRecords.add(mr);
@@ -724,14 +724,14 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     for (final MapRecord mr : oldRecords) {
 
       Logger.getLogger(this.getClass())
-          .info("  Checking for deleted records: " + mr.getId());
+          .debug("  Checking for deleted records: " + mr.getId());
       // if old record is not in the new record set, delete it
       if (getMapRecordInSet(syncedRecords, mr.getId()) == null) {
 
-        Logger.getLogger(WorkflowServiceJpa.class).info("    Delete record");
+        Logger.getLogger(WorkflowServiceJpa.class).debug("    Delete record");
         removeMapRecord(mr.getId());
       } else {
-        Logger.getLogger(WorkflowServiceJpa.class).info("    Record exists");
+        Logger.getLogger(WorkflowServiceJpa.class).debug("    Record exists");
       }
     }
 
