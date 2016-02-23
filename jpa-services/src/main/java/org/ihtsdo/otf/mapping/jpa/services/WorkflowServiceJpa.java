@@ -1444,7 +1444,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
     final List<FeedbackConversation> feedbackConversations =
         (List<FeedbackConversation>) getQueryResults(sb.toString(),
             FeedbackConversationJpa.class, FeedbackConversationJpa.class,
-            pfsParameter, totalCt);
+            pfs, totalCt);
 
     if (pfsParameter != null && query.contains("viewed")) {
 
