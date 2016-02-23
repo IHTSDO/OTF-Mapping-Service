@@ -596,12 +596,10 @@ angular
       $scope.getBrowserUrl = function() {
         if ($scope.currentUser.userName === 'guest')
           return 'http://browser.ihtsdotools.org/index.html?perspective=full&conceptId1='
-            + $scope.conceptId + '&edition=en-edition'
-            + '&server=https://browser-aws-1.ihtsdotools.org/&langRefset=900000000000509007'
-            + '&acceptLicense=true';
+            + $scope.conceptId + '&acceptLicense=true';
         else
           return 'http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1='
-            + $scope.conceptId + '&diagrammingMarkupEnabled=true&acceptLicense=true';
+            + $scope.conceptId + '&acceptLicense=true';
       };
 
       $scope.openConceptBrowser = function() {
