@@ -1443,8 +1443,8 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
     int[] totalCt = new int[1];
     final List<FeedbackConversation> feedbackConversations =
         (List<FeedbackConversation>) getQueryResults(sb.toString(),
-            FeedbackConversationJpa.class, FeedbackConversationJpa.class,
-            pfs, totalCt);
+            FeedbackConversationJpa.class, FeedbackConversationJpa.class, pfs,
+            totalCt);
 
     if (pfsParameter != null && query.contains("viewed")) {
 
@@ -1485,10 +1485,14 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
       }
       totalCt[0] = conversationsToKeep.size();
       feedbackConversations.clear();
-      for (int i = pfsParameter.getStartIndex(); i < pfsParameter
-          .getStartIndex() + pfsParameter.getMaxResults()
-          && i < conversationsToKeep.size(); i++) {
-        feedbackConversations.add(conversationsToKeep.get(i));
+      if (pfsParameter.getStartIndex() != -1) {
+        for (int i = pfsParameter.getStartIndex(); i < pfsParameter
+            .getStartIndex() + pfsParameter.getMaxResults()
+            && i < conversationsToKeep.size(); i++) {
+          feedbackConversations.add(conversationsToKeep.get(i));
+        }
+      } else {
+        feedbackConversations.addAll(conversationsToKeep);
       }
 
     }
