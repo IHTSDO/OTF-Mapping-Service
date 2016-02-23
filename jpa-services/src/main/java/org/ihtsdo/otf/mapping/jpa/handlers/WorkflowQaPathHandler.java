@@ -258,7 +258,7 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
     PfsParameter pfsParameter, WorkflowService workflowService)
       throws Exception {
     Logger.getLogger(this.getClass())
-        .info(getName() + ": findAvailableWork for project "
+        .debug(getName() + ": findAvailableWork for project "
             + mapProject.getName() + " and user " + mapUser.getUserName());
 
     SearchResultList availableWork = new SearchResultListJpa();
@@ -361,6 +361,10 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
     MapUser mapUser, MapUserRole userRole, String query,
     PfsParameter pfsParameter, WorkflowService workflowService)
       throws Exception {
+    
+    Logger.getLogger(this.getClass())
+    .debug(getName() + ": findAssignedWork for project "
+        + mapProject.getName() + " and user " + mapUser.getUserName());
 
     SearchResultList assignedWork = new SearchResultListJpa();
     final StringBuilder sb = new StringBuilder();
@@ -488,7 +492,7 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
     Set<MapRecord> mapRecords, MapRecord mapRecord) throws Exception {
 
     Logger.getLogger(this.getClass())
-        .info(getName() + ": Processing workflow action by " + mapUser.getName()
+        .debug(getName() + ": Processing workflow action by " + mapUser.getName()
             + ":  " + workflowAction.toString());
 
     // the set of records returned after processing
@@ -496,8 +500,7 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
 
     switch (workflowAction) {
       case CREATE_QA_RECORD:
-        Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
-            .info("assignFromInitialRecord:  QA_PATH");
+    
 
         if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)
             || mapRecord.getWorkflowStatus()
@@ -530,9 +533,7 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
         }
         break;
       case ASSIGN_FROM_SCRATCH:
-        Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
-            .info("Assigning concept along QA_PATH");
-
+     
         MapRecord qaRecord =
             createMapRecordForTrackingRecordAndUser(trackingRecord, mapUser);
 
@@ -563,9 +564,7 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
         break;
 
       case FINISH_EDITING:
-        Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
-            .info("QA_PATH");
-
+       
         // a lead has finished reviewing a QA
         if (newRecords.size() == 3) {
 
@@ -609,9 +608,7 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
         }
         break;
       case PUBLISH:
-        Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
-            .info("QA_PATH - Called Publish on resolved qa");
-
+    
         // Requirements for QA_PATH publish action
         // - 1 record marked REVISION
         // - 1 record marked QA_NEEDED
@@ -636,9 +633,7 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
 
         break;
       case UNASSIGN:
-        Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
-            .info("Unassign:  QA_PATH");
-
+    
         MapRecord revisionRecord = null;
         MapRecord qaNeededRecord = null;
         MapRecord editRecord = null;

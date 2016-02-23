@@ -187,10 +187,10 @@ public class IndexViewerHandler {
     int endLevel, String subSearchAnchor, boolean requireHasChild)
       throws Exception {
 
-    Logger.getLogger(this.getClass()).info("Perform index search ");
-    Logger.getLogger(this.getClass()).info("  terminology = " + terminology);
-    Logger.getLogger(this.getClass()).info("  domain = " + domain);
-    Logger.getLogger(this.getClass()).info("  searchStr = " + searchStr);
+    Logger.getLogger(this.getClass()).debug("Perform index search ");
+    Logger.getLogger(this.getClass()).debug("  terminology = " + terminology);
+    Logger.getLogger(this.getClass()).debug("  domain = " + domain);
+    Logger.getLogger(this.getClass()).debug("  searchStr = " + searchStr);
 
     final Properties config = ConfigUtility.getConfigProperties();
     final String prop = config.getProperty("index.viewer.data");
@@ -218,12 +218,12 @@ public class IndexViewerHandler {
     int maxHits = Integer.parseInt(config.getProperty("index.viewer.maxHits"));
 
     // Open index
-    Logger.getLogger(this.getClass()).info("  Open index reader");
+    Logger.getLogger(this.getClass()).debug("  Open index reader");
     final Directory dir = FSDirectory.open(selectedDomainDir);
     final IndexReader reader = IndexReader.open(dir);
 
     // Prep searcher
-    Logger.getLogger(this.getClass()).info("  Prep searcher");
+    Logger.getLogger(this.getClass()).debug("  Prep searcher");
     final IndexSearcher searcher = new IndexSearcher(reader);
     final String defaultField = "title";
     final Map<String, Analyzer> fieldAnalyzers = new HashMap<>();
@@ -231,7 +231,7 @@ public class IndexViewerHandler {
     final PerFieldAnalyzerWrapper analyzer = new PerFieldAnalyzerWrapper(
         new StandardAnalyzer(Version.LUCENE_36), fieldAnalyzers);
 
-    Logger.getLogger(this.getClass()).info("  Prep searcher");
+    Logger.getLogger(this.getClass()).debug("  Prep searcher");
     final QueryParser parser =
         new QueryParser(Version.LUCENE_36, defaultField, analyzer);
 
@@ -284,10 +284,10 @@ public class IndexViewerHandler {
    */
   private List<String> performCodeSearch(String terminology,
     String terminologyVersion, String domain, String code) throws Exception {
-    Logger.getLogger(this.getClass()).info("Perform index code search ");
-    Logger.getLogger(this.getClass()).info("  terminology = " + terminology);
-    Logger.getLogger(this.getClass()).info("  domain = " + domain);
-    Logger.getLogger(this.getClass()).info("  code = " + code);
+    Logger.getLogger(this.getClass()).debug("Perform index code search ");
+    Logger.getLogger(this.getClass()).debug("  terminology = " + terminology);
+    Logger.getLogger(this.getClass()).debug("  domain = " + domain);
+    Logger.getLogger(this.getClass()).debug("  code = " + code);
 
     return performSearch(terminology, terminologyVersion, domain,
         code.contains("code:") ? code : "code:" + code, 0, 2, null, false);
@@ -296,10 +296,10 @@ public class IndexViewerHandler {
 
   private Document getDocumentForLink(String terminology,
     String terminologyVersion, String domain, String linkStr) throws Exception {
-    Logger.getLogger(this.getClass()).info("Perform index link search ");
-    Logger.getLogger(this.getClass()).info("  terminology = " + terminology);
-    Logger.getLogger(this.getClass()).info("  domain = " + domain);
-    Logger.getLogger(this.getClass()).info("  link = " + linkStr);
+    Logger.getLogger(this.getClass()).debug("Perform index link search ");
+    Logger.getLogger(this.getClass()).debug("  terminology = " + terminology);
+    Logger.getLogger(this.getClass()).debug("  domain = " + domain);
+    Logger.getLogger(this.getClass()).debug("  link = " + linkStr);
 
     final Properties config = ConfigUtility.getConfigProperties();
     final String prop = config.getProperty("index.viewer.data");
@@ -317,12 +317,12 @@ public class IndexViewerHandler {
     int maxHits = Integer.parseInt(config.getProperty("index.viewer.maxHits"));
 
     // Open index
-    Logger.getLogger(this.getClass()).info("  Open index reader");
+    Logger.getLogger(this.getClass()).debug("  Open index reader");
     final Directory dir = FSDirectory.open(selectedDomainDir);
     final IndexReader reader = IndexReader.open(dir);
 
     // Prep searcher
-    Logger.getLogger(this.getClass()).info("  Prep searcher");
+    Logger.getLogger(this.getClass()).debug("  Prep searcher");
     final IndexSearcher searcher = new IndexSearcher(reader);
     final String defaultField = "title";
     final Map<String, Analyzer> fieldAnalyzers = new HashMap<>();
@@ -330,7 +330,7 @@ public class IndexViewerHandler {
     final PerFieldAnalyzerWrapper analyzer = new PerFieldAnalyzerWrapper(
         new StandardAnalyzer(Version.LUCENE_36), fieldAnalyzers);
 
-    Logger.getLogger(this.getClass()).info("  Prep searcher");
+    Logger.getLogger(this.getClass()).debug("  Prep searcher");
     final QueryParser parser =
         new QueryParser(Version.LUCENE_36, defaultField, analyzer);
 
@@ -424,7 +424,7 @@ public class IndexViewerHandler {
                   searchResult.setValue(domainDir.getName());
                   searchResultList.addSearchResult(searchResult);
                   Logger.getLogger(ContentServiceJpa.class)
-                      .info("  Index domain found: " + domainDir.getName());
+                      .debug("  Index domain found: " + domainDir.getName());
                 }
               }
             }
@@ -475,7 +475,7 @@ public class IndexViewerHandler {
                   // find domain directory
                   if (domainDir.getName().equals(index)) {
                     Logger.getLogger(ContentServiceJpa.class)
-                        .info("  Pages for index domain found: "
+                        .debug("  Pages for index domain found: "
                             + domainDir.getName());
                     // find pages
                     for (final File pageFile : domainDir.listFiles()) {
@@ -519,7 +519,7 @@ public class IndexViewerHandler {
       // construct the link text and add to details
       for (Fieldable field : d.getFields()) {
         Logger.getLogger(getClass())
-            .info("  " + field.name() + ": " + d.get(field.name()));
+            .debug("  " + field.name() + ": " + d.get(field.name()));
       }
 
       // truncate
@@ -540,7 +540,7 @@ public class IndexViewerHandler {
       // construct the link text and add to details
       for (Fieldable field : d.getFields()) {
         Logger.getLogger(getClass())
-            .info("  " + field.name() + ": " + d.get(field.name()));
+            .debug("  " + field.name() + ": " + d.get(field.name()));
       }
 
       // add indentation based on position
