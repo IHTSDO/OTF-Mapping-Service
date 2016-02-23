@@ -355,7 +355,7 @@ public class WorkflowReviewProjectPathHandler
       throws Exception {
 
     Logger.getLogger(this.getClass())
-        .info(getName() + ": findAvailableWork for project "
+        .debug(getName() + ": findAvailableWork for project "
             + mapProject.getName() + " and user " + mapUser.getUserName());
 
     SearchResultList availableWork = new SearchResultListJpa();
@@ -412,6 +412,11 @@ public class WorkflowReviewProjectPathHandler
     MapUser mapUser, MapUserRole userRole, String query,
     PfsParameter pfsParameter, WorkflowService workflowService)
       throws Exception {
+    
+    Logger.getLogger(this.getClass())
+    .debug(getName() + ": findAvailableWork for project "
+        + mapProject.getName() + " and user " + mapUser.getUserName());
+    
     SearchResultList assignedWork = new SearchResultListJpa();
     final StringBuilder sb = new StringBuilder();
     if (query != null && !query.isEmpty() && !query.equals("null")) {
@@ -550,7 +555,7 @@ public class WorkflowReviewProjectPathHandler
     WorkflowAction workflowAction, MapProject mapProject, MapUser mapUser,
     Set<MapRecord> mapRecords, MapRecord mapRecord) throws Exception {
     Logger.getLogger(this.getClass())
-        .info(getName() + ": Processing workflow action by " + mapUser.getName()
+        .debug(getName() + ": Processing workflow action by " + mapUser.getName()
             + ":  " + workflowAction.toString());
 
     // the set of records returned after processing
@@ -611,7 +616,7 @@ public class WorkflowReviewProjectPathHandler
           case EDITING_IN_PROGRESS:
           case NEW:
 
-            Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
+            Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).debug(
                 "FinishEditing: REVIEW_PROJECT_PATH, Specialist level work");
 
             // check assumptions
@@ -631,7 +636,7 @@ public class WorkflowReviewProjectPathHandler
           case REVIEW_NEW:
 
             Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
-                .info("FinishEditing: REVIEW_PROJECT_PATH, Lead level work");
+                .debug("FinishEditing: REVIEW_PROJECT_PATH, Lead level work");
 
             // check assumptions
             // - should be two map records, this one and one marked
