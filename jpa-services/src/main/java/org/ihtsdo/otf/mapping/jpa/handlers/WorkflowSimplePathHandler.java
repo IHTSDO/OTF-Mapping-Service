@@ -197,7 +197,7 @@ public class WorkflowSimplePathHandler extends AbstractWorkflowPathHandler {
       throws Exception {
 
     Logger.getLogger(this.getClass())
-        .info(getName() + ": findAvailableWork for project "
+        .debug(getName() + ": findAvailableWork for project "
             + mapProject.getName() + " and user " + mapUser.getUserName());
 
     SearchResultList availableWork = new SearchResultListJpa();
@@ -322,7 +322,7 @@ public class WorkflowSimplePathHandler extends AbstractWorkflowPathHandler {
     WorkflowAction workflowAction, MapProject mapProject, MapUser mapUser,
     Set<MapRecord> mapRecords, MapRecord mapRecord) throws Exception {
     Logger.getLogger(this.getClass())
-        .info(getName() + ": Processing workflow action by " + mapUser.getName()
+        .debug(getName() + ": Processing workflow action by " + mapUser.getName()
             + ":  " + workflowAction.toString());
 
     // the set of records returned after processing
@@ -359,7 +359,7 @@ public class WorkflowSimplePathHandler extends AbstractWorkflowPathHandler {
           case NEW:
 
             Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
-                .info("FinishEditing: SIMPLE_PATH, Specialist level work");
+                .debug("FinishEditing: SIMPLE_PATH, Specialist level work");
 
             // check assumptions
             // - should only be one record
