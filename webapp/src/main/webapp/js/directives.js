@@ -31,7 +31,7 @@ mapProjectAppDirectives.directive('otfMapRecordNarrow', function($sce, utilServi
   };
 });
 
-mapProjectAppDirectives.directive('otfMapRecordWide', function($sce) {
+mapProjectAppDirectives.directive('otfMapRecordWide', function($sce, utilService) {
 
   return {
 
