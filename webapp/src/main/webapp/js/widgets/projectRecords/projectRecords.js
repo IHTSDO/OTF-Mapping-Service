@@ -771,6 +771,7 @@ angular
         function qaRecordsHelper(records, label, index) {
 
           if (index == records.length) {
+            $scope.isRunning = false;
             return;
           }
 
