@@ -567,7 +567,7 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
         // write anchor and title
         out.println("</td></tr><tr><td>");
 
-        out.println("<div id=\"" + aname + "\">");
+        out.println("<div id=\"" + aname + "\" ng-click=\"details('" + aname + "')\" >");
         openDiv = true;
         out.println(data.get(key));
 
@@ -693,7 +693,7 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
         }
         out.println("</td></tr><tr><td>");
 
-        out.println("<div id=\"" + aname + "\">");
+        out.println("<div id=\"" + aname + "\" ng-click=\"details('" + aname + "')\">");
         openDiv = true;
         out.println("- - - - - - - - - - - ".substring(0, level * 2)
             + data.get("title"));
