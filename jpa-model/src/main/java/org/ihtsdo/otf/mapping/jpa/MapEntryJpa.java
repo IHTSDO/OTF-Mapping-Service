@@ -391,8 +391,6 @@ public class MapEntryJpa implements MapEntry {
    */
   public void setMapRecordId(Long mapRecordId) {
     if (this.mapRecord == null) {
-      Logger.getLogger(MapEntryJpa.class).info(
-          "Setting map record id to " + mapRecordId.toString());
       this.mapRecord = new MapRecordJpa();
       this.mapRecord.setId(mapRecordId);
     }
