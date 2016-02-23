@@ -71,7 +71,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
       $scope.query = '';
       $scope.treeQuery = '';
     });
-    
+
     // function called on storage listener event
     function onStorageEvent(storageEvent) {
       console.debug(storageEvent);
@@ -82,6 +82,13 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
         localStorage.removeItem('targetCode');
         $scope.query = targetCode;
         $scope.search();
+        
+        console.debug(window.location.href);
+        console.debug(window.name);
+        
+        var mtWindow = window.open(window.location.href, 'mappingToolWindow');
+        mtWindow.focus();
+        
       }
     }
 
@@ -402,11 +409,11 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
           $scope.getConceptDetails(treePositions[i]);
 
           /*
-           * // expand children, but do not expand their info panels for (var j =
-           * 0; j < treePositions[i].children.length; i++) {
-           * 
-           * treePositions[i].children[j].isOpen = true; }
-           */
+                     * // expand children, but do not expand their info panels for (var j = 0; j <
+                     * treePositions[i].children.length; i++) {
+                     * 
+                     * treePositions[i].children[j].isOpen = true; }
+                     */
 
           // stop recursive expansion here;
           return true;
