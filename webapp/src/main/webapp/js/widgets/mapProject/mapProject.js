@@ -217,16 +217,11 @@ angular
         var myWindow = null;
 
         if ($scope.currentUser.userName === 'guest')
-          myWindow = window
-            .open('http://browser.ihtsdotools.org/index.html?perspective=full'
-              + '&edition=en-edition'
-              + '&server=https://browser-aws-1.ihtsdotools.org/api/snomed/&langRefset=900000000000509007'
-              + '&acceptLicense=true');
+          myWindow = window.open('http://browser.ihtsdotools.org/index.html?perspective=full'
+            + '&acceptLicense=true');
         else
-          myWindow = window
-            .open(
-              'http://dailybuild.ihtsdotools.org/index.html?perspective=full&diagrammingMarkupEnabled=true&acceptLicense=true',
-              'browserWindow');
+          myWindow = window.open('http://dailybuild.ihtsdotools.org/index.html?perspective=full'
+            + '&acceptLicense=true');
         myWindow.focus();
       };
 

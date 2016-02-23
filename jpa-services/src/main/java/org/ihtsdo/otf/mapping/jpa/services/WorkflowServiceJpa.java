@@ -1435,6 +1435,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
     if (pfs.getSortField() == null || pfs.getSortField().isEmpty()) {
       pfs.setSortField("lastModified");
     }
+    // Get all results if viewed is specified
     if (query.contains("viewed")) {
       pfs.setStartIndex(-1);
     }
