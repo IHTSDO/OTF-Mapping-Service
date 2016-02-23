@@ -161,6 +161,16 @@ public class IndexViewerHandler {
     List<SearchResult> searchResults = list.getSearchResults();
     Collections.sort(searchResults, new Comparator<SearchResult>() {
       public int compare(SearchResult o1, SearchResult o2) {
+        
+        if (o1.getValue2() == null && o2.getValue2() == null) {
+          return 0;
+        }
+        if (o1.getValue2() == null) {
+          return -1;
+        }
+        if (o2.getValue2() == null) {
+          return 1;
+        }
         return o1.getValue2().compareTo(o2.getValue2());
       }
     });
