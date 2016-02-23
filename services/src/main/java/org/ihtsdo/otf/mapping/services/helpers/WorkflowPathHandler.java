@@ -41,7 +41,7 @@ public interface WorkflowPathHandler extends Configurable {
    */
   public ValidationResult validateTrackingRecordForActionAndUser(
     TrackingRecord trackingRecord, WorkflowAction action, MapUser mapUser)
-      throws Exception;
+    throws Exception;
 
   /**
    * Find available work.
@@ -58,7 +58,7 @@ public interface WorkflowPathHandler extends Configurable {
   public SearchResultList findAvailableWork(MapProject mapProject,
     MapUser mapUser, MapUserRole userRole, String query,
     PfsParameter pfsParameter, WorkflowService workflowService)
-      throws Exception;
+    throws Exception;
 
   /**
    * Find assigned work.
@@ -75,7 +75,7 @@ public interface WorkflowPathHandler extends Configurable {
   public SearchResultList findAssignedWork(MapProject mapProject,
     MapUser mapUser, MapUserRole userRole, String query,
     PfsParameter pfsParameter, WorkflowService workflowService)
-      throws Exception;
+    throws Exception;
 
   /**
    * Gets the name.
@@ -101,13 +101,22 @@ public interface WorkflowPathHandler extends Configurable {
     Set<MapRecord> mapRecords, MapRecord mapRecord) throws Exception;
 
   /**
-   * Indicates whether or not map record in eligible for insertion into workflow
+   * Indicates whether or not map record in eligible for insertion into
+   * workflow.
    *
    * @param mapRecord the map record
    * @return <code>true</code> if so, <code>false</code> otherwise
    */
   public boolean isMapRecordInWorkflow(MapRecord mapRecord);
 
+  /**
+   * Returns the origin map records for map record.
+   *
+   * @param mapRecord the map record
+   * @param workflowService the workflow service
+   * @return the origin map records for map record
+   * @throws Exception the exception
+   */
   public MapRecordList getOriginMapRecordsForMapRecord(MapRecord mapRecord,
     WorkflowService workflowService) throws Exception;
 

@@ -366,9 +366,9 @@ public abstract class AbstractWorkflowPathHandler
 
   /**
    * Returns the current map record for user. Yet another convenience function
-   * 
+   *
    * @param records the records
-   * @param mapUser the map user
+   * @param userName the user name
    * @return the current map record for user
    */
   @SuppressWarnings("static-method")
