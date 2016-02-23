@@ -42,6 +42,42 @@ mapProjectApp
         // terminology Notes
         var notes = {};
 
+        // Sets the error
+        this.setError = function(message) {
+          $rootScope.globalError = message;
+        };
+
+        // Clears the error
+        this.clearError = function() {
+          $rootScope.resetGlobalError();
+        };
+
+        // Handle error message
+        function handleError(message) {
+          this.handleError(message);
+        }
+        this.handleError = function(message) {
+          console.debug('Handle error: ', message);
+          if (message && message.length > 120) {
+            $rootScope.globalError = 'Unexpected error, click the icon to view attached full error';
+            $rootScope.globalLongError = message;
+          } else {
+            $rootScope.globalError = message;
+          }
+          // handle no message
+          if (!$rootScope.globalError) {
+            $rootScope.globalError = 'Unexpected server side error.';
+          }
+          // If authtoken expired, relogin
+          if ($rootScope.globalError && $rootScope.globalError.indexOf('AuthToken') != -1) {
+            // Reroute back to login page with 'auth token has expired' message
+            $location.path('/');
+          } else {
+            // scroll to top of page
+            window.scrollTo(0, 0);
+          }
+        };
+
         // look up the 'terminology notes' for the map project
         // Mechanism for asterisk/dagger in ICD10
         this.initializeTerminologyNotes = function(projectId) {
@@ -100,39 +136,6 @@ mapProjectApp
             return pfs2;
           }
           return pfs;
-        };
-
-        // Sets the error
-        this.setError = function(message) {
-          $rootScope.globalError = message;
-        };
-
-        // Clears the error
-        this.clearError = function() {
-          $rootScope.resetGlobalError();
-        };
-
-        // Handle error message
-        this.handleError = function(message) {
-          console.debug('Handle error: ', message);
-          if (message && message.length > 120) {
-            $rootScope.globalError = 'Unexpected error, click the icon to view attached full error';
-            $rootScope.globalLongError = message;
-          } else {
-            $rootScope.globalError = message;
-          }
-          // handle no message
-          if (!$rootScope.globalError) {
-            $rootScope.globalError = 'Unexpected server side error.';
-          }
-          // If authtoken expired, relogin
-          if ($rootScope.globalError && $rootScope.globalError.indexOf('AuthToken') != -1) {
-            // Reroute back to login page with 'auth token has expired' message
-            $location.path('/');
-          } else {
-            // scroll to top of page
-            window.scrollTo(0, 0);
-          }
         };
 
         // Convert date to a string
