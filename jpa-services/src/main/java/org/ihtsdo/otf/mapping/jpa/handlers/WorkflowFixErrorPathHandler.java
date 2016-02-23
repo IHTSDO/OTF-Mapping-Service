@@ -342,7 +342,7 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
     PfsParameter pfsParameter, WorkflowService workflowService)
       throws Exception {
     Logger.getLogger(this.getClass())
-        .info(getName() + ": findAvailableWork for project "
+        .debug(getName() + ": findAvailableWork for project "
             + mapProject.getName() + " and user " + mapUser.getUserName());
 
     final SearchResultList availableWork = new SearchResultListJpa();
@@ -398,7 +398,7 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
     PfsParameter pfsParameter, WorkflowService workflowService)
       throws Exception {
     Logger.getLogger(this.getClass())
-        .info(getName() + ": findAssignedWork for project "
+        .debug(getName() + ": findAssignedWork for project "
             + mapProject.getName() + " and user " + mapUser.getUserName());
 
     // instantiate the assigned work search results
@@ -525,7 +525,7 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
     WorkflowAction workflowAction, MapProject mapProject, MapUser mapUser,
     Set<MapRecord> mapRecords, MapRecord mapRecord) throws Exception {
     Logger.getLogger(this.getClass())
-        .info(getName() + ": Processing workflow action by " + mapUser.getName()
+        .debug(getName() + ": Processing workflow action by " + mapUser.getName()
             + ":  " + workflowAction.toString());
 
     // the set of records returned after processing
@@ -539,9 +539,7 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
 
     switch (workflowAction) {
       case ASSIGN_FROM_INITIAL_RECORD:
-        Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
-            .info("assignFromInitialRecord:  FIX_ERROR_PATH");
-
+    
         // case 1 : User claims a PUBLISHED or READY_FOR_PUBLICATION record
         // to
         // fix error on.
@@ -633,8 +631,7 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
         }
         break;
       case FINISH_EDITING:
-        Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
-            .info("FIX_ERROR_PATH");
+      
 
         // case 1: A user has finished correcting an error on a previously
         // published record
@@ -642,9 +639,6 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
         // this
         // case, NEW, EDITING_IN_PROGRESS
         if (mapRecords.size() == 2) {
-
-          Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
-              .info("  User has finished correcting an error");
 
           // assumption check: should only be 2 records
           // 1) The original record (now marked REVISION)
@@ -730,9 +724,7 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
 
         break;
       case PUBLISH:
-        Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
-            .info("FIX_ERROR_PATH - Called Publish on resolved review");
-
+     
         // Requirements for FIX_ERROR_PATH publish action
         // - 1 record marked REVISION
         // - 1 record marked REVIEW_NEEDED
@@ -769,10 +761,6 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
         newRecords.clear();
         newRecords.add(mapRecord);
 
-        Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
-            "publish - FIX_ERROR_PATH - Creating READY_FOR_PUBLICATION record "
-                + mapRecord.toString());
-
         break;
       case SAVE_FOR_LATER:
         if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.NEW))
@@ -782,9 +770,7 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
 
         break;
       case UNASSIGN:
-        Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
-            .info("Unassign:  FIX_ERROR_PATH");
-
+       
         for (final MapRecord mr : mapRecords) {
           if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
             revisionRecord = mr;

@@ -69,7 +69,7 @@ angular
           angular.forEach(domain.pages, function(page) {
             var pageTab = {
               name : page,
-              active : false
+              active : false // tabs ordered with orderBy:'name', first tab's active autoset
             };
             domainTab.pageTabs.push(pageTab);
           });
@@ -77,13 +77,11 @@ angular
           domainTab.pageTabs.sort(function(a, b) {
             return a.name > b.name;
           });
-          domainTab.pageTabs[0].active = true;
-          $scope.domainTabs.push(domainTab);
-        });
+          
+          console.debug(domainTab.pageTabs);
 
-        // sort domain tabs by name
-        $scope.domainTabs.sort(function(a, b) {
-          return a.name > b.name;
+
+          $scope.domainTabs.push(domainTab);
         });
 
         // select the first domain and first page
