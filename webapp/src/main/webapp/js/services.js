@@ -1,17 +1,16 @@
 'use strict';
 
 // TODO Test or remove later
-mapProjectApp.service('indexViewerService', [ 'rootScope',
-  function($rootScope, $templateCache) {
-    
-    this.addTemplate = function(name, template) {
-      
-    }
-    
-    this.getTemplate = function(name) {
-      
-    }
-}]);
+mapProjectApp.service('indexViewerService', [ 'rootScope', function($rootScope, $templateCache) {
+
+  this.addTemplate = function(name, template) {
+    // n/a
+  };
+
+  this.getTemplate = function(name) {
+    // n/a
+  };
+} ]);
 
 // Util service
 mapProjectApp
@@ -21,7 +20,8 @@ mapProjectApp
       '$rootScope',
       '$location',
       '$anchorScroll',
-      function($rootScope, $location, $anchorScroll) {
+      '$http',
+      function($rootScope, $location, $anchorScroll, $http) {
         console.debug('configure utilService');
         // declare the error
         this.error = {
@@ -37,6 +37,39 @@ mapProjectApp
           plugins : 'autolink autoresize link image charmap searchreplace lists paste',
           toolbar : 'undo redo | styleselect lists | bold italic underline strikethrough | charmap link image',
           forced_root_block : ''
+        };
+
+        // terminology Notes
+        var notes = {};
+
+        // look up the 'terminology notes' for the map project
+        // Mechanism for asterisk/dagger in ICD10
+        this.initializeTerminologyNotes = function(projectId) {
+          $rootScope.glassPane++;
+          console.debug('initialize terminology notes', projectId);
+          $http.get(root_mapping + 'mapProject/' + projectId + '/notes').then(
+          // Success
+          function(response) {
+            var list = {};
+            for (var i = 0; i < response.data.keyValuePair.length; i++) {
+              var entry = response.data.keyValuePair[i];
+              list[entry.key] = entry.value;
+            }
+            notes[projectId] = list;
+            console.debug(' notes[' + projectId + ']', notes[projectId]);
+            $rootScope.glassPane--;
+          },
+          // Error
+          function(response) {
+            $rootScope.glassPane--;
+            handleError(response.data);
+          });
+        };
+
+        // Get notes for this project id
+        // Mechanism for asterisk/dagger in ICD10
+        this.getNotes = function(projectId) {
+          return notes[projectId];
         };
 
         // Prep query

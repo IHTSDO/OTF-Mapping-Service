@@ -77,7 +77,8 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
       console.debug(storageEvent);
       var targetCode = localStorage.getItem('targetCode');
 
-      // if target code is set, focus window, remove from storage, and set target
+      // if target code is set, focus window, remove from storage, and set
+      // target
       if (targetCode) {
         localStorage.removeItem('targetCode');
         $scope.query = targetCode;
@@ -221,9 +222,9 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
         gpService.decrement();
       },
       // error
-      function(data) {
+      function(response) {
         gpService.decrement();
-        $rootScope.handleHttpError(data);
+        utilService.handleError(response.data);
       });
     };
 

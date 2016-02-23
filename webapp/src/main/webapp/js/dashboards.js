@@ -4,7 +4,7 @@ var mapProjectAppDashboards = angular.module('mapProjectAppDashboards', [ 'adf',
   'LocalStorageModule' ]);
 
 mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function($scope, $routeParams,
-  $rootScope, $location, $http, localStorageService) {
+  $rootScope, $location, $http, localStorageService, utilService) {
 
   // model variable
   $scope.model = null;
@@ -115,7 +115,6 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function($sc
     console.debug('Revised preferences: ', $scope.preferences.dashboardModels);
   };
 
-
   $scope.$on('adfDashboardChanged', function(event, name, model) {
     console.debug('Dashboard change detected by mainDashboard', model);
     localStorageService.set(name, model);
@@ -148,8 +147,6 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function($sc
 
   // watch for project change
   $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
-    console.debug('RecordDashboardCtrl:  Detected change in focus project');
-
     var path = '';
 
     if ($scope.currentRole === 'Specialist') {
@@ -423,7 +420,6 @@ mapProjectAppDashboards.controller('FeedbackConversationsDashboardCtrl', functio
     console.debug('Revised preferences: ', $scope.preferences.dashboardModels);
   };
 
-
   $scope.$on('adfDashboardChanged', function(event, name, model) {
     console.debug('Dashboard change detected by mainDashboard', model);
     localStorageService.set(name, model);
@@ -456,8 +452,7 @@ mapProjectAppDashboards.controller('FeedbackConversationsDashboardCtrl', functio
 
   // watch for project change
   $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
-    console.debug('MapProjectWidgetCtrl: Detected change in focus project');
-
+    utilService.initializeTerminologyNotes(parameters.focusProject.id);
   });
 
   function setDefaultModel() {
@@ -555,7 +550,7 @@ mapProjectAppDashboards.controller('FeedbackConversationsDashboardCtrl', functio
 });
 
 mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope, $http, $location,
-  localStorageService) {
+  localStorageService, utilService) {
 
   $scope.model = null;
 
@@ -622,6 +617,9 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
           $scope.model = $scope.defaultModel;
         }
 
+        // Initialize notes
+        utilService.initializeTerminologyNotes($scope.focusProject.id);
+
       }).error(function(data, status, headers, config) {
         $rootScope.glassPane--;
         $location.path('/');
@@ -641,7 +639,6 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
   // watch for preferences change
   $scope.parameters = null;
   $scope.$on('localStorageModule.notification.setUserPreferences', function(event, parameters) {
-
     console.debug('dashboardCtrl:  Detected change in preferences');
     console.debug(parameters);
     $scope.parameters = parameters;
@@ -1194,7 +1191,7 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function($scope, $r
           // cycle over columns
           for (var j = 0; j < $scope.model.rows[i].columns.length; j++) {
 
-            // if column has widgets  defined
+            // if column has widgets defined
             if ($scope.model.rows[i].columns[j].hasOwnProperty('widgets')) {
 
               // add the number of widgets to count
@@ -1327,7 +1324,7 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function($scope, $r
   // watch for project change
   $scope.$on('localStorageModule.notification.setFocusProject', function(event, name) {
     console.debug('MainDashboardCtrl:  Detected change in map projects');
-
+    utilService.initializeTerminologyNotes(parameters.focusProject.id);
     $scope.mapProjects = localStorageService.get('mapProjects');
   });
 
@@ -1408,7 +1405,7 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function($scope, $r
 });
 
 mapProjectAppDashboards.controller('ProjectDetailsDashboardCtrl', function($rootScope, $scope,
-  $http, $location, localStorageService) {
+  $http, $location, localStorageService, utilService) {
 
   // On initialization, reset all values to null -- used to
   // ensure watch
@@ -1451,6 +1448,10 @@ mapProjectAppDashboards.controller('ProjectDetailsDashboardCtrl', function($root
         $rootScope.handleHttpError(data, status, headers, config);
       });
     }
+  });
+  // watch for project change
+  $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
+    utilService.initializeTerminologyNotes(parameters.focusProject.id);
   });
 
   // must instantiate a default dashboard on call
@@ -1568,7 +1569,7 @@ mapProjectAppDashboards.controller('ProjectDetailsDashboardCtrl', function($root
 });
 
 mapProjectAppDashboards.controller('ProjectRecordsDashboardCtrl', function($rootScope, $scope,
-  $http, $location, localStorageService) {
+  $http, $location, localStorageService, utilService) {
 
   // On initialization, reset all values to null -- used to ensure watch
   // functions work correctly
@@ -1611,6 +1612,10 @@ mapProjectAppDashboards.controller('ProjectRecordsDashboardCtrl', function($root
     }
   });
 
+  // watch for project change
+  $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
+    utilService.initializeTerminologyNotes(parameters.focusProject.id);
+  });
   // must instantiate a default dashboard on call
   setModel();
 
@@ -1709,7 +1714,7 @@ mapProjectAppDashboards.controller('ProjectRecordsDashboardCtrl', function($root
 });
 
 mapProjectAppDashboards.controller('RecordConceptDashboardCtrl', function($rootScope, $scope,
-  $http, $location, localStorageService) {
+  $http, $location, localStorageService, utilService) {
 
   // On initialization, reset all values to null -- used to ensure watch
   // functions work correctly
@@ -1754,6 +1759,11 @@ mapProjectAppDashboards.controller('RecordConceptDashboardCtrl', function($rootS
         $rootScope.handleHttpError(data, status, headers, config);
       });
     }
+  });
+
+  // watch for project change
+  $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
+    utilService.initializeTerminologyNotes(parameters.focusProject.id);
   });
 
   // must instantiate a default dashboard on call
@@ -1897,6 +1907,10 @@ mapProjectAppDashboards.controller('IndexViewerDashboardCtrl', function($rootSco
     }
   });
 
+  // watch for project change
+  $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
+    utilService.initializeTerminologyNotes(parameters.focusProject.id);
+  });
   // must instantiate a default dashboard on call
   setModel();
 

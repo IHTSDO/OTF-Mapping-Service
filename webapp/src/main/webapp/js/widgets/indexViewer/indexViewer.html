@@ -21,85 +21,90 @@
   -->
 
 <div class="row">
-	<div class="col-md-8">
-		<form>
-			Search: <input id="searchField" ng-model="searchField"
-				style="margin: 5px;"> <input id="subSearchField"
-				ng-model="subSearchField" style="margin: 5px;"> <input
-				id="subSubSearchField" ng-model="subSubSearchField"
-				style="margin: 5px;"> <input type="checkbox"
-				ng-model="allCheckBox" style="margin: 5px;"> All
-			<button class="btn btn-sm btn-primary" style="margin: 5px;"
-				ng-click="performAggregatedSearch(searchField, subSearchField, subSubSearchField, allCheckBox);">Go</button>
-			<button class="btn btn-sm btn-primary"
-				ng-click="searchField = null; 
+  <div class="col-md-8">
+    <form>
+      Search: <input id="searchField" ng-model="searchField"
+        style="margin: 5px;"> <input id="subSearchField"
+        ng-model="subSearchField" style="margin: 5px;"> <input
+        id="subSubSearchField" ng-model="subSubSearchField" style="margin: 5px;">
+      <input type="checkbox" ng-model="allCheckBox" style="margin: 5px;">
+      All
+      <button class="btn btn-sm btn-primary" style="margin: 5px;"
+        ng-click="performAggregatedSearch(searchField, subSearchField, subSubSearchField, allCheckBox);">Go</button>
+      <button class="btn btn-sm btn-primary"
+        ng-click="searchField = null; 
               subSearchField = null; subSubSearchField = null; 
               searchResults = null;">Reset</button>
-		</form>
+    </form>
 
 
-		<div
-			style="float: left; width: 60%; padding: 10px; text-overflow: ellipsis; overflow: hidden;">
-			<!-- TODO Reenable this? <b>{{mainTermLabel}}</b> -->
-		</div>
+    <div
+      style="float: left; width: 60%; padding: 10px; text-overflow: ellipsis; overflow: hidden;">
+      <!-- TODO Reenable this? <b>{{mainTermLabel}}</b> -->
+    </div>
 
-		<div style="float: right; width: 40%; padding: 10px;">
-			<div ng-show="searchResults">
+    <div style="float: right; width: 40%; padding: 10px;">
+      <div ng-show="searchResults">
 
 
-				<!-- First -->
-				<a title="Go to first search result" ng-click="goToSearchResult(0)"
-					ng-class="{'hidden' : searchResultIndex === 0}"> <i
-					class="glyphicon glyphicon-backward"></i>
-				</a>
+        <!-- First -->
+        <a title="Go to first search result" ng-click="goToSearchResult(0)"
+          ng-class="{'hidden' : searchResultIndex === 0}">
+          <i class="glyphicon glyphicon-backward"></i>
+        </a>
 
-				<!-- Previous -->
-				<a title="Go to previous search result"
-					ng-class="{'hidden'  : searchResultIndex === 0}"
-					ng-click="goToSearchResult(searchResultIndex - 1)"> <i
-					class="glyphicon glyphicon-step-backward"></i>
-				</a> {{searchResultIndex + 1}} of {{searchResults.length}} results
+        <!-- Previous -->
+        <a title="Go to previous search result"
+          ng-class="{'hidden'  : searchResultIndex === 0}"
+          ng-click="goToSearchResult(searchResultIndex - 1)">
+          <i class="glyphicon glyphicon-step-backward"></i>
+        </a>
+        {{searchResultIndex + 1}} of {{searchResults.length}} results
 
-				<!-- Next -->
-				<a title="Go to next search result"
-					ng-class="{'hidden'  : searchResultIndex === searchResults.length - 1}"
-					ng-click="goToSearchResult(searchResultIndex + 1)"> <i
-					class="glyphicon glyphicon-step-forward"></i>
-				</a>
+        <!-- Next -->
+        <a title="Go to next search result"
+          ng-class="{'hidden'  : searchResultIndex === searchResults.length - 1}"
+          ng-click="goToSearchResult(searchResultIndex + 1)">
+          <i class="glyphicon glyphicon-step-forward"></i>
+        </a>
 
-				<!-- Last -->
-				<a title="Go to last search result"
-					ng-class="{'hidden'  : searchResultIndex === searchResults.length - 1}"
-					ng-click="goToSearchResult(nResults - 1)"> <i
-					class="glyphicon glyphicon-forward"></i>
-				</a>
-			</div>
-		</div>
-	</div>
-	<div class="col-md-4 " style="padding-right:25px;" ng-show="indexTrail">
-		<div class="well" style="padding:0px;" ng-show="!indexTrail || indexTrail.length == 0"><em>Click any title to view the index trail.</em></div>
-		<div class="well" style="padding:0px;" ng-bind-html="to_trusted(indexTrail)"></div>
-	</div>
+        <!-- Last -->
+        <a title="Go to last search result"
+          ng-class="{'hidden'  : searchResultIndex === searchResults.length - 1}"
+          ng-click="goToSearchResult(nResults - 1)">
+          <i class="glyphicon glyphicon-forward"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4 " style="padding-right: 25px;" ng-show="indexTrail">
+    <div class="well" style="padding: 0px;"
+      ng-show="!indexTrail || indexTrail.length == 0">
+      <em>Click any title to view the index trail.</em>
+    </div>
+    <div class="well" style="padding: 0px;"
+      ng-bind-html="to_trusted(indexTrail)"></div>
+  </div>
 </div>
 
 
 <div>
 
-	<!-- Domains tabset -->
-	<tabset> <!--  Domain selection 	--> <tab
-		ng-repeat="domainTab in domainTabs  | orderBy: 'name'"
-		heading="{{domainTab.domain.name}}"
-		select="selectDomainTab(domainTab)"> <!-- Domain page tabset -->
-	<tabset> <!--  Domain page selection --> <tab
-		active="pageTab.active" ng-click="selectPage(pageTab.name)"
-		ng-repeat="pageTab in domainTab.pageTabs | orderBy:'name'" heading="{{pageTab.name}}">
+  <!-- Domains tabset -->
+  <tabset> <!--  Domain selection 	--> <tab
+    ng-repeat="domainTab in domainTabs  | orderBy: 'name'"
+    heading="{{domainTab.domain.name}}" select="selectDomainTab(domainTab)">
+  <!-- Domain page tabset --> <tabset> <!--  Domain page selection -->
+  <tab active="pageTab.active" ng-click="selectPage(pageTab.name)"
+    ng-repeat="pageTab in domainTab.pageTabs | orderBy:'name'"
+    heading="{{pageTab.name}}">
 
-	<div id="scrollArea" style="height: 500px;">
-		<div class="slide-animate" ng-include ng-click="selectPage(pageTab)"
-			src="getPageUrl(domainTab.domain.name, pageTab.name)" autoscroll></div>
-	</div>
-	<!--  End domain page tab --> </tab> <!--  End domain page tabset --> </tabset> <!--  End domain selection -->
-	</tab> <!--  End domains tabset --> </tabset>
+  <div id="scrollArea" style="height: 500px;">
+    <div class="slide-animate" ng-include ng-click="selectPage(pageTab)"
+      src="getPageUrl(domainTab.domain.name, pageTab.name)" autoscroll></div>
+  </div>
+  <!--  End domain page tab --> </tab> <!--  End domain page tabset --> </tabset> <!--  End domain selection -->
+  </tab> <!--  End domains tabset --> </tabset>
 
 </div>
 

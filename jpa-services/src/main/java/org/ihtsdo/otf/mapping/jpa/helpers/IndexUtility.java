@@ -481,8 +481,9 @@ public class IndexUtility {
               "Could not retrieve a non-analyzed Field annotation for get method for variable name "
                   + pfs.getSortField());
         }
-
-        Sort sort = new Sort(new SortField(sortField, SortField.STRING));
+        
+        // Reverse sort by default - for last modified
+        Sort sort = new Sort(new SortField(sortField, SortField.STRING, true));
         fullTextQuery.setSort(sort);
       }
     }
