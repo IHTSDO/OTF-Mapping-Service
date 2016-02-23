@@ -7,15 +7,18 @@
   <tbody>
     <tr ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
       <td style="padding: 5px;">Assign work to:</td>
-      <td style="padding: 5px;"><select ng-model="assignedMapUser"
-        ng-options="mapUser as mapUser.name for mapUser in mapUsers track by mapUser.name"
-        ng-change="retrieveAvailableWork(1, queryAvailable, assignedMapUser)">
-      </select></td>
+      <td style="padding: 5px;">
+        <select ng-model="assignedMapUser"
+          ng-options="mapUser as mapUser.name for mapUser in mapUsers track by mapUser.name"
+          ng-change="retrieveAvailableWork(1, queryAvailable, assignedMapUser)">
+        </select>
+      </td>
     </tr>
     <tr>
       <td style="padding: 5px;">Batch size:</td>
-      <td style="padding: 5px;"><select ng-model="batchSize"
-        ng-options="batchSize as batchSize for batchSize in batchSizes"></select>
+      <td style="padding: 5px;">
+        <select ng-model="batchSize"
+          ng-options="batchSize as batchSize for batchSize in batchSizes"></select>
         &nbsp;
         <button class="btn btn-sm btn-primary"
           ng-show="currentRole === 'Lead' || currentRole === 'Administrator'"
@@ -24,7 +27,8 @@
         <button class="btn btn-sm btn-primary"
           ng-show="currentRole === 'Specialist'"
           ng-click="assignBatch(currentUser, batchSize, queryAvailable)">Claim
-          Batch</button></td>
+          Batch</button>
+      </td>
     </tr>
 
     <tr>
@@ -36,7 +40,7 @@
             ng-click="retrieveAvailableWork(1, queryAvailable, assignedMapUser); isConceptListOpen = true">Search</button>
           <button class="btn btn-sm btn-primary"
             ng-click="retrieveAvailableWork(1, 'null', assignedMapUser); queryAvailable = null; isConceptListOpen = false">Reset</button>
-          </form>
+        </form>
       </td>
     </tr>
 
@@ -72,13 +76,17 @@
 
       <tr ng-repeat="concept in availableWork">
 
-        <td style="width: 3%; padding: 5px;"><a title="Claim"
-          ng-show="currentRole == 'Specialist'"
-          ng-click="assignWork(concept, currentUser, queryAvailable, 'concept', availableWorkPage)"><i
-            class="glyphicon glyphicon-import"></i></a> <a title="Assign"
-          ng-show="currentRole === 'Lead' || currentRole === 'Administrator'"
-          ng-click="assignWork(concept, assignedMapUser, queryAvailable, 'concept', availableWorkPage)"><i
-            class="glyphicon glyphicon-import"></i></a></td>
+        <td style="width: 3%; padding: 5px;">
+          <a title="Claim" ng-show="currentRole == 'Specialist'"
+            ng-click="assignWork(concept, currentUser, queryAvailable, 'concept', availableWorkPage)">
+            <i class="glyphicon glyphicon-import"></i>
+          </a>
+          <a title="Assign"
+            ng-show="currentRole === 'Lead' || currentRole === 'Administrator'"
+            ng-click="assignWork(concept, assignedMapUser, queryAvailable, 'concept', availableWorkPage)">
+            <i class="glyphicon glyphicon-import"></i>
+          </a>
+        </td>
         <td style="width: 17%; padding: 5px;">{{concept.terminologyId}}</td>
         <td style="width: 80%; padding: 5px;">{{concept.value}}</td>
     </tbody>
@@ -96,15 +104,18 @@
   <tbody>
     <tr ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
       <td style="padding: 5px;">Assign conflicts to:</td>
-      <td style="padding: 5px;"><select ng-model="assignedMapLead"
-        ng-options="mapUser as mapUser.name for mapUser in focusProject.mapLead track by mapUser.name"
-        ng-change="retrieveAvailableConflicts(1, queryAvailableConflict, assignedMapLead)">
-      </select></td>
+      <td style="padding: 5px;">
+        <select ng-model="assignedMapLead"
+          ng-options="mapUser as mapUser.name for mapUser in focusProject.mapLead track by mapUser.name"
+          ng-change="retrieveAvailableConflicts(1, queryAvailableConflict, assignedMapLead)">
+        </select>
+      </td>
     </tr>
     <tr>
       <td style="padding: 5px;">Batch size:</td>
-      <td style="padding: 5px;"><select ng-model="batchSizeConflict"
-        ng-options="batchSize as batchSize for batchSize in batchSizes"></select>
+      <td style="padding: 5px;">
+        <select ng-model="batchSizeConflict"
+          ng-options="batchSize as batchSize for batchSize in batchSizes"></select>
         &nbsp;
         <button class="btn btn-sm btn-primary"
           ng-click="assignBatchConflict(assignedMapLead, batchSizeConflict, queryAvailableConflict)">Assign
@@ -156,9 +167,12 @@
 
       <tr ng-repeat="concept in availableConflicts">
 
-        <td style="width: 3%; padding: 5px;"><a title="Assign"
-          ng-click="assignWork(concept, assignedMapLead, queryAvailableConflict, 'conflict', availableConflictsPage)"><i
-            class="glyphicon glyphicon-import"></i></a></td>
+        <td style="width: 3%; padding: 5px;">
+          <a title="Assign"
+            ng-click="assignWork(concept, assignedMapLead, queryAvailableConflict, 'conflict', availableConflictsPage)">
+            <i class="glyphicon glyphicon-import"></i>
+          </a>
+        </td>
         <td style="width: 17%; padding: 5px;">{{concept.terminologyId}}</td>
         <td style="width: 80%; padding: 5px;">{{concept.value}}</td>
     </tbody>
@@ -174,15 +188,18 @@
   <tbody>
     <tr ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
       <td style="padding: 5px;">Assign conflicts to:</td>
-      <td style="padding: 5px;"><select ng-model="assignedMapLead"
-        ng-options="mapUser as mapUser.name for mapUser in focusProject.mapLead track by mapUser.name"
-        ng-change="retrieveAvailableReviewWork(1, queryAvailableReview, assignedMapLead)">
-      </select></td>
+      <td style="padding: 5px;">
+        <select ng-model="assignedMapLead"
+          ng-options="mapUser as mapUser.name for mapUser in focusProject.mapLead track by mapUser.name"
+          ng-change="retrieveAvailableReviewWork(1, queryAvailableReview, assignedMapLead)">
+        </select>
+      </td>
     </tr>
     <tr>
       <td style="padding: 5px;">Batch size:</td>
-      <td style="padding: 5px;"><select ng-model="batchSizeReview"
-        ng-options="batchSize as batchSize for batchSize in batchSizes"></select>
+      <td style="padding: 5px;">
+        <select ng-model="batchSizeReview"
+          ng-options="batchSize as batchSize for batchSize in batchSizes"></select>
         &nbsp;
         <button class="btn btn-sm btn-primary"
           ng-click="assignBatchReview(assignedMapLead, batchSizeReview, queryAvailableReview)">Assign
@@ -234,9 +251,12 @@
 
       <tr ng-repeat="concept in availableReviewWork">
 
-        <td style="width: 3%; padding: 5px;"><a title="Assign"
-          ng-click="assignWork(concept, assignedMapLead, queryAvailableReview, 'review', availableReviewWorkPage)"><i
-            class="glyphicon glyphicon-import"></i></a></td>
+        <td style="width: 3%; padding: 5px;">
+          <a title="Assign"
+            ng-click="assignWork(concept, assignedMapLead, queryAvailableReview, 'review', availableReviewWorkPage)">
+            <i class="glyphicon glyphicon-import"></i>
+          </a>
+        </td>
         <td style="width: 17%; padding: 5px;">{{concept.terminologyId}}</td>
         <td style="width: 80%; padding: 5px;">{{concept.value}}</td>
     </tbody>
@@ -253,15 +273,18 @@
   <tbody>
     <tr ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
       <td style="padding: 5px;">Assign work to:</td>
-      <td style="padding: 5px;"><select ng-model="assignedMapUser"
-        ng-options="mapUser as mapUser.name for mapUser in mapUsers track by mapUser.name"
-        ng-change="retrieveAvailableQAWork(1, selectedQaLabel, assignedMapUser)">
-      </select></td>
+      <td style="padding: 5px;">
+        <select ng-model="assignedMapUser"
+          ng-options="mapUser as mapUser.name for mapUser in mapUsers track by mapUser.name"
+          ng-change="retrieveAvailableQAWork(1, selectedQaLabel, assignedMapUser)">
+        </select>
+      </td>
     </tr>
     <tr>
       <td style="padding: 5px;">Batch size:</td>
-      <td style="padding: 5px;"><select ng-model="batchSize"
-        ng-options="batchSize as batchSize for batchSize in batchSizes"></select>
+      <td style="padding: 5px;">
+        <select ng-model="batchSize"
+          ng-options="batchSize as batchSize for batchSize in batchSizes"></select>
         &nbsp;
         <button class="btn btn-sm btn-primary"
           ng-show="currentRole === 'Lead' || currentRole === 'Administrator'"
@@ -270,15 +293,17 @@
         <button class="btn btn-sm btn-primary"
           ng-show="currentRole === 'Specialist'"
           ng-click="assignBatchQA(currentUser, batchSize, selectedQaLabel)">Claim
-          Batch</button></td>
+          Batch</button>
+      </td>
     </tr>
 
     <tr>
       <td style="padding: 5px;">Filter by label:</td>
-      <td style="padding: 5px;"><select style="width: 250px;" ng-model="selectedQaLabel"
-        ng-change="retrieveAvailableQAWork(1, selectedQaLabel, null);"
-        ng-options="lbl for lbl in labelNames">
-      </select>
+      <td style="padding: 5px;">
+        <select style="width: 250px;" ng-model="selectedQaLabel"
+          ng-change="retrieveAvailableQAWork(1, selectedQaLabel, null);"
+          ng-options="lbl for lbl in labelNames">
+        </select>
         <button class="btn btn-sm btn-primary"
           ng-click="retrieveAvailableQAWork(1, 'null', 'null'); selectedQaLabel = null;">Reset</button>
       </td>
@@ -309,10 +334,12 @@
         <th style="width: 17%; padding: 5px;">Id</th>
         <th style="width: 72%; padding: 5px;">Preferred Name</th>
         <th style="width: 3%; padding: 5px;"></th>
-        <th style="width: 3%; padding: 5px;"><a title="Remove all displayed work from QA"
-          ng-click="removeAllQaWork(selectedQaLabel, assignedMapUser)"><i
-            class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i></a>
-        </th>
+        <th style="width: 3%; padding: 5px;"><a
+            title="Remove all displayed work from QA"
+            ng-click="removeAllQaWork(selectedQaLabel, assignedMapUser)">
+            <i
+              class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i>
+          </a></th>
       </tr>
 
     </thead>
@@ -321,22 +348,32 @@
 
       <tr ng-repeat="concept in availableQAWork">
 
-        <td style="width: 3%; padding: 5px;"><a title="Claim"
-          ng-show="currentRole == 'Specialist'"
-          ng-click="assignWork(concept, currentUser, selectedQaLabel, 'qa', availableQAWorkPage)"><i
-            class="glyphicon glyphicon-import"></i></a> <a title="Assign"
-          ng-show="currentRole === 'Lead' || currentRole === 'Administrator'"
-          ng-click="assignWork(concept, assignedMapUser, selectedQaLabel, 'qa', availableQAWorkPage)"><i
-            class="glyphicon glyphicon-import"></i></a></td>
+        <td style="width: 3%; padding: 5px;">
+          <a title="Claim" ng-show="currentRole == 'Specialist'"
+            ng-click="assignWork(concept, currentUser, selectedQaLabel, 'qa', availableQAWorkPage)">
+            <i class="glyphicon glyphicon-import"></i>
+          </a>
+          <a title="Assign"
+            ng-show="currentRole === 'Lead' || currentRole === 'Administrator'"
+            ng-click="assignWork(concept, assignedMapUser, selectedQaLabel, 'qa', availableQAWorkPage)">
+            <i class="glyphicon glyphicon-import"></i>
+          </a>
+        </td>
         <td style="width: 17%; padding: 5px;">{{concept.terminologyId}}</td>
         <td style="width: 72%; padding: 5px;">{{concept.name}}</td>
-        <td style="width: 3%; padding: 5px;"><a title="Labels"
-          ng-show="concept.labels.length > 0" tooltip-placement="top"
-          tooltip="{{concept.labels}}" style="float: right; margin-right: 5px;"><i
-            class="glyphicon glyphicon-tasks"></i></a></td>
-        <td style="width: 3%; padding: 5px;"><a title="Remove from QA"
-          ng-click="removeQaWork(concept.terminologyId, selectedQaLabel, availableQaWorkPage)"><i
-            class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i></a></td>
+        <td style="width: 3%; padding: 5px;">
+          <a title="Labels" ng-show="concept.labels.length > 0"
+            tooltip-placement="top" tooltip="{{concept.labels}}"
+            style="float: right; margin-right: 5px;">
+            <i class="glyphicon glyphicon-tasks"></i>
+          </a>
+        </td>
+        <td style="width: 3%; padding: 5px;">
+          <a title="Remove from QA"
+            ng-click="removeQaWork(concept.terminologyId, selectedQaLabel, availableQaWorkPage)">
+            <i class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i>
+          </a>
+        </td>
     </tbody>
 
   </table>

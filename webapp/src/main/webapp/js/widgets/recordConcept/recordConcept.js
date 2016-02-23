@@ -40,10 +40,9 @@ angular
       $scope.currentRole = localStorageService.get('currentRole');
       $scope.preferences = localStorageService.get('preferences');
       $scope.userToken = localStorageService.get('userToken');
-      
+
       // flag indicating if index viewer is available for dest terminology
       $scope.indexViewerExists = false;
-
 
       // watch for changes to focus project
       $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
@@ -64,7 +63,7 @@ angular
           $http.defaults.headers.common.Authorization = $scope.userToken;
           console.debug($scope.mapProjects);
           $scope.go();
-          
+
           setIndexViewerStatus();
         }
       });
@@ -471,7 +470,6 @@ angular
           }
         }
       }
-      
 
       function applyRelationshipStyle() {
         // Cycle over all entries. Add the relation name to the advice
@@ -499,7 +497,6 @@ angular
           }
         }
       }
-      
 
       // change the focus project to the project associated with a
       // specified
@@ -538,7 +535,7 @@ angular
         });
 
       };
-      
+
       // function to change project from the header
       $scope.changeFocusProject = function(mapProject) {
         $scope.focusProject = mapProject;
@@ -594,7 +591,6 @@ angular
         $scope.model.title = terminology + ' Concept ' + conceptId + ': ' + defaultPreferredName;
 
       }
-      
 
       // opens SNOMED CT browser
       $scope.getBrowserUrl = function() {
@@ -620,7 +616,7 @@ angular
         var myWindow = window.open(newUrl, 'indexViewerWindow');
         myWindow.focus();
       };
-      
+
       function setIndexViewerStatus() {
         $http(
           {
@@ -642,7 +638,7 @@ angular
           $scope.indexViewerExists = false;
         });
       }
-      
+
       $scope.openViewerFeedbackModal = function(lrecord, currentUser) {
 
         console.debug('openViewerFeedbackModal with ', lrecord, currentUser);

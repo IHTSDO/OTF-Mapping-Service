@@ -5,7 +5,7 @@ var mapProjectAppDirectives = angular.module('mapProjectAppDirectives', []);
 // ///////////////////////////////////////////////////
 // Directives:
 // ///////////////////////////////////////////////////
-mapProjectAppDirectives.directive('otfMapRecordNarrow', function($sce) {
+mapProjectAppDirectives.directive('otfMapRecordNarrow', function($sce, utilService) {
 
   return {
 
@@ -18,6 +18,10 @@ mapProjectAppDirectives.directive('otfMapRecordNarrow', function($sce) {
       showTitle : '='
     },
     link : function(scope, iElement, iAttrs, ctrl) {
+
+      // Wire notes
+      scope.notes = utilService.getNotes(scope.project.id);
+
       // function to return trusted html code (for tooltip
       // content)
       scope.to_trusted = function(html_code) {
@@ -27,7 +31,7 @@ mapProjectAppDirectives.directive('otfMapRecordNarrow', function($sce) {
   };
 });
 
-mapProjectAppDirectives.directive('otfMapRecordWide', function($sce) {
+mapProjectAppDirectives.directive('otfMapRecordWide', function($sce, utilService) {
 
   return {
 
@@ -40,6 +44,10 @@ mapProjectAppDirectives.directive('otfMapRecordWide', function($sce) {
       showTitle : '='
     },
     link : function(scope, iElement, iAttrs, ctrl) {
+
+      // Wire notes
+      scope.notes = utilService.getNotes(scope.project.id);
+
       // function to return trusted html code (for tooltip
       // content)
       scope.to_trusted = function(html_code) {
@@ -146,4 +154,3 @@ mapProjectAppDirectives.directive('droppable', function() {
     }
   };
 });
-

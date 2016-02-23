@@ -106,8 +106,10 @@ angular
         return $sce.trustAsHtml(html_code);
       };
 
-      // Helper function to retrieve records based on scope variables and variable pfs
-      // Two uses currently: normal project records retrieval (paged) and qa record retrieval (unpaged)
+      // Helper function to retrieve records based on scope variables and
+      // variable pfs
+      // Two uses currently: normal project records retrieval (paged) and qa
+      // record retrieval (unpaged)
       $scope.retrieveRecordsHelper = function(pfs) {
 
         $rootScope.resetGlobalError();
@@ -126,18 +128,23 @@ angular
         $rootScope.glassPane++;
 
         // retrieve map records
-        $http.post(query_url, pfs).then(function(response) {
-          $rootScope.glassPane--;
-          if (!response || !response.data || !response.data.mapRecord) {
-            deferred.reject('Bad response');
-          } else {
-            deferred.resolve(response.data)
-          }
-        }, function(data, status, headers, config) {
-          $rootScope.glassPane--;
-          $rootScope.handleHttpError(data, status, headers, config);
-          deferred.reject('Bad request');
-        });
+        $http.post(query_url, pfs).then(
+          // Success
+          function(response) {
+            $rootScope.glassPane--;
+            if (!response || !response.data || !response.data.mapRecord) {
+              deferred.reject('Bad response');
+            } else {
+              deferred.resolve(response.data);
+            }
+          },
+          // Error
+          function(response) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(response.data, response.status, response.headers,
+              response.config);
+            deferred.reject('Bad request');
+          });
         return deferred.promise;
       };
 
@@ -582,25 +589,35 @@ angular
         console.debug('Getting root trees');
         $rootScope.glassPane++;
         $http.get(root_mapping + 'treePosition/project/id/' + $scope.focusProject.id + '/source')
-          .then(function(response) {
-            $rootScope.glassPane--;
-            console.debug('Root trees', response);
-            $scope.searchParameters.roots = response.data.treePosition;
-          }, function(data, status, headers, config) {
-            $rootScope.glassPane--;
-            $rootScope.handleHttpError(data, status, headers, config);
+          .then(
+            // Success
+            function(response) {
+              $rootScope.glassPane--;
+              console.debug('Root trees', response);
+              $scope.searchParameters.roots = response.data.treePosition;
+            },
+            // Error
+            function(response) {
+              $rootScope.glassPane--;
+              $rootScope.handleHttpError(response.data, response.status, response.headers,
+                response.config);
 
-          });
+            });
 
         $rootScope.glassPane++;
-        $http.get(root_mapping + 'advice/advices').then(function(response) {
-          $rootScope.glassPane--;
-          console.debug('Map advices', response);
-          $scope.searchParameters.advices = response.data.mapAdvice;
-        }, function(data, status, headers, config) {
-          $rootScope.glassPane--;
-          $rootScope.handleHttpError(data, status, headers, config);
-        });
+        $http.get(root_mapping + 'advice/advices').then(
+          // Success
+          function(response) {
+            $rootScope.glassPane--;
+            console.debug('Map advices', response);
+            $scope.searchParameters.advices = response.data.mapAdvice;
+          },
+          // Error
+          function(response) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(response.data, response.status, response.headers,
+              response.config);
+          });
 
       };
 
@@ -677,7 +694,8 @@ angular
                   controller : QaRecordsCtrl,
                   resolve : {
 
-                    // used to confirm that unpaged search matches paged search results
+                    // used to confirm that unpaged search matches paged search
+                    // results
                     records : function() {
                       return recordList.mapRecord;
                     }
@@ -689,7 +707,7 @@ angular
                   $scope.retrieveRecords(1);
                 }, function() {
                   $scope.retrieveRecords(1);
-                })
+                });
               }
             });
 

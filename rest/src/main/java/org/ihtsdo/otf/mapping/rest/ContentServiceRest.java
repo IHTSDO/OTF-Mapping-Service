@@ -497,6 +497,17 @@ public class ContentServiceRest extends RootServiceRest {
     }
   }
 
+  /**
+   * Returns the index viewer details for link.
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @param domain the domain
+   * @param link the link
+   * @param authToken the auth token
+   * @return the index viewer details for link
+   * @throws Exception the exception
+   */
   @GET
   @Path("/index/{terminology}/{terminologyVersion}/{domain}/details/{link}")
   @ApiOperation(value = "Peform the search given the search terms.", notes = "Performs the search given the search terms in the given terminology.", response = SearchResultList.class)
