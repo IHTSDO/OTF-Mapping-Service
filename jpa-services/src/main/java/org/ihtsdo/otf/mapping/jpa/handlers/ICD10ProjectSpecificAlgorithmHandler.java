@@ -207,7 +207,11 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         }
         concepts.get(entry.getMapGroup()).add(concept);
       }
-      final String primaryCode = concepts.get(1).get(0).getTerminologyId();
+      
+      // get the primary code (if not NC)
+      final String primaryCode = 
+          concepts.get(1).get(0) == null ? null : // the NC case
+              concepts.get(1).get(0).getTerminologyId();
 
       // Only process these rules if these is a single entry per group
       if (concepts.keySet().size() == mapRecord.getMapEntries().size()) {
@@ -374,11 +378,11 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         // external cause code from range Y85.0 - Y89.9 or advice POSSIBLE
         // REQUIREMENT FOR EXTERNAL CAUSE CODE.
         //
-        if (primaryCode.matches("^T9[0-7].*")
+        if (primaryCode != null && (primaryCode.matches("^T9[0-7].*")
             || primaryCode.startsWith("T98.0")
             || primaryCode.startsWith("T98.1")
             || primaryCode.startsWith("T98.2")
-            || primaryCode.startsWith("T98.3")) {
+            || primaryCode.startsWith("T98.3"))) {
 
           boolean hasAdvice =
               TerminologyUtility.hasAdvice(mapRecord.getMapEntries().get(0),
