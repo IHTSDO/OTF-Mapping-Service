@@ -90,12 +90,16 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
           window.alert('Target code selected in index viewer: ' + targetCode);
         }, 250);
 
-
       }
     }
 
     // add the storage listener
     window.addEventListener('storage', onStorageEvent, false);
+
+    // remove listener on location change
+    $scope.$on('$locationChangeStart', function(event) {
+      window.removeEventListener('storage', onStorageEvent);
+    });
 
     // REQUIRED WATCH VARIABLES: focusProject, userToken. None others needed.
     $scope.$watch([ 'focusProject', 'userToken' ], function() {
@@ -130,7 +134,6 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
     // Perform a search - list or tree depending on the state
     $scope.search = function() {
 
-      
       // Query is implied
       if (!$scope.query) {
         return;
