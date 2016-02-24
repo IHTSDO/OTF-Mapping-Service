@@ -81,25 +81,28 @@ mapProjectApp
         // look up the 'terminology notes' for the map project
         // Mechanism for asterisk/dagger in ICD10
         this.initializeTerminologyNotes = function(projectId) {
-          $rootScope.glassPane++;
-          console.debug('initialize terminology notes', projectId);
-          $http.get(root_mapping + 'mapProject/' + projectId + '/notes').then(
-          // Success
-          function(response) {
-            var list = {};
-            for (var i = 0; i < response.data.keyValuePair.length; i++) {
-              var entry = response.data.keyValuePair[i];
-              list[entry.key] = entry.value;
-            }
-            notes[projectId] = list;
-            console.debug(' notes[' + projectId + ']', notes[projectId]);
-            $rootScope.glassPane--;
-          },
-          // Error
-          function(response) {
-            $rootScope.glassPane--;
-            handleError(response.data);
-          });
+          // Skip if no auth header yet
+          if (!$http.defaults.headers.common.Authorization) {
+            $rootScope.glassPane++;
+            console.debug('initialize terminology notes', projectId);
+            $http.get(root_mapping + 'mapProject/' + projectId + '/notes').then(
+            // Success
+            function(response) {
+              var list = {};
+              for (var i = 0; i < response.data.keyValuePair.length; i++) {
+                var entry = response.data.keyValuePair[i];
+                list[entry.key] = entry.value;
+              }
+              notes[projectId] = list;
+              console.debug(' notes[' + projectId + ']', notes[projectId]);
+              $rootScope.glassPane--;
+            },
+            // Error
+            function(response) {
+              $rootScope.glassPane--;
+              handleError(response.data);
+            });
+          }
         };
 
         // Get notes for this project id
