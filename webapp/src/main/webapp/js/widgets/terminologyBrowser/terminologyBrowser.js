@@ -83,13 +83,14 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
         localStorage.removeItem('targetCode');
         $scope.query = targetCode;
         $scope.search();
-        
+
         console.debug(window.location.href);
         console.debug(window.name);
-        
-        var mtWindow = window.open(window.location.href, 'mappingToolWindow');
-        mtWindow.focus();
-        
+        $timeout(function() {
+          window.alert('Target code selected in index viewer: ' + targetCode);
+        }, 250);
+
+
       }
     }
 
@@ -129,6 +130,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
     // Perform a search - list or tree depending on the state
     $scope.search = function() {
 
+      
       // Query is implied
       if (!$scope.query) {
         return;
