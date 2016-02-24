@@ -1469,7 +1469,7 @@ angular
 
         $scope.getBrowserUrl = function() {
           return 'http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1='
-            + $scope.record.conceptId + '&diagrammingMarkupEnabled=true&acceptLicense=true';
+            + $scope.record.conceptId + '&acceptLicense=true';
         };
 
         $scope.openConceptBrowser = function() {
