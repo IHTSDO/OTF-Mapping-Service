@@ -211,6 +211,8 @@ angular
             $http.defaults.headers.common.Authorization = $scope.userToken;
             setIndexViewerStatus();
             retrieveRecord();
+            // Initialize terminology notes
+            utilService.initializeTerminologyNotes($scope.project.id);
           }
         });
 
@@ -1596,7 +1598,6 @@ angular
           return parseInt(principle.principleId, 10) + 1;
         };
 
-        // Initialize terminology notes
-        utilService.initializeTerminologyNotes($scope.project.id);
+       
 
       } ]);
