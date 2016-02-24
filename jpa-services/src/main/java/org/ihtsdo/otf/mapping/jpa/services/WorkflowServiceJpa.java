@@ -1435,6 +1435,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
     if (pfs.getSortField() == null || pfs.getSortField().isEmpty()) {
       pfs.setSortField("lastModified");
     }
+    // Get all results if viewed is specified
     if (query.contains("viewed")) {
       pfs.setStartIndex(-1);
     }
@@ -1442,8 +1443,8 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
     int[] totalCt = new int[1];
     final List<FeedbackConversation> feedbackConversations =
         (List<FeedbackConversation>) getQueryResults(sb.toString(),
-            FeedbackConversationJpa.class, FeedbackConversationJpa.class,
-            pfsParameter, totalCt);
+            FeedbackConversationJpa.class, FeedbackConversationJpa.class, pfs,
+            totalCt);
 
     if (pfsParameter != null && query.contains("viewed")) {
 
@@ -1484,10 +1485,14 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
       }
       totalCt[0] = conversationsToKeep.size();
       feedbackConversations.clear();
-      for (int i = pfsParameter.getStartIndex(); i < pfsParameter
-          .getStartIndex() + pfsParameter.getMaxResults()
-          && i < conversationsToKeep.size(); i++) {
-        feedbackConversations.add(conversationsToKeep.get(i));
+      if (pfsParameter.getStartIndex() != -1) {
+        for (int i = pfsParameter.getStartIndex(); i < pfsParameter
+            .getStartIndex() + pfsParameter.getMaxResults()
+            && i < conversationsToKeep.size(); i++) {
+          feedbackConversations.add(conversationsToKeep.get(i));
+        }
+      } else {
+        feedbackConversations.addAll(conversationsToKeep);
       }
 
     }
