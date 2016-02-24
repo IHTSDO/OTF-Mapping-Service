@@ -82,7 +82,7 @@ mapProjectApp
         // Mechanism for asterisk/dagger in ICD10
         this.initializeTerminologyNotes = function(projectId) {
           // Skip if no auth header yet
-          if (!$http.defaults.headers.common.Authorization) {
+          if ($http.defaults.headers.common.Authorization) {
             $rootScope.glassPane++;
             console.debug('initialize terminology notes', projectId);
             $http.get(root_mapping + 'mapProject/' + projectId + '/notes').then(
