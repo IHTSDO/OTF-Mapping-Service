@@ -3186,6 +3186,10 @@ public class MappingServiceRest extends RootServiceRest {
       MapEntry mapEntry = null;
       for (final MapEntry entry : mapRecord.getMapEntries()) {
         if (entry.getId() != null && entry.getId() == -1) {
+          if (mapEntry != null) {
+            throw new Exception(
+                "More than one map entry is indicated as the one to compute advice for.");
+          }
           mapEntry = entry;
         }
       }
