@@ -69,7 +69,8 @@ angular
           angular.forEach(domain.pages, function(page) {
             var pageTab = {
               name : page,
-              active : false // tabs ordered with orderBy:'name', first tab's active autoset
+              active : false
+            // tabs ordered with orderBy:'name', first tab's active autoset
             };
             domainTab.pageTabs.push(pageTab);
           });
@@ -77,9 +78,8 @@ angular
           domainTab.pageTabs.sort(function(a, b) {
             return a.name > b.name;
           });
-          
-          console.debug(domainTab.pageTabs);
 
+          console.debug(domainTab.pageTabs);
 
           $scope.domainTabs.push(domainTab);
         });
@@ -175,7 +175,10 @@ angular
         if ($scope.currentResult) {
           $scope.removeHighlighting($scope.currentResult.value);
         }
-
+        
+        // get the index trail for this
+        $scope.detailsHighlighted(result.value);
+      
         // parse the new search result to determine page
         var page = result.value.charAt(0);
 
@@ -276,11 +279,15 @@ angular
           }, 500);
 
       };
+    
+      
       // retrieve popover details
-      $scope.details = function(link) {
+      function detailsHelper(link) {
+        
+        var deferred = $q.defer();
 
-        $scope.indexTrail = null;
         if (!link) {
+          deferred.resolve(null);
           return;
         }
 
@@ -292,10 +299,11 @@ angular
             + '/details/' + link).then(
           // Success
           function(response) {
+            
+            console.debug('resolving', response.data.substring(1, response.data.length - 2));
 
             // substring to eliminate quotation marks
-            // TODO Use a real regular expression for this and stop being lazy
-            $scope.indexTrail = response.data.substring(1, response.data.length - 2);
+            deferred.resolve(response.data.substring(1, response.data.length - 2));
 
           },
           // Error
@@ -303,8 +311,28 @@ angular
             $rootScope.glassPane--;
             $rootScope.handleHttpError(response.data, response.status, response.headers,
               response.config);
+            deferred.resolve(null);
           });
+        
+        return deferred.promise;
 
+      };
+      
+      
+      $scope.detailsHighlighted = function(link) {
+        console.debug('Getting SR details', link);
+        detailsHelper(link).then(function(response) {
+          console.debug('details', response);
+          $scope.indexTrailHighlighted = response;
+        });
+      };
+      
+      $scope.details = function(link) {
+        console.debug('Getting details', link);
+        detailsHelper(link).then(function(response) {
+          console.debug('details', response);
+          $scope.indexTrail = response;
+        });
       };
 
       // ///////////////////////////////////////
