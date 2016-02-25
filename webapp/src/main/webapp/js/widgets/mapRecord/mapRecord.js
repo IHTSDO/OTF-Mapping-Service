@@ -1320,6 +1320,11 @@ angular
           $scope.groupsTree[entry.mapGroup - 1].entry = entries;
           $scope.saveGroups();
 
+          // select something that is left
+          if ($scope.record.mapEntry && $scope.record.mapEntry.length > 0) {
+            $scope.selectMapEntry($scope.record.mapEntry[0]);
+          }
+
         };
 
         // Notification watcher for save/delete entry events
@@ -1387,6 +1392,11 @@ angular
 
           // re-calculate group and priority
           $scope.saveGroups();
+
+          // select something that is left
+          if ($scope.record.mapEntry && $scope.record.mapEntry.length > 0) {
+            $scope.selectMapEntry($scope.record.mapEntry[0]);
+          }
 
         };
 
@@ -1597,7 +1607,5 @@ angular
         $scope.orderByPrincipleId = function(principle) {
           return parseInt(principle.principleId, 10) + 1;
         };
-
-       
 
       } ]);

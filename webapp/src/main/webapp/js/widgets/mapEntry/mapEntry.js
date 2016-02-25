@@ -267,6 +267,8 @@ angular
             if (entry.localId == $scope.entry.localId || entry.id == $scope.entry.id) {
               entry = $scope.entry;
             }
+            // pass the record entry, use the scoped one
+            // if it is the entry currently being edited
             computeAdvice(entry, i).then(
             // Success
             function(data) {
@@ -291,9 +293,12 @@ angular
 
           $rootScope.glassPane++;
 
+          var entryIsScopeEntry = entry.id == $scope.entry.id
+            || entry.localId == $scope.entry.localId;
+
           // Replace in the record the entry being edited
           // so the changes are reflected. All other entries
-          // are sync'd with map record dispaly.
+          // are sync'd with map record display.
           var copy = angular.copy($scope.record);
           var entryCopy = angular.copy(entry);
           entryCopy.id = -1;
@@ -305,9 +310,11 @@ angular
             // if localId or Id matches $scope record, replace it
             if (copy.mapEntry[i].id == $scope.entry.id
               || copy.mapEntry[i].localId == $scope.entry.localId) {
-              var entryCopy = angular.copy($scope.entry);
-              entryCopy.id = -1;
-              copy.mapEntry.splice(i, 1, entryCopy);
+              var entryCopy2 = angular.copy($scope.entry);
+              if (entryIsScopeEntry) {
+                entryCopy2.id = -1;
+              }
+              copy.mapEntry.splice(i, 1, entryCopy2);
               break;
             }
           }
