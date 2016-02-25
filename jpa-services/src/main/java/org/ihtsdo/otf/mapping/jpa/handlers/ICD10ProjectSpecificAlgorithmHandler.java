@@ -207,11 +207,12 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         }
         concepts.get(entry.getMapGroup()).add(concept);
       }
-      
+
       // get the primary code (if not NC)
-      final String primaryCode = 
-          concepts.get(1).get(0) == null ? null : // the NC case
-              concepts.get(1).get(0).getTerminologyId();
+      final String primaryCode = concepts.get(1).get(0) == null ? null : // the
+                                                                         // NC
+                                                                         // case
+          concepts.get(1).get(0).getTerminologyId();
 
       // Only process these rules if these is a single entry per group
       if (concepts.keySet().size() == mapRecord.getMapEntries().size()) {
@@ -378,11 +379,12 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         // external cause code from range Y85.0 - Y89.9 or advice POSSIBLE
         // REQUIREMENT FOR EXTERNAL CAUSE CODE.
         //
-        if (primaryCode != null && (primaryCode.matches("^T9[0-7].*")
-            || primaryCode.startsWith("T98.0")
-            || primaryCode.startsWith("T98.1")
-            || primaryCode.startsWith("T98.2")
-            || primaryCode.startsWith("T98.3"))) {
+        if (primaryCode != null
+            && (primaryCode.matches("^T9[0-7].*")
+                || primaryCode.startsWith("T98.0")
+                || primaryCode.startsWith("T98.1")
+                || primaryCode.startsWith("T98.2") || primaryCode
+                  .startsWith("T98.3"))) {
 
           boolean hasAdvice =
               TerminologyUtility.hasAdvice(mapRecord.getMapEntries().get(0),
@@ -702,7 +704,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       //
       final String externalCauseCodeAdvice =
           "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE";
-      final boolean hasExternalCauseCodeAdvice =
+      boolean hasExternalCauseCodeAdvice =
           TerminologyUtility.hasAdvice(mapEntry, externalCauseCodeAdvice);
 
       //
@@ -899,6 +901,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
             && !hasExternalCauseCodeAdvice) {
           advices.add(TerminologyUtility.getAdvice(mapProject,
               externalCauseCodeAdvice));
+          hasExternalCauseCodeAdvice = true;
         } else {
           boolean found = false;
           for (int i = 1; i < mapRecord.getMapEntries().size(); i++) {
@@ -910,16 +913,14 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
               break;
             }
           }
-          if (!found
-              && !TerminologyUtility.hasAdvice(mapEntry,
-                  externalCauseCodeAdvice)) {
+          if (!found && !hasExternalCauseCodeAdvice) {
             advices.add(TerminologyUtility.getAdvice(mapProject,
                 externalCauseCodeAdvice));
-          } else if (found
-              && TerminologyUtility
-                  .hasAdvice(mapEntry, externalCauseCodeAdvice)) {
+            hasExternalCauseCodeAdvice = true;
+          } else if (found && hasExternalCauseCodeAdvice) {
             advices.remove(TerminologyUtility.getAdvice(mapProject,
                 externalCauseCodeAdvice));
+            hasExternalCauseCodeAdvice = false;
           }
         }
       }
@@ -948,7 +949,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
               .getTargetName().toLowerCase().contains("hereditary"))) {
         advices.remove(TerminologyUtility.getAdvice(mapProject,
             externalCauseCodeAdvice));
-
+        hasExternalCauseCodeAdvice = false;
       }
 
       //
@@ -974,6 +975,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           && mapEntry.getTargetId().startsWith("E10")) {
         advices.remove(TerminologyUtility.getAdvice(mapProject,
             externalCauseCodeAdvice));
+        hasExternalCauseCodeAdvice = false;
       }
 
       //
@@ -985,6 +987,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           && mapEntry.getTargetId().startsWith("E12")) {
         advices.remove(TerminologyUtility.getAdvice(mapProject,
             externalCauseCodeAdvice));
+        hasExternalCauseCodeAdvice = false;
       }
 
       //
@@ -1001,6 +1004,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
                   .matches("^[VWXY].*")) {
             advices.remove(TerminologyUtility.getAdvice(mapProject,
                 externalCauseCodeAdvice));
+            hasExternalCauseCodeAdvice = false;
             break;
           }
         }
