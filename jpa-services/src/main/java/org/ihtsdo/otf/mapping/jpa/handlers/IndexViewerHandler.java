@@ -433,6 +433,8 @@ public class IndexViewerHandler {
     // Local directory
     String dataDir =
         ConfigUtility.getConfigProperties().getProperty("index.viewer.data");
+    
+    Logger.getLogger(getClass()).info("Retrieving index domains from " + dataDir);
 
     if (dataDir == null || dataDir.isEmpty()) {
       return searchResultList;
