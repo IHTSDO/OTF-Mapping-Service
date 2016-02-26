@@ -27,6 +27,7 @@ import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.helpers.FileSorter;
 
+// TODO: Auto-generated Javadoc
 /**
  * Loads unpublished complex maps.
  * 
@@ -43,6 +44,21 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
    * @required
    */
   private String inputFile;
+  
+  /**
+   * The workflow status to assign to created map records.
+   *
+   * @parameter 
+   * @required 
+   */
+  private String workflowStatus;
+  
+  /**  
+   * The user name. 
+   * 
+   * @parameter
+   */
+  private String userName;
 
   /**
    * Executes the plugin.
@@ -52,11 +68,21 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
   public void execute() throws MojoExecutionException {
     getLog().info("Starting loading complex map data");
     getLog().info("  inputFile = " + inputFile);
+    getLog().info("  workflowStatus = " + workflowStatus);
+    getLog().info("  userName = " + userName);
 
     try {
 
       if (inputFile == null || !new File(inputFile).exists()) {
         throw new MojoFailureException("Specified input file missing");
+      }
+      
+      if (workflowStatus == null || WorkflowStatus.valueOf(workflowStatus) == null) {
+        throw new MojoFailureException("Missing or invalid workflow status. Acceptable values are " + WorkflowStatus.values().toString());
+      }
+      
+      if (userName == null) {
+        getLog().info("No user specified, defaulting to user 'loader'");
       }
 
       // sort input file
@@ -165,7 +191,7 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
       for (String refsetId : complexMapRefSetMemberMap.keySet()) {
         mappingService.createMapRecordsForMapProject(mapProjectMap
             .get(refsetId).getId(), loaderUser, complexMapRefSetMemberMap
-            .get(refsetId), WorkflowStatus.READY_FOR_PUBLICATION);
+            .get(refsetId), WorkflowStatus.valueOf(workflowStatus));
       }
 
       // clean-up

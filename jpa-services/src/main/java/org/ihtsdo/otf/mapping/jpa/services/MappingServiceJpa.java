@@ -1831,9 +1831,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     List<ComplexMapRefSetMember> complexMapRefSetMembers,
     WorkflowStatus workflowStatus, float samplingRate) throws Exception {
     MapProject mapProject = getMapProject(mapProjectId);
-    Logger.getLogger(MappingServiceJpa.class).debug(
+    Logger.getLogger(MappingServiceJpa.class).info(
         "  Creating map records for map project - " + mapProject.getName()
-            + ", assigning workflow status " + WorkflowStatus.PUBLISHED);
+            + ", assigning workflow status " + workflowStatus.toString());
 
     // Verify application is letting the service manage transactions
     if (!getTransactionPerOperation()) {
@@ -1960,7 +1960,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
             mapRecord.setWorkflowStatus(workflowStatus);
           } else {
             samplingRecordsPublished++;
-            mapRecord.setWorkflowStatus(WorkflowStatus.PUBLISHED);
+            mapRecord.setWorkflowStatus(workflowStatus);
           }
 
           addMapRecord(mapRecord);

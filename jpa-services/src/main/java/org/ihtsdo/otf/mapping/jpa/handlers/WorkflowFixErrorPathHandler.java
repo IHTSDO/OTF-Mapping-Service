@@ -58,8 +58,8 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
 
     setWorkflowPath(WorkflowPath.FIX_ERROR_PATH);
 
-    // initial state has no user/workflow status pairs
-    // e.g. PUBLISHED record, no assigned user
+    // This really should be false, but empty workflow support not fully
+    // complete
     setEmptyWorkflowAllowed(true);
 
     // workflow states representing a record marked for revision and the
@@ -525,8 +525,8 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
     WorkflowAction workflowAction, MapProject mapProject, MapUser mapUser,
     Set<MapRecord> mapRecords, MapRecord mapRecord) throws Exception {
     Logger.getLogger(this.getClass())
-        .debug(getName() + ": Processing workflow action by " + mapUser.getName()
-            + ":  " + workflowAction.toString());
+        .debug(getName() + ": Processing workflow action by "
+            + mapUser.getName() + ":  " + workflowAction.toString());
 
     // the set of records returned after processing
     Set<MapRecord> newRecords = new HashSet<>(mapRecords);
@@ -539,7 +539,7 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
 
     switch (workflowAction) {
       case ASSIGN_FROM_INITIAL_RECORD:
-    
+
         // case 1 : User claims a PUBLISHED or READY_FOR_PUBLICATION record
         // to
         // fix error on.
@@ -631,7 +631,6 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
         }
         break;
       case FINISH_EDITING:
-      
 
         // case 1: A user has finished correcting an error on a previously
         // published record
@@ -724,7 +723,7 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
 
         break;
       case PUBLISH:
-     
+
         // Requirements for FIX_ERROR_PATH publish action
         // - 1 record marked REVISION
         // - 1 record marked REVIEW_NEEDED
@@ -770,7 +769,7 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
 
         break;
       case UNASSIGN:
-       
+
         for (final MapRecord mr : mapRecords) {
           if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
             revisionRecord = mr;

@@ -65,12 +65,12 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
 
     setWorkflowPath(WorkflowPath.LEGACY_PATH);
 
-    setEmptyWorkflowAllowed(true);
+    setEmptyWorkflowAllowed(false);
 
     // STATE: Initial initialState has published legacy record
     initialState = new WorkflowPathState("Initial State");
     initialState.addWorkflowCombination(new WorkflowStatusCombination(Arrays
-        .asList(WorkflowStatus.PUBLISHED)));
+        .asList(WorkflowStatus.REVISION)));
     trackingRecordStateToActionMap.put(initialState,
         new HashSet<>(Arrays.asList(WorkflowAction.ASSIGN_FROM_SCRATCH)));
 
@@ -913,7 +913,7 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
   @Override
   public boolean isMapRecordInWorkflow(MapRecord mapRecord) {
     return !mapRecord.getWorkflowStatus().equals(
-        WorkflowStatus.READY_FOR_PUBLICATION);
+        WorkflowStatus.READY_FOR_PUBLICATION) && !mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED);
   }
 
   @Override
