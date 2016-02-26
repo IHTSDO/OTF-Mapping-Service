@@ -102,6 +102,12 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
             public int compare(String o1, String o2) {
               String[] fields1 = o1.split("\t");
               String[] fields2 = o2.split("\t");
+              
+              // keep headers at top
+              if (o1.startsWith("id")) {
+                return 1;
+              }
+              
               long i = fields1[4].compareTo(fields2[4]);
               if (i != 0) {
                 return (int) i;
@@ -260,7 +266,9 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
         complexMapRefSetMember.setMapRule(fields[8]);
         complexMapRefSetMember.setMapAdvice(fields[9]);
         complexMapRefSetMember.setMapTarget(fields[10]);
-        complexMapRefSetMember.setMapRelationId(Long.valueOf(fields[12]));
+        
+        // handle complex vs. extended maps -- extended maps have mapCategory as well as correlationId
+        complexMapRefSetMember.setMapRelationId(Long.valueOf(fields[fields.length == 13 ? 12 : 11]));
 
         // BLOCK is unused
         complexMapRefSetMember.setMapBlock(0); // default value
