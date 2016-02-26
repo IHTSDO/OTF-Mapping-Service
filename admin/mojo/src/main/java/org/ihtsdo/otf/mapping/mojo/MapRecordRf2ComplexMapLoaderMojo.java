@@ -143,6 +143,13 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
                               if (i != 0) {
                                 return (int) i;
                               } else {
+                                
+                                // complex maps do not have mapCategory field
+                                if (fields1.length == 12) {
+                                  return 0;
+                                }
+                                
+                                // extended maps have extra mapCategory field
                                 i = fields1[12].compareTo(fields2[12]);
                                 if (i != 0) {
                                   return (int) i;
