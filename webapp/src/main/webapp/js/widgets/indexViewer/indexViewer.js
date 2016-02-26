@@ -26,6 +26,12 @@ angular
       // the name and page currently viewed
       $scope.selectedDomain = null;
       $scope.selectedPage = null;
+      
+      // input fields
+      $scope.searchField = null;
+      $scope.subSearchField = null;
+      $scope.subSubSearchField = null;
+      $scope.allCheckBox = false;
 
       // search results variables
       $scope.searchResults = null;
@@ -125,6 +131,12 @@ angular
 
       $scope.performAggregatedSearch = function(searchField, subSearchField, subSubSearchField,
         searchAllLevels, suppressAlerts) {
+        
+        // ensure input fields are set
+        $scope.searchField = searchField;
+        $scope.subSearchField = subSearchField;
+        $scope.subSubSearchField = subSubSearchField;
+        $scope.allCheckBox = searchAllLevels;
 
         var deferred = $q.defer();
 
