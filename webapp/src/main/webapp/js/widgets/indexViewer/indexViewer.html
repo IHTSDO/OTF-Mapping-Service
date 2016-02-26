@@ -31,17 +31,14 @@
 				ng-model="allCheckBox" style="margin: 5px;"> All
 			<button class="btn btn-sm btn-primary" style="margin: 5px;"
 				ng-click="performAggregatedSearch(searchField, subSearchField, subSubSearchField, allCheckBox);">Go</button>
-			<button class="btn btn-sm btn-primary"
-				ng-click="searchField = null; 
-              subSearchField = null; subSubSearchField = null; 
-              searchResults = null;">Reset</button>
+			<button class="btn btn-sm btn-primary" ng-click="reset()">Reset</button>
 		</form>
 
 
 		<div class="row">
 			<div class="col-md-6"></div>
 			<div class="col-md-1">
-				<div ng-show="searchResultIndex > 0">
+				<div ng-show="searchResults && searchResultIndex > 0">
 					<!-- First -->
 					<i title="Go to first search result"
 						class="noul glyphicon glyphicon-backward"
@@ -53,25 +50,24 @@
 				</div>
 			</div>
 			<div class="col-md-2">
-				<div ng-show="searchResults.length > 0">{{searchResultIndex +
-					1}} of {{searchResults.length}} search results</div>
+				<div ng-show="searchResults && searchResults.length > 0">{{searchResultIndex
+					+ 1}} of {{searchResults.length}} search results</div>
 			</div>
 			<div class="col-md-1">
-				<div ng-show="searchResultIndex < searchResults.length">
+				<div
+					ng-show="searchResults && searchResultIndex < searchResults.length">
 					<i title="Go to next search result"
-						ng-class="{'hidden'  : searchResultIndex === searchResults.length - 1}"
 						ng-click="goToSearchResult(searchResultIndex + 1)"
 						class="noul glyphicon glyphicon-step-forward"></i>
 					<!-- Last -->
 					<i title="Go to last search result"
-						ng-class="{'hidden'  : searchResultIndex === searchResults.length - 1}"
 						ng-click="goToSearchResult(nResults - 1)"
 						class="noul glyphicon glyphicon-forward"></i>
 				</div>
 			</div>
 			<div class="col-md-2"></div>
 		</div>
-		
+
 	</div>
 </div>
 
@@ -96,7 +92,7 @@
 					src="getPageUrl(domainTab.domain.name, pageTab.name)" autoscroll></div>
 			</div>
 		</div>
-		<div class="col-md-3" style="padding-left:0px;">
+		<div class="col-md-3" style="padding-left: 0px;">
 
 
 			<p style="margin-top: 15px;">Highlighted Index Trail</p>
