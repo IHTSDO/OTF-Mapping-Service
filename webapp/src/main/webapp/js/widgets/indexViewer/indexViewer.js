@@ -33,6 +33,7 @@ angular
       $scope.searchResultsLabel = null;
       $scope.searchResultIndex = 0;
       $scope.indexTrail = null;
+      $scope.indexTrailHighlighted = null;
 
       // get the local storage variables
       $scope.currentUser = localStorageService.get('currentUser');
@@ -50,6 +51,26 @@ angular
           $scope.initialize();
         }
       });
+      
+      $scope.reset = function() {
+        // reset input fields
+        $scope.searchField = null; 
+        $scope.subSearchField = null; 
+        $scope.subSubSearchField = null;
+        
+        // reset search results
+        $scope.searchResults = null;
+        $scope.searchResultIndex = 0;
+        
+        // reset index trails
+        $scope.indexTrail = null;
+        $scope.indexTrailHighlighted = null;
+        
+        // remove highlighting from current element
+        if ($scope.currentResult) {
+          $scope.removeHighlighting($scope.currentResult.value);
+        }
+      }
 
       // create a list of page/active pairs, with first tab active
       // cumbersome hack due to old version of angular-ui-bootstrap
@@ -166,15 +187,17 @@ angular
       $scope.goToElement = function(result) {
 
         console.debug('Going to result', result);
-
+        
         if (!result) {
-          console.error('Attempted to navigate to null result');
+          return;
         }
 
         // remove highlighting from current element
         if ($scope.currentResult) {
           $scope.removeHighlighting($scope.currentResult.value);
         }
+        
+     
         
         // get the index trail for this
         $scope.detailsHighlighted(result.value);
