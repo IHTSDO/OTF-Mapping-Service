@@ -55,6 +55,8 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
 
     setWorkflowPath(WorkflowPath.QA_PATH);
 
+    // This really should be false, but empty workflow support not fully
+    // complete
     setEmptyWorkflowAllowed(true);
 
     // STATE: Initial state has no tracking record
@@ -361,10 +363,10 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
     MapUser mapUser, MapUserRole userRole, String query,
     PfsParameter pfsParameter, WorkflowService workflowService)
       throws Exception {
-    
+
     Logger.getLogger(this.getClass())
-    .debug(getName() + ": findAssignedWork for project "
-        + mapProject.getName() + " and user " + mapUser.getUserName());
+        .debug(getName() + ": findAssignedWork for project "
+            + mapProject.getName() + " and user " + mapUser.getUserName());
 
     SearchResultList assignedWork = new SearchResultListJpa();
     final StringBuilder sb = new StringBuilder();
@@ -434,7 +436,7 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
           if (labelBuffer.indexOf(label) == -1) {
             labelBuffer.append(";").append(label);
           }
-       
+
           if (label.equals(query)) {
             hasLabel = true;
           }
@@ -450,7 +452,8 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
       }
       // if no label query supplied or this tracking record has the requested
       // label
-      if (query == null || query.isEmpty() || query.equals("null") || hasLabel == true) {
+      if (query == null || query.isEmpty() || query.equals("null")
+          || hasLabel == true) {
         result.setTerminologyId(mapRecord.getConceptId());
         result.setValue(mapRecord.getConceptName());
         result.setValue2(labelBuffer.toString());
@@ -492,15 +495,14 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
     Set<MapRecord> mapRecords, MapRecord mapRecord) throws Exception {
 
     Logger.getLogger(this.getClass())
-        .debug(getName() + ": Processing workflow action by " + mapUser.getName()
-            + ":  " + workflowAction.toString());
+        .debug(getName() + ": Processing workflow action by "
+            + mapUser.getName() + ":  " + workflowAction.toString());
 
     // the set of records returned after processing
     Set<MapRecord> newRecords = new HashSet<>(mapRecords);
 
     switch (workflowAction) {
       case CREATE_QA_RECORD:
-    
 
         if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)
             || mapRecord.getWorkflowStatus()
@@ -533,7 +535,7 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
         }
         break;
       case ASSIGN_FROM_SCRATCH:
-     
+
         MapRecord qaRecord =
             createMapRecordForTrackingRecordAndUser(trackingRecord, mapUser);
 
@@ -564,7 +566,7 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
         break;
 
       case FINISH_EDITING:
-       
+
         // a lead has finished reviewing a QA
         if (newRecords.size() == 3) {
 
@@ -608,7 +610,7 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
         }
         break;
       case PUBLISH:
-    
+
         // Requirements for QA_PATH publish action
         // - 1 record marked REVISION
         // - 1 record marked QA_NEEDED
@@ -633,7 +635,7 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
 
         break;
       case UNASSIGN:
-    
+
         MapRecord revisionRecord = null;
         MapRecord qaNeededRecord = null;
         MapRecord editRecord = null;

@@ -69,6 +69,7 @@ public abstract class AbstractWorkflowPathHandler
    * 
    * @return <code>true</code> if so, <code>false</code> otherwise
    */
+  @Override
   public boolean isEmptyWorkflowAllowed() {
     return emptyWorkflowAllowed;
   }
@@ -114,6 +115,12 @@ public abstract class AbstractWorkflowPathHandler
       combinations.addAll(state.getWorkflowCombinations());
     }
     return combinations;
+  }
+  
+  @Override 
+  public boolean isTrackingRecordInWorkflow(TrackingRecord trackingRecord) {
+    WorkflowPathState ws = getWorkflowStateForTrackingRecord(trackingRecord);
+    return ws != null;
   }
 
   @Override
@@ -636,5 +643,7 @@ public abstract class AbstractWorkflowPathHandler
 
     return mapRecord;
   }
+  
+
 
 }

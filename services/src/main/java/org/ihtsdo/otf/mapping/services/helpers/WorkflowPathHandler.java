@@ -120,4 +120,19 @@ public interface WorkflowPathHandler extends Configurable {
   public MapRecordList getOriginMapRecordsForMapRecord(MapRecord mapRecord,
     WorkflowService workflowService) throws Exception;
 
+  /**
+   * Indicates whether or not empty workflow allowed is the case.
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public boolean isEmptyWorkflowAllowed();
+
+  /**
+   * Indicates whether or not tracking record has a valid combination of map records for this workflow path
+   *
+   * @param trackingRecord the tracking record
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public boolean isTrackingRecordInWorkflow(TrackingRecord trackingRecord);
+
 }
