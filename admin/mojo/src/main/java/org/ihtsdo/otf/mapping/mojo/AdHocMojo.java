@@ -38,17 +38,32 @@ public class AdHocMojo extends AbstractMojo {
 
   /** The workflow service. */
   WorkflowService workflowService = null;
-  
 
   /* see superclass */
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
+    getLog().info("Start Ad hoc mojo");
     /**
-     * Put ad hoc code below
+     * Put ad hoc code below:
+     * 
+     * 20160226:
+     * 
+     * <pre>
+     * Find all map records from project with refsetid 447562003
+     * If there is a single map entry and it is an asterisk code
+     *   Remove advice “THIS CODE IS NOT TO BE USED IN THE PRIMARY POSITION”
+     *     If it exists
+     *   Add  advice “THIS CODE MAY BE USED IN THE PRIMARY POSITION WHEN THE MANIFESTATION IS THE PRIMARY FOCUS OF CARE”
+     *     If it does not exist
+     *   Add advice “THIS MAP REQUIRES A DAGGER CODE AS WELL AS AN ASTERISK CODE”
+     *     If it does not exist
+     * If there are more than one map entries, for each entry whose targetId is an asterisk code:
+     *   Remove advice “THIS CODE IS NOT TO BE USED IN THE PRIMARY POSITION”
+     * If it exists
+     *   Add  advice “THIS CODE MAY BE USED IN THE PRIMARY POSITION WHEN THE MANIFESTATION IS THE PRIMARY FOCUS OF CARE”
+     *     If it does not exist
+     * </pre>
      */
-
-    // 2/12/16 -- apply map advice to map entries referencing asterisk target
-    // codes in ICD10
 
     try {
       contentService = new ContentServiceJpa();
@@ -72,24 +87,35 @@ public class AdHocMojo extends AbstractMojo {
       Logger.getLogger(this.getClass()).info(
           "Found map project " + mapProject.getName());
 
-      MapAdvice mapAdvice = null;
+      MapAdvice advice1 = null;
+      MapAdvice advice2 = null;
+      MapAdvice advice3 = null;
 
       // find the desired advice
       for (MapAdvice m : workflowService.getMapAdvices().getMapAdvices()) {
-        if (m
-            .getName()
-            .equals(
-                "THIS CODE MAY BE USED IN THE PRIMARY POSITION WHEN THE MANIFESTATION IS THE PRIMARY FOCUS OF CARE")) {
-          mapAdvice = m;
+        if (m.getName().equals(
+            "THIS CODE MAY BE USED IN THE PRIMARY POSITION "
+                + "WHEN THE MANIFESTATION IS THE PRIMARY FOCUS OF CARE")) {
+          advice1 = m;
+        }
+
+        else if (m.getName().equals(
+            "THIS CODE IS NOT TO BE USED IN THE PRIMARY POSITION")) {
+          advice2 = m;
+        }
+
+        else if (m.getName().equals(
+            "THIS MAP REQUIRES A DAGGER CODE AS WELL AS AN ASTERISK CODE")) {
+          advice3 = m;
         }
       }
 
-      if (mapAdvice == null) {
-        throw new MojoExecutionException(
-            "Could not find map advice with name THIS CODE MAY BE USED IN THE PRIMARY POSITION WHEN THE MANIFESTATION IS THE PRIMARY FOCUS OF CARE");
+      if (advice1 == null || advice2 == null || advice3 == null) {
+        throw new MojoExecutionException("Could not find map advices");
       }
-      Logger.getLogger(this.getClass()).info(
-          "Found map advice " + mapAdvice.getName());
+      getLog().info("  Found map advice - " + advice1.getName());
+      getLog().info("  Found map advice - " + advice2.getName());
+      getLog().info("  Found map advice - " + advice3.getName());
 
       // find the ICD10 asterisk code
       String asteriskConceptId = null;
@@ -97,7 +123,8 @@ public class AdHocMojo extends AbstractMojo {
       PfsParameter pfs = new PfsParameterJpa();
       pfs.setQueryRestriction("terminology:ICD10 AND terminologyVersion:2010 AND defaultPreferredName:\"Asterisk refset\"");
       try {
-        SearchResultList searchResults = contentService.findConceptsForQuery(null, pfs);
+        SearchResultList searchResults =
+            contentService.findConceptsForQuery(null, pfs);
         if (searchResults.getCount() != 1) {
           throw new MojoFailureException(
               "Found multiple asterisk concepts for ICD10: "
@@ -113,28 +140,27 @@ public class AdHocMojo extends AbstractMojo {
       Logger.getLogger(this.getClass()).info(
           "Found hibernate id for ICD10 asterisk refset: " + asteriskConceptId);
 
-      Logger.getLogger(this.getClass())
-          .info("Loading published and publication-ready records...");
+      Logger.getLogger(this.getClass()).info(
+          "Loading published and publication-ready records...");
 
       // count variables for log output
       int nTotal = 0;
-      int nAdded = 0;
+      int nChanged = 0;
 
       // cycle over all map records for project
       List<MapRecord> mapRecords =
-          workflowService.getMapRecordsForMapProject(mapProject.getId()).getMapRecords();
-      
-      Logger.getLogger(this.getClass())
-      .info("Cycling over published and publication-ready records...");
-      
+          workflowService.getMapRecordsForMapProject(mapProject.getId())
+              .getMapRecords();
+
+      Logger.getLogger(this.getClass()).info(
+          "Cycling over published and publication-ready records...");
+
       workflowService.beginTransaction();
 
       Iterator<MapRecord> iter = mapRecords.iterator();
 
       while (iter.hasNext()) {
-
         MapRecord mr = iter.next();
-
         boolean recordChanged = false;
 
         // skip non-published records
@@ -146,33 +172,67 @@ public class AdHocMojo extends AbstractMojo {
 
         nTotal++;
 
-        // cycle over entries
-        for (MapEntry me : mr.getMapEntries()) {
+        // If there is a single map entry and it is an asterisk code
+        // Remove advice “THIS CODE IS NOT TO BE USED IN THE PRIMARY POSITION”
+        // If it exists
+        // Add advice “THIS CODE MAY BE USED IN THE PRIMARY POSITION WHEN THE
+        // MANIFESTATION IS THE PRIMARY FOCUS OF CARE”
+        // If it does not exist
+        // Add advice “THIS MAP REQUIRES A DAGGER CODE AS WELL AS AN ASTERISK
+        // CODE”
+        // If it does not exist
+        if (mr.getMapEntries().size() == 1) {
+          final MapEntry entry = mr.getMapEntries().get(0);
 
-          // if an icd10 assterisk code
-          if (me.getMapGroup() == 1 && isIcd10AsteriskCode(me.getTargetId(), asteriskConceptId)) {
-
-            if (!me.getMapAdvices().contains(mapAdvice)) {
-
-              Logger.getLogger(AdHocMojo.class).info(
-                  "Adding missing advice to map record " + mr.getId()
-                      + " for concept " + mr.getConceptId() + ", map entry "
-                      + me.getId() + " with target " + me.getTargetId());
-
-              // add advice
-              me.addMapAdvice(mapAdvice);
+          if (isIcd10AsteriskCode(entry.getTargetId(), asteriskConceptId)) {
+            if (entry.getMapAdvices().contains(advice2)) {
+              entry.removeMapAdvice(advice2);
               recordChanged = true;
-              nAdded++;
-
+            } else if (!entry.getMapAdvices().contains(advice1)) {
+              entry.addMapAdvice(advice1);
+              recordChanged = true;
+            } else if (!entry.getMapAdvices().contains(advice3)) {
+              entry.addMapAdvice(advice3);
+              recordChanged = true;
             }
-          } else if (me.getMapAdvices().contains(mapAdvice)) {
-            Logger.getLogger(AdHocMojo.class)
-            .info("Removing extraneous advice from map record " + mr.getId()
-                + " for concept " + mr.getConceptId() + ", map entry "
-                + me.getId() + " with target " + me.getTargetId());
-            
-            me.removeMapAdvice(mapAdvice);
-            recordChanged = true;
+            if (recordChanged) {
+              getLog().info("    changed " + mr.getConceptId());
+              nChanged++;
+            }
+          }
+        }
+
+        else {
+
+          // cycle over entries
+          for (final MapEntry entry : mr.getMapEntries()) {
+
+            // if an icd10 asterisk code
+            if (isIcd10AsteriskCode(entry.getTargetId(), asteriskConceptId)) {
+
+              // If there are more than one map entries, for each entry whose
+              // targetId is an asterisk code:
+              // Remove advice “THIS CODE IS NOT TO BE USED IN THE PRIMARY
+              // POSITION”
+              // If it exists
+              // Add advice “THIS CODE MAY BE USED IN THE PRIMARY POSITION WHEN
+              // THE MANIFESTATION IS THE PRIMARY FOCUS OF CARE”
+              // If it does not exist
+
+              if (entry.getMapAdvices().contains(advice2)) {
+                entry.getMapAdvices().remove(advice2);
+                recordChanged = true;
+              }
+
+              if (!entry.getMapAdvices().contains(advice1)) {
+                entry.getMapAdvices().add(advice1);
+                recordChanged = true;
+              }
+            }
+          }
+          if (recordChanged) {
+            getLog().info("    changed " + mr.getConceptId());
+            nChanged++;
           }
         }
 
@@ -181,19 +241,15 @@ public class AdHocMojo extends AbstractMojo {
         }
       }
 
-      Logger.getLogger(this.getClass()).info(
-          "Checked " + nTotal + " published/publication-ready records ("
-              + mapRecords.size() + " in project");
-      Logger.getLogger(this.getClass()).info(
-          "Added missing advice to " + nAdded + " entries referencing "
-              + icd10AsteriskCodes.size() + " asterisk code targets");
+      getLog().info("  changed = " + nChanged);
+      getLog().info("  total = " + nTotal);
 
-      Logger.getLogger(this.getClass()).info("Committing...");
+      getLog().info("Committing...");
 
       // execute the transaction
       workflowService.commit();
 
-      Logger.getLogger(this.getClass()).info("Finished");
+      getLog().info("Finished");
 
     } catch (Exception e) {
       e.printStackTrace();
