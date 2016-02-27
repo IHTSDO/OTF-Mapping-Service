@@ -264,7 +264,7 @@ angular
             var entry = record.mapEntry[i];
             // Use the scoped entry if the local id matches or if the actual id
             // matches
-            if (matchingEnries(entry, $scope.entry)) {
+            if (matchingEntry(entry, $scope.entry)) {
               entry = $scope.entry;
             }
             // pass the record entry, use the scoped one
@@ -272,12 +272,8 @@ angular
             computeAdvice(entry, i).then(
             // Success
             function(data) {
-              // Only call updateEntry on the scope version
-              // other references point back to the record
-              // and so are inherently already updated
-              if (matchingEntries(data, $scope.entry)) {
-                updateEntry(data);
-              }
+              // Update the entry
+              updateEntry(data);
             });
           }
         }
@@ -293,7 +289,7 @@ angular
 
           $rootScope.glassPane++;
 
-          var entryIsScopeEntry = matchingEntries(entry, $scope.entry);
+          var entryIsScopeEntry = matchingEntry(entry, $scope.entry);
 
           // Replace in the record the entry being edited
           // so the changes are reflected. All other entries
@@ -307,7 +303,7 @@ angular
           // one in cases where we are checking other entries
           for (var i = 0; i < copy.mapEntry.length; i++) {
             // if localId or Id matches $scope record, replace it
-            if (matchingEntries(copy.mapEntry[i], $scope.entry)) {
+            if (matchingEntry(copy.mapEntry[i], $scope.entry)) {
               var entryCopy2 = angular.copy($scope.entry);
               if (entryIsScopeEntry) {
                 entryCopy2.id = -1;
@@ -332,7 +328,7 @@ angular
               if (data) {
                 entry.mapAdvice = data.mapAdvice;
                 // get the allowable advices and relations for this entry
-                if (matchingEntries(entry, $scope.entry)) {
+                if (matchingEntry(entry, $scope.entry)) {
                   $scope.allowableAdvices = getAllowableAdvices(entry, $scope.project.mapAdvice);
                   sortByKey($scope.allowableAdvices, 'detail');
                   $scope.allowableMapRelations = getAllowableRelations(entry,
