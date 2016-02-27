@@ -64,7 +64,7 @@ public class IndexViewerHandler {
   public SearchResultList findIndexEntries(String terminology,
     String terminologyVersion, String domain, String searchField,
     String subSearchField, String subSubSearchField, boolean allFlag)
-      throws Exception {
+    throws Exception {
 
     SearchResultList searchResultList = new SearchResultListJpa();
 
@@ -97,10 +97,11 @@ public class IndexViewerHandler {
     mainSearchResults =
         performCodeSearch(terminology, terminologyVersion, domain, searchField);
     if (mainSearchResults.size() == 0) {
-      mainSearchResults = performSearch(terminology, terminologyVersion, domain,
-          searchField, startLevel, endLevel, null,
-          (subSearchField != null && !subSearchField.equals("undefined")
-              && !subSearchField.equals("")));
+      mainSearchResults =
+          performSearch(terminology, terminologyVersion, domain, searchField,
+              startLevel, endLevel, null, (subSearchField != null
+                  && !subSearchField.equals("undefined") && !subSearchField
+                  .equals("")));
     }
 
     if (subSearchField == null || subSearchField.equals("undefined")
@@ -113,10 +114,12 @@ public class IndexViewerHandler {
       }
       return sortSearchResultList(searchResultList);
     } else {
-      startLevel = Integer
-          .parseInt(config.getProperty("index.viewer.subSearchStartLevel"));
-      endLevel = Integer
-          .parseInt(config.getProperty("index.viewer.subSearchEndLevel"));
+      startLevel =
+          Integer.parseInt(config
+              .getProperty("index.viewer.subSearchStartLevel"));
+      endLevel =
+          Integer
+              .parseInt(config.getProperty("index.viewer.subSearchEndLevel"));
       for (int i = 0; i < mainSearchResults.size(); i++) {
         subSearchResults.addAll(performSearch(terminology, terminologyVersion,
             domain, subSearchField, startLevel, endLevel,
@@ -134,14 +137,16 @@ public class IndexViewerHandler {
       }
       return sortSearchResultList(searchResultList);
     } else {
-      startLevel = Integer
-          .parseInt(config.getProperty("index.viewer.subSubSearchStartLevel"));
-      endLevel = Integer
-          .parseInt(config.getProperty("index.viewer.subSubSearchEndLevel"));
+      startLevel =
+          Integer.parseInt(config
+              .getProperty("index.viewer.subSubSearchStartLevel"));
+      endLevel =
+          Integer.parseInt(config
+              .getProperty("index.viewer.subSubSearchEndLevel"));
       for (int i = 0; i < subSearchResults.size(); i++) {
         subSubSearchResults.addAll(performSearch(terminology,
-            terminologyVersion, domain, subSubSearchField, startLevel, endLevel,
-            subSearchResults.get(i), false));
+            terminologyVersion, domain, subSubSearchField, startLevel,
+            endLevel, subSearchResults.get(i), false));
       }
     }
 
@@ -169,7 +174,7 @@ public class IndexViewerHandler {
     Collections.sort(searchResults, new Comparator<SearchResult>() {
       @Override
       public int compare(SearchResult o1, SearchResult o2) {
-        
+
         if (o1.getValue2() == null && o2.getValue2() == null) {
           return 0;
         }
@@ -203,7 +208,7 @@ public class IndexViewerHandler {
   private List<String> performSearch(String terminology,
     String terminologyVersion, String domain, String searchStr, int startLevel,
     int endLevel, String subSearchAnchor, boolean requireHasChild)
-      throws Exception {
+    throws Exception {
 
     Logger.getLogger(this.getClass()).debug("Perform index search ");
     Logger.getLogger(this.getClass()).debug("  terminology = " + terminology);
@@ -215,8 +220,9 @@ public class IndexViewerHandler {
     if (prop == null) {
       return new ArrayList<>();
     }
-    final String indexesDir = prop + "/" + terminology + "/"
-        + terminologyVersion + "/lucene/" + domain;
+    final String indexesDir =
+        prop + "/" + terminology + "/" + terminologyVersion + "/lucene/"
+            + domain;
 
     final List<String> searchResults = new ArrayList<>();
     // configure
@@ -230,8 +236,9 @@ public class IndexViewerHandler {
     if (subSearchAnchor != null && subSearchAnchor.indexOf(".") == -1)
       query = query + " topLink:" + subSearchAnchor;
     if (subSearchAnchor != null && subSearchAnchor.indexOf(".") != -1)
-      query = query + " topLink:"
-          + subSearchAnchor.substring(0, subSearchAnchor.indexOf('.'));
+      query =
+          query + " topLink:"
+              + subSearchAnchor.substring(0, subSearchAnchor.indexOf('.'));
 
     int maxHits = Integer.parseInt(config.getProperty("index.viewer.maxHits"));
 
@@ -246,8 +253,9 @@ public class IndexViewerHandler {
     final String defaultField = "title";
     final Map<String, Analyzer> fieldAnalyzers = new HashMap<>();
     fieldAnalyzers.put("code", new KeywordAnalyzer());
-    final PerFieldAnalyzerWrapper analyzer = new PerFieldAnalyzerWrapper(
-        new StandardAnalyzer(Version.LUCENE_36), fieldAnalyzers);
+    final PerFieldAnalyzerWrapper analyzer =
+        new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_36),
+            fieldAnalyzers);
 
     Logger.getLogger(this.getClass()).debug("  Prep searcher");
     final QueryParser parser =
@@ -269,8 +277,9 @@ public class IndexViewerHandler {
       final String label = d.get("label");
       int level = Integer.parseInt(levelTag);
 
-      String linkFirstComponent = (link.indexOf(".") != -1)
-          ? link.substring(0, link.indexOf(".")) : link;
+      String linkFirstComponent =
+          (link.indexOf(".") != -1) ? link.substring(0, link.indexOf("."))
+              : link;
       if (label != null)
         linkToLabelMap.put(linkFirstComponent, label);
 
@@ -334,8 +343,9 @@ public class IndexViewerHandler {
     if (prop == null) {
       return null;
     }
-    final String indexesDir = prop + "/" + terminology + "/"
-        + terminologyVersion + "/lucene/" + domain;
+    final String indexesDir =
+        prop + "/" + terminology + "/" + terminologyVersion + "/lucene/"
+            + domain;
 
     // configure
     final File selectedDomainDir = new File(indexesDir);
@@ -355,8 +365,9 @@ public class IndexViewerHandler {
     final String defaultField = "title";
     final Map<String, Analyzer> fieldAnalyzers = new HashMap<>();
     fieldAnalyzers.put("link", new KeywordAnalyzer());
-    final PerFieldAnalyzerWrapper analyzer = new PerFieldAnalyzerWrapper(
-        new StandardAnalyzer(Version.LUCENE_36), fieldAnalyzers);
+    final PerFieldAnalyzerWrapper analyzer =
+        new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_36),
+            fieldAnalyzers);
 
     Logger.getLogger(this.getClass()).debug("  Prep searcher");
     final QueryParser parser =
@@ -409,13 +420,6 @@ public class IndexViewerHandler {
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.ContentService#getIndexDomains(java.lang
-   * .String, java.lang.String)
-   */
   /**
    * Returns the index domains.
    *
@@ -424,7 +428,6 @@ public class IndexViewerHandler {
    * @return the index domains
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   public SearchResultList getIndexDomains(String terminology,
     String terminologyVersion) throws Exception {
 
@@ -433,8 +436,9 @@ public class IndexViewerHandler {
     // Local directory
     String dataDir =
         ConfigUtility.getConfigProperties().getProperty("index.viewer.data");
-    
-    Logger.getLogger(getClass()).info("Retrieving index domains from " + dataDir);
+
+    Logger.getLogger(getClass()).info(
+        "Retrieving index domains from " + dataDir);
 
     if (dataDir == null || dataDir.isEmpty()) {
       return searchResultList;
@@ -453,8 +457,8 @@ public class IndexViewerHandler {
                   SearchResult searchResult = new SearchResultJpa();
                   searchResult.setValue(domainDir.getName());
                   searchResultList.addSearchResult(searchResult);
-                  Logger.getLogger(ContentServiceJpa.class)
-                      .debug("  Index domain found: " + domainDir.getName());
+                  Logger.getLogger(ContentServiceJpa.class).debug(
+                      "  Index domain found: " + domainDir.getName());
                 }
               }
             }
@@ -466,13 +470,6 @@ public class IndexViewerHandler {
     return searchResultList;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.ContentService#getIndexViewerPagesForIndex
-   * (java.lang.String, java.lang.String, java.lang.String)
-   */
   /**
    * Returns the index pages for index.
    *
@@ -504,8 +501,8 @@ public class IndexViewerHandler {
                 for (final File domainDir : typeDir.listFiles()) {
                   // find domain directory
                   if (domainDir.getName().equals(index)) {
-                    Logger.getLogger(ContentServiceJpa.class)
-                        .debug("  Pages for index domain found: "
+                    Logger.getLogger(ContentServiceJpa.class).debug(
+                        "  Pages for index domain found: "
                             + domainDir.getName());
                     // find pages
                     for (final File pageFile : domainDir.listFiles()) {
@@ -558,8 +555,8 @@ public class IndexViewerHandler {
 
       // construct the link text and add to details
       for (Fieldable field : d.getFields()) {
-        Logger.getLogger(getClass())
-            .debug("  " + field.name() + ": " + d.get(field.name()));
+        Logger.getLogger(getClass()).debug(
+            "  " + field.name() + ": " + d.get(field.name()));
       }
 
       // truncate
@@ -579,8 +576,8 @@ public class IndexViewerHandler {
 
       // construct the link text and add to details
       for (Fieldable field : d.getFields()) {
-        Logger.getLogger(getClass())
-            .debug("  " + field.name() + ": " + d.get(field.name()));
+        Logger.getLogger(getClass()).debug(
+            "  " + field.name() + ": " + d.get(field.name()));
       }
 
       // add indentation based on position
@@ -594,15 +591,15 @@ public class IndexViewerHandler {
       } else {
         htmlFragment += d.get("title");
       }
-      
+
       // if code present, add
       if (d.get("code") != null) {
         htmlFragment += "&nbsp;" + d.get("code");
       }
-      
+
       // add line break
       htmlFragment += "<br>";
-      
+
     }
 
     return htmlFragment;
