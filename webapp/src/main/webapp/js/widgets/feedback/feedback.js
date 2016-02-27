@@ -41,7 +41,7 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
       $scope.searchPerformed = false; // initialize variable to track whether
       // search was performed
       $scope.feedbackType = 'All Feedback';
-      $scope.resolvedType = 'All';
+      $scope.resolvedType = 'Active';
       $scope.reviewedType = 'All';
       $scope.recordIdOwnerMap = new Array();
 
