@@ -1,206 +1,204 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-	<!-- Module Metadata -->
-	<parent>
-		<groupId>org.ihtsdo.otf.mapping</groupId>
-		<artifactId>mapping-parent</artifactId>
-		<version>1.0.0-SNAPSHOT</version>
-		<relativePath>../parent</relativePath>
-	</parent>
+  <!-- Module Metadata -->
+  <parent>
+    <groupId>org.ihtsdo.otf.mapping</groupId>
+    <artifactId>mapping-parent</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <relativePath>../parent</relativePath>
+  </parent>
 
-	<artifactId>mapping-webapp</artifactId>
-	<name>OTF RF2 Webapp</name>
-	<description>OTF RF2 webapp</description>
-	<packaging>war</packaging>
+  <artifactId>mapping-webapp</artifactId>
+  <name>OTF RF2 Webapp</name>
+  <description>OTF RF2 webapp</description>
+  <packaging>war</packaging>
 
-	<properties>
-		<packageName>${project.parent.artifactId}-webapp</packageName>
-		<!-- Specify the config artifact parameters -->
-		<config.groupId>org.ihtsdo.otf.mapping</config.groupId>
-		<config.artifactId>mapping-config-dev-windows</config.artifactId>
-		<config.version>${releaseVersion}</config.version>
-		<!-- having these defaults is problematic, require them in config file -->
-		<index.viewer.groupId>org.ihtsdo.otf.mapping</index.viewer.groupId>
-		<index.viewer.artifactId>index-viewer-data-icd10</index.viewer.artifactId>
-		<index.viewer.version>1.1.0-SNAPSHOT</index.viewer.version>
-	</properties>
+  <properties>
+    <packageName>${project.parent.artifactId}-webapp</packageName>
+    <!-- Specify the config artifact parameters -->
+    <config.groupId>org.ihtsdo.otf.mapping</config.groupId>
+    <config.artifactId>mapping-config-dev-windows</config.artifactId>
+    <config.version>${releaseVersion}</config.version>
+    <!-- having these defaults is problematic, require them in config file <index.viewer.groupId>org.ihtsdo.otf.mapping</index.viewer.groupId> 
+      <index.viewer.artifactId>index-viewer-data-icd10</index.viewer.artifactId> <index.viewer.version>1.1.0-SNAPSHOT</index.viewer.version> -->
+  </properties>
 
-	<!-- Declare Project Dependency Versions -->
-	<dependencies>
+  <!-- Declare Project Dependency Versions -->
+  <dependencies>
 
-		<!-- Model interfaces. -->
-		<dependency>
-			<groupId>org.ihtsdo.otf.mapping</groupId>
-			<artifactId>mapping-model</artifactId>
-		</dependency>
+    <!-- Model interfaces. -->
+    <dependency>
+      <groupId>org.ihtsdo.otf.mapping</groupId>
+      <artifactId>mapping-model</artifactId>
+    </dependency>
 
-	</dependencies>
+  </dependencies>
 
-	<!-- Standard build profile, no special configuration needed -->
-	<build>
-		<finalName>${project.artifactId}</finalName>
+  <!-- Standard build profile, no special configuration needed -->
+  <build>
+    <finalName>${project.artifactId}</finalName>
 
-		<!-- Add target images folder to the resources list -->
-		<resources>
-			<resource>
-				<directory>
+    <!-- Add target images folder to the resources list -->
+    <resources>
+      <resource>
+        <directory>
         ${project.build.directory}/custom
         </directory>
-			</resource>
-		</resources>
+      </resource>
+    </resources>
 
-		<plugins>
+    <plugins>
 
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>unpack</id>
-						<phase>initialize</phase>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>${config.groupId}</groupId>
-									<artifactId>${config.artifactId}</artifactId>
-									<version>${config.version}</version>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/config/resources</outputDirectory>
-								</artifactItem>
-							</artifactItems>
-						</configuration>
-					</execution>
-					<execution>
-						<id>unpack-index-viewer-data</id>
-						<phase>process-sources</phase>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<!-- These are set by the properties in the read-project-properties 
-										call. They can be manually overridden with -D as desired. -->
-									<groupId>${index.viewer.groupId}</groupId>
-									<artifactId>${index.viewer.artifactId}</artifactId>
-									<version>${index.viewer.version}</version>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/config/resources</outputDirectory>
-								</artifactItem>
-							</artifactItems>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>unpack</id>
+            <phase>initialize</phase>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>${config.groupId}</groupId>
+                  <artifactId>${config.artifactId}</artifactId>
+                  <version>${config.version}</version>
+                  <type>zip</type>
+                  <outputDirectory>${project.build.directory}/config/resources</outputDirectory>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+          <execution>
+            <id>unpack-index-viewer-data</id>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <!-- These are set by the properties in the read-project-properties 
+                    call. They can be manually overridden with -D as desired. -->
+                  <groupId>${index.viewer.groupId}</groupId>
+                  <artifactId>${index.viewer.artifactId}</artifactId>
+                  <version>${index.viewer.version}</version>
+                  <type>zip</type>
+                  <outputDirectory>${project.build.directory}/config/resources</outputDirectory>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
 
-			<!-- Configure environment-specific build time information -->
-			<!-- In particular, this is for base.url -->
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>properties-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>read-project-properties</goal>
-						</goals>
-						<configuration>
-							<files>
-								<file>${project.build.directory}/config/resources/config.properties</file>
-							</files>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+      <!-- Configure environment-specific build time information -->
+      <!-- In particular, this is for base.url -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>properties-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>read-project-properties</goal>
+            </goals>
+            <configuration>
+              <files>
+                <file>${project.build.directory}/config/resources/config.properties</file>
+              </files>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
 
-			<!-- Configure .war build -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-war-plugin</artifactId>
-				<configuration>
-					<webResources>
-						<resource>
-							<directory>${project.build.directory}/config/resources</directory>
-							<!-- avoid unnecessary stuff -->
-							<excludes>
-								<exclude>bin/**</exclude>
-								<exclude>config*.properties</exclude>
-							</excludes>
-						</resource>
-						<resource>
-							<directory>src/main/webapp</directory>
-							<filtering>true</filtering>
-							<includes>
-								<include>index.html</include>
-								<include>partials/footer.html</include>
-								<include>partials/header.html</include>
-								<include>partials/login.html</include>
-							</includes>
-						</resource>
-						<resource>
-							<directory>src/main/webapp</directory>
-							<filtering>false</filtering>
-							<excludes>
-								<exclude>index.html</exclude>
-								<exclude>partials/footer.html</exclude>
-								<exclude>partials/header.html</exclude>
-								<exclude>partials/login.html</exclude>
-							</excludes>
-						</resource>
-					</webResources>
-				</configuration>
-			</plugin>
+      <!-- Configure .war build -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <configuration>
+          <webResources>
+            <resource>
+              <directory>${project.build.directory}/config/resources</directory>
+              <!-- avoid unnecessary stuff -->
+              <excludes>
+                <exclude>bin/**</exclude>
+                <exclude>config*.properties</exclude>
+              </excludes>
+            </resource>
+            <resource>
+              <directory>src/main/webapp</directory>
+              <filtering>true</filtering>
+              <includes>
+                <include>index.html</include>
+                <include>partials/footer.html</include>
+                <include>partials/header.html</include>
+                <include>partials/login.html</include>
+              </includes>
+            </resource>
+            <resource>
+              <directory>src/main/webapp</directory>
+              <filtering>false</filtering>
+              <excludes>
+                <exclude>index.html</exclude>
+                <exclude>partials/footer.html</exclude>
+                <exclude>partials/header.html</exclude>
+                <exclude>partials/login.html</exclude>
+              </excludes>
+            </resource>
+          </webResources>
+        </configuration>
+      </plugin>
 
-			<!-- Configure debian package -->
-			<plugin>
-				<groupId>org.vafer</groupId>
-				<artifactId>jdeb</artifactId>
-				<version>1.1.1</version>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>jdeb</goal>
-						</goals>
-						<configuration>
-							<deb>${project.build.directory}/${packageName}-${releaseVersion}-all.deb</deb>
-							<classifier>all</classifier>
-							<controlDir>${basedir}/src/deb/control</controlDir>
-							<snapshotExpand>true</snapshotExpand>
-							<snapshotEnv>BUILD_NUMBER</snapshotEnv>
-							<signPackage>false</signPackage>
-							<dataSet>
-								<data>
-									<src>${basedir}/src/main/webapp</src>
-									<type>directory</type>
-									<mapper>
-										<type>directory</type>
-										<prefix>/var/www</prefix>
-									</mapper>
-									<mapper>
-										<type>perm</type>
-										<prefix>/srv/http/${packageName}</prefix>
-										<filemode>0644</filemode>
-									</mapper>
-								</data>
-								<data>
-									<src>${basedir}/src/nginx/web.conf</src>
-									<dst>/etc/nginx/conf.d/${packageName}.conf</dst>
-									<type>file</type>
-									<conffile>true</conffile>
-								</data>
-							</dataSet>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+      <!-- Configure debian package -->
+      <plugin>
+        <groupId>org.vafer</groupId>
+        <artifactId>jdeb</artifactId>
+        <version>1.1.1</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>jdeb</goal>
+            </goals>
+            <configuration>
+              <deb>${project.build.directory}/${packageName}-${releaseVersion}-all.deb</deb>
+              <classifier>all</classifier>
+              <controlDir>${basedir}/src/deb/control</controlDir>
+              <snapshotExpand>true</snapshotExpand>
+              <snapshotEnv>BUILD_NUMBER</snapshotEnv>
+              <signPackage>false</signPackage>
+              <dataSet>
+                <data>
+                  <src>${basedir}/src/main/webapp</src>
+                  <type>directory</type>
+                  <mapper>
+                    <type>directory</type>
+                    <prefix>/var/www</prefix>
+                  </mapper>
+                  <mapper>
+                    <type>perm</type>
+                    <prefix>/srv/http/${packageName}</prefix>
+                    <filemode>0644</filemode>
+                  </mapper>
+                </data>
+                <data>
+                  <src>${basedir}/src/nginx/web.conf</src>
+                  <dst>/etc/nginx/conf.d/${packageName}.conf</dst>
+                  <type>file</type>
+                  <conffile>true</conffile>
+                </data>
+              </dataSet>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
 
-		</plugins>
-	</build>
+    </plugins>
+  </build>
 
 </project>
