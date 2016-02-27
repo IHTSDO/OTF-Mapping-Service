@@ -26,7 +26,7 @@ angular
       // the name and page currently viewed
       $scope.selectedDomain = null;
       $scope.selectedPage = null;
-      
+
       // input fields
       $scope.searchField = null;
       $scope.subSearchField = null;
@@ -57,26 +57,26 @@ angular
           $scope.initialize();
         }
       });
-      
+
       $scope.reset = function() {
         // reset input fields
-        $scope.searchField = null; 
-        $scope.subSearchField = null; 
+        $scope.searchField = null;
+        $scope.subSearchField = null;
         $scope.subSubSearchField = null;
-        
+
         // reset search results
         $scope.searchResults = null;
         $scope.searchResultIndex = 0;
-        
+
         // reset index trails
         $scope.indexTrail = null;
         $scope.indexTrailHighlighted = null;
-        
+
         // remove highlighting from current element
         if ($scope.currentResult) {
           $scope.removeHighlighting($scope.currentResult.value);
         }
-      }
+      };
 
       // create a list of page/active pairs, with first tab active
       // cumbersome hack due to old version of angular-ui-bootstrap
@@ -131,7 +131,7 @@ angular
 
       $scope.performAggregatedSearch = function(searchField, subSearchField, subSubSearchField,
         searchAllLevels, suppressAlerts) {
-        
+
         // ensure input fields are set
         $scope.searchField = searchField;
         $scope.subSearchField = subSearchField;
@@ -199,7 +199,7 @@ angular
       $scope.goToElement = function(result) {
 
         console.debug('Going to result', result);
-        
+
         if (!result) {
           return;
         }
@@ -208,12 +208,10 @@ angular
         if ($scope.currentResult) {
           $scope.removeHighlighting($scope.currentResult.value);
         }
-        
-     
-        
+
         // get the index trail for this
         $scope.detailsHighlighted(result.value);
-      
+
         // parse the new search result to determine page
         var page = result.value.charAt(0);
 
@@ -314,11 +312,10 @@ angular
           }, 500);
 
       };
-    
-      
+
       // retrieve popover details
       function detailsHelper(link) {
-        
+
         var deferred = $q.defer();
 
         if (!link) {
@@ -334,7 +331,7 @@ angular
             + '/details/' + link).then(
           // Success
           function(response) {
-            
+
             console.debug('resolving', response.data.substring(1, response.data.length - 2));
 
             // substring to eliminate quotation marks
@@ -348,12 +345,11 @@ angular
               response.config);
             deferred.resolve(null);
           });
-        
+
         return deferred.promise;
 
-      };
-      
-      
+      }
+
       $scope.detailsHighlighted = function(link) {
         console.debug('Getting SR details', link);
         detailsHelper(link).then(function(response) {
@@ -361,7 +357,7 @@ angular
           $scope.indexTrailHighlighted = response;
         });
       };
-      
+
       $scope.details = function(link) {
         console.debug('Getting details', link);
         detailsHelper(link).then(function(response) {
