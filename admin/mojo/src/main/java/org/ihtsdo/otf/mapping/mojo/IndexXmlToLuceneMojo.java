@@ -137,6 +137,7 @@ public class IndexXmlToLuceneMojo extends AbstractMojo {
       inputDir = baseDir + "/xml";
 
       // set the lucene output directory
+      // TODO: put this into "lucene" directory of baseDir, not hibernate setting!
       String indexBaseDir =
           ConfigUtility.getConfigProperties().getProperty(
               "hibernate.search.default.indexBase");
