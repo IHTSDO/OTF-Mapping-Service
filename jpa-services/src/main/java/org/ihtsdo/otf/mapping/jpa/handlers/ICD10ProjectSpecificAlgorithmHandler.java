@@ -1064,7 +1064,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           cacheCodes();
 
           // Is it a valid 3 digit code?
-          return valid3DigitCodes.contains(terminologyId);
+          return valid3DigitCodes.contains(terminologyId.toUpperCase());
 
         }
       }
