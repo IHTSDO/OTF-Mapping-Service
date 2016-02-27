@@ -280,7 +280,7 @@
                 </goals>
                 <configuration>
                   <inputFile>${input.file}</inputFile>
-                  <workflowStatus>${workflow.status}</workflowStatus>
+                  <workflowStatus>PUBLISHED</workflowStatus>
                 </configuration>
               </execution>
             </executions>
@@ -288,7 +288,7 @@
         </plugins>
       </build>
     </profile>
-    
+
     <!-- Load published map records from RF2 -Drun.config=.. must also be specified. -->
     <profile>
       <id>LegacyMapRecords</id>
@@ -308,32 +308,6 @@
                   <inputFile>${input.file}</inputFile>
                   <workflowStatus>REVISION</workflowStatus>
                   <userName>legacy</userName>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    
-    <!-- Load published map records from RF2 -Drun.config=.. must also be specified. -->
-    <profile>
-      <id>PublishedMapRecords</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.ihtsdo.otf.mapping</groupId>
-            <artifactId>mapping-admin-mojo</artifactId>
-            <executions>
-              <execution>
-                <id>load-rf2-complex-map</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>load-rf2-complex-map</goal>
-                </goals>
-                <configuration>
-                  <inputFile>${input.file}</inputFile>
-                  <workflowStatus>PUBLISHED</workflowStatus>
                 </configuration>
               </execution>
             </executions>
@@ -501,8 +475,8 @@
         </plugins>
       </build>
     </profile>
-    
-     <profile>
+
+    <profile>
       <id>AdHoc</id>
       <build>
         <plugins>
