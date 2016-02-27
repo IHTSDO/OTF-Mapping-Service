@@ -188,12 +188,17 @@ public class AdHocMojo extends AbstractMojo {
             if (entry.getMapAdvices().contains(advice2)) {
               entry.removeMapAdvice(advice2);
               recordChanged = true;
-            } else if (!entry.getMapAdvices().contains(advice1)) {
+              getLog().info("    remove " +  mr.getConceptId() + " " + advice2);
+            }
+            if (!entry.getMapAdvices().contains(advice1)) {
               entry.addMapAdvice(advice1);
               recordChanged = true;
-            } else if (!entry.getMapAdvices().contains(advice3)) {
+              getLog().info("    add " +  mr.getConceptId() + " " + advice1);
+            } 
+            if (!entry.getMapAdvices().contains(advice3)) {
               entry.addMapAdvice(advice3);
               recordChanged = true;
+              getLog().info("    add " +  mr.getConceptId() + " " + advice3);
             }
             if (recordChanged) {
               getLog().info("    changed " + mr.getConceptId());
@@ -222,11 +227,13 @@ public class AdHocMojo extends AbstractMojo {
               if (entry.getMapAdvices().contains(advice2)) {
                 entry.getMapAdvices().remove(advice2);
                 recordChanged = true;
+                getLog().info("    remove " +  mr.getConceptId() + " " + advice2);
               }
 
               if (!entry.getMapAdvices().contains(advice1)) {
                 entry.getMapAdvices().add(advice1);
                 recordChanged = true;
+                getLog().info("    add " +  mr.getConceptId() + " " + advice2);
               }
             }
           }
