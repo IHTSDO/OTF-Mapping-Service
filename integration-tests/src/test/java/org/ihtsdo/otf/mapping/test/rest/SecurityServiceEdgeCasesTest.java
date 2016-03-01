@@ -108,7 +108,12 @@ public class SecurityServiceEdgeCasesTest {
    */
   @AfterClass
   public static void teardownClass() throws Exception {
-    // do nothing
+		// remove the users
+		for (MapUser user : mappingService.getMapUsers().getMapUsers()) {
+			mappingService.removeMapUser(user.getId());
+		}
+
+		mappingService.close();
   }
 
 }
