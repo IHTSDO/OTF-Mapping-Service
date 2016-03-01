@@ -34,6 +34,7 @@ import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -205,6 +206,7 @@ public class WorkflowPathStatesNonLegacyPathTest {
    * @throws Exception the exception
    */
   @Test
+  @Ignore("Obsolete test afte workflow change")
   public void testIllegalWorkflowStatusCombinations() throws Exception {
 
     // set of combinations to test
