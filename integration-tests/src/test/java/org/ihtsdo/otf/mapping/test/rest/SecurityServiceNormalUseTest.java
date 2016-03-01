@@ -1,27 +1,13 @@
 package org.ihtsdo.otf.mapping.test.rest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
-import java.io.File;
-import java.io.FileReader;
-import java.util.Properties;
-
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-
-import org.apache.log4j.Logger;
-import org.hibernate.envers.AuditReaderFactory;
-import org.hibernate.search.jpa.FullTextEntityManager;
-import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
-import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rest.SecurityServiceRest;
 import org.ihtsdo.otf.mapping.services.MappingService;
-import org.ihtsdo.otf.mapping.test.other.MapRecordJpaTest;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -47,9 +33,13 @@ public class SecurityServiceNormalUseTest {
 	@BeforeClass
 	public static void setupClass() throws Exception {
 
-
 		securityService = new SecurityServiceRest();
 		mappingService = new MappingServiceJpa();
+
+		// remove the users to ensure clean initial condition
+		for (MapUser user : mappingService.getMapUsers().getMapUsers()) {
+			mappingService.removeMapUser(user.getId());
+		}
 
 		// create map users
 		MapUser user = new MapUserJpa();

@@ -37,11 +37,13 @@ import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
  * Unit test for workflow path states on "non legacy path".
  */
+@Ignore("Workflow integration obsolete")
 public class WorkflowPathStatesLegacyPathTest {
 
   /** The ws. */
@@ -184,7 +186,7 @@ public class WorkflowPathStatesLegacyPathTest {
     legacyRecord.setLastModifiedBy(legacyUser);
     legacyRecord.setOwner(legacyUser);
     legacyRecord.setMapProjectId(mapProject.getId());
-    legacyRecord.setWorkflowStatus(WorkflowStatus.PUBLISHED);
+    legacyRecord.setWorkflowStatus(WorkflowStatus.REVISION);
 
     MapEntry e = new MapEntryJpa();
     e.setMapBlock(1);
