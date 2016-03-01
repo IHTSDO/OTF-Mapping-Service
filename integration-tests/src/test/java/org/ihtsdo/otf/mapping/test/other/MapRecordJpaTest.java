@@ -24,6 +24,7 @@ import org.hibernate.search.SearchFactory;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
+import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
 import org.ihtsdo.otf.mapping.jpa.MapNoteJpa;
@@ -244,47 +245,6 @@ public class MapRecordJpaTest {
 
   }
 
-  /**
-   * Tests cascading delete settings from Entry to Note, Principle, Advice.
-   * 
-   * @throws Exception the exception
-   */
-  @SuppressWarnings("static-method")
-  @Test
-  public void confirmMapEntryDelete() throws Exception {
-
-    Logger.getLogger(MapRecordJpaTest.class).info(
-        "Testing MapEntry delete functions...");
-
-    EntityTransaction tx = manager.getTransaction();
-
-    MapEntry mapEntry =
-        (MapEntry) manager.createQuery("select m from MapEntryJpa m")
-            .getSingleResult();
-
-    // retrieve id of advice, entry, note
-
-    Long entryId = mapEntry.getId();
-    Long entryAdviceId = mapEntry.getMapAdvices().iterator().next().getId();
-    Logger.getLogger(MapRecordJpaTest.class).info("entryId " + entryId);
-
-    // delete the map entry
-    tx.begin();
-    if (manager.contains(mapEntry)) {
-      manager.remove(mapEntry);
-    } else {
-      manager.remove(manager.merge(mapEntry));
-    }
-
-    tx.commit();
-
-    // test existence of entry (should have been deleted)
-    assertTrue(manager.find(MapEntryJpa.class, entryId) == null);
-
-    // test existence of entry advice (should not have been deleted)
-    assertTrue(manager.find(MapAdviceJpa.class, entryAdviceId) != null);
-
-  }
 
   /**
    * Confirms map record load.
@@ -333,6 +293,7 @@ public class MapRecordJpaTest {
     mapUser1.setEmail("new email");
     mapUser1.setName("user1");
     mapUser1.setUserName("username1");
+    mapUser1.setApplicationRole(MapUserRole.LEAD);
     manager.persist(mapUser1);
 
     // create map record
@@ -345,6 +306,7 @@ public class MapRecordJpaTest {
     mapRecord1.setFlagForMapLeadReview(false);
     mapRecord1.setLastModified(new Long("1"));
     mapRecord1.setTimestamp(System.currentTimeMillis());
+    mapRecord1.setLastModifiedBy(mapUser1);
     mapRecord1.setOwner(mapUser1);
     manager.persist(mapRecord1);
 
