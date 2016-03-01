@@ -33,11 +33,13 @@ import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
  * Unit test for workflow actions on non legacy path.
  */
+@Ignore("Workflow integration tests outdated after workflow revision")
 public class WorkflowActionNonLegacyPathTest {
 
 	// the content
