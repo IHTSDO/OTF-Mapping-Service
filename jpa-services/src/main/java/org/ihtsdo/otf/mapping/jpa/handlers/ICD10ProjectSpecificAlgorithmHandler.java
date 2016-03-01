@@ -444,8 +444,6 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
           // Validate the external cause code
           else {
-            // TODO: also need to add map advice when undetermined poisoning and
-            // ismapped to accidental code
 
             Set<String> cmpCodes = getIcd10ExternalCauseCodes();
             String type = "unspecified";
@@ -1601,12 +1599,12 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
    * @return the icd10 external cause codes
    */
   private static Set<String> getIcd10ExternalCauseCodes() {
-    final List<String> externalCauseCodes = new ArrayList<>();
+    final Set<String> externalCauseCodes = new HashSet<>();
     externalCauseCodes.addAll(getIcd10AdverseEffectPoisoningCodes());
     externalCauseCodes.addAll(getIcd10IntentionalPoisoningCodes());
     externalCauseCodes.addAll(getIcd10UndeterminedPoisoningCodes());
     externalCauseCodes.addAll(getIcd10AccidentalPoisoningCodes());
-    return null;
+    return externalCauseCodes;
   }
 
   /**
