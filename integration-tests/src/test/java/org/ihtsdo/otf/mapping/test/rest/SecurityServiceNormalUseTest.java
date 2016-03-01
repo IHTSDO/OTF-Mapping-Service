@@ -34,15 +34,6 @@ import org.junit.Test;
  */
 public class SecurityServiceNormalUseTest {
 
-	/** The manager. */
-	private static EntityManager manager;
-
-	/** The factory. */
-	private static EntityManagerFactory factory;
-
-	/** The full text entity manager. */
-	private static FullTextEntityManager fullTextEntityManager;
-
 	/** The service. */
 	private static SecurityServiceRest securityService;
 	private static MappingService mappingService;
@@ -55,17 +46,6 @@ public class SecurityServiceNormalUseTest {
 	 */
 	@BeforeClass
 	public static void setupClass() throws Exception {
-
-		// create Entity Manager
-		String configFileName = System.getProperty("run.config.test");
-		Logger.getLogger(MapRecordJpaTest.class).info("  run.config.test = " + configFileName);
-		Properties config = new Properties();
-		FileReader in = new FileReader(new File(configFileName));
-		config.load(in);
-		in.close();
-		Logger.getLogger(MapRecordJpaTest.class).info("  properties = " + config);
-		factory = Persistence.createEntityManagerFactory("MappingServiceDS", config);
-		manager = factory.createEntityManager();
 
 
 		securityService = new SecurityServiceRest();
