@@ -38,10 +38,12 @@ import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
+import org.ihtsdo.otf.mapping.test.helpers.TestHelper;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -51,6 +53,7 @@ import org.junit.Test;
  * confirms indexed fields are indexed 3. confirms MapRecord is audited and
  * changes are logged in audit table
  */
+@Ignore("Disabled due to bad transaction handling")
 public class MapRecordJpaTest {
 
   /** The manager. */
@@ -82,6 +85,8 @@ public class MapRecordJpaTest {
    */
   @BeforeClass
   public static void init() throws Exception {
+	  
+	  TestHelper testHelper = new TestHelper();
 
     // create Entity Manager
     String configFileName = System.getProperty("run.config.test");

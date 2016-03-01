@@ -4,6 +4,8 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.MapProjectList;
 import org.ihtsdo.otf.mapping.helpers.MapUserList;
 import org.ihtsdo.otf.mapping.rest.MappingServiceRest;
+import org.ihtsdo.otf.mapping.test.helpers.TestHelper;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -15,6 +17,8 @@ public class MappingServiceRestTest {
 
   /** The edit mapping service */
   private static MappingServiceRest service;
+  
+  private static TestHelper testHelper;
 
   /**
    * Instantiates an empty {@link MappingServiceRestTest}.
@@ -33,7 +37,25 @@ public class MappingServiceRestTest {
 
     Logger.getLogger(MappingServiceRestTest.class).info(
         "Initializing MappingServiceRestTest");
+    
+    try {
+		testHelper = new TestHelper();
+		testHelper.createTestData();
+	} catch (Exception e) {
+		org.junit.Assert.fail("Init failed");
+		e.printStackTrace();
+	}
 
+  }
+  
+  @AfterClass
+  public static void teardown() {
+	  try {
+		testHelper.clearTestData();
+		testHelper.close();
+	} catch (Exception e) {
+		org.junit.Assert.fail("Teardown failed");
+	}
   }
 
   /**
@@ -47,20 +69,14 @@ public class MappingServiceRestTest {
         "Testing retrieval of elements...");
 
     // retrieve all
-    MapProjectList projects = service.getMapProjects("adm");
-    MapUserList users = service.getMapUsers("adm");
+    MapProjectList projects = service.getMapProjects("admin");
+    MapUserList users = service.getMapUsers("admin");
 
     Logger.getLogger(MappingServiceRestTest.class).info(
         Integer.toString(projects.getCount()) + " projects found");
     Logger.getLogger(MappingServiceRestTest.class).info(
         Integer.toString(users.getCount()) + " users found");
 
-    // retrieve all projects
-    service.getMapProjects("adm");
-    /*
-     * // retrieve projects by specialist for (MapUser m : users.getMapUsers())
-     * { service.getMapProjectsForUser(m.getId().toString(), "adm"); }
-     */
 
   }
 
