@@ -38,7 +38,6 @@ import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
-import org.ihtsdo.otf.mapping.test.helpers.TestHelper;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -85,8 +84,6 @@ public class MapRecordJpaTest {
    */
   @BeforeClass
   public static void init() throws Exception {
-	  
-	  TestHelper testHelper = new TestHelper();
 
     // create Entity Manager
     String configFileName = System.getProperty("run.config.test");
@@ -249,7 +246,6 @@ public class MapRecordJpaTest {
     assertTrue(manager.find(MapAdviceJpa.class, entryAdviceId) != null);
 
   }
-
 
   /**
    * Confirms map record load.
