@@ -368,73 +368,29 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements
     return map;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.jpa.services.RootServiceJpa#close()
-   */
   @Override
   public void close() {
     // no-op - this is just helper class
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MetadataService#getTerminologies()
-   */
   @Override
   public List<String> getTerminologies() {
     // no-op - this is just helper class
     return null;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getVersions(java.lang.String
-   * )
-   */
   @Override
   public List<String> getVersions(String terminology) {
     // no-op - this is just helper class
     return null;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getLatestVersion(java.lang
-   * .String)
-   */
   @Override
   public String getLatestVersion(String terminology) {
     // no-op - this is just helper class
     return null;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getPreviousVersion(java
-   * .lang.String)
-   */
-  @Override
-  public String getPreviousVersion(String terminology) {
-    // no-op - this is just helper class
-    return null;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getTerminologyLatestVersions
-   * ()
-   */
   @Override
   public String getPreviousVersion(String terminology) {
     // no-op - this is just helper class

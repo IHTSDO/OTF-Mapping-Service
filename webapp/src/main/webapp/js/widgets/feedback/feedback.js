@@ -1,8 +1,7 @@
 'use strict';
 
-angular
-  .module('mapProjectApp.widgets.feedback', [ 'adf.provider' ])
-  .config(function(dashboardProvider) {
+angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
+  function(dashboardProvider) {
     dashboardProvider.widget('feedback', {
       title : 'Feedback',
       description : 'Displays a list of feedback notes',
@@ -125,14 +124,6 @@ angular
             }
           }).success(function(data) {
           $rootScope.glassPane--;
-          console.debug("success to update Feedback conversation.");
-        }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
-          $scope.recordError = "Error updating feedback conversation.";
-          $rootScope.handleHttpError(data, status, headers, config);
-        });
-      }
-      ;
 
           // set pagination variables
           $scope.nRecords = data.totalCount;

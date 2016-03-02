@@ -703,10 +703,6 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
         // detached object errors
         MapRecord newRecord = new MapRecordJpa(mr, false);
 
-        /*
-         * Logger.getLogger(WorkflowServiceJpa.class).info( "Adding record: " +
-         * newRecord.toString());
-         */
         // add the record to the database
         addMapRecord(newRecord);
 
@@ -1173,15 +1169,6 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
     Logger.getLogger(WorkflowServiceJpa.class).info(
         "Retrieving tracking records for project " + mapProject.getId() + ", "
             + mapProject.getName());
-
-    // instantiate a copy of all workflow handlers
-    WorkflowNonLegacyPathHandler nonLegacyHandler =
-        new WorkflowNonLegacyPathHandler();
-    WorkflowFixErrorPathHandler fixErrorHandler =
-        new WorkflowFixErrorPathHandler();
-    WorkflowQaPathHandler qaHandler = new WorkflowQaPathHandler();
-    WorkflowReviewProjectPathHandler reviewHandler =
-        new WorkflowReviewProjectPathHandler();
 
     // get all the tracking records for this project
     TrackingRecordList trackingRecords =

@@ -492,19 +492,4 @@ public interface WorkflowService extends MappingService {
   public WorkflowPathHandler getWorkflowPathHandlerForMapProject(
     MapProject mapProject) throws Exception;
 
-  /**
-   * Send feedback email.
-   *
-   * @param name the name
-   * @param email the email
-   * @param conceptId the concept id
-   * @param conceptName the concept name
-   * @param refSetId the ref set id
-   * @param feedbackMessage the feedback message
-   * @throws Exception the exception
-   */
-  public void sendFeedbackEmail(String name, String email, String conceptId,
-    String conceptName, String refSetId, String feedbackMessage)
-    throws Exception;
-
 }

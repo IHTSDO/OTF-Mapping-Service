@@ -71,7 +71,7 @@ public class ReportServiceRest extends RootServiceRest {
 
   /**
    * Returns the report definitions.
-   * 
+   *
    * @param authToken the auth token
    * @return the report definition
    * @throws Exception the exception
@@ -97,15 +97,6 @@ public class ReportServiceRest extends RootServiceRest {
       // get the reports
       final ReportDefinitionList definitionList =
           reportService.getReportDefinitions();
-
-      // sort by name
-      definitionList.sortBy(new Comparator<ReportDefinition>() {
-        @Override
-        public int compare(ReportDefinition o1, ReportDefinition o2) {
-          return o1.getName().toLowerCase()
-              .compareTo(o2.getName().toLowerCase());
-        }
-      });
 
       // sort by name
       definitionList.sortBy(new Comparator<ReportDefinition>() {
@@ -166,53 +157,8 @@ public class ReportServiceRest extends RootServiceRest {
   }
 
   /**
-   * Returns the report definitions.
-   *
-   * @param id the id
-   * @param authToken the auth token
-   * @return the report definition
-   */
-  @GET
-  @Path("/definition/id/{id}")
-  @ApiOperation(value = "Get a report definition", notes = "Gets the report definition for the specified id.", response = ReportDefinitionJpa.class)
-  @Produces({
-      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-  })
-  public ReportDefinition getReportDefinition(
-    @ApiParam(value = "Report definition id", required = true) @PathParam("id") Long id,
-    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Report):  /definition/id/" + id);
-    String user = "";
-
-    try {
-      // authorize call
-      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
-      user = securityService.getUsernameForToken(authToken);
-      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
-        throw new WebApplicationException(
-            Response
-                .status(401)
-                .entity(
-                    "User does not have permissions to get report definitions.")
-                .build());
-
-      // get the reports
-      ReportService reportService = new ReportServiceJpa();
-      ReportDefinition definition = reportService.getReportDefinition(id);
-
-      reportService.close();
-
-      return definition;
-    } catch (Exception e) {
-      handleException(e, "trying to get report definition", user, "", "");
-      return null;
-    }
-  }
-
-  /**
    * Adds the report definitions.
-   * 
+   *
    * @param reportDefinition the report definition
    * @param authToken the auth token
    * @return the report definition
@@ -635,81 +581,6 @@ public class ReportServiceRest extends RootServiceRest {
   }
 
   /**
-   * Returns the most recent report for map project and report type.
-   * 
-   * @param projectId the project id
-   * @param definitionId the definition id
-   * @param authToken the auth token
-   * @return the reports for map project and report type
-   */
-  @GET
-  @Path("/report/reports/latest/project/id/{projectId}/definition/id/{definitionId}/items")
-  @ApiOperation(value = "Get latest report for a project and definition", notes = "Gets the latest result items for the specified definition and project", response = ReportJpa.class)
-  @Produces({
-      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-  })
-  public Report getLatestReport(
-    @ApiParam(value = "Map project id", required = true) @PathParam("projectId") Long projectId,
-    @ApiParam(value = "Report definition id", required = true) @PathParam("definitionId") Long definitionId,
-    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
-
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Report):  /report/reports/latest/project/id/"
-            + projectId.toString() + "/definition/id/"
-            + definitionId.toString() + "/items");
-    String user = "";
-    String projectName = "";
-
-    try {
-      // authorize call
-      MapUserRole role =
-          securityService.getMapProjectRoleForToken(authToken, projectId);
-      user = securityService.getUsernameForToken(authToken);
-      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
-        throw new WebApplicationException(
-            Response
-                .status(401)
-                .entity(
-                    "User does not have permissions to retrieve most recent report.")
-                .build());
-
-      MappingService mappingService = new MappingServiceJpa();
-      MapProject mapProject = mappingService.getMapProject(projectId);
-      projectName = mapProject.getName();
-      mappingService.close();
-
-      // get the reports
-      ReportService reportService = new ReportServiceJpa();
-      ReportDefinition reportDefinition =
-          reportService.getReportDefinition(definitionId);
-      ReportList reportList =
-          reportService.getReportsForMapProjectAndReportDefinition(mapProject,
-              reportDefinition, null);
-      reportService.close();
-
-      Report latestReport = null;
-      for (Report rpt : reportList.getReports()) {
-        if (latestReport == null
-            || rpt.getTimestamp() > latestReport.getTimestamp())
-          latestReport = rpt;
-      }
-      if (latestReport == null) {
-        return null;
-      }
-      // lazy initialize items
-      for (ReportResult result : latestReport.getResults()) {
-        result.getReportResultItems().size();
-      }
-      return latestReport;
-    } catch (Exception e) {
-      handleException(e, "trying to retrieve most recent report", user,
-          projectName, "");
-      return null;
-    }
-
-  }
-
-  /**
    * Generate report.
    * @param reportDefinition the report definition
    * 
@@ -947,14 +818,6 @@ public class ReportServiceRest extends RootServiceRest {
       // get the qaChecks
       final ReportDefinitionList definitionList =
           reportService.getQACheckDefinitions();
-
-      // sort results
-      definitionList.sortBy(new Comparator<ReportDefinition>() {
-        @Override
-        public int compare(ReportDefinition o1, ReportDefinition o2) {
-          return o1.getName().compareTo(o2.getName());
-        }
-      });
 
       // sort results
       definitionList.sortBy(new Comparator<ReportDefinition>() {

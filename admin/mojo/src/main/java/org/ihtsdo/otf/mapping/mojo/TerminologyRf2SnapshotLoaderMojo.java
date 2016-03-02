@@ -39,7 +39,6 @@ import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.ihtsdo.otf.mapping.services.helpers.FileSorter;
-import org.ihtsdo.otf.mapping.services.helpers.OtfEmailHandler;
 
 import com.google.common.io.Files;
 
@@ -74,12 +73,6 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
    * @required
    */
   private String version;
-  
-  /**
-   * Whether to send email notification of any errors
-   * @parameter
-   */
-  private boolean sendNotification = false;
 
   /**
    * Whether to send email notification of any errors
@@ -166,23 +159,6 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
       // Load config properties
       Properties config = ConfigUtility.getConfigProperties();
-      
-      // check that notifications can be sent if requested
-      String notificationRecipients =
-          config.getProperty("send.notification.recipients");
-      if (!sendNotification) {
-        getLog().info(
-            "No notifications will be sent as a result of workflow computation.");
-      }
-      if (sendNotification
-          && config.getProperty("send.notification.recipients") == null) {
-        throw new MojoFailureException(
-            "Email notification was requested, but no recipients were specified.");
-      } else {
-        getLog().info(
-            "Request to send notification email for any errors to recipients: "
-                + notificationRecipients);
-      }
 
       // check that notifications can be sent if requested
       String notificationRecipients =

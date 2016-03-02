@@ -24,7 +24,7 @@
       <div ng-repeat="col in row.columns" class="column" ng-class="col.class"
         ui-sortable="sortableOptions" ng-model="col.widgets">
         <div class="widgets" ng-repeat="definition in col.widgets">
-          <adf-widget  definition="definition" column="col"
+          <adf-widget definition="definition" column="col"
             edit-mode="{{editMode}}" collapsible="collapsible" />
         </div>
       </div>

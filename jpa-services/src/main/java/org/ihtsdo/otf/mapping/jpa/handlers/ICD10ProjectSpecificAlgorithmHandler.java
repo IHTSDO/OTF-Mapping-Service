@@ -151,19 +151,6 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
                     + Integer.toString(mapEntry.getMapGroup()) + "," : "")
                 + " map  priority "
                 + Integer.toString(mapEntry.getMapPriority()));
-          }
-
-          // Validate the code
-          if (concept != null && !isTargetCodeValid(concept.getTerminologyId())) {
-
-            validationResult.addError("Target code "
-                + mapEntry.getTargetId()
-                + " is an invalid code, use a child code instead. "
-                + " Entry:"
-                + (mapProject.isGroupStructure() ? " group "
-                    + Integer.toString(mapEntry.getMapGroup()) + "," : "")
-                + " map  priority "
-                + Integer.toString(mapEntry.getMapPriority()));
 
           }
 

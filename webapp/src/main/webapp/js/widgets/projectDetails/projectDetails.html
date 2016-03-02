@@ -22,12 +22,12 @@
   </span>
 </div>
 
-<accordion close-others="false"> <accordion-group
-	is-open="true"> <accordion-heading>
+<accordion close-others="false"> <accordion-group is-open="true">
+<accordion-heading>
 <h5>
-	<span tooltip-placement="right"
-		tooltip="List of the details for this project."> Map Project
-		Details </span>
+  <span tooltip-placement="right"
+    tooltip="List of the details for this project."> Map Project Details
+  </span>
 </h5>
 </accordion-heading>
 
@@ -122,12 +122,12 @@
   </tbody>
 </table>
 <p></p>
-</accordion-group><accordion-group
-	ng-show="focusProject.mapLead.length > 0 || editModeEnabled == true">
+</accordion-group> <accordion-group
+  ng-show="focusProject.mapLead.length > 0 || editModeEnabled == true">
 <accordion-heading>
 <h5>
-	<span tooltip-placement="right"
-		tooltip="List of the map leads for this project."> Map Leads </span>
+  <span tooltip-placement="right"
+    tooltip="List of the map leads for this project."> Map Leads </span>
 </h5>
 </accordion-heading>
 <table style="width: 100%" class="table pure-table">
@@ -210,12 +210,12 @@
 </form>
 
 </accordion-group> <accordion-group
-	ng-show="focusProject.mapSpecialist.length > 0 || editModeEnabled == true">
+  ng-show="focusProject.mapSpecialist.length > 0 || editModeEnabled == true">
 <accordion-heading>
 <h5>
-	<span tooltip-placement="right"
-		tooltip="List of the map specialists for this project."> Map
-		Specialists </span>
+  <span tooltip-placement="right"
+    tooltip="List of the map specialists for this project."> Map
+    Specialists </span>
 </h5>
 </accordion-heading>
 <table style="width: 100%" class="table pure-table">
@@ -303,20 +303,19 @@
 </form>
 
 </accordion-group> <accordion-group
-	ng-show="focusProject.mapAdvice.length > 0 || editModeEnabled == true">
+  ng-show="focusProject.mapAdvice.length > 0 || editModeEnabled == true">
 <accordion-heading>
 <h5>
-	<span tooltip-placement="right"
-		tooltip="List of the map advice for this project."> Map Advices
-	</span>
+  <span tooltip-placement="right"
+    tooltip="List of the map advice for this project."> Map Advices </span>
 </h5>
 </accordion-heading> <pagination direction-links="false" boundary-links="true"
-	total-items="pagedAdviceCount" items-per-page="pageSize"
-	page="pageAdvice" on-select-page="getPagedAdvices(page, adviceFilter)"></pagination>
+  total-items="pagedAdviceCount" items-per-page="pageSize" page="pageAdvice"
+  on-select-page="getPagedAdvices(page, adviceFilter)"></pagination>
 <form>
-	<input id="adviceSearch" type="text" ng-model="adviceFilter"
-		ng-change="getPagedAdvices(1, adviceFilter)"> <input
-		type="submit" value="Reset Filter" ng-click="resetAdviceFilter()">
+  <input id="adviceSearch" type="text" ng-model="adviceFilter"
+    ng-change="getPagedAdvices(1, adviceFilter)"> <input type="submit"
+    value="Reset Filter" ng-click="resetAdviceFilter()">
 </form>
 
 <table style="width: 100%" class="table pure-table">
@@ -352,7 +351,7 @@
       </td>
     </tr>
 
-	</tbody>
+  </tbody>
 </table>
 
 <table ng-show="editModeEnabled == true && currentRole == 'Administrator'"
@@ -423,22 +422,21 @@
 </form>
 
 </accordion-group> <accordion-group
-	ng-show="focusProject.mapRelation.length > 0 || editModeEnabled == true">
+  ng-show="focusProject.mapRelation.length > 0 || editModeEnabled == true">
 <accordion-heading>
 <h5>
-	<span tooltip-placement="right"
-		tooltip="List of the map relations for this project."> Map
-		Relations </span>
+  <span tooltip-placement="right"
+    tooltip="List of the map relations for this project."> Map Relations
+  </span>
 </h5>
 </accordion-heading> <pagination ng-show="focusProject.mapRelation.length > pageSize"
-	direction-links="false" boundary-links="true"
-	total-items="pagedRelationCount" items-per-page="pageSize"
-	page="pageRelation"
-	on-select-page="getPagedRelations(page, relationFilter)"></pagination>
+  direction-links="false" boundary-links="true" total-items="pagedRelationCount"
+  items-per-page="pageSize" page="pageRelation"
+  on-select-page="getPagedRelations(page, relationFilter)"></pagination>
 <form>
-	<input type="text" ng-model="relationFilter"
-		ng-change="getPagedRelations(1, relationFilter)"> <input
-		type="submit" value="Reset Filter" ng-click="resetRelationFilter()">
+  <input type="text" ng-model="relationFilter"
+    ng-change="getPagedRelations(1, relationFilter)"> <input
+    type="submit" value="Reset Filter" ng-click="resetRelationFilter()">
 </form>
 
 <table style="width: 100%" class="table pure-table">
@@ -557,24 +555,24 @@
   </table>
 </form>
 </accordion-group> <accordion-group
-	ng-show="true || focusProject.reportDefinition.length > 0 || editModeEnabled == true">
+  ng-show="true || focusProject.reportDefinition.length > 0 || editModeEnabled == true">
 <accordion-heading>
 <h5>
-	<span tooltip-placement="right"
-		tooltip="List of the report definitions for this project.">
-		Report Definitions </span>
+  <span tooltip-placement="right"
+    tooltip="List of the report definitions for this project."> Report
+    Definitions </span>
 </h5>
 
 </accordion-heading> <pagination ng-show="focusProject.reportDefinition.length > pageSize"
-	direction-links="false" boundary-links="true"
-	total-items="pagedReportDefinitionCount" items-per-page="pageSize"
-	page="pageDefinition"
-	on-select-page="getPagedReportDefinitions(page, reportDefinitionFilter)"></pagination>
+  direction-links="false" boundary-links="true"
+  total-items="pagedReportDefinitionCount" items-per-page="pageSize"
+  page="pageDefinition"
+  on-select-page="getPagedReportDefinitions(page, reportDefinitionFilter)"></pagination>
 <form>
-	<input type="text" ng-model="reportDefinitionFilter"
-		ng-change="getPagedReportDefinitions(1, reportDefinitionFilter)">
-	<input type="submit" value="Reset Filter"
-		ng-click="resetReportDefinitionFilter(); reportDefinitionFilter = '';">
+  <input type="text" ng-model="reportDefinitionFilter"
+    ng-change="getPagedReportDefinitions(1, reportDefinitionFilter)"> <input
+    type="submit" value="Reset Filter"
+    ng-click="resetReportDefinitionFilter(); reportDefinitionFilter = '';">
 </form>
 
 
@@ -655,12 +653,12 @@
 </table>
 
 </accordion-group> <accordion-group
-	ng-show="true || focusProject.reportDefinition.length > 0 || editModeEnabled == true">
+  ng-show="true || focusProject.reportDefinition.length > 0 || editModeEnabled == true">
 <accordion-heading>
 <h5>
-	<span tooltip-placement="right"
-		tooltip="List of the qa check definitions for this project.">
-		QA Check Definitions </span>
+  <span tooltip-placement="right"
+    tooltip="List of the qa check definitions for this project."> QA
+    Check Definitions </span>
 </h5>
 </accordion-heading> <pagination ng-show="focusProject.reportDefinition.length > pageSize"
   direction-links="false" boundary-links="true"
@@ -747,22 +745,22 @@
 </table>
 
 </accordion-group> <accordion-group
-	ng-show="focusProject.mapPrinciple.length > 0 || editModeEnabled == true">
+  ng-show="focusProject.mapPrinciple.length > 0 || editModeEnabled == true">
 <accordion-heading>
 <h5>
-	<span tooltip-placement="right"
-		tooltip="List of the map principles for this project."> Map
-		Principles </span>
+  <span tooltip-placement="right"
+    tooltip="List of the map principles for this project."> Map
+    Principles </span>
 </h5>
 </accordion-heading> <pagination ng-show="focusProject.mapPrinciple.length > pageSize"
-	direction-links="false" boundary-links="true"
-	total-items="pagedPrincipleCount" items-per-page="pageSize"
-	page="pagePrinciple"
-	on-select-page="getPagedPrinciples(page, principleFilter)"></pagination>
+  direction-links="false" boundary-links="true"
+  total-items="pagedPrincipleCount" items-per-page="pageSize"
+  page="pagePrinciple"
+  on-select-page="getPagedPrinciples(page, principleFilter)"></pagination>
 <form>
-	<input type="text" ng-model="principleFilter"
-		ng-change="getPagedPrinciples(1, principleFilter)"> <input
-		type="submit" value="Reset Filter" ng-click="resetPrincipleFilter()">
+  <input type="text" ng-model="principleFilter"
+    ng-change="getPagedPrinciples(1, principleFilter)"> <input
+    type="submit" value="Reset Filter" ng-click="resetPrincipleFilter()">
 </form>
 
 <table style="width: 100%" class="table pure-table">
@@ -881,19 +879,19 @@
   <input type="file" ng-file-select="onFileSelect($files)">
 </div>
 <div
-	ng-show="focusProject.mapPrincipleSourceDocument != null &&
+  ng-show="focusProject.mapPrincipleSourceDocument != null &&
                     focusProject.mapPrincipleSourceDocument != ''">
   Principles taken from
   <a href="doc/{{focusProject.mapPrincipleSourceDocument}}" target="_blank">Map
     Principles Document</a>
 </div>
 </accordion-group> <accordion-group
-	ng-show="focusProject.mapAgeRange.length > 0 || editModeEnabled == true">
+  ng-show="focusProject.mapAgeRange.length > 0 || editModeEnabled == true">
 <accordion-heading>
 <h5>
-	<span tooltip-placement="right"
-		tooltip="List of the preset age ranges used for rule construction for this project.">
-		Preset Age Ranges </span>
+  <span tooltip-placement="right"
+    tooltip="List of the preset age ranges used for rule construction for this project.">
+    Preset Age Ranges </span>
 </h5>
 </accordion-heading>
 <table style="width: 100%" class="table pure-table">
@@ -1036,12 +1034,12 @@
 </form>
 
 </accordion-group> <accordion-group
-	ng-show="focusProject.errorMessages.length > 0 || editModeEnabled == true">
+  ng-show="focusProject.errorMessages.length > 0 || editModeEnabled == true">
 <accordion-heading>
 <h5>
-	<span tooltip-placement="right"
-		tooltip="List of the potential error messages available for this project.">
-		Error Messages </span>
+  <span tooltip-placement="right"
+    tooltip="List of the potential error messages available for this project.">
+    Error Messages </span>
 </h5>
 </accordion-heading>
 <table style="width: 100%" class="table pure-table">
@@ -1098,14 +1096,14 @@
 
 </accordion-group> <accordion-group> <accordion-heading>
 <h5>
-	<span tooltip-placement="right"
-		tooltip="List of the concepts in scope for this project.">
-		Scope Concepts </span>
+  <span tooltip-placement="right"
+    tooltip="List of the concepts in scope for this project."> Scope
+    Concepts </span>
 </h5>
 </accordion-heading> <pagination direction-links="false" boundary-links="true"
-	total-items="pagedScopeConceptCount" items-per-page="pageSize"
-	max-size="maxSize" page="pageScopeConcept"
-	on-select-page="getPagedScopeConcepts(page)"></pagination> <!-- <form>
+  total-items="pagedScopeConceptCount" items-per-page="pageSize"
+  max-size="maxSize" page="pageScopeConcept"
+  on-select-page="getPagedScopeConcepts(page)"></pagination> <!-- <form>
       <input id="scopeConceptSearch" type="text" ng-model="scopeConceptFilter" ng-change="getPagedScopeConcepts(1)">
       <input type="submit" value="Reset Filter" ng-click="resetScopeConceptFilter()">
     </form>  -->
@@ -1133,10 +1131,10 @@
   </tbody>
 </table>
 
-<div ng-show="focusProject.scopeDescendantsFlag == true">Scope
-	Descendants Included</div>
+<div ng-show="focusProject.scopeDescendantsFlag == true">Scope Descendants
+  Included</div>
 <div ng-show="focusProject.scopeDescendantsFlag == false">Scope
-	Descendants Not Included</div>
+  Descendants Not Included</div>
 
 <div ng-show="editModeEnabled == true">
   Scope Descendants Included <select
@@ -1165,14 +1163,14 @@
 
 </accordion-group> <accordion-group> <accordion-heading>
 <h5>
-	<span tooltip-placement="right"
-		tooltip="List of the concepts excluded from scope for this project.">
-		Scope Excluded Concepts </span>
+  <span tooltip-placement="right"
+    tooltip="List of the concepts excluded from scope for this project.">
+    Scope Excluded Concepts </span>
 </h5>
 </accordion-heading> <pagination direction-links="false" boundary-links="true"
-	total-items="pagedScopeExcludedConceptCount" items-per-page="pageSize"
-	max-size="maxSize" page="pageScopeExcludedConcept"
-	on-select-page="getPagedScopeExcludedConcepts(page)"></pagination> <!--<form>
+  total-items="pagedScopeExcludedConceptCount" items-per-page="pageSize"
+  max-size="maxSize" page="pageScopeExcludedConcept"
+  on-select-page="getPagedScopeExcludedConcepts(page)"></pagination> <!--<form>
       <input id="scopeExcludedConceptSearch" type="text" ng-model="scopeExcludedConceptFilter" ng-change="getPagedScopeExcludedConcepts(1)">
       <input type="submit" value="Reset Filter" ng-click="resetScopeExcludedConceptFilter()">
     </form>  -->
