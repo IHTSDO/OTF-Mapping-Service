@@ -17,7 +17,8 @@ public class MappingServiceRestTest {
 
   /** The edit mapping service */
   private static MappingServiceRest service;
-  
+
+  /** The test helper. */
   private static TestHelper testHelper;
 
   /**
@@ -37,25 +38,28 @@ public class MappingServiceRestTest {
 
     Logger.getLogger(MappingServiceRestTest.class).info(
         "Initializing MappingServiceRestTest");
-    
+
     try {
-		testHelper = new TestHelper();
-		testHelper.createTestData();
-	} catch (Exception e) {
-		org.junit.Assert.fail("Init failed");
-		e.printStackTrace();
-	}
+      testHelper = new TestHelper();
+      testHelper.createTestData();
+    } catch (Exception e) {
+      org.junit.Assert.fail("Init failed");
+      e.printStackTrace();
+    }
 
   }
-  
+
+  /**
+   * Teardown.
+   */
   @AfterClass
   public static void teardown() {
-	  try {
-		testHelper.clearTestData();
-		testHelper.close();
-	} catch (Exception e) {
-		org.junit.Assert.fail("Teardown failed");
-	}
+    try {
+      testHelper.clearTestData();
+      testHelper.close();
+    } catch (Exception e) {
+      org.junit.Assert.fail("Teardown failed");
+    }
   }
 
   /**
@@ -76,7 +80,6 @@ public class MappingServiceRestTest {
         Integer.toString(projects.getCount()) + " projects found");
     Logger.getLogger(MappingServiceRestTest.class).info(
         Integer.toString(users.getCount()) + " users found");
-
 
   }
 
