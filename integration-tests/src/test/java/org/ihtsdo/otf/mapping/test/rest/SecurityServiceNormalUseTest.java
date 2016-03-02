@@ -20,119 +20,116 @@ import org.junit.Test;
  */
 public class SecurityServiceNormalUseTest {
 
-	/** The service. */
-	private static SecurityServiceRest securityService;
-	private static MappingService mappingService;
+  /** The service. */
+  private static SecurityServiceRest securityService;
 
-	/**
-	 * Create test fixtures for class.
-	 *
-	 * @throws Exception
-	 *             the exception
-	 */
-	@BeforeClass
-	public static void setupClass() throws Exception {
+  /** The mapping service. */
+  private static MappingService mappingService;
 
-		securityService = new SecurityServiceRest();
-		mappingService = new MappingServiceJpa();
+  /**
+   * Create test fixtures for class.
+   *
+   * @throws Exception the exception
+   */
+  @BeforeClass
+  public static void setupClass() throws Exception {
 
-		// remove the users to ensure clean initial condition
-		for (MapUser user : mappingService.getMapUsers().getMapUsers()) {
-			mappingService.removeMapUser(user.getId());
-		}
+    securityService = new SecurityServiceRest();
+    mappingService = new MappingServiceJpa();
 
-		// create map users
-		MapUser user = new MapUserJpa();
-		user.setName("guest");
-		user.setUserName("guest");
-		user.setEmail("guest");
-		user.setApplicationRole(MapUserRole.VIEWER);
-		mappingService.addMapUser(user);
+    // remove the users to ensure clean initial condition
+    for (MapUser user : mappingService.getMapUsers().getMapUsers()) {
+      mappingService.removeMapUser(user.getId());
+    }
 
-		MapUser demoUser = new MapUserJpa();
-		demoUser.setName("demo_lead");
-		demoUser.setUserName("demo_lead");
-		demoUser.setEmail("demo_lead");
-		demoUser.setApplicationRole(MapUserRole.VIEWER);
-		mappingService.addMapUser(demoUser);
+    // create map users
+    MapUser user = new MapUserJpa();
+    user.setName("guest");
+    user.setUserName("guest");
+    user.setEmail("guest");
+    user.setApplicationRole(MapUserRole.VIEWER);
+    mappingService.addMapUser(user);
 
-	}
+    MapUser demoUser = new MapUserJpa();
+    demoUser.setName("demo_lead");
+    demoUser.setUserName("demo_lead");
+    demoUser.setEmail("demo_lead");
+    demoUser.setApplicationRole(MapUserRole.VIEWER);
+    mappingService.addMapUser(demoUser);
 
-	/**
-	 * Create test fixtures per test.
-	 *
-	 * @throws Exception
-	 *             the exception
-	 */
-	@Before
-	public void setup() throws Exception {
+  }
 
-	}
+  /**
+   * Create test fixtures per test.
+   *
+   * @throws Exception the exception
+   */
+  @Before
+  public void setup() throws Exception {
+    // n/a
+  }
 
-	/**
-	 * Test normal use of the authenticate methods of
-	 * {@link SecurityServiceRest}.
-	 * 
-	 * @throws Exception
-	 *             the exception
-	 */
-	@Test
-	public void testNormalUseRestSecurity001() throws Exception {
-		try {
-			String authToken = securityService.authenticate("guest", "guest");
-			Assert.assertEquals(authToken, "guest");
-			authToken = securityService.authenticate("demo_lead", "demo_lead");
-			Assert.assertEquals(authToken, "demo_lead");
-		} catch (Exception e) {
-			fail("Error during login test");
-			e.printStackTrace();
-		}
-	}
+  /**
+   * Test normal use of the authenticate methods of {@link SecurityServiceRest}.
+   * 
+   * @throws Exception the exception
+   */
+  @SuppressWarnings("static-method")
+  @Test
+  public void testNormalUseRestSecurity001() throws Exception {
+    try {
+      String authToken = securityService.authenticate("guest", "guest");
+      Assert.assertEquals(authToken, "guest");
+      authToken = securityService.authenticate("demo_lead", "demo_lead");
+      Assert.assertEquals(authToken, "demo_lead");
+    } catch (Exception e) {
+      fail("Error during login test");
+      e.printStackTrace();
+    }
+  }
 
-	/**
-	 * Test normal use of logout for {@link SecurityServiceRest}.
-	 *
-	 * @throws Exception
-	 *             the exception
-	 */
-	@Test
-	public void testNormalUseRestSecurity002() throws Exception {
-		try {
-			securityService.authenticate("guest", "guest");
-			securityService.authenticate("demo_lead", "demo_lead");
-			securityService.logout("guest");
-			securityService.logout("demo_lead");
-		} catch (Exception e) {
-			fail("Error during logout test");
-			e.printStackTrace();
-		}
-	}
+  /**
+   * Test normal use of logout for {@link SecurityServiceRest}.
+   *
+   * @throws Exception the exception
+   */
+  @SuppressWarnings("static-method")
+  @Test
+  public void testNormalUseRestSecurity002() throws Exception {
+    try {
+      securityService.authenticate("guest", "guest");
+      securityService.authenticate("demo_lead", "demo_lead");
+      securityService.logout("guest");
+      securityService.logout("demo_lead");
+    } catch (Exception e) {
+      fail("Error during logout test");
+      e.printStackTrace();
+    }
+  }
 
-	/**
-	 * Teardown.
-	 *
-	 * @throws Exception
-	 *             the exception
-	 */
-	@After
-	public void teardown() throws Exception {
-		// do nothing
-	}
+  /**
+   * Teardown.
+   *
+   * @throws Exception the exception
+   */
+  @After
+  public void teardown() throws Exception {
+    // do nothing
+  }
 
-	/**
-	 * Teardown class.
-	 *
-	 * @throws Exception
-	 *             the exception
-	 */
-	@AfterClass
-	public static void teardownClass() throws Exception {
-		// remove the users
-		for (MapUser user : mappingService.getMapUsers().getMapUsers()) {
-			mappingService.removeMapUser(user.getId());
-		}
+  /**
+   * Teardown class.
+   *
+   * @throws Exception the exception
+   */
+  @AfterClass
+  public static void teardownClass() throws Exception {
+    // remove the users
+    for (MapUser user : mappingService.getMapUsers().getMapUsers()) {
+      mappingService.removeMapUser(user.getId());
+    }
 
-		mappingService.close();
-	}
+    mappingService.close();
+  }
 
 }
