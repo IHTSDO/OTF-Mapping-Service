@@ -27,18 +27,22 @@ import org.ihtsdo.otf.mapping.helpers.FeedbackConversationListJpa;
 import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
+import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
+import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
+import org.ihtsdo.otf.mapping.helpers.WorkflowType;
 import org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
+import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowFixErrorPathHandler;
+import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowQaPathHandler;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
-import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ReportServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
@@ -49,10 +53,10 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.reports.Report;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
-import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.ReportService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
+import org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 import org.ihtsdo.otf.mapping.workflow.WorkflowException;
 import org.ihtsdo.otf.mapping.workflow.WorkflowExceptionJpa;
@@ -60,6 +64,9 @@ import org.ihtsdo.otf.mapping.workflow.WorkflowExceptionJpa;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
+
+// TODO Reminder to Patrick to clean up logging after finish (e.g. .info -> .debug)
+// TODO Ticket reminder: assign/unassign of review work does not refresh assigned concept in cases where the user is both specialist & lead (i.e. see it twice after assignment)
 
 /**
  * REST implementation for workflow service.
@@ -76,6 +83,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
   /**
    * Instantiates an empty {@link WorkflowServiceRest}.
+   * 
    * @throws Exception
    */
   public WorkflowServiceRest() throws Exception {
@@ -95,35 +103,28 @@ public class WorkflowServiceRest extends RootServiceRest {
   public void computeWorkflow(
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /project/id/" + mapProjectId.toString()
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /project/id/" + mapProjectId.toString()
             + "/compute");
 
-    String userName = "";
+    String user = null;
     String project = "";
 
-    WorkflowService workflowService = new WorkflowServiceJpa();
-    MappingService mappingService = new MappingServiceJpa();
+    final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
-      userName = securityService.getUsernameForToken(authToken);
-      MapUserRole role =
-          securityService.getMapProjectRoleForToken(authToken, mapProjectId);
-      if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
-        throw new WebApplicationException(Response.status(401)
-            .entity("User does not have permissions to compute workflow.")
-            .build());
+      user = authorizeProject(mapProjectId, authToken,
+          MapUserRole.ADMINISTRATOR, "compute workflow", securityService);
 
-      MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
       workflowService.computeWorkflow(mapProject);
       return;
     } catch (Exception e) {
-      handleException(e, "trying to compute workflow", userName, project, "");
+      handleException(e, "trying to compute workflow", user, project, "");
     } finally {
-      mappingService.close();
       workflowService.close();
       securityService.close();
     }
@@ -155,74 +156,53 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @PathParam("query") String query,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /project/id/" + mapProjectId.toString()
-            + "/user/id/" + userName + "/availableConcepts"
-            + " with PfsParameter: " + "\n" + "     Index/Results = "
-            + Integer.toString(pfsParameter.getStartIndex()) + "/"
-            + Integer.toString(pfsParameter.getMaxResults()) + "\n"
-            + "     Sort field    = " + pfsParameter.getSortField()
-            + "     Filter String = " + pfsParameter.getQueryRestriction());
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /project/id/" + mapProjectId.toString()
+            + "/user/id/" + userName + "/availableConcepts");
 
     String project = "";
-    String user = "";
+    String user = null;
 
-    MappingService mappingService = new MappingServiceJpa();
-    WorkflowService workflowService = new WorkflowServiceJpa();
-    ContentService contentService = new ContentServiceJpa();
+    final WorkflowService workflowService = new WorkflowServiceJpa();
+    final ContentService contentService = new ContentServiceJpa();
     try {
-      // System.out.println("Authorizing at: " + System.currentTimeMillis()
-      // / 1000);
-
       // authorize call
-      MapUserRole role =
-          securityService.getMapProjectRoleForToken(authToken, mapProjectId);
-      if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-        throw new WebApplicationException(Response.status(401)
-            .entity("User does not have permissions to find available work.")
-            .build());
+      user = authorizeProject(mapProjectId, authToken, MapUserRole.SPECIALIST,
+          "find available concepts", securityService);
 
-      // System.out.println("Retrieving objects at "
-      // + System.currentTimeMillis() / 1000);
-
-      // retrieve the project and user
-      MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      // get the project and user
+      final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
-      MapUser mapUser = mappingService.getMapUser(userName);
+      final MapUser mapUser = workflowService.getMapUser(userName);
       user = mapUser.getUserName();
 
-      // System.out.println("Getting available work at "
-      // + System.currentTimeMillis() / 1000);
-
-      // retrieve the workflow tracking records
-      SearchResultList results =
-          workflowService.findAvailableWork(mapProject, mapUser, query,
-              pfsParameter);
+      // get the workflow tracking records
+      SearchResultList results = workflowService.findAvailableWork(mapProject,
+          mapUser, MapUserRole.SPECIALIST, query, pfsParameter);
 
       // Check that all concepts referenced here are active (and thus have
       // a tree position)
       // This is a temporary fix, which will be removed once a more robust
       // solution to scope concepts is found
       // SEE MAP-862
-      SearchResultList revisedResults = new SearchResultListJpa();
-      for (SearchResult result : results.getIterable()) {
+      final SearchResultList revisedResults = new SearchResultListJpa();
+      for (final SearchResult result : results.getIterable()) {
 
-        Concept c =
-            contentService.getConcept(result.getTerminologyId(),
-                mapProject.getSourceTerminology(),
-                mapProject.getSourceTerminologyVersion());
+        final Concept c = contentService.getConcept(result.getTerminologyId(),
+            mapProject.getSourceTerminology(),
+            mapProject.getSourceTerminologyVersion());
         if (c == null) {
-          Logger.getLogger(WorkflowServiceJpa.class).warn(
-              "Could not get concept " + result.getTerminologyId() + ", "
+          Logger.getLogger(WorkflowServiceJpa.class)
+              .warn("Could not get concept " + result.getTerminologyId() + ", "
                   + mapProject.getSourceTerminology() + ", "
                   + mapProject.getSourceTerminologyVersion());
         } else if (c.isActive()) {
           revisedResults.addSearchResult(result);
         } else {
-          Logger.getLogger(WorkflowServiceJpa.class).warn(
-              "Skipping inactive concept " + result.getTerminologyId());
+          Logger.getLogger(WorkflowServiceJpa.class)
+              .warn("Skipping inactive concept " + result.getTerminologyId());
         }
       }
 
@@ -234,7 +214,6 @@ public class WorkflowServiceRest extends RootServiceRest {
       handleException(e, "trying to find available work", user, project, "");
       return null;
     } finally {
-      mappingService.close();
       contentService.close();
       workflowService.close();
       securityService.close();
@@ -267,49 +246,76 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @PathParam("query") String query,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /project/id/" + mapProjectId.toString()
-            + "/user/id/" + userName + "/assignedConcepts"
-            + " with PfsParameter: " + "\n" + "     Index/Results = "
-            + Integer.toString(pfsParameter.getStartIndex()) + "/"
-            + Integer.toString(pfsParameter.getMaxResults()) + "\n"
-            + "     Sort field    = " + pfsParameter.getSortField()
-            + "     Filter String = " + pfsParameter.getQueryRestriction());
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /project/id/" + mapProjectId.toString()
+            + "/user/id/" + userName + "/assignedConcepts");
 
     String project = "";
-    String user = "";
+    String user = null;
 
-    MappingService mappingService = new MappingServiceJpa();
-    WorkflowService workflowService = new WorkflowServiceJpa();
+    final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
-      MapUserRole role =
-          securityService.getMapProjectRoleForToken(authToken, mapProjectId);
-      if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-        throw new WebApplicationException(Response.status(401)
-            .entity("User does not have permissions to find assigned work.")
-            .build());
+      user = authorizeProject(mapProjectId, authToken, MapUserRole.SPECIALIST,
+          "find assigned concepts", securityService);
 
-      // retrieve the project and user
-      MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      // get the project and user
+      final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
-      MapUser mapUser = mappingService.getMapUser(userName);
+      final MapUser mapUser = workflowService.getMapUser(userName);
       user = mapUser.getUserName();
 
-      // retrieve the workflow tracking records
-      SearchResultList results =
-          workflowService.findAssignedWork(mapProject, mapUser, query,
-              pfsParameter);
+      // create PfsParameter from query restriction passed
+      PfsParameter localPfs = new PfsParameterJpa();
+      localPfs.setQueryRestriction(pfsParameter.getQueryRestriction());
+      localPfs.setSortField(pfsParameter.getSortField());
 
-      return results;
+      // get ALL FixErrorPath work at specialist level for the project
+      WorkflowPathHandler fixErrorHandler = new WorkflowFixErrorPathHandler();
+      SearchResultList fixErrorWork =
+          fixErrorHandler.findAssignedWork(mapProject, mapUser,
+              MapUserRole.SPECIALIST, query, localPfs, workflowService);
+
+      // get ALL assigned work at specialist level for project
+      SearchResultList assignedWork = workflowService.findAssignedWork(
+          mapProject, mapUser, MapUserRole.SPECIALIST, query, localPfs);
+
+      // concatenate the results
+      assignedWork.addSearchResults(fixErrorWork);
+
+      // apply paging
+      int[] totalCt = new int[1];
+      localPfs = new PfsParameterJpa(pfsParameter);
+      localPfs.setQueryRestriction("");
+      localPfs.setSortField("");
+
+      // create list of SearchResultJpas
+      // NOTE: This could be cleaned up with better typing
+      // currently cannot convert List<SearchResultJpa> to
+      // List<SearchResult>
+      List<SearchResultJpa> results = new ArrayList<>();
+      for (SearchResult sr : assignedWork.getSearchResults()) {
+        results.add((SearchResultJpa) sr);
+      }
+
+      // apply paging to the list
+      results = workflowService.applyPfsToList(results, SearchResultJpa.class,
+          totalCt, localPfs);
+
+      // reconstruct the assignedWork search result list
+      assignedWork.setSearchResults(new ArrayList<SearchResult>());
+      for (SearchResult sr : results) {
+        assignedWork.addSearchResult(sr);
+      }
+
+      return assignedWork;
 
     } catch (Exception e) {
       handleException(e, "trying to find assigned concepts", user, project, "");
       return null;
     } finally {
-      mappingService.close();
       workflowService.close();
       securityService.close();
     }
@@ -338,51 +344,35 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @PathParam("query") String query,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /project/id/" + mapProjectId.toString()
-            + "/user/id" + userName + "/availableConflicts"
-            + " with PfsParameter: " + "\n" + "     Index/Results = "
-            + Integer.toString(pfsParameter.getStartIndex()) + "/"
-            + Integer.toString(pfsParameter.getMaxResults()) + "\n"
-            + "     Sort field    = " + pfsParameter.getSortField()
-            + "     Filter String = " + pfsParameter.getQueryRestriction());
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /project/id/" + mapProjectId.toString()
+            + "/user/id" + userName + "/availableConflicts");
 
     String project = "";
-    String user = "";
+    String user = null;
 
-    MappingService mappingService = new MappingServiceJpa();
-    WorkflowService workflowService = new WorkflowServiceJpa();
+    final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
-      MapUserRole role =
-          securityService.getMapProjectRoleForToken(authToken, mapProjectId);
-      if (!role.hasPrivilegesOf(MapUserRole.LEAD))
-        throw new WebApplicationException(Response
-            .status(401)
-            .entity(
-                "User does not have permissions to find available conflicts.")
-            .build());
+      user = authorizeProject(mapProjectId, authToken, MapUserRole.LEAD,
+          "find available conflicts", securityService);
 
-      // retrieve the project and user
-      MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      // get the project and user
+      final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
-      MapUser mapUser = mappingService.getMapUser(userName);
+      final MapUser mapUser = workflowService.getMapUser(userName);
       user = mapUser.getUserName();
 
-      // retrieve the workflow tracking records
-      SearchResultList results =
-          workflowService.findAvailableConflicts(mapProject, mapUser, query,
-              pfsParameter);
-
-      return results;
+      // get the workflow tracking records
+      return workflowService.findAvailableWork(mapProject, mapUser,
+          MapUserRole.LEAD, query, pfsParameter);
     } catch (Exception e) {
       handleException(e, "trying to find available conflicts", user, project,
           "");
       return null;
     } finally {
-      mappingService.close();
       workflowService.close();
       securityService.close();
     }
@@ -411,50 +401,35 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @PathParam("query") String query,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /project/id/" + mapProjectId.toString()
-            + "/user/id/" + userName + "/assignedConflicts"
-            + " with PfsParameter: " + "\n" + "     Index/Results = "
-            + Integer.toString(pfsParameter.getStartIndex()) + "/"
-            + Integer.toString(pfsParameter.getMaxResults()) + "\n"
-            + "     Sort field    = " + pfsParameter.getSortField()
-            + "     Filter String = " + pfsParameter.getQueryRestriction());
-
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /project/id/" + mapProjectId.toString()
+            + "/user/id/" + userName + "/assignedConflicts");
     String project = "";
-    String user = "";
+    String user = null;
 
-    MappingService mappingService = new MappingServiceJpa();
-    WorkflowService workflowService = new WorkflowServiceJpa();
+    final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
-      MapUserRole role =
-          securityService.getMapProjectRoleForToken(authToken, mapProjectId);
-      if (!role.hasPrivilegesOf(MapUserRole.LEAD))
-        throw new WebApplicationException(Response
-            .status(401)
-            .entity(
-                "User does not have permissions to find assigned conflicts.")
-            .build());
+      user = authorizeProject(mapProjectId, authToken, MapUserRole.LEAD,
+          "find assigned conflicts", securityService);
 
-      // retrieve the project and user
-      MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      // get the project and user
+      final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
-      MapUser mapUser = mappingService.getMapUser(userName);
+      final MapUser mapUser = workflowService.getMapUser(userName);
       user = mapUser.getUserName();
 
-      // retrieve the map records
-      SearchResultList results =
-          workflowService.findAssignedConflicts(mapProject, mapUser, query,
-              pfsParameter);
+      // get the map records
+      return workflowService.findAssignedWork(mapProject, mapUser,
+          MapUserRole.LEAD, query, pfsParameter);
 
-      return results;
     } catch (Exception e) {
-      handleException(e, "trying to find assigned conflicts", user, project, "");
+      handleException(e, "trying to find assigned conflicts", user, project,
+          "");
       return null;
     } finally {
-      mappingService.close();
       workflowService.close();
       securityService.close();
     }
@@ -483,52 +458,81 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @PathParam("query") String query,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /project/id/" + mapProjectId.toString()
-            + "/user/id" + userName + "/availableReviewWork"
-            + " with PfsParameter: " + "\n" + "     Index/Results = "
-            + Integer.toString(pfsParameter.getStartIndex()) + "/"
-            + Integer.toString(pfsParameter.getMaxResults()) + "\n"
-            + "     Sort field    = " + pfsParameter.getSortField()
-            + "     Filter String = " + pfsParameter.getQueryRestriction());
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /project/id/" + mapProjectId.toString()
+            + "/user/id" + userName + "/availableReviewWork");
 
     String project = "";
-    String user = "";
+    String user = null;
 
-    MappingService mappingService = new MappingServiceJpa();
-    WorkflowService workflowService = new WorkflowServiceJpa();
+    final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
-      MapUserRole role =
-          securityService.getMapProjectRoleForToken(authToken, mapProjectId);
-      if (!role.hasPrivilegesOf(MapUserRole.LEAD))
-        throw new WebApplicationException(
-            Response
-                .status(401)
-                .entity(
-                    "User does not have permissions to find available review work.")
-                .build());
+      user = authorizeProject(mapProjectId, authToken, MapUserRole.LEAD,
+          "find available review work ", securityService);
 
-      // retrieve the project and user
-      MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      // get the project and user
+      final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
-      MapUser mapUser = mappingService.getMapUser(userName);
+      final MapUser mapUser = workflowService.getMapUser(userName);
       user = mapUser.getUserName();
 
-      // retrieve the workflow tracking records
-      SearchResultList results =
-          workflowService.findAvailableReviewWork(mapProject, mapUser, query,
-              pfsParameter);
+      PfsParameter localPfs = new PfsParameterJpa();
+      localPfs.setQueryRestriction(pfsParameter.getQueryRestriction());
+      localPfs.setSortField(pfsParameter.getSortField());
 
-      return results;
+      SearchResultList availableWork = new SearchResultListJpa();
+
+      // get ALL FixErrorPath work at specialist level for the project
+      WorkflowPathHandler fixErrorHandler = new WorkflowFixErrorPathHandler();
+      SearchResultList fixErrorWork =
+          fixErrorHandler.findAvailableWork(mapProject, mapUser,
+              MapUserRole.LEAD, query, localPfs, workflowService);
+
+      // if review project path, get normal work
+      if (mapProject.getWorkflowType().equals(WorkflowType.REVIEW_PROJECT)) {
+
+        // get ALL normal workflow work at lead level
+        availableWork = workflowService.findAvailableWork(mapProject, mapUser,
+            MapUserRole.LEAD, query, pfsParameter);
+      }
+
+      // combine the results
+      availableWork.addSearchResults(fixErrorWork);
+
+      // apply paging
+      int[] totalCt = new int[1];
+      localPfs = new PfsParameterJpa(pfsParameter);
+      localPfs.setQueryRestriction(null);
+      localPfs.setSortField(null);
+
+      // create list of SearchResultJpas
+      // NOTE: This could be cleaned up with better typing
+      // currently cannot convert List<SearchResultJpa> to
+      // List<SearchResult>
+      List<SearchResultJpa> results = new ArrayList<>();
+      for (SearchResult sr : availableWork.getSearchResults()) {
+        results.add((SearchResultJpa) sr);
+      }
+
+      // apply paging to the list
+      results = workflowService.applyPfsToList(results, SearchResultJpa.class,
+          totalCt, localPfs);
+
+      // reconstruct the assignedWork search result list
+      availableWork.setSearchResults(new ArrayList<SearchResult>());
+      for (SearchResult sr : results) {
+        availableWork.addSearchResult(sr);
+      }
+
+      return availableWork;
     } catch (Exception e) {
       handleException(e, "trying to find available review work", user, project,
           "");
       return null;
     } finally {
-      mappingService.close();
       workflowService.close();
       securityService.close();
     }
@@ -555,52 +559,38 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @PathParam("query") String query,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /project/id/" + mapProjectId.toString()
-            + "/availableQAWork" + " with PfsParameter: " + "\n"
-            + "     Index/Results = "
-            + Integer.toString(pfsParameter.getStartIndex()) + "/"
-            + Integer.toString(pfsParameter.getMaxResults()) + "\n"
-            + "     Sort field    = " + pfsParameter.getSortField()
-            + "     Filter String = " + pfsParameter.getQueryRestriction());
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /project/id/" + mapProjectId.toString()
+            + "/availableQAWork");
 
     String project = "";
-    // all qa work will have user "qa"
-    String user = "qa";
+    String user = "qa"; // always the qa user for specialist level work
 
-    MappingService mappingService = new MappingServiceJpa();
-    WorkflowService workflowService = new WorkflowServiceJpa();
+    final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
-      MapUserRole role =
-          securityService.getMapProjectRoleForToken(authToken, mapProjectId);
-      if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-        throw new WebApplicationException(
-            Response
-                .status(401)
-                .entity(
-                    "User does not have permissions to find available qa work.")
-                .build());
+     authorizeProject(mapProjectId, authToken, MapUserRole.SPECIALIST,
+          "find available qa work ", securityService);
 
-      // retrieve the project and user
-      MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      // get the project and user
+      final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
-      MapUser mapUser = mappingService.getMapUser(user);
+      final MapUser mapUser = workflowService.getMapUser(user);
       user = mapUser.getUserName();
 
-      // retrieve the workflow tracking records
-      SearchResultList results =
-          workflowService.findAvailableQAWork(mapProject, mapUser, query,
-              pfsParameter);
+      WorkflowPathHandler handler = new WorkflowQaPathHandler();
+      SearchResultList results = handler.findAvailableWork(mapProject, mapUser,
+          MapUserRole.SPECIALIST, query, pfsParameter, workflowService);
 
       return results;
+
     } catch (Exception e) {
+      e.printStackTrace();
       handleException(e, "trying to find available qa work", user, project, "");
       return null;
     } finally {
-      mappingService.close();
       workflowService.close();
       securityService.close();
     }
@@ -629,51 +619,76 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @PathParam("query") String query,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /project/id/" + mapProjectId.toString()
-            + "/user/id/" + userName + "/assignedReviewWork"
-            + " with PfsParameter: " + "\n" + "     Index/Results = "
-            + Integer.toString(pfsParameter.getStartIndex()) + "/"
-            + Integer.toString(pfsParameter.getMaxResults()) + "\n"
-            + "     Sort field    = " + pfsParameter.getSortField()
-            + "     Filter String = " + pfsParameter.getQueryRestriction());
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /project/id/" + mapProjectId.toString()
+            + "/user/id/" + userName + "/assignedReviewWork");
 
     String project = "";
-    String user = "";
+    String user = null;
 
-    MappingService mappingService = new MappingServiceJpa();
-    WorkflowService workflowService = new WorkflowServiceJpa();
+    final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
-      MapUserRole role =
-          securityService.getMapProjectRoleForToken(authToken, mapProjectId);
-      if (!role.hasPrivilegesOf(MapUserRole.LEAD))
-        throw new WebApplicationException(Response
-            .status(401)
-            .entity(
-                "User does not have permissions to find assigned review work.")
-            .build());
+      user = authorizeProject(mapProjectId, authToken, MapUserRole.LEAD,
+          "find assigned review work ", securityService);
 
-      // retrieve the project and user
-      MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      // get the project and user
+      final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
-      MapUser mapUser = mappingService.getMapUser(userName);
+      final MapUser mapUser = workflowService.getMapUser(userName);
       user = mapUser.getUserName();
 
-      // retrieve the map records
-      SearchResultList results =
-          workflowService.findAssignedReviewWork(mapProject, mapUser, query,
-              pfsParameter);
+      PfsParameter localPfs = new PfsParameterJpa();
+      localPfs.setSortField(pfsParameter.getSortField());
+      localPfs.setQueryRestriction(pfsParameter.getQueryRestriction());
 
-      return results;
+      // get ALL FixErrorPath work at specialist level for the project
+      WorkflowPathHandler fixErrorHandler = new WorkflowFixErrorPathHandler();
+      SearchResultList assignedWork =
+          fixErrorHandler.findAssignedWork(mapProject, mapUser,
+              MapUserRole.LEAD, query, localPfs, workflowService);
+
+      // if a review project, get all normal workflow work and combine
+      if (mapProject.getWorkflowType().equals(WorkflowType.REVIEW_PROJECT)) {
+        SearchResultList reviewProjectWork = workflowService.findAssignedWork(
+            mapProject, mapUser, MapUserRole.LEAD, query, pfsParameter);
+        assignedWork.addSearchResults(reviewProjectWork);
+      }
+      
+      // apply paging
+      int[] totalCt = new int[1];
+      localPfs = new PfsParameterJpa(pfsParameter);
+      localPfs.setQueryRestriction("");
+      localPfs.setSortField("");
+
+      // create list of SearchResultJpas
+      // NOTE: This could be cleaned up with better typing
+      // currently cannot convert List<SearchResultJpa> to
+      // List<SearchResult>
+      List<SearchResultJpa> results = new ArrayList<>();
+      for (SearchResult sr : assignedWork.getSearchResults()) {
+        results.add((SearchResultJpa) sr);
+      }
+
+      // apply paging to the list
+      results = workflowService.applyPfsToList(results, SearchResultJpa.class,
+          totalCt, localPfs);
+
+      // reconstruct the assignedWork search result list
+      assignedWork.setSearchResults(new ArrayList<SearchResult>());
+      for (SearchResult sr : results) {
+        assignedWork.addSearchResult(sr);
+      }
+
+      return assignedWork;
+
     } catch (Exception e) {
       handleException(e, "trying to find assigned review work", user, project,
           "");
       return null;
     } finally {
-      mappingService.close();
       workflowService.close();
       securityService.close();
     }
@@ -702,48 +717,39 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @PathParam("query") String query,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /project/id/" + mapProjectId.toString()
-            + "/user/id/" + userName + "/assignedQAWork"
-            + " with PfsParameter: " + "\n" + "     Index/Results = "
-            + Integer.toString(pfsParameter.getStartIndex()) + "/"
-            + Integer.toString(pfsParameter.getMaxResults()) + "\n"
-            + "     Sort field    = " + pfsParameter.getSortField()
-            + "     Filter String = " + pfsParameter.getQueryRestriction());
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /project/id/" + mapProjectId.toString()
+            + "/user/id/" + userName + "/query/" + query + "/assignedQAWork");
 
     String project = "";
-    String user = "";
+    String user = null;
 
-    MappingService mappingService = new MappingServiceJpa();
-    WorkflowService workflowService = new WorkflowServiceJpa();
+    final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
-      MapUserRole role =
-          securityService.getMapProjectRoleForToken(authToken, mapProjectId);
-      if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-        throw new WebApplicationException(Response.status(401)
-            .entity("User does not have permissions to find assigned qa work.")
-            .build());
+      user = authorizeProject(mapProjectId, authToken, MapUserRole.SPECIALIST,
+          "find assigned qa work ", securityService);
 
-      // retrieve the project and user
-      MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      // get the project and user
+      final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
-      MapUser mapUser = mappingService.getMapUser(userName);
+      final MapUser mapUser = workflowService.getMapUser(userName);
       user = mapUser.getUserName();
-
-      // retrieve the map records
-      SearchResultList results =
-          workflowService.findAssignedQAWork(mapProject, mapUser, query,
-              pfsParameter);
-
+      
+      // SPECIAL CASE: Access QA Workflow Path directly
+      WorkflowPathHandler handler = new WorkflowQaPathHandler();
+      SearchResultList results = handler.findAssignedWork(mapProject, mapUser,
+          MapUserRole.SPECIALIST, query, pfsParameter, workflowService);
       return results;
+
+
+
     } catch (Exception e) {
       handleException(e, "trying to find assigned qa work", user, project, "");
       return null;
     } finally {
-      mappingService.close();
       workflowService.close();
       securityService.close();
     }
@@ -764,49 +770,39 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Username", required = true) @PathParam("userName") String userName,
     @ApiParam(value = "Initial map record to copy, in JSON or XML POST data", required = true) MapRecordJpa mapRecord,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /assignFromRecord/user/id/" + userName
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /assignFromRecord/user/id/" + userName
             + " with map record id " + mapRecord.getId() + " for project "
             + mapRecord.getMapProjectId() + " and concept id "
             + mapRecord.getConceptId());
 
     String project = "";
 
-    WorkflowService workflowService = new WorkflowServiceJpa();
-    MappingService mappingService = new MappingServiceJpa();
-    ContentService contentService = new ContentServiceJpa();
+    final WorkflowService workflowService = new WorkflowServiceJpa();
+    final ContentService contentService = new ContentServiceJpa();
     try {
       // authorize call
-      MapUserRole role =
-          securityService.getMapProjectRoleForToken(authToken, new Long(
-              mapRecord.getMapProjectId()));
-      if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-        throw new WebApplicationException(
-            Response
-                .status(401)
-                .entity(
-                    "User does not have permissions to assign work from a map record.")
-                .build());
+      authorizeProject(mapRecord.getMapProjectId(), authToken,
+          MapUserRole.SPECIALIST, "assign concept from record",
+          securityService);
 
-      MapProject mapProject =
-          mappingService.getMapProject(new Long(mapRecord.getMapProjectId()));
+      final MapProject mapProject =
+          workflowService.getMapProject(mapRecord.getMapProjectId());
       project = mapProject.getName();
-      MapUser mapUser = mappingService.getMapUser(userName);
-      Concept concept =
-          contentService.getConcept(mapRecord.getConceptId(),
-              mapProject.getSourceTerminology(),
-              mapProject.getSourceTerminologyVersion());
+      final MapUser mapUser = workflowService.getMapUser(userName);
+      final Concept concept = contentService.getConcept(
+          mapRecord.getConceptId(), mapProject.getSourceTerminology(),
+          mapProject.getSourceTerminologyVersion());
 
       workflowService.processWorkflowAction(mapProject, concept, mapUser,
           mapRecord, WorkflowAction.ASSIGN_FROM_INITIAL_RECORD);
 
     } catch (Exception e) {
-      handleException(e, "trying to assign concept from a map record",
-          userName, project, mapRecord.getId().toString());
+      handleException(e, "trying to assign concept from a map record", userName,
+          project, mapRecord.getId().toString());
     } finally {
-      mappingService.close();
       workflowService.close();
       contentService.close();
       securityService.close();
@@ -826,39 +822,32 @@ public class WorkflowServiceRest extends RootServiceRest {
   @Path("/assign/project/id/{id}/concept/id/{terminologyId}/user/id/{userName}")
   @ApiOperation(value = "Assign user to concept", notes = "Assigns specified user to map the specified concept for the specified project.")
   public void assignConcept(
-    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") String mapProjectId,
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Concept id, e.g. 22298006", required = true) @PathParam("terminologyId") String terminologyId,
     @ApiParam(value = "Username", required = true) @PathParam("userName") String userName,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /assign/project/id/"
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /assign/project/id/"
             + mapProjectId.toString() + "/concept/id/" + terminologyId
             + "/user/id/" + userName);
 
     String project = "";
 
-    WorkflowService workflowService = new WorkflowServiceJpa();
-    MappingService mappingService = new MappingServiceJpa();
-    ContentService contentService = new ContentServiceJpa();
+    final WorkflowService workflowService = new WorkflowServiceJpa();
+    final ContentService contentService = new ContentServiceJpa();
     try {
       // authorize call
-      MapUserRole role =
-          securityService.getMapProjectRoleForToken(authToken, new Long(
-              mapProjectId));
-      if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-        throw new WebApplicationException(Response.status(401)
-            .entity("User does not have permissions to assign work.").build());
+      authorizeProject(mapProjectId, authToken, MapUserRole.SPECIALIST,
+          "assign concept", securityService);
 
-      MapProject mapProject =
-          mappingService.getMapProject(new Long(mapProjectId));
+      final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
-      MapUser mapUser = mappingService.getMapUser(userName);
-      Concept concept =
-          contentService.getConcept(terminologyId,
-              mapProject.getSourceTerminology(),
-              mapProject.getSourceTerminologyVersion());
+      MapUser mapUser = workflowService.getMapUser(userName);
+      Concept concept = contentService.getConcept(terminologyId,
+          mapProject.getSourceTerminology(),
+          mapProject.getSourceTerminologyVersion());
 
       workflowService.processWorkflowAction(mapProject, concept, mapUser, null,
           WorkflowAction.ASSIGN_FROM_SCRATCH);
@@ -867,7 +856,6 @@ public class WorkflowServiceRest extends RootServiceRest {
       handleException(e, "trying to assign work", userName, project,
           terminologyId);
     } finally {
-      mappingService.close();
       workflowService.close();
       contentService.close();
       securityService.close();
@@ -890,46 +878,35 @@ public class WorkflowServiceRest extends RootServiceRest {
   })
   @ApiOperation(value = "Assign user to batch of concepts.", notes = "Assigns specified user to map the specified list of concept ids for the specified project.")
   public void assignBatch(
-    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") String mapProjectId,
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Username", required = true) @PathParam("userName") String userName,
     @ApiParam(value = "List of terminology ids to be assigned, in JSON or XML POST data", required = true) List<String> terminologyIds,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /assignBatch/project/id/" + mapProjectId
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /assignBatch/project/id/" + mapProjectId
             + "/user/id/" + userName);
-
-    WorkflowService workflowService = new WorkflowServiceJpa();
-    MappingService mappingService = new MappingServiceJpa();
-    ContentService contentService = new ContentServiceJpa();
 
     String project = "";
 
+    final WorkflowService workflowService = new WorkflowServiceJpa();
+    final ContentService contentService = new ContentServiceJpa();
     try {
-
       // authorize call
-      // authorize call
-      MapUserRole role =
-          securityService.getMapProjectRoleForToken(authToken, new Long(
-              mapProjectId));
-      if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-        throw new WebApplicationException(Response.status(401)
-            .entity("User does not have permissions to assign batches.")
-            .build());
+      authorizeProject(mapProjectId, authToken, MapUserRole.SPECIALIST,
+          "assign Batch", securityService);
 
-      MapProject mapProject =
-          mappingService.getMapProject(new Long(mapProjectId));
+      final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
-      MapUser mapUser = mappingService.getMapUser(userName);
+      final MapUser mapUser = workflowService.getMapUser(userName);
 
-      for (String terminologyId : terminologyIds) {
-        Logger.getLogger(WorkflowServiceRest.class).info(
-            "   Assigning " + terminologyId);
-        Concept concept =
-            contentService.getConcept(terminologyId,
-                mapProject.getSourceTerminology(),
-                mapProject.getSourceTerminologyVersion());
+      for (final String terminologyId : terminologyIds) {
+        Logger.getLogger(WorkflowServiceRest.class)
+            .info("   Assigning " + terminologyId);
+        final Concept concept = contentService.getConcept(terminologyId,
+            mapProject.getSourceTerminology(),
+            mapProject.getSourceTerminologyVersion());
 
         // Only process batch assignment request if the concept is
         // active
@@ -941,17 +918,15 @@ public class WorkflowServiceRest extends RootServiceRest {
           workflowService.processWorkflowAction(mapProject, concept, mapUser,
               null, WorkflowAction.ASSIGN_FROM_SCRATCH);
         } else {
-          Logger.getLogger(WorkflowServiceJpa.class).warn(
-              "Skipping inactive concept " + concept.getTerminologyId());
+          Logger.getLogger(WorkflowServiceJpa.class)
+              .warn("Skipping inactive concept " + concept.getTerminologyId());
         }
-
       }
 
     } catch (Exception e) {
       handleException(e, "trying to assign a batch", userName, project,
           terminologyIds.toString());
     } finally {
-      mappingService.close();
       workflowService.close();
       contentService.close();
       securityService.close();
@@ -979,34 +954,28 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Concept id, e.g. 22298006", required = true) @PathParam("terminologyId") String terminologyId,
     @ApiParam(value = "Username", required = true) @PathParam("userName") String userName,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /unassign/project/id/"
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /unassign/project/id/"
             + mapProjectId.toString() + "/concept/id/" + terminologyId
             + "/user/id/" + userName);
 
     String project = "";
-    WorkflowService workflowService = new WorkflowServiceJpa();
-    MappingService mappingService = new MappingServiceJpa();
-    ContentService contentService = new ContentServiceJpa();
+    final WorkflowService workflowService = new WorkflowServiceJpa();
+    final ContentService contentService = new ContentServiceJpa();
 
     try {
+      // authorize call
+      authorizeProject(mapProjectId, authToken, MapUserRole.SPECIALIST,
+          "unassign concept", securityService);
 
-      MapUserRole role =
-          securityService.getMapProjectRoleForToken(authToken, mapProjectId);
-      if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-        throw new WebApplicationException(Response.status(401)
-            .entity("User does not have permissions to unassign work.").build());
-
-      MapProject mapProject =
-          mappingService.getMapProject(new Long(mapProjectId));
+      final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
-      MapUser mapUser = mappingService.getMapUser(userName);
-      Concept concept =
-          contentService.getConcept(terminologyId,
-              mapProject.getSourceTerminology(),
-              mapProject.getSourceTerminologyVersion());
+      final MapUser mapUser = workflowService.getMapUser(userName);
+      final Concept concept = contentService.getConcept(terminologyId,
+          mapProject.getSourceTerminology(),
+          mapProject.getSourceTerminologyVersion());
 
       workflowService.processWorkflowAction(mapProject, concept, mapUser, null,
           WorkflowAction.UNASSIGN);
@@ -1017,7 +986,6 @@ public class WorkflowServiceRest extends RootServiceRest {
           terminologyId);
       return null;
     } finally {
-      mappingService.close();
       workflowService.close();
       contentService.close();
       securityService.close();
@@ -1044,43 +1012,32 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Username", required = true) @PathParam("userName") String userName,
     @ApiParam(value = "List of terminology ids to be assigned, in JSON or XML POST data", required = true) List<String> terminologyIds,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /unassign/project/id/"
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /unassign/project/id/"
             + mapProjectId.toString() + "/user/id/" + userName + "/all");
 
     String project = "";
 
-    WorkflowService workflowService = new WorkflowServiceJpa();
-    MappingService mappingService = new MappingServiceJpa();
-    ContentService contentService = new ContentServiceJpa();
-
+    final WorkflowService workflowService = new WorkflowServiceJpa();
+    final ContentService contentService = new ContentServiceJpa();
     try {
 
       // authorize call
-      MapUserRole role =
-          securityService.getMapProjectRoleForToken(authToken, mapProjectId);
-      if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-        throw new WebApplicationException(Response.status(401)
-            .entity("User does not have permissions to unassign work batch.")
-            .build());
+      authorizeProject(mapProjectId, authToken, MapUserRole.SPECIALIST,
+          "unassign Batch", securityService);
 
       // get the project and user
-      MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
-      MapUser mapUser = mappingService.getMapUser(userName);
+      final MapUser mapUser = workflowService.getMapUser(userName);
 
-      for (String terminologyId : terminologyIds) {
+      for (final String terminologyId : terminologyIds) {
 
-        Concept concept =
-            contentService.getConcept(terminologyId,
-                mapProject.getSourceTerminology(),
-                mapProject.getSourceTerminologyVersion());
-
-        Logger.getLogger(WorkflowServiceRest.class).info(
-            "  Unassigning " + mapUser.getUserName() + " from concept "
-                + terminologyId);
+        final Concept concept = contentService.getConcept(terminologyId,
+            mapProject.getSourceTerminology(),
+            mapProject.getSourceTerminologyVersion());
         workflowService.processWorkflowAction(mapProject, concept, mapUser,
             null, WorkflowAction.UNASSIGN);
       }
@@ -1089,7 +1046,6 @@ public class WorkflowServiceRest extends RootServiceRest {
       handleException(e, "trying to unassign work batch", userName, project,
           terminologyIds.toString());
     } finally {
-      mappingService.close();
       workflowService.close();
       contentService.close();
       securityService.close();
@@ -1112,52 +1068,41 @@ public class WorkflowServiceRest extends RootServiceRest {
   public void finishWork(
     @ApiParam(value = "Completed map record, in JSON or XML POST data", required = true) MapRecordJpa mapRecord,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /finish" + " for map record with id = "
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /finish" + " for map record with id = "
             + mapRecord.getId().toString());
 
-    String user = "";
+    String user = null;
     String project = "";
-    MappingService mappingService = new MappingServiceJpa();
-    ContentService contentService = new ContentServiceJpa();
-    WorkflowService workflowService = new WorkflowServiceJpa();
-
+    final ContentService contentService = new ContentServiceJpa();
+    final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
-      MapUserRole role =
-          securityService.getMapProjectRoleForToken(authToken,
-              mapRecord.getMapProjectId());
-      if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-        throw new WebApplicationException(Response
-            .status(401)
-            .entity(
-                "User does not have permissions to set a record to finished.")
-            .build());
+      authorizeProject(mapRecord.getMapProjectId(), authToken,
+          MapUserRole.SPECIALIST, "finish work", securityService);
 
       // get the map project and map user
-      MapProject mapProject =
-          mappingService.getMapProject(mapRecord.getMapProjectId());
+      final MapProject mapProject =
+          workflowService.getMapProject(mapRecord.getMapProjectId());
       project = mapProject.getName();
-      MapUser mapUser = mapRecord.getOwner();
+      final MapUser mapUser = mapRecord.getOwner();
       user = mapUser.getUserName();
 
       // get the concept
-      Concept concept =
-          contentService.getConcept(mapRecord.getConceptId(),
-              mapProject.getSourceTerminology(),
-              mapProject.getSourceTerminologyVersion());
+      final Concept concept = contentService.getConcept(
+          mapRecord.getConceptId(), mapProject.getSourceTerminology(),
+          mapProject.getSourceTerminologyVersion());
 
       // execute the workflow call
       workflowService.processWorkflowAction(mapProject, concept, mapUser,
           mapRecord, WorkflowAction.FINISH_EDITING);
 
     } catch (Exception e) {
-      handleException(e, "trying to finish work", user, project, mapRecord
-          .getId().toString());
+      handleException(e, "trying to finish work", user, project,
+          mapRecord.getId().toString());
     } finally {
-      mappingService.close();
       workflowService.close();
       contentService.close();
       securityService.close();
@@ -1182,52 +1127,41 @@ public class WorkflowServiceRest extends RootServiceRest {
   public void publishWork(
     @ApiParam(value = "Completed map record, in JSON or XML POST data", required = true) MapRecordJpa mapRecord,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /publish" + " for map record with id = "
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /publish" + " for map record with id = "
             + mapRecord.getId().toString());
 
-    String user = "";
+    String user = null;
     String project = "";
-    MappingService mappingService = new MappingServiceJpa();
-    ContentService contentService = new ContentServiceJpa();
-    WorkflowService workflowService = new WorkflowServiceJpa();
-
+    final ContentService contentService = new ContentServiceJpa();
+    final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
-      MapUserRole role =
-          securityService.getMapProjectRoleForToken(authToken,
-              mapRecord.getMapProjectId());
-      if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-        throw new WebApplicationException(Response
-            .status(401)
-            .entity(
-                "User does not have permissions to set a record to published.")
-            .build());
+      authorizeProject(mapRecord.getMapProjectId(), authToken,
+          MapUserRole.SPECIALIST, "publish work", securityService);
 
       // get the map project and map user
-      MapProject mapProject =
-          mappingService.getMapProject(mapRecord.getMapProjectId());
+      final MapProject mapProject =
+          workflowService.getMapProject(mapRecord.getMapProjectId());
       project = mapProject.getName();
-      MapUser mapUser = mapRecord.getOwner();
+      final MapUser mapUser = mapRecord.getOwner();
       user = mapUser.getUserName();
 
       // get the concept
-      Concept concept =
-          contentService.getConcept(mapRecord.getConceptId(),
-              mapProject.getSourceTerminology(),
-              mapProject.getSourceTerminologyVersion());
+      final Concept concept = contentService.getConcept(
+          mapRecord.getConceptId(), mapProject.getSourceTerminology(),
+          mapProject.getSourceTerminologyVersion());
 
       // execute the workflow call
       workflowService.processWorkflowAction(mapProject, concept, mapUser,
           mapRecord, WorkflowAction.PUBLISH);
 
     } catch (Exception e) {
-      handleException(e, "trying to publish work", user, project, mapRecord
-          .getId().toString());
+      handleException(e, "trying to publish work", user, project,
+          mapRecord.getId().toString());
     } finally {
-      mappingService.close();
       workflowService.close();
       contentService.close();
       securityService.close();
@@ -1251,58 +1185,48 @@ public class WorkflowServiceRest extends RootServiceRest {
   public void saveWork(
     @ApiParam(value = "Map record to save, in JSON or XML POST data", required = true) MapRecordJpa mapRecord,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /save" + " for map record with id = "
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /save" + " for map record with id = "
             + mapRecord.getId().toString());
 
-    String user = "";
+    String user = null;
     String project = "";
-    MappingService mappingService = new MappingServiceJpa();
-    ContentService contentService = new ContentServiceJpa();
-    WorkflowService workflowService = new WorkflowServiceJpa();
+    final ContentService contentService = new ContentServiceJpa();
+    final WorkflowService workflowService = new WorkflowServiceJpa();
 
     try {
-
       // authorize call
-      MapUserRole role =
-          securityService.getMapProjectRoleForToken(authToken,
-              mapRecord.getMapProjectId());
-      if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-        throw new WebApplicationException(Response.status(401)
-            .entity("User does not have permissions to save a map record.")
-            .build());
-
-      securityService.getMapProjectRoleForToken(authToken,
-          mapRecord.getMapProjectId());
+      authorizeProject(mapRecord.getMapProjectId(), authToken,
+          MapUserRole.SPECIALIST, "save work", securityService);
+      final MapUserRole role = securityService
+          .getMapProjectRoleForToken(authToken, mapRecord.getMapProjectId());
       if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
         throw new WebApplicationException(Response.status(401)
             .entity("User does not have permissions to save a map record.")
             .build());
 
       // get the map project and map user
-      MapProject mapProject =
-          mappingService.getMapProject(mapRecord.getMapProjectId());
+      final MapProject mapProject =
+          workflowService.getMapProject(mapRecord.getMapProjectId());
       project = mapProject.getName();
-      MapUser mapUser = mapRecord.getOwner();
+      final MapUser mapUser = mapRecord.getOwner();
       user = mapUser.getUserName();
 
       // get the concept
-      Concept concept =
-          contentService.getConcept(mapRecord.getConceptId(),
-              mapProject.getSourceTerminology(),
-              mapProject.getSourceTerminologyVersion());
+      final Concept concept = contentService.getConcept(
+          mapRecord.getConceptId(), mapProject.getSourceTerminology(),
+          mapProject.getSourceTerminologyVersion());
 
       // process the workflow action
       workflowService.processWorkflowAction(mapProject, concept, mapUser,
           mapRecord, WorkflowAction.SAVE_FOR_LATER);
 
     } catch (Exception e) {
-      handleException(e, "trying to save work", user, project, mapRecord
-          .getId().toString());
+      handleException(e, "trying to save work", user, project,
+          mapRecord.getId().toString());
     } finally {
-      mappingService.close();
       workflowService.close();
       contentService.close();
       securityService.close();
@@ -1326,42 +1250,29 @@ public class WorkflowServiceRest extends RootServiceRest {
   public void cancelWorkForMapRecord(
     @ApiParam(value = "Map record to cancel work for , in JSON or XML POST data") MapRecordJpa mapRecord,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /cancel for map record with id = "
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /cancel for map record with id = "
             + mapRecord.getId());
 
-    String userName = "";
+    String userName = null;
     String project = "";
     // open the services
-    ContentService contentService = new ContentServiceJpa();
-    MappingService mappingService = new MappingServiceJpa();
-    WorkflowService workflowService = new WorkflowServiceJpa();
-
+    final ContentService contentService = new ContentServiceJpa();
+    final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
-      userName = securityService.getUsernameForToken(authToken);
-      // authorize call
-      MapUserRole role =
-          securityService.getMapProjectRoleForToken(authToken,
-              mapRecord.getMapProjectId());
-      if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-        throw new WebApplicationException(
-            Response
-                .status(401)
-                .entity(
-                    "User does not have permissions to cancel editing a map record.")
-                .build());
+      authorizeProject(mapRecord.getMapProjectId(), authToken,
+          MapUserRole.SPECIALIST, "cancel work", securityService);
 
       // get the map project and concept
-      MapProject mapProject =
-          mappingService.getMapProject(mapRecord.getMapProjectId());
+      final MapProject mapProject =
+          workflowService.getMapProject(mapRecord.getMapProjectId());
       project = mapProject.getName();
-      Concept concept =
-          contentService.getConcept(mapRecord.getConceptId(),
-              mapProject.getSourceTerminology(),
-              mapProject.getSourceTerminologyVersion());
+      final Concept concept = contentService.getConcept(
+          mapRecord.getConceptId(), mapProject.getSourceTerminology(),
+          mapProject.getSourceTerminologyVersion());
 
       // process the workflow action
       workflowService.processWorkflowAction(mapProject, concept,
@@ -1370,7 +1281,6 @@ public class WorkflowServiceRest extends RootServiceRest {
       handleException(e, "trying to cancel editing a map record", userName,
           project, mapRecord.getId().toString());
     } finally {
-      mappingService.close();
       workflowService.close();
       contentService.close();
       securityService.close();
@@ -1394,46 +1304,33 @@ public class WorkflowServiceRest extends RootServiceRest {
   public void createQARecord(
     @ApiParam(value = "Map record to create qa record for , in JSON or XML POST data") MapRecordJpa mapRecord,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     Logger.getLogger(WorkflowServiceRest.class).info(
         "RESTful call (Workflow): /createQARecord for map record with id = "
             + mapRecord.getId());
 
-    String userName = "";
+    String userName = null;
     String project = "";
     // open the services
-    ContentService contentService = new ContentServiceJpa();
-    MappingService mappingService = new MappingServiceJpa();
-    WorkflowService workflowService = new WorkflowServiceJpa();
-
+    final ContentService contentService = new ContentServiceJpa();
+    final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
-      userName = securityService.getUsernameForToken(authToken);
-      // authorize call
-      MapUserRole role =
-          securityService.getMapProjectRoleForToken(authToken,
-              mapRecord.getMapProjectId());
-      if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-        throw new WebApplicationException(
-            Response
-                .status(401)
-                .entity(
-                    "User does not have permissions to create a qa record from a map record.")
-                .build());
+      authorizeProject(mapRecord.getMapProjectId(), authToken,
+          MapUserRole.SPECIALIST, "create QA record", securityService);
 
       // get the map project and concept
-      MapProject mapProject =
-          mappingService.getMapProject(mapRecord.getMapProjectId());
+      final MapProject mapProject =
+          workflowService.getMapProject(mapRecord.getMapProjectId());
       project = mapProject.getName();
-      Concept concept =
-          contentService.getConcept(mapRecord.getConceptId(),
-              mapProject.getSourceTerminology(),
-              mapProject.getSourceTerminologyVersion());
+      final Concept concept = contentService.getConcept(
+          mapRecord.getConceptId(), mapProject.getSourceTerminology(),
+          mapProject.getSourceTerminologyVersion());
 
       // find the qa user
       MapUser mapUser = null;
-      for (MapUser user : mappingService.getMapUsers().getMapUsers()) {
+      for (final MapUser user : workflowService.getMapUsers().getMapUsers()) {
         if (user.getUserName().equals("qa"))
           mapUser = user;
       }
@@ -1446,7 +1343,6 @@ public class WorkflowServiceRest extends RootServiceRest {
       handleException(e, "trying to create a qa map record", userName, project,
           mapRecord.getId().toString());
     } finally {
-      mappingService.close();
       workflowService.close();
       contentService.close();
       securityService.close();
@@ -1470,39 +1366,28 @@ public class WorkflowServiceRest extends RootServiceRest {
   public void createQAWork(
     @ApiParam(value = "Report of concepts to create qa records for , in JSON or XML POST data") Long reportId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /createQAWork for report with id = "
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /createQAWork for report with id = "
             + reportId);
 
-    String userName = "";
+    String userName = null;
     String project = "";
     Report report = null;
 
-    ReportService reportService = new ReportServiceJpa();
-    WorkflowService workflowService = new WorkflowServiceJpa();
+    final ReportService reportService = new ReportServiceJpa();
+    final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
-      // authorize call
-      userName = securityService.getUsernameForToken(authToken);
 
       // get report and projectId
       report = reportService.getReport(reportId);
 
       // authorize call
-      MapUserRole role =
-          securityService.getMapProjectRoleForToken(authToken,
-              report.getMapProjectId());
-      if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-        throw new WebApplicationException(
-            Response
-                .status(401)
-                .entity(
-                    "User does not have permissions to create qa work from a report of concepts.")
-                .build());
+      authorizeProject(report.getMapProjectId(), authToken,
+          MapUserRole.SPECIALIST, "create QA work", securityService);
 
       workflowService.createQAWork(report);
-
     } catch (Exception e) {
       handleException(e, "trying to create qa work", userName, project,
           report == null ? "" : report.getId().toString());
@@ -1536,44 +1421,34 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Concept id, e.g. 22298006", required = true) @PathParam("terminologyId") String terminologyId,
     @ApiParam(value = "Username", required = true) @PathParam("userName") String userName,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /assignedRecord/projectId/" + mapProjectId
-            + "/concept/" + terminologyId + "/user/" + userName);
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /assignedRecord/projectId/"
+            + mapProjectId + "/concept/" + terminologyId + "/user/" + userName);
 
-    String user = "";
+    String user = null;
     String project = "";
-    MappingService mappingService = new MappingServiceJpa();
-    ContentService contentService = new ContentServiceJpa();
-    WorkflowService workflowService = new WorkflowServiceJpa();
-
+    final ContentService contentService = new ContentServiceJpa();
+    final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
-      MapUserRole role =
-          securityService.getMapProjectRoleForToken(authToken, mapProjectId);
-      if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-        throw new WebApplicationException(
-            Response
-                .status(401)
-                .entity(
-                    "User does not have permissions to retrieve an assigned map record given concept and user.")
-                .build());
+      authorizeProject(mapProjectId, authToken, MapUserRole.SPECIALIST,
+          "get assigned record for concept and userk", securityService);
 
-      MapUser mapUser = mappingService.getMapUser(userName);
+      final MapUser mapUser = workflowService.getMapUser(userName);
       user = mapUser.getUserName();
-      MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
 
-      Concept concept =
-          contentService.getConcept(terminologyId,
-              mapProject.getSourceTerminology(),
-              mapProject.getSourceTerminologyVersion());
+      final Concept concept = contentService.getConcept(terminologyId,
+          mapProject.getSourceTerminology(),
+          mapProject.getSourceTerminologyVersion());
 
-      TrackingRecord trackingRecord =
+      final TrackingRecord trackingRecord =
           workflowService.getTrackingRecord(mapProject, concept);
 
-      for (MapRecord mr : workflowService
+      for (final MapRecord mr : workflowService
           .getMapRecordsForTrackingRecord(trackingRecord)) {
         if (mr.getOwner().equals(mapUser)) {
           return mr;
@@ -1582,11 +1457,10 @@ public class WorkflowServiceRest extends RootServiceRest {
 
       return null;
     } catch (Exception e) {
-      handleException(e, "trying to retrieve an assigned map record", user,
-          project, terminologyId);
+      handleException(e, "trying to get an assigned map record", user, project,
+          terminologyId);
       return null;
     } finally {
-      mappingService.close();
       workflowService.close();
       contentService.close();
       securityService.close();
@@ -1611,40 +1485,30 @@ public class WorkflowServiceRest extends RootServiceRest {
   public Boolean isMapRecordFalseConflict(
     @ApiParam(value = "Map record id, e.g. 28123", required = true) @PathParam("id") Long recordId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     Logger.getLogger(WorkflowServiceRest.class).info(
         "RESTful call (Workflow): /record/id/" + recordId + "/sFalseConflict");
 
-    MappingService mappingService = new MappingServiceJpa();
-    WorkflowService workflowService = new WorkflowServiceJpa();
-
-    MapRecord mapRecord = mappingService.getMapRecord(recordId);
-    MapProject mapProject =
-        mappingService.getMapProject(mapRecord.getMapProjectId());
+    final WorkflowService workflowService = new WorkflowServiceJpa();
 
     try {
+      final MapRecord mapRecord = workflowService.getMapRecord(recordId);
+      final MapProject mapProject =
+          workflowService.getMapProject(mapRecord.getMapProjectId());
+
       // authorize call
-      MapUserRole role =
-          securityService.getMapProjectRoleForToken(authToken, new Long(
-              mapProject.getId()));
-      if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-        throw new WebApplicationException(
-            Response
-                .status(401)
-                .entity(
-                    "User does not have permissions to check record for false conflict")
-                .build());
+      authorizeProject(mapProject.getId(), authToken, MapUserRole.SPECIALIST,
+          "is map record false conflict", securityService);
 
       // if not a conflict resolution record, return null
       if (!mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_NEW)
-          && !mapRecord.getWorkflowStatus().equals(
-              WorkflowStatus.CONFLICT_DETECTED))
+          && !mapRecord.getWorkflowStatus()
+              .equals(WorkflowStatus.CONFLICT_DETECTED))
         return false;
 
-      WorkflowException workflowException =
-          workflowService.getWorkflowException(mapProject,
-              mapRecord.getConceptId());
+      final WorkflowException workflowException = workflowService
+          .getWorkflowException(mapProject, mapRecord.getConceptId());
 
       if (workflowException != null) {
         if (workflowException.getFalseConflictMapRecordIds().contains(recordId))
@@ -1653,9 +1517,8 @@ public class WorkflowServiceRest extends RootServiceRest {
           return false;
       }
     } catch (Exception e) {
-      handleException(e, "trying to retrieve flag for false conflict");
+      handleException(e, "trying to get flag for false conflict");
     } finally {
-      mappingService.close();
       workflowService.close();
       securityService.close();
     }
@@ -1685,31 +1548,22 @@ public class WorkflowServiceRest extends RootServiceRest {
   public FeedbackConversation addFeedbackConversation(
     @ApiParam(value = "Feedback conversation, in JSON or XML POST data", required = true) FeedbackConversationJpa conversation,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /conversation/add");
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /conversation/add");
 
-    String userName = "";
-    WorkflowService workflowService = new WorkflowServiceJpa();
-
+    String userName = null;
+    final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
-      userName = securityService.getUsernameForToken(authToken);
-      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
-      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
-        throw new WebApplicationException(
-            Response
-                .status(401)
-                .entity(
-                    "User does not have permissions to add a feedback conversation.")
-                .build());
+      userName = authorizeProject(conversation.getMapProjectId(), authToken,
+          MapUserRole.SPECIALIST, "add feedback conversation", securityService);
 
-      Logger.getLogger(WorkflowServiceRest.class).info(
-          "RESTful call (Workflow): /conversation/update feedback msg: "
+      Logger.getLogger(WorkflowServiceRest.class)
+          .info("RESTful call (Workflow): /conversation/update feedback msg: "
               + conversation.getFeedbacks().get(0));
-
       workflowService.addFeedbackConversation(conversation);
 
       return conversation;
@@ -1717,67 +1571,6 @@ public class WorkflowServiceRest extends RootServiceRest {
     } catch (Exception e) {
       handleException(e, "add a feedback conversation", userName, "",
           conversation.getMapRecordId().toString());
-      return null;
-    } finally {
-      workflowService.close();
-      securityService.close();
-    }
-  }
-
-  /**
-   * Sends a feedback message email.
-   *
-   * @param messageInfo the message
-   * @param authToken the auth token
-   * @return the string
-   * @throws Exception the exception
-   */
-  @POST
-  @Path("/message")
-  @ApiOperation(value = "Sends a feedback message email.", notes = "Sends a feedback message email.")
-  @Consumes({
-      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-  })
-  @Produces({
-      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-  })
-  public Response sendFeedbackEmail(
-    @ApiParam(value = "message", required = true) List<String> messageInfo,
-    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-
-    // log call
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /message");
-
-    String userName = "";
-    WorkflowService workflowService = new WorkflowServiceJpa();
-
-    try {
-      // authorize call
-      userName = securityService.getUsernameForToken(authToken);
-      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
-      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
-        throw new WebApplicationException(
-            Response
-                .status(401)
-                .entity(
-                    "User does not have permissions to add a feedback conversation.")
-                .build());
-
-      Logger.getLogger(WorkflowServiceRest.class).info(
-          "RESTful call (Workflow): /message msg: " + messageInfo);
-
-      // Split up message and send parts
-      workflowService.sendFeedbackEmail(messageInfo.get(0),
-          messageInfo.get(1), messageInfo.get(2), messageInfo.get(3), 
-          messageInfo.get(4), messageInfo.get(5));
-      
-      
-      return null;
-
-    } catch (Exception e) {
-      handleException(e, "send a message email", userName, "", messageInfo.get(0));
       return null;
     } finally {
       workflowService.close();
@@ -1800,53 +1593,43 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Map record id, e.g. 7", required = true) @PathParam("id") Long recordId,
     @ApiParam(value = "Whether is false conflict, e.g. true", required = true) @PathParam("isFalseConflict") boolean isFalseConflict,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /record/id/" + recordId
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /record/id/" + recordId
             + "/setFalseConflict/" + isFalseConflict);
 
-    MappingService mappingService = new MappingServiceJpa();
-    WorkflowService workflowService = new WorkflowServiceJpa();
-
-    MapRecord mapRecord = mappingService.getMapRecord(recordId);
-    MapProject mapProject =
-        mappingService.getMapProject(mapRecord.getMapProjectId());
+    final WorkflowService workflowService = new WorkflowServiceJpa();
 
     try {
+      final MapRecord mapRecord = workflowService.getMapRecord(recordId);
+      final MapProject mapProject =
+          workflowService.getMapProject(mapRecord.getMapProjectId());
+
       // authorize call
-      MapUserRole role =
-          securityService.getMapProjectRoleForToken(authToken, new Long(
-              mapProject.getId()));
-      if (!role.hasPrivilegesOf(MapUserRole.LEAD))
-        throw new WebApplicationException(
-            Response
-                .status(401)
-                .entity(
-                    "User does not have permissions to check record for false conflict")
-                .build());
+      authorizeProject(mapProject.getId(), authToken, MapUserRole.LEAD,
+          "set map record false conflict", securityService);
 
       // if not a conflict resolution record, throw an error
       if (!mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_NEW)
-          && !mapRecord.getWorkflowStatus().equals(
-              WorkflowStatus.CONFLICT_IN_PROGRESS)
-          && !mapRecord.getWorkflowStatus().equals(
-              WorkflowStatus.CONFLICT_RESOLVED))
+          && !mapRecord.getWorkflowStatus()
+              .equals(WorkflowStatus.CONFLICT_IN_PROGRESS)
+          && !mapRecord.getWorkflowStatus()
+              .equals(WorkflowStatus.CONFLICT_RESOLVED))
         throw new WebApplicationException(Response.status(401)
             .entity("Cannot set false conflict flag on a non-conflict record")
             .build());
 
-      WorkflowException workflowException =
-          workflowService.getWorkflowException(mapProject,
-              mapRecord.getConceptId());
+      WorkflowException workflowException = workflowService
+          .getWorkflowException(mapProject, mapRecord.getConceptId());
 
       // if no workflow exception for this concept, add it
       if (workflowException == null) {
         workflowException = new WorkflowExceptionJpa();
         workflowException.setMapProjectId(mapProject.getId());
         workflowException.setTerminology(mapProject.getSourceTerminology());
-        workflowException.setTerminologyVersion(mapProject
-            .getSourceTerminologyVersion());
+        workflowException
+            .setTerminologyVersion(mapProject.getSourceTerminologyVersion());
         workflowException.setTerminologyId(mapRecord.getConceptId());
       }
 
@@ -1854,12 +1637,19 @@ public class WorkflowServiceRest extends RootServiceRest {
 
       // if setting to true, add the record ids
       if (isFalseConflict) {
-        // add this record
-        recordIds.add(recordId);
+        // find the tracking record for this map record
+        TrackingRecord trackingRecord =
+            workflowService.getTrackingRecordForMapProjectAndConcept(mapProject,
+                mapRecord.getConceptId());
+
+        // instantiate workflow handler for this tracking record
+        WorkflowPathHandler handler = workflowService.getWorkflowPathHandler(
+            trackingRecord.getWorkflowPath().toString());
 
         // add the specialist records for this conflict
-        for (MapRecord mr : mappingService.getOriginMapRecordsForConflict(
-            recordId).getIterable()) {
+        for (final MapRecord mr : handler
+            .getOriginMapRecordsForMapRecord(mapRecord, workflowService)
+            .getIterable()) {
           recordIds.add(mr.getId());
         }
 
@@ -1883,7 +1673,6 @@ public class WorkflowServiceRest extends RootServiceRest {
       handleException(e, "trying to set flag for false conflict");
     } finally {
       workflowService.close();
-      mappingService.close();
       securityService.close();
     }
   }
@@ -1891,7 +1680,7 @@ public class WorkflowServiceRest extends RootServiceRest {
   /**
    * Updates a feedback conversation.
    *
-   * @param feedbackConversation the feedback conversation to be updated
+   * @param conversation the conversation
    * @param authToken the auth token
    * @throws Exception the exception
    */
@@ -1902,33 +1691,27 @@ public class WorkflowServiceRest extends RootServiceRest {
   })
   @ApiOperation(value = "Update a feedback conversation.", notes = "Updates specified feedback conversation.", response = Response.class)
   public void updateFeedbackConversation(
-    @ApiParam(value = "Feedback conversation, in JSON or XML POST data", required = true) FeedbackConversationJpa feedbackConversation,
+    @ApiParam(value = "Feedback conversation, in JSON or XML POST data", required = true) FeedbackConversationJpa conversation,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /conversation/update");
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /conversation/update");
 
-    WorkflowService workflowService = new WorkflowServiceJpa();
+    final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
-      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
-      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
-        throw new WebApplicationException(
-            Response
-                .status(401)
-                .entity(
-                    "User does not have permissions to update the feedback conversation.")
-                .build());
+      authorizeProject(conversation.getMapProjectId(), authToken,
+          MapUserRole.VIEWER, "udpate feedback conversation", securityService);
 
-      workflowService.updateFeedbackConversation(feedbackConversation);
+      workflowService.updateFeedbackConversation(conversation);
 
       // add debug
-      int ct = feedbackConversation.getFeedbacks().size();
-      Logger.getLogger(WorkflowServiceRest.class).info(
-          "RESTful call (Workflow): /conversation/update feedback msg: "
-              + feedbackConversation.getFeedbacks().get(ct - 1));
+      final int ct = conversation.getFeedbacks().size();
+      Logger.getLogger(WorkflowServiceRest.class)
+          .info("RESTful call (Workflow): /conversation/update feedback msg: "
+              + conversation.getFeedbacks().get(ct - 1));
 
     } catch (Exception e) {
       handleException(e, "update the feedback conversation");
@@ -1956,30 +1739,24 @@ public class WorkflowServiceRest extends RootServiceRest {
   public FeedbackConversation getFeedbackConversation(
     @ApiParam(value = "Map record id, e.g. 28123", required = true) @PathParam("id") Long mapRecordId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     Logger.getLogger(WorkflowServiceRest.class).info(
         "RESTful call (Workflow): /conversation/id/" + mapRecordId.toString());
 
-    WorkflowService workflowService = new WorkflowServiceJpa();
+    final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
+      final FeedbackConversation conversation =
+          workflowService.getFeedbackConversation(mapRecordId);
 
-      FeedbackConversation feedbackConversation =
-          workflowService.getFeedbackConversation(new Long(mapRecordId));
-
-      // authorize call
-      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
-      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
-        throw new WebApplicationException(
-            Response
-                .status(401)
-                .entity(
-                    "User does not have permissions to retrieve the feedback conversation.")
-                .build());
-
-      return feedbackConversation;
+      if (conversation != null) {
+        // authorize call
+        authorizeProject(conversation.getMapProjectId(), authToken,
+            MapUserRole.VIEWER, "get feedback conversation", securityService);
+      }
+      return conversation;
     } catch (Exception e) {
-      handleException(e, "trying to retrieve the feedback conversation");
+      handleException(e, "trying to get the feedback conversation");
       return null;
     } finally {
       workflowService.close();
@@ -2014,42 +1791,30 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @PathParam("query") String query,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /conversation/project/id/"
+    Logger.getLogger(getClass())
+        .info("RESTful call (Workflow): /conversation/project/id/"
             + mapProjectId.toString() + " userName: " + userName + " query: "
-            + query + " with PfsParameter: " + "\n" + "     Index/Results = "
-            + Integer.toString(pfsParameter.getStartIndex()) + "/"
-            + Integer.toString(pfsParameter.getMaxResults()) + "\n"
-            + "     Sort field    = " + pfsParameter.getSortField()
-            + "     Filter String = " + pfsParameter.getQueryRestriction());
+            + query);
 
-    String user = "";
-    WorkflowService workflowService = new WorkflowServiceJpa();
+    String user = null;
+    final WorkflowService workflowService = new WorkflowServiceJpa();
     // execute the service call
     try {
       // authorize call
-      MapUserRole role =
-          securityService.getMapProjectRoleForToken(authToken, mapProjectId);
-      user = securityService.getUsernameForToken(authToken);
-      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
-        throw new WebApplicationException(
-            Response
-                .status(401)
-                .entity(
-                    "User does not have permissions to retrieve the feedback conversations for a map project.")
-                .build());
+      authorizeProject(mapProjectId, authToken, MapUserRole.VIEWER,
+          "find feedback conversations for project and user", securityService);
 
-      FeedbackConversationList feedbackConversationList =
+      final FeedbackConversationList feedbackConversationList =
           workflowService.findFeedbackConversationsForProject(mapProjectId,
               userName, query, pfsParameter);
       return feedbackConversationList;
     } catch (Exception e) {
       handleException(e,
-          "trying to retrieve the feedback conversations for a map project",
-          user, mapProjectId.toString(), "");
+          "trying to get the feedback conversations for a map project", user,
+          mapProjectId.toString(), "");
       return null;
     } finally {
       workflowService.close();
@@ -2077,36 +1842,25 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Concept id, e.g. 22298006", required = true) @PathParam("terminologyId") String conceptId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /record/concept/id/" + conceptId);
+    Logger.getLogger(getClass())
+        .info("RESTful call (Workflow): /record/concept/id/" + conceptId);
 
-    String user = "";
-    WorkflowService workflowService = new WorkflowServiceJpa();
+    String user = null;
+    final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
-      MapUserRole applicationRole =
-          securityService.getApplicationRoleForToken(authToken);
-      user = securityService.getUsernameForToken(authToken);
+      authorizeProject(mapProjectId, authToken, MapUserRole.VIEWER,
+          "get feedback conversations for terminology id", securityService);
 
-      if (!applicationRole.hasPrivilegesOf(MapUserRole.VIEWER))
-        throw new WebApplicationException(
-            Response
-                .status(401)
-                .entity(
-                    "User does not have permissions to find feedback conversations by the given concept id.")
-                .build());
+      return (FeedbackConversationListJpa) workflowService
+          .getFeedbackConversationsForConcept(mapProjectId, conceptId);
 
-      FeedbackConversationListJpa feedbackConversationList =
-          (FeedbackConversationListJpa) workflowService
-              .getFeedbackConversationsForConcept(mapProjectId, conceptId);
-
-      return feedbackConversationList;
     } catch (Exception e) {
       handleException(e,
-          "trying to find feedback conversations by the given concept id",
-          user, "", conceptId);
+          "trying to find feedback conversations by the given concept id", user,
+          "", conceptId);
       return null;
     } finally {
       workflowService.close();
@@ -2139,50 +1893,40 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "List of terminology ids to assign", required = true) List<String> terminologyIds,
     @ApiParam(value = "Map user to assign to", required = true) @PathParam("userName") String userName,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+      throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /assign/project/id/" + mapProjectId
+    Logger.getLogger(getClass())
+        .info("RESTful call (Workflow): /assign/project/id/" + mapProjectId
             + "/fixErrorPath with ids: " + terminologyIds.toString());
 
-    String user = "";
+    String user = null;
     // open workflow and content services
-    MappingService mappingService = new MappingServiceJpa();
-    WorkflowService workflowService = new WorkflowServiceJpa();
-    ContentService contentService = new ContentServiceJpa();
+    final WorkflowService workflowService = new WorkflowServiceJpa();
+    final ContentService contentService = new ContentServiceJpa();
     // execute the service call
     try {
       // authorize call
-      MapUserRole role =
-          securityService.getMapProjectRoleForToken(authToken, mapProjectId);
-      user = securityService.getUsernameForToken(authToken);
-      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
-        throw new WebApplicationException(
-            Response
-                .status(401)
-                .entity(
-                    "User does not have permissions to assign map records to the fix error path.")
-                .build());
+      authorizeProject(mapProjectId, authToken, MapUserRole.SPECIALIST,
+          "assign Batch To Fix Error Path", securityService);
 
-      MapProject mapProject = mappingService.getMapProject(mapProjectId);
-      MapUser mapUser = mappingService.getMapUser(userName);
+      final MapProject mapProject = workflowService.getMapProject(mapProjectId);
+      final MapUser mapUser = workflowService.getMapUser(userName);
 
       if (mapUser == null)
-        throw new LocalException("The user could not be retrieved");
+        throw new LocalException("The user could not be found");
 
-      ValidationResult result = new ValidationResultJpa();
+      final ValidationResult result = new ValidationResultJpa();
 
-      List<MapRecord> mapRecords = new ArrayList<>();
+      final List<MapRecord> mapRecords = new ArrayList<>();
 
       // cycle over these ids
-      for (String terminologyId : terminologyIds) {
+      for (final String terminologyId : terminologyIds) {
 
-        MapRecordList mrList =
-            mappingService.getMapRecordsForProjectAndConcept(mapProjectId,
-                terminologyId);
+        final MapRecordList mrList = workflowService
+            .getMapRecordsForProjectAndConcept(mapProjectId, terminologyId);
 
-        // first check: records retrieved
+        // first check: records getd
         if (mrList.getCount() == 0) {
           result.addError("No records found for concept " + terminologyId);
           continue;
@@ -2190,18 +1934,19 @@ public class WorkflowServiceRest extends RootServiceRest {
 
         // first check: only one record
         if (mrList.getCount() != 1) {
-          result.addError("Multiple records present for concept "
-              + terminologyId);
+          result.addError(
+              "Multiple records present for concept " + terminologyId);
           continue;
         }
 
         // get the first record
-        MapRecord mapRecord = mrList.getIterable().iterator().next();
+        final MapRecord mapRecord = mrList.getIterable().iterator().next();
 
         // second check: PUBLISHED or READY_FOR_PUBLICATION
-        if (!mapRecord.getWorkflowStatus().equals(
-            WorkflowStatus.READY_FOR_PUBLICATION)
-            && !mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)) {
+        if (!mapRecord.getWorkflowStatus()
+            .equals(WorkflowStatus.READY_FOR_PUBLICATION)
+            && !mapRecord.getWorkflowStatus()
+                .equals(WorkflowStatus.PUBLISHED)) {
           result.addError("Record is not publication-ready for concept "
               + terminologyId + ", " + mapRecord.getConceptName());
           continue;
@@ -2210,20 +1955,17 @@ public class WorkflowServiceRest extends RootServiceRest {
         mapRecords.add(mapRecord);
       }
 
-      // close the mapping service
-
       // cycle over all eligible map records
-      for (MapRecord mapRecord : mapRecords) {
+      for (final MapRecord mapRecord : mapRecords) {
 
         // get concept for this terminology id
-        Concept concept =
-            contentService.getConcept(mapRecord.getConceptId(),
-                mapProject.getSourceTerminology(),
-                mapProject.getSourceTerminologyVersion());
+        final Concept concept = contentService.getConcept(
+            mapRecord.getConceptId(), mapProject.getSourceTerminology(),
+            mapProject.getSourceTerminologyVersion());
 
         if (concept == null) {
-          result.addError("Could not retrieve concept for id "
-              + mapRecord.getConceptId());
+          result.addError(
+              "Could not get concept for id " + mapRecord.getConceptId());
           continue;
         }
 
@@ -2234,14 +1976,13 @@ public class WorkflowServiceRest extends RootServiceRest {
               mapRecord, WorkflowAction.ASSIGN_FROM_INITIAL_RECORD);
 
           // add success message if no errors thrown
-          result.addMessage("Successfully assigned concept "
-              + mapRecord.getConceptId() + ", "
-              + concept.getDefaultPreferredName());
+          result.addMessage(
+              "Successfully assigned concept " + mapRecord.getConceptId() + ", "
+                  + concept.getDefaultPreferredName());
         } catch (LocalException e) {
           result
               .addError("Concept already in workflow, could not assign concept "
-                  + mapRecord.getConceptId()
-                  + ", "
+                  + mapRecord.getConceptId() + ", "
                   + concept.getDefaultPreferredName());
         }
       }
@@ -2254,7 +1995,6 @@ public class WorkflowServiceRest extends RootServiceRest {
       return null;
     } finally {
       workflowService.close();
-      mappingService.close();
       contentService.close();
       securityService.close();
     }

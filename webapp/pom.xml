@@ -21,6 +21,8 @@
     <config.groupId>org.ihtsdo.otf.mapping</config.groupId>
     <config.artifactId>mapping-config-dev-windows</config.artifactId>
     <config.version>${releaseVersion}</config.version>
+    <!-- having these defaults is problematic, require them in config file <index.viewer.groupId>org.ihtsdo.otf.mapping</index.viewer.groupId> 
+      <index.viewer.artifactId>index-viewer-data-icd10</index.viewer.artifactId> <index.viewer.version>1.1.0-SNAPSHOT</index.viewer.version> -->
   </properties>
 
   <!-- Declare Project Dependency Versions -->
@@ -127,7 +129,7 @@
                 <exclude>bin/**</exclude>
                 <exclude>config*.properties</exclude>
               </excludes>
-          </resource>
+            </resource>
             <resource>
               <directory>src/main/webapp</directory>
               <filtering>true</filtering>

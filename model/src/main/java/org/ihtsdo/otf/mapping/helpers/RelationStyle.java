@@ -1,7 +1,7 @@
 package org.ihtsdo.otf.mapping.helpers;
 
 /**
- * Enum representingfwhat type of relation style a map project uses.
+ * Enum representing what type of relation style a map project uses.
  */
 public enum RelationStyle {
 
@@ -9,7 +9,10 @@ public enum RelationStyle {
   MAP_CATEGORY_STYLE("Map Category Style"),
 
   /** The relationship style. */
-  RELATIONSHIP_STYLE("Relationship Style");
+  RELATIONSHIP_STYLE("Relationship Style"),
+
+  /** For simple maps */
+  NONE("No Relationships");
 
   /** The display name. */
   private String displayName = null;

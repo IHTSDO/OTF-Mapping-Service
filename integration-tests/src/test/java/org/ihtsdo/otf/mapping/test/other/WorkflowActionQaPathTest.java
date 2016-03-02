@@ -33,11 +33,13 @@ import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
  * Unit test for workflow action on qa path test.
  */
+@Ignore("Workflow integrtaion testing outdated after workflow revision")
 public class WorkflowActionQaPathTest {
 
   // the content
@@ -46,10 +48,22 @@ public class WorkflowActionQaPathTest {
 
   // the mapping objects
   /** The loader. */
-  private static MapUser viewer, specialist, loader;
+  private static MapUser viewer;
+
+  /** The specialist. */
+  private static MapUser specialist;
+
+  /** The loader. */
+  private static MapUser loader;
 
   /** The loader record. */
-  private static MapRecord revisionRecord, specRecord, loaderRecord;
+  private static MapRecord revisionRecord;
+
+  /** The spec record. */
+  private static MapRecord specRecord;
+
+  /** The loader record. */
+  private static MapRecord loaderRecord;
 
   /** The map project. */
   private static MapProject mapProject;
@@ -87,8 +101,6 @@ public class WorkflowActionQaPathTest {
 
     // instantiate the workflow handler
     handler = new WorkflowQaPathHandler();
-
-    System.out.println(handler.getWorkflowStatusCombinations());
 
     // ensure database is clean
     for (Concept c : contentService.getConcepts().getIterable()) {
@@ -178,7 +190,6 @@ public class WorkflowActionQaPathTest {
   @Test
   public void testQaNeededState() throws Exception {
     Logger.getLogger(getClass()).info("TEST qa needed state");
-
 
     // clear existing records
     Logger.getLogger(getClass()).info("  clear record");
@@ -334,7 +345,6 @@ public class WorkflowActionQaPathTest {
 
       // Test: viewer
       ValidationResult result = testAllActionsForUser(viewer);
-      System.out.println("result="+result);
       // all actions except cancel should fail
       for (WorkflowAction action : WorkflowAction.values()) {
         switch (action) {
@@ -587,8 +597,6 @@ public class WorkflowActionQaPathTest {
   @AfterClass
   public static void cleanup() throws Exception {
 
-    System.out.println("Cleanup.");
-
     workflowService.clearWorkflowForMapProject(mapProject);
     workflowService.close();
 
@@ -614,9 +622,8 @@ public class WorkflowActionQaPathTest {
    *
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   private void getTrackingRecord() throws Exception {
-    System.out.println("Getting tracking record for project "
-        + mapProject.getId() + " and concept " + concept.getTerminologyId());
     workflowService.computeWorkflow(mapProject);
     Thread.sleep(1000);
     trackingRecord = workflowService.getTrackingRecord(mapProject, concept);
@@ -627,8 +634,8 @@ public class WorkflowActionQaPathTest {
    *
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   private void clearMapRecords() throws Exception {
-    System.out.println("Clearing map records.");
     for (MapRecord mr : mappingService.getMapRecords().getIterable()) {
       mappingService.removeMapRecord(mr.getId());
     }
@@ -645,6 +652,7 @@ public class WorkflowActionQaPathTest {
    * @return the validation result
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   private ValidationResult testAllActionsForUser(MapUser user) throws Exception {
     ValidationResult result = new ValidationResultJpa();
 
@@ -653,10 +661,8 @@ public class WorkflowActionQaPathTest {
           handler.validateTrackingRecordForActionAndUser(trackingRecord,
               action, user);
       if (actionResult.isValid()) {
-        System.out.println(action + " valid");
         result.addMessage(action.toString());
       } else {
-        System.out.println(action + " invalid -- " + actionResult.toString());
         result.addError(action.toString());
       }
     }
@@ -670,6 +676,7 @@ public class WorkflowActionQaPathTest {
    * @param status the status
    * @return the map record
    */
+  @SuppressWarnings("static-method")
   private MapRecord createRecord(MapUser user, WorkflowStatus status) {
     MapRecord record = new MapRecordJpa();
 

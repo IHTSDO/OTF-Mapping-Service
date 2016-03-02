@@ -1,25 +1,25 @@
 /* CSS file for OTF Mapping WebApp */
-
 #scrollArea {
-    height: 100%;
-    overflow: auto;
-  }
- 
-  #bottom {
-    display: block;
-  }
+	height: 100%;
+	overflow: auto;
+}
+
+#bottom {
+	display: block;
+}
 
 /* ensures that all links properly display a pointer cursor */
 a {
-	cursor:pointer;
+	cursor: pointer;
 }
 
 .glyphicon {
-	cursor:pointer;
+	cursor: pointer;
+	min-width: 15px; 
 }
 
 .term-browser-icon {
-	min-width: 15px;	
+	min-width: 15px;
 }
 
 .term-browser-icon-disabled {
@@ -28,25 +28,22 @@ a {
 	cursor: default;
 }
 
-
-
-
 .odd {
-  background-color: #FFFDF5;
+	background-color: #FFFDF5;
 }
+
 .even {
-  background-color: #F3F7F2;
+	background-color: #F3F7F2;
 }
 
 /* to make padding smaller on tab headers */
-.nav > li > a {
-  position: relative;
-  display: block;
-  padding: 10px 10px;
+.nav>li>a {
+	position: relative;
+	display: block;
+	padding: 10px 10px;
 }
 
-
-html,body {
+html, body {
 	margin: 0; /* Remove body margin/padding */
 	padding: 0;
 	/**height: 100%;*/
@@ -73,9 +70,9 @@ p {
 }
 
 .panel-group .panel {
-  margin-bottom: 0;
-/*   overflow: hidden; */
-  border-radius: 4px;
+	margin-bottom: 0;
+	/*   overflow: hidden; */
+	border-radius: 4px;
 }
 
 /** alert button formatting from bootstrap.css -- want to make them thinner */
@@ -92,42 +89,42 @@ p {
 }
 
 .alert-warning {
-  margin-top: 0px;
-  margin-bottom: 0px;
-  padding: 5px;
+	margin-top: 0px;
+	margin-bottom: 0px;
+	padding: 5px;
 }
 
 .alert-info-select {
-  margin-top: 0px;
-  margin-bottom: 0px;
-  padding: 5px;
+	margin-top: 0px;
+	margin-bottom: 0px;
+	padding: 5px;
 }
 
 .alert-info-select {
-  margin-top: 0px;
-  margin-bottom: 0px;
-  padding: 5px;
-  border-color: #E2E2E2;
-  background-color: #FFFFFF;
+	margin-top: 0px;
+	margin-bottom: 0px;
+	padding: 5px;
+	border-color: #E2E2E2;
+	background-color: #FFFFFF;
 }
 
 /** from bootstrap.css, want the global error to take up less space */
-.border-error {	
-  padding: 0px 0px 0px 0px;
+.border-error {
+	padding: 0px 0px 0px 0px;
 }
 
 .icon-flipped {
-transform: scaleX(-1);
--moz-transform: scaleX(-1);
--webkit-transform: scaleX(-1);
--ms-transform: scaleX(-1);
+	transform: scaleX(-1);
+	-moz-transform: scaleX(-1);
+	-webkit-transform: scaleX(-1);
+	-ms-transform: scaleX(-1);
 }
 
 /** widens the display for truncated term browser entries */
- .term-browser-dropdown-menu {
-  min-width: 300px;
-  position: relative;
-} 
+.term-browser-dropdown-menu {
+	min-width: 300px;
+	position: relative;
+}
 
 /** from bootstrap.css - less wasted space on advices and principles */
 hr {
@@ -137,9 +134,9 @@ hr {
 
 /** from bootstrap.css - changes advice and principles buttons to fill space */
 button[disabled] {
-  cursor: default;
-  width: 100%;
-  text-align: left;
+	cursor: default;
+	width: 100%;
+	text-align: left;
 }
 
 /** from bootstrap.css - changes margin between panels in a group */
@@ -182,21 +179,21 @@ body {
 }
 
 .ta-editor {
-    min-height: 300px;
-    height: auto;
-    overflow: auto;
-    font-family: inherit;
-    font-size: 100%;
-    margin:20px 0;
+	min-height: 300px;
+	height: auto;
+	overflow: auto;
+	font-family: inherit;
+	font-size: 100%;
+	margin: 20px 0;
 }
 
 /* used for the login page horizontal organization */
 #wrapper {
-		width:900px;
-		height:170px;
-		margin:0px auto;
-		padding:10px;
-	}
+	width: 900px;
+	height: 170px;
+	margin: 0px auto;
+	padding: 10px;
+}
 
 #content {
 	margin-top: 10px;
@@ -220,4 +217,15 @@ body {
 #content-right {
 	margin-left: 10px;
 	width: 334px;
+}
+
+.nobreak {
+	display: inline-block;
+	white-space: nowrap;
+}
+
+.noul {
+ color: #337ab7;
+ cursor: pointer;
+ text-decoration: none;
 }

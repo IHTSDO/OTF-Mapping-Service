@@ -123,10 +123,15 @@ public class OtfErrorHandler {
    * @param userName the current user's user name
    * @param project the project
    * @param recordId the record id
+   * @throws Exception 
    */
   public void sendEmail(Exception e, String whatIsHappening, String userName,
-    String project, String recordId) {
+    String project, String recordId) throws Exception {
 
+    if (!"true".equals(ConfigUtility.getConfigProperties().getProperty(
+        "mail.enabled"))) {
+      return;
+    }
     // Bail if no recipients
     if (recipients == null || recipients.isEmpty()) {
       return;

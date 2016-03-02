@@ -35,8 +35,8 @@ angular
   })
   .controller(
     'projectRecordsCtrl',
-    function($scope, $rootScope, $http, $routeParams, $location, $modal,
-      localStorageService, $sce) {
+    function($scope, $rootScope, $http, $routeParams, $location, $modal, $q, localStorageService,
+      $sce) {
 
       $scope.page = 'records';
 
@@ -49,13 +49,12 @@ angular
       $scope.mapAdvicesPresent = false;
 
       // error variables
-      $scope.errorProject = "";
-      $scope.errorConcept = "";
-      $scope.errorRecords = "";
+      $scope.errorProject = '';
+      $scope.errorConcept = '';
+      $scope.errorRecords = '';
 
-      // pagination variables
-      $scope.recordsPerPage = 10;
-      $scope.recordPage = 1;
+      // maximum limit for QA access
+      $scope.qaRecordLimit = 500;
 
       // for collapse directive
       $scope.isCollapsed = true;
@@ -63,9 +62,8 @@ angular
       $scope.conversation = null;
 
       // watch for changes to focus project
-      $scope.$on('localStorageModule.notification.setFocusProject', function(
-        event, parameters) {
-        console.debug("ProjectRecordCtrl:  Detected change in focus project",
+      $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
+        console.debug('ProjectRecordCtrl:  Detected change in focus project',
           parameters.focusProject);
         $scope.focusProject = parameters.focusProject;
         $scope.getRecordsForProject();
@@ -73,7 +71,7 @@ angular
 
       // retrieve the current global variables
       $scope.focusProject = localStorageService.get('focusProject');
-      $scope.mapProjects = localStorageService.get("mapProjects");
+      $scope.mapProjects = localStorageService.get('mapProjects');
       $scope.currentUser = localStorageService.get('currentUser');
       $scope.currentRole = localStorageService.get('currentRole');
       $scope.preferences = localStorageService.get('preferences');
@@ -82,8 +80,7 @@ angular
       $scope.userToken = localStorageService.get('userToken');
       $scope.$watch([ 'focusProject', 'userToken' ], function() {
 
-        console.debug('Detected project or user change', $scope.focusProject,
-          $scope.userToken);
+        console.debug('Detected project or user change', $scope.focusProject, $scope.userToken);
 
         // need both focus project and user token set before executing main
         // functions
@@ -91,6 +88,8 @@ angular
           $http.defaults.headers.common.Authorization = $scope.userToken;
           $scope.projectId = $scope.focusProject.id;
           $scope.getRecordsForProject();
+          $scope.initializeSearchParameters();
+
         }
       });
 
@@ -107,94 +106,99 @@ angular
         return $sce.trustAsHtml(html_code);
       };
 
-      // function to clear input box and return to initial view
-      $scope.resetSearch = function() {
-        $scope.query = null;
-        $scope.retrieveRecords(1);
+      // Helper function to retrieve records based on scope variables and
+      // variable pfs
+      // Two uses currently: normal project records retrieval (paged) and qa
+      // record retrieval (unpaged)
+      $scope.retrieveRecordsHelper = function(pfs) {
+
+        $rootScope.resetGlobalError();
+
+        var deferred = $q.defer();
+        var query_url = root_mapping
+          + 'record/project/id/'
+          + $scope.project.objectId
+          + '/ancestor/'
+          + ($scope.searchParameters.ancestorId && $scope.searchParameters.advancedMode ? $scope.searchParameters.ancestorId
+            : 'null') + '/query/'
+          + ($scope.searchParameters.query ? $scope.searchParameters.query : 'null');
+
+        console.debug('  pfs', pfs);
+
+        $rootScope.glassPane++;
+
+        // retrieve map records
+        $http.post(query_url, pfs).then(
+          // Success
+          function(response) {
+            $rootScope.glassPane--;
+            if (!response || !response.data || !response.data.mapRecord) {
+              deferred.reject('Bad response');
+            } else {
+              deferred.resolve(response.data);
+            }
+          },
+          // Error
+          function(response) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(response.data, response.status, response.headers,
+              response.config);
+            deferred.reject('Bad request');
+          });
+        return deferred.promise;
       };
 
       // function to retrieve records for a specified page
       $scope.retrieveRecords = function(page) {
 
-        console.debug('Retrieving records');
+        console.debug('Retrieving records', page);
 
         // construct html parameters parameter
-        var pfsParameterObj = constructPfsParameterObj(page);
+        var pfsParameterObj = $scope.getPfsFromSearchParameters(page);
 
-        var query_url;
-        if ($scope.currentRole === 'Viewer') {
-          query_url = root_mapping + "record/project/id/"
-            + $scope.project.objectId + "/published";
-        } else if ($scope.currentRole === 'Specialist'
-          || $scope.currentRole === 'Lead'
-          || $scope.currentRole === 'Administrator') {
-          query_url = root_mapping + "record/project/id/"
-            + $scope.project.objectId;
-        } else {
-          console.debug("ERROR: Invalid role detected in retrieveRecords()");
-        }
-
-        $rootScope.glassPane++;
-
-        // retrieve map records
-        $http({
-          url : query_url,
-          dataType : "json",
-          data : pfsParameterObj,
-          method : "POST",
-          headers : {
-            "Content-Type" : "application/json"
-          }
-        }).success(
+        // NOTE: Glass Pane and error handling are done in helper function
+        $scope.retrieveRecordsHelper(pfsParameterObj).then(
           function(data) {
 
-            $rootScope.glassPane--;
             $scope.records = data.mapRecord;
-            $scope.statusRecordLoad = "";
+            $scope.statusRecordLoad = '';
 
             // set pagination variables
             $scope.nRecords = data.totalCount;
             $scope.numRecordPages = Math.ceil(data.totalCount
-              / $scope.recordsPerPage);
+              / $scope.searchParameters.recordsPerPage);
 
-          }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
-          $rootScope.handleHttpError(data, status, headers, config);
-        }).then(function(data) {
+            // check if icon legends are necessary
+            $scope.unmappedDescendantsPresent = false;
+            $scope.mapNotesPresent = false;
+            $scope.mapAdvicesPresent = false;
 
-          // check if icon legends are necessary
-          $scope.unmappedDescendantsPresent = false;
-          $scope.mapNotesPresent = false;
-          $scope.mapAdvicesPresent = false;
-
-          // check if any notes or advices are present
-          for (var i = 0; i < $scope.records.length; i++) {
-            if ($scope.records[i].mapNote.length > 0) {
-              $scope.mapNotesPresent = true;
-            }
-            for (var j = 0; j < $scope.records[i].mapEntry.length; j++) {
-              if ($scope.records[i].mapEntry[j].mapAdvice.length > 0) {
-                $scope.mapAdvicesPresent = true;
+            // check if any notes or advices are present
+            for (var i = 0; i < $scope.records.length; i++) {
+              if ($scope.records[i].mapNote.length > 0) {
+                $scope.mapNotesPresent = true;
+              }
+              for (var j = 0; j < $scope.records[i].mapEntry.length; j++) {
+                if ($scope.records[i].mapEntry[j].mapAdvice.length > 0) {
+                  $scope.mapAdvicesPresent = true;
+                }
               }
             }
-            ;
-          }
-          ;
 
-          // check relation syle flags
-          if ($scope.project.mapRelationStyle === "MAP_CATEGORY_STYLE") {
-            applyMapCategoryStyle();
-          }
+            // check relation syle flags
+            if ($scope.project.mapRelationStyle === 'MAP_CATEGORY_STYLE') {
+              applyMapCategoryStyle();
+            }
 
-          if ($scope.project.mapRelationStyle === "RELATIONSHIP_STYLE") {
-            applyRelationshipStyle();
-          }
+            if ($scope.project.mapRelationStyle === 'RELATIONSHIP_STYLE') {
+              applyRelationshipStyle();
+            }
 
-          // get unmapped descendants (checking done in routine)
-          if ($scope.records.length > 0) {
-            getUnmappedDescendants(0);
-          }
-        });
+            // get unmapped descendants (checking done in routine)
+            if ($scope.records.length > 0) {
+              getUnmappedDescendants(0);
+            }
+          });
       };
 
       // Constructs a paging/filtering/sorting parameters object for RESTful
@@ -202,11 +206,12 @@ angular
       function constructPfsParameterObj(page) {
 
         return {
-          "startIndex" : (page - 1) * $scope.recordsPerPage,
-          "maxResults" : $scope.recordsPerPage,
-          "sortField" : null,
-          "queryRestriction" : $scope.query
-        }; // assigning simply to $scope.query when null produces undefined
+          'startIndex' : (page - 1) * searchParameters.recordsPerPage,
+          'maxResults' : searchParameters.recordsPerPage,
+          'sortField' : null,
+          'queryRestriction' : $scope.searchParameters.query
+        }; // assigning simply to $scope.searchParameters.query when null
+        // produces undefined
 
       }
 
@@ -225,13 +230,12 @@ angular
 
           $http(
             {
-              url : root_mapping + "concept/id/"
-                + $scope.records[index].conceptId + "/"
-                + "unmappedDescendants/project/id/" + $scope.project.id,
-              dataType : "json",
-              method : "GET",
+              url : root_mapping + 'concept/id/' + $scope.records[index].conceptId + '/'
+                + 'unmappedDescendants/project/id/' + $scope.project.id,
+              dataType : 'json',
+              method : 'GET',
               headers : {
-                "Content-Type" : "application/json"
+                'Content-Type' : 'application/json'
               }
             }).success(function(data) {
             if (data.count > 0)
@@ -243,46 +247,41 @@ angular
         }
 
       }
-      ;
 
       function applyMapCategoryStyle() {
 
         // set the category display text
-        $scope.mapRelationStyleText = "Map Category Style";
+        $scope.mapRelationStyleText = 'Map Category Style';
 
-        // Cycle over all entries. If targetId is blank, show relationName as
+        // Cycle over all entries. If targetId is blank, show relation name as
         // the target name
         for (var i = 0; i < $scope.records.length; i++) {
           for (var j = 0; j < $scope.records[i].mapEntry.length; j++) {
 
-            if ($scope.records[i].mapEntry[j].targetId === "") {
-              $scope.records[i].mapEntry[j].targetName = "\""
-                + $scope.records[i].mapEntry[j].relationName + "\"";
+            if ($scope.records[i].mapEntry[j].targetId === '') {
+              $scope.records[i].mapEntry[j].targetName = $scope.records[i].mapEntry[j].mapRelation.name;
             }
           }
         }
       }
-      ;
 
       function applyRelationshipStyle() {
 
-        $scope.mapRelationStyleText = "Relationship Style";
+        $scope.mapRelationStyleText = 'Relationship Style';
 
         // Cycle over all entries. Add the relation name to the advice list
         for (var i = 0; i < $scope.records.length; i++) {
           for (var j = 0; j < $scope.records[i].mapEntry.length; j++) {
-            if ($scope.records[i].mapEntry[j].targetId === "") {
+            if ($scope.records[i].mapEntry[j].targetId === '') {
               // get the object for easy handling
               var jsonObj = $scope.records[i].mapEntry[j].mapAdvice;
 
               // add the serialized advice
               jsonObj.push({
-                "id" : "0",
-                "name" : "\"" + $scope.records[i].mapEntry[j].mapRelationName
-                  + "\"",
-                "detail" : "\"" + $scope.records[i].mapEntry[j].mapRelationName
-                  + "\"",
-                "objectId" : "0"
+                'id' : '0',
+                'name' : $scope.records[i].mapEntry[j].mapRelation.name,
+                'detail' : $scope.records[i].mapEntry[j].mapRelation.name,
+                'objectId' : '0'
               });
 
               $scope.records[i].mapEntry[j].mapAdvice = jsonObj;
@@ -290,48 +289,64 @@ angular
           }
         }
       }
-      ;
+
+      $scope.logout = function() {
+        $rootScope.glassPane++;
+        $http({
+          url : root_security + 'logout/user/id/' + $scope.currentUser.userName,
+          method : 'POST',
+          headers : {
+            'Content-Type' : 'text/plain'
+          // save userToken from authentication
+          }
+        }).success(function(data) {
+          $rootScope.glassPane--;
+          $location.path('/');
+        }).error(function(data, status, headers, config) {
+          $rootScope.glassPane--;
+          $location.path('/');
+          $rootScope.handleHttpError(data, status, headers, config);
+        });
+
+      };
 
       // function to change project from the header
       $scope.changeFocusProject = function(mapProject) {
         $scope.focusProject = mapProject;
-        console.debug("changing project to " + $scope.focusProject.name);
+        console.debug('changing project to ' + $scope.focusProject.name);
 
         // update and broadcast the new focus project
         localStorageService.add('focusProject', $scope.focusProject);
-        $rootScope.$broadcast(
-          'localStorageModule.notification.setFocusProject', {
-            key : 'focusProject',
-            focusProject : $scope.focusProject
-          });
+        $rootScope.$broadcast('localStorageModule.notification.setFocusProject', {
+          key : 'focusProject',
+          focusProject : $scope.focusProject
+        });
 
         // update the user preferences
         $scope.preferences.lastMapProjectId = $scope.focusProject.id;
         localStorageService.add('preferences', $scope.preferences);
-        $rootScope.$broadcast(
-          'localStorageModule.notification.setUserPreferences', {
-            key : 'userPreferences',
-            userPreferences : $scope.preferences
-          });
+        $rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {
+          key : 'userPreferences',
+          userPreferences : $scope.preferences
+        });
 
       };
 
       $scope.goToHelp = function() {
         var path;
         if ($scope.page != 'mainDashboard') {
-          path = "help/" + $scope.page + "Help.html";
+          path = 'help/' + $scope.page + 'Help.html';
         } else {
-          path = "help/" + $scope.currentRole + "DashboardHelp.html";
+          path = 'help/' + $scope.currentRole + 'DashboardHelp.html';
         }
-        console.debug("go to help page " + path);
+        console.debug('go to help page ' + path);
         // redirect page
         $location.path(path);
       };
 
       $scope.isEditable = function(record) {
 
-        if (($scope.currentRole === 'Specialist'
-          || $scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator')
+        if (($scope.currentRole === 'Specialist' || $scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator')
           && (record.workflowStatus === 'PUBLISHED' || record.workflowStatus === 'READY_FOR_PUBLICATION')) {
 
           return true;
@@ -344,7 +359,7 @@ angular
 
       $scope.editRecord = function(record) {
 
-        console.debug("EditRecord()");
+        console.debug('EditRecord()');
         console.debug(record);
 
         // check if this record is assigned to the user and not in a publication
@@ -354,61 +369,59 @@ angular
           && record.workflowStatus != 'READY_FOR_PUBLICATION') {
 
           // go to the edit page
-          $location.path("/record/recordId/" + id);
+          $location.path('/record/recordId/' + id);
 
           // otherwise, assign this record along the FIX_ERROR_PATH
         } else {
 
           $rootScope.glassPane++;
 
-          console
-            .debug("Edit record clicked, assigning record along FIX_ERROR_PATH");
-          $http(
-            {
-              url : root_workflow + "assignFromRecord/user/id/"
-                + $scope.currentUser.userName,
-              method : "POST",
-              dataType : 'json',
-              data : record,
-              headers : {
-                "Content-Type" : "application/json"
-              }
-            }).success(
-            function(data) {
-              console.debug('Assignment successful');
-              $http(
-                {
-                  url : root_workflow + "record/project/id/"
-                    + $scope.focusProject.id + "/concept/id/"
-                    + record.conceptId + "/user/id/"
-                    + $scope.currentUser.userName,
-                  method : "GET",
-                  dataType : 'json',
-                  data : record,
-                  headers : {
-                    "Content-Type" : "application/json"
-                  }
-                }).success(function(data) {
+          console.debug('Edit record clicked, assigning record along FIX_ERROR_PATH');
+          $http({
+            url : root_workflow + 'assignFromRecord/user/id/' + $scope.currentUser.userName,
+            method : 'POST',
+            dataType : 'json',
+            data : record,
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          })
+            .success(
+              function(data) {
+                console.debug('Assignment successful');
+                $http(
+                  {
+                    url : root_workflow + 'record/project/id/' + $scope.focusProject.id
+                      + '/concept/id/' + record.conceptId + '/user/id/'
+                      + $scope.currentUser.userName,
+                    method : 'GET',
+                    dataType : 'json',
+                    data : record,
+                    headers : {
+                      'Content-Type' : 'application/json'
+                    }
+                  }).success(function(data) {
 
-                $rootScope.glassPane--;
+                  $rootScope.glassPane--;
 
-                // open the record edit view
-                $location.path("/record/recordId/" + data.id);
+                  // open the record edit view
+                  $location.path('/record/recordId/' + data.id);
+                }).error(function(data, status, headers, config) {
+                  $rootScope.glassPane--;
+
+                  $rootScope.handleHttpError(data, status, headers, config);
+                });
+
               }).error(function(data, status, headers, config) {
-                $rootScope.glassPane--;
+              $rootScope.glassPane--;
 
-                $rootScope.handleHttpError(data, status, headers, config);
-              });
-
-            }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
-
-            $rootScope.handleHttpError(data, status, headers, config);
-          });
+              $rootScope.handleHttpError(data, status, headers, config);
+            });
         }
       };
 
-      $scope.truncate = function(string, length) {
+      $scope.truncate = function(string, plength) {
+        var length = plength;
         if (length == null)
           length = 100;
         if (string.length > length)
@@ -417,7 +430,8 @@ angular
           return string;
       };
 
-      $scope.truncated = function(string, length) {
+      $scope.truncated = function(string, plength) {
+        var length = plength;
         if (length == null)
           length = 100;
         if (string.length > length)
@@ -428,27 +442,26 @@ angular
 
       $scope.openViewerFeedbackModal = function(lrecord, currentUser) {
 
-        console.debug("openViewerFeedbackModal with ", lrecord, currentUser);
+        console.debug('openViewerFeedbackModal with ', lrecord, currentUser);
 
-        var modalInstance = $modal
-          .open({
-            templateUrl : 'js/widgets/projectRecords/projectRecordsViewerFeedback.html',
-            controller : ViewerFeedbackModalCtrl,
-            resolve : {
-              record : function() {
-                return lrecord;
-              },
-              currentUser : function() {
-                return currentUser;
-              }
+        var modalInstance = $modal.open({
+          templateUrl : 'js/widgets/projectRecords/projectRecordsViewerFeedback.html',
+          controller : ViewerFeedbackModalCtrl,
+          resolve : {
+            record : function() {
+              return lrecord;
+            },
+            currentUser : function() {
+              return currentUser;
             }
-          });
+          }
+        });
 
       };
 
       var ViewerFeedbackModalCtrl = function($scope, $modalInstance, record) {
 
-        console.debug("Entered modal control", record);
+        console.debug('Entered modal control', record);
 
         $scope.record = record;
         $scope.project = localStorageService.get('focusProject');
@@ -457,24 +470,22 @@ angular
         $scope.feedbackInput = '';
 
         $scope.sendFeedback = function(record, feedbackMessage, name, email) {
-          console.debug("Sending feedback email", record);
+          console.debug('Sending feedback email', record);
 
-          if (feedbackMessage == null || feedbackMessage == undefined
-            || feedbackMessage === '') {
-            window.alert("The feedback field cannot be blank. ");
+          if (feedbackMessage == null || feedbackMessage == undefined || feedbackMessage === '') {
+            window.alert('The feedback field cannot be blank. ');
             return;
           }
 
           if ($scope.currentUser.userName === 'guest'
-            && (name == null || name == undefined || name === ''
-              || email == null || email == undefined || email === '')) {
-            window.alert("Name and email must be provided.");
+            && (name == null || name == undefined || name === '' || email == null
+              || email == undefined || email === '')) {
+            window.alert('Name and email must be provided.');
             return;
           }
 
-          if ($scope.currentUser.userName === 'guest'
-            && validateEmail(email) == false) {
-            window.alert("Invalid email address provided.");
+          if ($scope.currentUser.userName === 'guest' && validateEmail(email) == false) {
+            window.alert('Invalid email address provided.');
             return;
           }
 
@@ -483,21 +494,21 @@ angular
 
           $rootScope.glassPane++;
           $http({
-            url : root_workflow + "message",
-            dataType : "json",
-            method : "POST",
+            url : root_workflow + 'message',
+            dataType : 'json',
+            method : 'POST',
             data : sList,
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
 
           }).success(function(data) {
-            console.debug("success to sendFeedbackEmail.");
+            console.debug('success to sendFeedbackEmail.');
             $rootScope.glassPane--;
             $modalInstance.close();
           }).error(function(data, status, headers, config) {
             $modalInstance.close();
-            $scope.recordError = "Error sending feedback email.";
+            $scope.recordError = 'Error sending feedback email.';
             $rootScope.glassPane--;
             $rootScope.handleHttpError(data, status, headers, config);
           });
@@ -517,8 +528,8 @@ angular
 
           menubar : false,
           statusbar : false,
-          plugins : "autolink autoresize link image charmap searchreplace lists paste",
-          toolbar : "undo redo | styleselect lists | bold italic underline strikethrough | charmap link image",
+          plugins : 'autolink autoresize link image charmap searchreplace lists paste',
+          toolbar : 'undo redo | styleselect lists | bold italic underline strikethrough | charmap link image',
 
           setup : function(ed) {
 
@@ -532,6 +543,274 @@ angular
             });
           }
         };
+
+      };
+
+      // //////////////////////////////
+      // Advanced Search Components
+      // //////////////////////////////
+      $scope.searchParameters = {
+        query : '',
+        page : 1,
+        recordsPerPage : 10,
+        advancedMode : false,
+
+        // advanced options
+        ancestorId : null,
+        rootId : null,
+        targetId : null,
+        targetName : null,
+        adviceContained : true,
+        adviceName : null,
+
+        // search display data
+        roots : [], // source terminology root concepts
+        advices : []
+      // map advices
+      };
+
+      // function to clear input box and return to initial view
+      $scope.resetSearch = function() {
+        $scope.searchParameters.query = null;
+        $scope.searchParameters.page = 1;
+        $scope.searchParameters.targetId = null;
+        $scope.searchParameters.targetName = null;
+        $scope.searchParameters.rootId = null;
+        $scope.searchParameters.ancestorId = null;
+        $scope.searchParameters.adviceName = null;
+        $scope.searchParameters.adviceContained = true;
+
+        $scope.retrieveRecords(1);
+      };
+
+      // on load, get the root trees for the terminology
+      $scope.initializeSearchParameters = function() {
+
+        console.debug('Getting root trees');
+        $rootScope.glassPane++;
+        $http.get(root_mapping + 'treePosition/project/id/' + $scope.focusProject.id + '/source')
+          .then(
+            // Success
+            function(response) {
+              $rootScope.glassPane--;
+              console.debug('Root trees', response);
+              $scope.searchParameters.roots = response.data.treePosition;
+            },
+            // Error
+            function(response) {
+              $rootScope.glassPane--;
+              $rootScope.handleHttpError(response.data, response.status, response.headers,
+                response.config);
+
+            });
+
+        $rootScope.glassPane++;
+        $http.get(root_mapping + 'advice/advices').then(
+          // Success
+          function(response) {
+            $rootScope.glassPane--;
+            console.debug('Map advices', response);
+            $scope.searchParameters.advices = response.data.mapAdvice;
+          },
+          // Error
+          function(response) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(response.data, response.status, response.headers,
+              response.config);
+          });
+
+      };
+
+      // toggle advanced search
+      $scope.toggleAdvancedSearch = function() {
+        // set the display flag
+        $scope.searchParameters.advancedMode = !$scope.searchParameters.advancedMode;
+      };
+
+      $scope.getPfsFromSearchParameters = function(page) {
+        $scope.searchParameters.page = page;
+        console.debug('Getting pfs from search parameters', $scope.searchParameters);
+        var pfs = {
+          'startIndex' : ($scope.searchParameters.page - 1)
+            * $scope.searchParameters.recordsPerPage,
+          'maxResults' : $scope.searchParameters.recordsPerPage,
+
+          // NOTE: If query specified, do not sort by concept id (preserve
+          // result relevance)
+          'sortField' : $scope.searchParameters && $scope.searchParameters.query ? null
+            : 'conceptId',
+          'queryRestriction' : ''
+        };
+
+        if ($scope.searchParameters.advancedMode) {
+          console.debug('Advanced search mode specified');
+          var queryRestrictions = [];
+          // check target id
+          if ($scope.searchParameters.targetId && $scope.searchParameters.targetId.length > 0) {
+            queryRestrictions.push('mapEntries.targetId:' + $scope.searchParameters.targetId);
+          }
+
+          // check target name
+          if ($scope.searchParameters.targetName && $scope.searchParameters.targetName.length > 0) {
+            queryRestrictions.push('mapEntries.targetName:' + $scope.searchParameters.targetName);
+          }
+
+          // check map advices
+          if ($scope.searchParameters.adviceName) {
+            queryRestrictions.push(($scope.searchParameters.adviceContained ? '' : 'NOT ')
+              + 'mapEntries.mapAdvices.name:"' + $scope.searchParameters.adviceName + '"');
+          }
+
+          console.debug('Fielded search results:' + queryRestrictions);
+
+          for (var i = 0; i < queryRestrictions.length; i++) {
+            pfs.queryRestriction += (pfs.queryRestriction.length > 0 ? ' AND ' : '')
+              + queryRestrictions[i];
+          }
+
+        }
+
+        return pfs;
+      };
+
+      // Open the QA Records modal
+      $scope.openQaRecordsModal = function() {
+        console.debug('openQaRecordsModal');
+
+        var pfs = $scope.getPfsFromSearchParameters(1);
+        pfs.startIndex = -1;
+        pfs.maxResults = -1;
+        $scope
+          .retrieveRecordsHelper(pfs)
+          .then(
+            function(recordList) {
+              if (recordList.count !== $scope.nRecords) {
+                utilService
+                  .handleError('Mismatch between QA record retrieval and existing results. Aborting QA.');
+              } else {
+
+                var modalInstance = $modal.open({
+                  templateUrl : 'js/widgets/projectRecords/qa-records.html',
+                  controller : QaRecordsCtrl,
+                  resolve : {
+
+                    // used to confirm that unpaged search matches paged search
+                    // results
+                    records : function() {
+                      return recordList.mapRecord;
+                    }
+                  }
+                });
+
+                // on close (success or fail), reload records
+                modalInstance.result.then(function() {
+                  $scope.retrieveRecords(1);
+                }, function() {
+                  $scope.retrieveRecords(1);
+                });
+              }
+            });
+
+      };
+
+      // QA records modal controller
+      var QaRecordsCtrl = function($scope, $modalInstance, $q, utilService, records) {
+        console.debug('Entered modal control', records);
+
+        if (records.length == 0) {
+          utilService.handleError('Failed to open QA Modal: No records specified for QA');
+          return;
+        }
+
+        if (records.length > $scope.qaRecordLimit) {
+          utilService.handleError('Failed to open QA Modal: Too many records specified for QA');
+          return;
+        }
+
+        // get the project id from the first record
+        var projectId = records[0].mapProjectId;
+
+        if (!projectId) {
+          utilService.handleError('Failed to open QA Modal: Could not determine map project');
+          return;
+        }
+
+        // Scope vars
+        $scope.isRunning = false;
+        $scope.qaSucceeded = 0;
+        $scope.qaFailed = 0;
+        $scope.qaSkipped = 0;
+        $scope.qaComplete = 0;
+        $scope.qaTotal = records.length;
+
+        // Cancel
+        $scope.cancel = function() {
+          console.debug('Stopping QA Records...');
+          $scope.isRunning = false;
+        };
+
+        // Close
+        $scope.close = function() {
+          $modalInstance.close();
+        };
+
+        // Create QA records
+        $scope.qaRecords = function(label) {
+          $scope.isRunning = true;
+          $scope.qaSucceeded = 0;
+          $scope.qaFailed = 0;
+          $scope.qaSkipped = 0;
+          $scope.qaComplete = 0;
+
+          // call the recursive helper function
+          qaRecordsHelper(records, label, 0);
+
+        };
+
+        // recursively sends records for qa
+        function qaRecordsHelper(records, label, index) {
+
+          if (index == records.length) {
+            $scope.isRunning = false;
+            return;
+          }
+
+          qaRecord(records[index], label)['finally'](function() {
+            qaRecordsHelper(records, label, index + 1);
+          });
+        }
+
+        // helper function (with promise) to assign a single record to QA
+        function qaRecord(record, label) {
+          var deferred = $q.defer();
+          // if stop request detected, reject
+          if (!$scope.isRunning) {
+            $scope.qaSkipped++;
+            deferred.reject();
+          } else {
+            if (!record.labels) {
+              record.labels = [];
+            }
+            record.labels.push(label);
+
+            $http.post(root_workflow + 'createQARecord', record).then(function() {
+              $scope.qaSucceeded++;
+              deferred.resolve();
+            }, function() {
+              $scope.qaFailed++;
+              deferred.reject();
+            });
+          }
+
+          $scope.qaComplete++; // really should be called submitted, but meh
+          return deferred.promise;
+        }
+
+        // Clear the error
+        $scope.clearError = function() {
+          $scope.error = null;
+        };
+
       };
 
     });

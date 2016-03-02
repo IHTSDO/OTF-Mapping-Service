@@ -1,5 +1,4 @@
 'use strict';
-
 angular
   .module('mapProjectApp.widgets.mapProject', [ 'adf.provider' ])
   .config(function(dashboardProvider) {
@@ -25,35 +24,27 @@ angular
       $scope.indexViewerExists = false;
 
       // watch for project change
-      $scope.$on('localStorageModule.notification.setFocusProject', function(
-        event, parameters) {
-        console
-          .debug("MapProjectWidgetCtrl:  Detected change in focus project");
+      $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
+        console.debug('on localStorageModule.notification.setFocusProject');
         $scope.project = parameters.focusProject;
-
         console.debug($scope.project);
       });
 
       // the only local storage variable required for this app is
-            // userToken
+      // userToken
       $scope.$watch('userToken', function() {
-
         $http.defaults.headers.common.Authorization = $scope.userToken;
         setIndexViewerStatus();
       });
 
       $scope.goProjectDetails = function() {
-        console.debug($scope.role);
-
-        var path = "/project/details";
+        var path = '/project/details';
         // redirect page
         $location.path(path);
       };
 
       $scope.goMapRecords = function() {
-        console.debug($scope.role);
-
-        var path = "/project/records";
+        var path = '/project/records';
         // redirect page
         $location.path(path);
       };
@@ -61,24 +52,20 @@ angular
       $scope.generateTestData = function() {
 
         if ($scope.nConflicts == undefined || $scope.nConflicts == null) {
-          alert("You must specify the number of conflicts to be generated.");
+          alert('You must specify the number of conflicts to be generated.');
         } else {
-
-          console.debug("Generating test data");
           $rootScope.glassPane++;
-
-          var confirmGenerate = confirm("Are you sure you want to generate test data?");
+          var confirmGenerate = confirm('Are you sure you want to generate test data?');
           if (confirmGenerate == true) {
-
             // call the generate API
             $http(
               {
-                url : root_workflow + "project/id/" + $scope.project.id
-                  + "/generateConflicts/maxConflicts/" + $scope.nConflicts,
-                dataType : "json",
-                method : "POST",
+                url : root_workflow + 'project/id/' + $scope.project.id
+                  + '/generateConflicts/maxConflicts/' + $scope.nConflicts,
+                dataType : 'json',
+                method : 'POST',
                 headers : {
-                  "Content-Type" : "application/json"
+                  'Content-Type' : 'application/json'
                 }
               }).success(function(data) {
               $rootScope.glassPane--;
@@ -95,21 +82,19 @@ angular
       };
 
       $scope.generateTestingStateForKLININ = function() {
-
-        console.debug("Generating mapping testing state");
         $rootScope.glassPane++;
 
-        var confirmGenerate = confirm("Are you sure you want to generate the clean mapping user testing state?");
+        var confirmGenerate = confirm('Are you sure you want to generate the clean mapping user testing state?');
         if (confirmGenerate == true) {
           // call the generate API
           $http(
             {
-              url : root_workflow + "project/id/" + $scope.project.id
-                + "/generateTestingStateKLININ",
-              dataType : "json",
-              method : "POST",
+              url : root_workflow + 'project/id/' + $scope.project.id
+                + '/generateTestingStateKLININ',
+              dataType : 'json',
+              method : 'POST',
               headers : {
-                "Content-Type" : "application/json"
+                'Content-Type' : 'application/json'
               }
             }).success(function(data) {
             $rootScope.glassPane--;
@@ -121,21 +106,18 @@ angular
       };
 
       $scope.generateTestingStateForBHEKRE = function() {
-
-        console.debug("Generating mapping testing state");
         $rootScope.glassPane++;
-
-        var confirmGenerate = confirm("Are you sure you want to generate the clean mapping user testing state?");
+        var confirmGenerate = confirm('Are you sure you want to generate the clean mapping user testing state?');
         if (confirmGenerate == true) {
           // call the generate API
           $http(
             {
-              url : root_workflow + "project/id/" + $scope.project.id
-                + "/generateTestingStateBHEKRE",
-              dataType : "json",
-              method : "POST",
+              url : root_workflow + 'project/id/' + $scope.project.id
+                + '/generateTestingStateBHEKRE',
+              dataType : 'json',
+              method : 'POST',
               headers : {
-                "Content-Type" : "application/json"
+                'Content-Type' : 'application/json'
               }
             }).success(function(data) {
             $rootScope.glassPane--;
@@ -167,13 +149,31 @@ angular
 
       };
 
-      var ShowDeltaModalCtrl = function($scope, $http, $modalInstance,
-        terminology, version) {
+      // Compute Workflow
+      $scope.computeWorkflow = function() {
+        console.debug('compute workflow');
+        $rootScope.glassPane++;
+        $http({
+          url : root_workflow + 'project/id/' + $scope.project.id + '/compute',
+          dataType : 'json',
+          method : 'POST',
+          headers : {
+            'Content-Type' : 'application/json'
+          }
+        }).success(function(data) {
+          $rootScope.glassPane--;
+        }).error(function(data, status, headers, config) {
+          $rootScope.glassPane--;
+          $rootScope.handleHttpError(data, status, headers, config);
+        });
+      };
+
+      var ShowDeltaModalCtrl = function($scope, $http, $modalInstance, terminology, version) {
 
         $scope.pageSize = 10;
         $scope.terminology = terminology; // used
-                                                                                    // for
-                                                                                    // title
+        // for
+        // title
 
         $scope.close = function() {
           $modalInstance.close();
@@ -181,41 +181,32 @@ angular
 
         $scope.getConcepts = function(page, filter) {
           $rootScope.glassPane++;
-          var pfsParameterObj =
-
-          {
-            "startIndex" : page == -1 ? -1 : (page - 1) * $scope.pageSize,
-            "maxResults" : page == -1 ? -1 : $scope.pageSize,
-            "sortField" : null,
-            "queryRestriction" : filter
+          var pfsParameterObj = {
+            'startIndex' : page == -1 ? -1 : (page - 1) * $scope.pageSize,
+            'maxResults' : page == -1 ? -1 : $scope.pageSize,
+            'sortField' : null,
+            'queryRestriction' : filter
           };
+          $http({
+            url : root_content + 'terminology/id/' + terminology + '/' + version + '/delta',
+            dataType : 'json',
+            method : 'POST',
+            data : pfsParameterObj,
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+            $rootScope.glassPane--;
 
-          console.debug(pfsParameterObj);
+            $scope.concepts = data.searchResult;
+            $scope.nConcepts = data.totalCount;
+            $scope.numConceptPages = Math.ceil(data.totalCount / $scope.pageSize);
 
-          $http(
-            {
-              url : root_content + "terminology/id/" + terminology + "/"
-                + version + "/delta",
-              dataType : "json",
-              method : "POST",
-              data : pfsParameterObj,
-              headers : {
-                "Content-Type" : "application/json"
-              }
-            }).success(
-            function(data) {
-              $rootScope.glassPane--;
-
-              $scope.concepts = data.searchResult;
-              $scope.nConcepts = data.totalCount;
-              $scope.numConceptPages = Math.ceil(data.totalCount
-                / $scope.pageSize);
-
-            }).error(function(data, status, headers, config) {
+          }).error(function(data, status, headers, config) {
             $rootScope.glassPane--;
             $scope.concepts = [];
             // $rootScope.handleHttpError(data, status, headers,
-                        // config);
+            // config);
           });
 
         };
@@ -223,42 +214,38 @@ angular
       };
 
       $scope.openConceptBrowser = function() {
+        var myWindow = null;
+
         if ($scope.currentUser.userName === 'guest')
-          var myWindow = window
-            .open("http://browser.ihtsdotools.org/index.html?perspective=full"
-              + "&edition=en-edition"
-              + "&server=https://browser-aws-1.ihtsdotools.org/&langRefset=900000000000509007"
-              + "&acceptLicense=true");
+          myWindow = window.open('http://browser.ihtsdotools.org/index.html?perspective=full'
+            + '&acceptLicense=true');
         else
-          var myWindow = window
-            .open(
-              "http://dailybuild.ihtsdotools.org/index.html?perspective=full&diagrammingMarkupEnabled=true&acceptLicense=true",
-              "browserWindow");
+          myWindow = window.open('http://dailybuild.ihtsdotools.org/index.html?perspective=full'
+            + '&acceptLicense=true');
         myWindow.focus();
       };
 
+      // Open index viewer
       $scope.openIndexViewer = function() {
-        console.debug("page location is", window.location.href);
         var currentUrl = window.location.href;
         var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
-        var newUrl = baseUrl + "/index/viewer";
-        var myWindow = window.open(newUrl, "indexViewerWindow");
+        var newUrl = baseUrl + '/index/viewer';
+        var myWindow = window.open(newUrl, 'indexViewerWindow');
         myWindow.focus();
       };
 
+      // Set index viewer status
       function setIndexViewerStatus() {
         $http(
           {
-            url : root_content + "index/"
-              + $scope.project.destinationTerminology + "/"
+            url : root_content + 'index/' + $scope.project.destinationTerminology + '/'
               + $scope.project.destinationTerminologyVersion,
-            dataType : "json",
-            method : "GET",
+            dataType : 'json',
+            method : 'GET',
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-          console.debug("Success in getting viewable indexes.");
           if (data.searchResult.length > 0) {
             $scope.indexViewerExists = true;
           } else {
@@ -268,5 +255,5 @@ angular
           $scope.indexViewerExists = false;
         });
       }
-      ;
+
     });

@@ -87,15 +87,11 @@ public class MapAdviceJpa implements MapAdvice {
    */
   public MapAdviceJpa(MapAdvice mapAdvice) {
     super();
-    // System.out.println("Copying map advice");
-
     this.id = mapAdvice.getId();
     this.name = mapAdvice.getName();
     this.detail = mapAdvice.getDetail();
     this.isAllowableForNullTarget = mapAdvice.isAllowableForNullTarget();
     this.isComputed = mapAdvice.isComputed();
-
-    // System.out.println("  " + toString());
   }
 
   /**

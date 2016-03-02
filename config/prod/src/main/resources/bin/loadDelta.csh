@@ -5,11 +5,12 @@
 # 0      19      *       *       0       csh /home/ihtsdo/config/bin/loadDelta.csh > /home/ihtsdo/logs/loadDelta.log
 #
 # Configure
-# 
+#
 set MAPPING_CODE=/home/ihtsdo/code
 set MAPPING_CONFIG=/home/ihtsdo/config/config.properties
 set MAPPING_DATA=/home/ihtsdo/data
-set SNOMEDCT_VERSION=20150131
+set SNOMEDCT_VERSION=20160731
+set dir=/home/ihtsdo/data/dripFeed
 
 echo "------------------------------------------------"
 echo "Starting ...`/bin/date`"
@@ -21,67 +22,101 @@ echo "MAPPING_CONFIG = $MAPPING_CODE"
 echo "Taking down the server"
 service tomcat7 stop
 if ($status != 0) then
-	echo "ERROR stopping server"
-	exit 1
+        echo "ERROR stopping server"
+        exit 1
 endif
 
-echo "    Delete current wb-release-process-1.20-SNAPSHOT-delta file ...`/bin/date`"
-cd ~/.m2/repository/org/ihtsdo/intl/release/process/wb-release-process/1.20-SNAPSHOT
-rm -fr wb-release-process-1.20-SNAPSHOT-delta
+echo "    Delete last delta ...`/bin/date`"
+cd $dir
+rm -fr $dir/*
 if ($status != 0) then
-    echo "ERROR deleting delta data"
+    echo "ERROR deleting old delta data"
     exit 1
 endif
 
-
+# THIS MAY CHANGE - obviously dates are a one-time thing
 echo "    Obtain latest release ...`/bin/date`"
-cd $MAPPING_DATA
-mvn org.apache.maven.plugins:maven-dependency-plugin:2.4:get \
-  -DgroupId=org.ihtsdo.intl.release.process -DartifactId=wb-release-process \
-  -Dclassifier=delta -Dversion=1.20-SNAPSHOT -Dpackaging=zip \
-  -Dtransitive=false
+wget "https://release.ihtsdotools.org/api/v1/centers/international/products/snomed_ct_ts_release/builds/" -O /tmp/xx.$$.json
 if ($status != 0) then
-    echo "ERROR retrieving latest delta data"
+    echo "ERROR downloading builds file"
     exit 1
 endif
 
-echo "    Unzip delta files into wb-release-process-1.20-SNAPSHOT-delta ... `/bin/date`"
-cd ~/.m2/repository/org/ihtsdo/intl/release/process/wb-release-process/1.20-SNAPSHOT
-unzip wb-release-process-1.20-SNAPSHOT-delta.zip -d wb-release-process-1.20-SNAPSHOT-delta
+set latestRelease = `grep outputfiles_url /tmp/xx.$$.json | sort -n | tail -1 | cut -d\: -f 2- | sed 's/ "//; s/",//'`
 if ($status != 0) then
-    echo "ERROR unzipping delta data"
+    echo "ERROR determining latest release"
     exit 1
 endif
 
-echo "    Load the delta ... `/bin/date`"
-cd $MAPPING_CODE/admin/loader
-mvn install -PRF2-delta -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT \
-  -Dlast.publication.date=$SNOMEDCT_VERSION \
-  -Dinput.dir=/home/ihtsdo/.m2/repository/org/ihtsdo/intl/release/process/wb-release-process/1.20-SNAPSHOT/wb-release-process-1.20-SNAPSHOT-delta/destination/Delta | sed 's/^/      /'
+wget $latestRelease -O /tmp/yy.$$.json
 if ($status != 0) then
-    echo "ERROR processing delta data"
+    echo "ERROR downloading latest release directory"
     exit 1
 endif
 
-echo "    Remove SNOMEDCT tree positions ... `/bin/date`"
-cd $MAPPING_CODE/admin/remover
-mvn install -PTreepos -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT -Dversion=latest | sed 's/^/      /'
+set zipFile = `grep '.zip"' /tmp/yy.$$.json | grep '"url"' | cut -d\: -f 2- | sed 's/ "//; s/"//'`
 if ($status != 0) then
-    echo "ERROR removing tree positions"
+    echo "ERROR determining zip file"
     exit 1
 endif
 
-echo "    Generate SNOMEDCT tree positions ... `/bin/date`"
-cd $MAPPING_CODE/admin/loader
-mvn install -PTreepos -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT -Dversion=latest -Droot.ids=138875005 | sed 's/^/      /'
+wget $zipFile
 if ($status != 0) then
-    echo "ERROR computing tree positions"
+    echo "ERROR downloading .zip"
     exit 1
+endif
+
+echo "    Unpack the delta ...`/bin/date`"
+unzip $zipFile:t "*/Delta/*"
+if ($status != 0) then
+    echo "ERROR unpacking .zip"
+    exit 1
+endif
+
+/bin/mv `find */Delta -name "*txt"` .
+if ($status != 0) then
+    echo "ERROR  moving delta files to current dir"
+    exit 1
+endif
+
+/bin/rm -rf *zip /tmp/{xx,yy}.$$.json
+
+# continue only if delta concepts file is not empty
+if (`grep -v effectiveTime *Concept*txt | wc -l` > 0) then
+
+	echo "    Load the delta ... `/bin/date`"
+	cd $MAPPING_CODE/admin/loader
+	mvn install -PRF2-delta -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT \
+	  -Dlast.publication.date=$SNOMEDCT_VERSION \
+	  -Dinput.dir=$dir | sed 's/^/      /'
+	if ($status != 0) then
+	    echo "ERROR processing delta data"
+	    exit 1
+	endif
+	
+	echo "    Remove SNOMEDCT tree positions ... `/bin/date`"
+	cd $MAPPING_CODE/admin/remover
+	mvn install -PTreepos -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT -Dversion=latest | sed 's/^/      /'
+	if ($status != 0) then
+	    echo "ERROR removing tree positions"
+	    exit 1
+	endif
+
+	echo "    Generate SNOMEDCT tree positions ... `/bin/date`"
+	cd $MAPPING_CODE/admin/loader
+	mvn install -PTreepos -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT -Dversion=latest -Droot.ids=138875005 | sed 's/^/      /'
+	if ($status != 0) then
+	    echo "ERROR computing tree positions"
+	    exit 1
+	endif
+
+else
+    echo "Concepts file is empty"
 endif
 
 echo "    Compute workflow ...`/bin/date`"
 cd $MAPPING_CODE/admin/loader
-mvn install -PComputeWorkflow -Drun.config=$MAPPING_CONFIG -Drefset.id=447563008,447562003,450993002 -Dsend.notification=true | sed 's/^/      /'
+mvn install -PComputeWorkflow -Drun.config=$MAPPING_CONFIG -Drefset.id=447562003,467614008,467614008 -Dsend.notification=true | sed 's/^/      /'
 if ($status != 0) then
     echo "ERROR computing workflow"
     exit 1

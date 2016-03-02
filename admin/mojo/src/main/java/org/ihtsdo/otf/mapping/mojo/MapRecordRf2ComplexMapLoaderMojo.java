@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -28,6 +27,7 @@ import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.helpers.FileSorter;
 
+// TODO: Auto-generated Javadoc
 /**
  * Loads unpublished complex maps.
  * 
@@ -44,6 +44,21 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
    * @required
    */
   private String inputFile;
+  
+  /**
+   * The workflow status to assign to created map records.
+   *
+   * @parameter 
+   * @required 
+   */
+  private String workflowStatus;
+  
+  /**  
+   * The user name. 
+   * 
+   * @parameter
+   */
+  private String userName;
 
   /**
    * Executes the plugin.
@@ -53,11 +68,21 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
   public void execute() throws MojoExecutionException {
     getLog().info("Starting loading complex map data");
     getLog().info("  inputFile = " + inputFile);
+    getLog().info("  workflowStatus = " + workflowStatus);
+    getLog().info("  userName = " + userName);
 
     try {
 
       if (inputFile == null || !new File(inputFile).exists()) {
         throw new MojoFailureException("Specified input file missing");
+      }
+      
+      if (workflowStatus == null || WorkflowStatus.valueOf(workflowStatus) == null) {
+        throw new MojoFailureException("Missing or invalid workflow status. Acceptable values are " + WorkflowStatus.values().toString());
+      }
+      
+      if (userName == null) {
+        getLog().info("No user specified, defaulting to user 'loader'");
       }
 
       // sort input file
@@ -77,12 +102,19 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
             public int compare(String o1, String o2) {
               String[] fields1 = o1.split("\t");
               String[] fields2 = o2.split("\t");
+              
+              // keep headers at top
+              if (o1.startsWith("id")) {
+                return 1;
+              }
+              
               long i = fields1[4].compareTo(fields2[4]);
               if (i != 0) {
                 return (int) i;
               } else {
                 i = fields1[5].compareTo(fields2[5]);
-                //i = (Long.parseLong(fields1[5]) - Long.parseLong(fields2[5]));
+                // i = (Long.parseLong(fields1[5]) -
+                // Long.parseLong(fields2[5]));
                 if (i != 0) {
                   return (int) i;
                 } else {
@@ -117,6 +149,13 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
                               if (i != 0) {
                                 return (int) i;
                               } else {
+                                
+                                // complex maps do not have mapCategory field
+                                if (fields1.length == 12) {
+                                  return 0;
+                                }
+                                
+                                // extended maps have extra mapCategory field
                                 i = fields1[12].compareTo(fields2[12]);
                                 if (i != 0) {
                                   return (int) i;
@@ -165,7 +204,7 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
       for (String refsetId : complexMapRefSetMemberMap.keySet()) {
         mappingService.createMapRecordsForMapProject(mapProjectMap
             .get(refsetId).getId(), loaderUser, complexMapRefSetMemberMap
-            .get(refsetId), WorkflowStatus.READY_FOR_PUBLICATION);
+            .get(refsetId), WorkflowStatus.valueOf(workflowStatus));
       }
 
       // clean-up
@@ -182,8 +221,10 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
 
   /**
    * Load extended map ref sets from the file.
-   * @return
-   * 
+   *
+   * @param complexMapFile the complex map file
+   * @param mapProjectMap the map project map
+   * @return the map
    * @throws Exception the exception
    */
   private static Map<String, List<ComplexMapRefSetMember>> loadExtendedMapRefSets(
@@ -225,7 +266,9 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
         complexMapRefSetMember.setMapRule(fields[8]);
         complexMapRefSetMember.setMapAdvice(fields[9]);
         complexMapRefSetMember.setMapTarget(fields[10]);
-        complexMapRefSetMember.setMapRelationId(Long.valueOf(fields[12]));
+        
+        // handle complex vs. extended maps -- extended maps have mapCategory as well as correlationId
+        complexMapRefSetMember.setMapRelationId(Long.valueOf(fields[fields.length == 13 ? 12 : 11]));
 
         // BLOCK is unused
         complexMapRefSetMember.setMapBlock(0); // default value
@@ -233,7 +276,6 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
         complexMapRefSetMember.setMapBlockAdvice(null); // no default
 
         // Terminology attributes
-        Logger.getLogger(FileSorter.class).info("refsetId = " + refsetId);
         complexMapRefSetMember.setTerminology(mapProjectMap.get(refsetId)
             .getSourceTerminology());
         complexMapRefSetMember.setTerminologyVersion(mapProjectMap

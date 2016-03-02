@@ -34,11 +34,13 @@ import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
  * Unit test for workflow path states on "review project path".
  */
+@Ignore("Workflow integration tests outdated after workflow revision")
 public class WorkflowPathStatesReviewProjectPathTest {
 
   /** The handler. */
@@ -75,8 +77,6 @@ public class WorkflowPathStatesReviewProjectPathTest {
    */
   @BeforeClass
   public static void init() throws Exception {
-
-    System.out.println("Initialization");
 
     // instantiate the services
     contentService = new ContentServiceJpa();
@@ -311,6 +311,7 @@ public class WorkflowPathStatesReviewProjectPathTest {
    * @param status the status
    * @return the map record
    */
+  @SuppressWarnings("static-method")
   private MapRecord createRecord(MapUser user, WorkflowStatus status) {
     MapRecord record = new MapRecordJpa();
 
@@ -333,8 +334,6 @@ public class WorkflowPathStatesReviewProjectPathTest {
    */
   private void getTrackingRecord(WorkflowStatusCombination combination)
     throws Exception {
-    System.out.println("Computing tracking record for combination: "
-        + combination.toString());
 
     // reset the records
     resetRecords();
