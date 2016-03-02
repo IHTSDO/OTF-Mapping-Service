@@ -21,8 +21,14 @@ public enum MapUserRole {
   /** The administrator. */
   ADMINISTRATOR("Administrator");
 
+  /**  The value. */
   private String value;
 
+  /**
+   * Instantiates a {@link MapUserRole} from the specified parameters.
+   *
+   * @param value the value
+   */
   private MapUserRole(String value) {
     this.value = value;
   }

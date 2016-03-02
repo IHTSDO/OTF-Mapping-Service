@@ -1,6 +1,11 @@
 package org.ihtsdo.otf.mapping.test.rest;
 
+import org.ihtsdo.otf.mapping.helpers.MapUserRole;
+import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
+import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
+import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rest.SecurityServiceRest;
+import org.ihtsdo.otf.mapping.services.MappingService;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -12,8 +17,10 @@ import org.junit.Test;
  */
 public class SecurityServiceEdgeCasesTest {
 
-  /** The service. */
-  private SecurityServiceRest service;
+
+	/** The securityService. */
+	private static SecurityServiceRest securityService;
+	private static MappingService mappingService;
 
   /**
    * Create test fixtures for class.
@@ -22,7 +29,23 @@ public class SecurityServiceEdgeCasesTest {
    */
   @BeforeClass
   public static void setupClass() throws Exception {
-    // do nothing
+	  securityService = new SecurityServiceRest();
+		mappingService = new MappingServiceJpa();
+
+		// create map users
+		MapUser user = new MapUserJpa();
+		user.setName("guest");
+		user.setUserName("guest");
+		user.setEmail("guest");
+		user.setApplicationRole(MapUserRole.VIEWER);
+		mappingService.addMapUser(user);
+
+		MapUser demoUser = new MapUserJpa();
+		demoUser.setName("demo_lead");
+		demoUser.setUserName("demo_lead");
+		demoUser.setEmail("demo_lead");
+		demoUser.setApplicationRole(MapUserRole.VIEWER);
+		mappingService.addMapUser(demoUser);
   }
 
   /**
@@ -32,7 +55,7 @@ public class SecurityServiceEdgeCasesTest {
    */
   @Before
   public void setup() throws Exception {
-    service = new SecurityServiceRest();
+    securityService = new SecurityServiceRest();
   }
 
   /**
@@ -43,10 +66,10 @@ public class SecurityServiceEdgeCasesTest {
   @Test
   public void testEdgeCasesRestSecurity001() throws Exception {
 
-    service.authenticate("guest", "guest");
-    service.authenticate("guest", "guest");
-    service.authenticate("demo_lead", ".");
-    service.authenticate("demo_lead", ".");
+    securityService.authenticate("guest", "guest");
+    securityService.authenticate("guest", "guest");
+    securityService.authenticate("demo_lead", ".");
+    securityService.authenticate("demo_lead", ".");
   }
 
   /**
@@ -56,15 +79,15 @@ public class SecurityServiceEdgeCasesTest {
    */
   @Test
   public void testEdgeCasesRestSecurity002() throws Exception {
-    service.logout("guest");
+    securityService.logout("guest");
 
-    service.authenticate("guest", "guest");
-    service.logout("guest");
-    service.logout("guest");
+    securityService.authenticate("guest", "guest");
+    securityService.logout("guest");
+    securityService.logout("guest");
 
-    service.authenticate("demo_lead", ".");
-    service.logout("demo_lead");
-    service.logout("demo_lead");
+    securityService.authenticate("demo_lead", ".");
+    securityService.logout("demo_lead");
+    securityService.logout("demo_lead");
 
   }
 
@@ -85,7 +108,12 @@ public class SecurityServiceEdgeCasesTest {
    */
   @AfterClass
   public static void teardownClass() throws Exception {
-    // do nothing
+		// remove the users
+		for (MapUser user : mappingService.getMapUsers().getMapUsers()) {
+			mappingService.removeMapUser(user.getId());
+		}
+
+		mappingService.close();
   }
 
 }

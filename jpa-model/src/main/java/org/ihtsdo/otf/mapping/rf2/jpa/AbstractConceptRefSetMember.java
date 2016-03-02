@@ -21,6 +21,23 @@ public abstract class AbstractConceptRefSetMember extends AbstractRefSetMember
   private Concept concept;
 
   /**
+   * Instantiates an empty {@link AbstractConceptRefSetMember}.
+   */
+  protected AbstractConceptRefSetMember() {
+    super();
+  }
+
+  /**
+   * Abstract ref set member.
+   *
+   * @param member the member
+   */
+  protected AbstractConceptRefSetMember(ConceptRefSetMember member) {
+    super(member);
+    concept = member.getConcept();
+  }
+
+  /**
    * {@inheritDoc}
    */
   @XmlTransient

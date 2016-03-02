@@ -5,7 +5,7 @@ var mapProjectAppDirectives = angular.module('mapProjectAppDirectives', []);
 // ///////////////////////////////////////////////////
 // Directives:
 // ///////////////////////////////////////////////////
-mapProjectAppDirectives.directive('otfMapRecordNarrow', function($sce) {
+mapProjectAppDirectives.directive('otfMapRecordNarrow', function($sce, utilService) {
 
   return {
 
@@ -18,6 +18,10 @@ mapProjectAppDirectives.directive('otfMapRecordNarrow', function($sce) {
       showTitle : '='
     },
     link : function(scope, iElement, iAttrs, ctrl) {
+
+      // Wire notes
+      scope.notes = utilService.getNotes(scope.project.id);
+
       // function to return trusted html code (for tooltip
       // content)
       scope.to_trusted = function(html_code) {
@@ -27,7 +31,7 @@ mapProjectAppDirectives.directive('otfMapRecordNarrow', function($sce) {
   };
 });
 
-mapProjectAppDirectives.directive('otfMapRecordWide', function($sce) {
+mapProjectAppDirectives.directive('otfMapRecordWide', function($sce, utilService) {
 
   return {
 
@@ -40,6 +44,10 @@ mapProjectAppDirectives.directive('otfMapRecordWide', function($sce) {
       showTitle : '='
     },
     link : function(scope, iElement, iAttrs, ctrl) {
+
+      // Wire notes
+      scope.notes = utilService.getNotes(scope.project.id);
+
       // function to return trusted html code (for tooltip
       // content)
       scope.to_trusted = function(html_code) {
@@ -49,33 +57,29 @@ mapProjectAppDirectives.directive('otfMapRecordWide', function($sce) {
   };
 });
 
-angular.module('dynamicSortableTree', []).directive(
-  'dynamicSortableTree',
-  [
-    '$compile',
-    function($compile) {
-      'use strict';
-      return {
-        restrict : 'E',
-        require : '^ngModel',
-        scope : true,
-        link : function(scope, element, attrs, ngModel) {
-          var ngModelItem = scope.$eval(attrs.ngModel);
-          scope.ngModelItem = ngModelItem;
+angular.module('dynamicSortableTree', []).directive('dynamicSortableTree',
+  [ '$compile', function($compile) {
+    'use strict';
+    return {
+      restrict : 'E',
+      require : '^ngModel',
+      scope : true,
+      link : function(scope, element, attrs, ngModel) {
+        var ngModelItem = scope.$eval(attrs.ngModel);
+        scope.ngModelItem = ngModelItem;
 
-          var getView = scope.$eval(attrs.dynamicSortableView);
-          if (getView && typeof getView === 'function') {
-            var templateUrl = getView(ngModelItem);
-            if (templateUrl) {
-              element.html('<div ng-include src="\'' + templateUrl
-                + '\'"></div>');
-            }
-
-            $compile(element.contents())(scope);
+        var getView = scope.$eval(attrs.dynamicSortableView);
+        if (getView && typeof getView === 'function') {
+          var templateUrl = getView(ngModelItem);
+          if (templateUrl) {
+            element.html('<div ng-include src="' + templateUrl + '"></div>');
           }
+
+          $compile(element.contents())(scope);
         }
-      };
-    } ]);
+      }
+    };
+  } ]);
 
 mapProjectAppDirectives.directive('draggable', function() {
   return function(scope, element) {

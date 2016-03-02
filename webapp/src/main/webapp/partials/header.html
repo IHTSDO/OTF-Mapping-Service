@@ -1,80 +1,99 @@
 <!-- Feedback link - unless no user or guest user -->
-<div ng-include="currentUser.name != null && currentUser.name != 'Guest' ? './partials/feedback.html' : null"></div>
+<div
+  ng-include="currentUser.name != null && currentUser.name != 'Guest' ? './partials/feedback.html' : null"></div>
 
 <nav style="background-color: #FFFFFF"
-	class="navbar navbar-default navbar-fixed-top" role="navigation">
-	<div class="container-fluid">
-		<!-- Brand and toggle get grouped for better mobile display -->
-		<div class="navbar-header">
-			<img class="pull-left" src="images/logo.png" height="50px">
-			<p class="navbar-brand">&nbsp; &nbsp; &nbsp; ${deploy.title}</p>
-		</div>
+  class="navbar navbar-default navbar-fixed-top" role="navigation">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <img class="pull-left" src="images/logo.png" height="50px">
+      <p class="navbar-brand">&nbsp; &nbsp; &nbsp; ${deploy.title}</p>
+    </div>
 
-		<!-- Collect the nav links, forms, and other content for toggling -->
-		<div class="collapse navbar-collapse"
-			id="bs-example-navbar-collapse-1">
-			<ul class="nav navbar-nav navbar-right">
-				<!--  Username and logout tool -->
-				<li>
-					
-					<p id="userAndRole" class="navbar-text"
-						ng-show="currentUser.name != null">
-						{{currentUser.name}} ({{currentRole}})&nbsp; <a
-							ng-show="currentUser.name != null && page != 'indexViewerDashboard'"
-							title="Log out" ng-click="logout(); alert('clicked');"><i
-							class="glyphicon glyphicon-log-out"></i></a>
-					</p>
-				</li>
-				<li>
-					<!-- Focus Project tool -->
-					<div class="navbar-text dropdown"
-						ng-show="currentUser.name != null && page != 'indexViewerDashboard'">
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav navbar-right">
+        <!--  Username and logout tool -->
+        <li>
 
-						<div class="dropdown-toggle" style="cursor: pointer;">
-							Project: {{focusProject.name}} &nbsp <a
-								title="Change Focus Project"><i
-								class="glyphicon glyphicon-edit"></i></a>
-						</div>
-						<div class="dropdown-menu"
-							style="position: absolute; width: 350px; text-align: right; padding: 15px;">
-							<div ng-repeat="mapProject in mapProjects">
-								<span ng-click="changeFocusProject(mapProject); alert('clicked');">&nbsp&nbsp<a>{{mapProject.name}}</a>&nbsp&nbsp
-								</span>
+          <p id="userAndRole" class="navbar-text"
+            ng-show="currentUser.name != null">
+            {{currentUser.name}} ({{currentRole}})&nbsp;
+            <a
+              ng-show="currentUser.name != null && page != 'indexViewerDashboard'"
+              title="Log out" ng-click="logout(); alert('clicked');">
+              <i class="glyphicon glyphicon-log-out"></i>
+            </a>
+          </p>
+        </li>
+        <li>
+          <!-- Focus Project tool -->
+          <div class="navbar-text dropdown"
+            ng-show="currentUser.name != null && page != 'indexViewerDashboard'">
 
-							</div>
-						</div>
-				</li>
-				<li>
-					<p class="navbar-text">
+            <div class="dropdown-toggle" style="cursor: pointer;">
+              Project: {{focusProject.name}} &nbsp;
+              <a title="Change Focus Project">
+                <i class="glyphicon glyphicon-edit"></i>
+              </a>
+            </div>
+            <div class="dropdown-menu"
+              style="position: absolute; width: 350px; text-align: right; padding: 15px;">
+              <div ng-repeat="mapProject in mapProjects">
+                <span
+                  ng-click="changeFocusProject(mapProject); alert('clicked');">
+                  &nbsp;&nbsp;
+                  <a>{{mapProject.name}}</a>
+                  &nbsp;&nbsp;
+                </span>
 
-						<!-- Dashboard tool (by role) -->
+              </div>
+            </div>
+          </div>
+        </li>
+        <li>
+          <p class="navbar-text">
+
+            <!-- Dashboard tool (by role) -->
 
 
-						<a
-							ng-show="currentRole.toLowerCase() === 'viewer' && page != 'indexViewerDashboard'"
-							title="Dashboard" href="index.html#/viewer/dash"><i
-							class="glyphicon glyphicon-stats"></i></a> <a
-							ng-show="currentRole === 'Specialist' && page != 'indexViewerDashboard'"
-							title="Dashboard" href="index.html#/specialist/dash"><i
-							class="glyphicon glyphicon-stats"></i></a> <a
-							ng-show="currentRole === 'Lead' && page != 'indexViewerDashboard'"
-							title="Dashboard" href="index.html#/lead/dash"><i
-							class="glyphicon glyphicon-stats"></i></a> <a
-							ng-show="currentRole === 'Administrator' && page != 'indexViewerDashboard'"
-							title="Dashboard" href="index.html#/admin/dash"><i
-							class="glyphicon glyphicon-stats"></i></a> &nbsp;
+            <a
+              ng-show="currentRole.toLowerCase() === 'viewer' && page != 'indexViewerDashboard'"
+              title="Dashboard" href="index.html#/viewer/dash">
+              <i class="glyphicon glyphicon-stats"></i>
+            </a>
+            <a
+              ng-show="currentRole === 'Specialist' && page != 'indexViewerDashboard'"
+              title="Dashboard" href="index.html#/specialist/dash">
+              <i class="glyphicon glyphicon-stats"></i>
+            </a>
+            <a
+              ng-show="currentRole === 'Lead' && page != 'indexViewerDashboard'"
+              title="Dashboard" href="index.html#/lead/dash">
+              <i class="glyphicon glyphicon-stats"></i>
+            </a>
+            <a
+              ng-show="currentRole === 'Administrator' && page != 'indexViewerDashboard'"
+              title="Dashboard" href="index.html#/admin/dash">
+              <i class="glyphicon glyphicon-stats"></i>
+            </a>
+            &nbsp;
 
-						<!-- Help tool -->
+            <!-- Help tool -->
 
-						<a title="Help"><span ng-click="goToHelp()"
-							class="glyphicon glyphicon-question-sign"></span></a> &nbsp;
-					</p>
-				</li>
-			</ul>
-		</div>
-		<!-- /.navbar-collapse -->
-	</div>
-	<!-- /.container-fluid -->
+            <a title="Help">
+              <span ng-click="goToHelp()"
+                class="glyphicon glyphicon-question-sign"></span>
+            </a>
+            &nbsp;
+          </p>
+        </li>
+      </ul>
+    </div>
+    <!-- /.navbar-collapse -->
+  </div>
+  <!-- /.container-fluid -->
 </nav>
 
 

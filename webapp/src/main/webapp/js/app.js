@@ -3,91 +3,91 @@
 // Declare app level module
 var mapProjectApp = angular.module(
   'mapProjectApp',
-  [ 'ngRoute', 'mapProjectAppControllers', 'adf',
-    'mapProjectApp.widgets.metadataList', 'mapProjectApp.widgets.mapProject',
-    'mapProjectApp.widgets.mapRecord', 'mapProjectApp.widgets.mapEntry',
-    'mapProjectApp.widgets.assignedList', 'mapProjectApp.widgets.editedList',
-    'mapProjectApp.widgets.workAvailable',
-    'mapProjectApp.widgets.terminologyBrowser',
-    'mapProjectApp.widgets.compareRecords',
-    'mapProjectApp.widgets.projectDetails',
-    'mapProjectApp.widgets.projectRecords',
-    'mapProjectApp.widgets.recordConcept',
-    'mapProjectApp.widgets.recordSummary', 'mapProjectApp.widgets.recordAdmin',
-    'mapProjectApp.widgets.feedback',
-    'mapProjectApp.widgets.feedbackConversation',
-    'mapProjectApp.widgets.applicationAdmin', 'mapProjectApp.widgets.report',
-    'mapProjectApp.widgets.qaCheck', 'mapProjectApp.widgets.indexViewer',
-    'LocalStorageModule', 'ngCookies', 'ui.tinymce',
-    'angularjs-dropdown-multiselect', 'angularFileUpload', 'ui.tree' ]).value(
-  'prefix', '').config(function(dashboardProvider) {
+  [ 'ngRoute', 'mapProjectAppControllers', 'adf', 'mapProjectApp.widgets.metadataList',
+    'mapProjectApp.widgets.mapProject', 'mapProjectApp.widgets.mapRecord',
+    'mapProjectApp.widgets.mapEntry', 'mapProjectApp.widgets.assignedList',
+    'mapProjectApp.widgets.editedList', 'mapProjectApp.widgets.workAvailable',
+    'mapProjectApp.widgets.terminologyBrowser', 'mapProjectApp.widgets.compareRecords',
+    'mapProjectApp.widgets.projectDetails', 'mapProjectApp.widgets.projectRecords',
+    'mapProjectApp.widgets.recordConcept', 'mapProjectApp.widgets.recordSummary',
+    'mapProjectApp.widgets.recordAdmin', 'mapProjectApp.widgets.feedback',
+    'mapProjectApp.widgets.feedbackConversation', 'mapProjectApp.widgets.applicationAdmin',
+    'mapProjectApp.widgets.report', 'mapProjectApp.widgets.qaCheck',
+    'mapProjectApp.widgets.indexViewer', 'LocalStorageModule', 'ngCookies', 'ui.tinymce',
+    'angularjs-dropdown-multiselect', 'angularFileUpload', 'ui.tree' ]).value('prefix', '').config(
+  function(dashboardProvider) {
 
-  dashboardProvider.structure('6-6', {
-    rows : [ {
-      columns : [ {
-        styleClass : 'col-md-6'
+    dashboardProvider.structure('6-6', {
+      rows : [ {
+        columns : [ {
+          styleClass : 'col-md-6'
+        }, {
+          styleClass : 'col-md-6'
+        } ]
+      } ]
+    }).structure('4-8', {
+      rows : [ {
+        columns : [ {
+          styleClass : 'col-md-4',
+          widgets : []
+        }, {
+          styleClass : 'col-md-8',
+          widgets : []
+        } ]
+      } ]
+    }).structure('12/4-4-4', {
+      rows : [ {
+        columns : [ {
+          styleClass : 'col-md-12'
+        } ]
       }, {
-        styleClass : 'col-md-6'
+        columns : [ {
+          styleClass : 'col-md-4'
+        }, {
+          styleClass : 'col-md-4'
+        }, {
+          styleClass : 'col-md-4'
+        } ]
       } ]
-    } ]
-  }).structure('4-8', {
-    rows : [ {
-      columns : [ {
-        styleClass : 'col-md-4',
-        widgets : []
+    }).structure('12/6-6', {
+      rows : [ {
+        columns : [ {
+          styleClass : 'col-md-12'
+        } ]
       }, {
-        styleClass : 'col-md-8',
-        widgets : []
+        columns : [ {
+          styleClass : 'col-md-6'
+        }, {
+          styleClass : 'col-md-6'
+        } ]
       } ]
-    } ]
-  }).structure('12/4-4-4', {
-    rows : [ {
-      columns : [ {
-        styleClass : 'col-md-12'
-      } ]
-    }, {
-      columns : [ {
-        styleClass : 'col-md-4'
+    }).structure('12/6-6/12', {
+      rows : [ {
+        columns : [ {
+          styleClass : 'col-md-12'
+        } ]
       }, {
-        styleClass : 'col-md-4'
+        columns : [ {
+          styleClass : 'col-md-6'
+        }, {
+          styleClass : 'col-md-6'
+        } ]
       }, {
-        styleClass : 'col-md-4'
+        columns : [ {
+          styleClass : 'col-md-12'
+        } ]
       } ]
-    } ]
-  }).structure('12/6-6', {
-    rows : [ {
-      columns : [ {
-        styleClass : 'col-md-12'
-      } ]
-    }, {
-      columns : [ {
-        styleClass : 'col-md-6'
-      }, {
-        styleClass : 'col-md-6'
-      } ]
-    } ]
-  }).structure('12/6-6/12', {
-    rows : [ {
-      columns : [ {
-        styleClass : 'col-md-12'
-      } ]
-    }, {
-      columns : [ {
-        styleClass : 'col-md-6'
-      }, {
-        styleClass : 'col-md-6'
-      } ]
-    }, {
-      columns : [ {
-        styleClass : 'col-md-12'
-      } ]
-    } ]
+    });
+
   });
 
-});
+// set the main application window name
+// window.name = 'mappingToolWindow';
 
 mapProjectApp.config([ '$routeProvider', function($routeProvider) {
+  
 
+  
   // ////////////////////////////
   // DASHBOARDS
   // ////////////////////////////
@@ -169,3 +169,5 @@ mapProjectApp.config([ '$routeProvider', function($routeProvider) {
     redirectTo : 'partials/error.html'
   });
 } ]);
+
+

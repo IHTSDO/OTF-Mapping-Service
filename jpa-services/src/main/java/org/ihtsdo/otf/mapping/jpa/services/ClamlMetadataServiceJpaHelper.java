@@ -3,12 +3,11 @@ package org.ihtsdo.otf.mapping.jpa.services;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import org.ihtsdo.otf.mapping.helpers.GraphHelper;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
+import org.ihtsdo.otf.mapping.jpa.helpers.TerminologyUtility;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
@@ -55,13 +54,7 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     return "-1";
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getAllMetadata(java.lang
-   * .String, java.lang.String)
-   */
+  /* see superclass */
   @Override
   public Map<String, Map<String, String>> getAllMetadata(String terminology,
     String version) {
@@ -69,13 +62,7 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     return null;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getModules(java.lang.String
-   * , java.lang.String)
-   */
+  /* see superclass */
   @Override
   public Map<String, String> getModules(String terminology, String version)
     throws Exception {
@@ -94,31 +81,20 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     if (rootId == null)
       throw new Exception("Module concept cannot be found.");
 
-    Map<String,String> result =getDescendantMap(contentService, rootId, terminology, version);
+    Map<String, String> result =
+        getDescendantMap(contentService, rootId, terminology, version);
     contentService.close();
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getAttributeValueRefSets
-   * (java.lang.String, java.lang.String)
-   */
+  /* see superclass */
   @Override
   public Map<String, String> getAttributeValueRefSets(String terminology,
     String version) throws NumberFormatException, Exception {
     return new HashMap<>();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getComplexMapRefSets(java
-   * .lang.String, java.lang.String)
-   */
+  /* see superclass */
   @Override
   public Map<String, String> getComplexMapRefSets(String terminology,
     String version) throws NumberFormatException, Exception {
@@ -126,39 +102,21 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getLanguageRefSets(java
-   * .lang.String, java.lang.String)
-   */
+  /* see superclass */
   @Override
   public Map<String, String> getLanguageRefSets(String terminology,
     String version) throws NumberFormatException, Exception {
     return new HashMap<>();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getSimpleMapRefSets(java
-   * .lang.String, java.lang.String)
-   */
+  /* see superclass */
   @Override
   public Map<String, String> getSimpleMapRefSets(String terminology,
     String version) throws NumberFormatException, Exception {
     return new HashMap<>();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getSimpleRefSets(java.lang
-   * .String, java.lang.String)
-   */
+  /* see superclass */
   @Override
   public Map<String, String> getSimpleRefSets(String terminology, String version)
     throws NumberFormatException, Exception {
@@ -184,26 +142,14 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getMapRelations(java.lang
-   * .String, java.lang.String)
-   */
+  /* see superclass */
   @Override
   public Map<String, String> getMapRelations(String terminology, String version)
     throws NumberFormatException, Exception {
     return new HashMap<>();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getDefinitionStatuses(java
-   * .lang.String, java.lang.String)
-   */
+  /* see superclass */
   @Override
   public Map<String, String> getDefinitionStatuses(String terminology,
     String version) throws NumberFormatException, Exception {
@@ -223,18 +169,13 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     if (rootId == null)
       throw new Exception("Definition status concept cannot be found.");
 
-    Map<String,String> result =getDescendantMap(contentService, rootId, terminology, version);
+    Map<String, String> result =
+        getDescendantMap(contentService, rootId, terminology, version);
     contentService.close();
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getDescriptionTypes(java
-   * .lang.String, java.lang.String)
-   */
+  /* see superclass */
   @Override
   public Map<String, String> getDescriptionTypes(String terminology,
     String version) throws NumberFormatException, Exception {
@@ -253,18 +194,13 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     }
     if (rootId == null)
       throw new Exception("Description type concept cannot be found.");
-    Map<String,String> result =getDescendantMap(contentService, rootId, terminology, version);
+    Map<String, String> result =
+        getDescendantMap(contentService, rootId, terminology, version);
     contentService.close();
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getCaseSignificances(java
-   * .lang.String, java.lang.String)
-   */
+  /* see superclass */
   @Override
   public Map<String, String> getCaseSignificances(String terminology,
     String version) throws NumberFormatException, Exception {
@@ -284,18 +220,13 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     if (rootId == null)
       throw new Exception("Case significance concept cannot be found.");
 
-    Map<String,String> result =getDescendantMap(contentService, rootId, terminology, version);
+    Map<String, String> result =
+        getDescendantMap(contentService, rootId, terminology, version);
     contentService.close();
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getRelationshipTypes(java
-   * .lang.String, java.lang.String)
-   */
+  /* see superclass */
   @Override
   public Map<String, String> getRelationshipTypes(String terminology,
     String version) throws NumberFormatException, Exception {
@@ -316,17 +247,13 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     if (rootId == null)
       throw new Exception("Relationship type concept cannot be found.");
 
-    Map<String,String> result =getDescendantMap(contentService, rootId, terminology, version);
+    Map<String, String> result =
+        getDescendantMap(contentService, rootId, terminology, version);
     contentService.close();
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MetadataService#
-   * getHierarchicalRelationshipTypes(java.lang.String, java.lang.String)
-   */
+  /* see superclass */
   @Override
   public Map<String, String> getHierarchicalRelationshipTypes(
     String terminology, String version) throws NumberFormatException, Exception {
@@ -343,12 +270,7 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     return map;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MetadataService#
-   * getRelationshipCharacteristicTypes(java.lang.String, java.lang.String)
-   */
+  /* see superclass */
   @Override
   public Map<String, String> getRelationshipCharacteristicTypes(
     String terminology, String version) throws NumberFormatException, Exception {
@@ -368,18 +290,13 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     if (rootId == null)
       throw new Exception("Characteristic type concept cannot be found.");
 
-    Map<String,String> result =getDescendantMap(contentService, rootId, terminology, version);
+    Map<String, String> result =
+        getDescendantMap(contentService, rootId, terminology, version);
     contentService.close();
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getRelationshipModifiers
-   * (java.lang.String, java.lang.String)
-   */
+  /* see superclass */
   @Override
   public Map<String, String> getRelationshipModifiers(String terminology,
     String version) throws NumberFormatException, Exception {
@@ -398,78 +315,47 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     if (rootId == null)
       throw new Exception("Modifier concept cannot be found.");
 
-    Map<String,String> result =getDescendantMap(contentService, rootId, terminology, version);
+    Map<String, String> result =
+        getDescendantMap(contentService, rootId, terminology, version);
     contentService.close();
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MetadataService#close()
-   */
+  /* see superclass */
   @Override
   public void close() {
     // no-op - this is just helper class
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MetadataService#getTerminologies()
-   */
+  /* see superclass */
   @Override
   public List<String> getTerminologies() {
     // no-op - this is just helper class
     return null;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getVersions(java.lang.String
-   * )
-   */
+  /* see superclass */
   @Override
   public List<String> getVersions(String terminology) {
     // no-op - this is just helper class
     return null;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getLatestVersion(java.lang
-   * .String)
-   */
+  /* see superclass */
   @Override
   public String getLatestVersion(String terminology) {
     // no-op - this is just helper class
     return null;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getPreviousVersion(java
-   * .lang.String)
-   */
+  /* see superclass */
   @Override
   public String getPreviousVersion(String terminology) {
     // no-op - this is just helper class
     return null;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MetadataService#getTerminologyLatestVersions
-   * ()
-   */
+  /* see superclass */
   @Override
   public Map<String, String> getTerminologyLatestVersions() {
     // no-op - this is just helper class
@@ -478,13 +364,15 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
 
   /**
    * Returns the descendant map for the specified parameters.
-   * 
+   *
    * @param contentService the content service
    * @param terminologyId the terminology id
    * @param terminology the terminology
    * @param version the version
    * @return the descendant map
+   * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   private Map<String, String> getDescendantMap(ContentService contentService,
     String terminologyId, String terminology, String version) throws Exception {
     Map<String, String> map = new HashMap<>();
@@ -492,9 +380,8 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     // want all descendants, do not use pfsParameter
     Concept concept =
         contentService.getConcept(terminologyId, terminology, version);
-    Set<Concept> descendants =
-        GraphHelper.getDescendantConcepts(concept,
-            getIsaRelationshipType(terminology, version));
+    List<Concept> descendants =
+        TerminologyUtility.getActiveDescendants(concept);
 
     for (Concept descendant : descendants) {
       if (descendant.isActive()) {
@@ -505,8 +392,4 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     return map;
   }
 
-  @Override
-  public void initializeFieldNames() throws Exception {
-    // no need
-  }
 }

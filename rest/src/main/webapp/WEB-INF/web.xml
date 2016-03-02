@@ -20,7 +20,7 @@
     <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
     <init-param>
       <param-name>com.sun.jersey.config.property.packages</param-name>
-      <param-value>com.fasterxml.jackson.jaxrs.json;org.ihtsdo.otf.mapping.rest;org.ihtsdo.otf.mapping.model;org.ihtsdo.otf.mapping.rf2;org.ihtsdo.otf.mapping.rf2.jpa;com.wordnik.swagger.jersey.listing</param-value>
+      <param-value>com.fasterxml.jackson.jaxrs.json;org.ihtsdo.otf.mapping.rest;org.ihtsdo.otf.mapping.model;org.ihtsdo.otf.mapping.rf2;org.ihtsdo.otf.mapping.rf2.jpa;org.ihtsdo.otf.mapping.services;org.ihtsdo.otf.mapping.jpa.services;com.wordnik.swagger.jersey.listing</param-value>
     </init-param>
     <load-on-startup>1</load-on-startup>
   </servlet>

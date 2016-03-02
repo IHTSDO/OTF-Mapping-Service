@@ -8,37 +8,20 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.log4j.Logger;
-import org.apache.lucene.index.FieldInfo;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.queryParser.MultiFieldQueryParser;
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.queryParser.QueryParser;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.SortField;
-import org.apache.lucene.util.ReaderUtil;
-import org.apache.lucene.util.Version;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
 import org.hibernate.envers.query.AuditQuery;
-import org.hibernate.search.SearchFactory;
-import org.hibernate.search.indexes.IndexReaderAccessor;
-import org.hibernate.search.jpa.FullTextEntityManager;
-import org.hibernate.search.jpa.Search;
-import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapAgeRangeList;
@@ -66,8 +49,6 @@ import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
-import org.ihtsdo.otf.mapping.helpers.TreePositionListJpa;
-import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.helpers.WorkflowType;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
@@ -91,13 +72,12 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.model.MapUserPreferences;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
+import org.ihtsdo.otf.mapping.rf2.SimpleMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
+import org.ihtsdo.otf.mapping.rf2.jpa.ComplexMapRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
-import org.ihtsdo.otf.mapping.services.WorkflowService;
-import org.ihtsdo.otf.mapping.services.helpers.OtfEmailHandler;
-import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
 /**
  * JPA implementation of the {@link MappingService}.
@@ -107,12 +87,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
   /** The commit count. */
   private final static int commitCt = 2000;
 
-  /** The map record indexed field names. */
-  protected static Set<String> mapRecordFieldNames;
-
-  /** The map record indexed field names. */
-  protected static Set<String> mapProjectFieldNames;
-
   /**
    * Instantiates an empty {@link MappingServiceJpa}.
    * 
@@ -120,54 +94,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
    */
   public MappingServiceJpa() throws Exception {
     super();
-    if (mapRecordFieldNames == null) {
-      initializeFieldNames();
-    }
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.RootService#initializeFieldNames()
-   */
-  @Override
-  public synchronized void initializeFieldNames() throws Exception {
-    mapRecordFieldNames = new HashSet<>();
-    mapProjectFieldNames = new HashSet<>();
-    Map<String, Set<String>> fieldNamesMap = new HashMap<>();
-    fieldNamesMap.put("MapRecordJpa", mapRecordFieldNames);
-    fieldNamesMap.put("MapProjectJpa", mapProjectFieldNames);
-    EntityManager manager = factory.createEntityManager();
-    FullTextEntityManager fullTextEntityManager =
-        org.hibernate.search.jpa.Search.getFullTextEntityManager(manager);
-    IndexReaderAccessor indexReaderAccessor =
-        fullTextEntityManager.getSearchFactory().getIndexReaderAccessor();
-    Set<String> indexedClassNames =
-        fullTextEntityManager.getSearchFactory().getStatistics()
-            .getIndexedClassNames();
-    for (String indexClass : indexedClassNames) {
-      Set<String> fieldNames = null;
-      if (indexClass.indexOf("MapRecordJpa") != -1) {
-        Logger.getLogger(ContentServiceJpa.class).info(
-            "FOUND MapRecordJpa index");
-        fieldNames = fieldNamesMap.get("MapRecordJpa");
-      } else if (indexClass.indexOf("MapProjectJpa") != -1) {
-        Logger.getLogger(ContentServiceJpa.class).info(
-            "FOUND MapProjectJpa index");
-        fieldNames = fieldNamesMap.get("MapProjectJpa");
-      }
-      if (fieldNames != null) {
-        IndexReader indexReader = indexReaderAccessor.open(indexClass);
-        try {
-          for (FieldInfo info : ReaderUtil.getMergedFieldInfos(indexReader)) {
-            fieldNames.add(info.name);
-          }
-        } finally {
-          indexReaderAccessor.close(indexReader);
-        }
-      }
-    }
-    fullTextEntityManager.close();
   }
 
   /**
@@ -221,13 +147,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return m;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#getMapProjectForRefSetId
-   * (java.lang.String)
-   */
+  /* see superclass */
   @Override
   public MapProject getMapProjectForRefSetId(String refSetId) throws Exception {
 
@@ -268,7 +188,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     mapProjects = query.getResultList();
 
     // force instantiation of lazy collections
-    for (MapProject mapProject : mapProjects) {
+    for (final MapProject mapProject : mapProjects) {
       handleMapProjectLazyInitialization(mapProject);
     }
 
@@ -291,64 +211,31 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
   public SearchResultList findMapProjectsForQuery(String query,
     PfsParameter pfsParameter) throws Exception {
 
-    SearchResultList s = new SearchResultListJpa();
+    final SearchResultList list = new SearchResultListJpa();
 
-    FullTextEntityManager fullTextEntityManager =
-        Search.getFullTextEntityManager(manager);
+    int[] totalCt = new int[1];
+    final List<MapProject> projects =
+        (List<MapProject>) getQueryResults(query == null ? "" : query,
+            MapProjectJpa.class, MapProjectJpa.class, pfsParameter, totalCt);
 
-    SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
-    Query luceneQuery;
+    Logger.getLogger(getClass()).debug(
+        Integer.toString(projects.size()) + " map projects retrieved");
 
-    try {
-      // construct luceneQuery based on URL format
-      if (query.indexOf(':') == -1) { // no fields indicated
-        MultiFieldQueryParser queryParser =
-            new MultiFieldQueryParser(Version.LUCENE_36,
-                mapProjectFieldNames.toArray(new String[0]),
-                searchFactory.getAnalyzer(MapProjectJpa.class));
-        queryParser.setAllowLeadingWildcard(false);
-        luceneQuery = queryParser.parse(query);
-
-      } else { // field:value
-        QueryParser queryParser =
-            new QueryParser(Version.LUCENE_36, "summary",
-                searchFactory.getAnalyzer(MapProjectJpa.class));
-        luceneQuery = queryParser.parse(query);
-      }
-    } catch (ParseException e) {
-      throw new LocalException(
-          "The specified search terms cannot be parsed.  Please check syntax and try again.");
-    }
-
-    List<MapProject> m;
-
-    m =
-        fullTextEntityManager.createFullTextQuery(luceneQuery,
-            MapProjectJpa.class).getResultList();
-    // if a parse exception, throw a local exception
-
-    Logger.getLogger(this.getClass()).debug(
-        Integer.toString(m.size()) + " map projects retrieved");
-
-    for (MapProject mp : m) {
-      s.addSearchResult(new SearchResultJpa(mp.getId(), mp.getRefSetId()
+    list.setTotalCount(totalCt[0]);
+    for (final MapProject mp : projects) {
+      list.addSearchResult(new SearchResultJpa(mp.getId(), mp.getRefSetId()
           .toString(), mp.getName(), ""));
     }
 
     // Sort by ID
-    s.sortBy(new Comparator<SearchResult>() {
+    list.sortBy(new Comparator<SearchResult>() {
       @Override
       public int compare(SearchResult o1, SearchResult o2) {
         return o1.getId().compareTo(o2.getId());
       }
     });
 
-    fullTextEntityManager.close();
-
-    // closing fullTextEntityManager also closes manager, recreate
-    manager = factory.createEntityManager();
-
-    return s;
+    return list;
 
   }
 
@@ -507,13 +394,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return (MapUser) query.getSingleResult();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#getMapUser(java.lang.String
-   * )
-   */
+  /* see superclass */
   @Override
   public MapUser getMapUser(String userName) throws Exception {
 
@@ -537,15 +418,15 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     List<MapProject> mpListReturn = new ArrayList<>();
 
     // iterate and check for presence of mapUser as specialist
-    for (MapProject mp : mpList.getMapProjects()) {
+    for (final MapProject mp : mpList.getMapProjects()) {
 
-      for (MapUser ms : mp.getMapSpecialists()) {
+      for (final MapUser ms : mp.getMapSpecialists()) {
         if (ms.equals(mapUser)) {
           mpListReturn.add(mp);
         }
       }
 
-      for (MapUser ms : mp.getMapLeads()) {
+      for (final MapUser ms : mp.getMapLeads()) {
         if (ms.equals(mapUser)) {
           mpListReturn.add(mp);
         }
@@ -553,7 +434,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     }
 
     // force instantiation of lazy collections
-    for (MapProject mapProject : mpListReturn) {
+    for (final MapProject mapProject : mpListReturn) {
       handleMapProjectLazyInitialization(mapProject);
     }
 
@@ -601,7 +482,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     if (getTransactionPerOperation()) {
       // remove specialist from all these projects
       tx.begin();
-      for (MapProject mp : projects) {
+      for (final MapProject mp : projects) {
         mp.removeMapLead(mu);
         mp.removeMapSpecialist(mu);
         manager.merge(mp);
@@ -618,7 +499,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       tx.commit();
 
     } else {
-      for (MapProject mp : projects) {
+      for (final MapProject mp : projects) {
         mp.removeMapLead(mu);
         mp.removeMapSpecialist(mu);
         manager.merge(mp);
@@ -672,7 +553,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     mapRecords = query.getResultList();
     MapRecordListJpa mapRecordList = new MapRecordListJpa();
 
-    for (MapRecord mr : mapRecordList.getIterable()) {
+    for (final MapRecord mr : mapRecordList.getIterable()) {
       this.handleMapRecordLazyInitialization(mr);
     }
 
@@ -718,63 +599,33 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
   public SearchResultList findMapRecordsForQuery(String query,
     PfsParameter pfsParameter) throws Exception {
 
-    SearchResultList s = new SearchResultListJpa();
+    final SearchResultList list = new SearchResultListJpa();
 
-    FullTextEntityManager fullTextEntityManager =
-        Search.getFullTextEntityManager(manager);
+    int[] totalCt = new int[1];
+    final List<MapRecord> records =
+        (List<MapRecord>) getQueryResults(query == null ? "" : query,
+            MapRecordJpa.class, MapRecordJpa.class, pfsParameter, totalCt);
 
-    SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
-    Query luceneQuery;
+    Logger.getLogger(getClass()).debug(
+        Integer.toString(records.size()) + " map records retrieved");
 
-    try {
-
-      // construct luceneQuery based on URL format
-      if (query.indexOf(':') == -1) { // no fields indicated
-        MultiFieldQueryParser queryParser =
-            new MultiFieldQueryParser(Version.LUCENE_36,
-                mapRecordFieldNames.toArray(new String[0]),
-                searchFactory.getAnalyzer(MapRecordJpa.class));
-        queryParser.setAllowLeadingWildcard(false);
-        luceneQuery = queryParser.parse(query);
-
-      } else { // field:value
-        QueryParser queryParser =
-            new QueryParser(Version.LUCENE_36, "summary",
-                searchFactory.getAnalyzer(MapRecordJpa.class));
-        luceneQuery = queryParser.parse(query);
-      }
-
-      List<MapRecord> mapRecords =
-          fullTextEntityManager.createFullTextQuery(luceneQuery,
-              MapRecordJpa.class).getResultList();
-
-      Logger.getLogger(this.getClass()).debug(
-          Integer.toString(mapRecords.size()) + " map records retrieved");
-
-      for (MapRecord mapRecord : mapRecords) {
-        s.addSearchResult(new SearchResultJpa(mapRecord.getId(), mapRecord
-            .getConceptId().toString(), mapRecord.getConceptName(), ""));
-      }
-
-      // Sort by ID
-      s.sortBy(new Comparator<SearchResult>() {
-        @Override
-        public int compare(SearchResult o1, SearchResult o2) {
-          return o1.getId().compareTo(o2.getId());
-        }
-      });
-
-      fullTextEntityManager.close();
-
-      // closing fullTextEntityManager also closes manager, recreate
-      manager = factory.createEntityManager();
-
-      return s;
-
-    } catch (ParseException e) {
-      throw new LocalException(
-          "The specified search terms cannot be parsed.  Please check syntax and try again.");
+    for (final MapRecord mapRecord : records) {
+      list.addSearchResult(new SearchResultJpa(mapRecord.getId(), mapRecord
+          .getConceptId().toString(), mapRecord.getConceptName(), ""));
     }
+
+    list.setTotalCount(totalCt[0]);
+
+    // Sort by ID
+    list.sortBy(new Comparator<SearchResult>() {
+      @Override
+      public int compare(SearchResult o1, SearchResult o2) {
+        return o1.getId().compareTo(o2.getId());
+      }
+    });
+
+    return list;
+
   }
 
   /**
@@ -817,11 +668,12 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
   /**
    * Update a map record.
-   * 
+   *
    * @param mapRecord the map record to be updated
+   * @throws Exception the exception
    */
   @Override
-  public void updateMapRecord(MapRecord mapRecord) {
+  public void updateMapRecord(MapRecord mapRecord) throws Exception {
 
     // update last modified timestamp
     mapRecord.setLastModified((new java.util.Date()).getTime());
@@ -834,58 +686,20 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     // Algorithm Handler only instantiated if required
     // Warning message used to store any errors for logging/email
     ProjectSpecificAlgorithmHandler algorithmHandler = null;
-    String warningMsg = "";
-    for (MapEntry mapEntry : mapRecord.getMapEntries()) {
+    for (final MapEntry mapEntry : mapRecord.getMapEntries()) {
       if (mapEntry.getTargetId() == null || mapEntry.getTargetId().isEmpty()) {
 
         // get handler if not already instantiated
         if (algorithmHandler == null) {
-          try {
-            algorithmHandler =
-                getProjectSpecificAlgorithmHandler(getMapProject(mapRecord
-                    .getMapProjectId()));
-          } catch (Exception e) {
-            warningMsg +=
-                "Unexpected error attempting to instantiate project specific handler";
-          }
+          algorithmHandler =
+              getProjectSpecificAlgorithmHandler(getMapProject(mapRecord
+                  .getMapProjectId()));
         }
 
         // try to set the default target name
-        try {
-          Logger.getLogger(MappingServiceJpa.class).info(
-              "Ensuring blank target properly set for map entry "
-                  + mapEntry.getId());
-          mapEntry.setTargetId("");
-          mapEntry.setTargetName(algorithmHandler
-              .getDefaultTargetNameForBlankTarget());
-        } catch (Exception e) {
-
-          // do not throw exception, but send email
-          warningMsg +=
-              "Unexpected error attempting to set blank target for map entry\n"
-                  + "  Map Record Id     : " + mapRecord.getId()
-                  + "  Map Record Concept: " + mapRecord.getConceptId() + ", "
-                  + mapRecord.getConceptName() + "  Map Entry Id      : "
-                  + mapEntry.getId();
-
-        }
-
-      }
-    }
-
-    if (!warningMsg.isEmpty()) {
-      Logger.getLogger(MappingServiceJpa.class).error(
-          "Failed to correctly set blank targets: " + warningMsg);
-      try {
-        // send email if recipients list specified
-        OtfEmailHandler emailHandler = new OtfEmailHandler();
-        if (emailHandler.isRecipientsListSpecified()) {
-          emailHandler.sendSimpleEmail(
-              "OTF-Mapping-Tool Warning: Failed to properly set blank target",
-              warningMsg);
-        }
-      } catch (Exception e) {
-        // do nothing
+        mapEntry.setTargetId("");
+        mapEntry.setTargetName(algorithmHandler
+            .getDefaultTargetNameForBlankTarget());
       }
     }
 
@@ -934,12 +748,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#getMapRecordRevisions(
-   * java.lang.Long)
-   */
+  /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
   public MapRecordList getMapRecordRevisions(Long mapRecordId) {
@@ -962,19 +771,14 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     // construct the map
     MapRecordListJpa mapRecordList = new MapRecordListJpa();
     mapRecordList.setMapRecords(revisions);
-    for (MapRecord mapRecord : revisions) {
+    for (final MapRecord mapRecord : revisions) {
       handleMapRecordLazyInitialization(mapRecord);
     }
     mapRecordList.setTotalCount(revisions.size());
     return mapRecordList;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#
-   * getMapRecordRevisionsForConcept(java.lang.String)
-   */
+  /* see superclass */
   @Override
   public MapRecordList getMapRecordRevisionsForConcept(String conceptId,
     Long mapProjectId) {
@@ -1002,7 +806,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     MapRecordListJpa mapRecordList = new MapRecordListJpa();
     Set<Long> usedRecordIds = new HashSet<>();
     List<MapRecord> mostRecentHistoricalRecords = new ArrayList<>();
-    for (MapRecord mapRecord : revisions) {
+    for (final MapRecord mapRecord : revisions) {
       if (!usedRecordIds.contains(mapRecord.getId())) {
         handleMapRecordLazyInitialization(mapRecord);
         usedRecordIds.add(mapRecord.getId());
@@ -1014,13 +818,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return mapRecordList;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#getRecentlyEditedMapRecords
-   * (org.ihtsdo.otf.mapping.model.MapUser)
-   */
+  /* see superclass */
   @SuppressWarnings({
     "unchecked"
   })
@@ -1084,17 +882,17 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     }
 
     // execute the query
-    List<MapRecord> editedRecords = query.getResultList();
+    final List<MapRecord> editedRecords = query.getResultList();
 
     // create the mapRecordList and set total size
-    MapRecordListJpa mapRecordList = new MapRecordListJpa();
+    final MapRecordListJpa mapRecordList = new MapRecordListJpa();
     // mapRecordList.setTotalCount(editedRecords.size());
 
     // only add one copy -- note this results in uneven page sizes
-    List<MapRecord> uniqueRecords = new ArrayList<>();
-    for (MapRecord mapRecord : editedRecords) {
+    final List<MapRecord> uniqueRecords = new ArrayList<>();
+    for (final MapRecord mapRecord : editedRecords) {
       boolean recordExists = false;
-      for (MapRecord mr : uniqueRecords) {
+      for (final MapRecord mr : uniqueRecords) {
         if (mr.getId().equals(mapRecord.getId()))
           recordExists = true;
       }
@@ -1103,7 +901,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     }
 
     // handle all lazy initializations
-    for (MapRecord mapRecord : uniqueRecords) {
+    for (final MapRecord mapRecord : uniqueRecords) {
       handleMapRecordLazyInitialization(mapRecord);
     }
     mapRecordList.setMapRecords(uniqueRecords);
@@ -1137,7 +935,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     // Try query
     query.setParameter("conceptId", terminologyId);
     mapRecords = query.getResultList();
-    for (MapRecord mapRecord : mapRecords) {
+    for (final MapRecord mapRecord : mapRecords) {
       handleMapRecordLazyInitialization(mapRecord);
     }
 
@@ -1147,13 +945,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return mapRecordList;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#getMapRecordsForMapProject
-   * (java.lang.Long)
-   */
+  /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
   public MapRecordList getMapRecordsForMapProject(Long mapProjectId)
@@ -1168,12 +960,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return mapRecordList;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#
-   * getMapRecordForProjectAndConcept(java.lang.Long, java.lang.String)
-   */
+  /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
   public MapRecordList getMapRecordsForProjectAndConcept(Long mapProjectId,
@@ -1186,7 +973,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
             .setParameter("mapProjectId", mapProjectId)
             .setParameter("conceptId", terminologyId).getResultList();
     MapRecordList mapRecordList = new MapRecordListJpa();
-    for (MapRecord mapRecord : mapRecords) {
+    for (final MapRecord mapRecord : mapRecords) {
       handleMapRecordLazyInitialization(mapRecord);
     }
     mapRecordList.setMapRecords(mapRecords);
@@ -1195,409 +982,78 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#getMapRecordsForMapProject
-   * (java.lang.Long, org.ihtsdo.otf.mapping.helpers.PfsParameter)
-   */
+  /* see superclass */
   @Override
   @SuppressWarnings("unchecked")
   public MapRecordList getPublishedAndReadyForPublicationMapRecordsForMapProject(
     Long mapProjectId, PfsParameter pfsParameter) throws Exception {
 
-    // construct basic query
-    String fullQuery =
-        constructMapRecordForMapProjectIdQuery(mapProjectId,
-            pfsParameter == null ? new PfsParameterJpa() : pfsParameter);
+    final StringBuilder sb = new StringBuilder();
+    sb.append("mapProjectId:" + mapProjectId).append(
+        " AND (workflowStatus:PUBLISHED OR "
+            + "workflowStatus:READY_FOR_PUBLICATION)");
 
-    fullQuery +=
-        " AND (workflowStatus:'PUBLISHED' OR workflowStatus:'READY_FOR_PUBLICATION')";
-
-    Logger.getLogger(MappingServiceJpa.class).info(fullQuery);
-
-    FullTextEntityManager fullTextEntityManager =
-        Search.getFullTextEntityManager(manager);
-
-    SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
-    Query luceneQuery;
-
-    // construct luceneQuery based on URL format
-
-    org.hibernate.search.jpa.FullTextQuery ftquery = null;
-
-    try {
-
-      QueryParser queryParser =
-          new QueryParser(Version.LUCENE_36, "summary",
-              searchFactory.getAnalyzer(MapRecordJpa.class));
-      luceneQuery = queryParser.parse(fullQuery);
-
-      ftquery =
-          fullTextEntityManager.createFullTextQuery(luceneQuery,
-              MapRecordJpa.class);
-
-      // if a parse exception, throw a local exception
-    } catch (ParseException e) {
-      throw new LocalException(
-          "The specified search terms cannot be parsed.  Please check syntax and try again.");
+    final PfsParameter pfs = new PfsParameterJpa(pfsParameter);
+    if (pfs.getSortField() == null || pfs.getSortField().isEmpty()) {
+      pfs.setSortField("conceptId");
     }
 
-    // Sort Options -- in order of priority
-    // (1) if a sort field is specified by pfs parameter, use it
-    // (2) if a query has been specified, use nothing (lucene relevance
-    // default)
-    // (3) if a query has not been specified, sort by conceptId
+    int[] totalCt = new int[1];
+    final List<MapRecord> mapRecords =
+        (List<MapRecord>) getQueryResults(sb.toString(), MapRecordJpa.class,
+            MapRecordJpa.class, pfs, totalCt);
 
-    String sortField = "conceptId";
-    if (pfsParameter != null && pfsParameter.getSortField() != null
-        && !pfsParameter.getSortField().isEmpty()) {
-      ftquery.setSort(new Sort(new SortField(pfsParameter.getSortField(),
-          SortField.STRING)));
-    } else if (pfsParameter != null
-        && pfsParameter.getQueryRestriction() != null
-        && !pfsParameter.getQueryRestriction().isEmpty()) {
-      // do nothing
-    } else {
-      ftquery.setSort(new Sort(new SortField(sortField, SortField.STRING)));
-    }
-
-    // get the results
-    int totalCount;
-    List<MapRecord> mapRecords = new ArrayList<>();
-
-    totalCount = ftquery.getResultSize();
-
-    if (pfsParameter != null) {
-      ftquery.setFirstResult(pfsParameter.getStartIndex());
-      ftquery.setMaxResults(pfsParameter.getMaxResults());
-    }
-    mapRecords = ftquery.getResultList();
-
-    Logger.getLogger(this.getClass()).debug(
-        Integer.toString(mapRecords.size()) + " records retrieved");
-
-    for (MapRecord mapRecord : mapRecords) {
+    for (final MapRecord mapRecord : mapRecords) {
       handleMapRecordLazyInitialization(mapRecord);
     }
 
     // set the total count
-    MapRecordListJpa mapRecordList = new MapRecordListJpa();
-    mapRecordList.setTotalCount(totalCount);
+    final MapRecordListJpa list = new MapRecordListJpa();
+    list.setTotalCount(totalCt[0]);
+    list.setMapRecords(mapRecords);
 
-    // extract the required sublist of map records
-    mapRecordList.setMapRecords(mapRecords);
-
-    return mapRecordList;
+    return list;
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#getMapRecordsForMapProject
-   * (java.lang.Long, org.ihtsdo.otf.mapping.helpers.PfsParameter)
-   */
+  /* see superclass */
   @Override
   @SuppressWarnings("unchecked")
   public MapRecordList getPublishedMapRecordsForMapProject(Long mapProjectId,
     PfsParameter pfsParameter) throws Exception {
 
-    // construct basic query
-    String fullQuery =
-        constructMapRecordForMapProjectIdQuery(mapProjectId,
-            pfsParameter == null ? new PfsParameterJpa() : pfsParameter);
+    final StringBuilder sb = new StringBuilder();
+    sb.append("mapProjectId:" + mapProjectId).append(
+        " AND workflowStatus:'PUBLISHED'");
 
-    fullQuery += " AND workflowStatus:'PUBLISHED'";
-
-    Logger.getLogger(MappingServiceJpa.class).info(fullQuery);
-
-    FullTextEntityManager fullTextEntityManager =
-        Search.getFullTextEntityManager(manager);
-
-    SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
-    Query luceneQuery;
-
-    // construct luceneQuery based on URL format
-
-    QueryParser queryParser =
-        new QueryParser(Version.LUCENE_36, "summary",
-            searchFactory.getAnalyzer(MapRecordJpa.class));
-
-    try {
-      luceneQuery = queryParser.parse(fullQuery);
-
-      org.hibernate.search.jpa.FullTextQuery ftquery =
-          fullTextEntityManager.createFullTextQuery(luceneQuery,
-              MapRecordJpa.class);
-
-      // Sort Options -- in order of priority
-      // (1) if a sort field is specified by pfs parameter, use it
-      // (2) if a query has been specified, use nothing (lucene relevance
-      // default)
-      // (3) if a query has not been specified, sort by conceptId
-
-      String sortField = "conceptId";
-      if (pfsParameter != null && pfsParameter.getSortField() != null
-          && !pfsParameter.getSortField().isEmpty()) {
-        ftquery.setSort(new Sort(new SortField(pfsParameter.getSortField(),
-            SortField.STRING)));
-      } else if (pfsParameter != null
-          && pfsParameter.getQueryRestriction() != null
-          && !pfsParameter.getQueryRestriction().isEmpty()) {
-        // do nothing
-      } else {
-        ftquery.setSort(new Sort(new SortField(sortField, SortField.STRING)));
-      }
-
-      // get the results
-      int totalCount = ftquery.getResultSize();
-
-      if (pfsParameter != null) {
-        ftquery.setFirstResult(pfsParameter.getStartIndex());
-        ftquery.setMaxResults(pfsParameter.getMaxResults());
-      }
-      List<MapRecord> mapRecords = ftquery.getResultList();
-
-      Logger.getLogger(this.getClass()).debug(
-          Integer.toString(mapRecords.size()) + " records retrieved");
-
-      for (MapRecord mapRecord : mapRecords) {
-        handleMapRecordLazyInitialization(mapRecord);
-      }
-
-      // set the total count
-      MapRecordListJpa mapRecordList = new MapRecordListJpa();
-      mapRecordList.setTotalCount(totalCount);
-
-      // extract the required sublist of map records
-      mapRecordList.setMapRecords(mapRecords);
-
-      return mapRecordList;
-    } catch (ParseException e) {
-      throw new LocalException(
-          "The specified search terms cannot be parsed.  Please check syntax and try again.");
+    final PfsParameter pfs = new PfsParameterJpa(pfsParameter);
+    if (pfs.getSortField() == null || pfs.getSortField().isEmpty()) {
+      pfs.setSortField("conceptId");
     }
+
+    int[] totalCt = new int[1];
+    final List<MapRecord> mapRecords =
+        (List<MapRecord>) getQueryResults(sb.toString(), MapRecordJpa.class,
+            MapRecordJpa.class, pfs, totalCt);
+
+    for (final MapRecord mapRecord : mapRecords) {
+      handleMapRecordLazyInitialization(mapRecord);
+    }
+
+    // set the total count
+    final MapRecordListJpa list = new MapRecordListJpa();
+    list.setTotalCount(totalCt[0]);
+    list.setMapRecords(mapRecords);
+
+    return list;
 
   }
 
-  /**
-   * Helper function for map record query construction using both fielded terms
-   * and unfielded terms.
-   * 
-   * @param mapProjectId the map project id for which queries are retrieved
-   * @param pfsParameter the pfs parameter
-   * @return the full lucene query text
-   */
-  private static String constructMapRecordForMapProjectIdQuery(
-    Long mapProjectId, PfsParameter pfsParameter) {
-
-    String fullQuery;
-
-    // if no filter supplied, return query based on map project id only
-    if (pfsParameter != null
-        && (pfsParameter.getQueryRestriction() == null
-            || pfsParameter.getQueryRestriction().equals("") || pfsParameter
-            .getQueryRestriction().equals("undefined"))) {
-      fullQuery = "mapProjectId:" + mapProjectId;
-      return fullQuery;
-    }
-
-    // Pre-treatment: Find any lower-case boolean operators and set to
-    // uppercase
-
-    // //////////////////
-    // Basic algorithm:
-    //
-    // 1) add whitespace breaks to operators
-    // 2) split query on whitespace
-    // 3) cycle over terms in split query to find quoted material, add each
-    // term/quoted term to parsed terms\
-    // a) special case: quoted term after a :
-    // 3) cycle over terms in parsed terms
-    // a) if an operator/parantheses, pass through unchanged (send to upper
-    // case
-    // for boolean)
-    // b) if a fielded query (i.e. field:value), pass through unchanged
-    // c) if not, construct query on all fields with this term
-
-    // list of escape terms (i.e. quotes, operators) to be fed into query
-    // untouched
-    String escapeTerms = "\\+|\\-|\"|\\(|\\)";
-    String booleanTerms = "and|AND|or|OR|not|NOT";
-
-    // first cycle over the string to add artificial breaks before and after
-    // control characters
-    final String queryStr =
-        (pfsParameter == null ? "" : pfsParameter.getQueryRestriction());
-
-    String queryStrMod = queryStr;
-    queryStrMod = queryStrMod.replace("(", " ( ");
-    queryStrMod = queryStrMod.replace(")", " ) ");
-    queryStrMod = queryStrMod.replace("\"", " \" ");
-    queryStrMod = queryStrMod.replace("+", " + ");
-    queryStrMod = queryStrMod.replace("-", " - ");
-
-    // remove any leading or trailing whitespace (otherwise first/last null
-    // term
-    // bug)
-    queryStrMod = queryStrMod.trim();
-
-    // split the string by white space and single-character operators
-    String[] terms = queryStrMod.split("\\s+");
-
-    // merge items between quotation marks
-    boolean exprInQuotes = false;
-    List<String> parsedTerms = new ArrayList<>();
-    String currentTerm = "";
-
-    // cycle over terms to identify quoted (i.e. non-parsed) terms
-    for (int i = 0; i < terms.length; i++) {
-
-      // if an open quote is detected
-      if (terms[i].equals("\"")) {
-
-        if (exprInQuotes) {
-
-          // special case check: fielded term. Impossible for first
-          // term to be
-          // fielded.
-          if (parsedTerms.size() == 0) {
-            parsedTerms.add("\"" + currentTerm + "\"");
-          } else {
-            String lastParsedTerm = parsedTerms.get(parsedTerms.size() - 1);
-
-            // if last parsed term ended with a colon, append this
-            // term to the
-            // last parsed term
-            if (lastParsedTerm.endsWith(":")) {
-              parsedTerms.set(parsedTerms.size() - 1, lastParsedTerm + "\""
-                  + currentTerm + "\"");
-            } else {
-              parsedTerms.add("\"" + currentTerm + "\"");
-            }
-          }
-
-          // reset current term
-          currentTerm = "";
-          exprInQuotes = false;
-
-        } else {
-          exprInQuotes = true;
-        }
-
-        // if no quote detected
-      } else {
-
-        // if inside quotes, continue building term
-        if (exprInQuotes) {
-          currentTerm =
-              currentTerm == "" ? terms[i] : currentTerm + " " + terms[i];
-
-          // otherwise, add to parsed list
-        } else {
-          parsedTerms.add(terms[i]);
-        }
-      }
-    }
-
-    for (String s : parsedTerms) {
-      Logger.getLogger(MappingServiceJpa.class).debug("  " + s);
-    }
-
-    // cycle over terms to construct query
-    fullQuery = "";
-
-    for (int i = 0; i < parsedTerms.size(); i++) {
-
-      // if not the first term AND the last term was not an escape term
-      // add whitespace separator
-      if (i != 0 && !parsedTerms.get(i - 1).matches(escapeTerms)) {
-
-        fullQuery += " ";
-      }
-      /*
-       * fullQuery += (i == 0 ? // check for first term "" : // -> if first
-       * character, add nothing parsedTerms.get(i-1).matches(escapeTerms) ? //
-       * check if last term was an escape character "": // -> if last term was
-       * an escape character, add nothing " "); // -> otherwise, add a
-       * separating space
-       */
-
-      // if an escape character/sequence, add this term unmodified
-      if (parsedTerms.get(i).matches(escapeTerms)) {
-
-        fullQuery += parsedTerms.get(i);
-
-        // else if a boolean character, add this term in upper-case form
-        // (i.e.
-        // lucene format)
-      } else if (parsedTerms.get(i).matches(booleanTerms)) {
-
-        fullQuery += parsedTerms.get(i).toUpperCase();
-
-        // else if already a field-specific query term, add this term
-        // unmodified
-      } else if (parsedTerms.get(i).contains(":")) {
-
-        fullQuery += parsedTerms.get(i);
-
-        // otherwise, treat as unfielded query term
-      } else {
-
-        // open parenthetical term
-        fullQuery += "(";
-
-        // add fielded query for each indexed term, separated by OR
-        Iterator<String> namesIter = mapRecordFieldNames.iterator();
-        while (namesIter.hasNext()) {
-          fullQuery += namesIter.next() + ":" + parsedTerms.get(i);
-          if (namesIter.hasNext())
-            fullQuery += " OR ";
-        }
-
-        // close parenthetical term
-        fullQuery += ")";
-      }
-
-      // if further terms remain in the sequence
-      if (!(i == parsedTerms.size() - 1)) {
-
-        // Add a separating OR iff:
-        // - this term is not an escape character
-        // - this term is not a boolean term
-        // - next term is not a boolean term
-        if (!parsedTerms.get(i).matches(escapeTerms)
-            && !parsedTerms.get(i).matches(booleanTerms)
-            && !parsedTerms.get(i + 1).matches(booleanTerms)) {
-
-          fullQuery += " OR";
-        }
-      }
-    }
-
-    // add parantheses and map project constraint
-    fullQuery = "(" + fullQuery + ")" + " AND mapProjectId:" + mapProjectId;
-
-    Logger.getLogger(MappingServiceJpa.class).debug("Full query: " + fullQuery);
-
-    return fullQuery;
-
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#findConceptsInScope(org.
-   * ihtsdo.otf.mapping.model.MapProject)
-   */
+  /* see superclass */
   @Override
   public SearchResultList findConceptsInScope(Long mapProjectId,
     PfsParameter pfsParameter) throws Exception {
-    Logger.getLogger(this.getClass()).info(
+    Logger.getLogger(getClass()).info(
         "Find concepts in scope for " + mapProjectId);
 
     MapProject project = getMapProject(mapProjectId);
@@ -1612,10 +1068,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     // if we are looking for descendants
     // e.g. "Clinical Finding" does not need to be mapped for SNOMED->ICD10
     if (!project.isScopeDescendantsFlag()) {
-      Logger.getLogger(this.getClass()).info(
+      Logger.getLogger(getClass()).info(
           "  Project not using scope descendants flag - "
               + project.getScopeConcepts());
-      for (String conceptId : project.getScopeConcepts()) {
+      for (final String conceptId : project.getScopeConcepts()) {
         Concept c =
             contentService.getConcept(conceptId, terminology,
                 terminologyVersion);
@@ -1638,20 +1094,20 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
     // Include descendants in scope.
     if (project.isScopeDescendantsFlag()) {
-      Logger.getLogger(this.getClass()).info(
+      Logger.getLogger(getClass()).info(
           "  Project using scope descendants flag");
       // for each scope concept, get descendants
-      for (String terminologyId : project.getScopeConcepts()) {
+      for (final String terminologyId : project.getScopeConcepts()) {
         SearchResultList descendants =
             contentService.findDescendantConcepts(terminologyId, terminology,
                 terminologyVersion, pfsParameter);
 
-        Logger.getLogger(this.getClass()).info(
+        Logger.getLogger(getClass()).info(
             "    Concept " + terminologyId + " has "
                 + descendants.getTotalCount() + " descendants ("
                 + descendants.getCount() + " from getCount)");
         // cycle over descendants
-        for (SearchResult sr : descendants.getSearchResults()) {
+        for (final SearchResult sr : descendants.getSearchResults()) {
           conceptsInScope.addSearchResult(sr);
         }
       }
@@ -1667,14 +1123,14 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
     // remove those excluded from scope
     SearchResultList finalConceptsInScope = new SearchResultListJpa();
-    for (SearchResult sr : conceptsInScope.getSearchResults()) {
+    for (final SearchResult sr : conceptsInScope.getSearchResults()) {
       if (!excludedResultList.contains(sr)) {
         finalConceptsInScope.addSearchResult(sr);
       }
     }
 
     finalConceptsInScope.setTotalCount(finalConceptsInScope.getCount());
-    Logger.getLogger(this.getClass()).info(
+    Logger.getLogger(getClass()).info(
         "Finished getting scope concepts - "
             + finalConceptsInScope.getTotalCount());
 
@@ -1688,22 +1144,16 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#findUnmappedConceptsInScope
-   * (org.ihtsdo.otf.mapping.model.MapProject)
-   */
+  /* see superclass */
   @Override
   public SearchResultList findUnmappedConceptsInScope(Long mapProjectId,
     PfsParameter pfsParameter) throws Exception {
-    Logger.getLogger(this.getClass()).info(
+    Logger.getLogger(getClass()).info(
         "Find unmapped concepts in scope for " + mapProjectId);
     // Get in scope concepts
     SearchResultList conceptsInScope =
         findConceptsInScope(mapProjectId, pfsParameter);
-    Logger.getLogger(this.getClass()).info(
+    Logger.getLogger(getClass()).info(
         "  Project has " + conceptsInScope.getTotalCount()
             + " concepts in scope");
 
@@ -1712,7 +1162,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     // project
     //
     Set<String> mappedConcepts = new HashSet<>();
-    for (MapRecord mapRecord : getMapRecordsForMapProject(mapProjectId)
+    for (final MapRecord mapRecord : getMapRecordsForMapProject(mapProjectId)
         .getIterable()) {
       if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)
           || mapRecord.getWorkflowStatus().equals(
@@ -1726,7 +1176,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     //
     ContentService contentService = new ContentServiceJpa();
     SearchResultList unmappedConceptsInScope = new SearchResultListJpa();
-    for (SearchResult sr : conceptsInScope.getSearchResults()) {
+    for (final SearchResult sr : conceptsInScope.getSearchResults()) {
 
       if (!mappedConcepts.contains(sr.getTerminologyId())) {
         unmappedConceptsInScope.addSearchResult(sr);
@@ -1736,19 +1186,14 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     unmappedConceptsInScope.setTotalCount(unmappedConceptsInScope.getCount());
     contentService.close();
 
-    Logger.getLogger(this.getClass()).info(
+    Logger.getLogger(getClass()).info(
         "  Project has " + unmappedConceptsInScope.getTotalCount()
             + " unmapped concepts in scope");
 
     return unmappedConceptsInScope;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#
-   * findMappedConceptsOutOfScopeBounds(java.lang.Long)
-   */
+  /* see superclass */
   @Override
   public SearchResultList findMappedConceptsOutOfScopeBounds(Long mapProjectId,
     PfsParameter pfsParameter) throws Exception {
@@ -1758,7 +1203,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
         getMapRecordsForMapProject(mapProjectId).getMapRecords();
     ContentService contentService = new ContentServiceJpa();
 
-    for (MapRecord record : mapRecordList) {
+    for (final MapRecord record : mapRecordList) {
       Concept c =
           contentService.getConcept(record.getConceptId(),
               project.getSourceTerminology(),
@@ -1778,13 +1223,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return mappedConceptsOutOfBounds;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#findConceptsExcludedFromScope
-   * (org.ihtsdo.otf.mapping.model.MapProject)
-   */
+  /* see superclass */
   @Override
   public SearchResultList findConceptsExcludedFromScope(Long mapProjectId,
     PfsParameter pfsParameter) throws Exception {
@@ -1796,7 +1235,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     String terminologyVersion = project.getSourceTerminologyVersion();
 
     // add specified excluded concepts
-    for (String conceptId : project.getScopeExcludedConcepts()) {
+    for (final String conceptId : project.getScopeExcludedConcepts()) {
       Concept c =
           contentService.getConcept(conceptId, terminology, terminologyVersion);
       if (c != null) {
@@ -1814,13 +1253,13 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     if (project.isScopeExcludedDescendantsFlag()) {
 
       // for each excluded scope concept, get descendants
-      for (String terminologyId : project.getScopeExcludedConcepts()) {
+      for (final String terminologyId : project.getScopeExcludedConcepts()) {
         SearchResultList descendants =
             contentService.findDescendantConcepts(terminologyId, terminology,
                 terminologyVersion, null);
 
         // cycle over descendants
-        for (SearchResult sr : descendants.getSearchResults()) {
+        for (final SearchResult sr : descendants.getSearchResults()) {
           conceptsExcludedFromScope.addSearchResult(sr);
         }
       }
@@ -1830,26 +1269,20 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     contentService.close();
     conceptsExcludedFromScope.setTotalCount(conceptsExcludedFromScope
         .getCount());
-    Logger.getLogger(this.getClass()).info(
+    Logger.getLogger(getClass()).info(
         "Concepts excluded from scope "
             + +conceptsExcludedFromScope.getTotalCount());
     return conceptsExcludedFromScope;
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#isConceptInScope(org.ihtsdo
-   * .otf.mapping.rf2.Concept, org.ihtsdo.otf.mapping.model.MapProject)
-   */
+  /* see superclass */
   @Override
   public boolean isConceptInScope(String conceptId, Long mapProjectId)
     throws Exception {
     MapProject project = getMapProject(mapProjectId);
     // if directly matches preset scope concept return true
-    for (String c : project.getScopeConcepts()) {
+    for (final String c : project.getScopeConcepts()) {
       if (c.equals(conceptId))
         return true;
     }
@@ -1858,9 +1291,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       return false;
 
     ContentService contentService = new ContentServiceJpa();
-    for (TreePosition tp : contentService.getTreePositionsWithDescendants(
-        conceptId, project.getSourceTerminology(),
-        project.getSourceTerminologyVersion()).getIterable()) {
+    for (final TreePosition tp : contentService
+        .getTreePositionsWithDescendants(conceptId,
+            project.getSourceTerminology(),
+            project.getSourceTerminologyVersion()).getIterable()) {
       String ancestorPath = tp.getAncestorPath();
       if (project.isScopeExcludedDescendantsFlag()
           && ancestorPath.contains(conceptId)) {
@@ -1875,20 +1309,13 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return false;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#isConceptExcludedFromScope
-   * (org.ihtsdo.otf.mapping.rf2.Concept,
-   * org.ihtsdo.otf.mapping.model.MapProject)
-   */
+  /* see superclass */
   @Override
   public boolean isConceptExcludedFromScope(String conceptId, Long mapProjectId)
     throws Exception {
     MapProject project = getMapProject(mapProjectId);
     // if directly matches preset scope concept return true
-    for (String c : project.getScopeExcludedConcepts()) {
+    for (final String c : project.getScopeExcludedConcepts()) {
       if (c.equals(conceptId))
         return true;
     }
@@ -1897,9 +1324,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       return false;
 
     ContentService contentService = new ContentServiceJpa();
-    for (TreePosition tp : contentService.getTreePositionsWithDescendants(
-        conceptId, project.getSourceTerminology(),
-        project.getSourceTerminologyVersion()).getIterable()) {
+    for (final TreePosition tp : contentService
+        .getTreePositionsWithDescendants(conceptId,
+            project.getSourceTerminology(),
+            project.getSourceTerminologyVersion()).getIterable()) {
       String ancestorPath = tp.getAncestorPath();
       if (project.isScopeDescendantsFlag() && ancestorPath.contains(conceptId)) {
         continue;
@@ -1914,27 +1342,22 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return false;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#isConceptOutOfScopeBounds
-   * (java.lang.String, java.lang.Long)
-   */
+  /* see superclass */
   @Override
   public boolean isConceptOutOfScopeBounds(String conceptId, Long mapProjectId)
     throws Exception {
     MapProject project = getMapProject(mapProjectId);
     // if directly matches preset scope concept return false
-    for (String c : project.getScopeConcepts()) {
+    for (final String c : project.getScopeConcepts()) {
       if (c.equals(conceptId))
         return false;
     }
 
     ContentService contentService = new ContentServiceJpa();
-    for (TreePosition tp : contentService.getTreePositionsWithDescendants(
-        conceptId, project.getSourceTerminology(),
-        project.getSourceTerminologyVersion()).getIterable()) {
+    for (final TreePosition tp : contentService
+        .getTreePositionsWithDescendants(conceptId,
+            project.getSourceTerminology(),
+            project.getSourceTerminologyVersion()).getIterable()) {
       String ancestorPath = tp.getAncestorPath();
       if (project.isScopeDescendantsFlag() && ancestorPath.contains(conceptId)) {
         return false;
@@ -1962,23 +1385,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     MapProject project = getMapProject(mapProjectId);
     SearchResultList unmappedDescendants = new SearchResultListJpa();
 
-    // get hierarchical rel
-    MetadataService metadataService = new MetadataServiceJpa();
-    Map<String, String> hierarchicalRelationshipTypeMap =
-        metadataService.getHierarchicalRelationshipTypes(
-            project.getSourceTerminology(),
-            project.getSourceTerminologyVersion());
-    if (hierarchicalRelationshipTypeMap.keySet().size() > 1) {
-      throw new IllegalStateException(
-          "Map project source terminology has too many hierarchical relationship types - "
-              + project.getSourceTerminology());
-    }
-    if (hierarchicalRelationshipTypeMap.keySet().size() < 1) {
-      throw new IllegalStateException(
-          "Map project source terminology has too few hierarchical relationship types - "
-              + project.getSourceTerminology());
-    }
-
     // get descendants -- no pfsParameter, want all results
     ContentService contentService = new ContentServiceJpa();
     SearchResultList descendants =
@@ -1991,7 +1397,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     if (descendants.getCount() < project.getPropagationDescendantThreshold()) {
 
       // cycle over descendants
-      for (SearchResult sr : descendants.getSearchResults()) {
+      for (final SearchResult sr : descendants.getSearchResults()) {
 
         // if descendant has no associated map records, add to list
         if (getMapRecordsForConcept(sr.getTerminologyId()).getTotalCount() == 0) {
@@ -1999,13 +1405,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
         }
       }
     }
-
-    // close managers
     contentService.close();
-    metadataService.close();
-
     return unmappedDescendants;
-
   }
 
   // //////////////////////////////
@@ -2016,13 +1417,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
   // Addition services ///
   // //////////////////////////
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#addMapPrinciple(org.ihtsdo
-   * .otf.mapping.model.MapPrinciple)
-   */
+  /* see superclass */
   @Override
   public MapPrinciple addMapPrinciple(MapPrinciple mapPrinciple) {
     if (getTransactionPerOperation()) {
@@ -2037,13 +1432,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return mapPrinciple;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#addMapAdvice(org.ihtsdo.
-   * otf.mapping.model.MapAdvice)
-   */
+  /* see superclass */
   @Override
   public MapAdvice addMapAdvice(MapAdvice mapAdvice) {
     if (getTransactionPerOperation()) {
@@ -2059,13 +1448,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return mapAdvice;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#addMapRelation(org.ihtsdo.
-   * otf.mapping.model.MapRelation)
-   */
+  /* see superclass */
   @Override
   public MapRelation addMapRelation(MapRelation mapRelation) {
     if (getTransactionPerOperation()) {
@@ -2084,12 +1467,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
   // Update services ///
   // //////////////////////////
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#updateMapPrinciple(org
-   * .ihtsdo .otf.mapping.model.MapPrinciple)
-   */
+  /* see superclass */
   @Override
   public void updateMapPrinciple(MapPrinciple mapPrinciple) {
     if (getTransactionPerOperation()) {
@@ -2104,13 +1482,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#updateMapAdvice(org.ihtsdo
-   * .otf.mapping.model.MapAdvice)
-   */
+  /* see superclass */
   @Override
   public void updateMapAdvice(MapAdvice mapAdvice) {
     if (getTransactionPerOperation()) {
@@ -2126,12 +1498,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#updateMapRelation(org.
-   * ihtsdo .otf.mapping.model.MapRelation)
-   */
+  /* see superclass */
   @Override
   public void updateMapRelation(MapRelation mapRelation) {
     if (getTransactionPerOperation()) {
@@ -2151,12 +1518,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
   // Removal services ///
   // //////////////////////////
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#removeMapPrinciple(java
-   * .lang.Long)
-   */
+  /* see superclass */
   @Override
   public void removeMapPrinciple(Long mapPrincipleId) {
     if (getTransactionPerOperation()) {
@@ -2179,13 +1541,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#removeMapAdvice(java.lang
-   * .Long)
-   */
+  /* see superclass */
   @Override
   public void removeMapAdvice(Long mapAdviceId) {
     if (getTransactionPerOperation()) {
@@ -2208,12 +1564,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#removeMapRelation(java
-   * .lang.Long)
-   */
+  /* see superclass */
   @Override
   public void removeMapRelation(Long mapRelationId) {
     if (getTransactionPerOperation()) {
@@ -2236,13 +1587,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#getMapPrinciple(java.lang
-   * .Long)
-   */
+  /* see superclass */
   @Override
   public MapPrinciple getMapPrinciple(Long id) throws Exception {
 
@@ -2252,11 +1597,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return (MapPrinciple) query.getSingleResult();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#getMapPrinciples()
-   */
+  /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
   public MapPrincipleList getMapPrinciples() {
@@ -2275,11 +1616,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#getMapAdvices()
-   */
+  /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
   public MapAdviceList getMapAdvices() {
@@ -2296,11 +1633,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return mapAdviceList;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#getMapRelations()
-   */
+  /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
   public MapRelationList getMapRelations() {
@@ -2323,13 +1656,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
   // / Services for Map Project Creation
   // ///////////////////////////////////////
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#createMapRecordsForMapProject
-   * (java.lang.Long, org.ihtsdo.otf.mapping.helpers.WorkflowStatus)
-   */
+  /* see superclass */
+  /* see superclass */
   @Override
   public void createMapRecordsForMapProject(Long mapProjectId,
     WorkflowStatus workflowStatus) throws Exception {
@@ -2344,44 +1672,81 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
     // get the loader user
     MapUser loaderUser;
-    try {
-      loaderUser = getMapUser("loader");
-    } catch (Exception e) {
-      // if loader user does not exist, add it
-      loaderUser = new MapUserJpa();
-      loaderUser.setApplicationRole(MapUserRole.VIEWER);
-      loaderUser.setUserName("loader");
-      loaderUser.setName("Loader Record");
-      loaderUser.setEmail("none");
-      loaderUser = addMapUser(loaderUser);
+
+    // use the 'legacy' user if a legacy path workflow project
+    if (mapProject.getWorkflowType().equals(WorkflowType.LEGACY_PATH)) {
+      try {
+        loaderUser = getMapUser("legacy");
+      } catch (Exception e) {
+        // if loader user does not exist, add it
+        loaderUser = new MapUserJpa();
+        loaderUser.setApplicationRole(MapUserRole.VIEWER);
+        loaderUser.setUserName("legacy");
+        loaderUser.setName("Legacy Record");
+        loaderUser.setEmail("none");
+        loaderUser = addMapUser(loaderUser);
+      }
     }
 
-    // retrieve all complex map ref set members for mapProject
-    javax.persistence.Query query =
-        manager.createQuery("select r from ComplexMapRefSetMemberJpa r "
-            + "where r.refSetId = :refSetId order by r.concept.id, "
-            + "r.mapBlock, r.mapGroup, r.mapPriority");
-    query.setParameter("refSetId", mapProject.getRefSetId());
-    List<ComplexMapRefSetMember> complexMapRefSetMembers = new ArrayList<>();
-    for (Object member : query.getResultList()) {
-      ComplexMapRefSetMember refSetMember = (ComplexMapRefSetMember) member;
-      complexMapRefSetMembers.add(refSetMember);
+    // otherwise, use the 'loader' user
+    else {
+
+      try {
+        loaderUser = getMapUser("loader");
+      } catch (Exception e) {
+        // if loader user does not exist, add it
+        loaderUser = new MapUserJpa();
+        loaderUser.setApplicationRole(MapUserRole.VIEWER);
+        loaderUser.setUserName("loader");
+        loaderUser.setName("Loader Record");
+        loaderUser.setEmail("none");
+        loaderUser = addMapUser(loaderUser);
+      }
     }
 
-    Logger.getLogger(MappingServiceJpa.class).warn(
-        "  " + complexMapRefSetMembers.size()
-            + " complex map refset members found (some skipped)");
-    createMapRecordsForMapProject(mapProjectId, loaderUser,
-        complexMapRefSetMembers, workflowStatus);
+    Logger.getLogger(getClass()).info(
+        "Map records will be loaded and attributed to user: "
+            + loaderUser.getUserName());
+
+    List<ComplexMapRefSetMember> members = new ArrayList<>();
+
+    // IF map project uses "simple", then construct a query from a simple map
+    if (mapProject.getMapRefsetPattern() == MapRefsetPattern.SimpleMap) {
+      // else retrieve all complex map ref set members for mapProject
+      javax.persistence.Query query =
+          manager.createQuery("select r from SimpleMapRefSetMemberJpa r "
+              + "where r.refSetId = :refSetId");
+      query.setParameter("refSetId", mapProject.getRefSetId());
+      for (final Object member : query.getResultList()) {
+        final SimpleMapRefSetMember simpleMember =
+            (SimpleMapRefSetMember) member;
+        final ComplexMapRefSetMember complexMember =
+            new ComplexMapRefSetMemberJpa(simpleMember);
+        members.add(complexMember);
+      }
+    }
+
+    // else retrieve all complex map ref set members for mapProject
+    else {
+      javax.persistence.Query query =
+          manager.createQuery("select r from ComplexMapRefSetMemberJpa r "
+              + "where r.refSetId = :refSetId order by r.concept.id, "
+              + "r.mapBlock, r.mapGroup, r.mapPriority");
+      query.setParameter("refSetId", mapProject.getRefSetId());
+      for (final Object member : query.getResultList()) {
+        ComplexMapRefSetMember refSetMember = (ComplexMapRefSetMember) member;
+        members.add(refSetMember);
+      }
+    }
+
+    // Create the map records
+    createMapRecordsForMapProject(mapProjectId, loaderUser, members,
+        workflowStatus);
   }
 
   // ONLY FOR TESTING PURPOSES
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#
-   * removeMapRecordsForMapProjectId (java.lang.Long)
-   */
+
+  /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
   public Long removeMapRecordsForMapProject(Long mapProjectId) {
@@ -2396,10 +1761,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
                 "select m from MapRecordJpa m where m.mapProjectId = :mapProjectId")
             .setParameter("mapProjectId", mapProjectId).getResultList();
 
-    for (MapRecord record : records) {
+    for (final MapRecord record : records) {
 
       // delete notes
-      for (MapNote note : record.getMapNotes()) {
+      for (final MapNote note : record.getMapNotes()) {
         if (manager.contains(note)) {
           manager.remove(note);
         } else {
@@ -2409,7 +1774,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       record.setMapNotes(null);
 
       // delete entries
-      for (MapEntry entry : record.getMapEntries()) {
+      for (final MapEntry entry : record.getMapEntries()) {
 
         // remove advices
         entry.setMapAdvices(null);
@@ -2435,7 +1800,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
     tx.commit();
 
-    Logger.getLogger(this.getClass()).debug(
+    Logger.getLogger(getClass()).debug(
         Integer.toString(nRecords) + " records deleted for map project id = "
             + mapProjectId);
 
@@ -2460,21 +1825,15 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
         complexMapRefSetMembers, workflowStatus, -1.0f);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#createMapRecordsForMapProject
-   * (java.lang.Long, java.util.List)
-   */
+  /* see superclass */
   @Override
   public void createMapRecordsForMapProject(Long mapProjectId, MapUser mapUser,
     List<ComplexMapRefSetMember> complexMapRefSetMembers,
     WorkflowStatus workflowStatus, float samplingRate) throws Exception {
     MapProject mapProject = getMapProject(mapProjectId);
-    Logger.getLogger(MappingServiceJpa.class).debug(
+    Logger.getLogger(MappingServiceJpa.class).info(
         "  Creating map records for map project - " + mapProject.getName()
-            + ", assigning workflow status " + WorkflowStatus.PUBLISHED);
+            + ", assigning workflow status " + workflowStatus.toString());
 
     // Verify application is letting the service manage transactions
     if (!getTransactionPerOperation()) {
@@ -2497,23 +1856,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     // use the map relation id->name mapping to construct a hash set of
     // MapRelations
     Map<String, MapRelation> mapRelationIdMap = new HashMap<>();
-    for (MapRelation mapRelation : getMapRelations().getIterable()) {
+    for (final MapRelation mapRelation : getMapRelations().getIterable()) {
       mapRelationIdMap.put(mapRelation.getTerminologyId(), mapRelation);
-    }
-
-    Map<String, String> hierarchicalRelationshipTypeMap =
-        metadataService.getHierarchicalRelationshipTypes(
-            mapProject.getSourceTerminology(),
-            mapProject.getSourceTerminologyVersion());
-    if (hierarchicalRelationshipTypeMap.keySet().size() > 1) {
-      throw new IllegalStateException(
-          "Map project source terminology has too many hierarchical relationship types - "
-              + mapProject.getSourceTerminology());
-    }
-    if (hierarchicalRelationshipTypeMap.keySet().size() < 1) {
-      throw new IllegalStateException(
-          "Map project source terminology has too few hierarchical relationship types - "
-              + mapProject.getSourceTerminology());
     }
 
     boolean prevTransactionPerOperationSetting = getTransactionPerOperation();
@@ -2537,7 +1881,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
         throw new Exception("Loader user could not be found");
       }
 
-      for (ComplexMapRefSetMember refSetMember : complexMapRefSetMembers) {
+      for (final ComplexMapRefSetMember refSetMember : complexMapRefSetMembers) {
 
         // Skip inactive cases
         if (!refSetMember.isActive()) {
@@ -2547,7 +1891,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
         }
 
         // Skip concept exclusion rules
-        if (refSetMember.getMapRule().matches("IFA\\s\\d*\\s\\|.*\\s\\|")) {
+        if (refSetMember.getMapRule() != null
+            && refSetMember.getMapRule().matches("IFA\\s\\d*\\s\\|.*\\s\\|")) {
           if (refSetMember.getMapAdvice().contains(
               "MAP IS CONTEXT DEPENDENT FOR GENDER")
               && !refSetMember.getMapRule().matches("AND IFA")) {
@@ -2578,11 +1923,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
         // if no concept for this ref set member, skip
         if (concept == null) {
           continue;
-          /*
-           * throw new NoResultException(
-           * "    Concept is unexpectedly missing for " +
-           * refSetMember.getTerminologyId());
-           */
         }
 
         // if different concept than previous ref set member, create
@@ -2605,6 +1945,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
           // set the owner and lastModifiedBy user fields to
           // loaderUser
           mapRecord.setOwner(mapUser);
+          mapRecord.setLastModified(refSetMember.getEffectiveTime().getTime());
           mapRecord.setLastModifiedBy(mapUser);
 
           // random determine workflow state
@@ -2619,7 +1960,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
             mapRecord.setWorkflowStatus(workflowStatus);
           } else {
             samplingRecordsPublished++;
-            mapRecord.setWorkflowStatus(WorkflowStatus.PUBLISHED);
+            mapRecord.setWorkflowStatus(workflowStatus);
           }
 
           addMapRecord(mapRecord);
@@ -2652,7 +1993,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
           } else {
             targetName = c.getDefaultPreferredName();
           }
-          Logger.getLogger(this.getClass()).debug(
+          Logger.getLogger(getClass()).debug(
               "      Setting target name " + targetName);
         } else {
           targetName = "No target";
@@ -2663,11 +2004,11 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
         if (refSetMember.getMapRelationId() != null) {
           relationName =
               relationIdNameMap.get(refSetMember.getMapRelationId().toString());
-          Logger.getLogger(this.getClass()).debug(
+          Logger.getLogger(getClass()).debug(
               "      Look up relation name = " + relationName);
         }
 
-        Logger.getLogger(this.getClass()).debug("      Create map entry");
+        Logger.getLogger(getClass()).debug("      Create map entry");
         MapEntry mapEntry = new MapEntryJpa();
         mapEntry.setTargetId(refSetMember.getMapTarget() == null ? ""
             : refSetMember.getMapTarget());
@@ -2676,7 +2017,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
         mapEntry.setMapRelation(mapRelationIdMap.get(refSetMember
             .getMapRelationId().toString()));
         String rule = refSetMember.getMapRule();
-        if (rule.equals("OTHERWISE TRUE"))
+        if (rule != null && rule.equals("OTHERWISE TRUE"))
           rule = "TRUE";
         mapEntry.setRule(rule);
         mapEntry.setMapBlock(refSetMember.getMapBlock());
@@ -2696,14 +2037,14 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
         // match
         // relation name
         // This should automatically exclude IFA/ALWAYS advice
-        Logger.getLogger(this.getClass()).debug("      Setting map advice");
+        Logger.getLogger(getClass()).debug("      Setting map advice");
         if (refSetMember.getMapAdvice() != null
             && !refSetMember.getMapAdvice().equals("")) {
-          for (MapAdvice ma : mapAdvices.getIterable()) {
+          for (final MapAdvice ma : mapAdvices.getIterable()) {
             if (refSetMember.getMapAdvice().indexOf(ma.getName()) != -1
                 && !ma.getName().equals(relationName)) {
               mapEntry.addMapAdvice(ma);
-              Logger.getLogger(this.getClass()).debug("    " + ma.getName());
+              Logger.getLogger(getClass()).debug("    " + ma.getName());
             }
           }
         }
@@ -2730,35 +2071,19 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#getTransactionPerOperation
-   * ()
-   */
+  /* see superclass */
   @Override
   public boolean getTransactionPerOperation() {
     return transactionPerOperation;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#setTransactionPerOperation
-   * (boolean)
-   */
+  /* see superclass */
   @Override
   public void setTransactionPerOperation(boolean transactionPerOperation) {
     this.transactionPerOperation = transactionPerOperation;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#beginTransaction()
-   */
+  /* see superclass */
   @Override
   public void beginTransaction() {
 
@@ -2773,11 +2098,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     tx.begin();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#commit()
-   */
+  /* see superclass */
   @Override
   public void commit() {
 
@@ -2796,11 +2117,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
   // AGE RANGE FUNCTIONS
   // ////////////////////////
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#getMapAgeRanges()
-   */
+  /* see superclass */
   @Override
   @SuppressWarnings("unchecked")
   public MapAgeRangeList getMapAgeRanges() {
@@ -2815,13 +2132,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return m;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#addMapAgeRange(org.ihtsdo
-   * .otf.mapping.model.MapAgeRange)
-   */
+  /* see superclass */
   @Override
   public MapAgeRange addMapAgeRange(MapAgeRange mapAgeRange) {
     if (getTransactionPerOperation()) {
@@ -2838,12 +2149,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return mapAgeRange;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#removeMapAgeRange(java
-   * .lang.Long)
-   */
+  /* see superclass */
   @Override
   public void removeMapAgeRange(Long mapAgeRangeId) {
     if (getTransactionPerOperation()) {
@@ -2866,12 +2172,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#updateMapAgeRange(org.
-   * ihtsdo .otf.mapping.model.MapAgeRange)
-   */
+  /* see superclass */
   @Override
   public void updateMapAgeRange(MapAgeRange mapAgeRange) {
     if (getTransactionPerOperation()) {
@@ -2889,12 +2190,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
   // MAP USER PREFERENCES FUNCTIONS
   // /////////////////////////////////////
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#getMapUserPreferences(
-   * java.lang.String)
-   */
+  /* see superclass */
   @Override
   public MapUserPreferences getMapUserPreferences(String userName)
     throws Exception {
@@ -2919,14 +2215,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       m = new MapUserPreferencesJpa();
       m.setMapUser(mapUser); // set the map user
       MapProjectList mapProjects = getMapProjects();
-      m.setLastMapProjectId(mapProjects.getIterable().iterator().next().getId()); // set
-                                                                                  // a
-                                                                                  // default
-                                                                                  // project
-                                                                                  // to
-                                                                                  // 1st
-                                                                                  // project
-                                                                                  // found
+      // set a default project to 1st project found
+      m.setLastMapProjectId(mapProjects.getIterable().iterator().next().getId());
 
       // add object
       addMapUserPreferences(m);
@@ -2961,12 +2251,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return mapUserPreferencesList;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#addMapUserPreferences(
-   * org.ihtsdo.otf.mapping.model.MapUserPreferences)
-   */
+  /* see superclass */
   @Override
   public MapUserPreferences addMapUserPreferences(
     MapUserPreferences mapUserPreferences) {
@@ -2984,13 +2269,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return mapUserPreferences;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#removeMapUserPreferences
-   * (java.lang.Long)
-   */
+  /* see superclass */
   @Override
   public void removeMapUserPreferences(Long mapUserPreferencesId) {
     if (getTransactionPerOperation()) {
@@ -3015,13 +2294,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#updateMapUserPreferences
-   * (org.ihtsdo .otf.mapping.model.MapUserPreferences)
-   */
+  /* see superclass */
   @Override
   public void updateMapUserPreferences(MapUserPreferences mapUserPreferences) {
     if (getTransactionPerOperation()) {
@@ -3035,18 +2308,12 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#getMapUserRole(java.lang
-   * .String, java.lang.Long)
-   */
+  /* see superclass */
   @Override
   public MapUserRole getMapUserRoleForMapProject(String userName,
     Long mapProjectId) throws Exception {
 
-    Logger.getLogger(MappingServiceJpa.class).info(
+    Logger.getLogger(MappingServiceJpa.class).debug(
         "Finding user's role " + userName + " " + mapProjectId);
 
     // get the user and map project for parameters
@@ -3073,13 +2340,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return MapUserRole.VIEWER;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#
-   * getProjectSpecificAlgorithmHandler
-   * (org.ihtsdo.otf.mapping.model.MapProject)
-   */
+  /* see superclass */
   @Override
   @XmlTransient
   public ProjectSpecificAlgorithmHandler getProjectSpecificAlgorithmHandler(
@@ -3095,32 +2356,17 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
   }
 
-  /**
-   * Sets the valid field for tree positions, given a map project id.
-   * 
-   * @param treePositions the tree positions
-   * @param mapProjectId the map project id
-   * @return the revised list of tree positions
-   * @throws Exception the exception
-   */
+  /* see superclass */
   @Override
-  public TreePositionList setTreePositionValidCodes(
-    List<TreePosition> treePositions, Long mapProjectId) throws Exception {
-
-    Logger.getLogger(MappingServiceJpa.class).info(
-        "Setting tree position valid codes");
-
+  public TreePositionList setTreePositionValidCodes(MapProject mapProject,
+    TreePositionList treePositions, ProjectSpecificAlgorithmHandler handler)
+    throws Exception {
     // get the map project and its algorithm handler
-    MapProject mapProject = getMapProject(mapProjectId);
-    ProjectSpecificAlgorithmHandler algorithmHandler =
-        getProjectSpecificAlgorithmHandler(mapProject);
 
-    setTreePositionValidCodesHelper(treePositions, algorithmHandler);
+    // Helper function to unravel TreePositionList -> List<TreePosition>
+    setTreePositionValidCodesHelper(treePositions.getTreePositions(), handler);
 
-    TreePositionListJpa treePositionList = new TreePositionListJpa();
-    treePositionList.setTreePositions(treePositions);
-    treePositionList.setTotalCount(treePositions.size());
-    return treePositionList;
+    return treePositions;
   }
 
   /**
@@ -3133,270 +2379,27 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
    * @param algorithmHandler the algorithm handler
    * @throws Exception the exception
    */
-  public void setTreePositionValidCodesHelper(List<TreePosition> treePositions,
+  private void setTreePositionValidCodesHelper(
+    List<TreePosition> treePositions,
     ProjectSpecificAlgorithmHandler algorithmHandler) throws Exception {
-
     // cycle over all tree positions and check target code, recursively
     // cycle over children
-    for (TreePosition tp : treePositions) {
-
+    for (final TreePosition tp : treePositions) {
       tp.setValid(algorithmHandler.isTargetCodeValid(tp.getTerminologyId()));
-
       setTreePositionValidCodesHelper(tp.getChildren(), algorithmHandler);
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#
-   * setTreePositionTerminologyNotes(java.util.List, java.lang.Long)
-   */
+  /* see superclass */
   @Override
   public TreePositionList setTreePositionTerminologyNotes(
-    List<TreePosition> treePositions, Long mapProjectId) throws Exception {
-
-    Logger.getLogger(MappingServiceJpa.class).info(
-        "Setting tree position terminology notes");
-
-    // get the map project and its algorithm handler
-    MapProject mapProject = getMapProject(mapProjectId);
-    ProjectSpecificAlgorithmHandler algorithmHandler =
-        getProjectSpecificAlgorithmHandler(mapProject);
-
-    // construct the tree position list
-    TreePositionListJpa treePositionList = new TreePositionListJpa();
-    treePositionList.setTreePositions(treePositions);
-    treePositionList.setTotalCount(treePositions.size());
+    MapProject mapProject, TreePositionList treePositions,
+    ProjectSpecificAlgorithmHandler handler) throws Exception {
 
     // compute the target terminology notes
-    algorithmHandler.computeTargetTerminologyNotes(treePositionList);
+    handler.computeTargetTerminologyNotes(treePositions.getTreePositions());
 
-    return treePositionList;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#getOriginMapRecordsForConflict
-   * (java.lang.Long)
-   */
-  @SuppressWarnings("unused")
-  @Override
-  public MapRecordList getOriginMapRecordsForConflict(Long mapRecordId)
-    throws Exception {
-
-    Logger.getLogger(MappingServiceJpa.class).info(
-        "getRecordsInConflict with record id = " + mapRecordId.toString());
-
-    MapRecordList conflictRecords = new MapRecordListJpa();
-
-    MapRecord mapRecord = getMapRecord(mapRecordId);
-    if (mapRecord == null) {
-      throw new Exception(
-          "getRecordsInConflict: Could not find map record with id = "
-              + mapRecordId.toString() + "!");
-    }
-
-    MapProject mapProject = getMapProject(mapRecord.getMapProjectId());
-
-    /*
-     * Three cases where this is called CONFLICT_PROJECT: Two specialists in
-     * conflict Requires two CONFLICT_DETECTED records in database Record must
-     * be CONFLICT_NEW, CONFLICT_IN_PROGRESS, CONFLICT_RESOLVED FIX_ERROR_PATH:
-     * For any project type Requires one REVIEW_NEEDED record in database
-     * Requires one REVISION record in database Record must be REVIEW_NEW,
-     * REVIEW_IN_PROGRESS, REVIEW_RESOLVED REVIEW_PROJECT: For either normal
-     * workflow or FIX_ERROR_PATH Requires one REVIEW_NEEDED record in database
-     * Record must be REVIEW_NEW, REVIEW_IN_PROGRESS, REVIEW_RESOLVED record
-     */
-
-    // if a conflict project and two specialist records in conflict,
-    // retrieve the CONFLICT_DETECTED
-    // records
-    if (mapProject.getWorkflowType().equals(WorkflowType.CONFLICT_PROJECT)
-        && (mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_NEW)
-            || mapRecord.getWorkflowStatus().equals(
-                WorkflowStatus.CONFLICT_IN_PROGRESS) || mapRecord
-            .getWorkflowStatus().equals(WorkflowStatus.CONFLICT_RESOLVED))) {
-
-      // As with review record below, this try/catch block is a
-      // method to handle situations where originId set has more than
-      // two elements (i.e. is unordered)
-      // and where records retrieved are no longer in the database (e.g.
-      // in
-      // audit history)
-      try {
-        for (Long originId : mapRecord.getOriginIds()) {
-          MapRecord mr = getMapRecord(originId);
-          if (mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED)) {
-            conflictRecords.addMapRecord(getMapRecord(originId));
-          }
-        }
-
-        if (conflictRecords.getCount() == 2) {
-          conflictRecords.setTotalCount(conflictRecords.getCount());
-          return conflictRecords;
-        } else {
-          throw new Exception(
-              "Could not retrieve two CONFLICT_DETECTED records for conflict");
-        }
-      } catch (Exception e) {
-        // do nothing
-      }
-
-    } else if ((mapProject.getWorkflowType().equals(
-        WorkflowType.CONFLICT_PROJECT) && (mapRecord.getWorkflowStatus()
-        .equals(WorkflowStatus.REVIEW_NEW)
-        || mapRecord.getWorkflowStatus().equals(
-            WorkflowStatus.REVIEW_IN_PROGRESS)
-        || mapRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_RESOLVED)
-        || mapRecord.getWorkflowStatus().equals(WorkflowStatus.QA_NEW)
-        || mapRecord.getWorkflowStatus().equals(WorkflowStatus.QA_IN_PROGRESS) || mapRecord
-        .getWorkflowStatus().equals(WorkflowStatus.QA_RESOLVED)))
-
-        ||
-
-        (mapProject.getWorkflowType().equals(WorkflowType.REVIEW_PROJECT) && mapRecord
-            .getOriginIds().size() > 2)) {
-
-      boolean foundReviewRecord = false; // the specialist's completed
-      // work
-      boolean foundRevisionRecord = false; // the original published work
-
-      for (Long originId : mapRecord.getOriginIds()) {
-        System.out.println("Getting origin id:  " + originId);
-        MapRecord mr = getMapRecord(originId);
-
-        // This try/catch block is here to prevent problems
-        // with the origin ids being an unordered set
-        // Only records currently in the database are returned
-        try {
-
-          if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED)
-              || mr.getWorkflowStatus().equals(WorkflowStatus.QA_NEEDED)) {
-            conflictRecords.addMapRecord(getMapRecord(originId));
-            foundReviewRecord = true;
-          } else if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
-            conflictRecords.addMapRecord(getMapRecord(originId));
-            foundRevisionRecord = true;
-          }
-
-        } catch (Exception e) {
-          // do nothing
-        }
-
-        // once records are found, stop processing origin ids
-        if (foundReviewRecord && foundRevisionRecord) {
-          conflictRecords.setTotalCount(conflictRecords.getCount());
-          return conflictRecords;
-        }
-
-      }
-
-      // this is the case on the QA_PATH
-      if (foundReviewRecord || foundRevisionRecord) {
-        conflictRecords.setTotalCount(conflictRecords.getCount());
-        return conflictRecords;
-      }
-
-    } else if (mapProject.getWorkflowType().equals(WorkflowType.REVIEW_PROJECT)
-        && mapRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW)
-        || mapRecord.getWorkflowStatus().equals(
-            WorkflowStatus.REVIEW_IN_PROGRESS)
-        || mapRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_RESOLVED)
-        || mapRecord.getWorkflowStatus().equals(WorkflowStatus.QA_NEW)
-        || mapRecord.getWorkflowStatus().equals(WorkflowStatus.QA_IN_PROGRESS)
-        || mapRecord.getWorkflowStatus().equals(WorkflowStatus.QA_RESOLVED)) {
-
-      System.out.println("Getting origin id for REVIEW_PROJECT record");
-
-      WorkflowService workflowService = new WorkflowServiceJpa();
-
-      TrackingRecord tr =
-          workflowService.getTrackingRecordForMapProjectAndConcept(mapProject,
-              mapRecord.getConceptId());
-
-      if (tr.getWorkflowPath().equals(WorkflowPath.REVIEW_PROJECT_PATH)
-          || tr.getWorkflowPath().equals(WorkflowPath.QA_PATH)) {
-
-        for (Long originId : mapRecord.getOriginIds()) {
-
-          try {
-            MapRecord mr =
-                getMapRecord(mapRecord.getOriginIds().iterator().next());
-
-            // check assumption
-            if (!mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED)
-                && !mr.getWorkflowStatus().equals(WorkflowStatus.QA_NEEDED)) {
-              workflowService.close();
-              throw new Exception(
-                  "Single origin record found for review, but was not REVIEW_NEEDED or QA_NEEDED");
-            }
-
-            // add and return this record
-            conflictRecords.addMapRecord(mr);
-            conflictRecords.setTotalCount(conflictRecords.getCount());
-            workflowService.close();
-
-            return conflictRecords;
-
-          } catch (Exception e) {
-            // do nothing
-          }
-
-        }
-
-      } else if (tr.getWorkflowPath().equals(WorkflowPath.FIX_ERROR_PATH)) {
-
-        boolean foundReviewRecord = false; // the specialist's completed
-        // work
-        boolean foundRevisionRecord = false; // the original published
-        // work
-
-        for (Long originId : mapRecord.getOriginIds()) {
-          System.out.println("Getting origin id:  " + originId);
-          MapRecord mr = getMapRecord(originId);
-
-          // As with other try blocks in this section, this
-          // try/catch block is implemented to handle situations
-          // where the unordered originIds set leads to attempts
-          // to retrieve records that no longer exist
-          try {
-
-            if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED)) {
-              conflictRecords.addMapRecord(getMapRecord(originId));
-              foundReviewRecord = true;
-            } else if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
-              conflictRecords.addMapRecord(getMapRecord(originId));
-              foundRevisionRecord = true;
-            }
-
-          } catch (Exception e) {
-            // do nothing, attempted to find a record that no longer
-            // exists
-          }
-
-          // once records are found, stop processing origin ids
-          if (foundReviewRecord && foundRevisionRecord) {
-            conflictRecords.setTotalCount(conflictRecords.getCount());
-            workflowService.close();
-            return conflictRecords;
-          }
-
-        }
-      } else {
-        throw new Exception(
-            "Could not retrieve exactly one origin id for REVIEW_PROJECT path");
-      }
-
-    } else {
-      throw new Exception(
-          "Invalid map record passed to conflict origins routine");
-    }
-
-    return conflictRecords;
+    return treePositions;
   }
 
   /**
@@ -3406,9 +2409,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
    * @param mapProject the map project
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   private void validateUserAndRole(MapProject mapProject) throws Exception {
     Map<MapUser, String> userToRoleMap = new HashMap<>();
-    for (MapUser user : mapProject.getMapLeads()) {
+    for (final MapUser user : mapProject.getMapLeads()) {
       // if user is already in map, throw exception
       if (userToRoleMap.containsKey(user))
         throw new IllegalStateException("Error: User " + user.getName()
@@ -3416,7 +2420,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       else
         userToRoleMap.put(user, "lead");
     }
-    for (MapUser user : mapProject.getMapSpecialists()) {
+    for (final MapUser user : mapProject.getMapSpecialists()) {
       // if user is already in map, throw exception
       if (userToRoleMap.containsKey(user))
         throw new IllegalStateException("Error: User " + user.getName()
@@ -3432,6 +2436,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
    * 
    * @param mapRecord the map record
    */
+  @SuppressWarnings("static-method")
   private void handleMapRecordLazyInitialization(MapRecord mapRecord) {
     // handle all lazy initializations
     mapRecord.getOwner().getEmail();
@@ -3441,7 +2446,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     mapRecord.getOriginIds().size();
     mapRecord.getLabels().size();
     mapRecord.getReasonsForConflict().size();
-    for (MapEntry mapEntry : mapRecord.getMapEntries()) {
+    for (final MapEntry mapEntry : mapRecord.getMapEntries()) {
       if (mapEntry.getMapRelation() != null)
         mapEntry.getMapRelation().getName();
       mapEntry.getMapAdvices().size();
@@ -3454,6 +2459,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
    * 
    * @param mapProject the map project
    */
+  @SuppressWarnings("static-method")
   private void handleMapProjectLazyInitialization(MapProject mapProject) {
     // handle all lazy initializations
     mapProject.getMapAdvices().size();
@@ -3470,13 +2476,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#checkMapGroupsForMapProject
-   * (org.ihtsdo.otf.mapping.model.MapProject)
-   */
+  /* see superclass */
   @Override
   public void checkMapGroupsForMapProject(MapProject mapProject,
     boolean updateRecords) throws Exception {
@@ -3513,13 +2513,13 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     int nMapEntriesRemoved = 0;
 
     // cycle over all map records for this project
-    for (MapRecord mr : mapRecordsInProject.getIterable()) {
+    for (final MapRecord mr : mapRecordsInProject.getIterable()) {
       Map<Integer, List<MapEntry>> entriesByGroup = new HashMap<>();
 
       boolean mapRecordAltered = false;
 
       // sort entries by group
-      for (MapEntry me : mr.getMapEntries()) {
+      for (final MapEntry me : mr.getMapEntries()) {
         // get the cached entries
         List<MapEntry> entries = entriesByGroup.get(me.getMapGroup());
 
@@ -3545,7 +2545,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
           // cycle over entries in this group
           boolean isValidGroup = false;
-          for (MapEntry entry : entries) {
+          for (final MapEntry entry : entries) {
             if (entry.getTargetId() != null && !entry.getTargetId().equals(""))
               isValidGroup = true;
           }
@@ -3555,7 +2555,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
             mapRecordAltered = true;
 
-            for (MapEntry entry : entries) {
+            for (final MapEntry entry : entries) {
               mr.removeMapEntry(entry);
               nMapEntriesRemoved++;
             }
@@ -3594,7 +2594,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     // ////////////////////////////////////////////
 
     // cycle over all records
-    for (MapRecord mapRecord : mapRecordsInProject.getIterable()) {
+    for (final MapRecord mapRecord : mapRecordsInProject.getIterable()) {
 
       // create a map representing oldGroup -> newGroup
       List<Integer> mapGroupsFound = new ArrayList<>();
@@ -3603,7 +2603,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       Map<Integer, Integer> mapGroupRemapping = new HashMap<>();
 
       // find the existing groups
-      for (MapEntry mapEntry : mapRecord.getMapEntries()) {
+      for (final MapEntry mapEntry : mapRecord.getMapEntries()) {
 
         // if this group not already present, add to list
         if (!mapGroupsFound.contains(mapEntry.getMapGroup()))
@@ -3679,7 +2679,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
                   + mapRecord.getConceptName());
 
           String mapLogStr = "";
-          for (Integer i : mapGroupRemapping.keySet()) {
+          for (final Integer i : mapGroupRemapping.keySet()) {
             mapLogStr += " " + i + "->" + mapGroupRemapping.get(i);
           }
 
@@ -3692,7 +2692,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
           this.handleMapRecordLazyInitialization(mapRecord);
 
-          for (MapEntry me : mapRecord.getMapEntries()) {
+          for (final MapEntry me : mapRecord.getMapEntries()) {
             if (mapGroupRemapping.containsKey(me.getMapGroup())) {
               me.setMapGroup(mapGroupRemapping.get(me.getMapGroup()));
             }
@@ -3722,6 +2722,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
             + nRecordsRemapped + " with group errors");
   }
 
+  /* see superclass */
   @Override
   public void removeMapAdviceFromEnvironment(MapAdvice mapAdvice)
     throws Exception {
@@ -3741,12 +2742,12 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     // remove map advice from all map entries, found via map records
     beginTransaction();
 
-    for (MapRecord mr : getMapRecords().getIterable()) {
+    for (final MapRecord mr : getMapRecords().getIterable()) {
 
       adviceRemoved = false;
 
       // cycle over entries
-      for (MapEntry me : mr.getMapEntries()) {
+      for (final MapEntry me : mr.getMapEntries()) {
 
         if (me.getMapAdvices().contains(mapAdvice)) {
           me.removeMapAdvice(mapAdvice);
@@ -3771,7 +2772,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     beginTransaction();
     nAdviceRemoved = 0;
 
-    for (MapProject mp : getMapProjects().getIterable()) {
+    for (final MapProject mp : getMapProjects().getIterable()) {
 
       adviceRemoved = false;
 
@@ -3793,18 +2794,14 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#getMapProjectMetadata()
-   */
+  /* see superclass */
   @Override
   public Map<String, Map<String, String>> getMapProjectMetadata()
     throws Exception {
     Map<String, Map<String, String>> idNameMapList = new HashMap<>();
 
     Map<String, String> workflowNameMap = new HashMap<>();
-    for (WorkflowType type : WorkflowType.values()) {
+    for (final WorkflowType type : WorkflowType.values()) {
       workflowNameMap.put(type.name(), type.getDisplayName());
     }
     if (workflowNameMap.size() > 0) {
@@ -3812,7 +2809,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     }
 
     Map<String, String> relationStyleNameMap = new HashMap<>();
-    for (RelationStyle type : RelationStyle.values()) {
+    for (final RelationStyle type : RelationStyle.values()) {
       relationStyleNameMap.put(type.name(), type.getDisplayName());
     }
     if (relationStyleNameMap.size() > 0) {
@@ -3820,7 +2817,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     }
 
     Map<String, String> mapRefsetPatternNameMap = new HashMap<>();
-    for (MapRefsetPattern type : MapRefsetPattern.values()) {
+    for (final MapRefsetPattern type : MapRefsetPattern.values()) {
       mapRefsetPatternNameMap.put(type.name(), type.getDisplayName());
     }
     if (mapRefsetPatternNameMap.size() > 0) {
@@ -3843,6 +2840,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return idNameMapList;
   }
 
+  /* see superclass */
   @Override
   public SearchResultList getScopeConceptsForMapProject(MapProject mapProject,
     PfsParameter pfsParameter) throws Exception {
@@ -3877,7 +2875,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
     // for each concept id in sublist, get the
     ContentService contentService = new ContentServiceJpa();
-    for (String conceptId : scopeConcepts) {
+    for (final String conceptId : scopeConcepts) {
 
       SearchResult searchResult = new SearchResultJpa();
       searchResult.setTerminology(mapProject.getSourceTerminology());
@@ -3903,11 +2901,12 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     return searchResultList;
   }
 
+  /* see superclass */
   @Override
   public SearchResultList getScopeExcludedConceptsForMapProject(
     MapProject mapProject, PfsParameter pfsParameter) throws Exception {
 
-    SearchResultList searchResultList = new SearchResultListJpa();
+    final SearchResultList searchResultList = new SearchResultListJpa();
 
     PfsParameter localPfsParameter = pfsParameter;
 
@@ -3938,8 +2937,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     scopeExcludedConcepts = scopeExcludedConcepts.subList(startIndex, endIndex);
 
     // for each concept id in sublist, get the concept name
-    ContentService contentService = new ContentServiceJpa();
-    for (String conceptId : scopeExcludedConcepts) {
+    final ContentService contentService = new ContentServiceJpa();
+    for (final String conceptId : scopeExcludedConcepts) {
 
       SearchResult searchResult = new SearchResultJpa();
       searchResult.setTerminology(mapProject.getSourceTerminology());

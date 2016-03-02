@@ -1,25 +1,20 @@
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
-import org.ihtsdo.otf.mapping.helpers.GraphHelper;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
+import org.ihtsdo.otf.mapping.jpa.helpers.TerminologyUtility;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
-import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
-import org.ihtsdo.otf.mapping.services.MetadataService;
 
 /**
  * The Class ICD10ProjectSpecificAlgorithmHandler.
  */
 public class ICD9CMProjectSpecificAlgorithmHandler extends
     DefaultProjectSpecificAlgorithmHandler {
-
-  /** The isa type id. */
-  private String isaTypeId = null;
 
   /**
    * For ICD9, a target code is valid if: - Concept exists - Concept is a leaf
@@ -32,8 +27,6 @@ public class ICD9CMProjectSpecificAlgorithmHandler extends
   @Override
   public ValidationResult validateTargetCodes(MapRecord mapRecord)
     throws Exception {
-
-    // System.out.println("Validating target codes");
 
     ValidationResult validationResult = new ValidationResultJpa();
     ContentService contentService = new ContentServiceJpa();
@@ -162,16 +155,13 @@ public class ICD9CMProjectSpecificAlgorithmHandler extends
             mapProject.getDestinationTerminology(),
             mapProject.getDestinationTerminologyVersion());
 
-    // lazy initialize the isa type id
-    lazyInitIsaTypeId();
-
     // verify that concept exists
     if (concept == null) {
       contentService.close();
       return false;
 
       // if concept exists, verify that it is a leaf node (no children)
-    } else if (GraphHelper.getChildConcepts(concept, isaTypeId).size() != 0) {
+    } else if (TerminologyUtility.getActiveChildren(concept).size() != 0) {
       contentService.close();
       return false;
 
@@ -180,23 +170,6 @@ public class ICD9CMProjectSpecificAlgorithmHandler extends
     // otherwise, return true
     contentService.close();
     return true;
-  }
-
-  /**
-   * Lazy initializes the isa type id.
-   * 
-   * @throws Exception the exception
-   */
-  private void lazyInitIsaTypeId() throws Exception {
-    if (isaTypeId == null) {
-      MetadataService metadataService = new MetadataServiceJpa();
-      isaTypeId =
-          metadataService
-              .getHierarchicalRelationshipTypes("ICD9CM",
-                  metadataService.getLatestVersion("ICD9CM")).keySet()
-              .iterator().next();
-      metadataService.close();
-    }
   }
 
 }

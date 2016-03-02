@@ -6,9 +6,10 @@
 <div ng-repeat="label in record.labels" style="width: 100%; margin-bottom: 5px;">
   <div
     style="vertical-align: top; width: 7%; display: inline-block; padding: 2px">
-    <span style="color: #99CCFF"><i
-      class="glyphicon glyphicon-tasks blue" alt="label icon"
-      tooltip-placement="top" tooltip="Label"></i></span>
+    <span style="color: #99CCFF">
+      <i class="glyphicon glyphicon-tasks blue" alt="label icon"
+        tooltip-placement="top" tooltip="Label"></i>
+    </span>
   </div>
   <div class="alert alert-success"
     style="vertical-align: top; display: inline-block; padding: 1px">
@@ -25,7 +26,7 @@ Map Entries
 
   <div ng-show="entry.targetId.length > 0"
     style="vertical-align: top; width: 90%; display: inline-block; padding: 2px">
-    <em>{{entry.targetId}}</em> {{entry.targetName}}
+    <em>{{entry.targetId}}{{notes[entry.targetId]}}</em> {{entry.targetName}}
 
   </div>
   <div
@@ -38,9 +39,10 @@ Map Entries
   <div ng-repeat="advice in entry.mapAdvice">
     <div
       style="vertical-align: top; width: 7%; display: inline-block; padding: 2px">
-      <span style="color: #99CCFF"><i
-        class="glyphicon glyphicon-tags" alt="advice icon"
-        tooltip-placement="top" tooltip="Map Advice"></i></span>
+      <span style="color: #99CCFF">
+        <i class="glyphicon glyphicon-tags" alt="advice icon"
+          tooltip-placement="top" tooltip="Map Advice"></i>
+      </span>
     </div>
     <div class="alert alert-warning"
       style="vertical-align: top; width: 85%; display: inline-block; padding: 2px">
@@ -50,9 +52,10 @@ Map Entries
   <div ng-show="entry.mapRelation != null">
     <div
       style="vertical-align: top; width: 7%; display: inline-block; padding: 2px">
-      <span style="color: #99CCFF"><i
-        class="glyphicon glyphicon-tag blue" alt="relation icon"
-        tooltip-placement="top" tooltip="Map Relation"></i></span>
+      <span style="color: #99CCFF">
+        <i class="glyphicon glyphicon-tag blue" alt="relation icon"
+          tooltip-placement="top" tooltip="Map Relation"></i>
+      </span>
     </div>
     <div class="alert alert-info"
       style="vertical-align: top; width: 85%; display: inline-block; padding: 2px">
@@ -64,15 +67,15 @@ Map Entries
   Map Notes
   <div style="padding: 2px" ng-repeat="note in record.mapNote">
     <div class="alert alert-warning">
-      [By <a href="mailto:{{user.email}}">{{note.user.name}}</a> on
-      {{note.timestamp | date:'MM-dd-yyyy HH:mm'}}]
+      [By
+      <a href="mailto:{{user.email}}">{{note.user.name}}</a>
+      on {{note.timestamp | date:'MM-dd-yyyy HH:mm'}}]
       <div style="padding-left: 20px;" ng-bind-html="to_trusted(note.note)"></div>
 
     </div>
   </div>
 
 
-</div>
 </div>
 <div ng-show="record.mapPrinciple.length > 0">
   Map Principles

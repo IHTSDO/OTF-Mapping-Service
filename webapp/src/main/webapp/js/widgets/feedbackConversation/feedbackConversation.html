@@ -1,32 +1,35 @@
 
-<span ng-show="record != null && record.mapEntry.length > 0">Record owned
-  by: {{record.owner.name}}
-  <div otf-map-record-wide record="record" project="focusProject"
-    show-title="false"></div>
+<div ng-show="record != null && record.mapEntry.length > 0">
+  Record owned by: {{record.owner.name}}
+  <span otf-map-record-wide record="record" project="focusProject"
+    show-title="false"></span>
   <hr>
-</span>
-<span ng-show="record1 != null && record1.mapEntry.length > 0">Record
-  owned by: {{record1.owner.name}}
-  <div otf-map-record-wide record="record1" project="focusProject"
-    show-title="false"></div>
+</div>
+<div ng-show="record1 != null && record1.mapEntry.length > 0">
+  Record owned by: {{record1.owner.name}}
+  <span otf-map-record-wide record="record1" project="focusProject"
+    show-title="false"></span>
   <hr>
-</span>
-<span ng-show="record2 != null && record2.mapEntry.length > 0">Record
-  owned by: {{record2.owner.name}}
-  <div otf-map-record-wide record="record2" project="focusProject"
-    show-title="false"></div>
+</div>
+<div ng-show="record2 != null && record2.mapEntry.length>
+  0">
+  Record owned by: {{record2.owner.name}}
+  <span otf-map-record-wide record="record2" project="focusProject"
+    show-title="false"></span>
   <hr>
-</span>
+</div>
 <!-- display items in feedback conversation -->
 <div ng-show="conversation.feedback.length > 0" style="margin-top: 3px;">
   <div ng-repeat="feedback in conversation.feedback">
 
     <!--  display related feedback -->
     <div class="alert alert-warning" disabled>
-      [By {{feedback.sender.name}} to <span
-        ng-repeat="recipient in feedback.recipients"> {{recipient.name}}<span
-        ng-if="$last == false">,</span></span> on {{feedback.timestamp |
-      date:'MM-dd-yyyy HH:mm'}}]
+      [By {{feedback.sender.name}} to
+      <span ng-repeat="recipient in feedback.recipients">
+        {{recipient.name}}
+        <span ng-if="$last == false">,</span>
+      </span>
+      on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
       <div ng-show="feedback.mapError != 'None'" style="padding-left: 20px;"
         ng-bind-html="to_trusted(feedback.mapError)"></div>
       <div style="padding-left: 20px;"
@@ -52,7 +55,7 @@
   View</button>
 <button class="btn btn-sm btn-primary" ng-click="openConceptBrowser()">SNOMED
   CT Browser</button>
-<button class="btn btn-sm btn-primary" ng-show="indexViewerExists == true" 
+<button class="btn btn-sm btn-primary" ng-show="indexViewerExists == true"
   ng-click="openIndexViewer()">Index Viewer</button>
 <button class="btn btn-sm btn-primary" ng-click="goEdit(record)"
   ng-show="displayEdit() == true">Edit record</button>
@@ -62,9 +65,9 @@
   ng-click="markUnviewed ? 
    markViewed(conversation, currentUser) : markFeedbackUnviewed(conversation)">
 Mark unviewed
-<span ng-show="conversation.userName == currentUser.userName"> <input
-  type="checkbox" ng-model="conversation.resolved"
-  ng-click="conversation.resolved ? 
+<span ng-show="conversation.userName == currentUser.userName">
+  <input type="checkbox" ng-model="conversation.resolved"
+    ng-click="conversation.resolved ? 
     markActive(conversation) : markFeedbackResolved(conversation)">
   Mark resolved
 </span>

@@ -15,7 +15,6 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
-import org.ihtsdo.otf.mapping.services.helpers.OtfEmailHandler;
 import org.ihtsdo.otf.mapping.services.helpers.OtfErrorHandler;
 
 /**
@@ -108,12 +107,11 @@ public class QaDatabase extends AbstractMojo {
 
         }
 
-        OtfEmailHandler emailHandler = new OtfEmailHandler();
         String notificationRecipients =
             ConfigUtility.getConfigProperties().getProperty(
                 "send.notification.recipients");
         if (notificationRecipients != null) {
-          emailHandler.sendSimpleEmail(notificationRecipients,
+          ConfigUtility.sendEmail(notificationRecipients,
               "[OTF-Mapping-Tool] Database QA Results", msg.toString());
         }
         getLog().info(msg.toString());

@@ -75,7 +75,7 @@ angular
       $scope.setTab = function(tabNumber) {
         if (tabNumber == null)
           tabNumber = 0;
-        console.debug("Switching to tab " + tabNumber);
+        console.debug('Switching to tab ' + tabNumber);
 
         angular.forEach($scope.tabs, function(tab) {
           tab.active = (tab.id == tabNumber ? true : false);
@@ -114,16 +114,14 @@ angular
       $scope.assignedQAWorkType = 'QA_NEW';
 
       // watch for project change
-      $scope.$on('localStorageModule.notification.setFocusProject', function(
-        event, parameters) {
-        console
-          .debug("MapProjectWidgetCtrl:  Detected change in focus project");
+      $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
+        console.debug('on focus project change');
         $scope.focusProject = parameters.focusProject;
       });
 
       // watch for first retrieval of last tab for this session
       $scope.$watch('assignedTab', function() {
-        console.debug('assignedTab retrieved', $scope.assignedTab);
+        console.debug('watch assigned tab', $scope.assignedTab);
 
         // unidentified source is resetting the tab to 0 after initial load
         // introduced a brief timeout to ensure correct tab is picked
@@ -133,10 +131,9 @@ angular
 
       });
 
-      $scope.$on('workAvailableWidget.notification.assignWork', function(event,
-        parameters) {
-        console.debug('assignedlist: assignWork notification', parameters,
-          $scope.currentRole);
+      // Event on assigned work being ready
+      $scope.$on('workAvailableWidget.notification.assignWork', function(event, parameters) {
+        console.debug('on available work ready', parameters);
 
         // perform action based on notification parameters
         // Expect:
@@ -155,8 +152,8 @@ angular
               $scope.setTab(0);
 
               // retrieve the work
-              $scope.retrieveAssignedWork($scope.assignedWorkPage,
-                $scope.queryAssigned, $scope.assignedWorkType);
+              $scope.retrieveAssignedWork($scope.assignedWorkPage, $scope.queryAssigned,
+                $scope.assignedWorkType);
 
               // Conflicts
             } else if (parameters.assignType === 'conflict') {
@@ -164,14 +161,13 @@ angular
               $scope.setTab(1);
 
               // retrieve the work
-              $scope.retrieveAssignedConflicts($scope.assignedConflictPage,
-                $scope.queryConflict, $scope.assignedConflictType);
+              $scope.retrieveAssignedConflicts($scope.assignedConflictPage, $scope.queryConflict,
+                $scope.assignedConflictType);
 
               // Review Work
             } else if (parameters.assignType === 'review') {
               // set the tab
               $scope.setTab(2);
-              ;
 
               // retrieve the work
               $scope.retrieveAssignedReviewWork($scope.assignedReviewWorkPage,
@@ -183,9 +179,9 @@ angular
               $scope.setTab(3);
 
               // retrieve the work
-              $scope.retrieveAssignedWorkForUser(
-                $scope.assignedWorkForUserPage, parameters.assignUser.userName,
-                $scope.queryAssignedForUser, $scope.assignedWorkForUserType);
+              $scope.retrieveAssignedWorkForUser($scope.assignedWorkForUserPage,
+                parameters.assignUser.userName, $scope.queryAssignedForUser,
+                $scope.assignedWorkForUserType);
 
               // QA Work
             } else if (parameters.assignType === 'qa') {
@@ -193,8 +189,8 @@ angular
               $scope.setTab(4);
 
               // retrieve the work
-              $scope.retrieveAssignedQAWork($scope.assignedQaWorkPage,
-                $scope.queryQaWork, $scope.assignedQaWorkType);
+              $scope.retrieveAssignedQAWork($scope.assignedQaWorkPage, $scope.queryQaWork,
+                $scope.assignedQaWorkType);
             }
           } else {
 
@@ -216,56 +212,41 @@ angular
             $scope.setTab(0);
 
             // retrieve the work
-            $scope.retrieveAssignedWork($scope.assignedWorkPage,
-              $scope.assignedWorkQuery, $scope.assignedWorkType);
+            $scope.retrieveAssignedWork($scope.assignedWorkPage, $scope.assignedWorkQuery,
+              $scope.assignedWorkType);
           } else if (parameters.assignType === 'qa') {
             // set the tab
             $scope.setTab(4);
 
             // retrieve the work
-            $scope.retrieveAssignedQAWork($scope.assignedQaWorkPage,
-              $scope.assignedQaWorkQuery, $scope.assignedQaWorkType);
+            $scope.retrieveAssignedQAWork($scope.assignedQaWorkPage, $scope.assignedQaWorkQuery,
+              $scope.assignedQaWorkType);
           }
         }
       });
 
       // on any change of relevant scope variables, retrieve work
-      $scope
-        .$watch(
-          [ 'focusProject', 'user', 'userToken', 'currentRole' ],
-          function() {
-            console
-              .debug('assignedListCtrl:  Detected project or user set/change');
+      $scope.$watch([ 'focusProject', 'user', 'userToken', 'currentRole' ], function() {
+        console.debug('on focusProject ready');
 
-            if ($scope.focusProject != null && $scope.currentUser != null
-              && $scope.currentUserToken != null && $scope.currentRole != null) {
+        if ($scope.focusProject != null && $scope.currentUser != null
+          && $scope.currentUserToken != null && $scope.currentRole != null) {
+          $http.defaults.headers.common.Authorization = $scope.currentUserToken;
 
-              $http.defaults.headers.common.Authorization = $scope.currentUserToken;
+          $scope.mapUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
+          $scope.retrieveAssignedWork($scope.assignedWorkPage, null, $scope.assignedWorkType);
+          $scope.retrieveAssignedQAWork(1, null, $scope.assignedQAWorkType);
+          $scope.retrieveLabels();
+          if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
+            $scope.retrieveAssignedConflicts(1, null, $scope.assignedConflictType);
+            $scope.retrieveAssignedReviewWork(1, null, $scope.assignedReviewWorkType);
+            $scope.retrieveAssignedWorkForUser(1, null, $scope.mapUserViewed,
+              $scope.assignedWorkForUserType);
+          }
+        }
+      });
 
-              $scope.mapUsers = $scope.focusProject.mapSpecialist
-                .concat($scope.focusProject.mapLead);
-
-              $scope.retrieveAssignedWork($scope.assignedWorkPage, null,
-                $scope.assignedWorkType);
-              $scope.retrieveAssignedQAWork(1, null, $scope.assignedQAWorkType);
-              $scope.retrieveLabels();
-              if ($scope.currentRole === 'Lead'
-                || $scope.currentRole === 'Administrator') {
-                $scope.retrieveAssignedConflicts(1, null,
-                  $scope.assignedConflictType);
-                $scope.retrieveAssignedReviewWork(1, null,
-                  $scope.assignedReviewWorkType);
-                $scope.retrieveAssignedWorkForUser(1, null,
-                  $scope.mapUserViewed, $scope.assignedWorkForUserType);
-              }
-            }
-          });
-
-      $scope.retrieveAssignedConflicts = function(page, query,
-        assignedConflictType) {
-
-        console.debug('Retrieving Assigned Conflicts: ', page, query,
-          assignedConflictType);
+      $scope.retrieveAssignedConflicts = function(page, query, assignedConflictType) {
 
         // hard set the conflict PFS scope variables
         $scope.assignedConflictsPage = page;
@@ -285,53 +266,47 @@ angular
 
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
-          "startIndex" : page == -1 ? -1 : (page - 1) * $scope.itemsPerPage,
-          "maxResults" : page == -1 ? -1 : $scope.itemsPerPage,
-          "sortField" : 'sortKey',
-          "queryRestriction" : assignedConflictType
+          'startIndex' : page == -1 ? -1 : (page - 1) * $scope.itemsPerPage,
+          'maxResults' : page == -1 ? -1 : $scope.itemsPerPage,
+          'sortField' : 'sortKey',
+          'queryRestriction' : assignedConflictType
         };
 
         $rootScope.glassPane++;
 
         $http(
           {
-            url : root_workflow + "project/id/" + $scope.focusProject.id
-              + "/user/id/" + $scope.currentUser.userName + "/query/"
-              + (query == null ? null : encodeURIComponent(query))
-              + "/assignedConflicts",
-            dataType : "json",
+            url : root_workflow + 'project/id/' + $scope.focusProject.id + '/user/id/'
+              + $scope.currentUser.userName + '/query/'
+              + (query == null ? null : encodeURIComponent(query)) + '/assignedConflicts',
+            dataType : 'json',
             data : pfsParameterObj,
-            method : "POST",
+            method : 'POST',
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
-          }).success(
-          function(data) {
-            $rootScope.glassPane--;
+          }).success(function(data) {
+          $rootScope.glassPane--;
 
-            $scope.assignedConflictsPage = page;
-            $scope.assignedConflicts = data.searchResult;
+          $scope.assignedConflictsPage = page;
+          $scope.assignedConflicts = data.searchResult;
 
-            // set pagination
-            $scope.nAssignedConflicts = data.totalCount;
-            $scope.numAssignedConflictsPages = Math.ceil(data.totalCount
-              / $scope.itemsPerPage);
+          // set pagination
+          $scope.nAssignedConflicts = data.totalCount;
+          $scope.numAssignedConflictsPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
 
-            // set title
-            $scope.tabs[1].title = "Conflicts (" + data.totalCount + ")";
+          // set title
+          $scope.tabs[1].title = 'Conflicts (' + data.totalCount + ')';
 
-          }).error(function(data, status, headers, config) {
+        }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
 
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
 
-      $scope.retrieveAssignedWork = function(page, query, assignedWorkType) {
-
-        console.debug('Retrieving Assigned Concepts: ', page, query,
-          assignedWorkType);
-
+      $scope.retrieveAssignedWork = function(page, pquery, assignedWorkType) {
+        var query = pquery;
         // set the scope variables
         // this is necessary due to some frustrating non-functional two-way
         // binding
@@ -353,78 +328,68 @@ angular
 
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
-          "startIndex" : page == -1 ? -1 : (page - 1) * $scope.itemsPerPage,
-          "maxResults" : page == -1 ? -1 : $scope.itemsPerPage,
-          "sortField" : 'sortKey',
-          "queryRestriction" : assignedWorkType
+          'startIndex' : page == -1 ? -1 : (page - 1) * $scope.itemsPerPage,
+          'maxResults' : page == -1 ? -1 : $scope.itemsPerPage,
+          'sortField' : 'sortKey',
+          'queryRestriction' : assignedWorkType
         };
 
         $rootScope.glassPane++;
 
         $http(
           {
-            url : root_workflow + "project/id/" + $scope.focusProject.id
-              + "/user/id/" + $scope.currentUser.userName + "/query/"
-              + (query == null ? null : encodeURIComponent(query))
-              + "/assignedConcepts",
-            dataType : "json",
+            url : root_workflow + 'project/id/' + $scope.focusProject.id + '/user/id/'
+              + $scope.currentUser.userName + '/query/'
+              + (query == null ? null : encodeURIComponent(query)) + '/assignedConcepts',
+            dataType : 'json',
             data : pfsParameterObj,
-            method : "POST",
+            method : 'POST',
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
-          })
-          .success(
-            function(data) {
-              $rootScope.glassPane--;
-
-              $scope.assignedWorkPage = page;
-              $scope.assignedRecords = data.searchResult;
-
-              // set pagination
-              $scope.numAssignedRecordPages = Math.ceil(data.totalCount
-                / $scope.itemsPerPage);
-              $scope.nAssignedRecords = data.totalCount;
-
-              // set title
-              $scope.tabs[0].title = "Concepts (" + $scope.nAssignedRecords
-                + ")";
-
-            }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
-            $rootScope.handleHttpError(data, status, headers, config);
-          });
-      };
-
-      $scope.retrieveLabels = function() {
-        console.debug('assignedListCtrl: Retrieving labels');
-
-        $rootScope.glassPane++;
-        $http({
-          url : root_reporting + "qaLabel/qaLabels",
-          dataType : "json",
-          method : "GET",
-          headers : {
-            "Content-Type" : "application/json"
-          }
-        }).success(function(data) {
-          console.debug("Success in getting qa labels.");
-
+          }).success(function(data) {
           $rootScope.glassPane--;
-          for (var i = 0; i < data.searchResult.length; i++) {
-            $scope.labelNames.push(data.searchResult[i].value);
-          }
+
+          $scope.assignedWorkPage = page;
+          $scope.assignedRecords = data.searchResult;
+
+          // set pagination
+          $scope.numAssignedRecordPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
+          $scope.nAssignedRecords = data.totalCount;
+
+          // set title
+          $scope.tabs[0].title = 'Concepts (' + $scope.nAssignedRecords + ')';
+
         }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
 
-      $scope.retrieveAssignedQAWork = function(page, query, assignedWorkType) {
+      $scope.retrieveLabels = function() {
 
-        console.debug('Retrieving Assigned QA Work: ', page, query,
-          assignedWorkType);
+        $rootScope.glassPane++;
+        $http({
+          url : root_reporting + 'qaLabel/qaLabels/' + $scope.focusProject.id,
+          dataType : 'json',
+          method : 'GET',
+          headers : {
+            'Content-Type' : 'application/json'
+          }
+        }).success(function(data) {
+          $rootScope.glassPane--;
+          for (var i = 0; i < data.searchResult.length; i++) {
+            $scope.labelNames.push(data.searchResult[i].value);
+          }
 
+        }).error(function(data, status, headers, config) {
+          $rootScope.glassPane--;
+          $rootScope.handleHttpError(data, status, headers, config);
+        });
+      };
+
+      $scope.retrieveAssignedQAWork = function(page, pquery, assignedWorkType) {
+        var query = pquery;
         // hard set the PFS variables
         $scope.assignedQaWorkPage = page;
         $scope.assignedQaWorkType = assignedWorkType;
@@ -444,61 +409,54 @@ angular
 
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
-          "startIndex" : page == -1 ? -1 : (page - 1) * $scope.itemsPerPage,
-          "maxResults" : page == -1 ? -1 : $scope.itemsPerPage,
-          "sortField" : 'sortKey',
-          "queryRestriction" : assignedWorkType
+          'startIndex' : page == -1 ? -1 : (page - 1) * $scope.itemsPerPage,
+          'maxResults' : page == -1 ? -1 : $scope.itemsPerPage,
+          'sortField' : 'sortKey',
+          'queryRestriction' : assignedWorkType
         };
 
         $rootScope.glassPane++;
 
         $http(
           {
-            url : root_workflow + "project/id/" + $scope.focusProject.id
-              + "/user/id/" + $scope.currentUser.userName + "/query/"
-              + (query == null ? null : encodeURIComponent(query))
-              + "/assignedQAWork",
-            dataType : "json",
+            url : root_workflow + 'project/id/' + $scope.focusProject.id + '/user/id/'
+              + $scope.currentUser.userName + '/query/'
+              + (query == null ? null : encodeURIComponent(query)) + '/assignedQAWork',
+            dataType : 'json',
             data : pfsParameterObj,
-            method : "POST",
+            method : 'POST',
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
-          }).success(
-          function(data) {
-            $rootScope.glassPane--;
+          }).success(function(data) {
+          $rootScope.glassPane--;
 
-            $scope.assignedQAWorkPage = page;
-            $scope.assignedQAWork = data.searchResult;
+          $scope.assignedQAWorkPage = page;
+          $scope.assignedQAWork = data.searchResult;
 
-            // set pagination
-            $scope.numAssignedRecordPages = Math.ceil(data.totalCount
-              / $scope.itemsPerPage);
-            $scope.nAssignedQAWork = data.totalCount;
+          // set pagination
+          $scope.numAssignedRecordPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
+          $scope.nAssignedQAWork = data.totalCount;
 
-            // set title
-            $scope.tabs[4].title = "QA (" + $scope.nAssignedQAWork + ")";
+          // set title
+          $scope.tabs[4].title = 'QA (' + $scope.nAssignedQAWork + ')';
 
-            // set labels
-            for (var i = 0; i < $scope.assignedQAWork.length; i++) {
-              var concept = $scope.assignedQAWork[i];
+          // set labels
+          for (var i = 0; i < $scope.assignedQAWork.length; i++) {
+            var concept = $scope.assignedQAWork[i];
 
-              $scope.assignedQAWork[i].name = concept.value;
-              $scope.assignedQAWork[i].labels = concept.value2.replace(/;/g,
-                ' ');
-            }
+            $scope.assignedQAWork[i].name = concept.value;
+            $scope.assignedQAWork[i].labels = concept.value2.replace(/;/g, ' ');
+          }
 
-          }).error(function(data, status, headers, config) {
+        }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
 
-      $scope.retrieveAssignedReviewWork = function(page, query,
-        assignedWorkType) {
-
-        console.debug('Retrieving Assigned Review Work: ', page, query,
-          assignedWorkType);
+      $scope.retrieveAssignedReviewWork = function(page, pquery, assignedWorkType) {
+        var query = pquery;
 
         // hard set the PFS variables
         $scope.assignedReviewWorkPage = page;
@@ -519,52 +477,45 @@ angular
 
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
-          "startIndex" : page == -1 ? -1 : (page - 1) * $scope.itemsPerPage,
-          "maxResults" : page == -1 ? -1 : $scope.itemsPerPage,
-          "sortField" : 'sortKey',
-          "queryRestriction" : assignedWorkType
+          'startIndex' : page == -1 ? -1 : (page - 1) * $scope.itemsPerPage,
+          'maxResults' : page == -1 ? -1 : $scope.itemsPerPage,
+          'sortField' : 'sortKey',
+          'queryRestriction' : assignedWorkType
         };
 
         $rootScope.glassPane++;
 
         $http(
           {
-            url : root_workflow + "project/id/" + $scope.focusProject.id
-              + "/user/id/" + $scope.currentUser.userName + "/query/"
-              + (query == null ? null : encodeURIComponent(query))
-              + "/assignedReviewWork",
-            dataType : "json",
+            url : root_workflow + 'project/id/' + $scope.focusProject.id + '/user/id/'
+              + $scope.currentUser.userName + '/query/'
+              + (query == null ? null : encodeURIComponent(query)) + '/assignedReviewWork',
+            dataType : 'json',
             data : pfsParameterObj,
-            method : "POST",
+            method : 'POST',
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
-          }).success(
-          function(data) {
-            $rootScope.glassPane--;
+          }).success(function(data) {
+          $rootScope.glassPane--;
 
-            $scope.assignedReviewWorkPage = page;
-            $scope.assignedReviewWork = data.searchResult;
+          $scope.assignedReviewWorkPage = page;
+          $scope.assignedReviewWork = data.searchResult;
 
-            // set pagination
-            $scope.numAssignedRecordPages = Math.ceil(data.totalCount
-              / $scope.itemsPerPage);
-            $scope.nAssignedReviewWork = data.totalCount;
+          // set pagination
+          $scope.numAssignedRecordPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
+          $scope.nAssignedReviewWork = data.totalCount;
 
-            // set title
-            $scope.tabs[2].title = "Review (" + $scope.nAssignedReviewWork
-              + ")";
+          // set title
+          $scope.tabs[2].title = 'Review (' + $scope.nAssignedReviewWork + ')';
 
-          }).error(function(data, status, headers, config) {
+        }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
 
-      $scope.retrieveAssignedWorkForUser = function(page, mapUserName, query,
-        assignedWorkType) {
-
-        console.debug("retrieveAssignedWorkForUser:", $scope.mapUserViewed);
+      $scope.retrieveAssignedWorkForUser = function(page, mapUserName, query, assignedWorkType) {
 
         // hard set the PFS variables
         $scope.assignedWorkForUserPage = page;
@@ -594,53 +545,53 @@ angular
           $scope.nAssignedRecordsForUser = 0;
 
           // set title
-          $scope.tabs[3].title = "By User";
+          $scope.tabs[3].title = 'By User';
 
           return;
         }
 
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
-          "startIndex" : page == -1 ? -1 : (page - 1) * $scope.itemsPerPage,
-          "maxResults" : page == -1 ? -1 : $scope.itemsPerPage,
-          "sortField" : 'sortKey',
-          "queryRestriction" : assignedWorkType
+          'startIndex' : page == -1 ? -1 : (page - 1) * $scope.itemsPerPage,
+          'maxResults' : page == -1 ? -1 : $scope.itemsPerPage,
+          'sortField' : 'sortKey',
+          'queryRestriction' : assignedWorkType
         };
 
         $rootScope.glassPane++;
 
         $http(
           {
-            url : root_workflow + "project/id/" + $scope.focusProject.id
-              + "/user/id/" + mapUserName + "/query/"
-              + (query == null ? null : encodeURIComponent(query))
-              + "/assignedConcepts",
-            dataType : "json",
+            url : root_workflow + 'project/id/' + $scope.focusProject.id + '/user/id/'
+              + mapUserName + '/query/' + (query == null ? null : encodeURIComponent(query))
+              + '/assignedConcepts',
+            dataType : 'json',
             data : pfsParameterObj,
-            method : "POST",
+            method : 'POST',
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
-          }).success(
-          function(data) {
+          })
+          .success(
+            function(data) {
+              $rootScope.glassPane--;
+
+              $scope.assignedWorkForUserPage = page;
+              $scope.assignedRecordsForUser = data.searchResult;
+
+              // set pagination
+              $scope.numAssignedRecordPagesForUser = Math.ceil(data.totalCount
+                / $scope.itemsPerPage);
+              $scope.nAssignedRecordsForUser = data.totalCount;
+              $scope.numRecordPagesForUser = Math.ceil($scope.nAssignedRecordsForUser
+                / $scope.itemsPerPage);
+
+              $scope.tabs[3].title = 'By User (' + data.totalCount + ')';
+
+            }).error(function(data, status, headers, config) {
             $rootScope.glassPane--;
-
-            $scope.assignedWorkForUserPage = page;
-            $scope.assignedRecordsForUser = data.searchResult;
-
-            // set pagination
-            $scope.numAssignedRecordPagesForUser = Math.ceil(data.totalCount
-              / $scope.itemsPerPage);
-            $scope.nAssignedRecordsForUser = data.totalCount;
-            $scope.numRecordPagesForUser = Math
-              .ceil($scope.nAssignedRecordsForUser / $scope.itemsPerPage);
-
-            $scope.tabs[3].title = "By User (" + data.totalCount + ")";
-
-          }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
-          $rootScope.handleHttpError(data, status, headers, config);
-        });
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
 
       };
 
@@ -648,74 +599,64 @@ angular
       function setPagination(assignedRecordsPerPage, nAssignedRecords) {
 
         $scope.assignedRecordsPerPage = assignedRecordsPerPage;
-        $scope.numRecordPages = Math.ceil($scope.nAssignedRecords
-          / assignedRecordsPerPage);
+        $scope.numRecordPages = Math.ceil($scope.nAssignedRecords / assignedRecordsPerPage);
       }
-      ;
 
       // on notification, update assigned work
       $scope.assignWork = function(newRecords) {
 
         $scope.retrieveAssignedWork($scope.assignedWorkPage);
-        if ($scope.currentRole === 'Lead'
-          || $scope.currentRole === 'Administrator') {
+        if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
           $scope.retrieveAssignedConflicts($scope.assignedConflictsPage);
         }
       };
 
       // function to relinquish work (i.e. unassign the user)
       $scope.unassignWork = function(record, mapUser, workType) {
-        console.debug("unassignWork", record, record.terminologyVersion);
 
         // show a confirmation dialog if requested
         // NOTE: workflow status is contained in terminologyVersion for a
         // searchResult object
-        if (record.terminologyVersion === "EDITING_DONE"
-          || record.terminologyVersion === "REVIEW_RESOLVED"
-          || record.terminologyVersion === "QA_RESOLVED"
-          || record.terminologyVersion === "CONFLICT_RESOLVED") {
-          var response = confirm("Are you sure you want to return finished work?  You will lose any work done.");
+        if (record.terminologyVersion === 'EDITING_DONE'
+          || record.terminologyVersion === 'REVIEW_RESOLVED'
+          || record.terminologyVersion === 'QA_RESOLVED'
+          || record.terminologyVersion === 'CONFLICT_RESOLVED') {
+          var response = confirm('Are you sure you want to return finished work?  You will lose any work done.');
           if (response == false)
             return;
         }
 
-        console.debug("query", $scope.queryAssigned)
         $rootScope.glassPane++;
-
         $http(
           {
-            url : root_workflow + "unassign/project/id/"
-              + $scope.focusProject.id + "/concept/id/" + record.terminologyId
-              + "/user/id/" + mapUser.userName,
-            dataType : "json",
-            method : "POST",
+            url : root_workflow + 'unassign/project/id/' + $scope.focusProject.id + '/concept/id/'
+              + record.terminologyId + '/user/id/' + mapUser.userName,
+            dataType : 'json',
+            method : 'POST',
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
-          }).success(
-          function(data) {
+          }).success(function(data) {
 
-            $rootScope.glassPane--;
+          $rootScope.glassPane--;
 
-            // trigger reload of this type of work via broadcast
-            // notification
-            $rootScope.$broadcast(
-              'workAvailableWidget.notification.assignWork', {
-                assignUser : mapUser,
-                assignType : workType,
-                resetFilters : false
-              });
+          // trigger reload of this type of work via broadcast
+          // notification
+          $rootScope.$broadcast('workAvailableWidget.notification.assignWork', {
+            assignUser : mapUser,
+            assignType : workType,
+            resetFilters : false
+          });
 
-            // if this user unassigned their own work, broadcast
-            // unassign
-            if (mapUser.userName === $scope.currentUser.userName)
-              $rootScope
-                .$broadcast('assignedListWidget.notification.unassignWork');
+          // if this user unassigned their own work, broadcast
+          // unassign
+          if (mapUser.userName === $scope.currentUser.userName)
+            $rootScope.$broadcast('assignedListWidget.notification.unassignWork');
 
-            // if this user is viewing their assigned concepts via the By User
-            // tab, re-retrieve
+          // if this user is viewing their assigned concepts via the By User
+          // tab, re-retrieve
 
-          }).error(function(data, status, headers, config) {
+        }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
           $rootScope.handleHttpError(data, status, headers, config);
         });
@@ -731,19 +672,17 @@ angular
       // query: any text filter currently applied
       $scope.unassignAllWork = function(user, workType, workStatus, query) {
 
-        if (confirm("Are you sure you want to return all displayed work?") == false)
+        if (confirm('Are you sure you want to return all displayed work?') == false)
           return;
 
         // get the full list of currently assigned work for this query and
         // workType
         $rootScope.glassPane++;
-        console.debug("Retrieving concepts to unassign", user, workType,
-          workStatus, query);
         var pfsParameterObj = {
-          "startIndex" : -1,
-          "maxResults" : -1,
-          "sortField" : 'sortKey',
-          "queryRestriction" : workStatus
+          'startIndex' : -1,
+          'maxResults' : -1,
+          'sortField' : 'sortKey',
+          'queryRestriction' : workStatus
         };
 
         var workTypeText = null;
@@ -766,22 +705,18 @@ angular
         // retrieve the list of assigned work
         $http(
           {
-            url : root_workflow + "project/id/" + $scope.focusProject.id
-              + "/user/id/" + user.userName + "/query/"
-              + (query == null ? "null" : encodeURIComponent(query)) + "/"
-              + workTypeText,
-            dataType : "json",
+            url : root_workflow + 'project/id/' + $scope.focusProject.id + '/user/id/'
+              + user.userName + '/query/' + (query == null ? 'null' : encodeURIComponent(query))
+              + '/' + workTypeText,
+            dataType : 'json',
             data : pfsParameterObj,
-            method : "POST",
+            method : 'POST',
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
           }).success(function(data) {
 
-          console.debug("Unassign retrieval", data.searchResult);
-
           var terminologyIds = new Array();
-          ;
           for (var i = 0; i < data.searchResult.length; i++) {
             terminologyIds.push(data.searchResult[i].terminologyId);
           }
@@ -800,23 +735,18 @@ angular
         $scope.ownTab = ownTab;
       };
 
-      var unassignBatch = function(mapUser, terminologyIds, workType,
-        workStatus) {
-
-        console.debug("unassignBatch", mapUser, terminologyIds, workType,
-          workStatus);
+      var unassignBatch = function(mapUser, terminologyIds, workType, workStatus) {
 
         $rootScope.glassPane++;
         $http(
           {
-            url : root_workflow + "unassign/project/id/"
-              + $scope.focusProject.id + "/user/id/" + mapUser.userName
-              + "/batch",
-            dataType : "json",
+            url : root_workflow + 'unassign/project/id/' + $scope.focusProject.id + '/user/id/'
+              + mapUser.userName + '/batch',
+            dataType : 'json',
             data : terminologyIds,
-            method : "POST",
+            method : 'POST',
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
           }).success(function(data) {
           $rootScope.glassPane--;
@@ -824,25 +754,22 @@ angular
         }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
           $rootScope.handleHttpError(data, status, headers, config);
-        }).then(
-          function() {
+        }).then(function() {
 
-            // trigger reload of this type of work via broadcast
-            // notification
-            $rootScope.$broadcast(
-              'workAvailableWidget.notification.assignWork', {
-                assignUser : mapUser,
-                assignType : workType,
-                assignWorkflowStatus : workStatus
-              });
+          // trigger reload of this type of work via broadcast
+          // notification
+          $rootScope.$broadcast('workAvailableWidget.notification.assignWork', {
+            assignUser : mapUser,
+            assignType : workType,
+            assignWorkflowStatus : workStatus
+          });
 
-            // if this user unassigned their own work, broadcast
-            // unassign
-            if (mapUser.userName === $scope.currentUser.userName)
-              $rootScope
-                .$broadcast('assignedListWidget.notification.unassignWork');
+          // if this user unassigned their own work, broadcast
+          // unassign
+          if (mapUser.userName === $scope.currentUser.userName)
+            $rootScope.$broadcast('assignedListWidget.notification.unassignWork');
 
-          })
+        });
 
       };
 
@@ -871,28 +798,27 @@ angular
           return ((x < y) ? -1 : ((x > y) ? 1 : 0));
         });
       }
-      ;
 
       $scope.goEditRecord = function(id) {
-        var path = "/record/recordId/" + id;
+        var path = '/record/recordId/' + id;
         // redirect page
         $location.path(path);
       };
 
       $scope.goEditConflict = function(id) {
-        var path = "/record/conflicts/" + id;
+        var path = '/record/conflicts/' + id;
         // redirect page
         $location.path(path);
       };
 
       $scope.goEditReviewWork = function(id) {
-        var path = "/record/review/" + id;
+        var path = '/record/review/' + id;
         // redirect page
         $location.path(path);
       };
 
       $scope.goEditQAWork = function(id) {
-        var path = "/record/review/" + id;
+        var path = '/record/review/' + id;
         // redirect page
         $location.path(path);
       };
@@ -908,7 +834,7 @@ angular
         records.push(searchResult);
 
         $scope.openFinishOrPublishModal(records);
-      }
+      };
 
       /**
        * Function to open finish or publish modal. Argument: workflowStatus: The
@@ -918,78 +844,61 @@ angular
       $scope.finishOrPublishBatch = function(workflowStatus) {
 
         // check arguments
-        if (workflowStatus != null
-          && workflowStatus.indexOf('_IN_PROGRESS') == -1
+        if (workflowStatus != null && workflowStatus.indexOf('_IN_PROGRESS') == -1
           && workflowStatus.indexOf('_RESOLVED') == -1) {
           console
-            .error("Invalid workflow status passed to finishOrPublish, must be *_IN_PROGRESS or *_RESOLVED");
+            .error('Invalid workflow status passed to finishOrPublish, must be *_IN_PROGRESS or *_RESOLVED');
         }
-
-        console.debug("Called finishOrPublishBatch with workflowStatus",
-          workflowStatus);
-
         // determine type of work
         var apiWorkflowText;
 
         // determine the retrieval API text
         // i.e.. whether to call assignedConcepts,
         // assignedReviewWork, or assignedConcepts
-        if (workflowStatus === 'CONFLICT_IN_PROGRESS'
-          || workflowStatus === 'CONFLICT_RESOLVED')
+        if (workflowStatus === 'CONFLICT_IN_PROGRESS' || workflowStatus === 'CONFLICT_RESOLVED')
           apiWorkflowText = 'assignedConflicts';
-        else if (workflowStatus === 'REVIEW_IN_PROGRESS'
-          || workflowStatus === 'REVIEW_RESOLVED')
+        else if (workflowStatus === 'REVIEW_IN_PROGRESS' || workflowStatus === 'REVIEW_RESOLVED')
           apiWorkflowText = 'assignedReviewWork';
-        else if (workflowStatus === 'QA_IN_PROGRESS'
-          || workflowStatus === 'QA_RESOLVED')
+        else if (workflowStatus === 'QA_IN_PROGRESS' || workflowStatus === 'QA_RESOLVED')
           apiWorkflowText = 'assignedQAWork';
-        else if (workflowStatus === 'EDITING_IN_PROGRESS'
-          || workflowStatus === 'EDITING_DONE')
+        else if (workflowStatus === 'EDITING_IN_PROGRESS' || workflowStatus === 'EDITING_DONE')
           apiWorkflowText = 'assignedConcepts';
         else {
-          console.debug("Could not determine api call from workflow status");
           return;
         }
 
-        console.debug('apiWorkflowText', apiWorkflowText);
-
         // construct a paging/filtering/sorting object based on work type
         var pfsParameterObj = {
-          "startIndex" : -1,
-          "maxResults" : -1,
-          "sortField" : null,
-          "queryRestriction" : workflowStatus
+          'startIndex' : -1,
+          'maxResults' : -1,
+          'sortField' : null,
+          'queryRestriction' : workflowStatus
         };
 
         $rootScope.glassPane++;
-
-        console.debug("Making html call to retrieve eligible records");
-
         $http(
           {
-            url : root_workflow + "project/id/" + $scope.focusProject.id
-              + "/user/id/" + $scope.currentUser.userName + "/query/null/"
-              + apiWorkflowText, // set above based on
+            url : root_workflow + 'project/id/' + $scope.focusProject.id + '/user/id/'
+              + $scope.currentUser.userName + '/query/null/' + apiWorkflowText, // set
+            // above
+            // based
+            // on
             // specified workflow
             // status
-            dataType : "json",
+            dataType : 'json',
             data : pfsParameterObj,
-            method : "POST",
+            method : 'POST',
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-          $rootScope.glassPane--;
 
           // if results found, open the modal
           if (data.searchResult.length > 0) {
-            console.debug("Results: ", data.searchResult);
             $scope.openFinishOrPublishModal(data.searchResult);
-          } else {
-            console.debug("No results returned");
           }
+          $rootScope.glassPane--;
         }).error(function(data, status, headers, config) {
-          console.debug("ERROR RETRIEVING SEARCH RESULTS");
           $rootScope.glassPane--;
           $rootScope.handleHttpError(data, status, headers, config);
         });
@@ -999,18 +908,13 @@ angular
       $scope.openFinishOrPublishModal = function(records) {
 
         if (records == null || records.length == 0) {
-          console.error("openPerformBatchActionModal called with no records");
+          console.error('openPerformBatchActionModal called with no records');
           return;
         }
-        ;
-
-        console.debug("Entered openFinishOrPUblishModal", records);
 
         // NOTE: Record information is shoehorned into searchResult
         // workflow status is contained in terminologyVersion
         var workflowStatus = records[0].terminologyVersion;
-        console.debug("WorkflowStatus = ", workflowStatus);
-
         var modalInstance = $modal
           .open({
             templateUrl : 'js/widgets/assignedList/assignedListFinishOrPublish.html',
@@ -1027,6 +931,13 @@ angular
                 return $scope.currentUser;
               },
               action : function() {
+               
+                // catch simple workflow case
+                if ($scope.focusProject.workflowType === 'SIMPLE_PATH') {
+                  return 'publish';
+                }
+
+                // otherwise, distinguish between lead work and specialist work
                 return (workflowStatus === 'CONFLICT_RESOLVED'
                   || workflowStatus === 'REVIEW_RESOLVED' || workflowStatus === 'QA_RESOLVED') ? 'publish'
                   : 'finish';
@@ -1034,73 +945,67 @@ angular
             }
           });
 
-        modalInstance.result.then(
+        modalInstance.result
+          .then(
 
-        // called on Done clicked by user
-        function() {
-          console.debug("User closed finish/publish modal");
-          if (workflowStatus === 'CONFLICT_IN_PROGRESS'
-            || workflowStatus === 'CONFLICT_RESOLVED') {
-            $scope.retrieveAssignedConflicts(1, null, workflowStatus); // called
-            // on
-            // Done
-          } else if (workflowStatus === 'REVIEW_IN_PROGRESS'
-            || workflowStatus === 'REVIEW_RESOLVED') {
-            if ($scope.currentRole === 'Lead') {
-              $scope.retrieveAssignedReviewWork(1, null, workflowStatus); // called
-              // on
-              // Done
-            }
-          } else if (workflowStatus === 'QA_IN_PROGRESS'
-            || workflowStatus === 'QA_RESOLVED') {
-            $scope.retrieveAssignedQAWork(1, null, workflowStatus); // called
-            // on
-            // Done
-          } else if (workflowStatus === 'EDITING_IN_PROGRESS'
-            || workflowStatus === 'EDITING_DONE') {
-            $scope.retrieveAssignedWork(1, null, workflowStatus); // called
-            // on
-            // Done
-          } else {
-            console.debug("Could not determine api call from workflow status");
-            return;
-          }
+            // called on Done clicked by user
+            function() {
+              if (workflowStatus === 'CONFLICT_IN_PROGRESS'
+                || workflowStatus === 'CONFLICT_RESOLVED') {
+                $scope.retrieveAssignedConflicts(1, null, workflowStatus); // called
+                // on
+                // Done
+              } else if (workflowStatus === 'REVIEW_IN_PROGRESS'
+                || workflowStatus === 'REVIEW_RESOLVED') {
+                if ($scope.currentRole === 'Lead') {
+                  $scope.retrieveAssignedReviewWork(1, null, workflowStatus); // called
+                  // on
+                  // Done
+                }
+              } else if (workflowStatus === 'QA_IN_PROGRESS' || workflowStatus === 'QA_RESOLVED') {
+                $scope.retrieveAssignedQAWork(1, null, workflowStatus); // called
+                // on
+                // Done
+              } else if (workflowStatus === 'EDITING_IN_PROGRESS'
+                || workflowStatus === 'EDITING_DONE') {
+                $scope.retrieveAssignedWork(1, null, workflowStatus); // called
+                // on
+                // Done
+              } else {
+                return;
+              }
 
-          // called on Cancel/Escape, same functionality
-        }, function() {
-          console.debug("Finish/publish modal dismissed");
-          if (workflowStatus === 'CONFLICT_IN_PROGRESS'
-            || workflowStatus === 'CONFLICT_RESOLVED') {
-            $scope.retrieveAssignedConflicts(1, null, workflowStatus); // called
-            // on
-            // Done
-          } else if (workflowStatus === 'REVIEW_IN_PROGRESS'
-            || workflowStatus === 'REVIEW_RESOLVED') {
-            if ($scope.currentRole === 'Lead') {
-              $scope.retrieveAssignedReviewWork(1, null, workflowStatus); // called
-              // on
-              // Done
-            }
-          } else if (workflowStatus === 'QA_IN_PROGRESS'
-            || workflowStatus === 'QA_RESOLVED') {
-            $scope.retrieveAssignedQAWork(1, null, workflowStatus);
-          } else if (workflowStatus === 'EDITING_IN_PROGRESS'
-            || workflowStatus === 'EDITING_DONE') {
-            $scope.retrieveAssignedWork(1, null, workflowStatus); // called
-            // on
-            // Done
-          } else {
-            console.debug("Could not determine api call from workflow status");
-            return;
-          }
-        });
+              // called on Cancel/Escape, same functionality
+            }, function() {
+              if (workflowStatus === 'CONFLICT_IN_PROGRESS'
+                || workflowStatus === 'CONFLICT_RESOLVED') {
+                $scope.retrieveAssignedConflicts(1, null, workflowStatus); // called
+                // on
+                // Done
+              } else if (workflowStatus === 'REVIEW_IN_PROGRESS'
+                || workflowStatus === 'REVIEW_RESOLVED') {
+                if ($scope.currentRole === 'Lead') {
+                  $scope.retrieveAssignedReviewWork(1, null, workflowStatus); // called
+                  // on
+                  // Done
+                }
+              } else if (workflowStatus === 'QA_IN_PROGRESS' || workflowStatus === 'QA_RESOLVED') {
+                $scope.retrieveAssignedQAWork(1, null, workflowStatus);
+              } else if (workflowStatus === 'EDITING_IN_PROGRESS'
+                || workflowStatus === 'EDITING_DONE') {
+                $scope.retrieveAssignedWork(1, null, workflowStatus); // called
+                // on
+                // Done
+              } else {
+                return;
+              }
+            });
 
       };
 
-      var FinishOrPublishWorkModalCtrl = function($scope, $modalInstance, $q,
-        user, project, records, action) {
+      var FinishOrPublishWorkModalCtrl = function($scope, $modalInstance, $q, user, project,
+        records, action) {
 
-        console.debug("Entered modal control", user, project, records);
         $scope.user = user;
         $scope.project = project;
         $scope.records = records;
@@ -1118,8 +1023,7 @@ angular
 
         $scope.selectNextRecord = function() {
           var deferred = $q.defer();
-          $scope.index = $scope.index == $scope.records.length ? 1
-            : $scope.index + 1;
+          $scope.index = $scope.index == $scope.records.length ? 1 : $scope.index + 1;
           $scope.loadRecord().then(function() {
             deferred.resolve();
           }, function() {
@@ -1133,105 +1037,90 @@ angular
         $scope.loadRecord = function() {
 
           var deferred = $q.defer();
-
           $scope.validationResult = null;
-
-          console.debug("Selecting record", $scope.index);
 
           // get id from list (note index is range [1,n], subtract one for
           // array
           // access)
           var recordId = $scope.records[$scope.index - 1].id;
-
-          console.debug("Retrieving record", recordId);
-
           $rootScope.glassPane++;
-
           // perform the retrieval call
           $http({
-            url : root_mapping + "record/id/" + recordId,
-            method : "GET",
+            url : root_mapping + 'record/id/' + recordId,
+            method : 'GET',
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
-          })
-            .success(
-              function(data) {
+          }).success(
+            function(data) {
 
-                // do not close glass pane here, validate record first
+              // do not close glass pane here, validate record first
 
-                // set scope record
-                $scope.currentRecord = data;
+              // set scope record
+              $scope.currentRecord = data;
 
-                // check if this record is still in progress, based on
-                // requested
-                // action
-                if ($scope.action === 'publish') {
+              // check if this record is still in progress, based on
+              // requested
+              // action
+              if ($scope.action === 'publish') {
 
-                  // if in a publication state, this record has been
-                  // finished
-                  if ($scope.currentRecord.workflowStatus === 'READY_FOR_PUBLICATION'
-                    || $scope.currentRecord.workflowStatus === 'PUBLISHED')
-                    $scope.currentRecord.isFinished = true;
-                  else
-                    $scope.currentRecord.isFinished = false;
+                // if in a publication state, this record has been
+                // finished
+                if ($scope.currentRecord.workflowStatus === 'READY_FOR_PUBLICATION'
+                  || $scope.currentRecord.workflowStatus === 'PUBLISHED')
+                  $scope.currentRecord.isFinished = true;
+                else
+                  $scope.currentRecord.isFinished = false;
 
-                } else if ($scope.action === 'finish') {
+              } else if ($scope.action === 'finish') {
 
-                  // if an *_IN_PROGRESS record, not finished
-                  if ($scope.currentRecord.workflowStatus === 'EDITING_IN_PROGRESS'
-                    || $scope.currentRecord.workflowStatus === 'CONFLICT_IN_PROGRESS'
-                    || $scope.currentRecord.workflowStatus === 'REVIEW_IN_PROGRESS'
-                    || $scope.currentRecord.workflowStatus === 'QA_IN_PROGRESS')
-                    $scope.currentRecord.isFinished = false;
+                // if an *_IN_PROGRESS record, not finished
+                if ($scope.currentRecord.workflowStatus === 'EDITING_IN_PROGRESS'
+                  || $scope.currentRecord.workflowStatus === 'CONFLICT_IN_PROGRESS'
+                  || $scope.currentRecord.workflowStatus === 'REVIEW_IN_PROGRESS'
+                  || $scope.currentRecord.workflowStatus === 'QA_IN_PROGRESS')
+                  $scope.currentRecord.isFinished = false;
 
-                  // otherwise, this record has been finished/published
-                  // via this
-                  // modal
-                  else
-                    $scope.currentRecord.isFinished = true;
+                // otherwise, this record has been finished/published
+                // via this
+                // modal
+                else
+                  $scope.currentRecord.isFinished = true;
+              }
+
+              // validate the record
+              $http({
+                url : root_mapping + 'validation/record/validate',
+                dataType : 'json',
+                data : $scope.currentRecord,
+                method : 'POST',
+                headers : {
+                  'Content-Type' : 'application/json'
                 }
-
-                console.debug("Validating the map record");
-                // validate the record
-                $http({
-                  url : root_mapping + "validation/record/validate",
-                  dataType : "json",
-                  data : $scope.currentRecord,
-                  method : "POST",
-                  headers : {
-                    "Content-Type" : "application/json"
-                  }
-                })
-                  .success(function(data) {
-                    $rootScope.glassPane--;
-                    console.debug("validation results:", data);
-                    $scope.validationResult = data;
-                    deferred.resolve($scope.currentRecord);
-                  })
-                  .error(
-                    function(data, status, headers, config) {
-                      $rootScope.glassPane--;
-                      $scope.validationResult = null;
-                      $scope.recordError = "Unexpected error reported by server.  Contact an admin.";
-                      console.debug("Failed to validate map record");
-                      $rootScope.handleHttpError(data, status, headers, config);
-                      deferred.reject("Map record failed validation");
-                    });
-
+              }).success(function(data) {
+                $rootScope.glassPane--;
+                $scope.validationResult = data;
+                deferred.resolve($scope.currentRecord);
               }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
-              $scope.error = "Could not retrieve record";
-              deferred.reject("Could not retrieve record");
-            });
+                $rootScope.glassPane--;
+                $scope.validationResult = null;
+                $scope.recordError = 'Unexpected error reported by server.  Contact an admin.';
+                $rootScope.handleHttpError(data, status, headers, config);
+                deferred.reject('Map record failed validation');
+              });
+
+            }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $scope.error = 'Could not retrieve record';
+            deferred.reject('Could not retrieve record');
+          });
 
           return deferred.promise;
         };
 
         $scope.finishCurrentRecord = function() {
 
-          if ($scope.validationResult.valid == true
-            && $scope.currentRecord.isFinished == false) {
+          if ($scope.validationResult.valid == true && $scope.currentRecord.isFinished == false) {
             finishRecord($scope.currentRecord).then(function(response) {
 
               // flag this record as finished
@@ -1244,7 +1133,7 @@ angular
                 $scope.selectNextRecord();
               }
             }, function(response) {
-              $scope.error("Unexpected error finishing record.");
+              $scope.error('Unexpected error finishing record.');
             });
           }
         };
@@ -1260,11 +1149,11 @@ angular
             url : root_workflow + $scope.action, // api text is passed in
             // as
             // argument
-            dataType : "json",
+            dataType : 'json',
             data : record,
-            method : "POST",
+            method : 'POST',
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
           }).success(function(data) {
             $rootScope.glassPane--;
@@ -1284,65 +1173,47 @@ angular
         function finishAllRecordsHelper() {
 
           // select the next record
-          $scope.selectNextRecord().then(
-            function() {
+          $scope.selectNextRecord().then(function() {
+            if ($scope.validationResult.valid == true && $scope.currentRecord.isFinished == false) {
 
-              console.debug("Record selected, valid = "
-                + $scope.validationResult.valid + ", finished = "
-                + $scope.currentRecord.isFinished);
+              // finish the record, then WAIT for the promise to resolve
+              finishRecord($scope.currentRecord).then(
+              // success function
+              function() {
+                $scope.recordsFinished++;
 
-              if ($scope.validationResult.valid == true
-                && $scope.currentRecord.isFinished == false) {
-
-                console.debug("Finishing record...", $scope.currentRecord);
-
-                // finish the record, then WAIT for the promise to resolve
-                finishRecord($scope.currentRecord).then(
-                // success function
-                function() {
-                  console.debug("Finished with record");
-
-                  $scope.recordsFinished++;
-
-                  // flag current record as finished
-                  $scope.currentRecord.isFinished = true;
-
-                  // call the helper again if more records
-                  if ($scope.index < $scope.records.length)
-                    finishAllRecordsHelper();
-
-                  // error function
-                }, function() {
-
-                  console.debug("Record could not be finished");
-
-                  $scope.recordsNotFinished++;
-
-                  // call the helper again if more records
-                  if ($scope.index < $scope.records.length)
-                    finishAllRecordsHelper();
-
-                });
-              } else {
-                console.debug("Record skipped");
-
-                // increment counter only if this record is not already
-                // finished
-                if ($scope.currentRecord.isFinished == false)
-                  $scope.recordsNotFinished++;
+                // flag current record as finished
+                $scope.currentRecord.isFinished = true;
 
                 // call the helper again if more records
                 if ($scope.index < $scope.records.length)
                   finishAllRecordsHelper();
-              }
-            });
+
+                // error function
+              }, function() {
+                $scope.recordsNotFinished++;
+
+                // call the helper again if more records
+                if ($scope.index < $scope.records.length)
+                  finishAllRecordsHelper();
+
+              });
+            } else {
+
+              // increment counter only if this record is not already
+              // finished
+              if ($scope.currentRecord.isFinished == false)
+                $scope.recordsNotFinished++;
+
+              // call the helper again if more records
+              if ($scope.index < $scope.records.length)
+                finishAllRecordsHelper();
+            }
+          });
 
         }
 
         $scope.finishAllRecords = function() {
-
-          $rootScope.glassPane++;
-
           // set index to before the first record
           $scope.index = 0;
 
@@ -1352,11 +1223,6 @@ angular
 
           // call the sequential finishAllRecords helper function
           finishAllRecordsHelper();
-
-          console.debug("Complete (finished/unfinished)",
-            $scope.recordsFinished, $scope.recordsNotFinished);
-
-          $rootScope.glassPane--;
         };
 
         $scope.done = function() {

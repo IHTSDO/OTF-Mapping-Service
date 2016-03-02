@@ -2,11 +2,6 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 
-<!--[if IE]>
-    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-
-
 </head>
 <body>
 
@@ -25,10 +20,10 @@
     <div ng-show="conversation1.feedback.length > 0">
       <div ng-repeat="feedback in conversation1.feedback">
         <div class="alert alert-warning" disabled>
-          [By {{feedback.sender.name}} to <span
-            ng-repeat="recipient in feedback.recipients">
-            {{recipient.name}}</span> on {{feedback.timestamp | date:'MM-dd-yyyy
-          HH:mm'}}]
+          [By {{feedback.sender.name}} to
+          <span ng-repeat="recipient in feedback.recipients">
+            {{recipient.name}}</span>
+          on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
           <div ng-show="feedback.mapError != 'None'" style="padding-left: 20px;"
             ng-bind-html="to_trusted(feedback.mapError)"></div>
           <div style="padding-left: 20px;"
@@ -41,16 +36,18 @@
     <form style="margin-top: 8px; margin-left: 4px;">
       <table>
         <tr>
-          <form method="post">
+          <td colspan="2">
             <textarea id="tinymce-feedback1" ui-tinymce="tinymceOptions"
               ng-model="feedbackComment1"></textarea>
-          </form>
+          </td>
         </tr>
         <tr>
           <td>Error Message:&nbsp;</td>
-          <td><select ng-model="selectedErrorMessage1" style="margin: 4px"
-            ng-options=" msg as msg for msg in errorMessages">
-          </select></td>
+          <td>
+            <select ng-model="selectedErrorMessage1" style="margin: 4px"
+              ng-options=" msg as msg for msg in errorMessages">
+            </select>
+          </td>
         </tr>
       </table>
       <div>
@@ -80,10 +77,10 @@
     <div ng-show="conversation2.feedback.length > 0">
       <div ng-repeat="feedback in conversation2.feedback">
         <div class="alert alert-warning" disabled>
-          [By {{feedback.sender.name}} to <span
-            ng-repeat="recipient in feedback.recipients">
-            {{recipient.name}}</span> on {{feedback.timestamp | date:'MM-dd-yyyy
-          HH:mm'}}]
+          [By {{feedback.sender.name}} to
+          <span ng-repeat="recipient in feedback.recipients">
+            {{recipient.name}}</span>
+          on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
           <div ng-show="feedback.mapError != 'None'" style="padding-left: 20px;"
             ng-bind-html="to_trusted(feedback.mapError)"></div>
           <div style="padding-left: 20px;"
@@ -96,16 +93,18 @@
     <form style="margin-top: 8px; margin-left: 4px;">
       <table>
         <tr>
-          <form method="post">
+          <td colspan="2">
             <textarea id="tinymce-feedback2" ui-tinymce="tinymceOptions"
               ng-model="feedbackComment2"></textarea>
-          </form>
+          </td>
         </tr>
         <tr>
           <td>Error Message:&nbsp;</td>
-          <td><select ng-model="selectedErrorMessage2" style="margin: 4px"
-            ng-options="msg as msg for msg in errorMessages">
-          </select></td>
+          <td>
+            <select ng-model="selectedErrorMessage2" style="margin: 4px"
+              ng-options="msg as msg for msg in errorMessages">
+            </select>
+          </td>
         </tr>
       </table>
       <div>
@@ -123,8 +122,6 @@
     <hr>
   </div>
 
-
-
   <div style="float: left; width: 100%" id="report">
     <accordion close-others="false"> <accordion-group
       is-open="isGroupFeedbackOpen"> <accordion-heading>
@@ -135,10 +132,12 @@
     <div ng-show="leadConversation.feedback.length > 0">
       <div ng-repeat="feedback in leadConversation.feedback">
         <div class="alert alert-warning" disabled>
-          [By {{feedback.sender.name}} to <span
-            ng-repeat="recipient in feedback.recipients">
-            {{recipient.name}}<span ng-if="$last == false">,</span>
-          </span> on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
+          [By {{feedback.sender.name}} to
+          <span ng-repeat="recipient in feedback.recipients">
+            {{recipient.name}}
+            <span ng-if="$last == false">,</span>
+          </span>
+          on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
           <div style="padding-left: 20px;"
             ng-bind-html="to_trusted(feedback.message)"></div>
         </div>
@@ -176,16 +175,18 @@
         <div
           ng-class="{'alert alert-danger' : !isFalseConflict, 'alert alert-success' : isFalseConflict}"
           role="alert" style="padding: 5px; margin-top: 9px; margin-bottom: 0px">
-          <span ng-show="isFalseConflict">[Error Ignored] </span>{{result}}
+          <span ng-show="isFalseConflict">[Error Ignored] </span>
+          {{result}}
         </div>
       </div>
     </div>
     <div ng-show="validationResult.warnings.length > 0">
       <div ng-repeat="result in validationResult.warnings">
         <div
-          ng-class="{'alert alert-warning' : !isFalseConflict, 'alert alert-success' : isFalseConflict} role="
-          alert" style="padding: 5px; margin-top: 9px; margin-bottom: 0px">
-          <span ng-show="isFalseConflict">[Warning Ignored] </span>{{result}}
+          ng-class="{'alert alert-warning' : !isFalseConflict, 'alert alert-success' : isFalseConflict}"
+          style="padding: 5px; margin-top: 9px; margin-bottom: 0px">
+          <span ng-show="isFalseConflict">[Warning Ignored] </span>
+          {{result}}
         </div>
       </div>
     </div>
@@ -206,10 +207,6 @@
     </div>
     </accordion-group> </accordion>
   </div>
-
-
-
-
 
 </body>
 </html>

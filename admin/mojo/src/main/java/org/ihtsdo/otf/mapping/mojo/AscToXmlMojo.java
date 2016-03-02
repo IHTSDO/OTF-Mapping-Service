@@ -2,9 +2,10 @@ package org.ihtsdo.otf.mapping.mojo;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -125,9 +126,10 @@ public class AscToXmlMojo extends AbstractMojo {
 
       // Set parent to root
       Element parent = root;
-
       // Read through file and process each record
-      reader = new BufferedReader(new FileReader(file));
+      reader =
+          new BufferedReader(new InputStreamReader(new FileInputStream(file),
+              "UTF-8"));
       String line = reader.readLine();
       StringBuilder lastLine = new StringBuilder();
       Pattern pattern = Pattern.compile("^[A-Z]+");
@@ -205,7 +207,7 @@ public class AscToXmlMojo extends AbstractMojo {
       FileOutputStream outputStream =
           new FileOutputStream(new File(outputDir, "ICD10_" + file.getName()
               + ".xml"));
-      Serializer serializer = new Serializer(outputStream);
+      Serializer serializer = new Serializer(outputStream, "UTF-8");
       serializer.setIndent(4);
       serializer.write(document);
       outputStream.close();
@@ -431,6 +433,7 @@ public class AscToXmlMojo extends AbstractMojo {
    *
    * @param parent the parent element
    */
+  @SuppressWarnings("static-method")
   private void writeTableEndToXml(Element parent) {
     Element indexHeading = new Element("endTable");
     parent.appendChild(indexHeading);

@@ -25,7 +25,9 @@
     </tr>
     <tr>
       <td>Workflow Status</td>
-      <td><input ng-model="record.workflowStatus"></td>
+      <td>
+        <input ng-model="record.workflowStatus">
+      </td>
     </tr>
   </table>
 
@@ -67,18 +69,19 @@ Note: Must be delimited by either whitespace or commas.
   </div>
 </div>
 
-</tab>
-<tab heading="Assign Fix Errors">
+</tab> <tab heading="Assign Fix Errors">
 
 <h4>Enter Terminology Ids to Assign Along Fix Error Path</h4>
 
-<div>Assign to: 
-<select ng-model="userToAssign" ng-options="user as user.name for user in projectUsers"></select>
+<div>
+  Assign to: <select ng-model="userToAssign"
+    ng-options="user as user.name for user in projectUsers"></select>
 </div>
 Note: Must be delimited by either whitespace or commas.<br>
 <textarea style="width: 100%; height: 250px" ng-model="conceptIdsToAssign"></textarea>
 <button class="btn btn-sm btn-primary"
-  ng-click="assignFixError(conceptIdsToAssign, userToAssign)">Assign Records</button>
+  ng-click="assignFixError(conceptIdsToAssign, userToAssign)">Assign
+  Records</button>
 <button class="btn btn-sm btn-danger" ng-click="conceptIdsToRemove = ''">Clear</button>
 
 <!--  Display results of batch operation -->
@@ -91,7 +94,8 @@ Note: Must be delimited by either whitespace or commas.<br>
     </ul>
   </div>
 
-  <div ng-show="validationResultAssign.warnings.length > 0" style="color: orange">
+  <div ng-show="validationResultAssign.warnings.length > 0"
+    style="color: orange">
     Warnings:<br>
     <ul>
       <li ng-repeat="warning in validationResultAssign.warnings">{{warning}}</li>
@@ -104,5 +108,4 @@ Note: Must be delimited by either whitespace or commas.<br>
       <li ng-repeat="error in validationResultAssign.errors">{{error}}</li>
     </ul>
   </div>
-</div>
-</tabset>
+</div></tabset>

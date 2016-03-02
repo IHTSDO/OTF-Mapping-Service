@@ -185,6 +185,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
             getLog().info("  Adding user " + user.getName());
             user.setId(null);
             mappingService.addMapUser(user);
+            currentUsers.add(user);
           } else {
             getLog().info("  User already exists " + user.getName());
           }
@@ -194,6 +195,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
             getLog().info("  Adding user " + user.getName());
             user.setId(null);
             mappingService.addMapUser(user);
+            currentUsers.add(user);
           } else {
             getLog().info("  User already exists " + user.getName());
           }
