@@ -26,8 +26,8 @@
 </div>
 
 <div>
-	<div
-		style="float: right; width: 60%; padding: 10px 0px 10px 10px; border-left: thin solid #ddd;">
+  <div
+    style="float: right; width: 60%; padding: 10px 0px 10px 10px; border-left: thin solid #ddd;">
 
     <div class="alert alert-warning" ng-show="reportDisplayed == null">No
       QA Check results generated</div>
@@ -50,16 +50,16 @@
         QA check generated no results.</div>
 
 
-			<div ng-repeat="result in reportDisplayed.results">
+      <div ng-repeat="result in reportDisplayed.results">
 
-				<!--  The result items -->
+        <!--  The result items -->
 
-				<div>
-					<pagination ng-show="result.nPages > 1" total-items="result.ct"
-						page="result.page" max-size="5" class="pagination-sm"
-						boundary-links="true" rotate="true" num-pages="result.nPages"
-						on-select-page="getResultItems(result, page)"></pagination>
-				</div>
+        <div>
+          <pagination ng-show="result.nPages > 1" total-items="result.ct"
+            page="result.page" max-size="5" class="pagination-sm"
+            boundary-links="true" rotate="true" num-pages="result.nPages"
+            on-select-page="getResultItems(result, page)"></pagination>
+        </div>
 
         <table class="table">
           <thead>

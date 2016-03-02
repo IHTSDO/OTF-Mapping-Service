@@ -412,7 +412,6 @@ angular
               if (groupFound == false) {
                 $scope.addMapGroup();
               }
-            }
 
             }
           }
@@ -918,13 +917,6 @@ angular
 
             $scope.principleInput = '';
           }
-        }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
-          $scope.recordError = "Error saving record.";
-          $rootScope.handleHttpError(data, status, headers, config);
-          $scope.recordSuccess = "";
-        });
-      };
 
           broadcastRecord();
         };
@@ -1590,10 +1582,6 @@ angular
               arr.splice(i, 1);
             }
           }
-        }
-        return;
-      }
-      ;
 
           sortByKey(arr, 'name');
         }
