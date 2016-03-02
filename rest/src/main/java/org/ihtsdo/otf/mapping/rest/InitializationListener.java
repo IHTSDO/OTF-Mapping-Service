@@ -6,8 +6,6 @@ import java.util.TimerTask;
 import javax.ws.rs.ext.Provider;
 
 import org.apache.log4j.Logger;
-import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
-import org.ihtsdo.otf.mapping.services.SecurityService;
 
 import com.sun.jersey.api.model.AbstractResourceModelContext;
 import com.sun.jersey.api.model.AbstractResourceModelListener;
