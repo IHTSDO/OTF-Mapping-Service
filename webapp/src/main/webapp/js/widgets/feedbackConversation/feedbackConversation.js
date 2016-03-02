@@ -2,23 +2,18 @@
 
 angular
   .module('mapProjectApp.widgets.feedbackConversation', [ 'adf.provider' ])
-  .config(
-    function(dashboardProvider) {
-      dashboardProvider
-        .widget(
-          'feedbackConversation',
-          {
-            title : 'Feedback Conversation',
-            description : 'Displays a Feedback Conversation',
-            controller : 'feedbackConversationCtrl',
-            templateUrl : 'js/widgets/feedbackConversation/feedbackConversation.html',
-            edit : {}
-          });
-    })
+  .config(function(dashboardProvider) {
+    dashboardProvider.widget('feedbackConversation', {
+      title : 'Feedback Conversation',
+      description : 'Displays a Feedback Conversation',
+      controller : 'feedbackConversationCtrl',
+      templateUrl : 'js/widgets/feedbackConversation/feedbackConversation.html',
+      edit : {}
+    });
+  })
   .controller(
     'feedbackConversationCtrl',
-    function($scope, $rootScope, $routeParams, $http, $location, $modal, $sce,
-      localStorageService) {
+    function($scope, $rootScope, $routeParams, $http, $location, $modal, $sce, localStorageService) {
 
       $scope.currentUser = null;
       $scope.currentRole = null;
@@ -57,13 +52,10 @@ angular
       };
 
       // watch for project change
-      $scope.$on('localStorageModule.notification.setFocusProject', function(
-        event, parameters) {
-        console
-          .debug("MapProjectWidgetCtrl:  Detected change in focus project");
+      $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
+        console.debug('MapProjectWidgetCtrl:  Detected change in focus project');
         $scope.focusProject = parameters.focusProject;
-        $scope.allUsers = $scope.focusProject.mapSpecialist
-          .concat($scope.focusProject.mapLead);
+        $scope.allUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
         organizeUsers($scope.allUsers);
         initializeReturnRecipients($scope.conversation);
       });
@@ -72,126 +64,109 @@ angular
       // conversation from feedback list
 
       // on any change of focusProject, retrieve new available work
-      $scope
-        .$watch(
-          [ 'focusProject', 'currentUser', 'currentUserToken' ],
-          function() {
-            console
-              .debug('feedbackConversationCtrl:  Detected project or user set/change');
-            if ($scope.focusProject != null && $scope.currentUser != null
-              && $scope.currentUserToken != null) {
-              $http.defaults.headers.common.Authorization = $scope.currentUserToken;
-              $scope.allUsers = $scope.focusProject.mapSpecialist
-                .concat($scope.focusProject.mapLead);
-              organizeUsers($scope.allUsers);
-              $scope.getFeedbackConversation();
+      $scope.$watch([ 'focusProject', 'currentUser', 'currentUserToken' ], function() {
+        console.debug('feedbackConversationCtrl:  Detected project or user set/change');
+        if ($scope.focusProject != null && $scope.currentUser != null
+          && $scope.currentUserToken != null) {
+          $http.defaults.headers.common.Authorization = $scope.currentUserToken;
+          $scope.allUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
+          organizeUsers($scope.allUsers);
+          $scope.getFeedbackConversation();
 
-              setIndexViewerStatus();
-            }
-          });
+          setIndexViewerStatus();
+        }
+      });
 
-      $scope.allUsers = $scope.focusProject.mapSpecialist
-        .concat($scope.focusProject.mapLead);
+      $scope.allUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
       organizeUsers($scope.allUsers);
 
       // function to retrieve the feedback conversation based on record id
       $scope.getFeedbackConversation = function() {
         $rootScope.glassPane++;
         $http({
-          url : root_workflow + "conversation/id/" + $scope.recordId,
-          dataType : "json",
-          method : "GET",
+          url : root_workflow + 'conversation/id/' + $scope.recordId,
+          dataType : 'json',
+          method : 'GET',
           headers : {
-            "Content-Type" : "application/json"
+            'Content-Type' : 'application/json'
           }
-        }).success(
-          function(data) {
+        }).success(function(data) {
 
-            $scope.conversation = data;
-            console.debug("Feedback Conversation:");
-            console.debug($scope.conversation);
-            $scope.markViewed($scope.conversation, $scope.currentUser);
-            initializeReturnRecipients($scope.conversation);
+          $scope.conversation = data;
+          console.debug('Feedback Conversation:');
+          console.debug($scope.conversation);
+          $scope.markViewed($scope.conversation, $scope.currentUser);
+          initializeReturnRecipients($scope.conversation);
 
-            $scope.record = null;
+          $scope.record = null;
 
-            // load record to be displayed; try to find active
-            // record first
-            $http(
-              {
-                url : root_mapping + "record/id/"
-                  + $scope.conversation.mapRecordId + "/historical",
-                dataType : "json",
-                method : "GET",
+          // load record to be displayed; try to find active
+          // record first
+          $http({
+            url : root_mapping + 'record/id/' + $scope.conversation.mapRecordId + '/historical',
+            dataType : 'json',
+            method : 'GET',
+            authorization : $scope.currentUserToken,
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+
+            $rootScope.glassPane--;
+
+            $scope.record = data;
+
+            setTitle();
+
+            // get the conflict records if they exist
+            var originIds = $scope.record.originIds;
+            if (originIds != null && originIds.length > 0) {
+
+              $rootScope.glassPane++;
+              $http({
+                url : root_mapping + 'record/id/' + originIds[0] + '/historical',
+                dataType : 'json',
+                method : 'GET',
                 authorization : $scope.currentUserToken,
                 headers : {
-                  "Content-Type" : "application/json"
+                  'Content-Type' : 'application/json'
                 }
-              }).success(
-              function(data) {
+              }).success(function(data) {
 
                 $rootScope.glassPane--;
 
-                $scope.record = data;
+                $scope.record1 = data;
 
-                setTitle();
-
-                // get the conflict records if they exist
-                var originIds = $scope.record.originIds;
-                if (originIds != null && originIds.length > 0) {
-
+                if (originIds != null && originIds.length == 2) {
                   $rootScope.glassPane++;
-                  $http(
-                    {
-                      url : root_mapping + "record/id/" + originIds[0]
-                        + "/historical",
-                      dataType : "json",
-                      method : "GET",
-                      authorization : $scope.currentUserToken,
-                      headers : {
-                        "Content-Type" : "application/json"
-                      }
-                    }).success(
-                    function(data) {
+                  $http({
+                    url : root_mapping + 'record/id/' + originIds[1] + '/historical',
+                    dataType : 'json',
+                    method : 'GET',
+                    authorization : $scope.currentUserToken,
+                    headers : {
+                      'Content-Type' : 'application/json'
+                    }
+                  }).success(function(data) {
+                    $rootScope.glassPane--;
+                    $scope.record2 = data;
 
-                      $rootScope.glassPane--;
-
-                      $scope.record1 = data;
-
-                      if (originIds != null && originIds.length == 2) {
-                        $rootScope.glassPane++;
-                        $http(
-                          {
-                            url : root_mapping + "record/id/" + originIds[1]
-                              + "/historical",
-                            dataType : "json",
-                            method : "GET",
-                            authorization : $scope.currentUserToken,
-                            headers : {
-                              "Content-Type" : "application/json"
-                            }
-                          }).success(function(data) {
-                          $rootScope.glassPane--;
-                          $scope.record2 = data;
-
-                          setDisplayRecords();
-                        }).error(
-                          function(data, status, headers, config) {
-                            $rootScope.glassPane--;
-                            $rootScope.handleHttpError(data, status, headers,
-                              config);
-                          });
-                      }
-                    }).error(function(data, status, headers, config) {
+                    setDisplayRecords();
+                  }).error(function(data, status, headers, config) {
                     $rootScope.glassPane--;
                     $rootScope.handleHttpError(data, status, headers, config);
                   });
                 }
               }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
-              $rootScope.handleHttpError(data, status, headers, config);
-            });
+                $rootScope.glassPane--;
+                $rootScope.handleHttpError(data, status, headers, config);
+              });
+            }
           }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
           $rootScope.handleHttpError(data, status, headers, config);
         });
@@ -235,28 +210,24 @@ angular
 
       // update the title to contain conceptId and preferred name
       function setTitle() {
-        $scope.model.title = $scope.conversation.title + " - Concept "
-          + $scope.conversation.terminologyId + ":  "
-          + $scope.conversation.defaultPreferredName;
+        $scope.model.title = $scope.conversation.title + ' - Concept '
+          + $scope.conversation.terminologyId + ':  ' + $scope.conversation.defaultPreferredName;
       }
-      ;
 
       // options for the rich text feedback input field
       $scope.tinymceOptions = {
         menubar : false,
         statusbar : false,
-        plugins : "autolink autoresize link image charmap searchreplace",
-        toolbar : "undo redo | styleselect | bold italic underline strikethrough | charmap link image",
+        plugins : 'autolink autoresize link image charmap searchreplace',
+        toolbar : 'undo redo | styleselect | bold italic underline strikethrough | charmap link image',
       };
 
       // send feedback on already started conversation
-      $scope.sendFeedback = function(record, feedbackMessage, conversation,
-        recipientList) {
-        console.debug("Add feedback to conversation", record);
+      $scope.sendFeedback = function(record, feedbackMessage, conversation, recipientList) {
+        console.debug('Add feedback to conversation', record);
 
-        if (feedbackMessage == null || feedbackMessage == undefined
-          || feedbackMessage === '') {
-          window.alert("The feedback field cannot be blank. ");
+        if (feedbackMessage == null || feedbackMessage == undefined || feedbackMessage === '') {
+          window.alert('The feedback field cannot be blank. ');
           return;
         }
         // figure out the return recipients based on previous feedback
@@ -276,13 +247,13 @@ angular
 
         // create feedback msg to be added to the conversation
         var feedback = {
-          "message" : feedbackMessage,
-          "mapError" : "",
-          "timestamp" : new Date(),
-          "sender" : $scope.currentUser,
-          "recipients" : newRecipients,
-          "isError" : "false",
-          "viewedBy" : [ $scope.currentUser ]
+          'message' : feedbackMessage,
+          'mapError' : '',
+          'timestamp' : new Date(),
+          'sender' : $scope.currentUser,
+          'recipients' : newRecipients,
+          'isError' : 'false',
+          'viewedBy' : [ $scope.currentUser ]
         };
 
         localFeedback.push(feedback);
@@ -316,40 +287,38 @@ angular
 
       // opens SNOMED CT browser
       $scope.getBrowserUrl = function() {
-        if ($scope.currentUser.userName === 'guest')
-          return "http://browser.ihtsdotools.org/index.html?perspective=full&conceptId1="
-            + $scope.conversation.terminologyId
-            + "&edition=en-edition"
-            + "&server=https://browser-aws-1.ihtsdotools.org/&langRefset=900000000000509007"
-            + "&acceptLicense=true";
+        if ($scope.currentUser.userName === 'guest') {
+          return 'http://browser.ihtsdotools.org/index.html?perspective=full&conceptId1='
+            + $scope.conversation.terminologyId + '&acceptLicense=true';
 
-        else
-          return "http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1="
-            + $scope.conversation.terminologyId
-            + "&diagrammingMarkupEnabled=true&acceptLicense=true";
+        } else {
+          return 'http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1='
+            + $scope.conversation.terminologyId + '&acceptLicense=true';
+        }
+
       };
 
       $scope.openConceptBrowser = function() {
-        window.open($scope.getBrowserUrl(), "browserWindow");
+        window.open($scope.getBrowserUrl(), 'browserWindow');
       };
 
       $scope.openIndexViewer = function() {
-        console.debug("page location is", window.location.href);
+        console.debug('page location is', window.location.href);
         var currentUrl = window.location.href;
         var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
-        var newUrl = baseUrl + "/index/viewer";
-        var myWindow = window.open(newUrl, "indexViewerWindow");
+        var newUrl = baseUrl + '/index/viewer';
+        var myWindow = window.open(newUrl, 'indexViewerWindow');
         myWindow.focus();
       };
 
       // redirects to the record editing or conflict editing page
       $scope.goEdit = function(record) {
         if (record.workflowStatus == 'CONFLICT_NEW') {
-          var path = "/record/conflicts/" + record.id;
+          var path = '/record/conflicts/' + record.id;
           // redirect page
           $location.path(path);
         } else {
-          var path = "/record/recordId/" + record.id;
+          var path = '/record/recordId/' + record.id;
           // redirect page
           $location.path(path);
         }
@@ -357,12 +326,12 @@ angular
 
       // redirect to the concept view
       $scope.goConceptView = function(id) {
-        var path = "/record/conceptId/" + id;
+        var path = '/record/conceptId/' + id;
         // redirect page
         $location.path(path);
       };
 
-      // determines if the "Edit Record" button should be displayed
+      // determines if the 'Edit Record' button should be displayed
       $scope.displayEdit = function() {
         if ($scope.record == null || $scope.record == undefined)
           return false;
@@ -393,7 +362,7 @@ angular
       $scope.markActive = function(conversation) {
         conversation.resolved = 'false';
         updateFeedbackConversation(conversation);
-      }
+      };
 
       $scope.markFeedbackResolved = function(conversation) {
         conversation.resolved = 'true';
@@ -406,7 +375,7 @@ angular
         // if no previous feedback conversations, return just first map
         // lead in
         // list
-        if (conversation == null || conversation == "") {
+        if (conversation == null || conversation == '') {
           $scope.returnRecipients.push($scope.focusProject.mapLead[0]);
           return;
         }
@@ -428,29 +397,27 @@ angular
         }
         return;
       }
-      ;
 
       function updateFeedbackConversation(conversation) {
         $rootScope.glassPane++;
 
         $http({
-          url : root_workflow + "conversation/update",
-          dataType : "json",
+          url : root_workflow + 'conversation/update',
+          dataType : 'json',
           data : conversation,
-          method : "POST",
+          method : 'POST',
           headers : {
-            "Content-Type" : "application/json"
+            'Content-Type' : 'application/json'
           }
         }).success(function(data) {
           $rootScope.glassPane--;
-          console.debug("success to update Feedback conversation.");
+          console.debug('success to update Feedback conversation.');
         }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
-          $scope.recordError = "Error updating feedback conversation.";
+          $scope.recordError = 'Error updating feedback conversation.';
           $rootScope.handleHttpError(data, status, headers, config);
         });
       }
-      ;
 
       function organizeUsers(arr) {
         // remove Current user
@@ -462,12 +429,12 @@ angular
 
         // remove demo users
         for (var i = arr.length; i--;) {
-          if (arr[i].name.indexOf("demo") > -1) {
+          if (arr[i].name.indexOf('demo') > -1) {
             arr.splice(i, 1);
           }
         }
 
-        sortByKey(arr, "name");
+        sortByKey(arr, 'name');
       }
 
       // sort and return an array by string key
@@ -478,21 +445,19 @@ angular
           return ((x < y) ? -1 : ((x > y) ? 1 : 0));
         });
       }
-      ;
 
       function setIndexViewerStatus() {
         $http(
           {
-            url : root_content + "index/"
-              + $scope.project.destinationTerminology + "/"
-              + $scope.project.destinationTerminologyVersion,
-            dataType : "json",
-            method : "GET",
+            url : root_content + 'index/' + $scope.focusProject.destinationTerminology + '/'
+              + $scope.focusProject.destinationTerminologyVersion,
+            dataType : 'json',
+            method : 'GET',
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-          console.debug("Success in getting viewable indexes.");
+          console.debug('Success in getting viewable indexes.');
           if (data.searchResult.length > 0) {
             $scope.indexViewerExists = true;
           } else {
@@ -502,5 +467,5 @@ angular
           $scope.indexViewerExists = false;
         });
       }
-      ;
+
     });

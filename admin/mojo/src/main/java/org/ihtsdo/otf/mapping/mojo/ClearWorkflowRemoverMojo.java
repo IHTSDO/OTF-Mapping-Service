@@ -5,10 +5,8 @@ import java.util.Set;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
-import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
 
 /**
@@ -43,10 +41,10 @@ public class ClearWorkflowRemoverMojo extends AbstractMojo {
 
     try {
 
-      MappingService mappingService = new MappingServiceJpa();
-      Set<MapProject> mapProjects = new HashSet<>();
+      final WorkflowService workflowService = new WorkflowServiceJpa();
+      final Set<MapProject> mapProjects = new HashSet<>();
 
-      for (MapProject mapProject : mappingService.getMapProjects()
+      for (MapProject mapProject : workflowService.getMapProjects()
           .getIterable()) {
         for (String id : refsetId.split(",")) {
           if (mapProject.getRefSetId().equals(id)) {
@@ -56,7 +54,6 @@ public class ClearWorkflowRemoverMojo extends AbstractMojo {
       }
 
       // Clear workflow
-      WorkflowService workflowService = new WorkflowServiceJpa();
       for (MapProject mapProject : mapProjects) {
         getLog().info(
             "Clearing workflow for " + mapProject.getName() + ", "
@@ -65,7 +62,6 @@ public class ClearWorkflowRemoverMojo extends AbstractMojo {
       }
 
       getLog().info("done ...");
-      mappingService.close();
       workflowService.close();
 
     } catch (Exception e) {

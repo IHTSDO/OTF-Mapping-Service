@@ -84,7 +84,6 @@ public class ICPCProjectSpecificAlgorithmHandler extends
   public MapRelation computeMapRelation(MapRecord mapRecord, MapEntry mapEntry)
     throws Exception {
 
-    // System.out.println("Computing map relation");
     // if entry has no target
     if (mapEntry.getTargetId() == null || mapEntry.getTargetId().isEmpty()) {
 
@@ -111,8 +110,6 @@ public class ICPCProjectSpecificAlgorithmHandler extends
     if (mapEntry.getRule() == null || mapEntry.getRule().isEmpty()) {
       return null;
     }
-
-    // System.out.println("Entry has target");
 
     // if entry has a gender rule
     if (mapEntry.getRule().contains("MALE")) {
@@ -149,8 +146,6 @@ public class ICPCProjectSpecificAlgorithmHandler extends
 
       // using contains here to capture TRUE and OTHERWISE TRUE
     } else if (mapEntry.getRule().contains("TRUE")) {
-
-      // System.out.println("Entry has TRUE rule");
 
       // retrieve the relations by terminology id
       for (MapRelation relation : mapProject.getMapRelations()) {

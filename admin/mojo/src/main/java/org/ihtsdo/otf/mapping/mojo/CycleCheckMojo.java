@@ -7,6 +7,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
+import org.ihtsdo.otf.mapping.services.MetadataService;
 
 /**
  * Goal which performs a cycle check.
@@ -64,20 +65,19 @@ public class CycleCheckMojo extends AbstractMojo {
 
       // creating tree positions
       // first get isaRelType from metadata
-      MetadataServiceJpa metadataService = new MetadataServiceJpa();
+      final MetadataService metadataService = new MetadataServiceJpa();
       Map<String, String> hierRelTypeMap =
           metadataService.getHierarchicalRelationshipTypes(terminology,
               terminologyVersion);
       String isaRelType = hierRelTypeMap.keySet().iterator().next().toString();
       metadataService.close();
-
-      ContentService contentService = new ContentServiceJpa();
       getLog().info("Start creating tree positions.");
 
+      final ContentService contentService = new ContentServiceJpa();
       for (String rootId : rootIds.split(",")) {
         getLog().info("  Cycle check from rootId " + rootId);
-        contentService.cycleCheck(terminology, terminologyVersion,
-            isaRelType, rootId);
+        contentService.cycleCheck(terminology, terminologyVersion, isaRelType,
+            rootId);
       }
       contentService.close();
 

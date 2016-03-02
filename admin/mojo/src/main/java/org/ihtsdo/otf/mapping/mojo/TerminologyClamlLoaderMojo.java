@@ -13,6 +13,7 @@ import java.io.Reader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -62,7 +63,11 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
    * @parameter
    * @required
    */
-  String inputFile;
+  private String inputFile;
+
+  // NOTE: default visibility is used instead of private
+  // so that the inner class parser does not require
+  // the use of synthetic accessors
 
   /**
    * Name of terminology to be loaded.
@@ -77,10 +82,6 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
    * @required
    */
   String version;
-
-  // NOTE: default visibility is used instead of private
-  // so that the inner class parser does not require
-  // the use of synthetic accessors
 
   /** The effective time. */
   String effectiveTime;
@@ -97,15 +98,14 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
   /** The content service. */
   ContentService contentService;
 
-  /**
-   * child to parent code map NOTE: this assumes a single superclass
-   **/
-  Map<String, String> childToParentCodeMap;
+  /** Child to parent code map NOTE: this assumes a single superclass */
+  Map<String, String> chdParMap;
 
-  /**
-   * Indicates subclass relationships NOTE: this assumes a single superclass
-   **/
-  Map<String, Boolean> parentCodeHasChildrenMap;
+  /** Indicates subclass relationships NOTE: this assumes a single superclass */
+  Map<String, Boolean> parChildrenMap;
+
+  /** The concept usage map. */
+  Map<String, String> conceptUsageMap = new HashMap<>();
 
   /** The helper. */
   ClamlMetadataHelper helper;
@@ -144,21 +144,21 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
               effectiveTime, contentService);
       conceptMap = helper.createMetadata();
 
-      childToParentCodeMap = new HashMap<>();
-      parentCodeHasChildrenMap = new HashMap<>();
+      chdParMap = new HashMap<>();
+      parChildrenMap = new HashMap<>();
 
       // Prep SAX parser
-      SAXParserFactory factory = SAXParserFactory.newInstance();
+      final SAXParserFactory factory = SAXParserFactory.newInstance();
       factory.setValidating(false);
-      SAXParser saxParser = factory.newSAXParser();
-      DefaultHandler handler = new LocalHandler();
+      final SAXParser saxParser = factory.newSAXParser();
+      final DefaultHandler handler = new LocalHandler();
 
       // Open XML and begin parsing
-      File file = new File(inputFile);
+      final File file = new File(inputFile);
       fis = new FileInputStream(file);
       inputStream = checkForUtf8BOM(fis);
       reader = new InputStreamReader(inputStream, "UTF-8");
-      InputSource is = new InputSource(reader);
+      final InputSource is = new InputSource(reader);
       is.setEncoding("UTF-8");
       saxParser.parse(is, handler);
 
@@ -166,16 +166,18 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 
       // creating tree positions
       // first get isaRelType from metadata
-      MetadataService metadataService = new MetadataServiceJpa();
-      Map<String, String> hierRelTypeMap =
+      final MetadataService metadataService = new MetadataServiceJpa();
+      final Map<String, String> hierRelTypeMap =
           metadataService.getHierarchicalRelationshipTypes(terminology,
               terminologyVersion);
-      String isaRelType = hierRelTypeMap.keySet().iterator().next().toString();
+      final String isaRelType =
+          hierRelTypeMap.keySet().iterator().next().toString();
       metadataService.close();
 
       // Let the service create its own transaction.
-      for (String root : roots) {
-        getLog().info("Start creating tree positions " + root + ", " + isaRelType);
+      for (final String root : roots) {
+        getLog().info(
+            "Start creating tree positions " + root + ", " + isaRelType);
         contentService.computeTreePositions(terminology, terminologyVersion,
             isaRelType, root);
       }
@@ -222,7 +224,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
    */
   private static InputStream checkForUtf8BOM(InputStream inputStream)
     throws IOException {
-    PushbackInputStream pushbackInputStream =
+    final PushbackInputStream pushbackInputStream =
         new PushbackInputStream(new BufferedInputStream(inputStream), 3);
     byte[] bom = new byte[3];
     if (pushbackInputStream.read(bom) != -1) {
@@ -239,65 +241,66 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
   class LocalHandler extends DefaultHandler {
 
     /** The chars. */
-    StringBuilder chars = new StringBuilder();
+    private StringBuilder chars = new StringBuilder();
 
     /** The label chars - used for description text. */
-    StringBuilder labelChars = new StringBuilder();
+    private StringBuilder labelChars = new StringBuilder();
 
     /** The rubric kind. */
-    String rubricKind = null;
+    private String rubricKind = null;
 
     /** The rubric id. */
-    String rubricId = null;
+    private String rubricId = null;
 
     /** The code. */
-    String code = null;
+    private String code = null;
 
     /** The parent code. */
-    String parentCode = null;
+    private String parentCode = null;
 
     /** The modifier code. */
-    String modifierCode = null;
+    private String modifierCode = null;
 
     /** The modifier. */
-    String modifier = null;
+    private String modifier = null;
 
     /** The class usage. */
-    String classUsage = null;
+    private String classUsage = null;
 
     /** The reference usage. */
-    String referenceUsage = null;
+    private String referenceUsage = null;
 
     /** The reference code. */
-    String referenceCode = null;
+    private String referenceCode = null;
 
     /** The ref set member counter. */
-    int refSetMemberCounter = 1;
+    private int refSetMemberCounter = 1;
 
     /** The reference indicating a non-isa relationship. */
-    String reference = null;
+    private String reference = null;
 
     /** The current sub classes. */
-    Set<String> currentSubClasses = new HashSet<>();
+    private Set<String> currentSubClasses = new HashSet<>();
 
     /**
      * This is a code => modifier map. The modifier must then be looked up in
      * modifier map to determine the code extensions and template concepts
      * associated with it.
      */
-    Map<String, List<String>> classToModifierMap = new HashMap<>();
+    private Map<String, List<String>> classToModifierMap = new HashMap<>();
 
     /**
      * This is a code => modifier map. If a code is modified but also blocked by
      * an entry in here, do not make children from the template classes.
      */
-    Map<String, List<String>> classToExcludedModifierMap = new HashMap<>();
+    private Map<String, List<String>> classToExcludedModifierMap =
+        new HashMap<>();
 
     /**
      * The rels map for holding data for relationships that will be built after
      * all concepts are created.
      */
-    Map<String, Set<Concept>> relsMap = new HashMap<>();
+    private Map<String, Set<Concept>> relsMap = new HashMap<>();
 
     /** Indicates rels are needed as a result of the SuperClass tag. */
     boolean isaRelNeeded = false;
@@ -306,18 +309,18 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
      * The concept that is currently being built from the contents of a Class
      * tag.
      */
-    Concept concept = new ConceptJpa();
+    private Concept concept = new ConceptJpa();
 
     /** The rel id counter. */
     int relIdCounter = 100;
 
     /** The modifier map. */
-    Map<String, Map<String, Concept>> modifierMap = new HashMap<>();
+    private Map<String, Map<String, Concept>> modifierMap = new HashMap<>();
 
     /**
      * Tag stack.
      */
-    Stack<String> tagStack = new Stack<>();
+    private Stack<String> tagStack = new Stack<>();
 
     /**
      * Instantiates a new local handler.
@@ -342,11 +345,11 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       if (qName.equalsIgnoreCase("meta")) {
         // e.g. <Meta name="TopLevelSort"
         // value="- A B D F H K L N P R S T U W X Y Z"/>
-        String name = attributes.getValue("name");
+        final String name = attributes.getValue("name");
         if (name != null && name.equalsIgnoreCase("toplevelsort")) {
           String value = attributes.getValue("value");
           roots = new ArrayList<>();
-          for (String code : value.split(" ")) {
+          for (final String code : value.split(" ")) {
             getLog().info("  Adding root: " + code.trim());
             roots.add(code.trim());
           }
@@ -406,7 +409,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
             "  Class "
                 + (code != null ? code : (modifier + ":" + modifierCode))
                 + " has parent " + parentCode);
-        parentCodeHasChildrenMap.put(parentCode, true);
+        parChildrenMap.put(parentCode, true);
       }
 
       // Encountered "Subclass", save child information
@@ -417,12 +420,12 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
             "  Class "
                 + (code != null ? code : (modifier + ":" + modifierCode))
                 + " has child " + childCode);
-        parentCodeHasChildrenMap.put(code, true);
+        parChildrenMap.put(code, true);
       }
 
       // Encountered ModifiedBy, save modifier code information
       if (qName.equalsIgnoreCase("modifiedby")) {
-        String modifiedByCode = attributes.getValue("code");
+        final String modifiedByCode = attributes.getValue("code");
         getLog().info("  Class " + code + " modified by " + modifiedByCode);
         List<String> currentModifiers = new ArrayList<>();
         if (classToModifierMap.containsKey(code)) {
@@ -434,7 +437,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 
       // Encountered ExcludeModifier, save excluded modifier code information
       if (qName.equalsIgnoreCase("excludemodifier")) {
-        String excludeModifierCode = attributes.getValue("code");
+        final String excludeModifierCode = attributes.getValue("code");
         getLog().info(
             "  Class and subclasses of " + code + " exclude modifier "
                 + excludeModifierCode);
@@ -448,15 +451,15 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
         // If the code contains a dash (-) we need to generate
         // all of the codes in the range
         if (code.indexOf("-") != -1) {
-          String[] startEnd = code.split("-");
+          final String[] startEnd = code.split("-");
           char letterStart = startEnd[0].charAt(0);
           char letterEnd = startEnd[1].charAt(0);
           int start = Integer.parseInt(startEnd[0].substring(1));
           int end = Integer.parseInt(startEnd[1].substring(1));
           for (char c = letterStart; c <= letterEnd; c++) {
             for (int i = start; i <= end; i++) {
-              String padI = "0000000000" + i;
-              String code =
+              final String padI = "0000000000" + i;
+              final String code =
                   c
                       + padI.substring(
                           padI.length() - startEnd[0].length() + 1,
@@ -584,11 +587,12 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
             // Persist now, but commit at the end after all descriptions are
             // added
             contentService.addConcept(concept);
+
             conceptMap.put(code, concept);
           }
 
           // Add description to concept for this rubric
-          Description desc = new DescriptionJpa();
+          final Description desc = new DescriptionJpa();
           desc.setTerminologyId(rubricId);
           desc.setEffectiveTime(dateFormat.parse(effectiveTime));
           desc.setActive(true);
@@ -689,11 +693,34 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
             }
             children.add(concept);
             relsMap.put(parentCode + ":" + "isa", children);
-            for (Concept child : children) {
-              childToParentCodeMap.put(child.getTerminologyId(), parentCode);
+            for (final Concept child : children) {
+              chdParMap.put(child.getTerminologyId(), parentCode);
             }
-            parentCodeHasChildrenMap.put(parentCode, true);
+            parChildrenMap.put(parentCode, true);
 
+          }
+
+          // Record class level dagger/asterisk info as refset member
+          if (classUsage != null) {
+            getLog().info("  Class " + code + " has usage " + classUsage);
+            getLog().info("    id = " + concept.getId());
+            final SimpleRefSetMember member = new SimpleRefSetMemberJpa();
+            member.setConcept(concept);
+            member.setActive(true);
+            member.setEffectiveTime(dateFormat.parse(effectiveTime));
+            member.setModuleId(new Long(conceptMap.get("defaultModule")
+                .getTerminologyId()));
+            member.setTerminology(terminology);
+            member.setTerminologyId(new Integer(refSetMemberCounter++)
+                .toString());
+            member.setTerminologyVersion(terminologyVersion);
+            member.setRefSetId(conceptMap.get(classUsage).getTerminologyId());
+            concept.addSimpleRefSetMember(member);
+            if (concept.getId() != null) {
+              // Add member
+              contentService.addSimpleRefSetMember(member);
+              conceptUsageMap.put(concept.getTerminologyId(), classUsage);
+            }
           }
 
           // If concept indicates modifiedby tag, add related children
@@ -701,24 +728,6 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
           // modifiers need to be created for this concept
           if (qName.equalsIgnoreCase("class") && code.indexOf("-") == -1) {
             modifierHelper(code);
-          }
-
-          // Record class level dagger/asterisk info as refset member
-          if (classUsage != null) {
-            getLog().info("  Class " + code + " has usage " + classUsage);
-            SimpleRefSetMember refSetMember = new SimpleRefSetMemberJpa();
-            refSetMember.setConcept(concept);
-            refSetMember.setActive(true);
-            refSetMember.setEffectiveTime(dateFormat.parse(effectiveTime));
-            refSetMember.setModuleId(new Long(conceptMap.get("defaultModule")
-                .getTerminologyId()));
-            refSetMember.setTerminology(terminology);
-            refSetMember.setTerminologyId(new Integer(refSetMemberCounter++)
-                .toString());
-            refSetMember.setTerminologyVersion(terminologyVersion);
-            refSetMember.setRefSetId(conceptMap.get(classUsage)
-                .getTerminologyId());
-            concept.addSimpleRefSetMember(refSetMember);
           }
 
           // reset variables at the end of each
@@ -764,13 +773,14 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
     @Override
     public void endDocument() throws SAXException {
       // Add relationships now that all concepts have been created
-      Map<String, Integer> relDisambiguation = new HashMap<>();
+      final Map<String, Integer> relDisambiguation = new HashMap<>();
 
       try {
-        for (Map.Entry<String, Set<Concept>> mapEntry : relsMap.entrySet()) {
+        for (final Map.Entry<String, Set<Concept>> mapEntry : relsMap
+            .entrySet()) {
 
-          String key = mapEntry.getKey();
-          String tokens[] = key.split(":");
+          final String key = mapEntry.getKey();
+          final String tokens[] = key.split(":");
           String parentCode = null;
           String id = null;
           String type = null;
@@ -810,12 +820,12 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
             type = "dagger-to-asterisk";
           if (type.equals("dagger"))
             type = "asterisk-to-dagger";
-          for (Concept childConcept : mapEntry.getValue()) {
+          for (final Concept childConcept : mapEntry.getValue()) {
             getLog().info(
                 "  Create Relationship " + childConcept.getTerminologyId()
                     + " " + type + " " + parentCode + " " + id);
             if (conceptMap.containsKey(parentCode)) {
-              Relationship relationship = new RelationshipJpa();
+              final Relationship relationship = new RelationshipJpa();
               // For reference, use the provided id
               if (id != null) {
                 relationship.setTerminologyId(id);
@@ -894,7 +904,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       }
 
       // add description to concept
-      Description desc = new DescriptionJpa();
+      final Description desc = new DescriptionJpa();
       desc.setTerminologyId(rubricId);
       desc.setEffectiveTime(dateFormat.parse(effectiveTime));
       desc.setActive(true);
@@ -923,8 +933,9 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       // Determine if "code" or any of its ancestor codes have modifiers
       // that are not blocked by excluded modifiers
       String cmpCode = codeToModify;
-      Map<String, String> modifiersToMatchedCodeMap = new HashMap<>();
-      Map<String, String> excludedModifiersToMatchedCodeMap = new HashMap<>();
+      final Map<String, String> modifiersToMatchedCodeMap = new HashMap<>();
+      final Map<String, String> excludedModifiersToMatchedCodeMap =
+          new HashMap<>();
       while (cmpCode.length() > 2) {
         getLog().info("    Determine if " + cmpCode + " has modifiers");
 
@@ -932,7 +943,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
         // add it
         if (classToModifierMap.containsKey(cmpCode)) {
           // Find and save all modifiers at this level
-          for (String modifier : classToModifierMap.get(cmpCode)) {
+          for (final String modifier : classToModifierMap.get(cmpCode)) {
             modifiersToMatchedCodeMap.put(modifier, codeToModify);
             getLog().info("      Use modifier " + modifier + " for " + cmpCode);
             // If this modifier has been explicitly excluded at a lower level
@@ -962,14 +973,13 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
         // NOTE: this can go after the earlier section because we'll always
         // find an excluded modifier at a level lower than where it was defined
         if (classToExcludedModifierMap.containsKey(cmpCode)) {
-          for (String modifier : classToExcludedModifierMap.get(cmpCode)) {
+          for (final String modifier : classToExcludedModifierMap.get(cmpCode)) {
             // Check manual exclusion overrides.
             excludedModifiersToMatchedCodeMap.put(modifier, cmpCode);
           }
         }
 
-        cmpCode =
-            TerminologyClamlLoaderMojo.this.childToParentCodeMap.get(cmpCode);
+        cmpCode = TerminologyClamlLoaderMojo.this.chdParMap.get(cmpCode);
         if (cmpCode == null) {
           break;
         }
@@ -983,7 +993,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       if (modifiersForCode.size() > 0) {
 
         // Loop through all modifiers identified as applying to this code
-        for (String modifiedByCode : modifiersForCode) {
+        for (final String modifiedByCode : modifiersForCode) {
 
           // Apply 4th digit modifiers to 3 digit codes (and recursively call)
           // Apply 5th digit modifiers to 4 digit codes (which have length 5 due
@@ -998,10 +1008,10 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
             if (modifierMap.containsKey(modifiedByCode)) {
               // for each code on that modifier, create a
               // child and create a relationship
-              for (Map.Entry<String, Concept> mapEntry : modifierMap.get(
+              for (final Map.Entry<String, Concept> mapEntry : modifierMap.get(
                   modifiedByCode).entrySet()) {
 
-                Concept modConcept =
+                final Concept modConcept =
                     modifierMap.get(modifiedByCode).get(mapEntry.getKey());
 
                 // handle case where a _5 modifier is defined with a code having
@@ -1033,14 +1043,14 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 
           // Handle case of 3 digit code with a _5 modifier without any children
           else if (codeToModify.length() == 3
-              && parentCodeHasChildrenMap.get(codeToModify) == null
+              && parChildrenMap.get(codeToModify) == null
               && modifiedByCode.endsWith("_5")) {
 
-            Concept conceptToModify = conceptMap.get(codeToModify);
+            final Concept conceptToModify = conceptMap.get(codeToModify);
             getLog().info(
                 "        Creating placeholder concept "
                     + conceptToModify.getTerminologyId() + ".X");
-            Concept placeholderConcept = new ConceptJpa();
+            final Concept placeholderConcept = new ConceptJpa();
             placeholderConcept
                 .setDefaultPreferredName(" - PLACEHOLDER 4th digit");
 
@@ -1075,218 +1085,41 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       if (code.contains("-")) {
         return false;
       }
-      String cmpCode = code.substring(0, 3);
+      final String cmpCode = code.substring(0, 3);
       getLog().info(
           "    CHECK OVERRIDE " + code + ", " + cmpCode + ", " + modifier);
 
-      Set<String> overrideCodes = new HashSet<>();
-
-      // 4TH AND 5TH
-      overrideCodes.add("V09");
-      overrideCodes.add("V19");
-      overrideCodes.add("V29");
-      overrideCodes.add("V39");
-      overrideCodes.add("V49");
-      overrideCodes.add("V59");
-      overrideCodes.add("V69");
-      overrideCodes.add("V79");
-      overrideCodes.add("V80");
-      overrideCodes.add("V81");
-      overrideCodes.add("V82");
-      overrideCodes.add("V83");
-      overrideCodes.add("V84");
-      overrideCodes.add("V85");
-      overrideCodes.add("V86");
-      overrideCodes.add("V87");
-      overrideCodes.add("V88");
-      overrideCodes.add("V89");
-      overrideCodes.add("V95");
-      overrideCodes.add("V96");
-      overrideCodes.add("V97");
-      overrideCodes.add("W00");
-      overrideCodes.add("W01");
-      overrideCodes.add("W02");
-      overrideCodes.add("W03");
-      overrideCodes.add("W04");
-      overrideCodes.add("W05");
-      overrideCodes.add("W06");
-      overrideCodes.add("W07");
-      overrideCodes.add("W08");
-      overrideCodes.add("W09");
-      overrideCodes.add("W10");
-      overrideCodes.add("W11");
-      overrideCodes.add("W12");
-      overrideCodes.add("W13");
-      overrideCodes.add("W14");
-      overrideCodes.add("W15");
-      overrideCodes.add("W16");
-      overrideCodes.add("W17");
-      overrideCodes.add("W18");
-      overrideCodes.add("W19");
-      overrideCodes.add("W20");
-      overrideCodes.add("W21");
-      overrideCodes.add("W22");
-      overrideCodes.add("W23");
-      overrideCodes.add("W24");
-      overrideCodes.add("W25");
-      overrideCodes.add("W26");
-      overrideCodes.add("W27");
-      overrideCodes.add("W28");
-      overrideCodes.add("W29");
-      overrideCodes.add("W30");
-      overrideCodes.add("W31");
-      overrideCodes.add("W32");
-      overrideCodes.add("W33");
-      overrideCodes.add("W34");
-      overrideCodes.add("W35");
-      overrideCodes.add("W36");
-      overrideCodes.add("W37");
-      overrideCodes.add("W38");
-      overrideCodes.add("W39");
-      overrideCodes.add("W40");
-      overrideCodes.add("W41");
-      overrideCodes.add("W42");
-      overrideCodes.add("W43");
-      overrideCodes.add("W44");
-      overrideCodes.add("W45");
-      overrideCodes.add("W46");
-      overrideCodes.add("W49");
-      overrideCodes.add("W50");
-      overrideCodes.add("W51");
-      overrideCodes.add("W52");
-      overrideCodes.add("W53");
-      overrideCodes.add("W54");
-      overrideCodes.add("W55");
-      overrideCodes.add("W56");
-      overrideCodes.add("W57");
-      overrideCodes.add("W58");
-      overrideCodes.add("W59");
-      overrideCodes.add("W60");
-      overrideCodes.add("W64");
-      overrideCodes.add("W65");
-      overrideCodes.add("W66");
-      overrideCodes.add("W67");
-      overrideCodes.add("W68");
-      overrideCodes.add("W69");
-      overrideCodes.add("W70");
-      overrideCodes.add("W73");
-      overrideCodes.add("W74");
-      overrideCodes.add("W75");
-      overrideCodes.add("W76");
-      overrideCodes.add("W77");
-      overrideCodes.add("W78");
-      overrideCodes.add("W79");
-      overrideCodes.add("W80");
-      overrideCodes.add("W81");
-      overrideCodes.add("W83");
-      overrideCodes.add("W84");
-      overrideCodes.add("W85");
-      overrideCodes.add("W86");
-      overrideCodes.add("W87");
-      overrideCodes.add("W88");
-      overrideCodes.add("W89");
-      overrideCodes.add("W90");
-      overrideCodes.add("W91");
-      overrideCodes.add("W92");
-      overrideCodes.add("W93");
-      overrideCodes.add("W94");
-      overrideCodes.add("W99");
-      overrideCodes.add("X00");
-      overrideCodes.add("X01");
-      overrideCodes.add("X02");
-      overrideCodes.add("X03");
-      overrideCodes.add("X04");
-      overrideCodes.add("X05");
-      overrideCodes.add("X06");
-      overrideCodes.add("X08");
-      overrideCodes.add("X09");
-      overrideCodes.add("X10");
-      overrideCodes.add("X11");
-      overrideCodes.add("X12");
-      overrideCodes.add("X13");
-      overrideCodes.add("X14");
-      overrideCodes.add("X15");
-      overrideCodes.add("X16");
-      overrideCodes.add("X17");
-      overrideCodes.add("X18");
-      overrideCodes.add("X19");
-      overrideCodes.add("X20");
-      overrideCodes.add("X21");
-      overrideCodes.add("X22");
-      overrideCodes.add("X23");
-      overrideCodes.add("X24");
-      overrideCodes.add("X25");
-      overrideCodes.add("X26");
-      overrideCodes.add("X27");
-      overrideCodes.add("X28");
-      overrideCodes.add("X29");
-      overrideCodes.add("X30");
-      overrideCodes.add("X31");
-      overrideCodes.add("X32");
-      overrideCodes.add("X33");
-      overrideCodes.add("X34");
-      overrideCodes.add("X35");
-      overrideCodes.add("X36");
-      overrideCodes.add("X37");
-      overrideCodes.add("X38");
-      overrideCodes.add("X39");
-      overrideCodes.add("X40");
-      overrideCodes.add("X41");
-      overrideCodes.add("X42");
-      overrideCodes.add("X43");
-      overrideCodes.add("X44");
-      overrideCodes.add("X45");
-      overrideCodes.add("X46");
-      overrideCodes.add("X47");
-      overrideCodes.add("X48");
-      overrideCodes.add("X49");
-      overrideCodes.add("X50");
-      overrideCodes.add("X51");
-      overrideCodes.add("X52");
-      overrideCodes.add("X53");
-      overrideCodes.add("X54");
-      overrideCodes.add("X57");
-      overrideCodes.add("X58");
-      overrideCodes.add("X59");
-      overrideCodes.add("Y06");
-      overrideCodes.add("Y07");
-      overrideCodes.add("Y35");
-      overrideCodes.add("Y36");
-      overrideCodes.add("Y40");
-      overrideCodes.add("Y41");
-      overrideCodes.add("Y42");
-      overrideCodes.add("Y43");
-      overrideCodes.add("Y44");
-      overrideCodes.add("Y45");
-      overrideCodes.add("Y46");
-      overrideCodes.add("Y47");
-      overrideCodes.add("Y48");
-      overrideCodes.add("Y49");
-      overrideCodes.add("Y50");
-      overrideCodes.add("Y51");
-      overrideCodes.add("Y52");
-      overrideCodes.add("Y53");
-      overrideCodes.add("Y54");
-      overrideCodes.add("Y55");
-      overrideCodes.add("Y56");
-      overrideCodes.add("Y57");
-      overrideCodes.add("Y58");
-      overrideCodes.add("Y59");
-      overrideCodes.add("Y63");
-      overrideCodes.add("Y64");
-      overrideCodes.add("Y65");
-      overrideCodes.add("Y83");
-      overrideCodes.add("Y84");
-      overrideCodes.add("Y85");
-      overrideCodes.add("Y87");
-      overrideCodes.add("Y88");
-      overrideCodes.add("Y89");
-      overrideCodes.add("Y90");
-      overrideCodes.add("Y91");
+      final Set<String> overrideCodes =
+          new HashSet<>(Arrays.asList(new String[] {
+              // 4TH AND 5TH
+              "V09", "V19", "V29", "V39", "V49", "V59", "V69", "V79", "V80",
+              "V81", "V82", "V83", "V84", "V85", "V86", "V87", "V88", "V89",
+              "V95", "V96", "V97", "W00", "W01", "W02", "W03", "W04", "W05",
+              "W06", "W07", "W08", "W09", "W10", "W11", "W12", "W13", "W14",
+              "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23",
+              "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32",
+              "W33", "W34", "W35", "W36", "W37", "W38", "W39", "W40", "W41",
+              "W42", "W43", "W44", "W45", "W46", "W49", "W50", "W51", "W52",
+              "W53", "W54", "W55", "W56", "W57", "W58", "W59", "W60", "W64",
+              "W65", "W66", "W67", "W68", "W69", "W70", "W73", "W74", "W75",
+              "W76", "W77", "W78", "W79", "W80", "W81", "W83", "W84", "W85",
+              "W86", "W87", "W88", "W89", "W90", "W91", "W92", "W93", "W94",
+              "W99", "X00", "X01", "X02", "X03", "X04", "X05", "X06", "X08",
+              "X09", "X10", "X11", "X12", "X13", "X14", "X15", "X16", "X17",
+              "X18", "X19", "X20", "X21", "X22", "X23", "X24", "X25", "X26",
+              "X27", "X28", "X29", "X30", "X31", "X32", "X33", "X34", "X35",
+              "X36", "X37", "X38", "X39", "X40", "X41", "X42", "X43", "X44",
+              "X45", "X46", "X47", "X48", "X49", "X50", "X51", "X52", "X53",
+              "X54", "X57", "X58", "X59", "Y06", "Y07", "Y35", "Y36", "Y40",
+              "Y41", "Y42", "Y43", "Y44", "Y45", "Y46", "Y47", "Y48", "Y49",
+              "Y50", "Y51", "Y52", "Y53", "Y54", "Y55", "Y56", "Y57", "Y58",
+              "Y59", "Y63", "Y64", "Y65", "Y83", "Y84", "Y85", "Y87", "Y88",
+              "Y89", "Y90", "Y91"
+          }));
 
       // Override excludes for the code list above for S20W00_4
       if (overrideCodes.contains(cmpCode) && modifier.equals("S20W00_4")
-          && !parentCodeHasChildrenMap.containsKey(cmpCode))
+          && !parChildrenMap.containsKey(cmpCode))
         return true;
 
       /**
@@ -1308,11 +1141,9 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
      */
     private boolean isDescendantCode(String desc, String anc) {
       String currentCode = desc;
-      while (TerminologyClamlLoaderMojo.this.childToParentCodeMap
-          .get(currentCode) != null) {
-        String parent =
-            TerminologyClamlLoaderMojo.this.childToParentCodeMap
-                .get(currentCode);
+      while (TerminologyClamlLoaderMojo.this.chdParMap.get(currentCode) != null) {
+        final String parent =
+            TerminologyClamlLoaderMojo.this.chdParMap.get(currentCode);
         if (parent.equals(anc)) {
           return true;
         }
@@ -1346,12 +1177,52 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 
       conceptMap.put(childConcept.getTerminologyId(), childConcept);
       contentService.addConcept(childConcept);
+
+      // ADD mod concept asterisk stuff
+      for (final SimpleRefSetMember member : modConcept
+          .getSimpleRefSetMembers()) {
+        final SimpleRefSetMember copy = new SimpleRefSetMemberJpa();
+        copy.setActive(member.isActive());
+        copy.setConcept(childConcept);
+        copy.setEffectiveTime(member.getEffectiveTime());
+        copy.setModuleId(member.getModuleId());
+        copy.setRefSetId(member.getRefSetId());
+        copy.setTerminology(member.getTerminology());
+        copy.setTerminologyVersion(member.getTerminologyVersion());
+        copy.setTerminologyId(member.getTerminologyId());
+        contentService.addSimpleRefSetMember(copy);
+        // a little different, but does occupy the spot
+        conceptUsageMap.put(childConcept.getTerminologyId(),
+            member.getRefSetId());
+      }
+
+      // If child doesn't have usage but parent does,
+      // Copy parents here
+      if (!conceptUsageMap.containsKey(childConcept.getTerminologyId())
+          && conceptUsageMap.containsKey(parentConcept.getTerminologyId())) {
+        final String usage =
+            conceptUsageMap.get(parentConcept.getTerminologyId());
+        final SimpleRefSetMember member = new SimpleRefSetMemberJpa();
+        member.setConcept(childConcept);
+        member.setActive(true);
+        member.setEffectiveTime(dateFormat.parse(effectiveTime));
+        member.setModuleId(new Long(conceptMap.get("defaultModule")
+            .getTerminologyId()));
+        member.setTerminology(terminology);
+        member.setTerminologyId(new Integer(refSetMemberCounter++).toString());
+        member.setTerminologyVersion(terminologyVersion);
+        member.setRefSetId(conceptMap.get(usage).getTerminologyId());
+        childConcept.addSimpleRefSetMember(member);
+        contentService.addSimpleRefSetMember(member);
+        conceptUsageMap.put(childConcept.getTerminologyId(), usage);
+      }
+
       // add relationship
       helper.createIsaRelationship(parentConcept, childConcept, ("" + relId),
           terminology, terminologyVersion, effectiveTime);
-      childToParentCodeMap.put(childConcept.getTerminologyId(),
+      chdParMap.put(childConcept.getTerminologyId(),
           parentConcept.getTerminologyId());
-      parentCodeHasChildrenMap.put(parentConcept.getTerminologyId(), true);
+      parChildrenMap.put(parentConcept.getTerminologyId(), true);
       return childConcept;
 
     }

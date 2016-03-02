@@ -59,6 +59,7 @@ public class ExportReportHandler {
    * @param wb the wb
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   private void handleExportReport(Report report, Workbook wb) throws Exception {
     Logger.getLogger(ReportServiceJpa.class).info(
         "Exporting report " + report.getName() + "...");

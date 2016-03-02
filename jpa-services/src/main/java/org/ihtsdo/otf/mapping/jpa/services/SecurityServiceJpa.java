@@ -52,30 +52,14 @@ public class SecurityServiceJpa extends RootServiceJpa implements
 
   /**
    * Instantiates an empty {@link SecurityServiceJpa}.
-   * 
-   * @throws Exception
+   *
+   * @throws Exception the exception
    */
   public SecurityServiceJpa() throws Exception {
     super();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.services.RootService#initializeFieldNames()
-   */
-  @Override
-  public void initializeFieldNames() throws Exception {
-    // no need
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.SecurityService#authenticate(java.lang.
-   * String, java.lang.String)
-   */
+  /* see superclass */
   @Override
   public String authenticate(String username, String password) throws Exception {
     if (username == null)
@@ -107,6 +91,31 @@ public class SecurityServiceJpa extends RootServiceJpa implements
       return username;
     }    
     
+    // Use ihtsdo.security.activated as a switch
+    // - false or true = ihtsdo
+    // uts = uts
+    if (config.getProperty("ihtsdo.security.activated") != null
+        && config.getProperty("ihtsdo.security.activated").equals("uts")) {
+      return utsAuthenticate(username, password);
+    } else {
+      return ihtsdoAuthenticate(username, password);
+    }
+  }
+
+  /**
+   * IHTSDO authenticate.
+   *
+   * @param username the username
+   * @param password the password
+   * @return the string
+   * @throws Exception the exception
+   */
+  @SuppressWarnings("unchecked")
+  private String ihtsdoAuthenticate(String username, String password)
+    throws Exception {
+
+    String ihtsdoSecurityUrl = config.getProperty("ihtsdo.security.url");
+
     // Use ihtsdo.security.activated as a switch
     // - false or true = ihtsdo
     // uts = uts
@@ -324,6 +333,7 @@ public class SecurityServiceJpa extends RootServiceJpa implements
     return token;
   }
 
+  /* see superclass */
   @Override
   public void logout(String userName) throws Exception {
 
@@ -336,13 +346,7 @@ public class SecurityServiceJpa extends RootServiceJpa implements
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.SecurityService#getUsernameForToken(java
-   * .lang.String)
-   */
+  /* see superclass */
   @SuppressWarnings("unused")
   @Override
   public String getUsernameForToken(String authToken) throws Exception {
@@ -357,7 +361,7 @@ public class SecurityServiceJpa extends RootServiceJpa implements
     // bypass steps below and don't login
     if (authToken.equals("guest"))
       return "guest";
-    
+
     // read ihtsdo security url and active status from config file
     if (config == null) {
       config = ConfigUtility.getConfigProperties();
@@ -407,13 +411,7 @@ public class SecurityServiceJpa extends RootServiceJpa implements
           "401");
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.SecurityService#authorizeToken(java.lang
-   * .String, java.lang.Long)
-   */
+  /* see superclass */
   @Override
   public MapUserRole getMapProjectRoleForToken(String authToken,
     Long mapProjectId) throws Exception {
@@ -433,13 +431,7 @@ public class SecurityServiceJpa extends RootServiceJpa implements
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.SecurityService#authorizeToken(java.lang
-   * .String)
-   */
+  /* see superclass */
   @Override
   public MapUserRole getApplicationRoleForToken(String authToken)
     throws Exception {

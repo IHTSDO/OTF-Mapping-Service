@@ -31,11 +31,13 @@ import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
  * Unit test for workflow actions on review project path.
  */
+@Ignore("Workflow integration tests outdated after revision")
 public class WorkflowActionReviewProjectPathTest {
 
   // the content
@@ -44,10 +46,19 @@ public class WorkflowActionReviewProjectPathTest {
 
   // the mapping objects
   /** The lead. */
-  private static MapUser viewer, specialist, lead;
+  private static MapUser viewer;
+
+  /** The specialist. */
+  private static MapUser specialist;
+
+  /** The lead. */
+  private static MapUser lead;
 
   /** The lead record. */
-  private static MapRecord specRecord, leadRecord;
+  private static MapRecord specRecord;
+
+  /** The lead record. */
+  private static MapRecord leadRecord;
 
   /** The map project. */
   private static MapProject mapProject;
@@ -77,8 +88,6 @@ public class WorkflowActionReviewProjectPathTest {
    */
   @BeforeClass
   public static void init() throws Exception {
-
-    System.out.println("Initialization");
 
     // instantiate the services
     contentService = new ContentServiceJpa();
@@ -838,8 +847,6 @@ public class WorkflowActionReviewProjectPathTest {
   @AfterClass
   public static void cleanup() throws Exception {
 
-    System.out.println("Cleanup.");
-
     workflowService.clearWorkflowForMapProject(mapProject);
     workflowService.close();
 
@@ -863,9 +870,8 @@ public class WorkflowActionReviewProjectPathTest {
    *
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   private void getTrackingRecord() throws Exception {
-    System.out.println("Getting tracking record for project "
-        + mapProject.getId() + " and concept " + concept.getTerminologyId());
     workflowService.computeWorkflow(mapProject);
     Thread.sleep(1000);
     trackingRecord = workflowService.getTrackingRecord(mapProject, concept);
@@ -876,8 +882,8 @@ public class WorkflowActionReviewProjectPathTest {
    *
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   private void clearMapRecords() throws Exception {
-    System.out.println("Clearing map records.");
     for (MapRecord mr : mappingService.getMapRecords().getIterable()) {
       mappingService.removeMapRecord(mr.getId());
     }
@@ -893,6 +899,7 @@ public class WorkflowActionReviewProjectPathTest {
    * @return the validation result
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   private ValidationResult testAllActionsForUser(MapUser user) throws Exception {
     ValidationResult result = new ValidationResultJpa();
 
@@ -916,6 +923,7 @@ public class WorkflowActionReviewProjectPathTest {
    * @param status the status
    * @return the map record
    */
+  @SuppressWarnings("static-method")
   private MapRecord createRecord(MapUser user, WorkflowStatus status) {
     MapRecord record = new MapRecordJpa();
 

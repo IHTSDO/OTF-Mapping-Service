@@ -1,142 +1,159 @@
 <div
-	style="float: left; width: 40%; padding-top: 10px; border-right: thin solid #ddd;">
+  style="float: left; width: 40%; padding-top: 10px; border-right: thin solid #ddd;">
 
-	<form>
-		<table>
-			<tbody>
-				<tr>
-					<td style="padding: 5px;"><select style="width: 250px;"
-						id="reportSearch"
-						ng-options="definition as definition.name for definition in definitions |  orderBy: 'name' | filter: {qacheck:false}"
-						ng-change="getReports(1, selectedDefinition, queryReport)"
-						ng-model="selectedDefinition"></select>
-					<td style="padding: 5px">
-						<button class="btn btn-sm btn-primary"
-							ng-click="getReports(1, null, queryReport); selectedDefinition = null;">Reset</button>
-						<button ng-show="selectedDefinition != null"
-							ng-click="generateNewReport(selectedDefinition)"
-							class="btn btn-sm btn-primary">Generate</button>
-					</td>
-				</tr>
-                
-			</tbody>
-		</table>
-	</form>
-    <div style="width: 100%; padding: 5px;" ng-show="selectedDefinition != null && selectedDefinition.description != ''">
-        <strong>Description:</strong> 
-        <div style="padding-left: 20px;word-wrap: break-word;"
-            ng-bind-html="to_trusted(selectedDefinition.description)"></div>
-    </div>
-    
-	<pagination ng-show="nReportPages > 1" total-items="nReports"
-		page="reportPage" max-size="5" class="pagination-sm"
-		boundary-links="true" rotate="true" num-pages="nReportPages"
-		on-select-page="getReports(page, selectedDefinition, queryReport)"></pagination>
+  <form>
+    <table>
+      <tbody>
+        <tr>
+          <td style="padding: 5px;">
+            <select style="width: 250px;" id="reportSearch"
+              ng-options="definition as definition.name for definition in definitions |  orderBy: 'name' | filter: {qacheck:false}"
+              ng-change="getReports(1, selectedDefinition, queryReport)"
+              ng-model="selectedDefinition"></select>
+          <td style="padding: 5px">
+            <button class="btn btn-sm btn-primary"
+              ng-click="getReports(1, null, queryReport); selectedDefinition = null;">Reset</button>
+            <button ng-show="selectedDefinition != null"
+              ng-click="generateNewReport(selectedDefinition)"
+              class="btn btn-sm btn-primary">Generate</button>
+          </td>
+        </tr>
 
-	<div ng-show="nReports != 0">
+      </tbody>
+    </table>
+  </form>
+  <div style="width: 100%; padding: 5px;"
+    ng-show="selectedDefinition != null && selectedDefinition.description != ''">
+    <strong>Description:</strong>
+    <div style="padding-left: 20px; word-wrap: break-word;"
+      ng-bind-html="to_trusted(selectedDefinition.description)"></div>
+  </div>
 
-		<table class="table">
+  <pagination ng-show="nReportPages > 1" total-items="nReports"
+    page="reportPage" max-size="5" class="pagination-sm" boundary-links="true"
+    rotate="true" num-pages="nReportPages"
+    on-select-page="getReports(page, selectedDefinition, queryReport)"></pagination>
 
-			<thead>
-				<tr>
-					<th style="width: 70%; padding: 5px;">Name</th>
-					<th style="width: 25%; padding: 5px;">Date</th>
-					<th style="width: 5%; padding: 5px;"></th>
+  <div ng-show="nReports != 0">
 
-				</tr>
+    <table class="table">
 
-			</thead>
+      <thead>
+        <tr>
+          <th style="width: 70%; padding: 5px;">Name</th>
+          <th style="width: 25%; padding: 5px;">Date</th>
+          <th style="width: 5%; padding: 5px;"></th>
 
-			<tbody>
+        </tr>
 
-				<tr ng-repeat="report in reports">
+      </thead>
 
-					<td style="width: 70%; padding: 5px;"><a
-						ng-show="report.id != reportDisplayed.id"
-						ng-click="viewReport(report)">{{report.name}}</a> <span
-						ng-show="report.id == reportDisplayed.id">{{report.name}}</span></td>
-					<td style="width: 25%; padding: 5px;">{{report.timestamp |
-						date: 'MM/dd/yyyy'}}</td>
-					<td style="width: 5%;"><a title="Delete Report"
-						ng-click="deleteReport(report, page, selectedDefinition, queryReport); reportDisplayed = null;"
-						ng-show="report.owner.id == currentUser.id || currentRole == 'Administrator'">
-							<i class="glyphicon glyphicon-remove"></i>
-					</a></td>
-			</tbody>
+      <tbody>
 
-		</table>
-	</div>
+        <tr ng-repeat="report in reports">
+
+          <td style="width: 70%; padding: 5px;">
+            <a ng-show="report.id != reportDisplayed.id"
+              ng-click="viewReport(report)">{{report.name}}</a>
+            <span ng-show="report.id == reportDisplayed.id">{{report.name}}</span>
+          </td>
+          <td style="width: 25%; padding: 5px;">{{report.timestamp | date:
+            'MM/dd/yyyy'}}</td>
+          <td style="width: 5%;">
+            <a title="Delete Report"
+              ng-click="deleteReport(report, page, selectedDefinition, queryReport); reportDisplayed = null;"
+              ng-show="report.owner.id == currentUser.id || currentRole == 'Administrator'">
+              <i class="glyphicon glyphicon-remove"></i>
+            </a>
+          </td>
+      </tbody>
+
+    </table>
+  </div>
 </div>
 
 <div>
-	<div style="float: right; width: 60%; padding: 10px">
+  <div style="float: right; width: 60%; padding: 10px">
 
-		<div class="alert alert-warning" ng-show="reportDisplayed == null">
-			No report selected</div>
+    <div class="alert alert-warning" ng-show="reportDisplayed == null">No
+      report selected</div>
 
-		<div ng-show="reportDisplayed != null">
+    <div ng-show="reportDisplayed != null">
 
-			<div style="margin-bottom:5px;">
-				<strong>Report:</strong> {{reportDisplayed.name}}, run
-				{{reportDisplayed.timestamp | date: 'MM/dd/yyyy'}} <span
-					ng-show="reportDisplayed.autoGenerated == false">by
-					{{reportDisplayed.owner.name}}</span> <span
-					ng-show="reportDisplayed.autoGenerated == true">(Auto-generated)</span>
-			</div>
-            <div>
-              <strong>Description:</strong> 
-                <div style="padding-left: 20px;word-wrap: break-word;"
-                  ng-bind-html="to_trusted(reportDisplayed.reportDefinition.description)"></div>              
-            </div>
+      <div style="margin-bottom: 5px;">
+        <strong>Report:</strong> {{reportDisplayed.name}}, run
+        {{reportDisplayed.timestamp | date: 'MM/dd/yyyy'}}
+        <span ng-show="reportDisplayed.autoGenerated == false">by
+          {{reportDisplayed.owner.name}}</span>
+        <span ng-show="reportDisplayed.autoGenerated == true">(Auto-generated)</span>
+      </div>
+      <div>
+        <strong>Description:</strong>
+        <div style="padding-left: 20px; word-wrap: break-word;"
+          ng-bind-html="to_trusted(reportDisplayed.reportDefinition.description)"></div>
+      </div>
 
-			<div class="alert alert-warning"
-				ng-show="reportDisplayed.results.length == 0">This report
-				generated no results.</div>
-			<table ng-show="reportDisplayed.results.length > 0" class="table">
-				<thead>
-					<th style="width: 3%;"></th>
-					<th style="width: 15%";>Count</th>
-					<th>Value</th>
-				</thead>
-				<tbody>
-					<tr ng-repeat="result in reportDisplayed.results">
-						<td><a ng-click="toggleResultItems(result, result.page)">
-								[<i
-								ng-class="{'glyphicon-minus': !result.isCollapsed, 'glyphicon-plus': result.isCollapsed}"></i>]
-						</a></td>
-						<td>{{result.ct}}</td>
-						<td>{{result.value}}
+      <div class="alert alert-warning"
+        ng-show="reportDisplayed.results.length == 0">This report
+        generated no results.</div>
+      <table ng-show="reportDisplayed.results.length > 0" class="table">
+        <thead>
+          <tr>
+            <th style="width: 3%;"></th>
+            <th style="width: 15%">Count</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="result in reportDisplayed.results">
+            <td>
+              <a ng-click="toggleResultItems(result, result.page)">
+                <span class="nobreak">
+                  [
+                  <i
+                    ng-class="{'glyphicon-minus': !result.isCollapsed, 'glyphicon-plus': result.isCollapsed}"></i>
+                  ]
+                </span>
+              </a>
+            </td>
+            <td>{{result.ct}}</td>
+            <td>
+              {{result.value}}
 
-							<div ng-show="!result.isCollapsed">
-								<pagination ng-show="result.nPages > 1" total-items="result.ct"
-									page="result.page" max-size="5" class="pagination-sm"
-									boundary-links="true" rotate="true" num-pages="result.nPages"
-									on-select-page="getResultItems(result, page)"></pagination>
+              <div ng-show="!result.isCollapsed">
+                <pagination ng-show="result.nPages > 1" total-items="result.ct"
+                  page="result.page" max-size="5" class="pagination-sm"
+                  boundary-links="true" rotate="true" num-pages="result.nPages"
+                  on-select-page="getResultItems(result, page)"></pagination>
 
-								<table class="table">
-									<thead>
-										<th>Id</th>
-										<th>Name</th>
-									</thead>
-									<tbody>
-										<tr ng-repeat="item in result.reportResultItems">
-											<td><a
-												ng-href="{{'index.html#/record/conceptId/' + item.itemId}}"
-												target="_blank">{{item.itemId}}</a></td>
-											<td>{{item.itemName}}</td>
-									</tbody>
-								</table>
-							</div>
-						</td>
-				</tbody>
-			</table>
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Id</th>
+                      <th>Name</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr ng-repeat="item in result.reportResultItems">
+                      <td>
+                        <a
+                          ng-href="{{'index.html#/record/conceptId/' + item.itemId}}"
+                          target="_blank">{{item.itemId}}</a>
+                      </td>
+                      <td>{{item.itemName}}</td>
+                  </tbody>
+                </table>
+              </div>
+            </td>
+        </tbody>
+      </table>
 
-			<button class="btn btn-sm btn-primary"
-				ng-show="reportDisplayed.results.length > 0"
-				ng-click="exportReport(reportDisplayed)">Export</button>
-		</div>
+      <button class="btn btn-sm btn-primary"
+        ng-show="reportDisplayed.results.length > 0"
+        ng-click="exportReport(reportDisplayed)">Export</button>
+    </div>
 
 
 
-	</div>
+  </div>
 </div>
