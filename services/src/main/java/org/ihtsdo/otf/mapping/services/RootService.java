@@ -1,5 +1,9 @@
 package org.ihtsdo.otf.mapping.services;
 
+import java.util.List;
+
+import org.ihtsdo.otf.mapping.helpers.PfsParameter;
+
 /**
  * Generically represents a service, with common functionality.
  */
@@ -18,13 +22,6 @@ public interface RootService {
    * @throws Exception the exception
    */
   public void closeFactory() throws Exception;
-
-  /**
-   * Initialize field names.
-   *
-   * @throws Exception the exception
-   */
-  public void initializeFieldNames() throws Exception;
 
   /**
    * Gets the transaction per operation.
@@ -72,9 +69,38 @@ public interface RootService {
   public void close() throws Exception;
 
   /**
-   * Clears all service resources
-   * @throws Exception
+   * Clears all service resources.
+   *
+   * @throws Exception the exception
    */
   public void clear() throws Exception;
 
+  /**
+   * Apply pfs to list.
+   *
+   * @param <T> the
+   * @param list the list
+   * @param clazz the clazz
+   * @param totalCt the total ct
+   * @param pfs the pfs
+   * @return the list
+   * @throws Exception the exception
+   */
+  public <T> List<T> applyPfsToList(List<T> list, Class<T> clazz,
+    int[] totalCt, PfsParameter pfs) throws Exception;
+
+  /**
+   * Returns the query results.
+   *
+   * @param <T> the
+   * @param query the query
+   * @param fieldNamesKey the field names key
+   * @param clazz the clazz
+   * @param pfs the pfs
+   * @param totalCt the total ct
+   * @return the query results
+   * @throws Exception the exception
+   */
+  public <T> List<?> getQueryResults(String query, Class<?> fieldNamesKey,
+    Class<?> clazz, PfsParameter pfs, int[] totalCt) throws Exception;
 }

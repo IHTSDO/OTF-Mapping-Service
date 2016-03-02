@@ -105,44 +105,44 @@ public class ClamlMetadataHelper {
     // Create concepts representing defaults needed to create
     // other concepts
     //
-    Concept defaultDefinitionStatusConcept =
+    final Concept defaultDefinitionStatusConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Default definition status", effectiveTime);
     defaultDefinitionStatusConcept.setDefinitionStatusId(Long
         .valueOf(defaultDefinitionStatusConcept.getTerminologyId()));
     conceptMap.put("defaultDefinitionStatus", defaultDefinitionStatusConcept);
 
-    Concept defaultModuleConcept =
+    final Concept defaultModuleConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Default module", effectiveTime);
     defaultModuleConcept.setModuleId(new Long(defaultModuleConcept
         .getTerminologyId()));
     conceptMap.put("defaultModule", defaultModuleConcept);
 
-    Concept defaultCaseSignificanceConcept =
+    final Concept defaultCaseSignificanceConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Default case significance", effectiveTime);
     conceptMap.put("defaultCaseSignificance", defaultCaseSignificanceConcept);
 
-    Concept preferredConcept =
+    final Concept preferredConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Preferred", effectiveTime);
     conceptMap.put("preferred", preferredConcept);
 
-    Concept defaultModifierConcept =
+    final Concept defaultModifierConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Default modifier", effectiveTime);
     conceptMap.put("defaultModifier", defaultModifierConcept);
     contentService.addConcept(defaultModifierConcept);
 
-    Concept defaultCharacteristicTypeConcept =
+    final Concept defaultCharacteristicTypeConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Default characteristic type", effectiveTime);
     conceptMap.put("defaultCharacteristicType",
         defaultCharacteristicTypeConcept);
     contentService.addConcept(defaultCharacteristicTypeConcept);
 
-    Concept isaConcept =
+    final Concept isaConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Isa", effectiveTime);
     conceptMap.put("isa", isaConcept);
@@ -155,27 +155,29 @@ public class ClamlMetadataHelper {
     //
     defaultDefinitionStatusConcept.setModuleId(new Long(conceptMap.get(
         "defaultModule").getTerminologyId()));
-    for (Description desc : defaultDefinitionStatusConcept.getDescriptions()) {
+    for (final Description desc : defaultDefinitionStatusConcept
+        .getDescriptions()) {
       desc.setModuleId(new Long(conceptMap.get("defaultModule")
           .getTerminologyId()));
       desc.setCaseSignificanceId(new Long(conceptMap.get(
           "defaultCaseSignificance").getTerminologyId()));
       desc.setTypeId(new Long(conceptMap.get("preferred").getTerminologyId()));
     }
-    for (Description desc : defaultModuleConcept.getDescriptions()) {
+    for (final Description desc : defaultModuleConcept.getDescriptions()) {
       desc.setModuleId(new Long(conceptMap.get("defaultModule")
           .getTerminologyId()));
       desc.setCaseSignificanceId(new Long(conceptMap.get(
           "defaultCaseSignificance").getTerminologyId()));
       desc.setTypeId(new Long(conceptMap.get("preferred").getTerminologyId()));
     }
-    for (Description desc : defaultCaseSignificanceConcept.getDescriptions()) {
+    for (final Description desc : defaultCaseSignificanceConcept
+        .getDescriptions()) {
       desc.setCaseSignificanceId(new Long(conceptMap.get(
           "defaultCaseSignificance").getTerminologyId()));
       desc.setTypeId(new Long(conceptMap.get("preferred").getTerminologyId()));
     }
 
-    for (Description desc : preferredConcept.getDescriptions()) {
+    for (final Description desc : preferredConcept.getDescriptions()) {
       desc.setTypeId(new Long(conceptMap.get("preferred").getTerminologyId()));
     }
 
@@ -194,7 +196,7 @@ public class ClamlMetadataHelper {
     //
     // Top level concept
     //
-    Concept metadataConcept =
+    final Concept metadataConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Metadata", effectiveTime);
     conceptMap.put("modifier", metadataConcept);
@@ -203,79 +205,79 @@ public class ClamlMetadataHelper {
     //
     // Description types
     //
-    Concept descriptionTypeConcept =
+    final Concept descriptionTypeConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Description type", effectiveTime);
     conceptMap.put("descriptionType", descriptionTypeConcept);
     contentService.addConcept(descriptionTypeConcept);
 
-    Concept codingHintConcept =
+    final Concept codingHintConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Coding hint", effectiveTime);
     conceptMap.put("coding-hint", codingHintConcept);
     contentService.addConcept(codingHintConcept);
 
-    Concept considerConcept =
+    final Concept considerConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Consider", effectiveTime);
     conceptMap.put("consider", considerConcept);
     contentService.addConcept(considerConcept);
 
-    Concept definitionConcept =
+    final Concept definitionConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Definition", effectiveTime);
     conceptMap.put("definition", definitionConcept);
     contentService.addConcept(definitionConcept);
 
-    Concept exclusionConcept =
+    final Concept exclusionConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Exclusion", effectiveTime);
     conceptMap.put("exclusion", exclusionConcept);
     contentService.addConcept(exclusionConcept);
 
-    Concept inclusionConcept =
+    final Concept inclusionConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Inclusion", effectiveTime);
     conceptMap.put("inclusion", inclusionConcept);
     contentService.addConcept(inclusionConcept);
 
-    Concept footnoteConcept =
+    final Concept footnoteConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Footnote", effectiveTime);
     conceptMap.put("footnote", footnoteConcept);
     contentService.addConcept(footnoteConcept);
 
-    Concept introductionConcept =
+    final Concept introductionConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Introduction", effectiveTime);
     conceptMap.put("introduction", introductionConcept);
     contentService.addConcept(introductionConcept);
 
-    Concept modifierlinkConcept =
+    final Concept modifierlinkConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Modifier link", effectiveTime);
     conceptMap.put("modifierlink", modifierlinkConcept);
     contentService.addConcept(modifierlinkConcept);
 
-    Concept noteConcept =
+    final Concept noteConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Note", effectiveTime);
     conceptMap.put("note", noteConcept);
     contentService.addConcept(noteConcept);
 
-    Concept preferredAbbreviatedConcept =
+    final Concept preferredAbbreviatedConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Preferred abbreviated", effectiveTime);
     conceptMap.put("preferredAbbreviated", preferredAbbreviatedConcept);
     contentService.addConcept(preferredAbbreviatedConcept);
 
-    Concept preferredLongConcept =
+    final Concept preferredLongConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Preferred long", effectiveTime);
     conceptMap.put("preferredLong", preferredLongConcept);
     contentService.addConcept(preferredLongConcept);
 
-    Concept textConcept =
+    final Concept textConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Text", effectiveTime);
     conceptMap.put("text", textConcept);
@@ -331,25 +333,25 @@ public class ClamlMetadataHelper {
     //
     // Relationship types
     //
-    Concept relationshipTypeConcept =
+    final Concept relationshipTypeConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Relationship type", effectiveTime);
     conceptMap.put("relationshipType", relationshipTypeConcept);
     contentService.addConcept(relationshipTypeConcept);
 
-    Concept asteriskToDaggerConcept =
+    final Concept asteriskToDaggerConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Asterisk to dagger", effectiveTime);
     conceptMap.put("asterisk-to-dagger", asteriskToDaggerConcept);
     contentService.addConcept(asteriskToDaggerConcept);
 
-    Concept daggerToAsteriskConcept =
+    final Concept daggerToAsteriskConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Dagger to asterisk", effectiveTime);
     conceptMap.put("dagger-to-asterisk", daggerToAsteriskConcept);
     contentService.addConcept(daggerToAsteriskConcept);
 
-    Concept referenceConcept =
+    final Concept referenceConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Reference", effectiveTime);
     conceptMap.put("reference", referenceConcept);
@@ -377,7 +379,7 @@ public class ClamlMetadataHelper {
     //
     // Case significance
     //
-    Concept caseSignificanceConcept =
+    final Concept caseSignificanceConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Case significance", effectiveTime);
     conceptMap.put("caseSignificance", caseSignificanceConcept);
@@ -393,7 +395,7 @@ public class ClamlMetadataHelper {
     //
     // Characteristic type
     //
-    Concept characteristicTypeConcept =
+    final Concept characteristicTypeConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Characteristic type", effectiveTime);
     conceptMap.put("characteristicType", characteristicTypeConcept);
@@ -409,7 +411,7 @@ public class ClamlMetadataHelper {
     //
     // Modifier
     //
-    Concept modifierConcept =
+    final Concept modifierConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Modifier", effectiveTime);
     conceptMap.put("modifier", modifierConcept);
@@ -426,7 +428,7 @@ public class ClamlMetadataHelper {
     //
     // Definition status
     //
-    Concept definitionStatusConcept =
+    final Concept definitionStatusConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Definition status", effectiveTime);
     conceptMap.put("definitionStatus", definitionStatusConcept);
@@ -442,7 +444,7 @@ public class ClamlMetadataHelper {
     //
     // Module
     //
-    Concept moduleConcept =
+    final Concept moduleConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Module", effectiveTime);
     conceptMap.put("module", moduleConcept);
@@ -459,25 +461,25 @@ public class ClamlMetadataHelper {
     //
     // Refsets
     //
-    Concept refsetsConcept =
+    final Concept refsetsConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Refsets", effectiveTime);
     conceptMap.put("refsets", refsetsConcept);
     contentService.addConcept(refsetsConcept);
 
-    Concept simpleRefsetsConcept =
+    final Concept simpleRefsetsConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Simple refsets", effectiveTime);
     conceptMap.put("simpleRefsets", simpleRefsetsConcept);
     contentService.addConcept(simpleRefsetsConcept);
 
-    Concept asteriskRefsetConcept =
+    final Concept asteriskRefsetConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Asterisk refset", effectiveTime);
     conceptMap.put("aster", asteriskRefsetConcept);
     contentService.addConcept(asteriskRefsetConcept);
 
-    Concept daggerRefsetConcept =
+    final Concept daggerRefsetConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Dagger refset", effectiveTime);
     conceptMap.put("dagger", daggerRefsetConcept);
@@ -518,12 +520,18 @@ public class ClamlMetadataHelper {
     String terminology, String terminologyVersion, String defaultPreferredName,
     String effectiveTime) throws Exception {
 
-    Concept concept = new ConceptJpa();
+    final Concept concept = new ConceptJpa();
     concept.setTerminologyId(terminologyId);
     concept.setTerminology(terminology);
     concept.setTerminologyVersion(terminologyVersion);
     concept.setEffectiveTime(dt.parse(effectiveTime));
-    concept.setDefaultPreferredName(defaultPreferredName);
+    // If this is the fifth digit below a 4th digit placeholder, clean text
+    if (terminologyId.length() == 6) {
+      concept.setDefaultPreferredName(defaultPreferredName.replaceAll(
+          "- PLACEHOLDER 4th digit ", ""));
+    } else {
+      concept.setDefaultPreferredName(defaultPreferredName);
+    }
     concept.setActive(true);
     // default definition status
     if (conceptMap.containsKey("defaultDefinitionStatus"))
@@ -535,7 +543,7 @@ public class ClamlMetadataHelper {
           .getTerminologyId()));
 
     // Create a preferred name description
-    Description desc = new DescriptionJpa();
+    final Description desc = new DescriptionJpa();
     desc.setTerminologyId(terminologyId);
     desc.setEffectiveTime(dt.parse(effectiveTime));
     desc.setActive(true);
@@ -545,7 +553,12 @@ public class ClamlMetadataHelper {
           .getTerminologyId()));
     desc.setTerminology(terminology);
     desc.setTerminologyVersion(terminologyVersion);
-    desc.setTerm(defaultPreferredName);
+    if (terminologyId.length() == 6) {
+      desc.setTerm(defaultPreferredName.replaceAll(
+          "- PLACEHOLDER 4th digit ", ""));
+    } else {
+      desc.setTerm(defaultPreferredName);
+    }
     desc.setConcept(concept);
     // default case significance
     if (conceptMap.containsKey("defaultCaseSignificance"))
@@ -578,7 +591,7 @@ public class ClamlMetadataHelper {
     if (parentConcept == null) {
       throw new Exception("Parent concept may not be null");
     }
-    Relationship relationship = new RelationshipJpa();
+    final Relationship relationship = new RelationshipJpa();
     relationship.setTerminologyId(terminologyId);
     relationship.setEffectiveTime(dt.parse(effectiveTime));
     relationship.setActive(true);
@@ -596,7 +609,7 @@ public class ClamlMetadataHelper {
     relationship.setSourceConcept(childConcept);
     // default "isa" type
     relationship.setTypeId(new Long(conceptMap.get("isa").getTerminologyId()));
-    Set<Relationship> rels = new HashSet<>();
+    final Set<Relationship> rels = new HashSet<>();
     rels.add(relationship);
     childConcept.setRelationships(rels);
   }

@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2016 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.rf2.jpa;
 
 import java.util.ArrayList;
@@ -68,6 +71,7 @@ public class TreePositionJpa implements TreePosition {
   @Transient
   private boolean valid;
 
+  /** The desc groups. */
   @Transient
   private List<TreePositionDescriptionGroup> descGroups = new ArrayList<>();
 
@@ -123,152 +127,90 @@ public class TreePositionJpa implements TreePosition {
     this.id = id;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.rf2.TreePosition#getAncestorPath()
-   */
+  /* see superclass */
   @Override
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public String getAncestorPath() {
     return ancestorPath;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.rf2.TreePosition#setAncestorPath(java.lang.String)
-   */
+  /* see superclass */
   @Override
   public void setAncestorPath(String ancestorPath) {
     this.ancestorPath = ancestorPath;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.rf2.TreePosition#getTerminology()
-   */
+  /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public String getTerminology() {
     return terminology;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.rf2.TreePosition#setTerminology(java.lang.String)
-   */
+  /* see superclass */
   @Override
   public void setTerminology(String terminology) {
     this.terminology = terminology;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.rf2.TreePosition#getTerminologyVersion()
-   */
+  /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public String getTerminologyVersion() {
     return terminologyVersion;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.rf2.TreePosition#setTerminologyVersion(java.lang
-   * .String)
-   */
+  /* see superclass */
   @Override
   public void setTerminologyVersion(String terminologyVersion) {
     this.terminologyVersion = terminologyVersion;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.rf2.TreePosition#getTerminologyId()
-   */
+  /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   public String getTerminologyId() {
     return terminologyId;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.rf2.TreePosition#setTerminologyId(java.lang.String)
-   */
+  /* see superclass */
   @Override
   public void setTerminologyId(String terminologyId) {
     this.terminologyId = terminologyId;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.rf2.TreePosition#getDefaultPreferredName()
-   */
+  /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   public String getDefaultPreferredName() {
     return defaultPreferredName;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.rf2.TreePosition#setDefaultPreferredName(java.lang
-   * .String)
-   */
+  /* see superclass */
   @Override
   public void setDefaultPreferredName(String defaultPreferredName) {
     this.defaultPreferredName = defaultPreferredName;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.rf2.TreePosition#getChildrenCount()
-   */
+  /* see superclass */
   @Override
   public int getChildrenCount() {
     return childrenCount;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.rf2.TreePosition#setChildrenCount(int)
-   */
+  /* see superclass */
   @Override
   public void setChildrenCount(int childrenCount) {
     this.childrenCount = childrenCount;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.rf2.TreePosition#getDescendantCount()
-   */
+  /* see superclass */
   @Override
   public int getDescendantCount() {
     return descendantCount;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.rf2.TreePosition#setDescendantCount(int)
-   */
+  /* see superclass */
   @Override
   public void setDescendantCount(int descendantCount) {
     this.descendantCount = descendantCount;
@@ -285,13 +227,7 @@ public class TreePositionJpa implements TreePosition {
     return terminologyNote;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.rf2.TreePosition#setTerminologyNote(java.lang.String
-   * )
-   */
+  /* see superclass */
   @Override
   public void setTerminologyNote(String terminologyNote) {
     this.terminologyNote = terminologyNote;
@@ -316,23 +252,13 @@ public class TreePositionJpa implements TreePosition {
     return children;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.rf2.TreePosition#setChildren(java.util.List)
-   */
+  /* see superclass */
   @Override
   public void setChildren(List<TreePosition> children) {
     this.children = children;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.rf2.TreePosition#addChild(org.ihtsdo.otf.mapping
-   * .rf2.TreePosition)
-   */
+  /* see superclass */
   @Override
   public void addChild(TreePosition treePosition) {
 
@@ -350,11 +276,7 @@ public class TreePositionJpa implements TreePosition {
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.rf2.TreePosition#addChildren(java.util.List)
-   */
+  /* see superclass */
   @Override
   public void addChildren(List<TreePosition> treePositions) {
 
@@ -364,11 +286,7 @@ public class TreePositionJpa implements TreePosition {
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.rf2.TreePosition#isValid()
-   */
+  /* see superclass */
   @Override
   @Transient
   @XmlElement
@@ -376,31 +294,25 @@ public class TreePositionJpa implements TreePosition {
     return valid;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.rf2.TreePosition#setValid(boolean)
-   */
+  /* see superclass */
   @Override
   public void setValid(boolean valid) {
     this.valid = valid;
   }
 
+  /* see superclass */
   @Override
   public List<TreePositionDescriptionGroup> getDescGroups() {
     return descGroups;
   }
 
+  /* see superclass */
   @Override
   public void setDescGroups(List<TreePositionDescriptionGroup> descGroups) {
     this.descGroups = descGroups;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#hashCode()
-   */
+  /* see superclass */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -424,11 +336,7 @@ public class TreePositionJpa implements TreePosition {
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
+  /* see superclass */
   @Override
   public boolean equals(Object obj) {
     if (this == obj)
@@ -466,11 +374,7 @@ public class TreePositionJpa implements TreePosition {
     return true;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
+  /* see superclass */
   @Override
   public String toString() {
     String childrenStr = "";

@@ -52,11 +52,7 @@ public class MapRecordRemoverMojo extends AbstractMojo {
     // Do nothing
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.maven.plugin.Mojo#execute()
-   */
+
   @Override
   public void execute() throws MojoExecutionException {
     getLog().info("Starting removing map records for project");
@@ -64,15 +60,15 @@ public class MapRecordRemoverMojo extends AbstractMojo {
 
     try {
 
-      MappingService mappingService = new MappingServiceJpa();
+      final MappingService mappingService = new MappingServiceJpa();
       mappingService.setTransactionPerOperation(false);
       mappingService.beginTransaction();
-      Set<MapProject> mapProjects = new HashSet<>();
+      final Set<MapProject> mapProjects = new HashSet<>();
 
       getLog().info("Start removing map records for refsetId - " + refsetId);
-      for (MapProject mapProject : mappingService.getMapProjects()
+      for (final MapProject mapProject : mappingService.getMapProjects()
           .getIterable()) {
-        for (String id : refsetId.split(",")) {
+        for (final String id : refsetId.split(",")) {
           if (mapProject.getRefSetId().equals(id)) {
             mapProjects.add(mapProject);
           }
@@ -86,9 +82,9 @@ public class MapRecordRemoverMojo extends AbstractMojo {
 
       // Remove map record and entry notes
       int ct = 0;
-      for (MapProject mapProject : mapProjects) {
+      for (final MapProject mapProject : mapProjects) {
         getLog().debug("    Remove map records for " + mapProject.getName());
-        for (MapRecord record : mappingService.getMapRecordsForMapProject(
+        for (final MapRecord record : mappingService.getMapRecordsForMapProject(
             mapProject.getId()).getMapRecords()) {
           getLog().info(
               "    Removing map record " + record.getId() + " from "

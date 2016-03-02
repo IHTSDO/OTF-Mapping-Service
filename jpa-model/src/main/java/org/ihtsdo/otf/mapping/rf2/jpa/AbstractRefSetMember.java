@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2016 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.rf2.jpa;
 
 import javax.persistence.Column;
@@ -16,6 +19,23 @@ public abstract class AbstractRefSetMember extends AbstractComponent implements
   /** The ref set id */
   @Column(nullable = false)
   String refSetId;
+
+  /**
+   * Instantiates an empty {@link AbstractRefSetMember}.
+   */
+  protected AbstractRefSetMember() {
+    super();
+  }
+
+  /**
+   * Instantiates a {@link AbstractRefSetMember} from the specified parameters.
+   *
+   * @param member the member
+   */
+  protected AbstractRefSetMember(RefSetMember member) {
+    super(member);
+    this.refSetId = member.getRefSetId();
+  }
 
   /**
    * {@inheritDoc}

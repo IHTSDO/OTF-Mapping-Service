@@ -2,59 +2,125 @@
   <p>This is the content of the template</p>
 </script>
 
-<form>
-  Search: <input id="searchField" ng-model="searchField" style="margin: 5px;">
-  <input id="subSearchField" ng-model="subSearchField" style="margin: 5px;">
-  <input id="subSubSearchField" ng-model="subSubSearchField"
-    style="margin: 5px;"> <input type="checkbox" ng-model="allCheckBox"
-    style="margin: 5px;"> All
-  <button class="btn btn-sm btn-primary" style="margin: 5px;"
-    ng-click="performAggregatedSearch(searchField, subSearchField, subSubSearchField);">Go</button>
-  <button class="btn btn-sm btn-primary"
-    ng-click="searchField = null; 
-              subSearchField = null; subSubSearchField = null; 
-              mainTermLabel = ''; searchResultsLabel = '';
-              firstArrow = false; previousArrow = false;
-              nextArrow = false; lastArrow = false;">Reset</button>
-</form>
+<style>
+.hidden : {
+	visibility: hidden;
+}
+</style>
+
+<!--  Target setting and popover details retrieval, remove entirely after testing complete
+<input type="text" ng-model="targetCodeTest"><button class="btn btn-sm btn-primary" ng-click="selectTargetCode(targetCodeTest)">Test Target Set</button>
+<input type="text" ng-model="linkTest"><button class="btn btn-sm btn-primary" ng-click="details(linkTest)">Test Details Retrieval</button>
+<textarea ng-show="testDetailsResult" ng-model="testDetailsResult"></textarea><br>
+ <div style="padding-left: 20px;" ng-bind-html="to_trusted(testDetailsResult)"></div>
+<hr>
+ -->
+
+<!-- 
+ // WCI IHTSDO OTF NOTE -- 02/18/16 changed ng-bind to bind-html-unsafe
+  -->
+
+<div class="row">
+	<div class="col-md-12">
+		<form>
+			Search: <input id="searchField" ng-model="searchField"
+				style="margin: 5px;"> <input id="subSearchField"
+				ng-model="subSearchField" style="margin: 5px;"> <input
+				id="subSubSearchField" ng-model="subSubSearchField"
+				style="margin: 5px;"> <input type="checkbox"
+				ng-model="allCheckBox" style="margin: 5px;"> All
+			<button class="btn btn-sm btn-primary" style="margin: 5px;"
+				ng-click="performAggregatedSearch(searchField, subSearchField, subSubSearchField, allCheckBox);">Go</button>
+			<button class="btn btn-sm btn-primary" ng-click="reset()">Reset</button>
+		</form>
 
 
-<div style="float: left; width: 60%; padding: 10px;">
-  <b>{{mainTermLabel}}</b>
-</div>
+		<div class="row">
+			<div class="col-md-6"></div>
+			<div class="col-md-1">
+				<div ng-show="searchResults && searchResultIndex > 0">
+					<!-- First -->
+					<i title="Go to first search result"
+						class="noul glyphicon glyphicon-backward"
+						ng-click="goToSearchResult(0)"></i>
+					<!-- Previous -->
+					<i title="Go to previous search result"
+						ng-click="goToSearchResult(searchResultIndex - 1)"
+						class="noul glyphicon glyphicon-step-backward"></i>
+				</div>
+			</div>
+			<div class="col-md-2">
+				<div ng-show="searchResults && searchResults.length > 0">{{searchResultIndex
+					+ 1}} of {{searchResults.length}} search results</div>
+			</div>
+			<div class="col-md-1">
+				<div
+					ng-show="searchResults && searchResultIndex < searchResults.length - 1">
+					<i title="Go to next search result"
+						ng-click="goToSearchResult(searchResultIndex + 1)"
+						class="noul glyphicon glyphicon-step-forward"></i>
+					<!-- Last -->
+					<i title="Go to last search result"
+						ng-click="goToSearchResult(nResults - 1)"
+						class="noul glyphicon glyphicon-forward"></i>
+				</div>
+			</div>
+			<div class="col-md-2"></div>
+		</div>
 
-<div style="float: right; width: 40%; padding: 10px;">
-  <a title="Go to first search result" ng-show="firstArrow"
-    ng-click="goFirstResult()"><i class="glyphicon glyphicon-backward"></i></a>
-  <a title="Go to previous search result" ng-show="previousArrow"
-    ng-click="goPreviousResult()"><i
-    class="glyphicon glyphicon-step-backward"></i></a> {{searchResultsLabel}} <a
-    title="Go to next search result" ng-show="nextArrow"
-    ng-click="goNextResult()"><i class="glyphicon glyphicon-step-forward"></i></a>
-  <a title="Go to last search result" ng-show="lastArrow"
-    ng-click="goLastResult()"><i class="glyphicon glyphicon-forward"></i></a>
+	</div>
 </div>
 
 <div>
-  <tabset> <tab ng-repeat="domain in domains  | orderBy: 'toString()'" heading="{{domain}}"
-    ng-click="retrieveIndexPages(domain);"> </tab></tabset>
+
+	<!-- Domains tabset -->
+	<tabset> <!--  Domain selection 	--> <tab
+		ng-repeat="domainTab in domainTabs  | orderBy: 'name'"
+		heading="{{domainTab.domain.name}}"
+		select="selectDomainTab(domainTab)"> <!-- Domain page tabset -->
+	<tabset> <!--  Domain page selection --> <tab
+		active="pageTab.active" ng-click="selectPage(pageTab.name)"
+		ng-repeat="pageTab in domainTab.pageTabs | orderBy:'name'"
+		heading="{{pageTab.name}}">
+
+	<div class="row">
+
+		<div class="col-md-9">
+
+			<div id="scrollArea" style="height: 500px;">
+				<div class="slide-animate" ng-include ng-click="selectPage(pageTab)"
+					src="getPageUrl(domainTab.domain.name, pageTab.name)" autoscroll></div>
+			</div>
+		</div>
+		<div class="col-md-3" style="padding-left: 0px;">
+
+
+			<p style="margin-top: 15px;">Highlighted Index Trail</p>
+			<div class="well" style="padding: 0px;"
+				ng-show="!indexTrailHighlighted || indexTrailHighlighted.length == 0">
+				<em>No search performed.</em>
+			</div>
+			<div class="well" style="padding: 0px;"
+				ng-show="indexTrailHighlighted.length > 0"
+				ng-bind-html="to_trusted(indexTrailHighlighted)"></div>
+			<hr>
+
+
+			<p style="margin-top: 15px;">User-selected Index Trail</p>
+			<div class="well" style="padding: 0px;"
+				ng-show="!indexTrail || indexTrail.length == 0">
+				<em>Click any title to view its index trail.</em>
+			</div>
+			<div class="well" style="padding: 0px;"
+				ng-show="indexTrail.length > 0"
+				ng-bind-html="to_trusted(indexTrail)"></div>
+
+
+		</div>
+	</div>
+	<!--  End domain page tab --> </tab> <!--  End domain page tabset --> </tabset> <!--  End domain selection -->
+	</tab> <!--  End domains tabset --> </tabset>
+
 </div>
-
-<div align="center" style="padding: 10px;">
-  <div style="display: inline; padding: 8px;" ng-repeat="indexTab in indexPages  | orderBy: 'toString()'">
-    <a ng-style="set_style(indexTab)" ng-click="updateUrl(indexTab)">{{indexTab}}</a>
-  </div>
-</div>
-
-<div id="scrollArea" style="height: 500px;">
-  <div class="slide-animate" ng-include src="tUrl" autoscroll></div>
-</div>
-
-
-
-
-
-
-
 
 
