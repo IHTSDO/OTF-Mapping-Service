@@ -4,7 +4,7 @@
 
 <table style="margin-top: 10px;">
   <tr>
-    <td style="padding: 5px";>Filter concepts:</td>
+    <td style="padding: 5px;">Filter concepts:</td>
     <td style="padding: 5px;">
       <form>
         <input id="assignedSearch" ng-model="queryAssigned">
@@ -20,14 +20,14 @@
     <td>
       <form>
         <input type="radio" ng-model="assignedWorkType" value="ALL"
-          ng-change="retrieveAssignedWork(1, queryAssigned, assignedWorkType)">All</input>
+          ng-change="retrieveAssignedWork(1, queryAssigned, assignedWorkType)">All
         <input type="radio" ng-model="assignedWorkType" value="NEW"
-          ng-change="retrieveAssignedWork(1, queryAssigned, assignedWorkType)">New</input>
+          ng-change="retrieveAssignedWork(1, queryAssigned, assignedWorkType)">New
         <input type="radio" ng-model="assignedWorkType"
           value="EDITING_IN_PROGRESS"
-          ng-change="retrieveAssignedWork(1, queryAssigned, assignedWorkType)">Editing</input>
+          ng-change="retrieveAssignedWork(1, queryAssigned, assignedWorkType)">Editing
         <input type="radio" ng-model="assignedWorkType" value="EDITING_DONE"
-          ng-change="retrieveAssignedWork(1, queryAssigned, assignedWorkType)">Finished</input>
+          ng-change="retrieveAssignedWork(1, queryAssigned, assignedWorkType)">Finished
       </form>
     </td>
   </tr>
@@ -55,17 +55,22 @@
 
         <!--  Extra column if on editing in progress page for dashboard finish commands -->
         <th style="width: 3%; padding: 5px;"><a
-          ng-show="assignedWorkType === 'EDITING_IN_PROGRESS'"
-          title="Finish All Work"
-          ng-click="finishOrPublishBatch(assignedWorkType)"> <i
-            class="glyphicon glyphicon-check"></i>
-        </a></th>
+            ng-show="assignedWorkType === 'EDITING_IN_PROGRESS'"
+            title="Finish All Work"
+            ng-click="finishOrPublishBatch(assignedWorkType)">
+            <i class="glyphicon glyphicon-check"></i>
+          </a> <a ng-show="assignedWorkType === 'EDITING_DONE'"
+            title='Publish All Finished Concepts'
+            ng-click="finishOrPublishBatch(assignedWorkType)">
+            <i class="glyphicon glyphicon-check"></i>
+          </a></th>
 
         <th style="width: 75%; padding: 5px;">Preferred Name</th>
         <th style="width: 3%; padding: 5px;"><a title="Return All Work"
-          ng-click="unassignAllWork(currentUser, 'concept', assignedWorkType, queryAssigned)"><i
-            class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i></a>
-        </th>
+            ng-click="unassignAllWork(currentUser, 'concept', assignedWorkType, queryAssigned)">
+            <i
+              class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i>
+          </a></th>
 
       </tr>
 
@@ -78,34 +83,38 @@
 
 
         <td style="width: 3%; padding: 5px;">
-          <!-- Display a pushpin if this record has previously been edited --> <a
-          title='Continue working on this concept'
-          ng-show="result.terminologyVersion === 'EDITING_IN_PROGRESS'"> <i
-            ng-click="goEditRecord(result.id)"
-            class="glyphicon glyphicon-pushpin"></i>
-        </a> <!-- Display a pencil if this record has not yet been edited --> <a
-          title='Start work on this concept'
-          ng-show="result.terminologyVersion === 'NEW'"> <i
-            ng-click="goEditRecord(result.id)"
-            class="glyphicon glyphicon-pencil"></i>
-        </a> <!-- Display a saved icon if this record has been marked finished--> <a
-          title='Re-edit this finished concept'
-          ng-show="result.terminologyVersion === 'EDITING_DONE'
+          <!-- Display a pushpin if this record has previously been edited -->
+          <a title='Continue working on this concept'
+            ng-show="result.terminologyVersion === 'EDITING_IN_PROGRESS'">
+            <i ng-click="goEditRecord(result.id)"
+              class="glyphicon glyphicon-pushpin"></i>
+          </a>
+          <!-- Display a pencil if this record has not yet been edited -->
+          <a title='Start work on this concept'
+            ng-show="result.terminologyVersion === 'NEW'">
+            <i ng-click="goEditRecord(result.id)"
+              class="glyphicon glyphicon-pencil"></i>
+          </a>
+          <!-- Display a saved icon if this record has been marked finished-->
+          <a title='Re-edit this finished concept'
+            ng-show="result.terminologyVersion === 'EDITING_DONE'
 						|| result.terminologyVersion === 'CONFLICT_DETECTED'
 						|| result.terminologyVersion === 'REVIEW_NEEDED'">
             <i ng-click="goEditRecord(result.id)"
-            class="glyphicon glyphicon-saved"></i>
-        </a> <!-- If lead has claimed their own previous work for review, don't allow clicking -->
+              class="glyphicon glyphicon-saved"></i>
+          </a>
+          <!-- If lead has claimed their own previous work for review, do not allow clicking -->
           <a disabled title='You have claimed this concept for Lead Review'
-          ng-show="result.terminologyVersion === 'REVIEW_NEW'
+            ng-show="result.terminologyVersion === 'REVIEW_NEW'
 						|| result.terminologyVersion === 'REVIEW_IN_PROGRESS'">
             <i class="glyphicon glyphicon-ban-circle"></i>
-        </a> <a disabled
-          title='You have claimed this concept for Conflict Resolution'
-          ng-show="result.terminologyVersion === 'CONFLICT_NEW'
+          </a>
+          <a disabled
+            title='You have claimed this concept for Conflict Resolution'
+            ng-show="result.terminologyVersion === 'CONFLICT_NEW'
 						|| result.terminologyVersion === 'CONFLICT_IN_PROGRESS'">
             <i class="glyphicon glyphicon-ban-circle"></i>
-        </a>
+          </a>
 
 
         </td>
@@ -115,20 +124,31 @@
 
         <td style="width: 3%; padding: 5px;">
           <!-- Display a checkmark if this record has previously been edited -->
-          <a style:"display:inline" title='Finish this concept'
-          ng-show="result.terminologyVersion === 'EDITING_IN_PROGRESS' && assignedWorkType === 'EDITING_IN_PROGRESS'">
+          <a style="display: inline" title='Finish this concept'
+            ng-show="result.terminologyVersion === 'EDITING_IN_PROGRESS' && assignedWorkType === 'EDITING_IN_PROGRESS'">
             <i ng-click="finishOrPublish(result)" class="glyphicon glyphicon-ok"></i>
-        </a>
+          </a>
+
+          <!-- Display a checkmark to publish if this record is resolved -- only for simple path workflow -->
+          <a style="display: inline" title='Publish this record'
+            ng-show="result.terminologyVersion === 'EDITING_DONE' && focusProject.workflowType === 'SIMPLE_PATH'">
+            <i ng-click="finishOrPublish(result)" class="glyphicon glyphicon-ok"></i>
+          </a>
         </td>
+
+
 
         <td style="width: 75%; padding: 5px;">{{result.value}}</td>
 
 
 
 
-        <td style="width: 3%; padding: 5px;"><a title="Return"
-          ng-click="unassignWork(result, currentUser, 'concept')"><i
-            class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i></a></td>
+        <td style="width: 3%; padding: 5px;">
+          <a title="Return"
+            ng-click="unassignWork(result, currentUser, 'concept')">
+            <i class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i>
+          </a>
+        </td>
       </tr>
     </tbody>
 
@@ -144,13 +164,13 @@
 </div>
 
 </tab> <tab heading="{{tabs[1].title}}" active="tabs[1].active" select="setTab(1)"
-  ng-show="(currentRole === 'Lead' || currentRole === 'Administrator') && focusProject.workflowType === 'CONFLICT_PROJECT'">
+  ng-show="(currentRole === 'Lead' || currentRole === 'Administrator') && (focusProject.workflowType === 'CONFLICT_PROJECT' || focusProject.workflowType === 'LEGACY_PATH')">
 
 
 
 <table style="margin-top: 10px; margin-bottom: 10px;">
   <tr>
-    <td style="padding: 5px";>Filter concepts:</td>
+    <td style="padding: 5px;">Filter concepts:</td>
     <td style="padding: 5px;">
       <form>
         <input id="conflictSearch" ng-model="queryConflict">
@@ -166,15 +186,15 @@
     <td>
       <form>
         <input type="radio" ng-model="assignedConflictType" value="ALL"
-          ng-change="retrieveAssignedConflicts(1, queryAssigned, assignedConflictType)">All</input>
+          ng-change="retrieveAssignedConflicts(1, queryAssigned, assignedConflictType)">All
         <input type="radio" ng-model="assignedConflictType" value="CONFLICT_NEW"
-          ng-change="retrieveAssignedConflicts(1, queryAssigned, assignedConflictType)">New</input>
+          ng-change="retrieveAssignedConflicts(1, queryAssigned, assignedConflictType)">New
         <input type="radio" ng-model="assignedConflictType"
           value="CONFLICT_IN_PROGRESS"
-          ng-change="retrieveAssignedConflicts(1, queryAssigned, assignedConflictType)">Editing</input>
+          ng-change="retrieveAssignedConflicts(1, queryAssigned, assignedConflictType)">Editing
         <input type="radio" ng-model="assignedConflictType"
           value="CONFLICT_RESOLVED"
-          ng-change="retrieveAssignedConflicts(1, queryAssigned, assignedConflictType)">Resolved</input>
+          ng-change="retrieveAssignedConflicts(1, queryAssigned, assignedConflictType)">Resolved
       </form>
     </td>
   </tr>
@@ -205,22 +225,23 @@
 
         <!--  Extra column if on editing in progress page for dashboard finish commands -->
         <th style="width: 3%; padding: 5px;"><a
-          ng-show="assignedConflictType === 'CONFLICT_IN_PROGRESS'"
-          title='Finish Editing All Conflicts'
-          ng-click="finishOrPublishBatch(assignedConflictType)"> <i
-            class="glyphicon glyphicon-check"></i>
-        </a> <a ng-show="assignedConflictType === 'CONFLICT_RESOLVED'"
-          title='Publish All Resolved Conflicts'
-          ng-click="finishOrPublishBatch(assignedConflictType)"> <i
-            class="glyphicon glyphicon-check"></i>
-        </a></th>
+            ng-show="assignedConflictType === 'CONFLICT_IN_PROGRESS'"
+            title='Finish Editing All Conflicts'
+            ng-click="finishOrPublishBatch(assignedConflictType)">
+            <i class="glyphicon glyphicon-check"></i>
+          </a> <a ng-show="assignedConflictType === 'CONFLICT_RESOLVED'"
+            title='Publish All Resolved Conflicts'
+            ng-click="finishOrPublishBatch(assignedConflictType)">
+            <i class="glyphicon glyphicon-check"></i>
+          </a></th>
 
         <th style="width: 75%; padding: 5px;">Preferred Name</th>
         <th style="width: 3%; padding: 5px;"><a
-          title="Return All Conflicts"
-          ng-click="unassignAllWork(currentUser, 'conflict', assignedConflictType, queryConflict)"><i
-            class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i></a>
-        </th>
+            title="Return All Conflicts"
+            ng-click="unassignAllWork(currentUser, 'conflict', assignedConflictType, queryConflict)">
+            <i
+              class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i>
+          </a></th>
 
       </tr>
 
@@ -231,42 +252,48 @@
       <tr ng-repeat="result in assignedConflicts">
 
         <td style="width: 3%; padding: 5px;">
-          <!-- Display a pushpin if this record has previously been edited --> <a
-          title='Re-edit this resolved conflict'
-          ng-show="result.terminologyVersion === 'CONFLICT_IN_PROGRESS'"> <i
-            ng-click="goEditConflict(result.id)"
-            class="glyphicon glyphicon-pushpin"></i>
-        </a> <!-- Display a pencil if this record has not yet been edited --> <a
-          title='Start work on this conflict'
-          ng-show="result.terminologyVersion === 'CONFLICT_NEW'"> <i
-            ng-click="goEditConflict(result.id)"
-            class="glyphicon glyphicon-pencil"></i>
-        </a> <!-- Display a finished icon if this record has previously been edited -->
+          <!-- Display a pushpin if this record has previously been edited -->
+          <a title='Re-edit this resolved conflict'
+            ng-show="result.terminologyVersion === 'CONFLICT_IN_PROGRESS'">
+            <i ng-click="goEditConflict(result.id)"
+              class="glyphicon glyphicon-pushpin"></i>
+          </a>
+          <!-- Display a pencil if this record has not yet been edited -->
+          <a title='Start work on this conflict'
+            ng-show="result.terminologyVersion === 'CONFLICT_NEW'">
+            <i ng-click="goEditConflict(result.id)"
+              class="glyphicon glyphicon-pencil"></i>
+          </a>
+          <!-- Display a finished icon if this record has previously been edited -->
           <a title='Continue working on this conflict'
-          ng-show="result.terminologyVersion === 'CONFLICT_RESOLVED'"> <i
-            ng-click="goEditConflict(result.id)"
-            class="glyphicon glyphicon-saved"></i>
-        </a>
+            ng-show="result.terminologyVersion === 'CONFLICT_RESOLVED'">
+            <i ng-click="goEditConflict(result.id)"
+              class="glyphicon glyphicon-saved"></i>
+          </a>
         </td>
 
 
         <td style="width: 14%; padding: 5px;">{{result.terminologyId}}</td>
         <td style="width: 3%; padding: 5px;">
-          <!-- Display a checkmark to finish if in progress --> <a
-          style:"display:inline" title='Resolve this conflict'
-          ng-show="result.terminologyVersion === 'CONFLICT_IN_PROGRESS' && assignedConflictType === 'CONFLICT_IN_PROGRESS'">
+          <!-- Display a checkmark to finish if in progress -->
+          <a style="display: inline" title='Resolve this conflict'
+            ng-show="result.terminologyVersion === 'CONFLICT_IN_PROGRESS' && assignedConflictType === 'CONFLICT_IN_PROGRESS'">
             <i ng-click="finishOrPublish(result)" class="glyphicon glyphicon-ok"></i>
-        </a> <!-- Display a checkmark to publish if this record is resolved --> <a
-          style:"display:inline" title='Publish this resolved conflict'
-          ng-show="result.terminologyVersion === 'CONFLICT_RESOLVED' && assignedConflictType === 'CONFLICT_RESOLVED'">
+          </a>
+          <!-- Display a checkmark to publish if this record is resolved -->
+          <a style="display: inline" title='Publish this resolved conflict'
+            ng-show="result.terminologyVersion === 'CONFLICT_RESOLVED' && assignedConflictType === 'CONFLICT_RESOLVED'">
             <i ng-click="finishOrPublish(result)" class="glyphicon glyphicon-ok"></i>
-        </a>
+          </a>
         </td>
 
         <td style="width: 80%; padding: 5px;">{{result.value}}</td>
-        <td style="width: 3%; padding: 5px;"><a title="Return"
-          ng-click="unassignWork(result, currentUser, 'conflict')"><i
-            class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i></a></td>
+        <td style="width: 3%; padding: 5px;">
+          <a title="Return"
+            ng-click="unassignWork(result, currentUser, 'conflict')">
+            <i class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i>
+          </a>
+        </td>
       </tr>
     </tbody>
 
@@ -278,17 +305,12 @@
     concepts matched the search.</div>
 </div>
 
-</div>
-
-
 </tab> <tab heading="{{tabs[2].title}}" active="tabs[2].active" select="setTab(2)"
   ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
 
-
-
 <table style="margin-top: 10px; margin-bottom: 10px;">
   <tr>
-    <td style="padding: 5px";>Filter concepts:</td>
+    <td style="padding: 5px;">Filter concepts:</td>
     <td style="padding: 5px;">
       <form>
         <input id="reviewSearch" ng-model="queryReviewWork">
@@ -304,15 +326,15 @@
     <td>
       <form>
         <input type="radio" ng-model="assignedReviewWorkType" value="ALL"
-          ng-change="retrieveAssignedReviewWork(1, queryAssigned, assignedReviewWorkType)">All</input>
+          ng-change="retrieveAssignedReviewWork(1, queryAssigned, assignedReviewWorkType)">All
         <input type="radio" ng-model="assignedReviewWorkType" value="REVIEW_NEW"
-          ng-change="retrieveAssignedReviewWork(1, queryAssigned, assignedReviewWorkType)">New</input>
+          ng-change="retrieveAssignedReviewWork(1, queryAssigned, assignedReviewWorkType)">New
         <input type="radio" ng-model="assignedReviewWorkType"
           value="REVIEW_IN_PROGRESS"
-          ng-change="retrieveAssignedReviewWork(1, queryAssigned, assignedReviewWorkType)">Editing</input>
+          ng-change="retrieveAssignedReviewWork(1, queryAssigned, assignedReviewWorkType)">Editing
         <input type="radio" ng-model="assignedReviewWorkType"
           value="REVIEW_RESOLVED"
-          ng-change="retrieveAssignedReviewWork(1, queryAssigned, assignedReviewWorkType)">Resolved</input>
+          ng-change="retrieveAssignedReviewWork(1, queryAssigned, assignedReviewWorkType)">Resolved
       </form>
     </td>
   </tr>
@@ -341,20 +363,21 @@
 
         <!--  Extra column if on editing in progress page for dashboard finish commands -->
         <th style="width: 3%; padding: 5px;"><a
-          ng-show="assignedReviewWorkType === 'REVIEW_IN_PROGRESS'"
-          title='Finish Editing All Review Work'
-          ng-click="finishOrPublishBatch(assignedReviewWorkType)"> <i
-            class="glyphicon glyphicon-check"></i>
-        </a> <a ng-show="assignedReviewWorkType === 'REVIEW_RESOLVED'"
-          title='Publish All Resolved Review Work'
-          ng-click="finishOrPublishBatch(assignedReviewWorkType)"> <i
-            class="glyphicon glyphicon-check"></i>
-        </a></th>
+            ng-show="assignedReviewWorkType === 'REVIEW_IN_PROGRESS'"
+            title='Finish Editing All Review Work'
+            ng-click="finishOrPublishBatch(assignedReviewWorkType)">
+            <i class="glyphicon glyphicon-check"></i>
+          </a> <a ng-show="assignedReviewWorkType === 'REVIEW_RESOLVED'"
+            title='Publish All Resolved Review Work'
+            ng-click="finishOrPublishBatch(assignedReviewWorkType)">
+            <i class="glyphicon glyphicon-check"></i>
+          </a></th>
         <th style="width: 80%; padding: 5px;">Preferred Name</th>
         <th style="width: 3%; padding: 5px;"><a title="Return All Work"
-          ng-click="unassignAllWork(currentUser, 'review', assignedReviewWorkType, queryReviewWork)"><i
-            class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i>
-        </a></th>
+            ng-click="unassignAllWork(currentUser, 'review', assignedReviewWorkType, queryReviewWork)">
+            <i
+              class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i>
+          </a></th>
 
       </tr>
 
@@ -365,42 +388,48 @@
       <tr ng-repeat="result in assignedReviewWork">
 
         <td style="width: 3%; padding: 5px;">
-          <!-- Display a pushpin if this record has previously been edited --> <a
-          title='Continue reviewing work.'
-          ng-show="result.terminologyVersion === 'REVIEW_IN_PROGRESS'"> <i
-            ng-click="goEditReviewWork(result.id)"
-            class="glyphicon glyphicon-pushpin"></i>
-        </a> <!-- Display a pencil if this record has not yet been edited --> <a
-          title='Start reviewing this work'
-          ng-show="result.terminologyVersion === 'REVIEW_NEW'"> <i
-            ng-click="goEditReviewWork(result.id)"
-            class="glyphicon glyphicon-pencil"></i>
-        </a> <!-- Display a finished icon if this record has previously been edited -->
+          <!-- Display a pushpin if this record has previously been edited -->
+          <a title='Continue reviewing work.'
+            ng-show="result.terminologyVersion === 'REVIEW_IN_PROGRESS'">
+            <i ng-click="goEditReviewWork(result.id)"
+              class="glyphicon glyphicon-pushpin"></i>
+          </a>
+          <!-- Display a pencil if this record has not yet been edited -->
+          <a title='Start reviewing this work'
+            ng-show="result.terminologyVersion === 'REVIEW_NEW'">
+            <i ng-click="goEditReviewWork(result.id)"
+              class="glyphicon glyphicon-pencil"></i>
+          </a>
+          <!-- Display a finished icon if this record has previously been edited -->
           <a title='Continue working on this conflict'
-          ng-show="result.terminologyVersion === 'REVIEW_RESOLVED'"> <i
-            ng-click="goEditReviewWork(result.id)"
-            class="glyphicon glyphicon-saved"></i>
-        </a>
+            ng-show="result.terminologyVersion === 'REVIEW_RESOLVED'">
+            <i ng-click="goEditReviewWork(result.id)"
+              class="glyphicon glyphicon-saved"></i>
+          </a>
         </td>
 
         <td style="width: 14%; padding: 5px;">{{result.terminologyId}}</td>
 
         <td style="width: 3%; padding: 5px;">
           <!-- Display a checkmark if this record has previously been edited -->
-          <a style:"display:inline" title='Finish this review work'
-          ng-show="result.terminologyVersion === 'REVIEW_IN_PROGRESS' && assignedReviewWorkType === 'REVIEW_IN_PROGRESS'">
+          <a style="display: inline" title='Finish this review work'
+            ng-show="result.terminologyVersion === 'REVIEW_IN_PROGRESS' && assignedReviewWorkType === 'REVIEW_IN_PROGRESS'">
             <i ng-click="finishOrPublish(result)" class="glyphicon glyphicon-ok"></i>
-        </a> <!-- Display a checkmark if this record has previously resolved --> <a
-          style:"display:inline" title='Publish this resolved review work'
-          ng-show="result.terminologyVersion === 'REVIEW_RESOLVED' && assignedReviewWorkType === 'REVIEW_RESOLVED'">
+          </a>
+          <!-- Display a checkmark if this record has previously resolved -->
+          <a style="display: inline" title='Publish this resolved review work'
+            ng-show="result.terminologyVersion === 'REVIEW_RESOLVED' && assignedReviewWorkType === 'REVIEW_RESOLVED'">
             <i ng-click="finishOrPublish(result)" class="glyphicon glyphicon-ok"></i>
-        </a>
+          </a>
         </td>
 
         <td style="width: 80%; padding: 5px;">{{result.value}}</td>
-        <td style="width: 3%; padding: 5px;"><a title="Return"
-          ng-click="unassignWork(result, currentUser, 'review')"><i
-            class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i></a></td>
+        <td style="width: 3%; padding: 5px;">
+          <a title="Return"
+            ng-click="unassignWork(result, currentUser, 'review')">
+            <i class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i>
+          </a>
+        </td>
       </tr>
     </tbody>
 
@@ -418,13 +447,15 @@
 <table style="margin-top: 10px; margin-bottom: 10px;">
   <tr>
     <td style="padding: 5px;">View work assigned to:</td>
-    <td style="padding: 5px;"><select ng-model="mapUserViewed"
-      ng-options="mapUser as mapUser.name for mapUser in mapUsers track by mapUser.name"
-      ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssignedForUser)">
-    </select></td>
+    <td style="padding: 5px;">
+      <select ng-model="mapUserViewed"
+        ng-options="mapUser as mapUser.name for mapUser in mapUsers track by mapUser.name"
+        ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssignedForUser)">
+      </select>
+    </td>
   </tr>
   <tr>
-    <td style="padding: 5px";>Filter concepts:</td>
+    <td style="padding: 5px;">Filter concepts:</td>
     <td style="padding: 5px;">
       <form>
         <input id="assignedForUserSearch" ng-model="queryAssignedForUser">
@@ -440,15 +471,15 @@
     <td>
       <form>
         <input type="radio" ng-model="assignedWorkForUserType" value="ALL"
-          ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssigned, assignedWorkForUserType)">All</input>
+          ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssigned, assignedWorkForUserType)">All
         <input type="radio" ng-model="assignedWorkForUserType" value="NEW"
-          ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssigned, assignedWorkForUserType)">New</input>
+          ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssigned, assignedWorkForUserType)">New
         <input type="radio" ng-model="assignedWorkForUserType"
           value="EDITING_IN_PROGRESS"
-          ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssigned, assignedWorkForUserType)">Editing</input>
+          ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssigned, assignedWorkForUserType)">Editing
         <input type="radio" ng-model="assignedWorkForUserType"
           value="EDITING_DONE"
-          ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssigned, assignedWorkForUserType)">Finished</input>
+          ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssigned, assignedWorkForUserType)">Finished
       </form>
     </td>
   </tr>
@@ -476,28 +507,26 @@
       <th style="width: 60%; padding: 5px;">Preferred Name</th>
       <th style="width: 25%; padding: 5px;">Last Modified</th>
       <th style="width: 3%; padding: 5px;"><a title="Return All Work"
-        ng-click="unassignAllWork(mapUserViewed, 'concept', assignedWorkForUserType, queryAssignedForUser)"><i
-          class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i>
-      </a></th>
-
+          ng-click="unassignAllWork(mapUserViewed, 'concept', assignedWorkForUserType, queryAssignedForUser)">
+          <i
+            class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i>
+        </a></th>
     </tr>
-    </tr>
-
   </thead>
-
   <tbody>
-
     <tr ng-repeat="result in assignedRecordsForUser">
-
-
-      <td style="width: 12%; padding: 5px;"><a
-        href="#/record/conceptId/{{result.terminologyId}}">{{result.terminologyId}}</a></td>
+      <td style="width: 12%; padding: 5px;">
+        <a href="#/record/conceptId/{{result.terminologyId}}">{{result.terminologyId}}</a>
+      </td>
       <td style="width: 60%; padding: 5px;">{{result.value}}</td>
       <td style="width: 25%; padding: 5px;">{{result.terminology |
         date:'MM-dd-yyyy HH:mm'}}</td>
-      <td style="width: 3%; padding: 5px;"><a title="Return"
-        ng-click="unassignWork(result, mapUserViewed, 'conceptsByUser')"><i
-          class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i></a></td>
+      <td style="width: 3%; padding: 5px;">
+        <a title="Return"
+          ng-click="unassignWork(result, mapUserViewed, 'conceptsByUser')">
+          <i class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i>
+        </a>
+      </td>
     </tr>
 
   </tbody>
@@ -511,27 +540,28 @@
 <table style="margin-top: 10px; margin-bottom: 10px;">
   <tr>
     <td style="padding: 5px;">Filter by label:</td>
-    <td style="padding: 5px;"><select ng-model="queryQaWork"
-      ng-change="retrieveAssignedQAWork(1, 	queryQaWork, assignedQAWorkType);"
-      ng-options="lbl for lbl in labelNames">
-    </select>
+    <td style="padding: 5px;">
+      <select ng-model="queryQaWork"
+        ng-change="retrieveAssignedQAWork(1, 	queryQaWork, assignedQAWorkType);"
+        ng-options="lbl for lbl in labelNames">
+      </select>
       <button class="btn btn-sm btn-primary"
         ng-click="retrieveAssignedQAWork(1, 'null', assignedQAWorkType); selected = null;">Reset</button>
     </td>
   </tr>
-  
+
   <tr>
     <td></td>
     <td>
       <form>
         <input type="radio" ng-model="assignedQAWorkType" value="ALL"
-          ng-change="retrieveAssignedQAWork(1, queryAssigned, assignedQAWorkType)">All</input>
+          ng-change="retrieveAssignedQAWork(1, queryAssigned, assignedQAWorkType)">All
         <input type="radio" ng-model="assignedQAWorkType" value="QA_NEW"
-          ng-change="retrieveAssignedQAWork(1, queryAssigned, assignedQAWorkType)">New</input>
+          ng-change="retrieveAssignedQAWork(1, queryAssigned, assignedQAWorkType)">New
         <input type="radio" ng-model="assignedQAWorkType" value="QA_IN_PROGRESS"
-          ng-change="retrieveAssignedQAWork(1, queryAssigned, assignedQAWorkType)">Editing</input>
+          ng-change="retrieveAssignedQAWork(1, queryAssigned, assignedQAWorkType)">Editing
         <input type="radio" ng-model="assignedQAWorkType" value="QA_RESOLVED"
-          ng-change="retrieveAssignedQAWork(1, queryAssigned, assignedQAWorkType)">Resolved</input>
+          ng-change="retrieveAssignedQAWork(1, queryAssigned, assignedQAWorkType)">Resolved
       </form>
     </td>
   </tr>
@@ -559,21 +589,22 @@
 
         <!--  Extra column if on editing in progress page for dashboard finish commands -->
         <th style="width: 3%; padding: 5px;"><a
-          ng-show="assignedQAWorkType === 'QA_IN_PROGRESS'"
-          title='Finish Editing All QA Work'
-          ng-click="finishOrPublishBatch(assignedQAWorkType)"> <i
-            class="glyphicon glyphicon-check"></i>
-        </a> <a ng-show="assignedQAWorkType === 'QA_RESOLVED'"
-          title='Publish All Resolved QA Work'
-          ng-click="finishOrPublishBatch(assignedQAWorkType)"> <i
-            class="glyphicon glyphicon-check"></i>
-        </a></th>
+            ng-show="assignedQAWorkType === 'QA_IN_PROGRESS'"
+            title='Finish Editing All QA Work'
+            ng-click="finishOrPublishBatch(assignedQAWorkType)">
+            <i class="glyphicon glyphicon-check"></i>
+          </a> <a ng-show="assignedQAWorkType === 'QA_RESOLVED'"
+            title='Publish All Resolved QA Work'
+            ng-click="finishOrPublishBatch(assignedQAWorkType)">
+            <i class="glyphicon glyphicon-check"></i>
+          </a></th>
         <th style="width: 77%; padding: 5px;">Preferred Name</th>
         <th style="width: 3%; padding: 5px;"></th>
         <th style="width: 3%; padding: 5px;"><a title="Return All Work"
-            ng-click="unassignAllWork(currentUser, 'qa', assignedQAWorkType, queryQAWork)"><i
-            class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i>
-        </a></th>
+            ng-click="unassignAllWork(currentUser, 'qa', assignedQAWorkType, queryQAWork)">
+            <i
+              class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i>
+          </a></th>
 
       </tr>
 
@@ -584,45 +615,54 @@
       <tr ng-repeat="result in assignedQAWork">
 
         <td style="width: 3%; padding: 5px;">
-          <!-- Display a pushpin if this record has previously been edited --> <a
-          title='Continue work on this concept.'
-          ng-show="result.terminologyVersion === 'QA_IN_PROGRESS'"> <i
-            ng-click="goEditQAWork(result.id)"
-            class="glyphicon glyphicon-pushpin"></i>
-        </a> <!-- Display a pencil if this record has not yet been edited --> <a
-          title='Start work on this concept'
-          ng-show="result.terminologyVersion === 'QA_NEW'"> <i
-            ng-click="goEditQAWork(result.id)"
-            class="glyphicon glyphicon-pencil"></i>
-        </a> <!-- Display a finished icon if this record has previously been edited -->
+          <!-- Display a pushpin if this record has previously been edited -->
+          <a title='Continue work on this concept.'
+            ng-show="result.terminologyVersion === 'QA_IN_PROGRESS'">
+            <i ng-click="goEditQAWork(result.id)"
+              class="glyphicon glyphicon-pushpin"></i>
+          </a>
+          <!-- Display a pencil if this record has not yet been edited -->
+          <a title='Start work on this concept'
+            ng-show="result.terminologyVersion === 'QA_NEW'">
+            <i ng-click="goEditQAWork(result.id)"
+              class="glyphicon glyphicon-pencil"></i>
+          </a>
+          <!-- Display a finished icon if this record has previously been edited -->
           <a title='Continue work on this concept'
-          ng-show="result.terminologyVersion === 'QA_RESOLVED'"> <i
-            ng-click="goEditQAWork(result.id)" class="glyphicon glyphicon-saved"></i>
-        </a>
+            ng-show="result.terminologyVersion === 'QA_RESOLVED'">
+            <i ng-click="goEditQAWork(result.id)"
+              class="glyphicon glyphicon-saved"></i>
+          </a>
         </td>
 
         <td style="width: 14%; padding: 5px;">{{result.terminologyId}}</td>
 
         <td style="width: 3%; padding: 5px;">
           <!-- Display a checkmark if this record has previously been edited -->
-          <a style:"display:inline" title='Finish this QA work'
-          ng-show="result.terminologyVersion === 'QA_IN_PROGRESS' && assignedQAWorkType === 'QA_IN_PROGRESS'">
+          <a style="display: inline" title='Finish this QA work'
+            ng-show="result.terminologyVersion === 'QA_IN_PROGRESS' && assignedQAWorkType === 'QA_IN_PROGRESS'">
             <i ng-click="finishOrPublish(result)" class="glyphicon glyphicon-ok"></i>
-        </a> <!-- Display a checkmark if this record has previously resolved --> <a
-          style:"display:inline" title='Publish this resolved QA work'
-          ng-show="result.terminologyVersion === 'QA_RESOLVED' && assignedQAWorkType === 'QA_RESOLVED'">
+          </a>
+          <!-- Display a checkmark if this record has previously resolved -->
+          <a style="display: inline" title='Publish this resolved QA work'
+            ng-show="result.terminologyVersion === 'QA_RESOLVED' && assignedQAWorkType === 'QA_RESOLVED'">
             <i ng-click="finishOrPublish(result)" class="glyphicon glyphicon-ok"></i>
-        </a>
+          </a>
         </td>
 
         <td style="width: 77%; padding: 5px;">{{result.name}}</td>
-        <td style="width: 3%; padding: 5px;"><a title="Labels"
-          ng-show="result.labels.length > 0" tooltip-placement="top"
-          tooltip="{{result.labels}}" style="float: right; margin-right: 5px;"><i
-            class="glyphicon glyphicon-tasks"></i></a></td>
-        <td style="width: 3%; padding: 5px;"><a title="Return"
-          ng-click="unassignWork(result, currentUser, 'qa')"><i
-            class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i></a></td>
+        <td style="width: 3%; padding: 5px;">
+          <a title="Labels" ng-show="result.labels.length > 0"
+            tooltip-placement="top" tooltip="{{result.labels}}"
+            style="float: right; margin-right: 5px;">
+            <i class="glyphicon glyphicon-tasks"></i>
+          </a>
+        </td>
+        <td style="width: 3%; padding: 5px;">
+          <a title="Return" ng-click="unassignWork(result, currentUser, 'qa')">
+            <i class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i>
+          </a>
+        </td>
       </tr>
     </tbody>
 

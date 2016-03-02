@@ -1,8 +1,7 @@
 'use strict';
 
-angular
-  .module('mapProjectApp.widgets.feedback', [ 'adf.provider' ])
-  .config(function(dashboardProvider) {
+angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
+  function(dashboardProvider) {
     dashboardProvider.widget('feedback', {
       title : 'Feedback',
       description : 'Displays a list of feedback notes',
@@ -13,15 +12,14 @@ angular
   })
   .controller(
     'feedbackCtrl',
-    function($scope, $rootScope, $http, $location, $modal, $sce,
-      localStorageService) {
+    function($scope, $rootScope, $http, $location, $modal, $sce, localStorageService) {
       $scope.currentUser = null;
       $scope.currentRole = null;
       $scope.focusProject = null;
       $scope.feedbackConversations = null;
 
-      $scope.feedbackTypes = [ 'All Feedback', 'Feedback', 'Group Feedback',
-        'Error Feedback', 'Discrepancy Review Feedback' ];
+      $scope.feedbackTypes = [ 'All Feedback', 'Feedback', 'Group Feedback', 'Error Feedback',
+        'Discrepancy Review Feedback' ];
       $scope.reviewedTypes = [ 'All', 'Viewed', 'Unviewed' ];
       $scope.resolvedTypes = [ 'All', 'Active', 'Resolved' ];
 
@@ -43,7 +41,7 @@ angular
       $scope.searchPerformed = false; // initialize variable to track whether
       // search was performed
       $scope.feedbackType = 'All Feedback';
-      $scope.resolvedType = 'All';
+      $scope.resolvedType = 'Active';
       $scope.reviewedType = 'All';
       $scope.recordIdOwnerMap = new Array();
 
@@ -52,17 +50,14 @@ angular
       $scope.recordPage = 1;
 
       // watch for project change
-      $scope.$on('localStorageModule.notification.setFocusProject', function(
-        event, parameters) {
-        console
-          .debug("MapProjectWidgetCtrl:  Detected change in focus project");
+      $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
+        console.debug('MapProjectWidgetCtrl:  Detected change in focus project');
         $scope.focusProject = parameters.focusProject;
       });
 
       // on any change of focusProject, retrieve new available work
       $scope
-        .$watch(
-          [ 'focusProject', 'currentUser', 'currentUserToken', 'currentRole' ],
+        .$watch([ 'focusProject', 'currentUser', 'currentUserToken', 'currentRole' ],
           function() {
 
             if ($scope.focusProject != null && $scope.currentUser != null
@@ -70,13 +65,15 @@ angular
               $http.defaults.headers.common.Authorization = $scope.currentUserToken;
               $scope.mapUsers = $scope.focusProject.mapSpecialist
                 .concat($scope.focusProject.mapLead);
-              $scope.retrieveFeedback(1, $scope.feedbackType,
-                $scope.reviewedType, $scope.resolvedType, $scope.query);
+              $scope.retrieveFeedback(1, $scope.feedbackType, $scope.reviewedType,
+                $scope.resolvedType, $scope.query);
             }
           });
 
-      $scope.retrieveFeedback = function(page, feedbackType, reviewedType,
-        resolvedType, query) {
+      $scope.retrieveFeedback = function(ppage, feedbackType, reviewedType, resolvedType, pquery) {
+
+        var query = pquery;
+        var page = ppage;
 
         $scope.feedbackType = feedbackType;
         $scope.resolvedType = resolvedType;
@@ -88,60 +85,55 @@ angular
 
         // construct full query based on all parameters
         if (query == null || query == 'undefined' || query == '')
-          query = "mapProjectId:" + $scope.focusProject.id;
+          query = 'mapProjectId:' + $scope.focusProject.id;
         else
-          query = query + " AND mapProjectId:" + $scope.focusProject.id;
+          query = query + ' AND mapProjectId:' + $scope.focusProject.id;
 
         if (feedbackType == 'Feedback')
           query = query
-            + " AND title:Feedback NOT title:Discrepancy NOT title:Error NOT title:Group";
-        else if (feedbackType != null && feedbackType != 'undefined'
-          && feedbackType != '' && feedbackType != 'All Feedback')
-          query = query + " AND title:\"" + feedbackType + "\"";
-        if (reviewedType != null && reviewedType != 'undefined'
-          && reviewedType != '' && reviewedType != 'All')
-          query = query + " AND viewed:"
-            + (reviewedType == 'Viewed' ? 'true' : 'false');
-        if (resolvedType != null && resolvedType != 'undefined'
-          && resolvedType != '' && resolvedType != 'All')
-          query = query + " AND resolved:"
-            + (resolvedType == 'Active' ? 'false' : 'true');
+            + ' AND title:Feedback NOT title:Discrepancy NOT title:Error NOT title:Group';
+        else if (feedbackType != null && feedbackType != 'undefined' && feedbackType != ''
+          && feedbackType != 'All Feedback')
+          query = query + ' AND title:\"' + feedbackType + '\"';
+        if (reviewedType != null && reviewedType != 'undefined' && reviewedType != ''
+          && reviewedType != 'All')
+          query = query + ' AND viewed:' + (reviewedType == 'Viewed' ? 'true' : 'false');
+        if (resolvedType != null && resolvedType != 'undefined' && resolvedType != ''
+          && resolvedType != 'All')
+          query = query + ' AND resolved:' + (resolvedType == 'Active' ? 'false' : 'true');
 
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
-          "startIndex" : (page - 1) * $scope.recordsPerPage,
-          "maxResults" : $scope.recordsPerPage,
-          "sortField" : 'lastModified',
-          "queryRestriction" : query
+          'startIndex' : (page - 1) * $scope.recordsPerPage,
+          'maxResults' : $scope.recordsPerPage,
+          'sortField' : 'lastModified',
+          'queryRestriction' : ''
         };
 
         $rootScope.glassPane++;
 
         $http(
           {
-            url : root_workflow + "conversation/project/id/"
-              + $scope.focusProject.id + "/" + $scope.currentUser.userName
-              + "/query/" + encodeURIComponent(query),
-            dataType : "json",
+            url : root_workflow + 'conversation/project/id/' + $scope.focusProject.id + '/'
+              + $scope.currentUser.userName + '/query/' + encodeURIComponent(query),
+            dataType : 'json',
             data : pfsParameterObj,
-            method : "POST",
+            method : 'POST',
             headers : {
-              "Content-Type" : "application/json"
+              'Content-Type' : 'application/json'
             }
-          }).success(
-          function(data) {
-            $rootScope.glassPane--;
+          }).success(function(data) {
+          $rootScope.glassPane--;
 
-            // set pagination variables
-            $scope.nRecords = data.totalCount;
-            $scope.numRecordPages = Math.ceil(data.totalCount
-              / $scope.recordsPerPage);
+          // set pagination variables
+          $scope.nRecords = data.totalCount;
+          $scope.numRecordPages = Math.ceil(data.totalCount / $scope.recordsPerPage);
 
-            $scope.feedbackConversations = data.feedbackConversation;
-            console.debug("Feedback Conversations:");
-            console.debug($scope.feedbackConversations);
+          $scope.feedbackConversations = data.feedbackConversation;
+          console.debug('Feedback Conversations:');
+          console.debug($scope.feedbackConversations);
 
-          }).error(function(data, status, headers, config) {
+        }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
           $rootScope.handleHttpError(data, status, headers, config);
         });
@@ -178,26 +170,25 @@ angular
         $rootScope.glassPane++;
 
         $http({
-          url : root_workflow + "conversation/update",
-          dataType : "json",
+          url : root_workflow + 'conversation/update',
+          dataType : 'json',
           data : conversation,
-          method : "POST",
+          method : 'POST',
           headers : {
-            "Content-Type" : "application/json"
+            'Content-Type' : 'application/json'
           }
         }).success(function(data) {
           $rootScope.glassPane--;
-          console.debug("success to update Feedback conversation.");
+          console.debug('success to update Feedback conversation.');
         }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
-          $scope.recordError = "Error updating feedback conversation.";
+          $scope.recordError = 'Error updating feedback conversation.';
           $rootScope.handleHttpError(data, status, headers, config);
         });
       }
-      ;
 
       $scope.goFeedbackConversations = function(id) {
-        var path = "/conversation/recordId/" + id;
+        var path = '/conversation/recordId/' + id;
         // redirect page
         $location.path(path);
       };

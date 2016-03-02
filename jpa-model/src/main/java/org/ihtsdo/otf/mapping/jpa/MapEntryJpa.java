@@ -17,7 +17,6 @@ import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
-import org.apache.log4j.Logger;
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Analyzer;
@@ -76,6 +75,7 @@ public class MapEntryJpa implements MapEntry {
   @Column(nullable = false)
   private int mapPriority;
 
+  /** The map relation. */
   @OneToOne(targetEntity = MapRelationJpa.class, fetch = FetchType.EAGER)
   @IndexedEmbedded(targetElement = MapRelationJpa.class)
   private MapRelation mapRelation;
@@ -133,8 +133,6 @@ public class MapEntryJpa implements MapEntry {
    */
   public MapEntryJpa(MapEntry mapEntry, boolean keepIds) {
     super();
-
-    // System.out.println("Deep copying entry.");
 
     // copy id, otherwise leave null
     if (keepIds) {
@@ -198,6 +196,7 @@ public class MapEntryJpa implements MapEntry {
    * 
    * @see org.ihtsdo.otf.mapping.model.MapEntry#getTarget()
    */
+  /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public String getTargetId() {
@@ -209,6 +208,7 @@ public class MapEntryJpa implements MapEntry {
    * 
    * @see org.ihtsdo.otf.mapping.model.MapEntry#setTarget(java.lang.String)
    */
+  /* see superclass */
   @Override
   public void setTargetId(String targetId) {
     this.targetId = targetId;
@@ -219,6 +219,7 @@ public class MapEntryJpa implements MapEntry {
    * 
    * @see org.ihtsdo.otf.mapping.model.MapEntry#getTargetName()
    */
+  /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   public String getTargetName() {
@@ -230,18 +231,21 @@ public class MapEntryJpa implements MapEntry {
    * 
    * @see org.ihtsdo.otf.mapping.model.MapEntry#setTargetName(java.lang.String)
    */
+  /* see superclass */
   @Override
   public void setTargetName(String targetName) {
     this.targetName = targetName;
 
   }
 
+  /* see superclass */
   @Override
   @XmlElement(type = MapRelationJpa.class, name = "mapRelation")
   public MapRelation getMapRelation() {
     return mapRelation;
   }
 
+  /* see superclass */
   @Override
   public void setMapRelation(MapRelation mapRelation) {
     this.mapRelation = mapRelation;
@@ -252,6 +256,7 @@ public class MapEntryJpa implements MapEntry {
    * 
    * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapAdvices()
    */
+  /* see superclass */
   @XmlElement(type = MapAdviceJpa.class, name = "mapAdvice")
   @Override
   public Set<MapAdvice> getMapAdvices() {
@@ -265,6 +270,7 @@ public class MapEntryJpa implements MapEntry {
    * 
    * @see org.ihtsdo.otf.mapping.model.MapEntry#setMapAdvices(java.util.Set)
    */
+  /* see superclass */
   @Override
   public void setMapAdvices(Set<MapAdvice> mapAdvices) {
     this.mapAdvices = mapAdvices;
@@ -277,6 +283,7 @@ public class MapEntryJpa implements MapEntry {
    * org.ihtsdo.otf.mapping.model.MapEntry#addMapAdvice(org.ihtsdo.otf.mapping
    * .model.MapAdvice)
    */
+  /* see superclass */
   @Override
   public void addMapAdvice(MapAdvice mapAdvice) {
     mapAdvices.add(mapAdvice);
@@ -288,6 +295,7 @@ public class MapEntryJpa implements MapEntry {
    * @see org.ihtsdo.otf.mapping.model.MapEntry#removeMapAdvice(org.ihtsdo.otf.
    * mapping .model.MapAdvice)
    */
+  /* see superclass */
   @Override
   public void removeMapAdvice(MapAdvice mapAdvice) {
     mapAdvices.remove(mapAdvice);
@@ -298,6 +306,7 @@ public class MapEntryJpa implements MapEntry {
    * 
    * @see org.ihtsdo.otf.mapping.model.MapEntry#getRule()
    */
+  /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   public String getRule() {
@@ -309,6 +318,7 @@ public class MapEntryJpa implements MapEntry {
    * 
    * @see org.ihtsdo.otf.mapping.model.MapEntry#setRule(java.lang.String)
    */
+  /* see superclass */
   @Override
   public void setRule(String rule) {
     this.rule = rule;
@@ -319,6 +329,7 @@ public class MapEntryJpa implements MapEntry {
    * 
    * @see org.ihtsdo.otf.mapping.model.MapEntry#getIndex()
    */
+  /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public int getMapPriority() {
@@ -330,6 +341,7 @@ public class MapEntryJpa implements MapEntry {
    * 
    * @see org.ihtsdo.otf.mapping.model.MapEntry#setIndex(java.lang.String)
    */
+  /* see superclass */
   @Override
   public void setMapPriority(int mapPriority) {
     this.mapPriority = mapPriority;
@@ -340,6 +352,7 @@ public class MapEntryJpa implements MapEntry {
    * 
    * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapRecord()
    */
+  /* see superclass */
   @XmlTransient
   @Override
   public MapRecord getMapRecord() {
@@ -353,6 +366,7 @@ public class MapEntryJpa implements MapEntry {
    * org.ihtsdo.otf.mapping.model.MapEntry#setMapRecord(org.ihtsdo.otf.mapping
    * .model.MapRecord)
    */
+  /* see superclass */
   @Override
   public void setMapRecord(MapRecord mapRecord) {
     this.mapRecord = mapRecord;
@@ -370,14 +384,12 @@ public class MapEntryJpa implements MapEntry {
 
   /**
    * Sets the map record based on serialized id Necessary when receiving a
-   * serialized entry with only mapRecordId
-   * 
+   * serialized entry with only mapRecordId.
+   *
    * @param mapRecordId the map record id
    */
   public void setMapRecordId(Long mapRecordId) {
     if (this.mapRecord == null) {
-      Logger.getLogger(MapEntryJpa.class).info(
-          "Setting map record id to " + mapRecordId.toString());
       this.mapRecord = new MapRecordJpa();
       this.mapRecord.setId(mapRecordId);
     }
@@ -388,6 +400,7 @@ public class MapEntryJpa implements MapEntry {
    * 
    * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapGroup()
    */
+  /* see superclass */
   @Override
   public int getMapGroup() {
     return this.mapGroup;
@@ -398,6 +411,7 @@ public class MapEntryJpa implements MapEntry {
    * 
    * @see org.ihtsdo.otf.mapping.model.MapEntry#setMapGroup(int)
    */
+  /* see superclass */
   @Override
   public void setMapGroup(int mapGroup) {
     this.mapGroup = mapGroup;
@@ -409,6 +423,7 @@ public class MapEntryJpa implements MapEntry {
    * 
    * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapBlock()
    */
+  /* see superclass */
   @Override
   public int getMapBlock() {
     return this.mapBlock;
@@ -419,12 +434,14 @@ public class MapEntryJpa implements MapEntry {
    * 
    * @see org.ihtsdo.otf.mapping.model.MapEntry#setMapBlock(int)
    */
+  /* see superclass */
   @Override
   public void setMapBlock(int mapBlock) {
     this.mapBlock = mapBlock;
 
   }
 
+  /* see superclass */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -449,6 +466,7 @@ public class MapEntryJpa implements MapEntry {
     return result;
   }
 
+  /* see superclass */
   @Override
   public boolean equals(Object obj) {
     if (this == obj)
@@ -500,6 +518,7 @@ public class MapEntryJpa implements MapEntry {
     return true;
   }
 
+  /* see superclass */
   @Override
   public String toString() {
     return "MapEntryJpa [id=" + id + ", mapRecord="
@@ -518,6 +537,7 @@ public class MapEntryJpa implements MapEntry {
    * org.ihtsdo.otf.mapping.model.MapEntry#isEquivalent(org.ihtsdo.otf.mapping
    * .model.MapEntry)
    */
+  /* see superclass */
   @Override
   public boolean isEquivalent(MapEntry me) {
 
@@ -558,8 +578,6 @@ public class MapEntryJpa implements MapEntry {
     } else if (me.getMapRelation() != null) {
       return false;
     }
-
-    // System.out.println("  Relations equal");
     // advices must be identical
     if (this.mapAdvices == null && me.getMapAdvices() != null) {
       return false;
@@ -574,10 +592,6 @@ public class MapEntryJpa implements MapEntry {
           return false;
       }
     }
-
-    // System.out.println("  Advices equal");
-
-    // System.out.println("Entries equivalent.");
 
     return true;
   }

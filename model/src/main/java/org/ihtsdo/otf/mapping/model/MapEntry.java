@@ -56,7 +56,23 @@ public interface MapEntry {
    */
   public void setTargetName(String targetName);
 
-  /**
+//  /**
+//   * Gets the terminology note.  
+//   * This is a place where a terminology like ICD10 can decorate
+//   * the code with asterisk/dagger.
+//   * 
+//   * @return the terminology note
+//   */
+//  public String getTerminologyNote();
+//
+//  /**
+//   * Lists the terminology note.
+//   * 
+//   * @param terminologyNote the new terminology note
+//   */
+//  public void setTerminologyNote(String terminologyNote);
+
+  /** 
    * Returns the advices.
    * 
    * @return the advices

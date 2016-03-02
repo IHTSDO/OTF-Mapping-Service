@@ -11,28 +11,28 @@
 <accordion-heading> Source Concept <i
   class="pull-right glyphicon"
   ng-class="{'glyphicon-chevron-down': isConceptOpen, 'glyphicon-chevron-right': !isConceptOpen}"></i>
-</accordion-heading> <!-- This is confusing/misleading so remove it
-<div ng-show="concept.effectiveTime > record.lastModified">
-  <p class="alert alert-warning">The {{concept.terminology}} concept was
-    modified after your last edit, on {{concept.effectiveTime |
-    date:'MM-dd-yyyy'}}</p>
-</div>
- -->
+</accordion-heading>
 <table>
 
   <tr>
-    <td style="vertical-align: top; padding: 5px;"><strong>Id</strong></td>
-    <td style="vertical-align: top; padding: 5px;">{{concept.terminology}},{{concept.terminologyId}}
-      &nbsp<a title='Open SNOMED Browser' href="">
+    <td style="vertical-align: top; padding: 5px;">
+      <strong>Id</strong>
+    </td>
+    <td style="vertical-align: top; padding: 5px;">
+      {{concept.terminology}},{{concept.terminologyId}} &nbsp;
+      <a title='Open SNOMED Browser' href="">
         <i class="glyphicon glyphicon-info-sign" ng-click="openConceptBrowser()"></i>
-      </a> <a title='Open Index Viewer' ng-show="indexViewerExists == true">
+      </a>
+      <a title='Open Index Viewer' ng-show="indexViewerExists == true">
         <i ng-click="openIndexViewer()" class="glyphicon glyphicon-book"></i>
       </a>
 
     </td>
   </tr>
   <tr>
-    <td style="vertical-align: top; padding: 5px;"><strong>Name</strong></td>
+    <td style="vertical-align: top; padding: 5px;">
+      <strong>Name</strong>
+    </td>
     <td style="vertical-align: top; padding: 5px;">{{concept.defaultPreferredName}}</td>
   </tr>
 
@@ -48,53 +48,46 @@
 
 <div ui-tree="options">
   <ol ui-tree-nodes="" ng-model="groupsTree">
+
     <li ng-repeat="group in groupsTree" ui-tree-node>
       <div class="angular-ui-tree-handle">
         <div style="display: inline; float: left; width: 3%;">
           <i class="glyphicon glyphicon-move"></i>
         </div>
+
         Map Group {{group.mapGroup}}
 
-        <div data-nodrag style="display: inline; float: right; width: 3%;">
+        <div ng-show="project.mapRefsetPattern != 'SimpleMap'" data-nodrag
+          style="display: inline; float: right; width: 3%;">
           <i class="glyphicon glyphicon-remove" ng-click="deleteMapGroup(group)"></i>
         </div>
       </div>
       <ol ui-tree-nodes="" ng-model="group.entry">
         <li ng-repeat="entry in group.entry" ui-tree-node>
-
           <div
             ng-class="{'alert alert-info-select': !entry.isSelected, 'alert alert-success': entry.isSelected}"
             disabled>
-
             <div style="display: inline; float: left; width: 3%;">
               <i class="glyphicon glyphicon-move"></i>
             </div>
-
             <a data-nodrag ng-click="selectMapEntry(entry)">{{getEntrySummary(entry)}}</a>
-
             <div data-nodrag style="display: inline; float: right; width: 3%;">
-              <i class="glyphicon glyphicon-remove"
+              <i ng-show="project.mapRefsetPattern != 'SimpleMap'"
+                class="glyphicon glyphicon-remove"
                 ng-click="deleteMapEntry(entry)"></i>
             </div>
-
-            </p>
           </div>
-
         </li>
-
-        <li data-nodrag><button ng-click="addMapEntry(group)">Add
-            Entry</button></li>
-
+        <li ng-show="project.mapRefsetPattern != 'SimpleMap'" data-nodrag><button
+            ng-click="addMapEntry(group)">Add Entry</button></li>
       </ol>
       <hr>
 
     </li>
-
-
-
   </ol>
-  <button data-nodrag ng-click="addMapGroup()">Add Group</button>
-  <div>&nbsp</div>
+  <button ng-show="project.mapRefsetPattern != 'SimpleMap'" data-nodrag
+    ng-click="addMapGroup()">Add Group</button>
+  <div>&nbsp;</div>
 </div>
 
 
@@ -138,7 +131,7 @@ Notes <i class="pull-right glyphicon"
     <code>Tab</code>
     ,
     <code>Enter</code>
-    &nbsp&nbsp
+    &nbsp;&nbsp;
   </span>
 </form>
 
@@ -258,7 +251,7 @@ review<br>
       <code>Tab</code>
       ,
       <code>Enter</code>
-      &nbsp&nbsp
+      &nbsp;&nbsp;
     </span>
   </form>
 
@@ -280,12 +273,13 @@ review<br>
 <p></p>
 <p></p>
 <span style="color: green;">{{recordSuccess}}</span> <span style="color: red;">{{recordError}}</span>
-<span style="color: red;" ng-show="validationResult.errors.length > 0">
+<div style="color: red;" ng-show="validationResult.errors.length > 0">
   Errors detected:
   <ul>
     <li ng-repeat="error in validationResult.errors">{{error}}</li>
   </ul>
-</span> <span style="color: orange;" ng-show="validationResult.warnings.length > 0">
+</div>
+<div style="color: orange;" ng-show="validationResult.warnings.length > 0">
   Warnings:
   <ul>
     <li ng-repeat="warning in validationResult.warnings">{{warning}}</li>
@@ -294,4 +288,4 @@ review<br>
     <p></p>
     <strong>To ignore warnings, click Finish or Finish/Next</strong>
   </div>
-</span>
+</div>

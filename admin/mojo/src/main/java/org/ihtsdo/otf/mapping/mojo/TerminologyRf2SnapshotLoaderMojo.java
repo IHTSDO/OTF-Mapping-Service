@@ -39,7 +39,6 @@ import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.ihtsdo.otf.mapping.services.helpers.FileSorter;
-import org.ihtsdo.otf.mapping.services.helpers.OtfEmailHandler;
 
 import com.google.common.io.Files;
 
@@ -74,7 +73,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
    * @required
    */
   private String version;
-  
+
   /**
    * Whether to send email notification of any errors
    * @parameter
@@ -160,13 +159,14 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
       // Load config properties
       Properties config = ConfigUtility.getConfigProperties();
-      
+
       // check that notifications can be sent if requested
       String notificationRecipients =
           config.getProperty("send.notification.recipients");
       if (!sendNotification) {
-        getLog().info(
-            "No notifications will be sent as a result of workflow computation.");
+        getLog()
+            .info(
+                "No notifications will be sent as a result of workflow computation.");
       }
       if (sendNotification
           && config.getProperty("send.notification.recipients") == null) {
@@ -334,15 +334,16 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
         closeAllSortedFiles();
 
         // Create tree positions
-        MetadataService metadataService = new MetadataServiceJpa();
+        final MetadataService metadataService = new MetadataServiceJpa();
         Map<String, String> hierRelTypeMap =
             metadataService.getHierarchicalRelationshipTypes(terminology,
                 version);
         String isaRelType =
             hierRelTypeMap.keySet().iterator().next().toString();
-        metadataService.close();
-        ContentService contentService = new ContentServiceJpa();
         getLog().info("  Start creating tree positions.");
+        metadataService.close();
+
+        final ContentService contentService = new ContentServiceJpa();
 
         // Walk up tree to the root
         // ASSUMPTION: single root
@@ -362,15 +363,15 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
           break;
         }
         getLog().info("    Compute tree from rootId " + conceptId);
-        ValidationResult result = contentService.computeTreePositions(terminology, version, isaRelType,
-            rootId);
+        ValidationResult result =
+            contentService.computeTreePositions(terminology, version,
+                isaRelType, rootId);
         if (sendNotification && !result.isValid()) {
-          OtfEmailHandler handler = new OtfEmailHandler();
-          handler
+          ConfigUtility
               .sendValidationResultEmail(
                   config.getProperty("notification.recipients"),
-                  "OTF-Mapping-Tool:  Errors in computing " + terminology + ", "
-                      + version + " hierarchical tree positions",
+                  "OTF-Mapping-Tool:  Errors in computing " + terminology
+                      + ", " + version + " hierarchical tree positions",
                   "Hello,\n\nErrors were detected when computing hierarchical tree positions for "
                       + terminology + ", " + version, result);
         }
@@ -882,6 +883,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
    * @return the sorted {@link File}
    * @throws IOException Signals that an I/O exception has occurred.
    */
+  @SuppressWarnings("static-method")
   private File mergeSortedFiles(File files1, File files2,
     Comparator<String> comp, File dir, String headerLine) throws IOException {
     final BufferedReader in1 = new BufferedReader(new FileReader(files1));
