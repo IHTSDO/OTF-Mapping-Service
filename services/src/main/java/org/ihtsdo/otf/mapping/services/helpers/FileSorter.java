@@ -250,9 +250,11 @@ public class FileSorter {
 
   /**
    * Splits a file given a line comparator.
-   * 
+   *
    * @param inputFile the String giving the path to the file to be split
+   * @param dir the dir
    * @param comparator the comparator function by which to compare lines
+   * @param segmentSize the segment size
    * @return a String list of the split filenames
    * @throws Exception the exception
    */
@@ -301,9 +303,10 @@ public class FileSorter {
 
   /**
    * Creates a temporary file from an array of lines.
-   * 
+   *
    * @param lines the lines
    * @param fileIn the input file
+   * @param outputDir the output dir
    * @return the string
    * @throws IOException Signals that an I/O exception has occurred.
    */

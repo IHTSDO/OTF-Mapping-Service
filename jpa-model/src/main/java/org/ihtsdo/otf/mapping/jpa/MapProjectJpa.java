@@ -229,7 +229,7 @@ public class MapProjectJpa implements MapProject {
 
   /** The team based. */
   @Column(nullable = false)
-  private Boolean teamBased = false;
+  private boolean teamBased = false;
 
   /**
    * Default constructor.

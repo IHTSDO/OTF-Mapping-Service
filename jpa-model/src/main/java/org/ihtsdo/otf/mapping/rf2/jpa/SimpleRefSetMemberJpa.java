@@ -14,9 +14,6 @@ import org.ihtsdo.otf.mapping.rf2.SimpleRefSetMember;
 public class SimpleRefSetMemberJpa extends AbstractConceptRefSetMember
     implements SimpleRefSetMember {
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public String toString() {
     return this.getId()
@@ -31,9 +28,7 @@ public class SimpleRefSetMemberJpa extends AbstractConceptRefSetMember
         + ","
         + this.isActive()
         + ","
-        +
-
-        (this.getConcept() == null ? null : this.getConcept()
+        + (this.getConcept() == null ? null : this.getConcept()
             .getTerminologyId());
   }
 

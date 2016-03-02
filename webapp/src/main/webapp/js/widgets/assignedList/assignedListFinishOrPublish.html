@@ -7,10 +7,8 @@
   <button ng-show="records.length > 1" class="btn btn-sm btn-warning"
     ng-click="selectNextRecord()">Skip</button>
 
-
   <div ng-show="currentRecord.isFinished == true" style="color: green">Record
     saved and {{actionText}}ed.</div>
-
 
   <div ng-show="validationResult.errors.length > 0">
     <hr>
@@ -20,26 +18,18 @@
     </ul>
   </div>
 
-  <div ng-show="validationResult.warnings.length > 0">
-    <hr>
-    <span style="color: orange">Warnings:</span>
-    <ul>
-      <li ng-repeat="warning in validationResult.warnings">{{warning}}</li>
-    </ul>
-  </div>
-
-
-
   <hr>
-
 
   <div otf-map-record-narrow record="currentRecord" project="project"
     show-title="true"></div>
-  <div ng-show="records.length > 1"> 
-   <hr>
-   
-   <button class="btn btn-sm btn-primary" ng-click="finishAllRecords()">{{actionText}} All Records</button>
-   <div class="alert alert-success" ng-show="recordsFinished > 0">Records {{actionText}}ed: {{recordsFinished}}</div>
-   <div class="alert alert-warning" ng-show="recordsNotFinished > 0">Records not {{actionText}}ed: {{recordsNotFinished}}</div>
-</div> 
+  <div ng-show="records.length > 1">
+    <hr>
+
+    <button class="btn btn-sm btn-primary" ng-click="finishAllRecords()">{{actionText}}
+      All Records</button>
+    <div class="alert alert-success" ng-show="recordsFinished > 0">Records
+      {{actionText}}ed: {{recordsFinished}}</div>
+    <div class="alert alert-warning" ng-show="recordsNotFinished > 0">Records
+      not {{actionText}}ed: {{recordsNotFinished}}</div>
+  </div>
 </div>

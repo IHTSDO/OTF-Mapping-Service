@@ -1,6 +1,8 @@
 package org.ihtsdo.otf.mapping.services;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.ComplexMapRefSetMemberList;
@@ -492,8 +494,8 @@ public interface ContentService extends RootService {
    * @param rootId the root id
    * @throws Exception the exception
    */
-  public void cycleCheck(String terminology,
-    String terminologyVersion, String typeId, String rootId) throws Exception;
+  public void cycleCheck(String terminology, String terminologyVersion,
+    String typeId, String rootId) throws Exception;
 
   /**
    * Gets the transaction per operation.
@@ -575,6 +577,32 @@ public interface ContentService extends RootService {
     String terminology, String terminologyVersion) throws Exception;
 
   /**
+   * Is descendant of.
+   *
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param version the version
+   * @param ancestorId the ancestor id
+   * @return the tree position list
+   * @throws Exception the exception
+   */
+  public boolean isDescendantOf(String terminologyId, String terminology,
+    String version, String ancestorId) throws Exception;
+
+  /**
+   * Indicates whether or not descendant of is the case.
+   *
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param version the version
+   * @param ancestorIds the ancestor ids
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   * @throws Exception the exception
+   */
+  public boolean isDescendantOf(String terminologyId, String terminology,
+    String version, List<String> ancestorIds) throws Exception;
+
+  /**
    * Find concepts modified since date.
    *
    * @param terminology the terminology
@@ -620,9 +648,12 @@ public interface ContentService extends RootService {
    * Compute tree position concept information.
    *
    * @param tpList the tp list
+   * @param descTypes the desc types
+   * @param relTypes the rel types
    * @throws Exception the exception
    */
-  public void computeTreePositionInformation(TreePositionList tpList)
+  public void computeTreePositionInformation(TreePositionList tpList,
+    Map<String, String> descTypes, Map<String, String> relTypes)
     throws Exception;
 
   /**
@@ -669,7 +700,6 @@ public interface ContentService extends RootService {
   public DescriptionList getAllActiveDescriptions(String terminology,
     String terminologyVersion) throws Exception;
 
- 
   /**
    * Gets all concepts.
    *
@@ -678,8 +708,8 @@ public interface ContentService extends RootService {
    * @return the concepts
    * @throws Exception the exception
    */
-  public LanguageRefSetMemberList getAllActiveLanguageRefSetMembers(String terminology,
-    String terminologyVersion) throws Exception;
+  public LanguageRefSetMemberList getAllActiveLanguageRefSetMembers(
+    String terminology, String terminologyVersion) throws Exception;
 
   /**
    * Gets the all relationship terminology ids.
@@ -727,7 +757,6 @@ public interface ContentService extends RootService {
    */
   public ConceptList getConcepts() throws Exception;
 
- 
   /**
    * Gets the tree position with descendants.
    *
@@ -760,5 +789,17 @@ public interface ContentService extends RootService {
   public ComplexMapRefSetMemberList getComplexMapRefSetMembersForRefSetId(
     String refSetId) throws Exception;
 
+  /**
+   * Indicates whether or not concept is descendant along a hierarchical path
+   *
+   * @param ancestorPath the ancestor path
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   * @throws Exception the exception
+   */
+  public boolean isDescendantOfPath(String ancestorPath, String terminologyId,
+    String terminology, String terminologyVersion) throws Exception;
 
 }

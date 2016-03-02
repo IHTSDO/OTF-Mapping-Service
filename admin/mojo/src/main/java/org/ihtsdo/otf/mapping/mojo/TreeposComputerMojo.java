@@ -10,8 +10,8 @@ import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
+import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
-import org.ihtsdo.otf.mapping.services.helpers.OtfEmailHandler;
 
 /**
  * Goal which loads an RF2 Snapshot of SNOMED CT data into a database.
@@ -77,7 +77,8 @@ public class TreeposComputerMojo extends AbstractMojo {
     try {
       config = ConfigUtility.getConfigProperties();
     } catch (Exception e1) {
-      throw new MojoFailureException("Could not retrieve parameters from conf file");
+      throw new MojoFailureException(
+          "Could not retrieve parameters from conf file");
     }
     String notificationRecipients =
         config.getProperty("send.notification.recipients");
@@ -99,16 +100,16 @@ public class TreeposComputerMojo extends AbstractMojo {
 
       // creating tree positions
       // first get isaRelType from metadata
-      MetadataServiceJpa metadataService = new MetadataServiceJpa();
+      final MetadataService metadataService = new MetadataServiceJpa();
       Map<String, String> hierRelTypeMap =
           metadataService.getHierarchicalRelationshipTypes(terminology,
               terminologyVersion);
       String isaRelType = hierRelTypeMap.keySet().iterator().next().toString();
-      metadataService.close();
 
-      ContentService contentService = new ContentServiceJpa();
       getLog().info("Start creating tree positions.");
-
+      metadataService.close();
+      
+      final ContentService contentService = new ContentServiceJpa();
       // Walk up tree to the root
       // ASSUMPTION: single root
       ValidationResult results = new ValidationResultJpa();
@@ -123,8 +124,7 @@ public class TreeposComputerMojo extends AbstractMojo {
       contentService.close();
 
       if (!results.isValid()) {
-        OtfEmailHandler handler = new OtfEmailHandler();
-        handler
+        ConfigUtility
             .sendValidationResultEmail(
                 notificationRecipients,
                 "OTF-Mapping-Tool:  Errors in computing " + terminology + ", "

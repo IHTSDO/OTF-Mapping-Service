@@ -1,5 +1,5 @@
 /*
- *    Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2016 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.services.helpers;
 
@@ -12,8 +12,16 @@ import java.util.Comparator;
 import java.util.Properties;
 import java.util.UUID;
 
+import javax.mail.Message;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.Configurable;
+import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 
 /**
  * Loads and serves configuration.
@@ -104,6 +112,16 @@ public class ConfigUtility {
     throw new Exception("Handler is not assignable from " + type.getName());
   }
 
+  /**
+   * New standard handler instance with configuration.
+   *
+   * @param <T> the
+   * @param property the property
+   * @param handlerName the handler name
+   * @param type the type
+   * @return the t
+   * @throws Exception the exception
+   */
   public static <T extends Configurable> T newStandardHandlerInstanceWithConfiguration(
     String property, String handlerName, Class<T> type) throws Exception {
 
@@ -135,9 +153,146 @@ public class ConfigUtility {
         handlerProperties.put(shortKey, config.getProperty(key.toString()));
       }
     }
-    //handler.setProperties(handlerProperties);
+    // handler.setProperties(handlerProperties);
     return handler;
   }
+
+  /**
+   * Indicates whether or not recipients list specified is the case.
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public static boolean isRecipientsListSpecified() {
+    return !config.getProperty("send.notification.recipients").isEmpty();
+  }
+
+  /**
+   * Send validation result email.
+   *
+   * @param recipients the recipients
+   * @param subject the subject
+   * @param message the message
+   * @param validationResult the validation result
+   * @throws Exception the exception
+   */
+  public static void sendValidationResultEmail(String recipients,
+    String subject, String message, ValidationResult validationResult)
+    throws Exception {
+
+    // validation message is specified header message and two new lines
+    String validationMessage = message + "\n\n";
+
+    // add the messages
+    if (!validationResult.getMessages().isEmpty()) {
+      validationMessage += "Messages:\n";
+      for (String s : validationResult.getMessages()) {
+        validationMessage += "  " + s + "\n";
+      }
+      validationMessage += "\n";
+    }
+
+    // add the errors
+    if (!validationResult.getErrors().isEmpty()) {
+      validationMessage += "Errors:\n";
+      for (String s : validationResult.getErrors()) {
+        validationMessage += "  " + s + "\n";
+      }
+      validationMessage += "\n";
+    }
+
+    // add the warnings
+    if (!validationResult.getWarnings().isEmpty()) {
+      validationMessage += "Warnings:\n";
+      for (String s : validationResult.getWarnings()) {
+        validationMessage += "  " + s + "\n";
+      }
+      validationMessage += "\n";
+    }
+
+    // send the revised message
+    ConfigUtility.sendEmail(recipients, subject, validationMessage);
+
+  }
+
+  /**
+   * Sends email.
+   *
+   * @param recipients the recipients
+   * @param subject the subject
+   * @param body the body
+   * @throws Exception the exception
+   */
+  public static void sendEmail(String recipients, String subject, String body)
+    throws Exception {
+    // avoid sending mail if disabled
+    final Properties details = ConfigUtility.getConfigProperties();
+
+    String from = details.getProperty("mail.smtp.user");
+    if ("false".equals(details.getProperty("mail.enabled"))) {
+      // do nothing
+      return;
+    }
+    SMTPAuthenticator auth = new SMTPAuthenticator();
+    Session session = Session.getInstance(config, auth);
+
+    MimeMessage msg = new MimeMessage(session);
+    if (body.contains("<html")) {
+      msg.setContent(body.toString(), "text/html; charset=utf-8");
+    } else {
+      msg.setText(body.toString());
+    }
+    msg.setSubject(subject);
+    msg.setFrom(new InternetAddress(from));
+    String[] recipientsArray = recipients.split(";");
+    for (String recipient : recipientsArray) {
+      msg.addRecipient(Message.RecipientType.TO, new InternetAddress(recipient));
+    }
+    Transport.send(msg);
+  }
+
+  /**
+   * Capitalize.
+   *
+   * @param value the value
+   * @return the string
+   */
+  public static String capitalize(String value) {
+    if (value == null) {
+      return value;
+    }
+    return value.substring(0, 1).toUpperCase() + value.substring(1);
+  }
+
+  /**
+   * SMTPAuthenticator.
+   */
+  public static class SMTPAuthenticator extends javax.mail.Authenticator {
+
+    /**
+     * Instantiates an empty {@link SMTPAuthenticator}.
+     */
+    public SMTPAuthenticator() {
+      // do nothing
+    }
+
+    /* see superclass */
+    @Override
+    public PasswordAuthentication getPasswordAuthentication() {
+      Properties config = null;
+      try {
+        config = ConfigUtility.getConfigProperties();
+      } catch (Exception e) {
+        // do nothing
+      }
+      if (config == null) {
+        return null;
+      } else {
+        return new PasswordAuthentication(config.getProperty("mail.smtp.user"),
+            config.getProperty("mail.smtp.password"));
+      }
+    }
+  }
+
   /**
    * Returns the raw bytes.
    * 
@@ -250,7 +405,6 @@ public class ConfigUtility {
           String[] fields1 = o1.split("\t");
           String[] fields2 = o2.split("\t");
 
-          
           int i = fields1[4].compareTo(fields2[4]);
           if (i != 0) {
             return i;
@@ -259,6 +413,11 @@ public class ConfigUtility {
             if (i != 0) {
               return i;
             } else {
+              // Handle simple case - compare referencedComponentId (will be
+              // unique)
+              if (fields1.length == 6) {
+                return 0;
+              }
               i = Integer.parseInt(fields1[6]) - Integer.parseInt(fields2[6]);
               if (i != 0) {
                 return i;
@@ -322,6 +481,10 @@ public class ConfigUtility {
         if (i != 0) {
           return i;
         } else {
+          // handle simple human readable case
+          if (fields1.length == 9) {
+            return 0;
+          }
           i = Integer.parseInt(fields1[7]) - Integer.parseInt(fields2[7]);
           if (i != 0) {
             return i;

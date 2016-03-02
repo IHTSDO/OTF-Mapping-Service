@@ -8,22 +8,18 @@
  * @param [caseSensitive]
  *          {boolean} optional boolean to use case-sensitive searching
  */
-angular.module('ui.highlight', []).filter(
-  'highlight',
-  function() {
-    return function(text, search, caseSensitive) {
-      if (search || angular.isNumber(search)) {
-        text = text.toString();
-        search = search.toString();
-        if (caseSensitive) {
-          return text.split(search).join(
-            '<span class="ui-match">' + search + '</span>');
-        } else {
-          return text.replace(new RegExp(search, 'gi'),
-            '<span class="ui-match">$&</span>');
-        }
+angular.module('ui.highlight', []).filter('highlight', function(highlight) {
+  return function(text, search, caseSensitive) {
+    if (search || angular.isNumber(search)) {
+      var ltext = text.toString();
+      var lsearch = search.toString();
+      if (caseSensitive) {
+        return ltext.split(lsearch).join('<span class="ui-match">' + lsearch + '</span>');
       } else {
-        return text;
+        return ltext.replace(new RegExp(lsearch, 'gi'), '<span class="ui-match">$&</span>');
       }
-    };
-  });
+    } else {
+      return text;
+    }
+  };
+});
