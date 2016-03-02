@@ -34,11 +34,13 @@ import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
  * Unit test for workflow path states on "non legacy path".
  */
+@Ignore("Workflow integration testing outdated after workflow revision")
 public class WorkflowPathStatesNonLegacyPathTest {
 
   /** The handler. */
@@ -57,7 +59,13 @@ public class WorkflowPathStatesNonLegacyPathTest {
   private static TrackingRecord trackingRecord;
 
   /** The lead. */
-  private static MapUser specialist, specialist2, lead;
+  private static MapUser specialist;
+
+  /** The specialist2. */
+  private static MapUser specialist2;
+
+  /** The lead. */
+  private static MapUser lead;
 
   /** The map project. */
   private static MapProject mapProject;
@@ -72,8 +80,6 @@ public class WorkflowPathStatesNonLegacyPathTest {
    */
   @BeforeClass
   public static void init() throws Exception {
-
-    System.out.println("Initialization");
 
     // instantiate the services
     contentService = new ContentServiceJpa();
@@ -201,6 +207,7 @@ public class WorkflowPathStatesNonLegacyPathTest {
    * @throws Exception the exception
    */
   @Test
+  @Ignore("Obsolete test afte workflow change")
   public void testIllegalWorkflowStatusCombinations() throws Exception {
 
     // set of combinations to test
@@ -316,6 +323,7 @@ public class WorkflowPathStatesNonLegacyPathTest {
    * @param status the status
    * @return the map record
    */
+  @SuppressWarnings("static-method")
   private MapRecord createRecord(MapUser user, WorkflowStatus status) {
     MapRecord record = new MapRecordJpa();
 
@@ -338,9 +346,6 @@ public class WorkflowPathStatesNonLegacyPathTest {
    */
   private void getTrackingRecord(WorkflowStatusCombination combination)
     throws Exception {
-    System.out.println("Computing tracking record for combination: "
-        + combination.toString());
-
     // reset the records
     resetRecords();
 

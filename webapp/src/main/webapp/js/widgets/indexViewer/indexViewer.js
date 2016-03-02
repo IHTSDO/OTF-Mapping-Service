@@ -13,339 +13,488 @@ angular
   })
   .controller(
     'indexViewerCtrl',
-    function($scope, $rootScope, $http, $location, $modal, $sce, $anchorScroll,
-      $templateCache, $compile, localStorageService) {
+    function($scope, $rootScope, $sce, $http, $location, $anchorScroll, $q, $templateCache,
+      $timeout, localStorageService, utilService) {
 
-      // initialize as empty to indicate still initializing
-      // database connection
+      // the index domains, domain = { name : '', active : '', pages : ''}
+      $scope.domains = [];
+
+      // array objects for tab management
+      $scope.domainTabs = null;
+      $scope.pageTabs = null;
+
+      // the name and page currently viewed
+      $scope.selectedDomain = null;
+      $scope.selectedPage = null;
+
+      // input fields
+      $scope.searchField = null;
+      $scope.subSearchField = null;
+      $scope.subSubSearchField = null;
+      $scope.allCheckBox = false;
+
+      // search results variables
+      $scope.searchResults = null;
+      $scope.currentResult = null;
+      $scope.searchResultsLabel = null;
+      $scope.searchResultIndex = 0;
+      $scope.indexTrail = null;
+      $scope.indexTrailHighlighted = null;
+
+      // get the local storage variables
       $scope.currentUser = localStorageService.get('currentUser');
       $scope.currentRole = localStorageService.get('currentRole');
       $scope.focusProject = localStorageService.get('focusProject');
-
-      $scope.domains = [];
-      $scope.indexPages = [];
-      $scope.selectedPage;
-      $scope.searchResultsLabel = '';
-      $scope.searchResultsIndex = 0;
-      $scope.mainTermLabel = '';
-      $scope.allCheckBox = false;
-
-      // watch for project change
-      $scope
-        .$on(
-          'localStorageModule.notification.setFocusProject',
-          function(event, parameters) {
-            window
-              .alert("The project and terminology cannot be changed on the index viewer.");
-          });
-
-      // on any change of focusProject, set headers
       $scope.currentUserToken = localStorageService.get('userToken');
-      $scope
-        .$watch(
-          [ 'focusProject', 'currentUser', 'userToken' ],
-          function() {
 
-            if ($scope.focusProject != null && $scope.currentUser != null
-              && $scope.currentUserToken != null) {
-              $http.defaults.headers.common.Authorization = $scope.currentUserToken;
+      // watch for all required values
+      $scope.$watch([ 'focusProject', 'currentUser', 'userToken' ], function() {
 
-              $scope.go();
-            }
+        if ($scope.focusProject != null && $scope.currentUser != null
+          && $scope.currentUserToken != null) {
+          $http.defaults.headers.common.Authorization = $scope.currentUserToken;
+
+          $scope.initialize();
+        }
+      });
+
+      $scope.reset = function() {
+        // reset input fields
+        $scope.searchField = null;
+        $scope.subSearchField = null;
+        $scope.subSubSearchField = null;
+
+        // reset search results
+        $scope.searchResults = null;
+        $scope.searchResultIndex = 0;
+
+        // reset index trails
+        $scope.indexTrail = null;
+        $scope.indexTrailHighlighted = null;
+
+        // remove highlighting from current element
+        if ($scope.currentResult) {
+          $scope.removeHighlighting($scope.currentResult.value);
+        }
+      };
+
+      // create a list of page/active pairs, with first tab active
+      // cumbersome hack due to old version of angular-ui-bootstrap
+      // that can only receive assignable values for 'active'
+      $scope.initializeTabs = function() {
+        $scope.domainTabs = [];
+        angular.forEach($scope.domains, function(domain) {
+
+          // create the domain tab
+          var domainTab = {
+            domain : domain,
+            active : false,
+            pageTabs : []
+          };
+
+          // add the page tabs
+          angular.forEach(domain.pages, function(page) {
+            var pageTab = {
+              name : page,
+              active : false
+            // tabs ordered with orderBy:'name', first tab's active autoset
+            };
+            domainTab.pageTabs.push(pageTab);
           });
 
-      $scope.go = function() {
+          domainTab.pageTabs.sort(function(a, b) {
+            return a.name > b.name;
+          });
+
+          console.debug(domainTab.pageTabs);
+
+          $scope.domainTabs.push(domainTab);
+        });
+
+        // select the first domain and first page
+        $scope.selectDomainTab($scope.domainTabs[0]);
+        $scope.selectPageTab($scope.domainTabs[0].pageTabs[0]);
+      };
+
+      // processes tab click events
+      $scope.selectDomainTab = function(selectedDomainTab) {
+        $scope.selectedDomain = selectedDomainTab.domain;
+      };
+
+      $scope.selectPageTab = function(pageTab) {
+        $scope.selectedPage = pageTab.name;
+      };
+
+      // //////////////////////////////////////////
+      // Searching, Navigation, and Highlighting
+      // //////////////////////////////////////////
+
+      $scope.performAggregatedSearch = function(searchField, subSearchField, subSubSearchField,
+        searchAllLevels, suppressAlerts) {
+
+        // ensure input fields are set
+        $scope.searchField = searchField;
+        $scope.subSearchField = subSearchField;
+        $scope.subSubSearchField = subSubSearchField;
+        $scope.allCheckBox = searchAllLevels;
+
+        var deferred = $q.defer();
+
+        // check for wildcard-only searches
+        if (searchField == '*' && subSearchField == '*' && subSubSearchField == '*') {
+          window.alert('Wildcard-only searches are not supported');
+          deferred.reject(null);
+          return;
+        }
+
+        if (!searchField) {
+          window.alert('The first search box must not be empty');
+          deferred.reject(null);
+          return;
+        }
+
+        var url = root_content + 'index/' + $scope.focusProject.destinationTerminology + '/'
+          + $scope.focusProject.destinationTerminologyVersion + '/' + $scope.selectedDomain.name
+          + '/search/' + searchField + '/subSearch/'
+          + (subSearchField ? subSearchField : 'undefined') + '/subSubSearch/'
+          + (subSubSearchField ? subSubSearchField : 'undefined') + '/' + searchAllLevels;
 
         $rootScope.glassPane++;
-        $http(
-          {
-            url : root_content + "index/"
-              + $scope.focusProject.destinationTerminology + "/"
-              + $scope.focusProject.destinationTerminologyVersion,
-            dataType : "json",
-            method : "GET",
-            headers : {
-              "Content-Type" : "application/json"
-            }
-          }).success(function(data) {
-          console.debug("Success in getting viewable indexes.");
-          for (var i = 0; i < data.searchResult.length; i++) {
-            $scope.domains.push(data.searchResult[i].value);
+        $http({
+          url : url,
+          dataType : 'json',
+          method : 'GET',
+          headers : {
+            'Content-Type' : 'application/json'
           }
+        }).success(function(data) {
 
-          $scope.domains = $scope.domains.sort();
-          $scope.selectedDomain = $scope.domains[0];
-          $scope.retrieveIndexPages($scope.domains[0]);
-          $scope.mainTermLabel = '';
+          $scope.searchResults = data.searchResult;
+          $scope.nResults = data.totalCount;
+
+          if ($scope.nResults > 0) {
+            $scope.searchResultsLabel = $scope.searchResults[0].value2;
+            $scope.goToSearchResult(0);
+
+            deferred.resolve();
+
+          } else {
+            // show alert if not suppressed
+            if (!suppressAlerts) {
+              window.alert('No Matching Search Results.');
+            }
+            deferred.reject('no results');
+          }
           $rootScope.glassPane--;
+
+        }).error(function(data, status, headers, config) {
+          $rootScope.glassPane--;
+          $scope.searchResults = null;
+          $rootScope.handleHttpError(data, status, headers, config);
+          deferred.reject();
+        });
+
+        return deferred.promise;
+      };
+      $scope.goToElement = function(result) {
+
+        console.debug('Going to result', result);
+
+        if (!result) {
+          return;
+        }
+
+        // remove highlighting from current element
+        if ($scope.currentResult) {
+          $scope.removeHighlighting($scope.currentResult.value);
+        }
+
+        // get the index trail for this
+        $scope.detailsHighlighted(result.value);
+
+        // parse the new search result to determine page
+        var page = result.value.charAt(0);
+
+        // change the page
+        $scope.changeTab(page);
+
+        // apply very short timeout to allow tab change
+        $timeout(function() {
+          // go to the element on the page, preventing reload
+          $rootScope.preventSingleReload = true;
+          $location.hash(result.value);
+
+          $scope.applyHighlighting(result.value);
+          $anchorScroll(result.value);
+        }, 100);
+        // update the current result
+        $scope.currentResult = result;
+      };
+
+      $scope.goToSearchResult = function(index) {
+        $scope.searchResultIndex = index;
+        $scope.goToElement($scope.searchResults[index]);
+      };
+
+      $scope.changeTab = function(tabName) {
+
+        angular.forEach($scope.domainTabs, function(domainTab) {
+          if (domainTab.domain.name === $scope.selectedDomain.name) {
+            angular.forEach(domainTab.pageTabs, function(pageTab) {
+              if (pageTab.name === tabName) {
+                pageTab.active = true;
+              } else {
+                pageTab.active = false;
+              }
+            });
+          }
+        });
+
+      };
+
+      // apply highlighting
+      $scope.applyHighlighting = function(eID) {
+        if (document.getElementById(eID) != null) {
+          document.getElementById(eID).style.backgroundColor = "yellow";
+        } else {
+          console.error('Failed to apply highlighting on item with eid ' + eID);
+        }
+      };
+
+      // remove highlighting
+      $scope.removeHighlighting = function(eID) {
+        if (document.getElementById(eID) != null) {
+          document.getElementById(eID).style.backgroundColor = "white";
+        } else {
+          console.error('Failed to remove highlighting on item with eid ' + eID);
+        }
+      };
+
+      // ///////////////////////////////////////
+      // Element Click Events
+      // ///////////////////////////////////////
+
+      // search from link
+      $scope.search = function(searchStr) {
+        // attempt single term search
+        $scope.performAggregatedSearch(searchStr, null, null, false, true).then(function() {
+          // on success do nothing
+        }, function() {
+
+          // try to search sub levels if commas are present
+          var splitStr = searchStr.split(',');
+          if (splitStr.length === 2) {
+            $scope.performAggregatedSearch(splitStr[0], splitStr[1], null, false, false);
+          } else if (splitStr.length === 3) {
+            $scope.performAggregatedSearch(splitStr[0], splitStr[1], splitStr[2], false, false);
+          }
+        });
+      };
+
+      // put the selected target code in storage to trigger any listeners
+      $scope.code = function(targetCode) {
+        if (!targetCode) {
+          return;
+        }
+        console.debug('testing storage event');
+        localStorage.setItem('targetCode', targetCode);
+
+        $timeout(
+          function() {
+            var val = localStorage.getItem('targetCode');
+            if (val) {
+              utilService
+                .handleError('Target code not received by any listeners. The Mapping Tool is either not open or not in editing view');
+              localStorage.removeItem('targetCode');
+            } else {
+              window.blur();
+            }
+          }, 500);
+
+      };
+
+      // retrieve popover details
+      function detailsHelper(link) {
+
+        var deferred = $q.defer();
+
+        if (!link) {
+          deferred.resolve(null);
+          return;
+        }
+
+        console
+          .debug('testing details retrieval', $scope.focusProject, $scope.selectedDomain, link);
+        $http.get(
+          root_content + 'index/' + $scope.focusProject.destinationTerminology + '/'
+            + $scope.focusProject.destinationTerminologyVersion + '/' + $scope.selectedDomain.name
+            + '/details/' + link).then(
+          // Success
+          function(response) {
+
+            console.debug('resolving', response.data.substring(1, response.data.length - 2));
+
+            // substring to eliminate quotation marks
+            deferred.resolve(response.data.substring(1, response.data.length - 2));
+
+          },
+          // Error
+          function(response) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(response.data, response.status, response.headers,
+              response.config);
+            deferred.resolve(null);
+          });
+
+        return deferred.promise;
+
+      }
+
+      $scope.detailsHighlighted = function(link) {
+        console.debug('Getting SR details', link);
+        detailsHelper(link).then(function(response) {
+          console.debug('details', response);
+          $scope.indexTrailHighlighted = response;
+        });
+      };
+
+      $scope.details = function(link) {
+        console.debug('Getting details', link);
+        detailsHelper(link).then(function(response) {
+          console.debug('details', response);
+          $scope.indexTrail = response;
+        });
+      };
+
+      // ///////////////////////////////////////
+      // Initialization
+      // ///////////////////////////////////////
+
+      $scope.initialize = function() {
+        // get the domains
+        $scope.getDomains();
+      };
+
+      // Initializes all domains
+      $scope.getDomains = function() {
+
+        $rootScope.glassPane++;
+        $http.get(
+          root_content + 'index/' + $scope.focusProject.destinationTerminology + '/'
+            + $scope.focusProject.destinationTerminologyVersion)
+
+        // on success
+        .success(function(domainNames) {
+
+          $rootScope.glassPane--;
+
+          console.debug('Domain names retrieved', domainNames);
+
+          // get the pages
+          angular.forEach(domainNames.searchResult, function(searchResult) {
+            $scope.getDomainPages(searchResult.value).then(function(domainPages) {
+
+              // construct the domain object
+              var domain = {
+                name : searchResult.value,
+                pages : domainPages.sort(),
+
+              };
+
+              // FOR DEV WORK ONLY: truncate pages for faster testing
+              // domain.pages = domain.pages.slice(0, 3);
+
+              // push onto the domains array
+              $scope.domains.push(domain);
+
+              // if all domains loaded, sort mark first one as selected
+              if ($scope.domains.length == domainNames.searchResult.length) {
+                $scope.domains.sort(function(a, b) {
+                  return a.name > b.name;
+                });
+
+                $scope.initializeTabs();
+              }
+
+              // cache the template urls for this domain
+              $scope.cacheUrls(domain);
+            });
+
+          });
+
         }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
 
-      // parses the text from a link and calls the search method
-      $scope.performSearchFromLink = function(searchText) {
-        console.debug("searchText:", searchText);
+      // Retrieves the pages for a domain name
+      $scope.getDomainPages = function(domainName) {
 
-        $scope.allCheckBox = false;
-        var res = searchText.split(",");
-        if (res.length == 1) {
-          $scope.performAggregatedSearch(res[0], 'undefined', 'undefined');
-          $scope.searchField = res[0];
-          $scope.subSearchField = '';
-          $scope.subSubSearchField = '';
-          $scope.mainTermLabel = '';
-        } else if (res.length == 2) {
-          $scope.performAggregatedSearch(res[0], res[1].trim(), 'undefined');
-          $scope.searchField = res[0];
-          $scope.subSearchField = res[1];
-          $scope.subSubSearchField = '';
-          $scope.mainTermLabel = '';
-        } else {
-          $scope.performAggregatedSearch(res[0], res[1].trim(), res[2].trim());
-          $scope.searchField = res[0];
-          $scope.subSearchField = res[1];
-          $scope.subSubSearchField = res[2];
-          $scope.mainTermLabel = '';
-        }
-      };
-
-      $scope.performAggregatedSearch = function(searchField, subSearchField,
-        subSubSearchField) {
-
-        console.debug(searchField + " " + subSearchField + " "
-          + subSubSearchField);
-
-        if (searchField == null || searchField == '') {
-          window.alert("The first search box must not be empty");
-          return;
-        }
-        if (searchField == '*' && subSearchField == '*'
-          && subSubSearchField == '*') {
-          window.alert("Oh behave - That search isn't useful!");
-          return;
-        }
-        if (subSearchField == '' || subSearchField == null) {
-          subSearchField = 'undefined';
-        }
-        if (subSubSearchField == '' || subSubSearchField == null) {
-          subSubSearchField = 'undefined';
-        }
-
-        var url = root_content + "index/"
-          + $scope.focusProject.destinationTerminology + "/"
-          + $scope.focusProject.destinationTerminologyVersion + "/"
-          + $scope.selectedDomain + "/search/" + searchField + "/subSearch/"
-          + subSearchField + "/subSubSearch/" + subSubSearchField + "/"
-          + $scope.allCheckBox;
+        console.debug('Retrieving pages for domain ' + domainName);
+        var deferred = $q.defer();
 
         $rootScope.glassPane++;
-        $http({
-          url : url,
-          dataType : "json",
-          method : "GET",
-          headers : {
-            "Content-Type" : "application/json"
-          }
-        })
-          .success(
-            function(data) {
-              $scope.results = data.searchResult;
+        $http.get(
+          root_content + 'index/' + $scope.focusProject.destinationTerminology + '/'
+            + $scope.focusProject.destinationTerminologyVersion + '/' + domainName)
 
-              $scope.nResults = data.totalCount;
-              if ($scope.nResults > 0) {
-                $scope.searchResultsLabel = "1 of " + $scope.nResults;
-                $scope.mainTermLabel = $scope.results[0].value2;
-                $scope.searchResultsIndex = 0;
-
-                if ($scope.nResults > 0) {
-                  $scope
-                    .goToElement($scope.results[$scope.searchResultsIndex].value);
-                }
-
-                $scope.setBackwardButtonsDisplayed(false);
-                if ($scope.nResults == 1) {
-                  $scope.setForwardButtonsDisplayed(false);
-                } else {
-                  $scope.setForwardButtonsDisplayed(true);
-                }
-              } else {
-                window.alert("No Matching Search Results.");
-              }
-              $rootScope.glassPane--;
-
-            }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
-            $scope.results = null;
-            $rootScope.handleHttpError(data, status, headers, config);
-          });
-      };
-
-      // returns the set of titles of html pages for the given domain
-      $scope.retrieveIndexPages = function(domain) {
-        console.debug('retrieveIndexPages', domain);
-        $rootScope.glassPane++;
-        $http(
-          {
-            url : root_content + "index/"
-              + $scope.focusProject.destinationTerminology + "/"
-              + $scope.focusProject.destinationTerminologyVersion + "/"
-              + domain,
-            dataType : "json",
-            method : "GET",
-            headers : {
-              "Content-Type" : "application/json"
-            }
-          }).success(
-          function(data) {
-            console.debug("Success in getting viewable pages for index.");
-            $scope.indexPages = [];
-            for (var i = 0; i < data.searchResult.length; i++) {
-              $scope.indexPages.push(data.searchResult[i].value);
-            }
-            $scope.indexPages = $scope.indexPages.sort();
-
-            $scope.selectedDomain = domain;
-            $scope.selectedPage = $scope.indexPages[0];
-            $scope.updateUrl($scope.indexPages[0]);
-            $scope.mainTermLabel = '';
-            $rootScope.glassPane--;
-
-            // cache all index pages now so they will be available to ng-include
-            // when needed
-            for (var i = 0; i < $scope.indexPages.length; i++) {
-              $rootScope.glassPane++;
-              var url = "indexViewerData/"
-                + $scope.focusProject.destinationTerminology + "/"
-                + $scope.focusProject.destinationTerminologyVersion + "/html/"
-                + $scope.selectedDomain + "/" + $scope.indexPages[i] + ".html"
-
-              $http.get(url, {
-                cache : $templateCache
-              }).then(function(result) {
-                console.log(result);
-                $templateCache.put(url, result);
-                $rootScope.glassPane--;
-              });
-            }
-
-          }).error(function(data, status, headers, config) {
+        // success
+        .success(function(searchResults) {
           $rootScope.glassPane--;
-          $rootScope.handleHttpError(data, status, headers, config);
+          console.debug('Pages for ' + domainName, searchResults);
+          var domainPages = searchResults.searchResult.map(function(searchResult) {
+            return searchResult.value;
+          });
+
+          deferred.resolve(domainPages);
+
+        })
+
+        // failure
+        .error(function() {
+          $rootScope.glassPane--;
+          deferred.reject('Could not load domain pages for domain ' + domainName);
+        });
+        return deferred.promise;
+      };
+
+      $scope.getPageUrl = function(domainName, page) {
+        return 'indexViewerData/' + $scope.focusProject.destinationTerminology + '/'
+          + $scope.focusProject.destinationTerminologyVersion + '/html/' + domainName + '/' + page
+          + '.html';
+      };
+
+      $scope.cacheUrls = function(domain) {
+
+        angular.forEach(domain.pages, function(page) {
+
+          var url = $scope.getPageUrl(domain.name, page);
+
+          $rootScope.glassPane++;
+          $http.get(url, {
+            cache : $templateCache
+          }).then(
+          // Success
+          function(response) {
+            $templateCache.put(url, response);
+            $rootScope.glassPane--;
+          },
+
+          // Error
+          function(response) {
+            utilService.handleError('Error caching urls');
+            $rootScope.glassPane--;
+          });
+
         });
       };
 
-      // scrolling to the given eID on the correct html page
-      $scope.goToElement = function(eID) {
-
-        // if needing to switch to different html page
-        if (eID.charAt(0) != $scope.selectedPage) {
-          // parse the eID to find the name of the target html page
-          $scope.selectedPage = eID.charAt(0);
-          // switch to the target html page
-          $scope.updateUrl($scope.selectedPage);
-          $scope.eID = eID;
-
-          // when the html page finishes loading the scrolling will happen
-          // see $rootScope.$on('includeContentLoaded'...
-        } else {
-          // staying on same html page, so just scroll
-          $location.hash(eID);
-          $anchorScroll();
-        }
-
+      // ////////////////////////////////
+      // Utility
+      // ////////////////////////////////
+      $scope.to_trusted = function(html_code) {
+        return $sce.trustAsHtml(html_code);
       };
 
-      // updates the url to switch to display a new html page in the index
-      // viewer
-      $scope.updateUrl = function(pageName) {
-
-        $scope.selectedPage = pageName;
-
-        $scope.tUrl = "indexViewerData/"
-          + $scope.focusProject.destinationTerminology + "/"
-          + $scope.focusProject.destinationTerminologyVersion + "/html/"
-          + $scope.selectedDomain + "/" + pageName + ".html";
-
-      };
-
-      $scope.goFirstResult = function() {
-        console.debug('goFirstResult called', $scope.searchResultsIndex);
-        $scope.goToElement($scope.results[0].value);
-        $scope.searchResultsLabel = "1 of " + $scope.nResults;
-        $scope.mainTermLabel = $scope.results[0].value2;
-        $scope.setBackwardButtonsDisplayed(false);
-        $scope.setForwardButtonsDisplayed(true);
-      };
-
-      $scope.goPreviousResult = function() {
-        console.debug('goPreviousResult called', $scope.searchResultsIndex);
-        $scope.searchResultsLabel = $scope.searchResultsIndex + " of "
-          + $scope.nResults;
-        $scope.searchResultsIndex--;
-        $scope.goToElement($scope.results[$scope.searchResultsIndex].value);
-        $scope.mainTermLabel = $scope.results[$scope.searchResultsIndex].value2;
-        if ($scope.searchResultsIndex == 0)
-          $scope.setBackwardButtonsDisplayed(false);
-        $scope.setForwardButtonsDisplayed(true);
-      };
-
-      $scope.goNextResult = function() {
-        console.debug('goNextResult called', $scope.searchResultsIndex);
-        $scope.searchResultsIndex++;
-        $scope.searchResultsLabel = ($scope.searchResultsIndex + 1) + " of "
-          + $scope.nResults;
-        $scope.mainTermLabel = $scope.results[$scope.searchResultsIndex].value2;
-        $scope.goToElement($scope.results[$scope.searchResultsIndex].value);
-        if ($scope.results.length == $scope.searchResultsIndex + 1)
-          $scope.setForwardButtonsDisplayed(false);
-        $scope.setBackwardButtonsDisplayed(true);
-      };
-
-      $scope.goLastResult = function() {
-        console.debug('goLastResult called', $scope.searchResultsIndex);
-        $scope.goToElement($scope.results[$scope.results.length - 1].value);
-        $scope.searchResultsLabel = $scope.nResults + " of " + $scope.nResults;
-        $scope.mainTermLabel = $scope.results[$scope.results.length - 1].value2;
-        $scope.setForwardButtonsDisplayed(false);
-        $scope.setBackwardButtonsDisplayed(true);
-      };
-
-      $scope.setBackwardButtonsDisplayed = function(b) {
-        $scope.previousArrow = b;
-        $scope.firstArrow = b;
-      };
-
-      $scope.setForwardButtonsDisplayed = function(b) {
-        $scope.nextArrow = b;
-        $scope.lastArrow = b;
-      };
-
-      $scope.$on('$locationChangeStart', function(ev, newUrl, oldUrl) {
-        // prevent reloading because it messes up the scrolling
-        if (newUrl.indexOf("Help") == -1) {
-          ev.preventDefault();
-          // if the Help page, allow the default reloading response
-        }
-
-      });
-
-      // called when ng-include completes loading an html page
-      $rootScope.$on('$includeContentLoaded', function() {
-
-        console.debug('includeContentLoaded', $scope.eID);
-        $location.hash($scope.eID);
-
-        $anchorScroll();
-
-      });
-
-      $scope.set_style = function(indexTab) {
-        if (indexTab == $scope.selectedPage) {
-          return {
-            color : "red"
-          }
-        }
-      };
     });

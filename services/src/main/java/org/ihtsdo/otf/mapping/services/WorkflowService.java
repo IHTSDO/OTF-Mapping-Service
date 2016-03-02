@@ -9,6 +9,7 @@ import java.util.Set;
 import org.ihtsdo.otf.mapping.helpers.FeedbackConversationList;
 import org.ihtsdo.otf.mapping.helpers.FeedbackList;
 import org.ihtsdo.otf.mapping.helpers.MapUserList;
+import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.TrackingRecordList;
@@ -21,6 +22,7 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.reports.Report;
 import org.ihtsdo.otf.mapping.rf2.Concept;
+import org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 import org.ihtsdo.otf.mapping.workflow.WorkflowException;
 
@@ -28,7 +30,7 @@ import org.ihtsdo.otf.mapping.workflow.WorkflowException;
  * Generically represents a service for answering questions and performing
  * actions related to workflow management.
  */
-public interface WorkflowService extends RootService {
+public interface WorkflowService extends MappingService {
 
   /**
    * Gets the workflow tracking record.
@@ -38,8 +40,8 @@ public interface WorkflowService extends RootService {
    * @return the workflow tracking record
    * @throws Exception the exception
    */
-  public TrackingRecord getTrackingRecord(MapProject mapProject, Concept concept)
-    throws Exception;
+  public TrackingRecord getTrackingRecord(MapProject mapProject,
+    Concept concept) throws Exception;
 
   /**
    * Gets the workflow tracking records.
@@ -97,84 +99,6 @@ public interface WorkflowService extends RootService {
   public void removeTrackingRecord(Long trackingRecordId) throws Exception;
 
   /**
-   * Search Functions.
-   *
-   * @param mapProject the map project
-   * @param mapUser the map user
-   * @param query the query
-   * @param pfsParameter the pfs parameter
-   * @return the search result list
-   * @throws Exception the exception
-   */
-  public SearchResultList findAvailableWork(MapProject mapProject,
-    MapUser mapUser, String query, PfsParameter pfsParameter) throws Exception;
-
-  /**
-   * Find available conflicts.
-   *
-   * @param mapProject the map project
-   * @param mapUser the map user
-   * @param query the query
-   * @param pfsParameter the pfs parameter
-   * @return the search result list
-   * @throws Exception the exception
-   */
-  public SearchResultList findAvailableConflicts(MapProject mapProject,
-    MapUser mapUser, String query, PfsParameter pfsParameter) throws Exception;
-
-  /**
-   * Find assigned concepts.
-   *
-   * @param mapProject the map project
-   * @param mapUser the map user
-   * @param query the query
-   * @param pfsParameter the pfs parameter
-   * @return the search result list
-   * @throws Exception the exception
-   */
-  public SearchResultList findAssignedWork(MapProject mapProject,
-    MapUser mapUser, String query, PfsParameter pfsParameter) throws Exception;
-
-  /**
-   * Find assigned conflicts.
-   *
-   * @param mapProject the map project
-   * @param mapUser the map user
-   * @param query the query
-   * @param pfsParameter the pfs parameter
-   * @return the search result list
-   * @throws Exception the exception
-   */
-  public SearchResultList findAssignedConflicts(MapProject mapProject,
-    MapUser mapUser, String query, PfsParameter pfsParameter) throws Exception;
-
-  /**
-   * Find available review work.
-   *
-   * @param mapProject the map project
-   * @param mapUser the map user
-   * @param query the query
-   * @param pfsParameter the pfs parameter
-   * @return the search result list
-   * @throws Exception the exception
-   */
-  public SearchResultList findAvailableReviewWork(MapProject mapProject,
-    MapUser mapUser, String query, PfsParameter pfsParameter) throws Exception;
-
-  /**
-   * Find assigned review work.
-   *
-   * @param mapProject the map project
-   * @param mapUser the map user
-   * @param query the query
-   * @param pfsParameter the pfs parameter
-   * @return the search result list
-   * @throws Exception the exception
-   */
-  public SearchResultList findAssignedReviewWork(MapProject mapProject,
-    MapUser mapUser, String query, PfsParameter pfsParameter) throws Exception;
-
-  /**
    * Called by REST services, performs a specific action given a project,
    * concept, and user.
    * 
@@ -187,7 +111,7 @@ public interface WorkflowService extends RootService {
    */
   public void processWorkflowAction(MapProject mapProject, Concept concept,
     MapUser mapUser, MapRecord mapRecord, WorkflowAction workflowAction)
-    throws Exception;
+      throws Exception;
 
   /**
    * Synchronize workflow tracking record given the new version and the old
@@ -452,7 +376,7 @@ public interface WorkflowService extends RootService {
    */
   public FeedbackConversationList findFeedbackConversationsForProject(
     Long mapProjectId, String userName, String query, PfsParameter pfsParameter)
-    throws Exception;
+      throws Exception;
 
   /**
    * Returns the feedback conversations for concept.
@@ -485,38 +409,88 @@ public interface WorkflowService extends RootService {
   FeedbackList getFeedbackErrorsForRecord(MapRecord mapRecord) throws Exception;
 
   /**
-   * Find available qa work.
-   *
-   * @param mapProject the map project
-   * @param mapUser the map user
-   * @param query the query
-   * @param pfsParameter the pfs parameter
-   * @return the search result list
-   * @throws Exception the exception
-   */
-  public SearchResultList findAvailableQAWork(MapProject mapProject,
-    MapUser mapUser, String query, PfsParameter pfsParameter) throws Exception;
-
-  /**
-   * Find assigned qa work.
-   *
-   * @param mapProject the map project
-   * @param mapUser the map user
-   * @param query the query
-   * @param pfsParameter the pfs parameter
-   * @return the search result list
-   * @throws Exception the exception
-   */
-  public SearchResultList findAssignedQAWork(MapProject mapProject,
-    MapUser mapUser, String query, PfsParameter pfsParameter) throws Exception;
-
-  /**
    * Creates the qa work.
    *
    * @param report the report
    * @throws Exception the exception
    */
   public void createQAWork(Report report) throws Exception;
+
+  /**
+   * Send feedback email.
+   *
+   * @param name the name
+   * @param email the email
+   * @param conceptId the concept id
+   * @param conceptName the concept name
+   * @param refSetId the ref set id
+   * @param feedbackMessage the feedback message
+   * @throws Exception the exception
+   */
+  public void sendFeedbackEmail(String name, String email, String conceptId,
+    String conceptName, String refSetId, String feedbackMessage)
+      throws Exception;
+
+
+  /**
+   * Find available work.
+   *
+   * @param mapProject the map project
+   * @param mapUser the map user
+   * @param userRole the user role
+   * @param query the query
+   * @param pfsParameter the pfs parameter
+   * @return the search result list
+   * @throws Exception the exception
+   */
+  public SearchResultList findAvailableWork(MapProject mapProject,
+    MapUser mapUser, MapUserRole userRole, String query,
+    PfsParameter pfsParameter) throws Exception;
+
+  /**
+   * Find assigned work.
+   *
+   * @param mapProject the map project
+   * @param mapUser the map user
+   * @param userRole the user role
+   * @param query the query
+   * @param pfsParameter the pfs parameter
+   * @return the search result list
+   * @throws Exception the exception
+   */
+  public SearchResultList findAssignedWork(MapProject mapProject,
+    MapUser mapUser, MapUserRole userRole, String query,
+    PfsParameter pfsParameter) throws Exception;
+
+  /**
+   * Returns the workflow path handler.
+   *
+   * @param name the name
+   * @return the workflow path handler
+   * @throws Exception
+   */
+  public WorkflowPathHandler getWorkflowPathHandler(String name)
+    throws Exception;
+
+  /**
+   * Gets the previously published version of map record.
+   *
+   * @param mapRecord the map record
+   * @return the previously published version of map record
+   * @throws Exception the exception
+   */
+  public MapRecord getPreviouslyPublishedVersionOfMapRecord(MapRecord mapRecord)
+    throws Exception;
+
+  /**
+   * Returns the workflow path handler for map projecte.
+   *
+   * @param mapProject the map project
+   * @return the workflow path handler for map projecte
+   * @throws Exception the exception
+   */
+  public WorkflowPathHandler getWorkflowPathHandlerForMapProject(
+    MapProject mapProject) throws Exception;
 
   /**
    * Send feedback email.

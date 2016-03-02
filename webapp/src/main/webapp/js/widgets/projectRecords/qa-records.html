@@ -1,0 +1,44 @@
+<div class="modal-header">
+  <h3>Submitting {{qaTotal}} Project Records to QA</h3>
+</div>
+
+<div class="modal-body">
+  <div class="row">
+    <div class="col-md-4">Enter label for QA records (required):</div>
+    <div class="col-md-8">
+      <input ng-model="qaLabel" size="40">
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-4"></div>
+    <div class="col-md-8">
+      <div class="alert alert-info" style="padding: 5px;"
+        ng-show="qaComplete > 0">Submitted: {{qaComplete}} / {{qaTotal}}
+        records</div>
+      <div class="alert alert-success" ng-show="qaSucceeded > 0"
+        style="width: 100%">Successful: {{qaSucceeded}} records</div>
+      <div class="alert alert-warning" ng-show="qaSkipped > 0"
+        style="width: 100%">
+        Skipped: {{qaSkipped}} records
+        <div class="alert alert-danger" ng-show="qaFailed > 0"
+          style="width: 100%">Failed: {{qaFailed}} records</div>
+      </div>
+    </div>
+
+    <div class="row">&nbsp;</div>
+
+    <div class="alert alert-danger" ng-if="error">
+      {{error}}
+      <i class="pull-right glyphicon glyphicon-remove" ng-click="clearError()"></i>
+    </div>
+  </div>
+</div>
+
+<div class="modal-footer">
+  <button class="btn btn-primary"
+    ng-show="qaLabel && !isRunning && !qaSucceeded && !qaFailed && !qaSkipped"
+    ng-click="qaRecords(qaLabel)">Create QA Records</button>
+  <button class="btn btn-primary" ng-show="!isRunning" ng-click="close()">Close</button>
+  <button class="btn btn-warning" ng-show="isRunning" ng-click="cancel()">Cancel</button>
+</div>

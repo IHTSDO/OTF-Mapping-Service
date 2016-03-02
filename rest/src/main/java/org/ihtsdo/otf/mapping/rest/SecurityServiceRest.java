@@ -55,18 +55,13 @@ public class SecurityServiceRest extends RootServiceRest {
     Logger.getLogger(SecurityServiceRest.class).info(
         "RESTful call (Authentication): /authentication for map user = "
             + username);
-    SecurityService securityService = new SecurityServiceJpa();
+    final SecurityService securityService = new SecurityServiceJpa();
     try {
       return securityService.authenticate(username, password);
     } catch (LocalException e) {
-      e.printStackTrace();
-      Logger.getLogger(SecurityServiceRest.class).error(
-          "Local exception thrown");
       throw new WebApplicationException(Response.status(401)
           .entity(e.getMessage()).build());
     } catch (Exception e) {
-      Logger.getLogger(SecurityServiceRest.class).error(
-          "General exception thrown");
       handleException(e, "Unexpected error trying to authenticate a map user");
       return null;
     } finally {
@@ -90,18 +85,14 @@ public class SecurityServiceRest extends RootServiceRest {
     Logger.getLogger(SecurityServiceRest.class).info(
         "RESTful call (Logout) : /logout/user/id/" + userName);
     try {
-      SecurityService securityService = new SecurityServiceJpa();
+      final SecurityService securityService = new SecurityServiceJpa();
       securityService.logout(userName);
       securityService.close();
       return null;
     } catch (LocalException e) {
-      Logger.getLogger(SecurityServiceRest.class).error(
-          "Local exception thrown");
       throw new WebApplicationException(Response.status(401)
           .entity(e.getMessage()).build());
     } catch (Exception e) {
-      Logger.getLogger(SecurityServiceRest.class).error(
-          "General exception thrown");
       handleException(e, "Unexpected error trying to authenticate a map user");
     }
     return null;
