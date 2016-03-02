@@ -286,8 +286,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements
       boolean outOfOrderFlag = false;
       boolean missingEntry = false;
 
-      System.out.println("strings1=" + stringEntries1);
-      System.out.println("strings2=" + stringEntries2);
       for (int d = 0; d < Math
           .min(stringEntries1.size(), stringEntries2.size()); d++) {
 

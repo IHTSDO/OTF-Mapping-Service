@@ -1162,7 +1162,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     BufferedWriter writer = null;
     filename =
         outputDir + "/der2_" + pattern + mapProject.getMapRefsetPattern()
-            + "ActiveSnapshot_INT_" + effectiveTime + ".txt";
+            + "Snapshot_INT_" + effectiveTime + ".txt";
 
     // write headers
     Logger.getLogger(getClass()).info("  snapshot file:  " + filename);

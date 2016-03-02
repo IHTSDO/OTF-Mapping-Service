@@ -1189,51 +1189,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
   }
 
-    // Also retire inferred relationships added after the last release
-    // but not in the current delta.  Relationships do not change
-    // they are created or retired - so we likely do not need to worry
-    // about retractions of changes here
-
-    // OK, so after experimenting with this, we can't effectively identify
-    // what kind of change was retracted, and so can't assume that it was
-    // an addition.  Every attempt to model this logic has failed because
-    // we simply do not have the intermediate information
-    // 
-/**    
-    ct = 0;
-    getLog().info("    Retire removed relationships");
-    List<Relationship> relationships =
-        contentService.getRelationshipsModifiedSinceDate(terminology,
-            rf2Version).getRelationships();
-    contentService.clear();
-
-    for (Relationship relationship : relationships) {
-
-      if (relationship.getEffectiveTime().after(rf2Version)
-          && !deltaRelationshipIds.contains(relationship.getTerminologyId())
-          && relationship.isActive()) {
-        getLog().info("        retire " + relationship.getTerminologyId());
-        ct++;
-        relationship.setActive(false);
-        relationship.setEffectiveTime(deltaLoaderStartDate);
-        contentService.updateRelationship(relationship);
-      }
-    }
-    getLog().info("      count =  " + ct);
-**/
-    
-    contentService.commit();
-    contentService.clear();
-    contentService.beginTransaction();
-
-    // Identifying the difference between a change in a description that
-    // was retracted and an addition of a description that was retracted
-    // is difficult and likely very error prone.  Failing to properly
-    // handle retractions of changes or additions has very minor effect.
-    // So, it is recommended to be skipped.  
-    // As are retracted changes or additions of language refset member entries.
-
-  }
   // helper function to update and store concept
   // as well as putting all descendant objects in the cache
   // for easy retrieval

@@ -103,9 +103,8 @@ angular
         $scope.retrieveAvailableWork($scope.availableWorkPage);
         $scope.retrieveAvailableQAWork($scope.availableQAWorkPage);
         if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Admin') {
-          $scope.retrieveAvailableConflicts(1, $scope.queryAvailableConflicts);
-          $scope
-            .retrieveAvailableReviewWork(1, $scope.queryAvailableReviewWork);
+          $scope.retrieveAvailableConflicts($scope.availableConflictsPage);
+          $scope.retrieveAvailableReviewWork($scope.availableReviewWorkPage);
         }
       });
 

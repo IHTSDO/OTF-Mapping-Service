@@ -279,7 +279,6 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
 
     try {
-
       // authorize call
       user =
           authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
@@ -915,7 +914,6 @@ public class MappingServiceRest extends RootServiceRest {
     String user = "";
     final MappingService mappingService = new MappingServiceJpa();
 
-    MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
       user =
@@ -3365,8 +3363,6 @@ public class MappingServiceRest extends RootServiceRest {
 
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
 
-      MapProject mapProject = mappingService.getMapProject(mapProjectId);
-
       // get the local tree positions from content service
       final TreePositionList treePositions =
           contentService.getTreePositionsWithChildren(terminologyId,
@@ -3450,9 +3446,6 @@ public class MappingServiceRest extends RootServiceRest {
 
       // set the valid codes using mapping service
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
-
-      // set the valid codes using mapping service
-      MapProject mapProject = mappingService.getMapProject(mapProjectId);
 
       // get the root tree positions from content service
       final TreePositionList treePositions =
@@ -3611,8 +3604,6 @@ public class MappingServiceRest extends RootServiceRest {
               "get tree position graphs for query", securityService);
 
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
-
-      MapProject mapProject = mappingService.getMapProject(mapProjectId);
 
       // get the tree positions from concept service
       final TreePositionList treePositions =
@@ -3995,11 +3986,6 @@ public class MappingServiceRest extends RootServiceRest {
       projectDir.mkdir();
       final File archiveProjectDir =
           new File(archiveDir, mapProjectId.toString());
-      archiveProjectDir.mkdir();
-
-      File projectDir = new File(docDir, mapProjectId.toString());
-      projectDir.mkdir();
-      File archiveProjectDir = new File(archiveDir, mapProjectId.toString());
       archiveProjectDir.mkdir();
 
       // compose the name of the stored file

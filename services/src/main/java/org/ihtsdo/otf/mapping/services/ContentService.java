@@ -757,7 +757,6 @@ public interface ContentService extends RootService {
    */
   public ConceptList getConcepts() throws Exception;
 
- 
   /**
    * Gets the tree position with descendants.
    *

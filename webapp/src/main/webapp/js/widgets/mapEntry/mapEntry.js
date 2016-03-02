@@ -133,9 +133,6 @@ angular
               $scope.entry.targetName = null;
 
             }
-          }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
-          $rootScope.handleHttpError(data, status, headers, config);
 
           }).error(function(data, status, headers, config) {
             $rootScope.glassPane--;
@@ -191,8 +188,6 @@ angular
           if ($scope.project.ruleBased == true) {
             entry.rule = 'TRUE';
           }
-        }).success(
-          function(data) {
 
           // attempt to autocompute the map relation, then update the entry
           $scope.computeParameters(false);
@@ -771,19 +766,7 @@ angular
           if (entry.targetId != null) {
             var nullTarget = (entry.targetId === '');
 
-          console.debug('Advices after removal:');
-          for (var i = 0; i < entry['mapAdvice'].length; i++) {
-            console.debug(entry['mapAdvice'][i]);
-          }
-
-          updateEntry();
-        }
-
-      };
-
-      // ///////////////////////
-      // Relation functions ///
-      // ///////////////////////
+            for (var i = 0; i < advices.length; i++) {
 
               // do not add computed advices
               if (advices[i].isComputed == false) {
@@ -801,46 +784,10 @@ angular
                       advicePresent = true;
                   }
 
-          // set these to null for consistency
-        } else {
-          console.debug("Setting parameters to null");
-          $scope.entry.targetId = null;
-          $scope.entry.mapRelation = null;
-        }
-      };
-
-      // Function for MapAdvice and MapRelations, returns allowable lists
-      // based
-      // on null target and element properties
-      function getAllowableAdvices(entry, advices) {
-
-        var allowableAdvices = [];
-
-        // if target is null (i.e. not valid or empty), return empty list
-        if (entry.targetId != null) {
-          var nullTarget = (entry.targetId === "");
-
-          for (var i = 0; i < advices.length; i++) {
-
-            // do not add computed advices
-            if (advices[i].isComputed == false) {
-
-              // if empty target and allowable for null target OR
-              // if valid target and not allowable for null target
-              if ((nullTarget == true && advices[i].isAllowableForNullTarget == true)
-                || (nullTarget == false && advices[i].isAllowableForNullTarget == false)) {
-
-                // check that this advice is not already present on the
-                // entry
-                var advicePresent = false;
-                for (var j = 0; j < entry.mapAdvice.length; j++) {
-                  if (entry.mapAdvice[j].id === advices[i].id)
-                    advicePresent = true;
+                  // add advice if not already present
+                  if (advicePresent == false)
+                    allowableAdvices.push(advices[i]);
                 }
-
-                // add advice if not already present
-                if (advicePresent == false)
-                  allowableAdvices.push(advices[i]);
               }
             }
           }
@@ -863,7 +810,7 @@ angular
 
             for (var i = 0; i < relations.length; i++) {
 
-            if (relations[i].isComputed == false) {
+              if (relations[i].isComputed == false) {
 
                 if ((nullTarget == true && relations[i].isAllowableForNullTarget == true)
                   || (nullTarget == false && relations[i].isAllowableForNullTarget == false)) {
@@ -873,7 +820,8 @@ angular
                   relations[i].displayName = (relations[i].abbreviation === 'none' ? relations[i].name
                     : relations[i].abbreviation);
 
-                allowableRelations.push(relations[i]);
+                  allowableRelations.push(relations[i]);
+                }
               }
             }
           }

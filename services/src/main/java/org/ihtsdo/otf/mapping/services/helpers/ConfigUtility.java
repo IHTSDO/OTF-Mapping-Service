@@ -112,40 +112,6 @@ public class ConfigUtility {
     throw new Exception("Handler is not assignable from " + type.getName());
   }
 
-  public static <T extends Configurable> T newStandardHandlerInstanceWithConfiguration(
-    String property, String handlerName, Class<T> type) throws Exception {
-
-    // Instantiate the handler
-    // property = "metadata.service.handler" (e.g)
-    // handlerName = "SNOMED" (e.g.)
-    String classKey = property + "." + handlerName + ".class";
-    if (config.getProperty(classKey) == null) {
-      throw new Exception("Unexpected null classkey " + classKey);
-    }
-    String handlerClass = config.getProperty(classKey);
-    Logger.getLogger(ConfigUtility.class).info("Instantiate " + handlerClass);
-    T handler =
-        ConfigUtility.newHandlerInstance(handlerName, handlerClass, type);
-
-    // Look up and build properties
-    Properties handlerProperties = new Properties();
-    handlerProperties.setProperty("security.handler", handlerName);
-
-    for (Object key : config.keySet()) {
-      // Find properties like "metadata.service.handler.SNOMED.class"
-      if (key.toString().startsWith(property + "." + handlerName + ".")) {
-        String shortKey =
-            key.toString().substring(
-                (property + "." + handlerName + ".").length());
-        Logger.getLogger(ConfigUtility.class).info(
-            " property " + shortKey + " = "
-                + config.getProperty(key.toString()));
-        handlerProperties.put(shortKey, config.getProperty(key.toString()));
-      }
-    }
-    //handler.setProperties(handlerProperties);
-    return handler;
-  }
   /**
    * New standard handler instance with configuration.
    *

@@ -89,32 +89,7 @@ public class SecurityServiceJpa extends RootServiceJpa implements
       }
       mappingService.close();
       return username;
-    }    
-    
-    // Use ihtsdo.security.activated as a switch
-    // - false or true = ihtsdo
-    // uts = uts
-    if (config.getProperty("ihtsdo.security.activated") != null
-        && config.getProperty("ihtsdo.security.activated").equals("uts")) {
-      return utsAuthenticate(username, password);
-    } else {
-      return ihtsdoAuthenticate(username, password);
     }
-  }
-
-  /**
-   * IHTSDO authenticate.
-   *
-   * @param username the username
-   * @param password the password
-   * @return the string
-   * @throws Exception the exception
-   */
-  @SuppressWarnings("unchecked")
-  private String ihtsdoAuthenticate(String username, String password)
-    throws Exception {
-
-    String ihtsdoSecurityUrl = config.getProperty("ihtsdo.security.url");
 
     // Use ihtsdo.security.activated as a switch
     // - false or true = ihtsdo

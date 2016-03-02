@@ -1,5 +1,5 @@
 <div class="modal-header">
-	<h3>Rule Constructor</h3>
+  <h3>Rule Constructor</h3>
 </div>
 
 <div class="modal-body">
@@ -86,22 +86,11 @@
   </div>
   <!-- END chronological age select -->
 
-		<div ng-show="ruleCategory === 'Age - At Onset'">
-			<h4>Select from preset age ranges</h4>
-
-			<select ng-model="presetAgeRange"
-				ng-change="constructRule(ruleCategory, presetAgeRange)"
-				ng-options="presetAgeRange as presetAgeRange.stringName for presetAgeRange in presetAgeRanges"></select>
-		</div>
-
-	</div>
-	<!-- END chronological age select -->
-
-	<div ng-show="rule.length > 0">
-		<hr>
-		<h3>Rule Preview:</h3>
-		<blockquote>{{rule}}</blockquote>
-	</div>
+  <div ng-show="rule.length > 0">
+    <hr>
+    <h3>Rule Preview:</h3>
+    <blockquote>{{rule}}</blockquote>
+  </div>
 
 </div>
 <!--  end of modal-body -->
