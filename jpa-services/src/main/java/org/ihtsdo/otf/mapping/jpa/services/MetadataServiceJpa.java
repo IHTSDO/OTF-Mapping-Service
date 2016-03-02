@@ -484,9 +484,4 @@ public class MetadataServiceJpa extends RootServiceJpa implements
 
   }
 
-  @Override
-  public void initializeFieldNames() throws Exception {
-    // no need
-  }
-
 }

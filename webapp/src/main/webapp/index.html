@@ -4,7 +4,8 @@
 <meta http-equiv="Content-Language" content="en" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <link rel="icon" type="image/png" href="images/favicon.png" />
-<title>IHTSDO Mapping Tool</title>
+<title>{{title}}</title>
+<!-- <title>IHTSDO Mapping Tool</title> -->
 <style type="text/css" media="all"></style>
 <!-- build:css css/sample.min.css  -->
 
@@ -132,36 +133,47 @@
 	src="js/widgets/applicationAdmin/applicationAdmin.js"></script>
 <script type="text/javascript" src="js/widgets/report/report.js"></script>
 <script type="text/javascript" src="js/widgets/qaCheck/qaCheck.js"></script>
-<script type="text/javascript"
-	src="js/widgets/indexViewer/indexViewer.js"></script>
+<script type="text/javascript" src="js/widgets/indexViewer/indexViewer.js"></script>
 
 </head>
 <body>
 
-	<noscript>
-		<style type="text/css">
-.container {
-	display: none;
-}
-</style>
-		<div class="alert alert-danger">
-			You must have Javascript enabled to use the Mapping Tool.
-		</div>
-	</noscript>
-	<div class="container">
+  <noscript>
+    <div class="alert alert-danger">You must have Javascript enabled to
+      use the Mapping Tool.</div>
+  </noscript>
+  <div class="container">
 
-		<div id="globalError" class="border-error alert-error" ng-show="globalError.length > 0">
-			<h4 class="alert alert-danger alert-error">
-				{{globalError}}
-				<div style="display: inline; float: right; width: 3%;">
-					<i class="glyphicon glyphicon-remove" ng-click="resetGlobalError()"></i>
-				</div>
-			</h4>
-		</div>
-		<div ng-view style="margin-top: 10px;"></div>
-		<div ng-show="glassPane > 0" class="top-layer"></div>
-	</div>
-	
+    <!-- Error handling -->
+    <div class="row">
+      <!-- padding -->
+      <div class="col-md-1 col-xs-0"></div>
+      <div class="col-md-10 col-xs-12" id="errorMsg"
+        class="border-error alert-error" ng-show="globalError">
+        <h4 class="alert alert-danger alert-error">
+          {{globalError}}
+          <span style="display: inline; float: right;">
+
+            <i class="glyphicon glyphicon-tags" style="margin-right: 15px"
+              ng-show="globalLongError"
+              title="{{globalErrorExpand ? 'Hide' : 'Show'}} long eror"
+              ng-click="globalErrorExpand = !globalErrorExpand;"></i>
+            <i class="glyphicon glyphicon-remove" ng-click="globalError = '';"></i>
+          </span>
+          <span class="intro-text"
+            ng-show="globalLongError && globalErrorExpand">
+            <br />{{globalLongError}}
+          </span>
+        </h4>
+      </div>
+      <!-- padding -->
+      <div class="col-md-1 col-xs-0"></div>
+    </div>
+
+    <div ng-view style="margin-top: 10px;"></div>
+    <div ng-show="glassPane > 0" class="top-layer"></div>
+  </div>
+
 
 </body>
 </html>

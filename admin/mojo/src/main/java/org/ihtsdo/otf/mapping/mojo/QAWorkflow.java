@@ -6,16 +6,13 @@ import java.util.Properties;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
-import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
-import org.ihtsdo.otf.mapping.services.helpers.OtfEmailHandler;
 
 /**
- * Loads unpublished complex maps.
+ * Performs QA of the workflow
  * 
  * See admin/qa/pom.xml for a sample execution.
  * 
@@ -51,15 +48,13 @@ public class QAWorkflow extends AbstractMojo {
 
     try {
 
-      MappingService mappingService = new MappingServiceJpa();
-      WorkflowService workflowService = new WorkflowServiceJpa();
-
+      final WorkflowService workflowService = new WorkflowServiceJpa();
       List<MapProject> mapProjects = new ArrayList<>();
 
       if (refsetId == null) {
-        mapProjects = mappingService.getMapProjects().getMapProjects();
+        mapProjects = workflowService.getMapProjects().getMapProjects();
       } else {
-        for (MapProject mapProject : mappingService.getMapProjects()
+        for (MapProject mapProject : workflowService.getMapProjects()
             .getIterable()) {
           for (String id : refsetId.split(",")) {
             if (mapProject.getRefSetId().equals(id)) {
@@ -118,13 +113,11 @@ public class QAWorkflow extends AbstractMojo {
             config.getProperty("send.notification.recipients");
 
         // instantiate the email handler
-        OtfEmailHandler emailHandler = new OtfEmailHandler();
-        emailHandler.sendSimpleEmail(notificationRecipients,
+        ConfigUtility.sendEmail(notificationRecipients,
             "OTF Mapping Tool:  Workflow Errors Detected", message.toString());
 
       }
 
-      mappingService.close();
       workflowService.close();
 
       getLog().info("Done ...");

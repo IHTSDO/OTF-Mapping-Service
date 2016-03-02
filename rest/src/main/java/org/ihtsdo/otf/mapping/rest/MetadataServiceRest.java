@@ -8,9 +8,7 @@ import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.dto.KeyValuePair;
@@ -73,31 +71,29 @@ public class MetadataServiceRest extends RootServiceRest {
         "RESTful call (Metadata): /metadata/" + terminology + "/" + version);
 
     String user = "";
-    MetadataService metadataService = new MetadataServiceJpa();
+    final MetadataService metadataService = new MetadataServiceJpa();
     try {
-      user = securityService.getUsernameForToken(authToken);
-
-      // authorize call
-      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
-      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
-        throw new WebApplicationException(Response.status(401)
-            .entity("User does not have permissions to retrieve the metadata.")
-            .build());
+      // authorize
+      user =
+          authorizeApp(authToken, MapUserRole.VIEWER, "get metadata",
+              securityService);
 
       // call jpa service and get complex map return type
-      Map<String, Map<String, String>> mapOfMaps =
+      final Map<String, Map<String, String>> mapOfMaps =
           metadataService.getAllMetadata(terminology, version);
 
       // convert complex map to KeyValuePair objects for easy transformation to
       // XML/JSON
-      KeyValuePairLists keyValuePairLists = new KeyValuePairLists();
-      for (Map.Entry<String, Map<String, String>> entry : mapOfMaps.entrySet()) {
-        String metadataType = entry.getKey();
-        Map<String, String> metadataPairs = entry.getValue();
-        KeyValuePairList keyValuePairList = new KeyValuePairList();
+      final KeyValuePairLists keyValuePairLists = new KeyValuePairLists();
+      for (final Map.Entry<String, Map<String, String>> entry : mapOfMaps
+          .entrySet()) {
+        final String metadataType = entry.getKey();
+        final Map<String, String> metadataPairs = entry.getValue();
+        final KeyValuePairList keyValuePairList = new KeyValuePairList();
         keyValuePairList.setName(metadataType);
-        for (Map.Entry<String, String> pairEntry : metadataPairs.entrySet()) {
-          KeyValuePair keyValuePair =
+        for (final Map.Entry<String, String> pairEntry : metadataPairs
+            .entrySet()) {
+          final KeyValuePair keyValuePair =
               new KeyValuePair(pairEntry.getKey().toString(),
                   pairEntry.getValue());
           keyValuePairList.addKeyValuePair(keyValuePair);
@@ -106,7 +102,7 @@ public class MetadataServiceRest extends RootServiceRest {
       }
       return keyValuePairLists;
     } catch (Exception e) {
-      handleException(e, "trying to retrieve the metadata", user, "", "");
+      handleException(e, "trying to get the metadata", user, "", "");
       return null;
     } finally {
       metadataService.close();
@@ -137,23 +133,18 @@ public class MetadataServiceRest extends RootServiceRest {
         "RESTful call (Metadata): /all/" + terminology);
 
     String user = "";
-    MetadataService metadataService = new MetadataServiceJpa();
+    final MetadataService metadataService = new MetadataServiceJpa();
     try {
-      // authorize call
-      user = securityService.getUsernameForToken(authToken);
-      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
-      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
-        throw new WebApplicationException(Response.status(401)
-            .entity("User does not have permissions to retrieve all metadata.")
-            .build());
+      // authorize
+      user =
+          authorizeApp(authToken, MapUserRole.VIEWER, "get all metadata",
+              securityService);
 
-      String version = metadataService.getLatestVersion(terminology);
-      KeyValuePairLists keyValuePairLists = new KeyValuePairLists();
-      keyValuePairLists = getMetadata(terminology, version, authToken);
+      final String version = metadataService.getLatestVersion(terminology);
+      return getMetadata(terminology, version, authToken);
 
-      return keyValuePairLists;
     } catch (Exception e) {
-      handleException(e, "trying to retrieve all metadata", user, "", "");
+      handleException(e, "trying to get all metadata", user, "", "");
       return null;
     } finally {
       metadataService.close();
@@ -182,23 +173,17 @@ public class MetadataServiceRest extends RootServiceRest {
         "RESTful call (Metadata): /terminologies/latest/");
 
     String user = "";
-    MetadataService metadataService = new MetadataServiceJpa();
+    final MetadataService metadataService = new MetadataServiceJpa();
     try {
-      // authorize call
-      user = securityService.getUsernameForToken(authToken);
-      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
-      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
-        throw new WebApplicationException(
-            Response
-                .status(401)
-                .entity(
-                    "User does not have permissions to retrieve the latest versions of all terminologies.")
-                .build());
+      // authorize
+      user =
+          authorizeApp(authToken, MapUserRole.VIEWER,
+              "get all terminologies and versions", securityService);
 
-      Map<String, String> terminologyVersionMap =
+      final Map<String, String> terminologyVersionMap =
           metadataService.getTerminologyLatestVersions();
-      KeyValuePairList keyValuePairList = new KeyValuePairList();
-      for (Map.Entry<String, String> termVersionPair : terminologyVersionMap
+      final KeyValuePairList keyValuePairList = new KeyValuePairList();
+      for (final Map.Entry<String, String> termVersionPair : terminologyVersionMap
           .entrySet()) {
         keyValuePairList.addKeyValuePair(new KeyValuePair(termVersionPair
             .getKey(), termVersionPair.getValue()));
@@ -206,7 +191,7 @@ public class MetadataServiceRest extends RootServiceRest {
       return keyValuePairList;
     } catch (Exception e) {
       handleException(e,
-          "trying to retrieve the latest versions of all terminologies", user,
+          "trying to get the latest versions of all terminologies", user,
           "", "");
       return null;
     } finally {
@@ -236,25 +221,19 @@ public class MetadataServiceRest extends RootServiceRest {
         "RESTful call (Metadata): /terminologies");
 
     String user = "";
-    MetadataService metadataService = new MetadataServiceJpa();
+    final MetadataService metadataService = new MetadataServiceJpa();
     try {
-      // authorize call
-      user = securityService.getUsernameForToken(authToken);
-      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
-      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
-        throw new WebApplicationException(
-            Response
-                .status(401)
-                .entity(
-                    "User does not have permissions to retrieve the versions of all terminologies.")
-                .build());
+      // authorize
+      user =
+          authorizeApp(authToken, MapUserRole.VIEWER,
+              "get all terminology versions", securityService);
 
-      KeyValuePairLists keyValuePairLists = new KeyValuePairLists();
-      List<String> terminologies = metadataService.getTerminologies();
-      for (String terminology : terminologies) {
-        List<String> versions = metadataService.getVersions(terminology);
-        KeyValuePairList keyValuePairList = new KeyValuePairList();
-        for (String version : versions) {
+      final KeyValuePairLists keyValuePairLists = new KeyValuePairLists();
+      final List<String> terminologies = metadataService.getTerminologies();
+      for (final String terminology : terminologies) {
+        final List<String> versions = metadataService.getVersions(terminology);
+        final KeyValuePairList keyValuePairList = new KeyValuePairList();
+        for (final String version : versions) {
           keyValuePairList.addKeyValuePair(new KeyValuePair(terminology,
               version));
         }
@@ -264,7 +243,7 @@ public class MetadataServiceRest extends RootServiceRest {
       return keyValuePairLists;
     } catch (Exception e) {
       handleException(e,
-          "trying to retrieve the versions of all terminologies", user, "", "");
+          "trying to get the versions of all terminologies", user, "", "");
       return null;
     } finally {
       metadataService.close();
