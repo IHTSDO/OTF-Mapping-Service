@@ -32,6 +32,7 @@ import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
+import org.ihtsdo.otf.mapping.jpa.helpers.TerminologyUtility;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
@@ -1875,7 +1876,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
       // Simple map
     } else if (mapProject.getMapRefsetPattern() == MapRefsetPattern.SimpleMap) {
-      
+
       // For simple map, avoid writing entries with blank maps
       // these are placeholders to better manage scope.
       if (member.getConcept() == null
@@ -2104,6 +2105,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         errorFlag = true;
         // if record is ready for publication
       } else {
+        // Make sure map entries are sorted by by mapGroup/mapPriority
+        Collections.sort(mapRecord.getMapEntries(),
+            new TerminologyUtility.MapEntryComparator());
+        
         // CHECK: Map record (must be ready for publication) passes project
         // specific validation checks
         ValidationResult result = algorithmHandler.validateRecord(mapRecord);

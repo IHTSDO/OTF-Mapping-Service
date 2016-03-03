@@ -3812,6 +3812,9 @@ public class MappingServiceRest extends RootServiceRest {
           mappingService.getMapProject(mapRecord.getMapProjectId());
       final ProjectSpecificAlgorithmHandler algorithmHandler =
           mappingService.getProjectSpecificAlgorithmHandler(mapProject);
+      // Make sure map entries are sorted by by mapGroup/mapPriority
+      Collections.sort(mapRecord.getMapEntries(),
+          new TerminologyUtility.MapEntryComparator());
 
       final ValidationResult validationResult =
           algorithmHandler.validateRecord(mapRecord);
