@@ -2163,7 +2163,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     Logger.getLogger(getClass()).info(
         "    Log into the application to see the report results");
 
-    // commit the report
+
+    // Commit the new report either way
+    reportService.commit();
+    
     // TODO: may need a way to override the errors if we want to proceed with a
     // release anyway
     if (!testModeFlag) {
@@ -2175,8 +2178,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       }
     }
 
-    // Commit the new report either way
-    reportService.commit();
 
     Logger.getLogger(getClass()).info("Done.");
 
