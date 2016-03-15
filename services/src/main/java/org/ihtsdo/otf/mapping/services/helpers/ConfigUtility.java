@@ -415,7 +415,7 @@ public class ConfigUtility {
             } else {
               // Handle simple case - compare referencedComponentId (will be
               // unique)
-              if (fields1.length == 6) {
+              if (fields1.length == 7) {
                 return 0;
               }
               i = Integer.parseInt(fields1[6]) - Integer.parseInt(fields2[6]);
