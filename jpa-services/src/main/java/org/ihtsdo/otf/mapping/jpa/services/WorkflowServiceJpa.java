@@ -1178,7 +1178,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
     Set<String> terminologyIdsWithTrackingRecord = new HashSet<>();
 
     WorkflowPathHandler handler =
-        getWorkflowPathHandler(mapProject.getWorkflowType().toString());
+        getWorkflowPathHandlerForMapProject(mapProject);
 
     for (final TrackingRecord trackingRecord : trackingRecords
         .getTrackingRecords()) {
