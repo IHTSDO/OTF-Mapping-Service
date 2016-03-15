@@ -1894,7 +1894,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               + "\t"
               + member.getRefSetId()
               + "\t"
-              + member.getConcept().getTerminologyId();
+              + member.getConcept().getTerminologyId()
+              + "\t"
+              + member.getMapTarget();
     }
 
     entryLine += "\r\n";
@@ -2108,7 +2110,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         // Make sure map entries are sorted by by mapGroup/mapPriority
         Collections.sort(mapRecord.getMapEntries(),
             new TerminologyUtility.MapEntryComparator());
-        
+
         // CHECK: Map record (must be ready for publication) passes project
         // specific validation checks
         ValidationResult result = algorithmHandler.validateRecord(mapRecord);
@@ -2168,10 +2170,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     Logger.getLogger(getClass()).info(
         "    Log into the application to see the report results");
 
-
     // Commit the new report either way
     reportService.commit();
-    
+
     // TODO: may need a way to override the errors if we want to proceed with a
     // release anyway
     if (!testModeFlag) {
@@ -2182,7 +2183,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         mappingService.commit();
       }
     }
-
 
     Logger.getLogger(getClass()).info("Done.");
 
@@ -2491,7 +2491,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   @SuppressWarnings("static-method")
   private String getPatternForType(MapProject mapProject) {
     if (mapProject.getMapRefsetPattern() == MapRefsetPattern.SimpleMap) {
-      return "cRefset_";
+      return "sRefset_";
     } else if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ComplexMap) {
       return "iissscRefset_";
     } else if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ExtendedMap) {
@@ -2509,7 +2509,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   @SuppressWarnings("static-method")
   private String getHeader(MapProject mapProject) {
     if (mapProject.getMapRefsetPattern() == MapRefsetPattern.SimpleMap) {
-      return "id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId";
+      return "id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tmapTarget";
     } else if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ComplexMap) {
       return "id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\t"
           + "mapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId";
