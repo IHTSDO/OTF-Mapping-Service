@@ -1,9 +1,13 @@
+/*
+ *    Copyright 2016 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.rf2.jpa;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.SimpleMapRefSetMember;
 
 /**
@@ -18,6 +22,35 @@ public class SimpleMapRefSetMemberJpa extends AbstractConceptRefSetMember
   /** The map target */
   @Column(nullable = false)
   private String mapTarget;
+
+  /**
+   * Instantiates an empty {@link SimpleMapRefSetMemberJpa}.
+   */
+  public SimpleMapRefSetMemberJpa() {
+    // n/a
+  }
+
+  /**
+   * Instantiates a {@link SimpleMapRefSetMemberJpa} from the specified
+   * parameters.
+   *
+   * @param member the member
+   */
+  public SimpleMapRefSetMemberJpa(ComplexMapRefSetMember member) {
+    super(member);
+    this.mapTarget = member.getMapTarget();
+  }
+
+  /**
+   * Instantiates a {@link SimpleMapRefSetMemberJpa} from the specified
+   * parameters.
+   *
+   * @param member the member
+   */
+  public SimpleMapRefSetMemberJpa(SimpleMapRefSetMember member) {
+    super(member);
+    this.mapTarget = member.getMapTarget();
+  }
 
   /**
    * returns the map target
@@ -37,9 +70,6 @@ public class SimpleMapRefSetMemberJpa extends AbstractConceptRefSetMember
     this.mapTarget = mapTarget;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public String toString() {
     return this.getId()
