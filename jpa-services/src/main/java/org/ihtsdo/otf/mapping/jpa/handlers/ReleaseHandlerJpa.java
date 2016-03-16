@@ -55,6 +55,7 @@ import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 import org.ihtsdo.otf.mapping.rf2.jpa.ComplexMapRefSetMemberJpa;
+import org.ihtsdo.otf.mapping.rf2.jpa.SimpleMapRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
@@ -534,11 +535,22 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               getComplexMapRefSetMemberForMapEntry(mapEntry, mapRecord,
                   mapProject, concept);
 
-          String uuidStr = getHash(member);
+          if (mapProject.getMapRefsetPattern() == MapRefsetPattern.SimpleMap) {
+            // Run member through simple/complex conversion
+            // This makes sure what was read from the database
+            // matches for non-simple fields what was generated in
+            // getComplexMapRefSetMemberForMapEntry
+            member =
+                new ComplexMapRefSetMemberJpa(new SimpleMapRefSetMemberJpa(
+                    member));
+          }
+
+          final String uuidStr = getHash(member);
 
           // attempt to retrieve any existing complex map ref set
           // member
-          ComplexMapRefSetMember prevMember = prevMembersHashMap.get(uuidStr);
+          final ComplexMapRefSetMember prevMember =
+              prevMembersHashMap.get(uuidStr);
 
           // if existing found, re-use uuid, otherwise generate new
           if (prevMember == null) {
@@ -2394,7 +2406,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           Logger.getLogger(getClass()).debug("    Add member - " + member);
           if (!testModeFlag) {
             member.setConcept(concept);
-            contentService.addComplexMapRefSetMember(member);
+            if (mapProject.getMapRefsetPattern() != MapRefsetPattern.SimpleMap) {
+              contentService.addComplexMapRefSetMember(member);
+            } else {
+              contentService
+                  .addSimpleMapRefSetMember(new SimpleMapRefSetMemberJpa(member));
+            }
           }
         } else {
           throw new Exception("Member references non-existent concept - "
