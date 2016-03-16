@@ -340,9 +340,22 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // after record processing, the remaining ref set members
     // represent those entries that are now inactive
     Map<String, ComplexMapRefSetMember> prevMembersHashMap = new HashMap<>();
-    for (final ComplexMapRefSetMember c : prevMemberList
+    int simpleBlankTargetCt = 0;
+    for (final ComplexMapRefSetMember member : prevMemberList
         .getComplexMapRefSetMembers()) {
-      prevMembersHashMap.put(getHash(c), c);
+
+      // Skip lines for SimpleMap where the map target is empty
+      // These are just placeholders for managing scope
+      // NOTE: if there is a need to have a simple map with blank targets
+      // this could be coded in some other way, like "NOCODE" instead of
+      // blank
+      if (mapProject.getMapRefsetPattern() == MapRefsetPattern.SimpleMap
+          && member.getMapTarget().isEmpty()) {
+        simpleBlankTargetCt++;
+        continue;
+      }
+
+      prevMembersHashMap.put(getHash(member), member);
     }
 
     // output size of each collection
@@ -354,9 +367,17 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             + prevMemberList.getCount());
 
     // if sizes do not match, output warning
-    if (prevMembersHashMap.keySet().size() != prevMemberList.getCount()) {
+    if (mapProject.getMapRefsetPattern() != MapRefsetPattern.SimpleMap
+        && prevMembersHashMap.keySet().size() != prevMemberList.getCount()) {
       throw new Exception(
           "UUID-quintuples count does not match refset member count");
+    }
+
+    if (mapProject.getMapRefsetPattern() == MapRefsetPattern.SimpleMap
+        && (prevMembersHashMap.keySet().size() + simpleBlankTargetCt) != prevMemberList
+            .getCount()) {
+      throw new Exception(
+          "UUID-quintuples count does not match refset member count for SimpleMap");
     }
 
     // clear the ref set members list (no longer used)
