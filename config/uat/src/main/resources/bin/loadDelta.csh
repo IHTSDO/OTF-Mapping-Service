@@ -102,6 +102,9 @@ if (`grep -v effectiveTime *Concept*txt | wc -l` > 0) then
 	    exit 1
 	endif
 
+	echo "Clear indexes directory"
+	/bin/rm -rf /var/lib/tomcat7/indexes/lucene/indexes/org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa/*
+
 	echo "    Generate SNOMEDCT tree positions ... `/bin/date`"
 	cd $MAPPING_CODE/admin/loader
 	mvn install -PTreepos -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT -Dversion=latest -Droot.ids=138875005 | sed 's/^/      /'
