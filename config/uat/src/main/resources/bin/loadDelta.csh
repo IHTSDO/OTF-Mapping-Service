@@ -102,8 +102,14 @@ if (`grep -v effectiveTime *Concept*txt | wc -l` > 0) then
 	    exit 1
 	endif
 
-	echo "Clear indexes directory"
-	/bin/rm -rf /var/lib/tomcat7/indexes/lucene/indexes/org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa/*
+    # optimize tree positions table
+    # must be done manually (periodically) because otherwise
+    # we'd have to put the password into this script
+    echo "Clear indexes directory"
+    /bin/rm -rf /var/lib/tomcat7/indexes/lucene/indexes/org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa/*
+    echo "Reindex other tree positions"
+     cd $MAPPING_CODE/admin/lucene
+    mvn install -PReindex -Drun.config=$MAPPING_CONFIG -Dindexed.objects=TreePositionJpa | sed 's/^/      /'
 
 	echo "    Generate SNOMEDCT tree positions ... `/bin/date`"
 	cd $MAPPING_CODE/admin/loader
