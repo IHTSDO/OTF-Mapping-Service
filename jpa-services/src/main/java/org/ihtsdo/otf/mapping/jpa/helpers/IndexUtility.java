@@ -417,6 +417,8 @@ public class IndexUtility {
         new MultiFieldQueryParser(Version.LUCENE_36,
             IndexUtility.getIndexedFieldNames(fieldNamesKey, true).toArray(
                 new String[] {}), searchFactory.getAnalyzer(clazz));
+    
+    queryParser.setLowercaseExpandedTerms(false);
     if (logQuery) {
       Logger.getLogger(IndexUtility.class).info("  query = " + pfsQuery);
     }
