@@ -2719,9 +2719,9 @@ public class MappingServiceRest extends RootServiceRest {
       final MapUserRole role =
           securityService.getMapProjectRoleForToken(authToken, mapProjectId);
       if (role.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
-        queryRestriction +=
+    /*    queryRestriction +=
             " AND (workflowStatus:PUBLISHED OR workflowStatus:READY_FOR_PUBLICATION)";
-      } else {
+    */  } else {
         queryRestriction += " AND workflowStatus:PUBLISHED";
       }
 
