@@ -121,7 +121,7 @@ angular
           + '/ancestor/'
           + ($scope.searchParameters.ancestorId && $scope.searchParameters.advancedMode ? $scope.searchParameters.ancestorId
             : 'null') + '/query/'
-          + ($scope.searchParameters.query ? $scope.searchParameters.query : 'null');
+          + ($scope.searchParameters.query ? encodeURIComponent($scope.searchParameters.query) : 'null');
 
         console.debug('  pfs', pfs);
 
