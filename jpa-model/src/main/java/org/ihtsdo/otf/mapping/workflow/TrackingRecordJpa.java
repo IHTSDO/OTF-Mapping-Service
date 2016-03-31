@@ -16,6 +16,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import org.apache.lucene.analysis.WhitespaceAnalyzer;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.Field;
@@ -29,9 +30,8 @@ import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
  */
 @Entity
 @Indexed
-@Table(name = "tracking_records", uniqueConstraints = @UniqueConstraint(columnNames = {
-    "terminologyId", "terminology", "terminologyVersion", "mapProjectId"
-}))
+@Table(name = "tracking_records", uniqueConstraints = @UniqueConstraint(columnNames = { "terminologyId", "terminology",
+		"terminologyVersion", "mapProjectId" }) )
 public class TrackingRecordJpa implements TrackingRecord {
 
   /** The id. */
@@ -76,7 +76,7 @@ public class TrackingRecordJpa implements TrackingRecord {
 
   /** The map record ids. */
   @ElementCollection
-  @CollectionTable(name = "tracking_records_map_records", joinColumns = @JoinColumn(name = "id"))
+	@CollectionTable(name = "tracking_records_map_records", joinColumns = @JoinColumn(name = "id") )
   @Column(nullable = true)
   private Set<Long> mapRecordIds = new HashSet<>();
 
@@ -193,7 +193,7 @@ public class TrackingRecordJpa implements TrackingRecord {
   }
 
   @Override
-  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO, analyzer = @Analyzer(impl = WhitespaceAnalyzer.class) )
   public String getUserAndWorkflowStatusPairs() {
     return userAndWorkflowStatusPairs;
   }
@@ -204,8 +204,7 @@ public class TrackingRecordJpa implements TrackingRecord {
   }
 
   @Override
-  public void addUserAndWorkflowStatusPair(String userName,
-    String workflowStatus) {
+	public void addUserAndWorkflowStatusPair(String userName, String workflowStatus) {
     String pair = workflowStatus + "_" + userName;
     if (this.userAndWorkflowStatusPairs == null)
       this.userAndWorkflowStatusPairs = pair;
@@ -215,14 +214,11 @@ public class TrackingRecordJpa implements TrackingRecord {
   }
 
   @Override
-  public void removeUserAndWorkflowStatusPair(String userName,
-    String workflowStatus) {
+	public void removeUserAndWorkflowStatusPair(String userName, String workflowStatus) {
     String pair = workflowStatus + "_" + userName;
 
     if (this.userAndWorkflowStatusPairs.indexOf(pair) != -1) {
-      userAndWorkflowStatusPairs =
-          userAndWorkflowStatusPairs.replaceAll(pair, "").replace("  ", " ")
-              .trim();
+			userAndWorkflowStatusPairs = userAndWorkflowStatusPairs.replaceAll(pair, "").replace("  ", " ").trim();
     }
   }
 
@@ -281,10 +277,10 @@ public class TrackingRecordJpa implements TrackingRecord {
   public void removeAssignedUserName(String name) {
     if (this.assignedUserNames.indexOf(name) != -1) {
 
-      // remove the name, tighten any double spaces remaining, and trim the
+			// remove the name, tighten any double spaces remaining, and trim
+			// the
       // string
-      this.assignedUserNames =
-          this.assignedUserNames.replace(name, "").replace("  ", " ").trim();
+			this.assignedUserNames = this.assignedUserNames.replace(name, "").replace("  ", " ").trim();
 
       // call the count function
       this.getAssignedUserCount();
@@ -309,14 +305,12 @@ public class TrackingRecordJpa implements TrackingRecord {
 
   @Override
   public String toString() {
-    return "TrackingRecordJpa [id=" + id + ", mapProjectId=" + mapProjectId
-        + ", terminology=" + terminology + ", terminologyId=" + terminologyId
-        + ", terminologyVersion=" + terminologyVersion
-        + ", defaultPreferredName=" + defaultPreferredName + ", sortKey="
-        + sortKey + ", workflowPath=" + workflowPath
-        + ", userAndWorkflowStatusPairs=" + userAndWorkflowStatusPairs
-        + ", mapRecordIds=" + mapRecordIds + ", assignedUserNames="
-        + assignedUserNames + ", assignedUserCount=" + assignedUserCount + "]";
+		return "TrackingRecordJpa [id=" + id + ", mapProjectId=" + mapProjectId + ", terminology=" + terminology
+				+ ", terminologyId=" + terminologyId + ", terminologyVersion=" + terminologyVersion
+				+ ", defaultPreferredName=" + defaultPreferredName + ", sortKey=" + sortKey + ", workflowPath="
+				+ workflowPath + ", userAndWorkflowStatusPairs=" + userAndWorkflowStatusPairs + ", mapRecordIds="
+				+ mapRecordIds + ", assignedUserNames=" + assignedUserNames + ", assignedUserCount=" + assignedUserCount
+				+ "]";
   }
 
   @Override
@@ -324,35 +318,16 @@ public class TrackingRecordJpa implements TrackingRecord {
     final int prime = 31;
     int result = 1;
     result = prime * result + assignedUserCount;
-    result =
-        prime * result
-            + ((assignedUserNames == null) ? 0 : assignedUserNames.hashCode());
-    result =
-        prime
-            * result
-            + ((defaultPreferredName == null) ? 0 : defaultPreferredName
-                .hashCode());
-    result =
-        prime * result + ((mapProjectId == null) ? 0 : mapProjectId.hashCode());
-    result =
-        prime * result + ((mapRecordIds == null) ? 0 : mapRecordIds.hashCode());
+		result = prime * result + ((assignedUserNames == null) ? 0 : assignedUserNames.hashCode());
+		result = prime * result + ((defaultPreferredName == null) ? 0 : defaultPreferredName.hashCode());
+		result = prime * result + ((mapProjectId == null) ? 0 : mapProjectId.hashCode());
+		result = prime * result + ((mapRecordIds == null) ? 0 : mapRecordIds.hashCode());
     result = prime * result + ((sortKey == null) ? 0 : sortKey.hashCode());
-    result =
-        prime * result + ((terminology == null) ? 0 : terminology.hashCode());
-    result =
-        prime * result
-            + ((terminologyId == null) ? 0 : terminologyId.hashCode());
-    result =
-        prime
-            * result
-            + ((terminologyVersion == null) ? 0 : terminologyVersion.hashCode());
-    result =
-        prime
-            * result
-            + ((userAndWorkflowStatusPairs == null) ? 0
-                : userAndWorkflowStatusPairs.hashCode());
-    result =
-        prime * result + ((workflowPath == null) ? 0 : workflowPath.hashCode());
+		result = prime * result + ((terminology == null) ? 0 : terminology.hashCode());
+		result = prime * result + ((terminologyId == null) ? 0 : terminologyId.hashCode());
+		result = prime * result + ((terminologyVersion == null) ? 0 : terminologyVersion.hashCode());
+		result = prime * result + ((userAndWorkflowStatusPairs == null) ? 0 : userAndWorkflowStatusPairs.hashCode());
+		result = prime * result + ((workflowPath == null) ? 0 : workflowPath.hashCode());
     return result;
   }
 
@@ -410,8 +385,7 @@ public class TrackingRecordJpa implements TrackingRecord {
     if (userAndWorkflowStatusPairs == null) {
       if (other.userAndWorkflowStatusPairs != null)
         return false;
-    } else if (!userAndWorkflowStatusPairs
-        .equals(other.userAndWorkflowStatusPairs))
+		} else if (!userAndWorkflowStatusPairs.equals(other.userAndWorkflowStatusPairs))
       return false;
     if (workflowPath != other.workflowPath)
       return false;
