@@ -104,24 +104,12 @@ public class TrackingRecordJpa implements TrackingRecord {
     this.id = id;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.workflow.TrackingRecord#getMapProjectId()
-   */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public Long getMapProjectId() {
     return this.mapProjectId;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.workflow.TrackingRecord#setMapProjectId(java.lang
-   * .Long)
-   */
   @Override
   public void setMapProjectId(Long mapProjectId) {
     this.mapProjectId = mapProjectId;
@@ -159,40 +147,22 @@ public class TrackingRecordJpa implements TrackingRecord {
     this.terminology = terminology;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public String getTerminologyId() {
     return terminologyId;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public void setTerminologyId(String terminologyId) {
     this.terminologyId = terminologyId;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.workflow.TrackingRecord#setDefaultPreferredName
-   * (java.lang.String)
-   */
   @Override
   public void setDefaultPreferredName(String defaultPreferredName) {
     this.defaultPreferredName = defaultPreferredName;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.workflow.TrackingRecord#getDefaultPreferredName
-   * ()
-   */
   @Override
   @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   @Analyzer(definition = "noStopWord")
@@ -200,83 +170,39 @@ public class TrackingRecordJpa implements TrackingRecord {
     return defaultPreferredName;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.workflow.TrackingRecord#setSortKey(java.
-   * lang.String)
-   */
   @Override
   public void setSortKey(String sortKey) {
     this.sortKey = sortKey;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.workflow.TrackingRecord#getSortKey()
-   */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public String getSortKey() {
     return sortKey;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.workflow.TrackingRecord#getWorkflowPath()
-   */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public WorkflowPath getWorkflowPath() {
     return workflowPath;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.workflow.TrackingRecord#setWorkflowPath(org.ihtsdo
-   * .otf.mapping.helpers.WorkflowPath)
-   */
   @Override
   public void setWorkflowPath(WorkflowPath workflowPath) {
     this.workflowPath = workflowPath;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.workflow.TrackingRecord#getUserAndWorkflowStatusPairs
-   * ()
-   */
   @Override
   @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   public String getUserAndWorkflowStatusPairs() {
     return userAndWorkflowStatusPairs;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.workflow.TrackingRecord#setUserAndWorkflowStatusPairs
-   * (java.lang.String)
-   */
   @Override
   public void setUserAndWorkflowStatusPairs(String userAndWorkflowStatusPairs) {
     this.userAndWorkflowStatusPairs = userAndWorkflowStatusPairs;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.workflow.TrackingRecord#addUserAndWorkflowStatusPair
-   * (java.lang.String, java.lang.String)
-   */
   @Override
   public void addUserAndWorkflowStatusPair(String userName,
     String workflowStatus) {
@@ -288,13 +214,6 @@ public class TrackingRecordJpa implements TrackingRecord {
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.workflow.TrackingRecord#removeUserAndWorkflowStatusPair
-   * (java.lang.String, java.lang.String)
-   */
   @Override
   public void removeUserAndWorkflowStatusPair(String userName,
     String workflowStatus) {
@@ -307,43 +226,22 @@ public class TrackingRecordJpa implements TrackingRecord {
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.workflow.TrackingRecord#getMapRecordIds()
-   */
   @Override
   public Set<Long> getMapRecordIds() {
     return mapRecordIds;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.workflow.TrackingRecord#setMapRecordIds(java
-   * .util.Set)
-   */
   @Override
   public void setMapRecordIds(Set<Long> mapRecordIds) {
     this.mapRecordIds = mapRecordIds;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.workflow.TrackingRecord#getAssignedUserNames()
-   */
   @Override
   @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   public String getAssignedUserNames() {
     return assignedUserNames;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.workflow.TrackingRecord#getAssignedUserCount()
-   */
   @Override
   @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   public int getAssignedUserCount() {
@@ -356,13 +254,6 @@ public class TrackingRecordJpa implements TrackingRecord {
     return this.assignedUserCount;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.workflow.TrackingRecord#setAssignedUserNames(java
-   * .util.Set)
-   */
   @Override
   public void setAssignedUserNames(String assignedUserNames) {
     this.assignedUserNames = assignedUserNames;
@@ -371,13 +262,6 @@ public class TrackingRecordJpa implements TrackingRecord {
     this.getAssignedUserCount();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.workflow.TrackingRecord#addAssignedUserName(java
-   * .lang.String)
-   */
   @Override
   public void addAssignedUserName(String name) {
     // if string list is null, set it to name
@@ -393,13 +277,6 @@ public class TrackingRecordJpa implements TrackingRecord {
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.workflow.TrackingRecord#removeAssignedUserName(java
-   * .lang.String)
-   */
   @Override
   public void removeAssignedUserName(String name) {
     if (this.assignedUserNames.indexOf(name) != -1) {
@@ -416,12 +293,6 @@ public class TrackingRecordJpa implements TrackingRecord {
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.workflow.TrackingRecord#addMapRecord(org
-   * .ihtsdo.otf.mapping.model.MapRecord)
-   */
   @Override
   public void addMapRecordId(Long mapRecordId) {
     if (this.mapRecordIds == null)
@@ -429,12 +300,6 @@ public class TrackingRecordJpa implements TrackingRecord {
     this.mapRecordIds.add(mapRecordId);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.workflow.TrackingRecord#removeMapRecord(
-   * org.ihtsdo.otf.mapping.model.MapRecord)
-   */
   @Override
   public void removeMapRecordId(Long mapRecordId) {
     if (this.mapRecordIds != null) {
@@ -454,11 +319,6 @@ public class TrackingRecordJpa implements TrackingRecord {
         + assignedUserNames + ", assignedUserCount=" + assignedUserCount + "]";
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#hashCode()
-   */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -496,11 +356,6 @@ public class TrackingRecordJpa implements TrackingRecord {
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
   @Override
   public boolean equals(Object obj) {
     if (this == obj)
