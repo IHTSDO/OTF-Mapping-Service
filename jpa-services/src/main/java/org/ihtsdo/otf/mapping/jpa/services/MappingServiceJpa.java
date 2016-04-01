@@ -2389,9 +2389,11 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     for (final TreePosition tp : treePositions) {
       if (validMap.containsKey(tp.getTerminologyId())) {
         tp.setValid(validMap.get(tp.getTerminologyId()));
+        // If we've seen this terminology id, we have processed its children
+        return;
       } else {
         tp.setValid(algorithmHandler.isTargetCodeValid(tp.getTerminologyId()));
-        validMap.put(tp.getTerminology(), tp.isValid());
+        validMap.put(tp.getTerminologyId(), tp.isValid());
       }
       setTreePositionValidCodesHelper(tp.getChildren(), algorithmHandler,
           validMap);
