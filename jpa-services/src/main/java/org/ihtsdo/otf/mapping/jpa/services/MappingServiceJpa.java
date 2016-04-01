@@ -2362,9 +2362,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     TreePositionList treePositions, ProjectSpecificAlgorithmHandler handler)
     throws Exception {
     // get the map project and its algorithm handler
-
     // Helper function to unravel TreePositionList -> List<TreePosition>
-    setTreePositionValidCodesHelper(treePositions.getTreePositions(), handler);
+    setTreePositionValidCodesHelper(treePositions.getTreePositions(), handler,
+        new HashMap<String, Boolean>());
 
     return treePositions;
   }
@@ -2374,19 +2374,27 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
    * Instantiated to prevent necessity for retrieving algorithm handler at each
    * level. Note: Not necessary to return objects, tree positions are persisted
    * objects
-   * 
+   *
    * @param treePositions the tree positions
    * @param algorithmHandler the algorithm handler
+   * @param validMap the valid map
    * @throws Exception the exception
    */
   private void setTreePositionValidCodesHelper(
     List<TreePosition> treePositions,
-    ProjectSpecificAlgorithmHandler algorithmHandler) throws Exception {
+    ProjectSpecificAlgorithmHandler algorithmHandler,
+    Map<String, Boolean> validMap) throws Exception {
     // cycle over all tree positions and check target code, recursively
     // cycle over children
     for (final TreePosition tp : treePositions) {
-      tp.setValid(algorithmHandler.isTargetCodeValid(tp.getTerminologyId()));
-      setTreePositionValidCodesHelper(tp.getChildren(), algorithmHandler);
+      if (validMap.containsKey(tp.getTerminologyId())) {
+        tp.setValid(validMap.get(tp.getTerminologyId()));
+      } else {
+        tp.setValid(algorithmHandler.isTargetCodeValid(tp.getTerminologyId()));
+        validMap.put(tp.getTerminology(), tp.isValid());
+      }
+      setTreePositionValidCodesHelper(tp.getChildren(), algorithmHandler,
+          validMap);
     }
   }
 

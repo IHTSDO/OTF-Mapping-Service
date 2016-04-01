@@ -2174,6 +2174,10 @@ public class MappingServiceRest extends RootServiceRest {
 
       mapRecord = mappingService.getMapRecord(mapRecordId);
 
+      if (mapRecord == null) {
+        throw new LocalException("The map record " + mapRecordId
+            + " no longer exists, it has probably moved on in the workflow.");
+      }
       // authorize call
       user =
           authorizeProject(mapRecord.getMapProjectId(), authToken,
@@ -3729,6 +3733,11 @@ public class MappingServiceRest extends RootServiceRest {
     try {
       final MapRecord mapRecord = workflowService.getMapRecord(mapRecordId);
 
+      if (mapRecord == null) {
+        throw new LocalException("The map record " + mapRecordId
+            + " no longer exists, it has probably moved on in the workflow.");
+      }
+      
       // authorize call
       user =
           authorizeProject(mapRecord.getMapProjectId(), authToken,
