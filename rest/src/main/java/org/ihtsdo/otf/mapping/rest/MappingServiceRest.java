@@ -3629,17 +3629,24 @@ public class MappingServiceRest extends RootServiceRest {
       final Map<String, String> relTypes =
           metadataService.getRelationshipTypes(terminology, terminologyVersion);
 
-      contentService.computeTreePositionInformation(treePositions, descTypes,
-          relTypes);
-
       // set the valid codes using mapping service
       final ProjectSpecificAlgorithmHandler handler =
           mappingService.getProjectSpecificAlgorithmHandler(mapProject);
+
+      // Limit tree positions
+      treePositions.setTreePositions(handler.limitTreePositions(treePositions
+          .getTreePositions()));
+
+      contentService.computeTreePositionInformation(treePositions, descTypes,
+          relTypes);
+
       mappingService.setTreePositionValidCodes(mapProject, treePositions,
           handler);
       mappingService.setTreePositionTerminologyNotes(mapProject, treePositions,
           handler);
 
+      // TODO: if there are too many tree positions, then chop the tree off (2
+      // levels?)
       return treePositions;
 
     } catch (Exception e) {
@@ -3737,7 +3744,7 @@ public class MappingServiceRest extends RootServiceRest {
         throw new LocalException("The map record " + mapRecordId
             + " no longer exists, it has probably moved on in the workflow.");
       }
-      
+
       // authorize call
       user =
           authorizeProject(mapRecord.getMapProjectId(), authToken,
