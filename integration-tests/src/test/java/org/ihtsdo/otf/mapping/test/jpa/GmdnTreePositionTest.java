@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.test.jpa;
 
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -11,6 +12,7 @@ import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
+import org.ihtsdo.otf.mapping.rf2.TreePosition;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
@@ -89,7 +91,7 @@ public class GmdnTreePositionTest {
 
     // Second
     treePositions =
-        contentService.getTreePositionGraphForQuery("GMDN", "16_1", "terminologyId:61690");
+        contentService.getTreePositionGraphForQuery("GMDN", "16_1", "61690");
     Logger.getLogger(getClass()).info(
         "  treepos count = " + treePositions.getTotalCount());
 
@@ -101,12 +103,37 @@ public class GmdnTreePositionTest {
     relTypes =
         metadataService.getRelationshipTypes(terminology, terminologyVersion);
 
+    System.out.println("COUNT before limit="
+        + countTp(treePositions.getTreePositions()));
+    // Limit tree positions
+    treePositions.setTreePositions(handler.limitTreePositions(treePositions
+        .getTreePositions()));
+    System.out.println("COUNT after limit="
+        + countTp(treePositions.getTreePositions()));
+
     contentService.computeTreePositionInformation(treePositions, descTypes,
         relTypes);
 
     mappingService.setTreePositionValidCodes(null, treePositions, handler);
     mappingService
         .setTreePositionTerminologyNotes(null, treePositions, handler);
+
+  }
+
+  /**
+   * Count tp.
+   *
+   * @param tps the tps
+   * @return the int
+   */
+  private int countTp(List<TreePosition> tps) {
+    int i = 0;
+    for (final TreePosition tp : tps) {
+      i++;
+      i += countTp(tp.getChildren());
+    }
+
+    return i;
 
   }
 
