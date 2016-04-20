@@ -2679,8 +2679,9 @@ public class MappingServiceRest extends RootServiceRest {
         pfsLocal.setStartIndex(-1);
 
         // perform lucene search
-        searchResults = (query == null ? new SearchResultListJpa()
-            : mappingService.findMapRecordsForQuery(queryLocal, pfsLocal));
+        searchResults =
+            ((query == null || query.isEmpty()) ? new SearchResultListJpa()
+                : mappingService.findMapRecordsForQuery(queryLocal, pfsLocal));
 
         Logger.getLogger(getClass()).info(
             "Ancestor records search -- records matching before descendant check: "
