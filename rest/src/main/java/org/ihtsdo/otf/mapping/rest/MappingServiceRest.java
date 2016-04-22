@@ -2805,7 +2805,7 @@ public class MappingServiceRest extends RootServiceRest {
               .findDescendantConcepts(ancestorId,
                   mapProject.getSourceTerminology(),
                   mapProject.getSourceTerminologyVersion(),
-                  new PfsParameterJpa()));
+                  null));
         }
 
         // set search results total count to number of eligible results
