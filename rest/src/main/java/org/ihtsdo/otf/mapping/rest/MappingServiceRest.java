@@ -2782,19 +2782,29 @@ public class MappingServiceRest extends RootServiceRest {
 
         final SearchResultList eligibleResults = new SearchResultListJpa();
 
-        // determine which results are for descendant concepts
-        for (final SearchResult sr : searchResults.getSearchResults()) {
+        // If there was a search query, combin them
+        if (queryLocal != null && !queryLocal.isEmpty()) {
+          // determine which results are for descendant concepts
+          for (final SearchResult sr : searchResults.getSearchResults()) {
 
-          // if this terminology is a descendant OR is the concept itself
-          if (sr.getTerminologyId().equals(ancestorId)
-              || contentService.isDescendantOfPath(path, sr.getTerminologyId(),
-                  mapProject.getSourceTerminology(),
-                  mapProject.getSourceTerminologyVersion())) {
+            // if this terminology is a descendant OR is the concept itself
+            if (sr.getTerminologyId().equals(ancestorId)
+                || contentService.isDescendantOfPath(path,
+                    sr.getTerminologyId(), mapProject.getSourceTerminology(),
+                    mapProject.getSourceTerminologyVersion())) {
 
-            // add to eligible results
-            eligibleResults.addSearchResult(sr);
-
+              // add to eligible results
+              eligibleResults.addSearchResult(sr);
+            }
           }
+        }
+
+        // Otherwise, just get all descendants
+        else {
+          eligibleResults.addSearchResults(contentService
+              .findDescendantConcepts(ancestorId,
+                  mapProject.getSourceTerminology(),
+                  mapProject.getSourceTerminologyVersion(), pfsLocal));
         }
 
         // set search results total count to number of eligible results
