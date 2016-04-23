@@ -2699,14 +2699,19 @@ public class MappingServiceRest extends RootServiceRest {
           authorizeApp(authToken, MapUserRole.VIEWER,
               "find map records for map project and query", securityService);
 
+      // determine if a query was passed
+      boolean queryFlag =
+          query != null && !query.isEmpty() && !query.equals("null");
+      boolean ancestorFlag =
+          ancestorId != null && !ancestorId.isEmpty()
+              && !ancestorId.equals("null");
+
       // instantiate the list to be returned
       final MapRecordListJpa mapRecordList = new MapRecordListJpa();
 
       // create local pfs parameter for query restriction modification
       final PfsParameter pfsLocal = new PfsParameterJpa(pfsParameter);
-
-      // if query string text is "null", convert to actual null value
-      final String queryLocal = query.equals("null") ? null : query;
+      final String queryLocal = queryFlag ? query : null;
 
       // the revised query restriction (local variable for convenience)
       String queryRestriction = pfsLocal.getQueryRestriction();
@@ -2735,15 +2740,13 @@ public class MappingServiceRest extends RootServiceRest {
       SearchResultList searchResults;
 
       // if ancestor id specified, need to retrieve all results
-      if (ancestorId != null && !ancestorId.isEmpty()
-          && !ancestorId.equals("null")) {
+      if (ancestorFlag) {
         pfsLocal.setStartIndex(-1);
 
         // perform lucene search
         searchResults =
-            ((queryLocal == null || queryLocal.isEmpty())
-                ? new SearchResultListJpa() : mappingService
-                    .findMapRecordsForQuery(queryLocal, pfsLocal));
+            (queryFlag ? mappingService.findMapRecordsForQuery(queryLocal,
+                pfsLocal) : new SearchResultListJpa());
 
         Logger.getLogger(getClass()).info(
             "Ancestor records search -- records matching before descendant check: "
@@ -2783,7 +2786,7 @@ public class MappingServiceRest extends RootServiceRest {
         final SearchResultList eligibleResults = new SearchResultListJpa();
 
         // If there was a search query, combin them
-        if (queryLocal != null && !queryLocal.isEmpty()) {
+        if (queryFlag) {
           // determine which results are for descendant concepts
           for (final SearchResult sr : searchResults.getSearchResults()) {
 
@@ -2804,8 +2807,7 @@ public class MappingServiceRest extends RootServiceRest {
           eligibleResults.addSearchResults(contentService
               .findDescendantConcepts(ancestorId,
                   mapProject.getSourceTerminology(),
-                  mapProject.getSourceTerminologyVersion(),
-                  null));
+                  mapProject.getSourceTerminologyVersion(), null));
         }
 
         // set search results total count to number of eligible results
