@@ -2815,6 +2815,8 @@ public class MappingServiceRest extends RootServiceRest {
 
         Logger.getLogger(getClass()).info(
             "  " + searchResults.getTotalCount() + " map records found");
+        Logger.getLogger(getClass()).info(
+            "  results  = " + searchResults);
 
         // workaround for typing problems between List<SearchResultJpa> and
         // List<SearchResult>
@@ -2822,6 +2824,8 @@ public class MappingServiceRest extends RootServiceRest {
         for (SearchResult sr : eligibleResults.getSearchResults()) {
           results.add((SearchResultJpa) sr);
         }
+        Logger.getLogger(getClass()).info(
+            "  results  = " + results);
 
         // apply paging to the list -- note: use original pfs
         final int[] totalCt = new int[1];
@@ -4214,7 +4218,6 @@ public class MappingServiceRest extends RootServiceRest {
    * @param destFile the dest file
    * @throws IOException Signals that an I/O exception has occurred.
    */
-  @SuppressWarnings("resource")
   public static void copyFile(File sourceFile, File destFile)
     throws IOException {
     if (!destFile.exists()) {
