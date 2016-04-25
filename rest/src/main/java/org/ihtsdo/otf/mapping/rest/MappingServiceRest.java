@@ -84,7 +84,6 @@ import org.ihtsdo.otf.mapping.model.MapUserPreferences;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.Relationship;
-import org.ihtsdo.otf.mapping.rf2.TreePosition;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
@@ -2742,7 +2741,6 @@ public class MappingServiceRest extends RootServiceRest {
 
       // if ancestor id specified, need to retrieve all results
       if (ancestorFlag) {
-        Logger.getLogger(getClass()).info("  ANCESTOR FLAG");
         pfsLocal.setStartIndex(-1);
 
         // perform lucene search
@@ -2750,43 +2748,16 @@ public class MappingServiceRest extends RootServiceRest {
             (queryFlag ? mappingService.findMapRecordsForQuery(queryLocal,
                 pfsLocal) : new SearchResultListJpa());
 
-        Logger.getLogger(getClass()).info(
-            "Ancestor records search -- records matching before descendant check: "
-                + searchResults.getTotalCount());
-
         if (searchResults.getTotalCount() > 10000) {
           throw new LocalException(
               searchResults.getTotalCount()
                   + " potential string matches for ancestor search. Narrow your search and try again.");
         }
 
-        Logger.getLogger(getClass()).info(
-            "  results " + searchResults.getSearchResults().size());
-
         final MapProject mapProject =
             mappingService.getMapProject(mapProjectId);
 
         contentService = new ContentServiceJpa();
-
-        // get the tree positions for the concept in question
-        TreePositionList tpList =
-            contentService.getTreePositions(ancestorId,
-                mapProject.getSourceTerminology(),
-                mapProject.getSourceTerminologyVersion());
-
-        if (tpList.getCount() == 0) {
-          throw new LocalException(
-              "Cannot search for map records for descendants of concept "
-                  + ancestorId + ", no tree positions found");
-        }
-
-        TreePosition tp = tpList.getTreePositions().get(0);
-        String path =
-            (tp.getAncestorPath().isEmpty() ? "" : tp.getAncestorPath() + "~")
-                + tp.getTerminologyId();
-
-        Logger.getLogger(getClass()).info(
-            "Searching for map records for descendants of path " + path);
 
         final SearchResultList eligibleResults = new SearchResultListJpa();
 
@@ -2844,15 +2815,9 @@ public class MappingServiceRest extends RootServiceRest {
               .findMapRecordsForQuery(sb.toString(), pfsLocal));
 
         }
-        Logger.getLogger(getClass()).info(
-            "  eligible results " + eligibleResults.getSearchResults().size());
 
         // set search results total count to number of eligible results
         searchResults.setTotalCount(eligibleResults.getCount());
-
-        Logger.getLogger(getClass()).info(
-            "  " + searchResults.getTotalCount() + " map records found");
-        Logger.getLogger(getClass()).info("  results  = " + searchResults);
 
         // workaround for typing problems between List<SearchResultJpa> and
         // List<SearchResult>
@@ -2901,9 +2866,6 @@ public class MappingServiceRest extends RootServiceRest {
 
       // set the total count
       mapRecordList.setTotalCount(searchResults.getTotalCount());
-
-      Logger.getLogger(getClass()).info(
-          "  final results  = " + mapRecordList.getMapRecords().size());
 
       // remove notes if this is not a specialist or above
       if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
