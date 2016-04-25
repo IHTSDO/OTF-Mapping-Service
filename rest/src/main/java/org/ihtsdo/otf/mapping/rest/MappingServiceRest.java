@@ -2741,6 +2741,7 @@ public class MappingServiceRest extends RootServiceRest {
 
       // if ancestor id specified, need to retrieve all results
       if (ancestorFlag) {
+        Logger.getLogger(getClass()).info("  ANCESTOR FLAG");
         pfsLocal.setStartIndex(-1);
 
         // perform lucene search
@@ -2757,6 +2758,9 @@ public class MappingServiceRest extends RootServiceRest {
               searchResults.getTotalCount()
                   + " potential matches for ancestor search. Narrow your search and try again.");
         }
+
+        Logger.getLogger(getClass()).info(
+            "  results " + searchResults.getSearchResults().size());
 
         final MapProject mapProject =
             mappingService.getMapProject(mapProjectId);
@@ -2785,7 +2789,7 @@ public class MappingServiceRest extends RootServiceRest {
 
         final SearchResultList eligibleResults = new SearchResultListJpa();
 
-        // If there was a search query, combin them
+        // If there was a search query, combine them
         if (queryFlag) {
           // determine which results are for descendant concepts
           for (final SearchResult sr : searchResults.getSearchResults()) {
@@ -2804,19 +2808,41 @@ public class MappingServiceRest extends RootServiceRest {
 
         // Otherwise, just get all descendants
         else {
-          eligibleResults.addSearchResults(contentService
-              .findDescendantConcepts(ancestorId,
+          // Look up descendants, then convert to map records
+          final List<SearchResult> descendants =
+              contentService.findDescendantConcepts(ancestorId,
                   mapProject.getSourceTerminology(),
-                  mapProject.getSourceTerminologyVersion(), null));
+                  mapProject.getSourceTerminologyVersion(), null)
+                  .getSearchResults();
+          if (descendants.size() > 1000) {
+            throw new LocalException(
+                "Too many descendants for ancestor id, choose a more specific concept: "
+                    + descendants.size());
+
+          }
+          // Look up map records
+          final StringBuilder sb = new StringBuilder();
+          sb.append("(");
+          for (final SearchResult sr : descendants) {
+            if (sb.length() > 0) {
+              sb.append(" OR ");
+            }
+            sb.append("conceptId:" + sr.getTerminologyId());
+          }
+          sb.append(")");
+          eligibleResults.addSearchResults(mappingService
+              .findMapRecordsForQuery(sb.toString(), pfsLocal));
+
         }
+        Logger.getLogger(getClass()).info(
+            "  eligible results " + eligibleResults.getSearchResults().size());
 
         // set search results total count to number of eligible results
         searchResults.setTotalCount(eligibleResults.getCount());
 
         Logger.getLogger(getClass()).info(
             "  " + searchResults.getTotalCount() + " map records found");
-        Logger.getLogger(getClass()).info(
-            "  results  = " + searchResults);
+        Logger.getLogger(getClass()).info("  results  = " + searchResults);
 
         // workaround for typing problems between List<SearchResultJpa> and
         // List<SearchResult>
@@ -2824,8 +2850,6 @@ public class MappingServiceRest extends RootServiceRest {
         for (SearchResult sr : eligibleResults.getSearchResults()) {
           results.add((SearchResultJpa) sr);
         }
-        Logger.getLogger(getClass()).info(
-            "  results  = " + results);
 
         // apply paging to the list -- note: use original pfs
         final int[] totalCt = new int[1];
@@ -2867,6 +2891,9 @@ public class MappingServiceRest extends RootServiceRest {
 
       // set the total count
       mapRecordList.setTotalCount(searchResults.getTotalCount());
+
+      Logger.getLogger(getClass()).info(
+          "  final results  = " + mapRecordList.getMapRecords().size());
 
       // remove notes if this is not a specialist or above
       if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
