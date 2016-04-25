@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
@@ -2756,7 +2757,7 @@ public class MappingServiceRest extends RootServiceRest {
         if (searchResults.getTotalCount() > 10000) {
           throw new LocalException(
               searchResults.getTotalCount()
-                  + " potential matches for ancestor search. Narrow your search and try again.");
+                  + " potential string matches for ancestor search. Narrow your search and try again.");
         }
 
         Logger.getLogger(getClass()).info(
@@ -2791,14 +2792,22 @@ public class MappingServiceRest extends RootServiceRest {
 
         // If there was a search query, combine them
         if (queryFlag) {
+
+          // Find descendants and put into a set for quick lookup
+          final Set<String> descSet = new HashSet<>();
+          for (final SearchResult sr : contentService.findDescendantConcepts(
+              ancestorId, mapProject.getSourceTerminology(),
+              mapProject.getSourceTerminologyVersion(), null)
+              .getSearchResults()) {
+            descSet.add(sr.getTerminologyId());
+          }
+
           // determine which results are for descendant concepts
           for (final SearchResult sr : searchResults.getSearchResults()) {
 
             // if this terminology is a descendant OR is the concept itself
             if (sr.getTerminologyId().equals(ancestorId)
-                || contentService.isDescendantOfPath(path,
-                    sr.getTerminologyId(), mapProject.getSourceTerminology(),
-                    mapProject.getSourceTerminologyVersion())) {
+                || descSet.contains(sr.getTerminologyId())) {
 
               // add to eligible results
               eligibleResults.addSearchResult(sr);
@@ -2814,6 +2823,7 @@ public class MappingServiceRest extends RootServiceRest {
                   mapProject.getSourceTerminology(),
                   mapProject.getSourceTerminologyVersion(), null)
                   .getSearchResults();
+          descendants.add(new SearchResultJpa(0L, ancestorId, null, null));
           if (descendants.size() > 1000) {
             throw new LocalException(
                 "Too many descendants for ancestor id, choose a more specific concept: "
@@ -2824,7 +2834,7 @@ public class MappingServiceRest extends RootServiceRest {
           final StringBuilder sb = new StringBuilder();
           sb.append("(");
           for (final SearchResult sr : descendants) {
-            if (sb.length() > 0) {
+            if (sb.length() > 1) {
               sb.append(" OR ");
             }
             sb.append("conceptId:" + sr.getTerminologyId());
