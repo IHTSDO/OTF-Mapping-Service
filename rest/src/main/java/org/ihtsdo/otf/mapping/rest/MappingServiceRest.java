@@ -2764,6 +2764,17 @@ public class MappingServiceRest extends RootServiceRest {
         // If there was a search query, combine them
         if (queryFlag) {
 
+          // Check descendant concept count
+          final int ct =
+              contentService.getDescendantConceptsCount(ancestorId,
+                  mapProject.getSourceTerminology(),
+                  mapProject.getSourceTerminologyVersion());
+          if (ct > 2000) {
+            throw new LocalException(
+                "Too many descendants for ancestor id, choose a more specific concept: "
+                    + ct);
+          }
+
           // Find descendants and put into a set for quick lookup
           final Set<String> descSet = new HashSet<>();
           for (final SearchResult sr : contentService.findDescendantConcepts(
@@ -2788,6 +2799,18 @@ public class MappingServiceRest extends RootServiceRest {
 
         // Otherwise, just get all descendants
         else {
+
+          // Check descendant concept count
+          final int ct =
+              contentService.getDescendantConceptsCount(ancestorId,
+                  mapProject.getSourceTerminology(),
+                  mapProject.getSourceTerminologyVersion());
+          if (ct > 2000) {
+            throw new LocalException(
+                "Too many descendants for ancestor id, choose a more specific concept: "
+                    + ct);
+          }
+
           // Look up descendants, then convert to map records
           final List<SearchResult> descendants =
               contentService.findDescendantConcepts(ancestorId,
@@ -2795,12 +2818,7 @@ public class MappingServiceRest extends RootServiceRest {
                   mapProject.getSourceTerminologyVersion(), null)
                   .getSearchResults();
           descendants.add(new SearchResultJpa(0L, ancestorId, null, null));
-          if (descendants.size() > 1000) {
-            throw new LocalException(
-                "Too many descendants for ancestor id, choose a more specific concept: "
-                    + descendants.size());
 
-          }
           // Look up map records
           final StringBuilder sb = new StringBuilder();
           sb.append("(");
