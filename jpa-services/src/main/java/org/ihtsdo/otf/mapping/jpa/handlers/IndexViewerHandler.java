@@ -608,8 +608,8 @@ public class IndexViewerHandler {
       }
       
       // add see/see also
-      if (d.get("see") != null) {
-    	  htmlFragment += "&nbsp;&mdash;&nbsp;<i>see&nbsp;also&nbsp;" + d.get("see") + "<i>";
+      if (d.get("seealso") != null) {
+    	  htmlFragment += "&nbsp;&mdash;&nbsp;<i>see&nbsp;also&nbsp;" + d.get("seealso") + "<i>";
       }
 
       // add line break
