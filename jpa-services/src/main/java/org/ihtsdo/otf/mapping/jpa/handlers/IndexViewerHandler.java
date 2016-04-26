@@ -591,10 +591,25 @@ public class IndexViewerHandler {
       } else {
         htmlFragment += d.get("title");
       }
+      
+      // add nemod
+      if (d.get("nemod") != null) {
+    	htmlFragment += "&nbsp;" + d.get("nemod");
+      }
 
       // if code present, add
       if (d.get("code") != null) {
         htmlFragment += "&nbsp;" + d.get("code");
+      }
+      
+      // add see/see also
+      if (d.get("see") != null) {
+    	  htmlFragment += "&nbsp;&mdash;&nbsp;<i>see&nbsp;" + d.get("see") + "<i>";
+      }
+      
+      // add see/see also
+      if (d.get("see") != null) {
+    	  htmlFragment += "&nbsp;&mdash;&nbsp;<i>see&nbsp;also&nbsp;" + d.get("see") + "<i>";
       }
 
       // add line break
