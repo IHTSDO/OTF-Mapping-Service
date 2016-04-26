@@ -350,6 +350,10 @@ public class IndexXmlToLuceneMojo extends AbstractMojo {
     @Override
     public void endElement(String uri, String localName, String qName)
       throws SAXException {
+    	
+    	if (qName.toLowerCase().contains("see")) {
+    		Logger.getLogger(getClass()).info("see content " + qName + ", " + chars.toString());;
+    	}
 
       // handle embedded nemod in title
       if (qName.equalsIgnoreCase("title") && nemodInTitle) {
