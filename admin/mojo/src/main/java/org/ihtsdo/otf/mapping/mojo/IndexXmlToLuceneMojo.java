@@ -23,6 +23,7 @@ import java.util.StringTokenizer;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.analysis.PerFieldAnalyzerWrapper;
@@ -506,10 +507,12 @@ public class IndexXmlToLuceneMojo extends AbstractMojo {
         doc.add(new Field("code", data.get("code"), Store.YES, Index.ANALYZED,
             TermVector.NO));
       if (data.get("see") != null) {
+    	  Logger.getLogger(getClass()).info("see indexed " + data.get("see"));
         doc.add(new Field("see", data.get("see"), Store.YES, Index.ANALYZED, 
         	TermVector.NO));
       }
       if (data.get("seealso") != null) {
+    	  Logger.getLogger(getClass()).info("seealso indexed " + data.get("seealso"));
         doc.add(new Field("seealso", data.get("seealso"), Store.YES, 
         	Index.ANALYZED, TermVector.NO));
       }
