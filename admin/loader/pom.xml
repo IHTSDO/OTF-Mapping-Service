@@ -281,6 +281,8 @@
                 <configuration>
                   <inputFile>${input.file}</inputFile>
                   <workflowStatus>PUBLISHED</workflowStatus>
+                  <memberFlag>${member.flag}</memberFlag>
+                  <recordFlag>${record.flag}</recordFlag>
                 </configuration>
               </execution>
             </executions>
@@ -332,6 +334,7 @@
                 </goals>
                 <configuration>
                   <inputFile>${input.file}</inputFile>
+                  <workflowStatus>PUBLISHED</workflowStatus>
                   <memberFlag>${member.flag}</memberFlag>
                   <recordFlag>${record.flag}</recordFlag>
                 </configuration>
