@@ -64,6 +64,15 @@ public class MapRecordRf2SimpleMapLoaderMojo extends AbstractMojo {
   private boolean recordFlag;
 
   /**
+   * The workflow status to assign to created map records.
+   *
+   * @parameter
+   * @required
+   */
+  private String workflowStatus = WorkflowStatus.READY_FOR_PUBLICATION
+      .toString();
+
+  /**
    * Executes the plugin.
    * @throws MojoExecutionException the mojo execution exception
    */
@@ -77,6 +86,7 @@ public class MapRecordRf2SimpleMapLoaderMojo extends AbstractMojo {
     ContentService contentService = null;
     try {
 
+      // Check preconditions
       if (inputFile == null || !new File(inputFile).exists()) {
         throw new MojoFailureException("Specified input file missing");
       }
@@ -142,11 +152,9 @@ public class MapRecordRf2SimpleMapLoaderMojo extends AbstractMojo {
           getLog().info("  Refset " + refSetId + " count = " + ct);
 
           // Then call the mapping service to create the map records
-          WorkflowStatus status = WorkflowStatus.READY_FOR_PUBLICATION;
+          WorkflowStatus status = WorkflowStatus.valueOf(workflowStatus);
+
           // IF loading refSet members too, these are published already
-          if (memberFlag) {
-            status = WorkflowStatus.PUBLISHED;
-          }
           mappingService.createMapRecordsForMapProject(
               mapProjectMap.get(refSetId).getId(), loaderUser, complexMembers,
               status);
