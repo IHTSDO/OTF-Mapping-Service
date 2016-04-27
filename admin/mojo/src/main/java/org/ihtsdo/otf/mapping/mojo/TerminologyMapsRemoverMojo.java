@@ -44,7 +44,7 @@ public class TerminologyMapsRemoverMojo extends AbstractMojo {
    * @parameter
    * @required
    */
-  private String refSetId;
+  private String refsetId;
 
   /**
    * Instantiates a {@link TerminologyMapsRemoverMojo} from the specified
@@ -63,7 +63,7 @@ public class TerminologyMapsRemoverMojo extends AbstractMojo {
   @Override
   public void execute() throws MojoFailureException {
     getLog().info("Starting removing terminology");
-    getLog().info("  refsetId = " + refSetId);
+    getLog().info("  refsetId = " + refsetId);
     try {
       Properties config = ConfigUtility.getConfigProperties();
 
@@ -81,20 +81,21 @@ public class TerminologyMapsRemoverMojo extends AbstractMojo {
 
         Query query =
             manager
-                .createQuery("DELETE From SimpleMapRefSetMemberJpa rs where refSetId = :refSetId");
-        query.setParameter("refSetId", refSetId);
+                .createQuery("DELETE From SimpleMapRefSetMemberJpa rs where refsetId = :refsetId");
+        query.setParameter("refsetId", refsetId);
         int deleteRecords = query.executeUpdate();
         getLog().info(
             "    simple_map_ref_set records deleted: " + deleteRecords);
 
         query =
             manager
-                .createQuery("DELETE From ComplexMapRefSetMemberJpa rs where refSetId = :refSetId");
-        query.setParameter("refSetId", refSetId);
+                .createQuery("DELETE From ComplexMapRefSetMemberJpa rs where refsetId = :refsetId");
+        query.setParameter("refsetId", refsetId);
         deleteRecords = query.executeUpdate();
         getLog().info(
             "    complex_map_ref_set records deleted: " + deleteRecords);
 
+        tx.commit();
         getLog().info("Done ...");
 
       } catch (Exception e) {
