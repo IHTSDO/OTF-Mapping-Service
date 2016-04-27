@@ -44,8 +44,8 @@
     <last.publication.date>20150131</last.publication.date>
     <!-- Properties indicating how the RF2 map loader should function (simple only 
       for now -->
-    <member.flag>true</member.flag>
-    <record.flag>true</record.flag>
+    <member.flag>false</member.flag>
+    <record.flag>false</record.flag>
   </properties>
 
   <profiles>
