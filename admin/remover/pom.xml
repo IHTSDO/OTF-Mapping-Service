@@ -158,9 +158,9 @@
       </build>
     </profile>
 
-    <!-- Remove Map refset entries, specify -Drun.config... -->
+    <!-- Remove Map members, specify -Drun.config... -->
     <profile>
-      <id>MapRefsets</id>
+      <id>MapMembers</id>
       <build>
         <plugins>
           <plugin>
