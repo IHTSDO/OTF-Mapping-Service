@@ -2062,6 +2062,30 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     mappingService.setTransactionPerOperation(false);
     mappingService.beginTransaction();
 
+    // Check preconditions
+    // If there are "PUBLISHED" map entries, require
+    // either "simple" or "complex" map refset members to exist
+    if (mappingService
+        .findMapRecordsForQuery(
+            "mapProjectId:" + mapProject.getId()
+                + " AND workflowStatus:PUBLISHED", null).getSearchResults()
+        .size() > 0) {
+      final ContentService contentService = new ContentServiceJpa();
+      try {
+        if (contentService.getComplexMapRefSetMembersForRefSetId(
+            mapProject.getRefSetId()).getCount() == 0) {
+          throw new Exception(
+              "Map has published records but no refset member entries. "
+                  + "Reload previous release version file into refset table");
+        }
+
+      } catch (Exception e) {
+        throw e;
+      } finally {
+        contentService.close();
+      }
+    }
+
     // get the report definition
     Logger.getLogger(getClass()).info("  Create release QA report");
     ReportDefinition reportDefinition = null;
@@ -2206,8 +2230,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // Commit the new report either way
     reportService.commit();
 
-    // TODO: may need a way to override the errors if we want to proceed with a
-    // release anyway
+    // way to override the errors if we want to proceed with a release anyway
     if (!testModeFlag) {
       if (errorFlag) {
         mappingService.rollback();
