@@ -260,7 +260,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
                 || !concepts.get(2).get(0).getTerminologyId()
                     .equals(asteriskCode)) {
               result
-                  .addWarning("Remap, primary dagger code should have a secondary asterisk code mapping indicated by the preferred rubric ("
+                  .addWarning("Remap, primary dagger code should have a secondary asterisk "
+                      + "code mapping indicated by the preferred rubric ("
                       + asteriskCode + ")");
             }
           }
