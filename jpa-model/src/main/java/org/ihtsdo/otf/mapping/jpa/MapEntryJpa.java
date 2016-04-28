@@ -56,7 +56,7 @@ public class MapEntryJpa implements MapEntry {
   /** The map advices. */
   @ManyToMany(targetEntity = MapAdviceJpa.class, fetch = FetchType.LAZY)
   @IndexedEmbedded(targetElement = MapAdviceJpa.class)
-  private Set<MapAdvice> mapAdvices = new HashSet<>();
+  private Set<MapAdvice> mapAdvices  = new HashSet<>();
 
   /** The target. */
   @Column(nullable = true, length = 4000)
@@ -191,11 +191,7 @@ public class MapEntryJpa implements MapEntry {
     return (this.id == null ? null : id.toString());
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapEntry#getTarget()
-   */
+
   /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
@@ -203,34 +199,21 @@ public class MapEntryJpa implements MapEntry {
     return targetId;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapEntry#setTarget(java.lang.String)
-   */
+
   /* see superclass */
   @Override
   public void setTargetId(String targetId) {
     this.targetId = targetId;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapEntry#getTargetName()
-   */
   /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  @Analyzer(definition = "noStopWord")
   public String getTargetName() {
     return this.targetName;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapEntry#setTargetName(java.lang.String)
-   */
   /* see superclass */
   @Override
   public void setTargetName(String targetName) {
@@ -251,11 +234,6 @@ public class MapEntryJpa implements MapEntry {
     this.mapRelation = mapRelation;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapAdvices()
-   */
   /* see superclass */
   @XmlElement(type = MapAdviceJpa.class, name = "mapAdvice")
   @Override
@@ -265,47 +243,25 @@ public class MapEntryJpa implements MapEntry {
     return mapAdvices;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapEntry#setMapAdvices(java.util.Set)
-   */
   /* see superclass */
   @Override
   public void setMapAdvices(Set<MapAdvice> mapAdvices) {
     this.mapAdvices = mapAdvices;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapEntry#addMapAdvice(org.ihtsdo.otf.mapping
-   * .model.MapAdvice)
-   */
+
   /* see superclass */
   @Override
   public void addMapAdvice(MapAdvice mapAdvice) {
     mapAdvices.add(mapAdvice);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapEntry#removeMapAdvice(org.ihtsdo.otf.
-   * mapping .model.MapAdvice)
-   */
   /* see superclass */
   @Override
   public void removeMapAdvice(MapAdvice mapAdvice) {
     mapAdvices.remove(mapAdvice);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapEntry#getRule()
-   */
   /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
@@ -313,22 +269,14 @@ public class MapEntryJpa implements MapEntry {
     return rule;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapEntry#setRule(java.lang.String)
-   */
+
   /* see superclass */
   @Override
   public void setRule(String rule) {
     this.rule = rule;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapEntry#getIndex()
-   */
+
   /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
@@ -336,22 +284,12 @@ public class MapEntryJpa implements MapEntry {
     return mapPriority;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapEntry#setIndex(java.lang.String)
-   */
   /* see superclass */
   @Override
   public void setMapPriority(int mapPriority) {
     this.mapPriority = mapPriority;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapRecord()
-   */
   /* see superclass */
   @XmlTransient
   @Override
@@ -359,13 +297,6 @@ public class MapEntryJpa implements MapEntry {
     return this.mapRecord;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapEntry#setMapRecord(org.ihtsdo.otf.mapping
-   * .model.MapRecord)
-   */
   /* see superclass */
   @Override
   public void setMapRecord(MapRecord mapRecord) {
@@ -395,22 +326,14 @@ public class MapEntryJpa implements MapEntry {
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapGroup()
-   */
+ 
   /* see superclass */
   @Override
   public int getMapGroup() {
     return this.mapGroup;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapEntry#setMapGroup(int)
-   */
+ 
   /* see superclass */
   @Override
   public void setMapGroup(int mapGroup) {
@@ -418,22 +341,12 @@ public class MapEntryJpa implements MapEntry {
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapBlock()
-   */
   /* see superclass */
   @Override
   public int getMapBlock() {
     return this.mapBlock;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapEntry#setMapBlock(int)
-   */
   /* see superclass */
   @Override
   public void setMapBlock(int mapBlock) {
@@ -530,13 +443,6 @@ public class MapEntryJpa implements MapEntry {
         + mapBlock + ", mapGroup=" + mapGroup + "]";
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapEntry#isEquivalent(org.ihtsdo.otf.mapping
-   * .model.MapEntry)
-   */
   /* see superclass */
   @Override
   public boolean isEquivalent(MapEntry me) {
