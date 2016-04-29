@@ -32,6 +32,7 @@ import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
+import org.ihtsdo.otf.mapping.jpa.helpers.TerminologyUtility;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
@@ -54,6 +55,7 @@ import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 import org.ihtsdo.otf.mapping.rf2.jpa.ComplexMapRefSetMemberJpa;
+import org.ihtsdo.otf.mapping.rf2.jpa.SimpleMapRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
@@ -338,9 +340,22 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // after record processing, the remaining ref set members
     // represent those entries that are now inactive
     Map<String, ComplexMapRefSetMember> prevMembersHashMap = new HashMap<>();
-    for (final ComplexMapRefSetMember c : prevMemberList
+    int simpleBlankTargetCt = 0;
+    for (final ComplexMapRefSetMember member : prevMemberList
         .getComplexMapRefSetMembers()) {
-      prevMembersHashMap.put(getHash(c), c);
+
+      // Skip lines for SimpleMap where the map target is empty
+      // These are just placeholders for managing scope
+      // NOTE: if there is a need to have a simple map with blank targets
+      // this could be coded in some other way, like "NOCODE" instead of
+      // blank
+      if (mapProject.getMapRefsetPattern() == MapRefsetPattern.SimpleMap
+          && member.getMapTarget().isEmpty()) {
+        simpleBlankTargetCt++;
+        continue;
+      }
+
+      prevMembersHashMap.put(getHash(member), member);
     }
 
     // output size of each collection
@@ -352,9 +367,17 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             + prevMemberList.getCount());
 
     // if sizes do not match, output warning
-    if (prevMembersHashMap.keySet().size() != prevMemberList.getCount()) {
+    if (mapProject.getMapRefsetPattern() != MapRefsetPattern.SimpleMap
+        && prevMembersHashMap.keySet().size() != prevMemberList.getCount()) {
       throw new Exception(
           "UUID-quintuples count does not match refset member count");
+    }
+
+    if (mapProject.getMapRefsetPattern() == MapRefsetPattern.SimpleMap
+        && (prevMembersHashMap.keySet().size() + simpleBlankTargetCt) != prevMemberList
+            .getCount()) {
+      throw new Exception(
+          "UUID-quintuples count does not match refset member count for SimpleMap");
     }
 
     // clear the ref set members list (no longer used)
@@ -533,11 +556,22 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               getComplexMapRefSetMemberForMapEntry(mapEntry, mapRecord,
                   mapProject, concept);
 
-          String uuidStr = getHash(member);
+          if (mapProject.getMapRefsetPattern() == MapRefsetPattern.SimpleMap) {
+            // Run member through simple/complex conversion
+            // This makes sure what was read from the database
+            // matches for non-simple fields what was generated in
+            // getComplexMapRefSetMemberForMapEntry
+            member =
+                new ComplexMapRefSetMemberJpa(new SimpleMapRefSetMemberJpa(
+                    member));
+          }
+
+          final String uuidStr = getHash(member);
 
           // attempt to retrieve any existing complex map ref set
           // member
-          ComplexMapRefSetMember prevMember = prevMembersHashMap.get(uuidStr);
+          final ComplexMapRefSetMember prevMember =
+              prevMembersHashMap.get(uuidStr);
 
           // if existing found, re-use uuid, otherwise generate new
           if (prevMember == null) {
@@ -1875,7 +1909,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
       // Simple map
     } else if (mapProject.getMapRefsetPattern() == MapRefsetPattern.SimpleMap) {
-      
+
       // For simple map, avoid writing entries with blank maps
       // these are placeholders to better manage scope.
       if (member.getConcept() == null
@@ -1893,7 +1927,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               + "\t"
               + member.getRefSetId()
               + "\t"
-              + member.getConcept().getTerminologyId();
+              + member.getConcept().getTerminologyId()
+              + "\t"
+              + member.getMapTarget();
     }
 
     entryLine += "\r\n";
@@ -2026,6 +2062,30 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     mappingService.setTransactionPerOperation(false);
     mappingService.beginTransaction();
 
+    // Check preconditions
+    // If there are "PUBLISHED" map entries, require
+    // either "simple" or "complex" map refset members to exist
+    if (mappingService
+        .findMapRecordsForQuery(
+            "mapProjectId:" + mapProject.getId()
+                + " AND workflowStatus:PUBLISHED", null).getSearchResults()
+        .size() > 0) {
+      final ContentService contentService = new ContentServiceJpa();
+      try {
+        if (contentService.getComplexMapRefSetMembersForRefSetId(
+            mapProject.getRefSetId()).getCount() == 0) {
+          throw new Exception(
+              "Map has published records but no refset member entries. "
+                  + "Reload previous release version file into refset table");
+        }
+
+      } catch (Exception e) {
+        throw e;
+      } finally {
+        contentService.close();
+      }
+    }
+
     // get the report definition
     Logger.getLogger(getClass()).info("  Create release QA report");
     ReportDefinition reportDefinition = null;
@@ -2104,6 +2164,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         errorFlag = true;
         // if record is ready for publication
       } else {
+        // Make sure map entries are sorted by by mapGroup/mapPriority
+        Collections.sort(mapRecord.getMapEntries(),
+            new TerminologyUtility.MapEntryComparator());
+
         // CHECK: Map record (must be ready for publication) passes project
         // specific validation checks
         ValidationResult result = algorithmHandler.validateRecord(mapRecord);
@@ -2163,12 +2227,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     Logger.getLogger(getClass()).info(
         "    Log into the application to see the report results");
 
-
     // Commit the new report either way
     reportService.commit();
-    
-    // TODO: may need a way to override the errors if we want to proceed with a
-    // release anyway
+
+    // way to override the errors if we want to proceed with a release anyway
     if (!testModeFlag) {
       if (errorFlag) {
         mappingService.rollback();
@@ -2177,7 +2239,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         mappingService.commit();
       }
     }
-
 
     Logger.getLogger(getClass()).info("Done.");
 
@@ -2389,7 +2450,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           Logger.getLogger(getClass()).debug("    Add member - " + member);
           if (!testModeFlag) {
             member.setConcept(concept);
-            contentService.addComplexMapRefSetMember(member);
+            if (mapProject.getMapRefsetPattern() != MapRefsetPattern.SimpleMap) {
+              contentService.addComplexMapRefSetMember(member);
+            } else {
+              contentService
+                  .addSimpleMapRefSetMember(new SimpleMapRefSetMemberJpa(member));
+            }
           }
         } else {
           throw new Exception("Member references non-existent concept - "
@@ -2486,7 +2552,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   @SuppressWarnings("static-method")
   private String getPatternForType(MapProject mapProject) {
     if (mapProject.getMapRefsetPattern() == MapRefsetPattern.SimpleMap) {
-      return "cRefset_";
+      return "sRefset_";
     } else if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ComplexMap) {
       return "iissscRefset_";
     } else if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ExtendedMap) {
@@ -2504,7 +2570,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   @SuppressWarnings("static-method")
   private String getHeader(MapProject mapProject) {
     if (mapProject.getMapRefsetPattern() == MapRefsetPattern.SimpleMap) {
-      return "id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId";
+      return "id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tmapTarget";
     } else if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ComplexMap) {
       return "id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\t"
           + "mapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId";

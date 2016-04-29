@@ -1841,12 +1841,12 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
   public void computeTreePositionInformation(TreePositionList tpList,
     Map<String, String> descTypes, Map<String, String> relTypes)
     throws Exception {
-
     // if results are found, retrieve metadata and compute information
     if (tpList.getCount() > 0) {
 
       for (final TreePosition tp : tpList.getTreePositions())
-        computeTreePositionInformationHelper(tp, descTypes, relTypes);
+        computeTreePositionInformationHelper(tp, descTypes, relTypes,
+            new HashMap<String, List<TreePositionDescriptionGroup>>());
     }
 
   }
@@ -1866,16 +1866,22 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
    * Description: each description is a concept preferred name and a set of
    * referenced concepts ReferencedConcept: each referenced concept is a display
    * name and the terminology id of an existing concept to link to
-   * 
+   *
    * @param treePosition the tree position
    * @param descTypes the desc types
    * @param relTypes the rel types
-   * @return the tree position
+   * @param groupMap the concept map
    * @throws Exception the exception
    */
-  private TreePosition computeTreePositionInformationHelper(
-    TreePosition treePosition, Map<String, String> descTypes,
-    Map<String, String> relTypes) throws Exception {
+  private void computeTreePositionInformationHelper(TreePosition treePosition,
+    Map<String, String> descTypes, Map<String, String> relTypes,
+    Map<String, List<TreePositionDescriptionGroup>> groupMap) throws Exception {
+
+    if (groupMap.containsKey(treePosition.getTerminologyId())) {
+      treePosition.setDescGroups(groupMap.get(treePosition.getTerminologyId()));
+      // If we've seen this terminology id, we've processed it's children
+      return;
+    }
 
     // get the concept for this tree position
     final Concept concept =
@@ -1975,15 +1981,15 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     }
 
     treePosition.setDescGroups(new ArrayList<>(descGroups.values()));
+    groupMap.put(treePosition.getTerminologyId(), treePosition.getDescGroups());
 
     // calculate information for all children
     if (treePosition.getChildrenCount() > 0) {
       for (final TreePosition tp : treePosition.getChildren()) {
-        computeTreePositionInformationHelper(tp, descTypes, relTypes);
+        computeTreePositionInformationHelper(tp, descTypes, relTypes, groupMap);
       }
     }
 
-    return treePosition;
   }
 
   /* see superclass */
