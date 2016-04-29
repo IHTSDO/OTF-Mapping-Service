@@ -72,9 +72,13 @@ public class QAWorkflow extends AbstractMojo {
         getLog().info(
             "Checking workflow for " + mapProject.getName() + ", "
                 + mapProject.getId());
-        List<String> results =
-            workflowService.computeWorkflowStatusErrors(mapProject);
-
+        List<String> results = null;
+        
+        try {
+            results = workflowService.computeWorkflowStatusErrors(mapProject);
+        } catch (Exception e) {
+        	results.add("Unexpected error trying to check workflow -- see logs");
+        }
         if (results.size() != 0) {
 
           // add some header material

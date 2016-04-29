@@ -151,7 +151,7 @@ public class MapAdviceJpa implements MapAdvice {
    * 
    * @see org.ihtsdo.otf.mapping.model.MapAdvice#getName()
    */
-  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public String getName() {
     return name;

@@ -13,6 +13,7 @@ import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.jpa.services.ReportServiceJpa;
 import org.ihtsdo.otf.mapping.reports.Report;
 import org.ihtsdo.otf.mapping.reports.ReportResult;
@@ -23,154 +24,157 @@ import org.ihtsdo.otf.mapping.reports.ReportResultItem;
  */
 public class ExportReportHandler {
 
-  /**
-   * Instantiates an empty {@link ExportReportHandler}.
-   */
-  public ExportReportHandler() {
+	/**
+	 * Instantiates an empty {@link ExportReportHandler}.
+	 */
+	public ExportReportHandler() {
 
-  }
+	}
 
-  /**
-   * Export report.
-   *
-   * @param report the report
-   * @return the input stream
-   * @throws Exception the exception
-   */
-  public InputStream exportReport(Report report) throws Exception {
+	/**
+	 * Export report.
+	 *
+	 * @param report
+	 *            the report
+	 * @return the input stream
+	 * @throws Exception
+	 *             the exception
+	 */
+	public InputStream exportReport(Report report) throws Exception {
 
-    // Create workbook
-    Workbook wb = new HSSFWorkbook();
+		// Create workbook
+		Workbook wb = new HSSFWorkbook();
 
-    // Export report
-    handleExportReport(report, wb);
+		// Export report
+		handleExportReport(report, wb);
 
-    ByteArrayOutputStream out = new ByteArrayOutputStream();
-    wb.write(out);
-    InputStream in = new ByteArrayInputStream(out.toByteArray());
-    return in;
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		wb.write(out);
+		InputStream in = new ByteArrayInputStream(out.toByteArray());
+		return in;
 
-  }
+	}
 
-  /**
-   * Handle export report.
-   *
-   * @param report the report
-   * @param wb the wb
-   * @throws Exception the exception
-   */
-  @SuppressWarnings("static-method")
-  private void handleExportReport(Report report, Workbook wb) throws Exception {
-    Logger.getLogger(ReportServiceJpa.class).info(
-        "Exporting report " + report.getName() + "...");
-    CreationHelper createHelper = wb.getCreationHelper();
-    // Set font
-    Font font = wb.createFont();
-    font.setFontName("Cambria");
-    font.setFontHeightInPoints((short) 11);
+	/**
+	 * Handle export report.
+	 *
+	 * @param report
+	 *            the report
+	 * @param wb
+	 *            the wb
+	 * @throws Exception
+	 *             the exception
+	 */
+	@SuppressWarnings("static-method")
+	private void handleExportReport(Report report, Workbook wb) throws Exception {
+		Logger.getLogger(ReportServiceJpa.class).info("Exporting report " + report.getName() + "...");
 
-    // Fonts are set into a style
-    CellStyle style = wb.createCellStyle();
-    style.setFont(font);
+		try {
 
-    Sheet sheet = wb.createSheet("Report");
+			CreationHelper createHelper = wb.getCreationHelper();
+			// Set font
+			Font font = wb.createFont();
+			font.setFontName("Cambria");
+			font.setFontHeightInPoints((short) 11);
 
-    // Create header row and add cells
-    int rownum = 0;
-    int cellnum = 0;
-    Row row = sheet.createRow(rownum++);
-    Cell cell = null;
-    for (String header : new String[] {
-        "Count", "Value"
-    }) {
-      cell = row.createCell(cellnum++);
-      cell.setCellStyle(style);
-      cell.setCellValue(createHelper.createRichTextString(header));
-    }
+			// Fonts are set into a style
+			CellStyle style = wb.createCellStyle();
+			style.setFont(font);
 
-    for (ReportResult result : report.getResults()) {
-      // Add data row
-      cellnum = 0;
-      row = sheet.createRow(rownum++);
+			Sheet sheet = wb.createSheet("Report");
 
-      // Count
-      cell = row.createCell(cellnum++);
-      cell.setCellStyle(style);
-      cell.setCellValue(createHelper.createRichTextString(new Long(result
-          .getCt()).toString()));
+			// Create header row and add cells
+			int rownum = 0;
+			int cellnum = 0;
+			Row row = sheet.createRow(rownum++);
+			Cell cell = null;
+			for (String header : new String[] { "Count", "Value" }) {
+				cell = row.createCell(cellnum++);
+				cell.setCellStyle(style);
+				cell.setCellValue(createHelper.createRichTextString(header));
+			}
 
-      // Value
-      cell = row.createCell(cellnum++);
-      cell.setCellStyle(style);
-      cell.setCellValue(createHelper.createRichTextString(result.getValue()
-          .toString()));
-    }
+			for (ReportResult result : report.getResults()) {
+				// Add data row
+				cellnum = 0;
+				row = sheet.createRow(rownum++);
 
-    Sheet sheet2 = wb.createSheet("Report Results");
+				// Count
+				cell = row.createCell(cellnum++);
+				cell.setCellStyle(style);
+				cell.setCellValue(createHelper.createRichTextString(new Long(result.getCt()).toString()));
 
-    // Create header row and add cells
-    rownum = 0;
-    cellnum = 0;
-    row = sheet2.createRow(rownum++);
-    for (String header : new String[] {
-        "Count", "Value"
-    }) {
-      cell = row.createCell(cellnum++);
-      cell.setCellStyle(style);
-      cell.setCellValue(createHelper.createRichTextString(header));
-    }
+				// Value
+				cell = row.createCell(cellnum++);
+				cell.setCellStyle(style);
+				cell.setCellValue(createHelper.createRichTextString(result.getValue().toString()));
+			}
 
-    for (ReportResult result : report.getResults()) {
-      // Add data row
-      cellnum = 0;
-      row = sheet2.createRow(rownum++);
+			Sheet sheet2 = wb.createSheet("Report Results");
 
-      // Count
-      cell = row.createCell(cellnum++);
-      cell.setCellStyle(style);
-      cell.setCellValue(createHelper.createRichTextString(new Long(result
-          .getCt()).toString()));
+			// Create header row and add cells
+			rownum = 0;
+			cellnum = 0;
+			row = sheet2.createRow(rownum++);
+			for (String header : new String[] { "Count", "Value" }) {
+				cell = row.createCell(cellnum++);
+				cell.setCellStyle(style);
+				cell.setCellValue(createHelper.createRichTextString(header));
+			}
 
-      // Value
-      cell = row.createCell(cellnum++);
-      cell.setCellStyle(style);
-      cell.setCellValue(createHelper.createRichTextString(result.getValue()
-          .toString()));
+			for (ReportResult result : report.getResults()) {
+				// Add data row
+				cellnum = 0;
+				row = sheet2.createRow(rownum++);
 
-      row = sheet2.createRow(rownum++);
+				// Count
+				cell = row.createCell(cellnum++);
+				cell.setCellStyle(style);
+				cell.setCellValue(createHelper.createRichTextString(new Long(result.getCt()).toString()));
 
-      for (String header : new String[] {
-          "Id", "Name"
-      }) {
-        cell = row.createCell(cellnum++);
-        cell.setCellStyle(style);
-        cell.setCellValue(createHelper.createRichTextString(header));
-      }
+				// Value
+				cell = row.createCell(cellnum++);
+				cell.setCellStyle(style);
+				cell.setCellValue(createHelper.createRichTextString(result.getValue().toString()));
 
-      for (ReportResultItem resultItem : result.getReportResultItems()) {
+				row = sheet2.createRow(rownum++);
 
-        // Add data row
-        cellnum = 2;
-        row = sheet2.createRow(rownum++);
+				for (String header : new String[] { "Id", "Name" }) {
+					cell = row.createCell(cellnum++);
+					cell.setCellStyle(style);
+					cell.setCellValue(createHelper.createRichTextString(header));
+				}
 
-        // Id
-        cell = row.createCell(cellnum++);
-        cell.setCellStyle(style);
-        cell.setCellValue(createHelper.createRichTextString(resultItem
-            .getItemId().toString()));
+				// limit results so as not to exceeed (hopefully) the 65535 row
+				// limit for HSSF
+				if (result.getCt() < 1000) {
 
-        // Name
-        cell = row.createCell(cellnum++);
-        cell.setCellStyle(style);
-        cell.setCellValue(createHelper.createRichTextString(resultItem
-            .getItemName()));
-      }
-    }
+					for (ReportResultItem resultItem : result.getReportResultItems()) {
 
-    for (int i = 0; i < 4; i++) {
-      sheet.autoSizeColumn(i);
-      sheet2.autoSizeColumn(i);
-    }
+						// Add data row
+						cellnum = 2;
+						row = sheet2.createRow(rownum++);
 
-  }
+						// Id
+						cell = row.createCell(cellnum++);
+						cell.setCellStyle(style);
+						cell.setCellValue(createHelper.createRichTextString(resultItem.getItemId().toString()));
+
+						// Name
+						cell = row.createCell(cellnum++);
+						cell.setCellStyle(style);
+						cell.setCellValue(createHelper.createRichTextString(resultItem.getItemName()));
+					}
+				}
+			}
+
+			for (int i = 0; i < 4; i++) {
+				sheet.autoSizeColumn(i);
+				sheet2.autoSizeColumn(i);
+			}
+		} catch (Exception e) {
+			throw new LocalException(e.getMessage(), e);
+		}
+
+	}
 }
