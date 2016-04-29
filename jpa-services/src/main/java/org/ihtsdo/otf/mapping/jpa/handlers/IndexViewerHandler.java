@@ -576,7 +576,7 @@ public class IndexViewerHandler {
 
       // construct the link text and add to details
       for (Fieldable field : d.getFields()) {
-        Logger.getLogger(getClass()).debug(
+        Logger.getLogger(getClass()).info(
             "  " + field.name() + ": " + d.get(field.name()));
       }
 
@@ -591,11 +591,29 @@ public class IndexViewerHandler {
       } else {
         htmlFragment += d.get("title");
       }
+      
+      // add nemod
+      if (d.get("nemod") != null) {
+    	htmlFragment += "&nbsp;" + d.get("nemod");
+      }
 
+      // add see/see also
+      if (d.get("see") != null) {
+    	  Logger.getLogger(getClass()).info("see found: " + d.get("seeo"));
+    	  htmlFragment += "&nbsp;&mdash;&nbsp;<i>see&nbsp;" + d.get("see") + "</i>";
+      }
+      
+      // add see/see also
+      if (d.get("seealso") != null) {
+    	  Logger.getLogger(getClass()).info("see also found: " + d.get("seealso"));
+    	  htmlFragment += "&nbsp;&mdash;&nbsp;<i>see&nbsp;also&nbsp;" + d.get("seealso") + "</i>";
+      }
+      
       // if code present, add
       if (d.get("code") != null) {
         htmlFragment += "&nbsp;" + d.get("code");
       }
+      
 
       // add line break
       htmlFragment += "<br>";

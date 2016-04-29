@@ -242,12 +242,15 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           String asteriskCode = null;
           for (final Description desc : concepts.get(1).get(0)
               .getDescriptions()) {
-            for (final Relationship rel : concepts.get(1).get(0)
-                .getRelationships()) {
-              // the relationship terminologyId will match the description id
-              if (rel.getTerminologyId().startsWith(
-                  desc.getTerminologyId() + "~")) {
-                asteriskCode = rel.getDestinationConcept().getTerminologyId();
+            // "preferred" type - TODO: this could be improved upon by accessing metadata
+            if (desc.getTypeId().equals("4")) {
+              for (final Relationship rel : concepts.get(1).get(0)
+                  .getRelationships()) {
+                // the relationship terminologyId will match the description id
+                if (rel.getTerminologyId().startsWith(
+                    desc.getTerminologyId() + "~")) {
+                  asteriskCode = rel.getDestinationConcept().getTerminologyId();
+                }
               }
             }
           }
@@ -257,7 +260,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
                 || !concepts.get(2).get(0).getTerminologyId()
                     .equals(asteriskCode)) {
               result
-                  .addError("Remap, primary dagger code should have a secondary asterisk code mapping indicated by the preferred rubric ("
+                  .addWarning("Remap, primary dagger code should have a secondary asterisk "
+                      + "code mapping indicated by the preferred rubric ("
                       + asteriskCode + ")");
             }
           }
