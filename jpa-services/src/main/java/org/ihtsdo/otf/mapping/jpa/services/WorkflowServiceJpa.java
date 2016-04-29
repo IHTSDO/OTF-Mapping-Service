@@ -38,6 +38,7 @@ import org.ihtsdo.otf.mapping.helpers.TrackingRecordList;
 import org.ihtsdo.otf.mapping.helpers.TrackingRecordListJpa;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
+import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
@@ -1178,14 +1179,41 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
     Set<String> terminologyIdsWithTrackingRecord = new HashSet<>();
 
     WorkflowPathHandler handler =
-        getWorkflowPathHandler(mapProject.getWorkflowType().toString());
+        getWorkflowPathHandlerForMapProject(mapProject);
+    
+    WorkflowPathHandler fixErrorHandler = 
+    		this.getWorkflowPathHandler(WorkflowPath.FIX_ERROR_PATH.toString());
+    
+    WorkflowPathHandler qaPathHandler = 
+    		this.getWorkflowPathHandler(WorkflowPath.QA_PATH.toString());
 
     for (final TrackingRecord trackingRecord : trackingRecords
         .getTrackingRecords()) {
-
-      terminologyIdsWithTrackingRecord.add(trackingRecord.getTerminologyId());
-
-      ValidationResult result = handler.validateTrackingRecord(trackingRecord);
+    	
+    	  terminologyIdsWithTrackingRecord.add(trackingRecord.getTerminologyId());
+    	  
+    	  ValidationResult result = null;
+    	
+    	// check fix error path
+    	if (trackingRecord.getWorkflowPath().equals(WorkflowPath.FIX_ERROR_PATH)) {
+    		result = fixErrorHandler.validateTrackingRecord(trackingRecord);
+    	} 
+    	
+    	// check qa path
+    	else if (trackingRecord.getWorkflowPath().equals(WorkflowPath.QA_PATH)) {
+    		result = qaPathHandler.validateTrackingRecord(trackingRecord);
+    	} 
+    	
+    	// otherwise, check against project handler
+    	else {
+    	    result = handler.validateTrackingRecord(trackingRecord);
+    	}
+    	
+      if (result == null) {
+    	  result =  new ValidationResultJpa();
+    	  result.addError("Unexpected error -- validation result came back null");
+      }
+    
 
       if (!result.isValid()) {
         results

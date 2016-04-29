@@ -86,11 +86,11 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
 
   /**
    * Compute map relations.
-   * 
+   *
    * @param mapRecord the map record
    * @param mapEntry the map entry
    * @return the list
-   * @throws Exception
+   * @throws Exception the exception
    */
   public MapRelation computeMapRelation(MapRecord mapRecord, MapEntry mapEntry)
     throws Exception;
@@ -172,5 +172,13 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @throws Exception the exception
    */
   public Map<String, String> getAllTerminologyNotes() throws Exception;
+
+  /**
+   * Limit tree positions when returning from a query.
+   *
+   * @param treePositions the tree positions
+   * @return the list
+   */
+  public List<TreePosition> limitTreePositions(List<TreePosition> treePositions);
 
 }

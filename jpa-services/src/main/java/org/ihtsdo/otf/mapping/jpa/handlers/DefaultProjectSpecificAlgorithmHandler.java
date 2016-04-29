@@ -902,4 +902,11 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     return new HashMap<>();
   }
 
+  /* see superclass */
+  @Override
+  public List<TreePosition> limitTreePositions(List<TreePosition> treePositions) {
+    // default is no limiting
+    return treePositions;
+  }
+
 }
