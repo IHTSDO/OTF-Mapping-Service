@@ -42,6 +42,9 @@ angular
 
       // the project id, extracted from route params
       $scope.projectId = $routeParams.projectId;
+      
+      // whether the terminology has viewable index
+      $scope.indexViewerExists = false;
 
       // status variables
       $scope.unmappedDescendantsPresent = false;
@@ -89,6 +92,7 @@ angular
           $scope.projectId = $scope.focusProject.id;
           $scope.getRecordsForProject();
           $scope.initializeSearchParameters();
+          setIndexViewerStatus();
 
         }
       });
@@ -810,6 +814,38 @@ angular
         $scope.clearError = function() {
           $scope.error = null;
         };
+        
+        function setIndexViewerStatus() {
+            console.debug('Get index viewer status', $scope.project.destinationTerminology);
+            $http(
+              {
+                url : root_content + 'index/' + $scope.project.destinationTerminology + '/'
+                  + $scope.project.destinationTerminologyVersion,
+                dataType : 'json',
+                method : 'GET',
+                headers : {
+                  'Content-Type' : 'application/json'
+                }
+              }).success(function(data) {
+              console.debug('  data = ', data);
+              if (data.searchResult.length > 0) {
+                $scope.indexViewerExists = true;
+              } else {
+                $scope.indexViewerExists = false;
+              }
+            }).error(function(data, status, headers, config) {
+              $scope.indexViewerExists = false;
+            });
+          }
+        
+        // opens the index viewer
+        $scope.openIndexViewer = function() {
+            var currentUrl = window.location.href;
+            var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
+            var newUrl = baseUrl + '/index/viewer';
+            var myWindow = window.open(newUrl, 'indexViewerWindow');
+            myWindow.focus();
+          };
 
       };
 
