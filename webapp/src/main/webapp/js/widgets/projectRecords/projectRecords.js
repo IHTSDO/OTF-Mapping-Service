@@ -92,7 +92,7 @@ angular
           $scope.projectId = $scope.focusProject.id;
           $scope.getRecordsForProject();
           $scope.initializeSearchParameters();
-          setIndexViewerStatus();
+          $scope.setIndexViewerStatus();
 
         }
       });
@@ -815,7 +815,7 @@ angular
           $scope.error = null;
         };
         
-        function setIndexViewerStatus() {
+        $scope.setIndexViewerStatus = function() {
             console.debug('Get index viewer status', $scope.project.destinationTerminology);
             $http(
               {
