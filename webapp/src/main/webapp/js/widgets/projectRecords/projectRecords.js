@@ -70,6 +70,7 @@ angular
           parameters.focusProject);
         $scope.focusProject = parameters.focusProject;
         $scope.getRecordsForProject();
+        $scope.setIndexViewerStatus();
       });
 
       // retrieve the current global variables
