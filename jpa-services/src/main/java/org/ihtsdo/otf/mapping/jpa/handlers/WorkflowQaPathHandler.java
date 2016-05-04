@@ -413,15 +413,12 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
         break;
     }
 
-    PfsParameter pfsLocal = new PfsParameterJpa(pfsParameter);
-    pfsLocal.setQueryRestriction(null);
-    int[] totalCt = new int[1];
+    // Read all results - no paging, filtering or sorting needed
     final List<TrackingRecord> results =
-        (List<TrackingRecord>) workflowService
-            .getQueryResults(sb.toString(), TrackingRecordJpa.class,
-                TrackingRecordJpa.class, pfsLocal, totalCt);
-    assignedWork.setTotalCount(totalCt[0]);
+        (List<TrackingRecord>) workflowService.getQueryResults(sb.toString(),
+            TrackingRecordJpa.class, TrackingRecordJpa.class, null, new int[1]);
 
+    // Iterate through results, keep records matching label
     for (final TrackingRecord tr : results) {
       final SearchResult result = new SearchResultJpa();
       final Set<MapRecord> mapRecords =
@@ -470,15 +467,17 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
       }
     }
 
-    // construct local list for manual paging
+    // construct local list for manual paging (need Jpa objects)
     List<SearchResultJpa> tempResults = new ArrayList<>();
     for (SearchResult sr : assignedWork.getSearchResults()) {
       tempResults.add((SearchResultJpa) sr);
     }
 
+    // Set the assigned count.
+    assignedWork.setTotalCount(assignedWork.getCount());
+
     // apply paging to the list
-    // apply paging to the list
-    pfsLocal = new PfsParameterJpa(pfsParameter);
+    PfsParameter pfsLocal = new PfsParameterJpa(pfsParameter);
     pfsLocal.setQueryRestriction("");
     pfsLocal.setSortField("");
     tempResults =
@@ -490,7 +489,6 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
     for (SearchResult sr : tempResults) {
       assignedWork.addSearchResult(sr);
     }
-    assignedWork.setTotalCount(totalCt[0]);
 
     return assignedWork;
   }
