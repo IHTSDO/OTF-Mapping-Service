@@ -1,27 +1,18 @@
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.ihtsdo.otf.mapping.helpers.PfsParameter;
-import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
-import org.ihtsdo.otf.mapping.helpers.SearchResultList;
-import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
-import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
-import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
-import org.ihtsdo.otf.mapping.model.MapAdvice;
-import org.ihtsdo.otf.mapping.model.MapEntry;
-import org.ihtsdo.otf.mapping.model.MapProject;
-import org.ihtsdo.otf.mapping.model.MapRecord;
+import org.ihtsdo.otf.mapping.jpa.services.ReportServiceJpa;
+import org.ihtsdo.otf.mapping.reports.Report;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.SimpleRefSetMember;
 import org.ihtsdo.otf.mapping.services.ContentService;
+import org.ihtsdo.otf.mapping.services.ReportService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
 
 /**
@@ -43,6 +34,23 @@ public class AdHocMojo extends AbstractMojo {
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
     getLog().info("Start Ad hoc mojo");
+    
+    try {
+		ReportService reportService = new ReportServiceJpa();
+		
+		Long[] ids = {8796L,8799L,8797L,8798L,8800L,8801L,8802L};
+		
+		for (Long id : ids) {
+			Report report = reportService.getReport(id);
+			Logger.getLogger(getClass()).info("Removing report " + report.getId() + ", " + report.getName());
+			reportService.removeReport(report.getId());
+			
+		}
+		
+	} catch (Exception e1) {
+		// TODO Auto-generated catch block
+		e1.printStackTrace();
+	}
     /**
      * Put ad hoc code below:
      * 
@@ -66,7 +74,7 @@ public class AdHocMojo extends AbstractMojo {
      */
 
     try {
-      contentService = new ContentServiceJpa();
+     /* contentService = new ContentServiceJpa();
       workflowService = new WorkflowServiceJpa();
 
       // want a single commit
@@ -254,7 +262,7 @@ public class AdHocMojo extends AbstractMojo {
       getLog().info("Committing...");
 
       // execute the transaction
-      workflowService.commit();
+      workflowService.commit();*/
 
       getLog().info("Finished");
 
