@@ -6,20 +6,20 @@
 #
 # This script is controlled by a switch
 # The switch is on by default.  To turn it off
-# Create a file called "OFF" in /home/ihtsdo/bin 
+# Create a file called "OFF" in /home/ihtsdo/bin
 #
 
 # Check the switch
 echo "Check the switch"
 if (-e /home/ihtsdo/bin/OFF) then
-	echo "The switch is turned off, don't run"
-	exit 1
-endif 
+        echo "The switch is turned off, don't run"
+        exit 1
+endif
 
 # Runs load delta and ensures server is up
 /home/ihtsdo/bin/loadDelta.csh
 set x = $status
-if ($status != 0) then
+if ($x != 0) then
     service tomcat7 start
     return $x
 endif
