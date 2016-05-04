@@ -26,13 +26,20 @@ if ($status != 0) then
         exit 1
 endif
 
+# Redeploy code
+#/bin/rm -rf /var/lib/tomcat7/work/Catalina/localhost/mapping-rest
+#/bin/rm -rf /var/lib/tomcat7/webapps/mapping-rest
+#/bin/rm -rf /var/lib/tomcat7/webapps/ROOT
+#/bin/rm -rf /var/lib/tomcat7/webapps/mapping-rest.war
+#/bin/rm -rf /var/lib/tomcat7/webapps/ROOT.war
+
+#/bin/cp -f ~/code/rest/target/mapping-rest*war /var/lib/tomcat7/webapps/mapping-rest.war
+#/bin/cp -f ~/code/webapp/target/mapping-webapp*war /var/lib/tomcat7/webapps/ROOT.war
+
 echo "    Delete last delta ...`/bin/date`"
 cd $dir
 rm -fr $dir/*
-if ($status != 0) then
-    echo "ERROR deleting old delta data"
-    exit 1
-endif
+# OK if that fails
 
 # THIS MAY CHANGE - obviously dates are a one-time thing
 echo "    Obtain latest release ...`/bin/date`"
@@ -84,40 +91,39 @@ endif
 # continue only if delta concepts file is not empty
 if (`grep -v effectiveTime *Concept*txt | wc -l` > 0) then
 
-	echo "    Load the delta ... `/bin/date`"
-	cd $MAPPING_CODE/admin/loader
-	mvn install -PRF2-delta -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT \
-	  -Dlast.publication.date=$SNOMEDCT_VERSION \
-	  -Dinput.dir=$dir | sed 's/^/      /'
-	if ($status != 0) then
-	    echo "ERROR processing delta data"
-	    exit 1
-	endif
-	
-	echo "    Remove SNOMEDCT tree positions ... `/bin/date`"
-	cd $MAPPING_CODE/admin/remover
-	mvn install -PTreepos -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT -Dversion=latest | sed 's/^/      /'
-	if ($status != 0) then
-	    echo "ERROR removing tree positions"
-	    exit 1
-	endif
+        echo "    Load the delta ... `/bin/date`"
+        cd $MAPPING_CODE/admin/loader
+        mvn install -PRF2-delta -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT \
+          -Dlast.publication.date=$SNOMEDCT_VERSION \
+          -Dinput.dir=$dir | sed 's/^/      /'
+        if ($status != 0) then
+            echo "ERROR processing delta data"
+            exit 1
+        endif
 
-    # optimize tree positions table
-    # must be done manually (periodically) because otherwise
-    # we'd have to put the password into this script
-    echo "Clear indexes directory"
-    /bin/rm -rf /var/lib/tomcat7/indexes/lucene/indexes/org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa/*
-    echo "Reindex other tree positions"
-     cd $MAPPING_CODE/admin/lucene
-    mvn install -PReindex -Drun.config=$MAPPING_CONFIG -Dindexed.objects=TreePositionJpa | sed 's/^/      /'
+        echo "    Remove SNOMEDCT tree positions ... `/bin/date`"
+        cd $MAPPING_CODE/admin/remover
+        mvn install -PTreepos -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT -Dversion=latest | sed 's/^/      /'
+        if ($status != 0) then
+            echo "ERROR removing tree positions"
+            exit 1
+        endif
 
-	echo "    Generate SNOMEDCT tree positions ... `/bin/date`"
-	cd $MAPPING_CODE/admin/loader
-	mvn install -PTreepos -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT -Dversion=latest -Droot.ids=138875005 | sed 's/^/      /'
-	if ($status != 0) then
-	    echo "ERROR computing tree positions"
-	    exit 1
-	endif
+        # optimize tree positions table
+        echo "Clear indexes directory"
+        /bin/rm -rf /var/lib/tomcat7/indexes/lucene/indexes/org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa/*
+        echo "Reindex other tree positions"
+         cd $MAPPING_CODE/admin/lucene
+        mvn install -PReindex -Drun.config=$MAPPING_CONFIG -Dindexed.objects=TreePositionJpa | sed 's/^/      /'
+
+
+        echo "    Generate SNOMEDCT tree positions ... `/bin/date`"
+        cd $MAPPING_CODE/admin/loader
+        mvn install -PTreepos -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT -Dversion=latest -Droot.ids=138875005 | sed 's/^/      /'
+        if ($status != 0) then
+            echo "ERROR computing tree positions"
+            exit 1
+        endif
 
 else
     echo "Concepts file is empty"
@@ -133,6 +139,13 @@ endif
 
 echo "    Restarting tomcat7 server ...`/bin/date`"
 service tomcat7 start
+
+# reconnect "doc" directory
+#sleep 40
+
+#cd /var/lib/tomcat7/webapps/ROOT
+#ln -s ~ihtsdo/data/doc
+#chmod -R ga+rwx ~ihtsdo/data/doc
 
 echo "------------------------------------------------"
 echo "Finished ...`/bin/date`"
