@@ -43,7 +43,9 @@ public class AdHocMojo extends AbstractMojo {
 		for (Long id : ids) {
 			Report report = reportService.getReport(id);
 			Logger.getLogger(getClass()).info("Removing report " + report.getId() + ", " + report.getName());
-			reportService.removeReport(report.getId());
+			if (report != null) {
+				reportService.removeReport(report.getId());
+			}
 			
 		}
 		
