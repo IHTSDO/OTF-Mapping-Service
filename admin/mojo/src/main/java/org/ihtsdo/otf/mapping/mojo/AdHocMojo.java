@@ -41,10 +41,13 @@ public class AdHocMojo extends AbstractMojo {
 		Long[] ids = {8796L,8799L,8797L,8798L,8800L,8801L,8802L};
 		
 		for (Long id : ids) {
+			try {
 			Report report = reportService.getReport(id);
 			Logger.getLogger(getClass()).info("Removing report " + report.getId() + ", " + report.getName());
 			if (report != null) {
 				reportService.removeReport(report.getId());
+			} } catch (Exception e) {
+				// do nothing
 			}
 			
 		}
