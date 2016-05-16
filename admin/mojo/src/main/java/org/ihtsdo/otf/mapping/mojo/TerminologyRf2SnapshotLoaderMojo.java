@@ -452,9 +452,10 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
         new BufferedReader(new FileReader(simpleMapRefsetsByConceptFile));
 
     // Complex map reader
-    complexMapRefsetsByConcept =
-        new BufferedReader(new FileReader(complexMapRefsetsByConceptFile));
-
+    if (complexMapRefsetsByConcept != null) {
+	    complexMapRefsetsByConcept =
+	        new BufferedReader(new FileReader(complexMapRefsetsByConceptFile));
+    }
     // Extended map reader
     extendedMapRefsetsByConcept =
         new BufferedReader(new FileReader(extendedMapRefsetsByConceptsFile));
