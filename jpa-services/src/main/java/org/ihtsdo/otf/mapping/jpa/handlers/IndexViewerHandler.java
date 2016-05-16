@@ -48,29 +48,23 @@ public class IndexViewerHandler {
 
 	}
 
-	/**
-	 * Find index entries.
-	 *
-	 * @param terminology
-	 *            the terminology
-	 * @param terminologyVersion
-	 *            the terminology version
-	 * @param domain
-	 *            the domain
-	 * @param searchField
-	 *            the search field
-	 * @param subSearchField
-	 *            the sub search field
-	 * @param subSubSearchField
-	 *            the sub sub search field
-	 * @param allFlag
-	 *            the all flag
-	 * @return the search result list
-	 * @throws Exception
-	 *             the exception
-	 */
-	public SearchResultList findIndexEntries(String terminology, String terminologyVersion, String domain,
-			String searchField, String subSearchField, String subSubSearchField, boolean allFlag) throws Exception {
+  /**
+   * Find index entries.
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @param domain the domain
+   * @param searchField the search field
+   * @param subSearchField the sub search field
+   * @param subSubSearchField the sub sub search field
+   * @param allFlag the all flag
+   * @return the search result list
+   * @throws Exception the exception
+   */
+  public SearchResultList findIndexEntries(String terminology,
+    String terminologyVersion, String domain, String searchField,
+    String subSearchField, String subSubSearchField, boolean allFlag)
+      throws Exception {
 
 		SearchResultList searchResultList = new SearchResultListJpa();
 
@@ -181,57 +175,52 @@ public class IndexViewerHandler {
 		return list;
 	}
 
-	/**
-	 * Performs the search.
-	 *
-	 * @param terminology
-	 *            the terminology
-	 * @param terminologyVersion
-	 *            the terminology version
-	 * @param domain
-	 *            the domain
-	 * @param searchStr
-	 *            the search string
-	 * @param startLevel
-	 *            the start level
-	 * @param endLevel
-	 *            the end level
-	 * @param subSearchAnchor
-	 *            the sub search anchor
-	 * @param requireHasChild
-	 *            the require has child
-	 * @return the results
-	 * @throws Exception
-	 *             the exception
-	 */
-	private List<String> performSearch(String terminology, String terminologyVersion, String domain, String searchStr,
-			int startLevel, int endLevel, String subSearchAnchor, boolean requireHasChild) throws Exception {
+  /**
+   * Performs the search.
+   *
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @param domain the domain
+   * @param searchStr the search string
+   * @param startLevel the start level
+   * @param endLevel the end level
+   * @param subSearchAnchor the sub search anchor
+   * @param requireHasChild the require has child
+   * @return the results
+   * @throws Exception the exception
+   */
+  private List<String> performSearch(String terminology,
+    String terminologyVersion, String domain, String searchStr, int startLevel,
+    int endLevel, String subSearchAnchor, boolean requireHasChild)
+      throws Exception {
 
 		Logger.getLogger(this.getClass()).debug("Perform index search ");
 		Logger.getLogger(this.getClass()).debug("  terminology = " + terminology);
 		Logger.getLogger(this.getClass()).debug("  domain = " + domain);
 		Logger.getLogger(this.getClass()).debug("  searchStr = " + searchStr);
 
-		final Properties config = ConfigUtility.getConfigProperties();
-		final String prop = config.getProperty("index.viewer.data");
-		if (prop == null) {
-			return new ArrayList<>();
-		}
-		final String indexesDir = prop + "/" + terminology + "/" + terminologyVersion + "/lucene/" + domain;
+    final Properties config = ConfigUtility.getConfigProperties();
+    final String prop = config.getProperty("index.viewer.data");
+    if (prop == null) {
+      return new ArrayList<>();
+    }
+    final String indexesDir = prop + "/" + terminology + "/"
+        + terminologyVersion + "/lucene/" + domain;
 
 		final List<String> searchResults = new ArrayList<>();
 		// configure
 		final File selectedDomainDir = new File(indexesDir);
 
-		String query = "";
-		if (startLevel != -1 && endLevel != -1)
-			query = searchStr + " " + getLevelConstraint(startLevel, endLevel);
-		if (requireHasChild)
-			query = query + " hasChild:true";
-		if (subSearchAnchor != null && subSearchAnchor.indexOf(".") == -1)
-			query = query + " topLink:" + subSearchAnchor;
-		if (subSearchAnchor != null && subSearchAnchor.indexOf(".") != -1)
-			query = query + " topLink:" + subSearchAnchor.substring(0, subSearchAnchor.indexOf('.'));
+    String query = "";
+    if (startLevel != -1 && endLevel != -1)
+      query = searchStr + " " + getLevelConstraint(startLevel, endLevel);
+    if (requireHasChild)
+      query = query + " hasChild:true";
+    if (subSearchAnchor != null && subSearchAnchor.indexOf(".") == -1)
+      query = query + " topLink:" + subSearchAnchor;
+    if (subSearchAnchor != null && subSearchAnchor.indexOf(".") != -1)
+      query = query + " topLink:"
+          + subSearchAnchor.substring(0, subSearchAnchor.indexOf('.'));
 
 		int maxHits = Integer.parseInt(config.getProperty("index.viewer.maxHits"));
 
@@ -240,14 +229,14 @@ public class IndexViewerHandler {
 		final Directory dir = FSDirectory.open(selectedDomainDir);
 		final IndexReader reader = IndexReader.open(dir);
 
-		// Prep searcher
-		Logger.getLogger(this.getClass()).debug("  Prep searcher");
-		final IndexSearcher searcher = new IndexSearcher(reader);
-		final String defaultField = "title";
-		final Map<String, Analyzer> fieldAnalyzers = new HashMap<>();
-		fieldAnalyzers.put("code", new KeywordAnalyzer());
-		final PerFieldAnalyzerWrapper analyzer = new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_36),
-				fieldAnalyzers);
+    // Prep searcher
+    Logger.getLogger(this.getClass()).debug("  Prep searcher");
+    final IndexSearcher searcher = new IndexSearcher(reader);
+    final String defaultField = "title";
+    final Map<String, Analyzer> fieldAnalyzers = new HashMap<>();
+    fieldAnalyzers.put("code", new KeywordAnalyzer());
+    final PerFieldAnalyzerWrapper analyzer = new PerFieldAnalyzerWrapper(
+        new StandardAnalyzer(Version.LUCENE_36), fieldAnalyzers);
 
 		Logger.getLogger(this.getClass()).debug("  Prep searcher");
 		final QueryParser parser = new QueryParser(Version.LUCENE_36, defaultField, analyzer);
@@ -268,9 +257,10 @@ public class IndexViewerHandler {
 			final String label = d.get("label");
 			int level = Integer.parseInt(levelTag);
 
-			String linkFirstComponent = (link.indexOf(".") != -1) ? link.substring(0, link.indexOf(".")) : link;
-			if (label != null)
-				linkToLabelMap.put(linkFirstComponent, label);
+      String linkFirstComponent = (link.indexOf(".") != -1)
+          ? link.substring(0, link.indexOf(".")) : link;
+      if (label != null)
+        linkToLabelMap.put(linkFirstComponent, label);
 
 			// If subSearchAnchor is specified, the link must start with it
 			if (subSearchAnchor != null && !link.startsWith(subSearchAnchor + "."))
@@ -337,12 +327,13 @@ public class IndexViewerHandler {
 		Logger.getLogger(this.getClass()).debug("  domain = " + domain);
 		Logger.getLogger(this.getClass()).debug("  link = " + linkStr);
 
-		final Properties config = ConfigUtility.getConfigProperties();
-		final String prop = config.getProperty("index.viewer.data");
-		if (prop == null) {
-			return null;
-		}
-		final String indexesDir = prop + "/" + terminology + "/" + terminologyVersion + "/lucene/" + domain;
+    final Properties config = ConfigUtility.getConfigProperties();
+    final String prop = config.getProperty("index.viewer.data");
+    if (prop == null) {
+      return null;
+    }
+    final String indexesDir = prop + "/" + terminology + "/"
+        + terminologyVersion + "/lucene/" + domain;
 
 		// configure
 		final File selectedDomainDir = new File(indexesDir);
@@ -356,14 +347,14 @@ public class IndexViewerHandler {
 		final Directory dir = FSDirectory.open(selectedDomainDir);
 		final IndexReader reader = IndexReader.open(dir);
 
-		// Prep searcher
-		Logger.getLogger(this.getClass()).debug("  Prep searcher");
-		final IndexSearcher searcher = new IndexSearcher(reader);
-		final String defaultField = "title";
-		final Map<String, Analyzer> fieldAnalyzers = new HashMap<>();
-		fieldAnalyzers.put("link", new KeywordAnalyzer());
-		final PerFieldAnalyzerWrapper analyzer = new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_36),
-				fieldAnalyzers);
+    // Prep searcher
+    Logger.getLogger(this.getClass()).debug("  Prep searcher");
+    final IndexSearcher searcher = new IndexSearcher(reader);
+    final String defaultField = "title";
+    final Map<String, Analyzer> fieldAnalyzers = new HashMap<>();
+    fieldAnalyzers.put("link", new KeywordAnalyzer());
+    final PerFieldAnalyzerWrapper analyzer = new PerFieldAnalyzerWrapper(
+        new StandardAnalyzer(Version.LUCENE_36), fieldAnalyzers);
 
 		Logger.getLogger(this.getClass()).debug("  Prep searcher");
 		final QueryParser parser = new QueryParser(Version.LUCENE_36, defaultField, analyzer);
@@ -435,34 +426,35 @@ public class IndexViewerHandler {
 		// Local directory
 		String dataDir = ConfigUtility.getConfigProperties().getProperty("index.viewer.data");
 
-		Logger.getLogger(getClass()).info("Retrieving index domains from " + dataDir);
+    Logger.getLogger(getClass())
+        .info("Retrieving index domains from " + dataDir);
 
-		if (dataDir == null || dataDir.isEmpty()) {
-			return searchResultList;
-		}
-		for (final File termDir : new File(dataDir).listFiles()) {
-			// Find terminology directory
-			if (termDir.getName().toLowerCase().equals(terminology.toLowerCase())) {
-				for (final File versionDir : termDir.listFiles()) {
-					// Find version directory
-					if (versionDir.getName().equals(terminologyVersion)) {
-						for (final File typeDir : versionDir.listFiles()) {
-							// find html directory
-							if (typeDir.getName().equals("html")) {
-								// find domain directories
-								for (final File domainDir : typeDir.listFiles()) {
-									SearchResult searchResult = new SearchResultJpa();
-									searchResult.setValue(domainDir.getName());
-									searchResultList.addSearchResult(searchResult);
-									Logger.getLogger(ContentServiceJpa.class)
-											.debug("  Index domain found: " + domainDir.getName());
-								}
-							}
-						}
-					}
-				}
-			}
-		}
+    if (dataDir == null || dataDir.isEmpty()) {
+      return searchResultList;
+    }
+    for (final File termDir : new File(dataDir).listFiles()) {
+      // Find terminology directory
+      if (termDir.getName().toLowerCase().equals(terminology.toLowerCase())) {
+        for (final File versionDir : termDir.listFiles()) {
+          // Find version directory
+          if (versionDir.getName().equals(terminologyVersion)) {
+            for (final File typeDir : versionDir.listFiles()) {
+              // find html directory
+              if (typeDir.getName().equals("html")) {
+                // find domain directories
+                for (final File domainDir : typeDir.listFiles()) {
+                  SearchResult searchResult = new SearchResultJpa();
+                  searchResult.setValue(domainDir.getName());
+                  searchResultList.addSearchResult(searchResult);
+                  Logger.getLogger(ContentServiceJpa.class)
+                      .debug("  Index domain found: " + domainDir.getName());
+                }
+              }
+            }
+          }
+        }
+      }
+    }
 
 		return searchResultList;
 	}
@@ -489,37 +481,38 @@ public class IndexViewerHandler {
 		// Local directory
 		final String dataDir = ConfigUtility.getConfigProperties().getProperty("index.viewer.data");
 
-		for (final File termDir : new File(dataDir).listFiles()) {
-			// Find terminology directory
-			if (termDir.getName().equals(terminology)) {
-				for (final File versionDir : termDir.listFiles()) {
-					// find version directory
-					if (versionDir.getName().equals(terminologyVersion)) {
-						for (final File typeDir : versionDir.listFiles()) {
-							// find html directory
-							if (typeDir.getName().equals("html")) {
-								for (final File domainDir : typeDir.listFiles()) {
-									// find domain directory
-									if (domainDir.getName().equals(index)) {
-										Logger.getLogger(ContentServiceJpa.class)
-												.debug("  Pages for index domain found: " + domainDir.getName());
-										// find pages
-										for (final File pageFile : domainDir.listFiles()) {
-											SearchResult searchResult = new SearchResultJpa();
-											searchResult.setValue(
-													pageFile.getName().substring(0, pageFile.getName().indexOf('.')));
-											searchResultList.addSearchResult(searchResult);
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-		return searchResultList;
-	}
+    for (final File termDir : new File(dataDir).listFiles()) {
+      // Find terminology directory
+      if (termDir.getName().equals(terminology)) {
+        for (final File versionDir : termDir.listFiles()) {
+          // find version directory
+          if (versionDir.getName().equals(terminologyVersion)) {
+            for (final File typeDir : versionDir.listFiles()) {
+              // find html directory
+              if (typeDir.getName().equals("html")) {
+                for (final File domainDir : typeDir.listFiles()) {
+                  // find domain directory
+                  if (domainDir.getName().equals(index)) {
+                    Logger.getLogger(ContentServiceJpa.class)
+                        .debug("  Pages for index domain found: "
+                            + domainDir.getName());
+                    // find pages
+                    for (final File pageFile : domainDir.listFiles()) {
+                      SearchResult searchResult = new SearchResultJpa();
+                      searchResult.setValue(pageFile.getName().substring(0,
+                          pageFile.getName().indexOf('.')));
+                      searchResultList.addSearchResult(searchResult);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    return searchResultList;
+  }
 
 	/**
    * Returns the details as html for link.
@@ -569,8 +562,8 @@ public class IndexViewerHandler {
 
       // construct the link text and add to details
       for (Fieldable field : d.getFields()) {
-        Logger.getLogger(getClass()).info(
-            "  " + field.name() + ": " + d.get(field.name()));
+        Logger.getLogger(getClass())
+            .info("  " + field.name() + ": " + d.get(field.name()));
       }
 
       // add indentation based on position
@@ -584,30 +577,27 @@ public class IndexViewerHandler {
       } else {
         htmlFragment += d.get("title");
       }
-      
+
       // add nemod
       if (d.get("nemod") != null) {
-    	  for (String nemod : d.getValues("nemod")) {
-    		  htmlFragment += "&nbsp;" + nemod;
-    	  }
+        htmlFragment += "&nbsp;" + d.get("nemod");
       }
       
 
 
       // add see/see also
       if (d.get("see") != null) {
-    	  for (String see : d.getValues("see")) {
-	    	  Logger.getLogger(getClass()).info("see found: " + see);
-	    	  htmlFragment += "&nbsp;&mdash;&nbsp;<i>see&nbsp;" + see + "</i>";
-    	  }
+        Logger.getLogger(getClass()).info("see found: " + d.get("seeo"));
+        htmlFragment +=
+            "&nbsp;&mdash;&nbsp;<i>see&nbsp;" + d.get("see") + "</i>";
       }
-      
+
       // add see/see also
       if (d.get("seealso") != null) {
-    	  for (String seealso : d.getValues("seealso")) {
-	    	  Logger.getLogger(getClass()).info("see also found: " + seealso);
-	    	  htmlFragment += "&nbsp;&mdash;&nbsp;<i>see&nbsp;also&nbsp;" + seealso + "</i>";
-	    	  }
+        Logger.getLogger(getClass())
+            .info("see also found: " + d.get("seealso"));
+        htmlFragment += "&nbsp;&mdash;&nbsp;<i>see&nbsp;also&nbsp;"
+            + d.get("seealso") + "</i>";
       }
       
       // if code present, add
@@ -617,7 +607,6 @@ public class IndexViewerHandler {
     		  htmlFragment += "&nbsp;" + code;
 	      }
       }
-      
 
       // add line break
       htmlFragment += "<br>";
