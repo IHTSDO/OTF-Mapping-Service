@@ -243,6 +243,9 @@ public class IndexXmlToLuceneMojo extends AbstractMojo {
 		/** The data stack. */
 		Stack<Map<String, String>> dataStack = new Stack<>();
 
+		/** The data code list (special case) */
+		List<String> dataCodes = new ArrayList<>();
+
 		/** The letter. */
 		String letter = null;
 
@@ -350,8 +353,12 @@ public class IndexXmlToLuceneMojo extends AbstractMojo {
 			}
 
 			// Put character data into map
-			data.put(qName.toLowerCase(), chars.toString());
-
+			// SPECIAL CASE: List of codes
+			if (qName.toLowerCase().equals("code")) {
+				dataCodes.add(chars.toString());
+			} else {
+				data.put(qName.toLowerCase(), chars.toString());
+			}
 			// Handle case of a new letter
 			if (qName.equalsIgnoreCase("title") && inTag.get("letter") > 0 && inTag.get("mainterm") == 0) {
 				letter = data.get("title");
@@ -442,8 +449,15 @@ public class IndexXmlToLuceneMojo extends AbstractMojo {
 			doc.add(new Field("label", data.get("title"), Store.YES, Index.NOT_ANALYZED, TermVector.NO));
 			doc.add(new Field("link", data.get("aname"), Store.YES, Index.NOT_ANALYZED, TermVector.NO));
 			doc.add(new Field("level", "0", Store.YES, Index.NOT_ANALYZED, TermVector.NO));
-			if (data.get("code") != null)
-				doc.add(new Field("code", data.get("code"), Store.YES, Index.ANALYZED, TermVector.NO));
+			
+			// if codes were collected, add multiple fields
+			if (dataCodes.size() > 0) {
+				for (String code : dataCodes) {
+					doc.add(new Field("code", code, Store.YES, Index.ANALYZED, TermVector.NO));
+				}
+				// clear the codes for the next term/mainterm
+				dataCodes.clear();
+			}
 			if (data.get("see") != null) {
 				doc.add(new Field("see", data.get("see"), Store.YES, Index.ANALYZED, TermVector.NO));
 			}
@@ -481,8 +495,13 @@ public class IndexXmlToLuceneMojo extends AbstractMojo {
 			doc.add(new Field("topLink", aname.substring(0, aname.indexOf('.')), Store.NO, Index.ANALYZED,
 					TermVector.NO));
 			doc.add(new Field("level", data.get("level"), Store.YES, Index.NOT_ANALYZED, TermVector.NO));
-			if (data.get("code") != null)
-				doc.add(new Field("code", data.get("code"), Store.YES, Index.ANALYZED, TermVector.NO));
+			if (dataCodes.size() > 0) {
+				for (String code : dataCodes) {
+					doc.add(new Field("code", code, Store.YES, Index.ANALYZED, TermVector.NO));
+				}
+				// clear the codes for the next term/mainterm
+				dataCodes.clear();
+			}
 			if (data.get("see") != null) {
 				doc.add(new Field("see", data.get("see"), Store.YES, Index.ANALYZED, TermVector.NO));
 			}
