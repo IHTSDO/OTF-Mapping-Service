@@ -722,8 +722,8 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     }
     if (coreExtendedMapInputFile != null) {
       getLog().info(
-          "      Extended map file = " + coreComplexMapInputFile.toString()
-              + " " + coreComplexMapInputFile.exists());
+          "      Extended map file = " + coreExtendedMapInputFile.toString()
+              + " " + coreExtendedMapInputFile.exists());
     }
 
     // Simple map file
