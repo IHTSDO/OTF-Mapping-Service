@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
@@ -719,7 +720,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
         coreExtendedMapInputFile = f;
       }
     }
-    if (coreComplexMapInputFile != null) {
+    if (coreExtendedMapInputFile != null) {
       getLog().info(
           "      Extended map file = " + coreComplexMapInputFile.toString()
               + " " + coreComplexMapInputFile.exists());
@@ -733,9 +734,11 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
         coreSimpleMapInputFile = f;
       }
     }
-    getLog().info(
-        "      Simple map file = " + coreSimpleMapInputFile.toString() + " "
-            + coreSimpleMapInputFile.exists());
+    if (coreSimpleMapInputFile != null) {
+	    getLog().info(
+	        "      Simple map file = " + coreSimpleMapInputFile.toString() + " "
+	            + coreSimpleMapInputFile.exists());
+    }
 
     // Refset/Langauge dir
     File coreLanguageInputDir = new File(coreRefsetInputDir, "/Language/");
@@ -834,11 +837,13 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     sortRf2File(coreSimpleMapInputFile, simpleMapRefsetsByConceptFile, 5);
 
     // Sort complex map file
-    sortRf2File(coreComplexMapInputFile, complexMapRefsetsByConceptFile, 5);
-
+    if (coreComplexMapInputFile != null) {
+    	sortRf2File(coreComplexMapInputFile, complexMapRefsetsByConceptFile, 5);
+    }
     // sort extended map file
-    sortRf2File(coreExtendedMapInputFile, extendedMapRefsetsByConceptsFile, 5);
-
+    if (coreExtendedMapInputFile != null) {
+    	sortRf2File(coreExtendedMapInputFile, extendedMapRefsetsByConceptsFile, 5);
+    }
     // Sort language file
     sortRf2File(coreLanguageInputFile, languageRefsetsByDescriptionFile, 5);
 
@@ -854,6 +859,8 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
    */
   private void sortRf2File(File fileIn, File fileOut, final int sortColumn)
     throws Exception {
+	 
+	  
     Comparator<String> comp;
     // Comparator to split on \t and sort by sortColumn
     comp = new Comparator<String>() {
