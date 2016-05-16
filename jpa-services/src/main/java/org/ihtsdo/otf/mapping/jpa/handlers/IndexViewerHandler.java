@@ -64,7 +64,7 @@ public class IndexViewerHandler {
   public SearchResultList findIndexEntries(String terminology,
     String terminologyVersion, String domain, String searchField,
     String subSearchField, String subSubSearchField, boolean allFlag)
-    throws Exception {
+      throws Exception {
 
     SearchResultList searchResultList = new SearchResultListJpa();
 
@@ -97,11 +97,10 @@ public class IndexViewerHandler {
     mainSearchResults =
         performCodeSearch(terminology, terminologyVersion, domain, searchField);
     if (mainSearchResults.size() == 0) {
-      mainSearchResults =
-          performSearch(terminology, terminologyVersion, domain, searchField,
-              startLevel, endLevel, null, (subSearchField != null
-                  && !subSearchField.equals("undefined") && !subSearchField
-                  .equals("")));
+      mainSearchResults = performSearch(terminology, terminologyVersion, domain,
+          searchField, startLevel, endLevel, null,
+          (subSearchField != null && !subSearchField.equals("undefined")
+              && !subSearchField.equals("")));
     }
 
     if (subSearchField == null || subSearchField.equals("undefined")
@@ -114,12 +113,10 @@ public class IndexViewerHandler {
       }
       return sortSearchResultList(searchResultList);
     } else {
-      startLevel =
-          Integer.parseInt(config
-              .getProperty("index.viewer.subSearchStartLevel"));
-      endLevel =
-          Integer
-              .parseInt(config.getProperty("index.viewer.subSearchEndLevel"));
+      startLevel = Integer
+          .parseInt(config.getProperty("index.viewer.subSearchStartLevel"));
+      endLevel = Integer
+          .parseInt(config.getProperty("index.viewer.subSearchEndLevel"));
       for (int i = 0; i < mainSearchResults.size(); i++) {
         subSearchResults.addAll(performSearch(terminology, terminologyVersion,
             domain, subSearchField, startLevel, endLevel,
@@ -137,16 +134,14 @@ public class IndexViewerHandler {
       }
       return sortSearchResultList(searchResultList);
     } else {
-      startLevel =
-          Integer.parseInt(config
-              .getProperty("index.viewer.subSubSearchStartLevel"));
-      endLevel =
-          Integer.parseInt(config
-              .getProperty("index.viewer.subSubSearchEndLevel"));
+      startLevel = Integer
+          .parseInt(config.getProperty("index.viewer.subSubSearchStartLevel"));
+      endLevel = Integer
+          .parseInt(config.getProperty("index.viewer.subSubSearchEndLevel"));
       for (int i = 0; i < subSearchResults.size(); i++) {
         subSubSearchResults.addAll(performSearch(terminology,
-            terminologyVersion, domain, subSubSearchField, startLevel,
-            endLevel, subSearchResults.get(i), false));
+            terminologyVersion, domain, subSubSearchField, startLevel, endLevel,
+            subSearchResults.get(i), false));
       }
     }
 
@@ -208,7 +203,7 @@ public class IndexViewerHandler {
   private List<String> performSearch(String terminology,
     String terminologyVersion, String domain, String searchStr, int startLevel,
     int endLevel, String subSearchAnchor, boolean requireHasChild)
-    throws Exception {
+      throws Exception {
 
     Logger.getLogger(this.getClass()).debug("Perform index search ");
     Logger.getLogger(this.getClass()).debug("  terminology = " + terminology);
@@ -220,9 +215,8 @@ public class IndexViewerHandler {
     if (prop == null) {
       return new ArrayList<>();
     }
-    final String indexesDir =
-        prop + "/" + terminology + "/" + terminologyVersion + "/lucene/"
-            + domain;
+    final String indexesDir = prop + "/" + terminology + "/"
+        + terminologyVersion + "/lucene/" + domain;
 
     final List<String> searchResults = new ArrayList<>();
     // configure
@@ -236,9 +230,8 @@ public class IndexViewerHandler {
     if (subSearchAnchor != null && subSearchAnchor.indexOf(".") == -1)
       query = query + " topLink:" + subSearchAnchor;
     if (subSearchAnchor != null && subSearchAnchor.indexOf(".") != -1)
-      query =
-          query + " topLink:"
-              + subSearchAnchor.substring(0, subSearchAnchor.indexOf('.'));
+      query = query + " topLink:"
+          + subSearchAnchor.substring(0, subSearchAnchor.indexOf('.'));
 
     int maxHits = Integer.parseInt(config.getProperty("index.viewer.maxHits"));
 
@@ -253,9 +246,8 @@ public class IndexViewerHandler {
     final String defaultField = "title";
     final Map<String, Analyzer> fieldAnalyzers = new HashMap<>();
     fieldAnalyzers.put("code", new KeywordAnalyzer());
-    final PerFieldAnalyzerWrapper analyzer =
-        new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_36),
-            fieldAnalyzers);
+    final PerFieldAnalyzerWrapper analyzer = new PerFieldAnalyzerWrapper(
+        new StandardAnalyzer(Version.LUCENE_36), fieldAnalyzers);
 
     Logger.getLogger(this.getClass()).debug("  Prep searcher");
     final QueryParser parser =
@@ -277,9 +269,8 @@ public class IndexViewerHandler {
       final String label = d.get("label");
       int level = Integer.parseInt(levelTag);
 
-      String linkFirstComponent =
-          (link.indexOf(".") != -1) ? link.substring(0, link.indexOf("."))
-              : link;
+      String linkFirstComponent = (link.indexOf(".") != -1)
+          ? link.substring(0, link.indexOf(".")) : link;
       if (label != null)
         linkToLabelMap.put(linkFirstComponent, label);
 
@@ -343,9 +334,8 @@ public class IndexViewerHandler {
     if (prop == null) {
       return null;
     }
-    final String indexesDir =
-        prop + "/" + terminology + "/" + terminologyVersion + "/lucene/"
-            + domain;
+    final String indexesDir = prop + "/" + terminology + "/"
+        + terminologyVersion + "/lucene/" + domain;
 
     // configure
     final File selectedDomainDir = new File(indexesDir);
@@ -365,9 +355,8 @@ public class IndexViewerHandler {
     final String defaultField = "title";
     final Map<String, Analyzer> fieldAnalyzers = new HashMap<>();
     fieldAnalyzers.put("link", new KeywordAnalyzer());
-    final PerFieldAnalyzerWrapper analyzer =
-        new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_36),
-            fieldAnalyzers);
+    final PerFieldAnalyzerWrapper analyzer = new PerFieldAnalyzerWrapper(
+        new StandardAnalyzer(Version.LUCENE_36), fieldAnalyzers);
 
     Logger.getLogger(this.getClass()).debug("  Prep searcher");
     final QueryParser parser =
@@ -437,8 +426,8 @@ public class IndexViewerHandler {
     String dataDir =
         ConfigUtility.getConfigProperties().getProperty("index.viewer.data");
 
-    Logger.getLogger(getClass()).info(
-        "Retrieving index domains from " + dataDir);
+    Logger.getLogger(getClass())
+        .info("Retrieving index domains from " + dataDir);
 
     if (dataDir == null || dataDir.isEmpty()) {
       return searchResultList;
@@ -457,8 +446,8 @@ public class IndexViewerHandler {
                   SearchResult searchResult = new SearchResultJpa();
                   searchResult.setValue(domainDir.getName());
                   searchResultList.addSearchResult(searchResult);
-                  Logger.getLogger(ContentServiceJpa.class).debug(
-                      "  Index domain found: " + domainDir.getName());
+                  Logger.getLogger(ContentServiceJpa.class)
+                      .debug("  Index domain found: " + domainDir.getName());
                 }
               }
             }
@@ -501,8 +490,8 @@ public class IndexViewerHandler {
                 for (final File domainDir : typeDir.listFiles()) {
                   // find domain directory
                   if (domainDir.getName().equals(index)) {
-                    Logger.getLogger(ContentServiceJpa.class).debug(
-                        "  Pages for index domain found: "
+                    Logger.getLogger(ContentServiceJpa.class)
+                        .debug("  Pages for index domain found: "
                             + domainDir.getName());
                     // find pages
                     for (final File pageFile : domainDir.listFiles()) {
@@ -553,12 +542,6 @@ public class IndexViewerHandler {
       // insert before later links
       documents.add(0, d);
 
-      // construct the link text and add to details
-      for (Fieldable field : d.getFields()) {
-        Logger.getLogger(getClass()).debug(
-            "  " + field.name() + ": " + d.get(field.name()));
-      }
-
       // truncate
       if (sublink.lastIndexOf(".") == -1) {
         sublink = "";
@@ -576,8 +559,8 @@ public class IndexViewerHandler {
 
       // construct the link text and add to details
       for (Fieldable field : d.getFields()) {
-        Logger.getLogger(getClass()).info(
-            "  " + field.name() + ": " + d.get(field.name()));
+        Logger.getLogger(getClass())
+            .info("  " + field.name() + ": " + d.get(field.name()));
       }
 
       // add indentation based on position
@@ -591,29 +574,30 @@ public class IndexViewerHandler {
       } else {
         htmlFragment += d.get("title");
       }
-      
+
       // add nemod
       if (d.get("nemod") != null) {
-    	htmlFragment += "&nbsp;" + d.get("nemod");
+        htmlFragment += "&nbsp;" + d.get("nemod");
       }
 
       // add see/see also
       if (d.get("see") != null) {
-    	  Logger.getLogger(getClass()).info("see found: " + d.get("seeo"));
-    	  htmlFragment += "&nbsp;&mdash;&nbsp;<i>see&nbsp;" + d.get("see") + "</i>";
+        Logger.getLogger(getClass()).info("see found: " + d.get("seeo"));
+        htmlFragment +=
+            "&nbsp;&mdash;&nbsp;<i>see&nbsp;" + d.get("see") + "</i>";
       }
-      
+
       // add see/see also
       if (d.get("seealso") != null) {
-    	  Logger.getLogger(getClass()).info("see also found: " + d.get("seealso"));
-    	  htmlFragment += "&nbsp;&mdash;&nbsp;<i>see&nbsp;also&nbsp;" + d.get("seealso") + "</i>";
+        Logger.getLogger(getClass())
+            .info("see also found: " + d.get("seealso"));
+        htmlFragment += "&nbsp;&mdash;&nbsp;<i>see&nbsp;also&nbsp;"
+            + d.get("seealso") + "</i>";
       }
-      
-      // if code present, add
-      if (d.get("code") != null) {
-        htmlFragment += "&nbsp;" + d.get("code");
+
+      for (String code : d.getValues("code")) {
+        htmlFragment += "&nbsp;" + code;
       }
-      
 
       // add line break
       htmlFragment += "<br>";
