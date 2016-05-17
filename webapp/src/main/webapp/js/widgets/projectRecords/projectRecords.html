@@ -81,7 +81,7 @@
           ng-options="o.val as o.key for o in [{ key: 'contains', val: true }, { key: 'does not contain', val: false }]">
         </select> <select style="width: 83%" ng-model="searchParameters.adviceName"
           style="width: 98%;"
-          ng-options="mapAdvice.name as mapAdvice.name for mapAdvice in searchParameters.advices"></select>
+          ng-options="mapAdvice.name as mapAdvice.name for mapAdvice in searchParameters.advices | orderBy:'name'"></select>
       </div>
     </div>
   </div>
