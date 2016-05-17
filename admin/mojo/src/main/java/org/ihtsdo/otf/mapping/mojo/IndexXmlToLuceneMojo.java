@@ -249,11 +249,8 @@ public class IndexXmlToLuceneMojo extends AbstractMojo {
     /** The list of codes associated with the data */
     List<String> dataCodes = new ArrayList<>();
 
-		/** The data code list (special case) */
-		List<String> dataCodes = new ArrayList<>();
-
-		/** The letter. */
-		String letter = null;
+    /** The data stack. */
+    Stack<Map<String, String>> dataStack = new Stack<>();
 
     /** The letter. */
     String letter = null;
@@ -356,13 +353,13 @@ public class IndexXmlToLuceneMojo extends AbstractMojo {
     public void endElement(String uri, String localName, String qName)
       throws SAXException {
 
-			// Put character data into map
-			// SPECIAL CASE: List of codes
-			if (qName.toLowerCase().equals("code")) {
-				dataCodes.add(chars.toString());
-			} else {
-				data.put(qName.toLowerCase(), chars.toString());
-			}
+      // handle embedded nemod in title
+      if (qName.equalsIgnoreCase("title") && nemodInTitle) {
+        data.put("afterNemodTitleChars", chars.toString());
+        chars = titleChars;
+        titleChars = new StringBuffer();
+      }
+
       // Put character data into map if not a code
       if (!qName.toLowerCase().equals("code")) {
         data.put(qName.toLowerCase(), chars.toString());
@@ -429,43 +426,19 @@ public class IndexXmlToLuceneMojo extends AbstractMojo {
       chars.append(new String(ch, start, length));
     }
 
-		/**
-		 * Adds the document for main term.
-		 * 
-		 * @throws CorruptIndexException
-		 *             the corrupt index exception
-		 * @throws IOException
-		 *             Signals that an I/O exception has occurred.
-		 */
-		private void addDocumentForMainTerm() throws CorruptIndexException, IOException {
-			Document doc = new Document();
-			// getLog().info("mainTerm = " + data.get("title") + ", " +
-			// data.get("code") + ", " + data.get("nemod") + ", " +
-			// data.get("aname") + ", " + String.valueOf(hasChild));
-			doc.add(new Field("s", getFirstWord(data.get("title")), Store.NO, Index.ANALYZED, TermVector.NO));
-			doc.add(new Field("hasChild", String.valueOf(hasChild), Store.NO, Index.ANALYZED, TermVector.NO));
-			doc.add(new Field("title", data.get("title"), Store.YES, Index.ANALYZED, TermVector.NO));
-			if (data.get("nemod") != null)
-				doc.add(new Field("nemod", data.get("nemod"), Store.YES, Index.ANALYZED, TermVector.NO));
-			doc.add(new Field("label", data.get("title"), Store.YES, Index.NOT_ANALYZED, TermVector.NO));
-			doc.add(new Field("link", data.get("aname"), Store.YES, Index.NOT_ANALYZED, TermVector.NO));
-			doc.add(new Field("level", "0", Store.YES, Index.NOT_ANALYZED, TermVector.NO));
-			
-			// if codes were collected, add multiple fields
-			if (dataCodes.size() > 0) {
-				for (String code : dataCodes) {
-					doc.add(new Field("code", code, Store.YES, Index.ANALYZED, TermVector.NO));
-				}
-				// clear the codes for the next term/mainterm
-				dataCodes.clear();
-			}
-			if (data.get("see") != null) {
-				doc.add(new Field("see", data.get("see"), Store.YES, Index.ANALYZED, TermVector.NO));
-			}
-			if (data.get("seealso") != null) {
-				doc.add(new Field("seealso", data.get("seealso"), Store.YES, Index.ANALYZED, TermVector.NO));
-			}
-			writer.addDocument(doc);
+    /**
+     * Adds the dictionary words.
+     */
+    private void addDictionaryWords() {
+      StringTokenizer st = new StringTokenizer(data.get("title"), DELIM);
+      while (st.hasMoreTokens()) {
+        String token = st.nextToken();
+        if (!StandardAnalyzer.STOP_WORDS_SET.contains(token)
+            && token.length() > 2) {
+          words.add(token.toLowerCase());
+        }
+      }
+    }
 
     /**
      * Adds the document for main term.
@@ -502,39 +475,15 @@ public class IndexXmlToLuceneMojo extends AbstractMojo {
       }
       dataCodes.clear();
 
-			Document doc = new Document();
-			// getLog().info("term = " + data.get("title") + ", " +
-			// data.get("code") + ", " + data.get("nemod") + ", " +
-			// data.get("level") + ", " + data.get("aname") + ", " +
-			// String.valueOf(hasChild));
-			doc.add(new Field("s", getFirstWord(data.get("title")), Store.NO, Index.ANALYZED, TermVector.NO));
-			doc.add(new Field("hasChild", String.valueOf(hasChild), Store.NO, Index.ANALYZED, TermVector.NO));
-			doc.add(new Field("title", data.get("title"), Store.YES, Index.ANALYZED, TermVector.NO));
-			if (data.get("nemod") != null) {
-				doc.add(new Field("nemod", data.get("nemod"), Store.YES, Index.ANALYZED, TermVector.NO));
-			}
-			String aname = data.get("aname");
-			doc.add(new Field("link", aname, Store.YES, Index.NOT_ANALYZED, TermVector.NO));
-			doc.add(new Field("topLink", aname.substring(0, aname.indexOf('.')), Store.NO, Index.ANALYZED,
-					TermVector.NO));
-			doc.add(new Field("level", data.get("level"), Store.YES, Index.NOT_ANALYZED, TermVector.NO));
-			if (dataCodes.size() > 0) {
-				for (String code : dataCodes) {
-					doc.add(new Field("code", code, Store.YES, Index.ANALYZED, TermVector.NO));
-				}
-				// clear the codes for the next term/mainterm
-				dataCodes.clear();
-			}
-			if (data.get("see") != null) {
-				doc.add(new Field("see", data.get("see"), Store.YES, Index.ANALYZED, TermVector.NO));
-			}
-			if (data.get("seealso") != null) {
-				doc.add(new Field("seealso", data.get("seealso"), Store.YES, Index.ANALYZED, TermVector.NO));
-			}
-			writer.addDocument(doc);
-			addDictionaryWords();
-		}
-	}
+      if (data.get("see") != null) {
+        doc.add(new Field("see", data.get("see"), Store.YES, Index.ANALYZED,
+            TermVector.NO));
+      }
+      if (data.get("seealso") != null) {
+        doc.add(new Field("seealso", data.get("seealso"), Store.YES,
+            Index.ANALYZED, TermVector.NO));
+      }
+      writer.addDocument(doc);
 
       addDictionaryWords();
     }
