@@ -246,8 +246,10 @@ public class IndexXmlToLuceneMojo extends AbstractMojo {
     /** The data. */
     Map<String, String> data = new HashMap<>();
 
+    List<String> codes = new ArrayList<>();
+    
     /** The list of codes associated with the data */
-    List<String> dataCodes = new ArrayList<>();
+    Stack<List<String>> codesStack = new Stack<>();
 
     /** The data stack. */
     Stack<Map<String, String>> dataStack = new Stack<>();
@@ -313,14 +315,22 @@ public class IndexXmlToLuceneMojo extends AbstractMojo {
         inTag.put(qName.toLowerCase(), 1);
 
       // When encountering a new term or main term entry
-      // push the data values onto the stack.
+      // push the data and codes values onto the stacks.
       if (qName.equalsIgnoreCase("term")
           || qName.equalsIgnoreCase("mainterm")) {
         if (data != null) {
+          // push the data object
           dataStack.push(data);
+          
+          // push the stored data codes
+          codesStack.push(codes);
+          
+          // set the child flag to false initially for new element
           hasChild = false;
         }
+        
         data = new HashMap<>(0);
+        codes = new ArrayList<>();
       }
 
       // handle mainterm
@@ -365,9 +375,9 @@ public class IndexXmlToLuceneMojo extends AbstractMojo {
         data.put(qName.toLowerCase(), chars.toString());
       }
 
-      // otherwise,
+      // otherwise, add the code to the codes list
       else {
-        dataCodes.add(chars.toString());
+        codes.add(chars.toString());
       }
       // Handle case of a new letter
       if (qName.equalsIgnoreCase("title") && inTag.get("letter") > 0
@@ -382,6 +392,7 @@ public class IndexXmlToLuceneMojo extends AbstractMojo {
             addDocumentForMainTerm();
           }
           data = dataStack.pop();
+          codes = codesStack.pop();
         } catch (CorruptIndexException e) {
           throw new SAXException(e);
         } catch (IOException e) {
@@ -397,6 +408,7 @@ public class IndexXmlToLuceneMojo extends AbstractMojo {
             addDocumentForTerm();
           }
           data = dataStack.pop();
+          codes = codesStack.pop();
           hasChild = true;
           aname = aname.substring(0, aname.lastIndexOf('.'));
         } catch (CorruptIndexException e) {
@@ -469,11 +481,11 @@ public class IndexXmlToLuceneMojo extends AbstractMojo {
           TermVector.NO));
 
       // add the codes and clear the list
-      for (String code : dataCodes) {
+      for (String code : codes) {
         doc.add(
             new Field("code", code, Store.YES, Index.ANALYZED, TermVector.NO));
       }
-      dataCodes.clear();
+      codes.clear();
 
       if (data.get("see") != null) {
         doc.add(new Field("see", data.get("see"), Store.YES, Index.ANALYZED,
@@ -521,11 +533,11 @@ public class IndexXmlToLuceneMojo extends AbstractMojo {
           Index.NOT_ANALYZED, TermVector.NO));
 
       // add the codes and clear the list
-      for (String code : dataCodes) {
+      for (String code : codes) {
         doc.add(
             new Field("code", code, Store.YES, Index.ANALYZED, TermVector.NO));
       }
-      dataCodes.clear();
+      codes.clear();
 
       if (data.get("see") != null) {
         doc.add(new Field("see", data.get("see"), Store.YES, Index.ANALYZED,
