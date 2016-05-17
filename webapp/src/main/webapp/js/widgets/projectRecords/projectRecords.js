@@ -69,8 +69,15 @@ angular
         console.debug('ProjectRecordCtrl:  Detected change in focus project',
           parameters.focusProject);
         $scope.focusProject = parameters.focusProject;
+        
+     
+        
         $scope.getRecordsForProject();
         $scope.setIndexViewerStatus();
+        $scope.initializeSearchParameters();
+       
+        
+
       });
 
       // retrieve the current global variables
@@ -609,21 +616,7 @@ angular
 
             });
 
-        $rootScope.glassPane++;
-        $http.get(root_mapping + 'advice/advices').then(
-          // Success
-          function(response) {
-            $rootScope.glassPane--;
-            console.debug('Map advices', response);
-            $scope.searchParameters.advices = response.data.mapAdvice;
-          },
-          // Error
-          function(response) {
-            $rootScope.glassPane--;
-            $rootScope.handleHttpError(response.data, response.status, response.headers,
-              response.config);
-          });
-
+        $scope.searchParameters.advices = $scope.focusProject.mapAdvice;
       };
 
       // toggle advanced search
