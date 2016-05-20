@@ -571,6 +571,8 @@ angular
         ancestorId : null,
         rootId : null,
         targetId : null,
+        targetIdRangeStart: null,
+        targetIdRangeEnd: null,
         targetName : null,
         adviceContained : true,
         adviceName : null,
@@ -586,6 +588,8 @@ angular
         $scope.searchParameters.query = null;
         $scope.searchParameters.page = 1;
         $scope.searchParameters.targetId = null;
+        $scope.searchParameters.targetIdRangeStart = null;
+        $scope.searchParameters.targetIdRangEnd = null;
         $scope.searchParameters.targetName = null;
         $scope.searchParameters.rootId = null;
         $scope.searchParameters.ancestorId = null;
@@ -646,6 +650,11 @@ angular
           // check target id
           if ($scope.searchParameters.targetId && $scope.searchParameters.targetId.length > 0) {
             queryRestrictions.push('mapEntries.targetId:' + $scope.searchParameters.targetId);
+          }
+          
+          // check target id range
+          if ($scope.searchParameters.targetIdRangeStart && $scope.searchParameters.targetIdRangeEnd) {
+        	  queryRestrictions.push('mapEntries.targetId:[' + $scope.searchParameters.targetIdRangeStart + ' TO ' + $scope.searchParameters.targetIdRangeEnd + ']')
           }
 
           // check target name
