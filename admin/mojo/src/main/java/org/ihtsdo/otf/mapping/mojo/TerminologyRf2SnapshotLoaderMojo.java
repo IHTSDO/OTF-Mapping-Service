@@ -14,7 +14,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
@@ -414,46 +413,50 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
         new File(outputDir, "extended_map_refsets_by_concept.sort");
 
     // Concept reader
-    if (conceptsByConcept != null) {
+    if (conceptsByConceptsFile != null) {
       conceptsByConcept =
           new BufferedReader(new FileReader(conceptsByConceptsFile));
     }
     // Relationships by source concept reader
-    if (relationshipsBySourceConcept != null) {
+    if (relationshipsBySourceConceptFile != null) {
       relationshipsBySourceConcept =
           new BufferedReader(new FileReader(relationshipsBySourceConceptFile));
     }
     // Descriptions by description id reader
-    if (descriptionsByDescription != null) {
+    if (descriptionsByDescriptionFile != null) {
       descriptionsByDescription =
           new BufferedReader(new FileReader(descriptionsByDescriptionFile));
     }
     // Language RefSets by description id
+    if (languageRefsetsByDescriptionsFile != null) {
     languageRefsetsByDescription =
         new BufferedReader(new FileReader(languageRefsetsByDescriptionsFile));
-
+    }
+    
     // Attribute Value reader
-    if (attributeRefsetsByDescription != null) {
+    // NOTE: Discrepancy in naming here, but the sorted by concepts file is the one desired
+    // the description file stream is the one used.
+    if (attributeRefsetsByConceptFile != null) {
       attributeRefsetsByDescription =
           new BufferedReader(new FileReader(attributeRefsetsByConceptFile));
     }
     // Simple reader
-    if (simpleRefsetsByConcept != null) {
+    if (simpleRefsetsByConceptFile != null) {
       simpleRefsetsByConcept =
           new BufferedReader(new FileReader(simpleRefsetsByConceptFile));
     }
     // Simple Map reader
-    if (simpleMapRefsetsByConcept != null) {
+    if (simpleMapRefsetsByConceptFile != null) {
       simpleMapRefsetsByConcept =
           new BufferedReader(new FileReader(simpleMapRefsetsByConceptFile));
     }
     // Complex map reader
-    if (complexMapRefsetsByConcept != null) {
+    if (complexMapRefsetsByConceptFile != null) {
       complexMapRefsetsByConcept =
           new BufferedReader(new FileReader(complexMapRefsetsByConceptFile));
     }
     // Extended map reader
-    if (extendedMapRefsetsByConcept != null) {
+    if (extendedMapRefsetsByConceptsFile != null) {
       extendedMapRefsetsByConcept =
           new BufferedReader(new FileReader(extendedMapRefsetsByConceptsFile));
     }
