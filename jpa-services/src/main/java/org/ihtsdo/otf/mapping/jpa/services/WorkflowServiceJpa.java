@@ -354,9 +354,13 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
         // set the label on the record
         mapRecord.addLabel(report.getReportDefinition().getName());
 
-        // process the workflow action
-        processWorkflowAction(mapProject, concept, mapUser, mapRecord,
-            WorkflowAction.CREATE_QA_RECORD);
+        // process the workflow action - only if published/READY
+        if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)
+            || mapRecord.getWorkflowStatus().equals(
+                WorkflowStatus.READY_FOR_PUBLICATION)) {
+          processWorkflowAction(mapProject, concept, mapUser, mapRecord,
+              WorkflowAction.CREATE_QA_RECORD);
+        }
       }
     }
 
@@ -1180,40 +1184,39 @@ public class WorkflowServiceJpa extends MappingServiceJpa implements
 
     WorkflowPathHandler handler =
         getWorkflowPathHandlerForMapProject(mapProject);
-    
-    WorkflowPathHandler fixErrorHandler = 
-    		this.getWorkflowPathHandler(WorkflowPath.FIX_ERROR_PATH.toString());
-    
-    WorkflowPathHandler qaPathHandler = 
-    		this.getWorkflowPathHandler(WorkflowPath.QA_PATH.toString());
+
+    WorkflowPathHandler fixErrorHandler =
+        this.getWorkflowPathHandler(WorkflowPath.FIX_ERROR_PATH.toString());
+
+    WorkflowPathHandler qaPathHandler =
+        this.getWorkflowPathHandler(WorkflowPath.QA_PATH.toString());
 
     for (final TrackingRecord trackingRecord : trackingRecords
         .getTrackingRecords()) {
-    	
-    	  terminologyIdsWithTrackingRecord.add(trackingRecord.getTerminologyId());
-    	  
-    	  ValidationResult result = null;
-    	
-    	// check fix error path
-    	if (trackingRecord.getWorkflowPath().equals(WorkflowPath.FIX_ERROR_PATH)) {
-    		result = fixErrorHandler.validateTrackingRecord(trackingRecord);
-    	} 
-    	
-    	// check qa path
-    	else if (trackingRecord.getWorkflowPath().equals(WorkflowPath.QA_PATH)) {
-    		result = qaPathHandler.validateTrackingRecord(trackingRecord);
-    	} 
-    	
-    	// otherwise, check against project handler
-    	else {
-    	    result = handler.validateTrackingRecord(trackingRecord);
-    	}
-    	
-      if (result == null) {
-    	  result =  new ValidationResultJpa();
-    	  result.addError("Unexpected error -- validation result came back null");
+
+      terminologyIdsWithTrackingRecord.add(trackingRecord.getTerminologyId());
+
+      ValidationResult result = null;
+
+      // check fix error path
+      if (trackingRecord.getWorkflowPath().equals(WorkflowPath.FIX_ERROR_PATH)) {
+        result = fixErrorHandler.validateTrackingRecord(trackingRecord);
       }
-    
+
+      // check qa path
+      else if (trackingRecord.getWorkflowPath().equals(WorkflowPath.QA_PATH)) {
+        result = qaPathHandler.validateTrackingRecord(trackingRecord);
+      }
+
+      // otherwise, check against project handler
+      else {
+        result = handler.validateTrackingRecord(trackingRecord);
+      }
+
+      if (result == null) {
+        result = new ValidationResultJpa();
+        result.addError("Unexpected error -- validation result came back null");
+      }
 
       if (!result.isValid()) {
         results
