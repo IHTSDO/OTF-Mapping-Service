@@ -1327,7 +1327,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
       final SearchResultList list =
           service.findMapRecordsForQuery("mapProjectId:" + mapProjectId
-              + " AND workflowStatus:QA*", null);
+              + " AND (workflowStatus:QA_NEEDED OR workflowStatus:QA_NEW OR workflowStatus:QA_IN_PROGRESS OR workflowStatus:QA_RESOLVED)", null);
       final Set<String> labels = new HashSet<>();
       for (final SearchResult result : list.getSearchResults()) {
         final MapRecord record = service.getMapRecord(result.getId());
