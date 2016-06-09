@@ -127,6 +127,9 @@ public class MapRecordUpdaterMojo extends AbstractMojo {
             mappingService.updateMapRecord(record);
             if (++ct % 2000 == 0) {
               getLog().info("      " + ct + " records processed");
+              mappingService.commit();
+              mappingService.clear();
+              mappingService.beginTransaction();
             }
           }
         }
