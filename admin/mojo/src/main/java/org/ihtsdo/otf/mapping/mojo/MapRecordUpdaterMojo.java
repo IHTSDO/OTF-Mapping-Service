@@ -113,7 +113,7 @@ public class MapRecordUpdaterMojo extends AbstractMojo {
                   contentService.getConcept(entry.getTargetId(),
                       mapProject.getDestinationTerminology(),
                       mapProject.getDestinationTerminologyVersion());
-              if (concept != null
+              if (concept2 != null
                   && !entry.getTargetName().equals(
                       concept2.getDefaultPreferredName())) {
                 entry.setTargetName(concept2.getDefaultPreferredName());
