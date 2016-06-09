@@ -242,7 +242,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           String asteriskCode = null;
           for (final Description desc : concepts.get(1).get(0)
               .getDescriptions()) {
-            // "preferred" type - TODO: this could be improved upon by accessing metadata
+            // "preferred" type - TODO: this could be improved upon by accessing
+            // metadata
             if (desc.getTypeId().equals("4")) {
               for (final Relationship rel : concepts.get(1).get(0)
                   .getRelationships()) {
@@ -1739,21 +1740,22 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           "F39", "F54", "F55", "F59", "F61", "F69", "F82", "F83", "F88", "F89",
           "F99", "G01", "G07", "G08", "G09", "G10", "G14", "G20", "G22", "G26",
           "G35", "G64", "G92", "G98", "H46", "H55", "H71", "H82", "I00", "I10",
-          "I38", "I48", "I64", "I81", "I99", "J00", "J09", "J13", "J14", "J22",
-          "J36", "J40", "J42", "J46", "J47", "J60", "J61", "J64", "J65", "J80",
-          "J81", "J82", "J90", "J91", "K20", "K30", "K36", "K37", "L00", "L14",
-          "L22", "L26", "L42", "L45", "L52", "L80", "L82", "L83", "L84", "L86",
-          "L88", "L97", "N10", "N12", "N19", "N23", "N26", "N40", "N44", "N46",
-          "N47", "N61", "N62", "N63", "N72", "N86", "N96", "O11", "O13", "O16",
-          "O25", "O40", "O48", "O85", "O94", "O95", "P38", "P53", "P60", "P75",
-          "P77", "P90", "P93", "P95", "Q02", "R02", "R05", "R11", "R12", "R13",
-          "R14", "R15", "R17", "R18", "R21", "R31", "R32", "R33", "R34", "R35",
-          "R36", "R42", "R51", "R53", "R54", "R55", "R58", "R64", "R69", "R71",
-          "R72", "R75", "R80", "R81", "R91", "R92", "R95", "R98", "R99", "S16",
-          "S18", "S47", "T07", "T16", "T55", "T58", "T64", "T66", "T68", "T71",
-          "T96", "T97", "U88", "V98", "V99", "Y66", "Y69", "Y86", "Y95", "Y96",
-          "Y97", "Y98", "Z21", "Z33"
+          "I38", "I64", "I81", "I99", "J00", "J09", "J13", "J14", "J22", "J36",
+          "J40", "J42", "J46", "J47", "J60", "J61", "J64", "J65", "J80", "J81",
+          "J82", "J90", "J91", "K20", "K30", "K36", "K37", "L00", "L14", "L22",
+          "L26", "L42", "L45", "L52", "L80", "L82", "L83", "L84", "L86", "L88",
+          "L97", "N10", "N12", "N19", "N23", "N26", "N40", "N44", "N46", "N47",
+          "N61", "N62", "N63", "N72", "N86", "N96", "O11", "O13", "O16", "O25",
+          "O40", "O48", "O85", "O94", "O95", "P38", "P53", "P60", "P75", "P77",
+          "P90", "P93", "P95", "Q02", "R02", "R05", "R11", "R12", "R13", "R14",
+          "R15", "R17", "R18", "R21", "R31", "R32", "R33", "R34", "R35", "R36",
+          "R42", "R51", "R53", "R54", "R55", "R58", "R64", "R69", "R71", "R72",
+          "R75", "R80", "R81", "R91", "R92", "R98", "R99", "S16", "S18", "S47",
+          "T07", "T16", "T55", "T58", "T64", "T66", "T68", "T71", "T96", "T97",
+          "U88", "V98", "V99", "Y66", "Y69", "Y86", "Y95", "Y96", "Y97", "Y98",
+          "Z21", "Z33"
       }));
+      // for 2016 removed: I48, W26, and R95
 
       // Report to log
       Logger.getLogger(getClass()).info("  asterisk codes = " + asteriskCodes);
