@@ -291,6 +291,31 @@
       </build>
     </profile>
 
+    <!-- Update map records from RF2 -Drun.config=.. must also be specified. -->
+    <profile>
+      <id>UpdateMapRecords</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>update-map-records</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>update-map-records</goal>
+                </goals>
+                <configuration>
+                  <refsetId>${refset.id}</refsetId>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
     <!-- Load published map records from RF2 -Drun.config=.. must also be specified. -->
     <profile>
       <id>LegacyMapRecords</id>
