@@ -70,7 +70,7 @@ public class MapRecordUpdaterMojo extends AbstractMojo {
       mappingService.beginTransaction();
       final Set<MapProject> mapProjects = new HashSet<>();
 
-      getLog().info("Start removing map records for refsetId - " + refsetId);
+      getLog().info("Start updating map records for refsetId - " + refsetId);
       for (final MapProject mapProject : mappingService.getMapProjects()
           .getIterable()) {
         for (final String id : refsetId.split(",")) {
