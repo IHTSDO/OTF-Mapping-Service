@@ -291,10 +291,13 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
         + " OR userAndWorkflowStatusPairs:QA_IN_PROGRESS_*"
         + " OR userAndWorkflowStatusPairs:QA_RESOLVED_*" + ")");
 
+    // OTHERWISE, handle case where query is set
     // QA label searching requires retrieving all results
     PfsParameter pfsLocal = new PfsParameterJpa(pfsParameter);
-    pfsLocal.setMaxResults(-1);
-    pfsLocal.setStartIndex(-1);
+    if (query != null && !query.isEmpty() && !query.equals("null")) {
+      pfsLocal.setMaxResults(-1);
+      pfsLocal.setStartIndex(-1);
+    }
 
     int[] totalCt = new int[1];
     final List<TrackingRecord> results =
@@ -304,11 +307,12 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
     availableWork.setTotalCount(totalCt[0]);
 
     for (final TrackingRecord tr : results) {
+
       final SearchResult result = new SearchResultJpa();
       final Set<MapRecord> mapRecords =
           workflowService.getMapRecordsForTrackingRecord(tr);
 
-      StringBuffer labelBuffer = new StringBuffer();
+      final StringBuffer labelBuffer = new StringBuffer();
       boolean hasLabel = false;
       for (final MapRecord mr : mapRecords) {
 
@@ -337,9 +341,14 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
       }
     }
 
-    // construct local list for manual paging
-    List<SearchResultJpa> tempResults = new ArrayList<>();
-    for (SearchResult sr : availableWork.getSearchResults()) {
+    if (query == null || query.isEmpty() || query.equals("null")) {
+      return availableWork;
+    }
+
+    // otherwise construct local list for manual paging
+    List<SearchResultJpa> tempResults =
+        new ArrayList<>(availableWork.getCount() + 10);
+    for (final SearchResult sr : availableWork.getSearchResults()) {
       tempResults.add((SearchResultJpa) sr);
     }
 
@@ -352,7 +361,8 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
             totalCt, pfsLocal);
 
     // reconstruct the assignedWork search result list
-    availableWork.setSearchResults(new ArrayList<SearchResult>());
+    availableWork.setSearchResults(new ArrayList<SearchResult>(tempResults
+        .size() + 10));
     for (SearchResult sr : tempResults) {
       availableWork.addSearchResult(sr);
     }
