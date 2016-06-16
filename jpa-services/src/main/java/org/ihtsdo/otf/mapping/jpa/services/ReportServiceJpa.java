@@ -6,10 +6,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.persistence.NoResultException;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.LocalException;
@@ -29,7 +30,6 @@ import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
-import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.reports.Report;
 import org.ihtsdo.otf.mapping.reports.ReportDefinition;
@@ -1321,21 +1321,22 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
   /* see superclass */
   @Override
   public SearchResultList getQALabels(Long mapProjectId) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Reoprt Service - get QA Labels - " + mapProjectId);
 
-    final MappingService service = new MappingServiceJpa();
+    // Look up distinct label values used by QA records.
+    final javax.persistence.Query query =
+        manager
+            .createQuery("select distinct l from MapRecordJpa m JOIN m.labels l "
+                + "WHERE m.mapProjectId = :mapProjectId "
+                + "AND m.workflowStatus = 'QA_NEEDED'");
+    // TODO: may need to remove where not al
     try {
-
-      final SearchResultList list =
-          service.findMapRecordsForQuery("mapProjectId:" + mapProjectId
-              + " AND (workflowStatus:QA_NEEDED OR workflowStatus:QA_NEW OR workflowStatus:QA_IN_PROGRESS OR workflowStatus:QA_RESOLVED)", null);
-      final Set<String> labels = new HashSet<>();
-      for (final SearchResult result : list.getSearchResults()) {
-        final MapRecord record = service.getMapRecord(result.getId());
-        for (final String label : record.getLabels()) {
-          labels.add(label);
-        }
-      }
-
+      query.setParameter("mapProjectId", mapProjectId);
+      @SuppressWarnings("unchecked")
+      final List<String> labels = query.getResultList();
+      // Sort the labels
+      Collections.sort(labels);
       final SearchResultList results = new SearchResultListJpa();
       for (final String label : labels) {
         final SearchResult result = new SearchResultJpa();
@@ -1344,10 +1345,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
       }
 
       return results;
-    } catch (Exception e) {
-      throw e;
-    } finally {
-      service.close();
+    } catch (NoResultException e) {
+      return new SearchResultListJpa();
     }
 
   }

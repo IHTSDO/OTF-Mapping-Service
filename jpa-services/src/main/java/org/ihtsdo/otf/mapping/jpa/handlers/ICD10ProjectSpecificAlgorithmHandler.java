@@ -1621,8 +1621,6 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
    */
   @SuppressWarnings("unused")
   private boolean hasUseAdditional(Concept concept) throws Exception {
-    System.out.println("has use additional" + concept.getTerminologyId() + ", "
-        + concept);
     for (final Description desc : concept.getDescriptions()) {
       if (desc.getTerm().matches("Use additional code.*infectious agent.*")) {
         return true;
@@ -1631,14 +1629,11 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         return true;
       }
     }
-    System.out.println(" no code itself");
 
     final List<Concept> parents = TerminologyUtility.getActiveParents(concept);
-    System.out.println("  parents = " + parents);
     for (final Concept parent : parents) {
       return hasUseAdditional(parent);
     }
-    System.out.println("  return false");
 
     return false;
   }

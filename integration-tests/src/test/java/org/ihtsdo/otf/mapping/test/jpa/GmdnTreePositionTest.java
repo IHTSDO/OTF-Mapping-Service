@@ -103,13 +103,9 @@ public class GmdnTreePositionTest {
     relTypes =
         metadataService.getRelationshipTypes(terminology, terminologyVersion);
 
-    System.out.println("COUNT before limit="
-        + countTp(treePositions.getTreePositions()));
     // Limit tree positions
     treePositions.setTreePositions(handler.limitTreePositions(treePositions
         .getTreePositions()));
-    System.out.println("COUNT after limit="
-        + countTp(treePositions.getTreePositions()));
 
     contentService.computeTreePositionInformation(treePositions, descTypes,
         relTypes);
