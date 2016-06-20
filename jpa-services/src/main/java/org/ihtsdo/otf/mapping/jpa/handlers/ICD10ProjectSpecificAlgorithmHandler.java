@@ -414,6 +414,29 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           }
         }
 
+        // PREDICATE: Code K52.1 must have either an
+        // external cause code or advice POSSIBLE
+        // REQUIREMENT FOR EXTERNAL CAUSE CODE.
+        //
+        if (primaryCode != null && primaryCode.equals("K52.1")) {
+
+          boolean hasAdvice =
+              TerminologyUtility.hasAdvice(mapRecord.getMapEntries().get(0),
+                  "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE");
+          boolean hasExternalCauseCode = false;
+          for (final MapEntry entry : mapRecord.getMapEntries()) {
+            if (entry.getTargetId().matches("^[VWXY].*")) {
+              hasExternalCauseCode = true;
+              break;
+            }
+          }
+          if (!hasExternalCauseCode && !hasAdvice) {
+            result.addError("Code K52.13 must have either an "
+                + "external cause code or "
+                + "advice \"POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE\"");
+          }
+        }
+
         //
         // PREDICATE: SNOMED CT concept to map is a poisoning concept
         // (descendant of “Poisoning” 75478009 or "Adverse reaction to drug"
@@ -786,10 +809,12 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       //
       // PREDICATE: W00-Y34 except X34,X59,Y06,Y07,Y35,Y36 without
       // "POSSIBLE REQUIREMENT FOR PLACE OF OCCURRENCE" advice
+      // W26 added to this list also.
       // ACTION: add the advice
       //
       final String adviceP03 = "POSSIBLE REQUIREMENT FOR PLACE OF OCCURRENCE";
       if (mapEntry.getTargetId().matches("(W..|X..|Y[0-2].|Y3[0-4]).*")
+          && !mapEntry.getTargetId().startsWith("W26")
           && !mapEntry.getTargetId().startsWith("Y06")
           && !mapEntry.getTargetId().startsWith("Y07")
           && !mapEntry.getTargetId().startsWith("Y35")
@@ -900,6 +925,41 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       //
       if ((mapEntry.getTargetId().startsWith("S") || mapEntry.getTargetId()
           .startsWith("T"))) {
+        if (mapRecord.getMapEntries().size() == 1
+            && !hasExternalCauseCodeAdvice) {
+          advices.add(TerminologyUtility.getAdvice(mapProject,
+              externalCauseCodeAdvice));
+          hasExternalCauseCodeAdvice = true;
+        } else {
+          boolean found = false;
+          for (int i = 1; i < mapRecord.getMapEntries().size(); i++) {
+            // If external cause code found, set flag
+            if (mapRecord.getMapEntries().get(i).getTargetId() != null
+                && mapRecord.getMapEntries().get(i).getTargetId()
+                    .matches("^[VWXY].*")) {
+              found = true;
+              break;
+            }
+          }
+          if (!found && !hasExternalCauseCodeAdvice) {
+            advices.add(TerminologyUtility.getAdvice(mapProject,
+                externalCauseCodeAdvice));
+            hasExternalCauseCodeAdvice = true;
+          } else if (found && hasExternalCauseCodeAdvice) {
+            advices.remove(TerminologyUtility.getAdvice(mapProject,
+                externalCauseCodeAdvice));
+            hasExternalCauseCodeAdvice = false;
+          }
+        }
+      }
+
+      //
+      // PREDICATE: K52.1 code without advice
+      // "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE"
+      // and without secondary external cause code
+      // ACTION: add the advice
+      //
+      if (mapEntry.getTargetId().equals("K52.1")) {
         if (mapRecord.getMapEntries().size() == 1
             && !hasExternalCauseCodeAdvice) {
           advices.add(TerminologyUtility.getAdvice(mapProject,
@@ -1052,6 +1112,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         // required,
         // return true for codes with 3 or more digits
         if (terminologyId.toUpperCase().matches("W..|X..|Y[0-2].|Y3[0-4]")
+            && !terminologyId.toUpperCase().startsWith("W26")
             && !terminologyId.toUpperCase().startsWith("Y06")
             && !terminologyId.toUpperCase().startsWith("Y07")
             && !terminologyId.toUpperCase().startsWith("Y35")
@@ -1079,6 +1140,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         // required,
         // return true for codes with 3 or more digits
         if (terminologyId.toUpperCase().matches("(W..|X..|Y[0-2].|Y3[0-4])..")
+            && !terminologyId.toUpperCase().startsWith("W26")
             && !terminologyId.toUpperCase().startsWith("Y06")
             && !terminologyId.toUpperCase().startsWith("Y07")
             && !terminologyId.toUpperCase().startsWith("Y35")
@@ -1750,7 +1812,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           "U88", "V98", "V99", "Y66", "Y69", "Y86", "Y95", "Y96", "Y97", "Y98",
           "Z21", "Z33"
       }));
-      // for 2016 removed: I48, W26, and R95
+      // for 2016 removed: I48 R95
 
       // Report to log
       Logger.getLogger(getClass()).info("  asterisk codes = " + asteriskCodes);
