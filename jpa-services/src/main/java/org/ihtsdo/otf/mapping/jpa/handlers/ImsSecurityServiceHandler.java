@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.model.MapUser;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.ihtsdo.otf.mapping.services.helpers.SecurityServiceHandler;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -28,6 +29,19 @@ public class ImsSecurityServiceHandler implements SecurityServiceHandler {
   @Override
   public MapUser authenticate(String userName, String password)
     throws Exception {
+
+    // handle guest user
+    if (userName.equals("guest")
+        && "false".equals(ConfigUtility.getConfigProperties().getProperty(
+            "security.guest.disabled"))) {
+      final MapUser user = new MapUserJpa();
+      user.setName("Guest");
+      user.setApplicationRole(MapUserRole.VIEWER);
+      user.setEmail("test@example.com");
+      user.setUserName("guest");
+      return user;
+    }
+
     // password contains the IMS user document
 
     ObjectMapper mapper = new ObjectMapper();
