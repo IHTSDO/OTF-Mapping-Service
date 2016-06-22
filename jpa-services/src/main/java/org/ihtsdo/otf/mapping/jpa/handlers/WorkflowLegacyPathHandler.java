@@ -408,9 +408,9 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
     MapUser mapUser, MapUserRole userRole, String query,
     PfsParameter pfsParameter, WorkflowService workflowService)
     throws Exception {
-    Logger.getLogger(this.getClass())
-        .debug(getName() + ": findAvailableWork for project "
-            + mapProject.getName() + " and user " + mapUser.getUserName());
+    Logger.getLogger(this.getClass()).debug(
+        getName() + ": findAvailableWork for project " + mapProject.getName()
+            + " and user " + mapUser.getUserName());
 
     final SearchResultList availableWork = new SearchResultListJpa();
 
@@ -490,9 +490,9 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
     PfsParameter pfsParameter, WorkflowService workflowService)
     throws Exception {
 
-    Logger.getLogger(this.getClass())
-        .debug(getName() + ": findAssignedWork for project "
-            + mapProject.getName() + " and user " + mapUser.getUserName());
+    Logger.getLogger(this.getClass()).debug(
+        getName() + ": findAssignedWork for project " + mapProject.getName()
+            + " and user " + mapUser.getUserName());
 
     // instantiate the assigned work search results
     SearchResultList assignedWork = new SearchResultListJpa();
@@ -695,8 +695,8 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
     WorkflowAction workflowAction, MapProject mapProject, MapUser mapUser,
     Set<MapRecord> mapRecords, MapRecord mapRecord) throws Exception {
 
-    Logger.getLogger(this.getClass())
-        .debug(getName() + ": Processing workflow action by " + mapUser.getName()
+    Logger.getLogger(this.getClass()).debug(
+        getName() + ": Processing workflow action by " + mapUser.getName()
             + ":  " + workflowAction.toString());
 
     // the set of records returned after processing
@@ -813,14 +813,18 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
                   handler.compareMapRecords(mapRecord, legacyRecord);
 
               if (validationResult.isValid()) {
-                Logger.getLogger(getClass()).debug(
+                Logger
+                    .getLogger(getClass())
+                    .debug(
                         "LEGACY_PATH - No conflicts detected between specialist's work and legacy record, marking ready for publication.");
 
                 newRecords.remove(legacyRecord);
                 mapRecord
                     .setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
               } else {
-                Logger.getLogger(getClass()).debug(
+                Logger
+                    .getLogger(getClass())
+                    .debug(
                         "LEGACY_PATH - Conflicts detected between specialist's work and legacy record, marking ready for publication.");
                 mapRecord.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
               }
@@ -831,7 +835,9 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
                   handler.compareMapRecords(userRecord, secondSpecialistRecord);
 
               if (validationResult.isValid()) {
-                Logger.getLogger(getClass()).debug(
+                Logger
+                    .getLogger(getClass())
+                    .debug(
                         "LEGACY_PATH - No conflicts detected between two specialist's work, marking ready for publication.");
 
                 newRecords.remove(legacyRecord);
@@ -913,7 +919,8 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
   @Override
   public boolean isMapRecordInWorkflow(MapRecord mapRecord) {
     return !mapRecord.getWorkflowStatus().equals(
-        WorkflowStatus.READY_FOR_PUBLICATION) && !mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED);
+        WorkflowStatus.READY_FOR_PUBLICATION)
+        && !mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED);
   }
 
   @Override
