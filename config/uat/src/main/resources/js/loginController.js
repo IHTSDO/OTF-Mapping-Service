@@ -368,7 +368,7 @@ mapProjectAppControllers
         // Error
         function(response) {
           console.debug("ERROR - response = ", response);
-          $rootScope.globalError = response;
+          // $rootScope.globalError = response;
           // Show login buttons
           $scope.pending = false;
           $rootScope.glassPane--;
