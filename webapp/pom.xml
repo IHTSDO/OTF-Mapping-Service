@@ -124,8 +124,20 @@
           <webResources>
             <resource>
               <directory>${project.build.directory}/config/resources</directory>
-              <!-- avoid unnecessary stuff -->
+              <filtering>true</filtering>
+              <!-- include files to filter -->
+              <includes>
+                <include>js/partials/login.html</include>
+                <include>js/loginController.js</include>
+              </includes>
+            </resource>
+            <resource>
+              <directory>${project.build.directory}/config/resources</directory>
+              <!-- avoid unnecessary stuff and filtered files -->
+              <filtering>false</filtering>
               <excludes>
+                <include>js/partials/login.html</include>
+                <include>js/loginController.js</include>
                 <exclude>bin/**</exclude>
                 <exclude>config*.properties</exclude>
               </excludes>
