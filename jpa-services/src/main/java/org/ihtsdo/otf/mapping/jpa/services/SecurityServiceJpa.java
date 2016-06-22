@@ -1,37 +1,28 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.UUID;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response.Status.Family;
+import javax.persistence.NoResultException;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.MapUserList;
+import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
+import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
+import org.ihtsdo.otf.mapping.jpa.MapUserPreferencesJpa;
 import org.ihtsdo.otf.mapping.model.MapUser;
+import org.ihtsdo.otf.mapping.model.MapUserPreferences;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.representation.Form;
+import org.ihtsdo.otf.mapping.services.helpers.SecurityServiceHandler;
 
 /**
  * Reference implementation of the {@link SecurityService}.
@@ -39,16 +30,19 @@ import com.sun.jersey.api.representation.Form;
 public class SecurityServiceJpa extends RootServiceJpa implements
     SecurityService {
 
-  /** The token username map. */
-  private static Map<String, String> tokenUsernameMap = Collections
+  /** The token userName . */
+  private static Map<String, String> tokenMapUsernameMap = Collections
       .synchronizedMap(new HashMap<String, String>());
 
-  /** The token login time map. */
-  private static Map<String, Date> tokenLoginMap = Collections
+  /** The token login time . */
+  private static Map<String, Date> tokenTimeoutMap = Collections
       .synchronizedMap(new HashMap<String, Date>());
 
-  /** The config. */
-  private static Properties config = null;
+  /** The handler. */
+  private static SecurityServiceHandler handler = null;
+
+  /** The timeout. */
+  private static int timeout;
 
   /**
    * Instantiates an empty {@link SecurityServiceJpa}.
@@ -61,366 +55,440 @@ public class SecurityServiceJpa extends RootServiceJpa implements
 
   /* see superclass */
   @Override
-  public String authenticate(String username, String password) throws Exception {
-    if (username == null)
-      throw new LocalException("Invalid username: null");
-    if (password == null)
+  public MapUser authenticate(String userName, String password)
+    throws Exception {
+    // Check userName and password are not null
+    if (userName == null || userName.isEmpty())
+      throw new LocalException("Invalid userName: null");
+    if (password == null || password.isEmpty())
       throw new LocalException("Invalid password: null");
 
-    // read ihtsdo security url and active status from config file
-    if (config == null) {
-      config = ConfigUtility.getConfigProperties();
+    Properties config = ConfigUtility.getConfigProperties();
+
+    if (handler == null) {
+      timeout = Integer.valueOf(config.getProperty("security.timeout"));
+      String handlerName = config.getProperty("security.handler");
+      handler =
+          ConfigUtility.newStandardHandlerInstanceWithConfiguration(
+              "security.handler", handlerName, SecurityServiceHandler.class);
     }
 
-    // Handle guest user
-    boolean ihtsdoSecurityActivated =
-        !config.getProperty("ihtsdo.security.activated").equals("false");
-
-    // if ihtsdo security is off, use username as token
-    if (!ihtsdoSecurityActivated || username.equals("guest")) {
-      tokenUsernameMap.put(username, username);
-      tokenLoginMap.put(username, new Date());
-      MappingService mappingService = new MappingServiceJpa();
-      try {
-        mappingService.getMapUser(username);
-      } catch (Exception e) {
-        mappingService.close();
-        throw new LocalException("Unable to find map user for username", "401");
-      }
-      mappingService.close();
-      return username;
-    }
-
-    // Use ihtsdo.security.activated as a switch
-    // - false or true = ihtsdo
-    // uts = uts
-    if (config.getProperty("ihtsdo.security.activated") != null
-        && config.getProperty("ihtsdo.security.activated").equals("uts")) {
-      return utsAuthenticate(username, password);
-    } else {
-      return ihtsdoAuthenticate(username, password);
-    }
+    //
+    // Call the security service
+    //
+    MapUser authMapUser = handler.authenticate(userName, password);
+    return authHelper(authMapUser);
   }
 
   /**
-   * IHTSDO authenticate.
+   * Auth helper.
    *
-   * @param username the username
-   * @param password the password
-   * @return the string
+   * @param authMapUser the auth user
+   * @return the user
    * @throws Exception the exception
    */
-  @SuppressWarnings("unchecked")
-  private String ihtsdoAuthenticate(String username, String password)
-    throws Exception {
+  private MapUser authHelper(MapUser authMapUser) throws Exception {
+    if (authMapUser == null)
+      return null;
 
-    String ihtsdoSecurityUrl = config.getProperty("ihtsdo.security.url");
+    // check if authenticated user exists
+    MapUser userFound = getMapUser(authMapUser.getUserName());
 
-    // set up request to be posted to ihtsdo security service
-    Form form = new Form();
-    form.add("username", username);
-    form.add("password", password);
-    form.add("queryName", "getUserByNameAuth");
-
-    Client client = Client.create();
-    WebResource resource = client.resource(ihtsdoSecurityUrl);
-
-    resource.type(MediaType.APPLICATION_FORM_URLENCODED_TYPE);
-
-    ClientResponse response = resource.post(ClientResponse.class, form);
-
-    String resultString = "";
-    if (response.getClientResponseStatus().getFamily() == Family.SUCCESSFUL) {
-      resultString = response.getEntity(String.class);
-    } else {
-      // TODO Differentiate error messages with NO RESPONSE and
-      // Authentication Failed (Check text)
-      Logger.getLogger(this.getClass()).info("ERROR! " + response.getStatus());
-      resultString = response.getEntity(String.class);
-      Logger.getLogger(this.getClass()).info(resultString);
-      throw new LocalException("Incorrect user name or password.");
-    }
-
-    /*
-     * Synchronize the information sent back from ITHSDO with the MapUser
-     * object. Add a new map user if there isn't one matching the username If
-     * there is, load and update that map user and save the changes
-     */
-    String ihtsdoUserName = "";
-    String ihtsdoEmail = "";
-    String ihtsdoGivenName = "";
-    String ihtsdoSurname = "";
-
-    // converting json to Map
-    byte[] mapData = resultString.getBytes();
-    Map<String, HashMap<String, String>> jsonMap = new HashMap<>();
-
-    // parse username from json object
-    ObjectMapper objectMapper = new ObjectMapper();
-    jsonMap = objectMapper.readValue(mapData, HashMap.class);
-    for (Entry<String, HashMap<String, String>> entrySet : jsonMap.entrySet()) {
-      if (entrySet.getKey().equals("user")) {
-        HashMap<String, String> innerMap = entrySet.getValue();
-        for (Entry<String, String> innerEntrySet : innerMap.entrySet()) {
-          if (innerEntrySet.getKey().equals("name")) {
-            ihtsdoUserName = innerEntrySet.getValue();
-          } else if (innerEntrySet.getKey().equals("email")) {
-            ihtsdoEmail = innerEntrySet.getValue();
-          } else if (innerEntrySet.getKey().equals("givenName")) {
-            ihtsdoGivenName = innerEntrySet.getValue();
-          } else if (innerEntrySet.getKey().equals("surname")) {
-            ihtsdoSurname = innerEntrySet.getValue();
-          }
-        }
-      }
-    }
-    // check if ihtsdo user matches one of our MapUsers
-    MappingService mappingService = new MappingServiceJpa();
-    MapUserList userList = mappingService.getMapUsers();
-    MapUser userFound = null;
-    for (MapUser user : userList.getMapUsers()) {
-      if (user.getUserName().equals(ihtsdoUserName)) {
-        userFound = user;
-        break;
-      }
-    }
-    // if MapUser was found, update to match ihtsdo settings
+    // if user was found, update to match settings
+    Long userId = null;
     if (userFound != null) {
-      userFound.setEmail(ihtsdoEmail);
-      userFound.setName(ihtsdoGivenName + " " + ihtsdoSurname);
-      userFound.setUserName(ihtsdoUserName);
-      mappingService.updateMapUser(userFound);
-      // if MapUser not found, create one for our use
-    } else {
-      MapUser newMapUser = new MapUserJpa();
-      newMapUser.setName(ihtsdoGivenName + " " + ihtsdoSurname);
-      newMapUser.setUserName(ihtsdoUserName);
-      newMapUser.setEmail(ihtsdoEmail);
-      newMapUser.setApplicationRole(MapUserRole.VIEWER);
-      mappingService.addMapUser(newMapUser);
+      handleLazyInit(userFound);
+
+      Logger.getLogger(getClass()).info("update");
+      userFound.setEmail(authMapUser.getEmail());
+      userFound.setName(authMapUser.getName());
+      userFound.setUserName(authMapUser.getUserName());
+      userFound.setApplicationRole(authMapUser.getApplicationRole());
+
+      updateMapUser(userFound);
+      // if (userFound.getUserPreferences() == null) {
+      // MapUserPreferences newMapUserPreferences = new MapUserPreferencesJpa();
+      // newMapUserPreferences.setUser(userFound);
+      // addMapUserPreferences(newMapUserPreferences);
+      // }
+      userId = userFound.getId();
     }
-    mappingService.close();
+    // if MapUser not found, create one for our use
+    else {
+      Logger.getLogger(getClass()).info("add");
+      MapUser newMapUser = new MapUserJpa();
+      newMapUser.setEmail(authMapUser.getEmail());
+      newMapUser.setName(authMapUser.getName());
+      newMapUser.setUserName(authMapUser.getUserName());
+      newMapUser.setApplicationRole(authMapUser.getApplicationRole());
+      newMapUser = addMapUser(newMapUser);
+
+      MapUserPreferences newMapUserPreferences = new MapUserPreferencesJpa();
+      newMapUserPreferences.setMapUser(newMapUser);
+      newMapUserPreferences.setLastLogin(new Date().getTime());
+      newMapUserPreferences.setLastMapProjectId(0L);
+      newMapUserPreferences.setNotifiedByEmail(false);
+      addMapUserPreferences(newMapUserPreferences);
+      userId = newMapUser.getId();
+    }
+    manager.clear();
 
     // Generate application-managed token
-    String token = UUID.randomUUID().toString();
-    tokenUsernameMap.put(token, ihtsdoUserName);
-    tokenLoginMap.put(token, new Date());
+    String token = handler.computeTokenForUser(authMapUser.getUserName());
+    tokenMapUsernameMap.put(token, authMapUser.getUserName());
+    tokenTimeoutMap.put(token, new Date(new Date().getTime() + timeout));
 
-    Logger.getLogger(this.getClass()).info("User = " + resultString);
+    Logger.getLogger(getClass()).debug(
+        "MapUser = " + authMapUser.getUserName() + ", " + authMapUser);
 
-    return token;
-  }
+    // Reload the user to populate MapUserPreferences
+    final MapUser result = getMapUser(userId);
+    handleLazyInit(result);
+    result.setAuthToken(token);
 
-  /**
-   * UTS authenticate.
-   *
-   * @param username the username
-   * @param password the password
-   * @return the string
-   * @throws Exception the exception
-   */
-  @SuppressWarnings("unused")
-  private String utsAuthenticate(String username, String password)
-    throws Exception {
-    final String utsSecurityUrl = config.getProperty("ihtsdo.security.url");
-    final String licenseCode =
-        config.getProperty("ihtsdo.security.license.code");
-    if (licenseCode == null) {
-      throw new Exception("License code must be specified.");
-    }
-    if (licenseCode == null) {
-      throw new Exception("Security URL must be specified.");
-    }
-
-    String data =
-        URLEncoder.encode("licenseCode", "UTF-8") + "="
-            + URLEncoder.encode(licenseCode, "UTF-8");
-    data +=
-        "&" + URLEncoder.encode("user", "UTF-8") + "="
-            + URLEncoder.encode(username, "UTF-8");
-    data +=
-        "&" + URLEncoder.encode("password", "UTF-8") + "="
-            + URLEncoder.encode(password, "UTF-8");
-
-    Logger.getLogger(getClass()).debug(data);
-    URL url = new URL(utsSecurityUrl);
-    URLConnection conn = url.openConnection();
-    conn.setDoOutput(true);
-    OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
-    wr.write(data);
-    wr.flush();
-
-    BufferedReader rd =
-        new BufferedReader(new InputStreamReader(conn.getInputStream()));
-    String line;
-    boolean authenticated = false;
-    while ((line = rd.readLine()) != null) {
-      Logger.getLogger(getClass()).debug(line);
-      if (line.toLowerCase().contains("true")) {
-        authenticated = true;
-      }
-    }
-    wr.close();
-    rd.close();
-
-    if (!authenticated) {
-      throw new LocalException("Incorrect user name or password.");
-    }
-
-    /*
-     * Synchronize the information sent back from ITHSDO with the MapUser
-     * object. Add a new map user if there isn't one matching the username If
-     * there is, load and update that map user and save the changes
-     */
-    String userName = username;
-    String email = "test@example.com";
-    String givenName = "UTS User - " + username;
-    String surname = "";
-
-    // check if ihtsdo user matches one of our MapUsers
-    MappingService mappingService = new MappingServiceJpa();
-    MapUserList userList = mappingService.getMapUsers();
-    MapUser userFound = null;
-    for (MapUser user : userList.getMapUsers()) {
-      if (user.getUserName().equals(userName)) {
-        userFound = user;
-        break;
-      }
-    }
-    // if MapUser not found, add it (as a viewer)
-    if (userFound == null) {
-      MapUser newMapUser = new MapUserJpa();
-      newMapUser.setName(givenName + " " + surname);
-      newMapUser.setUserName(userName);
-      newMapUser.setEmail(email);
-      newMapUser.setApplicationRole(MapUserRole.VIEWER);
-      mappingService.addMapUser(newMapUser);
-    }
-    mappingService.close();
-
-    // Generate application-managed token
-    String token = UUID.randomUUID().toString();
-    tokenUsernameMap.put(token, userName);
-    tokenLoginMap.put(token, new Date());
-
-    Logger.getLogger(this.getClass()).info("User = " + username);
-
-    return token;
+    return result;
   }
 
   /* see superclass */
   @Override
-  public void logout(String userName) throws Exception {
-
-    if (userName == null || userName.isEmpty())
-      throw new LocalException("No user specified for logout", "401");
-
-    // remove this user name from the security service maps
-    tokenUsernameMap.remove(userName);
-    tokenLoginMap.remove(userName);
-
+  public void logout(String authToken) throws Exception {
+    tokenMapUsernameMap.remove(authToken);
+    tokenTimeoutMap.remove(authToken);
   }
 
   /* see superclass */
-  @SuppressWarnings("unused")
   @Override
   public String getUsernameForToken(String authToken) throws Exception {
-
-    // if this authToken consists only of the string "false", then most likely
-    // browser security settings are not properly configured
-    if (authToken.equals("false")) {
+    // use guest user for null auth token
+    if (authToken == null)
       throw new LocalException(
-          "Could not authenticate requests.  This is most likely to the Tool not being able to access your local cache.  Check that cookies are enabled in your browser and try again.");
-    }
+          "Attempt to access a service without an AuthToken, the user is likely not logged in.");
 
-    // bypass steps below and don't login
-    if (authToken.equals("guest"))
+    // handle guest user unless
+    if (authToken.equals("guest")
+        && "false".equals(ConfigUtility.getConfigProperties().getProperty(
+            "security.guest.disabled"))) {
       return "guest";
-
-    // read ihtsdo security url and active status from config file
-    if (config == null) {
-      config = ConfigUtility.getConfigProperties();
     }
 
-    if (authToken == null)
-      throw new LocalException("You must be logged in to view that page.",
-          "401");
-    String parsedToken = authToken.replace("\"", "");
+    // Replace double quotes in auth token.
+    final String parsedToken = authToken.replace("\"", "");
 
-    // see if this user has previously been logged in
-    if (tokenUsernameMap.containsKey(parsedToken)) {
+    // Check auth token against the userName map
+    if (tokenMapUsernameMap.containsKey(parsedToken)) {
+      String userName = tokenMapUsernameMap.get(parsedToken);
 
-      // get user name
-      String username = tokenUsernameMap.get(parsedToken);
+      // Validate that the user has not timed out.
+      if (handler.timeoutUser(userName)) {
 
-      // get last activity
-      Date lastActivity = tokenLoginMap.get(parsedToken);
-
-      String timeout = config.getProperty("ihtsdo.security.timeout");
-
-      // if the timeout parameter has been set
-      if (timeout != null && !timeout.isEmpty()) {
-
-        // check timeout against current time minus time of last activity
-        if ((new Date()).getTime() - lastActivity.getTime() > Long
-            .valueOf(timeout)) {
-
-          Logger.getLogger(SecurityServiceJpa.class).info(
-              "Timeout expired for user " + username + ".  Last login at "
-                  + lastActivity.toString() + " ("
-                  + (new Date().getTime() - lastActivity.getTime())
-                  + " ms difference)");
-
-          throw new LocalException(
-              "Your session has expired.  Please log in again.", "401");
+        if (tokenTimeoutMap.get(parsedToken) == null) {
+          throw new LocalException("No login timeout set for authToken.");
         }
+
+        if (tokenTimeoutMap.get(parsedToken).before(new Date())) {
+          throw new LocalException(
+              "AuthToken has expired. Please reload and log in again.");
+        }
+        tokenTimeoutMap.put(parsedToken, new Date(new Date().getTime()
+            + timeout));
       }
-
-      tokenLoginMap.put(parsedToken, new Date());
-      return username;
-
-      // throw exception, this user has attempted to view a page without
-      // being logged in
-    } else
-      throw new LocalException("You must be logged in to view that page.",
-          "401");
-  }
-
-  /* see superclass */
-  @Override
-  public MapUserRole getMapProjectRoleForToken(String authToken,
-    Long mapProjectId) throws Exception {
-    if (authToken == null)
-      throw new LocalException("You must be logged in to view that page.",
-          "401");
-    if (mapProjectId == null)
-      throw new Exception("Unexpected null map project id");
-
-    String parsedToken = authToken.replace("\"", "");
-
-    String username = getUsernameForToken(parsedToken);
-    MappingService mappingService = new MappingServiceJpa();
-    MapUserRole result =
-        mappingService.getMapUserRoleForMapProject(username, mapProjectId);
-    mappingService.close();
-    return result;
+      return userName;
+    } else {
+      throw new LocalException("AuthToken does not have a valid userName.");
+    }
   }
 
   /* see superclass */
   @Override
   public MapUserRole getApplicationRoleForToken(String authToken)
     throws Exception {
+    if (authToken == null) {
+      throw new LocalException(
+          "Attempt to access a service without an AuthToken, the user is likely not logged in.");
+    }
+    // Handle "guest" user
+    if (authToken.equals("guest")
+        && "false".equals(ConfigUtility.getConfigProperties().getProperty(
+            "security.guest.disabled"))) {
+      return MapUserRole.VIEWER;
+    }
 
-    if (authToken == null)
-      throw new LocalException("You must be logged in to view that page.",
-          "401");
-    String parsedToken = authToken.replace("\"", "");
+    final String parsedToken = authToken.replace("\"", "");
+    final String userName = getUsernameForToken(parsedToken);
 
-    String username = getUsernameForToken(parsedToken);
-    MappingService mappingService = new MappingServiceJpa();
-    MapUser user = mappingService.getMapUser(username.toLowerCase());
-    mappingService.close();
-
+    // check for null userName
+    if (userName == null) {
+      throw new LocalException("Unable to find user for the AuthToken");
+    }
+    final MapUser user = getMapUser(userName.toLowerCase());
+    if (user == null) {
+      return MapUserRole.VIEWER;
+      // throw new
+      // LocalException("Unable to obtain user information for userName = " +
+      // userName);
+    }
     return user.getApplicationRole();
+  }
+
+  /* see superclass */
+  @Override
+  public MapUserRole getMapProjectRoleForToken(String authToken, Long projectId)
+    throws Exception {
+    if (authToken == null) {
+      throw new LocalException(
+          "Attempt to access a service without an AuthToken, the user is likely not logged in.");
+    }
+    if (projectId == null) {
+      throw new Exception("Unexpected null project id");
+    }
+
+    final String userName = getUsernameForToken(authToken);
+    final MappingService service = new MappingServiceJpa();
+    try {
+      for (final MapUser user : service.getMapProject(projectId).getMapLeads()) {
+        if (user.getUserName().equals(userName)) {
+          return MapUserRole.LEAD;
+        }
+      }
+      for (final MapUser user : service.getMapProject(projectId)
+          .getMapSpecialists()) {
+        if (user.getUserName().equals(userName)) {
+          return MapUserRole.SPECIALIST;
+        }
+      }
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      service.close();
+    }
+    return MapUserRole.VIEWER;
+  }
+
+  /* see superclass */
+  @Override
+  public MapUser getMapUser(Long id) throws Exception {
+    return manager.find(MapUserJpa.class, id);
+  }
+
+  /* see superclass */
+  @Override
+  public MapUser getMapUser(String userName) throws Exception {
+    final javax.persistence.Query query =
+        manager
+            .createQuery("select u from MapUserJpa u where userName = :userName");
+    query.setParameter("userName", userName);
+    try {
+      final List<?> list = query.getResultList();
+      if (list.isEmpty()) {
+        return null;
+      }
+      return (MapUser) list.iterator().next();
+    } catch (NoResultException e) {
+      return null;
+    }
+  }
+
+  /* see superclass */
+  @Override
+  public MapUser addMapUser(MapUser user) {
+    Logger.getLogger(getClass()).debug("Security Service - add user " + user);
+    try {
+      if (getTransactionPerOperation()) {
+        tx = manager.getTransaction();
+        tx.begin();
+        manager.persist(user);
+        tx.commit();
+      } else {
+        manager.persist(user);
+      }
+    } catch (Exception e) {
+      if (tx.isActive()) {
+        tx.rollback();
+      }
+      throw e;
+    }
+
+    return user;
+  }
+
+  /* see superclass */
+  @Override
+  public void removeMapUser(Long id) {
+    Logger.getLogger(getClass()).debug("Security Service - remove user " + id);
+    tx = manager.getTransaction();
+    // retrieve this user
+    final MapUser mu = manager.find(MapUserJpa.class, id);
+    try {
+      if (getTransactionPerOperation()) {
+        tx.begin();
+        if (manager.contains(mu)) {
+          manager.remove(mu);
+        } else {
+          manager.remove(manager.merge(mu));
+        }
+        tx.commit();
+
+      } else {
+        if (manager.contains(mu)) {
+          manager.remove(mu);
+        } else {
+          manager.remove(manager.merge(mu));
+        }
+      }
+    } catch (Exception e) {
+      if (tx.isActive()) {
+        tx.rollback();
+      }
+      throw e;
+    }
+
+  }
+
+  /* see superclass */
+  @Override
+  public void updateMapUser(MapUser user) {
+    Logger.getLogger(getClass())
+        .debug("Security Service - update user " + user);
+    try {
+      if (getTransactionPerOperation()) {
+        tx = manager.getTransaction();
+        tx.begin();
+        manager.merge(user);
+        tx.commit();
+      } else {
+        manager.merge(user);
+      }
+    } catch (Exception e) {
+      if (tx.isActive()) {
+        tx.rollback();
+      }
+      throw e;
+    }
+  }
+
+  /* see superclass */
+  @SuppressWarnings("unchecked")
+  @Override
+  public MapUserList getMapUsers() {
+    javax.persistence.Query query =
+        manager.createQuery("select u from MapUserJpa u");
+    final List<MapUser> m = query.getResultList();
+    final MapUserListJpa mapMapUserList = new MapUserListJpa();
+    mapMapUserList.setMapUsers(m);
+    mapMapUserList.setTotalCount(m.size());
+    return mapMapUserList;
+  }
+
+  /* see superclass */
+  @SuppressWarnings("unchecked")
+  @Override
+  public MapUserList findMapUsersForQuery(String query, PfsParameter pfs)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "Security Service - find users " + query + ", pfs= " + pfs);
+
+    int[] totalCt = new int[1];
+    final List<MapUser> list =
+        (List<MapUser>) getQueryResults(query == null || query.isEmpty()
+            ? "id:[* TO *]" : query, MapUserJpa.class, MapUserJpa.class, pfs,
+            totalCt);
+    final MapUserList result = new MapUserListJpa();
+    result.setTotalCount(totalCt[0]);
+    result.setMapUsers(list);
+    for (final MapUser user : result.getMapUsers()) {
+      handleLazyInit(user);
+    }
+    return result;
+  }
+
+  /* see superclass */
+  @Override
+  public MapUserPreferences addMapUserPreferences(
+    MapUserPreferences userPreferences) {
+    Logger.getLogger(getClass()).debug(
+        "Security Service - add user preferences " + userPreferences);
+    try {
+      if (getTransactionPerOperation()) {
+        tx = manager.getTransaction();
+        tx.begin();
+        manager.persist(userPreferences);
+        tx.commit();
+      } else {
+        manager.persist(userPreferences);
+      }
+    } catch (Exception e) {
+      if (tx.isActive()) {
+        tx.rollback();
+      }
+      throw e;
+    }
+
+    return userPreferences;
+  }
+
+  /* see superclass */
+  @Override
+  public void removeMapUserPreferences(Long id) {
+    Logger.getLogger(getClass()).debug(
+        "Security Service - remove user preferences " + id);
+    tx = manager.getTransaction();
+    // retrieve this user
+    final MapUserPreferences mu = manager.find(MapUserPreferencesJpa.class, id);
+    try {
+      if (getTransactionPerOperation()) {
+        tx.begin();
+        if (manager.contains(mu)) {
+          manager.remove(mu);
+        } else {
+          manager.remove(manager.merge(mu));
+        }
+        tx.commit();
+
+      } else {
+        if (manager.contains(mu)) {
+          manager.remove(mu);
+        } else {
+          manager.remove(manager.merge(mu));
+        }
+      }
+    } catch (Exception e) {
+      if (tx.isActive()) {
+        tx.rollback();
+      }
+      throw e;
+    }
+
+  }
+
+  /* see superclass */
+  @Override
+  public void updateMapUserPreferences(MapUserPreferences userPreferences) {
+    Logger.getLogger(getClass()).debug(
+        "Security Service - update user preferences " + userPreferences);
+    try {
+      if (getTransactionPerOperation()) {
+        tx = manager.getTransaction();
+        tx.begin();
+        manager.merge(userPreferences);
+        tx.commit();
+      } else {
+        manager.merge(userPreferences);
+      }
+    } catch (Exception e) {
+      if (tx.isActive()) {
+        tx.rollback();
+      }
+      throw e;
+    }
+  }
+
+  /**
+   * Handle lazy init.
+   *
+   * @param user the user
+   */
+  @Override
+  public void handleLazyInit(MapUser user) {
+    // n/a - no objects connected
   }
 }

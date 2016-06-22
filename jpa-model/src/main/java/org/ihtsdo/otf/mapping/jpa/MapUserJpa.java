@@ -7,6 +7,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -61,6 +62,11 @@ public class MapUserJpa implements MapUser {
   @Column(nullable = true)
   private String team;
 
+  // Not a column
+  /** The auth token. */
+  @Transient
+  private String authToken;
+
   /**
    * The default constructor.
    */
@@ -80,6 +86,7 @@ public class MapUserJpa implements MapUser {
     this.email = mapUser.getEmail();
     this.team = mapUser.getTeam();
     this.applicationRole = mapUser.getApplicationRole();
+    this.authToken = mapUser.getAuthToken();
   }
 
   /**
@@ -175,23 +182,27 @@ public class MapUserJpa implements MapUser {
     this.name = name;
   }
 
+  /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public String getEmail() {
     return email;
   }
 
+  /* see superclass */
   @Override
   public void setEmail(String email) {
     this.email = email;
   }
 
+  /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public String getTeam() {
     return team;
   }
 
+  /* see superclass */
   @Override
   public void setTeam(String team) {
     this.team = team;
@@ -217,14 +228,24 @@ public class MapUserJpa implements MapUser {
     this.applicationRole = role;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /* see superclass */
   @Override
   public String toString() {
 
     return this.getId() + "," + this.getUserName() + "," + this.getEmail()
         + "," + this.getName() + "," + this.getApplicationRole().getValue();
+  }
+
+  /* see superclass */
+  @Override
+  public String getAuthToken() {
+    return authToken;
+  }
+
+  /* see superclass */
+  @Override
+  public void setAuthToken(String authToken) {
+    this.authToken = authToken;
   }
 
   /**

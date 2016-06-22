@@ -3,6 +3,7 @@ package org.ihtsdo.otf.mapping.jpa.services;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
@@ -392,4 +393,9 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     return map;
   }
 
+  /* see superclass */
+  @Override
+  public void setProperties(Properties properties) {
+    // n/a
+  }
 }

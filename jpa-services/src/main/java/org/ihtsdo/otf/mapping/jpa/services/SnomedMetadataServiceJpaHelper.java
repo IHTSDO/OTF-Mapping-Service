@@ -3,6 +3,7 @@ package org.ihtsdo.otf.mapping.jpa.services;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.jpa.helpers.TerminologyUtility;
@@ -424,4 +425,9 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements
 
   }
 
+  /* see superclass */
+  @Override
+  public void setProperties(Properties properties) {
+    // n/a
+  }
 }

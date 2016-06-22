@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
@@ -33,8 +34,8 @@ import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
  * Abstract implementation of {@link WorkflowPathHandler}.
  * 
  */
-public abstract class AbstractWorkflowPathHandler
-    implements WorkflowPathHandler {
+public abstract class AbstractWorkflowPathHandler implements
+    WorkflowPathHandler {
 
   /** The workflow path. */
   private WorkflowPath workflowPath = null;
@@ -110,14 +111,13 @@ public abstract class AbstractWorkflowPathHandler
    */
   public Set<WorkflowStatusCombination> getWorkflowStatusCombinations() {
     Set<WorkflowStatusCombination> combinations = new HashSet<>();
-    for (WorkflowPathState state : this.trackingRecordStateToActionMap
-        .keySet()) {
+    for (WorkflowPathState state : this.trackingRecordStateToActionMap.keySet()) {
       combinations.addAll(state.getWorkflowCombinations());
     }
     return combinations;
   }
-  
-  @Override 
+
+  @Override
   public boolean isTrackingRecordInWorkflow(TrackingRecord trackingRecord) {
     WorkflowPathState ws = getWorkflowStateForTrackingRecord(trackingRecord);
     return ws != null;
@@ -129,8 +129,8 @@ public abstract class AbstractWorkflowPathHandler
     // default: Published or Publication-Ready map records are not in workflow
     // override in workflow handlers if desired (e.g. legacy path)
 
-    return !mapRecord.getWorkflowStatus()
-        .equals(WorkflowStatus.READY_FOR_PUBLICATION)
+    return !mapRecord.getWorkflowStatus().equals(
+        WorkflowStatus.READY_FOR_PUBLICATION)
         && !mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED);
   }
 
@@ -160,16 +160,16 @@ public abstract class AbstractWorkflowPathHandler
       // check for empty (allowed) combination
       if (workflowCombination.isEmpty()) {
         if (!emptyWorkflowAllowed) {
-          result.addError(
-              "Empty workflow combination not allowed for this workflow path");
+          result
+              .addError("Empty workflow combination not allowed for this workflow path");
         }
 
         // otherwise, check whether this combination is allowed
-      } else if (!isWorkflowCombinationInTrackingRecordStates(
-          workflowCombination)) {
-        result.addError(
-            "Tracking record has invalid combination of reported workflow statuses for "
-                + trackingRecord.getUserAndWorkflowStatusPairs() + ": "
+      } else if (!isWorkflowCombinationInTrackingRecordStates(workflowCombination)) {
+        result
+            .addError("Tracking record has invalid combination of reported workflow statuses for "
+                + trackingRecord.getUserAndWorkflowStatusPairs()
+                + ": "
                 + workflowCombination.toString());
       }
 
@@ -180,8 +180,8 @@ public abstract class AbstractWorkflowPathHandler
       // extract the user/workflow pairs
       Set<String> userWorkflowPairs = new HashSet<>();
       if (trackingRecord.getUserAndWorkflowStatusPairs() != null)
-        userWorkflowPairs.addAll(Arrays
-            .asList(trackingRecord.getUserAndWorkflowStatusPairs().split(" ")));
+        userWorkflowPairs.addAll(Arrays.asList(trackingRecord
+            .getUserAndWorkflowStatusPairs().split(" ")));
 
       // get the map records
       MapRecordList mapRecords = getMapRecordsForTrackingRecord(trackingRecord);
@@ -191,8 +191,9 @@ public abstract class AbstractWorkflowPathHandler
       // pairs
       for (MapRecord mr : mapRecords.getMapRecords()) {
         // construct pair
-        String pair = mr.getWorkflowStatus().toString() + "_"
-            + mr.getOwner().getUserName();
+        String pair =
+            mr.getWorkflowStatus().toString() + "_"
+                + mr.getOwner().getUserName();
 
         // check for pair
         if (!userWorkflowPairs.contains(pair)) {
@@ -230,8 +231,9 @@ public abstract class AbstractWorkflowPathHandler
         // pair
         boolean recordFound = false;
         for (MapRecord mr : mapRecords.getMapRecords()) {
-          if (mr.getOwner().getUserName().equals(user) && mr.getWorkflowStatus()
-              .equals(WorkflowStatus.valueOf(workflowStatus))) {
+          if (mr.getOwner().getUserName().equals(user)
+              && mr.getWorkflowStatus().equals(
+                  WorkflowStatus.valueOf(workflowStatus))) {
             recordFound = true;
           }
         }
@@ -239,8 +241,8 @@ public abstract class AbstractWorkflowPathHandler
         // if record not found, tracking record is not in sync with map
         // records
         if (!recordFound) {
-          result.addError(
-              "Tracking record references workflow and user pair not present in tracked records");
+          result
+              .addError("Tracking record references workflow and user pair not present in tracked records");
         }
       }
     } catch (Exception e) {
@@ -264,7 +266,7 @@ public abstract class AbstractWorkflowPathHandler
   @Override
   public ValidationResult validateTrackingRecordForActionAndUser(
     TrackingRecord trackingRecord, WorkflowAction action, MapUser mapUser)
-      throws Exception {
+    throws Exception {
 
     // NOTE: This function MUST be overwritten in workflow path handlers
     return null;
@@ -302,8 +304,8 @@ public abstract class AbstractWorkflowPathHandler
           }
         }
 
-        workflowCombination
-            .addWorkflowStatus(WorkflowStatus.valueOf(workflowStatus));
+        workflowCombination.addWorkflowStatus(WorkflowStatus
+            .valueOf(workflowStatus));
       }
     }
 
@@ -362,8 +364,8 @@ public abstract class AbstractWorkflowPathHandler
 
           // otherwise, if this workflow status is higher, set to this
           // record
-          else if (mr.getWorkflowStatus()
-              .compareTo(assignedRecord.getWorkflowStatus()) > 0)
+          else if (mr.getWorkflowStatus().compareTo(
+              assignedRecord.getWorkflowStatus()) > 0)
             assignedRecord = mr;
         }
       }
@@ -399,8 +401,8 @@ public abstract class AbstractWorkflowPathHandler
 
           // otherwise, if this workflow status is higher, set to this
           // record
-          else if (mr.getWorkflowStatus()
-              .compareTo(assignedRecord.getWorkflowStatus()) > 0)
+          else if (mr.getWorkflowStatus().compareTo(
+              assignedRecord.getWorkflowStatus()) > 0)
             assignedRecord = mr;
         }
       }
@@ -436,8 +438,8 @@ public abstract class AbstractWorkflowPathHandler
 
           // otherwise, if this workflow status is higher, set to this
           // record
-          else if (mr.getWorkflowStatus()
-              .compareTo(assignedRecord.getWorkflowStatus()) > 0)
+          else if (mr.getWorkflowStatus().compareTo(
+              assignedRecord.getWorkflowStatus()) > 0)
             assignedRecord = mr;
         }
       }
@@ -488,7 +490,8 @@ public abstract class AbstractWorkflowPathHandler
    */
   public WorkflowPathState getWorkflowStateForTrackingRecord(
     TrackingRecord trackingRecord) {
-    WorkflowStatusCombination wc = getWorkflowCombinationForTrackingRecord(trackingRecord);
+    WorkflowStatusCombination wc =
+        getWorkflowCombinationForTrackingRecord(trackingRecord);
     return getWorkflowStateForWorkflowCombination(wc);
   }
 
@@ -501,8 +504,8 @@ public abstract class AbstractWorkflowPathHandler
   public WorkflowPathState getWorkflowPathStateForWorkflowStatusCombination(
     WorkflowStatusCombination combination) {
     for (WorkflowPathState state : trackingRecordStateToActionMap.keySet()) {
-     if (state.contains(combination)) {
-         return state;
+      if (state.contains(combination)) {
+        return state;
       }
     }
 
@@ -522,7 +525,7 @@ public abstract class AbstractWorkflowPathHandler
   @SuppressWarnings("static-method")
   public SearchResultList findAvailableWork(MapProject mapProject,
     final MapUser mapUser, String query, PfsParameter pfsParameter)
-      throws Exception {
+    throws Exception {
     return null;
   }
 
@@ -539,7 +542,7 @@ public abstract class AbstractWorkflowPathHandler
   @SuppressWarnings("static-method")
   public SearchResultList findAssignedWork(MapProject mapProject,
     final MapUser mapUser, String query, PfsParameter pfsParameter)
-      throws Exception {
+    throws Exception {
 
     return null;
   }
@@ -565,10 +568,12 @@ public abstract class AbstractWorkflowPathHandler
     Set<MapRecord> mapRecords, MapRecord mapRecord) throws Exception {
     return mapRecords;
   }
-  
+
   @Override
-  public MapRecordList getOriginMapRecordsForMapRecord(MapRecord mapRecord, WorkflowService workflowService) throws Exception {
-   throw new Exception("Workflow Path Handler  " + getName() + " does not support retrieving origin map records");
+  public MapRecordList getOriginMapRecordsForMapRecord(MapRecord mapRecord,
+    WorkflowService workflowService) throws Exception {
+    throw new Exception("Workflow Path Handler  " + getName()
+        + " does not support retrieving origin map records");
   }
 
   // //////////////////////////
@@ -643,7 +648,11 @@ public abstract class AbstractWorkflowPathHandler
 
     return mapRecord;
   }
-  
 
+  /* see superclass */
+  @Override
+  public void setProperties(Properties properties) {
+    // n/a
+  }
 
 }
