@@ -99,4 +99,18 @@ public interface MapUser {
    * @param team the team
    */
   public void setTeam(String team);
+
+  /**
+   * Returns the auth token.
+   *
+   * @return the auth token
+   */
+  public String getAuthToken();
+
+  /**
+   * Sets the auth token.
+   *
+   * @param authToken the auth token
+   */
+  public void setAuthToken(String authToken);
 }

@@ -605,7 +605,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
         else if (ldata === 'ADMINISTRATOR')
           role = 'Administrator';
         else
-          role = 'Could not determine role';
+          role = 'Viewer';
 
         $scope.currentRole = role;
         localStorageService.add('currentRole', role);

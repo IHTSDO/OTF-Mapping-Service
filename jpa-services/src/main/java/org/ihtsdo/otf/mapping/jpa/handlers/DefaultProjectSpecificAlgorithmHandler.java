@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -142,14 +143,16 @@ public class DefaultProjectSpecificAlgorithmHandler implements
   @Override
   public ValidationResult compareMapRecords(MapRecord record1, MapRecord record2) {
     final ValidationResult validationResult = new ValidationResultJpa();
-    
+
     if (record1 == null) {
-      validationResult.addError("First record not supplied to comparison routine");
+      validationResult
+          .addError("First record not supplied to comparison routine");
       return validationResult;
     }
-    
+
     if (record2 == null) {
-      validationResult.addError("Second record not supplied to comparison routine");
+      validationResult
+          .addError("Second record not supplied to comparison routine");
       return validationResult;
     }
 
@@ -849,7 +852,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     return workflowStatus;
   }
 
-
   @Override
   public void computeIdentifyAlgorithms(MapRecord mapRecord) throws Exception {
     // Default behavior is to do nothing
@@ -909,4 +911,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     return treePositions;
   }
 
+  /* see superclass */
+  @Override
+  public void setProperties(Properties properties) {
+    // n/a
+  }
 }

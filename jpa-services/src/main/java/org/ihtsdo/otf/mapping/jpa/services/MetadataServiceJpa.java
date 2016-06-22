@@ -14,7 +14,6 @@ import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 public class MetadataServiceJpa extends RootServiceJpa implements
     MetadataService {
 
-
   /** The helper map. */
   private static Map<String, MetadataService> helperMap = null;
   static {
@@ -36,6 +35,7 @@ public class MetadataServiceJpa extends RootServiceJpa implements
       helperMap = null;
     }
   }
+
   /**
    * Instantiates an empty {@link MetadataServiceJpa}.
    * @throws Exception
@@ -484,4 +484,9 @@ public class MetadataServiceJpa extends RootServiceJpa implements
 
   }
 
+  /* see superclass */
+  @Override
+  public void setProperties(Properties properties) {
+    // n/a
+  }
 }

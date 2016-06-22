@@ -153,7 +153,7 @@ public class ConfigUtility {
         handlerProperties.put(shortKey, config.getProperty(key.toString()));
       }
     }
-    // handler.setProperties(handlerProperties);
+    handler.setProperties(handlerProperties);
     return handler;
   }
 
