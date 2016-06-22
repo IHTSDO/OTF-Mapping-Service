@@ -29,7 +29,7 @@ mapProjectAppControllers
         // Login button, redirect to IMS
         $scope.login = function() {
           // This line requires maven filtering
-          window.location.href = "${security.handler.IMS.url}/#/login?serviceReferer=${base.url}%2F%23%2Fviewer%2Fdash";
+          window.location.href = "${security.handler.IMS.url}/#/login?serviceReferer=${base.url}%2F%23%2Flogin";
         }
 
         // login button directs to next page based on role selected
