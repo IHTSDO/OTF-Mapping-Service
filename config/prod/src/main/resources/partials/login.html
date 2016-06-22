@@ -1,0 +1,36 @@
+<!-- Partial for login page -->
+
+<div ng-include src="'./partials/header.html'"></div>
+
+<div id="wrapper">
+  <div id="content">
+
+    <div ng-if="pending" id="content-left">
+      <p>Determining if user is logged in...</p>
+    </div>
+
+    <div ng-if="!pending" id="content-left">
+      <strong>IHTSDO Login</strong><br>
+      <button style="margin-top: 10px;" type="submit" id="guestLoginButton"
+        ng-click="login()">Login</button>
+    </div>
+
+    <div id="content-main"></div>
+
+    <div id="content-right">
+      <strong>View Maps as a Guest</strong><br>
+      <button style="margin-top: 10px;" type="submit" id="guestLoginButton"
+        ng-click="goGuest('/project/records')">View Maps</button>
+    </div>
+
+  </div>
+
+</div>
+
+<div ng-include src="'./partials/footer.html'"></div>
+
+
+
+
+
+
