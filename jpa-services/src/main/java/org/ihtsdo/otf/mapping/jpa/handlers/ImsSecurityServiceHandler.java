@@ -65,10 +65,10 @@ public class ImsSecurityServiceHandler implements SecurityServiceHandler {
     Iterator<JsonNode> iter = doc.get("roles").elements();
     while (iter.hasNext()) {
       JsonNode role = iter.next();
-      if (role.asText().equals("ROLE_refset-administrators")) {
+      if (role.asText().equals("ROLE_mapping-administrators")) {
         user.setApplicationRole(MapUserRole.ADMINISTRATOR);
       }
-      // if (role.asText().equals("ROLE_refset-users")) {
+      // if (role.asText().equals("ROLE_mapping-users")) {
       // user.setApplicationRole(MapUserRole.USER);
       // }
     }
