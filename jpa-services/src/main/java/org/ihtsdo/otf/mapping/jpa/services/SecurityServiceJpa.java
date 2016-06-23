@@ -243,27 +243,17 @@ public class SecurityServiceJpa extends RootServiceJpa implements
       throw new Exception("Unexpected null project id");
     }
 
+    // Ask mapping service for this info.
     final String userName = getUsernameForToken(authToken);
-
-    final MappingService service = new MappingServiceJpa();
+    final MappingService mappingService = new MappingServiceJpa();
     try {
-      for (final MapUser user : service.getMapProject(projectId).getMapLeads()) {
-        if (user.getUserName().equals(userName)) {
-          return MapUserRole.LEAD;
-        }
-      }
-      for (final MapUser user : service.getMapProject(projectId)
-          .getMapSpecialists()) {
-        if (user.getUserName().equals(userName)) {
-          return MapUserRole.SPECIALIST;
-        }
-      }
+      return mappingService.getMapUserRoleForMapProject(userName, projectId);
     } catch (Exception e) {
       throw e;
     } finally {
-      service.close();
+      mappingService.close();
     }
-    return MapUserRole.NONE;
+
   }
 
   /* see superclass */
