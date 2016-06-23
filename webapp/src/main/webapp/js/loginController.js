@@ -324,4 +324,91 @@ mapProjectAppControllers.controller('LoginCtrl', [
       $location.path(path);
     };
 
+    // Initialize
+
+    // If we are not using auto-login, then clear the local cache
+    if (!$location.path().endsWith('/autologin')) {
+
+      // clear the local storage service
+      localStorageService.clearAll();
+
+      // set the user, role, focus project, and preferences to null
+      // (i.e.
+      // clear)
+      // by broadcasting to rest of app
+      $rootScope.$broadcast('localStorageModule.notification.setUser', {
+        key : 'currentUser',
+        currentUser : null
+      });
+      $rootScope.$broadcast('localStorageModule.notification.setRole', {
+        key : 'currentRole',
+        currentRole : null
+      });
+      $rootScope.$broadcast('localStorageModule.notification.setFocusProject', {
+        key : 'focusProject',
+        focusProject : null
+      });
+      $rootScope.$broadcast('localStorageModule.notification.setPreferences', {
+        key : 'preferences',
+        preferences : null
+      });
+
+      // initial values for pick-list
+      $scope.roles = [ 'Viewer', 'Specialist', 'Lead', 'Administrator' ];
+      $scope.role = $scope.roles[0];
+
+    }
+
+    // Otherwise, checked if we are logged in
+    // If so, proceed to location, otherwise call 'goGuest'
+    else {
+      $scope.mapUser = localStorageService.get('currentUser');
+
+      // If there is a user, attempt to log in
+      if ($scope.mapUser) {
+        $scope.userToken = localStorageService.get('userToken');
+        // set default header to contain userToken
+        $http.defaults.headers.common.Authorization = $scope.userToken;
+
+        // Make a call to test if we're logged in and to get preferences
+        $http({
+          url : root_mapping + 'userPreferences/user/id/' + $scope.mapUser.userName,
+          dataType : 'json',
+          method : 'GET',
+          headers : {
+            'Content-Type' : 'application/json'
+          }
+        }).success(function(data) {
+          // set scope preferences object
+          $scope.preferences = data;
+          $scope.preferences.lastLogin = new Date().getTime();
+          // If we are logged in, change focus project
+          var mapProjects = localStorageService.get('mapProjects');
+          var mapProject = localStorageService.get('mapProjects')[0];
+          for (var i = 0; i < mapProjects.length; i++) {
+            if ($routeParams.refSetId == mapProjects[i].refSetId) {
+              mapProject = mapProjects[i];
+              break;
+            }
+          }
+          $scope.changeFocusProject(mapProject);
+
+          // set location - should work for any autologin url
+          $location.path($location.path().replace('/autologin', ''));
+
+        }).error(function(data, status, headers, config) {
+
+          // call go guest and set the focus project (via param?)
+          $scope.goGuest($location.path().replace('/autologin', ''), $routeParams.refSetId);
+        });
+
+      } else {
+
+        // call go guest and set the focus project (via param?)
+        $scope.goGuest('record/conceptId/' + $routeParams.conceptId, $routeParams.refSetId);
+
+      }
+
+    }
+
   } ]);
