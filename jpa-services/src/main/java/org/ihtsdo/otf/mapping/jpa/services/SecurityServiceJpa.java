@@ -76,7 +76,7 @@ public class SecurityServiceJpa extends RootServiceJpa implements
     //
     // Call the security service
     //
-    // handle guest user unless    
+    // handle guest user unless
     MapUser authMapUser = handler.authenticate(userName, password);
     return authHelper(authMapUser);
   }
@@ -244,6 +244,7 @@ public class SecurityServiceJpa extends RootServiceJpa implements
     }
 
     final String userName = getUsernameForToken(authToken);
+
     final MappingService service = new MappingServiceJpa();
     try {
       for (final MapUser user : service.getMapProject(projectId).getMapLeads()) {
@@ -262,7 +263,7 @@ public class SecurityServiceJpa extends RootServiceJpa implements
     } finally {
       service.close();
     }
-    return MapUserRole.VIEWER;
+    return MapUserRole.NONE;
   }
 
   /* see superclass */
