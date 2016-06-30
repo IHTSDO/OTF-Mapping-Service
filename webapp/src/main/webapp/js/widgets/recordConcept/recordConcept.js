@@ -61,7 +61,6 @@ angular
         // functions
         if ($scope.focusProject != null && $scope.userToken != null && $scope.mapProjects != null) {
           $http.defaults.headers.common.Authorization = $scope.userToken;
-          console.debug($scope.mapProjects);
           $scope.go();
 
           setIndexViewerStatus();
@@ -157,7 +156,6 @@ angular
             applyRelationshipStyle();
           }
 
-          console.debug('VALIDATING RECORDS');
           validateRecords();
         });
       };
@@ -165,18 +163,10 @@ angular
       // function to retrieve validation results
       function validateRecords() {
 
-        console.debug('VALIDATING RECORDS FOR ROLE ' + $scope.currentRole);
-
         if ($scope.currentRole != 'Administrator' && $scope.currentRole != 'Lead'
           && $scope.currentRole != 'Specialist')
           return;
-
-        console.debug('Cycling over records', $scope.records);
-
         for (var i = 0; i < $scope.records.length; i++) {
-
-          console.debug('record ' + i, $scope.records[i]);
-
           validateRecord($scope.records[i]);
 
         }
@@ -195,10 +185,8 @@ angular
           }
         }).success(function(data) {
           $rootScope.glassPane--;
-          console.debug('validation results:', data);
           record.errors = data.errors;
           record.warnings = data.warnings;
-          console.debug(record);
         }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
           $rootScope.handleHttpError(data, status, headers, config);
@@ -279,13 +267,6 @@ angular
           }
         }
 
-        console.debug($scope.recordsInProject.length + ' records in project '
-          + $scope.focusProject.name);
-
-        for (var i = 0; i < $scope.recordsNotInProject.length; i++)
-          console.debug($scope.recordsNotInProject[i].length + ' records in project '
-            + $scope.recordsNotInProject[i][0].mapProjectId);
-
         // if no records for this project found, set flag
         if ($scope.recordsInProject.length == 0) {
           $scope.recordsInProjectNotFound = true;
@@ -308,9 +289,6 @@ angular
       };
 
       $scope.editRecord = function(record) {
-
-        console.debug('EditRecord()');
-        console.debug(record);
 
         // check if this record is assigned to the user and not in a
         // publication
@@ -380,7 +358,6 @@ angular
                       'Content-Type' : 'application/json'
                     }
                   }).success(function(data) {
-                  console.debug(data);
                   $rootScope.glassPane--;
 
                   // open the record edit view
@@ -700,7 +677,6 @@ angular
             }
 
           }).success(function(data) {
-            console.debug('success to sendFeedbackEmail.');
             $rootScope.glassPane--;
             $modalInstance.close();
           }).error(function(data, status, headers, config) {

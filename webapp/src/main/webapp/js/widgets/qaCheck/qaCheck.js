@@ -52,9 +52,6 @@ angular.module('mapProjectApp.widgets.qaCheck', [ 'adf.provider' ]).config(
 
         // retrieve the definitions
         $scope.definitions = $scope.focusProject.reportDefinition;
-
-        console.debug('QA Check definitions: ', $scope.definitions);
-
       }
     });
 
@@ -96,7 +93,6 @@ angular.module('mapProjectApp.widgets.qaCheck', [ 'adf.provider' ]).config(
 
     $scope.generateNewReport = function(reportDefinition) {
       $rootScope.glassPane++;
-
       console.debug('generateNewReport', reportDefinition);
 
       // obtain the record
@@ -112,9 +108,6 @@ angular.module('mapProjectApp.widgets.qaCheck', [ 'adf.provider' ]).config(
           }
         }).success(function(data) {
         $rootScope.glassPane--;
-
-        console.debug(data);
-
         // clear the items to prevent display of potentially enormous list
         for (var i = 0; i < data.results.length; i++) {
           data.results[i].resultsItems = [];
@@ -123,7 +116,6 @@ angular.module('mapProjectApp.widgets.qaCheck', [ 'adf.provider' ]).config(
         // set the report displayed and get the result items for each report
         // result
         $scope.reportDisplayed = data;
-        console.debug('Displayed report', $scope.reportDisplayed);
         for (var i = 0; i < $scope.reportDisplayed.results.length; i++) {
           $scope.getResultItems($scope.reportDisplayed.results[i]);
         }
@@ -179,7 +171,6 @@ angular.module('mapProjectApp.widgets.qaCheck', [ 'adf.provider' ]).config(
 
     $scope.addToQAWorkflow = function(report) {
       $rootScope.glassPane++;
-
       console.debug('addToQAWorkflow', report);
 
       $http({

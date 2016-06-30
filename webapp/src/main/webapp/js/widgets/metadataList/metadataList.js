@@ -77,7 +77,6 @@ angular.module('mapProjectApp.widgets.metadataList', [ 'adf.provider' ]).config(
         if (data.keyValuePair[index].key != undefined)
           $scope.terminologies.push(data.keyValuePair[index].key);
       }
-      console.debug($scope.terminologies);
     }).error(function(data, status, headers, config) {
       $rootScope.handleHttpError(data, status, headers, config);
     });

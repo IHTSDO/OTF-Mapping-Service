@@ -374,7 +374,6 @@ angular
           }).success(function(data) {
           $rootScope.glassPane--;
 
-          console.debug(data);
 
           $scope.availableQAWork = data.searchResult;
 
@@ -384,7 +383,6 @@ angular
 
           // set title
           $scope.tabs[3].title = 'QA (' + data.totalCount + ')';
-          console.debug($scope.numAvailableQAWorkPages);
 
           // set labels
           for (var i = 0; i < $scope.availableQAWork.length; i++) {
@@ -475,9 +473,6 @@ angular
             }
           }).success(
           function(data) {
-
-            console.debug(data);
-
             var workToUnassign = [];
             for (var i = 0; i < data.searchResult.length; i++) {
               workToUnassign.push(data.searchResult[i].terminologyId);
@@ -516,8 +511,6 @@ angular
       $scope.retrieveAvailableReviewWork = function(page, pquery, puser) {
         var query = pquery;
         var user = puser;
-        console.debug('************* workAvailableCtrl: Retrieving available review work');
-
         // clear local review error message
         $scope.errorReview = null;
 
@@ -560,8 +553,6 @@ angular
           }).success(function(data) {
           $rootScope.glassPane--;
 
-          console.debug('Retrieve reviews', data);
-
           $scope.availableReviewWork = data.searchResult;
 
           // set pagination
@@ -589,13 +580,7 @@ angular
       $scope.assignWork = function(trackingRecord, pmapUser, pquery, workType, workPage) {
         var mapUser = pmapUser;
         var query = pquery;
-        console.debug('assignWork called');
-        console.debug(trackingRecord);
-        console.debug(mapUser);
-        console.debug(query);
-        console.debug(workType);
-        console.debug(workPage);
-
+        
         // doublecheck map user and query, assign default values if
         // necessary
         if (mapUser == null)
@@ -621,8 +606,6 @@ angular
               assignType : workType
             });
 
-            console.debug($scope.availableWorkPage, $scope.availableConflictsPage,
-              $scope.availableReviewWorkPage, $scope.availableQAWorkPage);
             if (workType == 'concept') {
               $scope.retrieveAvailableWork(workPage, query, mapUser);
             } else if (workType === 'conflict') {
@@ -641,7 +624,6 @@ angular
 
       // assign a batch of records to the current user
       $scope.assignBatch = function(mapUser, batchSize, query) {
-
         console.debug('workAvailable, assignBatch:', mapUser, batchSize, query);
 
         // set query to null string if not provided
@@ -689,9 +671,6 @@ angular
               var trackingRecords = data.searchResult;
               var conceptListValid = true;
 
-              console.debug(trackingRecords);
-              console.debug($scope.availableWork);
-
               // if user is assigning to self, check that first result
               // matches
               // first displayed result
@@ -708,13 +687,10 @@ angular
               }
 
               if (conceptListValid == true) {
-                console.debug('Claiming batch of size: ' + batchSize);
-
                 var terminologyIds = [];
                 for (var i = 0; i < trackingRecords.length; i++) {
 
                   terminologyIds.push(trackingRecords[i].terminologyId);
-                  console.debug('  -> Concept ' + trackingRecords[i].terminologyId);
                 }
 
                 console.debug('Calling batch assignment API');
@@ -800,17 +776,12 @@ angular
               var trackingRecords = data.searchResult;
               var conceptListValid = true;
 
-              console.debug(trackingRecords);
-              console.debug($scope.availableConflicts);
-
               // if user is viewing conflicts, confirm that the returned
               // batch
               // matches the displayed conflicts
               if ($scope.currentUser.userName === mapUser.userName) {
                 for (var i = 0; i < $scope.itemsPerPage && i < batchSize
                   && i < $scope.availableConflicts; i++) {
-                  console.debug(trackingRecords[i]);
-                  console.debug($scope.availableWork[i]);
                   if (trackingRecords[i].id != $scope.availableWork[i].id) {
                     $scope.retrieveAvailableWork($scope.availableWorkPage, query);
                     alert('The available conflicts list has changed since loading.  Please review the new available conflicts and try again.');
@@ -821,13 +792,11 @@ angular
               }
 
               if (conceptListValid == true) {
-                console.debug('Claiming conflict batch of size: ' + batchSize);
-
+               
                 var terminologyIds = [];
                 for (var i = 0; i < trackingRecords.length; i++) {
 
                   terminologyIds.push(trackingRecords[i].terminologyId);
-                  console.debug('  -> Conflict ' + trackingRecords[i].terminologyId);
                 }
 
                 console.debug('Calling batch assignment API');
@@ -929,15 +898,12 @@ angular
               }
 
               if (conceptListValid == true) {
-                console.debug('Claiming review work batch of size: ' + batchSize);
 
                 var terminologyIds = [];
                 for (var i = 0; i < trackingRecords.length; i++) {
 
                   terminologyIds.push(trackingRecords[i].terminologyId);
-                  console.debug('  -> Review ' + trackingRecords[i].terminologyId);
                 }
-
                 console.debug('Calling batch assignment API');
 
                 $http(
@@ -1036,13 +1002,10 @@ angular
               }
 
               if (conceptListValid == true) {
-                console.debug('Claiming qa work batch of size: ' + batchSize);
-
                 var terminologyIds = [];
                 for (var i = 0; i < trackingRecords.length; i++) {
 
                   terminologyIds.push(trackingRecords[i].terminologyId);
-                  console.debug('  -> Review ' + trackingRecords[i].terminologyId);
                 }
 
                 console.debug('Calling batch assignment API');

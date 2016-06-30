@@ -54,8 +54,6 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
         $scope.definitions = $scope.focusProject.reportDefinition;
         $scope.definitions.sort();
 
-        console.debug('Report definitions: ', $scope.definitions);
-
         // retrieve the first page of
         // reports
         $scope.getReports(1, null, null);
@@ -85,8 +83,6 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
       var url = root_reporting + 'report/reports/project/id/' + $scope.focusProject.id
         + (definition == null ? '' : '/definition/id/' + definition.id);
 
-      console.debug('getReports URL', url);
-
       // obtain the reports
       $http({
         url : url,
@@ -106,7 +102,6 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
         $scope.nReports = data.totalCount;
         $scope.nReportPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
 
-        console.debug('Pagination variables', $scope.nReports, $scope.nReportPages);
       }).error(function(data, status, headers, config) {
         $rootScope.glassPane--;
         $scope.reports = null;
@@ -153,29 +148,23 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
 
     $scope.toggleResultItems = function(reportResult) {
 
-      console.debug('Toggling report result, id = ' + reportResult.id);
       // if open, simply close
       if (reportResult.isCollapsed == false) {
-        console.debug('--> Closing');
         reportResult.isCollapsed = true;
 
         // if closed, re-open and get result items if
         // necessary
       } else {
-        console.debug('--> Opening');
 
         reportResult.isCollapsed = false;
         if (reportResult.reportResultItems == null) {
-          console.debug('--> Retrieving new page');
           $scope.getResultItems(reportResult, reportResult.page);
         }
       }
     };
     // if closed, open
     $scope.getResultItems = function(reportResult, page) {
-
       $rootScope.glassPane++;
-
       console.debug('Getting report result items', reportResult, page);
 
       // construct a PFS object
@@ -221,7 +210,6 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
 
     $scope.generateNewReport = function(reportDefinition) {
       $rootScope.glassPane++;
-
       console.debug('generateNewReport', reportDefinition);
 
       // obtain the record
@@ -247,7 +235,6 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
     };
 
     $scope.addReportDefinition = function() {
-
       console.debug('Adding new report definition');
 
       var definition = {
