@@ -4,7 +4,7 @@ var mapProjectAppDashboards = angular.module('mapProjectAppDashboards', [ 'adf',
   'LocalStorageModule' ]);
 
 mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function($scope, $routeParams,
-  $rootScope, $location, $http, localStorageService, utilService) {
+  $rootScope, $location, $window, $http, localStorageService, utilService) {
 
   // model variable
   $scope.model = null;
@@ -224,7 +224,7 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function($sc
       }
     }).success(function(data) {
       $rootScope.glassPane--;
-      $location.path(data);
+      $window.location.href = data;
     }).error(function(data, status, headers, config) {
       $rootScope.glassPane--;
       $location.path('/');
@@ -292,7 +292,7 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function($sc
 });
 
 mapProjectAppDashboards.controller('FeedbackConversationsDashboardCtrl', function($scope,
-  $routeParams, $rootScope, $location, localStorageService) {
+  $routeParams, $rootScope, $location, $window, localStorageService) {
 
   // model variable
   $scope.model = null;
@@ -462,7 +462,7 @@ mapProjectAppDashboards.controller('FeedbackConversationsDashboardCtrl', functio
       }
     }).success(function(data) {
       $rootScope.glassPane--;
-      $location.path(data);
+      $window.location.href = data;
     }).error(function(data, status, headers, config) {
       $rootScope.glassPane--;
       $location.path('/');
@@ -526,7 +526,7 @@ mapProjectAppDashboards.controller('FeedbackConversationsDashboardCtrl', functio
 });
 
 mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope, $http, $location,
-  localStorageService, utilService) {
+  $window, localStorageService, utilService) {
 
   $scope.model = null;
 
@@ -987,7 +987,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
       }
     }).success(function(data) {
       $rootScope.glassPane--;
-      $location.path(data);
+      $window.location.href = data;
     }).error(function(data, status, headers, config) {
       $rootScope.glassPane--;
       $location.path('/');
@@ -1080,7 +1080,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
 });
 
 mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function($scope, $rootScope, $http,
-  $routeParams, $location, localStorageService) {
+  $routeParams, $location, $window, localStorageService) {
 
   $scope.model = null;
 
@@ -1279,7 +1279,7 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function($scope, $r
       }
     }).success(function(data) {
       $rootScope.glassPane--;
-      $location.path(data);
+      $window.location.href = data;
     }).error(function(data, status, headers, config) {
       $rootScope.glassPane--;
       $location.path('/');
@@ -1342,7 +1342,7 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function($scope, $r
 });
 
 mapProjectAppDashboards.controller('ProjectDetailsDashboardCtrl', function($rootScope, $scope,
-  $http, $location, localStorageService, utilService) {
+  $http, $location, $window, localStorageService, utilService) {
 
   // On initialization, reset all values to null -- used to
   // ensure watch
@@ -1433,7 +1433,7 @@ mapProjectAppDashboards.controller('ProjectDetailsDashboardCtrl', function($root
       }
     }).success(function(data) {
       $rootScope.glassPane--;
-      $location.path(data);
+      $window.location.href = data;
     }).error(function(data, status, headers, config) {
       $rootScope.glassPane--;
       $location.path('/');
@@ -1496,7 +1496,7 @@ mapProjectAppDashboards.controller('ProjectDetailsDashboardCtrl', function($root
 });
 
 mapProjectAppDashboards.controller('ProjectRecordsDashboardCtrl', function($rootScope, $scope,
-  $http, $location, localStorageService, utilService) {
+  $http, $location, $window, localStorageService, utilService) {
 
   // On initialization, reset all values to null -- used to ensure watch
   // functions work correctly
@@ -1588,7 +1588,7 @@ mapProjectAppDashboards.controller('ProjectRecordsDashboardCtrl', function($root
       }
     }).success(function(data) {
       $rootScope.glassPane--;
-      $location.path(data);
+      $window.location.href = data;
     }).error(function(data, status, headers, config) {
       $rootScope.glassPane--;
       $location.path('/');
@@ -1634,7 +1634,7 @@ mapProjectAppDashboards.controller('ProjectRecordsDashboardCtrl', function($root
 });
 
 mapProjectAppDashboards.controller('RecordConceptDashboardCtrl', function($rootScope, $scope,
-  $http, $location, localStorageService, utilService) {
+  $http, $location, $window, localStorageService, utilService) {
 
   // On initialization, reset all values to null -- used to ensure watch
   // functions work correctly
@@ -1729,7 +1729,7 @@ mapProjectAppDashboards.controller('RecordConceptDashboardCtrl', function($rootS
       }
     }).success(function(data) {
       $rootScope.glassPane--;
-      $location.path(data);
+      $window.location.href = data;
     }).error(function(data, status, headers, config) {
       $rootScope.glassPane--;
       $location.path('/');
@@ -1772,7 +1772,7 @@ mapProjectAppDashboards.controller('RecordConceptDashboardCtrl', function($rootS
 });
 
 mapProjectAppDashboards.controller('IndexViewerDashboardCtrl', function($rootScope, $scope, $http,
-  $location, localStorageService) {
+  $location, $window, localStorageService) {
 
   // On initialization, reset all values to null -- used to ensure watch
   // functions work correctly
