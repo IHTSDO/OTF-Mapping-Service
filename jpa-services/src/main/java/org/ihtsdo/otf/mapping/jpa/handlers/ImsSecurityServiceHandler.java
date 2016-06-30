@@ -109,4 +109,11 @@ public class ImsSecurityServiceHandler implements SecurityServiceHandler {
     this.properties = properties;
   }
 
+  /* see superclass */
+  @Override
+  public String getLogoutUrl() throws Exception {
+    return ConfigUtility.getConfigProperties().getProperty(
+        "security.handler.IMS.url.logout");
+  }
+
 }

@@ -22,6 +22,14 @@ public interface SecurityServiceHandler extends Configurable {
   public MapUser authenticate(String user, String password) throws Exception;
 
   /**
+   * Returns the logout url.
+   *
+   * @return the logout url
+   * @throws Exception the exception
+   */
+  public String getLogoutUrl() throws Exception;
+
+  /**
    * Indicates whether or not the user should be timed out.
    *
    * @param user the user

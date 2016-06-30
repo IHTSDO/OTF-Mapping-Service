@@ -152,9 +152,15 @@ public class SecurityServiceJpa extends RootServiceJpa implements
 
   /* see superclass */
   @Override
-  public void logout(String authToken) throws Exception {
+  public String logout(String authToken) throws Exception {
     tokenMapUsernameMap.remove(authToken);
     tokenTimeoutMap.remove(authToken);
+    if (handler == null) {
+      return handler.getLogoutUrl();
+    } else {
+      return "/";
+    }
+
   }
 
   /* see superclass */

@@ -232,7 +232,7 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function($sc
       }
     }).success(function(data) {
       $rootScope.glassPane--;
-      $location.path('/');
+      $location.path(data);
     }).error(function(data, status, headers, config) {
       $rootScope.glassPane--;
       $location.path('/');
@@ -485,7 +485,7 @@ mapProjectAppDashboards.controller('FeedbackConversationsDashboardCtrl', functio
       }
     }).success(function(data) {
       $rootScope.glassPane--;
-      $location.path('/');
+      $location.path(data);
     }).error(function(data, status, headers, config) {
       $rootScope.glassPane--;
       $location.path('/');
@@ -1035,7 +1035,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
       }
     }).success(function(data) {
       $rootScope.glassPane--;
-      $location.path('/');
+      $location.path(data);
     }).error(function(data, status, headers, config) {
       $rootScope.glassPane--;
       $location.path('/');
@@ -1340,7 +1340,7 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function($scope, $r
       }
     }).success(function(data) {
       $rootScope.glassPane--;
-      $location.path('/');
+      $location.path(data);
     }).error(function(data, status, headers, config) {
       $rootScope.glassPane--;
       $location.path('/');
@@ -1504,7 +1504,7 @@ mapProjectAppDashboards.controller('ProjectDetailsDashboardCtrl', function($root
       }
     }).success(function(data) {
       $rootScope.glassPane--;
-      $location.path('/');
+      $location.path(data);
     }).error(function(data, status, headers, config) {
       $rootScope.glassPane--;
       $location.path('/');
@@ -1666,7 +1666,7 @@ mapProjectAppDashboards.controller('ProjectRecordsDashboardCtrl', function($root
       }
     }).success(function(data) {
       $rootScope.glassPane--;
-      $location.path('/');
+      $location.path(data);
     }).error(function(data, status, headers, config) {
       $rootScope.glassPane--;
       $location.path('/');
@@ -1815,7 +1815,7 @@ mapProjectAppDashboards.controller('RecordConceptDashboardCtrl', function($rootS
       }
     }).success(function(data) {
       $rootScope.glassPane--;
-      $location.path('/');
+      $location.path(data);
     }).error(function(data, status, headers, config) {
       $rootScope.glassPane--;
       $location.path('/');
