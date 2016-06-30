@@ -151,7 +151,6 @@ angular
 
       // Compute Workflow
       $scope.computeWorkflow = function() {
-        console.debug('compute workflow');
         $rootScope.glassPane++;
         $http({
           url : root_workflow + 'project/id/' + $scope.project.id + '/compute',

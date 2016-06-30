@@ -64,7 +64,6 @@ angular
 
         }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
-          console.debug('ERROR GETTING PROJECT');
           $scope.errorMsg = 'Could not retrieve map project';
         });
       };

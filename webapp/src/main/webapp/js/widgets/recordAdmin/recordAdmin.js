@@ -27,7 +27,6 @@ angular
 
           $http.defaults.headers.common.Authorization = $scope.currentUserToken;
 
-          console.debug('Project and users', $scope.focusProject,
             $scope.focusProject.mapSpecialist, $scope.focusProject.mapLead);
 
           // construct list of specialists and leads
@@ -140,7 +139,6 @@ angular
 
         if (confirm('ARE YOU ABSOLUTELY SURE?\n\n  Deleting records through this interface requires recomputing workflow and rerunning indexes, and may cause workflow problems for other records.') == false)
           return;
-
         console.debug('Removing batch of records by terminologyId', terminologyIdsUnsplit);
 
         var terminologyIds = terminologyIdsUnsplit.split(/,\s*|\s+/);

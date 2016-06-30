@@ -75,15 +75,11 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function($sc
       }
     }
     $scope.model.widgetCount = widgetCt;
-    console.debug('Widgets found: ', $scope.model.widgetCount);
 
   });
 
   // function to reset to the default model (called from page)
   $scope.resetModel = function() {
-    console.debug('Main dashboard:   Reset to default model');
-
-    console.debug('user defined models: ', $scope.preferences.dashboardModels);
 
     // splice working oddly here, clunky workaround
     var models = {};
@@ -112,7 +108,6 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function($sc
       }
     });
 
-    console.debug('Revised preferences: ', $scope.preferences.dashboardModels);
   };
 
   $scope.$on('adfDashboardChanged', function(event, name, model) {
@@ -121,8 +116,6 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function($sc
 
     $scope.preferences.dashboardModels[$scope.page] = JSON.stringify($scope.model);
     localStorageService.add('preferences', $scope.preferences);
-
-    console.debug('Models', $scope.preferences.dashboardModels);
 
     // update the user preferences
     $http({
@@ -158,7 +151,6 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function($sc
     } else if ($scope.currentRole === 'Viewer') {
       path = '/viewer/dash';
     }
-    console.debug('redirecting to ' + path);
     $location.path(path);
   });
 
@@ -294,7 +286,6 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function($sc
     } else {
       path = 'help/' + $scope.currentRole + 'DashboardHelp.html';
     }
-    console.debug('go to help page ' + path);
     // redirect page
     $location.path(path);
   };
@@ -332,16 +323,13 @@ mapProjectAppDashboards.controller('FeedbackConversationsDashboardCtrl', functio
 
   // on successful user retrieval, construct the dashboard
   $scope.$watch([ 'preferences' ], function() {
-
     console.debug('MainDashboard: Preferences loaded, models = ',
       $scope.preferences.dashboardModels);
 
     if ($scope.page in $scope.preferences.dashboardModels) {
-      console.debug('  user defined model found');
       $scope.model = JSON.parse($scope.preferences.dashboardModels[$scope.page]);
 
     } else {
-      console.debug('  using default model (no user-defined model)');
       $scope.model = $scope.defaultModel;
     }
 
@@ -352,15 +340,11 @@ mapProjectAppDashboards.controller('FeedbackConversationsDashboardCtrl', functio
     // if model has rows defined
     if ($scope.model != null && $scope.model.hasOwnProperty('rows')) {
 
-      console.debug('model has rows');
-
       // cycle over rows
       for (var i = 0; i < $scope.model.rows.length; i++) {
 
         // if row has columns defined
         if ($scope.model.rows[i].hasOwnProperty('columns')) {
-
-          console.debug('row has columns');
 
           // cycle over columns
           for (var j = 0; j < $scope.model.rows[i].columns.length; j++) {
@@ -368,8 +352,6 @@ mapProjectAppDashboards.controller('FeedbackConversationsDashboardCtrl', functio
             // if column has widgets
             // defined
             if ($scope.model.rows[i].columns[j].hasOwnProperty('widgets')) {
-
-              console.debug('column has widgets');
 
               // add the number of
               // widgets to count
@@ -380,15 +362,12 @@ mapProjectAppDashboards.controller('FeedbackConversationsDashboardCtrl', functio
       }
     }
     $scope.model.widgetCount = widgetCt;
-    console.debug('Widgets found: ', $scope.model.widgetCount);
 
   });
 
   // function to reset to the default model (called from page)
   $scope.resetModel = function() {
     console.debug('Main dashboard:   Reset to default model');
-
-    console.debug('user defined models: ', $scope.preferences.dashboardModels);
 
     // splice working oddly here, clunky workaround
     var models = {};
@@ -426,8 +405,6 @@ mapProjectAppDashboards.controller('FeedbackConversationsDashboardCtrl', functio
 
     $scope.preferences.dashboardModels[$scope.page] = JSON.stringify($scope.model);
     localStorageService.add('preferences', $scope.preferences);
-
-    console.debug('Models', $scope.preferences.dashboardModels);
 
     // update the user preferences
     $http({
@@ -543,7 +520,6 @@ mapProjectAppDashboards.controller('FeedbackConversationsDashboardCtrl', functio
     } else {
       path = 'help/' + $scope.currentRole + 'DashboardHelp.html';
     }
-    console.debug('go to help page ' + path);
     // redirect page
     $location.path(path);
   };
@@ -634,8 +610,6 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
   // whether the model
   // has been successfully retrieved
 
-  console.debug('in dashboardCtrl');
-
   // watch for preferences change
   $scope.parameters = null;
   $scope.$on('localStorageModule.notification.setUserPreferences', function(event, parameters) {
@@ -655,27 +629,21 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
 
   // on successful user retrieval, construct the dashboard
   $scope.$watch([ 'preferences' ], function() {
-
     console.debug('dashboardCtrl:  Preferences or role changed');
 
     if ($scope.preferences == null) {
-      console.debug('  preferences not yet set, waiting');
       return;
     }
 
     if ($scope.currentRole == null) {
-      console.debug('  role not yet set, waiting');
       return;
     }
 
     if ($scope.page in $scope.preferences.dashboardModels) {
-      console.debug('  user defined model found');
       $scope.model = JSON.parse($scope.preferences.dashboardModels[$scope.page]);
 
     } else {
-
       console.debug('    setting default model based on role', $scope.currentRole);
-
     }
   });
 
@@ -691,8 +659,6 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
 
     // if model has rows defined
     if ($scope.model != null && $scope.model.hasOwnProperty('rows')) {
-
-      console.debug('model has rows');
 
       // cycle over rows
       for (var i = 0; i < $scope.model.rows.length; i++) {
@@ -716,15 +682,12 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
       }
     }
     $scope.model.widgetCount = widgetCt;
-    console.debug('Widgets found: ', $scope.model.widgetCount);
 
   });
 
   // function to reset to the default model (called from page)
   $scope.resetModel = function() {
     console.debug('Main dashboard:   Reset to default model');
-
-    console.debug('user defined models: ', $scope.preferences.dashboardModels);
 
     // splice working oddly here, clunky workaround
     var models = {};
@@ -753,7 +716,6 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
       }
     });
 
-    console.debug('Revised preferences: ', $scope.preferences.dashboardModels);
   };
 
   // function to set the default model (called on page load)
@@ -768,7 +730,6 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
      */
     if (!$scope.currentRole
       || ($scope.currentRole === 'Viewer' && $scope.currentUser.userName === 'guest')) {
-      console.debug('  Setting guest model');
 
       $scope.defaultModel = {
 
@@ -805,8 +766,6 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
      * AssignedList - EditedList
      */
     else if ($scope.currentRole === 'Specialist') {
-
-      console.debug('  Setting specialist model');
 
       $scope.defaultModel = {
 
@@ -860,8 +819,6 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
        * AssignedList - EditedList
        */
     } else if ($scope.currentRole === 'Lead') {
-
-      console.debug('  Setting lead model');
 
       $scope.defaultModel = {
 
@@ -927,14 +884,11 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
         } ]
       };
 
-      console.debug($scope.defaultModel);
-
       /**
        * Admin has the following widgets - MapProject - MetadataList -
        * AdminTools
        */
     } else if ($scope.currentRole === 'Administrator') {
-      console.debug('  Setting administrator model');
       $scope.defaultModel = {
 
         structure : '12/6-6/12',
@@ -999,8 +953,6 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
 
     $scope.preferences.dashboardModels[$scope.page] = JSON.stringify($scope.model);
     localStorageService.add('preferences', $scope.preferences);
-
-    console.debug('Models', $scope.preferences.dashboardModels);
 
     // update the user preferences
     $http({
@@ -1092,7 +1044,6 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
           'Content-Type' : 'application/json'
         }
       }).success(function(data) {
-      console.debug('Role set to: ' + data);
       $scope.currentRole = data.substring(1, data.length - 1);
       if ($scope.currentRole.toLowerCase() == 'specialist') {
         $scope.currentRole = 'Specialist';
@@ -1123,7 +1074,6 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
     } else {
       path = 'help/' + $scope.currentRole + 'DashboardHelp.html';
     }
-    console.debug('go to help page ' + path);
     // redirect page
     $location.path(path);
   };
@@ -1165,11 +1115,9 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function($scope, $r
       $scope.preferences.dashboardModels);
 
     if ($scope.page in $scope.preferences.dashboardModels) {
-      console.debug('  user defined model found');
       $scope.model = JSON.parse($scope.preferences.dashboardModels[$scope.page]);
 
     } else {
-      console.debug('  using default model (no user-defined model)');
       $scope.model = $scope.defaultModel;
     }
 
@@ -1179,8 +1127,6 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function($scope, $r
 
     // if model has rows defined
     if ($scope.model != null && $scope.model.hasOwnProperty('rows')) {
-
-      console.debug('model has rows');
 
       // cycle over rows
       for (var i = 0; i < $scope.model.rows.length; i++) {
@@ -1202,15 +1148,12 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function($scope, $r
       }
     }
     $scope.model.widgetCount = widgetCt;
-    console.debug('Widgets found: ', $scope.model.widgetCount);
 
   });
 
   // function to reset to the default model (called from page)
   $scope.resetModel = function() {
     console.debug('Main dashboard:   Reset to default model');
-
-    console.debug('user defined models: ', $scope.preferences.dashboardModels);
 
     // splice working oddly here, clunky workaround
     var models = {};
@@ -1239,13 +1182,11 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function($scope, $r
       }
     });
 
-    console.debug('Revised preferences: ', $scope.preferences.dashboardModels);
   };
 
   function setDefaultModel() {
     $scope.page = 'editDashboard';
     console.debug('Setting record dashboard model');
-    console.debug($scope.model);
 
     $scope.defaultModel = {
       structure : '6-6',
@@ -1298,8 +1239,6 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function($scope, $r
     $scope.preferences.dashboardModels[$scope.page] = JSON.stringify($scope.model);
     localStorageService.add('preferences', $scope.preferences);
 
-    console.debug('Models', $scope.preferences.dashboardModels);
-
     // update the user preferences
     $http({
       url : root_mapping + 'userPreferences/update',
@@ -1351,7 +1290,6 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function($scope, $r
   // function to change project from the header
   $scope.changeFocusProject = function(mapProject) {
     $scope.focusProject = mapProject;
-    console.debug('changing project to ' + $scope.focusProject.name);
 
     // update and broadcast the new focus project
     localStorageService.add('focusProject', $scope.focusProject);
@@ -1398,7 +1336,6 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function($scope, $r
     } else {
       path = 'help/' + $scope.currentRole + 'DashboardHelp.html';
     }
-    console.debug('go to help page ' + path);
     // redirect page
     $location.path(path);
   };
@@ -1427,8 +1364,6 @@ mapProjectAppDashboards.controller('ProjectDetailsDashboardCtrl', function($root
   $scope.focusProject = localStorageService.get('focusProject');
 
   $scope.page = 'projectDetailsDashboard';
-
-  console.debug('in projectDetailsDashboardCtrl');
 
   // watch for preferences change
   $scope.$on('localStorageModule.notification.setUserPreferences', function(event, parameters) {
@@ -1464,8 +1399,6 @@ mapProjectAppDashboards.controller('ProjectDetailsDashboardCtrl', function($root
 
   function setModel() {
 
-    console.debug('Setting the dashboard based on role: ' + $scope.currentRole);
-
     $scope.page = 'projectDetailsDashboard';
     $scope.model = {
 
@@ -1485,10 +1418,6 @@ mapProjectAppDashboards.controller('ProjectDetailsDashboardCtrl', function($root
   }
 
   $scope.$on('adfDashboardChanged', function(event, name, model) {
-    console.debug('adfDashboardChanged in DashBoardCtrl');
-    console.debug(event);
-    console.debug(name);
-    console.debug(model);
     $scope.model = model;
   });
 
@@ -1515,7 +1444,6 @@ mapProjectAppDashboards.controller('ProjectDetailsDashboardCtrl', function($root
   // function to change project from the header
   $scope.changeFocusProject = function(mapProject) {
     $scope.focusProject = mapProject;
-    console.debug('changing project to ' + $scope.focusProject.name);
 
     // update and broadcast the new focus project
     localStorageService.add('focusProject', $scope.focusProject);
@@ -1562,7 +1490,6 @@ mapProjectAppDashboards.controller('ProjectDetailsDashboardCtrl', function($root
     } else {
       path = 'help/' + $scope.currentRole + 'DashboardHelp.html';
     }
-    console.debug('go to help page ' + path);
     // redirect page
     $location.path(path);
   };
@@ -1589,8 +1516,6 @@ mapProjectAppDashboards.controller('ProjectRecordsDashboardCtrl', function($root
   $scope.focusProject = localStorageService.get('focusProject');
 
   $scope.page = 'projectRecordsDashboard';
-
-  console.debug('in projectRecordsDashboardCtrl');
 
   // watch for preferences change
   $scope.$on('localStorageModule.notification.setUserPreferences', function(event, parameters) {
@@ -1647,10 +1572,7 @@ mapProjectAppDashboards.controller('ProjectRecordsDashboardCtrl', function($root
   }
 
   $scope.$on('adfDashboardChanged', function(event, name, model) {
-    console.debug('adfDashboardChanged in DashBoardCtrl');
-    console.debug(event);
-    console.debug(name);
-    console.debug(model);
+
     $scope.model = model;
   });
 
@@ -1681,7 +1603,6 @@ mapProjectAppDashboards.controller('ProjectRecordsDashboardCtrl', function($root
   // function to change project from the header
   $scope.changeFocusProject = function(mapProject) {
     $scope.focusProject = mapProject;
-    console.debug('changing project to ' + $scope.focusProject.name);
 
     // update and broadcast the new focus project
     localStorageService.add('focusProject', $scope.focusProject);
@@ -1707,7 +1628,6 @@ mapProjectAppDashboards.controller('ProjectRecordsDashboardCtrl', function($root
     } else {
       path = 'help/' + $scope.currentRole + 'DashboardHelp.html';
     }
-    console.debug('go to help page ' + path);
     // redirect page
     $location.path(path);
   };
@@ -1734,8 +1654,6 @@ mapProjectAppDashboards.controller('RecordConceptDashboardCtrl', function($rootS
   $scope.focusProject = localStorageService.get('focusProject');
 
   $scope.page = 'recordConceptDashboard';
-
-  console.debug('in recordConceptDashboardCtrl');
 
   $scope.$on('localStorageModule.notification.setMapProjects', function(event, parameters) {
     $scope.mapProjects = parameters.mapProjects;
@@ -1796,10 +1714,6 @@ mapProjectAppDashboards.controller('RecordConceptDashboardCtrl', function($rootS
   }
 
   $scope.$on('adfDashboardChanged', function(event, name, model) {
-    console.debug('adfDashboardChanged in DashBoardCtrl');
-    console.debug(event);
-    console.debug(name);
-    console.debug(model);
     $scope.model = model;
   });
 
@@ -1852,7 +1766,6 @@ mapProjectAppDashboards.controller('RecordConceptDashboardCtrl', function($rootS
     } else {
       path = 'help/' + $scope.currentRole + 'DashboardHelp.html';
     }
-    console.debug('go to help page ' + path);
     // redirect page
     $location.path(path);
   };
@@ -1880,8 +1793,6 @@ mapProjectAppDashboards.controller('IndexViewerDashboardCtrl', function($rootSco
 
   $scope.page = 'indexViewerDashboard';
   $rootScope.title = $scope.focusProject.destinationTerminology + ' Index Viewer';
-
-  console.debug('in indexViewerDashboardCtrl');
 
   $scope.$on('localStorageModule.notification.setMapProjects', function(event, parameters) {
     $scope.mapProjects = parameters.mapProjects;
@@ -1940,10 +1851,6 @@ mapProjectAppDashboards.controller('IndexViewerDashboardCtrl', function($rootSco
   }
 
   $scope.$on('adfDashboardChanged', function(event, name, model) {
-    console.debug('adfDashboardChanged in DashBoardCtrl');
-    console.debug(event);
-    console.debug(name);
-    console.debug(model);
     $scope.model = model;
   });
 
@@ -1976,7 +1883,6 @@ mapProjectAppDashboards.controller('IndexViewerDashboardCtrl', function($rootSco
     } else {
       path = 'help/' + $scope.currentRole + 'DashboardHelp.html';
     }
-    console.debug('go to help page ' + path);
     // redirect page
     $location.path(path);
   };

@@ -57,7 +57,6 @@ mapProjectApp
           this.handleError(message);
         }
         this.handleError = function(message) {
-          console.debug('Handle error: ', message);
           if (message && message.length > 120) {
             $rootScope.globalError = 'Unexpected error, click the icon to view attached full error';
             $rootScope.globalLongError = message;
@@ -84,7 +83,6 @@ mapProjectApp
           // Skip if no auth header yet
           if ($http.defaults.headers.common.Authorization) {
             $rootScope.glassPane++;
-            console.debug('initialize terminology notes', projectId);
             $http.get(root_mapping + 'mapProject/' + projectId + '/notes').then(
             // Success
             function(response) {
@@ -94,7 +92,6 @@ mapProjectApp
                 list[entry.key] = entry.value;
               }
               notes[projectId] = list;
-              console.debug(' notes[' + projectId + ']', notes[projectId]);
               $rootScope.glassPane--;
             },
             // Error

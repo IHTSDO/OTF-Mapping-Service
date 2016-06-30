@@ -130,8 +130,6 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
           $scope.numRecordPages = Math.ceil(data.totalCount / $scope.recordsPerPage);
 
           $scope.feedbackConversations = data.feedbackConversation;
-          console.debug('Feedback Conversations:');
-          console.debug($scope.feedbackConversations);
 
         }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
@@ -179,7 +177,6 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
           }
         }).success(function(data) {
           $rootScope.glassPane--;
-          console.debug('success to update Feedback conversation.');
         }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
           $scope.recordError = 'Error updating feedback conversation.';

@@ -73,9 +73,9 @@ angular
 
       // function to change tab
       $scope.setTab = function(tabNumber) {
-        if (tabNumber == null)
+        if (tabNumber == null) {
           tabNumber = 0;
-        console.debug('Switching to tab ' + tabNumber);
+        }
 
         angular.forEach($scope.tabs, function(tab) {
           tab.active = (tab.id == tabNumber ? true : false);
@@ -931,7 +931,7 @@ angular
                 return $scope.currentUser;
               },
               action : function() {
-               
+
                 // catch simple workflow case
                 if ($scope.focusProject.workflowType === 'SIMPLE_PATH') {
                   return 'publish';
