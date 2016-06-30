@@ -143,6 +143,11 @@ public class DefaultSecurityServiceHandler implements SecurityServiceHandler {
     return userSet;
   }
 
+  @Override
+  public String getLogoutUrl() throws Exception {
+    return "/";
+  }
+
   // /**
   // * Returns the user users from config file.
   // *

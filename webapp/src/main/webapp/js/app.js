@@ -85,9 +85,7 @@ var mapProjectApp = angular.module(
 // window.name = 'mappingToolWindow';
 
 mapProjectApp.config([ '$routeProvider', function($routeProvider) {
-  
 
-  
   // ////////////////////////////
   // DASHBOARDS
   // ////////////////////////////
@@ -169,5 +167,3 @@ mapProjectApp.config([ '$routeProvider', function($routeProvider) {
     redirectTo : 'partials/error.html'
   });
 } ]);
-
-
