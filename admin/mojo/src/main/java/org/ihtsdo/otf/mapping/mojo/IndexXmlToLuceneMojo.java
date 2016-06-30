@@ -246,6 +246,7 @@ public class IndexXmlToLuceneMojo extends AbstractMojo {
     /** The data. */
     Map<String, String> data = new HashMap<>();
 
+    /** The codes. */
     List<String> codes = new ArrayList<>();
     
     /** The list of codes associated with the data */

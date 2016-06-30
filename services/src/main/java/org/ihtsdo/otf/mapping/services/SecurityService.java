@@ -33,9 +33,10 @@ public interface SecurityService extends RootService {
    * Logout.
    *
    * @param authToken the auth token
+   * @return the string
    * @throws Exception the exception
    */
-  public void logout(String authToken) throws Exception;
+  public String logout(String authToken) throws Exception;
 
   /**
    * Returns the userName for token.
@@ -60,6 +61,7 @@ public interface SecurityService extends RootService {
    * Returns the application role for token.
    *
    * @param authToken the auth token
+   * @param projectId the project id
    * @return the application role
    * @throws Exception the exception
    */
