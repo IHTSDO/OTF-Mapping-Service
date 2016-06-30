@@ -156,9 +156,14 @@ public class SecurityServiceJpa extends RootServiceJpa implements
     tokenMapUsernameMap.remove(authToken);
     tokenTimeoutMap.remove(authToken);
     if (handler == null) {
+      Properties config = ConfigUtility.getConfigProperties();
+      String handlerName = config.getProperty("security.handler");
+      handler =
+          ConfigUtility.newStandardHandlerInstanceWithConfiguration(
+              "security.handler", handlerName, SecurityServiceHandler.class);
       return handler.getLogoutUrl();
     } else {
-      return "/";
+      return handler.getLogoutUrl();
     }
 
   }

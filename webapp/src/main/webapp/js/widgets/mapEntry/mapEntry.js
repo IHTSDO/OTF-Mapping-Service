@@ -83,7 +83,6 @@ angular
 
         // broadcasts an update from the map entry to the map record widget
         function updateEntry(entry) {
-          console.debug('update entry', entry);
           $rootScope.$broadcast('mapEntryWidget.notification.modifySelectedEntry', {
             action : 'save',
             entry : angular.copy(entry),
@@ -93,7 +92,6 @@ angular
         }
 
         $scope.setTarget = function(targetCode) {
-          console.debug('set target', targetCode);
           $scope.getValidTargetError = '';
 
           // if target code is empty, compute parameters and return
@@ -105,7 +103,6 @@ angular
           }
 
           $rootScope.glassPane++;
-          console.debug('check if code is valid', $scope.project.id, targetCode);
           $http(
             {
               url : root_mapping + 'project/id/' + $scope.project.id + '/concept/' + targetCode
@@ -115,7 +112,6 @@ angular
                 'Content-Type' : 'application/json'
               }
             }).success(function(data) {
-            console.debug('  data = ', data);
             $rootScope.glassPane--;
 
             // if target found and valid
@@ -143,7 +139,6 @@ angular
 
         // watch for concept selection from terminology browser
         $scope.$on('terminologyBrowser.selectConcept', function(event, parameters) {
-          console.debug('select concept', parameters);
           // get the relative position of the inside of the map entry widget
 
           var rect = document.getElementById('mapEntryWidgetTop').getBoundingClientRect();
@@ -217,7 +212,6 @@ angular
           }
 
           $rootScope.glassPane++;
-          console.debug('compute map relations', copy);
           $http({
             url : root_mapping + 'relation/compute',
             dataType : 'json',
@@ -228,7 +222,6 @@ angular
             }
           }).success(
             function(data) {
-              console.debug('  data = ', data);
 
               if (data) {
 
@@ -313,7 +306,6 @@ angular
             }
           }
 
-          console.debug('compute map advice', copy);
           $http({
             url : root_mapping + 'advice/compute',
             dataType : 'json',
@@ -324,7 +316,6 @@ angular
             }
           }).success(
             function(data) {
-              console.debug('  data = ', data);
               if (data) {
                 entry.mapAdvice = data.mapAdvice;
                 // get the allowable advices and relations for this entry

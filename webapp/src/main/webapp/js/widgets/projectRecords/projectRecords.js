@@ -135,8 +135,6 @@ angular
             : 'null') + '/query/'
           + ($scope.searchParameters.query ? encodeURIComponent($scope.searchParameters.query) : 'null');
 
-        console.debug('  pfs', pfs);
-
         $rootScope.glassPane++;
 
         // retrieve map records
@@ -162,7 +160,6 @@ angular
 
       // function to retrieve records for a specified page
       $scope.retrieveRecords = function(page) {
-
         console.debug('Retrieving records', page);
 
         // construct html parameters parameter
@@ -351,7 +348,6 @@ angular
         } else {
           path = 'help/' + $scope.currentRole + 'DashboardHelp.html';
         }
-        console.debug('go to help page ' + path);
         // redirect page
         $location.path(path);
       };
@@ -371,9 +367,6 @@ angular
 
       $scope.editRecord = function(record) {
 
-        console.debug('EditRecord()');
-        console.debug(record);
-
         // check if this record is assigned to the user and not in a publication
         // ready state
         if (record.owner.userName === $scope.currentUser.userName
@@ -387,7 +380,6 @@ angular
         } else {
 
           $rootScope.glassPane++;
-
           console.debug('Edit record clicked, assigning record along FIX_ERROR_PATH');
           $http({
             url : root_workflow + 'assignFromRecord/user/id/' + $scope.currentUser.userName,
@@ -453,9 +445,6 @@ angular
       };
 
       $scope.openViewerFeedbackModal = function(lrecord, currentUser) {
-
-        console.debug('openViewerFeedbackModal with ', lrecord, currentUser);
-
         var modalInstance = $modal.open({
           templateUrl : 'js/widgets/projectRecords/projectRecordsViewerFeedback.html',
           controller : ViewerFeedbackModalCtrl,
@@ -472,7 +461,6 @@ angular
       };
 
       var ViewerFeedbackModalCtrl = function($scope, $modalInstance, record) {
-
         console.debug('Entered modal control', record);
 
         $scope.record = record;
@@ -667,9 +655,6 @@ angular
             queryRestrictions.push(($scope.searchParameters.adviceContained ? '' : 'NOT ')
               + 'mapEntries.mapAdvices.name:"' + $scope.searchParameters.adviceName + '"');
           }
-
-          console.debug('Fielded search results:' + queryRestrictions);
-
           for (var i = 0; i < queryRestrictions.length; i++) {
             pfs.queryRestriction += (pfs.queryRestriction.length > 0 ? ' AND ' : '')
               + queryRestrictions[i];
@@ -752,7 +737,6 @@ angular
 
         // Cancel
         $scope.cancel = function() {
-          console.debug('Stopping QA Records...');
           $scope.isRunning = false;
         };
 

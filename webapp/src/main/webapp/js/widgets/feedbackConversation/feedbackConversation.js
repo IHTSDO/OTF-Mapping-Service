@@ -93,8 +93,6 @@ angular
         }).success(function(data) {
 
           $scope.conversation = data;
-          console.debug('Feedback Conversation:');
-          console.debug($scope.conversation);
           $scope.markViewed($scope.conversation, $scope.currentUser);
           initializeReturnRecipients($scope.conversation);
 
@@ -224,7 +222,6 @@ angular
 
       // send feedback on already started conversation
       $scope.sendFeedback = function(record, feedbackMessage, conversation, recipientList) {
-        console.debug('Add feedback to conversation', record);
 
         if (feedbackMessage == null || feedbackMessage == undefined || feedbackMessage === '') {
           window.alert('The feedback field cannot be blank. ');
@@ -303,7 +300,6 @@ angular
       };
 
       $scope.openIndexViewer = function() {
-        console.debug('page location is', window.location.href);
         var currentUrl = window.location.href;
         var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
         var newUrl = baseUrl + '/index/viewer';
@@ -411,7 +407,6 @@ angular
           }
         }).success(function(data) {
           $rootScope.glassPane--;
-          console.debug('success to update Feedback conversation.');
         }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
           $scope.recordError = 'Error updating feedback conversation.';
@@ -457,7 +452,6 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-          console.debug('Success in getting viewable indexes.');
           if (data.searchResult.length > 0) {
             $scope.indexViewerExists = true;
           } else {

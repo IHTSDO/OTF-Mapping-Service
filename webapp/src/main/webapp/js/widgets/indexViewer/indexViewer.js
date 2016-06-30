@@ -106,8 +106,6 @@ angular
             return a.name > b.name;
           });
 
-          console.debug(domainTab.pageTabs);
-
           $scope.domainTabs.push(domainTab);
         });
 
@@ -197,8 +195,6 @@ angular
         return deferred.promise;
       };
       $scope.goToElement = function(result) {
-
-        console.debug('Going to result', result);
 
         if (!result) {
           return;
@@ -296,7 +292,6 @@ angular
         if (!targetCode) {
           return;
         }
-        console.debug('testing storage event');
         localStorage.setItem('targetCode', targetCode);
 
         $timeout(
@@ -331,9 +326,6 @@ angular
             + '/details/' + link).then(
           // Success
           function(response) {
-
-            console.debug('resolving', response.data.substring(1, response.data.length - 2));
-
             // substring to eliminate quotation marks
             deferred.resolve(response.data.substring(1, response.data.length - 2));
 
@@ -351,17 +343,13 @@ angular
       }
 
       $scope.detailsHighlighted = function(link) {
-        console.debug('Getting SR details', link);
         detailsHelper(link).then(function(response) {
-          console.debug('details', response);
           $scope.indexTrailHighlighted = response;
         });
       };
 
       $scope.details = function(link) {
-        console.debug('Getting details', link);
         detailsHelper(link).then(function(response) {
-          console.debug('details', response);
           $scope.indexTrail = response;
         });
       };
@@ -387,8 +375,6 @@ angular
         .success(function(domainNames) {
 
           $rootScope.glassPane--;
-
-          console.debug('Domain names retrieved', domainNames);
 
           // get the pages
           angular.forEach(domainNames.searchResult, function(searchResult) {
@@ -430,8 +416,6 @@ angular
 
       // Retrieves the pages for a domain name
       $scope.getDomainPages = function(domainName) {
-
-        console.debug('Retrieving pages for domain ' + domainName);
         var deferred = $q.defer();
 
         $rootScope.glassPane++;
@@ -442,7 +426,6 @@ angular
         // success
         .success(function(searchResults) {
           $rootScope.glassPane--;
-          console.debug('Pages for ' + domainName, searchResults);
           var domainPages = searchResults.searchResult.map(function(searchResult) {
             return searchResult.value;
           });
