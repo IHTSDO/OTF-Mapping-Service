@@ -80,6 +80,7 @@ public class SecurityServiceRest extends RootServiceRest {
    */
   @POST
   @Path("/logout/user/id/{userName}")
+  @Produces(MediaType.TEXT_PLAIN)
   @ApiOperation(value = "Log out.", notes = "Logs a map user out of the tool.", response = String.class)
   public String logout(
     @ApiParam(value = "Username", required = true) @PathParam("userName") String userName)

@@ -83,9 +83,6 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
         localStorage.removeItem('targetCode');
         $scope.query = targetCode;
         $scope.search();
-
-        console.debug(window.location.href);
-        console.debug(window.name);
         $timeout(function() {
           window.alert('Target code selected in index viewer: ' + targetCode);
         }, 250);
@@ -193,13 +190,11 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
       var t = $scope.focusProject.destinationTerminology;
       var v = $scope.focusProject.destinationTerminologyVersion;
       var lquery = query + ' AND terminology:' + t + ' AND terminologyVersion:' + v;
-      console.debug('get concepts for query', lquery);
 
       gpService.increment();
       $http.get(root_content + 'concept/query/' + encodeURIComponent(lquery)).then(
       // Success
       function(response) {
-        console.debug('  concepts = ', response.data.searchResult);
         $scope.searchStatus = '';
 
         // if just 0 results, show a message
