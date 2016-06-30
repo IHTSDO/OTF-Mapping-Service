@@ -527,7 +527,7 @@ angular
           }
         }).success(function(data) {
           $rootScope.glassPane--;
-          $location.path('/');
+          $location.path(data);
         }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
           $location.path('/');
