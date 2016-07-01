@@ -27,8 +27,6 @@ angular
 
           $http.defaults.headers.common.Authorization = $scope.currentUserToken;
 
-            $scope.focusProject.mapSpecialist, $scope.focusProject.mapLead);
-
           // construct list of specialists and leads
           $scope.projectUsers = $scope.focusProject.mapSpecialist
             .concat($scope.focusProject.mapLead);
