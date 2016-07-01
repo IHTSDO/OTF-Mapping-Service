@@ -3,6 +3,7 @@
 <!-- Prevent reload on this editing page -->
 <script type="text/javascript">
   window.onbeforeunload = function() {
+    window.onbeforeunload = new function() {};
     return "If you leave this page data may be lost!";
   }
 </script>
