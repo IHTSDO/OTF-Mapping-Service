@@ -1101,7 +1101,10 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
       String ancestorPath = ancestorPaths.get(0);
 
       // insert string to actually add this concept to the ancestor path
-      ancestorPath += "~" + terminologyId;
+      if (!ancestorPath.isEmpty()) {
+        ancestorPath += "~";
+      }
+      ancestorPath += terminologyId;
 
       // construct query for descendants
       query =

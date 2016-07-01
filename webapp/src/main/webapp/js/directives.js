@@ -20,7 +20,9 @@ mapProjectAppDirectives.directive('otfMapRecordNarrow', function($sce, utilServi
     link : function(scope, iElement, iAttrs, ctrl) {
 
       // Wire notes
-      scope.notes = utilService.getNotes(scope.project.id);
+      if (scope.project) {
+        scope.notes = utilService.getNotes(scope.project.id);
+      }
 
       // function to return trusted html code (for tooltip
       // content)
@@ -46,8 +48,9 @@ mapProjectAppDirectives.directive('otfMapRecordWide', function($sce, utilService
     link : function(scope, iElement, iAttrs, ctrl) {
 
       // Wire notes
-      scope.notes = utilService.getNotes(scope.project.id);
-
+      if (scope.project) {
+        scope.notes = utilService.getNotes(scope.project.id);
+      }
       // function to return trusted html code (for tooltip
       // content)
       scope.to_trusted = function(html_code) {
