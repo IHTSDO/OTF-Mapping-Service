@@ -70,7 +70,7 @@
                   <inputDir>${input.dir}</inputDir>
                   <inputFile>TEIL1.ASC</inputFile>
                   <terminology>ICD10</terminology>
-                  <terminologyVersion>2010</terminologyVersion>
+                  <terminologyVersion>2016</terminologyVersion>
                   <documentTitle>Alphabetical index to diseases and nature of
                     injury</documentTitle>
                   <headerProperties>
@@ -105,7 +105,7 @@
                   <inputDir>${input.dir}</inputDir>
                   <inputFile>TEIL2.ASC</inputFile>
                   <terminology>ICD10</terminology>
-                  <terminologyVersion>2010</terminologyVersion>
+                  <terminologyVersion>2016</terminologyVersion>
                   <documentTitle>External causes of injury</documentTitle>
                   <headerProperties />
                 </configuration>
@@ -120,7 +120,7 @@
                   <inputDir>${input.dir}</inputDir>
                   <inputFile>TEIL3.ASC</inputFile>
                   <terminology>ICD10</terminology>
-                  <terminologyVersion>2010</terminologyVersion>
+                  <terminologyVersion>2016</terminologyVersion>
                   <documentTitle>Table of drugs and chemicals</documentTitle>
                   <headerProperties>
                     <property>
@@ -162,7 +162,7 @@
                   <inputFile>ICD10_TEIL1.ASC.xml</inputFile>
                   <domain>TEIL1</domain>
                   <terminology>ICD10</terminology>
-                  <terminologyVersion>2010</terminologyVersion>
+                  <terminologyVersion>2016</terminologyVersion>
                 </configuration>
                 <goals>
                   <goal>convert-to-html</goal>
@@ -177,7 +177,7 @@
                   <inputFile>ICD10_TEIL2.ASC.xml</inputFile>
                   <domain>TEIL2</domain>
                   <terminology>ICD10</terminology>
-                  <terminologyVersion>2010</terminologyVersion>
+                  <terminologyVersion>2016</terminologyVersion>
                 </configuration>
                 <goals>
                   <goal>convert-to-html</goal>
@@ -192,7 +192,7 @@
                   <inputFile>ICD10_TEIL3.ASC.xml</inputFile>
                   <domain>TEIL3</domain>
                   <terminology>ICD10</terminology>
-                  <terminologyVersion>2010</terminologyVersion>
+                  <terminologyVersion>2016</terminologyVersion>
                 </configuration>
                 <goals>
                   <goal>convert-to-html</goal>
@@ -207,7 +207,7 @@
                   <inputFile>ICD10_TEIL1.ASC.xml</inputFile>
                   <domain>TEIL1</domain>
                   <terminology>ICD10</terminology>
-                  <terminologyVersion>2010</terminologyVersion>
+                  <terminologyVersion>2016</terminologyVersion>
                 </configuration>
                 <goals>
                   <goal>convert-to-lucene</goal>
@@ -222,7 +222,7 @@
                   <inputFile>ICD10_TEIL2.ASC.xml</inputFile>
                   <domain>TEIL2</domain>
                   <terminology>ICD10</terminology>
-                  <terminologyVersion>2010</terminologyVersion>
+                  <terminologyVersion>2016</terminologyVersion>
                 </configuration>
                 <goals>
                   <goal>convert-to-lucene</goal>
@@ -237,7 +237,7 @@
                   <inputFile>ICD10_TEIL3.ASC.xml</inputFile>
                   <domain>TEIL3</domain>
                   <terminology>ICD10</terminology>
-                  <terminologyVersion>2010</terminologyVersion>
+                  <terminologyVersion>2016</terminologyVersion>
                 </configuration>
                 <goals>
                   <goal>convert-to-lucene</goal>

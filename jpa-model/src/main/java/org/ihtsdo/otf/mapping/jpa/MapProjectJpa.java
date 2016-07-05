@@ -327,321 +327,184 @@ public class MapProjectJpa implements MapProject {
     // do nothing
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#getMapLeads()
-   */
+  /* see superclass */
   @Override
   @XmlElement(type = MapUserJpa.class, name = "mapLead")
   public Set<MapUser> getMapLeads() {
     return mapLeads;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#setMapLeads(java.util.Set)
-   */
+  /* see superclass */
   @Override
   public void setMapLeads(Set<MapUser> mapLeads) {
     this.mapLeads = mapLeads;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#addMapLead(org.ihtsdo.otf.mapping
-   * .model.MapLead)
-   */
+  /* see superclass */
   @Override
   public void addMapLead(MapUser mapLead) {
     mapLeads.add(mapLead);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#removeMapLead(org.ihtsdo.otf.mapping
-   * .model.MapLead)
-   */
+  /* see superclass */
   @Override
   public void removeMapLead(MapUser mapLead) {
     mapLeads.remove(mapLead);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#getMapSpecialists()
-   */
+  /* see superclass */
   @Override
   @XmlElement(type = MapUserJpa.class, name = "mapSpecialist")
   public Set<MapUser> getMapSpecialists() {
     return mapSpecialists;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#setMapSpecialists(java.util.Set)
-   */
+  /* see superclass */
   @Override
   public void setMapSpecialists(Set<MapUser> mapSpecialists) {
     this.mapSpecialists = mapSpecialists;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#addMapSpecialist(org.ihtsdo.otf
-   * .mapping.model.MapSpecialist)
-   */
+  /* see superclass */
   @Override
   public void addMapSpecialist(MapUser mapSpecialist) {
     mapSpecialists.add(mapSpecialist);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#removeMapSpecialist(org.ihtsdo.
-   * otf.mapping.model.MapSpecialist)
-   */
+  /* see superclass */
   @Override
   public void removeMapSpecialist(MapUser mapSpecialist) {
     mapSpecialists.remove(mapSpecialist);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#getSourceTerminology()
-   */
+  /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   public String getSourceTerminology() {
     return sourceTerminology;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#setSourceTerminology(java.lang.
-   * String)
-   */
+  /* see superclass */
   @Override
   public void setSourceTerminology(String sourceTerminology) {
     this.sourceTerminology = sourceTerminology;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#getDestinationTerminology()
-   */
+  /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   public String getDestinationTerminology() {
     return destinationTerminology;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#setDestinationTerminology(java.
-   * lang.String)
-   */
+  /* see superclass */
   @Override
   public void setDestinationTerminology(String destinationTerminology) {
     this.destinationTerminology = destinationTerminology;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#getSourceTerminologyVersion()
-   */
+  /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public String getSourceTerminologyVersion() {
     return sourceTerminologyVersion;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#setSourceTerminologyVersion(java
-   * .lang.String)
-   */
+  /* see superclass */
   @Override
   public void setSourceTerminologyVersion(String sourceTerminologyVersion) {
     this.sourceTerminologyVersion = sourceTerminologyVersion;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#getDestinationTerminologyVersion()
-   */
+  /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public String getDestinationTerminologyVersion() {
     return destinationTerminologyVersion;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#setDestinationTerminologyVersion
-   * (java.lang.String)
-   */
+  /* see superclass */
   @Override
   public void setDestinationTerminologyVersion(
     String destinationTerminologyVersion) {
     this.destinationTerminologyVersion = destinationTerminologyVersion;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#getName()
-   */
+  /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   public String getName() {
     return name;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#setName(java.lang.String)
-   */
+  /* see superclass */
   @Override
   public void setName(String name) {
     this.name = name;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#isPublic()
-   */
+  /* see superclass */
   @Override
   public boolean isPublic() {
     return isPublic;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#setPublic(boolean)
-   */
+  /* see superclass */
   @Override
   public void setPublic(boolean isPublic) {
     this.isPublic = isPublic;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#isGroupStructure()
-   */
+  /* see superclass */
   @Override
   public boolean isGroupStructure() {
     return groupStructure;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#setGroupStructure(boolean)
-   */
+  /* see superclass */
   @Override
   public void setGroupStructure(boolean groupStructure) {
     this.groupStructure = groupStructure;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#isPublished()
-   */
+  /* see superclass */
   @Override
   public boolean isPublished() {
     return published;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#setPublished(boolean)
-   */
+  /* see superclass */
   @Override
   public void setPublished(boolean published) {
     this.published = published;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#getWorkflowType()
-   */
+  /* see superclass */
   @Override
   public WorkflowType getWorkflowType() {
     return workflowType;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#setWorkflowType(org.ihtsdo.otf.
-   * mapping.helpers.WorkflowType)
-   */
+  /* see superclass */
   @Override
   public void setWorkflowType(WorkflowType workflowType) {
     this.workflowType = workflowType;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#getRefSetName()
-   */
+  /* see superclass */
   @Override
   public String getRefSetName() {
     return this.refSetName;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#setRefSetName(java.lang.String)
-   */
+  /* see superclass */
   @Override
   public void setRefSetName(String refSetName) {
     this.refSetName = refSetName;
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#getEditingCycleBeginDate()
-   */
+  /* see superclass */
   @Override
   public Date getEditingCycleBeginDate() {
     if (editingCycleBeginDate == null) {
@@ -650,23 +513,13 @@ public class MapProjectJpa implements MapProject {
     return editingCycleBeginDate;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#setEditingCycleBeginDate(java.util
-   * .Date)
-   */
+  /* see superclass */
   @Override
   public void setEditingCycleBeginDate(Date editingCycleBeginDate) {
     this.editingCycleBeginDate = editingCycleBeginDate;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#getLatestPublicationDate()
-   */
+  /* see superclass */
   @Override
   public Date getLatestPublicationDate() {
     if (latestPublicationDate == null) {
@@ -675,485 +528,267 @@ public class MapProjectJpa implements MapProject {
     return latestPublicationDate;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#setLatestPublicationDate(java.util
-   * .Date)
-   */
+  /* see superclass */
   @Override
   public void setLatestPublicationDate(Date latestPublicationDate) {
     this.latestPublicationDate = latestPublicationDate;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#getRefSetId()
-   */
+  /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public String getRefSetId() {
     return refSetId;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#setRefSetId(java.lang.String)
-   */
+  /* see superclass */
   @Override
   public void setRefSetId(String refSetId) {
     this.refSetId = refSetId;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#getMapRelationStyle()
-   */
+  /* see superclass */
   @Override
   public RelationStyle getMapRelationStyle() {
     return mapRelationStyle;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#getmapPrincipleSourceDocumentName()
-   */
+  /* see superclass */
   @Override
   public String getMapPrincipleSourceDocumentName() {
     return mapPrincipleSourceDocumentName;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#setmapPrincipleSourceDocumentName
-   * (java .lang.String)
-   */
+  /* see superclass */
   @Override
   public void setMapPrincipleSourceDocumentName(
     String mapPrincipleSourceDocumentName) {
     this.mapPrincipleSourceDocumentName = mapPrincipleSourceDocumentName;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#setMapRelationStyle(java.lang.String
-   * )
-   */
+  /* see superclass */
   @Override
   public void setMapRelationStyle(RelationStyle mapRelationStyle) {
     this.mapRelationStyle = mapRelationStyle;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#isRuleBased()
-   */
+  /* see superclass */
   @Override
   public boolean isRuleBased() {
     return ruleBased;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#setRuleBased(boolean)
-   */
+  /* see superclass */
   @Override
   public void setRuleBased(boolean ruleBased) {
     this.ruleBased = ruleBased;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#getMapRefsetPattern()
-   */
+  /* see superclass */
   @Override
   public MapRefsetPattern getMapRefsetPattern() {
     return mapRefsetPattern;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#setMapRefsetPattern(java.lang.String
-   * )
-   */
+  /* see superclass */
   @Override
   public void setMapRefsetPattern(MapRefsetPattern mapRefsetPattern) {
     this.mapRefsetPattern = mapRefsetPattern;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#getMapAdvices()
-   */
+  /* see superclass */
   @Override
   @XmlElement(type = MapAdviceJpa.class, name = "mapAdvice")
   public Set<MapAdvice> getMapAdvices() {
     return mapAdvices;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#setMapAdvices(java.util.Set)
-   */
+  /* see superclass */
   @Override
   public void setMapAdvices(Set<MapAdvice> mapAdvices) {
     this.mapAdvices = mapAdvices;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#addMapAdvice(org.ihtsdo.otf.mapping
-   * .model.MapAdvice)
-   */
+  /* see superclass */
   @Override
   public void addMapAdvice(MapAdvice mapAdvice) {
     mapAdvices.add(mapAdvice);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#removeMapAdvice(org.ihtsdo.otf.
-   * mapping.model.MapAdvice)
-   */
+  /* see superclass */
   @Override
   public void removeMapAdvice(MapAdvice mapAdvice) {
     mapAdvices.remove(mapAdvice);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#getMapPrinciples()
-   */
+  /* see superclass */
   @Override
   @XmlElement(type = MapPrincipleJpa.class, name = "mapPrinciple")
   public Set<MapPrinciple> getMapPrinciples() {
     return mapPrinciples;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#setMapPrinciples(java.util.Set)
-   */
+  /* see superclass */
   @Override
   public void setMapPrinciples(Set<MapPrinciple> mapPrinciples) {
     this.mapPrinciples = mapPrinciples;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#addMapPrinciple(org.ihtsdo.otf.
-   * mapping.model.MapPrinciple)
-   */
+  /* see superclass */
   @Override
   public void addMapPrinciple(MapPrinciple mapPrinciple) {
     mapPrinciples.add(mapPrinciple);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#removeMapPrinciple(org.ihtsdo.otf
-   * .mapping.model.MapPrinciple)
-   */
+  /* see superclass */
   @Override
   public void removeMapPrinciple(MapPrinciple mapPrinciple) {
     mapPrinciples.remove(mapPrinciple);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#getScopeConcepts()
-   */
+  /* see superclass */
   @Override
   public Set<String> getScopeConcepts() {
     return scopeConcepts;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#setScopeConcepts(java.util.Set)
-   */
+  /* see superclass */
   @Override
   public void setScopeConcepts(Set<String> scopeConcepts) {
     this.scopeConcepts = scopeConcepts;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#addScopeConcept(java.lang.String)
-   */
+  /* see superclass */
   @Override
   public void addScopeConcept(String terminologyId) {
     this.scopeConcepts.add(terminologyId);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#removeScopeConcept(java.lang.String
-   * )
-   */
+  /* see superclass */
   @Override
   public void removeScopeConcept(String terminologyId) {
     this.scopeConcepts.remove(terminologyId);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#isScopeDescendantsFlag()
-   */
+  /* see superclass */
   @Override
   public boolean isScopeDescendantsFlag() {
     return scopeDescendantsFlag;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#setScopeDescendantsFlag(boolean)
-   */
+  /* see superclass */
   @Override
   public void setScopeDescendantsFlag(boolean flag) {
     scopeDescendantsFlag = flag;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#getScopeExcludedConcepts()
-   */
+  /* see superclass */
   @Override
   public Set<String> getScopeExcludedConcepts() {
     return scopeExcludedConcepts;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#setScopeExcludedConcepts(java.util
-   * .Set)
-   */
+  /* see superclass */
   @Override
   public void setScopeExcludedConcepts(Set<String> scopeExcludedConcepts) {
     this.scopeExcludedConcepts = scopeExcludedConcepts;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#addScopeExcludedConcept(java.lang
-   * .String)
-   */
+  /* see superclass */
   @Override
   public void addScopeExcludedConcept(String terminologyId) {
     this.scopeExcludedConcepts.add(terminologyId);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#removeScopeExcludedConcept(java
-   * .lang.String)
-   */
+  /* see superclass */
   @Override
   public void removeScopeExcludedConcept(String terminologyId) {
     this.scopeExcludedConcepts.remove(terminologyId);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#isScopeExcludedDescendantsFlag()
-   */
+  /* see superclass */
   @Override
   public boolean isScopeExcludedDescendantsFlag() {
     return scopeExcludedDescendantsFlag;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#setScopeExcludedDescendantsFlag
-   * (boolean)
-   */
+  /* see superclass */
   @Override
   public void setScopeExcludedDescendantsFlag(boolean flag) {
     scopeExcludedDescendantsFlag = flag;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#getPresetAgeRanges()
-   */
+  /* see superclass */
   @Override
   @XmlElement(type = MapAgeRangeJpa.class, name = "mapAgeRange")
   public Set<MapAgeRange> getPresetAgeRanges() {
     return this.presetAgeRanges;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#setPresetAgeRanges(java.util.Set)
-   */
+  /* see superclass */
   @Override
   public void setPresetAgeRanges(Set<MapAgeRange> ageRanges) {
     this.presetAgeRanges = ageRanges;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#addPresetAgeRange(org.ihtsdo.otf
-   * .mapping.model.MapAgeRange)
-   */
+  /* see superclass */
   @Override
   public void addPresetAgeRange(MapAgeRange ageRange) {
     this.presetAgeRanges.add(ageRange);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#removePresetAgeRange(org.ihtsdo
-   * .otf.mapping.model.MapAgeRange)
-   */
+  /* see superclass */
   @Override
   public void removePresetAgeRange(MapAgeRange ageRange) {
     this.presetAgeRanges.remove(ageRange);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#getMapRelations()
-   */
+  /* see superclass */
   @Override
   @XmlElement(type = MapRelationJpa.class, name = "mapRelation")
   public Set<MapRelation> getMapRelations() {
     return mapRelations;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#setMapRelations(java.util.Set)
-   */
+  /* see superclass */
   @Override
   public void setMapRelations(Set<MapRelation> mapRelations) {
     this.mapRelations = mapRelations;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#addMapRelation(org.ihtsdo.otf.mapping
-   * .model.MapRelation)
-   */
+  /* see superclass */
   @Override
   public void addMapRelation(MapRelation mr) {
     this.mapRelations.add(mr);
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#removeMapRelation(org.ihtsdo.otf
-   * .mapping.model.MapRelation)
-   */
+  /* see superclass */
   @Override
   public void removeMapRelation(MapRelation mr) {
     this.mapRelations.remove(mr);
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#getErrorMessages()
-   */
+  /* see superclass */
   @Override
   public Set<String> getErrorMessages() {
     return errorMessages;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#setErrorMessages(java.util.Set)
-   */
+  /* see superclass */
   @Override
   public void setErrorMessages(Set<String> errorMessages) {
     this.errorMessages = errorMessages;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#getProjectSpecificAlgorithmHandlerClass
-   * ()
-   */
+  /* see superclass */
   @Override
   public String getProjectSpecificAlgorithmHandlerClass() {
     return projectSpecificAlgorithmHandlerClass;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#setProjectSpecificAlgorithmHandlerClass
-   * (java.lang.String)
-   */
+  /* see superclass */
   @Override
   public void setProjectSpecificAlgorithmHandlerClass(
     String projectSpecificAlgorithmHandlerClass) {
@@ -1161,11 +796,7 @@ public class MapProjectJpa implements MapProject {
         projectSpecificAlgorithmHandlerClass;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
+  /* see superclass */
   @Override
   public String toString() {
     return "MapProjectJpa [id=" + id + ", name=" + name + ", isPublic="
@@ -1195,11 +826,7 @@ public class MapProjectJpa implements MapProject {
         + propagationDescendantThreshold + "]";
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#hashCode()
-   */
+  /* see superclass */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -1237,11 +864,7 @@ public class MapProjectJpa implements MapProject {
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
+  /* see superclass */
   @Override
   public boolean equals(Object obj) {
     if (this == obj)
@@ -1296,24 +919,13 @@ public class MapProjectJpa implements MapProject {
     return true;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#setMapPrincipleSourceDocument(java
-   * .lang.String)
-   */
+  /* see superclass */
   @Override
   public void setMapPrincipleSourceDocument(String mapPrincipleSourceDocument) {
     this.mapPrincipleSourceDocument = mapPrincipleSourceDocument;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#getMapPrincipleSourceDocument()
-   */
+  /* see superclass */
   @Override
   public String getMapPrincipleSourceDocument() {
     return mapPrincipleSourceDocument;
@@ -1360,47 +972,26 @@ public class MapProjectJpa implements MapProject {
     this.propagatedFlag = propagatedFlag;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapProject#getReportDefinitions()
-   */
+  /* see superclass */
   @Override
   @XmlElement(type = ReportDefinitionJpa.class, name = "reportDefinition")
   public Set<ReportDefinition> getReportDefinitions() {
     return reportDefinitions;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#setReportDefinitions(java.util.Set)
-   */
+  /* see superclass */
   @Override
   public void setReportDefinitions(Set<ReportDefinition> reportDefinitions) {
     this.reportDefinitions = reportDefinitions;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#addReportDefinition(org.ihtsdo.
-   * otf.mapping.reports.ReportDefinition)
-   */
+  /* see superclass */
   @Override
   public void addReportDefinition(ReportDefinition reportDefinition) {
     reportDefinitions.add(reportDefinition);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapProject#removeReportDefinition(org.ihtsdo
-   * .otf.mapping.reports.ReportDefinition)
-   */
+  /* see superclass */
   @Override
   public void removeReportDefinition(ReportDefinition reportDefinition) {
     reportDefinitions.remove(reportDefinition);
