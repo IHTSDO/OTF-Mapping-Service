@@ -16,6 +16,7 @@ import nu.xom.Element;
 import nu.xom.Elements;
 import nu.xom.Serializer;
 
+import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -239,6 +240,7 @@ public class AscToXmlMojo extends AbstractMojo {
   public Element writeToXml(Element root, Element initialParent, String lastLine)
     throws Exception {
 
+    Logger.getLogger(getClass()).info(lastLine);
     // Setup
     Element parent = initialParent;
     Pattern notEmpty = Pattern.compile("\\S+");
