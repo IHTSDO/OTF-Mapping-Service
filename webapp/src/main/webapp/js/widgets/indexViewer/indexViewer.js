@@ -84,7 +84,7 @@ angular
       $scope.initializeTabs = function() {
         $scope.domainTabs = [];
         angular.forEach($scope.domains, function(domain) {
-
+          console.debug("Initialize domain", domain);
           // create the domain tab
           var domainTab = {
             domain : domain,
@@ -94,6 +94,7 @@ angular
 
           // add the page tabs
           angular.forEach(domain.pages, function(page) {
+            console.debug("Initialize page", domain, page);
             var pageTab = {
               name : page,
               active : false
