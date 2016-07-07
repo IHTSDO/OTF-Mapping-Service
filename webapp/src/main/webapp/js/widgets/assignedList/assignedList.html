@@ -59,7 +59,8 @@
             title="Finish All Work"
             ng-click="finishOrPublishBatch(assignedWorkType)">
             <i class="glyphicon glyphicon-check"></i>
-          </a> <a ng-show="assignedWorkType === 'EDITING_DONE'"
+          </a> <a
+            ng-show="assignedWorkType === 'EDITING_DONE' && focusProject.workflowType === 'SIMPLE_PATH'"
             title='Publish All Finished Concepts'
             ng-click="finishOrPublishBatch(assignedWorkType)">
             <i class="glyphicon glyphicon-check"></i>
