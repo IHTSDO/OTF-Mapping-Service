@@ -362,11 +362,10 @@
         <td style="width: 17%; padding: 5px;">{{concept.terminologyId}}</td>
         <td style="width: 72%; padding: 5px;">{{concept.name}}</td>
         <td style="width: 3%; padding: 5px;">
-          <a title="Labels" ng-show="concept.labels.length > 0"
+          <i ng-show="concept.labels.length > 0"
             tooltip-placement="top" tooltip="{{concept.labels}}"
-            style="float: right; margin-right: 5px;">
-            <i class="glyphicon glyphicon-tasks"></i>
-          </a>
+            style="float: right; margin-right: 5px;"
+            class="glyphicon glyphicon-tasks"></i>
         </td>
         <td style="width: 3%; padding: 5px;">
           <a title="Remove from QA"
