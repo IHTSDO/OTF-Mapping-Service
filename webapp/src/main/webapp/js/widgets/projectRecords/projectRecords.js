@@ -42,7 +42,7 @@ angular
 
       // the project id, extracted from route params
       $scope.projectId = $routeParams.projectId;
-      
+
       // whether the terminology has viewable index
       $scope.indexViewerExists = false;
 
@@ -69,14 +69,10 @@ angular
         console.debug('ProjectRecordCtrl:  Detected change in focus project',
           parameters.focusProject);
         $scope.focusProject = parameters.focusProject;
-        
-     
-        
+
         $scope.getRecordsForProject();
         $scope.setIndexViewerStatus();
         $scope.initializeSearchParameters();
-       
-        
 
       });
 
@@ -124,6 +120,10 @@ angular
       // record retrieval (unpaged)
       $scope.retrieveRecordsHelper = function(pfs) {
 
+        if ($scope.searchParameters.query.indexOf('/') != -1) {
+          window.alert("Slash characters are not allowed in search queries");
+          return;
+        }
         $rootScope.resetGlobalError();
 
         var deferred = $q.defer();
@@ -132,8 +132,10 @@ angular
           + $scope.project.objectId
           + '/ancestor/'
           + ($scope.searchParameters.ancestorId && $scope.searchParameters.advancedMode ? $scope.searchParameters.ancestorId
-            : 'null') + '/query/'
-          + ($scope.searchParameters.query ? encodeURIComponent($scope.searchParameters.query) : 'null');
+            : 'null')
+          + '/query/'
+          + ($scope.searchParameters.query ? encodeURIComponent($scope.searchParameters.query)
+            : 'null');
 
         $rootScope.glassPane++;
 
@@ -559,8 +561,8 @@ angular
         ancestorId : null,
         rootId : null,
         targetId : null,
-        targetIdRangeStart: null,
-        targetIdRangeEnd: null,
+        targetIdRangeStart : null,
+        targetIdRangeEnd : null,
         targetName : null,
         adviceContained : true,
         adviceName : null,
@@ -639,10 +641,13 @@ angular
           if ($scope.searchParameters.targetId && $scope.searchParameters.targetId.length > 0) {
             queryRestrictions.push('mapEntries.targetId:' + $scope.searchParameters.targetId);
           }
-          
+
           // check target id range
-          if ($scope.searchParameters.targetIdRangeStart && $scope.searchParameters.targetIdRangeEnd) {
-        	  queryRestrictions.push('mapEntries.targetId:[' + $scope.searchParameters.targetIdRangeStart + ' TO ' + $scope.searchParameters.targetIdRangeEnd + ']')
+          if ($scope.searchParameters.targetIdRangeStart
+            && $scope.searchParameters.targetIdRangeEnd) {
+            queryRestrictions.push('mapEntries.targetId:['
+              + $scope.searchParameters.targetIdRangeStart + ' TO '
+              + $scope.searchParameters.targetIdRangeEnd + ']')
           }
 
           // check target name
@@ -801,41 +806,39 @@ angular
         $scope.clearError = function() {
           $scope.error = null;
         };
-        
-        
 
       };
-      
+
       $scope.setIndexViewerStatus = function() {
-          console.debug('Get index viewer status', $scope.project.destinationTerminology);
-          $http(
-            {
-              url : root_content + 'index/' + $scope.project.destinationTerminology + '/'
-                + $scope.project.destinationTerminologyVersion,
-              dataType : 'json',
-              method : 'GET',
-              headers : {
-                'Content-Type' : 'application/json'
-              }
-            }).success(function(data) {
-            console.debug('  data = ', data);
-            if (data.searchResult.length > 0) {
-              $scope.indexViewerExists = true;
-            } else {
-              $scope.indexViewerExists = false;
+        console.debug('Get index viewer status', $scope.project.destinationTerminology);
+        $http(
+          {
+            url : root_content + 'index/' + $scope.project.destinationTerminology + '/'
+              + $scope.project.destinationTerminologyVersion,
+            dataType : 'json',
+            method : 'GET',
+            headers : {
+              'Content-Type' : 'application/json'
             }
-          }).error(function(data, status, headers, config) {
+          }).success(function(data) {
+          console.debug('  data = ', data);
+          if (data.searchResult.length > 0) {
+            $scope.indexViewerExists = true;
+          } else {
             $scope.indexViewerExists = false;
-          });
-        }
-      
+          }
+        }).error(function(data, status, headers, config) {
+          $scope.indexViewerExists = false;
+        });
+      }
+
       // opens the index viewer
       $scope.openIndexViewer = function() {
-          var currentUrl = window.location.href;
-          var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
-          var newUrl = baseUrl + '/index/viewer';
-          var myWindow = window.open(newUrl, 'indexViewerWindow');
-          myWindow.focus();
-        };
+        var currentUrl = window.location.href;
+        var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
+        var newUrl = baseUrl + '/index/viewer';
+        var myWindow = window.open(newUrl, 'indexViewerWindow');
+        myWindow.focus();
+      };
 
     });
