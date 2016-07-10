@@ -752,6 +752,11 @@ angular
 
         // Create QA records
         $scope.qaRecords = function(label) {
+          if (label.match(/[^a-zA-Z0-9,\.\- ]/)) {
+            window
+              .alert("QA labels may contain only alphanumeric characters, dot, dash, and space characters");
+            return;
+          }
           $scope.isRunning = true;
           $scope.qaSucceeded = 0;
           $scope.qaFailed = 0;
