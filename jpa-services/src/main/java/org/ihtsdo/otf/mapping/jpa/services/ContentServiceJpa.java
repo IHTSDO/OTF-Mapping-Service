@@ -1519,6 +1519,14 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
               .setParameter("terminologyVersion", terminologyVersion)
               .getResultList();
     }
+    // Sort by terminology id (alpha sort)
+    Collections.sort(treePositions, new Comparator<TreePosition>() {
+      @Override
+      public int compare(TreePosition o1, TreePosition o2) {
+        return o1.getTerminologyId().compareTo(o2.getTerminologyId());
+      }
+
+    });
     final TreePositionListJpa treePositionList = new TreePositionListJpa();
     treePositionList.setTreePositions(treePositions);
     treePositionList.setTotalCount(treePositions.size());
