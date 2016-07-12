@@ -14,6 +14,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -170,6 +171,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       final Map<String, String> hierRelTypeMap =
           metadataService.getHierarchicalRelationshipTypes(terminology,
               terminologyVersion);
+
       final String isaRelType =
           hierRelTypeMap.keySet().iterator().next().toString();
       metadataService.close();
@@ -1254,6 +1256,14 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
     // Override terminology version with parameter
     terminologyVersion = version;
     getLog().info("terminologyVersion: " + terminologyVersion);
-    getLog().info("effectiveTime: " + effectiveTime);
+
+    try {
+      dateFormat.parse(effectiveTime);
+      getLog().info("effectiveTime: " + effectiveTime);
+    } catch (Exception e) {
+      // just use today
+      effectiveTime = dateFormat.format(new Date());
+      getLog().info("effectiveTime: " + effectiveTime);
+    }
   }
 }
