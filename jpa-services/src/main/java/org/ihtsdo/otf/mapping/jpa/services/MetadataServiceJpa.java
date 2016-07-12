@@ -345,8 +345,9 @@ public class MetadataServiceJpa extends RootServiceJpa implements
       return helperMap.get(terminology).getHierarchicalRelationshipTypes(
           terminology, version);
     } else {
-      // return an empty map
-      return new HashMap<>();
+      throw new Exception(
+          "Terminology is not configured with a metadata handler: "
+              + terminology);
     }
   }
 

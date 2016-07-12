@@ -236,6 +236,34 @@
       </build>
     </profile>
 
+
+    <!-- Simple loaderL -Drun.config=.. must also be specified. -->
+    <profile>
+      <id>Simple</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>load-simple</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>load-simple</goal>
+                </goals>
+                <configuration>
+                  <inputFile>${input.file}</inputFile>
+                  <terminology>${terminology}</terminology>
+                  <version>${version}</version>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
     <!-- Load GMDN -Drun.config=.. must also be specified. -->
     <profile>
       <id>GMDN</id>
@@ -476,10 +504,9 @@
       </build>
     </profile>
 
-    <!-- Generate daily reports -Drun.config=.. must also be specified. -->
-    <!-- Typically, this is called from a cron job or CI server -->
+    <!-- Generate demo data -Drun.config=.. must also be specified. -->
     <profile>
-      <id>GenerateDailyReports</id>
+      <id>GenerateDemoData</id>
       <build>
         <plugins>
           <plugin>
@@ -487,16 +514,11 @@
             <artifactId>mapping-admin-mojo</artifactId>
             <executions>
               <execution>
-                <id>generate-daily-reports</id>
+                <id>generate-demo-data</id>
                 <phase>package</phase>
                 <goals>
-                  <goal>generate-daily-reports</goal>
+                  <goal>generate-demo-data</goal>
                 </goals>
-                <configuration>
-                  <startDate>${start.date}</startDate>
-                  <endDate>${end.date}</endDate>
-                  <refsetId>${refset.id}</refsetId>
-                </configuration>
               </execution>
             </executions>
           </plugin>
