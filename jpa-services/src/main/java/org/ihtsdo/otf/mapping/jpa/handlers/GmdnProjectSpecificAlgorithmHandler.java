@@ -25,6 +25,9 @@ public class GmdnProjectSpecificAlgorithmHandler extends
   @Override
   public boolean isTargetCodeValid(String terminologyId) throws Exception {
 
+    if (!terminologyId.contains("/")) {
+      return false;
+    }
     // Cache the "Term" term type - valid codes require it
     cacheTermType(mapProject.getDestinationTerminology(),
         mapProject.getDestinationTerminologyVersion());
