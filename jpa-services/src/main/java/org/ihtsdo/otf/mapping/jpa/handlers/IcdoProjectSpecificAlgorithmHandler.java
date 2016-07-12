@@ -25,6 +25,9 @@ public class IcdoProjectSpecificAlgorithmHandler extends
   @Override
   public boolean isTargetCodeValid(String terminologyId) throws Exception {
 
+    if (!terminologyId.contains("/")) {
+      return false;
+    }
     // Cache the "Term" term type - valid codes require it
     cacheTermType(mapProject.getDestinationTerminology(),
         mapProject.getDestinationTerminologyVersion());
@@ -37,15 +40,7 @@ public class IcdoProjectSpecificAlgorithmHandler extends
               mapProject.getDestinationTerminology(),
               mapProject.getDestinationTerminologyVersion());
 
-      // Only concepts with "term" description types
-      if (concept != null) {
-        for (final Description desc : concept.getDescriptions()) {
-          if (desc.getTypeId().equals(termType)) {
-            return true;
-          }
-        }
-      }
-      return false;
+      return concept != null;
 
     } catch (Exception e) {
       throw e;
