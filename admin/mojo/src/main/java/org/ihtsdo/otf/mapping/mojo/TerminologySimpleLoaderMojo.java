@@ -16,6 +16,7 @@ import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.DescriptionJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
+
 //
 /**
  * Goal which loads a simple code list data file.
@@ -65,11 +66,6 @@ public class TerminologySimpleLoaderMojo extends AbstractMojo {
     // do nothing
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.maven.plugin.Mojo#execute()
-   */
   @SuppressWarnings("resource")
   /* see superclass */
   @Override
@@ -88,6 +84,7 @@ public class TerminologySimpleLoaderMojo extends AbstractMojo {
       SimpleMetadataHelper helper =
           new SimpleMetadataHelper(terminology, version,
               dateFormat.format(now), contentService);
+      getLog().info("  Create concept metadata");
       Map<String, Concept> conceptMap = helper.createMetadata();
 
       // Set the input directory
@@ -97,6 +94,7 @@ public class TerminologySimpleLoaderMojo extends AbstractMojo {
       }
 
       // Create the root concept
+      getLog().info("  Create the root concept");
       Concept rootConcept = new ConceptJpa();
       rootConcept.setTerminologyId("root");
       rootConcept.setEffectiveTime(now);
@@ -111,7 +109,7 @@ public class TerminologySimpleLoaderMojo extends AbstractMojo {
       rootConcept.setDefaultPreferredName(terminology + " Root Concept");
 
       final Description rootDesc = new DescriptionJpa();
-      rootDesc.setTerminologyId("");
+      rootDesc.setTerminologyId("root");
       rootDesc.setEffectiveTime(now);
       rootDesc.setActive(true);
       rootDesc.setModuleId(Long.parseLong(conceptMap.get("defaultModule")
@@ -125,19 +123,20 @@ public class TerminologySimpleLoaderMojo extends AbstractMojo {
       rootDesc.setLanguageCode("en");
       rootDesc.setTypeId(Long.parseLong(conceptMap.get("preferred")
           .getTerminologyId()));
-      rootConcept.getDescriptions().add(rootDesc);
+      rootConcept.addDescription(rootDesc);
       rootConcept = contentService.addConcept(rootConcept);
 
       //
       // Open the file and process the data
       // code\tpreferred\t[synonym\t,..]
+      getLog().info("  Load concepts");
       String line;
       final BufferedReader in =
           new BufferedReader(new FileReader(new File(inputFile)));
+      int descCt = 1000;
       while ((line = in.readLine()) != null) {
         line = line.replace("\r", "");
         final String[] fields = line.split("\t");
-
         // skip header
         if (fields[0].equals("code")) {
           continue;
@@ -146,10 +145,9 @@ public class TerminologySimpleLoaderMojo extends AbstractMojo {
         if (fields.length < 2) {
           throw new Exception("Unexpected line, not enough fields: " + line);
         }
-
         final String code = fields[0];
         final String preferred = fields[1];
-        final Concept concept = new ConceptJpa();
+        Concept concept = new ConceptJpa();
         concept.setTerminologyId(code);
         concept.setEffectiveTime(now);
         // assume active
@@ -163,7 +161,7 @@ public class TerminologySimpleLoaderMojo extends AbstractMojo {
         concept.setDefaultPreferredName(preferred);
 
         final Description pref = new DescriptionJpa();
-        pref.setTerminologyId("");
+        pref.setTerminologyId(++descCt + "");
         pref.setEffectiveTime(now);
         pref.setActive(true);
         pref.setModuleId(Long.parseLong(conceptMap.get("defaultModule")
@@ -179,9 +177,9 @@ public class TerminologySimpleLoaderMojo extends AbstractMojo {
             .getTerminologyId()));
         concept.addDescription(pref);
 
-        for (int i = 2; i <= fields.length; i++) {
+        for (int i = 2; i < fields.length; i++) {
           final Description sy = new DescriptionJpa();
-          sy.setTerminologyId("");
+          sy.setTerminologyId(++descCt + "");
           sy.setEffectiveTime(now);
           sy.setActive(true);
           sy.setModuleId(Long.parseLong(conceptMap.get("defaultModule")
@@ -198,17 +196,27 @@ public class TerminologySimpleLoaderMojo extends AbstractMojo {
           concept.addDescription(sy);
         }
 
+        getLog().info(
+            "  concept = " + concept.getTerminologyId() + ", "
+                + concept.getDefaultPreferredName());
+        concept = contentService.addConcept(concept);
+        concept = contentService.getConcept(concept.getId());
         // Add isa rel to "root"
-        helper.createIsaRelationship(rootConcept, concept, "", terminology,
-            version, dateFormat.format(now));
-        contentService.addConcept(concept);
+        helper.createIsaRelationship(rootConcept, concept, ++descCt + "",
+            terminology, version, dateFormat.format(now));
 
       }
 
       in.close();
+      contentService.commit();
+
+      // Tree position computation
+      String isaRelType = conceptMap.get("isa").getTerminologyId();
+      getLog().info("Start creating tree positions root, " + isaRelType);
+      contentService.computeTreePositions(terminology, version, isaRelType,
+          "root");
 
       // Clean-up
-      contentService.commit();
       getLog().info("done ...");
       contentService.close();
 
