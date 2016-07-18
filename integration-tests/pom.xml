@@ -109,12 +109,12 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <includes>
-                <include>**/ResetDevDatabase.java</include>
+                <include>**/org/ithsdo/otf/mapping/test/mojo/ResetDemoDatabase.java</include>
               </includes>
               <additionalClasspathElements>
                 <additionalClasspathElement>src/main/resources</additionalClasspathElement>
               </additionalClasspathElements>
-              <skipTests>${skipTests}</skipTests>
+              <skipTests>false</skipTests>
             </configuration>
           </plugin>
         </plugins>
