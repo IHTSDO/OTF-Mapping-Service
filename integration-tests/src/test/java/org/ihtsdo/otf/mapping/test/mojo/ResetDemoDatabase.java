@@ -1,7 +1,7 @@
 /*
  * Copyright 2016 West Coast Informatics, LLC
  */
-package org.ithsdo.otf.mapping.test.mojo;
+package org.ihtsdo.otf.mapping.test.mojo;
 
 import java.io.File;
 import java.util.Arrays;
