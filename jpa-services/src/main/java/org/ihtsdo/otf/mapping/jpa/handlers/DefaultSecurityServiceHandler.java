@@ -145,6 +145,10 @@ public class DefaultSecurityServiceHandler implements SecurityServiceHandler {
 
   @Override
   public String getLogoutUrl() throws Exception {
+    final Properties config = ConfigUtility.getConfigProperties();
+    if (config.containsKey("security.handler.DEFAULT.url.logout")) {
+      return config.getProperty("security.handler.DEFAULT.url.logout");
+    }
     return "/";
   }
 
