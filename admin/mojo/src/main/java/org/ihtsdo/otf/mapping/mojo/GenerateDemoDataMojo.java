@@ -204,7 +204,7 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     project2.setMapRefsetPattern(MapRefsetPattern.ComplexMap);
     project2.setName("MEDICATION to RXNORM with REVIEW");
     project2
-        .setProjectSpecificAlgorithmHandlerClass("org.ihtsdo.otf.mapping.jpa.handlers.MedicationPojectSpecificAlgorithmHandler");
+        .setProjectSpecificAlgorithmHandlerClass("org.ihtsdo.otf.mapping.jpa.handlers.MedicationProjectSpecificAlgorithmHandler");
     project2.setPropagatedFlag(false);
     project2.setRefSetId("23456");
     project2.setRefSetName("Medication to RXNORM Mapping");
