@@ -72,14 +72,18 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
       $scope.treeQuery = '';
     });
 
+    // Code to auto-perform a search - turns out to be not that useful.
     // when mapEntry.js is populated
-    $scope.$on('mapRecordWidget.notification.changeSelectedEntry', function(event, parameters) {
-      // If no query and the entry is empty, search the map record automatically
-      if (!$scope.query && !parameters.entry.targetId) {
-        $scope.query = parameters.record.conceptName.toLowerCase().replace(/[^ A-Za-z0-9\.]/g, "");
-        $scope.search();
-      }
-    });
+    // $scope.$on('mapRecordWidget.notification.changeSelectedEntry',
+    // function(event, parameters) {
+    // // If no query and the entry is empty, search the map record
+    // automatically
+    // if (!$scope.query && !parameters.entry.targetId) {
+    // $scope.query = parameters.record.conceptName.toLowerCase().replace(/[^
+    // A-Za-z0-9\.]/g, "");
+    // $scope.search();
+    // }
+    // });
 
     // function called on storage listener event
     function onStorageEvent(storageEvent) {
