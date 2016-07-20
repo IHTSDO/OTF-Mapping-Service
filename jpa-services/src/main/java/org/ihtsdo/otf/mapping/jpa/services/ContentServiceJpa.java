@@ -1113,7 +1113,11 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
               + "where tp.terminologyId = c.terminologyId "
               + "and tp.terminology = c.terminology "
               + "and tp.terminologyVersion = c.terminologyVersion "
+              + "and tp.terminology = :terminology "
+              + "and tp.terminologyVersion = :terminologyVersion "
               + "and tp.ancestorPath like '" + ancestorPath + "%'");
+      query.setParameter("terminology", terminology);
+      query.setParameter("terminologyVersion", terminologyVersion);
 
       final List<Concept> concepts = query.getResultList();
 

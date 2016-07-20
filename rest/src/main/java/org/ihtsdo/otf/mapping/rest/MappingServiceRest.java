@@ -3653,6 +3653,11 @@ public class MappingServiceRest extends RootServiceRest {
         return new TreePositionListJpa();
       }
 
+      // TODO: add paging to this, for now, limit to 10
+      if (treePositions.getCount() > 10) {
+        treePositions.setTreePositions(treePositions.getTreePositions().subList(0, 10));
+      }
+      
       final String terminology =
           treePositions.getTreePositions().get(0).getTerminology();
       final String terminologyVersion =
