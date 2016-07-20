@@ -211,10 +211,10 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     project2.setSourceTerminology("MEDICATION");
     project2.setSourceTerminologyVersion("latest");
     project2.setWorkflowType(WorkflowType.REVIEW_PROJECT);
-    project1.setMapRelationStyle(RelationStyle.RELATIONSHIP_STYLE);
+    project2.setMapRelationStyle(RelationStyle.RELATIONSHIP_STYLE);
     project2.getScopeConcepts().add("root");
     project2.setScopeDescendantsFlag(true);
-    project1.setMapRelations(mapRelations);
+    project2.setMapRelations(mapRelations);
     project2.getMapLeads().add(lead1);
     project2.getMapLeads().add(lead2);
     project2.getMapSpecialists().add(specialist1);
