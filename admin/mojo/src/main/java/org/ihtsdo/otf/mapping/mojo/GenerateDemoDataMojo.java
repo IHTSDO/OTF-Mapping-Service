@@ -198,19 +198,19 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     // Create project 2
     Logger.getLogger(getClass()).info("Create project 2");
     MapProject project2 = new MapProjectJpa();
-    project2.setDestinationTerminology("SNOMEDCT");
-    project2.setDestinationTerminologyVersion("20140731");
+    project2.setDestinationTerminology("RXNORM");
+    project2.setDestinationTerminologyVersion("2016AA");
     project2.setGroupStructure(true);
     project2.setMapRefsetPattern(MapRefsetPattern.ComplexMap);
-    project2.setName("ALLERGY to SNOMEDCT with SIMPLE");
+    project2.setName("MEDICATION to RXNORM with REVIEW");
     project2
-        .setProjectSpecificAlgorithmHandlerClass("org.ihtsdo.otf.mapping.jpa.handlers.AllergyPojectSpecificAlgorithmHandler");
+        .setProjectSpecificAlgorithmHandlerClass("org.ihtsdo.otf.mapping.jpa.handlers.MedicationPojectSpecificAlgorithmHandler");
     project2.setPropagatedFlag(false);
-    project2.setRefSetId("54321");
-    project2.setRefSetName("Allergy to SNOMED Refset");
-    project2.setSourceTerminology("ALLERGY");
+    project2.setRefSetId("23456");
+    project2.setRefSetName("Medication to RXNORM Mapping");
+    project2.setSourceTerminology("MEDICATION");
     project2.setSourceTerminologyVersion("latest");
-    project2.setWorkflowType(WorkflowType.SIMPLE_PATH);
+    project2.setWorkflowType(WorkflowType.REVIEW_PROJECT);
     project1.setMapRelationStyle(RelationStyle.RELATIONSHIP_STYLE);
     project2.getScopeConcepts().add("root");
     project2.setScopeDescendantsFlag(true);

@@ -47,7 +47,8 @@ public class ResetDemoDatabase {
    * <pre>
    * 1. Load SNOMED terminology
    * 2. Load "allergy" terminology
-   * 3. Load the "rxnorm" terminology
+   * 3. Load "medication" terminology
+   * 4. Load the "rxnorm" terminology
    * </pre>
    * @throws Exception the exception
    */
@@ -83,26 +84,6 @@ public class ResetDemoDatabase {
     request.setGoals(Arrays.asList("clean", "install"));
     p = new Properties();
     p.setProperty("run.config", System.getProperty("run.config"));
-    request.setProperties(p);
-    request.setDebug(false);
-    invoker = new DefaultInvoker();
-    result = invoker.execute(request);
-    if (result.getExitCode() != 0) {
-      throw result.getExecutionException();
-    }
-
-    // Load allergy terminology
-    Logger.getLogger(getClass()).info("Load allergy terminology");
-    request = new DefaultInvocationRequest();
-    request.setPomFile(new File("../admin/loader/pom.xml"));
-    request.setProfiles(Arrays.asList("Simple"));
-    request.setGoals(Arrays.asList("clean", "install"));
-    p = new Properties();
-    p.setProperty("run.config", System.getProperty("run.config"));
-    p.setProperty("terminology", "ALLERGY");
-    p.setProperty("version", "latest");
-    p.setProperty("input.file", config.getProperty("data.dir") + "/"
-        + "allergy.txt");
     request.setProperties(p);
     request.setDebug(false);
     invoker = new DefaultInvoker();
@@ -153,6 +134,46 @@ public class ResetDemoDatabase {
       throw result.getExecutionException();
     }
 
+    // Load allergy terminology
+    Logger.getLogger(getClass()).info("Load allergy terminology");
+    request = new DefaultInvocationRequest();
+    request.setPomFile(new File("../admin/loader/pom.xml"));
+    request.setProfiles(Arrays.asList("Simple"));
+    request.setGoals(Arrays.asList("clean", "install"));
+    p = new Properties();
+    p.setProperty("run.config", System.getProperty("run.config"));
+    p.setProperty("terminology", "ALLERGY");
+    p.setProperty("version", "latest");
+    p.setProperty("input.file", config.getProperty("data.dir") + "/"
+        + "allergy.txt");
+    request.setProperties(p);
+    request.setDebug(false);
+    invoker = new DefaultInvoker();
+    result = invoker.execute(request);
+    if (result.getExitCode() != 0) {
+      throw result.getExecutionException();
+    }
+
+    // Load medication terminology
+    Logger.getLogger(getClass()).info("Load medication terminology");
+    request = new DefaultInvocationRequest();
+    request.setPomFile(new File("../admin/loader/pom.xml"));
+    request.setProfiles(Arrays.asList("Simple"));
+    request.setGoals(Arrays.asList("clean", "install"));
+    p = new Properties();
+    p.setProperty("run.config", System.getProperty("run.config"));
+    p.setProperty("terminology", "MEDICATION");
+    p.setProperty("version", "latest");
+    p.setProperty("input.file", config.getProperty("data.dir") + "/"
+        + "medication.txt");
+    request.setProperties(p);
+    request.setDebug(false);
+    invoker = new DefaultInvoker();
+    result = invoker.execute(request);
+    if (result.getExitCode() != 0) {
+      throw result.getExecutionException();
+    }
+    
     // Generate Demo Data
     Logger.getLogger(getClass()).info("Generate demo data");
     request = new DefaultInvocationRequest();
