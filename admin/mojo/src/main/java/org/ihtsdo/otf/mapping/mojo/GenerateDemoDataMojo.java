@@ -1,6 +1,8 @@
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.text.SimpleDateFormat;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
@@ -8,12 +10,14 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.helpers.MapRefsetPattern;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
+import org.ihtsdo.otf.mapping.helpers.RelationStyle;
 import org.ihtsdo.otf.mapping.helpers.ReportFrequency;
 import org.ihtsdo.otf.mapping.helpers.ReportQueryType;
 import org.ihtsdo.otf.mapping.helpers.ReportResultType;
 import org.ihtsdo.otf.mapping.helpers.ReportTimePeriod;
 import org.ihtsdo.otf.mapping.helpers.WorkflowType;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
+import org.ihtsdo.otf.mapping.jpa.MapRelationJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
@@ -21,6 +25,7 @@ import org.ihtsdo.otf.mapping.jpa.services.ReportServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
+import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.reports.ReportDefinition;
 import org.ihtsdo.otf.mapping.reports.ReportDefinitionJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
@@ -137,6 +142,25 @@ public class GenerateDemoDataMojo extends AbstractMojo {
       specialist3 = makeMapUser("specialist3", "Specialist3");
       specialist3 = (MapUserJpa) securityService.addMapUser(specialist3);
     }
+
+    //
+    // Mapping relationships
+    //
+    final Set<MapRelation> mapRelations = new HashSet<>();
+    for (final String rel : new String[] {
+        "exact", "partial", "narrower", "broader"
+    }) {
+      final String ucRel = rel.substring(0, 1).toUpperCase() + rel.substring(1);
+      final MapRelation relation = new MapRelationJpa();
+      relation.setAbbreviation(ucRel);
+      relation.setAllowableForNullTarget(false);
+      relation.setComputed(false);
+      relation.setName(ucRel + " match");
+      relation.setTerminologyId(rel);
+      mappingService.addMapRelation(relation);
+      mapRelations.add(relation);
+    }
+
     //
     // Make a project
     //
@@ -144,8 +168,8 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     MapProject project1 = new MapProjectJpa();
     project1.setDestinationTerminology("SNOMEDCT");
     project1.setDestinationTerminologyVersion("20140731");
-    project1.setGroupStructure(false);
-    project1.setMapRefsetPattern(MapRefsetPattern.SimpleMap);
+    project1.setGroupStructure(true);
+    project1.setMapRefsetPattern(MapRefsetPattern.ComplexMap);
     project1.setName("ALLERGY to SNOMEDCT with REVIEW");
     project1
         .setProjectSpecificAlgorithmHandlerClass("org.ihtsdo.otf.mapping.jpa.handlers.AllergyProjectSpecificAlgorithmHandler");
@@ -155,9 +179,10 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     project1.setSourceTerminology("ALLERGY");
     project1.setSourceTerminologyVersion("latest");
     project1.setWorkflowType(WorkflowType.REVIEW_PROJECT);
+    project1.setMapRelationStyle(RelationStyle.RELATIONSHIP_STYLE);
     project1.getScopeConcepts().add("root");
     project1.setScopeDescendantsFlag(true);
-
+    project1.setMapRelations(mapRelations);
     project1.getMapLeads().add(lead1);
     project1.getMapLeads().add(lead2);
     project1.getMapSpecialists().add(specialist1);
@@ -175,8 +200,8 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     MapProject project2 = new MapProjectJpa();
     project2.setDestinationTerminology("SNOMEDCT");
     project2.setDestinationTerminologyVersion("20140731");
-    project2.setGroupStructure(false);
-    project2.setMapRefsetPattern(MapRefsetPattern.SimpleMap);
+    project2.setGroupStructure(true);
+    project2.setMapRefsetPattern(MapRefsetPattern.ComplexMap);
     project2.setName("ALLERGY to SNOMEDCT with SIMPLE");
     project2
         .setProjectSpecificAlgorithmHandlerClass("org.ihtsdo.otf.mapping.jpa.handlers.AllergyPojectSpecificAlgorithmHandler");
@@ -186,9 +211,10 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     project2.setSourceTerminology("ALLERGY");
     project2.setSourceTerminologyVersion("latest");
     project2.setWorkflowType(WorkflowType.SIMPLE_PATH);
+    project1.setMapRelationStyle(RelationStyle.RELATIONSHIP_STYLE);
     project2.getScopeConcepts().add("root");
     project2.setScopeDescendantsFlag(true);
-
+    project1.setMapRelations(mapRelations);
     project2.getMapLeads().add(lead1);
     project2.getMapLeads().add(lead2);
     project2.getMapSpecialists().add(specialist1);
@@ -199,6 +225,7 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     Logger.getLogger(getClass()).info("  add " + project2);
     project2 = mappingService.addMapProject(project2);
     Logger.getLogger(getClass()).info("  compute workflow");
+    workflowService.computeWorkflow(project2);
 
     // Start editing cycle
     SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd");
@@ -309,7 +336,7 @@ public class GenerateDemoDataMojo extends AbstractMojo {
 
     // QA checks
     ReportDefinition qa1 = new ReportDefinitionJpa();
-    qa1.setDescription("Specialist productivity report.");
+    qa1.setDescription("Sample QA check to identify mappings involving the word 'peanut'");
     qa1.setDiffReport(false);
     qa1.setFrequency(ReportFrequency.ON_DEMAND);
     qa1.setName("Peanut records");
@@ -317,12 +344,14 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     qa1.setQuery("select distinct mr.conceptName value, mr.conceptId itemId, mr.conceptName itemName "
         + "from map_records mr "
         + "where mr.mapProjectId = :MAP_PROJECT_ID: "
-        + " and mr.conceptName like '%Peanut'");
+        + " and mr.conceptName like '%eanut%'");
     qa1.setQueryType(ReportQueryType.SQL);
     qa1.setResultType(ReportResultType.CONCEPT);
     qa1.setRoleRequired(MapUserRole.SPECIALIST);
     qa1.setTimePeriod(null);
     reportService.addReportDefinition(qa1);
+
+    // TODO: add qa check for "invalid codes"
   }
 
   /**

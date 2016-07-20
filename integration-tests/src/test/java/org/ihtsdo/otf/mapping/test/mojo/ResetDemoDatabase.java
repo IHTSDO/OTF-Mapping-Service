@@ -7,6 +7,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.apache.maven.shared.invoker.DefaultInvocationRequest;
 import org.apache.maven.shared.invoker.DefaultInvoker;
 import org.apache.maven.shared.invoker.InvocationRequest;
@@ -46,10 +47,10 @@ public class ResetDemoDatabase {
    * <pre>
    * 1. Load SNOMED terminology
    * 2. Load "allergy" terminology
+   * 3. Load the "rxnorm" terminology
    * </pre>
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   @Test
   public void test() throws Exception {
 
@@ -58,6 +59,7 @@ public class ResetDemoDatabase {
     }
 
     // Create database
+    Logger.getLogger(getClass()).info("Create database");
     InvocationRequest request = new DefaultInvocationRequest();
     request.setPomFile(new File("../admin/updatedb/pom.xml"));
     request.setProfiles(Arrays.asList("Updatedb"));
@@ -74,6 +76,7 @@ public class ResetDemoDatabase {
     }
 
     // Clear indexes
+    Logger.getLogger(getClass()).info("Clear indexes");
     request = new DefaultInvocationRequest();
     request.setPomFile(new File("../admin/lucene/pom.xml"));
     request.setProfiles(Arrays.asList("Reindex"));
@@ -88,7 +91,28 @@ public class ResetDemoDatabase {
       throw result.getExecutionException();
     }
 
+    // Load allergy terminology
+    Logger.getLogger(getClass()).info("Load allergy terminology");
+    request = new DefaultInvocationRequest();
+    request.setPomFile(new File("../admin/loader/pom.xml"));
+    request.setProfiles(Arrays.asList("Simple"));
+    request.setGoals(Arrays.asList("clean", "install"));
+    p = new Properties();
+    p.setProperty("run.config", System.getProperty("run.config"));
+    p.setProperty("terminology", "ALLERGY");
+    p.setProperty("version", "latest");
+    p.setProperty("input.file", config.getProperty("data.dir") + "/"
+        + "allergy.txt");
+    request.setProperties(p);
+    request.setDebug(false);
+    invoker = new DefaultInvoker();
+    result = invoker.execute(request);
+    if (result.getExitCode() != 0) {
+      throw result.getExecutionException();
+    }
+
     // Load RF2 snapshot
+    Logger.getLogger(getClass()).info("Load SNOMED");
     request = new DefaultInvocationRequest();
     request.setPomFile(new File("../admin/loader/pom.xml"));
     request.setProfiles(Arrays.asList("RF2-snapshot"));
@@ -107,18 +131,20 @@ public class ResetDemoDatabase {
       throw result.getExecutionException();
     }
 
-    // Load allergy terminology
+    // Load ingredient-based RXNORM terminology
+    Logger.getLogger(getClass()).info("Load RXNORM");
     request = new DefaultInvocationRequest();
     request.setPomFile(new File("../admin/loader/pom.xml"));
     request.setProfiles(Arrays.asList("Simple"));
     request.setGoals(Arrays.asList("clean", "install"));
     p = new Properties();
     p.setProperty("run.config", System.getProperty("run.config"));
-    p.setProperty("terminology", "ALLERGY");
-    p.setProperty("version", "latest");
+    p.setProperty("terminology", "RXNORM");
+    p.setProperty("version", "2016AA");
     p.setProperty("input.file", config.getProperty("data.dir") + "/"
-        + "allergy.txt");
-
+        + "rxnorm.txt");
+    p.setProperty("par.chd.file", config.getProperty("data.dir") + "/"
+        + "rxnormParChd.txt");
     request.setProperties(p);
     request.setDebug(false);
     invoker = new DefaultInvoker();
@@ -128,6 +154,7 @@ public class ResetDemoDatabase {
     }
 
     // Generate Demo Data
+    Logger.getLogger(getClass()).info("Generate demo data");
     request = new DefaultInvocationRequest();
     request.setPomFile(new File("../admin/loader/pom.xml"));
     request.setProfiles(Arrays.asList("GenerateDemoData"));
