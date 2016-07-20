@@ -3642,11 +3642,25 @@ public class MappingServiceRest extends RootServiceRest {
 
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
 
+      // formulate an "and" search from the query if it doesn't use special
+      // chars
+      StringBuilder qb = new StringBuilder();
+      if (!query.contains("\"") && !query.contains("-") && !query.contains("+")
+          && !query.contains("*")) {
+        for (final String word : query.split("\\s")) {
+          qb.append("+").append(word).append(" ");
+        }
+      }
+
+      else {
+        qb.append(query);
+      }
+
       // get the tree positions from concept service
       final TreePositionList treePositions =
           contentService.getTreePositionGraphForQuery(
               mapProject.getDestinationTerminology(),
-              mapProject.getDestinationTerminologyVersion(), query);
+              mapProject.getDestinationTerminologyVersion(), qb.toString());
       Logger.getLogger(getClass()).info(
           "  treepos count = " + treePositions.getTotalCount());
       if (treePositions.getCount() == 0) {
@@ -3655,9 +3669,10 @@ public class MappingServiceRest extends RootServiceRest {
 
       // TODO: add paging to this, for now, limit to 10
       if (treePositions.getCount() > 10) {
-        treePositions.setTreePositions(treePositions.getTreePositions().subList(0, 10));
+        treePositions.setTreePositions(treePositions.getTreePositions()
+            .subList(0, 10));
       }
-      
+
       final String terminology =
           treePositions.getTreePositions().get(0).getTerminology();
       final String terminologyVersion =
