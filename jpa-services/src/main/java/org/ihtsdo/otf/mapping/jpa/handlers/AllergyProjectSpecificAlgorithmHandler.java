@@ -72,7 +72,7 @@ DefaultProjectSpecificAlgorithmHandler {
       }
     }
     final Set<String> recordMinusEntry = new HashSet<>(recordWords);
-    recordMinusEntry.remove(entryWords);
+    recordMinusEntry.removeAll(entryWords);
 
     // If there are entry words and none match, warning
     if (entryWords.size() > 0 && recordWords.size() == recordMinusEntry.size()) {
