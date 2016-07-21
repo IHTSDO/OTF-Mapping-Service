@@ -554,15 +554,16 @@ public interface ContentService extends RootService {
   /**
    * Returns the tree positions for concept query. This returns a full tree
    * position graph all the way up to the root node.
-   * 
+   *
    * @param terminology the terminology
    * @param terminologyVersion the terminology version
    * @param query the query
+   * @param pfs the pfs
    * @return the tree positions for concept query
    * @throws Exception the exception
    */
   public TreePositionList getTreePositionGraphForQuery(String terminology,
-    String terminologyVersion, String query) throws Exception;
+    String terminologyVersion, String query, PfsParameter pfs) throws Exception;
 
   /**
    * Gets the tree positions.
