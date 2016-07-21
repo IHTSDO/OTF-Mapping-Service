@@ -3078,9 +3078,10 @@ public class MappingServiceRest extends RootServiceRest {
 
       // if no current record, look for revisions
       if (mapRecord == null) {
-        mapRecord =
-            mappingService.getMapRecordRevisions(mapRecordId).getMapRecords()
-                .get(0);
+        List<MapRecord> list =
+            mappingService.getMapRecordRevisions(mapRecordId).getMapRecords();
+        mapRecord = list.get(0);
+        mapRecord.getMapEntries().size();
       }
 
       final MapUserRole role =
@@ -3656,11 +3657,11 @@ public class MappingServiceRest extends RootServiceRest {
         qb.append(query);
       }
 
-      // TODO: need to figure out what "paging" means - it really has to do 
+      // TODO: need to figure out what "paging" means - it really has to do
       // with the number of tree positions under the root node, I think.
       final PfsParameter pfs = new PfsParameterJpa();
-      //pfs.setStartIndex(0);
-      //pfs.setMaxResults(10);
+      // pfs.setStartIndex(0);
+      // pfs.setMaxResults(10);
 
       // get the tree positions from concept service
       final TreePositionList treePositions =
