@@ -3656,21 +3656,23 @@ public class MappingServiceRest extends RootServiceRest {
         qb.append(query);
       }
 
+      // TODO: need to figure out what "paging" means - it really has to do 
+      // with the number of tree positions under the root node, I think.
+      final PfsParameter pfs = new PfsParameterJpa();
+      pfs.setStartIndex(0);
+      pfs.setMaxResults(10);
+
       // get the tree positions from concept service
       final TreePositionList treePositions =
-          contentService.getTreePositionGraphForQuery(
-              mapProject.getDestinationTerminology(),
-              mapProject.getDestinationTerminologyVersion(), qb.toString());
+          contentService
+              .getTreePositionGraphForQuery(
+                  mapProject.getDestinationTerminology(),
+                  mapProject.getDestinationTerminologyVersion(), qb.toString(),
+                  pfs);
       Logger.getLogger(getClass()).info(
           "  treepos count = " + treePositions.getTotalCount());
       if (treePositions.getCount() == 0) {
         return new TreePositionListJpa();
-      }
-
-      // TODO: add paging to this, for now, limit to 10
-      if (treePositions.getCount() > 10) {
-        treePositions.setTreePositions(treePositions.getTreePositions()
-            .subList(0, 10));
       }
 
       final String terminology =

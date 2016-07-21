@@ -1789,9 +1789,12 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
   @SuppressWarnings("unchecked")
   @Override
   public TreePositionList getTreePositionGraphForQuery(String terminology,
-    String terminologyVersion, String query) throws Exception {
+    String terminologyVersion, String query, PfsParameter pfs) throws Exception {
 
-    // construct the query
+    final PfsParameter localPfs =
+        pfs == null ? new PfsParameterJpa() : new PfsParameterJpa(pfs);
+
+        // construct the query
     final StringBuilder sb = new StringBuilder();
     if (query != null && !query.isEmpty() && !query.equals("null")) {
       sb.append(query).append(" AND ");
@@ -1804,7 +1807,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     final List<TreePosition> queriedTreePositions =
         (List<TreePosition>) getQueryResults(sb.toString(),
             TreePositionJpa.class, TreePositionJpa.class,
-            new PfsParameterJpa(), totalCt);
+            localPfs, totalCt);
 
     // initialize the result set
     final List<TreePosition> fullTreePositions = new ArrayList<>();
