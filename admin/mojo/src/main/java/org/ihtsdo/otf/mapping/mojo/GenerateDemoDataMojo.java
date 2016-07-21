@@ -317,23 +317,6 @@ public class GenerateDemoDataMojo extends AbstractMojo {
 
     // specialist productivity, lead productivity
 
-    // Add report definitions to the project(s)
-    project1.getReportDefinitions().add(def1);
-    project1.getReportDefinitions().add(def2);
-    project1.getReportDefinitions().add(def3);
-    project1.getReportDefinitions().add(def4);
-    mappingService.updateMapProject(project1);
-
-    project2.getReportDefinitions().add(def1);
-    project2.getReportDefinitions().add(def2);
-    project2.getReportDefinitions().add(def3);
-    project2.getReportDefinitions().add(def4);
-    mappingService.updateMapProject(project2);
-
-    // Generate the reports
-    reportService.generateDailyReports(project1, lead1);
-    reportService.generateDailyReports(project2, lead1);
-
     // QA checks
     ReportDefinition qa1 = new ReportDefinitionJpa();
     qa1.setDescription("Sample QA check to identify mappings involving the word 'peanut'");
@@ -350,6 +333,26 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     qa1.setRoleRequired(MapUserRole.SPECIALIST);
     qa1.setTimePeriod(null);
     reportService.addReportDefinition(qa1);
+
+    // Add report definitions to the project(s)
+    project1.getReportDefinitions().add(def1);
+    project1.getReportDefinitions().add(def2);
+    project1.getReportDefinitions().add(def3);
+    project1.getReportDefinitions().add(def4);
+    project1.getReportDefinitions().add(qa1);
+    mappingService.updateMapProject(project1);
+
+    project2.getReportDefinitions().add(def1);
+    project2.getReportDefinitions().add(def2);
+    project2.getReportDefinitions().add(def3);
+    project2.getReportDefinitions().add(def4);
+    project2.getReportDefinitions().add(qa1);
+    mappingService.updateMapProject(project2);
+
+    // Generate the reports
+    reportService.generateDailyReports(project1, lead1);
+    reportService.generateDailyReports(project2, lead1);
+
 
     // TODO: add qa check for "invalid codes"
   }
