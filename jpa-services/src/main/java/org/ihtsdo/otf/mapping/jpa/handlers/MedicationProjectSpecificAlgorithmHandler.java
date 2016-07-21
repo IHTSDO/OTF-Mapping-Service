@@ -66,9 +66,6 @@ DefaultProjectSpecificAlgorithmHandler {
     final Set<String> recordMinusEntry = new HashSet<>(recordWords);
     recordMinusEntry.removeAll(entryWords);
 
-    System.out.println("record words = " + recordWords);
-    System.out.println("entry words = " + entryWords);
-    System.out.println("minus words = " + recordMinusEntry);
     // If there are entry words and none match, warning
     if (entryWords.size() > 0 && recordWords.size() == recordMinusEntry.size()) {
       result
