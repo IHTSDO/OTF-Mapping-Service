@@ -3659,8 +3659,8 @@ public class MappingServiceRest extends RootServiceRest {
       // TODO: need to figure out what "paging" means - it really has to do 
       // with the number of tree positions under the root node, I think.
       final PfsParameter pfs = new PfsParameterJpa();
-      pfs.setStartIndex(0);
-      pfs.setMaxResults(10);
+      //pfs.setStartIndex(0);
+      //pfs.setMaxResults(10);
 
       // get the tree positions from concept service
       final TreePositionList treePositions =
