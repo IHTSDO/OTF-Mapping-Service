@@ -763,7 +763,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
         .add(AuditEntity.id().eq(mapRecordId))
 
         // order by descending timestamp
-        .addOrder(AuditEntity.property("timestamp").desc())
+        .addOrder(AuditEntity.property("lastModified").desc())
 
         // execute query
         .getResultList();
