@@ -26,10 +26,10 @@ DefaultProjectSpecificAlgorithmHandler {
 
     final ContentService contentService = new ContentServiceJpa();
     try {
-      // Allergy to substance - 419199007
+      // Allergic disposition - 609328004
       return contentService.isDescendantOf(terminologyId,
           mapProject.getDestinationTerminology(),
-          mapProject.getDestinationTerminologyVersion(), "419199007");
+          mapProject.getDestinationTerminologyVersion(), "609328004");
     } catch (Exception e) {
       throw e;
     } finally {
@@ -82,4 +82,5 @@ DefaultProjectSpecificAlgorithmHandler {
 
     return result;
   }
+
 }

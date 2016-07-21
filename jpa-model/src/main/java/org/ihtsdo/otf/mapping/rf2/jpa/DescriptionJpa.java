@@ -16,6 +16,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.ContainedIn;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Index;
@@ -156,6 +157,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
    */
   @Override
   @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  @Analyzer(definition = "noStopWord")
   public String getTerm() {
     return term;
   }
