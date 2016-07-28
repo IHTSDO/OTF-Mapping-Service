@@ -112,11 +112,10 @@ public class WorkflowReviewProjectPathHandler
     leadFinishedState
         .addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
             WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_RESOLVED)));
-    trackingRecordStateToActionMap
-        .put(leadFinishedState,
-            new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING,
-                WorkflowAction.PUBLISH, WorkflowAction.SAVE_FOR_LATER,
-                WorkflowAction.UNASSIGN)));
+    trackingRecordStateToActionMap.put(leadFinishedState,
+        new HashSet<>(
+            Arrays.asList(WorkflowAction.FINISH_EDITING, WorkflowAction.PUBLISH,
+                WorkflowAction.SAVE_FOR_LATER, WorkflowAction.UNASSIGN)));
 
   }
 
@@ -352,7 +351,7 @@ public class WorkflowReviewProjectPathHandler
   public SearchResultList findAvailableWork(MapProject mapProject,
     MapUser mapUser, MapUserRole userRole, String query,
     PfsParameter pfsParameter, WorkflowService workflowService)
-      throws Exception {
+    throws Exception {
 
     Logger.getLogger(this.getClass())
         .debug(getName() + ": findAvailableWork for project "
@@ -372,9 +371,13 @@ public class WorkflowReviewProjectPathHandler
       // REVIEW_NEEDED record with no REVIEW_NEW, REVIEW_IN_PROGRESS, or
       // REVIEW_RESOLVED
       case LEAD:
+        // Case requires review
         sb.append(" AND userAndWorkflowStatusPairs:REVIEW_NEEDED_*");
+        // And was not edited by this lead
+        sb.append(" AND NOT userAndWorkflowStatusPairs:REVIEW_NEEDED_"
+            + mapUser.getUserName());
 
-        // there must not be an already claimed review record
+        // And has not been picked up by a different lead
         sb.append(" AND NOT (userAndWorkflowStatusPairs:REVIEW_NEW_*"
             + " OR userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_*"
             + " OR userAndWorkflowStatusPairs:REVIEW_RESOLVED_*" + ")");
@@ -411,12 +414,12 @@ public class WorkflowReviewProjectPathHandler
   public SearchResultList findAssignedWork(MapProject mapProject,
     MapUser mapUser, MapUserRole userRole, String query,
     PfsParameter pfsParameter, WorkflowService workflowService)
-      throws Exception {
-    
+    throws Exception {
+
     Logger.getLogger(this.getClass())
-    .debug(getName() + ": findAvailableWork for project "
-        + mapProject.getName() + " and user " + mapUser.getUserName());
-    
+        .debug(getName() + ": findAvailableWork for project "
+            + mapProject.getName() + " and user " + mapUser.getUserName());
+
     SearchResultList assignedWork = new SearchResultListJpa();
     final StringBuilder sb = new StringBuilder();
     if (query != null && !query.isEmpty() && !query.equals("null")) {
@@ -555,8 +558,8 @@ public class WorkflowReviewProjectPathHandler
     WorkflowAction workflowAction, MapProject mapProject, MapUser mapUser,
     Set<MapRecord> mapRecords, MapRecord mapRecord) throws Exception {
     Logger.getLogger(this.getClass())
-        .debug(getName() + ": Processing workflow action by " + mapUser.getName()
-            + ":  " + workflowAction.toString());
+        .debug(getName() + ": Processing workflow action by "
+            + mapUser.getName() + ":  " + workflowAction.toString());
 
     // the set of records returned after processing
     Set<MapRecord> newRecords = new HashSet<>(mapRecords);
@@ -616,8 +619,9 @@ public class WorkflowReviewProjectPathHandler
           case EDITING_IN_PROGRESS:
           case NEW:
 
-            Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).debug(
-                "FinishEditing: REVIEW_PROJECT_PATH, Specialist level work");
+            Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
+                .debug(
+                    "FinishEditing: REVIEW_PROJECT_PATH, Specialist level work");
 
             // check assumptions
             // - should only be one record
