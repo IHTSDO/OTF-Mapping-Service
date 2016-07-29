@@ -3078,9 +3078,10 @@ public class MappingServiceRest extends RootServiceRest {
 
       // if no current record, look for revisions
       if (mapRecord == null) {
-        mapRecord =
-            mappingService.getMapRecordRevisions(mapRecordId).getMapRecords()
-                .get(0);
+        List<MapRecord> list =
+            mappingService.getMapRecordRevisions(mapRecordId).getMapRecords();
+        mapRecord = list.get(0);
+        mapRecord.getMapEntries().size();
       }
 
       final MapUserRole role =
@@ -3642,11 +3643,33 @@ public class MappingServiceRest extends RootServiceRest {
 
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
 
+      // formulate an "and" search from the query if it doesn't use special
+      // chars
+      StringBuilder qb = new StringBuilder();
+      if (!query.contains("\"") && !query.contains("-") && !query.contains("+")
+          && !query.contains("*")) {
+        for (final String word : query.split("\\s")) {
+          qb.append("+").append(word).append(" ");
+        }
+      }
+
+      else {
+        qb.append(query);
+      }
+
+      // TODO: need to figure out what "paging" means - it really has to do
+      // with the number of tree positions under the root node, I think.
+      final PfsParameter pfs = new PfsParameterJpa();
+      // pfs.setStartIndex(0);
+      // pfs.setMaxResults(10);
+
       // get the tree positions from concept service
       final TreePositionList treePositions =
-          contentService.getTreePositionGraphForQuery(
-              mapProject.getDestinationTerminology(),
-              mapProject.getDestinationTerminologyVersion(), query);
+          contentService
+              .getTreePositionGraphForQuery(
+                  mapProject.getDestinationTerminology(),
+                  mapProject.getDestinationTerminologyVersion(), qb.toString(),
+                  pfs);
       Logger.getLogger(getClass()).info(
           "  treepos count = " + treePositions.getTotalCount());
       if (treePositions.getCount() == 0) {
