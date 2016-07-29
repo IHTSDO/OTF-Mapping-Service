@@ -213,8 +213,20 @@ public class SimpleMetadataHelper {
         + metadataCounter++, terminology, terminologyVersion, effectiveTime);
 
     //
-    // Relationship types - n/a
+    // Relationship types - isa
     //
+    final Concept relationshipTypeConcept =
+        createNewActiveConcept("" + metadataCounter++, terminology,
+            terminologyVersion, "Relationship type", effectiveTime);
+    conceptMap.put("relationshipType", relationshipTypeConcept);
+    contentService.addConcept(relationshipTypeConcept);
+
+    createIsaRelationship(metadataConcept, relationshipTypeConcept, ""
+        + metadataCounter++, terminology, terminologyVersion, effectiveTime);
+
+    createIsaRelationship(relationshipTypeConcept, isaConcept, new Integer(
+        metadataCounter++).toString(), terminology, terminologyVersion,
+        effectiveTime);
 
     //
     // Case significance

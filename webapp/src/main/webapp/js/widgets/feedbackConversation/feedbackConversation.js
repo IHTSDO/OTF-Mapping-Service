@@ -91,7 +91,7 @@ angular
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-
+          console.debug("XXX", data);
           $scope.conversation = data;
           $scope.markViewed($scope.conversation, $scope.currentUser);
           initializeReturnRecipients($scope.conversation);
