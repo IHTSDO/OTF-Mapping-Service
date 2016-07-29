@@ -72,6 +72,19 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
       $scope.treeQuery = '';
     });
 
+    // Code to auto-perform a search - turns out to be not that useful.
+    // when mapEntry.js is populated
+    // $scope.$on('mapRecordWidget.notification.changeSelectedEntry',
+    // function(event, parameters) {
+    // // If no query and the entry is empty, search the map record
+    // automatically
+    // if (!$scope.query && !parameters.entry.targetId) {
+    // $scope.query = parameters.record.conceptName.toLowerCase().replace(/[^
+    // A-Za-z0-9\.]/g, "");
+    // $scope.search();
+    // }
+    // });
+
     // function called on storage listener event
     function onStorageEvent(storageEvent) {
       console.debug(storageEvent);
@@ -395,7 +408,9 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
     // also returns true/false if:
     // - the id of the node or one of its children exactly matches the search
     $scope.expandAll = function(treePositions) {
+      var retval = false;
       for (var i = 0; i < treePositions.length; i++) {
+
         // initialize the truncation wells
         initTruncationWells(treePositions[i]);
 
@@ -404,41 +419,39 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
           treePositions[i].isOpen = true;
         }
 
-        // if the node exactly matches a query
+        // Stop on an exact id search match
         if (treePositions[i].terminologyId.toUpperCase() === $scope.treeQuery.toUpperCase()) {
           // load the concept detalis
           $scope.getConceptDetails(treePositions[i]);
 
           /*
-                     * // expand children, but do not expand their info panels for (var j = 0; j <
-                     * treePositions[i].children.length; i++) {
-                     * 
-                     * treePositions[i].children[j].isOpen = true; }
-                     */
+           * // expand children, but do not expand their info panels for (var j =
+           * 0; j < treePositions[i].children.length; i++) {
+           * 
+           * treePositions[i].children[j].isOpen = true; }
+           */
 
           // stop recursive expansion here;
-          return true;
+          retval = true;
         }
 
-        // if a child node reports that this is in direct path of a requested
+        // If this will stop an an exact id search, expand the concept details
         // concept id, get details
         else if ($scope.expandAll(treePositions[i].children) == true) {
 
-          // if this is a root node, simply return false to avoid expanding
-          // this node
-          if (treePositions[i].ancestorPath == null || treePositions[i].ancestorPath === '')
+          // if this is a root node, bail immediately without expanding anything
+          if (treePositions[i].ancestorPath == null || treePositions[i].ancestorPath === '') {
             return false;
+          }
 
           $scope.getConceptDetails(treePositions[i]);
-
-          return true;
+          retval = true;
         }
 
-        // return false (not an exact match)
-        else
-          return false;
-
       }
+
+      // Return true if any exact match was found
+      return retval;
     };
 
     $scope.toggleChildren = function(node) {
@@ -471,7 +484,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
     // function for toggling retrieval and display of concept details
     $scope.getConceptDetails = function(node) {
 
-      // initialize truuncation wells
+      // initialize truncation wells
       initTruncationWells(node);
 
       // if called when currently displayed, clear current concept

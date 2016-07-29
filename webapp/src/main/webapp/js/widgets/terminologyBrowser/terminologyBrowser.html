@@ -1,6 +1,6 @@
 
 <form>
-  <input ng-model="query">
+  <input ng-model="query" autofocus>
   <button ng-show="query" ng-click="search()">Search</button>
   <button ng-show="query" ng-click="clearSearch()">Reset</button>
   <!-- Don't use these for now - not working properly
@@ -654,7 +654,7 @@
 
                                             </div>
                                           </div>
-                                        </div> <!--  Children - level 8 -->
+                                        </div> <!--  Children - level 9 -->
                                         <ul
                                           style="list-style-type: none; padding-left: 15px;"
                                           ng-show="node8.isOpen">
@@ -731,7 +731,88 @@
 
                                                 </div>
                                               </div>
-                                            </div>
+                                            </div> <!--  Children - level 10 -->
+                                            <ul
+                                              style="list-style-type: none; padding-left: 15px;"
+                                              ng-show="node9.isOpen">
+
+                                              <li
+                                                ng-repeat="node10 in node9.children">
+                                                <!--  Concept Details --> <a
+                                                  ng-show="node10.childrenCount > 0">
+                                                  <i class="glyphicon"
+                                                    ng-click="toggleChildren(node10)"
+                                                    ng-class="{'glyphicon-chevron-down': node10.isOpen, 'glyphicon-chevron-right': !node10.isOpen}"></i>
+                                                </a> <a
+                                                  ng-show="node10.childrenCount == 0">
+                                                  <i
+                                                    class="glyphicon glyphicon-leaf"></i>
+                                                </a>&nbsp;<a>
+                                                  <i
+                                                    class="glyphicon glyphicon-info-sign term-browser-icon"
+                                                    ng-show="node10.descGroups.length > 0"
+                                                    ng-click="getConceptDetails(node10)"></i>
+                                                </a> <i
+                                                  class="glyphicon glyphicon-info-sign term-browser-icon-disabled"
+                                                  ng-show="node10.descGroups.length == 0"></i>&nbsp;<a
+                                                  ng-show="node10.valid == true"
+                                                  ng-click="selectConcept(node10)">{{node10.terminologyId}}</a>
+                                                <span
+                                                  ng-show="node10.valid == false">{{node10.terminologyId}}</span>{{node10.terminologyNote}}:
+                                                {{truncate(node10.defaultPreferredName)}}
+                                                <div style="display: inline;"
+                                                  ng-show=truncated(node10.defaultPreferredName)
+                                                  class="dropdown">
+                                                  <a class="dropdown-toggle">...</a>
+                                                  <span style="width: 100%"
+                                                    class="dropdown-menu term-browser-dropdown-menu">
+                                                    {{node10.defaultPreferredName}}
+                                                  </span>
+                                                </div> {{node10.preferredDescription}}
+
+                                                <div
+                                                  collapse="!(node10.isConceptOpen)">
+
+                                                  <div class="well well-sm">
+
+                                                    <div
+                                                      ng-repeat="descGroup in node10.descGroups">
+                                                      <em>{{descGroup.name}}</em>
+                                                      <ul>
+                                                        <li
+                                                          ng-repeat="treePositionDescription in descGroup.treePositionDescriptions">
+                                                          {{truncate(treePositionDescription.name)}}
+
+                                                          <div
+                                                            style="display: inline"
+                                                            ng-show=truncated(treePositionDescription.name)
+                                                            ng-click="treePositionDescription.isCollapsed = !treePositionDescription.isCollapsed">
+                                                            <a>...</a>
+                                                          </div> <span
+                                                            ng-show="treePositionDescription.referencedConcepts.length > 0">
+                                                            (
+                                                            <span
+                                                              ng-repeat="referencedConcept in treePositionDescription.referencedConcepts">
+                                                              <a
+                                                                ng-click="gotoReferencedConcept(referencedConcept)">{{referencedConcept.displayName}}
+                                                              </a>
+                                                            </span>
+                                                            )
+                                                          </span>
+
+                                                          <div
+                                                            ng-show="truncated(treePositionDescription.name)"
+                                                            class="well well-sm"
+                                                            collapse="treePositionDescription.isCollapsed == true || treePositionDescription.isCollapsed == undefined || treePositionDescription.isCollapsed == null">
+                                                            {{treePositionDescription.name}}</div>
+                                                        </li>
+                                                      </ul>
+
+                                                    </div>
+                                                  </div>
+                                                </div> <!-- put 11 here -->
+                                              </li>
+                                            </ul> <!-- end 10 -->
                                           </li>
                                         </ul>
                                       </li>

@@ -16,6 +16,7 @@ import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.DescriptionJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
+
 //
 /**
  * Goal which loads a simple code list data file.
@@ -36,11 +37,19 @@ public class TerminologySimpleLoaderMojo extends AbstractMojo {
   final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
 
   /**
-   * The input file
+   * The input file.
+   *
    * @parameter
    * @required
    */
   private String inputFile;
+
+  /**
+   * The par/chd rels file.
+   *
+   * @parameter
+   */
+  private String parChdFile;
 
   /**
    * Name of terminology to be loaded.
@@ -65,17 +74,14 @@ public class TerminologySimpleLoaderMojo extends AbstractMojo {
     // do nothing
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.maven.plugin.Mojo#execute()
-   */
+  /* see superclass */
   @SuppressWarnings("resource")
   /* see superclass */
   @Override
   public void execute() throws MojoFailureException {
     getLog().info("Starting loading simple data");
     getLog().info("  inputFile = " + inputFile);
+    getLog().info("  parChdFile = " + parChdFile);
     getLog().info("  terminology = " + terminology);
     getLog().info("  version = " + version);
 
@@ -83,11 +89,13 @@ public class TerminologySimpleLoaderMojo extends AbstractMojo {
       final ContentService contentService = new ContentServiceJpa();
       contentService.setTransactionPerOperation(false);
       contentService.beginTransaction();
+      int objCt = 1000;
 
       final Date now = new Date();
       SimpleMetadataHelper helper =
           new SimpleMetadataHelper(terminology, version,
               dateFormat.format(now), contentService);
+      getLog().info("  Create concept metadata");
       Map<String, Concept> conceptMap = helper.createMetadata();
 
       // Set the input directory
@@ -97,6 +105,7 @@ public class TerminologySimpleLoaderMojo extends AbstractMojo {
       }
 
       // Create the root concept
+      getLog().info("  Create the root concept");
       Concept rootConcept = new ConceptJpa();
       rootConcept.setTerminologyId("root");
       rootConcept.setEffectiveTime(now);
@@ -111,7 +120,7 @@ public class TerminologySimpleLoaderMojo extends AbstractMojo {
       rootConcept.setDefaultPreferredName(terminology + " Root Concept");
 
       final Description rootDesc = new DescriptionJpa();
-      rootDesc.setTerminologyId("");
+      rootDesc.setTerminologyId("root");
       rootDesc.setEffectiveTime(now);
       rootDesc.setActive(true);
       rootDesc.setModuleId(Long.parseLong(conceptMap.get("defaultModule")
@@ -125,19 +134,20 @@ public class TerminologySimpleLoaderMojo extends AbstractMojo {
       rootDesc.setLanguageCode("en");
       rootDesc.setTypeId(Long.parseLong(conceptMap.get("preferred")
           .getTerminologyId()));
-      rootConcept.getDescriptions().add(rootDesc);
+      rootConcept.addDescription(rootDesc);
       rootConcept = contentService.addConcept(rootConcept);
+      conceptMap.put(rootConcept.getTerminologyId(), rootConcept);
 
       //
       // Open the file and process the data
       // code\tpreferred\t[synonym\t,..]
+      getLog().info("  Load concepts");
       String line;
       final BufferedReader in =
           new BufferedReader(new FileReader(new File(inputFile)));
       while ((line = in.readLine()) != null) {
         line = line.replace("\r", "");
         final String[] fields = line.split("\t");
-
         // skip header
         if (fields[0].equals("code")) {
           continue;
@@ -146,10 +156,9 @@ public class TerminologySimpleLoaderMojo extends AbstractMojo {
         if (fields.length < 2) {
           throw new Exception("Unexpected line, not enough fields: " + line);
         }
-
         final String code = fields[0];
         final String preferred = fields[1];
-        final Concept concept = new ConceptJpa();
+        Concept concept = new ConceptJpa();
         concept.setTerminologyId(code);
         concept.setEffectiveTime(now);
         // assume active
@@ -163,7 +172,7 @@ public class TerminologySimpleLoaderMojo extends AbstractMojo {
         concept.setDefaultPreferredName(preferred);
 
         final Description pref = new DescriptionJpa();
-        pref.setTerminologyId("");
+        pref.setTerminologyId(++objCt + "");
         pref.setEffectiveTime(now);
         pref.setActive(true);
         pref.setModuleId(Long.parseLong(conceptMap.get("defaultModule")
@@ -179,9 +188,9 @@ public class TerminologySimpleLoaderMojo extends AbstractMojo {
             .getTerminologyId()));
         concept.addDescription(pref);
 
-        for (int i = 2; i <= fields.length; i++) {
+        for (int i = 2; i < fields.length; i++) {
           final Description sy = new DescriptionJpa();
-          sy.setTerminologyId("");
+          sy.setTerminologyId(++objCt + "");
           sy.setEffectiveTime(now);
           sy.setActive(true);
           sy.setModuleId(Long.parseLong(conceptMap.get("defaultModule")
@@ -198,17 +207,57 @@ public class TerminologySimpleLoaderMojo extends AbstractMojo {
           concept.addDescription(sy);
         }
 
-        // Add isa rel to "root"
-        helper.createIsaRelationship(rootConcept, concept, "", terminology,
-            version, dateFormat.format(now));
-        contentService.addConcept(concept);
+        getLog().info(
+            "  concept = " + concept.getTerminologyId() + ", "
+                + concept.getDefaultPreferredName());
+        concept = contentService.addConcept(concept);
+        conceptMap.put(concept.getTerminologyId(), concept);
+        concept = contentService.getConcept(concept.getId());
+
+        // If no par/chd file, make isa relationships to the root
+        if (parChdFile == null) {
+          helper.createIsaRelationship(rootConcept, concept, ++objCt + "",
+              terminology, version, dateFormat.format(now));
+        }
 
       }
 
+      // If there is a par/chd file, need to create all those relationships now
+      if (parChdFile != null) {
+        getLog().info("  Load Parent/Child rels - " + parChdFile);
+        final BufferedReader in2 =
+            new BufferedReader(new FileReader(new File(parChdFile)));
+        while ((line = in2.readLine()) != null) {
+          line = line.replace("\r", "");
+          final String[] fields = line.split("\t");
+          if (fields.length != 2) {
+            throw new Exception("Unexpected number of fields: " + fields.length);
+          }
+          final Concept par = conceptMap.get(fields[0]);
+          if (par == null) {
+            throw new Exception("Unable to find parent concept " + fields[0]);
+          }
+          final Concept chd = conceptMap.get(fields[1]);
+          if (chd == null) {
+            throw new Exception("Unable to find child concept " + fields[0]);
+          }
+          helper.createIsaRelationship(par, chd, ++objCt + "", terminology,
+              version, dateFormat.format(now));
+
+        }
+        in2.close();
+      }
+
       in.close();
+      contentService.commit();
+
+      // Tree position computation
+      String isaRelType = conceptMap.get("isa").getTerminologyId();
+      getLog().info("Start creating tree positions root, " + isaRelType);
+      contentService.computeTreePositions(terminology, version, isaRelType,
+          "root");
 
       // Clean-up
-      contentService.commit();
       getLog().info("done ...");
       contentService.close();
 
