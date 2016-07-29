@@ -3,6 +3,7 @@ package org.ihtsdo.otf.mapping.test.jpa;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
@@ -89,7 +90,8 @@ public class GmdnTreePositionTest {
 
     // Second
     treePositions =
-        contentService.getTreePositionGraphForQuery("GMDN", "16_1", "61690");
+        contentService.getTreePositionGraphForQuery("GMDN", "16_1", "61690",
+            new PfsParameterJpa());
     Logger.getLogger(getClass()).info(
         "  treepos count = " + treePositions.getTotalCount());
 
