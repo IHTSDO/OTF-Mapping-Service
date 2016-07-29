@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
-    <version>1.5.1-SNAPSHOT</version>
+    <version>1.5.0</version>
     <relativePath>../parent</relativePath>
   </parent>
 
@@ -90,11 +90,9 @@
             <additionalClasspathElement>src/main/resources</additionalClasspathElement>
           </additionalClasspathElements>
           <skipTests>${skipTests}</skipTests>
-          <includes>
-            <include>**/org/ihtsdo/otf/mapping/test/jpa/*Test.java</include>
-            <include>**/org/ihtsdo/otf/mapping/test/other/*Test.java</include>
-            <include>**/org/ihtsdo/otf/mapping/test/rest/*Test.java</include>
-          </includes>
+          <excludes>
+            <exclude>**/ResetDemoDatabase.java</exclude>
+          </excludes>
         </configuration>
       </plugin>
     </plugins>
@@ -105,12 +103,13 @@
       <id>reset</id>
       <build>
         <plugins>
+          <!-- Add src/main/resources to the classpath -->
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <includes>
-                <include>**/ResetDemoDatabase.java</include>
+                <include>**/ResetDevDatabase.java</include>
               </includes>
               <additionalClasspathElements>
                 <additionalClasspathElement>src/main/resources</additionalClasspathElement>
