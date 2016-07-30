@@ -6,7 +6,9 @@ mapProjectAppControllers.controller('LoginCtrl', [
   '$location',
   '$http',
   '$routeParams',
-  function($scope, localStorageService, $rootScope, $location, $http, $routeParams) {
+  'appConfig',
+  function($scope, localStorageService, $rootScope, $location, $http, $routeParams, appConfig) {
+    $scope.appConfig = appConfig;
     $scope.page = 'login';
     $scope.mapUsers = [];
     $scope.userName = '';

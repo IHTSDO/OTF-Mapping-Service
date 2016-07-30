@@ -4,11 +4,9 @@
     <div class="navbar-header">
       <ul class="nav navbar-nav navbar-left">
         <li><p class="navbar-text">
-            <a class="navbar-link" href="${deploy.footer.link}">
-              ${deploy.footer.copyright} </a>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <!-- NOTE: for maven filtering to work as of 3.0.5, this needs to be on its own line -->
-            ${project.version}
+            <a class="navbar-link" href="{{appConfig['deploy.footer.link']}}">
+              {{appConfig['deploy.footer.copyright']}} </a>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {{appConfig.projectVersion}}
           </p></li>
         <li>
           <div style="text-align: center; padding: 5px; margin: 0 0 0 0;"

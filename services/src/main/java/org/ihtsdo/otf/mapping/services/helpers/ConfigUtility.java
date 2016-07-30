@@ -43,8 +43,8 @@ public class ConfigUtility {
   public synchronized static Properties getConfigProperties() throws Exception {
     if (config == null) {
       String configFileName = System.getProperty("run.config");
-      Logger.getLogger(ConfigUtility.class.getName()).info(
-          "  run.config = " + configFileName);
+      Logger.getLogger(ConfigUtility.class.getName())
+          .info("  run.config = " + configFileName);
       config = new Properties();
       FileReader in = new FileReader(new File(configFileName));
       config.load(in);
@@ -52,6 +52,33 @@ public class ConfigUtility {
       Logger.getLogger(ConfigUtility.class).info("  properties = " + config);
     }
     return config;
+  }
+
+  /**
+   * Returns the ui config properties.
+   *
+   * @return the ui config properties
+   * @throws Exception the exception
+   */
+  public static Properties getUiConfigProperties() throws Exception {
+    final Properties config = getConfigProperties();
+    // use "deploy.*" and "site.*" and "base.url" properties
+    final Properties p = new Properties();
+    for (final Object prop : config.keySet()) {
+      final String str = prop.toString();
+
+      if (str.startsWith("deploy.") || str.startsWith("site.")
+          || str.startsWith("base.url")) {
+        p.put(prop, config.getProperty(prop.toString()));
+      }
+
+      if (str.startsWith("security") && str.contains("url")) {
+        p.put(prop, config.getProperty(prop.toString()));
+      }
+
+    }
+    return p;
+
   }
 
   /**
@@ -64,8 +91,8 @@ public class ConfigUtility {
     throws Exception {
     if (testConfig == null) {
       String configFileName = System.getProperty("run.config.test");
-      Logger.getLogger(ConfigUtility.class.getName()).info(
-          "  run.config.test = " + configFileName);
+      Logger.getLogger(ConfigUtility.class.getName())
+          .info("  run.config.test = " + configFileName);
       testConfig = new Properties();
       FileReader in = new FileReader(new File(configFileName));
       testConfig.load(in);
@@ -144,12 +171,10 @@ public class ConfigUtility {
     for (Object key : config.keySet()) {
       // Find properties like "metadata.service.handler.SNOMED.class"
       if (key.toString().startsWith(property + "." + handlerName + ".")) {
-        String shortKey =
-            key.toString().substring(
-                (property + "." + handlerName + ".").length());
-        Logger.getLogger(ConfigUtility.class).info(
-            " property " + shortKey + " = "
-                + config.getProperty(key.toString()));
+        String shortKey = key.toString()
+            .substring((property + "." + handlerName + ".").length());
+        Logger.getLogger(ConfigUtility.class).info(" property " + shortKey
+            + " = " + config.getProperty(key.toString()));
         handlerProperties.put(shortKey, config.getProperty(key.toString()));
       }
     }
@@ -245,7 +270,8 @@ public class ConfigUtility {
     msg.setFrom(new InternetAddress(from));
     String[] recipientsArray = recipients.split(";");
     for (String recipient : recipientsArray) {
-      msg.addRecipient(Message.RecipientType.TO, new InternetAddress(recipient));
+      msg.addRecipient(Message.RecipientType.TO,
+          new InternetAddress(recipient));
     }
     Transport.send(msg);
   }
@@ -426,10 +452,9 @@ public class ConfigUtility {
                 if (i != 0) {
                   return i;
                 } else {
-                  i =
-                      (fields1[0] + fields1[1] + fields1[2] + fields1[3])
-                          .compareTo(fields2[0] + fields2[1] + fields2[2]
-                              + fields2[3]);
+                  i = (fields1[0] + fields1[1] + fields1[2] + fields1[3])
+                      .compareTo(
+                          fields2[0] + fields2[1] + fields2[2] + fields2[3]);
                   if (i != 0) {
                     return i;
                   } else {
@@ -493,10 +518,8 @@ public class ConfigUtility {
             if (i != 0) {
               return i;
             } else {
-              i =
-                  (fields1[0] + fields1[1] + fields1[2] + fields1[3])
-                      .compareTo(fields2[0] + fields2[1] + fields2[2]
-                          + fields2[3]);
+              i = (fields1[0] + fields1[1] + fields1[2] + fields1[3])
+                  .compareTo(fields2[0] + fields2[1] + fields2[2] + fields2[3]);
               if (i != 0) {
                 return i;
               } else {
