@@ -56,6 +56,7 @@ mapProjectApp
         function handleError(message) {
           this.handleError(message);
         }
+        
         this.handleError = function(message) {
           if (message && message.length > 120) {
             $rootScope.globalError = 'Unexpected error, click the icon to view attached full error';
