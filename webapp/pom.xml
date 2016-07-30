@@ -21,8 +21,6 @@
     <config.groupId>org.ihtsdo.otf.mapping</config.groupId>
     <config.artifactId>mapping-config-dev-windows</config.artifactId>
     <config.version>${releaseVersion}</config.version>
-    <!-- having these defaults is problematic, require them in config file <index.viewer.groupId>org.ihtsdo.otf.mapping</index.viewer.groupId> 
-      <index.viewer.artifactId>index-viewer-data-icd10</index.viewer.artifactId> <index.viewer.version>1.1.0-SNAPSHOT</index.viewer.version> -->
   </properties>
 
   <!-- Declare Project Dependency Versions -->
@@ -73,46 +71,6 @@
               </artifactItems>
             </configuration>
           </execution>
-          <execution>
-            <id>unpack-index-viewer-data</id>
-            <phase>process-sources</phase>
-            <goals>
-              <goal>unpack</goal>
-            </goals>
-            <configuration>
-              <artifactItems>
-                <artifactItem>
-                  <!-- These are set by the properties in the read-project-properties 
-                    call. They can be manually overridden with -D as desired. -->
-                  <groupId>${index.viewer.groupId}</groupId>
-                  <artifactId>${index.viewer.artifactId}</artifactId>
-                  <version>${index.viewer.version}</version>
-                  <type>zip</type>
-                  <outputDirectory>${project.build.directory}/config/resources</outputDirectory>
-                </artifactItem>
-              </artifactItems>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <!-- Configure environment-specific build time information -->
-      <!-- In particular, this is for base.url -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>properties-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>read-project-properties</goal>
-            </goals>
-            <configuration>
-              <files>
-                <file>${project.build.directory}/config/resources/config.properties</file>
-              </files>
-            </configuration>
-          </execution>
         </executions>
       </plugin>
 
@@ -124,24 +82,8 @@
           <webResources>
             <resource>
               <directory>${project.build.directory}/config/resources</directory>
-              <filtering>true</filtering>
-              <!-- include files to filter -->
-              <includes>
-                <include>js/partials/login.html</include>
-                <include>js/loginController.js</include>
-              </includes>
-            </resource>
-            <resource>
-              <directory>${project.build.directory}/config/resources</directory>
-              <!-- avoid unnecessary stuff and filtered files -->
-              <filtering>false</filtering>
+              <!-- avoid unnecessary stuff -->
               <excludes>
-                <exclude>
-                  js/partials/login.html
-                </exclude>
-                <exclude>
-                  js/loginController.js
-                </exclude>
                 <exclude>bin/**</exclude>
                 <exclude>config*.properties</exclude>
               </excludes>
@@ -150,20 +92,14 @@
               <directory>src/main/webapp</directory>
               <filtering>true</filtering>
               <includes>
-                <include>index.html</include>
-                <include>partials/footer.html</include>
-                <include>partials/header.html</include>
-                <include>partials/login.html</include>
+                <include>js/appConfig.js</include>
               </includes>
             </resource>
             <resource>
               <directory>src/main/webapp</directory>
               <filtering>false</filtering>
               <excludes>
-                <exclude>index.html</exclude>
-                <exclude>partials/footer.html</exclude>
-                <exclude>partials/header.html</exclude>
-                <exclude>partials/login.html</exclude>
+                <exclude>js/appConfig.js</exclude>
               </excludes>
             </resource>
           </webResources>

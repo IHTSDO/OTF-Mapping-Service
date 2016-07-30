@@ -21,6 +21,8 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
   function($scope, $rootScope, $q, $timeout, $http, $routeParams, $location, localStorageService,
     utilService, gpService) {
 
+    // Scope variables
+    $scope.listMode = false;
     $scope.focusProject = localStorageService.get('focusProject');
     $scope.userToken = localStorageService.get('userToken');
     $scope.terminology = null;
@@ -65,6 +67,10 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
     // coupled with $watch below, this avoids premature work fetching
     $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
       $scope.focusProject = parameters.focusProject;
+      // Set default list mode
+      if ($scope.focusProject.destinationTerminology === 'GMDN') {
+        $scope.listMode = true;
+      }
     });
 
     $scope.$on('mapEntryWidget.notification.clearTargetConcept', function(event, parameters) {
@@ -143,7 +149,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
     // Handler for the "Search" button
     // Perform a search - list or tree depending on the state
     $scope.search = function() {
-
+      
       // Query is implied
       if (!$scope.query) {
         return;
@@ -154,11 +160,11 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
         return;
       }
 
-      // TODO: hack: fix this, need a configurable project setting
-      // or some characteristic about the destination terminology
-      // ideally we would define a "default" mode for the project
-      // and the user could switch if they were having a problem
-      if ($scope.focusProject.destinationTerminology == 'GMDN') {
+      // clear the search results
+      $scope.searchResults = [];
+
+      // list or tree mode
+      if ($scope.listMode) {
         $scope.performSearch($scope.query);
       } else {
         // Perform tree search
@@ -184,7 +190,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
       $scope.getRootTree();
     };
 
-    // Search a terminologyId in the tree
+    // Search a terminologyId in the tree from the list
     $scope.selectResult = function(result) {
       $scope.selectedResult = result;
       $scope.treeQuery = result.terminologyId;
@@ -217,12 +223,11 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
           $scope.getRootTree();
           $scope.manageStack($scope.query);
         }
+
         // If just 1 result, leave results blank, set tree query and search
         // the root tree
         else if (response.data.searchResult.length == 1) {
-          $scope.searchResults = [];
-          $scope.treeQuery = $scope.query;
-          $scope.getRootTreeWithQuery(true);
+          $scope.selectResult(response.data.searchResult[0]);
         }
 
         // otherwise display results and root tree
@@ -357,9 +362,11 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
       $scope.searchBackAllowed = $scope.searchStackPosition > 0;
       $scope.searchForwardAllowed = $scope.searchStackPosition < $scope.searchStackResults;
 
+      // clear the search results
+      $scope.searchResults = [];
       // if query is not populated or undefined, get the root trees, otherwise
       // get query results
-      if ($scope.focusProject.destinationTerminology == 'GMDN') {
+      if ($scope.listMode) {
         $scope.performSearch($scope.query);
       } else {
         // Perform tree search
@@ -454,6 +461,12 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
       return retval;
     };
 
+    // Toggle the list/tree mode
+    $scope.toggleListMode = function() {
+      $scope.listMode = !$scope.listMode;
+    }
+
+    // Toggle child nodes
     $scope.toggleChildren = function(node) {
       node.isOpen = !node.isOpen;
 

@@ -13,9 +13,11 @@ angular
   })
   .controller(
     'recordConceptCtrl',
-    function($scope, $rootScope, $http, $routeParams, $location, $modal, localStorageService, $sce) {
+    function($scope, $rootScope, $http, $routeParams, $location, $modal, localStorageService, $sce,
+      appConfig) {
 
       // scope variables
+      $scope.appConfig = appConfig;
       $scope.page = 'concept';
       $scope.error = ''; // initially empty
       $scope.conceptId = $routeParams.conceptId;
