@@ -529,7 +529,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
    *
    * @return the effective time
    */
-  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.YES)
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public Date getEffectiveTime() {
     return super.getEffectiveTime();
@@ -563,7 +563,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
    * @return the default preferred name
    */
   @Override
-  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.YES)
+  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   @Analyzer(definition = "noStopWord")
   public String getDefaultPreferredName() {
     return defaultPreferredName;

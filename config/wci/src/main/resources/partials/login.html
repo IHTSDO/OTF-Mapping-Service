@@ -14,7 +14,7 @@
         <button style="margin-top: 10px;" id="userLoginButton" type="submit"
           ng-click="go('/viewer/dash')">Login</button>
         <p style="margin-top: 5px">
-          <a href="${deploy.reset.password.link}">Forgot Password?</a>
+          <a href="{{appConfig['deploy.reset.password.link']}}">Forgot Password?</a>
         </p>
       </form>
     </div>
