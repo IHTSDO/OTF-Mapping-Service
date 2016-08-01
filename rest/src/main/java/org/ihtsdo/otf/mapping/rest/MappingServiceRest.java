@@ -4258,6 +4258,7 @@ public class MappingServiceRest extends RootServiceRest {
    * @param destFile the dest file
    * @throws IOException Signals that an I/O exception has occurred.
    */
+  @SuppressWarnings("resource")
   public static void copyFile(File sourceFile, File destFile)
     throws IOException {
     if (!destFile.exists()) {

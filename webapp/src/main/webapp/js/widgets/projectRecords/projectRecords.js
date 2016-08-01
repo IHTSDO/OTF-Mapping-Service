@@ -36,8 +36,8 @@ angular
   .controller(
     'projectRecordsCtrl',
     function($scope, $rootScope, $http, $routeParams, $location, $modal, $q, localStorageService,
-      $sce) {
-
+      $sce, appConfig) {
+      $scope.appConfig = appConfig;
       $scope.page = 'records';
 
       // the project id, extracted from route params
