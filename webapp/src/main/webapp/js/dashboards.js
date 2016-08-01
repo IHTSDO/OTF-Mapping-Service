@@ -4,9 +4,10 @@ var mapProjectAppDashboards = angular.module('mapProjectAppDashboards', [ 'adf',
   'LocalStorageModule' ]);
 
 mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function($scope, $routeParams,
-  $rootScope, $location, $window, $http, localStorageService, utilService) {
+  $rootScope, $location, $window, $http, localStorageService, utilService, appConfig) {
 
   // model variable
+  $scope.appConfig = appConfig;
   $scope.model = null;
 
   // On initialization, reset all values to null -- used to
@@ -292,9 +293,10 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function($sc
 });
 
 mapProjectAppDashboards.controller('FeedbackConversationsDashboardCtrl', function($scope,
-  $routeParams, $rootScope, $location, $window, localStorageService) {
+  $routeParams, $rootScope, $location, $window, localStorageService, appConfig) {
 
   // model variable
+  $scope.appConfig = appConfig;
   $scope.model = null;
 
   // On initialization, reset all values to null -- used to
@@ -526,8 +528,9 @@ mapProjectAppDashboards.controller('FeedbackConversationsDashboardCtrl', functio
 });
 
 mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope, $http, $location,
-  $window, localStorageService, utilService) {
+  $window, localStorageService, utilService, appConfig) {
 
+  $scope.appConfig = appConfig;
   $scope.model = null;
 
   // On initialization, reset all values to null -- used to
@@ -1080,8 +1083,9 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
 });
 
 mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function($scope, $rootScope, $http,
-  $routeParams, $location, $window, localStorageService) {
+  $routeParams, $location, $window, localStorageService, appConfig) {
 
+  $scope.appConfig = appConfig;
   $scope.model = null;
 
   // On initialization, reset all values to null -- used to
@@ -1342,8 +1346,9 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function($scope, $r
 });
 
 mapProjectAppDashboards.controller('ProjectDetailsDashboardCtrl', function($rootScope, $scope,
-  $http, $location, $window, localStorageService, utilService) {
+  $http, $location, $window, localStorageService, utilService, appConfig) {
 
+  $scope.appConfig = appConfig;
   // On initialization, reset all values to null -- used to
   // ensure watch
   // functions work correctly
@@ -1496,8 +1501,9 @@ mapProjectAppDashboards.controller('ProjectDetailsDashboardCtrl', function($root
 });
 
 mapProjectAppDashboards.controller('ProjectRecordsDashboardCtrl', function($rootScope, $scope,
-  $http, $location, $window, localStorageService, utilService) {
+  $http, $location, $window, localStorageService, utilService, appConfig) {
 
+  $scope.appConfig = appConfig;
   // On initialization, reset all values to null -- used to ensure watch
   // functions work correctly
   $scope.mapProjects = null;
@@ -1634,8 +1640,9 @@ mapProjectAppDashboards.controller('ProjectRecordsDashboardCtrl', function($root
 });
 
 mapProjectAppDashboards.controller('RecordConceptDashboardCtrl', function($rootScope, $scope,
-  $http, $location, $window, localStorageService, utilService) {
+  $http, $location, $window, localStorageService, utilService, appConfig) {
 
+  $scope.appConfig = appConfig;
   // On initialization, reset all values to null -- used to ensure watch
   // functions work correctly
   $scope.mapProjects = null;
@@ -1772,8 +1779,9 @@ mapProjectAppDashboards.controller('RecordConceptDashboardCtrl', function($rootS
 });
 
 mapProjectAppDashboards.controller('IndexViewerDashboardCtrl', function($rootScope, $scope, $http,
-  $location, $window, localStorageService) {
+  $location, $window, localStorageService, appConfig) {
 
+  $scope.appConfig = appConfig;
   // On initialization, reset all values to null -- used to ensure watch
   // functions work correctly
   $scope.mapProjects = null;

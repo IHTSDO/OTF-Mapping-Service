@@ -77,7 +77,7 @@ public class ContentServiceRest extends RootServiceRest {
     @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminolgoyVersion") String terminologyVersion,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-      throws Exception {
+    throws Exception {
 
     Logger.getLogger(ContentServiceRest.class)
         .info("RESTful call (Content): /concept/" + terminology + "/"
@@ -134,7 +134,7 @@ public class ContentServiceRest extends RootServiceRest {
     @ApiParam(value = "Concept terminology id, e.g. 22298006", required = true) @PathParam("terminologyId") String terminologyId,
     @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-      throws Exception {
+    throws Exception {
 
     Logger.getLogger(ContentServiceRest.class)
         .info("RESTful call (Content): /concept/" + terminology + "/id/"
@@ -178,7 +178,7 @@ public class ContentServiceRest extends RootServiceRest {
   public SearchResultList findConceptsForQuery(
     @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @PathParam("string") String searchString,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-      throws Exception {
+    throws Exception {
 
     Logger.getLogger(ContentServiceRest.class)
         .info("RESTful call (Content): /concept/query/" + searchString);
@@ -222,7 +222,7 @@ public class ContentServiceRest extends RootServiceRest {
     @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-      throws Exception {
+    throws Exception {
 
     Logger.getLogger(ContentServiceRest.class)
         .info("RESTful call (Content): /concept/" + terminology + "/"
@@ -267,7 +267,7 @@ public class ContentServiceRest extends RootServiceRest {
     @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-      throws Exception {
+    throws Exception {
 
     Logger.getLogger(ContentServiceRest.class)
         .info("RESTful call (Content): /concept/" + terminology + "/"
@@ -352,7 +352,7 @@ public class ContentServiceRest extends RootServiceRest {
     @ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken,
     @ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter)
-      throws Exception {
+    throws Exception {
 
     Logger.getLogger(ContentServiceRest.class)
         .info("RESTful call (Content): /terminology/id/" + terminology + "/"
@@ -430,7 +430,7 @@ public class ContentServiceRest extends RootServiceRest {
     @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-      throws Exception {
+    throws Exception {
 
     Logger.getLogger(ContentServiceRest.class)
         .info("RESTful call (Content): /index/" + terminology + "/"
@@ -474,7 +474,7 @@ public class ContentServiceRest extends RootServiceRest {
     @ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
     @ApiParam(value = "Name of index or domain", required = true) @PathParam("index") String index,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-      throws Exception {
+    throws Exception {
 
     Logger.getLogger(ContentServiceRest.class)
         .info("RESTful call (Content): /index/" + terminology + "/"
@@ -520,18 +520,20 @@ public class ContentServiceRest extends RootServiceRest {
     @ApiParam(value = "Domain/Index within terminology", required = true) @PathParam("domain") String domain,
     @ApiParam(value = "Object link", required = true) @PathParam("link") String link,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-      throws Exception {
+    throws Exception {
 
     Logger.getLogger(ContentServiceRest.class)
-        .info("RESTful call (Content): /index/" + terminology + "/" + terminologyVersion + "/" + domain + "/details/" + link);
+        .info("RESTful call (Content): /index/" + terminology + "/"
+            + terminologyVersion + "/" + domain + "/details/" + link);
 
     final IndexViewerHandler indexViewerHandler = new IndexViewerHandler();
     try {
       // authorize call
-      authorizeApp(authToken, MapUserRole.VIEWER, "get index viewer details for object link",
-          securityService);
+      authorizeApp(authToken, MapUserRole.VIEWER,
+          "get index viewer details for object link", securityService);
 
-      return indexViewerHandler.getDetailsAsHtmlForLink(terminology, terminologyVersion, domain, link);
+      return indexViewerHandler.getDetailsAsHtmlForLink(terminology,
+          terminologyVersion, domain, link);
 
     } catch (Exception e) {
       handleException(e, "trying to get index viewer details for object link");
@@ -570,7 +572,7 @@ public class ContentServiceRest extends RootServiceRest {
     @ApiParam(value = "Third level search field to refine search", required = true) @PathParam("subSubSearchField") String subSubSearchField,
     @ApiParam(value = "If all levels should be searched, e.g. true", required = true) @PathParam("allFlag") boolean allFlag,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-      throws Exception {
+    throws Exception {
 
     Logger.getLogger(ContentServiceRest.class)
         .info("RESTful call (Content): /index/" + terminology + "/"

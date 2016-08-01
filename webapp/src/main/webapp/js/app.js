@@ -81,9 +81,58 @@ var mapProjectApp = angular.module(
 
   });
 
+// Initialize app config (runs after route provider config)
+mapProjectApp.run([
+  '$http',
+  'appConfig',
+  'gpService',
+  'utilService',
+  function($http, appConfig, gpService, utilService) {
+
+    // Request properties from the server
+    gpService.increment();
+    $http.get('/mapping-rest/security/properties').then(
+      // success
+      function(response) {
+        gpService.decrement();
+        // Copy over to appConfig
+        for ( var key in response.data) {
+          appConfig[key] = response.data[key];
+        }
+
+        // if appConfig not set or contains nonsensical values, throw error
+        var errMsg = '';
+        if (!appConfig) {
+          errMsg += 'Application configuration (appConfig.js) could not be found';
+        }
+
+        // Iterate through app config variables and verify interpolation
+        console.debug('Application configuration variables set:');
+        for ( var key in appConfig) {
+          if (appConfig.hasOwnProperty(key)) {
+            console.debug('  ' + key + ': ' + appConfig[key]);
+            if (appConfig[key].startsWith('${')) {
+              errMsg += 'Configuration property ' + key
+                + ' not set in project or configuration file';
+            }
+          }
+        }
+
+        if (errMsg.length > 0) {
+          // Send an embedded 'data' object
+          utilService.handleError('Configuration Error:\n' + errMsg);
+        }
+
+      },
+      // Error
+      function(response) {
+        gpService.decrement();
+        utilService.handleError(response.data);
+      });
+  } ]);
+
 // set the main application window name
 // window.name = 'mappingToolWindow';
-
 mapProjectApp.config([ '$routeProvider', function($routeProvider) {
 
   // ////////////////////////////
@@ -166,4 +215,6 @@ mapProjectApp.config([ '$routeProvider', function($routeProvider) {
   $routeProvider.otherwise({
     redirectTo : 'partials/error.html'
   });
-} ]);
+}
+
+]);
