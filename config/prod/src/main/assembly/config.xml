@@ -10,6 +10,11 @@
       <useDefaultExcludes>true</useDefaultExcludes>
       <fileMode>0755</fileMode>
     </fileSet>
+    <fileSet>
+      <directory>target/config/resources</directory>
+      <outputDirectory>/</outputDirectory>
+      <useDefaultExcludes>true</useDefaultExcludes>
+    </fileSet>
   </fileSets>
   <includeBaseDirectory>false</includeBaseDirectory>
 </assembly>

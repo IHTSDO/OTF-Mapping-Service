@@ -181,26 +181,6 @@
         </executions>
       </plugin>
 
-      <!-- Configure environment-specific build time information -->
-      <!-- In particular, this is for base.url -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>properties-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>read-project-properties</goal>
-            </goals>
-            <configuration>
-              <files>
-                <file>${project.build.directory}/config/resources/config.properties</file>
-              </files>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
       <!-- Configure .war build -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -217,21 +197,7 @@
                 <exclude>config*.properties</exclude>
               </excludes>
             </resource>
-            <resource>
-              <directory>src/main/webapp</directory>
-              <filtering>true</filtering>
-              <includes>
-                <include>index.html</include>
-              </includes>
-            </resource>
-            <resource>
-              <directory>src/main/webapp</directory>
-              <filtering>false</filtering>
-              <excludes>
-                <exclude>index.html</exclude>
-              </excludes>
-            </resource>
-          </webResources>
+           </webResources>
         </configuration>
       </plugin>
 
