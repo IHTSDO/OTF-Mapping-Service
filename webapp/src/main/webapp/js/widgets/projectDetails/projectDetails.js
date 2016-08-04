@@ -444,8 +444,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           $scope.pagedScopeExcludedConcept = data.searchResult;
           $scope.pagedScopeExcludedConceptCount = data.totalCount;
         }).error(function(data, status, headers, config) {
-          $rootScoped.glassPane--;
-
+          $rootScope.glassPane--;
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
