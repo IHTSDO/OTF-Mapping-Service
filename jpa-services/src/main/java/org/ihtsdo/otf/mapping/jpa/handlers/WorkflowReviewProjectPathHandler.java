@@ -1,6 +1,7 @@
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -77,20 +78,20 @@ public class WorkflowReviewProjectPathHandler
         new WorkflowStatusCombination(Arrays.asList(WorkflowStatus.NEW)));
     specialistEditingState.addWorkflowCombination(new WorkflowStatusCombination(
         Arrays.asList(WorkflowStatus.EDITING_IN_PROGRESS)));
+    specialistEditingState.addWorkflowCombination(new WorkflowStatusCombination(
+        Arrays.asList(WorkflowStatus.EDITING_DONE)));
     trackingRecordStateToActionMap.put(specialistEditingState,
         new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING,
             WorkflowAction.SAVE_FOR_LATER, WorkflowAction.UNASSIGN)));
 
     // STATE: Specialist level work (complete)
-    // permissible actions: SAVE_FOR_LATER, FINISH_EDITING, UNASSIGN,
-    // ASSIGN_FROM_SCRATCH
-    specialistFinishedState = new WorkflowPathState("EDITING_DONE");
+    // permissible actions: ASSIGN_FROM_SCRATCH
+    specialistFinishedState = new WorkflowPathState("REVIEW_NEEDED");
     specialistFinishedState
         .addWorkflowCombination(new WorkflowStatusCombination(
-            Arrays.asList(WorkflowStatus.EDITING_DONE)));
+            Arrays.asList(WorkflowStatus.REVIEW_NEEDED)));
     trackingRecordStateToActionMap.put(specialistFinishedState,
-        new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING,
-            WorkflowAction.SAVE_FOR_LATER, WorkflowAction.UNASSIGN)));
+        new HashSet<>(Arrays.asList(WorkflowAction.ASSIGN_FROM_SCRATCH)));
 
     // STATE: Lead work
     // permissible actions: SAVE_FOR_LATER, FINISH_EDITING, UNASSIGN
@@ -193,9 +194,10 @@ public class WorkflowReviewProjectPathHandler
       // check record
       if (currentRecord == null) {
         result.addError("User must have a record");
-      } else if (!currentRecord.getWorkflowStatus().equals(WorkflowStatus.NEW)
-          && !currentRecord.getWorkflowStatus()
-              .equals(WorkflowStatus.EDITING_IN_PROGRESS)) {
+      } else if (!EnumSet
+          .of(WorkflowStatus.NEW, WorkflowStatus.EDITING_IN_PROGRESS,
+              WorkflowStatus.EDITING_DONE)
+          .contains(currentRecord.getWorkflowStatus())) {
         result.addError("User's record does not meet requirements");
       }
 
@@ -230,7 +232,7 @@ public class WorkflowReviewProjectPathHandler
 
         // check record
         if (!currentRecord.getWorkflowStatus()
-            .equals(WorkflowStatus.EDITING_DONE)) {
+            .equals(WorkflowStatus.REVIEW_NEEDED)) {
           result.addError("User's record does not meet requirements");
         }
 
@@ -248,15 +250,14 @@ public class WorkflowReviewProjectPathHandler
           }
         }
 
-        // // TODO: all of these should be permitted now
-        // else {
-        // // check action
-        // if (!action.equals(WorkflowAction.SAVE_FOR_LATER)
-        // && !action.equals(WorkflowAction.FINISH_EDITING)
-        // && !action.equals(WorkflowAction.UNASSIGN)) {
-        // result.addError("Action is not permitted.");
-        // }
-        // }
+        else {
+          // check action
+          if (!action.equals(WorkflowAction.SAVE_FOR_LATER)
+              && !action.equals(WorkflowAction.FINISH_EDITING)
+              && !action.equals(WorkflowAction.UNASSIGN)) {
+            result.addError("Action is not permitted.");
+          }
+        }
 
         // Case 2: Lead assigning review
       } else {
@@ -634,9 +635,8 @@ public class WorkflowReviewProjectPathHandler
 
             break;
 
-          // case 1: specialist finishes a map record
+          // case 1b: specialist finishes a map record a second time
           case EDITING_DONE:
-          case REVIEW_NEEDED:
 
             Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
                 .debug(

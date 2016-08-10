@@ -64,6 +64,11 @@
             title='Publish All Finished Concepts'
             ng-click="finishOrPublishBatch(assignedWorkType)">
             <i class="glyphicon glyphicon-check"></i>
+          </a> <a
+            ng-show="assignedWorkType === 'EDITING_DONE' && focusProject.workflowType === 'REVIEW_PROJECT'"
+            title='Finish Edited Concepts'
+            ng-click="finishOrPublishBatch(assignedWorkType)">
+            <i class="glyphicon glyphicon-check"></i>
           </a></th>
 
         <th style="width: 75%; padding: 5px;">Preferred Name</th>
@@ -132,9 +137,13 @@
             <i ng-click="finishOrPublish(result)" class="glyphicon glyphicon-ok"></i>
           </a>
 
-          <!-- Display a checkmark to publish if this record is resolved -- only for simple path workflow -->
-          <a style="display: inline" title='Publish this record'
+          <!-- Display a checkmark to publish if this record is resolved -- only for simple/review path workflow -->
+          <a style="display: inline" title='Publish this concept'
             ng-show="result.terminologyVersion === 'EDITING_DONE' && focusProject.workflowType === 'SIMPLE_PATH'">
+            <i ng-click="finishOrPublish(result)" class="glyphicon glyphicon-ok"></i>
+          </a>
+          <a style="display: inline" title='Finish this concept'
+            ng-show="result.terminologyVersion === 'EDITING_DONE' && focusProject.workflowType === 'REVIEW_PROJECT'">
             <i ng-click="finishOrPublish(result)" class="glyphicon glyphicon-ok"></i>
           </a>
         </td>

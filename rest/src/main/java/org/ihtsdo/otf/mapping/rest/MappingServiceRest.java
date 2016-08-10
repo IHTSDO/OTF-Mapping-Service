@@ -3383,7 +3383,7 @@ public class MappingServiceRest extends RootServiceRest {
    * @throws Exception the exception
    */
   @GET
-  @Path("/treePosition/project/id/{projectId}")
+  @Path("/treePosition/project/id/{projectId}/destination")
   @ApiOperation(value = "Get root tree positions", notes = "Gets a list of tree positions at the root of the terminology.", response = TreePositionListJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
