@@ -37,7 +37,8 @@
 
 <!-- Search Results: scrollable container -->
 <div style="max-height: 1000px; overflow-y: scroll;">
-  <span ng-show="searchStatus" class="alert alert-warning">{{searchStatus}}</span>
+  <span ng-show="searchStatus" style="margin-top: 5px"
+    class="alert alert-warning">{{searchStatus}}</span>
 
   <!-- LIST -->
   <div ng-show="searchResults.length > 0" style="margin-bottom: 5px;">

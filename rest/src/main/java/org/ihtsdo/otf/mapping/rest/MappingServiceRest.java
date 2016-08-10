@@ -3564,9 +3564,11 @@ public class MappingServiceRest extends RootServiceRest {
 
       // formulate an "and" search from the query if it doesn't use special
       // chars
-      StringBuilder qb = new StringBuilder();
+      boolean plusFlag = false;
+      final StringBuilder qb = new StringBuilder();
       if (!query.contains("\"") && !query.contains("-") && !query.contains("+")
           && !query.contains("*")) {
+        plusFlag = true;
         for (final String word : query.split("\\s")) {
           qb.append("+").append(word).append(" ");
         }
@@ -3583,14 +3585,23 @@ public class MappingServiceRest extends RootServiceRest {
       // pfs.setMaxResults(10);
 
       // get the tree positions from concept service
-      final TreePositionList treePositions = contentService
+      TreePositionList treePositions = contentService
           .getTreePositionGraphForQuery(mapProject.getDestinationTerminology(),
               mapProject.getDestinationTerminologyVersion(), qb.toString(),
               pfs);
       Logger.getLogger(getClass())
           .info("  treepos count = " + treePositions.getTotalCount());
       if (treePositions.getCount() == 0) {
-        return new TreePositionListJpa();
+        // Re-try search without +
+        if (plusFlag) {
+          treePositions = contentService.getTreePositionGraphForQuery(
+              mapProject.getDestinationTerminology(),
+              mapProject.getDestinationTerminologyVersion(), qb.toString(),
+              pfs);
+        }
+        if (treePositions.getCount() == 0) {
+          return new TreePositionListJpa();
+        }
       }
 
       final String terminology =
@@ -3622,7 +3633,9 @@ public class MappingServiceRest extends RootServiceRest {
       // levels?)
       return treePositions;
 
-    } catch (Exception e) {
+    } catch (
+
+    Exception e) {
       handleException(e, "trying to get the tree position graphs for a query",
           user, mapProjectId.toString(), "");
       return null;
