@@ -120,22 +120,15 @@ angular
       // record retrieval (unpaged)
       $scope.retrieveRecordsHelper = function(pfs) {
 
-        if ($scope.searchParameters.query.indexOf('/') != -1) {
-          window.alert("Slash characters are not allowed in search queries");
-          return;
-        }
         $rootScope.resetGlobalError();
 
         var deferred = $q.defer();
         var query_url = root_mapping
           + 'record/project/id/'
           + $scope.project.objectId
-          + '/ancestor/'
+          + '?ancestorId='
           + ($scope.searchParameters.ancestorId && $scope.searchParameters.advancedMode ? $scope.searchParameters.ancestorId
-            : 'null')
-          + '/query/'
-          + ($scope.searchParameters.query ? encodeURIComponent($scope.searchParameters.query)
-            : 'null');
+            : '') + '&query=' + encodeURIComponent($scope.searchParameters.query);
 
         $rootScope.glassPane++;
 
