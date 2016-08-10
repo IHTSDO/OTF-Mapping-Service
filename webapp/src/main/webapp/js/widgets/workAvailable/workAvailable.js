@@ -236,8 +236,7 @@ angular
         $http(
           {
             url : root_workflow + 'project/id/' + $scope.focusProject.id + '/user/id/'
-              + user.userName + '/query/' + (query == null ? 'null' : encodeURIComponent(query))
-              + '/availableConflicts',
+              + user.userName + '/availableConflicts?query=' + encodeURIComponent(query),
             dataType : 'json',
             data : pfsParameterObj,
             method : 'POST',
@@ -301,8 +300,7 @@ angular
         $http(
           {
             url : root_workflow + 'project/id/' + $scope.focusProject.id + '/user/id/'
-              + user.userName + '/query/' + (query == null ? 'null' : encodeURIComponent(query))
-              + '/availableConcepts',
+              + user.userName + '/availableConcepts' + '?query=' + encodeURIComponent(query),
             dataType : 'json',
             data : pfsParameterObj,
             method : 'POST',
@@ -363,8 +361,8 @@ angular
 
         $http(
           {
-            url : root_workflow + 'project/id/' + $scope.focusProject.id + '/query/'
-              + (query == null ? 'null' : encodeURIComponent(query)) + '/availableQAWork',
+            url : root_workflow + 'project/id/' + $scope.focusProject.id + '/availableQAWork'
+              + '?query=' + encodeURIComponent(query),
             dataType : 'json',
             data : pfsParameterObj,
             method : 'POST',
@@ -373,7 +371,6 @@ angular
             }
           }).success(function(data) {
           $rootScope.glassPane--;
-
 
           $scope.availableQAWork = data.searchResult;
 
@@ -463,8 +460,8 @@ angular
         // first, get the currently available work (refresh)
         $http(
           {
-            url : root_workflow + 'project/id/' + $scope.focusProject.id + '/query/'
-              + (query == null ? 'null' : encodeURIComponent(query)) + '/availableQAWork',
+            url : root_workflow + 'project/id/' + $scope.focusProject.id + '/availableQAWork'
+              + '?query=' + encodeURIComponent(query),
             dataType : 'json',
             data : pfsParameterObj,
             method : 'POST',
@@ -542,8 +539,7 @@ angular
         $http(
           {
             url : root_workflow + 'project/id/' + $scope.focusProject.id + '/user/id/'
-              + user.userName + '/query/' + (query == null ? 'null' : encodeURIComponent(query))
-              + '/availableReviewWork',
+              + user.userName + '/availableReviewWork' + '?query=' + encodeURIComponent(query),
             dataType : 'json',
             data : pfsParameterObj,
             method : 'POST',
@@ -580,7 +576,7 @@ angular
       $scope.assignWork = function(trackingRecord, pmapUser, pquery, workType, workPage) {
         var mapUser = pmapUser;
         var query = pquery;
-        
+
         // doublecheck map user and query, assign default values if
         // necessary
         if (mapUser == null)
@@ -598,24 +594,23 @@ angular
             headers : {
               'Content-Type' : 'application/json'
             }
-          }).success(
-          function(data) {
-            $rootScope.glassPane--;
-            $rootScope.$broadcast('workAvailableWidget.notification.assignWork', {
-              assignUser : mapUser,
-              assignType : workType
-            });
+          }).success(function(data) {
+          $rootScope.glassPane--;
+          $rootScope.$broadcast('workAvailableWidget.notification.assignWork', {
+            assignUser : mapUser,
+            assignType : workType
+          });
 
-            if (workType == 'concept') {
-              $scope.retrieveAvailableWork(workPage, query, mapUser);
-            } else if (workType === 'conflict') {
-              $scope.retrieveAvailableConflicts(workPage, query, mapUser);
-            } else if (workType === 'review') {
-              $scope.retrieveAvailableReviewWork(workPage, query, mapUser);
-            } else if (workType === 'qa') {
-              $scope.retrieveAvailableQAWork(workPage, query, mapUser);
-            }
-          }).error(function(data, status, headers, config) {
+          if (workType == 'concept') {
+            $scope.retrieveAvailableWork(workPage, query, mapUser);
+          } else if (workType === 'conflict') {
+            $scope.retrieveAvailableConflicts(workPage, query, mapUser);
+          } else if (workType === 'review') {
+            $scope.retrieveAvailableReviewWork(workPage, query, mapUser);
+          } else if (workType === 'qa') {
+            $scope.retrieveAvailableQAWork(workPage, query, mapUser);
+          }
+        }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
           $rootScope.handleHttpError(data, status, headers, config);
         });
@@ -654,8 +649,7 @@ angular
         $http(
           {
             url : root_workflow + 'project/id/' + $scope.focusProject.id + '/user/id/'
-              + mapUser.userName + '/query/' + (query == null ? 'null' : query)
-              + '/availableConcepts',
+              + mapUser.userName + '/availableConcepts' + '?query=' + encodeURIComponent(query),
             dataType : 'json',
             data : pfsParameterObj,
             method : 'POST',
@@ -759,8 +753,7 @@ angular
         $http(
           {
             url : root_workflow + 'project/id/' + $scope.focusProject.id + '/user/id/'
-              + mapUser.userName + '/query/' + (query == null ? 'null' : query)
-              + '/availableConflicts',
+              + mapUser.userName + '/availableConflicts' + '?query=' + encodeURIComponent(query),
             dataType : 'json',
             data : pfsParameterObj,
             method : 'POST',
@@ -792,7 +785,7 @@ angular
               }
 
               if (conceptListValid == true) {
-               
+
                 var terminologyIds = [];
                 for (var i = 0; i < trackingRecords.length; i++) {
 
@@ -864,8 +857,7 @@ angular
         $http(
           {
             url : root_workflow + 'project/id/' + $scope.focusProject.id + '/user/id/'
-              + mapUser.userName + '/query/' + (query == null ? 'null' : query)
-              + '/availableReviewWork',
+              + mapUser.userName + '/availableReviewWork' + '?query=' + encodeURIComponent(query),
             dataType : 'json',
             data : pfsParameterObj,
             method : 'POST',
@@ -968,8 +960,8 @@ angular
         $rootScope.glassPane++;
         $http(
           {
-            url : root_workflow + 'project/id/' + $scope.focusProject.id + '/query/'
-              + (query == null ? 'null' : query) + '/availableQAWork',
+            url : root_workflow + 'project/id/' + $scope.focusProject.id + '/availableQAWork'
+              + '?query=' + encodeURIComponent(query),
             dataType : 'json',
             data : pfsParameterObj,
             method : 'POST',

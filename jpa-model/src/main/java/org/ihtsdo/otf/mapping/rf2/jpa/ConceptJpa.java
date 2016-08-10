@@ -231,9 +231,8 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * org.ihtsdo.otf.mapping.rf2.Concept#removeRelationship(org.ihtsdo.otf.mapping
-   * .rf2.Relationship)
+   * @see org.ihtsdo.otf.mapping.rf2.Concept#removeRelationship(org.ihtsdo.otf.
+   * mapping .rf2.Relationship)
    */
   @Override
   public void removeRelationship(Relationship relationship) {
@@ -327,7 +326,8 @@ public class ConceptJpa extends AbstractComponent implements Concept {
    * @param simpleRefSetMembers the set of SimpleRefSetMembers
    */
   @Override
-  public void setSimpleRefSetMembers(Set<SimpleRefSetMember> simpleRefSetMembers) {
+  public void setSimpleRefSetMembers(
+    Set<SimpleRefSetMember> simpleRefSetMembers) {
     this.simpleRefSetMembers = simpleRefSetMembers;
   }
 
@@ -584,16 +584,10 @@ public class ConceptJpa extends AbstractComponent implements Concept {
    */
   @Override
   public String toString() {
-
     return getId() + "," + getTerminology() + "," + getTerminologyId() + ","
         + getTerminologyVersion() + "," + getEffectiveTime() + "," + isActive()
-        + "," + getModuleId() + "," + // end of basic component fields
-
-        getDefinitionStatusId() + "," + getDefaultPreferredName(); // end
-                                                                   // of
-                                                                   // basic
-                                                                   // concept
-                                                                   // fields
+        + "," + getModuleId() + "," + getDefinitionStatusId() + ","
+        + getDefaultPreferredName();
   }
 
   /*
@@ -605,10 +599,8 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   public int hashCode() {
     final int prime = 31;
     int result = super.hashCode();
-    result =
-        prime
-            * result
-            + ((definitionStatusId == null) ? 0 : definitionStatusId.hashCode());
+    result = prime * result
+        + ((definitionStatusId == null) ? 0 : definitionStatusId.hashCode());
     return result;
   }
 
