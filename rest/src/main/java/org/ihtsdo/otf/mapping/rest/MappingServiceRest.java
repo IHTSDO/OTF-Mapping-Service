@@ -3596,7 +3596,7 @@ public class MappingServiceRest extends RootServiceRest {
         if (plusFlag) {
           treePositions = contentService.getTreePositionGraphForQuery(
               mapProject.getDestinationTerminology(),
-              mapProject.getDestinationTerminologyVersion(), qb.toString(),
+              mapProject.getDestinationTerminologyVersion(), query,
               pfs);
         }
         if (treePositions.getCount() == 0) {
