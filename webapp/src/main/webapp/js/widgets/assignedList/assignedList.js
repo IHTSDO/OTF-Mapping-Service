@@ -277,8 +277,8 @@ angular
         $http(
           {
             url : root_workflow + 'project/id/' + $scope.focusProject.id + '/user/id/'
-              + $scope.currentUser.userName + '/query/'
-              + (query == null ? null : encodeURIComponent(query)) + '/assignedConflicts',
+              + $scope.currentUser.userName + '/assignedConflicts?query='
+              + encodeURIComponent(query ? query : ''),
             dataType : 'json',
             data : pfsParameterObj,
             method : 'POST',
@@ -339,8 +339,8 @@ angular
         $http(
           {
             url : root_workflow + 'project/id/' + $scope.focusProject.id + '/user/id/'
-              + $scope.currentUser.userName + '/query/'
-              + (query == null ? null : encodeURIComponent(query)) + '/assignedConcepts',
+              + $scope.currentUser.userName + '/assignedConcepts?query='
+              + encodeURIComponent(query ? query : ''),
             dataType : 'json',
             data : pfsParameterObj,
             method : 'POST',
@@ -420,8 +420,8 @@ angular
         $http(
           {
             url : root_workflow + 'project/id/' + $scope.focusProject.id + '/user/id/'
-              + $scope.currentUser.userName + '/query/'
-              + (query == null ? null : encodeURIComponent(query)) + '/assignedQAWork',
+              + $scope.currentUser.userName + '/assignedQAWork?query='
+              + encodeURIComponent(query ? query : ''),
             dataType : 'json',
             data : pfsParameterObj,
             method : 'POST',
@@ -488,8 +488,8 @@ angular
         $http(
           {
             url : root_workflow + 'project/id/' + $scope.focusProject.id + '/user/id/'
-              + $scope.currentUser.userName + '/query/'
-              + (query == null ? null : encodeURIComponent(query)) + '/assignedReviewWork',
+              + $scope.currentUser.userName + '/assignedReviewWork?query='
+              + encodeURIComponent(query ? query : ''),
             dataType : 'json',
             data : pfsParameterObj,
             method : 'POST',
@@ -563,8 +563,7 @@ angular
         $http(
           {
             url : root_workflow + 'project/id/' + $scope.focusProject.id + '/user/id/'
-              + mapUserName + '/query/' + (query == null ? null : encodeURIComponent(query))
-              + '/assignedConcepts',
+              + mapUserName + '/assignedConcepts?query=' + encodeURIComponent(query ? query : ''),
             dataType : 'json',
             data : pfsParameterObj,
             method : 'POST',
@@ -706,8 +705,8 @@ angular
         $http(
           {
             url : root_workflow + 'project/id/' + $scope.focusProject.id + '/user/id/'
-              + user.userName + '/query/' + (query == null ? 'null' : encodeURIComponent(query))
-              + '/' + workTypeText,
+              + user.userName + '/' + workTypeText + '?query='
+              + encodeURIComponent(query ? query : ''),
             dataType : 'json',
             data : pfsParameterObj,
             method : 'POST',
@@ -876,15 +875,11 @@ angular
         };
 
         $rootScope.glassPane++;
+        // set based on specified workflow status
         $http(
           {
             url : root_workflow + 'project/id/' + $scope.focusProject.id + '/user/id/'
-              + $scope.currentUser.userName + '/query/null/' + apiWorkflowText, // set
-            // above
-            // based
-            // on
-            // specified workflow
-            // status
+              + $scope.currentUser.userName + '/' + apiWorkflowText,
             dataType : 'json',
             data : pfsParameterObj,
             method : 'POST',
@@ -1014,13 +1009,14 @@ angular
         // the
         // number of records
 
-        // set the dispaly text based on action
+        // set the display text based on action
         if (action === 'finish') {
           $scope.actionText = 'Finish';
         } else if (action === 'publish') {
           $scope.actionText = 'Publish';
         }
 
+        // Select the next record in the records array
         $scope.selectNextRecord = function() {
           var deferred = $q.defer();
           $scope.index = $scope.index == $scope.records.length ? 1 : $scope.index + 1;
@@ -1033,7 +1029,7 @@ angular
 
         };
 
-        // declare the function
+        // Load the current record
         $scope.loadRecord = function() {
 
           var deferred = $q.defer();
@@ -1078,14 +1074,21 @@ angular
                 if ($scope.currentRecord.workflowStatus === 'EDITING_IN_PROGRESS'
                   || $scope.currentRecord.workflowStatus === 'CONFLICT_IN_PROGRESS'
                   || $scope.currentRecord.workflowStatus === 'REVIEW_IN_PROGRESS'
-                  || $scope.currentRecord.workflowStatus === 'QA_IN_PROGRESS')
+                  || $scope.currentRecord.workflowStatus === 'QA_IN_PROGRESS') {
                   $scope.currentRecord.isFinished = false;
+                }
+
+                // If using "editing done" as a pre-step before review
+                else if ($scope.currentRecord.workflowStatus === 'EDITING_DONE') {
+                  $scope.currentRecord.isFinished = false;
+                }
 
                 // otherwise, this record has been finished/published
                 // via this
                 // modal
-                else
+                else {
                   $scope.currentRecord.isFinished = true;
+                }
               }
 
               // validate the record
