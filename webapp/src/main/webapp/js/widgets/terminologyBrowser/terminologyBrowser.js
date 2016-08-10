@@ -251,7 +251,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
       console.debug('get root tree');
       $rootScope.glassPane++;
       $http({
-        url : root_mapping + 'treePosition/project/id/' + $scope.focusProject.id,
+        url : root_mapping + 'treePosition/project/id/' + $scope.focusProject.id + '/destination',
         method : 'GET',
         headers : {
           'Content-Type' : 'application/json'
