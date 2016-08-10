@@ -8,6 +8,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
@@ -167,29 +168,28 @@ public class ContentServiceRest extends RootServiceRest {
   /**
    * Returns the concept for search string.
    *
-   * @param searchString the lucene search string
+   * @param query the lucene search string
    * @param authToken the auth token
    * @return the concept for id
    * @throws Exception the exception
    */
   @GET
-  @Path("/concept/query/{string}")
+  @Path("/concept")
   @ApiOperation(value = "Find concepts matching a search query.", notes = "Gets a list of search results that match the lucene query.", response = String.class)
   public SearchResultList findConceptsForQuery(
-    @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @PathParam("string") String searchString,
+    @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @QueryParam("query") String query,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(ContentServiceRest.class)
-        .info("RESTful call (Content): /concept/query/" + searchString);
+        .info("RESTful call (Content): /concept " + query);
 
     final ContentService contentService = new ContentServiceJpa();
     try {
       // authorize call
       authorizeApp(authToken, MapUserRole.VIEWER, "find concepts",
           securityService);
-      return contentService.findConceptsForQuery(searchString,
-          new PfsParameterJpa());
+      return contentService.findConceptsForQuery(query, new PfsParameterJpa());
 
     } catch (Exception e) {
       handleException(e, "trying to find the concepts by query");
