@@ -1,6 +1,7 @@
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -77,21 +78,20 @@ public class WorkflowReviewProjectPathHandler
         new WorkflowStatusCombination(Arrays.asList(WorkflowStatus.NEW)));
     specialistEditingState.addWorkflowCombination(new WorkflowStatusCombination(
         Arrays.asList(WorkflowStatus.EDITING_IN_PROGRESS)));
+    specialistEditingState.addWorkflowCombination(new WorkflowStatusCombination(
+        Arrays.asList(WorkflowStatus.EDITING_DONE)));
     trackingRecordStateToActionMap.put(specialistEditingState,
         new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING,
             WorkflowAction.SAVE_FOR_LATER, WorkflowAction.UNASSIGN)));
 
     // STATE: Specialist level work (complete)
-    // permissible actions: SAVE_FOR_LATER, FINISH_EDITING, UNASSIGN,
-    // ASSIGN_FROM_SCRATCH
+    // permissible actions: ASSIGN_FROM_SCRATCH
     specialistFinishedState = new WorkflowPathState("REVIEW_NEEDED");
     specialistFinishedState
         .addWorkflowCombination(new WorkflowStatusCombination(
             Arrays.asList(WorkflowStatus.REVIEW_NEEDED)));
     trackingRecordStateToActionMap.put(specialistFinishedState,
-        new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING,
-            WorkflowAction.SAVE_FOR_LATER, WorkflowAction.UNASSIGN,
-            WorkflowAction.ASSIGN_FROM_SCRATCH)));
+        new HashSet<>(Arrays.asList(WorkflowAction.ASSIGN_FROM_SCRATCH)));
 
     // STATE: Lead work
     // permissible actions: SAVE_FOR_LATER, FINISH_EDITING, UNASSIGN
@@ -194,9 +194,10 @@ public class WorkflowReviewProjectPathHandler
       // check record
       if (currentRecord == null) {
         result.addError("User must have a record");
-      } else if (!currentRecord.getWorkflowStatus().equals(WorkflowStatus.NEW)
-          && !currentRecord.getWorkflowStatus()
-              .equals(WorkflowStatus.EDITING_IN_PROGRESS)) {
+      } else if (!EnumSet
+          .of(WorkflowStatus.NEW, WorkflowStatus.EDITING_IN_PROGRESS,
+              WorkflowStatus.EDITING_DONE)
+          .contains(currentRecord.getWorkflowStatus())) {
         result.addError("User's record does not meet requirements");
       }
 
@@ -487,7 +488,7 @@ public class WorkflowReviewProjectPathHandler
                 + mapUser.getUserName());
             break;
           case "EDITING_DONE":
-            sb.append(" AND userAndWorkflowStatusPairs:REVIEW_NEEDED_"
+            sb.append(" AND userAndWorkflowStatusPairs:EDITING_DONE_"
                 + mapUser.getUserName());
             break;
           default:
@@ -495,7 +496,7 @@ public class WorkflowReviewProjectPathHandler
                 " AND (userAndWorkflowStatusPairs:NEW_" + mapUser.getUserName()
                     + " OR userAndWorkflowStatusPairs:EDITING_IN_PROGRESS_"
                     + mapUser.getUserName()
-                    + " OR userAndWorkflowStatusPairs:REVIEW_NEEDED_"
+                    + " OR userAndWorkflowStatusPairs:EDITING_DONE_"
                     + mapUser.getUserName() + ")");
             break;
         }
@@ -615,9 +616,27 @@ public class WorkflowReviewProjectPathHandler
         switch (mapRecord.getWorkflowStatus()) {
 
           // case 1: specialist finishes a map record
-          case REVIEW_NEEDED:
           case EDITING_IN_PROGRESS:
           case NEW:
+
+            Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
+                .debug(
+                    "FinishEditing: REVIEW_PROJECT_PATH, Specialist level work");
+
+            // check assumptions
+            // - should only be one record
+            if (mapRecords.size() != 1) {
+              throw new Exception(
+                  "FINISH called at initial editing level on REVIEW_PROJECT_PATH where more than one record exists");
+            }
+
+            // mark as REVIEW_NEEDED
+            mapRecord.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
+
+            break;
+
+          // case 1b: specialist finishes a map record a second time
+          case EDITING_DONE:
 
             Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
                 .debug(

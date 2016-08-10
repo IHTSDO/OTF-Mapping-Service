@@ -72,6 +72,10 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
         $scope.listMode = true;
       }
     });
+    // Check current focus project setting
+    if ($scope.focusProject.destinationTerminology === 'GMDN') {
+      $scope.listMode = true;
+    }
 
     $scope.$on('mapEntryWidget.notification.clearTargetConcept', function(event, parameters) {
       $scope.query = '';
@@ -149,7 +153,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
     // Handler for the "Search" button
     // Perform a search - list or tree depending on the state
     $scope.search = function() {
-      
+
       // Query is implied
       if (!$scope.query) {
         return;
@@ -211,7 +215,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
       var lquery = query + ' AND terminology:' + t + ' AND terminologyVersion:' + v;
 
       gpService.increment();
-      $http.get(root_content + 'concept/query/' + encodeURIComponent(lquery)).then(
+      $http.get(root_content + 'concept?query=' + encodeURIComponent(lquery)).then(
       // Success
       function(response) {
         $scope.searchStatus = '';
@@ -251,7 +255,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
       console.debug('get root tree');
       $rootScope.glassPane++;
       $http({
-        url : root_mapping + 'treePosition/project/id/' + $scope.focusProject.id,
+        url : root_mapping + 'treePosition/project/id/' + $scope.focusProject.id + '/destination',
         method : 'GET',
         headers : {
           'Content-Type' : 'application/json'
@@ -287,7 +291,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
       $rootScope.glassPane++;
       $http(
         {
-          url : root_mapping + 'treePosition/project/id/' + $scope.focusProject.id + '/query/'
+          url : root_mapping + 'treePosition/project/id/' + $scope.focusProject.id + '?query='
             + encodeURIComponent($scope.treeQuery),
           method : 'GET',
           headers : {

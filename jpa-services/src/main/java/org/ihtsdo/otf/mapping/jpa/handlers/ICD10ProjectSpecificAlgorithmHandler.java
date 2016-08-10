@@ -37,8 +37,8 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
 /**
  * The {@link ProjectSpecificAlgorithmHandler} for ICD10 projects.
  */
-public class ICD10ProjectSpecificAlgorithmHandler extends
-    DefaultProjectSpecificAlgorithmHandler {
+public class ICD10ProjectSpecificAlgorithmHandler
+    extends DefaultProjectSpecificAlgorithmHandler {
 
   // These state variables are maintained by sequential calls to
   // validate complex map refset records during a release
@@ -102,8 +102,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
   public ValidationResult validateTargetCodes(MapRecord mapRecord)
     throws Exception {
 
-    Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info(
-        "Validating target codes for ICD10");
+    Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class)
+        .info("Validating target codes for ICD10");
 
     final ValidationResult validationResult = new ValidationResultJpa();
     final ContentService contentService = new ContentServiceJpa();
@@ -111,27 +111,25 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
     for (final MapEntry mapEntry : mapRecord.getMapEntries()) {
 
       // add an error if neither relation nor target are set
-      if (mapEntry.getMapRelation() == null
-          && (mapEntry.getTargetId() == null || mapEntry.getTargetId().equals(
-              ""))) {
+      if (mapEntry.getMapRelation() == null && (mapEntry.getTargetId() == null
+          || mapEntry.getTargetId().equals(""))) {
 
-        validationResult
-            .addError("A relation indicating the reason must be selected when no target is assigned.");
+        validationResult.addError(
+            "A relation indicating the reason must be selected when no target is assigned.");
 
         // if a target is specified check it
       } else if (mapEntry.getTargetId() != null
           && !mapEntry.getTargetId().equals("")) {
 
-        Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info(
-            "  Checking id: " + mapEntry.getTargetId());
+        Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class)
+            .info("  Checking id: " + mapEntry.getTargetId());
 
         // first, check terminology id based on above rules
         if (!mapEntry.getTargetId().equals("")
-            && (!mapEntry.getTargetId().matches(".[0-9].*") || mapEntry
-                .getTargetId().contains("-"))) {
+            && (!mapEntry.getTargetId().matches(".[0-9].*")
+                || mapEntry.getTargetId().contains("-"))) {
           validationResult
-              .addError("Invalid target code "
-                  + mapEntry.getTargetId()
+              .addError("Invalid target code " + mapEntry.getTargetId()
                   + "!  For ICD10, valid target codes must contain 3 digits and must not contain a dash."
                   + " Entry:"
                   + (mapProject.isGroupStructure() ? " group "
@@ -143,14 +141,14 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           // Validate the code
           if (!isTargetCodeValid(mapEntry.getTargetId())) {
 
-            validationResult.addError("Target code "
-                + mapEntry.getTargetId()
-                + " is an invalid code, use a child code instead. "
-                + " Entry:"
-                + (mapProject.isGroupStructure() ? " group "
-                    + Integer.toString(mapEntry.getMapGroup()) + "," : "")
-                + " map  priority "
-                + Integer.toString(mapEntry.getMapPriority()));
+            validationResult
+                .addError("Target code " + mapEntry.getTargetId()
+                    + " is an invalid code, use a child code instead. "
+                    + " Entry:"
+                    + (mapProject.isGroupStructure() ? " group "
+                        + Integer.toString(mapEntry.getMapGroup()) + "," : "")
+                    + " map  priority "
+                    + Integer.toString(mapEntry.getMapPriority()));
 
           }
 
@@ -159,9 +157,9 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         // otherwise, check that relation is assignable to null target
       } else {
         if (!mapEntry.getMapRelation().isAllowableForNullTarget()) {
-          validationResult.addError("The map relation "
-              + mapEntry.getMapRelation().getName()
-              + " is not allowable for null targets");
+          validationResult.addError(
+              "The map relation " + mapEntry.getMapRelation().getName()
+                  + " is not allowable for null targets");
         }
       }
     }
@@ -195,9 +193,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         if (!concepts.containsKey(entry.getMapGroup())) {
           concepts.put(entry.getMapGroup(), new ArrayList<Concept>());
         }
-        final Concept concept =
-            contentService
-                .getConcept(entry.getTargetId(), terminology, version);
+        final Concept concept = contentService.getConcept(entry.getTargetId(),
+            terminology, version);
         // Lazy initialize
         if (concept != null) {
           concept.getDescriptions().size();
@@ -235,7 +232,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         // matching that asterisk code
         // GUIDANCE: Add the secondary code
         //
-        if (concepts.get(1).get(0) != null && daggerCodes.contains(primaryCode)) {
+        if (concepts.get(1).get(0) != null
+            && daggerCodes.contains(primaryCode)) {
 
           // iterate through descriptions/relationships and see if there is an
           // asterisk code
@@ -248,8 +246,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
               for (final Relationship rel : concepts.get(1).get(0)
                   .getRelationships()) {
                 // the relationship terminologyId will match the description id
-                if (rel.getTerminologyId().startsWith(
-                    desc.getTerminologyId() + "~")) {
+                if (rel.getTerminologyId()
+                    .startsWith(desc.getTerminologyId() + "~")) {
                   asteriskCode = rel.getDestinationConcept().getTerminologyId();
                 }
               }
@@ -257,11 +255,10 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           }
           if (asteriskCode != null) {
             // if there is no secondary code matching asterisk
-            if (concepts.keySet().size() == 1
-                || !concepts.get(2).get(0).getTerminologyId()
-                    .equals(asteriskCode)) {
-              result
-                  .addWarning("Remap, primary dagger code should have a secondary asterisk "
+            if (concepts.keySet().size() == 1 || !concepts.get(2).get(0)
+                .getTerminologyId().equals(asteriskCode)) {
+              result.addWarning(
+                  "Remap, primary dagger code should have a secondary asterisk "
                       + "code mapping indicated by the preferred rubric ("
                       + asteriskCode + ")");
             }
@@ -276,13 +273,13 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         //
         final List<Concept> children =
             TerminologyUtility.getActiveChildren(concepts.get(1).get(0));
-        if (concepts.get(1).get(0) != null
-            && primaryCode.length() == 5
+        if (concepts.get(1).get(0) != null && primaryCode.length() == 5
             && children.size() > 1
-            && (children.get(0).getDefaultPreferredName().endsWith("open") || children
-                .get(0).getDefaultPreferredName().endsWith("closed"))) {
-          result
-              .addError("Remap to 5 digits and add \"MAPPED FOLLOWING WHO GUIDANCE\" "
+            && (children.get(0).getDefaultPreferredName().endsWith("open")
+                || children.get(0).getDefaultPreferredName()
+                    .endsWith("closed"))) {
+          result.addError(
+              "Remap to 5 digits and add \"MAPPED FOLLOWING WHO GUIDANCE\" "
                   + "advice if SNOMED does not indicate open or closed");
 
         }
@@ -292,24 +289,19 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         // where SNOMED doesn't indicate "open" or "closed".
         // GUIDANCE: Remap to "open" and add MAPPED FOLLOWING WHO GUIDANCE
         //
-        if (concepts.get(1).get(0) != null
-            && primaryCode.length() == 6
-            && concepts.get(1).get(0).getDefaultPreferredName()
-                .endsWith("open")
+        if (concepts.get(1).get(0) != null && primaryCode.length() == 6
+            && concepts.get(1).get(0).getDefaultPreferredName().endsWith("open")
             && !mapRecord.getConceptName().toLowerCase().contains("open")
             && !mapRecord.getConceptName().toLowerCase().contains("closed")) {
           result.addWarning("Remap fracture to \"closed\" and "
               + "add \"MAPPED FOLLOWING WHO GUIDANCE\" advice");
         }
-        if (concepts.get(1).get(0) != null
-            && primaryCode.length() == 6
-            && concepts.get(1).get(0).getDefaultPreferredName()
-                .endsWith("open")
+        if (concepts.get(1).get(0) != null && primaryCode.length() == 6
+            && concepts.get(1).get(0).getDefaultPreferredName().endsWith("open")
             && mapRecord.getConceptName().toLowerCase().contains("closed")) {
           result.addWarning("Possible closed fracture mapped to 'open'");
         }
-        if (concepts.get(1).get(0) != null
-            && primaryCode.length() == 6
+        if (concepts.get(1).get(0) != null && primaryCode.length() == 6
             && concepts.get(1).get(0).getDefaultPreferredName()
                 .endsWith("closed")
             && mapRecord.getConceptName().toLowerCase().contains("open")) {
@@ -369,10 +361,11 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
                 && concept.getTerminologyId().length() == 5
                 && TerminologyUtility.hasActiveChildren(concept)
                 && !TerminologyUtility.hasAdvice(
-                    mapRecord.getMapEntries().get(i),
+                    mapRecord.getMapEntries().get(
+                        i),
                     "FIFTH CHARACTER REQUIRED TO FURTHER SPECIFY THE SITE")) {
-              result
-                  .addWarning("4 digit M code entry may require 5th digit or \"FIFTH "
+              result.addWarning(
+                  "4 digit M code entry may require 5th digit or \"FIFTH "
                       + "CHARACTER REQUIRED TO FURTHER SPECIFY THE SITE\" advice");
               break;
             }
@@ -384,12 +377,11 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         // external cause code from range Y85.0 - Y89.9 or advice POSSIBLE
         // REQUIREMENT FOR EXTERNAL CAUSE CODE.
         //
-        if (primaryCode != null
-            && (primaryCode.matches("^T9[0-7].*")
-                || primaryCode.startsWith("T98.0")
-                || primaryCode.startsWith("T98.1")
-                || primaryCode.startsWith("T98.2") || primaryCode
-                  .startsWith("T98.3"))) {
+        if (primaryCode != null && (primaryCode.matches("^T9[0-7].*")
+            || primaryCode.startsWith("T98.0")
+            || primaryCode.startsWith("T98.1")
+            || primaryCode.startsWith("T98.2")
+            || primaryCode.startsWith("T98.3"))) {
 
           boolean hasAdvice =
               TerminologyUtility.hasAdvice(mapRecord.getMapEntries().get(0),
@@ -445,29 +437,28 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
         // (as derived from columns 2,3, and 5 from TEIL3.ASC index file).
         // GUIDANCE: Remap to include the (required) external cause code.
         //
-        boolean isPoisoning =
-            mapRecord.getConceptId().equals("75478009")
-                || mapRecord.getConceptId().equals("62014003")
-                || contentService.isDescendantOf(mapRecord.getConceptId(),
-                    mapProject.getSourceTerminology(),
-                    mapProject.getSourceTerminologyVersion(),
-                    Arrays.asList(new String[] {
-                        "75478009", "62014003"
-                    }));
+        boolean isPoisoning = mapRecord.getConceptId().equals("75478009")
+            || mapRecord.getConceptId().equals("62014003")
+            || contentService.isDescendantOf(mapRecord.getConceptId(),
+                mapProject.getSourceTerminology(),
+                mapProject.getSourceTerminologyVersion(),
+                Arrays.asList(new String[] {
+                    "75478009", "62014003"
+                }));
         if (concepts.get(1).get(0) != null
             && mapRecord.getMapEntries().size() == 1 && isPoisoning) {
-          result
-              .addWarning("Remap, poisoning requires an external cause code from the TEIL3.ASC index");
+          result.addWarning(
+              "Remap, poisoning requires an external cause code from the TEIL3.ASC index");
         }
         // Validate external cause code presence and not primary position
         else if (concepts.get(1).get(0) != null
             && mapRecord.getMapEntries().size() > 1 && isPoisoning) {
 
           // cause code in primary position
-          if (getIcd10ExternalCauseCodes().contains(
-              mapRecord.getMapEntries().get(0).getTargetId())) {
-            result
-                .addWarning("Remap, poisoning requires an external cause code in a secondary position");
+          if (getIcd10ExternalCauseCodes()
+              .contains(mapRecord.getMapEntries().get(0).getTargetId())) {
+            result.addWarning(
+                "Remap, poisoning requires an external cause code in a secondary position");
           }
 
           // Validate the external cause code
@@ -550,14 +541,13 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           if (concept != null) {
             final MapEntry entry = mapRecord.getMapEntries().get(i);
 
-            if (Arrays.asList(
-                new String[] {
-                    "J40", "J20.0", "J20.1", "J20.2", "J20.3", "J20.4",
-                    "J20.5", "J20.6", "J20.7", "J20.8", "J20.9", "A50.2"
-                }).contains(concept.getTerminologyId())
+            if (Arrays.asList(new String[] {
+                "J40", "J20.0", "J20.1", "J20.2", "J20.3", "J20.4", "J20.5",
+                "J20.6", "J20.7", "J20.8", "J20.9", "A50.2"
+            }).contains(concept.getTerminologyId())
                 && !entry.getRule().contains("Current chronological age")) {
-              result
-                  .addWarning("Consider adding a \"Current chronological age\" rule to entry "
+              result.addWarning(
+                  "Consider adding a \"Current chronological age\" rule to entry "
                       + i);
             }
           }
@@ -574,8 +564,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
                     mapProject.getSourceTerminology(),
                     mapProject.getSourceTerminologyVersion(), "385356007");
         if (isTumorStageFinding && concepts.get(1).get(0) != null) {
-          result
-              .addWarning("Generally, descendants of tumor stage finding are mapped to NC");
+          result.addWarning(
+              "Generally, descendants of tumor stage finding are mapped to NC");
         }
 
       }
@@ -699,10 +689,9 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
     try {
 
-      final Concept concept =
-          contentService.getConcept(mapEntry.getTargetId(),
-              mapProject.getDestinationTerminology(),
-              mapProject.getDestinationTerminologyVersion());
+      final Concept concept = contentService.getConcept(mapEntry.getTargetId(),
+          mapProject.getDestinationTerminology(),
+          mapProject.getDestinationTerminologyVersion());
 
       // lazy initialize
       if (concept != null) {
@@ -794,6 +783,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       final String asteriskAdvice =
           "THIS CODE MAY BE USED IN THE PRIMARY POSITION "
               + "WHEN THE MANIFESTATION IS THE PRIMARY FOCUS OF CARE";
+      final String daggerAlsoAdvice =
+          "THIS MAP REQUIRES A DAGGER CODE AS WELL AS AN ASTERISK CODE";
       // If asterisk code
       if (asteriskCodes.contains(concept.getTerminologyId())) {
         if (!TerminologyUtility.hasAdvice(mapEntry, asteriskAdvice)) {
@@ -804,6 +795,17 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       else if (TerminologyUtility.hasAdvice(mapEntry, asteriskAdvice)) {
         advices
             .remove(TerminologyUtility.getAdvice(mapProject, asteriskAdvice));
+      }
+      if (asteriskCodes.contains(concept.getTerminologyId())) {
+        if (!TerminologyUtility.hasAdvice(mapEntry, daggerAlsoAdvice)) {
+          advices
+              .add(TerminologyUtility.getAdvice(mapProject, daggerAlsoAdvice));
+        }
+      }
+      // otherwise if advice present
+      else if (TerminologyUtility.hasAdvice(mapEntry, daggerAlsoAdvice)) {
+        advices
+            .remove(TerminologyUtility.getAdvice(mapProject, daggerAlsoAdvice));
       }
 
       //
@@ -845,7 +847,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       //
       // PREDICATE: Primary map target is T31 or T32 and does not have the
       // advice
-      // "USE AS PRIMARY CODE ONLY IF SITE OF BURN UNSPECIFIED, OTHERWISE USE AS A SUPPLEMENTARY CODE WITH CATEGORIES T20-T29 (Burns)"
+      // "USE AS PRIMARY CODE ONLY IF SITE OF BURN UNSPECIFIED, OTHERWISE USE AS
+      // A SUPPLEMENTARY CODE WITH CATEGORIES T20-T29 (Burns)"
       // ACTION: add the advice
       //
       final String adviceP06 =
@@ -877,21 +880,18 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       // ACTION: add the advice
       //
       final String adviceP21a = "MAPPED FOLLOWING WHO GUIDANCE";
-      boolean isPoisoning =
-          mapRecord.getConceptId().equals("75478009")
-              || contentService.isDescendantOf(mapRecord.getConceptId(),
-                  mapProject.getSourceTerminology(),
-                  mapProject.getSourceTerminologyVersion(), "75478009");
+      boolean isPoisoning = mapRecord.getConceptId().equals("75478009")
+          || contentService.isDescendantOf(mapRecord.getConceptId(),
+              mapProject.getSourceTerminology(),
+              mapProject.getSourceTerminologyVersion(), "75478009");
       if (isPoisoning
           && !mapRecord.getConceptName().toLowerCase().matches("adverse")
           && !mapRecord.getConceptName().toLowerCase().matches("unintentional")
           && !mapRecord.getConceptName().toLowerCase().matches("accidental")
           && !mapRecord.getConceptName().toLowerCase().matches("intentional")
           && !mapRecord.getConceptName().toLowerCase().matches("undetermined")
-          && mapEntry.getMapGroup() > 1
-          && mapEntry.getMapPriority() == 1
-          && getIcd10AccidentalPoisoningCodes()
-              .contains(mapEntry.getTargetId())
+          && mapEntry.getMapGroup() > 1 && mapEntry.getMapPriority() == 1
+          && getIcd10AccidentalPoisoningCodes().contains(mapEntry.getTargetId())
           && !TerminologyUtility.hasAdvice(mapEntry, adviceP21a)) {
         advices.add(TerminologyUtility.getAdvice(mapProject, adviceP21a));
       }
@@ -923,8 +923,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       // and without secondary external cause code
       // ACTION: add the advice
       //
-      if ((mapEntry.getTargetId().startsWith("S") || mapEntry.getTargetId()
-          .startsWith("T"))) {
+      if ((mapEntry.getTargetId().startsWith("S")
+          || mapEntry.getTargetId().startsWith("T"))) {
         if (mapRecord.getMapEntries().size() == 1
             && !hasExternalCauseCodeAdvice) {
           advices.add(TerminologyUtility.getAdvice(mapProject,
@@ -1007,11 +1007,11 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       // word "hereditary" then it shouldn't have advice for external cause
       // code.
       //
-      if (hasExternalCauseCodeAdvice
-          && (mapRecord.getConceptName().toLowerCase().contains("hereditary") || mapEntry
-              .getTargetName().toLowerCase().contains("hereditary"))) {
-        advices.remove(TerminologyUtility.getAdvice(mapProject,
-            externalCauseCodeAdvice));
+      if (hasExternalCauseCodeAdvice && (mapRecord.getConceptName()
+          .toLowerCase().contains("hereditary")
+          || mapEntry.getTargetName().toLowerCase().contains("hereditary"))) {
+        advices.remove(
+            TerminologyUtility.getAdvice(mapProject, externalCauseCodeAdvice));
         hasExternalCauseCodeAdvice = false;
       }
 
@@ -1036,8 +1036,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       //
       if (hasExternalCauseCodeAdvice
           && mapEntry.getTargetId().startsWith("E10")) {
-        advices.remove(TerminologyUtility.getAdvice(mapProject,
-            externalCauseCodeAdvice));
+        advices.remove(
+            TerminologyUtility.getAdvice(mapProject, externalCauseCodeAdvice));
         hasExternalCauseCodeAdvice = false;
       }
 
@@ -1048,8 +1048,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       //
       if (hasExternalCauseCodeAdvice
           && mapEntry.getTargetId().startsWith("E12")) {
-        advices.remove(TerminologyUtility.getAdvice(mapProject,
-            externalCauseCodeAdvice));
+        advices.remove(
+            TerminologyUtility.getAdvice(mapProject, externalCauseCodeAdvice));
         hasExternalCauseCodeAdvice = false;
       }
 
@@ -1152,10 +1152,9 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
       }
       // verify concept exists in database
-      final Concept concept =
-          contentService.getConcept(terminologyId,
-              mapProject.getDestinationTerminology(),
-              mapProject.getDestinationTerminologyVersion());
+      final Concept concept = contentService.getConcept(terminologyId,
+          mapProject.getDestinationTerminology(),
+          mapProject.getDestinationTerminologyVersion());
 
       if (concept == null) {
         return false;
@@ -1175,8 +1174,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
   public void computeTargetTerminologyNotes(List<TreePosition> treePositionList)
     throws Exception {
 
-    Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info(
-        "Computing target terminology notes.");
+    Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class)
+        .info("Computing target terminology notes.");
     cacheCodes();
 
     // for each tree position initially passed in, call the recursive helper
@@ -1197,8 +1196,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
   private void computeTargetTerminologyNotesHelper(TreePosition treePosition,
     String asteriskRefSetId, String daggerRefSetId) throws Exception {
 
-    Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info(
-        "Computing target terminology note for "
+    Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class)
+        .info("Computing target terminology note for "
             + treePosition.getTerminologyId());
 
     // initially set the note to an empty string
@@ -1249,21 +1248,21 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
     // gender)
     if (member.getMapTarget().isEmpty()
         && member.getMapRelationId().equals(Long.valueOf("447637006"))) {
-      result.addError("Map has empty target with map category 447637006 - "
-          + member);
+      result.addError(
+          "Map has empty target with map category 447637006 - " + member);
     }
     if (member.getMapTarget().isEmpty()
         && member.getMapRelationId().equals(Long.valueOf("447639009"))) {
-      result.addError("Map has empty target with map category 447639009 - "
-          + member);
+      result.addError(
+          "Map has empty target with map category 447639009 - " + member);
     }
 
     // Verify mapTarget is null when mapCategory is not 447637006 or 447639009
     if (!member.getMapTarget().isEmpty()
         && !member.getMapRelationId().equals(Long.valueOf("447637006"))
         && !member.getMapRelationId().equals(Long.valueOf("447639009"))) {
-      result
-          .addError("Map has non-empty target without map category 447639009 or 447637006  - "
+      result.addError(
+          "Map has non-empty target without map category 447639009 or 447637006  - "
               + member.getMapRelationId());
     }
 
@@ -1351,8 +1350,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
           result.addError("Empty target with advice not allowed - " + member);
         } else if (member.getMapAdvice().contains(advice.getName())
             && advice.isAllowableForNullTarget() && found) {
-          result.addError("Empty target with too many advice values - "
-              + member);
+          result
+              .addError("Empty target with too many advice values - " + member);
         } else if (member.getMapAdvice().contains(advice.getName())
             && advice.isAllowableForNullTarget() && !found) {
           found = true;
@@ -1372,19 +1371,18 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       result.addError("GENDER advice without gender rule - " + member);
     }
     if (!member.getMapAdvice().contains("MAP IS CONTEXT DEPENDENT FOR GENDER")
-        && (member.getMapRule().contains("| Male (finding) |") || member
-            .getMapRule().contains("| Female (finding) |"))) {
+        && (member.getMapRule().contains("| Male (finding) |")
+            || member.getMapRule().contains("| Female (finding) |"))) {
       result.addError("Gender rulel without GENDER advice - " + member);
     }
 
     // Verify advice MAP IS CONTEXT DEPENDENT FOR GENDER is not used in
     // conjunction with CD advice ...Wed Dec 17 00:41:58 PST 2014
     if (member.getMapAdvice().contains("MAP IS CONTEXT DEPENDENT FOR GENDER")
-        && member.getMapAdvice().contains(
-            " MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT")) {
-      result
-          .addError("Gender rule contains invalid CONTEXT DEPENDENT advice - "
-              + member);
+        && member.getMapAdvice()
+            .contains(" MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT")) {
+      result.addError(
+          "Gender rule contains invalid CONTEXT DEPENDENT advice - " + member);
     }
 
     // Verify map advice is sorted ...Wed Dec 17 00:41:58 PST 2014
@@ -1474,11 +1472,10 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       // TODO: consider other possible ancestors
       // RESULT: principle 19
       //
-      boolean isAllergy =
-          mapRecord.getConceptId().equals("609328004")
-              || contentService.isDescendantOf(mapRecord.getConceptId(),
-                  mapProject.getSourceTerminology(),
-                  mapProject.getSourceTerminologyVersion(), "609328004");
+      boolean isAllergy = mapRecord.getConceptId().equals("609328004")
+          || contentService.isDescendantOf(mapRecord.getConceptId(),
+              mapProject.getSourceTerminology(),
+              mapProject.getSourceTerminologyVersion(), "609328004");
       if (isAllergy) {
         principles.add(principleMap.get("19"));
       }
@@ -1488,11 +1485,10 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       // and not 25508008 |Pathological drug intoxication (disorder)|
       // RESULT: principle 21
       //
-      boolean isPoisoning =
-          mapRecord.getConceptId().equals("75478009")
-              || contentService.isDescendantOf(mapRecord.getConceptId(),
-                  mapProject.getSourceTerminology(),
-                  mapProject.getSourceTerminologyVersion(), "75478009");
+      boolean isPoisoning = mapRecord.getConceptId().equals("75478009")
+          || contentService.isDescendantOf(mapRecord.getConceptId(),
+              mapProject.getSourceTerminology(),
+              mapProject.getSourceTerminologyVersion(), "75478009");
       boolean pathalogicIntoxication =
           mapRecord.getConceptId().equals("25508008")
               || contentService.isDescendantOf(mapRecord.getConceptId(),
@@ -1516,16 +1512,14 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       // 399907009
       // RESULT: principle 32
       //
-      boolean isAnimalBite =
-          mapRecord.getConceptId().equals("399907009")
-              || contentService.isDescendantOf(mapRecord.getConceptId(),
-                  mapProject.getSourceTerminology(),
-                  mapProject.getSourceTerminologyVersion(), "399907009");
-      boolean isArthropodBite =
-          mapRecord.getConceptId().equals("409985002")
-              || contentService.isDescendantOf(mapRecord.getConceptId(),
-                  mapProject.getSourceTerminology(),
-                  mapProject.getSourceTerminologyVersion(), "409985002");
+      boolean isAnimalBite = mapRecord.getConceptId().equals("399907009")
+          || contentService.isDescendantOf(mapRecord.getConceptId(),
+              mapProject.getSourceTerminology(),
+              mapProject.getSourceTerminologyVersion(), "399907009");
+      boolean isArthropodBite = mapRecord.getConceptId().equals("409985002")
+          || contentService.isDescendantOf(mapRecord.getConceptId(),
+              mapProject.getSourceTerminology(),
+              mapProject.getSourceTerminologyVersion(), "409985002");
       if (isAnimalBite && !isArthropodBite) {
         principles.add(principleMap.get("32"));
       }
@@ -1686,8 +1680,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
     for (final Description desc : concept.getDescriptions()) {
       if (desc.getTerm().matches("Use additional code.*infectious agent.*")) {
         return true;
-      } else if (desc.getTerm().matches(
-          "Use additional code.*bacterial agent.*")) {
+      } else if (desc.getTerm()
+          .matches("Use additional code.*bacterial agent.*")) {
         return true;
       }
     }
@@ -1706,7 +1700,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
    * @throws Exception the exception
    */
   @SuppressWarnings({
-    "unchecked"
+      "unchecked"
   })
   private void cacheCodes() throws Exception {
 
@@ -1719,10 +1713,9 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
     final EntityManager manager = contentService.getEntityManager();
     try {
       // open the metadata service and get the relationship types
-      Map<String, String> simpleRefSets =
-          metadataService.getSimpleRefSets(
-              mapProject.getDestinationTerminology(),
-              mapProject.getDestinationTerminologyVersion());
+      Map<String, String> simpleRefSets = metadataService.getSimpleRefSets(
+          mapProject.getDestinationTerminology(),
+          mapProject.getDestinationTerminologyVersion());
 
       // find the dagger/asterisk types
       for (final String key : simpleRefSets.keySet()) {
@@ -1733,12 +1726,12 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       }
 
       if (asteriskRefSetId == null)
-        Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).warn(
-            "Could not find Asterisk refset");
+        Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class)
+            .warn("Could not find Asterisk refset");
 
       if (daggerRefSetId == null)
-        Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).warn(
-            "Could not find Dagger refset");
+        Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class)
+            .warn("Could not find Dagger refset");
 
       // Look up asterisk codes
       final javax.persistence.Query asteriskQuery =
@@ -1817,8 +1810,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
       // Report to log
       Logger.getLogger(getClass()).info("  asterisk codes = " + asteriskCodes);
       Logger.getLogger(getClass()).info("  dagger codes = " + daggerCodes);
-      Logger.getLogger(getClass()).info(
-          "  valid 3 digit codes = " + valid3DigitCodes);
+      Logger.getLogger(getClass())
+          .info("  valid 3 digit codes = " + valid3DigitCodes);
     } catch (Exception e) {
       throw e;
     } finally {

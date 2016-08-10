@@ -7,10 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * <<<<<<< HEAD The Class WorkflowStatusCombination.
- * 
- * ======= Represents a collection of workflow status values that is allowed for
- * a {@link WorkflowPathState}. >>>>>>> e1eeda452226fa58e6ba3bde608683ad62254578
+ * Represents a collection of workflow status values that is allowed for a
+ * {@link WorkflowPathState}.
  */
 public class WorkflowStatusCombination {
 
@@ -29,11 +27,7 @@ public class WorkflowStatusCombination {
 
   /**
    * Instantiates a {@link WorkflowStatusCombination} from the specified
-   * parameters. <<<<<<< HEAD
-   * 
-   * =======
-   *
-   * >>>>>>> e1eeda452226fa58e6ba3bde608683ad62254578
+   * parameters.
    * @param workflowStatuses the workflow statuses
    */
   public WorkflowStatusCombination(List<WorkflowStatus> workflowStatuses) {
@@ -72,7 +66,8 @@ public class WorkflowStatusCombination {
    * 
    * @param workflowStatuses the workflow statuses
    */
-  public void setWorkflowStatuses(Map<WorkflowStatus, Integer> workflowStatuses) {
+  public void setWorkflowStatuses(
+    Map<WorkflowStatus, Integer> workflowStatuses) {
     this.workflowStatuses = workflowStatuses;
   }
 
@@ -110,9 +105,8 @@ public class WorkflowStatusCombination {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result =
-        prime * result
-            + ((workflowStatuses == null) ? 0 : workflowStatuses.hashCode());
+    result = prime * result
+        + ((workflowStatuses == null) ? 0 : workflowStatuses.hashCode());
     return result;
   }
 

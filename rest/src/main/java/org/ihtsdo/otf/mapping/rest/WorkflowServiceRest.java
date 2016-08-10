@@ -17,6 +17,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -105,8 +106,8 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /project/id/" + mapProjectId.toString()
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /project/id/" + mapProjectId.toString()
             + "/compute");
 
     String user = null;
@@ -115,9 +116,8 @@ public class WorkflowServiceRest extends RootServiceRest {
     final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeProject(mapProjectId, authToken, MapUserRole.ADMINISTRATOR,
-              "compute workflow", securityService);
+      user = authorizeProject(mapProjectId, authToken,
+          MapUserRole.ADMINISTRATOR, "compute workflow", securityService);
 
       final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
@@ -143,7 +143,7 @@ public class WorkflowServiceRest extends RootServiceRest {
    * @throws Exception the exception
    */
   @POST
-  @Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/query/{query}/availableConcepts")
+  @Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/availableConcepts")
   @ApiOperation(value = "Find available concepts.", notes = "Gets a list of search results for concepts available to be worked on for the specified parameters.", response = SearchResultList.class)
   @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
@@ -154,14 +154,14 @@ public class WorkflowServiceRest extends RootServiceRest {
   public SearchResultList findAvailableConcepts(
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "User id, e.g. 2", required = true) @PathParam("userName") String userName,
-    @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @PathParam("query") String query,
+    @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @QueryParam("query") String query,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /project/id/" + mapProjectId.toString()
-            + "/user/id/" + userName + "/availableConcepts");
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /project/id/" + mapProjectId.toString()
+            + "/user/id/" + userName + "/availableConcepts " + query);
 
     String project = "";
     String user = null;
@@ -170,9 +170,8 @@ public class WorkflowServiceRest extends RootServiceRest {
     final ContentService contentService = new ContentServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeProject(mapProjectId, authToken, MapUserRole.SPECIALIST,
-              "find available concepts", securityService);
+      user = authorizeProject(mapProjectId, authToken, MapUserRole.SPECIALIST,
+          "find available concepts", securityService);
 
       // get the project and user
       final MapProject mapProject = workflowService.getMapProject(mapProjectId);
@@ -181,9 +180,8 @@ public class WorkflowServiceRest extends RootServiceRest {
       user = mapUser.getUserName();
 
       // get the workflow tracking records
-      SearchResultList results =
-          workflowService.findAvailableWork(mapProject, mapUser,
-              MapUserRole.SPECIALIST, query, pfsParameter);
+      SearchResultList results = workflowService.findAvailableWork(mapProject,
+          mapUser, MapUserRole.SPECIALIST, query, pfsParameter);
 
       // Check that all concepts referenced here are active (and thus have
       // a tree position)
@@ -193,20 +191,19 @@ public class WorkflowServiceRest extends RootServiceRest {
       final SearchResultList revisedResults = new SearchResultListJpa();
       for (final SearchResult result : results.getIterable()) {
 
-        final Concept c =
-            contentService.getConcept(result.getTerminologyId(),
-                mapProject.getSourceTerminology(),
-                mapProject.getSourceTerminologyVersion());
+        final Concept c = contentService.getConcept(result.getTerminologyId(),
+            mapProject.getSourceTerminology(),
+            mapProject.getSourceTerminologyVersion());
         if (c == null) {
-          Logger.getLogger(WorkflowServiceJpa.class).warn(
-              "Could not get concept " + result.getTerminologyId() + ", "
+          Logger.getLogger(WorkflowServiceJpa.class)
+              .warn("Could not get concept " + result.getTerminologyId() + ", "
                   + mapProject.getSourceTerminology() + ", "
                   + mapProject.getSourceTerminologyVersion());
         } else if (c.isActive()) {
           revisedResults.addSearchResult(result);
         } else {
-          Logger.getLogger(WorkflowServiceJpa.class).warn(
-              "Skipping inactive concept " + result.getTerminologyId());
+          Logger.getLogger(WorkflowServiceJpa.class)
+              .warn("Skipping inactive concept " + result.getTerminologyId());
         }
       }
 
@@ -236,7 +233,7 @@ public class WorkflowServiceRest extends RootServiceRest {
    * @throws Exception the exception
    */
   @POST
-  @Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/query/{query}/assignedConcepts")
+  @Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/assignedConcepts")
   @ApiOperation(value = "Find assigned concepts for a map project.", notes = "Gets a list of search results of assigned concepts for the specified parameters.", response = SearchResultList.class)
   @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
@@ -247,14 +244,14 @@ public class WorkflowServiceRest extends RootServiceRest {
   public SearchResultList findAssignedConcepts(
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "User id, e.g. 2", required = true) @PathParam("userName") String userName,
-    @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @PathParam("query") String query,
+    @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @QueryParam("query") String query,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /project/id/" + mapProjectId.toString()
-            + "/user/id/" + userName + "/assignedConcepts");
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /project/id/" + mapProjectId.toString()
+            + "/user/id/" + userName + "/assignedConcepts " + query);
 
     String project = "";
     String user = null;
@@ -262,9 +259,8 @@ public class WorkflowServiceRest extends RootServiceRest {
     final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeProject(mapProjectId, authToken, MapUserRole.SPECIALIST,
-              "find assigned concepts", securityService);
+      user = authorizeProject(mapProjectId, authToken, MapUserRole.SPECIALIST,
+          "find assigned concepts", securityService);
 
       // get the project and user
       final MapProject mapProject = workflowService.getMapProject(mapProjectId);
@@ -284,9 +280,8 @@ public class WorkflowServiceRest extends RootServiceRest {
               MapUserRole.SPECIALIST, query, localPfs, workflowService);
 
       // get ALL assigned work at specialist level for project
-      SearchResultList assignedWork =
-          workflowService.findAssignedWork(mapProject, mapUser,
-              MapUserRole.SPECIALIST, query, localPfs);
+      SearchResultList assignedWork = workflowService.findAssignedWork(
+          mapProject, mapUser, MapUserRole.SPECIALIST, query, localPfs);
 
       // concatenate the results
       assignedWork.addSearchResults(fixErrorWork);
@@ -307,9 +302,8 @@ public class WorkflowServiceRest extends RootServiceRest {
       }
 
       // apply paging to the list
-      results =
-          workflowService.applyPfsToList(results, SearchResultJpa.class,
-              totalCt, localPfs);
+      results = workflowService.applyPfsToList(results, SearchResultJpa.class,
+          totalCt, localPfs);
 
       // reconstruct the assignedWork search result list
       assignedWork.setSearchResults(new ArrayList<SearchResult>());
@@ -340,7 +334,7 @@ public class WorkflowServiceRest extends RootServiceRest {
    * @throws Exception the exception
    */
   @POST
-  @Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/query/{query}/availableConflicts")
+  @Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/availableConflicts")
   @ApiOperation(value = "Find available conflicts for a map project.", notes = "Gets a list of search results of available conflicts for the specified parameters.", response = SearchResultList.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
@@ -348,14 +342,14 @@ public class WorkflowServiceRest extends RootServiceRest {
   public SearchResultList findAvailableConflicts(
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "User id, e.g. 2", required = true) @PathParam("userName") String userName,
-    @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @PathParam("query") String query,
+    @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @QueryParam("query") String query,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /project/id/" + mapProjectId.toString()
-            + "/user/id" + userName + "/availableConflicts");
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /project/id/" + mapProjectId.toString()
+            + "/user/id" + userName + "/availableConflicts " + query);
 
     String project = "";
     String user = null;
@@ -363,9 +357,8 @@ public class WorkflowServiceRest extends RootServiceRest {
     final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeProject(mapProjectId, authToken, MapUserRole.LEAD,
-              "find available conflicts", securityService);
+      user = authorizeProject(mapProjectId, authToken, MapUserRole.LEAD,
+          "find available conflicts", securityService);
 
       // get the project and user
       final MapProject mapProject = workflowService.getMapProject(mapProjectId);
@@ -398,7 +391,7 @@ public class WorkflowServiceRest extends RootServiceRest {
    * @throws Exception the exception
    */
   @POST
-  @Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/query/{query}/assignedConflicts")
+  @Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/assignedConflicts")
   @ApiOperation(value = "Find assigned conflicts for a map project.", notes = "Gets a list of search results of assigned conflicts for the specified parameters.", response = SearchResultList.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
@@ -406,23 +399,22 @@ public class WorkflowServiceRest extends RootServiceRest {
   public SearchResultList findAssignedConflicts(
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "User id, e.g. 2", required = true) @PathParam("userName") String userName,
-    @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @PathParam("query") String query,
+    @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @QueryParam("query") String query,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /project/id/" + mapProjectId.toString()
-            + "/user/id/" + userName + "/assignedConflicts");
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /project/id/" + mapProjectId.toString()
+            + "/user/id/" + userName + "/assignedConflicts " + query);
     String project = "";
     String user = null;
 
     final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeProject(mapProjectId, authToken, MapUserRole.LEAD,
-              "find assigned conflicts", securityService);
+      user = authorizeProject(mapProjectId, authToken, MapUserRole.LEAD,
+          "find assigned conflicts", securityService);
 
       // get the project and user
       final MapProject mapProject = workflowService.getMapProject(mapProjectId);
@@ -435,7 +427,8 @@ public class WorkflowServiceRest extends RootServiceRest {
           MapUserRole.LEAD, query, pfsParameter);
 
     } catch (Exception e) {
-      handleException(e, "trying to find assigned conflicts", user, project, "");
+      handleException(e, "trying to find assigned conflicts", user, project,
+          "");
       return null;
     } finally {
       workflowService.close();
@@ -455,7 +448,7 @@ public class WorkflowServiceRest extends RootServiceRest {
    * @throws Exception the exception
    */
   @POST
-  @Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/query/{query}/availableReviewWork")
+  @Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/availableReviewWork")
   @ApiOperation(value = "Find available review work for a map project.", notes = "Gets a list of search results of available review work for the specified parameters.", response = SearchResultList.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
@@ -463,14 +456,14 @@ public class WorkflowServiceRest extends RootServiceRest {
   public SearchResultList findAvailableReviewWork(
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "User id, e.g. 2", required = true) @PathParam("userName") String userName,
-    @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @PathParam("query") String query,
+    @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @QueryParam("query") String query,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /project/id/" + mapProjectId.toString()
-            + "/user/id" + userName + "/availableReviewWork");
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /project/id/" + mapProjectId.toString()
+            + "/user/id" + userName + "/availableReviewWork " + query);
 
     String project = "";
     String user = null;
@@ -478,9 +471,8 @@ public class WorkflowServiceRest extends RootServiceRest {
     final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeProject(mapProjectId, authToken, MapUserRole.LEAD,
-              "find available review work ", securityService);
+      user = authorizeProject(mapProjectId, authToken, MapUserRole.LEAD,
+          "find available review work ", securityService);
 
       // get the project and user
       final MapProject mapProject = workflowService.getMapProject(mapProjectId);
@@ -504,9 +496,8 @@ public class WorkflowServiceRest extends RootServiceRest {
       if (mapProject.getWorkflowType().equals(WorkflowType.REVIEW_PROJECT)) {
 
         // get ALL normal workflow work at lead level
-        availableWork =
-            workflowService.findAvailableWork(mapProject, mapUser,
-                MapUserRole.LEAD, query, pfsParameter);
+        availableWork = workflowService.findAvailableWork(mapProject, mapUser,
+            MapUserRole.LEAD, query, pfsParameter);
       }
 
       // combine the results
@@ -528,9 +519,8 @@ public class WorkflowServiceRest extends RootServiceRest {
       }
 
       // apply paging to the list
-      results =
-          workflowService.applyPfsToList(results, SearchResultJpa.class,
-              totalCt, localPfs);
+      results = workflowService.applyPfsToList(results, SearchResultJpa.class,
+          totalCt, localPfs);
 
       // reconstruct the assignedWork search result list
       availableWork.setSearchResults(new ArrayList<SearchResult>());
@@ -560,21 +550,21 @@ public class WorkflowServiceRest extends RootServiceRest {
    * @throws Exception the exception
    */
   @POST
-  @Path("/project/id/{id:[0-9][0-9]*}/query/{query}/availableQAWork")
+  @Path("/project/id/{id:[0-9][0-9]*}/availableQAWork")
   @ApiOperation(value = "Find available qa work for a map project.", notes = "Gets a list of search results of available qa work for the specified parameters.", response = SearchResultList.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public SearchResultList findAvailableQAWork(
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
-    @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @PathParam("query") String query,
+    @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @QueryParam("query") String query,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /project/id/" + mapProjectId.toString()
-            + "/availableQAWork - " + query);
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /project/id/" + mapProjectId.toString()
+            + "/availableQAWork " + query);
 
     String project = "";
     String user = "qa"; // always the qa user for specialist level work
@@ -592,9 +582,8 @@ public class WorkflowServiceRest extends RootServiceRest {
       user = mapUser.getUserName();
 
       WorkflowPathHandler handler = new WorkflowQaPathHandler();
-      SearchResultList results =
-          handler.findAvailableWork(mapProject, mapUser,
-              MapUserRole.SPECIALIST, query, pfsParameter, workflowService);
+      SearchResultList results = handler.findAvailableWork(mapProject, mapUser,
+          MapUserRole.SPECIALIST, query, pfsParameter, workflowService);
 
       return results;
 
@@ -620,7 +609,7 @@ public class WorkflowServiceRest extends RootServiceRest {
    * @throws Exception the exception
    */
   @POST
-  @Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/query/{query}/assignedReviewWork")
+  @Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/assignedReviewWork")
   @ApiOperation(value = "Find assigned review work for a map project.", notes = "Gets a list of search results of assigned review work for the specified parameters.", response = SearchResultList.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
@@ -628,14 +617,14 @@ public class WorkflowServiceRest extends RootServiceRest {
   public SearchResultList findAssignedReviewWork(
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "User id, e.g. 2", required = true) @PathParam("userName") String userName,
-    @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @PathParam("query") String query,
+    @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @QueryParam("query") String query,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /project/id/" + mapProjectId.toString()
-            + "/user/id/" + userName + "/assignedReviewWork");
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /project/id/" + mapProjectId.toString()
+            + "/user/id/" + userName + "/assignedReviewWork " + query);
 
     String project = "";
     String user = null;
@@ -643,9 +632,8 @@ public class WorkflowServiceRest extends RootServiceRest {
     final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeProject(mapProjectId, authToken, MapUserRole.LEAD,
-              "find assigned review work ", securityService);
+      user = authorizeProject(mapProjectId, authToken, MapUserRole.LEAD,
+          "find assigned review work ", securityService);
 
       // get the project and user
       final MapProject mapProject = workflowService.getMapProject(mapProjectId);
@@ -665,9 +653,8 @@ public class WorkflowServiceRest extends RootServiceRest {
 
       // if a review project, get all normal workflow work and combine
       if (mapProject.getWorkflowType().equals(WorkflowType.REVIEW_PROJECT)) {
-        SearchResultList reviewProjectWork =
-            workflowService.findAssignedWork(mapProject, mapUser,
-                MapUserRole.LEAD, query, pfsParameter);
+        SearchResultList reviewProjectWork = workflowService.findAssignedWork(
+            mapProject, mapUser, MapUserRole.LEAD, query, pfsParameter);
         assignedWork.addSearchResults(reviewProjectWork);
       }
 
@@ -687,9 +674,8 @@ public class WorkflowServiceRest extends RootServiceRest {
       }
 
       // apply paging to the list
-      results =
-          workflowService.applyPfsToList(results, SearchResultJpa.class,
-              totalCt, localPfs);
+      results = workflowService.applyPfsToList(results, SearchResultJpa.class,
+          totalCt, localPfs);
 
       // reconstruct the assignedWork search result list
       assignedWork.setSearchResults(new ArrayList<SearchResult>());
@@ -721,7 +707,7 @@ public class WorkflowServiceRest extends RootServiceRest {
    * @throws Exception the exception
    */
   @POST
-  @Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/query/{query}/assignedQAWork")
+  @Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/assignedQAWork")
   @ApiOperation(value = "Find assigned qa work for a map project.", notes = "Gets a list of search results of assigned qa work for the specified parameters.", response = SearchResultList.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
@@ -729,14 +715,14 @@ public class WorkflowServiceRest extends RootServiceRest {
   public SearchResultList findAssignedQAWork(
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "User id, e.g. 2", required = true) @PathParam("userName") String userName,
-    @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @PathParam("query") String query,
+    @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @QueryParam("query") String query,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /project/id/" + mapProjectId.toString()
-            + "/user/id/" + userName + "/query/" + query + "/assignedQAWork");
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /project/id/" + mapProjectId.toString()
+            + "/user/id/" + userName + "/assignedQAWork " + query);
 
     String project = "";
     String user = null;
@@ -744,9 +730,8 @@ public class WorkflowServiceRest extends RootServiceRest {
     final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
-      user =
-          authorizeProject(mapProjectId, authToken, MapUserRole.SPECIALIST,
-              "find assigned qa work ", securityService);
+      user = authorizeProject(mapProjectId, authToken, MapUserRole.SPECIALIST,
+          "find assigned qa work ", securityService);
 
       // get the project and user
       final MapProject mapProject = workflowService.getMapProject(mapProjectId);
@@ -756,9 +741,8 @@ public class WorkflowServiceRest extends RootServiceRest {
 
       // SPECIAL CASE: Access QA Workflow Path directly
       WorkflowPathHandler handler = new WorkflowQaPathHandler();
-      SearchResultList results =
-          handler.findAssignedWork(mapProject, mapUser, MapUserRole.SPECIALIST,
-              query, pfsParameter, workflowService);
+      SearchResultList results = handler.findAssignedWork(mapProject, mapUser,
+          MapUserRole.SPECIALIST, query, pfsParameter, workflowService);
       return results;
 
     } catch (Exception e) {
@@ -787,8 +771,8 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /assignFromRecord/user/id/" + userName
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /assignFromRecord/user/id/" + userName
             + " with map record id " + mapRecord.getId() + " for project "
             + mapRecord.getMapProjectId() + " and concept id "
             + mapRecord.getConceptId());
@@ -800,23 +784,23 @@ public class WorkflowServiceRest extends RootServiceRest {
     try {
       // authorize call
       authorizeProject(mapRecord.getMapProjectId(), authToken,
-          MapUserRole.SPECIALIST, "assign concept from record", securityService);
+          MapUserRole.SPECIALIST, "assign concept from record",
+          securityService);
 
       final MapProject mapProject =
           workflowService.getMapProject(mapRecord.getMapProjectId());
       project = mapProject.getName();
       final MapUser mapUser = workflowService.getMapUser(userName);
-      final Concept concept =
-          contentService.getConcept(mapRecord.getConceptId(),
-              mapProject.getSourceTerminology(),
-              mapProject.getSourceTerminologyVersion());
+      final Concept concept = contentService.getConcept(
+          mapRecord.getConceptId(), mapProject.getSourceTerminology(),
+          mapProject.getSourceTerminologyVersion());
 
       workflowService.processWorkflowAction(mapProject, concept, mapUser,
           mapRecord, WorkflowAction.ASSIGN_FROM_INITIAL_RECORD);
 
     } catch (Exception e) {
-      handleException(e, "trying to assign concept from a map record",
-          userName, project, mapRecord.getId().toString());
+      handleException(e, "trying to assign concept from a map record", userName,
+          project, mapRecord.getId().toString());
     } finally {
       workflowService.close();
       contentService.close();
@@ -843,8 +827,8 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /assign/project/id/"
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /assign/project/id/"
             + mapProjectId.toString() + "/concept/id/" + terminologyId
             + "/user/id/" + userName);
 
@@ -860,10 +844,9 @@ public class WorkflowServiceRest extends RootServiceRest {
       final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
       MapUser mapUser = workflowService.getMapUser(userName);
-      Concept concept =
-          contentService.getConcept(terminologyId,
-              mapProject.getSourceTerminology(),
-              mapProject.getSourceTerminologyVersion());
+      Concept concept = contentService.getConcept(terminologyId,
+          mapProject.getSourceTerminology(),
+          mapProject.getSourceTerminologyVersion());
 
       workflowService.processWorkflowAction(mapProject, concept, mapUser, null,
           WorkflowAction.ASSIGN_FROM_SCRATCH);
@@ -900,8 +883,8 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /assignBatch/project/id/" + mapProjectId
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /assignBatch/project/id/" + mapProjectId
             + "/user/id/" + userName);
 
     String project = "";
@@ -918,12 +901,11 @@ public class WorkflowServiceRest extends RootServiceRest {
       final MapUser mapUser = workflowService.getMapUser(userName);
 
       for (final String terminologyId : terminologyIds) {
-        Logger.getLogger(WorkflowServiceRest.class).info(
-            "   Assigning " + terminologyId);
-        final Concept concept =
-            contentService.getConcept(terminologyId,
-                mapProject.getSourceTerminology(),
-                mapProject.getSourceTerminologyVersion());
+        Logger.getLogger(WorkflowServiceRest.class)
+            .info("   Assigning " + terminologyId);
+        final Concept concept = contentService.getConcept(terminologyId,
+            mapProject.getSourceTerminology(),
+            mapProject.getSourceTerminologyVersion());
 
         // Only process batch assignment request if the concept is
         // active
@@ -935,8 +917,8 @@ public class WorkflowServiceRest extends RootServiceRest {
           workflowService.processWorkflowAction(mapProject, concept, mapUser,
               null, WorkflowAction.ASSIGN_FROM_SCRATCH);
         } else {
-          Logger.getLogger(WorkflowServiceJpa.class).warn(
-              "Skipping inactive concept " + concept.getTerminologyId());
+          Logger.getLogger(WorkflowServiceJpa.class)
+              .warn("Skipping inactive concept " + concept.getTerminologyId());
         }
       }
 
@@ -973,8 +955,8 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /unassign/project/id/"
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /unassign/project/id/"
             + mapProjectId.toString() + "/concept/id/" + terminologyId
             + "/user/id/" + userName);
 
@@ -990,10 +972,9 @@ public class WorkflowServiceRest extends RootServiceRest {
       final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
       final MapUser mapUser = workflowService.getMapUser(userName);
-      final Concept concept =
-          contentService.getConcept(terminologyId,
-              mapProject.getSourceTerminology(),
-              mapProject.getSourceTerminologyVersion());
+      final Concept concept = contentService.getConcept(terminologyId,
+          mapProject.getSourceTerminology(),
+          mapProject.getSourceTerminologyVersion());
 
       workflowService.processWorkflowAction(mapProject, concept, mapUser, null,
           WorkflowAction.UNASSIGN);
@@ -1032,8 +1013,8 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /unassign/project/id/"
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /unassign/project/id/"
             + mapProjectId.toString() + "/user/id/" + userName + "/batch - "
             + terminologyIds);
 
@@ -1053,10 +1034,9 @@ public class WorkflowServiceRest extends RootServiceRest {
       final MapUser mapUser = workflowService.getMapUser(userName);
 
       for (final String terminologyId : terminologyIds) {
-        final Concept concept =
-            contentService.getConcept(terminologyId,
-                mapProject.getSourceTerminology(),
-                mapProject.getSourceTerminologyVersion());
+        final Concept concept = contentService.getConcept(terminologyId,
+            mapProject.getSourceTerminology(),
+            mapProject.getSourceTerminologyVersion());
         workflowService.processWorkflowAction(mapProject, concept, mapUser,
             null, WorkflowAction.UNASSIGN);
       }
@@ -1089,8 +1069,8 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /finish" + " for map record with id = "
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /finish" + " for map record with id = "
             + mapRecord.getId().toString());
 
     String user = null;
@@ -1110,18 +1090,17 @@ public class WorkflowServiceRest extends RootServiceRest {
       user = mapUser.getUserName();
 
       // get the concept
-      final Concept concept =
-          contentService.getConcept(mapRecord.getConceptId(),
-              mapProject.getSourceTerminology(),
-              mapProject.getSourceTerminologyVersion());
+      final Concept concept = contentService.getConcept(
+          mapRecord.getConceptId(), mapProject.getSourceTerminology(),
+          mapProject.getSourceTerminologyVersion());
 
       // execute the workflow call
       workflowService.processWorkflowAction(mapProject, concept, mapUser,
           mapRecord, WorkflowAction.FINISH_EDITING);
 
     } catch (Exception e) {
-      handleException(e, "trying to finish work", user, project, mapRecord
-          .getId().toString());
+      handleException(e, "trying to finish work", user, project,
+          mapRecord.getId().toString());
     } finally {
       workflowService.close();
       contentService.close();
@@ -1149,8 +1128,8 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /publish" + " for map record with id = "
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /publish" + " for map record with id = "
             + mapRecord.getId().toString());
 
     String user = null;
@@ -1170,18 +1149,17 @@ public class WorkflowServiceRest extends RootServiceRest {
       user = mapUser.getUserName();
 
       // get the concept
-      final Concept concept =
-          contentService.getConcept(mapRecord.getConceptId(),
-              mapProject.getSourceTerminology(),
-              mapProject.getSourceTerminologyVersion());
+      final Concept concept = contentService.getConcept(
+          mapRecord.getConceptId(), mapProject.getSourceTerminology(),
+          mapProject.getSourceTerminologyVersion());
 
       // execute the workflow call
       workflowService.processWorkflowAction(mapProject, concept, mapUser,
           mapRecord, WorkflowAction.PUBLISH);
 
     } catch (Exception e) {
-      handleException(e, "trying to publish work", user, project, mapRecord
-          .getId().toString());
+      handleException(e, "trying to publish work", user, project,
+          mapRecord.getId().toString());
     } finally {
       workflowService.close();
       contentService.close();
@@ -1208,8 +1186,8 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /save" + " for map record with id = "
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /save" + " for map record with id = "
             + mapRecord.getId().toString());
 
     String user = null;
@@ -1221,9 +1199,8 @@ public class WorkflowServiceRest extends RootServiceRest {
       // authorize call
       authorizeProject(mapRecord.getMapProjectId(), authToken,
           MapUserRole.SPECIALIST, "save work", securityService);
-      final MapUserRole role =
-          securityService.getMapProjectRoleForToken(authToken,
-              mapRecord.getMapProjectId());
+      final MapUserRole role = securityService
+          .getMapProjectRoleForToken(authToken, mapRecord.getMapProjectId());
       if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
         throw new WebApplicationException(Response.status(401)
             .entity("User does not have permissions to save a map record.")
@@ -1237,18 +1214,17 @@ public class WorkflowServiceRest extends RootServiceRest {
       user = mapUser.getUserName();
 
       // get the concept
-      final Concept concept =
-          contentService.getConcept(mapRecord.getConceptId(),
-              mapProject.getSourceTerminology(),
-              mapProject.getSourceTerminologyVersion());
+      final Concept concept = contentService.getConcept(
+          mapRecord.getConceptId(), mapProject.getSourceTerminology(),
+          mapProject.getSourceTerminologyVersion());
 
       // process the workflow action
       workflowService.processWorkflowAction(mapProject, concept, mapUser,
           mapRecord, WorkflowAction.SAVE_FOR_LATER);
 
     } catch (Exception e) {
-      handleException(e, "trying to save work", user, project, mapRecord
-          .getId().toString());
+      handleException(e, "trying to save work", user, project,
+          mapRecord.getId().toString());
     } finally {
       workflowService.close();
       contentService.close();
@@ -1275,8 +1251,8 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /cancel for map record with id = "
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /cancel for map record with id = "
             + mapRecord.getId());
 
     String userName = null;
@@ -1293,10 +1269,9 @@ public class WorkflowServiceRest extends RootServiceRest {
       final MapProject mapProject =
           workflowService.getMapProject(mapRecord.getMapProjectId());
       project = mapProject.getName();
-      final Concept concept =
-          contentService.getConcept(mapRecord.getConceptId(),
-              mapProject.getSourceTerminology(),
-              mapProject.getSourceTerminologyVersion());
+      final Concept concept = contentService.getConcept(
+          mapRecord.getConceptId(), mapProject.getSourceTerminology(),
+          mapProject.getSourceTerminologyVersion());
 
       // process the workflow action
       workflowService.processWorkflowAction(mapProject, concept,
@@ -1348,10 +1323,9 @@ public class WorkflowServiceRest extends RootServiceRest {
       final MapProject mapProject =
           workflowService.getMapProject(mapRecord.getMapProjectId());
       project = mapProject.getName();
-      final Concept concept =
-          contentService.getConcept(mapRecord.getConceptId(),
-              mapProject.getSourceTerminology(),
-              mapProject.getSourceTerminologyVersion());
+      final Concept concept = contentService.getConcept(
+          mapRecord.getConceptId(), mapProject.getSourceTerminology(),
+          mapProject.getSourceTerminologyVersion());
 
       // find the qa user
       MapUser mapUser = null;
@@ -1393,8 +1367,8 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /createQAWork for report with id = "
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /createQAWork for report with id = "
             + reportId);
 
     String userName = null;
@@ -1448,9 +1422,9 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /assignedRecord/projectId/" + mapProjectId
-            + "/concept/" + terminologyId + "/user/" + userName);
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /assignedRecord/projectId/"
+            + mapProjectId + "/concept/" + terminologyId + "/user/" + userName);
 
     String user = null;
     String project = "";
@@ -1466,10 +1440,9 @@ public class WorkflowServiceRest extends RootServiceRest {
       final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
 
-      final Concept concept =
-          contentService.getConcept(terminologyId,
-              mapProject.getSourceTerminology(),
-              mapProject.getSourceTerminologyVersion());
+      final Concept concept = contentService.getConcept(terminologyId,
+          mapProject.getSourceTerminology(),
+          mapProject.getSourceTerminologyVersion());
 
       final TrackingRecord trackingRecord =
           workflowService.getTrackingRecord(mapProject, concept);
@@ -1529,13 +1502,12 @@ public class WorkflowServiceRest extends RootServiceRest {
 
       // if not a conflict resolution record, return null
       if (!mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_NEW)
-          && !mapRecord.getWorkflowStatus().equals(
-              WorkflowStatus.CONFLICT_DETECTED))
+          && !mapRecord.getWorkflowStatus()
+              .equals(WorkflowStatus.CONFLICT_DETECTED))
         return false;
 
-      final WorkflowException workflowException =
-          workflowService.getWorkflowException(mapProject,
-              mapRecord.getConceptId());
+      final WorkflowException workflowException = workflowService
+          .getWorkflowException(mapProject, mapRecord.getConceptId());
 
       if (workflowException != null) {
         if (workflowException.getFalseConflictMapRecordIds().contains(recordId))
@@ -1578,20 +1550,18 @@ public class WorkflowServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /conversation/add");
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /conversation/add");
 
     String userName = null;
     final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
-      userName =
-          authorizeProject(conversation.getMapProjectId(), authToken,
-              MapUserRole.SPECIALIST, "add feedback conversation",
-              securityService);
+      userName = authorizeProject(conversation.getMapProjectId(), authToken,
+          MapUserRole.SPECIALIST, "add feedback conversation", securityService);
 
-      Logger.getLogger(WorkflowServiceRest.class).info(
-          "RESTful call (Workflow): /conversation/update feedback msg: "
+      Logger.getLogger(WorkflowServiceRest.class)
+          .info("RESTful call (Workflow): /conversation/update feedback msg: "
               + conversation.getFeedbacks().get(0));
       workflowService.addFeedbackConversation(conversation);
 
@@ -1624,8 +1594,8 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /record/id/" + recordId
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /record/id/" + recordId
             + "/setFalseConflict/" + isFalseConflict);
 
     final WorkflowService workflowService = new WorkflowServiceJpa();
@@ -1641,25 +1611,24 @@ public class WorkflowServiceRest extends RootServiceRest {
 
       // if not a conflict resolution record, throw an error
       if (!mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_NEW)
-          && !mapRecord.getWorkflowStatus().equals(
-              WorkflowStatus.CONFLICT_IN_PROGRESS)
-          && !mapRecord.getWorkflowStatus().equals(
-              WorkflowStatus.CONFLICT_RESOLVED))
+          && !mapRecord.getWorkflowStatus()
+              .equals(WorkflowStatus.CONFLICT_IN_PROGRESS)
+          && !mapRecord.getWorkflowStatus()
+              .equals(WorkflowStatus.CONFLICT_RESOLVED))
         throw new WebApplicationException(Response.status(401)
             .entity("Cannot set false conflict flag on a non-conflict record")
             .build());
 
-      WorkflowException workflowException =
-          workflowService.getWorkflowException(mapProject,
-              mapRecord.getConceptId());
+      WorkflowException workflowException = workflowService
+          .getWorkflowException(mapProject, mapRecord.getConceptId());
 
       // if no workflow exception for this concept, add it
       if (workflowException == null) {
         workflowException = new WorkflowExceptionJpa();
         workflowException.setMapProjectId(mapProject.getId());
         workflowException.setTerminology(mapProject.getSourceTerminology());
-        workflowException.setTerminologyVersion(mapProject
-            .getSourceTerminologyVersion());
+        workflowException
+            .setTerminologyVersion(mapProject.getSourceTerminologyVersion());
         workflowException.setTerminologyId(mapRecord.getConceptId());
       }
 
@@ -1669,17 +1638,17 @@ public class WorkflowServiceRest extends RootServiceRest {
       if (isFalseConflict) {
         // find the tracking record for this map record
         TrackingRecord trackingRecord =
-            workflowService.getTrackingRecordForMapProjectAndConcept(
-                mapProject, mapRecord.getConceptId());
+            workflowService.getTrackingRecordForMapProjectAndConcept(mapProject,
+                mapRecord.getConceptId());
 
         // instantiate workflow handler for this tracking record
-        WorkflowPathHandler handler =
-            workflowService.getWorkflowPathHandler(trackingRecord
-                .getWorkflowPath().toString());
+        WorkflowPathHandler handler = workflowService.getWorkflowPathHandler(
+            trackingRecord.getWorkflowPath().toString());
 
         // add the specialist records for this conflict
-        for (final MapRecord mr : handler.getOriginMapRecordsForMapRecord(
-            mapRecord, workflowService).getIterable()) {
+        for (final MapRecord mr : handler
+            .getOriginMapRecordsForMapRecord(mapRecord, workflowService)
+            .getIterable()) {
           recordIds.add(mr.getId());
         }
 
@@ -1726,8 +1695,8 @@ public class WorkflowServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /conversation/update");
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /conversation/update");
 
     final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
@@ -1739,8 +1708,8 @@ public class WorkflowServiceRest extends RootServiceRest {
 
       // add debug
       final int ct = conversation.getFeedbacks().size();
-      Logger.getLogger(WorkflowServiceRest.class).info(
-          "RESTful call (Workflow): /conversation/update feedback msg: "
+      Logger.getLogger(WorkflowServiceRest.class)
+          .info("RESTful call (Workflow): /conversation/update feedback msg: "
               + conversation.getFeedbacks().get(ct - 1));
 
     } catch (Exception e) {
@@ -1806,7 +1775,7 @@ public class WorkflowServiceRest extends RootServiceRest {
    * @throws Exception the exception
    */
   @POST
-  @Path("/conversation/project/id/{id:[0-9][0-9]*}/{userName}/query/{query}")
+  @Path("/conversation/project/id/{id:[0-9][0-9]*}/{userName}")
   @ApiOperation(value = "Get feedback conversations by map project", notes = "Gets a list of feedback conversations for the specified map project and user.", response = FeedbackConversationListJpa.class)
   @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
@@ -1818,14 +1787,14 @@ public class WorkflowServiceRest extends RootServiceRest {
   public FeedbackConversationList findFeedbackConversationsForMapProjectAndUser(
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Username", required = true) @PathParam("userName") String userName,
-    @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @PathParam("query") String query,
+    @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @QueryParam("query") String query,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     // log call
-    Logger.getLogger(getClass()).info(
-        "RESTful call (Workflow): /conversation/project/id/"
+    Logger.getLogger(getClass())
+        .info("RESTful call (Workflow): /conversation/project/id/"
             + mapProjectId.toString() + " userName: " + userName + " query: "
             + query);
 
@@ -1874,8 +1843,8 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(getClass()).info(
-        "RESTful call (Workflow): /record/concept/id/" + conceptId);
+    Logger.getLogger(getClass())
+        .info("RESTful call (Workflow): /record/concept/id/" + conceptId);
 
     String user = null;
     final WorkflowService workflowService = new WorkflowServiceJpa();
@@ -1889,8 +1858,8 @@ public class WorkflowServiceRest extends RootServiceRest {
 
     } catch (Exception e) {
       handleException(e,
-          "trying to find feedback conversations by the given concept id",
-          user, "", conceptId);
+          "trying to find feedback conversations by the given concept id", user,
+          "", conceptId);
       return null;
     } finally {
       workflowService.close();
@@ -1926,8 +1895,8 @@ public class WorkflowServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(getClass()).info(
-        "RESTful call (Workflow): /assign/project/id/" + mapProjectId
+    Logger.getLogger(getClass())
+        .info("RESTful call (Workflow): /assign/project/id/" + mapProjectId
             + "/fixErrorPath with ids: " + terminologyIds.toString());
 
     String user = null;
@@ -1953,9 +1922,8 @@ public class WorkflowServiceRest extends RootServiceRest {
       // cycle over these ids
       for (final String terminologyId : terminologyIds) {
 
-        final MapRecordList mrList =
-            workflowService.getMapRecordsForProjectAndConcept(mapProjectId,
-                terminologyId);
+        final MapRecordList mrList = workflowService
+            .getMapRecordsForProjectAndConcept(mapProjectId, terminologyId);
 
         // first check: records getd
         if (mrList.getCount() == 0) {
@@ -1965,8 +1933,8 @@ public class WorkflowServiceRest extends RootServiceRest {
 
         // first check: only one record
         if (mrList.getCount() != 1) {
-          result.addError("Multiple records present for concept "
-              + terminologyId);
+          result.addError(
+              "Multiple records present for concept " + terminologyId);
           continue;
         }
 
@@ -1974,9 +1942,10 @@ public class WorkflowServiceRest extends RootServiceRest {
         final MapRecord mapRecord = mrList.getIterable().iterator().next();
 
         // second check: PUBLISHED or READY_FOR_PUBLICATION
-        if (!mapRecord.getWorkflowStatus().equals(
-            WorkflowStatus.READY_FOR_PUBLICATION)
-            && !mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)) {
+        if (!mapRecord.getWorkflowStatus()
+            .equals(WorkflowStatus.READY_FOR_PUBLICATION)
+            && !mapRecord.getWorkflowStatus()
+                .equals(WorkflowStatus.PUBLISHED)) {
           result.addError("Record is not publication-ready for concept "
               + terminologyId + ", " + mapRecord.getConceptName());
           continue;
@@ -1989,14 +1958,13 @@ public class WorkflowServiceRest extends RootServiceRest {
       for (final MapRecord mapRecord : mapRecords) {
 
         // get concept for this terminology id
-        final Concept concept =
-            contentService.getConcept(mapRecord.getConceptId(),
-                mapProject.getSourceTerminology(),
-                mapProject.getSourceTerminologyVersion());
+        final Concept concept = contentService.getConcept(
+            mapRecord.getConceptId(), mapProject.getSourceTerminology(),
+            mapProject.getSourceTerminologyVersion());
 
         if (concept == null) {
-          result.addError("Could not get concept for id "
-              + mapRecord.getConceptId());
+          result.addError(
+              "Could not get concept for id " + mapRecord.getConceptId());
           continue;
         }
 
@@ -2007,14 +1975,13 @@ public class WorkflowServiceRest extends RootServiceRest {
               mapRecord, WorkflowAction.ASSIGN_FROM_INITIAL_RECORD);
 
           // add success message if no errors thrown
-          result.addMessage("Successfully assigned concept "
-              + mapRecord.getConceptId() + ", "
-              + concept.getDefaultPreferredName());
+          result.addMessage(
+              "Successfully assigned concept " + mapRecord.getConceptId() + ", "
+                  + concept.getDefaultPreferredName());
         } catch (LocalException e) {
           result
               .addError("Concept already in workflow, could not assign concept "
-                  + mapRecord.getConceptId()
-                  + ", "
+                  + mapRecord.getConceptId() + ", "
                   + concept.getDefaultPreferredName());
         }
       }
