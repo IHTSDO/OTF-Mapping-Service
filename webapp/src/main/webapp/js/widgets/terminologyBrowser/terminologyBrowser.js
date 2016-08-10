@@ -72,6 +72,10 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
         $scope.listMode = true;
       }
     });
+    // Check current focus project setting
+    if ($scope.focusProject.destinationTerminology === 'GMDN') {
+      $scope.listMode = true;
+    }
 
     $scope.$on('mapEntryWidget.notification.clearTargetConcept', function(event, parameters) {
       $scope.query = '';
@@ -149,7 +153,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
     // Handler for the "Search" button
     // Perform a search - list or tree depending on the state
     $scope.search = function() {
-      
+
       // Query is implied
       if (!$scope.query) {
         return;
