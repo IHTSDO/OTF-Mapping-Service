@@ -2,14 +2,11 @@ package org.ihtsdo.otf.mapping.jpa.handlers;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
-import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 import org.ihtsdo.otf.mapping.services.ContentService;
-import org.ihtsdo.otf.mapping.services.MetadataService;
 
 /**
  * GMDN project specific algorithm handler.
@@ -24,9 +21,6 @@ public class IcdoProjectSpecificAlgorithmHandler
     if (!terminologyId.contains("/")) {
       return false;
     }
-    // Cache the "Term" term type - valid codes require it
-    cacheTermType(mapProject.getDestinationTerminology(),
-        mapProject.getDestinationTerminologyVersion());
 
     final ContentService contentService = new ContentServiceJpa();
     try {
