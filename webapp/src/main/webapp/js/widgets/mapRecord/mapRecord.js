@@ -586,7 +586,7 @@ angular
             $http(
               {
                 url : root_workflow + 'project/id/' + $scope.project.id + '/user/id/'
-                  + $scope.user.userName + '/query/null/assignedConcepts',
+                  + $scope.user.userName + '/assignedConcepts',
 
                 dataType : 'json',
                 data : pfsParameterObj,
@@ -647,7 +647,7 @@ angular
             $http(
               {
                 url : root_workflow + 'project/id/' + $scope.project.id + '/user/id/'
-                  + $scope.user.userName + '/query/null/assignedConflicts',
+                  + $scope.user.userName + '/assignedConflicts',
 
                 dataType : 'json',
                 data : pfsParameterObj,
@@ -712,7 +712,7 @@ angular
             $http(
               {
                 url : root_workflow + 'project/id/' + $scope.project.id + '/user/id/'
-                  + $scope.user.userName + '/query/null/assignedReviewWork',
+                  + $scope.user.userName + '/assignedReviewWork',
 
                 dataType : 'json',
                 data : pfsParameterObj,
@@ -767,7 +767,7 @@ angular
             $http(
               {
                 url : root_workflow + 'project/id/' + $scope.project.id + '/user/id/'
-                  + $scope.user.userName + '/query/null/assignedQAWork',
+                  + $scope.user.userName + '/assignedQAWork',
 
                 dataType : 'json',
                 data : pfsParameterObj,
