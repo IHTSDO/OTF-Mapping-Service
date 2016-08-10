@@ -14,11 +14,8 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
 /**
  * GMDN project specific algorithm handler.
  */
-public class IcdoProjectSpecificAlgorithmHandler extends
-    DefaultProjectSpecificAlgorithmHandler {
-
-  /** The term type. */
-  private static Long termType = null;
+public class IcdoProjectSpecificAlgorithmHandler
+    extends DefaultProjectSpecificAlgorithmHandler {
 
   /* see superclass */
   @Override
@@ -34,10 +31,9 @@ public class IcdoProjectSpecificAlgorithmHandler extends
     final ContentService contentService = new ContentServiceJpa();
     try {
       // Concept must exist
-      final Concept concept =
-          contentService.getConcept(terminologyId,
-              mapProject.getDestinationTerminology(),
-              mapProject.getDestinationTerminologyVersion());
+      final Concept concept = contentService.getConcept(terminologyId,
+          mapProject.getDestinationTerminology(),
+          mapProject.getDestinationTerminologyVersion());
 
       return concept != null;
 
@@ -48,37 +44,10 @@ public class IcdoProjectSpecificAlgorithmHandler extends
     }
   }
 
-  /**
-   * Cache term type.
-   *
-   * @param terminology the terminology
-   * @param version the version
-   * @throws Exception the exception
-   */
-  private static void cacheTermType(String terminology, String version)
-    throws Exception {
-    // lazy initialize
-    if (termType == null) {
-      final MetadataService service = new MetadataServiceJpa();
-      try {
-        for (final Map.Entry<String, String> entry : service
-            .getDescriptionTypes(terminology, version).entrySet()) {
-          if (entry.getValue().equals("Term")) {
-            termType = Long.valueOf(entry.getKey());
-          }
-        }
-
-      } catch (Exception e) {
-        throw e;
-      } finally {
-        service.close();
-      }
-    }
-  }
-
   /* see superclass */
   @Override
-  public List<TreePosition> limitTreePositions(List<TreePosition> treePositions) {
+  public List<TreePosition> limitTreePositions(
+    List<TreePosition> treePositions) {
     // If the tree structure has more than say 100 positions, just return the
     // top one from each root
     List<TreePosition> result = new ArrayList<TreePosition>();
