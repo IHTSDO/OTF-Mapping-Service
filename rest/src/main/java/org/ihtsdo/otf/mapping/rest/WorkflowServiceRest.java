@@ -497,7 +497,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
         // get ALL normal workflow work at lead level
         availableWork = workflowService.findAvailableWork(mapProject, mapUser,
-            MapUserRole.LEAD, query, pfsParameter);
+            MapUserRole.LEAD, query, localPfs);
       }
 
       // combine the results
