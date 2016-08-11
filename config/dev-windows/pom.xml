@@ -22,6 +22,13 @@
     <index.viewer.version>${releaseVersion}</index.viewer.version>
   </properties>
 
+  <dependencies>
+    <!-- Model interfaces. -->
+    <dependency>
+      <groupId>org.ihtsdo.otf.mapping</groupId>
+      <artifactId>index-viewer-data-empty</artifactId>
+    </dependency>
+  </dependencies>
   <build>
     <plugins>
 

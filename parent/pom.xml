@@ -57,6 +57,11 @@
       <!-- Model interfaces. -->
       <dependency>
         <groupId>org.ihtsdo.otf.mapping</groupId>
+        <artifactId>index-viewer-data-empty</artifactId>
+        <version>${releaseVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ihtsdo.otf.mapping</groupId>
         <artifactId>mapping-model</artifactId>
         <version>${releaseVersion}</version>
       </dependency>
