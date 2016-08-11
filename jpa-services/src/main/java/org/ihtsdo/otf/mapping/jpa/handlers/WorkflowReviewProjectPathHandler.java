@@ -723,10 +723,16 @@ public class WorkflowReviewProjectPathHandler
 
         break;
       case SAVE_FOR_LATER:
-        if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.NEW))
+        // Feedback in the workflow, let "save for later" bring it back out of
+        // "finished"
+        if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.EDITING_DONE)) {
           mapRecord.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
-        if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW))
+        } else if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.NEW)) {
+          mapRecord.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
+        } else if (mapRecord.getWorkflowStatus()
+            .equals(WorkflowStatus.REVIEW_NEW)) {
           mapRecord.setWorkflowStatus(WorkflowStatus.REVIEW_IN_PROGRESS);
+        }
 
         break;
       case UNASSIGN:
