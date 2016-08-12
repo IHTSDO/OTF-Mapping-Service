@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
-    <version>1.5.2</version>
+    <version>1.5.3-SNAPSHOT</version>
     <relativePath>../../parent</relativePath>
   </parent>
 
@@ -500,6 +500,33 @@
             </executions>
           </plugin>
 
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- Generate daily reports -Drun.config=.. must also be specified. -->
+    <profile>
+      <id>GenerateDailyReports</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>generate-daily-reports</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>generate-daily-reports</goal>
+                </goals>
+                <configuration>
+                  <startDate>${start.date}</startDate>
+                  <endDate>${end.date}</endDate>
+                  <refsetId>${refset.id}</refsetId>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
         </plugins>
       </build>
     </profile>
