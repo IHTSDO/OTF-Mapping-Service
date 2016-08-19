@@ -21,10 +21,12 @@ import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapProject;
+import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Relationship;
 import org.ihtsdo.otf.mapping.rf2.SimpleRefSetMember;
+import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
@@ -63,16 +65,15 @@ public class TerminologyUtility {
       return false;
     }
     // Lazy initialize asterisk refset
-    if (!asteriskRefsetIdMap.containsKey(concept.getTerminology()
-        + concept.getTerminologyVersion())) {
+    if (!asteriskRefsetIdMap.containsKey(
+        concept.getTerminology() + concept.getTerminologyVersion())) {
       initDaggerAsterisk(concept.getTerminology(),
           concept.getTerminologyVersion(), service);
     }
 
     for (final SimpleRefSetMember member : concept.getSimpleRefSetMembers()) {
-      if (member.getRefSetId().equals(
-          asteriskRefsetIdMap.get(concept.getTerminology()
-              + concept.getTerminologyVersion()))) {
+      if (member.getRefSetId().equals(asteriskRefsetIdMap
+          .get(concept.getTerminology() + concept.getTerminologyVersion()))) {
         return true;
       }
     }
@@ -93,15 +94,14 @@ public class TerminologyUtility {
     if (concept == null) {
       return false;
     }
-    if (!daggerRefsetIdMap.containsKey(concept.getTerminology()
-        + concept.getTerminologyVersion())) {
+    if (!daggerRefsetIdMap.containsKey(
+        concept.getTerminology() + concept.getTerminologyVersion())) {
       initDaggerAsterisk(concept.getTerminology(),
           concept.getTerminologyVersion(), service);
     }
     for (final SimpleRefSetMember member : concept.getSimpleRefSetMembers()) {
-      if (member.getRefSetId().equals(
-          daggerRefsetIdMap.get(concept.getTerminology()
-              + concept.getTerminologyVersion()))) {
+      if (member.getRefSetId().equals(daggerRefsetIdMap
+          .get(concept.getTerminology() + concept.getTerminologyVersion()))) {
         return true;
       }
     }
@@ -124,16 +124,16 @@ public class TerminologyUtility {
       return false;
     }
     // Lazy initialize asterisk to dagger rel type id
-    if (!asteriskToDaggerIdMap.containsKey(asterisk.getTerminology()
-        + asterisk.getTerminologyVersion())) {
+    if (!asteriskToDaggerIdMap.containsKey(
+        asterisk.getTerminology() + asterisk.getTerminologyVersion())) {
       initDaggerAsterisk(asterisk.getTerminology(),
           asterisk.getTerminologyVersion(), service);
     }
     // Assume concept is an asterisk concept
     for (Relationship rel : asterisk.getRelationships()) {
-      if (rel.getTypeId().equals(
-          Long.valueOf(asteriskToDaggerIdMap.get(asterisk.getTerminology()
-              + asterisk.getTerminologyVersion())))
+      if (rel.getTypeId()
+          .equals(Long.valueOf(asteriskToDaggerIdMap.get(
+              asterisk.getTerminology() + asterisk.getTerminologyVersion())))
           && rel.getDestinationConcept().getTerminologyId()
               .equals(dagger.getTerminologyId())) {
         return true;
@@ -153,11 +153,11 @@ public class TerminologyUtility {
    */
   private static void initDaggerAsterisk(String terminology, String version,
     ContentService service) throws Exception {
-    final SearchResultList list =
-        service.findConceptsForQuery(
-            "(defaultPreferredName:asterisk OR defaultPreferredName:dagger) "
-                + " AND terminology:" + terminology
-                + " AND terminologyVersion:" + version, null);
+    final SearchResultList list = service.findConceptsForQuery(
+        "(defaultPreferredName:asterisk OR defaultPreferredName:dagger) "
+            + " AND terminology:" + terminology + " AND terminologyVersion:"
+            + version,
+        null);
     final String key = terminology + version;
     for (final SearchResult result : list.getSearchResults()) {
       if (result.getValue().equals("Asterisk refset")) {
@@ -193,9 +193,8 @@ public class TerminologyUtility {
     if (concept == null) {
       return null;
     }
-    final Long isaType =
-        getHierarchicalType(concept.getTerminology(),
-            concept.getTerminologyVersion());
+    final Long isaType = getHierarchicalType(concept.getTerminology(),
+        concept.getTerminologyVersion());
     final List<Concept> results = new ArrayList<>();
     for (Relationship rel : concept.getRelationships()) {
       if (rel.getTypeId().equals(isaType) && rel.isActive()) {
@@ -217,9 +216,8 @@ public class TerminologyUtility {
     if (concept == null) {
       return null;
     }
-    final Long isaType =
-        getHierarchicalType(concept.getTerminology(),
-            concept.getTerminologyVersion());
+    final Long isaType = getHierarchicalType(concept.getTerminology(),
+        concept.getTerminologyVersion());
     final List<Concept> results = new ArrayList<>();
     for (Relationship rel : concept.getInverseRelationships()) {
       if (rel.getTypeId().equals(isaType) && rel.isActive()) {
@@ -243,9 +241,8 @@ public class TerminologyUtility {
     Queue<Concept> conceptQueue = new LinkedList<>();
     Set<Concept> conceptSet = new HashSet<>();
 
-    final Long typeId =
-        getHierarchicalType(concept.getTerminology(),
-            concept.getTerminologyVersion());
+    final Long typeId = getHierarchicalType(concept.getTerminology(),
+        concept.getTerminologyVersion());
     // if non-null result, seed the queue with this concept
     if (concept != null) {
       conceptQueue.add(concept);
@@ -305,9 +302,8 @@ public class TerminologyUtility {
     if (concept == null) {
       return false;
     }
-    final Long isaType =
-        getHierarchicalType(concept.getTerminology(),
-            concept.getTerminologyVersion());
+    final Long isaType = getHierarchicalType(concept.getTerminology(),
+        concept.getTerminologyVersion());
     for (Relationship rel : concept.getInverseRelationships()) {
       if (rel.getTypeId().equals(isaType) && rel.isActive()) {
         return true;
@@ -329,11 +325,10 @@ public class TerminologyUtility {
     if (!isaRelTypes.containsKey(terminology + version)) {
       final MetadataService service = new MetadataServiceJpa();
       try {
-        isaRelTypes.put(
-            terminology + version,
-            Long.valueOf(service
-                .getHierarchicalRelationshipTypes(terminology, version)
-                .keySet().iterator().next()));
+        isaRelTypes.put(terminology + version,
+            Long.valueOf(
+                service.getHierarchicalRelationshipTypes(terminology, version)
+                    .keySet().iterator().next()));
       } catch (Exception e) {
         throw e;
       } finally {
