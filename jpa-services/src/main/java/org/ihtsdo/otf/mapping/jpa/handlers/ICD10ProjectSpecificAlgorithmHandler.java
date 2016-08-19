@@ -783,8 +783,6 @@ public class ICD10ProjectSpecificAlgorithmHandler
       final String asteriskAdvice =
           "THIS CODE MAY BE USED IN THE PRIMARY POSITION "
               + "WHEN THE MANIFESTATION IS THE PRIMARY FOCUS OF CARE";
-      final String daggerAlsoAdvice =
-          "THIS MAP REQUIRES A DAGGER CODE AS WELL AS AN ASTERISK CODE";
       // If asterisk code
       if (asteriskCodes.contains(concept.getTerminologyId())) {
         if (!TerminologyUtility.hasAdvice(mapEntry, asteriskAdvice)) {
@@ -796,7 +794,22 @@ public class ICD10ProjectSpecificAlgorithmHandler
         advices
             .remove(TerminologyUtility.getAdvice(mapProject, asteriskAdvice));
       }
-      if (asteriskCodes.contains(concept.getTerminologyId())) {
+     
+      //
+      // PREDICATE: single asterisk code without dagger code
+      // ACTION: add advice: THIS MAP REQUIRES A DAGGER CODE AS WELL AS AN
+      // ASTERISK CODE
+      //
+      final String daggerAlsoAdvice =
+          "THIS MAP REQUIRES A DAGGER CODE AS WELL AS AN ASTERISK CODE";
+      boolean hasDaggerCode = false;
+      for (final MapEntry entry : mapRecord.getMapEntries()) {
+        if (daggerCodes.contains(entry.getTargetId())) {
+          hasDaggerCode = true;
+          break;
+        }
+      }
+      if (asteriskCodes.contains(concept.getTerminologyId()) && !hasDaggerCode) {
         if (!TerminologyUtility.hasAdvice(mapEntry, daggerAlsoAdvice)) {
           advices
               .add(TerminologyUtility.getAdvice(mapProject, daggerAlsoAdvice));
