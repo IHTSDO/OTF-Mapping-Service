@@ -69,8 +69,8 @@ public class MapRecordRf2SimpleMapLoaderMojo extends AbstractMojo {
    * @parameter
    * @required
    */
-  private String workflowStatus = WorkflowStatus.READY_FOR_PUBLICATION
-      .toString();
+  private String workflowStatus =
+      WorkflowStatus.READY_FOR_PUBLICATION.toString();
 
   /**
    * Executes the plugin.
@@ -206,6 +206,9 @@ public class MapRecordRf2SimpleMapLoaderMojo extends AbstractMojo {
         if (!fields[0].equals("id")) {
 
           final String refsetId = fields[4];
+          if (mapProjectMap.get(refsetId) == null) {
+            throw new Exception("Unexpected refset id in line - " + line);
+          }
           final String terminology =
               mapProjectMap.get(refsetId).getSourceTerminology();
           final String version =
@@ -221,17 +224,14 @@ public class MapRecordRf2SimpleMapLoaderMojo extends AbstractMojo {
           member.setModuleId(Long.valueOf(fields[3]));
           member.setRefSetId(refsetId);
           // set referenced component
-          final Concept concept =
-              contentService.getConcept(
-                  fields[5], // referencedComponentId
-                  mapProjectMap.get(refsetId).getSourceTerminology(),
-                  mapProjectMap.get(refsetId).getSourceTerminologyVersion());
+          final Concept concept = contentService.getConcept(fields[5], // referencedComponentId
+              mapProjectMap.get(refsetId).getSourceTerminology(),
+              mapProjectMap.get(refsetId).getSourceTerminologyVersion());
           if (concept != null) {
             member.setConcept(concept);
           } else {
-            getLog().error(
-                "member " + member.getTerminologyId()
-                    + " references non-existent concept " + fields[5]);
+            getLog().error("member " + member.getTerminologyId()
+                + " references non-existent concept " + fields[5]);
             // TODO: this should throw an exception - commented out for testing
             // throw new IllegalStateException("member "
             // + member.getTerminologyId()
