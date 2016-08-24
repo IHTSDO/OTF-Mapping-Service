@@ -16,6 +16,9 @@ if (-e /home/ihtsdo/bin/OFF) then
         exit 1
 endif
 
+# enable maintenance page
+/opt/maint/getMaintHtml.sh start
+
 # Runs load delta and ensures server is up
 /home/ihtsdo/bin/loadDelta.csh
 set x = $status
@@ -23,3 +26,7 @@ if ($x != 0) then
     service tomcat7 start
     return $x
 endif
+
+# disable maintenance page
+/opt/maint/getMaintHtml.sh stop
+
