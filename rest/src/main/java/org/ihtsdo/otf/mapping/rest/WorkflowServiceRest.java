@@ -1997,4 +1997,64 @@ public class WorkflowServiceRest extends RootServiceRest {
 
   }
 
+  /**
+   * Sends a feedback message email.
+   *
+   * @param messageInfo the message
+   * @param authToken the auth token
+   * @return the string
+   * @throws Exception the exception
+   */
+  @POST
+  @Path("/message")
+  @ApiOperation(value = "Sends a feedback message email.", notes = "Sends a feedback message email.")
+  @Consumes({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public Response sendFeedbackEmail(
+    @ApiParam(value = "message", required = true) List<String> messageInfo,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    // log call
+    Logger.getLogger(WorkflowServiceRest.class).info(
+        "RESTful call (Workflow): /message");
+
+    String userName = "";
+    WorkflowService workflowService = new WorkflowServiceJpa();
+
+    try {
+      // authorize call
+      userName = securityService.getUsernameForToken(authToken);
+      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+        throw new WebApplicationException(
+            Response
+                .status(401)
+                .entity(
+                    "User does not have permissions to add a feedback conversation.")
+                .build());
+
+      Logger.getLogger(WorkflowServiceRest.class).info(
+          "RESTful call (Workflow): /message msg: " + messageInfo);
+
+      // Split up message and send parts
+      workflowService.sendFeedbackEmail(messageInfo.get(0),
+          messageInfo.get(1), messageInfo.get(2), messageInfo.get(3), 
+          messageInfo.get(4), messageInfo.get(5));
+      
+      
+      return null;
+
+    } catch (Exception e) {
+      handleException(e, "send a message email", userName, "", messageInfo.get(0));
+      return null;
+    } finally {
+      workflowService.close();
+      securityService.close();
+    }
+  }
 }
