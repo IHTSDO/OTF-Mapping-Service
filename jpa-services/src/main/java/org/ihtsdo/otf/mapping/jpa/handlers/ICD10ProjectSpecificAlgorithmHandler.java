@@ -794,7 +794,7 @@ public class ICD10ProjectSpecificAlgorithmHandler
         advices
             .remove(TerminologyUtility.getAdvice(mapProject, asteriskAdvice));
       }
-     
+
       //
       // PREDICATE: single asterisk code without dagger code
       // ACTION: add advice: THIS MAP REQUIRES A DAGGER CODE AS WELL AS AN
@@ -802,14 +802,9 @@ public class ICD10ProjectSpecificAlgorithmHandler
       //
       final String daggerAlsoAdvice =
           "THIS MAP REQUIRES A DAGGER CODE AS WELL AS AN ASTERISK CODE";
-      boolean hasDaggerCode = false;
-      for (final MapEntry entry : mapRecord.getMapEntries()) {
-        if (daggerCodes.contains(entry.getTargetId())) {
-          hasDaggerCode = true;
-          break;
-        }
-      }
-      if (asteriskCodes.contains(concept.getTerminologyId()) && !hasDaggerCode) {
+
+      if (asteriskCodes.contains(concept.getTerminologyId())
+          && mapRecord.getMapEntries().size() == 1) {
         if (!TerminologyUtility.hasAdvice(mapEntry, daggerAlsoAdvice)) {
           advices
               .add(TerminologyUtility.getAdvice(mapProject, daggerAlsoAdvice));
