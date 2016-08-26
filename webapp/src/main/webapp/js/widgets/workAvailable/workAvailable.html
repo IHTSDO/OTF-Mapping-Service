@@ -300,12 +300,14 @@
     <tr>
       <td style="padding: 5px;">Filter by label:</td>
       <td style="padding: 5px;">
-        <select style="width: 250px;" ng-model="selectedQaLabel"
+        <input type="text" ng-model="selectedQaLabel" size="25" ng-debounce
           ng-change="retrieveAvailableQAWork(1, selectedQaLabel, null);"
-          ng-options="lbl for lbl in labelNames">
-        </select>
-        <button class="btn btn-sm btn-primary"
-          ng-click="retrieveAvailableQAWork(1, 'null', 'null'); selectedQaLabel = null;">Reset</button>
+          list="qa-labels">
+        <datalist id="qa-labels">
+          <option ng-repeat="lbl in labelNames" value="{{lbl}}">{{lbl}}</option>
+        </datalist>
+        <button ng-show="selectedQaLabel" class="btn btn-xs btn-warning"
+          ng-click="retrieveAvailableQAWork(1, '', null); selectedQaLabel = '';">Clear</button>
       </td>
     </tr>
 
@@ -362,8 +364,8 @@
         <td style="width: 17%; padding: 5px;">{{concept.terminologyId}}</td>
         <td style="width: 72%; padding: 5px;">{{concept.name}}</td>
         <td style="width: 3%; padding: 5px;">
-          <i ng-show="concept.labels.length > 0"
-            tooltip-placement="top" tooltip="{{concept.labels}}"
+          <i ng-show="concept.labels.length > 0" tooltip-placement="top"
+            tooltip="{{concept.labels}}"
             style="float: right; margin-right: 5px;"
             class="glyphicon glyphicon-tasks"></i>
         </td>
