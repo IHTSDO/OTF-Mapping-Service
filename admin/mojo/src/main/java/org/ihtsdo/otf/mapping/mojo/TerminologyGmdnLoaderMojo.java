@@ -1,5 +1,5 @@
 /*
- *    Copyright 2016 West Coast Informatics, LLC
+ *    Copyright 2015 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.mojo;
 
@@ -59,6 +59,9 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
   /** The date format2. */
   final SimpleDateFormat dateFormat2 = new SimpleDateFormat("yyyyMMdd");
 
+  /** The char set. */
+  private static String charSet = "UTF-8";
+
   /**
    * The input dir.
    *
@@ -101,7 +104,9 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
   /** Child to parent code map NOTE: this assumes a single superclass. */
   Map<String, String> chdParMap;
 
-  /** Indicates subclass relationships NOTE: this assumes a single superclass. */
+  /**
+   * Indicates subclass relationships NOTE: this assumes a single superclass.
+   */
 
   Map<String, Boolean> parChildrenMap;
 
@@ -167,9 +172,8 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
       // create Metadata
       effectiveTime = new Date();
       getLog().info("  Create metadata classes - " + effectiveTime);
-      helper =
-          new GmdnMetadataHelper(terminology, version,
-              dateFormat2.format(effectiveTime), contentService);
+      helper = new GmdnMetadataHelper(terminology, version,
+          dateFormat2.format(effectiveTime), contentService);
       conceptMap = helper.createMetadata();
 
       // Initialize par/chd maps
@@ -189,10 +193,10 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
       // Open XML and begin parsing
       getLog().info("  Process term file");
       fis = new FileInputStream(termFile);
-      inputStream = checkForUtf8BOM(fis);
-      reader = new InputStreamReader(inputStream, "UTF-8");
+      inputStream = checkForBOM(fis);
+      reader = new InputStreamReader(inputStream, charSet);
       InputSource is = new InputSource(reader);
-      is.setEncoding("UTF-8");
+      is.setEncoding(charSet);
       saxParser.parse(is, handler);
       fis.close();
       inputStream.close();
@@ -211,10 +215,10 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
 
       // Open XML and begin parsing
       fis = new FileInputStream(collectivetermFile);
-      inputStream = checkForUtf8BOM(fis);
-      reader = new InputStreamReader(inputStream, "UTF-8");
+      inputStream = checkForBOM(fis);
+      reader = new InputStreamReader(inputStream, charSet);
       is = new InputSource(reader);
-      is.setEncoding("UTF-8");
+      is.setEncoding(charSet);
       saxParser.parse(is, handler);
       fis.close();
       inputStream.close();
@@ -233,10 +237,10 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
 
       // Open XML and begin parsing
       fis = new FileInputStream(termcollectivetermFile);
-      inputStream = checkForUtf8BOM(fis);
-      reader = new InputStreamReader(inputStream, "UTF-8");
+      inputStream = checkForBOM(fis);
+      reader = new InputStreamReader(inputStream, charSet);
       is = new InputSource(reader);
-      is.setEncoding("UTF-8");
+      is.setEncoding(charSet);
       saxParser.parse(is, handler);
       fis.close();
       inputStream.close();
@@ -255,10 +259,10 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
 
       // Open XML and begin parsing
       fis = new FileInputStream(cttreenodeFile);
-      inputStream = checkForUtf8BOM(fis);
-      reader = new InputStreamReader(inputStream, "UTF-8");
+      inputStream = checkForBOM(fis);
+      reader = new InputStreamReader(inputStream, charSet);
       is = new InputSource(reader);
-      is.setEncoding("UTF-8");
+      is.setEncoding(charSet);
       saxParser.parse(is, handler);
       fis.close();
       inputStream.close();
@@ -314,16 +318,36 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
    * @return the input stream
    * @throws IOException Signals that an I/O exception has occurred.
    */
-  private static InputStream checkForUtf8BOM(InputStream inputStream)
+  private static InputStream checkForBOM(InputStream inputStream)
     throws IOException {
-    final PushbackInputStream pushbackInputStream =
-        new PushbackInputStream(new BufferedInputStream(inputStream), 3);
-    byte[] bom = new byte[3];
+
+    // Check for UTF-16
+    PushbackInputStream pushbackInputStream =
+        new PushbackInputStream(new BufferedInputStream(inputStream), 2);
+    byte[] bom = new byte[2];
     if (pushbackInputStream.read(bom) != -1) {
-      if (!(bom[0] == (byte) 0xEF && bom[1] == (byte) 0xBB && bom[2] == (byte) 0xBF)) {
-        pushbackInputStream.unread(bom);
+      if (bom[0] == (byte) 0xFF && bom[1] == (byte) 0xFE) {
+        System.out.println("UTF-16");
+        charSet = "UTF-16LE";
+        return pushbackInputStream;
       }
     }
+    pushbackInputStream.close();
+
+    // Check for UTF-8
+    pushbackInputStream =
+        new PushbackInputStream(new BufferedInputStream(inputStream), 3);
+    bom = new byte[3];
+    if (pushbackInputStream.read(bom) != -1) {
+      if (bom[0] == (byte) 0xEF && bom[1] == (byte) 0xBB
+          && bom[2] == (byte) 0xBF) {
+        System.out.println("UTF-8");
+        charSet = "UTF-8";
+        return pushbackInputStream;
+      }
+    }
+
+    pushbackInputStream.unread(bom);
     return pushbackInputStream;
   }
 
@@ -389,7 +413,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
     private Description description = null;
 
     /** The term id. */
-    private String termId = null;
+    private String termCode = null;
 
     /** The ivd. */
     @SuppressWarnings("unused")
@@ -414,16 +438,16 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
         // create and configure concept
         concept = new ConceptJpa();
         setCommonFields(concept);
-        concept.setDefinitionStatusId(Long.parseLong(conceptMap.get(
-            "defaultDefinitionStatus").getTerminologyId()));
+        concept.setDefinitionStatusId(Long.parseLong(
+            conceptMap.get("defaultDefinitionStatus").getTerminologyId()));
 
         // create and configure description
         description = new DescriptionJpa();
         setCommonFields(description);
-        description.setTypeId(Long.parseLong(conceptMap.get("term")
-            .getTerminologyId()));
-        description.setCaseSignificanceId(Long.parseLong(conceptMap.get(
-            "defaultCaseSignificance").getTerminologyId()));
+        description.setTypeId(
+            Long.parseLong(conceptMap.get("term").getTerminologyId()));
+        description.setCaseSignificanceId(Long.parseLong(
+            conceptMap.get("defaultCaseSignificance").getTerminologyId()));
         description.setLanguageCode("en");
         description.setActive(true);
 
@@ -446,7 +470,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
           // CASCADE will handle descriptions
           if (concept.isActive() || !concept.isActive()) {
             // Use the "termID" as the key
-            conceptMap.put(termId, concept);
+            conceptMap.put(termCode, concept);
             contentService.addConcept(concept);
             Logger.getLogger(getClass()).debug("    concept = " + concept);
 
@@ -458,12 +482,12 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
         // </termID> - set the description terminology id
         else if (qName.equalsIgnoreCase("termID")) {
           description.setTerminologyId("term-" + chars.toString().trim());
-          termId = chars.toString().trim();
         }
 
         // </termCode> - set the concept terminology id
         else if (qName.equalsIgnoreCase("termCode")) {
           concept.setTerminologyId(chars.toString().trim());
+          termCode = chars.toString().trim();
         }
 
         // </termIsIVD> - add a description so we can show in the detail
@@ -471,14 +495,14 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
           if (!chars.toString().trim().isEmpty()) {
             final Description ivdDesc = new DescriptionJpa();
             setCommonFields(ivdDesc);
-            ivdDesc.setTypeId(Long.parseLong(conceptMap.get("ivdTerm")
-                .getTerminologyId()));
-            ivdDesc.setCaseSignificanceId(Long.parseLong(conceptMap.get(
-                "defaultCaseSignificance").getTerminologyId()));
+            ivdDesc.setTypeId(
+                Long.parseLong(conceptMap.get("ivdTerm").getTerminologyId()));
+            ivdDesc.setCaseSignificanceId(Long.parseLong(
+                conceptMap.get("defaultCaseSignificance").getTerminologyId()));
             ivdDesc.setLanguageCode("en");
             ivdDesc.setConcept(concept);
-            Logger.getLogger(getClass()).debug(
-                "    description = " + description);
+            Logger.getLogger(getClass())
+                .debug("    description = " + description);
             concept.addDescription(ivdDesc);
             ivdDesc.setActive(true);
             ivdDesc.setTerm(chars.toString().trim());
@@ -500,10 +524,10 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
         else if (qName.equalsIgnoreCase("termDefinition")) {
           final Description definition = new DescriptionJpa();
           setCommonFields(definition);
-          definition.setTypeId(Long.parseLong(conceptMap.get("definitionTerm")
-              .getTerminologyId()));
-          definition.setCaseSignificanceId(Long.parseLong(conceptMap.get(
-              "defaultCaseSignificance").getTerminologyId()));
+          definition.setTypeId(Long
+              .parseLong(conceptMap.get("definitionTerm").getTerminologyId()));
+          definition.setCaseSignificanceId(Long.parseLong(
+              conceptMap.get("defaultCaseSignificance").getTerminologyId()));
           definition.setLanguageCode("en");
           definition.setConcept(concept);
           Logger.getLogger(getClass())
@@ -584,16 +608,16 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
         // create and configure concept
         concept = new ConceptJpa();
         setCommonFields(concept);
-        concept.setDefinitionStatusId(Long.parseLong(conceptMap.get(
-            "defaultDefinitionStatus").getTerminologyId()));
+        concept.setDefinitionStatusId(Long.parseLong(
+            conceptMap.get("defaultDefinitionStatus").getTerminologyId()));
 
         // create and configure description
         description = new DescriptionJpa();
         setCommonFields(description);
-        description.setTypeId(Long.parseLong(conceptMap.get("collectiveTerm")
-            .getTerminologyId()));
-        description.setCaseSignificanceId(Long.parseLong(conceptMap.get(
-            "defaultCaseSignificance").getTerminologyId()));
+        description.setTypeId(Long
+            .parseLong(conceptMap.get("collectiveTerm").getTerminologyId()));
+        description.setCaseSignificanceId(Long.parseLong(
+            conceptMap.get("defaultCaseSignificance").getTerminologyId()));
         description.setLanguageCode("en");
         description.setActive(true);
 
@@ -643,10 +667,10 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
         else if (qName.equalsIgnoreCase("definition")) {
           final Description definition = new DescriptionJpa();
           setCommonFields(definition);
-          definition.setTypeId(Long.parseLong(conceptMap.get("definitionTerm")
-              .getTerminologyId()));
-          definition.setCaseSignificanceId(Long.parseLong(conceptMap.get(
-              "defaultCaseSignificance").getTerminologyId()));
+          definition.setTypeId(Long
+              .parseLong(conceptMap.get("definitionTerm").getTerminologyId()));
+          definition.setCaseSignificanceId(Long.parseLong(
+              conceptMap.get("defaultCaseSignificance").getTerminologyId()));
           definition.setLanguageCode("en");
           definition.setConcept(concept);
           Logger.getLogger(getClass())
@@ -733,8 +757,8 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
           }
         }
 
-        // </termID> - set the term id
-        else if (qName.equalsIgnoreCase("termID")) {
+        // </termCode> - set the term code
+        else if (qName.equalsIgnoreCase("termCode")) {
           // the id
           chdId = chars.toString().trim();
         }
@@ -809,17 +833,15 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
 
                 // add the concept - need to wait until the end
                 // so we know the name of the condept
-                Concept concept =
-                    addIntermediateConcept(par, newChd, newChdStart, newChdEnd,
-                        contentService);
+                Concept concept = addIntermediateConcept(par, newChd,
+                    newChdStart, newChdEnd, contentService);
                 conceptMap.put(newChd, concept);
 
                 // Increment counter and prep for the next 100
                 idx++;
                 newChdStart = null;
-                newChd =
-                    par + "."
-                        + ("00" + idx).substring(("00" + idx).length() - 3);
+                newChd = par + "."
+                    + ("00" + idx).substring(("00" + idx).length() - 3);
                 parChdMap.put(newChd, new HashSet<String>());
                 parChdMap.get(par).add(newChd);
 
@@ -834,9 +856,8 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
 
               // add the concept - need to wait until the end
               // so we know the name of the condept
-              Concept concept =
-                  addIntermediateConcept(par, newChd, newChdStart, newChdEnd,
-                      contentService);
+              Concept concept = addIntermediateConcept(par, newChd, newChdStart,
+                  newChdEnd, contentService);
               conceptMap.put(newChd, concept);
 
             }
@@ -859,11 +880,11 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
             }
 
             // Create relationship
-            Logger.getLogger(getClass()).debug(
-                "REL " + chd + ":" + chdConcept.getTerminologyId() + " => "
-                    + par + ":" + parConcept.getTerminologyId());
-            helper.createIsaRelationship(parConcept, chdConcept, "gmdn-"
-                + String.valueOf(++idCt), terminology, version,
+            Logger.getLogger(getClass())
+                .debug("REL " + chd + ":" + chdConcept.getTerminologyId()
+                    + " => " + par + ":" + parConcept.getTerminologyId());
+            helper.createIsaRelationship(parConcept, chdConcept,
+                "gmdn-" + String.valueOf(++idCt), terminology, version,
                 dateFormat2.format(effectiveTime));
 
           }
@@ -890,18 +911,18 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
       // Add a new concept for this
       final Concept concept = new ConceptJpa();
       setCommonFields(concept);
-      concept.setDefinitionStatusId(Long.parseLong(conceptMap.get(
-          "defaultDefinitionStatus").getTerminologyId()));
+      concept.setDefinitionStatusId(Long.parseLong(
+          conceptMap.get("defaultDefinitionStatus").getTerminologyId()));
       concept.setTerminologyId(newChd);
       concept.setDefaultPreferredName(newChdStart + " - " + newChdEnd);
 
       // create and configure description
       final Description description = new DescriptionJpa();
       setCommonFields(description);
-      description.setTypeId(Long.parseLong(conceptMap.get("term")
-          .getTerminologyId()));
-      description.setCaseSignificanceId(Long.parseLong(conceptMap.get(
-          "defaultCaseSignificance").getTerminologyId()));
+      description
+          .setTypeId(Long.parseLong(conceptMap.get("term").getTerminologyId()));
+      description.setCaseSignificanceId(Long.parseLong(
+          conceptMap.get("defaultCaseSignificance").getTerminologyId()));
       description.setLanguageCode("en");
       description.setActive(true);
       description.setTerminologyId(newChd);
@@ -988,9 +1009,8 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
           else {
             final String rootTerm = nodeTermMap.get(nodeId);
             final String rootCode = conceptMap.get(rootTerm).getTerminologyId();
-            Logger.getLogger(getClass()).info(
-                "    ROOT = " + rootTerm
-                    + (rootTerm.equals(rootCode) ? "" : ", " + rootCode));
+            Logger.getLogger(getClass()).info("    ROOT = " + rootTerm
+                + (rootTerm.equals(rootCode) ? "" : ", " + rootCode));
             roots.add(rootCode);
           }
         }
@@ -1020,9 +1040,9 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
           final Concept parConcept = conceptMap.get(par);
           // Only if chd/par concepts are active
           if (chdConcept != null && parConcept != null) {
-            Logger.getLogger(getClass()).debug(
-                "REL2 " + chd + ":" + chdConcept.getTerminologyId() + " => "
-                    + par + ":" + parConcept.getTerminologyId());
+            Logger.getLogger(getClass())
+                .debug("REL2 " + chd + ":" + chdConcept.getTerminologyId()
+                    + " => " + par + ":" + parConcept.getTerminologyId());
             helper.createIsaRelationship(
                 conceptMap.get(nodeTermMap.get(parNode)),
                 conceptMap.get(nodeTermMap.get(chdNode)),
@@ -1043,8 +1063,8 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
    * @param component the component
    */
   void setCommonFields(Component component) {
-    component.setModuleId(Long.valueOf(conceptMap.get("defaultModule")
-        .getTerminologyId()));
+    component.setModuleId(
+        Long.valueOf(conceptMap.get("defaultModule").getTerminologyId()));
     component.setActive(true);
     component.setTerminology(terminology);
     component.setTerminologyVersion(version);
