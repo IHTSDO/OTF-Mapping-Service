@@ -327,7 +327,6 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
     byte[] bom = new byte[2];
     if (pushbackInputStream.read(bom) != -1) {
       if (bom[0] == (byte) 0xFF && bom[1] == (byte) 0xFE) {
-        System.out.println("UTF-16");
         charSet = "UTF-16LE";
         return pushbackInputStream;
       }
@@ -341,7 +340,6 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
     if (pushbackInputStream.read(bom) != -1) {
       if (bom[0] == (byte) 0xEF && bom[1] == (byte) 0xBB
           && bom[2] == (byte) 0xBF) {
-        System.out.println("UTF-8");
         charSet = "UTF-8";
         return pushbackInputStream;
       }
