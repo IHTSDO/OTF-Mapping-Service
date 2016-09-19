@@ -557,12 +557,16 @@
   <tr>
     <td style="padding: 5px;">Filter by label:</td>
     <td style="padding: 5px;">
-      <select ng-model="queryQaWork"
-        ng-change="retrieveAssignedQAWork(1, 	queryQaWork, assignedQAWorkType);"
-        ng-options="lbl for lbl in labelNames">
-      </select>
-      <button class="btn btn-sm btn-primary"
-        ng-click="retrieveAssignedQAWork(1, 'null', assignedQAWorkType); selected = null;">Reset</button>
+      <form>
+        <input type="text" ng-model="queryQaWork" size="25" list="qa-labels">
+        <datalist id="qa-labels">
+          <option ng-repeat="lbl in labelNames" value="{{lbl}}">{{lbl}}</option>
+        </datalist>
+        <button class="btn btn-sm btn-primary"
+          ng-click="retrieveAssignedQAWork(1, queryQaWork, assignedQAWorkType);">Search</button>
+        <button class="btn btn-sm btn-primary"
+          ng-click="queryQaWork = null; retrieveAssignedQAWork(1, '', assignedQAWorkType); queryQaWork = '';">Reset</button>
+      </form>
     </td>
   </tr>
 
