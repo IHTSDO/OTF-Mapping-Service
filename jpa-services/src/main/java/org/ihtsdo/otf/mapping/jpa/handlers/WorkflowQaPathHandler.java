@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2015 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
 import java.util.ArrayList;
@@ -308,7 +311,7 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
           workflowService.getMapRecordsForTrackingRecord(tr);
 
       final StringBuffer labelBuffer = new StringBuffer();
-      boolean hasLabel = false;
+      boolean keepRecord = false;
       for (final MapRecord mr : mapRecords) {
 
         // extract all labels for this tracking record
@@ -317,15 +320,22 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
             labelBuffer.append(";").append(label);
           }
           if (label.contains(query) || query.contains(label)) {
-            hasLabel = true;
+            keepRecord = true;
           }
         }
+
+        // Keep record if query matches the concept id or name
+        if (mr.getConceptId().toLowerCase().startsWith(query.toLowerCase())
+            || mr.getConceptName().toLowerCase().contains(query.toLowerCase())) {
+          keepRecord = true;
+        }
+
       }
 
       // if no label query supplied or this tracking record has the requested
       // label
       if (query == null || query.isEmpty() || query.equals("null")
-          || hasLabel == true) {
+          || keepRecord == true) {
 
         // construct the search result
         result.setTerminologyId(tr.getTerminologyId());
@@ -431,7 +441,7 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
       // if QA Path properly used
       MapRecord mapRecord = null;
       StringBuffer labelBuffer = new StringBuffer();
-      boolean hasLabel = false;
+      boolean keepRecord = false;
       for (final MapRecord mr : mapRecords) {
         if (mr.getOwner().equals(mapUser)) {
           mapRecord = mr;
@@ -444,8 +454,14 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
           }
 
           if (label.equals(query)) {
-            hasLabel = true;
+            keepRecord = true;
           }
+        }
+
+        // Keep record if query matches the concept id or name
+        if (mr.getConceptId().toLowerCase().startsWith(query.toLowerCase())
+            || mr.getConceptName().toLowerCase().contains(query.toLowerCase())) {
+          keepRecord = true;
         }
 
       }
@@ -459,7 +475,7 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
       // if no label query supplied or this tracking record has the requested
       // label
       if (query == null || query.isEmpty() || query.equals("null")
-          || hasLabel == true) {
+          || keepRecord == true) {
         result.setTerminologyId(mapRecord.getConceptId());
         result.setValue(mapRecord.getConceptName());
         result.setValue2(labelBuffer.toString());
