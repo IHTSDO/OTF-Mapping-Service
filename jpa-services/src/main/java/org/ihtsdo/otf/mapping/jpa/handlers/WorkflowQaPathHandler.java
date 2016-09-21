@@ -326,7 +326,8 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
 
         // Keep record if query matches the concept id or name
         if (mr.getConceptId().toLowerCase().startsWith(query.toLowerCase())
-            || mr.getConceptName().toLowerCase().contains(query.toLowerCase())) {
+            || mr.getConceptName().toLowerCase()
+                .contains(query.toLowerCase())) {
           keepRecord = true;
         }
 
@@ -460,7 +461,8 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
 
         // Keep record if query matches the concept id or name
         if (mr.getConceptId().toLowerCase().startsWith(query.toLowerCase())
-            || mr.getConceptName().toLowerCase().contains(query.toLowerCase())) {
+            || mr.getConceptName().toLowerCase()
+                .contains(query.toLowerCase())) {
           keepRecord = true;
         }
 
@@ -653,8 +655,12 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
         newRecords.add(mapRecord);
         break;
       case SAVE_FOR_LATER:
-        if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.QA_NEW))
+        if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.QA_NEW)) {
           mapRecord.setWorkflowStatus(WorkflowStatus.QA_IN_PROGRESS);
+        }
+        if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.QA_RESOLVED)) {
+          mapRecord.setWorkflowStatus(WorkflowStatus.QA_IN_PROGRESS);
+        }
 
         break;
       case UNASSIGN:
