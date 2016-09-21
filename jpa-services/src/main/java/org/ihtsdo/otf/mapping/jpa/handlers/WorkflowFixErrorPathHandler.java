@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2015 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
 import java.util.Arrays;
@@ -65,23 +68,20 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
     // workflow states representing a record marked for revision and the
     // specialist-level editing
     specialistEditingState = new WorkflowPathState("NEW/IN_PROGRESS");
-    specialistEditingState
-        .addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
-            WorkflowStatus.REVISION, WorkflowStatus.NEW)));
-    specialistEditingState
-        .addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
-            WorkflowStatus.REVISION, WorkflowStatus.EDITING_IN_PROGRESS)));
-    trackingRecordStateToActionMap.put(
-        specialistEditingState,
+    specialistEditingState.addWorkflowCombination(new WorkflowStatusCombination(
+        Arrays.asList(WorkflowStatus.REVISION, WorkflowStatus.NEW)));
+    specialistEditingState.addWorkflowCombination(
+        new WorkflowStatusCombination(Arrays.asList(WorkflowStatus.REVISION,
+            WorkflowStatus.EDITING_IN_PROGRESS)));
+    trackingRecordStateToActionMap.put(specialistEditingState,
         new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING,
             WorkflowAction.SAVE_FOR_LATER, WorkflowAction.UNASSIGN)));
 
     specialistFinishedState = new WorkflowPathState("REVIEW_NEEDED");
     specialistFinishedState
-        .addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
-            WorkflowStatus.REVISION, WorkflowStatus.REVIEW_NEEDED)));
-    trackingRecordStateToActionMap.put(
-        specialistFinishedState,
+        .addWorkflowCombination(new WorkflowStatusCombination(Arrays
+            .asList(WorkflowStatus.REVISION, WorkflowStatus.REVIEW_NEEDED)));
+    trackingRecordStateToActionMap.put(specialistFinishedState,
         new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING,
             WorkflowAction.SAVE_FOR_LATER, WorkflowAction.UNASSIGN,
             WorkflowAction.ASSIGN_FROM_SCRATCH)));
@@ -90,26 +90,24 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
     // specialist work,
     // and lead review
     leadEditingState = new WorkflowPathState("Lead Review Incomplete");
-    leadEditingState.addWorkflowCombination(new WorkflowStatusCombination(
-        Arrays.asList(WorkflowStatus.REVISION, WorkflowStatus.REVIEW_NEEDED,
-            WorkflowStatus.REVIEW_NEW)));
-    leadEditingState.addWorkflowCombination(new WorkflowStatusCombination(
-        Arrays.asList(WorkflowStatus.REVISION, WorkflowStatus.REVIEW_NEEDED,
-            WorkflowStatus.REVIEW_IN_PROGRESS)));
-    trackingRecordStateToActionMap.put(
-        leadEditingState,
+    leadEditingState.addWorkflowCombination(
+        new WorkflowStatusCombination(Arrays.asList(WorkflowStatus.REVISION,
+            WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_NEW)));
+    leadEditingState.addWorkflowCombination(
+        new WorkflowStatusCombination(Arrays.asList(WorkflowStatus.REVISION,
+            WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_IN_PROGRESS)));
+    trackingRecordStateToActionMap.put(leadEditingState,
         new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING,
             WorkflowAction.SAVE_FOR_LATER, WorkflowAction.UNASSIGN)));
 
     leadFinishedState = new WorkflowPathState("Lead Review Complete");
-    leadFinishedState.addWorkflowCombination(new WorkflowStatusCombination(
-        Arrays.asList(WorkflowStatus.REVISION, WorkflowStatus.REVIEW_NEEDED,
-            WorkflowStatus.REVIEW_RESOLVED)));
-    trackingRecordStateToActionMap.put(
-        leadFinishedState,
-        new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING,
-            WorkflowAction.PUBLISH, WorkflowAction.SAVE_FOR_LATER,
-            WorkflowAction.UNASSIGN)));
+    leadFinishedState.addWorkflowCombination(
+        new WorkflowStatusCombination(Arrays.asList(WorkflowStatus.REVISION,
+            WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_RESOLVED)));
+    trackingRecordStateToActionMap.put(leadFinishedState,
+        new HashSet<>(
+            Arrays.asList(WorkflowAction.FINISH_EDITING, WorkflowAction.PUBLISH,
+                WorkflowAction.SAVE_FOR_LATER, WorkflowAction.UNASSIGN)));
   }
 
   /*
@@ -137,8 +135,8 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
     // first, validate the tracking record itself
     ValidationResult result = validateTrackingRecord(tr);
     if (!result.isValid()) {
-      result
-          .addError("Could not validate action for user due to workflow errors.");
+      result.addError(
+          "Could not validate action for user due to workflow errors.");
       return result;
     }
 
@@ -150,9 +148,8 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
 
     // third, get the user role for this map project
     MappingService mappingService = new MappingServiceJpa();
-    MapUserRole userRole =
-        mappingService.getMapUserRoleForMapProject(user.getUserName(),
-            tr.getMapProjectId());
+    MapUserRole userRole = mappingService
+        .getMapUserRoleForMapProject(user.getUserName(), tr.getMapProjectId());
     mappingService.close();
 
     // fourth, get the map records and workflow path state from the tracking
@@ -170,15 +167,15 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
     // Permissible actions: ASSIGN_FROM_INITIAL_RECORD
     // Minimum role : Specialist
     if (tr == null) {
-      result
-          .addError("Blank, non-committed tracking record required (i.e. project and concept specified only)");
+      result.addError(
+          "Blank, non-committed tracking record required (i.e. project and concept specified only)");
     } else if (state == null) {
 
       // check that tracking record has not yet been persisted (i.e. will
       // be created)
       if (tr.getId() != null) {
-        result
-            .addError("Blank, non-committed tracking record required (i.e. project and concept specified only)");
+        result.addError(
+            "Blank, non-committed tracking record required (i.e. project and concept specified only)");
       }
       // check record
       if (currentRecord != null) {
@@ -200,8 +197,8 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
       if (currentRecord == null) {
         result.addError("User must have a record");
       } else if (!currentRecord.getWorkflowStatus().equals(WorkflowStatus.NEW)
-          && !currentRecord.getWorkflowStatus().equals(
-              WorkflowStatus.EDITING_IN_PROGRESS)) {
+          && !currentRecord.getWorkflowStatus()
+              .equals(WorkflowStatus.EDITING_IN_PROGRESS)) {
         result.addError("User's record does not meet requirements");
       }
 
@@ -243,8 +240,8 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
       else if (currentRecord != null) {
 
         // check record
-        if (!currentRecord.getWorkflowStatus().equals(
-            WorkflowStatus.REVIEW_NEEDED)) {
+        if (!currentRecord.getWorkflowStatus()
+            .equals(WorkflowStatus.REVIEW_NEEDED)) {
           result.addError("User's record is marked "
               + currentRecord.getWorkflowStatus().toString()
               + " instead of REVIEW_NEW");
@@ -279,10 +276,10 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
       // check record
       if (currentRecord == null) {
         result.addError("User must have a record");
-      } else if (!currentRecord.getWorkflowStatus().equals(
-          WorkflowStatus.REVIEW_NEW)
-          && !currentRecord.getWorkflowStatus().equals(
-              WorkflowStatus.REVIEW_IN_PROGRESS)) {
+      } else if (!currentRecord.getWorkflowStatus()
+          .equals(WorkflowStatus.REVIEW_NEW)
+          && !currentRecord.getWorkflowStatus()
+              .equals(WorkflowStatus.REVIEW_IN_PROGRESS)) {
         result.addError("User's record does meet requirements");
       }
 
@@ -307,8 +304,8 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
       // check record
       if (currentRecord == null) {
         result.addError("User must have a record");
-      } else if (!currentRecord.getWorkflowStatus().equals(
-          WorkflowStatus.REVIEW_RESOLVED)) {
+      } else if (!currentRecord.getWorkflowStatus()
+          .equals(WorkflowStatus.REVIEW_RESOLVED)) {
         result.addError("User's record does meet requirements");
       }
 
@@ -327,9 +324,7 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
     }
 
     if (result.getErrors().size() != 0) {
-      result.addError("Error occured on "
-          + getName()
-          + " in workflow state "
+      result.addError("Error occured on " + getName() + " in workflow state "
           + (state != null ? state.getWorkflowStateName()
               : "Undetermined State"));
     }
@@ -348,9 +343,9 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
     MapUser mapUser, MapUserRole userRole, String query,
     PfsParameter pfsParameter, WorkflowService workflowService)
     throws Exception {
-    Logger.getLogger(this.getClass()).debug(
-        getName() + ": findAvailableWork for project " + mapProject.getName()
-            + " and user " + mapUser.getUserName());
+    Logger.getLogger(this.getClass())
+        .debug(getName() + ": findAvailableWork for project "
+            + mapProject.getName() + " and user " + mapUser.getUserName());
 
     final SearchResultList availableWork = new SearchResultListJpa();
 
@@ -404,9 +399,9 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
     MapUser mapUser, MapUserRole userRole, String query,
     PfsParameter pfsParameter, WorkflowService workflowService)
     throws Exception {
-    Logger.getLogger(this.getClass()).debug(
-        getName() + ": findAssignedWork for project " + mapProject.getName()
-            + " and user " + mapUser.getUserName());
+    Logger.getLogger(this.getClass())
+        .debug(getName() + ": findAssignedWork for project "
+            + mapProject.getName() + " and user " + mapUser.getUserName());
 
     // instantiate the assigned work search results
     SearchResultList assignedWork = new SearchResultListJpa();
@@ -420,9 +415,8 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
         + getName());
 
     // determine the query restrictions, type and pfs parameter
-    final String type =
-        pfsParameter.getQueryRestriction() != null ? pfsParameter
-            .getQueryRestriction() : "";
+    final String type = pfsParameter.getQueryRestriction() != null
+        ? pfsParameter.getQueryRestriction() : "";
     final List<TrackingRecord> results;
     final PfsParameter pfs = new PfsParameterJpa(pfsParameter);
     pfs.setQueryRestriction(null);
@@ -431,7 +425,7 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
     // switch on user role (Specialist or Lead)
     switch (userRole) {
 
-    // for lead-level work, get assigned fix error reviews
+      // for lead-level work, get assigned fix error reviews
       case LEAD:
         switch (type) {
           case "REVIEW_NEW":
@@ -462,8 +456,8 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
       case SPECIALIST:
         switch (type) {
           case "NEW":
-            sb.append(" AND userAndWorkflowStatusPairs:NEW_"
-                + mapUser.getUserName());
+            sb.append(
+                " AND userAndWorkflowStatusPairs:NEW_" + mapUser.getUserName());
 
             break;
           case "EDITING_IN_PROGRESS":
@@ -475,12 +469,12 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
                 + mapUser.getUserName());
             break;
           default:
-            sb.append(" AND (userAndWorkflowStatusPairs:NEW_"
-                + mapUser.getUserName()
-                + " OR userAndWorkflowStatusPairs:EDITING_IN_PROGRESS_"
-                + mapUser.getUserName()
-                + " OR userAndWorkflowStatusPairs:REVIEW_NEEDED_"
-                + mapUser.getUserName() + ")");
+            sb.append(
+                " AND (userAndWorkflowStatusPairs:NEW_" + mapUser.getUserName()
+                    + " OR userAndWorkflowStatusPairs:EDITING_IN_PROGRESS_"
+                    + mapUser.getUserName()
+                    + " OR userAndWorkflowStatusPairs:REVIEW_NEEDED_"
+                    + mapUser.getUserName() + ")");
             break;
         }
 
@@ -510,9 +504,8 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
             && !mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
 
           // get highest workflow status record
-          if (mapRecord == null
-              || mapRecord.getWorkflowStatus()
-                  .compareTo(mr.getWorkflowStatus()) < 0) {
+          if (mapRecord == null || mapRecord.getWorkflowStatus()
+              .compareTo(mr.getWorkflowStatus()) < 0) {
             mapRecord = mr;
           }
         }
@@ -529,13 +522,14 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
 
   }
 
+  /* see superclass */
   @Override
   public Set<MapRecord> processWorkflowAction(TrackingRecord trackingRecord,
     WorkflowAction workflowAction, MapProject mapProject, MapUser mapUser,
     Set<MapRecord> mapRecords, MapRecord mapRecord) throws Exception {
-    Logger.getLogger(this.getClass()).debug(
-        getName() + ": Processing workflow action by " + mapUser.getName()
-            + ":  " + workflowAction.toString());
+    Logger.getLogger(this.getClass())
+        .debug(getName() + ": Processing workflow action by "
+            + mapUser.getName() + ":  " + workflowAction.toString());
 
     // the set of records returned after processing
     Set<MapRecord> newRecords = new HashSet<>(mapRecords);
@@ -553,8 +547,8 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
         // to
         // fix error on.
         if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)
-            || mapRecord.getWorkflowStatus().equals(
-                WorkflowStatus.READY_FOR_PUBLICATION)) {
+            || mapRecord.getWorkflowStatus()
+                .equals(WorkflowStatus.READY_FOR_PUBLICATION)) {
 
           // deep copy the map record
           newRecord = new MapRecordJpa(mapRecord, false);
@@ -587,9 +581,8 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
         break;
       case ASSIGN_FROM_SCRATCH:
 
-        newRecord =
-            this.createMapRecordForTrackingRecordAndUser(trackingRecord,
-                mapUser);
+        newRecord = this.createMapRecordForTrackingRecordAndUser(trackingRecord,
+            mapUser);
         newRecord.setWorkflowStatus(WorkflowStatus.REVIEW_NEW);
 
         for (MapRecord mr : newRecords) {
@@ -619,21 +612,17 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
 
         // check assumption: user has an assigned record
         if (newRecord == null)
-          throw new Exception("Cancel work called for user "
-              + mapUser.getName() + " and " + trackingRecord.getTerminology()
-              + " concept " + trackingRecord.getTerminologyId()
+          throw new Exception("Cancel work called for user " + mapUser.getName()
+              + " and " + trackingRecord.getTerminology() + " concept "
+              + trackingRecord.getTerminologyId()
               + ", but could not retrieve assigned record.");
 
         // check assumption: a REVIEW record exists
         if (reviewRecord == null)
-          throw new Exception(
-              "Cancel work called for user "
-                  + mapUser.getName()
-                  + " and "
-                  + trackingRecord.getTerminology()
-                  + " concept "
-                  + trackingRecord.getTerminologyId()
-                  + ", but could not retrieve the previously published or ready-for-publication record.");
+          throw new Exception("Cancel work called for user " + mapUser.getName()
+              + " and " + trackingRecord.getTerminology() + " concept "
+              + trackingRecord.getTerminologyId()
+              + ", but could not retrieve the previously published or ready-for-publication record.");
 
         // perform action only if the user's record is NEW
         // if editing has occured (EDITING_IN_PROGRESS or above), null-op
@@ -665,8 +654,8 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
             if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION))
               foundOriginalRecord = true;
             if (mr.getWorkflowStatus().equals(WorkflowStatus.NEW)
-                || mr.getWorkflowStatus().equals(
-                    WorkflowStatus.EDITING_IN_PROGRESS)
+                || mr.getWorkflowStatus()
+                    .equals(WorkflowStatus.EDITING_IN_PROGRESS)
                 || mr.getWorkflowStatus().equals(WorkflowStatus.EDITING_DONE)
                 || mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED))
               foundModifiedRecord = true;
@@ -708,8 +697,8 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
             if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED))
               modifiedRecord = mr;
             if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW)
-                || mr.getWorkflowStatus().equals(
-                    WorkflowStatus.REVIEW_IN_PROGRESS)
+                || mr.getWorkflowStatus()
+                    .equals(WorkflowStatus.REVIEW_IN_PROGRESS)
                 || mr.getWorkflowStatus()
                     .equals(WorkflowStatus.REVIEW_RESOLVED))
               leadRecord = mr;
@@ -744,8 +733,8 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
         // - 1 record marked REVIEW_RESOLVED
 
         // check assumption: owned record is REVIEW_RESOLVED
-        if (!mapRecord.getWorkflowStatus().equals(
-            WorkflowStatus.REVIEW_RESOLVED))
+        if (!mapRecord.getWorkflowStatus()
+            .equals(WorkflowStatus.REVIEW_RESOLVED))
           throw new Exception(
               "Publish called on FIX_ERROR_PATH for map record not marked as REVIEW_RESOLVED (Workflow status found on map record "
                   + mapRecord.getId() + " is " + mapRecord.getWorkflowStatus());
@@ -776,10 +765,16 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
 
         break;
       case SAVE_FOR_LATER:
-        if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.NEW))
+        if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.NEW)) {
           mapRecord.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
-        if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW))
+        }
+        if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW)) {
           mapRecord.setWorkflowStatus(WorkflowStatus.REVIEW_IN_PROGRESS);
+        }
+        if (mapRecord.getWorkflowStatus()
+            .equals(WorkflowStatus.REVIEW_RESOLVED)) {
+          mapRecord.setWorkflowStatus(WorkflowStatus.REVIEW_IN_PROGRESS);
+        }
 
         break;
       case UNASSIGN:
@@ -788,14 +783,15 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
           if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
             revisionRecord = mr;
           } else if (mr.getWorkflowStatus().equals(WorkflowStatus.NEW)
-              || mr.getWorkflowStatus().equals(
-                  WorkflowStatus.EDITING_IN_PROGRESS)
+              || mr.getWorkflowStatus()
+                  .equals(WorkflowStatus.EDITING_IN_PROGRESS)
               || mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED)) {
             editingRecord = mr;
           } else if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW)
-              || mr.getWorkflowStatus().equals(
-                  WorkflowStatus.REVIEW_IN_PROGRESS)
-              || mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_RESOLVED)) {
+              || mr.getWorkflowStatus()
+                  .equals(WorkflowStatus.REVIEW_IN_PROGRESS)
+              || mr.getWorkflowStatus()
+                  .equals(WorkflowStatus.REVIEW_RESOLVED)) {
             reviewRecord = mr;
           }
         }
@@ -810,9 +806,8 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
           // retrieve the workflow status of the revision record
           WorkflowService workflowService = new WorkflowServiceJpa();
           try {
-            MapRecord prevRecord =
-                workflowService
-                    .getPreviouslyPublishedVersionOfMapRecord(revisionRecord);
+            MapRecord prevRecord = workflowService
+                .getPreviouslyPublishedVersionOfMapRecord(revisionRecord);
             revisionRecord.setWorkflowStatus(prevRecord.getWorkflowStatus());
           } catch (Exception e) {
             throw e;
