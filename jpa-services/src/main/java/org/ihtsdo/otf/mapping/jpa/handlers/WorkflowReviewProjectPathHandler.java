@@ -732,6 +732,9 @@ public class WorkflowReviewProjectPathHandler
         } else if (mapRecord.getWorkflowStatus()
             .equals(WorkflowStatus.REVIEW_NEW)) {
           mapRecord.setWorkflowStatus(WorkflowStatus.REVIEW_IN_PROGRESS);
+        } else if (mapRecord.getWorkflowStatus()
+            .equals(WorkflowStatus.REVIEW_RESOLVED)) {
+          mapRecord.setWorkflowStatus(WorkflowStatus.REVIEW_IN_PROGRESS);
         }
 
         break;
