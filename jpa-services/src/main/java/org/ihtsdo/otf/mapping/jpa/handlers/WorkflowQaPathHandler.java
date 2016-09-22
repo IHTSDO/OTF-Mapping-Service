@@ -325,9 +325,10 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
         }
 
         // Keep record if query matches the concept id or name
-        if (mr.getConceptId().toLowerCase().startsWith(query.toLowerCase())
-            || mr.getConceptName().toLowerCase()
-                .contains(query.toLowerCase())) {
+        if (query != null
+            && (mr.getConceptId().toLowerCase().startsWith(query.toLowerCase())
+                || mr.getConceptName().toLowerCase()
+                    .contains(query.toLowerCase()))) {
           keepRecord = true;
         }
 
@@ -460,9 +461,10 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
         }
 
         // Keep record if query matches the concept id or name
-        if (mr.getConceptId().toLowerCase().startsWith(query.toLowerCase())
-            || mr.getConceptName().toLowerCase()
-                .contains(query.toLowerCase())) {
+        if (query != null
+            && (mr.getConceptId().toLowerCase().startsWith(query.toLowerCase())
+                || mr.getConceptName().toLowerCase()
+                    .contains(query.toLowerCase()))) {
           keepRecord = true;
         }
 
