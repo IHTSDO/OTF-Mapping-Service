@@ -961,7 +961,7 @@ angular
         $http(
           {
             url : root_workflow + 'project/id/' + $scope.focusProject.id + '/availableQAWork'
-              + '?query=' + encodeURIComponent(query),
+              + '?query=' + (query ? encodeURIComponent(query) : 'null'),
             dataType : 'json',
             data : pfsParameterObj,
             method : 'POST',
