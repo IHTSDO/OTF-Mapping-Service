@@ -147,7 +147,7 @@ public class ExportReportHandler {
 
 				// limit results so as not to exceeed (hopefully) the 65535 row
 				// limit for HSSF
-				if (result.getCt() < 1000) {
+				if (result.getCt() < 2000) {
 
 					for (ReportResultItem resultItem : result.getReportResultItems()) {
 
