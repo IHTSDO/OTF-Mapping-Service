@@ -151,21 +151,37 @@ public class ExportReportHandler {
 
 					for (ReportResultItem resultItem : result.getReportResultItems()) {
 
-						// Add data row
-						cellnum = 2;
-						row = sheet2.createRow(rownum++);
+                      // Add data row
+                      cellnum = 2;
+                      row = sheet2.createRow(rownum++);
 
-						// Id
-						cell = row.createCell(cellnum++);
-						cell.setCellStyle(style);
-						cell.setCellValue(createHelper.createRichTextString(resultItem.getItemId().toString()));
+                      // Id
+                      cell = row.createCell(cellnum++);
+                      cell.setCellStyle(style);
+                      cell.setCellValue(createHelper.createRichTextString(resultItem.getItemId().toString()));
 
-						// Name
-						cell = row.createCell(cellnum++);
-						cell.setCellStyle(style);
-						cell.setCellValue(createHelper.createRichTextString(resultItem.getItemName()));
+                      // Name
+                      cell = row.createCell(cellnum++);
+                      cell.setCellStyle(style);
+                      cell.setCellValue(createHelper.createRichTextString(resultItem.getItemName()));
 					}
+				} else {
+                  // Add data row
+                  cellnum = 2;
+                  row = sheet2.createRow(rownum++);
+
+                  // Id
+                  cell = row.createCell(cellnum++);
+                  cell.setCellStyle(style);
+                  cell.setCellValue(createHelper.createRichTextString("There are too many rows to export (2000 max)"));
+
+                  // Name
+                  cell = row.createCell(cellnum++);
+                  cell.setCellStyle(style);
+                  cell.setCellValue(createHelper.createRichTextString(String.valueOf(result.getCt())));
+				  
 				}
+				   
 			}
 
 			for (int i = 0; i < 4; i++) {
