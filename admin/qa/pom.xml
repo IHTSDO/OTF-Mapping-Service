@@ -291,12 +291,13 @@
                     </property>
 
                     <property>
+                      <!-- Have an ICDO exception because legacy map data works this way. -->
                       <name>Every map entry should have a valid targetId (if not empty)</name>
                       <value>
                         SELECT b.conceptId, c.id, a.targetId
                         FROM
                         map_entries a, map_records b, map_projects c
-                        WHERE
+                        WHERE c.destinationTerminology != 'ICDO'
                         a.mapRecord_id = b.id
                         AND b.mapProjectId = c.id
                         AND
