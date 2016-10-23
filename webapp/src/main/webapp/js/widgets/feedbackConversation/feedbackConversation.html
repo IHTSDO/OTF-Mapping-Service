@@ -65,7 +65,7 @@
   ng-click="markUnviewed ? 
    markViewed(conversation, currentUser) : markFeedbackUnviewed(conversation)">
 Mark unviewed
-<span ng-show="conversation.userName == currentUser.userName">
+<span ng-show="conversation.userName == currentUser.userName && currentRole == 'LEAD'">
   <input type="checkbox" ng-model="conversation.resolved"
     ng-click="conversation.resolved ? 
     markActive(conversation) : markFeedbackResolved(conversation)">
