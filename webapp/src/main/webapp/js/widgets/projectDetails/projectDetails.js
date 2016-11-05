@@ -820,7 +820,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         }
 
         // by default the application role is Viewer
-        user.applicationRole = 'Viewer';
+        user.applicationRole = 'VIEWER';
 
         // add the user
         $http({
