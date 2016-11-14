@@ -2,7 +2,7 @@
   <input type="text" id="editQueryInput" ng-model="queryTerms">
   <button type="submit" style="padding-top: 10px;"
     class="btn btn-sm btn-primary"
-    ng-click="retrieveEditedWork(editedRecordsPage, queryTerms)">Search</button>
+    ng-click="retrieveEditedWork(1, queryTerms)">Search</button>
   <button type="submit" style="padding-top: 10px;"
     class="btn btn-sm btn-primary" ng-click="clearSearch(); queryTerms = ''">Reset</button>
   <a>
@@ -52,10 +52,11 @@
   </tbody>
 </table>
 
-<ul class="pager" ng-show="searchPerformed == true">
+<ul class="pager" ng-show="searchPerformed == true && editedRecordsPage>1">
   <li class="previous" ng-show="editedRecordsPage > 1"
-    ng-click="retrieveEditedWork(editedRecordsPage-1)"><a>&larr; Newer</a></li>
-  <li class="next" ng-click="retrieveEditedWork(editedRecordsPage+1)"><a>Older
+    ng-click="retrieveEditedWork(editedRecordsPage-1, queryTerms)"><a>&larr;
+      Newer</a></li>
+  <li class="next"
+    ng-click="retrieveEditedWork(editedRecordsPage+1, queryTerms)"><a>Older
       &rarr;</a></li>
 </ul>
-
