@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
-    <version>1.5.10</version>
+    <version>1.5.11</version>
     <relativePath>../../parent</relativePath>
   </parent>
 
@@ -18,8 +18,8 @@
   <properties>
     <!-- Specify index viewer data -->
     <index.viewer.groupId>org.ihtsdo.otf.mapping</index.viewer.groupId>
-    <index.viewer.artifactId>index-viewer-data-empty</index.viewer.artifactId>
-    <index.viewer.version>${releaseVersion}</index.viewer.version>
+    <index.viewer.artifactId>index-viewer-data-icd10</index.viewer.artifactId>
+    <index.viewer.version>1.4.1</index.viewer.version>
   </properties>
 
   <build>
