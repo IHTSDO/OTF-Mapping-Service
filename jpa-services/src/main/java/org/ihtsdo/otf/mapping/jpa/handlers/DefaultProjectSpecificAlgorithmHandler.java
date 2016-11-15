@@ -27,8 +27,8 @@ import org.ihtsdo.otf.mapping.rf2.TreePosition;
 /**
  * Reference implementation of {@link ProjectSpecificAlgorithmHandler}.
  */
-public class DefaultProjectSpecificAlgorithmHandler implements
-    ProjectSpecificAlgorithmHandler {
+public class DefaultProjectSpecificAlgorithmHandler
+    implements ProjectSpecificAlgorithmHandler {
 
   /** The map project. */
   protected MapProject mapProject = null;
@@ -95,8 +95,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     // FATAL ERROR: multiple map groups present for a project without group
     // structure
     if (!mapProject.isGroupStructure() && entryGroups.keySet().size() > 1) {
-      validationResult
-          .addError("Project has no group structure but multiple map groups were found.");
+      validationResult.addError(
+          "Project has no group structure but multiple map groups were found.");
       return validationResult;
     }
 
@@ -141,7 +141,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
   /* see superclass */
   @Override
-  public ValidationResult compareMapRecords(MapRecord record1, MapRecord record2) {
+  public ValidationResult compareMapRecords(MapRecord record1,
+    MapRecord record2) {
     final ValidationResult validationResult = new ValidationResultJpa();
 
     if (record1 == null) {
@@ -172,8 +173,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
       validationResult
           .addError("Invalid comparison, map record concept ids do not match ("
               + record1.getConceptId() + ", " + record2.getConceptId() + ").");
-      validationResult
-          .addConciseError("Invalid comparison - map record concept ids do not match");
+      validationResult.addConciseError(
+          "Invalid comparison - map record concept ids do not match");
       return validationResult;
     }
 
@@ -289,8 +290,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
       boolean outOfOrderFlag = false;
       boolean missingEntry = false;
 
-      for (int d = 0; d < Math
-          .min(stringEntries1.size(), stringEntries2.size()); d++) {
+      for (int d = 0; d < Math.min(stringEntries1.size(),
+          stringEntries2.size()); d++) {
 
         if (stringEntries1.get(d).equals(stringEntries2.get(d)))
           continue;
@@ -315,14 +316,16 @@ public class DefaultProjectSpecificAlgorithmHandler implements
               && isTargetIdsEqual(entries1.get(d), entries2.get(f))
               && !isMapRelationsEqual(entries1.get(d), entries2.get(f))) {
 
-            validationResult.addError("Map relation is different: "
-                + (entries1.get(d).getMapRelation() == null
-                    ? "No relation specified" : entries1.get(d)
-                        .getMapRelation().getName())
-                + " vs. "
-                + (entries2.get(f).getMapRelation() == null
-                    ? "No relation specified" : entries2.get(f)
-                        .getMapRelation().getName()));
+            validationResult
+                .addError(
+                    "Map relation is different: "
+                        + (entries1.get(d).getMapRelation() == null
+                            ? "No relation specified"
+                            : entries1.get(d).getMapRelation().getName())
+                        + " vs. "
+                        + (entries2.get(f).getMapRelation() == null
+                            ? "No relation specified" : entries2.get(f)
+                                .getMapRelation().getName()));
 
             validationResult.addConciseError("Map relation is different");
           }
@@ -335,8 +338,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
               && !entries1.get(d).getMapAdvices()
                   .equals(entries2.get(f).getMapAdvices()))
 
-            validationResult.merge(checkAdviceDifferences(entries1.get(d),
-                entries2.get(f)));
+            validationResult.merge(
+                checkAdviceDifferences(entries1.get(d), entries2.get(f)));
         }
       }
 
@@ -351,11 +354,11 @@ public class DefaultProjectSpecificAlgorithmHandler implements
             validationResult.addError("Target code is different: "
                 + (entries1.get(d).getTargetId() == null
                     || entries1.get(d).getTargetId().equals("") ? "No target"
-                    : entries1.get(d).getTargetId())
+                        : entries1.get(d).getTargetId())
                 + " vs. "
                 + (entries2.get(f).getTargetId() == null
                     || entries2.get(f).getTargetId().equals("") ? "No target"
-                    : entries2.get(f).getTargetId()));
+                        : entries2.get(f).getTargetId()));
             validationResult.addConciseError("Target code is different");
           }
         }
@@ -370,9 +373,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
                 && !entries2.get(f).getRule().equals("TRUE")
                 && !isRulesEqual(entries1.get(d), entries2.get(f))) {
 
-              validationResult.addError("Map rule is different: "
-                  + entries1.get(d).getRule() + " vs. "
-                  + entries2.get(f).getRule());
+              validationResult.addError(
+                  "Map rule is different: " + entries1.get(d).getRule()
+                      + " vs. " + entries2.get(f).getRule());
               validationResult.addConciseError("Map rule is different");
             }
           }
@@ -446,7 +449,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
    * @return a list of errors detected
    */
   @SuppressWarnings("static-method")
-  public ValidationResult checkMapRecordForDuplicateEntries(MapRecord mapRecord) {
+  public ValidationResult checkMapRecordForDuplicateEntries(
+    MapRecord mapRecord) {
     ValidationResult validationResult = new ValidationResultJpa();
     final List<MapEntry> entries = mapRecord.getMapEntries();
 
@@ -465,26 +469,38 @@ public class DefaultProjectSpecificAlgorithmHandler implements
           if (entries.get(j).getTargetId() == null) {
 
             if (entries.get(i).getMapRelation() != null
-                && entries.get(j).getMapRelation() != null
-                && entries.get(i).getMapRelation()
-                    .equals(entries.get(j).getMapRelation())) {
-              validationResult
-                  .addError("Duplicate entries (null target code, same map relation) found: "
+                && entries.get(j).getMapRelation() != null && entries.get(i)
+                    .getMapRelation().equals(entries.get(j).getMapRelation())) {
+              validationResult.addError(
+                  "Duplicate entries (null target code, same map relation) found: "
                       + "Group "
                       + Integer.toString(entries.get(i).getMapGroup())
-                      + ", priority "
-                      + entries.get(i).getMapPriority()
-                      + " and "
-                      + "Group "
+                      + ", priority " + entries.get(i).getMapPriority()
+                      + " and " + "Group "
                       + Integer.toString(entries.get(j).getMapGroup())
                       + ", priority " + entries.get(j).getMapPriority());
             }
           }
 
+        } else if (entries.get(i).getRule() != null
+            && entries.get(j).getRule() != null) {
+
+          // check if second entry's target identical to this one
+          if (entries.get(i).getTargetId().equals(entries.get(j).getTargetId())
+              && entries.get(i).getRule().equals(entries.get(j).getRule())) {
+            validationResult
+                .addError("Duplicate entries (same target code) found: "
+                    + "Group " + Integer.toString(entries.get(i).getMapGroup())
+                    + ", priority " + Integer.toString(i) + " and " + "Group "
+                    + Integer.toString(entries.get(j).getMapGroup())
+                    + ", priority " + Integer.toString(j));
+          }
+
         } else {
 
           // check if second entry's target identical to this one
-          if (entries.get(i).getTargetId().equals(entries.get(j).getTargetId())) {
+          if (entries.get(i).getTargetId()
+              .equals(entries.get(j).getTargetId())) {
             validationResult
                 .addError("Duplicate entries (same target code) found: "
                     + "Group " + Integer.toString(entries.get(i).getMapGroup())
@@ -558,16 +574,15 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
         for (final MapEntry mapEntry : entryGroups.get(key)) {
 
-          Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).debug(
-              "    Checking entry "
+          Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
+              .debug("    Checking entry "
                   + Integer.toString(mapEntry.getMapPriority()));
 
           // add message if TRUE rule found at non-terminating entry
           if (mapEntry.getMapPriority() != entryGroups.get(key).size()
               && mapEntry.getRule().equals("TRUE")) {
-            validationResult
-                .addError("Found non-terminating entry with TRUE rule."
-                    + " Entry:"
+            validationResult.addError(
+                "Found non-terminating entry with TRUE rule." + " Entry:"
                     + (mapProject.isGroupStructure() ? " group "
                         + Integer.toString(mapEntry.getMapGroup()) + "," : "")
                     + " map priority "
@@ -576,12 +591,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements
             // add message if terminating entry rule is not TRUE
           } else if (mapEntry.getMapPriority() == entryGroups.get(key).size()
               && !mapEntry.getRule().equals("TRUE")) {
-            validationResult.addError("Terminating entry has non-TRUE rule."
-                + " Entry:"
-                + (mapProject.isGroupStructure() ? " group "
-                    + Integer.toString(mapEntry.getMapGroup()) + "," : "")
-                + " map priority "
-                + Integer.toString(mapEntry.getMapPriority()));
+            validationResult
+                .addError("Terminating entry has non-TRUE rule." + " Entry:"
+                    + (mapProject.isGroupStructure() ? " group "
+                        + Integer.toString(mapEntry.getMapGroup()) + "," : "")
+                    + " map priority "
+                    + Integer.toString(mapEntry.getMapPriority()));
           }
         }
       }
@@ -627,8 +642,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
       }
     }
     for (final String error : validationResult.getErrors()) {
-      Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).debug(
-          "    " + error);
+      Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
+          .debug("    " + error);
     }
     return validationResult;
   }
@@ -647,13 +662,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     for (final MapEntry mapEntry : mapRecord.getMapEntries()) {
       for (final MapAdvice mapAdvice : mapEntry.getMapAdvices()) {
         if (!mapProject.getMapAdvices().contains(mapAdvice)) {
-          validationResult.addError("Invalid advice "
-              + mapAdvice.getName()
-              + "."
-              + " Entry:"
-              + (mapProject.isGroupStructure() ? " group "
-                  + Integer.toString(mapEntry.getMapGroup()) + "," : "")
-              + " map priority " + Integer.toString(mapEntry.getMapPriority()));
+          validationResult.addError(
+              "Invalid advice " + mapAdvice.getName() + "." + " Entry:"
+                  + (mapProject.isGroupStructure() ? " group "
+                      + Integer.toString(mapEntry.getMapGroup()) + "," : "")
+                  + " map priority "
+                  + Integer.toString(mapEntry.getMapPriority()));
         }
       }
     }
@@ -781,9 +795,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         if (advices1.get(i) != null && advices2.get(i) == null)
           continue;
         if (!advices1.get(i).equals(advices2.get(i))) {
-          result.addError("Map Advice is Different: "
-              + (advices1.get(i).getName() + " vs. " + advices2.get(i)
-                  .getName()));
+          result
+              .addError("Map Advice is Different: " + (advices1.get(i).getName()
+                  + " vs. " + advices2.get(i).getName()));
         }
       } catch (IndexOutOfBoundsException e) {
         result.addError("Map Advice is Different: "
@@ -823,12 +837,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     Collections.sort(advices, advicesComparator);
 
     final StringBuffer sb = new StringBuffer();
-    sb.append(mapEntry.getTargetId()
-        + " "
-        + mapEntry.getRule()
-        + " "
-        + (mapEntry.getMapRelation() != null ? mapEntry.getMapRelation()
-            .getId() : ""));
+    sb.append(mapEntry.getTargetId() + " " + mapEntry.getRule() + " "
+        + (mapEntry.getMapRelation() != null ? mapEntry.getMapRelation().getId()
+            : ""));
     for (final MapAdvice mapAdvice : advices) {
       sb.append(mapAdvice.getObjectId() + " ");
     }
@@ -906,7 +917,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
   /* see superclass */
   @Override
-  public List<TreePosition> limitTreePositions(List<TreePosition> treePositions) {
+  public List<TreePosition> limitTreePositions(
+    List<TreePosition> treePositions) {
     // default is no limiting
     return treePositions;
   }
