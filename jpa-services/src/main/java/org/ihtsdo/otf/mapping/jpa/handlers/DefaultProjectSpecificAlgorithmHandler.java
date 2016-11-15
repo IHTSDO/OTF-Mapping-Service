@@ -488,8 +488,8 @@ public class DefaultProjectSpecificAlgorithmHandler
           // check if second entry's target identical to this one
           if (entries.get(i).getTargetId().equals(entries.get(j).getTargetId())
               && entries.get(i).getRule().equals(entries.get(j).getRule())) {
-            validationResult
-                .addError("Duplicate entries (same target code) found: "
+            validationResult.addError(
+                "Duplicate entries (same target code and rule) found: "
                     + "Group " + Integer.toString(entries.get(i).getMapGroup())
                     + ", priority " + Integer.toString(i) + " and " + "Group "
                     + Integer.toString(entries.get(j).getMapGroup())
