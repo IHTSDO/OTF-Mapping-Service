@@ -86,7 +86,7 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
     getLog().info("  workflowStatus = " + workflowStatus);
     getLog().info("  userName = " + userName);
     getLog().info("  membersFlag = " + memberFlag);
-    getLog().info("  recordFile = " + recordFlag);
+    getLog().info("  recordFlag = " + recordFlag);
 
     // Set up map of refsetIds that we may encounter
     MappingService mappingService = null;

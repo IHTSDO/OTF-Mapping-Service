@@ -81,7 +81,7 @@ public class MapRecordRf2SimpleMapLoaderMojo extends AbstractMojo {
     getLog().info("Starting loading simple map data");
     getLog().info("  inputFile = " + inputFile);
     getLog().info("  membersFlag = " + memberFlag);
-    getLog().info("  recordFile = " + recordFlag);
+    getLog().info("  recordFlag = " + recordFlag);
     getLog().info("  workflowStatus = " + workflowStatus);
 
     // Set up map of refsetIds that we may encounter
@@ -135,7 +135,6 @@ public class MapRecordRf2SimpleMapLoaderMojo extends AbstractMojo {
       if (memberFlag) {
         for (final SimpleMapRefSetMember member : members) {
           contentService.addSimpleMapRefSetMember(member);
-          getLog().info("    member = " + member);
         }
       }
       contentService.commit();
