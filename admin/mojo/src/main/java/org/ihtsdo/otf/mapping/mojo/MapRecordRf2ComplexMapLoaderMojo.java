@@ -85,6 +85,8 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
     getLog().info("  inputFile = " + inputFile);
     getLog().info("  workflowStatus = " + workflowStatus);
     getLog().info("  userName = " + userName);
+    getLog().info("  membersFlag = " + memberFlag);
+    getLog().info("  recordFile = " + recordFlag);
 
     // Set up map of refsetIds that we may encounter
     MappingService mappingService = null;
@@ -111,9 +113,8 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
       // sort input file
       getLog().info(
           "  Sorting the file into " + System.getProperty("java.io.tmpdir"));
-      File outputFile =
-          File.createTempFile("ttt", ".sort",
-              new File(System.getProperty("java.io.tmpdir")));
+      File outputFile = File.createTempFile("ttt", ".sort",
+          new File(System.getProperty("java.io.tmpdir")));
       outputFile.delete();
       // Sort file according to unix sort
       // -k 5,5 -k 6,6n -k 7,7n -k 8,8n -k 1,4 -k 9,9 -k 10,10 -k 11,11
@@ -149,10 +150,9 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
                     if (i != 0) {
                       return (int) i;
                     } else {
-                      i =
-                          (fields1[0] + fields1[1] + fields1[2] + fields1[3])
-                              .compareTo(fields1[0] + fields1[1] + fields1[2]
-                                  + fields1[3]);
+                      i = (fields1[0] + fields1[1] + fields1[2] + fields1[3])
+                          .compareTo(fields1[0] + fields1[1] + fields1[2]
+                              + fields1[3]);
                       if (i != 0) {
                         return (int) i;
                       } else {
@@ -215,14 +215,21 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
         loaderUser = mappingService.addMapUser(loaderUser);
       }
 
-      Map<String, MapProject> mapProjectMap = new HashMap<>();
+      final Map<String, MapProject> mapProjectMap = new HashMap<>();
       for (MapProject project : mappingService.getMapProjects().getIterable()) {
         mapProjectMap.put(project.getRefSetId(), project);
       }
+      getLog().info("  Map projects");
+      for (final String refsetId : mapProjectMap.keySet()) {
+        final MapProject project = mapProjectMap.get(refsetId);
+        getLog().info("    project = " + project.getId() + ","
+            + project.getRefSetId() + ", " + project.getName());
 
+      }
       // load complexMapRefSetMembers from extendedMap file
-      List<ComplexMapRefSetMember> members =
+      final List<ComplexMapRefSetMember> members =
           getComplexMaps(outputFile, mapProjectMap);
+      getLog().info("  members = " + members.size());
 
       // If the member flag is set, insert all of these
       contentService.setTransactionPerOperation(false);
@@ -271,7 +278,8 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
       getLog().info("Done ...");
     } catch (Exception e) {
       e.printStackTrace();
-      throw new MojoExecutionException("Loading of RF2 Complex Maps failed.", e);
+      throw new MojoExecutionException("Loading of RF2 Complex Maps failed.",
+          e);
     } finally {
       try {
         mappingService.close();
@@ -327,8 +335,8 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
 
         // handle complex vs. extended maps -- extended maps have mapCategory as
         // well as correlationId
-        member.setMapRelationId(Long.valueOf(fields[fields.length == 13 ? 12
-            : 11]));
+        member.setMapRelationId(
+            Long.valueOf(fields[fields.length == 13 ? 12 : 11]));
 
         // BLOCK is unused
         member.setMapBlock(0); // default value
@@ -336,17 +344,15 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
         member.setMapBlockAdvice(null); // no default
 
         // Terminology attributes
-        member.setTerminology(mapProjectMap.get(refsetId)
-            .getSourceTerminology());
-        member.setTerminologyVersion(mapProjectMap.get(refsetId)
-            .getSourceTerminologyVersion());
+        member
+            .setTerminology(mapProjectMap.get(refsetId).getSourceTerminology());
+        member.setTerminologyVersion(
+            mapProjectMap.get(refsetId).getSourceTerminologyVersion());
 
         // set Concept
-        Concept concept =
-            contentService.getConcept(
-                fields[5], // referencedComponentId
-                mapProjectMap.get(refsetId).getSourceTerminology(),
-                mapProjectMap.get(refsetId).getSourceTerminologyVersion());
+        Concept concept = contentService.getConcept(fields[5], // referencedComponentId
+            mapProjectMap.get(refsetId).getSourceTerminology(),
+            mapProjectMap.get(refsetId).getSourceTerminologyVersion());
 
         if (concept != null) {
           member.setConcept(concept);
