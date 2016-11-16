@@ -102,9 +102,6 @@ public class ICD10ProjectSpecificAlgorithmHandler
   public ValidationResult validateTargetCodes(MapRecord mapRecord)
     throws Exception {
 
-    Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class)
-        .info("Validating target codes for ICD10");
-
     final ValidationResult validationResult = new ValidationResultJpa();
     final ContentService contentService = new ContentServiceJpa();
 
@@ -120,9 +117,6 @@ public class ICD10ProjectSpecificAlgorithmHandler
         // if a target is specified check it
       } else if (mapEntry.getTargetId() != null
           && !mapEntry.getTargetId().equals("")) {
-
-        Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class)
-            .info("  Checking id: " + mapEntry.getTargetId());
 
         // first, check terminology id based on above rules
         if (!mapEntry.getTargetId().equals("")
