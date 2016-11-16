@@ -78,8 +78,11 @@ public class MapRecordRf2SimpleMapLoaderMojo extends AbstractMojo {
    */
   @Override
   public void execute() throws MojoExecutionException {
-    getLog().info("Starting loading complex map data");
+    getLog().info("Starting loading simple map data");
     getLog().info("  inputFile = " + inputFile);
+    getLog().info("  membersFlag = " + memberFlag);
+    getLog().info("  recordFile = " + recordFlag);
+    getLog().info("  workflowStatus = " + workflowStatus);
 
     // Set up map of refsetIds that we may encounter
     MappingService mappingService = null;
@@ -108,15 +111,23 @@ public class MapRecordRf2SimpleMapLoaderMojo extends AbstractMojo {
       }
 
       // Get map projects
-      Map<String, MapProject> mapProjectMap = new HashMap<>();
+      final Map<String, MapProject> mapProjectMap = new HashMap<>();
       for (final MapProject project : mappingService.getMapProjects()
           .getIterable()) {
         mapProjectMap.put(project.getRefSetId(), project);
       }
+      getLog().info("  Map projects");
+      for (final String refsetId : mapProjectMap.keySet()) {
+        final MapProject project = mapProjectMap.get(refsetId);
+        getLog().info("    project = " + project.getId() + ","
+            + project.getRefSetId() + ", " + project.getName());
+
+      }
 
       // load complexMapRefSetMembers from simpleMap file
-      List<SimpleMapRefSetMember> members =
+      final List<SimpleMapRefSetMember> members =
           getSimpleMaps(new File(inputFile), mapProjectMap);
+      getLog().info("  members = " + members.size());
 
       // If the member flag is set, insert all of these
       contentService.setTransactionPerOperation(false);
@@ -124,6 +135,7 @@ public class MapRecordRf2SimpleMapLoaderMojo extends AbstractMojo {
       if (memberFlag) {
         for (final SimpleMapRefSetMember member : members) {
           contentService.addSimpleMapRefSetMember(member);
+          getLog().info("    member = " + member);
         }
       }
       contentService.commit();
@@ -132,7 +144,7 @@ public class MapRecordRf2SimpleMapLoaderMojo extends AbstractMojo {
       if (recordFlag) {
 
         // Get the distinct refsetIds involved
-        Set<String> refSetIds = new HashSet<>();
+        final Set<String> refSetIds = new HashSet<>();
         for (final SimpleMapRefSetMember member : members) {
           refSetIds.add(member.getRefSetId());
         }
@@ -142,17 +154,17 @@ public class MapRecordRf2SimpleMapLoaderMojo extends AbstractMojo {
 
           // Get a list of entries for that id
           int ct = 0;
-          List<ComplexMapRefSetMember> complexMembers = new ArrayList<>();
+          final List<ComplexMapRefSetMember> complexMembers = new ArrayList<>();
           for (final SimpleMapRefSetMember member : members) {
             if (refSetIds.contains(member.getRefSetId())) {
               complexMembers.add(new ComplexMapRefSetMemberJpa(member));
               ct++;
             }
           }
-          getLog().info("  Refset " + refSetId + " count = " + ct);
+          getLog().info("  records = " + ct);
 
           // Then call the mapping service to create the map records
-          WorkflowStatus status = WorkflowStatus.valueOf(workflowStatus);
+          final WorkflowStatus status = WorkflowStatus.valueOf(workflowStatus);
 
           // IF loading refSet members too, these are published already
           mappingService.createMapRecordsForMapProject(
