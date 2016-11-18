@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2015 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.services.helpers;
 
 import java.io.File;
@@ -31,7 +34,10 @@ public class OtfErrorHandler {
   public Properties config = null;
 
   /** The address that messages will appear as though they come from. */
-  String mailFrom = "";
+  String from = "";
+
+  /** The mail server user. */
+  String user = "";
 
   /** The password for the SMTP host. */
   String hostPassword = "";
@@ -47,6 +53,12 @@ public class OtfErrorHandler {
 
   /** Subject text for the email. */
   String mailSubject = "IHTSDO Mapping Tool Exception Report";
+
+  /** The start tls. */
+  boolean startTls = false;
+
+  /** The auth. */
+  boolean auth = false;
 
   /** Text for the email. */
   StringBuffer mailText;
@@ -79,16 +91,16 @@ public class OtfErrorHandler {
 
         // if a 401 code, build response and throw
         if (((LocalException) e).getResponseCode().equals("401")) {
-          Logger.getLogger(OtfErrorHandler.class).error(
-              "Unauthorized access detected");
+          Logger.getLogger(OtfErrorHandler.class)
+              .error("Unauthorized access detected");
 
-          throw new WebApplicationException(Response.status(401)
-              .entity(e.getMessage()).build());
+          throw new WebApplicationException(
+              Response.status(401).entity(e.getMessage()).build());
         }
         // if no code specified, build and throw a 500
       } else {
-        throw new WebApplicationException(Response.status(500)
-            .entity(e.getMessage()).build());
+        throw new WebApplicationException(
+            Response.status(500).entity(e.getMessage()).build());
       }
     }
 
@@ -103,16 +115,14 @@ public class OtfErrorHandler {
       sendEmail(e, whatIsHappening, userName, project, objectId);
     } catch (Exception ex) {
       ex.printStackTrace();
-      throw new WebApplicationException(Response.status(500)
-          .entity(ex.getMessage()).build());
+      throw new WebApplicationException(
+          Response.status(500).entity(ex.getMessage()).build());
     }
 
     // finally, throw the web application exception to the user
-    throw new WebApplicationException(Response
-        .status(500)
-        .entity(
-            "Unexpected error trying to " + whatIsHappening
-                + ". Please contact the administrator.").build());
+    throw new WebApplicationException(
+        Response.status(500).entity("Unexpected error trying to "
+            + whatIsHappening + ". Please contact the administrator.").build());
   }
 
   /**
@@ -123,13 +133,13 @@ public class OtfErrorHandler {
    * @param userName the current user's user name
    * @param project the project
    * @param recordId the record id
-   * @throws Exception 
+   * @throws Exception
    */
   public void sendEmail(Exception e, String whatIsHappening, String userName,
     String project, String recordId) throws Exception {
 
-    if (!"true".equals(ConfigUtility.getConfigProperties().getProperty(
-        "mail.enabled"))) {
+    if (!"true".equals(
+        ConfigUtility.getConfigProperties().getProperty("mail.enabled"))) {
       return;
     }
     // Bail if no recipients
@@ -138,19 +148,18 @@ public class OtfErrorHandler {
     }
 
     Properties props = new Properties();
-    props.put("mail.smtp.user", mailFrom);
+    props.put("mail.smtp.user", user);
     props.put("mail.smtp.password", hostPassword);
     props.put("mail.smtp.host", host);
     props.put("mail.smtp.port", port);
-    props.put("mail.smtp.starttls.enable", "true");
-    props.put("mail.smtp.auth", "true");
+    props.put("mail.smtp.starttls.enable", "" + startTls);
+    props.put("mail.smtp.auth", "" + auth);
 
     mailSubject = "IHTSDO Mapping Tool Exception Report";
     mailText = new StringBuffer();
     if (!(e instanceof LocalException))
-      mailText.append(
-          "Unexpected error trying to " + whatIsHappening
-              + ". Please contact the administrator.").append("\n\n");
+      mailText.append("Unexpected error trying to " + whatIsHappening
+          + ". Please contact the administrator.").append("\n\n");
 
     try {
       mailText.append("HOST: " + InetAddress.getLocalHost().getHostName())
@@ -176,11 +185,11 @@ public class OtfErrorHandler {
       MimeMessage msg = new MimeMessage(session);
       msg.setText(mailText.toString());
       msg.setSubject(mailSubject);
-      msg.setFrom(new InternetAddress(mailFrom));
+      msg.setFrom(new InternetAddress(from));
       String[] recipientsArray = recipients.split(";");
       for (String recipient : recipientsArray) {
-        msg.addRecipient(Message.RecipientType.TO, new InternetAddress(
-            recipient));
+        msg.addRecipient(Message.RecipientType.TO,
+            new InternetAddress(recipient));
       }
       Transport.send(msg);
 
@@ -201,7 +210,7 @@ public class OtfErrorHandler {
      */
     @Override
     public PasswordAuthentication getPasswordAuthentication() {
-      return new PasswordAuthentication(mailFrom, hostPassword);
+      return new PasswordAuthentication(from, hostPassword);
     }
   }
 
@@ -220,11 +229,17 @@ public class OtfErrorHandler {
       config.load(in);
       in.close();
 
-      mailFrom = config.getProperty("mail.smtp.user");
+      from = config.getProperty("mail.smtp.user");
+      if (config.getProperty("mail.smtp.from") != null) {
+        from = config.getProperty("mail.smtp.from");
+      }
+      user = config.getProperty("mail.smtp.user");
       hostPassword = config.getProperty("mail.smtp.password");
       host = config.getProperty("mail.smtp.host");
       port = config.getProperty("mail.smtp.port");
       recipients = config.getProperty("mail.smtp.to");
+      auth = "true".equals(config.getProperty("mail.smtp.auth"));
+      startTls = "true".equals(config.getProperty("mail.smtp.starttls.enable"));
     }
 
   }
