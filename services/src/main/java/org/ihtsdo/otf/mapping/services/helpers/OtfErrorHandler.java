@@ -181,7 +181,8 @@ public class OtfErrorHandler {
     try {
       SMTPAuthenticator auth = new SMTPAuthenticator();
       Session session = Session.getInstance(props, auth);
-
+      Logger.getLogger(getClass())
+          .info("  send email = " + from + ", " + recipients + ", " + props);
       MimeMessage msg = new MimeMessage(session);
       msg.setText(mailText.toString());
       msg.setSubject(mailSubject);
