@@ -466,7 +466,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
         if (qName.equalsIgnoreCase("term")) {
           // Add the concept (if active) - also if obsolete
           // CASCADE will handle descriptions
-          if (concept.isActive() || !concept.isActive()) {
+          if (concept.isActive()) { // || !concept.isActive()) {
             // Use the "termID" as the key
             conceptMap.put(termCode, concept);
             contentService.addConcept(concept);
@@ -636,7 +636,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
         if (qName.equalsIgnoreCase("collectiveterm")) {
           // Add the concept if active (or if obsolete)
           // CASCADE will handle descriptions
-          if (concept.isActive() || !concept.isActive()) {
+          if (concept.isActive()) {// || !concept.isActive()) {
             contentService.addConcept(concept);
             conceptMap.put(termId, concept);
           }
