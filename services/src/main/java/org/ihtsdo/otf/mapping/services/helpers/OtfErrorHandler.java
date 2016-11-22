@@ -147,14 +147,6 @@ public class OtfErrorHandler {
       return;
     }
 
-    Properties props = new Properties();
-    props.put("mail.smtp.user", user);
-    props.put("mail.smtp.password", hostPassword);
-    props.put("mail.smtp.host", host);
-    props.put("mail.smtp.port", port);
-    props.put("mail.smtp.starttls.enable", "" + startTls);
-    props.put("mail.smtp.auth", "" + auth);
-
     mailSubject = "IHTSDO Mapping Tool Exception Report";
     mailText = new StringBuffer();
     if (!(e instanceof LocalException))
@@ -178,25 +170,25 @@ public class OtfErrorHandler {
     e.printStackTrace(pw);
     mailText.append(out.getBuffer());
 
-    try {
-      SMTPAuthenticator auth = new SMTPAuthenticator();
-      Session session = Session.getInstance(props, auth);
-      Logger.getLogger(getClass())
-          .info("  send email = " + from + ", " + recipients + ", " + props);
-      MimeMessage msg = new MimeMessage(session);
-      msg.setText(mailText.toString());
-      msg.setSubject(mailSubject);
-      msg.setFrom(new InternetAddress(from));
-      String[] recipientsArray = recipients.split(";");
-      for (String recipient : recipientsArray) {
-        msg.addRecipient(Message.RecipientType.TO,
-            new InternetAddress(recipient));
-      }
-      Transport.send(msg);
-
-    } catch (Exception mex) {
-      mex.printStackTrace();
+    // send the revised message
+    Properties config = ConfigUtility.getConfigProperties();
+    String from;
+    if (config.containsKey("mail.smtp.from")) {
+      from = config.getProperty("mail.smtp.from");
+    } else {
+      from = config.getProperty("mail.smtp.user");
     }
+    Properties props = new Properties();
+    props.put("mail.smtp.user", config.getProperty("mail.smtp.user"));
+    props.put("mail.smtp.password", config.getProperty("mail.smtp.password"));
+    props.put("mail.smtp.host", config.getProperty("mail.smtp.host"));
+    props.put("mail.smtp.port", config.getProperty("mail.smtp.port"));
+    props.put("mail.smtp.starttls.enable",
+        config.getProperty("mail.smtp.starttls.enable"));
+    props.put("mail.smtp.auth", config.getProperty("mail.smtp.auth"));
+    ConfigUtility.sendEmail(mailSubject, from, recipients, mailText.toString(),
+        props, "true".equals(config.getProperty("mail.smtp.auth")));
+
   }
 
   /**
