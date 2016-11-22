@@ -69,15 +69,14 @@ public class QAWorkflow extends AbstractMojo {
       // Perform the QA checks
 
       for (MapProject mapProject : mapProjects) {
-        getLog().info(
-            "Checking workflow for " + mapProject.getName() + ", "
-                + mapProject.getId());
+        getLog().info("Checking workflow for " + mapProject.getName() + ", "
+            + mapProject.getId());
         List<String> results = null;
-        
+
         try {
-            results = workflowService.computeWorkflowStatusErrors(mapProject);
+          results = workflowService.computeWorkflowStatusErrors(mapProject);
         } catch (Exception e) {
-        	results.add("Unexpected error trying to check workflow -- see logs");
+          results.add("Unexpected error trying to check workflow -- see logs");
         }
         if (results.size() != 0) {
 
@@ -117,9 +116,24 @@ public class QAWorkflow extends AbstractMojo {
             config.getProperty("send.notification.recipients");
 
         // instantiate the email handler
-        ConfigUtility.sendEmail(notificationRecipients,
-            "OTF Mapping Tool:  Workflow Errors Detected", message.toString());
-
+        String from;
+        if (config.containsKey("mail.smtp.from")) {
+          from = config.getProperty("mail.smtp.from");
+        } else {
+          from = config.getProperty("mail.smtp.user");
+        }
+        Properties props = new Properties();
+        props.put("mail.smtp.user", config.getProperty("mail.smtp.user"));
+        props.put("mail.smtp.password",
+            config.getProperty("mail.smtp.password"));
+        props.put("mail.smtp.host", config.getProperty("mail.smtp.host"));
+        props.put("mail.smtp.port", config.getProperty("mail.smtp.port"));
+        props.put("mail.smtp.starttls.enable",
+            config.getProperty("mail.smtp.starttls.enable"));
+        props.put("mail.smtp.auth", config.getProperty("mail.smtp.auth"));
+        ConfigUtility.sendEmail("OTF Mapping Tool:  Workflow Errors Detected",
+            from, notificationRecipients, message.toString(), props,
+            "true".equals(config.getProperty("mail.smtp.auth")));
       }
 
       workflowService.close();
