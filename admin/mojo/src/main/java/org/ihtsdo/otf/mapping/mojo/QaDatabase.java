@@ -90,7 +90,8 @@ public class QaDatabase extends AbstractMojo {
       if (!errors.isEmpty()) {
         StringBuilder msg = new StringBuilder();
         msg.append("\r\n");
-        msg.append("The automated database QA mojo has found some issues with the following checks:\r\n");
+        msg.append(
+            "The automated database QA mojo has found some issues with the following checks:\r\n");
         msg.append("\r\n");
 
         for (String key : errors.keySet()) {
@@ -107,12 +108,30 @@ public class QaDatabase extends AbstractMojo {
 
         }
 
-        String notificationRecipients =
-            ConfigUtility.getConfigProperties().getProperty(
-                "send.notification.recipients");
+        String notificationRecipients = ConfigUtility.getConfigProperties()
+            .getProperty("send.notification.recipients");
         if (notificationRecipients != null) {
-          ConfigUtility.sendEmail(notificationRecipients,
-              "[OTF-Mapping-Tool] Database QA Results", msg.toString());
+          // send the revised message
+          Properties config = ConfigUtility.getConfigProperties();
+          String from;
+          if (config.containsKey("mail.smtp.from")) {
+            from = config.getProperty("mail.smtp.from");
+          } else {
+            from = config.getProperty("mail.smtp.user");
+          }
+          Properties props = new Properties();
+          props.put("mail.smtp.user", config.getProperty("mail.smtp.user"));
+          props.put("mail.smtp.password",
+              config.getProperty("mail.smtp.password"));
+          props.put("mail.smtp.host", config.getProperty("mail.smtp.host"));
+          props.put("mail.smtp.port", config.getProperty("mail.smtp.port"));
+          props.put("mail.smtp.starttls.enable",
+              config.getProperty("mail.smtp.starttls.enable"));
+          props.put("mail.smtp.auth", config.getProperty("mail.smtp.auth"));
+          ConfigUtility.sendEmail("[OTF-Mapping-Tool] Database QA Results",
+              from, notificationRecipients, msg.toString(), props,
+              "true".equals(config.getProperty("mail.smtp.auth")));
+
         }
         getLog().info(msg.toString());
 
