@@ -12,6 +12,7 @@ import java.util.Comparator;
 import java.util.Properties;
 import java.util.UUID;
 
+import javax.mail.Authenticator;
 import javax.mail.Message;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
@@ -235,30 +236,50 @@ public class ConfigUtility {
     }
 
     // send the revised message
-    ConfigUtility.sendEmail(recipients, subject, validationMessage);
+    String from;
+    if (config.containsKey("mail.smtp.from")) {
+      from = config.getProperty("mail.smtp.from");
+    } else {
+      from = config.getProperty("mail.smtp.user");
+    }
+    Properties props = new Properties();
+    props.put("mail.smtp.user", config.getProperty("mail.smtp.user"));
+    props.put("mail.smtp.password", config.getProperty("mail.smtp.password"));
+    props.put("mail.smtp.host", config.getProperty("mail.smtp.host"));
+    props.put("mail.smtp.port", config.getProperty("mail.smtp.port"));
+    props.put("mail.smtp.starttls.enable",
+        config.getProperty("mail.smtp.starttls.enable"));
+    props.put("mail.smtp.auth", config.getProperty("mail.smtp.auth"));
+    ConfigUtility.sendEmail(subject, from, recipients, validationMessage, props,
+        "true".equals(config.getProperty("mail.smtp.auth")));
 
   }
 
   /**
    * Sends email.
    *
-   * @param recipients the recipients
    * @param subject the subject
+   * @param from the from
+   * @param recipients the recipients
    * @param body the body
+   * @param details the details
+   * @param authFlag the auth flag
    * @throws Exception the exception
    */
-  public static void sendEmail(String recipients, String subject, String body)
-    throws Exception {
+  public static void sendEmail(String subject, String from, String recipients,
+    String body, Properties details, boolean authFlag) throws Exception {
     // avoid sending mail if disabled
-    final Properties details = ConfigUtility.getConfigProperties();
-
-    String from = details.getProperty("mail.smtp.user");
     if ("false".equals(details.getProperty("mail.enabled"))) {
       // do nothing
       return;
     }
-    SMTPAuthenticator auth = new SMTPAuthenticator();
-    Session session = Session.getInstance(config, auth);
+    Session session = null;
+    if (authFlag) {
+      Authenticator auth = new SMTPAuthenticator();
+      session = Session.getInstance(details, auth);
+    } else {
+      session = Session.getInstance(details);
+    }
 
     MimeMessage msg = new MimeMessage(session);
     if (body.contains("<html")) {
@@ -274,19 +295,6 @@ public class ConfigUtility {
           new InternetAddress(recipient));
     }
     Transport.send(msg);
-  }
-
-  /**
-   * Capitalize.
-   *
-   * @param value the value
-   * @return the string
-   */
-  public static String capitalize(String value) {
-    if (value == null) {
-      return value;
-    }
-    return value.substring(0, 1).toUpperCase() + value.substring(1);
   }
 
   /**
@@ -317,6 +325,19 @@ public class ConfigUtility {
             config.getProperty("mail.smtp.password"));
       }
     }
+  }
+
+  /**
+   * Capitalize.
+   *
+   * @param value the value
+   * @return the string
+   */
+  public static String capitalize(String value) {
+    if (value == null) {
+      return value;
+    }
+    return value.substring(0, 1).toUpperCase() + value.substring(1);
   }
 
   /**
