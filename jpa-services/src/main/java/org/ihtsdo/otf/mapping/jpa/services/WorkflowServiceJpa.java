@@ -544,9 +544,27 @@ public class WorkflowServiceJpa extends MappingServiceJpa
       String notificationRecipients =
           config.getProperty("send.notification.recipients");
       if (!notificationRecipients.isEmpty()) {
-        ConfigUtility.sendEmail(notificationRecipients, mapProject.getName()
-            + " Workflow Error Alert, Concept " + concept.getTerminologyId(),
-            message.toString());
+
+        String from;
+        if (config.containsKey("mail.smtp.from")) {
+          from = config.getProperty("mail.smtp.from");
+        } else {
+          from = config.getProperty("mail.smtp.user");
+        }
+        Properties props = new Properties();
+        props.put("mail.smtp.user", config.getProperty("mail.smtp.user"));
+        props.put("mail.smtp.password",
+            config.getProperty("mail.smtp.password"));
+        props.put("mail.smtp.host", config.getProperty("mail.smtp.host"));
+        props.put("mail.smtp.port", config.getProperty("mail.smtp.port"));
+        props.put("mail.smtp.starttls.enable",
+            config.getProperty("mail.smtp.starttls.enable"));
+        props.put("mail.smtp.auth", config.getProperty("mail.smtp.auth"));
+        ConfigUtility.sendEmail(
+            mapProject.getName() + " Workflow Error Alert, Concept "
+                + concept.getTerminologyId(),
+            from, notificationRecipients, message.toString(), props,
+            "true".equals(config.getProperty("mail.smtp.auth")));
       }
 
       throw new LocalException("Workflow action " + workflowAction.toString()
@@ -1645,11 +1663,27 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     String conceptUrl = baseUrlWebapp + "/#/record/conceptId/" + conceptId
         + "/autologin?refSetId=" + refSetId;
 
-    ConfigUtility.sendEmail(feedbackUserRecipient,
-        "Mapping Tool User Feedback: " + conceptId + "-" + conceptName,
+    String from;
+    if (config.containsKey("mail.smtp.from")) {
+      from = config.getProperty("mail.smtp.from");
+    } else {
+      from = config.getProperty("mail.smtp.user");
+    }
+    Properties props = new Properties();
+    props.put("mail.smtp.user", config.getProperty("mail.smtp.user"));
+    props.put("mail.smtp.password", config.getProperty("mail.smtp.password"));
+    props.put("mail.smtp.host", config.getProperty("mail.smtp.host"));
+    props.put("mail.smtp.port", config.getProperty("mail.smtp.port"));
+    props.put("mail.smtp.starttls.enable",
+        config.getProperty("mail.smtp.starttls.enable"));
+    props.put("mail.smtp.auth", config.getProperty("mail.smtp.auth"));
+    ConfigUtility.sendEmail(
+        "Mapping Tool User Feedback: " + conceptId + "-" + conceptName, from,
+        feedbackUserRecipient,
         "<html>User: " + name + "<br>" + "Email: " + email + "<br>"
             + "Concept: <a href=" + conceptUrl + ">" + conceptId + "- "
-            + conceptName + "</a><br><br>" + message + "</html>");
+            + conceptName + "</a><br><br>" + message + "</html>",
+        props, "true".equals(config.getProperty("mail.smtp.auth")));
 
   }
 

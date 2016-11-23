@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2015 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.util.HashMap;
@@ -29,7 +32,7 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
   /**
    * The refSet id.
    * @parameter refsetId
-   * */
+   */
   private String refsetId = null;
 
   /**
@@ -67,9 +70,8 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
       throw new MojoExecutionException(
           "Email notification was requested, but no recipients were specified.");
     } else {
-      getLog().info(
-          "Request to send notification email to recipients: "
-              + notificationRecipients);
+      getLog().info("Request to send notification email to recipients: "
+          + notificationRecipients);
       notificationMessage +=
           "Hello,\n\nWorkflow for the mapping tool has been recomputed.  Changes to the pool of available work are indicated below for each project\n\n";
     }
@@ -112,23 +114,20 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
         }
 
         // recompute workflow
-        getLog().info(
-            "Computing workflow for " + mapProject.getName() + ", "
-                + mapProject.getId());
+        getLog().info("Computing workflow for " + mapProject.getName() + ", "
+            + mapProject.getId());
         workflowService.computeWorkflow(mapProject);
 
-        getLog().info(
-            "Comparing new workflow to previous workflow for "
-                + mapProject.getName() + ", " + mapProject.getId());
+        getLog().info("Comparing new workflow to previous workflow for "
+            + mapProject.getName() + ", " + mapProject.getId());
 
         // cycle over new workflow and compare to previously stored values
         for (TrackingRecord tr : workflowService
             .getTrackingRecordsForMapProject(mapProject).getIterable()) {
 
           if (!previousWorkflowConcepts.containsKey(tr.getTerminologyId())) {
-            getLog().info(
-                "  New concept:  " + tr.getTerminologyId() + ", "
-                    + tr.getDefaultPreferredName());
+            getLog().info("  New concept:  " + tr.getTerminologyId() + ", "
+                + tr.getDefaultPreferredName());
             conceptsAddedSb.append("    ADDED " + tr.getTerminologyId() + ", "
                 + tr.getDefaultPreferredName() + "\n");
             conceptsAdded++;
@@ -142,17 +141,15 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
         // cycle over remaining concepts in old workflow, which were removed by
         // computing new workflow
         for (String terminologyId : previousWorkflowConcepts.keySet()) {
-          getLog().info(
-              "  Removed concept:  " + terminologyId + ", "
-                  + previousWorkflowConcepts.get(terminologyId));
+          getLog().info("  Removed concept:  " + terminologyId + ", "
+              + previousWorkflowConcepts.get(terminologyId));
           conceptsRemovedSb.append("    REMOVED " + terminologyId + ", "
               + previousWorkflowConcepts.get(terminologyId) + "\n");
           conceptsRemoved++;
         }
 
-        getLog().info(
-            "Workflow summary: " + conceptsAdded + " concepts added, "
-                + conceptsRemoved + " concepts removed");
+        getLog().info("Workflow summary: " + conceptsAdded + " concepts added, "
+            + conceptsRemoved + " concepts removed");
 
         notificationMessage +=
             "Project: " + mapProject.getName() + "\n" + "\tConcepts Added:   "
@@ -161,18 +158,34 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
 
       }
 
-      notificationMessage +=
-          "Key:"
-              + "\t'Concepts Added' refers to new concepts that were added via the drip feed/delta loader\n"
-              + "\t'Concepts Removed' refers to concepts with unfinished editing that were removed from scope, i.e. are no longer referred to in the drip feed";
+      notificationMessage += "Key:"
+          + "\t'Concepts Added' refers to new concepts that were added via the drip feed/delta loader\n"
+          + "\t'Concepts Removed' refers to concepts with unfinished editing that were removed from scope, i.e. are no longer referred to in the drip feed";
 
       getLog().info("done ...");
       workflowService.close();
 
       // if notification requested, send email
       if (sendNotification) {
-        ConfigUtility.sendEmail(notificationRecipients,
-            "[OTF-Mapping-Tool] Drip feed results", notificationMessage);
+        // send the revised message
+        String from;
+        if (config.containsKey("mail.smtp.from")) {
+          from = config.getProperty("mail.smtp.from");
+        } else {
+          from = config.getProperty("mail.smtp.user");
+        }
+        Properties props = new Properties();
+        props.put("mail.smtp.user", config.getProperty("mail.smtp.user"));
+        props.put("mail.smtp.password",
+            config.getProperty("mail.smtp.password"));
+        props.put("mail.smtp.host", config.getProperty("mail.smtp.host"));
+        props.put("mail.smtp.port", config.getProperty("mail.smtp.port"));
+        props.put("mail.smtp.starttls.enable",
+            config.getProperty("mail.smtp.starttls.enable"));
+        props.put("mail.smtp.auth", config.getProperty("mail.smtp.auth"));
+        ConfigUtility.sendEmail("[OTF-Mapping-Tool] Drip feed results", from,
+            notificationRecipients, notificationMessage, props,
+            "true".equals(config.getProperty("mail.smtp.auth")));
       }
 
     } catch (Exception e) {
