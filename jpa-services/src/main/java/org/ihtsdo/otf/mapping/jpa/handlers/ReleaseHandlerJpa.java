@@ -2254,7 +2254,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         .getIterable()) {
       Logger.getLogger(getClass()).debug("    Remove member - " + member);
       if (!testModeFlag) {
-        contentService.removeComplexMapRefSetMember(member.getId());
+        if (mapProject
+            .getMapRefsetPattern() != MapRefsetPattern.SimpleMap) {
+          contentService.removeComplexMapRefSetMember(member.getId());
+        } else {
+          contentService.removeSimpleMapRefSetMember(member.getId());
+        }
       }
     }
     contentService.commit();
