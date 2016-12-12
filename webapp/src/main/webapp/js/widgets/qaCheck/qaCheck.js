@@ -51,7 +51,15 @@ angular.module('mapProjectApp.widgets.qaCheck', [ 'adf.provider' ]).config(
         $http.defaults.headers.common.Authorization = $scope.currentUserToken;
 
         // retrieve the definitions
-        $scope.definitions = $scope.focusProject.reportDefinition;
+        $scope.definitions = $scope.focusProject.reportDefinition.filter(function(item) {
+          if ($scope.currentRole == 'SPECIALIST') {
+            return item.roleRequired == 'SPECIALIST' || item.roleRequired == 'VIEWER';
+          } else if ($scope.currentRole == 'LEAD') {
+            return item.roleRequired == 'LEAD' || item.roleRequired == 'SPECIALIST'
+              || item.roleRequired == 'VIEWER';
+          }
+          return true;
+        });
       }
     });
 
