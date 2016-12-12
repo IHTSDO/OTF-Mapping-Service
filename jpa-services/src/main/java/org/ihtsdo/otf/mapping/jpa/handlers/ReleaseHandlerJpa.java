@@ -211,6 +211,14 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       mapRecords = mapRecordList.getMapRecords();
     }
 
+    // get all scope concept terminology ids for this project
+    Logger.getLogger(getClass()).info("  Get scope concepts for map project");
+    Set<String> scopeConceptTerminologyIds = new HashSet<>();
+    for (final SearchResult sr : mappingService
+        .findConceptsInScope(mapProject.getId(), null).getSearchResults()) {
+      scopeConceptTerminologyIds.add(sr.getTerminologyId());
+    }
+
     // Log config
     Logger.getLogger(getClass())
         .info("  pattern = " + mapProject.getMapRefsetPattern().toString());
@@ -309,8 +317,13 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     // put all map records into the map record map
     for (final MapRecord mr : mapRecords) {
-      if (mr == null)
+      if (mr == null) {
         throw new Exception("Null record found in published list");
+      }
+      // Skip out of scope records
+      if (!scopeConceptTerminologyIds.contains(mr.getConceptId())) {
+        continue;
+      }
       mapRecordMap.put(mr.getConceptId(), mr);
     }
 
@@ -400,6 +413,11 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     final Map<String, ComplexMapRefSetMember> activeMembersMap =
         new HashMap<>();
     for (final MapRecord mapRecord : mapRecords) {
+      // Skip out of scope records
+      if (!scopeConceptTerminologyIds.contains(mapRecord.getConceptId())) {
+        continue;
+      }
+
       Logger.getLogger(getClass())
           .info("    Processing record for " + mapRecord.getConceptId());
 
@@ -2090,17 +2108,19 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         String reportMsg = "Concept not in scope";
 
         // separate error-type by previously-published or this-cycle-edited
-        if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED))
+        if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)) {
           resultMessages.add(reportMsg + " - previously published");
-        else
+        } else {
           resultMessages.add(reportMsg + " - edited this cycle");
-
-        // remove record if flag set
-        if (!testModeFlag) {
-          Logger.getLogger(getClass())
-              .info("    REMOVE out of scope record " + mapRecord.getId());
-          mappingService.removeMapRecord(mapRecord.getId());
         }
+
+        // This happens in "finish release" now.
+        // // remove record if flag set
+        // if (!testModeFlag) {
+        // Logger.getLogger(getClass())
+        // .info(" REMOVE out of scope record " + mapRecord.getId());
+        // mappingService.removeMapRecord(mapRecord.getId());
+        // }
       }
 
       // Add all reported errors to the report
@@ -2201,6 +2221,14 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   @Override
   public void finishRelease() throws Exception {
 
+    // get all scope concept terminology ids for this project
+    Logger.getLogger(getClass()).info("  Get scope concepts for map project");
+    Set<String> scopeConceptTerminologyIds = new HashSet<>();
+    for (final SearchResult sr : mappingService
+        .findConceptsInScope(mapProject.getId(), null).getSearchResults()) {
+      scopeConceptTerminologyIds.add(sr.getTerminologyId());
+    }
+
     if (mapRecords == null || mapRecords.isEmpty()) {
       MapRecordList mapRecordList = mappingService
           .getPublishedAndReadyForPublicationMapRecordsForMapProject(
@@ -2209,7 +2237,20 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       mappingService.setTransactionPerOperation(false);
       mappingService.beginTransaction();
       for (final MapRecord record : mapRecords) {
-        if (record
+
+        // Remove out of scope concepts if not in test mode
+        if (!scopeConceptTerminologyIds.contains(record.getConceptId())) {
+
+          // remove record if flag set
+          if (!testModeFlag) {
+            Logger.getLogger(getClass())
+                .info("    REMOVE out of scope record " + record.getId());
+            mappingService.removeMapRecord(record.getId());
+          }
+        }
+
+        // Mark record as PUBLISHED if READY FOR PUBLICATION and in scope
+        else if (record
             .getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION) {
           Logger.getLogger(getClass()).info("  Update record to PUBLISHED for "
               + record.getConceptId() + " " + record.getConceptName());
@@ -2254,7 +2295,11 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         .getIterable()) {
       Logger.getLogger(getClass()).debug("    Remove member - " + member);
       if (!testModeFlag) {
-        contentService.removeComplexMapRefSetMember(member.getId());
+        if (mapProject.getMapRefsetPattern() != MapRefsetPattern.SimpleMap) {
+          contentService.removeComplexMapRefSetMember(member.getId());
+        } else {
+          contentService.removeSimpleMapRefSetMember(member.getId());
+        }
       }
     }
     contentService.commit();
