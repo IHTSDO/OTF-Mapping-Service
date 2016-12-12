@@ -298,7 +298,7 @@
                         FROM
                         map_entries a, map_records b, map_projects c
                         WHERE c.destinationTerminology != 'ICDO'
-                        a.mapRecord_id = b.id
+                        AND a.mapRecord_id = b.id
                         AND b.mapProjectId = c.id
                         AND
                         targetId != ''

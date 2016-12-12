@@ -183,9 +183,14 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
         props.put("mail.smtp.starttls.enable",
             config.getProperty("mail.smtp.starttls.enable"));
         props.put("mail.smtp.auth", config.getProperty("mail.smtp.auth"));
-        ConfigUtility.sendEmail("[OTF-Mapping-Tool] Drip feed results", from,
-            notificationRecipients, notificationMessage, props,
-            "true".equals(config.getProperty("mail.smtp.auth")));
+        try {
+          ConfigUtility.sendEmail("[OTF-Mapping-Tool] Drip feed results", from,
+              notificationRecipients, notificationMessage, props,
+              "true".equals(config.getProperty("mail.smtp.auth")));
+        } catch (Exception e) {
+          // Don't allow an error here to stop processing
+          e.printStackTrace();
+        }
       }
 
     } catch (Exception e) {
