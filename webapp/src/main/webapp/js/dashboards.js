@@ -814,6 +814,14 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
               title : 'Recently Edited'
             } ]
           } ]
+        }, {
+          columns : [ {
+            class : 'col-md-12',
+            widgets : [ {
+              type : 'qaCheck',
+              title : 'QA Checks'
+            } ]
+          } ]
         } ]
       };
 
