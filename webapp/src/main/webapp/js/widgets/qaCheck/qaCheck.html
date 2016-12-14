@@ -13,7 +13,7 @@
         <td style="padding: 5px;">
           <button
             ng-show="reportDisplayed == null || reportDisplayed.id != null"
-            class="btn btn-sm btn-primary"
+            class="btn btn-xs btn-primary"
             ng-click="generateNewReport(selectedDefinition)">Generate</button>
         </td>
       </tr>
@@ -55,10 +55,10 @@
         <!--  The result items -->
 
         <div>
-          <pagination ng-show="result.nPages > 1" total-items="result.ct"
-            page="result.page" max-size="5" class="pagination-sm"
+          <uib-pagination ng-show="result.nPages > 1" total-items="result.ct"
+            ng-model="result.page" max-size="5" class="pagination-sm"
             boundary-links="true" rotate="true" num-pages="result.nPages"
-            on-select-page="getResultItems(result, page)"></pagination>
+            ng-change="getResultItems(result, page)"></uib-pagination>
         </div>
 
         <table class="table">
@@ -85,10 +85,10 @@
         </table>
       </div>
       <button ng-show="reportDisplayed.results.length > 0"
-        class="btn btn-sm btn-primary"
+        class="btn btn-xs btn-primary"
         ng-click="addToQAWorkflow(reportDisplayed)">Add to QA Workflow</button>
 
-      <button class="btn btn-sm btn-primary"
+      <button class="btn btn-xs btn-primary"
         ng-show="reportDisplayed.results.length > 0"
         ng-click="exportReport(reportDisplayed)">Export</button>
     </div>

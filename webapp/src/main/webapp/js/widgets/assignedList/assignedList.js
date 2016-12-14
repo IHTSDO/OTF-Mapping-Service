@@ -13,7 +13,7 @@ angular
   })
   .controller(
     'assignedListCtrl',
-    function($scope, $rootScope, $http, $location, $modal, localStorageService) {
+    function($scope, $rootScope, $http, $location, $uibModal, localStorageService) {
 
       // on initialization, explicitly assign to null and/or empty array
       $scope.currentUser = null;
@@ -910,7 +910,7 @@ angular
         // NOTE: Record information is shoehorned into searchResult
         // workflow status is contained in terminologyVersion
         var workflowStatus = records[0].terminologyVersion;
-        var modalInstance = $modal
+        var modalInstance = $uibModal
           .open({
             templateUrl : 'js/widgets/assignedList/assignedListFinishOrPublish.html',
             controller : FinishOrPublishWorkModalCtrl,
@@ -998,7 +998,7 @@ angular
 
       };
 
-      var FinishOrPublishWorkModalCtrl = function($scope, $modalInstance, $q, user, project,
+      var FinishOrPublishWorkModalCtrl = function($scope, $uibModalInstance, $q, user, project,
         records, action) {
 
         $scope.user = user;
@@ -1229,7 +1229,7 @@ angular
         };
 
         $scope.done = function() {
-          $modalInstance.close();
+          $uibModalInstance.close();
         };
 
         // get the first record

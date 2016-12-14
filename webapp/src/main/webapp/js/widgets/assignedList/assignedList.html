@@ -1,6 +1,6 @@
 
-<tabset> <tab heading="{{tabs[0].title}}" active="tabs[0].active"
-  select="setTab(0)">
+<uib-tabset> <uib-tab heading="{{tabs[0].title}}"
+  active="tabs[0].active" select="setTab(0)">
 
 <table style="margin-top: 10px;">
   <tr>
@@ -8,9 +8,9 @@
     <td style="padding: 5px;">
       <form>
         <input id="assignedSearch" ng-model="queryAssigned">
-        <button class="btn btn-sm btn-primary"
+        <button class="btn btn-xs btn-primary"
           ng-click="retrieveAssignedWork(1, queryAssigned, assignedWorkType)">Search</button>
-        <button class="btn btn-sm btn-primary"
+        <button class="btn btn-xs btn-primary"
           ng-click="retrieveAssignedWork(1, 'null', assignedWorkType); queryAssigned = null">Reset</button>
       </form>
     </td>
@@ -37,11 +37,10 @@
 
 
 <div ng-show="nAssignedRecords > 0">
-  <pagination ng-show="numAssignedRecordPages > 1"
-    total-items="nAssignedRecords" page="assignedWorkPage" class="pagination-sm"
-    max-size="5" boundary-links="true" rotate="true"
-    num-pages="numAssignedRecordPages"
-    on-select-page="retrieveAssignedWork(page, queryAssigned, assignedWorkType)"></pagination>
+  <uib-pagination ng-show="numAssignedRecordPages > 1"
+    total-items="nAssignedRecords" ng-model="assignedWorkPage"
+    class="pagination-sm" max-size="5" boundary-links="true" rotate="true"
+    ng-change="retrieveAssignedWork(page, queryAssigned, assignedWorkType)"></uib-pagination>
 
 
   <table class="table" style="margin-top: 10px;">
@@ -175,7 +174,7 @@
     concepts found.</div>
 </div>
 
-</tab> <tab heading="{{tabs[1].title}}" active="tabs[1].active" select="setTab(1)"
+</uib-tab> <uib-tab heading="{{tabs[1].title}}" active="tabs[1].active" select="setTab(1)"
   ng-show="(currentRole === 'Lead' || currentRole === 'Administrator') && (focusProject.workflowType === 'CONFLICT_PROJECT' || focusProject.workflowType === 'LEGACY_PATH')">
 
 
@@ -186,9 +185,9 @@
     <td style="padding: 5px;">
       <form>
         <input id="conflictSearch" ng-model="queryConflict">
-        <button class="btn btn-sm btn-primary"
+        <button class="btn btn-xs btn-primary"
           ng-click="retrieveAssignedConflicts(1, queryConflict, assignedConflictType)">Search</button>
-        <button class="btn btn-sm btn-primary"
+        <button class="btn btn-xs btn-primary"
           ng-click="retrieveAssignedConflicts(1, 'null', assignedConflictType); queryConflict = null">Reset</button>
       </form>
     </td>
@@ -220,11 +219,10 @@
 
 <div ng-show="nAssignedConflicts > 0">
 
-  <pagination total-items="nAssignedConflicts"
-    ng-show="numAssignedConflictsPages > 1" page="assignedConflictsPage"
-    class="pagination-sm" boundary-links="true" rotate="true"
-    num-pages="numAssignedConflictsPages" max-size="5"
-    on-select-page="retrieveAssignedConflicts(page, queryConflict, assignedConflictType)"></pagination>
+  <uib-pagination total-items="nAssignedConflicts"
+    ng-show="numAssignedConflictsPages > 1" ng-model="assignedConflictsPage"
+    class="pagination-sm" boundary-links="true" rotate="true" max-size="5"
+    ng-change="retrieveAssignedConflicts(page, queryConflict, assignedConflictType)"></uib-pagination>
 
   <table class="table">
 
@@ -319,7 +317,7 @@
     concepts matched the search.</div>
 </div>
 
-</tab> <tab heading="{{tabs[2].title}}" active="tabs[2].active" select="setTab(2)"
+</uib-tab> <uib-tab heading="{{tabs[2].title}}" active="tabs[2].active" select="setTab(2)"
   ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
 
 <table style="margin-top: 10px; margin-bottom: 10px;">
@@ -328,9 +326,9 @@
     <td style="padding: 5px;">
       <form>
         <input id="reviewSearch" ng-model="queryReviewWork">
-        <button class="btn btn-sm btn-primary"
+        <button class="btn btn-xs btn-primary"
           ng-click="retrieveAssignedReviewWork(1, queryReviewWork, assignedReviewWorkType)">Search</button>
-        <button class="btn btn-sm btn-primary"
+        <button class="btn btn-xs btn-primary"
           ng-click="retrieveAssignedReviewWork(1, 'null', assignedReviewWorkType); queryReviewWork = null">Reset</button>
       </form>
     </td>
@@ -362,11 +360,10 @@
 
 <div ng-show="nAssignedReviewWork > 0">
 
-  <pagination total-items="nAssignedReviewWork"
-    ng-show="numAssignedReviewWorkPages > 1" page="assignedReviewWorkPage"
-    class="pagination-sm" boundary-links="true" rotate="true"
-    num-pages="numAssignedReviewWorkPages" max-size="5"
-    on-select-page="retrieveAssignedReviewWork(page, queryReviewWork, assignedReviewWorkType)"></pagination>
+  <uib-pagination total-items="nAssignedReviewWork"
+    ng-show="numAssignedReviewWorkPages > 1" ng-model="assignedReviewWorkPage"
+    class="pagination-sm" boundary-links="true" rotate="true" max-size="5"
+    ng-change="retrieveAssignedReviewWork(page, queryReviewWork, assignedReviewWorkType)"></uib-pagination>
 
   <table class="table">
 
@@ -456,7 +453,7 @@
 </div>
 
 
-</tab> <tab heading="{{tabs[3].title}}" active="tabs[3].active" select="setTab(3)"
+</uib-tab> <uib-tab heading="{{tabs[3].title}}" active="tabs[3].active" select="setTab(3)"
   ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
 
 
@@ -475,9 +472,9 @@
     <td style="padding: 5px;">
       <form>
         <input id="assignedForUserSearch" ng-model="queryAssignedForUser">
-        <button class="btn btn-sm btn-primary"
+        <button class="btn btn-xs btn-primary"
           ng-click="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssignedForUser, assignedWorkForUserType)">Search</button>
-        <button class="btn btn-sm btn-primary"
+        <button class="btn btn-xs btn-primary"
           ng-click="retrieveAssignedWorkForUser(1, mapUserViewed.userName, 'null', assignedWorkForUserType); queryAssignedForUser = null">Reset</button>
       </form>
     </td>
@@ -501,11 +498,11 @@
   </tr>
 </table>
 
-<pagination ng-show="mapUserViewed != null && numAssignedRecordPagesForUser > 1"
-  total-items="nAssignedRecordsForUser" page="assignedWorkPageForUser"
+<uib-pagination
+  ng-show="mapUserViewed != null && numAssignedRecordPagesForUser > 1"
+  total-items="nAssignedRecordsForUser" ng-model="assignedWorkPageForUser"
   class="pagination-sm" max-size="5" boundary-links="true" rotate="true"
-  num-pages="numAssignedRecordPagesForUser"
-  on-select-page="retrieveAssignedWorkForUser(page, mapUserViewed.userName, queryAssignedForUser, assignedWorkForUserType)"></pagination>
+  ng-change="retrieveAssignedWorkForUser(page, mapUserViewed.userName, queryAssignedForUser, assignedWorkForUserType)"></uib-pagination>
 
 <!--  do not display controls if no records are assigned and the query term is null and a map user is selected-->
 <div style="padding: 10px;" ng-show="nAssignedRecordsForUser == 0">
@@ -549,7 +546,7 @@
 
 
 </table>
-</tab> <tab heading="{{tabs[4].title}}" active="tabs[4].active" select="setTab(4)">
+</uib-tab> <uib-tab heading="{{tabs[4].title}}" active="tabs[4].active" select="setTab(4)">
 
 
 
@@ -562,9 +559,9 @@
         <datalist id="qa-labels">
           <option ng-repeat="lbl in labelNames" value="{{lbl}}">{{lbl}}</option>
         </datalist>
-        <button class="btn btn-sm btn-primary"
+        <button class="btn btn-xs btn-primary"
           ng-click="retrieveAssignedQAWork(1, queryQaWork, assignedQAWorkType);">Search</button>
-        <button class="btn btn-sm btn-primary"
+        <button class="btn btn-xs btn-primary"
           ng-click="queryQaWork = null; retrieveAssignedQAWork(1, '', assignedQAWorkType); queryQaWork = '';">Reset</button>
       </form>
     </td>
@@ -595,10 +592,10 @@
 
 <div ng-show="nAssignedQAWork > 0">
 
-  <pagination total-items="nAssignedQAWork" ng-show="numAssignedQAWorkPages > 1"
-    page="assignedQAWorkPage" class="pagination-sm" boundary-links="true"
-    rotate="true" num-pages="numAssignedQAWorkPages" max-size="5"
-    on-select-page="retrieveAssignedQAWork(page, queryQAWork, assignedQAWorkType)"></pagination>
+  <uib-pagination total-items="nAssignedQAWork" ng-show="numAssignedQAWorkPages > 1"
+    ng-model="assignedQAWorkPage" class="pagination-sm" boundary-links="true"
+    rotate="true" max-size="5"
+    ng-change="retrieveAssignedQAWork(page, queryQAWork, assignedQAWorkType)"></uib-pagination>
 
   <table class="table">
 
@@ -675,7 +672,7 @@
         <td style="width: 77%; padding: 5px;">{{result.name}}</td>
         <td style="width: 3%; padding: 5px;">
           <a title="Labels" ng-show="result.labels.length > 0"
-            tooltip-placement="top" tooltip="{{result.labels}}"
+            tooltip-placement="top" uib-tooltip="{{result.labels}}"
             style="float: right; margin-right: 5px;">
             <i class="glyphicon glyphicon-tasks"></i>
           </a>
@@ -693,6 +690,4 @@
   </table>
 
 </div>
-
-
-</tab> </tabset>
+</uib-tab> </uib-tabset>

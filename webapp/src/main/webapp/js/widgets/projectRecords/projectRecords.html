@@ -17,17 +17,16 @@
   <a style="margin-left: 5px; margin-right: 10px;"
     ng-click="toggleAdvancedSearch()">
     <i class="glyphicon glyphicon-cog"></i>
-  </a> 
-   <a style="margin-right: 10px;" title='Open Index Viewer' ng-show="indexViewerExists == true">
-        <i ng-click="openIndexViewer()" class="glyphicon glyphicon-book"></i>
-      </a> 
+  </a>
+  <a style="margin-right: 10px;" title='Open Index Viewer'
+    ng-show="indexViewerExists == true">
+    <i ng-click="openIndexViewer()" class="glyphicon glyphicon-book"></i>
+  </a>
   <input type="submit" value="Search" ng-click="retrieveRecords(1)"> <input
     type="submit" value="Reset" ng-click="resetSearch()"> <input
     type="submit" style="margin-left: 5px; margin-right: 5px" value="QA Records"
     ng-show="(currentRole == 'Specialist' || currentRole == 'Lead') && nRecords > 0 && nRecords < qaRecordLimit"
-    ng-click="openQaRecordsModal()">
-   
-     &nbsp;&nbsp; {{nRecords}} results,
+    ng-click="openQaRecordsModal()"> &nbsp;&nbsp; {{nRecords}} results,
   page {{searchParameters.page}} of {{numRecordPages}}
 
   <div ng-show="searchParameters.advancedMode">
@@ -65,8 +64,8 @@
           ng-show="searchParameters.targetIdRangeStart || searchParameters.targetIdRangeEnd"></i>
       </div>
       <div class="col-md-9">
-        <input ng-model="searchParameters.targetIdRangeStart"> to 
-        <input ng-model="searchParameters.targetIdRangeEnd">
+        <input ng-model="searchParameters.targetIdRangeStart"> to <input
+          ng-model="searchParameters.targetIdRangeEnd">
       </div>
     </div>
     <div class="row" style="padding: 5px;">
@@ -101,9 +100,10 @@
 
 
 
-<pagination total-items="nRecords" page="searchParameters.page" max-size="10"
-  class="pagination-sm" boundary-links="true" rotate="true"
-  num-pages="numRecordPages" on-select-page="retrieveRecords(page)"></pagination>
+<pagination total-items="nRecords" ng-model="searchParameters.page"
+  max-size="10" class="pagination-sm" boundary-links="true" rotate="true"
+  num-pages="numRecordPages" ng-change="retrieveRecords(page)">
+</uib-pagination>
 
 
 
@@ -129,11 +129,9 @@
 </div>
 
 
-<pagination total-items="nRecords" page="searchParameters.page" max-size="10"
-  class="pagination-sm" boundary-links="true" rotate="true"
-  num-pages="numRecordPages" on-select-page="retrieveRecords(page)"></pagination>
+<pagination total-items="nRecords" ng-model="searchParameters.page"
+  max-size="10" class="pagination-sm" boundary-links="true" rotate="true"
+  num-pages="numRecordPages" ng-change="retrieveRecords(page)">
+</uib-pagination>
 
 <div ng-include src="'./partials/footer.html'"></div>
-
-
-

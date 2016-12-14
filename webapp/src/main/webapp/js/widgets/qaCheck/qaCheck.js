@@ -11,7 +11,7 @@ angular.module('mapProjectApp.widgets.qaCheck', [ 'adf.provider' ]).config(
     });
   }).controller(
   'qaCheckCtrl',
-  function($scope, $rootScope, $http, $location, $modal, $sce, localStorageService) {
+  function($scope, $rootScope, $http, $location, $uibModal, $sce, localStorageService) {
 
     // initialize as empty to indicate still initializing
     // database connection

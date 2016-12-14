@@ -13,15 +13,15 @@
 <div ng-show="recordsInProject.length > 0 || historicalRecords.length > 0">
 
   <h4>
-    <button class="btn btn-sm btn-primary" ng-click="goMapRecords()">Map
+    <button class="btn btn-xs btn-primary" ng-click="goMapRecords()">Map
       Records</button>
-    <button class="btn btn-sm btn-primary" ng-click="openConceptBrowser()">SNOMED
+    <button class="btn btn-xs btn-primary" ng-click="openConceptBrowser()">SNOMED
       CT Browser</button>
-    <button class="btn btn-sm btn-primary" ng-show="indexViewerExists == true"
+    <button class="btn btn-xs btn-primary" ng-show="indexViewerExists == true"
       ng-click="openIndexViewer()">Index Viewer</button>
     <span style="display: inline" class="dropdown"
       ng-show="concept.relationship.length > 0">
-      <button class="dropdown-toggle btn btn-sm btn-primary">Parents</button>
+      <button class="dropdown-toggle btn btn-xs btn-primary">Parents</button>
       <ul class="dropdown-menu">
         <b>Parents</b>
         <li
@@ -33,7 +33,7 @@
     </span>
     <span style="display: inline" class="dropdown"
       ng-show="concept.children.length > 0">
-      <button class="dropdown-toggle btn btn-sm btn-primary">Children</button>
+      <button class="dropdown-toggle btn btn-xs btn-primary">Children</button>
       <ul class="dropdown-menu">
         <b>Children</b>
         <li ng-repeat="concept in concept.children | orderBy: 'value'"><a
