@@ -15,17 +15,17 @@ angular
     'mapEntryWidgetCtrl',
     [
       '$scope',
+      '$window',
       '$rootScope',
       '$q',
       '$http',
       '$routeParams',
-      '$modal',
+      '$uibModal',
       '$location',
       '$anchorScroll',
       'localStorageService',
-      '$window',
-      function($scope, $rootScope, $q, $http, $routeParams, $modal, $location, $anchorScroll,
-        localStorageService, $window) {
+      function($scope, $window, $rootScope, $q, $http, $routeParams, $uibModal, $location,
+        $anchorScroll, localStorageService) {
 
         // for this widget, the only local storage service variable used is
         // user
@@ -145,7 +145,7 @@ angular
 
           // scroll to (mapEntry left, mapEntry top + scroll offset -
           // header/widget header width)
-          window.scrollTo(rect.left, rect.top + window.pageYOffset - 90);
+          $window.scrollTo(rect.left, rect.top + window.pageYOffset - 90);
 
           $scope.entry.targetId = parameters.concept.terminologyId;
           $scope.entry.targetName = parameters.concept.defaultPreferredName;
@@ -357,7 +357,7 @@ angular
           // clear any error regarding rule construction
           $scope.localErrorRule = '';
 
-          var modalInstance = $modal.open({
+          var modalInstance = $uibModal.open({
             templateUrl : 'partials/rule-modal.html',
             controller : RuleConstructorModalCtrl,
             resolve : {
@@ -426,7 +426,7 @@ angular
         };
 
         // controller for the modal
-        var RuleConstructorModalCtrl = function($scope, $http, $modalInstance, presetAgeRanges,
+        var RuleConstructorModalCtrl = function($scope, $http, $uibModalInstance, presetAgeRanges,
           entry) {
 
           $scope.ruleError = '';
@@ -463,11 +463,11 @@ angular
           $scope.rule = entry.rule;
 
           $scope.saveRule = function() {
-            $modalInstance.close($scope.rule, $scope.ruleSummary);
+            $uibModalInstance.close($scope.rule, $scope.ruleSummary);
           };
 
           $scope.cancelRule = function() {
-            $modalInstance.dismiss('cancel');
+            $uibModalInstance.dismiss('cancel');
           };
 
           // alter the rule category, and construct

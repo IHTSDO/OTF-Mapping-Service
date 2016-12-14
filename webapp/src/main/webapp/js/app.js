@@ -3,7 +3,8 @@
 // Declare app level module
 var mapProjectApp = angular.module(
   'mapProjectApp',
-  [ 'ngRoute', 'mapProjectAppControllers', 'adf', 'mapProjectApp.widgets.metadataList',
+  [ 'ngRoute', 'ui.bootstrap', 'ui.tree', 'ngFileUpload', 'ui.tinymce', 'ngCookies',
+    'mapProjectAppControllers', 'adf', 'mapProjectApp.widgets.metadataList',
     'mapProjectApp.widgets.mapProject', 'mapProjectApp.widgets.mapRecord',
     'mapProjectApp.widgets.mapEntry', 'mapProjectApp.widgets.assignedList',
     'mapProjectApp.widgets.editedList', 'mapProjectApp.widgets.workAvailable',
@@ -13,8 +14,7 @@ var mapProjectApp = angular.module(
     'mapProjectApp.widgets.recordAdmin', 'mapProjectApp.widgets.feedback',
     'mapProjectApp.widgets.feedbackConversation', 'mapProjectApp.widgets.applicationAdmin',
     'mapProjectApp.widgets.report', 'mapProjectApp.widgets.qaCheck',
-    'mapProjectApp.widgets.indexViewer', 'LocalStorageModule', 'ngCookies', 'ui.tinymce',
-    'angularjs-dropdown-multiselect', 'angularFileUpload', 'ui.tree' ]).value('prefix', '').config(
+    'mapProjectApp.widgets.indexViewer', 'LocalStorageModule' ]).value('prefix', '').config(
   function(dashboardProvider) {
 
     dashboardProvider.structure('6-6', {

@@ -35,7 +35,7 @@ angular
   })
   .controller(
     'projectRecordsCtrl',
-    function($scope, $rootScope, $http, $routeParams, $location, $modal, $q, localStorageService,
+    function($scope, $rootScope, $http, $routeParams, $location, $uibModal, $q, localStorageService,
       $sce, appConfig) {
       $scope.appConfig = appConfig;
       $scope.page = 'records';
@@ -440,7 +440,7 @@ angular
       };
 
       $scope.openViewerFeedbackModal = function(lrecord, currentUser) {
-        var modalInstance = $modal.open({
+        var modalInstance = $uibModal.open({
           templateUrl : 'js/widgets/projectRecords/projectRecordsViewerFeedback.html',
           controller : ViewerFeedbackModalCtrl,
           resolve : {
@@ -455,7 +455,7 @@ angular
 
       };
 
-      var ViewerFeedbackModalCtrl = function($scope, $modalInstance, record) {
+      var ViewerFeedbackModalCtrl = function($scope, $uibModalInstance, record) {
         console.debug('Entered modal control', record);
 
         $scope.record = record;
@@ -500,9 +500,9 @@ angular
           }).success(function(data) {
             console.debug('success to sendFeedbackEmail.');
             $rootScope.glassPane--;
-            $modalInstance.close();
+            $uibModalInstance.close();
           }).error(function(data, status, headers, config) {
-            $modalInstance.close();
+            $uibModalInstance.close();
             $scope.recordError = 'Error sending feedback email.';
             $rootScope.glassPane--;
             $rootScope.handleHttpError(data, status, headers, config);
@@ -511,7 +511,7 @@ angular
         };
 
         $scope.cancel = function() {
-          $modalInstance.dismiss('cancel');
+          $uibModalInstance.dismiss('cancel');
         };
 
         function validateEmail(email) {
@@ -679,7 +679,7 @@ angular
                   .handleError('Mismatch between QA record retrieval and existing results. Aborting QA.');
               } else {
 
-                var modalInstance = $modal.open({
+                var modalInstance = $uibModal.open({
                   templateUrl : 'js/widgets/projectRecords/qa-records.html',
                   controller : QaRecordsCtrl,
                   resolve : {
@@ -704,7 +704,7 @@ angular
       };
 
       // QA records modal controller
-      var QaRecordsCtrl = function($scope, $modalInstance, $q, utilService, records) {
+      var QaRecordsCtrl = function($scope, $uibModalInstance, $q, utilService, records) {
         console.debug('Entered modal control', records);
 
         if (records.length == 0) {
@@ -740,7 +740,7 @@ angular
 
         // Close
         $scope.close = function() {
-          $modalInstance.close();
+          $uibModalInstance.close();
         };
 
         // Create QA records
