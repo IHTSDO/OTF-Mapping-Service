@@ -532,6 +532,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
 
   $scope.appConfig = appConfig;
   $scope.model = null;
+  $scope.editMode = false;
 
   // On initialization, reset all values to null -- used to
   // ensure watch
@@ -549,7 +550,6 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
   $scope.currentUser = localStorageService.get('currentUser');
   $scope.preferences = localStorageService.get('preferences');
   $scope.focusProject = localStorageService.get('focusProject');
-
   // on project and user retrieval, retrieve the role
   $scope.$watch([ 'focusProject, currentUser' ], function() {
 
@@ -566,22 +566,15 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-
         var role = null;
-        var ldata = new String(data);
 
-        // strip quotes off of data
-        while (ldata.indexOf('\"') != -1) {
-          ldata = ldata.replace('\"', '');
-        }
-
-        if (ldata === 'VIEWER')
+        if (data === 'VIEWER')
           role = 'Viewer';
-        else if (ldata === 'SPECIALIST')
+        else if (data === 'SPECIALIST')
           role = 'Specialist';
-        else if (ldata === 'LEAD')
+        else if (data === 'LEAD')
           role = 'Lead';
-        else if (ldata === 'ADMINISTRATOR')
+        else if (data === 'ADMINISTRATOR')
           role = 'Administrator';
         else
           role = 'Viewer';
@@ -632,7 +625,8 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
 
   // on successful user retrieval, construct the dashboard
   $scope.$watch([ 'preferences' ], function() {
-    console.debug('dashboardCtrl:  Preferences or role changed');
+    console.debug('dashboardCtrl:  Preferences or role changed = ', $scope.preferences,
+      $scope.currentRole);
 
     if ($scope.preferences == null) {
       return;
@@ -916,20 +910,20 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
           columns : [ {
             class : 'col-md-12',
             widgets : [ {
-              type : 'recordAdmin',
-              config : {},
-              title : 'Record Administration'
-            } ]
-          } ]
-
-        }, {
-          columns : [ {
-            class : 'col-md-12',
-            widgets : [ {
               type : 'applicationAdmin',
               config : {},
               title : 'Application Administration'
             } ]
+          }, {
+            columns : [ {
+              class : 'col-md-12',
+              widgets : [ {
+                type : 'recordAdmin',
+                config : {},
+                title : 'Record Administration'
+              } ]
+            } ]
+
           } ]
 
         }, {

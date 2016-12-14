@@ -10,15 +10,15 @@
 
   <hr>
 
-  <button class="btn btn-sm btn-primary" ng-click="copyAdminProject()">Copy</button>
-  <button ng-show="editingPerformed == true" class="btn btn-sm btn-primary"
+  <button class="btn btn-xs btn-primary" ng-click="copyAdminProject()">Copy</button>
+  <button ng-show="editingPerformed == true" class="btn btn-xs btn-primary"
     ng-click="updateAdminProject()">Update</button>
   <div ng-show="editingPerformed == true" class="alert alert-warning"
     style="width: 25%; display: inline;">Unsaved Changes</div>
   <div ng-show="successMsg != null" class="alert alert-success"
     style="width: 25%; display: inline">{{successMsg}}</div>
 
-  <button class="btn btn-sm btn-danger pull-right"
+  <button class="btn btn-xs btn-danger pull-right"
     ng-click="deleteAdminProject()">Delete Project {{adminProject.id}}</button>
 
   <hr>
@@ -27,7 +27,7 @@
       <tr>
         <td width="18%">
           <div tooltip-placement="right"
-            tooltip="Display name of this map project.">
+            uib-tooltip="Display name of this map project.">
             <b>Name</b>
           </div>
         </td>
@@ -38,7 +38,7 @@
       <tr>
         <td width="18%">
           <div tooltip-placement="right"
-            tooltip="Abbreviation and version information for the terminology this map adminProject is mapping from.">
+            uib-tooltip="Abbreviation and version information for the terminology this map adminProject is mapping from.">
             <b>Source Terminology</b>
           </div>
         </td>
@@ -53,7 +53,7 @@
       <tr>
         <td width="18%">
           <div tooltip-placement="right"
-            tooltip="Abbreviation and version information for the terminology this map adminProject is mapping to.">
+            uib-tooltip="Abbreviation and version information for the terminology this map adminProject is mapping to.">
             <b>Destination Terminology</b>
           </div>
         </td>
@@ -68,7 +68,7 @@
       <tr>
         <td width="18%">
           <div tooltip-placement="right"
-            tooltip="The RF2 metadata concept identifier and preferred name representing this map adminProject.">
+            uib-tooltip="The RF2 metadata concept identifier and preferred name representing this map adminProject.">
             <b>Ref Set</b>
           </div>
         </td>
@@ -89,7 +89,7 @@
       <tr>
         <td>
           <div tooltip-placement="right"
-            tooltip="A true/false indicator of whether this mapping data has been published.">
+            uib-tooltip="A true/false indicator of whether this mapping data has been published.">
             <b>Published</b>
           </div>
         </td>
@@ -103,7 +103,7 @@
       <tr>
         <td>
           <div tooltip-placement="right"
-            tooltip="A true/false indicator of whether this map adminProject has multiple mappings for the same source concept.">
+            uib-tooltip="A true/false indicator of whether this map adminProject has multiple mappings for the same source concept.">
             <b>Group Structure</b>
           </div>
         </td>
@@ -116,7 +116,7 @@
       <tr>
         <td>
           <div tooltip-placement="right"
-            tooltip="A true/false indicator of whether this map adminProject uses rules other than TRUE">
+            uib-tooltip="A true/false indicator of whether this map adminProject uses rules other than TRUE">
             <b>Rule Based</b>
           </div>
         </td>
@@ -130,7 +130,7 @@
       <tr>
         <td>
           <div tooltip-placement="right"
-            tooltip="The method by which this adminProject uses the map relation (i.e. map record based, relationship based)">
+            uib-tooltip="The method by which this adminProject uses the map relation (i.e. map record based, relationship based)">
             <b>Relation Style</b>
           </div>
         </td>
@@ -142,7 +142,7 @@
       <tr>
         <td>
           <div tooltip-placement="right"
-            tooltip="The type of mapping this adminProject uses (i.e. simple, complex, extended)">
+            uib-tooltip="The type of mapping this adminProject uses (i.e. simple, complex, extended)">
             <b>Map Type</b>
           </div>
         </td>
@@ -154,7 +154,7 @@
       <tr>
         <td>
           <div tooltip-placement="right"
-            tooltip="The type of workflow this adminProject uses (i.e. conflict, review)">
+            uib-tooltip="The type of workflow this adminProject uses (i.e. conflict, review)">
             <b>Workflow Type</b>
           </div>
         </td>

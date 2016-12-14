@@ -35,20 +35,20 @@
         </li>
         <li>
           <!-- Focus Project tool -->
-          <div class="navbar-text dropdown"
+          <div class="navbar-text dropdown" uib-dropdown
             ng-show="currentUser.name != null && page != 'indexViewerDashboard'">
 
-            <div class="dropdown-toggle" style="cursor: pointer;">
+            <div class="dropdown-toggle" uib-dropdown-toggle
+              style="cursor: pointer;">
               Project: {{focusProject.name}} &nbsp;
               <a title="Change Focus Project">
                 <i class="glyphicon glyphicon-edit"></i>
               </a>
             </div>
-            <div class="dropdown-menu"
+            <div class="dropdown-menu" uib-dropdown-menu
               style="position: absolute; width: 350px; text-align: right; padding: 15px;">
               <div ng-repeat="mapProject in mapProjects">
-                <span
-                  ng-click="changeFocusProject(mapProject); alert('clicked');">
+                <span ng-click="changeFocusProject(mapProject); ">
                   &nbsp;&nbsp;
                   <a>{{mapProject.name}}</a>
                   &nbsp;&nbsp;

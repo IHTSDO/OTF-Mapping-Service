@@ -7,20 +7,24 @@
     <div id="content-left">
       <strong>Enter User and Password</strong><br>
       <form>
-        <input autofocus style="margin-top: 5px;" id="userField" ng-model="userName"
-          type="text" placeholder="Username" /><br> <input
+        <input autofocus style="margin-top: 5px;" id="userField"
+          ng-model="userName" type="text" placeholder="Username" /><br> <input
           style="margin-top: 5px;" id="passwordField" type="password"
           placeholder="Password" ng-model="password" /><br>
-        <button style="margin-top: 10px;" id ="userLoginButton" type="submit"
-          ng-click="go('/viewer/dash')">Login</button>
-        <p><a href="{{appConfig['deploy.reset.password.link']}}">Forgot Password?</a></p>
+        <button class="btn btn-xs btn-primary" style="margin-top: 10px;"
+          id="userLoginButton" type="submit" ng-click="go('/viewer/dash')">Login</button>
+        <p>
+          <a href="{{appConfig['deploy.reset.password.link']}}">Forgot
+            Password?</a>
+        </p>
       </form>
     </div>
     <div id="content-main"></div>
 
     <div id="content-right">
       <strong>View Maps as a Guest</strong><br>
-      <button style="margin-top: 10px;" type="submit" id ="guestLoginButton"
+      <button class="btn btn-xs btn-primary" style="margin-top: 10px;"
+        type="submit" id="guestLoginButton"
         ng-click="goGuest('/project/records')">View Maps</button>
     </div>
 

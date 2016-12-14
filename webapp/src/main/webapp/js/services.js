@@ -18,10 +18,11 @@ mapProjectApp
     'utilService',
     [
       '$rootScope',
+      '$window',
       '$location',
       '$anchorScroll',
       '$http',
-      function($rootScope, $location, $anchorScroll, $http) {
+      function($rootScope, $window, $location, $anchorScroll, $http) {
         console.debug('configure utilService');
         // declare the error
         this.error = {
@@ -56,7 +57,7 @@ mapProjectApp
         function handleError(message) {
           this.handleError(message);
         }
-        
+
         this.handleError = function(message) {
           if (message && message.length > 120) {
             $rootScope.globalError = 'Unexpected error, click the icon to view attached full error';
@@ -74,7 +75,7 @@ mapProjectApp
             $location.path('/');
           } else {
             // scroll to top of page
-            window.scrollTo(0, 0);
+            $window.scrollTo(0, 0);
           }
         };
 

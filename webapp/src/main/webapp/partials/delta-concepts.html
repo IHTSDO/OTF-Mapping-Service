@@ -12,9 +12,9 @@
     <td style="padding: 5px;">
       <form>
         <input id="conceptSearch" ng-model="queryConcepts">
-        <button class="btn btn-sm btn-primary"
+        <button class="btn btn-xs btn-primary"
           ng-click="getConcepts(1, queryConcepts)">Search</button>
-        <button class="btn btn-sm btn-primary"
+        <button class="btn btn-xs btn-primary"
           ng-click="getConcepts(1, null); queryConcepts = null">Reset</button>
       </form>
     </td>
@@ -24,11 +24,12 @@
     <td style="padding: 5px;">{{nConcepts}} matching concepts.</td>
   </tr>
   <tr>
-    <td style="padding: 5px;" colspan=2><pagination
-        ng-show="nConcepts > pageSize" total-items="nConcepts" page="page"
-        class="pagination-sm" max-size="5" boundary-links="true" rotate="true"
-        num-pages="numConceptPages"
-        on-select-page="getConcepts(page, queryConcepts)"></pagination></td>
+    <td style="padding: 5px;" colspan=2>
+      <uib-pagination ng-show="nConcepts > pageSize" total-items="nConcepts"
+        ng-model="page" class="pagination-sm" max-size="5" boundary-links="true"
+        rotate="true" num-pages="numConceptPages"
+        ng-change="getConcepts(page, queryConcepts)"></uib-pagination>
+    </td>
   </tr>
 </table>
 

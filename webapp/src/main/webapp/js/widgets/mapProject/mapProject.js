@@ -12,7 +12,7 @@ angular
   })
   .controller(
     'MapProjectWidgetCtrl',
-    function($scope, $http, $rootScope, $location, $modal, localStorageService) {
+    function($scope, $http, $rootScope, $location, $uibModal, localStorageService) {
 
       // get the local storage variables
       $scope.project = localStorageService.get('focusProject');
@@ -130,7 +130,7 @@ angular
 
       $scope.showDelta = function() {
 
-        var modalInstance = $modal.open({
+        var modalInstance = $uibModal.open({
           templateUrl : 'partials/delta-concepts.html',
           controller : ShowDeltaModalCtrl,
           resolve : {
@@ -167,7 +167,7 @@ angular
         });
       };
 
-      var ShowDeltaModalCtrl = function($scope, $http, $modalInstance, terminology, version) {
+      var ShowDeltaModalCtrl = function($scope, $http, $uibModalInstance, terminology, version) {
 
         $scope.pageSize = 10;
         $scope.terminology = terminology; // used
@@ -175,7 +175,7 @@ angular
         // title
 
         $scope.close = function() {
-          $modalInstance.close();
+          $uibModalInstance.close();
         };
 
         $scope.getConcepts = function(page, filter) {
