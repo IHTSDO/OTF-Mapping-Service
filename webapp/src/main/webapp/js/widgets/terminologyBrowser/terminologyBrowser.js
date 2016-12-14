@@ -253,6 +253,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
     // function to get the root nodes
     $scope.getRootTree = function() {
       console.debug('get root tree');
+      return;
       $rootScope.glassPane++;
       $http({
         url : root_mapping + 'treePosition/project/id/' + $scope.focusProject.id + '/destination',
@@ -261,7 +262,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
           'Content-Type' : 'application/json'
         }
       }).success(function(response) {
-        console.debug('  tree = ' + response.date);
+        console.debug('  tree = ', response);
         $rootScope.glassPane--;
         $scope.terminologyTree = response.treePosition;
         for (var i = 0; i < $scope.terminologyTree; i++) {
@@ -402,7 +403,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
               'Content-Type' : 'application/json'
             }
           }).success(function(response) {
-          console.debug('  tree = ', response.data);
+          console.debug('  tree = ', response);
           $rootScope.glassPane--;
           deferred.resolve(response);
         }).error(function(data, status, headers, config) {

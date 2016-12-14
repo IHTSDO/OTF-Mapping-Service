@@ -18,16 +18,16 @@ angular
     'mapRecordWidgetCtrl',
     [
       '$scope',
+      '$window',
       '$rootScope',
       '$http',
       '$routeParams',
       '$location',
       '$sce',
-      '$modal',
-      '$window',
+      '$uibModal',
       'localStorageService',
       'utilService',
-      function($scope, $rootScope, $http, $routeParams, $location, $sce, $modal, $window,
+      function($scope, $window, $rootScope, $http, $routeParams, $location, $sce, $uibModal,
         localStorageService, utilService) {
 
         // ///////////////////////////////////
@@ -550,7 +550,7 @@ angular
           // adds entry as
           // well
 
-          window.scrollTo(0, 0);
+          $window.window.scrollTo(0, 0);
 
           broadcastRecord();
         };

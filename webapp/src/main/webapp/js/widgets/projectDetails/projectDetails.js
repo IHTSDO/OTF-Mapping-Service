@@ -76,9 +76,8 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
     '$rootScope',
     '$location',
     'localStorageService',
-    '$upload',
     '$q',
-    function($scope, $http, $sce, $rootScope, $location, localStorageService, $upload, $q) {
+    function($scope, $http, $sce, $rootScope, $location, localStorageService, $q) {
 
       $scope.page = 'project';
 
@@ -1615,23 +1614,23 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         for (var i = 0; i < $files.length; i++) {
           var $file = $files[i];
           $rootScope.glassPane++;
-          $upload.upload({
-            url : root_mapping + 'upload/' + $scope.focusProject.id,
-            file : $file,
-            progress : function(e) {
-              // n/a
-            }
-          }).error(function(data, status, headers, config) {
-            // file is not uploaded successfully
-            $scope.recordError = 'Error updating map project.';
-            $rootScope.handleHttpError(data, status, headers, config);
-            $rootScope.glassPane--;
-          }).success(function(data) {
-            // file is uploaded successfully
-            confirm('The mapping principle handbook file upload is complete.');
-            $rootScope.glassPane--;
-            $scope.focusProject.mapPrincipleSourceDocument = data.substring(1, data.length - 1);
-          });
+          // $upload.upload({
+          // url : root_mapping + 'upload/' + $scope.focusProject.id,
+          // file : $file,
+          // progress : function(e) {
+          // // n/a
+          // }
+          // }).error(function(data, status, headers, config) {
+          // // file is not uploaded successfully
+          // $scope.recordError = 'Error updating map project.';
+          // $rootScope.handleHttpError(data, status, headers, config);
+          // $rootScope.glassPane--;
+          // }).success(function(data) {
+          // // file is uploaded successfully
+          // confirm('The mapping principle handbook file upload is complete.');
+          // $rootScope.glassPane--;
+          //            $scope.focusProject.mapPrincipleSourceDocument = data.substring(1, data.length - 1);
+          //          });
         }
       };
 

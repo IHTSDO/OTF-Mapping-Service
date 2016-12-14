@@ -16,7 +16,7 @@ angular
 
   .controller(
     'workAvailableWidgetCtrl',
-    function($scope, $rootScope, $http, $routeParams, $modal, $location, localStorageService) {
+    function($scope, $rootScope, $http, $routeParams, $uibModal, $location, localStorageService) {
 
       // local variables
       $scope.batchSizes = [ 100, 50, 25, 10, 5 ];

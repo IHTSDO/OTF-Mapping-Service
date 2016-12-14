@@ -1,8 +1,8 @@
 
-<form>
+<form ng-submit="search()">
   <input ng-model="query" autofocus>
-  <button ng-show="query" ng-click="search()">Search</button>
-  <button ng-show="query" ng-click="clearSearch()">Reset</button>
+  <button type="submit" class="btn btn-xs btn-primary">Search</button>
+  <span class="btn btn-xs btn-warning" ng-show="query" ng-click="clearSearch()">Reset</span>
   <!-- Don't use these for now - not working properly
   <button ng-show="searchBackAllowed == true" ng-click="changeSearch(-1)">
     <i class="glyphicon glyphicon-arrow-left"></i>
@@ -19,12 +19,12 @@
       ng-click="toggleListMode()" title="Switch to tree view"></i>
     &nbsp;&nbsp;
     <i class="pull-right glyphicon glyphicon-th-list"
-      tooltip="Currently in list mode"></i>
+      uib-tooltip="Currently in list mode"></i>
   </span>
   <span ng-show="!listMode">
     <i style="margin-right: 20px"
       class="pull-right glyphicon glyphicon-tree-conifer"
-      tooltip="Currently in tree mode"></i>
+      uib-tooltip="Currently in tree mode"></i>
     &nbsp;&nbsp;
     <i class="pull-right noul glyphicon glyphicon-th-list"
       title="Switch to list view" ng-click="toggleListMode()"></i>
@@ -44,11 +44,11 @@
 
     <span style="display: block;">
 
-      <pagination total-items="searchResults.length" previous-text="&lsaquo;"
-        next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
-        page="paging['search'].page" max-size="5" class="pagination-sm"
-        boundary-links="true" rotate="true"
-        on-select-page="getPagedSearchResults()"></pagination>
+      <uib-pagination total-items="searchResults.length"
+        previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;"
+        last-text="&raquo;" ng-model="paging['search'].page" max-size="5"
+        class="pagination-sm" boundary-links="true" rotate="true"
+        ng-change="getPagedSearchResults()"></uib-pagination>
 
     </span>
 
@@ -89,8 +89,7 @@
             {{node0.defaultPreferredName}} </span>
         </div>
 
-
-        <div collapse="!(node0.isConceptOpen)">
+        <div uib-collapse="!(node0.isConceptOpen)">
 
           <div class="well well-sm">
 
@@ -118,7 +117,7 @@
 
                   <div ng-show="truncated(treePositionDescription.name)"
                     class="well well-sm"
-                    collapse="treePositionDescription.isCollapsed == true || treePositionDescription.isCollapsed == undefined || treePositionDescription.isCollapsed == null">
+                    uib-collapse="treePositionDescription.isCollapsed == true || treePositionDescription.isCollapsed == undefined || treePositionDescription.isCollapsed == null">
                     {{treePositionDescription.name}}</div>
                 </li>
               </ul>
@@ -152,7 +151,7 @@
                 class="dropdown-menu term-browser-dropdown-menu">
                 {{node1.defaultPreferredName}} </span>
             </div>
-            <div collapse="!(node1.isConceptOpen)">
+            <div uib-collapse="!(node1.isConceptOpen)">
 
               <div class="well well-sm">
 
@@ -180,7 +179,7 @@
 
                       <div ng-show="truncated(treePositionDescription.name)"
                         class="well well-sm"
-                        collapse="treePositionDescription.isCollapsed == true || treePositionDescription.isCollapsed == undefined || treePositionDescription.isCollapsed == null">
+                        uib-collapse="treePositionDescription.isCollapsed == true || treePositionDescription.isCollapsed == undefined || treePositionDescription.isCollapsed == null">
                         {{treePositionDescription.name}}</div>
                     </li>
                   </ul>
@@ -215,7 +214,7 @@
                     {{node2.defaultPreferredName}} </span>
                 </div>
 
-                <div collapse="!(node2.isConceptOpen)">
+                <div uib-collapse="!(node2.isConceptOpen)">
 
                   <div class="well well-sm">
 
@@ -244,7 +243,7 @@
 
                           <div ng-show="truncated(treePositionDescription.name)"
                             class="well well-sm"
-                            collapse="treePositionDescription.isCollapsed == true || treePositionDescription.isCollapsed == undefined || treePositionDescription.isCollapsed == null">
+                            uib-collapse="treePositionDescription.isCollapsed == true || treePositionDescription.isCollapsed == undefined || treePositionDescription.isCollapsed == null">
                             {{treePositionDescription.name}}</div>
                         </li>
                       </ul>
@@ -282,7 +281,7 @@
                         {{node3.defaultPreferredName}} </span>
                     </div>
 
-                    <div collapse="!(node3.isConceptOpen)">
+                    <div uib-collapse="!(node3.isConceptOpen)">
 
                       <div class="well well-sm">
 
@@ -312,7 +311,7 @@
                               <div
                                 ng-show="truncated(treePositionDescription.name)"
                                 class="well well-sm"
-                                collapse="treePositionDescription.isCollapsed == true || treePositionDescription.isCollapsed == undefined || treePositionDescription.isCollapsed == null">
+                                uib-collapse="treePositionDescription.isCollapsed == true || treePositionDescription.isCollapsed == undefined || treePositionDescription.isCollapsed == null">
                                 {{treePositionDescription.name}}</div>
                             </li>
                           </ul>
@@ -351,7 +350,7 @@
                             {{node4.defaultPreferredName}} </span>
                         </div>
 
-                        <div collapse="!(node4.isConceptOpen)">
+                        <div uib-collapse="!(node4.isConceptOpen)">
 
                           <div class="well well-sm">
 
@@ -381,7 +380,7 @@
                                   <div
                                     ng-show="truncated(treePositionDescription.name)"
                                     class="well well-sm"
-                                    collapse="treePositionDescription.isCollapsed == true || treePositionDescription.isCollapsed == undefined || treePositionDescription.isCollapsed == null">
+                                    uib-collapse="treePositionDescription.isCollapsed == true || treePositionDescription.isCollapsed == undefined || treePositionDescription.isCollapsed == null">
                                     {{treePositionDescription.name}}</div>
                                 </li>
                               </ul>
@@ -421,7 +420,7 @@
                                 {{node5.defaultPreferredName}} </span>
                             </div>
 
-                            <div collapse="!(node5.isConceptOpen)">
+                            <div uib-collapse="!(node5.isConceptOpen)">
 
                               <div class="well well-sm">
 
@@ -451,7 +450,7 @@
                                       <div
                                         ng-show="truncated(treePositionDescription.name)"
                                         class="well well-sm"
-                                        collapse="treePositionDescription.isCollapsed == true || treePositionDescription.isCollapsed == undefined || treePositionDescription.isCollapsed == null">
+                                        uib-collapse="treePositionDescription.isCollapsed == true || treePositionDescription.isCollapsed == undefined || treePositionDescription.isCollapsed == null">
                                         {{treePositionDescription.name}}</div>
                                     </li>
                                   </ul>
@@ -492,7 +491,7 @@
                                     {{node6.defaultPreferredName}} </span>
                                 </div>
 
-                                <div collapse="!(node6.isConceptOpen)">
+                                <div uib-collapse="!(node6.isConceptOpen)">
 
                                   <div class="well well-sm">
 
@@ -523,7 +522,7 @@
                                           <div
                                             ng-show="truncated(treePositionDescription.name)"
                                             class="well well-sm"
-                                            collapse="treePositionDescription.isCollapsed == true || treePositionDescription.isCollapsed == undefined || treePositionDescription.isCollapsed == null">
+                                            uib-collapse="treePositionDescription.isCollapsed == true || treePositionDescription.isCollapsed == undefined || treePositionDescription.isCollapsed == null">
                                             {{treePositionDescription.name}}</div>
                                         </li>
                                       </ul>
@@ -564,7 +563,7 @@
                                         {{node7.defaultPreferredName}} </span>
                                     </div> {{node7.preferredDescription}}
 
-                                    <div collapse="!(node7.isConceptOpen)">
+                                    <div uib-collapse="!(node7.isConceptOpen)">
 
                                       <div class="well well-sm">
 
@@ -595,7 +594,7 @@
                                               <div
                                                 ng-show="truncated(treePositionDescription.name)"
                                                 class="well well-sm"
-                                                collapse="treePositionDescription.isCollapsed == true || treePositionDescription.isCollapsed == undefined || treePositionDescription.isCollapsed == null">
+                                                uib-collapse="treePositionDescription.isCollapsed == true || treePositionDescription.isCollapsed == undefined || treePositionDescription.isCollapsed == null">
                                                 {{treePositionDescription.name}}</div>
                                             </li>
                                           </ul>
@@ -636,7 +635,8 @@
                                             class="dropdown-menu term-browser-dropdown-menu">
                                             {{node8.defaultPreferredName}} </span>
                                         </div> {{node8.preferredDescription}}
-                                        <div collapse="!(node8.isConceptOpen)">
+                                        <div
+                                          uib-collapse="!(node8.isConceptOpen)">
 
                                           <div class="well well-sm">
 
@@ -667,7 +667,7 @@
                                                   <div
                                                     ng-show="truncated(treePositionDescription.name)"
                                                     class="well well-sm"
-                                                    collapse="treePositionDescription.isCollapsed == true || treePositionDescription.isCollapsed == undefined || treePositionDescription.isCollapsed == null">
+                                                    uib-collapse="treePositionDescription.isCollapsed == true || treePositionDescription.isCollapsed == undefined || treePositionDescription.isCollapsed == null">
                                                     {{treePositionDescription.name}}</div>
                                                 </li>
                                               </ul>
@@ -712,7 +712,7 @@
                                             </div> {{node9.preferredDescription}}
 
                                             <div
-                                              collapse="!(node9.isConceptOpen)">
+                                              uib-collapse="!(node9.isConceptOpen)">
 
                                               <div class="well well-sm">
 
@@ -744,7 +744,7 @@
                                                       <div
                                                         ng-show="truncated(treePositionDescription.name)"
                                                         class="well well-sm"
-                                                        collapse="treePositionDescription.isCollapsed == true || treePositionDescription.isCollapsed == undefined || treePositionDescription.isCollapsed == null">
+                                                        uib-collapse="treePositionDescription.isCollapsed == true || treePositionDescription.isCollapsed == undefined || treePositionDescription.isCollapsed == null">
                                                         {{treePositionDescription.name}}</div>
                                                     </li>
                                                   </ul>
@@ -791,7 +791,7 @@
                                                 </div> {{node10.preferredDescription}}
 
                                                 <div
-                                                  collapse="!(node10.isConceptOpen)">
+                                                  uib-collapse="!(node10.isConceptOpen)">
 
                                                   <div class="well well-sm">
 
@@ -823,7 +823,7 @@
                                                           <div
                                                             ng-show="truncated(treePositionDescription.name)"
                                                             class="well well-sm"
-                                                            collapse="treePositionDescription.isCollapsed == true || treePositionDescription.isCollapsed == undefined || treePositionDescription.isCollapsed == null">
+                                                            uib-collapse="treePositionDescription.isCollapsed == true || treePositionDescription.isCollapsed == undefined || treePositionDescription.isCollapsed == null">
                                                             {{treePositionDescription.name}}</div>
                                                         </li>
                                                       </ul>

@@ -50,14 +50,14 @@
   <input class="pull-right" type="submit" value="Send Feedback"
     ng-click="sendFeedback(record, feedbackInput, conversation, returnRecipients); feedbackInput = ''">
 </form>
-<button class="btn btn-sm btn-primary"
+<button class="btn btn-xs btn-primary"
   ng-click="goConceptView(conversation.terminologyId)">Mapped Concept
   View</button>
-<button class="btn btn-sm btn-primary" ng-click="openConceptBrowser()">SNOMED
+<button class="btn btn-xs btn-primary" ng-click="openConceptBrowser()">SNOMED
   CT Browser</button>
-<button class="btn btn-sm btn-primary" ng-show="indexViewerExists == true"
+<button class="btn btn-xs btn-primary" ng-show="indexViewerExists == true"
   ng-click="openIndexViewer()">Index Viewer</button>
-<button class="btn btn-sm btn-primary" ng-click="goEdit(record)"
+<button class="btn btn-xs btn-primary" ng-click="goEdit(record)"
   ng-show="displayEdit() == true">Edit record</button>
 <span ng-show="conversation.active == false" class="alert alert-warning"
   disabled> Record is inactive. </span>

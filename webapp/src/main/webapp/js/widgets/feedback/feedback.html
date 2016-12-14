@@ -1,31 +1,31 @@
-
-<form>
-  <input ng-model="query"> <input type="submit" value="Search"
-    ng-click="retrieveFeedback(1, feedbackType, reviewedType, resolvedType, query)">
-  <input type="submit" value="Reset" ng-click="resetSearch()">
-  &nbsp;&nbsp;{{nRecords}} results, page {{recordPage}} of {{numRecordPages}}
-</form>
-
-<pagination total-items="nRecords" page="recordPage" max-size="recordsPerPage"
-  class="pagination-sm" boundary-links="true" rotate="true"
-  num-pages="numRecordPages"
-  on-select-page="retrieveFeedback(page, feedbackType, reviewedType, resolvedType, query)"></pagination>
-
-<form>
-  <select tooltip-placement="top" tooltip="Feedback Type" ng-init="feedbackType"
-    ng-model="feedbackType"
+<div>
+  <form
+    ng-submit="retrieveFeedback(1, feedbackType, reviewedType, resolvedType, query)">
+    <input ng-model="query">
+    <button type="sumbit" class="btn btn-xs btn-primary">Search</button>
+    <span ng-click="resetSearch()" class="btn btn-xs btn-primary">Reset</span>
+    &nbsp;&nbsp;{{nRecords}} results, page {{recordPage}} of {{numRecordPages}}
+  </form>
+</div>
+<div style="margin-top: 10px">
+  <select tooltip-placement="top" uib-tooltip="Feedback Type"
+    ng-init="feedbackType" ng-model="feedbackType"
     ng-change="retrieveFeedback(1, feedbackType, reviewedType, resolvedType, query)"
     ng-options="item as item for item in feedbackTypes">
-  </select> <select tooltip-placement="top" tooltip="Viewed Status"
+  </select> <select tooltip-placement="top" uib-tooltip="Viewed Status"
     ng-init="reviewedType" ng-model="reviewedType"
     ng-change="retrieveFeedback(1, feedbackType, reviewedType, resolvedType, query)"
     ng-options="item as item for item in reviewedTypes">
-  </select> <select tooltip-placement="top" tooltip="Resolved Status"
+  </select> <select tooltip-placement="top" uib-tooltip="Resolved Status"
     ng-init="resolvedType" ng-model="resolvedType"
     ng-change="retrieveFeedback(1, feedbackType, reviewedType, resolvedType, query)"
     ng-options="item as item for item in resolvedTypes">
   </select>
-</form>
+</div>
+<uib-pagination total-items="nRecords" ng-model="recordPage"
+  max-size="recordsPerPage" class="pagination-sm" boundary-links="true"
+  rotate="true"
+  ng-change="retrieveFeedback(page, feedbackType, reviewedType, resolvedType, query)"></uib-pagination>
 
 <div ng-show="feedbackConversations.length > 0">
   <table class="table" style="margin-top: 10px;">

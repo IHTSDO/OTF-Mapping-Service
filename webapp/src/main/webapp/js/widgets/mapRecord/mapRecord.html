@@ -7,11 +7,11 @@
   }
 </script>
 
-<accordion> <accordion-group is-open="isConceptOpen">
-<accordion-heading> Source Concept <i
+<uib-accordion> <uib-accordion-group is-open="isConceptOpen">
+<uib-accordion-heading> Source Concept <i
   class="pull-right glyphicon"
   ng-class="{'glyphicon-chevron-down': isConceptOpen, 'glyphicon-chevron-right': !isConceptOpen}"></i>
-</accordion-heading>
+</uib-accordion-heading>
 <table>
 
   <tr>
@@ -38,13 +38,13 @@
 
 
 </table>
-</accordion-group> </accordion>
+</uib-accordion-group> </uib-accordion>
 
-<accordion> <accordion-group is-open="isEntriesOpen">
-<accordion-heading> Entries (New) <i
+<uib-accordion> <uib-accordion-group is-open="isEntriesOpen">
+<uib-accordion-heading> Entries (New) <i
   class="pull-right glyphicon"
   ng-class="{'glyphicon-chevron-down': isEntriesOpen, 'glyphicon-chevron-right': !isEntriesOpen}"></i>
-</accordion-heading>
+</uib-accordion-heading>
 
 <div ui-tree="options">
   <ol ui-tree-nodes="" ng-model="groupsTree">
@@ -79,23 +79,25 @@
           </div>
         </li>
         <li ng-show="project.mapRefsetPattern != 'SimpleMap'" data-nodrag><button
-            ng-click="addMapEntry(group)">Add Entry</button></li>
+            class="btn btn-xs btn-primary" ng-click="addMapEntry(group)">Add
+            Entry</button></li>
       </ol>
       <hr>
 
     </li>
   </ol>
-  <button ng-show="project.mapRefsetPattern != 'SimpleMap'" data-nodrag
+  <button class="btn btn-xs btn-primary"
+    ng-show="project.mapRefsetPattern != 'SimpleMap'" data-nodrag
     ng-click="addMapGroup()">Add Group</button>
   <div>&nbsp;</div>
 </div>
 
 
-<!--  NOTES PANEL --> <accordion> <accordion-group
-  is-open="isNotesOpen"> <accordion-heading>
+<!--  NOTES PANEL --> <uib-accordion> <uib-accordion-group
+  is-open="isNotesOpen"> <uib-accordion-heading>
 Notes <i class="pull-right glyphicon"
   ng-class="{'glyphicon-chevron-down': isNotesOpen, 'glyphicon-chevron-right': !isNotesOpen}"></i>
-</accordion-heading>
+</uib-accordion-heading>
 
 <div ng-show="record.mapNote.length > 0">
   <div ng-repeat="note in record.mapNote">
@@ -116,12 +118,13 @@ Notes <i class="pull-right glyphicon"
 </div>
 
 <span style="color: red">{{errorAddRecordNote}}</span> <!--  tinymce text area -->
-<form method="post">
+<form ng-submit="addRecordNote(record, noteInput); noteInput = ''">
   <textarea id="tinymce-notes" ui-tinymce="tinymceOptions" ng-model="noteInput"></textarea>
 
-  <input ng-show="noteEditMode == false" class="pull-right" type="submit"
-    accesskey="a" value="Add Note"
-    ng-click="addRecordNote(record, noteInput); noteInput = ''">
+  <button class="btn btn-xs btn-primary" class="btn btn-xs btn-primary"
+    ng-show="noteEditMode == false" class="pull-right" accesskey="a"
+    ng-click="addRecordNote(record, noteInput); noteInput = ''">Add
+    Note</button>
   <!-- <input ng-show="noteEditMode == true" class="pull-right" type="submit"  accesskey="a" value="Save Editing"
 		ng-click="saveEditRecordNote(record, noteInput); noteInput = ''">
 		<input ng-show="noteEditMode == true" class="pull-right" type="submit"  accesskey="a" value="Cancel Editing"
@@ -139,13 +142,13 @@ Notes <i class="pull-right glyphicon"
 
 <!-- Original text area box
 	<textarea style="width: 100%;" ng-model="noteInput" name="noteInputTextArea"></textarea>
-	 --> </accordion-group> </accordion> <!--  PRINCIPLES PANEL --> <accordion
-  ng-show="project.mapPrinciple.length > 0"> <accordion-group
-  is-open="isPrinciplesOpen"> <accordion-heading>
+	 --> </uib-accordion-group> </uib-accordion> <!--  PRINCIPLES PANEL --> <uib-accordion
+  ng-show="project.mapPrinciple.length > 0"> <uib-accordion-group
+  is-open="isPrinciplesOpen"> <uib-accordion-heading>
 Principles <i class="pull-right glyphicon"
   ng-class="{'glyphicon-chevron-down': isPrinciplesOpen, 'glyphicon-chevron-right': !isPrinciplesOpen}"></i>
 
-</accordion-heading>
+</uib-accordion-heading>
 
 <div ng-show="record.mapPrinciple.length > 0">
   <div ng-repeat="principle in record.mapPrinciple">
@@ -184,11 +187,11 @@ Principles <i class="pull-right glyphicon"
   <a href="doc/{{project.mapPrincipleSourceDocument}}" target="_blank">Map
     Principles Document</a>
 </div>
-</accordion-group> </accordion> <!--  FLAGS PANEL --> <accordion> <accordion-group
-  is-open="isFlagsOpen"> <accordion-heading>
+</uib-accordion-group> </uib-accordion> <!--  FLAGS PANEL --> <uib-accordion> <uib-accordion-group
+  is-open="isFlagsOpen"> <uib-accordion-heading>
 Flags <i class="pull-right glyphicon"
   ng-class="{'glyphicon-chevron-down': isFlagsOpen, 'glyphicon-chevron-right': !isFlagsOpen}"></i>
-</accordion-heading> <input type="checkbox" ng-model="record.flagForConsensusReview"> Flag
+</uib-accordion-heading> <input type="checkbox" ng-model="record.flagForConsensusReview"> Flag
 for consensus review<br>
 <input type="checkbox" ng-model="record.flagForEditorialReview"> Flag
 for editorial review<br>
@@ -196,7 +199,7 @@ for editorial review<br>
   ng-show="page != 'resolveConflictsDashboard'"> Flag for map lead
 review<br>
 
-</accordion-group> </accordion> <!--   FEEDBACK PANEL -->
+</uib-accordion-group> </uib-accordion> <!--   FEEDBACK PANEL -->
 <div
   ng-show="record.workflowStatus != 'CONFLICT_NEW' 
 	&& record.workflowStatus != 'CONFLICT_IN_PROGRESS' 
@@ -207,13 +210,13 @@ review<br>
 	&& record.workflowStatus != 'QA_NEW'
 	&& record.workflowStatus != 'QA_IN_PROGRESS'
 	&& record.workflowStatus != 'QA_RESOLVED'">
-  <accordion> <accordion-group is-open="isFeedbackOpen">
-  <accordion-heading> <span ng-click="markViewed()">
+  <uib-accordion> <uib-accordion-group is-open="isFeedbackOpen">
+  <uib-accordion-heading> <span ng-click="markViewed()">
     Feedback
     <span ng-show="conversation.feedback.length > 0">({{conversation.feedback.length}})</span>
     <i class="pull-right glyphicon"
       ng-class="{'glyphicon-chevron-down': isFeedbackOpen, 'glyphicon-chevron-right': !isFeedbackOpen}"></i>
-  </span></accordion-heading>
+  </span></uib-accordion-heading>
 
   <div ng-show="conversation.feedback.length > 0">
     <div ng-repeat="feedback in conversation.feedback">
@@ -235,7 +238,8 @@ review<br>
 
 
   <!--  tinymce text area -->
-  <form method="post">
+  <form
+    ng-submit="sendFeedback(record, feedbackInput, returnRecipients); feedbackInput=''">
     <div ng-dropdown-multiselect="" options="project.mapLead"
       selected-model="returnRecipients" extra-settings="multiSelectSettings"
       translation-texts="multiSelectCustomTexts"></div>
@@ -243,8 +247,9 @@ review<br>
     <textarea id="tinymce-feedback" ui-tinymce="tinymceOptions"
       ng-model="feedbackInput"></textarea>
 
-    <input class="pull-right" type="submit" value="Send Feedback"
+    <button class="btn btn-xs btn-primary pull-right" type="submit"
       ng-click="sendFeedback(record, feedbackInput, returnRecipients); feedbackInput = ''">
+      Send Feedback</button>
 
     <span class="pull-right">
       Shortcut to send feedback:
@@ -256,17 +261,17 @@ review<br>
   </form>
 
 
-  </accordion-group> </accordion>
+  </uib-accordion-group> </uib-accordion>
 </div>
 
-<button class="btn btn-sm btn-primary" ng-click="finishMapRecord(true)">Finish</button>
-<button class="btn btn-sm btn-warning" ng-click="cancelMapRecord()">Cancel</button>
-<button class="btn btn-sm btn-danger" ng-click="clearMapRecord()">Clear</button>
+<button class="btn btn-xs btn-primary" ng-click="finishMapRecord(true)">Finish</button>
+<button class="btn btn-xs btn-warning" ng-click="cancelMapRecord()">Cancel</button>
+<button class="btn btn-xs btn-danger" ng-click="clearMapRecord()">Clear</button>
 
-<button class="btn btn-sm btn-primary" style="float: right;"
+<button class="btn btn-xs btn-primary" style="float: right;"
   ng-click="saveMapRecord(true)">Save For Later</button>
-<button class="btn btn-sm btn-primary" tooltip-placement="top"
-  tooltip="{{dynamicTooltip}}" ng-show="page != 'resolveConflictsDashboard'"
+<button class="btn btn-xs btn-primary" tooltip-placement="top"
+  uib-tooltip="{{dynamicTooltip}}" ng-show="page != 'resolveConflictsDashboard'"
   style="float: right; margin-right: 5px;" ng-click="saveMapRecord(false)">Save/Next</button>
 
 
