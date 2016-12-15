@@ -133,11 +133,11 @@ hr {
 }
 
 /** from bootstrap.css - changes advice and principles buttons to fill space */
-button[disabled] {
+/* button[disabled] {
 	cursor: default;
 	width: 100%;
 	text-align: left;
-}
+} */
 
 /** from bootstrap.css - changes margin between panels in a group */
 .panel-group {
