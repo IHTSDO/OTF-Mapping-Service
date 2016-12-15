@@ -910,17 +910,17 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
           columns : [ {
             class : 'col-md-12',
             widgets : [ {
-              type : 'applicationAdmin',
+              type : 'recordAdmin',
               config : {},
-              title : 'Application Administration'
+              title : 'Record Administration'
             } ]
           }, {
             columns : [ {
               class : 'col-md-12',
               widgets : [ {
-                type : 'recordAdmin',
+                type : 'ApplicationAdmin',
                 config : {},
-                title : 'Record Administration'
+                title : 'Application Administration'
               } ]
             } ]
 
