@@ -253,7 +253,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
     // function to get the root nodes
     $scope.getRootTree = function() {
       console.debug('get root tree');
-      return;
+
       $rootScope.glassPane++;
       $http({
         url : root_mapping + 'treePosition/project/id/' + $scope.focusProject.id + '/destination',
