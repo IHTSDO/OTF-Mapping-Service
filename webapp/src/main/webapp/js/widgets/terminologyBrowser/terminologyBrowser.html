@@ -1,7 +1,6 @@
 
-<form ng-submit="search()">
   <input ng-model="query" autofocus>
-  <button type="submit" class="btn btn-xs btn-primary">Search</button>
+  <button class="btn btn-xs btn-primary" ng-click="search()">Search</button>
   <span class="btn btn-xs btn-warning" ng-show="query"
     ng-click="clearSearch()">Reset</span>
   <!-- Don't use these for now - not working properly
@@ -25,7 +24,6 @@
     class="pull-right noul glyphicon glyphicon-th-list"
     title="Switch to list view" ng-click="toggleListMode()"></i>
   </span>
-</form>
 <p></p>
 <!-- Search Results: scrollable container -->
 <div style="max-height: 1000px; overflow-y: scroll;">

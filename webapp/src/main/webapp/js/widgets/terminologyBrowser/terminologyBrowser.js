@@ -104,6 +104,7 @@ angular.module('mapProjectApp').controller(
       // target
       if (targetCode) {
         localStorage.removeItem('targetCode');
+        console.debug('test');
         $scope.query = targetCode;
         $scope.search();
         $timeout(function() {
@@ -173,8 +174,10 @@ angular.module('mapProjectApp').controller(
       if ($scope.listMode) {
         $scope.performSearch($scope.query);
       } else {
+  
         // Perform tree search
         $scope.treeQuery = $scope.query;
+        console.debug('get root tree with query', $scope.query);
         $scope.getRootTreeWithQuery(true);
       }
     };
