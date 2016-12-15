@@ -16,7 +16,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
     });
   })
 
-.controller(
+angular.module('mapProjectApp').controller(
   'terminologyBrowserWidgetCtrl',
   function($scope, $rootScope, $q, $timeout, $http, $routeParams, $location, localStorageService,
     utilService, gpService) {
@@ -166,6 +166,8 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
 
       // clear the search results
       $scope.searchResults = [];
+      
+      console.debug('search, listmode', $scope.listMode);
 
       // list or tree mode
       if ($scope.listMode) {
