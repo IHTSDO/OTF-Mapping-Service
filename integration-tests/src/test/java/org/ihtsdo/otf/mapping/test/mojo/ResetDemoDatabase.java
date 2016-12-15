@@ -188,6 +188,22 @@ public class ResetDemoDatabase {
     if (result.getExitCode() != 0) {
       throw result.getExecutionException();
     }
+    
+    // Reindex -- required at least for ConceptJpa, possibly others
+    Logger.getLogger(getClass()).info("Reindex concepts");
+    request = new DefaultInvocationRequest();
+    request.setPomFile(new File("../admin/lucene/pom.xml"));
+    request.setProfiles(Arrays.asList("Reindex"));
+    request.setGoals(Arrays.asList("clean", "install"));
+    p = new Properties();
+    p.setProperty("run.config", System.getProperty("run.config"));
+    p.setProperty("indexed.objects", "ConceptJpa");
+    request.setProperties(p);
+    invoker = new DefaultInvoker();
+    result = invoker.execute(request);
+    if (result.getExitCode() != 0) {
+      throw result.getExecutionException();
+    }
 
   }
 
