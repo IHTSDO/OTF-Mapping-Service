@@ -975,10 +975,13 @@ angular
         };
 
         $scope.addRecordNote = function(record, note) {
+
           // check if note non-empty
           if (note === '' || note == null) {
             $scope.errorAddRecordNote = 'Note cannot be empty';
           } else {
+
+            $scope.errorAddRecordNote = null;
 
             // construct note object
             var mapNote = new Object();
@@ -989,10 +992,7 @@ angular
             mapNote.user = $scope.user;
 
             // add note to record
-            addElementWithId(record['mapNote'], mapNote);
-
-            // set the text area to null
-            $scope.tinymceContent = null;
+            addElementWithId(record.mapNote, mapNote);
 
           }
 
@@ -1383,8 +1383,8 @@ angular
         // Removes a map group if it exists
         $scope.deleteMapGroup = function(group) {
 
-          var groupsTreeTemp =$scope.groupsTree.filter(function(g) {
-        	  return g.mapGroup != group.mapGroup
+          var groupsTreeTemp = $scope.groupsTree.filter(function(g) {
+            return g.mapGroup != group.mapGroup
           })
 
           $scope.groupsTree = groupsTreeTemp;
@@ -1418,13 +1418,14 @@ angular
 
           // if no hibernate id, assign local id
           if (elem.id == null || elem.id === '') {
-        	  var maxLocalId = Math.max.apply(null, array.map(function(v) {
-        		  return v.id;
-        	  }));
-              elem['localId'] = maxLocalId == -1 ? 1 : maxLocalId + 1;
+            var maxLocalId = Math.max.apply(null, array.map(function(v) {
+              return v.id;
+            }));
+            elem['localId'] = maxLocalId == -1 ? 1 : maxLocalId + 1;
           }
           array.push(elem);
-        };
+        }
+        ;
 
         // function to remove an element by id or localid
         // instantiated to negate necessity for equals methods for
