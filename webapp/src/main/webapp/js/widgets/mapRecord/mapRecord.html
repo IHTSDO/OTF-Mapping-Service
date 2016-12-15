@@ -118,12 +118,12 @@ Notes <i class="pull-right glyphicon"
 </div>
 
 <span style="color: red">{{errorAddRecordNote}}</span> <!--  tinymce text area -->
-<form ng-submit="addRecordNote(record, noteInput); noteInput = ''">
+<form>
   <textarea id="tinymce-notes" ui-tinymce="tinymceOptions" ng-model="noteInput"></textarea>
 
   <button class="btn btn-xs btn-primary" class="btn btn-xs btn-primary"
     ng-show="noteEditMode == false" class="pull-right" accesskey="a"
-    ng-click="addRecordNote(record, noteInput); noteInput = ''">Add
+    ng-click="addRecordNote(record, noteInput); noteInput = null;">Add
     Note</button>
   <!-- <input ng-show="noteEditMode == true" class="pull-right" type="submit"  accesskey="a" value="Save Editing"
 		ng-click="saveEditRecordNote(record, noteInput); noteInput = ''">
