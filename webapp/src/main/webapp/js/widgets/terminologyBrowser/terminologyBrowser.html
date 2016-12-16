@@ -41,12 +41,12 @@
         class="pagination-sm" boundary-links="true" rotate="true"
         ng-change="getPagedSearchResults()"></uib-pagination>
     </span>
-    <ul class="list-group" ng-show="searchResults.length > 0">
-      <li class="list-group-item"
+    <ul class="list-group" ng-show="searchResults.length > 0" >
+      <li class="list-group-item" style="cursor:pointer;"
         ng-repeat="result in pagedSearchResults"
         ng-click="selectResult(result)"
         ng-class="{selected: result.terminologyId == selectedResult.terminologyId}">
-        {{result.value}} ({{result.terminologyId}})</li>
+        <div style="cursor:pointer;">{{result.value}} ({{result.terminologyId}})</div></li>
     </ul>
   </div>
   <div ng-show="!listMode">
