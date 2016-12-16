@@ -34,7 +34,7 @@ angular
       $scope.tabs = [ {
         id : 0,
         title : 'Concepts',
-        active : false
+        active : true
       }, {
         id : 1,
         title : 'Conflicts',
@@ -76,10 +76,14 @@ angular
         if (tabNumber == null) {
           tabNumber = 0;
         }
+        
+        console.debug('setting tab', tabNumber);
 
         angular.forEach($scope.tabs, function(tab) {
           tab.active = (tab.id == tabNumber ? true : false);
         });
+        
+        console.debug($scope.tabs);
 
         // set flag for ByUser tab, i.e. whether viewing user's own work
         if (tabNumber == 3)
