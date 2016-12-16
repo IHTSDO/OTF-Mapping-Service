@@ -254,6 +254,7 @@
                 </goals>
                 <configuration>
                   <inputFile>${input.file}</inputFile>
+                  <parChdFile>${par.chd.file}</parChdFile>
                   <terminology>${terminology}</terminology>
                   <version>${version}</version>
                 </configuration>
