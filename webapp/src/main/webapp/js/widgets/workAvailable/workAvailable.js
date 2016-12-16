@@ -60,7 +60,7 @@ angular
       $scope.tabs = [ {
         id : 0,
         title : 'Concepts',
-        active : false
+        active : true
       }, {
         id : 1,
         title : 'Conflicts',
