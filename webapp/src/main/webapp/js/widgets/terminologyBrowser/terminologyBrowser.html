@@ -1,9 +1,10 @@
-
+<form ng-submit="search()">
   <input ng-model="query" autofocus>
   <button class="btn btn-xs btn-primary" ng-click="search()">Search</button>
   <span class="btn btn-xs btn-warning" ng-show="query"
     ng-click="clearSearch()">Reset</span>
-  <!-- Don't use these for now - not working properly
+
+<!-- Don't use these for now - not working properly
   <button ng-show="searchBackAllowed == true" ng-click="changeSearch(-1)">
     <i class="glyphicon glyphicon-arrow-left"></i>
   </button>
@@ -11,19 +12,20 @@
     <i class="glyphicon glyphicon-arrow-right"></i>
   </button>
  -->
-  <!-- Support tree/list mode switching -->
-    
-  <span ng-show="listMode"> <i style="margin-right: 20px"
-    class="pull-right noul glyphicon glyphicon-tree-conifer"
-    ng-click="toggleListMode()" title="Switch to tree view"></i>
-    &nbsp;&nbsp; <i class="pull-right glyphicon glyphicon-th-list"
-    uib-tooltip="Currently in list mode"></i>
-  </span> <span ng-show="!listMode"> <i style="margin-right: 20px"
-    class="pull-right glyphicon glyphicon-tree-conifer"
-    uib-tooltip="Currently in tree mode"></i> &nbsp;&nbsp; <i
-    class="pull-right noul glyphicon glyphicon-th-list"
-    title="Switch to list view" ng-click="toggleListMode()"></i>
-  </span>
+<!-- Support tree/list mode switching -->
+<span ng-show="listMode"> <i style="margin-right: 20px"
+  class="pull-right noul glyphicon glyphicon-tree-conifer"
+  ng-click="toggleListMode()" title="Switch to tree view"></i>
+  &nbsp;&nbsp; <i class="pull-right glyphicon glyphicon-th-list"
+  uib-tooltip="Currently in list mode"></i>
+</span>
+<span ng-show="!listMode"> <i style="margin-right: 20px"
+  class="pull-right glyphicon glyphicon-tree-conifer"
+  uib-tooltip="Currently in tree mode"></i> &nbsp;&nbsp; <i
+  class="pull-right noul glyphicon glyphicon-th-list"
+  title="Switch to list view" ng-click="toggleListMode()"></i>
+</span>
+</form>
 <p></p>
 <!-- Search Results: scrollable container -->
 <div style="max-height: 1000px; overflow-y: scroll;">
@@ -47,7 +49,6 @@
         {{result.value}} ({{result.terminologyId}})</li>
     </ul>
   </div>
-
   <div ng-show="!listMode">
     <!-- TREE -->
     <!--  Root - level 0 -->

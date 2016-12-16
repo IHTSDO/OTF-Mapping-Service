@@ -204,6 +204,7 @@ angular.module('mapProjectApp').controller(
       $scope.selectedResult = result;
       $scope.treeQuery = result.terminologyId;
       $scope.getRootTreeWithQuery(true);
+      $scope.toggleListMode();
     };
 
     // Page search results
@@ -461,7 +462,7 @@ angular.module('mapProjectApp').controller(
             return false;
           }
 
-          $scope.getConceptDetails(treePositions[i]);
+          // $scope.getConceptDetails(treePositions[i]);
           retval = true;
         }
 
