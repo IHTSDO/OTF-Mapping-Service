@@ -993,6 +993,8 @@ angular
 
             // add note to record
             addElementWithId(record.mapNote, mapNote);
+            
+            $scope.tinymceContent = null;
 
           }
 
