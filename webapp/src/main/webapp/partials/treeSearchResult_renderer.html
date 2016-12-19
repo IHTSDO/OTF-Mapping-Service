@@ -16,23 +16,28 @@
     ng-click="tree.isConceptOpen = !tree.isConceptOpen"></i></a>
 
   <!--  Terminology Id -->
-  <a ng-show="tree.valid == true" ng-bind-html="tree.terminologyId | highlight:parameters.query"
-    ng-click="callbacks.selectConcept(tree)"></a>
-  <span ng-show="tree.valid == false" ng-bind-html="tree.terminologyId | highlight:parameters.query"></span>{{tree.terminologyNote}}:
+  <a ng-show="tree.valid == true"
+    ng-bind-html="tree.terminologyId | highlight:parameters.query"
+    ng-click="callbacks.selectConcept(tree)"></a> <span
+    ng-show="tree.valid == false"
+    ng-bind-html="tree.terminologyId | highlight:parameters.query"></span>{{tree.terminologyNote}}:
 
   <!-- Default Preferred Name -->
   <span
     ng-bind-html="truncate(tree.defaultPreferredName) | highlight:parameters.query"></span>
   <div style="display: inline;"
     ng-show=truncated(tree.defaultPreferredName) class="dropdown">
-    <a class="dropdown-toggle">...</a> <span style="width: 100%"
-      class="dropdown-menu term-browser-dropdown-menu">
-      {{tree.defaultPreferredName}} </span>
+
+    <span popover-trigger="outsideClick" popover-append-to-body="true"
+      popover-placement="bottom"
+      uib-popover="{{tree.defaultPreferredName}}">...</span>
   </div>
 
   <div ng-show="tree.isConceptOpen"
     ng-init="tree.isConceptOpen = parameters.query === tree.terminologyId">
     <div class="well well-sm">
+      <div ng-show="!tree.descGroups || tree.descGroups.length == 0">
+        No description groups</div>
       <div ng-repeat="descGroup in tree.descGroups">
         <em>{{descGroup.name}}</em>
         <ul>

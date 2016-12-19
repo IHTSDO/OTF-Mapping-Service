@@ -559,6 +559,8 @@ angular.module('mapProjectApp').controller(
       return descriptions;
 
     }
+    
+    
 
     function formatDescription(description, relTypes, concept) {
       var relationshipsForDescription = [];
