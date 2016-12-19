@@ -3677,7 +3677,7 @@ public class MappingServiceRest extends RootServiceRest {
 
     Logger.getLogger(MappingServiceRest.class)
         .info("RESTful call (Mapping): /record/project/id/" + mapProjectId
-            + "/user/id" + username + "/edited");
+            + "/user/id/" + username + "/edited");
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();

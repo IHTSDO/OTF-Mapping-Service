@@ -848,8 +848,10 @@ public class MappingServiceJpa extends RootServiceJpa
         .add(AuditEntity.property("mapProjectId").eq(projectId))
         .add(AuditEntity.relatedId("lastModifiedBy").eq(user.getId()))
 
-        // exclude records with workflow status NEW
-        .add(AuditEntity.property("workflowStatus").ne(WorkflowStatus.NEW));
+        // exclude records with workflow status NEW or PUBLISHED
+        .add(AuditEntity.property("workflowStatus").ne(WorkflowStatus.NEW))
+        .add(AuditEntity.property("workflowStatus")
+            .ne(WorkflowStatus.PUBLISHED));
 
     // if sort field specified
     if (localPfsParameter.getSortField() != null) {

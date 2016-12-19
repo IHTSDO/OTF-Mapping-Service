@@ -1,8 +1,9 @@
 <uib-tabset> <uib-tab heading="Single Record Administration">
 <form>
   MapRecord Id: <input type="text" id="mapRecordId" ng-model="mapRecordId">
-  <button type="submit" ng-click="getRecord(mapRecordId, false)">Retrieve</button>
-  <button type="submit" ng-click="getRecord(mapRecordId, true)">Create
+  <button class="btn btn-xs btn-primary"
+    ng-click="getRecord(mapRecordId, false)">Retrieve</button>
+  <button class="btn btn-xs btn-primary" ng-click="getRecord(mapRecordId, true)">Create
     QA Record</button>
 </form>
 
