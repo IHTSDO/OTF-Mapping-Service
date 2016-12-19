@@ -1,8 +1,9 @@
 <uib-tabset> <uib-tab heading="Single Record Administration">
 <form>
   MapRecord Id: <input type="text" id="mapRecordId" ng-model="mapRecordId">
-  <button type="submit" ng-click="getRecord(mapRecordId, false)">Retrieve</button>
-  <button type="submit" ng-click="getRecord(mapRecordId, true)">Create
+  <button class="btn btn-xs btn-primary"
+    ng-click="getRecord(mapRecordId, false)">Retrieve</button>
+  <button class="btn btn-xs btn-primary" ng-click="getRecord(mapRecordId, true)">Create
     QA Record</button>
 </form>
 
@@ -34,7 +35,7 @@
   <button class="btn btn-xs btn-primary" ng-click="saveRecord()">Save</button>
   <button class="btn btn-xs btn-danger pull-right" ng-click="deleteRecord()">Delete</button>
 </div>
-</uib-tab> <uib-heading="Batch delete">
+</uib-tab> <uib-tab heading="Batch delete">
 
 <h4>Enter Terminology Ids</h4>
 Note: Must be delimited by either whitespace or commas.
@@ -69,7 +70,7 @@ Note: Must be delimited by either whitespace or commas.
   </div>
 </div>
 
-</uib-tab> <uib-heading="Assign Fix Errors">
+</uib-tab> <uib-tab heading="Assign FixErrors">
 
 <h4>Enter Terminology Ids to Assign Along Fix Error Path</h4>
 
