@@ -914,6 +914,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
               title : 'Map Project'
             } ]
           } ]
+
         }, {
           columns : [ {
             class : 'col-md-12',
@@ -922,16 +923,16 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
               config : {},
               title : 'Record Administration'
             } ]
-          }, {
-            columns : [ {
-              class : 'col-md-12',
-              widgets : [ {
-                type : 'applicationAdmin',
-                config : {},
-                title : 'Application Administration'
-              } ]
-            } ]
+          } ]
 
+        }, {
+          columns : [ {
+            class : 'col-md-12',
+            widgets : [ {
+              type : 'applicationAdmin',
+              config : {},
+              title : 'Application Administration'
+            } ]
           } ]
 
         }, {
