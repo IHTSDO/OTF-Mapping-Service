@@ -1,7 +1,7 @@
-<form>
+<form ng-submit="getAdminProject(adminProjectId)">
   MapProject Id: <input type="text" id="mapadminProjectId"
     ng-model="adminProjectId">
-  <button type="submit" ng-click="getAdminProject(adminProjectId)">Retrieve</button>
+  <button type="submit" class="btn btn-xs btn-primary">Retrieve</button>
 
 </form>
 <div ng-show="errorMsg != null" class="alert alert-danger" style="width: 25%">{{errorMsg}}</div>

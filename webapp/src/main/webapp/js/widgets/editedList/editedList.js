@@ -25,7 +25,7 @@ angular
       $scope.focusProject = localStorageService.get('focusProject');
 
       // pagination variables
-      $scope.recordsPerPage = 10;
+      $scope.pageSize = 2;
       $scope.editedRecordsPage = 1;
 
       // watch for project change
@@ -53,8 +53,8 @@ angular
 
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
-          'startIndex' : (page - 1) * $scope.recordsPerPage,
-          'maxResults' : $scope.recordsPerPage,
+          'startIndex' : (page - 1) * $scope.pageSize,
+          'maxResults' : $scope.pageSize,
           'sortField' : 'lastModified',
           'queryRestriction' : queryTerms ? queryTerms : ''
         };
@@ -76,7 +76,7 @@ angular
 
           $scope.recordPage = page;
           $scope.nRecords = data.totalCount;
-          $scope.numRecordPages = Math.ceil($scope.nRecords / $scope.recordsPerPage);
+          $scope.numRecordPages = Math.ceil($scope.nRecords / $scope.pageSize);
 
           $scope.editedRecords = data.mapRecord;
 
