@@ -246,3 +246,7 @@ body {
 	margin-left: auto;
 	margin-right: auto;
 }
+
+.tree-search-result {
+	font-weight: auto;
+}
