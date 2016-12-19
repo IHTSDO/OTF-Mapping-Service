@@ -61,7 +61,8 @@
         ng-click="editRecord(record)">
         <i class="glyphicon glyphicon glyphicon-pencil pull-right"></i>
       </a>
-      <br> Status: {{record.workflowStatus}}
+      <br> Status: {{record.workflowStatus}} ({{record.lastModified |
+      date:'MM-dd-yyyy HH:mm'}})
 
     </div>
     <div style="float: right; width: 3%;">
@@ -88,7 +89,8 @@
     ng-class-even="'even'">
 
     <div ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
-      Owner: {{record.owner.name}}<br> Status: {{record.workflowStatus}}
+      Owner: {{record.owner.name}}<br> Status: ({{record.workflowStatus}}
+      {{record.lastModified | date:'MM-dd-yyyy HH:mm'}})
 
     </div>
 
@@ -116,7 +118,8 @@
           ng-click="editRecord(record)">
           <i class="glyphicon glyphicon glyphicon-pencil pull-right"></i>
         </a>
-        <br> Status: {{record.workflowStatus}}
+        <br> Status: {{record.workflowStatus}} ({{record.lastModified |
+        date:'MM-dd-yyyy HH:mm'}})
 
       </div>
       <div otf-map-record-wide record="record" project="focusProject"

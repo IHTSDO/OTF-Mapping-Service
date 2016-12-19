@@ -58,7 +58,7 @@
           <uib-pagination ng-show="result.nPages > 1" total-items="result.ct"
             ng-model="result.page" max-size="5" class="pagination-sm"
             boundary-links="true" rotate="true" num-pages="result.nPages"
-            ng-change="getResultItems(result, page)"></uib-pagination>
+            ng-change="getResultItems(result, result.page)"></uib-pagination>
         </div>
 
         <table class="table">

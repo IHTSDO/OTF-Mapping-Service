@@ -345,12 +345,11 @@
 </h5>
 </uib-accordion-heading> <uib-pagination direction-links="false" boundary-links="true"
   total-items="pagedUserCount" items-per-page="pageSize" ng-model="pageUser"
-  ng-change="getPagedUsers(page, userFilter)"> </uib-pagination>
-<form>
+  ng-change="getPagedUsers(page, userFilter)"> </uib-pagination> <span>
   <input id="userSearch" type="text" ng-model="userFilter"
-    ng-change="getPagedUsers(1, userFilter)"> <input type="submit"
-    value="Reset Filter" ng-click="resetUserFilter()">
-</form>
+    ng-change="getPagedUsers(1, userFilter)">
+  <button ng-click="resetUserFilter()" class="btn btn-xs btn-warning">Reset</button>
+</span>
 
 <table class="table pure-table" style="width: 100%; margin-bottom: 5px;">
   <thead>
@@ -461,12 +460,11 @@
 </h5>
 </uib-accordion-heading> <uib-pagination direction-links="false" boundary-links="true"
   total-items="pagedAdviceCount" items-per-page="pageSize" ng-model="pageAdvice"
-  ng-change="getPagedAdvices(page, adviceFilter)"></uib-pagination>
-<form>
+  ng-change="getPagedAdvices(page, adviceFilter)"></uib-pagination> <span>
   <input id="adviceSearch" type="text" ng-model="adviceFilter"
-    ng-change="getPagedAdvices(1, adviceFilter)"> <input type="submit"
-    value="Reset Filter" ng-click="resetAdviceFilter()">
-</form>
+    ng-change="getPagedAdvices(1, adviceFilter)">
+  <button xs class="btn btn-xs btn-warning" ng-click="resetAdviceFilter()">Reset</button>
+</span>
 
 <table class="table pure-table" style="width: 100%; margin-bottom: 5px;">
   <thead>
@@ -585,8 +583,8 @@
   ng-change="getPagedRelations(page, relationFilter)"> </uib-pagination>
 <form>
   <input type="text" ng-model="relationFilter"
-    ng-change="getPagedRelations(1, relationFilter)"> <input
-    type="submit" value="Reset Filter" ng-click="resetRelationFilter()">
+    ng-change="getPagedRelations(1, relationFilter)">
+  <button class="btn btn-xs btn-warning" ng-click="resetRelationFilter()">Reset</button>
 </form>
 
 <table class="table pure-table" style="width: 100%; margin-bottom: 5px;">
@@ -725,11 +723,12 @@
   direction-links="false" boundary-links="true"
   total-items="pagedPrincipleCount" items-per-page="pageSize"
   ng-model="pagePrinciple" ng-change="getPagedPrinciples(page, principleFilter)"></uib-pagination>
-<form>
+
+<span>
   <input type="text" ng-model="principleFilter"
-    ng-change="getPagedPrinciples(1, principleFilter)"> <input
-    type="submit" value="Reset Filter" ng-click="resetPrincipleFilter()">
-</form>
+    ng-change="getPagedPrinciples(1, principleFilter)">
+  <button class="btn btn-xs btn-warning" ng-click="resetPrincipleFilter()">Reset</button>
+</span>
 
 <table class="table pure-table" style="width: 100%; margin-bottom: 5px;">
   <thead>
@@ -1000,11 +999,12 @@
   ng-model="pageReportDefinition"
   ng-change="getPagedReportDefinitions(page, reportDefinitionFilter)"></uib-pagination>
 
-<form>
+<span>
   <input type="text" ng-model="reportDefinitionFilter"
-    ng-change="getPagedReportDefinitions(1, reportDefinitionFilter)"> <input
-    type="submit" value="Reset Filter" ng-click="resetReportDefinitionFilter()">
-</form>
+    ng-change="getPagedReportDefinitions(1, reportDefinitionFilter)">
+  <button class="btn btn-xs btn-warning"
+    ng-click="resetReportDefinitionFilter()">Reset</button>
+</span>
 
 <table style="width: 100%" class="table pure-table" style="margin-bottom: 5px;">
   <thead>
@@ -1431,11 +1431,11 @@
   ng-model="pageQaDefinition"
   ng-change="getPagedQaDefinitions(page, qaCheckDefinitionFilter)"></uib-pagination>
 
-<form>
+<span>
   <input type="text" ng-model="qaCheckDefinitionFilter"
-    ng-change="getPagedQaDefinitions(1, qaCheckDefinitionFilter)"> <input
-    type="submit" value="Reset Filter" ng-click="resetQaDefinitionFilter()">
-</form>
+    ng-change="getPagedQaDefinitions(1, qaCheckDefinitionFilter)">
+  <button class="btn btn-xs btn-warning" ng-click="resetQaDefinitionFilter()">Reset</button>
+</span>
 
 <table style="width: 100%" class="table pure-table" style="margin-bottom: 5px;">
   <thead>
