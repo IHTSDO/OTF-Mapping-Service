@@ -76,7 +76,3 @@ pre.edit {
 	border: 1px solid; border-radius: 10px; padding: 15px;
 	display: block;
 }
-
-.angular-ui-tree-handle {
-	font-weight: 400 !important;
-}
