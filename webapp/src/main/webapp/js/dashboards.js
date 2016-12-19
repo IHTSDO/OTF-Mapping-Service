@@ -926,7 +926,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
             columns : [ {
               class : 'col-md-12',
               widgets : [ {
-                type : 'ApplicationAdmin',
+                type : 'applicationAdmin',
                 config : {},
                 title : 'Application Administration'
               } ]
