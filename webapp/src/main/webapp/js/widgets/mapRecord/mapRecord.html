@@ -1,39 +1,37 @@
 <!--  CONCEPT PANEL -->
 <!-- Prevent reload on this editing page -->
-<script type="text/javascript">
-  window.onbeforeunload = function() {
-    return "If you leave this page data may be lost!";
-  }
-</script>
-<uib-accordion> <uib-accordion-group
-  is-open="isConceptOpen"> <uib-accordion-heading>
-Source Concept <i class="pull-right glyphicon"
+
+<uib-accordion> <uib-accordion-group is-open="isConceptOpen">
+<uib-accordion-heading> Source Concept <i
+  class="pull-right glyphicon"
   ng-class="{'glyphicon-chevron-down': isConceptOpen, 'glyphicon-chevron-right': !isConceptOpen}"></i>
 </uib-accordion-heading>
 <table>
   <tr>
-    <td style="vertical-align: top; padding: 5px;"><strong>Id</strong>
+    <td style="vertical-align: top; padding: 5px;">
+      <strong>Id</strong>
     </td>
     <td style="vertical-align: top; padding: 5px;">
-      {{concept.terminology}},{{concept.terminologyId}} &nbsp; <a
-      title='Open SNOMED Browser' href=""> <i
-        class="glyphicon glyphicon-info-sign"
-        ng-click="openConceptBrowser()"></i>
-    </a> <a title='Open Index Viewer' ng-show="indexViewerExists == true">
+      {{concept.terminology}},{{concept.terminologyId}} &nbsp;
+      <a title='Open SNOMED Browser' href="">
+        <i class="glyphicon glyphicon-info-sign" ng-click="openConceptBrowser()"></i>
+      </a>
+      <a title='Open Index Viewer' ng-show="indexViewerExists == true">
         <i ng-click="openIndexViewer()" class="glyphicon glyphicon-book"></i>
-    </a>
+      </a>
     </td>
   </tr>
   <tr>
-    <td style="vertical-align: top; padding: 5px;"><strong>Name</strong>
+    <td style="vertical-align: top; padding: 5px;">
+      <strong>Name</strong>
     </td>
     <td style="vertical-align: top; padding: 5px;">{{concept.defaultPreferredName}}</td>
   </tr>
 </table>
 </uib-accordion-group> </uib-accordion>
-<uib-accordion> <uib-accordion-group
-  is-open="isEntriesOpen"> <uib-accordion-heading>
-Entries (New) <i class="pull-right glyphicon"
+<uib-accordion> <uib-accordion-group is-open="isEntriesOpen">
+<uib-accordion-heading> Entries (New) <i
+  class="pull-right glyphicon"
   ng-class="{'glyphicon-chevron-down': isEntriesOpen, 'glyphicon-chevron-right': !isEntriesOpen}"></i>
 </uib-accordion-heading>
 <div ui-tree="options">
@@ -44,10 +42,9 @@ Entries (New) <i class="pull-right glyphicon"
           <i class="glyphicon glyphicon-move"></i>
         </div>
         Map Group {{group.mapGroup}}
-        <div ng-show="project.mapRefsetPattern != 'SimpleMap'"
-          data-nodrag style="display: inline; float: right; width: 3%;">
-          <i class="glyphicon glyphicon-remove"
-            ng-click="deleteMapGroup(group)"></i>
+        <div ng-show="project.mapRefsetPattern != 'SimpleMap'" data-nodrag
+          style="display: inline; float: right; width: 3%;">
+          <i class="glyphicon glyphicon-remove" ng-click="deleteMapGroup(group)"></i>
         </div>
       </div>
       <ol ui-tree-nodes="" ng-model="group.entry">
@@ -59,17 +56,16 @@ Entries (New) <i class="pull-right glyphicon"
               <i class="glyphicon glyphicon-move"></i>
             </div>
             <a data-nodrag ng-click="selectMapEntry(entry)">{{getEntrySummary(entry)}}</a>
-            <div data-nodrag
-              style="display: inline; float: right; width: 3%;">
+            <div data-nodrag style="display: inline; float: right; width: 3%;">
               <i ng-show="project.mapRefsetPattern != 'SimpleMap'"
                 class="glyphicon glyphicon-remove"
                 ng-click="deleteMapEntry(entry)"></i>
             </div>
           </div>
         </li>
-        <li ng-show="project.mapRefsetPattern != 'SimpleMap'"
-          data-nodrag><button class="btn btn-xs btn-primary"
-            ng-click="addMapEntry(group)">Add Entry</button></li>
+        <li ng-show="project.mapRefsetPattern != 'SimpleMap'" data-nodrag><button
+            class="btn btn-xs btn-primary" ng-click="addMapEntry(group)">Add
+            Entry</button></li>
       </ol>
       <hr>
     </li>
@@ -92,18 +88,17 @@ Notes <i class="pull-right glyphicon"
       <!-- <i class="glyphicon glyphicon-pencil pull-right"
 					ng-click="editRecordNote(record, note); noteInput = note.note"></i>
 	 -->
-      [By <a href="mailto:{{user.email}}">{{note.user.name}}</a> on
-      {{note.timestamp | date:'MM-dd-yyyy HH:mm'}}]
-      <div style="padding-left: 20px;"
-        ng-bind-html="to_trusted(note.note)"></div>
+      [By
+      <a href="mailto:{{user.email}}">{{note.user.name}}</a>
+      on {{note.timestamp | date:'MM-dd-yyyy HH:mm'}}]
+      <div style="padding-left: 20px;" ng-bind-html="to_trusted(note.note)"></div>
     </div>
   </div>
   <hr>
 </div>
 <span style="color: red">{{errorAddRecordNote}}</span> <!--  tinymce text area -->
 <form>
-  <textarea id="tinymce-notes" ui-tinymce="tinymceOptions"
-    ng-model="noteInput"></textarea>
+  <textarea id="tinymce-notes" ui-tinymce="tinymceOptions" ng-model="noteInput"></textarea>
   <button class="btn btn-xs btn-primary" class="btn btn-xs btn-primary"
     ng-show="noteEditMode == false" class="pull-right" accesskey="a"
     ng-disabled="!noteInput"
@@ -113,8 +108,12 @@ Notes <i class="pull-right glyphicon"
 		ng-click="saveEditRecordNote(record, noteInput); noteInput = ''">
 		<input ng-show="noteEditMode == true" class="pull-right" type="submit"  accesskey="a" value="Cancel Editing"
 		ng-click="cancelEditRecordNote(); noteInput = ''"> -->
-  <span class="pull-right"> Shortcut to add note: <code>Tab</code>
-    , <code>Enter</code> &nbsp;&nbsp;
+  <span class="pull-right">
+    Shortcut to add note:
+    <code>Tab</code>
+    ,
+    <code>Enter</code>
+    &nbsp;&nbsp;
   </span>
 </form>
 <!-- Original text area box
@@ -131,9 +130,10 @@ Principles <i class="pull-right glyphicon"
       <div style="display: inline; float: left; width: 7%">
         {{principle.principleId}}:</div>
       <div style="display: inline;" class="dropdown">
-        <a class="dropdown-toggle"> <i
-          class="glyphicon glyphicon-info-sign"></i>
-        </a> {{principle.name}}
+        <a class="dropdown-toggle">
+          <i class="glyphicon glyphicon-info-sign"></i>
+        </a>
+        {{principle.name}}
         <div class="dropdown-menu">
           <p>Reference: {{principle.sectionRef}}</p>
           <p ng-bind-html="to_trusted(principle.detail)"></p>
@@ -157,21 +157,21 @@ Principles <i class="pull-right glyphicon"
 <hr>
 <div
   ng-show="project.mapPrincipleSourceDocument != null && project.mapPrincipleSourceDocument.length > 0">
-  Principles taken from <a
-    href="doc/{{project.mapPrincipleSourceDocument}}" target="_blank">Map
+  Principles taken from
+  <a href="doc/{{project.mapPrincipleSourceDocument}}" target="_blank">Map
     Principles Document</a>
 </div>
 </uib-accordion-group> </uib-accordion> <!--  FLAGS PANEL --> <uib-accordion> <uib-accordion-group
   is-open="isFlagsOpen"> <uib-accordion-heading>
 Flags <i class="pull-right glyphicon"
   ng-class="{'glyphicon-chevron-down': isFlagsOpen, 'glyphicon-chevron-right': !isFlagsOpen}"></i>
-</uib-accordion-heading> <input type="checkbox" ng-model="record.flagForConsensusReview">
-Flag for consensus review<br>
-<input type="checkbox" ng-model="record.flagForEditorialReview">
-Flag for editorial review<br>
+</uib-accordion-heading> <input type="checkbox" ng-model="record.flagForConsensusReview"> Flag
+for consensus review<br>
+<input type="checkbox" ng-model="record.flagForEditorialReview"> Flag
+for editorial review<br>
 <input type="checkbox" ng-model="record.flagForMapLeadReview"
-  ng-show="page != 'resolveConflictsDashboard'"> Flag for map
-lead review<br>
+  ng-show="page != 'resolveConflictsDashboard'"> Flag for map lead
+review<br>
 </uib-accordion-group> </uib-accordion> <!--   FEEDBACK PANEL -->
 <div
   ng-show="record.workflowStatus != 'CONFLICT_NEW' 
@@ -183,22 +183,23 @@ lead review<br>
 	&& record.workflowStatus != 'QA_NEW'
 	&& record.workflowStatus != 'QA_IN_PROGRESS'
 	&& record.workflowStatus != 'QA_RESOLVED'">
-  <uib-accordion> <uib-accordion-group
-    is-open="isFeedbackOpen"> <uib-accordion-heading>
-  <span ng-click="markViewed()"> Feedback <span
-    ng-show="conversation.feedback.length > 0">({{conversation.feedback.length}})</span>
+  <uib-accordion> <uib-accordion-group is-open="isFeedbackOpen">
+  <uib-accordion-heading> <span ng-click="markViewed()">
+    Feedback
+    <span ng-show="conversation.feedback.length > 0">({{conversation.feedback.length}})</span>
     <i class="pull-right glyphicon"
-    ng-class="{'glyphicon-chevron-down': isFeedbackOpen, 'glyphicon-chevron-right': !isFeedbackOpen}"></i>
+      ng-class="{'glyphicon-chevron-down': isFeedbackOpen, 'glyphicon-chevron-right': !isFeedbackOpen}"></i>
   </span></uib-accordion-heading>
   <div ng-show="conversation.feedback.length > 0">
     <div ng-repeat="feedback in conversation.feedback">
       <div class="alert alert-warning" disabled>
-        [By {{feedback.sender.name}} to <span
-          ng-repeat="recipient in feedback.recipients">
-          {{recipient.name}} <span ng-if="$last == false">,</span>
-        </span> on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
-        <div ng-show="feedback.mapError != 'None'"
-          style="padding-left: 20px;"
+        [By {{feedback.sender.name}} to
+        <span ng-repeat="recipient in feedback.recipients">
+          {{recipient.name}}
+          <span ng-if="$last == false">,</span>
+        </span>
+        on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
+        <div ng-show="feedback.mapError != 'None'" style="padding-left: 20px;"
           ng-bind-html="to_trusted(feedback.mapError)"></div>
         <div style="padding-left: 20px;"
           ng-bind-html="to_trusted(feedback.message)"></div>
@@ -206,24 +207,24 @@ lead review<br>
     </div>
     <hr>
   </div>
-  <!--  tinymce text area -->
-  <form
-    ng-submit="sendFeedback(record, feedbackInput, returnRecipients); feedbackInput=''">
+  <!--  tinymce text area --> <span>
     <div ng-dropdown-multiselect="" options="project.mapLead"
-      selected-model="returnRecipients"
-      extra-settings="multiSelectSettings"
+      selected-model="returnRecipients" extra-settings="multiSelectSettings"
       translation-texts="multiSelectCustomTexts"></div>
     <textarea id="tinymce-feedback" ui-tinymce="tinymceOptions"
       ng-model="feedbackInput"></textarea>
-    <button class="btn btn-xs btn-primary pull-right" type="submit"
+    <button class="btn btn-xs btn-primary pull-right"
       ng-disabled="!feedbackInput"
       ng-click="sendFeedback(record, feedbackInput, returnRecipients); feedbackInput = ''">
       Send Feedback</button>
-    <span class="pull-right"> Shortcut to send feedback: <code>Tab</code>
-      , <code>Enter</code> &nbsp;&nbsp;
+    <span class="pull-right">
+      Shortcut to send feedback:
+      <code>Tab</code>
+      ,
+      <code>Enter</code>
+      &nbsp;&nbsp;
     </span>
-  </form>
-  </uib-accordion-group> </uib-accordion>
+  </span> </uib-accordion-group> </uib-accordion>
 </div>
 <button class="btn btn-xs btn-primary" ng-click="finishMapRecord(true)">Finish</button>
 <button class="btn btn-xs btn-warning" ng-click="cancelMapRecord()">Cancel</button>
@@ -231,22 +232,18 @@ lead review<br>
 <button class="btn btn-xs btn-primary" style="float: right;"
   ng-click="saveMapRecord(true)">Save For Later</button>
 <button class="btn btn-xs btn-primary" tooltip-placement="top"
-  uib-tooltip="{{dynamicTooltip}}"
-  ng-show="page != 'resolveConflictsDashboard'"
-  style="float: right; margin-right: 5px;"
-  ng-click="saveMapRecord(false)">Save/Next</button>
+  uib-tooltip="{{dynamicTooltip}}" ng-show="page != 'resolveConflictsDashboard'"
+  style="float: right; margin-right: 5px;" ng-click="saveMapRecord(false)">Save/Next</button>
 <p></p>
 <p></p>
-<span style="color: green;">{{recordSuccess}}</span> <span
-  style="color: red;">{{recordError}}</span>
+<span style="color: green;">{{recordSuccess}}</span> <span style="color: red;">{{recordError}}</span>
 <div style="color: red;" ng-show="validationResult.errors.length > 0">
   Errors detected:
   <ul>
     <li ng-repeat="error in validationResult.errors">{{error}}</li>
   </ul>
 </div>
-<div style="color: orange;"
-  ng-show="validationResult.warnings.length > 0">
+<div style="color: orange;" ng-show="validationResult.warnings.length > 0">
   Warnings:
   <ul>
     <li ng-repeat="warning in validationResult.warnings">{{warning}}</li>

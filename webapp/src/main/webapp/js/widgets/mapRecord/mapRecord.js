@@ -30,6 +30,11 @@ angular
       function($scope, $window, $rootScope, $http, $routeParams, $location, $sce, $uibModal,
         localStorageService, utilService) {
 
+        // Attach an onbeforeunload function
+        $window.onbeforeunload = function() {
+          return "If you leave this page data may be lost!";
+        }
+
         // ///////////////////////////////////
         // Map Record Controller Functions //
         // ///////////////////////////////////
@@ -993,7 +998,7 @@ angular
 
             // add note to record
             addElementWithId(record.mapNote, mapNote);
-            
+
             $scope.tinymceContent = null;
 
           }

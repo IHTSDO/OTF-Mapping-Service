@@ -3,7 +3,7 @@
 <div ng-include src="'./partials/header.html'"></div>
 
 <div id="wrapper">
-  <div id="content"> 
+  <div id="content">
     <div id="content-left">
       <strong>Enter User and Password </strong><br>
       <form>
@@ -11,10 +11,11 @@
           type="text" placeholder="Username" /><br> <input
           style="margin-top: 5px;" id="passwordField" type="password"
           placeholder="Password" ng-model="password" /><br>
-        <button style="margin-top: 10px;" id="userLoginButton" type="submit"
-          ng-click="go('/viewer/dash')">Login</button>
-        <p style="margin-top: 5px">
-          <a href="{{appConfig['deploy.reset.password.link']}}">Forgot Password?</a>
+        <button class="btn btn-xs btn-primary" style="margin-top: 10px;"
+          id="userLoginButton" type="submit" ng-click="go('/viewer/dash')">Login</button>
+        <p>
+          <a href="{{appConfig['deploy.reset.password.link']}}">Forgot
+            Password?</a>
         </p>
       </form>
     </div>

@@ -812,6 +812,14 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
           columns : [ {
             class : 'col-md-12',
             widgets : [ {
+              type : 'report',
+              title : 'Reports'
+            } ]
+          } ]
+        }, {
+          columns : [ {
+            class : 'col-md-12',
+            widgets : [ {
               type : 'qaCheck',
               title : 'QA Checks'
             } ]
@@ -906,6 +914,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
               title : 'Map Project'
             } ]
           } ]
+
         }, {
           columns : [ {
             class : 'col-md-12',
@@ -914,16 +923,16 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
               config : {},
               title : 'Record Administration'
             } ]
-          }, {
-            columns : [ {
-              class : 'col-md-12',
-              widgets : [ {
-                type : 'ApplicationAdmin',
-                config : {},
-                title : 'Application Administration'
-              } ]
-            } ]
+          } ]
 
+        }, {
+          columns : [ {
+            class : 'col-md-12',
+            widgets : [ {
+              type : 'applicationAdmin',
+              config : {},
+              title : 'Application Administration'
+            } ]
           } ]
 
         }, {

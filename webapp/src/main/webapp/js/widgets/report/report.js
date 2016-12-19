@@ -50,13 +50,23 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
         && $scope.currentUserToken != null) {
         $http.defaults.headers.common.Authorization = $scope.currentUserToken;
 
-        // retrieve the definitions and sort by name
-        $scope.definitions = $scope.focusProject.reportDefinition;
+        // retrieve the definitions
+        $scope.definitions = $scope.focusProject.reportDefinition.filter(function(item) {
+          if ($scope.currentRole == 'Specialist') {
+            return item.roleRequired == 'SPECIALIST' || item.roleRequired == 'VIEWER';
+          } else if ($scope.currentRole == 'Lead') {
+            return item.roleRequired == 'LEAD' || item.roleRequired == 'SPECIALIST'
+              || item.roleRequired == 'VIEWER';
+          }
+          return true;
+        });
+        
         $scope.definitions.sort();
 
-        // retrieve the first page of
-        // reports
-        $scope.getReports(1, null, null);
+        // retrieve the first page of reports (for leads)
+        if ($scope.currentRole == 'Lead') {
+          $scope.getReports(1, null, null);
+        }
       }
     });
 
