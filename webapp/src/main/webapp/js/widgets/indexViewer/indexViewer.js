@@ -112,16 +112,12 @@ angular
 
         // select the first domain and first page
         $scope.selectDomainTab($scope.domainTabs[0]);
-        $scope.selectPageTab($scope.domainTabs[0].pageTabs[0]);
+        $scope.domainTabs[0].pageTabs[0].active = true;
       };
 
       // processes tab click events
       $scope.selectDomainTab = function(selectedDomainTab) {
         $scope.selectedDomain = selectedDomainTab.domain;
-      };
-
-      $scope.selectPageTab = function(pageTab) {
-        $scope.selectedPage = pageTab.name;
       };
 
       // //////////////////////////////////////////
