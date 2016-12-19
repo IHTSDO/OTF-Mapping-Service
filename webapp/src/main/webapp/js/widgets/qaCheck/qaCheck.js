@@ -52,9 +52,9 @@ angular.module('mapProjectApp.widgets.qaCheck', [ 'adf.provider' ]).config(
 
         // retrieve the definitions
         $scope.definitions = $scope.focusProject.reportDefinition.filter(function(item) {
-          if ($scope.currentRole == 'SPECIALIST') {
+          if ($scope.currentRole == 'Specialist') {
             return item.roleRequired == 'SPECIALIST' || item.roleRequired == 'VIEWER';
-          } else if ($scope.currentRole == 'LEAD') {
+          } else if ($scope.currentRole == 'Lead') {
             return item.roleRequired == 'LEAD' || item.roleRequired == 'SPECIALIST'
               || item.roleRequired == 'VIEWER';
           }

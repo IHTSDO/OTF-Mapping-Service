@@ -88,8 +88,8 @@
       <td style="vertical-align: top; padding: 5px;">
         <span>{{entry.rule}}&nbsp;</span>
         <span ng-show="entry.rule.length > 0">
-          <input type="submit" value="Set Rule"
-            ng-click="openRuleConstructor(entry)">
+          <button class="btn btn-xs btn-primary"
+            ng-click="openRuleConstructor(entry)">Set Rule</button>
         </span>
         <div style="color: red">{{localErrorRule}}</div>
       </td>

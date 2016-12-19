@@ -12,26 +12,24 @@
 <p>{{errorRecords}}</p>
 
 <p>
-<form>
+<form ng-submit="retrieveRecords(1)">
   <input ng-model="searchParameters.query">
-  <a style="margin-left: 5px; margin-right: 10px;"
-    ng-click="toggleAdvancedSearch()">
-    <i class="glyphicon glyphicon-cog"></i>
-  </a>
-  <a style="margin-right: 10px;" title='Open Index Viewer'
-    ng-show="indexViewerExists == true">
-    <i ng-click="openIndexViewer()" class="glyphicon glyphicon-book"></i>
-  </a>
-  <input type="submit" value="Search" ng-click="retrieveRecords(1)"> <input
-    type="submit" value="Reset" ng-click="resetSearch()"> <input
-    type="submit" style="margin-left: 5px; margin-right: 5px" value="QA Records"
+  <i style="margin-left: 5px; margin-right: 10px;"
+    ng-click="toggleAdvancedSearch()" class="noul glyphicon glyphicon-cog"></i>
+  <i style="margin-right: 10px;" title='Open Index Viewer'
+    ng-show="indexViewerExists == true" ng-click="openIndexViewer()"
+    class="noul glyphicon glyphicon-book"></i>
+
+  <button class="btn btn-xs btn-primary">Search</button>
+  <span class="btn btn-xs btn-warning" ng-click="resetSearch()">Reset</span>
+  <span class="btn btn-xs btn-primary"
+    style="margin-left: 5px; margin-right: 5px"
     ng-show="(currentRole == 'Specialist' || currentRole == 'Lead') && nRecords > 0 && nRecords < qaRecordLimit"
-    ng-click="openQaRecordsModal()"> &nbsp;&nbsp; {{nRecords}} results,
-  page {{searchParameters.page}} of {{numRecordPages}}
+    ng-click="openQaRecordsModal()">QA Records</span>
+  &nbsp;&nbsp; {{nRecords}} results, page {{searchParameters.page}} of
+  {{numRecordPages}}
 
   <div ng-show="searchParameters.advancedMode">
-
-
     <hr>
     <div class="row" style="padding: 5px;">
       <div class="col-md-3" style="padding-right: 0px;">
@@ -80,7 +78,9 @@
       </div>
     </div>
 
-    <div class="row" style="padding: 5px;">
+    <!-- Search by map advice -->
+    <div ng-show="searchParameters.advices.length > 0" class="row"
+      style="padding: 5px;">
       <div class="col-md-3" style="padding-right: 0px;">
         Map Advice
         <i class="glyphicon glyphicon-remove pull-right"
@@ -95,6 +95,25 @@
           ng-options="mapAdvice.name as mapAdvice.name for mapAdvice in searchParameters.advices | orderBy:'name'"></select>
       </div>
     </div>
+
+    <!--  Search by map principles -->
+    <div ng-show="searchParameters.principles.length > 0" class="row"
+      style="padding: 5px;">
+      <div class="col-md-3" style="padding-right: 0px;">
+        Map Principle
+        <i class="glyphicon glyphicon-remove pull-right"
+          ng-click="searchParameters.principleName = null"
+          ng-show="searchParameters.principleName"></i>
+      </div>
+      <div class="col-md-9">
+        <select style="width: 15%"
+          ng-model="searchParameters.principleContained"
+          ng-options="o.val as o.key for o in [{ key: 'contains', val: true }, { key: 'does not contain', val: false }]">
+        </select> <select style="width: 83%" ng-model="searchParameters.principleName"
+          style="width: 98%;"
+          ng-options="mapPrinciple.name as mapPrinciple.name for mapPrinciple in searchParameters.principles | orderBy:'name'"></select>
+      </div>
+    </div>
   </div>
 </form>
 
@@ -102,8 +121,7 @@
 
 <pagination total-items="nRecords" ng-model="searchParameters.page"
   max-size="10" class="pagination-sm" boundary-links="true" rotate="true"
-  num-pages="numRecordPages" ng-change="retrieveRecords(page)">
-</uib-pagination>
+  num-pages="numRecordPages" ng-change="retrieveRecords(page)"> </uib-pagination>
 
 
 
@@ -131,7 +149,6 @@
 
 <pagination total-items="nRecords" ng-model="searchParameters.page"
   max-size="10" class="pagination-sm" boundary-links="true" rotate="true"
-  num-pages="numRecordPages" ng-change="retrieveRecords(page)">
-</uib-pagination>
+  num-pages="numRecordPages" ng-change="retrieveRecords(page)"> </uib-pagination>
 
 <div ng-include src="'./partials/footer.html'"></div>
