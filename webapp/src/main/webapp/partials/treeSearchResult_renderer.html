@@ -14,22 +14,24 @@
     class="glyphicon glyphicon-info-sign term-browser-icon"
     ng-show="tree.descGroups.length > 0"
     ng-click="tree.isConceptOpen = !tree.isConceptOpen"></i></a>
-    
-     <a
-    ng-show="tree.valid == true" ng-click="selectConcept(tree)">{{tree.terminologyId}}</a>
-  <span ng-show="tree.valid == false">{{tree.terminologyId}}</span></strong>{{tree.terminologyNote}}:
-  {{truncate(tree.defaultPreferredName)}}
+
+  <!--  Terminology Id -->
+  <a ng-show="tree.valid == true" ng-bind-html="tree.terminologyId | highlight:parameters.query"
+    ng-click="callbacks.selectConcept(tree)"></a>
+  <span ng-show="tree.valid == false" ng-bind-html="tree.terminologyId | highlight:parameters.query"></span>{{tree.terminologyNote}}:
+
+  <!-- Default Preferred Name -->
+  <span
+    ng-bind-html="truncate(tree.defaultPreferredName) | highlight:parameters.query"></span>
   <div style="display: inline;"
     ng-show=truncated(tree.defaultPreferredName) class="dropdown">
     <a class="dropdown-toggle">...</a> <span style="width: 100%"
       class="dropdown-menu term-browser-dropdown-menu">
       {{tree.defaultPreferredName}} </span>
   </div>
-  <!-- Label Set highlighting on component name-->
-  <span
-    ng-bind-html="tree.defaultPreferredName | highlight:parameters.query"></span>
 
-  <div ng-show="tree.isConceptOpen" ng-init="tree.isConceptOpen = false">
+  <div ng-show="tree.isConceptOpen"
+    ng-init="tree.isConceptOpen = parameters.query === tree.terminologyId">
     <div class="well well-sm">
       <div ng-repeat="descGroup in tree.descGroups">
         <em>{{descGroup.name}}</em>

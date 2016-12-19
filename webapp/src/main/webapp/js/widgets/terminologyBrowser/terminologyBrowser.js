@@ -164,6 +164,9 @@ angular.module('mapProjectApp').controller(
       if (new RegExp('^\s+$').test($scope.query)) {
         return;
       }
+      
+      // set the srt parameters
+      $scope.srtParameters.query = $scope.query;
 
       // clear the search results
       $scope.searchResults = [];
@@ -532,16 +535,7 @@ angular.module('mapProjectApp').controller(
       return elementsByTypeId;
     }
 
-    //
-    // Search Result Tree Renderer callbacks
-    //
-    $scope.srtCallbacks = {
-      getTreeChildren : $scope.getTreeChildren
-    }
-    
-    $scope.srtParameters = {
-      expandAll : $scope.expandAll
-    }
+  
 
     // ////////////////////////////////////////////////////////////////
     // REFERENCE HANDLING
@@ -667,9 +661,23 @@ angular.module('mapProjectApp').controller(
     };
 
     $scope.selectConcept = function(node) {
+      console.debug('selectconcept', node);
       $rootScope.$broadcast('terminologyBrowser.selectConcept', {
         key : 'concept',
         concept : node
       });
     };
+    
+    //
+    // Search Result Tree Renderer callbacks
+    //
+    $scope.srtCallbacks = {
+      getTreeChildren : $scope.getTreeChildren,
+      selectConcept : $scope.selectConcept
+    }
+    
+    $scope.srtParameters = {
+      query : $scope.query
+    }
+    
   });

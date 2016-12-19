@@ -1,6 +1,7 @@
 <!-- Search Results Tree -->
 <div ng-if="searchResults && searchResults.length > 0"
   style="display: block;" ui-tree>
+  {{srtParameters}}
   <ol ui-tree-nodes="" ng-model="searchResults" id="tree-root"
     data-nodrop-enabled="true">
     <li ng-repeat="tree in searchResults" ui-tree-node data-nodrag
