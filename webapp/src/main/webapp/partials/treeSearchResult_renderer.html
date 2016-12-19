@@ -1,0 +1,73 @@
+
+<div ui-tree-handle>
+  <!-- Expand/collapse controls -->
+  <i ng-if="tree.children && tree.childrenCount > 0" data-nodrag
+    ng-click="toggleTree(this)" class="noul glyphicon"
+    ng-class="getTreeNodeIcon(this)"> </i>
+
+  <!-- if this node has no children reported by child count -->
+  <i class="glyphicon glyphicon-leaf" ng-show="tree.childrenCount == 0"></i>
+
+  <!-- Concept Details control -->
+  <i class="glyphicon glyphicon-info-sign term-browser-icon-disabled"
+    ng-show="tree.descGroups.length == 0"></i> <a> <i
+    class="glyphicon glyphicon-info-sign term-browser-icon"
+    ng-show="tree.descGroups.length > 0"
+    ng-click="tree.isConceptOpen = !tree.isConceptOpen"></i></a>
+    
+     <a
+    ng-show="tree.valid == true" ng-click="selectConcept(tree)">{{tree.terminologyId}}</a>
+  <span ng-show="tree.valid == false">{{tree.terminologyId}}</span></strong>{{tree.terminologyNote}}:
+  {{truncate(tree.defaultPreferredName)}}
+  <div style="display: inline;"
+    ng-show=truncated(tree.defaultPreferredName) class="dropdown">
+    <a class="dropdown-toggle">...</a> <span style="width: 100%"
+      class="dropdown-menu term-browser-dropdown-menu">
+      {{tree.defaultPreferredName}} </span>
+  </div>
+  <!-- Label Set highlighting on component name-->
+  <span
+    ng-bind-html="tree.defaultPreferredName | highlight:parameters.query"></span>
+
+  <div ng-show="tree.isConceptOpen" ng-init="tree.isConceptOpen = false">
+    <div class="well well-sm">
+      <div ng-repeat="descGroup in tree.descGroups">
+        <em>{{descGroup.name}}</em>
+        <ul>
+          <li
+            ng-repeat="treePositionDescription in descGroup.treePositionDescriptions">
+            {{truncate(treePositionDescription.name)}}
+            <div style="display: inline"
+              ng-show=truncated(treePositionDescription.name)
+              ng-click="treePositionDescription.isCollapsed = !treePositionDescription.isCollapsed">
+              <a>...</a>
+            </div> <span
+            ng-show="treePositionDescription.referencedConcepts.length > 0">
+              ( <span
+              ng-repeat="referencedConcept in treePositionDescription.referencedConcepts">
+                <a ng-click="gotoReferencedConcept(referencedConcept)">{{referencedConcept.displayName}}
+              </a>
+            </span> )
+          </span>
+            <div ng-show="truncated(treePositionDescription.name)"
+              class="well well-sm"
+              uib-collapse="treePositionDescription.isCollapsed == true || treePositionDescription.isCollapsed == undefined || treePositionDescription.isCollapsed == null">
+              {{treePositionDescription.name}}</div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- recursive display of next level of tree -->
+  <ol ui-tree-nodes="" ng-model="tree.children"
+    ng-class="{'hidden':collapsed}">
+
+
+
+    <!--  render the children -->
+    <li ng-repeat="tree in tree.children | orderBy:terminologyId"
+      ui-tree-node
+      ng-include="'partials/treeSearchResult_renderer.html'"></li>
+  </ol>
+</div>
