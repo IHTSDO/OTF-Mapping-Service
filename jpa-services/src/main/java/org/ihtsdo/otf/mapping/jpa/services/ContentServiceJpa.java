@@ -1895,9 +1895,14 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
     Map<String, String> descTypes, Map<String, String> relTypes,
     Map<String, List<TreePositionDescriptionGroup>> groupMap) throws Exception {
 
+	  // if already computed, attach desc groups and cycle through children
     if (groupMap.containsKey(treePosition.getTerminologyId())) {
       treePosition.setDescGroups(groupMap.get(treePosition.getTerminologyId()));
-      // If we've seen this terminology id, we've processed it's children
+      if (treePosition.getChildrenCount() > 0) {
+        for (final TreePosition tp : treePosition.getChildren()) {
+          computeTreePositionInformationHelper(tp, descTypes, relTypes, groupMap);
+        }
+      }
       return;
     }
 
