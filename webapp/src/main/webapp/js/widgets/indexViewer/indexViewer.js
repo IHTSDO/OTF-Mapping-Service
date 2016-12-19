@@ -324,7 +324,12 @@ angular
         $http.get(
           root_content + 'index/' + $scope.focusProject.destinationTerminology + '/'
             + $scope.focusProject.destinationTerminologyVersion + '/' + $scope.selectedDomain.name
-            + '/details/' + link).then(
+            + '/details/' + link, {
+              transformResponse : [ function(data) {
+                // Response is plain text at this point
+                return data;
+              } ]
+            }).then(
           // Success
           function(response) {
             // substring to eliminate quotation marks
