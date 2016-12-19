@@ -168,9 +168,6 @@ mapProjectAppDirectives.directive('treeSearchResult', [
       restrict : 'A',
       scope : {
 
-        // metadata
-        metadata : '=',
-
         // set search results if viewing trees for search
         searchResults : '=',
 
@@ -182,6 +179,8 @@ mapProjectAppDirectives.directive('treeSearchResult', [
       },
       templateUrl : 'partials/treeSearchResult.html',
       link : function(scope, element, attrs) {
+        
+        console.debug('callbacks', scope.callbacks);
 
         // page sizes
         scope.pageSizeSibling = 10;
@@ -221,6 +220,11 @@ mapProjectAppDirectives.directive('treeSearchResult', [
             tree.children = concatSiblings(tree.children, children);
           });
         };
+        
+        scope.selectConcept = function(tree) {
+          console.debug('in directive select concept');
+          scope.callbacks.selectConcept(tree);
+        }
 
         // retrieves children for a node (not from DOM)
         scope.getTreeChildren = function(tree) {

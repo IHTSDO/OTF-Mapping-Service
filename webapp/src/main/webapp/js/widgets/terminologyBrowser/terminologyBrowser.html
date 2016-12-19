@@ -1,9 +1,10 @@
-
+<form ng-submit="search()">
   <input ng-model="query" autofocus>
-  <button type="submit" class="btn btn-xs btn-primary" ng-click="search()">Search</button>
+  <button class="btn btn-xs btn-primary">Search</button>
   <span class="btn btn-xs btn-warning" ng-show="query"
     ng-click="clearSearch()">Reset</span>
-  
+
+
   <!-- Support tree/list mode switching -->
   <span ng-show="listMode"> <i style="margin-right: 20px"
     class="pull-right noul glyphicon glyphicon-tree-conifer"
@@ -16,6 +17,8 @@
     class="pull-right noul glyphicon glyphicon-th-list"
     title="Switch to list view" ng-click="toggleListMode()"></i>
   </span>
+</form>
+
 <p></p>
 <!-- Search Results: scrollable container -->
 <div style="max-height: 1000px; overflow-y: scroll;">
@@ -41,9 +44,10 @@
       </li>
     </ul>
   </div>
+
+
   <div ng-show="!listMode">
-    <div tree-search-result metadata="selected.metadata"
-      search-results="terminologyTree" parameters="searchParams"
-      callbacks="srtCallbacks"></div>
+    <div tree-search-result search-results="terminologyTree"
+      parameters="srtParameters" callbacks="srtCallbacks"></div>
   </div>
 </div>

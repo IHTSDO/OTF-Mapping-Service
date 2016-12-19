@@ -247,6 +247,11 @@ body {
 	margin-right: auto;
 }
 
-.tree-search-result {
-	font-weight: auto;
+.angular-ui-tree-handle {
+	font-weight: 400 !important;
+	cursor: auto !important;
+}
+
+.highlighted {
+	background: yellow
 }
