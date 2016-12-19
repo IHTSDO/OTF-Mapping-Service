@@ -88,7 +88,8 @@ mapProjectApp.run([
   'gpService',
   'utilService',
   function($http, appConfig, gpService, utilService) {
-
+    
+  
     // Request properties from the server
     gpService.increment();
     $http.get('/mapping-rest/security/properties').then(
@@ -133,7 +134,10 @@ mapProjectApp.run([
 
 // set the main application window name
 // window.name = 'mappingToolWindow';
-mapProjectApp.config([ '$routeProvider', function($routeProvider) {
+mapProjectApp.config([ '$rootScopeProvider', '$routeProvider', function($rootScopeProvider, $routeProvider) {
+  
+  $rootScopeProvider.digestTtl(15); 
+
 
   // ////////////////////////////
   // DASHBOARDS
