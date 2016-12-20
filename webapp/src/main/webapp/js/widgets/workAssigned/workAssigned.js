@@ -1,18 +1,18 @@
 'use strict';
 
 angular
-  .module('mapProjectApp.widgets.assignedList', [ 'adf.provider' ])
+  .module('mapProjectApp.widgets.workAssigned', [ 'adf.provider' ])
   .config(function(dashboardProvider) {
-    dashboardProvider.widget('assignedList', {
+    dashboardProvider.widget('workAssigned', {
       title : 'Assigned Work',
       description : 'Displays a list of assigned records',
-      controller : 'assignedListCtrl',
-      templateUrl : 'js/widgets/assignedList/assignedList.html',
+      controller : 'workAssignedCtrl',
+      templateUrl : 'js/widgets/workAssigned/workAssigned.html',
       edit : {}
     });
   })
   .controller(
-    'assignedListCtrl',
+    'workAssignedCtrl',
     function($scope, $rootScope, $http, $location, $uibModal, localStorageService) {
 
       // on initialization, explicitly assign to null and/or empty array
@@ -642,6 +642,8 @@ angular
           }).success(function(data) {
 
           $rootScope.glassPane--;
+          
+          console.debug('broadcasting', mapUser, workType)
 
           // trigger reload of this type of work via broadcast
           // notification
@@ -651,10 +653,11 @@ angular
             resetFilters : false
           });
 
-          // if this user unassigned their own work, broadcast
-          // unassign
-          if (mapUser.userName === $scope.currentUser.userName)
-            $rootScope.$broadcast('assignedListWidget.notification.unassignWork');
+          $rootScope.$broadcast('workAssignedWidget.notification.unassignWork', {
+            assignUser : mapUser,
+            assignType : workType,
+            resetFilters : false
+          });
 
           // if this user is viewing their assigned concepts via the By User
           // tab, re-retrieve
@@ -767,10 +770,8 @@ angular
             assignWorkflowStatus : workStatus
           });
 
-          // if this user unassigned their own work, broadcast
-          // unassign
-          if (mapUser.userName === $scope.currentUser.userName)
-            $rootScope.$broadcast('assignedListWidget.notification.unassignWork');
+        
+            $rootScope.$broadcast('workAssignedWidget.notification.unassignWork');
 
         });
 
@@ -916,7 +917,7 @@ angular
         var workflowStatus = records[0].terminologyVersion;
         var modalInstance = $uibModal
           .open({
-            templateUrl : 'js/widgets/assignedList/assignedListFinishOrPublish.html',
+            templateUrl : 'js/widgets/workAssigned/workAssignedFinishOrPublish.html',
             controller : FinishOrPublishWorkModalCtrl,
             size : 'lg',
             resolve : {
