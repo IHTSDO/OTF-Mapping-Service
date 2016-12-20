@@ -1,25 +1,40 @@
-<form ng-submit="search()">
-  <input ng-model="query" autofocus>
-  <button class="btn btn-xs btn-primary">Search</button>
-  <span class="btn btn-xs btn-warning" ng-show="query"
-    ng-click="clearSearch()">Reset</span>
+<div class="row" style="padding-left: 10px;">
+  <div class="col-md-6">
+    <input ng-model="query" autofocus>
+    <button class="btn btn-xs btn-primary" ng-click="search()">Search</button>
+    <span class="btn btn-xs btn-warning" ng-show="query"
+      ng-click="clearSearch()">Reset</span>
+  </div>
 
+  <div class="col-md-2">
+    <i
+      ng-show="paging.tree.pages > 0 && paging.tree.page != paging.tree.pages"
+      ng-click="search(1)" 
+      class="noul glyphicon glyphicon-forward pull-right"></i>
+    <i ng-show="paging.tree.pages > 0 && paging.tree.page != 1"
+      ng-click="search(-1)"
+      class="noul glyphicon glyphicon-backward pull-right" style="margin-right:10px;"></i>
+   
+  </div>
 
   <!-- Support tree/list mode switching -->
-  <span ng-show="listMode"> <i style="margin-right: 20px"
-    class="pull-right noul glyphicon glyphicon-tree-conifer"
-    ng-click="toggleListMode()" title="Switch to tree view"></i>
-    &nbsp;&nbsp; <i class="pull-right glyphicon glyphicon-th-list"
-    uib-tooltip="Currently in list mode"></i>
-  </span> <span ng-show="!listMode"> <i style="margin-right: 20px"
-    class="pull-right glyphicon glyphicon-tree-conifer"
-    uib-tooltip="Currently in tree mode"></i> &nbsp;&nbsp; <i
-    class="pull-right noul glyphicon glyphicon-th-list"
-    title="Switch to list view" ng-click="toggleListMode()"></i>
-  </span>
-</form>
+  <div class="col-md-3 pull-right">
+    <span ng-show="listMode"> <i style="margin-right: 20px"
+      class="pull-right noul glyphicon glyphicon-tree-conifer"
+      ng-click="toggleListMode()" title="Switch to tree view"></i>
+      &nbsp;&nbsp; <i class="pull-right glyphicon glyphicon-th-list"
+      uib-tooltip="Currently in list mode"></i>
+    </span> <span ng-show="!listMode"> <i style="margin-right: 20px"
+      class="pull-right glyphicon glyphicon-tree-conifer"
+      uib-tooltip="Currently in tree mode"></i> &nbsp;&nbsp; <i
+      class="pull-right noul glyphicon glyphicon-th-list"
+      title="Switch to list view" ng-click="toggleListMode()"></i>
+    </span>
+  </div>
+</div>
 
-<p></p>
+
+
 <!-- Search Results: scrollable container -->
 <div style="max-height: 1000px; overflow-y: scroll;">
   <span ng-show="searchStatus" style="margin-top: 5px"
@@ -44,10 +59,11 @@
       </li>
     </ul>
   </div>
+</div>
 
-
-  <div ng-show="!listMode">
-    <div tree-search-result search-results="terminologyTree"
-      parameters="srtParameters" callbacks="srtCallbacks"></div>
-  </div>
+<p></p>
+<div ng-show="!listMode">
+  <div tree-search-result search-results="terminologyTree"
+    parameters="srtParameters" callbacks="srtCallbacks"></div>
+</div>
 </div>
