@@ -7,10 +7,11 @@
 
 <div ng-show="entry != null">
 
-  <accordion> <accordion-group is-open="isTargetOpen">
-  <accordion-heading> Target<i class="pull-right glyphicon"
+  <uib-accordion> <uib-accordion-group is-open="isTargetOpen">
+  <uib-accordion-heading> Target<i
+    class="pull-right glyphicon"
     ng-class="{'glyphicon-chevron-down': isTargetOpen, 'glyphicon-chevron-right': !isTargetOpen}"></i>
-  </accordion-heading>
+  </uib-accordion-heading>
 
   <table style="width: 100%;">
 
@@ -48,13 +49,13 @@
 
   </table>
 
-  </accordion-group> </accordion>
+  </uib-accordion-group> </uib-accordion>
 
-  <accordion ng-show="project.mapRefsetPattern != 'SimpleMap'"> <accordion-group
-    is-open="isParametersOpen"> <accordion-heading>
+  <uib-accordion ng-show="project.mapRefsetPattern != 'SimpleMap'">
+  <uib-accordion-group is-open="isParametersOpen"> <uib-accordion-heading>
   Mapping Parameters <i class="pull-right glyphicon"
     ng-class="{'glyphicon-chevron-down': isParametersOpen, 'glyphicon-chevron-right': !isParametersOpen}"></i>
-  </accordion-heading>
+  </uib-accordion-heading>
 
   <table style="padding: 5px">
 
@@ -63,21 +64,17 @@
         <strong>Relation</strong>
       </td>
       <td style="vertical-align: top; padding: 5px;">
-        <span ng-show="entry.mapRelation != null">{{entry.mapRelation.name}}</span>
-        <span style="color: lightgray;" ng-show="entry.mapRelation == null">No
-          relation selected.</span>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top; padding: 5px; width: 50px;"></td>
-      <td style="vertical-align: top; padding: 5px;">
-        Set relation: <select ng-show="allowableMapRelations.length > 0"
-          style="width: 80%" ng-model="mapRelationInput"
-          ng-change="selectMapRelation(mapRelationInput); mapRelationInput = null;"
-          ng-options="mapRelation as mapRelation.displayName for mapRelation in allowableMapRelations"></select>
         <span style="color: lightgray;"
           ng-show="allowableMapRelations.length == 0">No relations
           available to select.</span>
+        <span ng-show="allowableMapRelations.length > 0">
+          <select style="max-width: 150px" ng-model="entry.mapRelation"
+            ng-init="entry.mapRelation" ng-change="selectMapRelation()"
+            ng-options="mapRelation as mapRelation.name for mapRelation in allowableMapRelations"></select>
+          &nbsp;&nbsp;
+          <span ng-show="entry.mapRelation">{{entry.mapRelation.name}}</span>
+
+        </span>
       </td>
     </tr>
 
@@ -124,5 +121,5 @@
       </td>
     </tr>
   </table>
-  </accordion-group> </accordion>
+  </uib-accordion-group> </uib-accordion>
 </div>

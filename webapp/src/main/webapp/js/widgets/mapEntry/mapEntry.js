@@ -195,8 +195,9 @@ angular
           var deferred = $q.defer();
 
           // ensure mapRelation is deserializable
-          if (entry.mapRelation === '' || entry.mapRelation === undefined)
+          if (!entry.mapRelation) {
             entry.mapRelation = null;
+          }
 
           // Fake the ID of this entry with -1 id, copy, then set it back
           // This is hacky, but we do not have a good way to send 2 objects
@@ -225,12 +226,20 @@ angular
 
               if (data) {
 
-                entry.mapRelation = data;
                 // get the allowable advices and relations
                 $scope.allowableAdvices = getAllowableAdvices(entry, $scope.project.mapAdvice);
                 sortByKey($scope.allowableAdvices, 'detail');
                 $scope.allowableMapRelations = getAllowableRelations(entry,
                   $scope.project.mapRelation);
+
+                for (var i = 0; i < $scope.allowableMapRelations.length; i++) {
+                  var relation = $scope.allowableMapRelations[i];
+                  if (relation.id == data.id) {
+                    entry.mapRelation = relation;
+                    break;
+                  }
+                }
+
                 $rootScope.glassPane--;
 
                 // return the promise
@@ -695,12 +704,7 @@ angular
         // Relation functions ///
         // ///////////////////////
 
-        $scope.selectMapRelation = function(mapRelation) {
-          $scope.entry.mapRelation = mapRelation;
-
-          // clear advice on relation change
-          $scope.entry.mapAdvice = [];
-
+        $scope.selectMapRelation = function() {
           // compute advices
           computeAdvices($scope.record);
         };
@@ -790,7 +794,6 @@ angular
         // based
         // on null target and element properties
         function getAllowableRelations(entry, relations) {
-
           var allowableRelations = [];
 
           // if the target is null (i.e. neither valid or empty)
@@ -805,11 +808,6 @@ angular
 
                 if ((nullTarget == true && relations[i].isAllowableForNullTarget == true)
                   || (nullTarget == false && relations[i].isAllowableForNullTarget == false)) {
-
-                  // handle a specific case where the name is more descriptive
-                  // than the abbreviation
-                  relations[i].displayName = (relations[i].abbreviation === 'none' ? relations[i].name
-                    : relations[i].abbreviation);
 
                   allowableRelations.push(relations[i]);
                 }
