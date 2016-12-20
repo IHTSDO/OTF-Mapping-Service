@@ -104,14 +104,12 @@ angular.module('mapProjectApp').controller(
 
     // function called on storage listener event
     function onStorageEvent(storageEvent) {
-      console.debug(storageEvent);
-      var targetCode = localStorage.getItem('targetCode');
+     var targetCode = localStorage.getItem('targetCode');
 
       // if target code is set, focus window, remove from storage, and set
       // target
       if (targetCode) {
         localStorage.removeItem('targetCode');
-        console.debug('test');
         $scope.query = targetCode;
         $scope.search();
         $timeout(function() {
@@ -162,8 +160,6 @@ angular.module('mapProjectApp').controller(
     // Perform a search - list or tree depending on the state
     $scope.search = function(page) {
 
-      console.debug('search', page);
-
       // Query is implied
       if (!$scope.query) {
         return;
@@ -180,8 +176,6 @@ angular.module('mapProjectApp').controller(
       // clear the search results
       $scope.searchResults = [];
 
-      console.debug('search, listmode', $scope.listMode);
-
       // list or tree mode
       if ($scope.listMode) {
         $scope.performSearch($scope.query);
@@ -193,7 +187,6 @@ angular.module('mapProjectApp').controller(
         }
 
         $scope.treeQuery = $scope.query;
-        console.debug('get root tree with query', $scope.query);
         $scope.getRootTreeWithQuery(true);
       }
     };
@@ -274,8 +267,7 @@ angular.module('mapProjectApp').controller(
 
     // function to get the root nodes
     $scope.getRootTree = function() {
-      console.debug('get root tree');
-
+   
       $rootScope.glassPane++;
       $http({
         url : root_mapping + 'treePosition/project/id/' + $scope.focusProject.id + '/destination',
@@ -284,7 +276,6 @@ angular.module('mapProjectApp').controller(
           'Content-Type' : 'application/json'
         }
       }).success(function(response) {
-        console.debug('  tree = ', response);
         $rootScope.glassPane--;
 
         for (var i = 0; i < response.treePosition; i++) {
@@ -292,7 +283,6 @@ angular.module('mapProjectApp').controller(
           $scope.response[i].treePosition.isConceptOpen = false;
         }
         $scope.terminologyTree = response.treePosition;
-        console.debug($scope.terminologyTree);
       }).error(function(data, status, headers, config) {
         $rootScope.glassPane--;
         $rootScope.handleHttpError(data, status, headers, config);
@@ -312,7 +302,6 @@ angular.module('mapProjectApp').controller(
       }
       $scope.searchStatus = 'Searching...';
       $scope.terminologyTree = [];
-      console.debug('get root tree with query', $scope.treeQuery);
       $rootScope.glassPane++;
       var pfs = {
         'startIndex' : ($scope.paging.tree.page - 1) * $scope.paging.tree.pageSize,
@@ -320,13 +309,11 @@ angular.module('mapProjectApp').controller(
         'sortField' : 'ancestorPath',
         'queryRestriction' : $scope.query
       };
-      console.debug('pfs', pfs);
       $http.post(
 
         root_mapping + 'treePosition/project/id/' + $scope.focusProject.id + '?query='
           + encodeURIComponent($scope.treeQuery), pfs).success(function(response) {
         $scope.searchStatus = '';
-        console.debug('  result = ', response.data);
         $rootScope.glassPane--;
 
         $scope.terminologyTree = response.treePosition;
@@ -335,7 +322,6 @@ angular.module('mapProjectApp').controller(
         $scope.paging.tree.totalCount = response.totalCount
 
         if (response.totalCount == 1 && $scope.terminology.indexOf('ICD10') == 0) {
-          console.debug('ICD10 detected');
           $scope.srtParameters.expandAll = true;
         } else {
           $scope.srtParameters.expandAll = false;
@@ -419,7 +405,6 @@ angular.module('mapProjectApp').controller(
     };
 
     $scope.gotoReferencedConcept = function(referencedConcept) {
-      console.debug('referenced concept', referencedConcept)
       $scope.query = referencedConcept.terminologyId;
       $scope.treeQuery = referencedConcept.terminologyId;
       $scope.srtParameters.query = referencedConcept.terminologyId;
@@ -430,7 +415,6 @@ angular.module('mapProjectApp').controller(
       var deferred = $q.defer();
 
       $rootScope.glassPane++;
-      console.debug('get local tree', terminologyId);
       $http(
         {
           url : root_mapping + 'treePosition/project/id/' + $scope.focusProject.id + '/concept/id/'
@@ -440,7 +424,6 @@ angular.module('mapProjectApp').controller(
             'Content-Type' : 'application/json'
           }
         }).success(function(response) {
-        console.debug('  tree = ', response);
         $rootScope.glassPane--;
         deferred.resolve(response);
       }).error(function(data, status, headers, config) {
@@ -685,7 +668,6 @@ angular.module('mapProjectApp').controller(
     };
 
     $scope.selectConcept = function(node) {
-      console.debug('selectconcept', node);
       $rootScope.$broadcast('terminologyBrowser.selectConcept', {
         key : 'concept',
         concept : node
