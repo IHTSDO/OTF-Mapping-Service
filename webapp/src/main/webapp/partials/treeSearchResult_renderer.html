@@ -35,7 +35,7 @@
 
 
   <div ng-show="tree.isConceptOpen || parameters.expandAll"
-    ng-init="tree.isConceptOpen = parameters.query === tree.terminologyId">
+    ng-init="tree.isConceptOpen = isMatchingNode(tree)">
     <div class="well well-sm">
       <div ng-show="!tree.descGroups || tree.descGroups.length == 0">
         No description groups</div>
