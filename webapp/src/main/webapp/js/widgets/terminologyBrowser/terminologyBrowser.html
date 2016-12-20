@@ -1,24 +1,26 @@
 <div class="row" style="padding-left: 10px;">
-  <div class="col-md-6">
+  <div class="col-md-8">
     <input ng-model="query" autofocus>
     <button class="btn btn-xs btn-primary" ng-click="search()">Search</button>
     <span class="btn btn-xs btn-warning" ng-show="query"
       ng-click="clearSearch()">Reset</span>
+      <span class="btn btn-xs btn-primary"
+      ng-click="srtParameters.expandAll = !srtParameters.expandAll">{{ srtParameters.expandAll ? 'Collapse' : 'Expand'}}</span>
   </div>
 
   <div class="col-md-2">
     <i
       ng-show="paging.tree.pages > 0 && paging.tree.page != paging.tree.pages"
-      ng-click="search(1)" 
+      ng-click="search(1)" title="Next results"
       class="noul glyphicon glyphicon-forward pull-right"></i>
     <i ng-show="paging.tree.pages > 0 && paging.tree.page != 1"
-      ng-click="search(-1)"
+      ng-click="search(-1)" title="Previous results"
       class="noul glyphicon glyphicon-backward pull-right" style="margin-right:10px;"></i>
    
   </div>
 
   <!-- Support tree/list mode switching -->
-  <div class="col-md-3 pull-right">
+  <div class="col-md-2 pull-right">
     <span ng-show="listMode"> <i style="margin-right: 20px"
       class="pull-right noul glyphicon glyphicon-tree-conifer"
       ng-click="toggleListMode()" title="Switch to tree view"></i>

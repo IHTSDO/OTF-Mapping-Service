@@ -1,4 +1,3 @@
-
 <div ui-tree-handle>
   <!-- Expand/collapse controls -->
   <i ng-if="tree.children && tree.childrenCount > 0" data-nodrag
@@ -32,8 +31,10 @@
       popover-placement="bottom"
       uib-popover="{{tree.defaultPreferredName}}">...</span>
   </div>
+  
 
-  <div ng-show="tree.isConceptOpen"
+
+  <div ng-show="tree.isConceptOpen || parameters.expandAll"
     ng-init="tree.isConceptOpen = parameters.query === tree.terminologyId">
     <div class="well well-sm">
       <div ng-show="!tree.descGroups || tree.descGroups.length == 0">

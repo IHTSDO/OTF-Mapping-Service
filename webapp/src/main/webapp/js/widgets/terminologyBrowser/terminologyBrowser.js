@@ -336,10 +336,17 @@ angular.module('mapProjectApp').controller(
         $scope.paging.tree.pages = Math.ceil(response.totalCount / $scope.paging.tree.pageSize);
         $scope.paging.tree.totalCount = response.totalCount
 
+        if (response.totalCount == 1 && $scope.terminology.indexOf('ICD10') == 0) {
+          console.debug('ICD10 detected');
+          $scope.srtParameters.expandAll = true;
+        } else {
+          $scope.srtParameters.expandAll = false;
+        }
+
         if ($scope.terminologyTree.length == 0) {
           $scope.searchStatus = 'No results';
         }
-        $scope.expandAll($scope.terminologyTree);
+       
         if (isNewSearch) {
           $scope.manageStack($scope.treeQuery);
         }
@@ -693,7 +700,8 @@ angular.module('mapProjectApp').controller(
     }
 
     $scope.srtParameters = {
-      query : $scope.query
+      query : $scope.query,
+      expandAll : false
     }
 
   });
