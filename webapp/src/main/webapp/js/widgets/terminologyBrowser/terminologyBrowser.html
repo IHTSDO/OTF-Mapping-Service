@@ -62,8 +62,7 @@
 <p></p>
 <div ng-show="!listMode">
   <span style="display: block;">
-
-    <uib-pagination ng-show="paging.tree.pages > 1"
+    <uib-pagination ng-show="treeQuery && paging.tree.pages > 1"
       style="margin-top:5px; margin-bottom:5px" items-per-page="1"
       total-items="paging.tree.pages" previous-text="&lsaquo;"
       next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
