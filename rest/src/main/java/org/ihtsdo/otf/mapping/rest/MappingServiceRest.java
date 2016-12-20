@@ -3535,7 +3535,7 @@ public class MappingServiceRest extends RootServiceRest {
    * @return the root-level trees corresponding to the query
    * @throws Exception the exception
    */
-  @GET
+  @POST
   @Path("/treePosition/project/id/{projectId}")
   @ApiOperation(value = "Get tree positions for query", notes = "Gets a list of tree positions for the specified parameters.", response = TreePositionListJpa.class)
   @Produces({
@@ -3544,6 +3544,7 @@ public class MappingServiceRest extends RootServiceRest {
   public TreePositionList getTreePositionGraphsForQueryAndMapProject(
     @ApiParam(value = "Terminology browser query, e.g. 'cholera'", required = true) @QueryParam("query") String query,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long mapProjectId,
+    @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = false) PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
@@ -3580,7 +3581,7 @@ public class MappingServiceRest extends RootServiceRest {
 
       // TODO: need to figure out what "paging" means - it really has to do
       // with the number of tree positions under the root node, I think.
-      final PfsParameter pfs = new PfsParameterJpa();
+      final PfsParameter pfs = pfsParameter != null ? pfsParameter : new PfsParameterJpa();
       // pfs.setStartIndex(0);
       // pfs.setMaxResults(10);
 

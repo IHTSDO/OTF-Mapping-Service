@@ -1850,7 +1850,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
     final TreePositionListJpa treePositionList = new TreePositionListJpa();
     treePositionList.setTreePositions(fullTreePositions);
-    treePositionList.setTotalCount(fullTreePositions.size());
+    treePositionList.setTotalCount(totalCt[0]);
     return treePositionList;
   }
 

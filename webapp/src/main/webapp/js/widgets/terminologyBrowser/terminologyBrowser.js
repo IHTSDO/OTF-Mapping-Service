@@ -22,6 +22,7 @@ angular.module('mapProjectApp').controller(
     utilService, gpService) {
 
     // Scope variables
+    $scope.paging = {};
     $scope.listMode = false;
     $scope.focusProject = localStorageService.get('focusProject');
     $scope.userToken = localStorageService.get('userToken');
@@ -39,12 +40,18 @@ angular.module('mapProjectApp').controller(
     $scope.treeQuery = '';
     $scope.searchResults = [];
     $scope.selectedResult = null;
+    $scope.paging.tree = {
+      page : 1,
+      pageSize : 10,
+      pages : null,
+      totalCount : null
 
-    // Paging
+    }
+
+    // Paging -- list view
     $scope.pageSize = 5;
     $scope.pagedSearchResults = [];
-    $scope.paging = {};
-    $scope.paging['search'] = {
+    $scope.paging.search = {
       page : 1,
       filter : '',
       sortField : null
@@ -153,7 +160,9 @@ angular.module('mapProjectApp').controller(
 
     // Handler for the "Search" button
     // Perform a search - list or tree depending on the state
-    $scope.search = function() {
+    $scope.search = function(pageOffset) {
+      
+      console.debug('search', pageOffset);
 
       // Query is implied
       if (!$scope.query) {
@@ -164,7 +173,7 @@ angular.module('mapProjectApp').controller(
       if (new RegExp('^\s+$').test($scope.query)) {
         return;
       }
-      
+
       // set the srt parameters
       $scope.srtParameters.query = $scope.query;
 
@@ -179,6 +188,12 @@ angular.module('mapProjectApp').controller(
       } else {
 
         // Perform tree search
+        if (pageOffset) {
+          $scope.paging.tree.page = $scope.paging.tree.page + pageOffset
+        } else {
+          $scope.paging.tree.page = 1;
+        }
+        console.debug('paging', pageOffset,  $scope.paging.tree);
         $scope.treeQuery = $scope.query;
         console.debug('get root tree with query', $scope.query);
         $scope.getRootTreeWithQuery(true);
@@ -273,7 +288,7 @@ angular.module('mapProjectApp').controller(
       }).success(function(response) {
         console.debug('  tree = ', response);
         $rootScope.glassPane--;
-        
+
         for (var i = 0; i < response.treePosition; i++) {
           $scope.response[i].treePosition.isOpen = false;
           $scope.response[i].treePosition.isConceptOpen = false;
@@ -301,23 +316,26 @@ angular.module('mapProjectApp').controller(
       $scope.terminologyTree = [];
       console.debug('get root tree with query', $scope.treeQuery);
       $rootScope.glassPane++;
-      $http(
-        {
-          url : root_mapping + 'treePosition/project/id/' + $scope.focusProject.id + '?query='
-            + encodeURIComponent($scope.treeQuery),
-          method : 'GET',
-          headers : {
-            'Content-Type' : 'application/json'
-          }
-        }).success(function(response) {
+      var pfs = {
+        'startIndex' : ($scope.paging.tree.page - 1) * $scope.paging.tree.pageSize,
+        'maxResults' : $scope.paging.tree.pageSize,
+        'sortField' : 'ancestorPath',
+        'queryRestriction' : $scope.query
+      };
+      console.debug('pfs', pfs);
+      $http.post(
+
+        root_mapping + 'treePosition/project/id/' + $scope.focusProject.id + '?query='
+          + encodeURIComponent($scope.treeQuery), pfs).success(function(response) {
         $scope.searchStatus = '';
         console.debug('  result = ', response.data);
         $rootScope.glassPane--;
+        
+        $scope.terminologyTree = response.treePosition;
+        
+        $scope.paging.tree.pages = Math.ceil(response.totalCount / $scope.paging.tree.pageSize);
+        $scope.paging.tree.totalCount = response.totalCount
 
-        // limit result count to 10 root tree positions
-        for (var x = 0; x < response.treePosition.length && x < 10; x++) {
-          $scope.terminologyTree[x] = response.treePosition[x];
-        }
         if ($scope.terminologyTree.length == 0) {
           $scope.searchStatus = 'No results';
         }
@@ -535,8 +553,6 @@ angular.module('mapProjectApp').controller(
       return elementsByTypeId;
     }
 
-  
-
     // ////////////////////////////////////////////////////////////////
     // REFERENCE HANDLING
     //
@@ -559,8 +575,6 @@ angular.module('mapProjectApp').controller(
       return descriptions;
 
     }
-    
-    
 
     function formatDescription(description, relTypes, concept) {
       var relationshipsForDescription = [];
@@ -669,7 +683,7 @@ angular.module('mapProjectApp').controller(
         concept : node
       });
     };
-    
+
     //
     // Search Result Tree Renderer callbacks
     //
@@ -677,9 +691,9 @@ angular.module('mapProjectApp').controller(
       getTreeChildren : $scope.getTreeChildren,
       selectConcept : $scope.selectConcept
     }
-    
+
     $scope.srtParameters = {
       query : $scope.query
     }
-    
+
   });
