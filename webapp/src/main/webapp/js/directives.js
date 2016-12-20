@@ -331,6 +331,10 @@ mapProjectAppDirectives.directive('treeSearchResult', [
           else
             return false;
         };
+        
+        scope.isMatchingNode = function(tree) {
+          return scope.parameters.query && scope.parameters.query.toLowerCase() === tree.terminologyId;
+        }
 
       }
     };
