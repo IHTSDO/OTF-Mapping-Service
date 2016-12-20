@@ -325,7 +325,7 @@ mapProjectAppDirectives.directive('treeSearchResult', [
         scope.truncated = function(string, plength) {
           var length = plength;
           if (length == null)
-            length = 15;
+            length = 150;
           if (string.length > length)
             return true;
           else
