@@ -461,7 +461,7 @@
     <td style="padding: 5px;">
       <select ng-model="mapUserViewed"
         ng-options="mapUser as mapUser.name for mapUser in mapUsers track by mapUser.name"
-        ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssignedForUser)">
+        ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssignedForUser, assignedWorkForUserType)">
       </select>
     </td>
   </tr>
@@ -482,15 +482,15 @@
     <td>
       <form>
         <input type="radio" ng-model="assignedWorkForUserType" value="ALL"
-          ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssigned, assignedWorkForUserType)">All
+          ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssignedForUser, assignedWorkForUserType)">All
         <input type="radio" ng-model="assignedWorkForUserType" value="NEW"
-          ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssigned, assignedWorkForUserType)">New
+          ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssignedForUser, assignedWorkForUserType)">New
         <input type="radio" ng-model="assignedWorkForUserType"
           value="EDITING_IN_PROGRESS"
-          ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssigned, assignedWorkForUserType)">Editing
+          ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssignedForUser, assignedWorkForUserType)">Editing
         <input type="radio" ng-model="assignedWorkForUserType"
           value="EDITING_DONE"
-          ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssigned, assignedWorkForUserType)">Finished
+          ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssignedForUser, assignedWorkForUserType)">Finished
       </form>
     </td>
   </tr>
@@ -518,7 +518,7 @@
       <th style="width: 60%; padding: 5px;">Preferred Name</th>
       <th style="width: 25%; padding: 5px;">Last Modified</th>
       <th style="width: 3%; padding: 5px;"><a title="Return All Work"
-          ng-click="unassignAllWork(mapUserViewed, 'conceptsByUser', assignedWorkForUserType, queryAssignedForUser)">
+          ng-click="unassignAllWork(mapUserViewed, 'concept', assignedWorkForUserType, queryAssignedForUser)">
           <i
             class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i>
         </a></th>

@@ -181,6 +181,13 @@ angular
 
               // set the tab
               $scope.setTab(3);
+              
+              // set the user based on parameters
+              angular.forEach($scope.mapUsers, function(mapUser) {
+                if (mapUser.userName === parameters.assignUser.userName) {
+                  $scope.mapUserViewed = mapUser;
+                }
+              });
 
               // retrieve the work
               $scope.retrieveAssignedWorkForUser($scope.assignedWorkForUserPage,
@@ -199,12 +206,18 @@ angular
           } else {
 
             // set the tab
-            $scope.setTab(4);
+            $scope.setTab(3);
+            
+            // set the user based on parameters
+            angular.forEach($scope.mapUsers, function(mapUser) {
+              if (mapUser.userName === parameters.assignUser.userName) {
+                $scope.mapUserViewed = mapUser;
+              }
+            });
 
             $scope.retrieveAssignedWorkForUser($scope.assignedWorkForUserPage,
-              parameters.assignUser.userName, 'NEW');
-            $scope.mapUserViewed = parameters.assignUser;
-            $scope.assignedWorkForUserType = 'NEW';
+              parameters.assignUser.userName, $scope.queryAssignedForUser, $scope.assignedWorkForUserType);
+
           }
 
           // SPECIALIST TABS
@@ -524,7 +537,7 @@ angular
         // hard set the PFS variables
         $scope.assignedWorkForUserPage = page;
         $scope.assignedWorkForUserType = assignedWorkType;
-        $scope.queryWorkForUser = query;
+        $scope.queryAssignedForUser = query;
 
         // ensure query is set to null if undefined
         if (query == undefined)
@@ -616,6 +629,8 @@ angular
 
       // function to relinquish work (i.e. unassign the user)
       $scope.unassignWork = function(record, mapUser, workType) {
+        
+        console.debug('unassignWork', mapUser, workType);
 
         // show a confirmation dialog if requested
         // NOTE: workflow status is contained in terminologyVersion for a
@@ -705,7 +720,6 @@ angular
         case 'qa':
           workTypeText = 'assignedQAWork';
           break;
-
         }
 
         // retrieve the list of assigned work
