@@ -760,7 +760,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
 
     /**
      * Specialist has the following widgets: - MapProject - WorkAvailable -
-     * AssignedList - EditedList
+     * WorkAssigned - EditedList
      */
     else if ($scope.currentRole === 'Specialist') {
 
@@ -787,7 +787,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
           }, {
             class : 'col-md-6',
             widgets : [ {
-              type : 'assignedList',
+              type : 'workAssigned',
               config : {},
               title : 'Assigned Work'
             } ]
@@ -829,7 +829,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
 
       /**
        * Lead has the following widgets -MapProject - WorkAvailable -
-       * AssignedList - EditedList
+       * WorkAssigned - EditedList
        */
     } else if ($scope.currentRole === 'Lead') {
 
@@ -856,7 +856,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
           }, {
             class : 'col-md-6',
             widgets : [ {
-              type : 'assignedList',
+              type : 'workAssigned',
               config : {},
               title : 'Assigned Work'
             } ]
