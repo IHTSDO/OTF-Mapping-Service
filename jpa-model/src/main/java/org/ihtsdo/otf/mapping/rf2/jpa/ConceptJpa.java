@@ -17,6 +17,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
@@ -126,6 +127,16 @@ public class ConceptJpa extends AbstractComponent implements Concept {
       // complexMapRefSetMembers = concept.getComplexMapRefSetMembers();
       // attributeValueRefSetMembers = concept.getAttributeValueRefSetMembers();
     }
+  }
+  
+
+  @Fields({
+      @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO),
+      @Field(name = "terminologyIdAnalyzed", index = Index.YES, analyze = Analyze.YES, store = Store.NO, analyzer = @Analyzer(definition = "noStopWord"))
+  })
+  @Override
+  public String getTerminologyId() {
+	  return super.getTerminologyId();
   }
 
   /**
