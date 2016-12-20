@@ -49,10 +49,10 @@ angular.module('mapProjectApp').controller(
     }
 
     // Paging -- list view
-    $scope.pageSize = 5;
     $scope.pagedSearchResults = [];
     $scope.paging.search = {
       page : 1,
+      pageSize : 10,
       filter : '',
       sortField : null
     };
@@ -160,9 +160,9 @@ angular.module('mapProjectApp').controller(
 
     // Handler for the "Search" button
     // Perform a search - list or tree depending on the state
-    $scope.search = function(pageOffset) {
-      
-      console.debug('search', pageOffset);
+    $scope.search = function(page) {
+
+      console.debug('search', page);
 
       // Query is implied
       if (!$scope.query) {
@@ -188,12 +188,10 @@ angular.module('mapProjectApp').controller(
       } else {
 
         // Perform tree search
-        if (pageOffset) {
-          $scope.paging.tree.page = $scope.paging.tree.page + pageOffset
-        } else {
+        if (!page) {
           $scope.paging.tree.page = 1;
         }
-        console.debug('paging', pageOffset,  $scope.paging.tree);
+
         $scope.treeQuery = $scope.query;
         console.debug('get root tree with query', $scope.query);
         $scope.getRootTreeWithQuery(true);
@@ -228,7 +226,7 @@ angular.module('mapProjectApp').controller(
     // Page search results
     $scope.getPagedSearchResults = function() {
       $scope.pagedSearchResults = utilService.getPagedArray($scope.searchResults,
-        $scope.paging['search'], $scope.pageSize);
+        $scope.paging['search'], $scope.paging['search'].pageSize);
     };
 
     // Perform a query search for a list
@@ -330,9 +328,9 @@ angular.module('mapProjectApp').controller(
         $scope.searchStatus = '';
         console.debug('  result = ', response.data);
         $rootScope.glassPane--;
-        
+
         $scope.terminologyTree = response.treePosition;
-        
+
         $scope.paging.tree.pages = Math.ceil(response.totalCount / $scope.paging.tree.pageSize);
         $scope.paging.tree.totalCount = response.totalCount
 
@@ -346,7 +344,7 @@ angular.module('mapProjectApp').controller(
         if ($scope.terminologyTree.length == 0) {
           $scope.searchStatus = 'No results';
         }
-       
+
         if (isNewSearch) {
           $scope.manageStack($scope.treeQuery);
         }
@@ -471,11 +469,11 @@ angular.module('mapProjectApp').controller(
           $scope.getConceptDetails(treePositions[i]);
 
           /*
-                     * // expand children, but do not expand their info panels for (var j = 0; j <
-                     * treePositions[i].children.length; i++) {
-                     * 
-                     * treePositions[i].children[j].isOpen = true; }
-                     */
+           * // expand children, but do not expand their info panels for (var j =
+           * 0; j < treePositions[i].children.length; i++) {
+           * 
+           * treePositions[i].children[j].isOpen = true; }
+           */
 
           // stop recursive expansion here;
           retval = true;
