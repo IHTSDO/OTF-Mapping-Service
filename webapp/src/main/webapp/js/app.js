@@ -6,7 +6,7 @@ var mapProjectApp = angular.module(
   [ 'ngRoute', 'ui.bootstrap', 'ui.tree', 'ngFileUpload', 'ui.tinymce', 'ngCookies',
     'mapProjectAppControllers', 'adf', 'mapProjectApp.widgets.metadataList',
     'mapProjectApp.widgets.mapProject', 'mapProjectApp.widgets.mapRecord',
-    'mapProjectApp.widgets.mapEntry', 'mapProjectApp.widgets.assignedList',
+    'mapProjectApp.widgets.mapEntry', 'mapProjectApp.widgets.workAssigned',
     'mapProjectApp.widgets.editedList', 'mapProjectApp.widgets.workAvailable',
     'mapProjectApp.widgets.terminologyBrowser', 'mapProjectApp.widgets.compareRecords',
     'mapProjectApp.widgets.projectDetails', 'mapProjectApp.widgets.projectRecords',
@@ -88,8 +88,7 @@ mapProjectApp.run([
   'gpService',
   'utilService',
   function($http, appConfig, gpService, utilService) {
-    
-  
+
     // Request properties from the server
     gpService.increment();
     $http.get('/mapping-rest/security/properties').then(
@@ -134,92 +133,92 @@ mapProjectApp.run([
 
 // set the main application window name
 // window.name = 'mappingToolWindow';
-mapProjectApp.config([ '$rootScopeProvider', '$routeProvider', function($rootScopeProvider, $routeProvider) {
-  
-  $rootScopeProvider.digestTtl(15); 
+mapProjectApp.config([ '$rootScopeProvider', '$routeProvider',
+  function($rootScopeProvider, $routeProvider) {
 
+    $rootScopeProvider.digestTtl(15);
 
-  // ////////////////////////////
-  // DASHBOARDS
-  // ////////////////////////////
+    // ////////////////////////////
+    // DASHBOARDS
+    // ////////////////////////////
 
-  $routeProvider.when('/:role/dash', {
-    templateUrl : 'partials/otf-dashboard.html',
-    controller : 'dashboardCtrl'
-  });
+    $routeProvider.when('/:role/dash', {
+      templateUrl : 'partials/otf-dashboard.html',
+      controller : 'dashboardCtrl'
+    });
 
-  // ////////////////////////////
-  // MAPPING SERVICES
-  // ////////////////////////////
+    // ////////////////////////////
+    // MAPPING SERVICES
+    // ////////////////////////////
 
-  $routeProvider.when('/project/records', {
-    templateUrl : 'partials/otf-dashboard.html',
-    controller : 'ProjectRecordsDashboardCtrl'
-  });
+    $routeProvider.when('/project/records', {
+      templateUrl : 'partials/otf-dashboard.html',
+      controller : 'ProjectRecordsDashboardCtrl'
+    });
 
-  $routeProvider.when('/project/details', {
-    templateUrl : 'partials/otf-dashboard.html',
-    controller : 'ProjectDetailsDashboardCtrl'
-  });
+    $routeProvider.when('/project/details', {
+      templateUrl : 'partials/otf-dashboard.html',
+      controller : 'ProjectDetailsDashboardCtrl'
+    });
 
-  $routeProvider.when('/record/conceptId/:conceptId', {
-    templateUrl : 'partials/otf-dashboard.html',
-    controller : 'RecordConceptDashboardCtrl'
-  });
+    $routeProvider.when('/record/conceptId/:conceptId', {
+      templateUrl : 'partials/otf-dashboard.html',
+      controller : 'RecordConceptDashboardCtrl'
+    });
 
-  $routeProvider.when('/record/conceptId/:conceptId/autologin', {
-    templateUrl : 'partials/otf-dashboard.html',
-    controller : 'LoginCtrl'
-  });
+    $routeProvider.when('/record/conceptId/:conceptId/autologin', {
+      templateUrl : 'partials/otf-dashboard.html',
+      controller : 'LoginCtrl'
+    });
 
-  $routeProvider.when('/conversation/recordId/:recordId', {
-    templateUrl : 'partials/otf-dashboard.html',
-    controller : 'FeedbackConversationsDashboardCtrl'
-  });
+    $routeProvider.when('/conversation/recordId/:recordId', {
+      templateUrl : 'partials/otf-dashboard.html',
+      controller : 'FeedbackConversationsDashboardCtrl'
+    });
 
-  $routeProvider.when('/record/recordId/:recordId', {
-    templateUrl : 'partials/otf-dashboard.html',
-    controller : 'MapRecordDashboardCtrl'
-  });
+    $routeProvider.when('/record/recordId/:recordId', {
+      templateUrl : 'partials/otf-dashboard.html',
+      controller : 'MapRecordDashboardCtrl'
+    });
 
-  $routeProvider.when('/record/conflicts/:recordId', {
-    templateUrl : 'partials/otf-dashboard.html',
-    controller : 'ResolveConflictsDashboardCtrl'
-  });
+    $routeProvider.when('/record/conflicts/:recordId', {
+      templateUrl : 'partials/otf-dashboard.html',
+      controller : 'ResolveConflictsDashboardCtrl'
+    });
 
-  $routeProvider.when('/record/review/:recordId', {
-    templateUrl : 'partials/otf-dashboard.html',
-    controller : 'ResolveConflictsDashboardCtrl'
-  });
+    $routeProvider.when('/record/review/:recordId', {
+      templateUrl : 'partials/otf-dashboard.html',
+      controller : 'ResolveConflictsDashboardCtrl'
+    });
 
-  $routeProvider.when('/index/viewer', {
-    templateUrl : 'partials/otf-dashboard.html',
-    controller : 'IndexViewerDashboardCtrl'
-  });
+    $routeProvider.when('/index/viewer', {
+      templateUrl : 'partials/otf-dashboard.html',
+      controller : 'IndexViewerDashboardCtrl'
+    });
 
-  // ////////////////////////////
-  // HELP PAGES
-  // ////////////////////////////
+    // ////////////////////////////
+    // HELP PAGES
+    // ////////////////////////////
 
-  $routeProvider.when('/help/:type', {
-    templateUrl : function(params) {
-      return 'partials/doc/' + params.type;
-    }
-  });
+    $routeProvider.when('/help/:type', {
+      templateUrl : function(params) {
+        return 'partials/doc/' + params.type;
+      }
+    });
 
-  // /////////////////////////////
-  // HOME and ERROR ROUTES
-  // /////////////////////////////
+    // /////////////////////////////
+    // HOME and ERROR ROUTES
+    // /////////////////////////////
 
-  $routeProvider.when('/', {
-    templateUrl : 'partials/login.html',
-    controller : 'LoginCtrl'
-  });
+    $routeProvider.when('/', {
+      templateUrl : 'partials/login.html',
+      controller : 'LoginCtrl'
+    });
 
-  $routeProvider.otherwise({
-    redirectTo : 'partials/error.html'
-  });
-}
+    $routeProvider.otherwise({
+      redirectTo : 'partials/error.html'
+    });
+  }
 
 ]);
 
