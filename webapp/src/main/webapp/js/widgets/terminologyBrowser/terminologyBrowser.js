@@ -419,7 +419,10 @@ angular.module('mapProjectApp').controller(
     };
 
     $scope.gotoReferencedConcept = function(referencedConcept) {
+      console.debug('referenced concept', referencedConcept)
+      $scope.query = referencedConcept.terminologyId;
       $scope.treeQuery = referencedConcept.terminologyId;
+      $scope.srtParameters.query = referencedConcept.terminologyId;
       $scope.getRootTreeWithQuery(true);
     };
 
@@ -694,7 +697,8 @@ angular.module('mapProjectApp').controller(
     //
     $scope.srtCallbacks = {
       getTreeChildren : $scope.getTreeChildren,
-      selectConcept : $scope.selectConcept
+      selectConcept : $scope.selectConcept,
+      gotoReferencedConcept : $scope.gotoReferencedConcept
     }
 
     $scope.srtParameters = {
