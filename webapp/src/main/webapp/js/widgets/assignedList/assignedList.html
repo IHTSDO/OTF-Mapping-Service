@@ -177,8 +177,6 @@
 </uib-tab> <uib-tab heading="{{tabs[1].title}}" active="tabs[1].active" select="setTab(1)"
   ng-show="(currentRole === 'Lead' || currentRole === 'Administrator') && (focusProject.workflowType === 'CONFLICT_PROJECT' || focusProject.workflowType === 'LEGACY_PATH')">
 
-
-
 <table style="margin-top: 10px; margin-bottom: 10px;">
   <tr>
     <td style="padding: 5px;">Filter concepts:</td>
@@ -520,7 +518,7 @@
       <th style="width: 60%; padding: 5px;">Preferred Name</th>
       <th style="width: 25%; padding: 5px;">Last Modified</th>
       <th style="width: 3%; padding: 5px;"><a title="Return All Work"
-          ng-click="unassignAllWork(mapUserViewed, 'concept', assignedWorkForUserType, queryAssignedForUser)">
+          ng-click="unassignAllWork(mapUserViewed, 'conceptsByUser', assignedWorkForUserType, queryAssignedForUser)">
           <i
             class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i>
         </a></th>
@@ -684,9 +682,6 @@
         </td>
       </tr>
     </tbody>
-
-
-
   </table>
 
 </div>
