@@ -3531,6 +3531,7 @@ public class MappingServiceRest extends RootServiceRest {
    *
    * @param query the query
    * @param mapProjectId the map project id
+   * @param pfsParameter the pfs parameter
    * @param authToken the auth token
    * @return the root-level trees corresponding to the query
    * @throws Exception the exception
@@ -3581,7 +3582,8 @@ public class MappingServiceRest extends RootServiceRest {
 
       // TODO: need to figure out what "paging" means - it really has to do
       // with the number of tree positions under the root node, I think.
-      final PfsParameter pfs = pfsParameter != null ? pfsParameter : new PfsParameterJpa();
+      final PfsParameter pfs =
+          pfsParameter != null ? pfsParameter : new PfsParameterJpa();
       // pfs.setStartIndex(0);
       // pfs.setMaxResults(10);
 
@@ -3597,8 +3599,7 @@ public class MappingServiceRest extends RootServiceRest {
         if (plusFlag) {
           treePositions = contentService.getTreePositionGraphForQuery(
               mapProject.getDestinationTerminology(),
-              mapProject.getDestinationTerminologyVersion(), query,
-              pfs);
+              mapProject.getDestinationTerminologyVersion(), query, pfs);
         }
         if (treePositions.getCount() == 0) {
           return new TreePositionListJpa();

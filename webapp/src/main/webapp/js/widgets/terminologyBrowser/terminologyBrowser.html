@@ -1,41 +1,37 @@
 <div class="row" style="padding-left: 10px;">
   <div class="col-md-8">
-    <input ng-model="query" autofocus>
-    <button class="btn btn-xs btn-primary" ng-click="search()">Search</button>
-    <span class="btn btn-xs btn-warning" ng-show="query"
-      ng-click="clearSearch()">Reset</span>
+    <form ng-submit="search()">
+      <input ng-model="query" autofocus>
+      <button type="submit" class="btn btn-xs btn-primary">Search</button>
+      <span class="btn btn-xs btn-warning" ng-show="query"
+        ng-click="clearSearch()">Reset</span>
       <span class="btn btn-xs btn-primary"
-      ng-click="srtParameters.expandAll = !srtParameters.expandAll">{{ srtParameters.expandAll ? 'Collapse' : 'Expand'}}</span>
-  </div>
-
-  <div class="col-md-2">
-    <i
-      ng-show="paging.tree.pages > 0 && paging.tree.page != paging.tree.pages"
-      ng-click="search(1)" title="Next results"
-      class="noul glyphicon glyphicon-forward pull-right"></i>
-    <i ng-show="paging.tree.pages > 0 && paging.tree.page != 1"
-      ng-click="search(-1)" title="Previous results"
-      class="noul glyphicon glyphicon-backward pull-right" style="margin-right:10px;"></i>
-   
+        title="{{srtParameters.expandAll ? 'Hide' : 'Show'}} details"
+        ng-click="srtParameters.expandAll = !srtParameters.expandAll">{{
+        srtParameters.expandAll ? 'Collapse' : 'Expand'}}</span>
+    </form>
   </div>
 
   <!-- Support tree/list mode switching -->
   <div class="col-md-2 pull-right">
-    <span ng-show="listMode"> <i style="margin-right: 20px"
-      class="pull-right noul glyphicon glyphicon-tree-conifer"
-      ng-click="toggleListMode()" title="Switch to tree view"></i>
-      &nbsp;&nbsp; <i class="pull-right glyphicon glyphicon-th-list"
-      uib-tooltip="Currently in list mode"></i>
-    </span> <span ng-show="!listMode"> <i style="margin-right: 20px"
-      class="pull-right glyphicon glyphicon-tree-conifer"
-      uib-tooltip="Currently in tree mode"></i> &nbsp;&nbsp; <i
-      class="pull-right noul glyphicon glyphicon-th-list"
-      title="Switch to list view" ng-click="toggleListMode()"></i>
+    <span ng-show="listMode">
+      <i style="margin-right: 20px"
+        class="pull-right noul glyphicon glyphicon-tree-conifer"
+        ng-click="toggleListMode()" title="Switch to tree view"></i>
+      &nbsp;&nbsp;
+      <i class="pull-right glyphicon glyphicon-th-list"
+        uib-tooltip="Currently in list mode"></i>
+    </span>
+    <span ng-show="!listMode">
+      <i style="margin-right: 20px"
+        class="pull-right glyphicon glyphicon-tree-conifer"
+        uib-tooltip="Currently in tree mode"></i>
+      &nbsp;&nbsp;
+      <i class="pull-right noul glyphicon glyphicon-th-list"
+        title="Switch to list view" ng-click="toggleListMode()"></i>
     </span>
   </div>
 </div>
-
-
 
 <!-- Search Results: scrollable container -->
 <div style="max-height: 1000px; overflow-y: scroll;">
@@ -44,17 +40,17 @@
   <!-- LIST -->
   <div ng-show="listMode && searchResults.length > 0"
     style="margin-bottom: 5px;">
-    <span style="display: block;"> <uib-pagination
+    <span style="display: block;">
+      <uib-pagination style="margin-top:5px; margin-bottom:5px"
+        items-per-page="paging['search'].pageSize"
         total-items="searchResults.length" previous-text="&lsaquo;"
         next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
-        ng-model="paging['search'].page" max-size="5"
-        class="pagination-sm" boundary-links="true" rotate="true"
-        ng-change="getPagedSearchResults()"></uib-pagination>
+        ng-model="paging['search'].page" max-size="5" class="pagination-sm"
+        boundary-links="true" rotate="true" ng-change="getPagedSearchResults()"></uib-pagination>
     </span>
     <ul class="list-group" ng-show="searchResults.length > 0">
       <li class="list-group-item" style="cursor: pointer;"
-        ng-repeat="result in pagedSearchResults"
-        ng-click="selectResult(result)"
+        ng-repeat="result in pagedSearchResults" ng-click="selectResult(result)"
         ng-class="{selected: result.terminologyId == selectedResult.terminologyId}">
         <div style="cursor: pointer;">{{result.value}}
           ({{result.terminologyId}})</div>
@@ -65,7 +61,15 @@
 
 <p></p>
 <div ng-show="!listMode">
+  <span style="display: block;">
+
+    <uib-pagination ng-show="paging.tree.pages > 1"
+      style="margin-top:5px; margin-bottom:5px" items-per-page="1"
+      total-items="paging.tree.pages" previous-text="&lsaquo;"
+      next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
+      ng-model="paging.tree.page" max-size="5" class="pagination-sm"
+      boundary-links="true" ng-change="search(paging.tree.page)"></uib-pagination>
+  </span>
   <div tree-search-result search-results="terminologyTree"
     parameters="srtParameters" callbacks="srtCallbacks"></div>
-</div>
 </div>
