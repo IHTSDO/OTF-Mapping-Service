@@ -32,6 +32,7 @@ angular
 
         // Attach an onbeforeunload function
         $window.onbeforeunload = function() {
+          $window.onbeforeunload = null;
           return "If you leave this page data may be lost!";
         }
 
