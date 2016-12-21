@@ -432,10 +432,10 @@
   direction-links="false" boundary-links="true" total-items="pagedRelationCount"
   items-per-page="pageSize" ng-model="pageRelation"
   ng-change="getPagedRelations(page, relationFilter)"></uib-pagination>
-<form>
+<form ng-submit="resetRelationFilter()">
   <input type="text" ng-model="relationFilter"
-    ng-change="getPagedRelations(1, relationFilter)"> <input
-    type="submit" value="Reset Filter" ng-click="resetRelationFilter()">
+    ng-change="getPagedRelations(1, relationFilter)">
+  <button type="submit" class="btn btn-xs btn-primary">Reset Filter</button>
 </form>
 
 <table style="width: 100%" class="table pure-table">
@@ -567,11 +567,10 @@
   total-items="pagedReportDefinitionCount" items-per-page="pageSize"
   ng-model="pageDefinition"
   ng-change="getPagedReportDefinitions(page, reportDefinitionFilter)"></uib-pagination>
-<form>
+<form ng-submit="resetReportDefinitionFilter(); reportDefinitionFilter = '';">
   <input type="text" ng-model="reportDefinitionFilter"
-    ng-change="getPagedReportDefinitions(1, reportDefinitionFilter)"> <input
-    type="submit" value="Reset Filter"
-    ng-click="resetReportDefinitionFilter(); reportDefinitionFilter = '';">
+    ng-change="getPagedReportDefinitions(1, reportDefinitionFilter)">
+  <button type="submit" class="btn btn-xs btn-primary">Reset Filter</button>
 </form>
 
 
@@ -665,11 +664,10 @@
   total-items="pagedQACheckDefinitionCount" items-per-page="pageSize"
   ng-model="pagedQACheckDefinition"
   ng-change="getPagedQACheckDefinitions(page, qaCheckDefinitionFilter)"></uib-pagination>
-<form>
+<form ng-submit="resetQACheckDefinitionFilter(); qaCheckDefinitionFilter = '';">
   <input type="text" ng-model="qaCheckDefinitionFilter"
     ng-change="getPagedQACheckDefinitions(1, qaCheckDefinitionFilter)">
-  <input type="submit" value="Reset Filter"
-    ng-click="resetQACheckDefinitionFilter(); qaCheckDefinitionFilter = '';">
+  <button type="submit" class="btn btn-xs btn-primary">Reset Filter</button>
 </form>
 
 
@@ -756,10 +754,10 @@
   direction-links="false" boundary-links="true"
   total-items="pagedPrincipleCount" items-per-page="pageSize"
   ng-model="pagePrinciple" ng-change="getPagedPrinciples(page, principleFilter)"></uib-pagination>
-<form>
+<form ng-submit="resetPrincipleFilter()">
   <input type="text" ng-model="principleFilter"
-    ng-change="getPagedPrinciples(1, principleFilter)"> <input
-    type="submit" value="Reset Filter" ng-click="resetPrincipleFilter()">
+    ng-change="getPagedPrinciples(1, principleFilter)">
+  <button type="submit" class="btn btn-xs btn-primary">Reset Filter</button>
 </form>
 
 <table style="width: 100%" class="table pure-table">
@@ -1102,9 +1100,9 @@
 </uib-accordion-heading> <uib-pagination direction-links="false" boundary-links="true"
   total-items="pagedScopeConceptCount" items-per-page="pageSize"
   max-size="maxSize" ng-model="pageScopeConcept"
-  ng-change="getPagedScopeConcepts(page)"></uib-pagination> <!-- <form>
+  ng-change="getPagedScopeConcepts(page)"></uib-pagination> <!-- <form ng-submit="resetScopeConceptFilter()">
       <input id="scopeConceptSearch" type="text" ng-model="scopeConceptFilter" ng-change="getPagedScopeConcepts(1)">
-      <input type="submit" value="Reset Filter" ng-click="resetScopeConceptFilter()">
+  <button type="submit" class="btn btn-xs btn-primary">Reset Filter</button>
     </form>  -->
 
 <table style="width: 100%" class="table pure-table">
@@ -1169,9 +1167,9 @@
 </uib-accordion-heading> <uib-pagination direction-links="false" boundary-links="true"
   total-items="pagedScopeExcludedConceptCount" items-per-page="pageSize"
   max-size="maxSize" ng-model="pageScopeExcludedConcept"
-  ng-change="getPagedScopeExcludedConcepts(page)"></uib-pagination> <!--<form>
+  ng-change="getPagedScopeExcludedConcepts(page)"></uib-pagination> <!--<form ng-submit="resetScopeExcludedConceptFilter()">
       <input id="scopeExcludedConceptSearch" type="text" ng-model="scopeExcludedConceptFilter" ng-change="getPagedScopeExcludedConcepts(1)">
-      <input type="submit" value="Reset Filter" ng-click="resetScopeExcludedConceptFilter()">
+  <button type="submit" class="btn btn-xs btn-primary">Reset Filter</button>
     </form>  -->
 
 <table style="width: 100%" class="table pure-table">
