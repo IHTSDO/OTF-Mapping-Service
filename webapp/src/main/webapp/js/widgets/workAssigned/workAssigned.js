@@ -968,23 +968,23 @@ angular
             function() {
               if (workflowStatus === 'CONFLICT_IN_PROGRESS'
                 || workflowStatus === 'CONFLICT_RESOLVED') {
-                $scope.retrieveAssignedConflicts(1, null, workflowStatus); // called
+                $scope.retrieveAssignedConflicts(1, null, $scope.assignedConflictType); // called
                 // on
                 // Done
               } else if (workflowStatus === 'REVIEW_IN_PROGRESS'
                 || workflowStatus === 'REVIEW_RESOLVED') {
                 if ($scope.currentRole === 'Lead') {
-                  $scope.retrieveAssignedReviewWork(1, null, workflowStatus); // called
+                  $scope.retrieveAssignedReviewWork(1, null, $scope.assignedReviewWorkType); // called
                   // on
                   // Done
                 }
               } else if (workflowStatus === 'QA_IN_PROGRESS' || workflowStatus === 'QA_RESOLVED') {
-                $scope.retrieveAssignedQAWork(1, null, workflowStatus); // called
+                $scope.retrieveAssignedQAWork(1, null, $scope.assignedQAWorkType); // called
                 // on
                 // Done
               } else if (workflowStatus === 'EDITING_IN_PROGRESS'
                 || workflowStatus === 'EDITING_DONE') {
-                $scope.retrieveAssignedWork(1, null, workflowStatus); // called
+                $scope.retrieveAssignedWork(1, null, $scope.assignedWorkType); // called
                 // on
                 // Done
               } else {
@@ -995,21 +995,21 @@ angular
             }, function() {
               if (workflowStatus === 'CONFLICT_IN_PROGRESS'
                 || workflowStatus === 'CONFLICT_RESOLVED') {
-                $scope.retrieveAssignedConflicts(1, null, workflowStatus); // called
+                $scope.retrieveAssignedConflicts(1, null, $scope.assignedConflictType); // called
                 // on
                 // Done
               } else if (workflowStatus === 'REVIEW_IN_PROGRESS'
                 || workflowStatus === 'REVIEW_RESOLVED') {
                 if ($scope.currentRole === 'Lead') {
-                  $scope.retrieveAssignedReviewWork(1, null, workflowStatus); // called
+                  $scope.retrieveAssignedReviewWork(1, null, $scope.assignedReviewWorkType); // called
                   // on
                   // Done
                 }
               } else if (workflowStatus === 'QA_IN_PROGRESS' || workflowStatus === 'QA_RESOLVED') {
-                $scope.retrieveAssignedQAWork(1, null, workflowStatus);
+                $scope.retrieveAssignedQAWork(1, null, $scope.assignedQAWorkType);
               } else if (workflowStatus === 'EDITING_IN_PROGRESS'
                 || workflowStatus === 'EDITING_DONE') {
-                $scope.retrieveAssignedWork(1, null, workflowStatus); // called
+                $scope.retrieveAssignedWork(1, null, $scope.assignedWorkType); // called
                 // on
                 // Done
               } else {
