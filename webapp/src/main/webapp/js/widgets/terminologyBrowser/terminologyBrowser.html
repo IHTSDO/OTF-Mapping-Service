@@ -5,7 +5,7 @@
       <button type="submit" class="btn btn-xs btn-primary">Search</button>
       <span class="btn btn-xs btn-warning" ng-show="query"
         ng-click="clearSearch()">Reset</span>
-      <span class="btn btn-xs btn-primary"
+      <span class="btn btn-xs btn-primary" ng-show="!listMode"
         title="{{srtParameters.expandAll ? 'Hide' : 'Show'}} details"
         ng-click="srtParameters.expandAll = !srtParameters.expandAll">{{
         srtParameters.expandAll ? 'Collapse' : 'Expand'}}</span>
