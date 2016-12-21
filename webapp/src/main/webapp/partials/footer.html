@@ -4,37 +4,55 @@
     <div class="navbar-header">
       <ul class="nav navbar-nav navbar-left">
         <li><p class="navbar-text">
-            <a class="navbar-link" href="{{appConfig['deploy.footer.link']}}">
+            <a class="navbar-link"
+              href="{{appConfig['deploy.footer.link']}}">
               {{appConfig['deploy.footer.copyright']}} </a>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {{appConfig.projectVersion}}
           </p></li>
         <li>
-          <div style="text-align: center; padding: 5px; margin: 0 0 0 0;"
+          <div
+            style="text-align: center; padding: 5px; margin: 0 0 0 0;"
             class="alert alert-danger" ng-show="glassPane < 0">
-            The Glass Pane activity indicator may not be functioning correctly.<br>Please
-            send a screenshot to an administrator. (GPC: {{glassPane}})
+            The Glass Pane activity indicator may not be functioning
+            correctly.<br>Please send a screenshot to an
+            administrator. (GPC: {{glassPane}})
           </div>
         </li>
       </ul>
     </div>
+
     <div class="collapse navbar-collapse">
+      <ul class="nav navbar-nav">
+        <li><p class="navbar-text">
+            <a href="index.html#/admin/dash">
+              <button class="btn btn-primary btn-xs"
+                ng-hide="page == 'mainDashboard'">Return to
+                Dashboard</button>
+            </a>
+          </p></li>
+      </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
-          <p class="navbar-text" ng-show="page == 'login'">Login Page</p>
+          <p class="navbar-text" ng-show="page == 'login'">Login
+            Page</p>
           <p class="navbar-text" ng-show="page == 'editDashboard'">Edit
             Record Dashboard</p>
-          <p class="navbar-text" ng-show="page == 'concept'">Mapped Concept
-            View</p>
-          <p class="navbar-text" ng-show="page == 'projectDetailsDashboard'">Map
-            Project Details View</p>
-          <p class="navbar-text" ng-show="page == 'records'">Map Record View</p>
-          <p class="navbar-text" ng-show="page == 'resolveConflictsDashboard'">Conflict
+          <p class="navbar-text" ng-show="page == 'concept'">Mapped
+            Concept View</p>
+          <p class="navbar-text"
+            ng-show="page == 'projectDetailsDashboard'">Map Project
+            Details View</p>
+          <p class="navbar-text" ng-show="page == 'records'">Map
+            Record View</p>
+          <p class="navbar-text"
+            ng-show="page == 'resolveConflictsDashboard'">Conflict
             Resolution Dashboard</p>
           <p class="navbar-text"
             ng-show="page == 'feedbackConversationsDashboard'">Feedback
             Conversation Dashboard</p>
-          <p class="navbar-text" ng-show="page == 'indexViewerDashboard'">Index
-            Viewer Dashboard</p>
+          <p class="navbar-text"
+            ng-show="page == 'indexViewerDashboard'">Index Viewer
+            Dashboard</p>
           <p class="navbar-text" ng-show="page == 'mainDashboard'">Dashboard</p>
         </li>
       </ul>
