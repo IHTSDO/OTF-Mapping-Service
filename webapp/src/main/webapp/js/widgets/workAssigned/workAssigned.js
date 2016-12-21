@@ -64,7 +64,9 @@ angular
         sortOn : false
       } ];
 
-      $scope.mapUserViewed == null;
+      $scope.selected = {
+        mapUserViewed : null
+      };
       $scope.ownTab = true; // variable to track whether viewing own work or
       // other users work
       $scope.searchPerformed = false; // initialize variable to track
@@ -76,13 +78,13 @@ angular
         if (tabNumber == null) {
           tabNumber = 0;
         }
-        
+
         console.debug('setting tab', tabNumber);
 
         angular.forEach($scope.tabs, function(tab) {
           tab.active = (tab.id == tabNumber ? true : false);
         });
-        
+
         console.debug($scope.tabs);
 
         // set flag for ByUser tab, i.e. whether viewing user's own work
@@ -181,11 +183,11 @@ angular
 
               // set the tab
               $scope.setTab(3);
-              
+
               // set the user based on parameters
               angular.forEach($scope.mapUsers, function(mapUser) {
                 if (mapUser.userName === parameters.assignUser.userName) {
-                  $scope.mapUserViewed = mapUser;
+                  $scope.selected.mapUserViewed = mapUser;
                 }
               });
 
@@ -207,16 +209,17 @@ angular
 
             // set the tab
             $scope.setTab(3);
-            
+
             // set the user based on parameters
             angular.forEach($scope.mapUsers, function(mapUser) {
               if (mapUser.userName === parameters.assignUser.userName) {
-                $scope.mapUserViewed = mapUser;
+                $scope.selected.mapUserViewed = mapUser;
               }
             });
 
             $scope.retrieveAssignedWorkForUser($scope.assignedWorkForUserPage,
-              parameters.assignUser.userName, $scope.queryAssignedForUser, $scope.assignedWorkForUserType);
+              parameters.assignUser.userName, $scope.queryAssignedForUser,
+              $scope.assignedWorkForUserType);
 
           }
 
@@ -257,7 +260,7 @@ angular
           if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
             $scope.retrieveAssignedConflicts(1, null, $scope.assignedConflictType);
             $scope.retrieveAssignedReviewWork(1, null, $scope.assignedReviewWorkType);
-            $scope.retrieveAssignedWorkForUser(1, null, $scope.mapUserViewed,
+            $scope.retrieveAssignedWorkForUser(1, null, $scope.selected.mapUserViewed,
               $scope.assignedWorkForUserType);
           }
         }
@@ -629,7 +632,7 @@ angular
 
       // function to relinquish work (i.e. unassign the user)
       $scope.unassignWork = function(record, mapUser, workType) {
-        
+
         console.debug('unassignWork', mapUser, workType);
 
         // show a confirmation dialog if requested
@@ -657,7 +660,7 @@ angular
           }).success(function(data) {
 
           $rootScope.glassPane--;
-          
+
           console.debug('broadcasting', mapUser, workType)
 
           // trigger reload of this type of work via broadcast
@@ -784,8 +787,7 @@ angular
             assignWorkflowStatus : workStatus
           });
 
-        
-            $rootScope.$broadcast('workAssignedWidget.notification.unassignWork');
+          $rootScope.$broadcast('workAssignedWidget.notification.unassignWork');
 
         });
 

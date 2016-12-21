@@ -9,7 +9,7 @@
       <td style="padding: 5px;">Assign work to:</td>
       <td style="padding: 5px;">
         <select ng-model="assignedMapUser"
-          ng-options="mapUser as mapUser.name for mapUser in mapUsers track by mapUser.name"
+          ng-options="mapUser as mapUser.name for mapUser in mapUsers | orderBy:'name'"
           ng-change="retrieveAvailableWork(1, queryAvailable, assignedMapUser)">
         </select>
       </td>
@@ -107,7 +107,7 @@
       <td style="padding: 5px;">Assign conflicts to:</td>
       <td style="padding: 5px;">
         <select ng-model="assignedMapLead"
-          ng-options="mapUser as mapUser.name for mapUser in focusProject.mapLead track by mapUser.name"
+          ng-options="mapUser as mapUser.name for mapUser in focusProject.mapLead | orderBy:'name'"
           ng-change="retrieveAvailableConflicts(1, queryAvailableConflict, assignedMapLead)">
         </select>
       </td>
@@ -147,8 +147,8 @@
 <div ng-show="nAvailableConflicts != 0">
 
   <uib-pagination ng-show="numAvailableConflictsPages > 1"
-    total-items="nAvailableConflicts" ng-model="availableConflictsPage" max-size="5"
-    class="pagination-sm" boundary-links="true" rotate="true"
+    total-items="nAvailableConflicts" ng-model="availableConflictsPage"
+    max-size="5" class="pagination-sm" boundary-links="true" rotate="true"
     num-pages="numAvailableConflictsPages"
     ng-change="retrieveAvailableConflicts(page, queryAvailableConflict)"></uib-pagination>
 
@@ -191,7 +191,7 @@
       <td style="padding: 5px;">Assign conflicts to:</td>
       <td style="padding: 5px;">
         <select ng-model="assignedMapLead"
-          ng-options="mapUser as mapUser.name for mapUser in focusProject.mapLead track by mapUser.name"
+          ng-options="mapUser as mapUser.name for mapUser in focusProject.mapLead | orderBy:'name'"
           ng-change="retrieveAvailableReviewWork(1, queryAvailableReview, assignedMapLead)">
         </select>
       </td>
@@ -273,7 +273,7 @@
       <td style="padding: 5px;">Assign work to:</td>
       <td style="padding: 5px;">
         <select ng-model="assignedMapUser"
-          ng-options="mapUser as mapUser.name for mapUser in mapUsers track by mapUser.name"
+          ng-options="mapUser as mapUser.name for mapUser in mapUsers | orderBy:'name'"
           ng-change="retrieveAvailableQAWork(1, selectedQaLabel, assignedMapUser)">
         </select>
       </td>
