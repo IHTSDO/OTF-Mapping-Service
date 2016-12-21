@@ -459,9 +459,9 @@
   <tr>
     <td style="padding: 5px;">View work assigned to:</td>
     <td style="padding: 5px;">
-      <select ng-model="mapUserViewed"
-        ng-options="mapUser as mapUser.name for mapUser in mapUsers track by mapUser.name"
-        ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssignedForUser, assignedWorkForUserType)">
+      <select ng-model="selected.mapUserViewed"
+        ng-options="mapUser as mapUser.name for mapUser in mapUsers | orderBy:'name'"
+        ng-change="retrieveAssignedWorkForUser(1, selected.mapUserViewed.userName, queryAssignedForUser, assignedWorkForUserType)">
       </select>
     </td>
   </tr>
@@ -471,9 +471,9 @@
       <form>
         <input id="assignedForUserSearch" ng-model="queryAssignedForUser">
         <button class="btn btn-xs btn-primary"
-          ng-click="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssignedForUser, assignedWorkForUserType)">Search</button>
+          ng-click="retrieveAssignedWorkForUser(1, selected.mapUserViewed.userName, queryAssignedForUser, assignedWorkForUserType)">Search</button>
         <button class="btn btn-xs btn-primary"
-          ng-click="retrieveAssignedWorkForUser(1, mapUserViewed.userName, 'null', assignedWorkForUserType); queryAssignedForUser = null">Reset</button>
+          ng-click="retrieveAssignedWorkForUser(1, selected.mapUserViewed.userName, 'null', assignedWorkForUserType); queryAssignedForUser = null">Reset</button>
       </form>
     </td>
   </tr>
@@ -482,25 +482,25 @@
     <td>
       <form>
         <input type="radio" ng-model="assignedWorkForUserType" value="ALL"
-          ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssignedForUser, assignedWorkForUserType)">All
+          ng-change="retrieveAssignedWorkForUser(1, selected.mapUserViewed.userName, queryAssignedForUser, assignedWorkForUserType)">All
         <input type="radio" ng-model="assignedWorkForUserType" value="NEW"
-          ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssignedForUser, assignedWorkForUserType)">New
+          ng-change="retrieveAssignedWorkForUser(1, selected.mapUserViewed.userName, queryAssignedForUser, assignedWorkForUserType)">New
         <input type="radio" ng-model="assignedWorkForUserType"
           value="EDITING_IN_PROGRESS"
-          ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssignedForUser, assignedWorkForUserType)">Editing
+          ng-change="retrieveAssignedWorkForUser(1, selected.mapUserViewed.userName, queryAssignedForUser, assignedWorkForUserType)">Editing
         <input type="radio" ng-model="assignedWorkForUserType"
           value="EDITING_DONE"
-          ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssignedForUser, assignedWorkForUserType)">Finished
+          ng-change="retrieveAssignedWorkForUser(1, selected.mapUserViewed.userName, queryAssignedForUser, assignedWorkForUserType)">Finished
       </form>
     </td>
   </tr>
 </table>
 
 <uib-pagination
-  ng-show="mapUserViewed != null && numAssignedRecordPagesForUser > 1"
+  ng-show="selected.mapUserViewed != null && numAssignedRecordPagesForUser > 1"
   total-items="nAssignedRecordsForUser" ng-model="assignedWorkPageForUser"
   class="pagination-sm" max-size="5" boundary-links="true" rotate="true"
-  ng-change="retrieveAssignedWorkForUser(page, mapUserViewed.userName, queryAssignedForUser, assignedWorkForUserType)"></uib-pagination>
+  ng-change="retrieveAssignedWorkForUser(page, selected.mapUserViewed.userName, queryAssignedForUser, assignedWorkForUserType)"></uib-pagination>
 
 <!--  do not display controls if no records are assigned and the query term is null and a map user is selected-->
 <div style="padding: 10px;" ng-show="nAssignedRecordsForUser == 0">
@@ -518,7 +518,7 @@
       <th style="width: 60%; padding: 5px;">Preferred Name</th>
       <th style="width: 25%; padding: 5px;">Last Modified</th>
       <th style="width: 3%; padding: 5px;"><a title="Return All Work"
-          ng-click="unassignAllWork(mapUserViewed, 'concept', assignedWorkForUserType, queryAssignedForUser)">
+          ng-click="unassignAllWork(selected.mapUserViewed, 'concept', assignedWorkForUserType, queryAssignedForUser)">
           <i
             class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i>
         </a></th>
@@ -534,7 +534,7 @@
         date:'MM-dd-yyyy HH:mm'}}</td>
       <td style="width: 3%; padding: 5px;">
         <a title="Return"
-          ng-click="unassignWork(result, mapUserViewed, 'conceptsByUser')">
+          ng-click="unassignWork(result, selected.mapUserViewed, 'conceptsByUser')">
           <i class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i>
         </a>
       </td>
@@ -590,9 +590,9 @@
 
 <div ng-show="nAssignedQAWork > 0">
 
-  <uib-pagination total-items="nAssignedQAWork" ng-show="numAssignedQAWorkPages > 1"
-    ng-model="assignedQAWorkPage" class="pagination-sm" boundary-links="true"
-    rotate="true" max-size="5"
+  <uib-pagination total-items="nAssignedQAWork"
+    ng-show="numAssignedQAWorkPages > 1" ng-model="assignedQAWorkPage"
+    class="pagination-sm" boundary-links="true" rotate="true" max-size="5"
     ng-change="retrieveAssignedQAWork(page, queryQAWork, assignedQAWorkType)"></uib-pagination>
 
   <table class="table">
