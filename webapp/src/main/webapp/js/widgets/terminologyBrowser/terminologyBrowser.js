@@ -180,12 +180,10 @@ angular.module('mapProjectApp').controller(
       if ($scope.listMode) {
         $scope.performSearch($scope.query);
       } else {
-
         // Perform tree search
         if (!page) {
           $scope.paging.tree.page = 1;
         }
-
         $scope.treeQuery = $scope.query;
         $scope.getRootTreeWithQuery(true);
       }
@@ -487,6 +485,7 @@ angular.module('mapProjectApp').controller(
     // Toggle the list/tree mode
     $scope.toggleListMode = function() {
       $scope.listMode = !$scope.listMode;
+      $scope.search(1);
     }
 
     // Toggle child nodes
