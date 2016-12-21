@@ -104,7 +104,7 @@ angular.module('mapProjectApp').controller(
 
     // function called on storage listener event
     function onStorageEvent(storageEvent) {
-     var targetCode = localStorage.getItem('targetCode');
+      var targetCode = localStorage.getItem('targetCode');
 
       // if target code is set, focus window, remove from storage, and set
       // target
@@ -209,9 +209,11 @@ angular.module('mapProjectApp').controller(
     // Search a terminologyId in the tree from the list
     $scope.selectResult = function(result) {
       $scope.selectedResult = result;
+      $scope.srtParameters.query = result.terminologyId;
+      $scope.query = result.terminologyId;
       $scope.treeQuery = result.terminologyId;
       $scope.getRootTreeWithQuery(true);
-      $scope.toggleListMode();
+      $scope.toggleListMode(true);
     };
 
     // Page search results
@@ -265,7 +267,7 @@ angular.module('mapProjectApp').controller(
 
     // function to get the root nodes
     $scope.getRootTree = function() {
-   
+
       $rootScope.glassPane++;
       $http({
         url : root_mapping + 'treePosition/project/id/' + $scope.focusProject.id + '/destination',
@@ -453,11 +455,11 @@ angular.module('mapProjectApp').controller(
           $scope.getConceptDetails(treePositions[i]);
 
           /*
-           * // expand children, but do not expand their info panels for (var j =
-           * 0; j < treePositions[i].children.length; i++) {
-           * 
-           * treePositions[i].children[j].isOpen = true; }
-           */
+                     * // expand children, but do not expand their info panels for (var j = 0; j <
+                     * treePositions[i].children.length; i++) {
+                     * 
+                     * treePositions[i].children[j].isOpen = true; }
+                     */
 
           // stop recursive expansion here;
           retval = true;
@@ -483,9 +485,11 @@ angular.module('mapProjectApp').controller(
     };
 
     // Toggle the list/tree mode
-    $scope.toggleListMode = function() {
+    $scope.toggleListMode = function(skipSearch) {
       $scope.listMode = !$scope.listMode;
-      $scope.search(1);
+      if (!skipSearch) {
+        $scope.search(1);
+      }
     }
 
     // Toggle child nodes
