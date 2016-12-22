@@ -151,7 +151,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          console.debug('  advices = ' + data);
+          console.debug('  advices = ',data);
           $scope.mapAdvices = data.mapAdvice;
           localStorageService.add('mapAdvices', data.mapAdvice);
           $rootScope.$broadcast('localStorageModule.notification.setMapAdvices', {
@@ -386,7 +386,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       };
 
       $scope.getPagedScopeConcepts = function(page) {
-        console.debug('Called paged scope concept for page ' + page);
+        console.debug('Called paged scope concept for page ',page);
 
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
@@ -407,7 +407,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          console.debug('  scope concepts = ' + data);
+          console.debug('  scope concepts = ',data);
           $rootScope.glassPane--;
           $scope.pagedScopeConcept = data.searchResult;
           $scope.pagedScopeConceptCount = data.totalCount;
@@ -419,7 +419,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       };
 
       $scope.getPagedScopeExcludedConcepts = function(page, filter) {
-        console.debug('Called paged scope concept for page ' + page);
+        console.debug('Called paged scope concept for page ', page);
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
           'startIndex' : page == -1 ? -1 : (page - 1) * $scope.pageSize,
@@ -438,7 +438,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          console.debug('  scope excluded = ' + data);
+          console.debug('  scope excluded = ', data);
           $rootScope.glassPane--;
           $scope.pagedScopeExcludedConcept = data.searchResult;
           $scope.pagedScopeExcludedConceptCount = data.totalCount;
@@ -918,7 +918,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       };
 
       $scope.updateAdvice = function(advice) {
-        console.debug('in updateAdvice');
+        console.debug('updateAdvice');
         $http({
           url : root_mapping + 'advice/update',
           dataType : 'json',
@@ -928,7 +928,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          console.debug('  success');
+          console.debug('  success',data);
         }).error(function(data, status, headers, config) {
           $scope.recordError = 'Error updating map advice.';
           $rootScope.handleHttpError(data, status, headers, config);
@@ -978,7 +978,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
 
       $scope.submitNewMapAdvice = function(mapAdviceName, mapAdviceDetail, allowableForNullTarget,
         isComputed) {
-        console.debug('in submitNewMapAdvice');
+        console.debug('submitNewMapAdvice');
         var obj = {
           'name' : mapAdviceName,
           'detail' : mapAdviceDetail,
@@ -997,7 +997,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           }
         }).success(function(data) {
           $rootScope.glassPane--;
-          console.debug('  success');
+          console.debug('  success',data);
 
           // add the new advice to the available list
           $scope.mapAdvices.push(data);
@@ -1049,7 +1049,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       };
 
       $scope.submitNewMapRelation = function(relation) {
-        console.debug('in submitNewMapRelation for application');
+        console.debug('submitNewMapRelation for application');
 
         $rootScope.glassPane++;
         $http({
@@ -1064,7 +1064,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
 
         .success(function(data) {
           $rootScope.glassPane--;
-          console.debug('  success');
+          console.debug('  success',data);
           // add new relations to the sets
           $scope.mapRelations.push(data);
           $scope.allowableMapRelations.push(data);
@@ -1185,7 +1185,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       };
 
       $scope.updatePrinciple = function(principle) {
-        console.debug('in  updatePrinciple', principle);
+        console.debug(' updatePrinciple', principle);
         $http({
           url : root_mapping + 'principle/update',
           dataType : 'json',
@@ -1195,7 +1195,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          console.debug('  success');
+          console.debug('  success',data);
         }).error(function(data, status, headers, config) {
           $scope.recordError = 'Error updating map principle.';
           $rootScope.handleHttpError(data, status, headers, config);
@@ -1244,7 +1244,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       };
 
       $scope.submitNewMapPrinciple = function(principle) {
-        console.debug('in submitNewMapPrinciple', principle);
+        console.debug('submitNewMapPrinciple', principle);
 
         $rootScope.glassPane++;
         $http({
@@ -1257,7 +1257,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           }
         }).success(function(data) {
           $rootScope.glassPane--;
-          console.debug('  success');
+          console.debug('  success',data);
 
           // add principle to the local sets
           $scope.mapPrinciples.push(data);
@@ -1306,7 +1306,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       };
 
       $scope.submitNewMapAgeRange = function(ageRange) {
-        console.debug('in submitNewMapAgeRange', ageRange);
+        console.debug('submitNewMapAgeRange', ageRange);
         $rootScope.glassPane++;
 
         $http({
@@ -1319,7 +1319,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           }
         }).success(function(data) {
           $rootScope.glassPane--;
-          console.debug('  success');
+          console.debug('  success',data);
 
           // add principle to the local sets
           $scope.mapAgeRanges.push(data);
@@ -1368,7 +1368,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
 
       // remove a single concept (using the [x] button)
       $scope.removeScopeIncludedConcept = function(scopeConcept, currentPage) {
-        console.debug('in removeScopeIncludedConcept', scopeConcept, currentPage);
+        console.debug('removeScopeIncludedConcept', scopeConcept, currentPage);
         $rootScope.glassPane++;
 
         $http({
@@ -1379,7 +1379,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             'Content-Type' : 'text/plain'
           }
         }).success(function(data) {
-          console.debug('  success');
+          console.debug('  success',data);
           $rootScope.glassPane--;
 
           // re-page the scope concepts
@@ -1394,7 +1394,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
 
       // remove a single/batch of excluded concepts
       $scope.removeScopeIncludedConcepts = function(scopeConceptsUnsplit) {
-        console.debug('in removeScopeIncludedConcepts', scopeConceptsUnsplit);
+        console.debug('removeScopeIncludedConcepts', scopeConceptsUnsplit);
         $rootScope.glassPane++;
         var scopeConcepts = scopeConceptsUnsplit.split(/,\s*|\s+/);
         $http({
@@ -1406,7 +1406,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          console.debug('  success');
+          console.debug('  success',data);
           $rootScope.glassPane--;
           $scope.getPagedScopeConcepts(1);
 
@@ -1419,7 +1419,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
 
       // submit a single/batch of concepts for addition
       $scope.submitNewScopeIncludedConcepts = function(scopeConceptsUnsplit) {
-        console.debug('in submitNewScopeIncludedConcept', scopeConceptsUnsplit);
+        console.debug('submitNewScopeIncludedConcept', scopeConceptsUnsplit);
 
         $rootScope.glassPane++;
 
@@ -1435,7 +1435,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           }
         }).success(function(data) {
           $rootScope.glassPane--;
-          console.debug('  success');
+          console.debug('  success',data);
           $scope.resetScopeConceptFilter();
 
         }).error(function(data, status, headers, config) {
@@ -1450,7 +1450,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
 
       // remove a single concept (using the [x] button)
       $scope.removeScopeExcludedConcept = function(scopeExcludedConcept, currentPage) {
-        console.debug('in removeScopeExcludedConcept', scopeExcludedConcept, currentPage);
+        console.debug('removeScopeExcludedConcept', scopeExcludedConcept, currentPage);
         $rootScope.glassPane++;
 
         $http(
@@ -1464,7 +1464,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-          console.debug('  success');
+          console.debug('  success',data);
           $rootScope.glassPane--;
 
           $scope.getPagedScopeExcludedConcepts(currentPage);
@@ -1476,7 +1476,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
 
       // remove a single/batch of excluded concepts
       $scope.removeScopeExcludedConcepts = function(scopeExcludedConceptsUnsplit) {
-        console.debug('in removeScopeExcludedConcepts', scopeExcludedConceptsUnsplit);
+        console.debug('removeScopeExcludedConcepts', scopeExcludedConceptsUnsplit);
         $rootScope.glassPane++;
 
         var scopeExcludedConcepts = scopeExcludedConceptsUnsplit.split(/,\s*|\s+/);
@@ -1492,7 +1492,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             }
           }).success(function() {
           $rootScope.glassPane--;
-          console.debug('  success');
+          console.debug('  success',data);
           $scope.getPagedScopeExcludedConcepts(1);
 
         }).error(function(data, status, headers, config) {
@@ -1504,7 +1504,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
 
       // submit a single/batch of concepts for addition
       $scope.submitNewScopeExcludedConcepts = function(scopeExcludedConceptsUnsplit) {
-        console.debug('in submitNewScopeExcludedConcept', scopeExcludedConceptsUnsplit);
+        console.debug('submitNewScopeExcludedConcept', scopeExcludedConceptsUnsplit);
 
         $rootScope.glassPane++;
         var scopeExcludedConcepts = scopeExcludedConceptsUnsplit.split(/,\s*|\s+/);
@@ -1519,7 +1519,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-          console.debug('  success');
+          console.debug('  success',data);
           $rootScope.glassPane--;
           $scope.getPagedScopeExcludedConcepts(1);
         }).error(function(data, status, headers, config) {
@@ -1586,7 +1586,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          console.debug('  success');
+          console.debug('  success',data);
           $rootScope.glassPane--;
 
           // update the cached project list
