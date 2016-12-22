@@ -868,12 +868,28 @@
 </form>
 <hr>
 
-<div ng-show="editModeEnabled == true && currentRole == 'Administrator'">
+<div
+  ng-show="editModeEnabled == true && currentRole == 'Administrator' || currentRole == 'Lead'">
   <div style="margin-top: 15px;">
     <b>Add New Map Principle Document</b>
   </div>
-  <hr>
-  <input type="file" ng-file-select="onFileSelect($files)">
+
+  <div style="margin-top: 10px;">
+    <button style="margin-left: 15px" type="file" ngf-select ng-model="file"
+      name="file" ngf-pattern="*txt,*doc,*docx" ngf-max-size="20MB"
+      class="btn btn-xs btn-primary">Browse for File</button>
+    <div ngf-drop ng-model="file" class="drop-box"
+      ngf-drag-over-class="'dragover'" ngf-max-size="20MB"
+      ngf-pattern="*txt,*doc,*docx">Drop file here</div>
+  </div>
+  <div ng-show="file">
+    {{file.name}} &nbsp;
+    <button ng-show="file" class="btn btn-xs btn-primary"
+      ng-click="uploadFile(file)">Upload Files</button>
+  </div>
+
+
+
 </div>
 <div
   ng-show="focusProject.mapPrincipleSourceDocument != null &&
