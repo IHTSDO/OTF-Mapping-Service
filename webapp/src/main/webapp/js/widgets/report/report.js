@@ -38,7 +38,6 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
 
     // watch for project change
     $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
-      console.debug('MapProjectWidgetCtrl:  Detected change in focus project');
       $scope.focusProject = parameters.focusProject;
     });
 
@@ -60,7 +59,7 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
           }
           return true;
         });
-        
+
         $scope.definitions.sort();
 
         // retrieve the first page of reports (for leads)
@@ -75,9 +74,6 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
       // force reportType to null if undefined or blank string
       if (definition == undefined || definition === '')
         definition = null;
-
-      console.debug('getReports', page, definition, queryReport);
-
       // construct a PFS object
       var pfsParameterObj = {
         'startIndex' : (page - 1) * $scope.itemsPerPage,
@@ -105,9 +101,6 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
       }).success(function(data) {
         $rootScope.glassPane--;
         $scope.reports = data.report;
-
-        console.debug('Reports fetched: ', data.report);
-
         // set paging parameters
         $scope.nReports = data.totalCount;
         $scope.nReportPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
@@ -134,7 +127,6 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
     $scope.generateReport = function(definition) {
 
       $rootScope.glassPane++;
-      console.debug('Definition', definition);
       // obtain the record
       $http(
         {
@@ -175,8 +167,6 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
     // if closed, open
     $scope.getResultItems = function(reportResult, page) {
       $rootScope.glassPane++;
-      console.debug('Getting report result items', reportResult, page);
-
       // construct a PFS object
       var pfsParameterObj = {
         'startIndex' : (page - 1) * $scope.itemsPerPage,
@@ -220,8 +210,6 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
 
     $scope.generateNewReport = function(reportDefinition) {
       $rootScope.glassPane++;
-      console.debug('generateNewReport', reportDefinition);
-
       // obtain the record
       $http(
         {
@@ -245,7 +233,6 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
     };
 
     $scope.addReportDefinition = function() {
-      console.debug('Adding new report definition');
 
       var definition = {
         'id' : null,
@@ -264,7 +251,6 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
     };
 
     $scope.deleteReport = function(report, page, selectedDefinition, queryReport) {
-      console.debug('in delete Report from reports');
 
       if (confirm('Are you sure that you want to delete a report?') == false)
         return;
@@ -278,7 +264,6 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
           'Content-Type' : 'application/json'
         }
       }).success(function(data) {
-        console.debug('success to delete report from application');
         $scope.getReports(page, selectedDefinition, queryReport);
       }).error(function(data, status, headers, config) {
         $scope.recordError = 'Error deleting map report from application.';

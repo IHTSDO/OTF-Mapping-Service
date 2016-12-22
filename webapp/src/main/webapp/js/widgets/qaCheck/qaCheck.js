@@ -38,7 +38,6 @@ angular.module('mapProjectApp.widgets.qaCheck', [ 'adf.provider' ]).config(
 
     // watch for project change
     $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
-      console.debug('MapProjectWidgetCtrl:  Detected change in focus project');
       $scope.focusProject = parameters.focusProject;
     });
 
@@ -101,7 +100,6 @@ angular.module('mapProjectApp.widgets.qaCheck', [ 'adf.provider' ]).config(
 
     $scope.generateNewReport = function(reportDefinition) {
       $rootScope.glassPane++;
-      console.debug('generateNewReport', reportDefinition);
 
       // obtain the record
       $http(
@@ -179,7 +177,6 @@ angular.module('mapProjectApp.widgets.qaCheck', [ 'adf.provider' ]).config(
 
     $scope.addToQAWorkflow = function(report) {
       $rootScope.glassPane++;
-      console.debug('addToQAWorkflow', report);
 
       $http({
         url : root_workflow + 'createQAWork',

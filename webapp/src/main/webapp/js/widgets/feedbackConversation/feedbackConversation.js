@@ -13,7 +13,8 @@ angular
   })
   .controller(
     'feedbackConversationCtrl',
-    function($scope, $rootScope, $routeParams, $http, $location, $uibModal, $sce, localStorageService) {
+    function($scope, $rootScope, $routeParams, $http, $location, $uibModal, $sce,
+      localStorageService) {
 
       $scope.currentUser = null;
       $scope.currentRole = null;
@@ -53,7 +54,6 @@ angular
 
       // watch for project change
       $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
-        console.debug('MapProjectWidgetCtrl:  Detected change in focus project');
         $scope.focusProject = parameters.focusProject;
         $scope.allUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
         organizeUsers($scope.allUsers);
@@ -65,7 +65,6 @@ angular
 
       // on any change of focusProject, retrieve new available work
       $scope.$watch([ 'focusProject', 'currentUser', 'currentUserToken' ], function() {
-        console.debug('feedbackConversationCtrl:  Detected project or user set/change');
         if ($scope.focusProject != null && $scope.currentUser != null
           && $scope.currentUserToken != null) {
           $http.defaults.headers.common.Authorization = $scope.currentUserToken;
@@ -91,7 +90,6 @@ angular
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          console.debug("XXX", data);
           $scope.conversation = data;
           $scope.markViewed($scope.conversation, $scope.currentUser);
           initializeReturnRecipients($scope.conversation);
