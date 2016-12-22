@@ -13,7 +13,7 @@
     <hr>
     <div otf-map-record-narrow record="record1" project="project"
       show-title="false"></div>
-    <button class="btn btn-sm btn-primary" style="margin: 4px"
+    <button class="btn btn-xs btn-primary" style="margin: 4px"
       ng-click="populateMapRecord(record1)">Start here</button>
     <hr>
 
@@ -51,11 +51,11 @@
         </tr>
       </table>
       <div>
-        <button class="btn btn-sm btn-primary" style="margin: 4px"
+        <button class="btn btn-xs btn-primary" style="margin: 4px"
           ng-show="selectedErrorMessage1 == errorMessages[0]"
           ng-click="submitNewFeedback(record1, selectedErrorMessage1, feedbackComment1); feedbackComment1 = ''; selectedErrorMessage1 = errorMessages[0];">Submit
           feedback</button>
-        <button class="btn btn-sm btn-primary" style="margin: 4px"
+        <button class="btn btn-xs btn-primary" style="margin: 4px"
           ng-show="selectedErrorMessage1 != errorMessages[0]"
           ng-click="submitNewFeedback(record1, selectedErrorMessage1, feedbackComment1); feedbackComment1 = ''; selectedErrorMessage1 = errorMessages[0];">Submit
           error</button>
@@ -70,7 +70,7 @@
     <hr>
     <div otf-map-record-narrow record="record2" project="project"
       show-title="false"></div>
-    <button class="btn btn-sm btn-primary" style="margin: 4px"
+    <button class="btn btn-xs btn-primary" style="margin: 4px"
       ng-click="populateMapRecord(record2)">Start here</button>
     <hr>
 
@@ -108,11 +108,11 @@
         </tr>
       </table>
       <div>
-        <button class="btn btn-sm btn-primary" style="margin: 4px"
+        <button class="btn btn-xs btn-primary" style="margin: 4px"
           ng-show="selectedErrorMessage2 == errorMessages[0]"
           ng-click="submitNewFeedback(record2, selectedErrorMessage2, feedbackComment2); feedbackComment2 = ''; selectedErrorMessage2 = errorMessages[0];">Submit
           feedback</button>
-        <button class="btn btn-sm btn-primary" style="margin: 4px"
+        <button class="btn btn-xs btn-primary" style="margin: 4px"
           ng-show="selectedErrorMessage2 != errorMessages[0]"
           ng-click="submitNewFeedback(record2, selectedErrorMessage2, feedbackComment2); feedbackComment2 = ''; selectedErrorMessage2 = errorMessages[0];">Submit
           error</button>
@@ -152,7 +152,7 @@
       <textarea id="tinymce-feedback3" ui-tinymce="tinymceOptions"
         ng-model="groupFeedback"></textarea>
     </form>
-    <button class="btn btn-sm btn-primary" style="margin: 4px"
+    <button class="btn btn-xs btn-primary" style="margin: 4px"
       ng-click="submitGroupFeedback(groupFeedback, returnRecipients); groupFeedback = ''">Submit
       feedback</button>
 
@@ -197,12 +197,12 @@
       ng-show="leadRecord.workflowStatus != 'REVIEW_NEW' && leadRecord.workflowStatus != 'REVIEW_IN_PROGRESS' && leadRecord.workflowStatus != 'REVIEW_RESOLVED'">
 
       <div ng-show="isFalseConflict == false">
-        <button class="btn btn-sm btn-primary" ng-click="toggleFalseConflict()">Mark
+        <button class="btn btn-xs btn-primary" ng-click="toggleFalseConflict()">Mark
           as Not In Conflict</button>
       </div>
       <div ng-show="isFalseConflict === true">
         Marked as not in conflict
-        <button class="btn btn-sm btn-primary" ng-click="toggleFalseConflict()">Unmark</button>
+        <button class="btn btn-xs btn-primary" ng-click="toggleFalseConflict()">Unmark</button>
       </div>
     </div>
     </accordion-group> </accordion>

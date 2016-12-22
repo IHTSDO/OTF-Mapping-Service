@@ -112,16 +112,14 @@ angular
 
         // select the first domain and first page
         $scope.selectDomainTab($scope.domainTabs[0]);
-        $scope.selectPageTab($scope.domainTabs[0].pageTabs[0]);
+        angular.forEach($scope.domainTabs, function(domainTab) {
+          domainTab.pageTabs[0].active = true;
+        });
       };
 
       // processes tab click events
       $scope.selectDomainTab = function(selectedDomainTab) {
         $scope.selectedDomain = selectedDomainTab.domain;
-      };
-
-      $scope.selectPageTab = function(pageTab) {
-        $scope.selectedPage = pageTab.name;
       };
 
       // //////////////////////////////////////////
@@ -324,7 +322,12 @@ angular
         $http.get(
           root_content + 'index/' + $scope.focusProject.destinationTerminology + '/'
             + $scope.focusProject.destinationTerminologyVersion + '/' + $scope.selectedDomain.name
-            + '/details/' + link).then(
+            + '/details/' + link, {
+            transformResponse : [ function(data) {
+              // Response is plain text at this point
+              return data;
+            } ]
+          }).then(
           // Success
           function(response) {
             // substring to eliminate quotation marks

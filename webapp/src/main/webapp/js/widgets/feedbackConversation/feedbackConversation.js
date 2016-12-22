@@ -13,7 +13,7 @@ angular
   })
   .controller(
     'feedbackConversationCtrl',
-    function($scope, $rootScope, $routeParams, $http, $location, $modal, $sce, localStorageService) {
+    function($scope, $rootScope, $routeParams, $http, $location, $uibModal, $sce, localStorageService) {
 
       $scope.currentUser = null;
       $scope.currentRole = null;

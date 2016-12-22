@@ -11,8 +11,7 @@
     show-title="false"></span>
   <hr>
 </div>
-<div ng-show="record2 != null && record2.mapEntry.length>
-  0">
+<div ng-show="record2 != null && record2.mapEntry.length > 0">
   Record owned by: {{record2.owner.name}}
   <span otf-map-record-wide record="record2" project="focusProject"
     show-title="false"></span>
@@ -43,21 +42,22 @@
   selected-model="returnRecipients" extra-settings="multiSelectSettings"
   translation-texts="multiSelectCustomTexts"></div>
 <!--  tinymce text area -->
-<form method="post">
+<span>
   <textarea id="tinymce-feedback" ui-tinymce="tinymceOptions"
     ng-model="feedbackInput"></textarea>
 
-  <input class="pull-right" type="submit" value="Send Feedback"
-    ng-click="sendFeedback(record, feedbackInput, conversation, returnRecipients); feedbackInput = ''">
-</form>
-<button class="btn btn-sm btn-primary"
+  <button class="pull-right" class="btn btn-xs btn-primary"
+    ng-click="sendFeedback(record, feedbackInput, conversation, returnRecipients); feedbackInput = ''">Send
+    Feedback</button>
+</span>
+<button class="btn btn-xs btn-primary"
   ng-click="goConceptView(conversation.terminologyId)">Mapped Concept
   View</button>
-<button class="btn btn-sm btn-primary" ng-click="openConceptBrowser()">SNOMED
+<button class="btn btn-xs btn-primary" ng-click="openConceptBrowser()">SNOMED
   CT Browser</button>
-<button class="btn btn-sm btn-primary" ng-show="indexViewerExists == true"
+<button class="btn btn-xs btn-primary" ng-show="indexViewerExists == true"
   ng-click="openIndexViewer()">Index Viewer</button>
-<button class="btn btn-sm btn-primary" ng-click="goEdit(record)"
+<button class="btn btn-xs btn-primary" ng-click="goEdit(record)"
   ng-show="displayEdit() == true">Edit record</button>
 <span ng-show="conversation.active == false" class="alert alert-warning"
   disabled> Record is inactive. </span>
@@ -65,7 +65,8 @@
   ng-click="markUnviewed ? 
    markViewed(conversation, currentUser) : markFeedbackUnviewed(conversation)">
 Mark unviewed
-<span ng-show="conversation.userName == currentUser.userName || currentRole == 'Lead'">
+<span
+  ng-show="conversation.userName == currentUser.userName || currentRole == 'Lead'">
   <input type="checkbox" ng-model="conversation.resolved"
     ng-click="conversation.resolved ? 
     markActive(conversation) : markFeedbackResolved(conversation)">

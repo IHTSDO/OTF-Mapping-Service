@@ -13,7 +13,7 @@ angular
   })
   .controller(
     'recordConceptCtrl',
-    function($scope, $rootScope, $http, $routeParams, $location, $modal, localStorageService, $sce,
+    function($scope, $rootScope, $http, $routeParams, $location, $uibModal, localStorageService, $sce,
       appConfig) {
 
       // scope variables
@@ -620,7 +620,7 @@ angular
 
         console.debug('openViewerFeedbackModal with ', lrecord, currentUser);
 
-        var modalInstance = $modal.open({
+        var modalInstance = $uibModal.open({
           templateUrl : 'js/widgets/projectRecords/projectRecordsViewerFeedback.html',
           controller : ViewerFeedbackModalCtrl,
           resolve : {
@@ -635,7 +635,7 @@ angular
 
       };
 
-      var ViewerFeedbackModalCtrl = function($scope, $modalInstance, record) {
+      var ViewerFeedbackModalCtrl = function($scope, $uibModalInstance, record) {
 
         console.debug('Entered modal control', record);
 
@@ -680,9 +680,9 @@ angular
 
           }).success(function(data) {
             $rootScope.glassPane--;
-            $modalInstance.close();
+            $uibModalInstance.close();
           }).error(function(data, status, headers, config) {
-            $modalInstance.close();
+            $uibModalInstance.close();
             $scope.recordError = 'Error sending feedback email.';
             $rootScope.glassPane--;
             $rootScope.handleHttpError(data, status, headers, config);
@@ -691,7 +691,7 @@ angular
         };
 
         $scope.cancel = function() {
-          $modalInstance.dismiss('cancel');
+          $uibModalInstance.dismiss('cancel');
         };
 
         function validateEmail(email) {

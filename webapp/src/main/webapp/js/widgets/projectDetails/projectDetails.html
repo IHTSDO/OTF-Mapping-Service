@@ -1,7 +1,7 @@
 
 <h3>
   {{focusProject.name}} &nbsp;
-  <button class="btn btn-sm btn-primary" ng-click="goMapRecords()">Map
+  <button class="btn btn-xs btn-primary" ng-click="goMapRecords()">Map
     Records</button>
 </h3>
 <p></p>
@@ -22,14 +22,14 @@
   </span>
 </div>
 
-<accordion close-others="false"> <accordion-group is-open="true">
-<accordion-heading>
+<uib-accordion close-others="false"> <uib-accordion-group
+  is-open="true"> <uib-accordion-heading>
 <h5>
   <span tooltip-placement="right"
-    tooltip="List of the details for this project."> Map Project Details
-  </span>
+    uib-tooltip="List of the details for this project."> Map Project
+    Details </span>
 </h5>
-</accordion-heading>
+</uib-accordion-heading>
 
 <p></p>
 <table class="table table-bordered" style="padding: 5px">
@@ -37,7 +37,7 @@
     <tr>
       <td width="18%">
         <div tooltip-placement="right"
-          tooltip="Abbreviation and version information for the terminology this map project is mapping from.">
+          uib-tooltip="Abbreviation and version information for the terminology this map project is mapping from.">
           <b>Source Terminology</b>
         </div>
       </td>
@@ -47,7 +47,7 @@
     <tr>
       <td width="18%">
         <div tooltip-placement="right"
-          tooltip="Abbreviation and version information for the terminology this map project is mapping to.">
+          uib-tooltip="Abbreviation and version information for the terminology this map project is mapping to.">
           <b>Destination Terminology</b>
         </div>
       </td>
@@ -57,7 +57,7 @@
     <tr>
       <td width="18%">
         <div tooltip-placement="right"
-          tooltip="The RF2 metadata concept identifier and preferred name representing this map project.">
+          uib-tooltip="The RF2 metadata concept identifier and preferred name representing this map project.">
           <b>Ref Set</b>
         </div>
       </td>
@@ -67,7 +67,7 @@
     <tr>
       <td>
         <div tooltip-placement="right"
-          tooltip="A true/false indicator of whether this mapping data has been published.">
+          uib-tooltip="A true/false indicator of whether this mapping data has been published.">
           <b>Published</b>
         </div>
       </td>
@@ -76,7 +76,7 @@
     <tr>
       <td>
         <div tooltip-placement="right"
-          tooltip="A true/false indicator of whether this map project has multiple mappings for the same source concept.">
+          uib-tooltip="A true/false indicator of whether this map project has multiple mappings for the same source concept.">
           <b>Group Structure</b>
         </div>
       </td>
@@ -85,7 +85,7 @@
     <tr>
       <td>
         <div tooltip-placement="right"
-          tooltip="A true/false indicator of whether this map project uses rules other than TRUE">
+          uib-tooltip="A true/false indicator of whether this map project uses rules other than TRUE">
           <b>Rule Based</b>
         </div>
       </td>
@@ -94,7 +94,7 @@
     <tr>
       <td>
         <div tooltip-placement="right"
-          tooltip="The method by which this project uses the map relation (i.e. map record based, relationship based)">
+          uib-tooltip="The method by which this project uses the map relation (i.e. map record based, relationship based)">
           <b>Relation Style</b>
         </div>
       </td>
@@ -103,7 +103,7 @@
     <tr>
       <td>
         <div tooltip-placement="right"
-          tooltip="The type of mapping this project uses (i.e. simple, complex, extended)">
+          uib-tooltip="The type of mapping this project uses (i.e. simple, complex, extended)">
           <b>Map Type</b>
         </div>
       </td>
@@ -112,7 +112,7 @@
     <tr>
       <td>
         <div tooltip-placement="right"
-          tooltip="The type of workflow this project uses (i.e. conflict, review)">
+          uib-tooltip="The type of workflow this project uses (i.e. conflict, review)">
           <b>Workflow Type</b>
         </div>
       </td>
@@ -122,14 +122,14 @@
   </tbody>
 </table>
 <p></p>
-</accordion-group> <accordion-group
+</uib-accordion-group> <uib-accordion-group
   ng-show="focusProject.mapLead.length > 0 || editModeEnabled == true">
-<accordion-heading>
+<uib-accordion-heading>
 <h5>
   <span tooltip-placement="right"
-    tooltip="List of the map leads for this project."> Map Leads </span>
+    uib-tooltip="List of the map leads for this project."> Map Leads </span>
 </h5>
-</accordion-heading>
+</uib-accordion-heading>
 <table style="width: 100%" class="table pure-table">
   <thead>
     <tr>
@@ -205,19 +205,19 @@
     </tbody>
   </table>
 
-  <button class="btn btn-sm btn-primary"
+  <button class="btn btn-xs btn-primary"
     ng-click="addMapUserToMapProjectWithRole(newLead, 'Lead'); newLead = null; ">Submit</button>
 </form>
 
-</accordion-group> <accordion-group
+</uib-accordion-group> <uib-accordion-group
   ng-show="focusProject.mapSpecialist.length > 0 || editModeEnabled == true">
-<accordion-heading>
+<uib-accordion-heading>
 <h5>
   <span tooltip-placement="right"
-    tooltip="List of the map specialists for this project."> Map
+    uib-tooltip="List of the map specialists for this project."> Map
     Specialists </span>
 </h5>
-</accordion-heading>
+</uib-accordion-heading>
 <table style="width: 100%" class="table pure-table">
   <thead>
     <tr>
@@ -298,35 +298,34 @@
     </tbody>
   </table>
 
-  <button class="btn btn-sm btn-primary"
+  <button class="btn btn-xs btn-primary"
     ng-click="addMapUserToMapProjectWithRole(newSpecialist, 'Specialist'); newSpecialist = null; ">Submit</button>
 </form>
 
-</accordion-group> <accordion-group
+</uib-accordion-group> <uib-accordion-group
   ng-show="focusProject.mapAdvice.length > 0 || editModeEnabled == true">
-<accordion-heading>
+<uib-accordion-heading>
 <h5>
   <span tooltip-placement="right"
-    tooltip="List of the map advice for this project."> Map Advices </span>
+    uib-tooltip="List of the map advice for this project."> Map Advices </span>
 </h5>
-</accordion-heading> <pagination direction-links="false" boundary-links="true"
-  total-items="pagedAdviceCount" items-per-page="pageSize" page="pageAdvice"
-  on-select-page="getPagedAdvices(page, adviceFilter)"></pagination>
-<form>
+</uib-accordion-heading> <uib-pagination direction-links="false" boundary-links="true"
+  total-items="pagedAdviceCount" items-per-page="pageSize" ng-model="pageAdvice"
+  ng-change="getPagedAdvices(page, adviceFilter)"></uib-pagination> <span>
   <input id="adviceSearch" type="text" ng-model="adviceFilter"
-    ng-change="getPagedAdvices(1, adviceFilter)"> <input type="submit"
-    value="Reset Filter" ng-click="resetAdviceFilter()">
-</form>
+    ng-change="getPagedAdvices(1, adviceFilter)">
+  <button class="btn btn-xs btn-warning" ng-click="resetAdviceFilter()">Reset</button>
+</span>
 
 <table style="width: 100%" class="table pure-table">
   <thead>
     <tr>
       <th style="width: 60%;">Advice</th>
       <th style="width: 20%;"><div tooltip-placement="top"
-          tooltip="Whether this advice can be applied to entries with no target">Allowable
+          uib-tooltip="Whether this advice can be applied to entries with no target">Allowable
           for Null Target</div></th>
       <th style="width: 20%;"><div tooltip-placement="top"
-          tooltip="If true, this advice is applied automatically and cannot be assigned directly by the user">Computed</div>
+          uib-tooltip="If true, this advice is applied automatically and cannot be assigned directly by the user">Computed</div>
       </th>
     </tr>
   </thead>
@@ -416,27 +415,27 @@
     </tbody>
   </table>
 
-  <button class="btn btn-sm btn-primary"
+  <button class="btn btn-xs btn-primary"
     ng-click="submitNewMapAdvice(newAdviceName, newAdviceDetail, newAllowableForNullTarget, newIsComputed); 
           newAdviceName = ''; newAdviceDetail = ''; newAllowableForNullTarget = false; newIsComputed = false; ">Submit</button>
 </form>
 
-</accordion-group> <accordion-group
+</uib-accordion-group> <uib-accordion-group
   ng-show="focusProject.mapRelation.length > 0 || editModeEnabled == true">
-<accordion-heading>
+<uib-accordion-heading>
 <h5>
   <span tooltip-placement="right"
-    tooltip="List of the map relations for this project."> Map Relations
-  </span>
+    uib-tooltip="List of the map relations for this project."> Map
+    Relations </span>
 </h5>
-</accordion-heading> <pagination ng-show="focusProject.mapRelation.length > pageSize"
+</uib-accordion-heading> <uib-pagination ng-show="focusProject.mapRelation.length > pageSize"
   direction-links="false" boundary-links="true" total-items="pagedRelationCount"
-  items-per-page="pageSize" page="pageRelation"
-  on-select-page="getPagedRelations(page, relationFilter)"></pagination>
-<form>
+  items-per-page="pageSize" ng-model="pageRelation"
+  ng-change="getPagedRelations(page, relationFilter)"></uib-pagination>
+<form ng-submit="resetRelationFilter()">
   <input type="text" ng-model="relationFilter"
-    ng-change="getPagedRelations(1, relationFilter)"> <input
-    type="submit" value="Reset Filter" ng-click="resetRelationFilter()">
+    ng-change="getPagedRelations(1, relationFilter)">
+  <button type="submit" class="btn btn-xs btn-primary">Reset Filter</button>
 </form>
 
 <table style="width: 100%" class="table pure-table">
@@ -444,15 +443,15 @@
     <tr>
       <th>Id</th>
       <th><div tooltip-placement="top"
-          tooltip="Short code abbreviation for this relation, if applicable">Code</div>
+          uib-tooltip="Short code abbreviation for this relation, if applicable">Code</div>
       </th>
       <th><div tooltip-placement="top"
-          tooltip="The full name of this map relation">Name</div></th>
+          uib-tooltip="The full name of this map relation">Name</div></th>
       <th><div tooltip-placement="top"
-          tooltip="Whether this relation can be applied to entries with no target">Allowable
+          uib-tooltip="Whether this relation can be applied to entries with no target">Allowable
           for Null Target</div></th>
       <th><div tooltip-placement="top"
-          tooltip="If true, this relation is applied automatically and cannot be assigned directly by the user">Computed</div>
+          uib-tooltip="If true, this relation is applied automatically and cannot be assigned directly by the user">Computed</div>
       </th>
     </tr>
   </thead>
@@ -546,7 +545,7 @@
       </tr>
       <tr>
         <td>
-          <button class="btn btn-sm btn-primary"
+          <button class="btn btn-xs btn-primary"
             ng-click="submitNewMapRelation(newRelation);newRelation = null;">Submit</button>
         </td>
         <td></td>
@@ -554,38 +553,38 @@
     </tbody>
   </table>
 </form>
-</accordion-group> <accordion-group
+</uib-accordion-group> <uib-accordion-group
   ng-show="true || focusProject.reportDefinition.length > 0 || editModeEnabled == true">
-<accordion-heading>
+<uib-accordion-heading>
 <h5>
   <span tooltip-placement="right"
-    tooltip="List of the report definitions for this project."> Report
-    Definitions </span>
+    uib-tooltip="List of the report definitions for this project.">
+    Report Definitions </span>
 </h5>
 
-</accordion-heading> <pagination ng-show="focusProject.reportDefinition.length > pageSize"
+</uib-accordion-heading> <uib-pagination ng-show="focusProject.reportDefinition.length > pageSize"
   direction-links="false" boundary-links="true"
   total-items="pagedReportDefinitionCount" items-per-page="pageSize"
-  page="pageDefinition"
-  on-select-page="getPagedReportDefinitions(page, reportDefinitionFilter)"></pagination>
-<form>
+  ng-model="pageDefinition"
+  ng-change="getPagedReportDefinitions(page, reportDefinitionFilter)"></uib-pagination>
+<form ng-submit="resetReportDefinitionFilter(); reportDefinitionFilter = '';">
   <input type="text" ng-model="reportDefinitionFilter"
-    ng-change="getPagedReportDefinitions(1, reportDefinitionFilter)"> <input
-    type="submit" value="Reset Filter"
-    ng-click="resetReportDefinitionFilter(); reportDefinitionFilter = '';">
+    ng-change="getPagedReportDefinitions(1, reportDefinitionFilter)">
+  <button type="submit" class="btn btn-xs btn-primary">Reset Filter</button>
 </form>
 
 
 <table style="width: 100%" class="table pure-table">
   <thead>
     <tr>
-      <th><div tooltip-placement="top" tooltip="Name of report definition">Name</div>
       <th><div tooltip-placement="top"
-          tooltip="Required role to view results of this report definition">Required
+          uib-tooltip="Name of report definition">Name</div>
+      <th><div tooltip-placement="top"
+          uib-tooltip="Required role to view results of this report definition">Required
           Role</div></th>
 
       <th><div tooltip-placement="top"
-          tooltip="Whether this report is calculated as the difference between two other reports">Diff
+          uib-tooltip="Whether this report is calculated as the difference between two other reports">Diff
           Report</div></th>
     </tr>
   </thead>
@@ -652,24 +651,23 @@
   </tbody>
 </table>
 
-</accordion-group> <accordion-group
+</uib-accordion-group> <uib-accordion-group
   ng-show="true || focusProject.reportDefinition.length > 0 || editModeEnabled == true">
-<accordion-heading>
+<uib-accordion-heading>
 <h5>
   <span tooltip-placement="right"
-    tooltip="List of the qa check definitions for this project."> QA
+    uib-tooltip="List of the qa check definitions for this project."> QA
     Check Definitions </span>
 </h5>
-</accordion-heading> <pagination ng-show="focusProject.reportDefinition.length > pageSize"
+</uib-accordion-heading> <uib-pagination ng-show="focusProject.reportDefinition.length > pageSize"
   direction-links="false" boundary-links="true"
   total-items="pagedQACheckDefinitionCount" items-per-page="pageSize"
-  page="pagedQACheckDefinition"
-  on-select-page="getPagedQACheckDefinitions(page, qaCheckDefinitionFilter)"></pagination>
-<form>
+  ng-model="pagedQACheckDefinition"
+  ng-change="getPagedQACheckDefinitions(page, qaCheckDefinitionFilter)"></uib-pagination>
+<form ng-submit="resetQACheckDefinitionFilter(); qaCheckDefinitionFilter = '';">
   <input type="text" ng-model="qaCheckDefinitionFilter"
     ng-change="getPagedQACheckDefinitions(1, qaCheckDefinitionFilter)">
-  <input type="submit" value="Reset Filter"
-    ng-click="resetQACheckDefinitionFilter(); qaCheckDefinitionFilter = '';">
+  <button type="submit" class="btn btn-xs btn-primary">Reset Filter</button>
 </form>
 
 
@@ -677,9 +675,9 @@
   <thead>
     <tr>
       <th><div tooltip-placement="top"
-          tooltip="Name of qa check definition">Name</div>
+          uib-tooltip="Name of qa check definition">Name</div>
       <th><div tooltip-placement="top"
-          tooltip="Required role to view results of this qa check definition">Required
+          uib-tooltip="Required role to view results of this qa check definition">Required
           Role</div></th>
     </tr>
   </thead>
@@ -744,23 +742,22 @@
   </tbody>
 </table>
 
-</accordion-group> <accordion-group
+</uib-accordion-group> <uib-accordion-group
   ng-show="focusProject.mapPrinciple.length > 0 || editModeEnabled == true">
-<accordion-heading>
+<uib-accordion-heading>
 <h5>
   <span tooltip-placement="right"
-    tooltip="List of the map principles for this project."> Map
+    uib-tooltip="List of the map principles for this project."> Map
     Principles </span>
 </h5>
-</accordion-heading> <pagination ng-show="focusProject.mapPrinciple.length > pageSize"
+</uib-accordion-heading> <uib-pagination ng-show="focusProject.mapPrinciple.length > pageSize"
   direction-links="false" boundary-links="true"
   total-items="pagedPrincipleCount" items-per-page="pageSize"
-  page="pagePrinciple"
-  on-select-page="getPagedPrinciples(page, principleFilter)"></pagination>
-<form>
+  ng-model="pagePrinciple" ng-change="getPagedPrinciples(page, principleFilter)"></uib-pagination>
+<form ng-submit="resetPrincipleFilter()">
   <input type="text" ng-model="principleFilter"
-    ng-change="getPagedPrinciples(1, principleFilter)"> <input
-    type="submit" value="Reset Filter" ng-click="resetPrincipleFilter()">
+    ng-change="getPagedPrinciples(1, principleFilter)">
+  <button type="submit" class="btn btn-xs btn-primary">Reset Filter</button>
 </form>
 
 <table style="width: 100%" class="table pure-table">
@@ -861,7 +858,7 @@
       </tr>
       <tr>
         <td>
-          <button class="btn btn-sm btn-primary" style="margin-bottom: 15px;"
+          <button class="btn btn-xs btn-primary" style="margin-bottom: 15px;"
             ng-click="submitNewMapPrinciple(newPrinciple);newPrinciple=null;">Submit</button>
         </td>
         <td></td>
@@ -885,15 +882,15 @@
   <a href="doc/{{focusProject.mapPrincipleSourceDocument}}" target="_blank">Map
     Principles Document</a>
 </div>
-</accordion-group> <accordion-group
+</uib-accordion-group> <uib-accordion-group
   ng-show="focusProject.mapAgeRange.length > 0 || editModeEnabled == true">
-<accordion-heading>
+<uib-accordion-heading>
 <h5>
   <span tooltip-placement="right"
-    tooltip="List of the preset age ranges used for rule construction for this project.">
+    uib-tooltip="List of the preset age ranges used for rule construction for this project.">
     Preset Age Ranges </span>
 </h5>
-</accordion-heading>
+</uib-accordion-heading>
 <table style="width: 100%" class="table pure-table">
   <thead>
     <tr>
@@ -1024,7 +1021,7 @@
       </tr>
       <tr>
         <td>
-          <button class="btn btn-sm btn-primary"
+          <button class="btn btn-xs btn-primary"
             ng-click="submitNewMapAgeRange(newAgeRange);newAgeRange = null;">Submit</button>
         </td>
         <td></td>
@@ -1033,15 +1030,15 @@
   </table>
 </form>
 
-</accordion-group> <accordion-group
+</uib-accordion-group> <uib-accordion-group
   ng-show="focusProject.errorMessages.length > 0 || editModeEnabled == true">
-<accordion-heading>
+<uib-accordion-heading>
 <h5>
   <span tooltip-placement="right"
-    tooltip="List of the potential error messages available for this project.">
+    uib-tooltip="List of the potential error messages available for this project.">
     Error Messages </span>
 </h5>
-</accordion-heading>
+</uib-accordion-heading>
 <table style="width: 100%" class="table pure-table">
   <thead>
     <tr>
@@ -1084,7 +1081,7 @@
 
       <tr>
         <td>
-          <button class="btn btn-sm btn-primary"
+          <button class="btn btn-xs btn-primary"
             ng-click="submitNewErrorMessage(newErrorMessage);
          newErrorMessage = '';">Submit</button>
         </td>
@@ -1094,18 +1091,18 @@
   </table>
 </form>
 
-</accordion-group> <accordion-group> <accordion-heading>
+</uib-accordion-group> <uib-accordion-group> <uib-accordion-heading>
 <h5>
   <span tooltip-placement="right"
-    tooltip="List of the concepts in scope for this project."> Scope
+    uib-tooltip="List of the concepts in scope for this project."> Scope
     Concepts </span>
 </h5>
-</accordion-heading> <pagination direction-links="false" boundary-links="true"
+</uib-accordion-heading> <uib-pagination direction-links="false" boundary-links="true"
   total-items="pagedScopeConceptCount" items-per-page="pageSize"
-  max-size="maxSize" page="pageScopeConcept"
-  on-select-page="getPagedScopeConcepts(page)"></pagination> <!-- <form>
+  max-size="maxSize" ng-model="pageScopeConcept"
+  ng-change="getPagedScopeConcepts(page)"></uib-pagination> <!-- <form ng-submit="resetScopeConceptFilter()">
       <input id="scopeConceptSearch" type="text" ng-model="scopeConceptFilter" ng-change="getPagedScopeConcepts(1)">
-      <input type="submit" value="Reset Filter" ng-click="resetScopeConceptFilter()">
+  <button type="submit" class="btn btn-xs btn-primary">Reset Filter</button>
     </form>  -->
 
 <table style="width: 100%" class="table pure-table">
@@ -1146,33 +1143,33 @@
     <b>Add New Scope Included Concept(s) to Project</b>
   </div>
   <hr>
-  <tabset> <tab heading="Add Concepts"> Enter concept terminology
-  ids, delimited by either whitespace or commas. <textarea
+  <uib-tabset> <uib-tab heading="Add Concepts"> Enter
+  concept terminology ids, delimited by either whitespace or commas. <textarea
     style="width: 100%; height: 100px" ng-model="scopeConceptsToAdd"></textarea>
-  <button class="btn btn-sm btn-primary"
+  <button class="btn btn-xs btn-primary"
     ng-click="submitNewScopeIncludedConcepts(scopeConceptsToAdd)">Add</button>
-  <button class="btn btn-sm btn-warning" ng-click="scopeConceptsToAdd = null">Clear</button>
-  </tab> <tab heading="Remove Concepts"> Enter concept terminology ids,
+  <button class="btn btn-xs btn-warning" ng-click="scopeConceptsToAdd = null">Clear</button>
+  </uib-tab> <uib-tab heading="Remove Concepts"> Enter concept terminology ids,
   delimited by either whitespace or commas. <textarea
     style="width: 100%; height: 100px" ng-model="scopeConceptsToRemove"></textarea>
-  <button class="btn btn-sm btn-primary"
+  <button class="btn btn-xs btn-primary"
     ng-click="removeScopeIncludedConcepts(scopeConceptsToRemove)">Remove</button>
-  <button class="btn btn-sm btn-warning" ng-click="scopeConceptsToRemove = null">Clear</button>
-  </tab> </tabset>
+  <button class="btn btn-xs btn-warning" ng-click="scopeConceptsToRemove = null">Clear</button>
+  </uib-tab> </tabset>
 </div>
 
-</accordion-group> <accordion-group> <accordion-heading>
+</uib-accordion-group> <uib-accordion-group> <uib-accordion-heading>
 <h5>
   <span tooltip-placement="right"
-    tooltip="List of the concepts excluded from scope for this project.">
+    uib-tooltip="List of the concepts excluded from scope for this project.">
     Scope Excluded Concepts </span>
 </h5>
-</accordion-heading> <pagination direction-links="false" boundary-links="true"
+</uib-accordion-heading> <uib-pagination direction-links="false" boundary-links="true"
   total-items="pagedScopeExcludedConceptCount" items-per-page="pageSize"
-  max-size="maxSize" page="pageScopeExcludedConcept"
-  on-select-page="getPagedScopeExcludedConcepts(page)"></pagination> <!--<form>
+  max-size="maxSize" ng-model="pageScopeExcludedConcept"
+  ng-change="getPagedScopeExcludedConcepts(page)"></uib-pagination> <!--<form ng-submit="resetScopeExcludedConceptFilter()">
       <input id="scopeExcludedConceptSearch" type="text" ng-model="scopeExcludedConceptFilter" ng-change="getPagedScopeExcludedConcepts(1)">
-      <input type="submit" value="Reset Filter" ng-click="resetScopeExcludedConceptFilter()">
+  <button type="submit" class="btn btn-xs btn-primary">Reset Filter</button>
     </form>  -->
 
 <table style="width: 100%" class="table pure-table">
@@ -1214,21 +1211,21 @@
     <b>Add New Scope Excluded Concept(s) to Project</b>
   </div>
   <hr>
-  <tabset> <tab heading="Add Concepts"> Enter concept terminology
-  ids, delimited by either whitespace or commas. <textarea
+  <uib-tabset> <uib-tab heading="Add Concepts"> Enter
+  concept terminology ids, delimited by either whitespace or commas. <textarea
     style="width: 100%; height: 100px" ng-model="scopeExcludedConceptsToAdd"></textarea>
-  <button class="btn btn-sm btn-primary"
+  <button class="btn btn-xs btn-primary"
     ng-click="submitNewScopeExcludedConcepts(scopeExcludedConceptsToAdd)">Add</button>
-  <button class="btn btn-sm btn-warning"
+  <button class="btn btn-xs btn-warning"
     ng-click="scopeExcludedConceptsToAdd = null">Clear</button>
-  </tab> <tab heading="Remove Concepts"> Enter concept terminology ids,
+  </uib-tab> <uib-tab heading="Remove Concepts"> Enter concept terminology ids,
   delimited by either whitespace or commas. <textarea
     style="width: 100%; height: 100px" ng-model="scopeExcludedConceptsToRemove"></textarea>
-  <button class="btn btn-sm btn-primary"
+  <button class="btn btn-xs btn-primary"
     ng-click="removeScopeExcludedConcepts(scopeExcludedConceptsToRemove)">Remove</button>
-  <button class="btn btn-sm btn-warning"
+  <button class="btn btn-xs btn-warning"
     ng-click="scopeExcludedConceptsToRemove = null">Clear</button>
-  </tab> </tabset>
+  </uib-tab> </uib-tabset>
 </div>
 
-</accordion-group> </accordion>
+</uib-accordion-group> </uib-accordion>

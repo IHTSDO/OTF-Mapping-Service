@@ -1,11 +1,11 @@
 
-<accordion close-others="false"> <accordion-group is-open="true">
-<accordion-group> <accordion-heading>
+<uib-accordion close-others="false"> <uib-accordion-group
+  is-open="true"> <uib-accordion-heading>
 <h5>
-  <span tooltip-placement="right" tooltip="List of the map projects.">
+  <span tooltip-placement="right" uib-tooltip="List of the map projects.">
     Map Projects </span>
 </h5>
-</accordion-heading>
+</uib-accordion-heading>
 
 <table class="table pure-table" style="width: 100%; margin-bottom: 5px;">
   <thead>
@@ -23,17 +23,17 @@
     style="border: 2px solid #ccc;">
     <tr>
       <td>
-        <input tooltip-placement="top" tooltip="Project Name"
+        <input tooltip-placement="top" uib-tooltip="Project Name"
           ng-model="project.name" ng-change="setEditingPerformed(project)"
           style="margin-bottom: 5px; width: 100%;"></input> <select
-          tooltip-placement="top" tooltip="Source Terminology and Version"
+          tooltip-placement="top" uib-tooltip="Source Terminology and Version"
           ng-init="project.sourceTerminologyAndVersion = getSourceVersion(project)"
           ng-model="project.sourceTerminologyAndVersion"
           ng-options="item for item in terminologyVersionPairs"
           ng-change="setEditingPerformed(project)"
           style="margin-bottom: 5px; width: 100%;">
         </select> <select tooltip-placement="top"
-          tooltip="Destination Terminology and Version"
+          uib-tooltip="Destination Terminology and Version"
           ng-init="project.destinationTerminologyAndVersion = getDestinationVersion(project)"
           ng-model="project.destinationTerminologyAndVersion"
           ng-options="item for item in terminologyVersionPairs"
@@ -43,10 +43,10 @@
           ng-change="setEditingPerformed(project)">
       </td>
       <td>
-        Team Based: <input tooltip-placement="top" tooltip="Team Based"
+        Team Based: <input tooltip-placement="top" uib-tooltip="Team Based"
           ng-model="project.refSetId" ng-change="setEditingPerformed(project)"
           style="width: 100%;"></input>
-        <div tooltip-placement="top" tooltip="Ref Set Name">{{project.refSetName}}</div>
+        <div tooltip-placement="top" uib-tooltip="Ref Set Name">{{project.refSetName}}</div>
       </td>
       <td>
         <table>
@@ -133,38 +133,38 @@
         </table>
       </td>
       <td>
-        <select tooltip-placement="top" tooltip="Map Type"
+        <select tooltip-placement="top" uib-tooltip="Map Type"
           ng-init="project.mapRefsetPattern=getMapType(project)"
           ng-model="project.mapRefsetPattern"
           ng-options="item for item in allowableMapTypes"
           ng-change="setEditingPerformed(project)"
           style="margin-bottom: 5px; width: 100%;">
-        </select> <select tooltip-placement="top" tooltip="Workflow Type"
+        </select> <select tooltip-placement="top" uib-tooltip="Workflow Type"
           ng-init="project.workflowType=getWorkflowType(project)"
           ng-model="project.workflowType"
           ng-options="item for item in allowableWorkflowTypes"
           ng-change="setEditingPerformed(project)"
           style="margin-bottom: 5px; width: 100%;">
-        </select> <select tooltip-placement="top" tooltip="Map Relation Style"
+        </select> <select tooltip-placement="top" uib-tooltip="Map Relation Style"
           ng-init="project.mapRelationStyle=getMapRelationStyle(project)"
           ng-model="project.mapRelationStyle"
           ng-options="item for item in allowableMapRelationStyles"
           ng-change="setEditingPerformed(project)"
           style="margin-bottom: 5px; width: 100%;">
         </select> <input tooltip-placement="top"
-          tooltip="Project Specific Algorithm Handler"
+          uib-tooltip="Project Specific Algorithm Handler"
           ng-model="project.projectSpecificAlgorithmHandlerClass"
           ng-change="setEditingPerformed(project)"
           style="margin-bottom: 5px; width: 100%;">
       </td>
       <td>
-        <button class="btn btn-sm btn-primary"
+        <button class="btn btn-xs btn-primary"
           ng-click="updateMapProjectFromList(project)"
           ng-show="isComponentChanged(project) == true">Save</button>
       </td>
 
       <td>
-        <div tooltip-placement="top" tooltip="Delete project">
+        <div tooltip-placement="top" uib-tooltip="Delete project">
           <i class="glyphicon glyphicon-remove"
             ng-click="deleteMapProject(project)"></i>
         </div>
@@ -173,7 +173,7 @@
 
   </tbody>
 </table>
-<button class="btn btn-sm btn-warning" ng-click="revertUnsavedProjects()"
+<button class="btn btn-xs btn-warning" ng-click="revertUnsavedProjects()"
   ng-show="projectInEditingPerformed() == true">Cancel Unsaved Edits</button>
 
 
@@ -317,7 +317,7 @@
 
       <tr>
         <td>
-          <button class="btn btn-sm btn-primary"
+          <button class="btn btn-xs btn-primary"
             ng-click="submitNewMapProject(newMapProjectName, newMapProjectSourceVersion, 
         newMapProjectDestinationVersion, newMapProjectRefSetId, newMapProjectPublished, 
         newMapProjectRuleBased, newMapProjectGroupStructure, newMapProjectPublic, 
@@ -338,19 +338,18 @@
   </table>
 </form>
 
-</accordion-group> <accordion-group> <accordion-heading>
+</uib-accordion-group> <uib-accordion-group> <uib-accordion-heading>
 <h5>
-  <span tooltip-placement="right" tooltip="List of the map users."> Map
-    Users </span>
+  <span tooltip-placement="right" uib-tooltip="List of the map users.">
+    Map Users </span>
 </h5>
-</accordion-heading> <pagination direction-links="false" boundary-links="true"
-  total-items="pagedUserCount" items-per-page="pageSize" page="pageUser"
-  on-select-page="getPagedUsers(page, userFilter)"></pagination>
-<form>
+</uib-accordion-heading> <uib-pagination direction-links="false" boundary-links="true"
+  total-items="pagedUserCount" items-per-page="pageSize" ng-model="pageUser"
+  ng-change="getPagedUsers(page, userFilter)"> </uib-pagination> <span>
   <input id="userSearch" type="text" ng-model="userFilter"
-    ng-change="getPagedUsers(1, userFilter)"> <input type="submit"
-    value="Reset Filter" ng-click="resetUserFilter()">
-</form>
+    ng-change="getPagedUsers(1, userFilter)">
+  <button ng-click="resetUserFilter()" class="btn btn-xs btn-warning">Reset</button>
+</span>
 
 <table class="table pure-table" style="width: 100%; margin-bottom: 5px;">
   <thead>
@@ -360,7 +359,7 @@
       <th style="width: 30%;">Email</th>
       <th style="width: 25%;">Team</th>
       <th style="width: 9%;"><div tooltip-placement="top"
-          tooltip="Indicates the administrative permissions this user has for the Mapping Tool Application (i.e. access to this page)">Application
+          uib-tooltip="Indicates the administrative permissions this user has for the Mapping Tool Application (i.e. access to this page)">Application
           Role</div></th>
       <th style="width: 3%;"></th>
       <th style="width: 3%;"></th>
@@ -394,11 +393,11 @@
       </td>
 
       <td>
-        <button class="btn btn-sm btn-primary" ng-click="updateUser(user)"
+        <button class="btn btn-xs btn-primary" ng-click="updateUser(user)"
           ng-show="isComponentChanged(user) == true">Save</button>
       </td>
       <td>
-        <div tooltip-placement="top" tooltip="Delete user">
+        <div tooltip-placement="top" uib-tooltip="Delete user">
           <i class="glyphicon glyphicon-remove" ng-click="deleteUser(user)"></i>
         </div>
       </td>
@@ -406,7 +405,7 @@
 
   </tbody>
 </table>
-<button class="btn btn-sm btn-warning" ng-click="revertUnsavedUsers()"
+<button class="btn btn-xs btn-warning" ng-click="revertUnsavedUsers()"
   ng-show="userInEditingPerformed() == true">Cancel Unsaved Edits</button>
 
 <form>
@@ -450,24 +449,22 @@
     </tbody>
   </table>
 
-  <button class="btn btn-sm btn-primary"
+  <button class="btn btn-xs btn-primary"
     ng-click="submitNewMapUser(newUserName, newUserFullName, newUserEmail, newUserApplicationRole); 
           newUserName = ''; newUserFullName = ''; newUserEmail = ''; newUserApplicationRole = null; ">Submit</button>
 </form>
-
-</accordion-group> <accordion-group> <accordion-heading>
+</uib-accordion-group> <uib-accordion-group> <uib-accordion-heading>
 <h5>
-  <span tooltip-placement="right" tooltip="List of the map advices."> Map
-    Advices </span>
+  <span tooltip-placement="right" uib-tooltip="List of the map advices.">
+    Map Advices </span>
 </h5>
-</accordion-heading> <pagination direction-links="false" boundary-links="true"
-  total-items="pagedAdviceCount" items-per-page="pageSize" page="pageAdvice"
-  on-select-page="getPagedAdvices(page, adviceFilter)"></pagination>
-<form>
+</uib-accordion-heading> <uib-pagination direction-links="false" boundary-links="true"
+  total-items="pagedAdviceCount" items-per-page="pageSize" ng-model="pageAdvice"
+  ng-change="getPagedAdvices(page, adviceFilter)"></uib-pagination> <span>
   <input id="adviceSearch" type="text" ng-model="adviceFilter"
-    ng-change="getPagedAdvices(1, adviceFilter)"> <input type="submit"
-    value="Reset Filter" ng-click="resetAdviceFilter()">
-</form>
+    ng-change="getPagedAdvices(1, adviceFilter)">
+  <button xs class="btn btn-xs btn-warning" ng-click="resetAdviceFilter()">Reset</button>
+</span>
 
 <table class="table pure-table" style="width: 100%; margin-bottom: 5px;">
   <thead>
@@ -475,10 +472,10 @@
       <th style="width: 40%;">Advice</th>
       <th style="width: 40%;">Detail</th>
       <th style="width: 7%;"><div tooltip-placement="top"
-          tooltip="Whether this advice can be applied to entries with no target">Allowable
+          uib-tooltip="Whether this advice can be applied to entries with no target">Allowable
           for Null Target</div>
       <th style="width: 7%;"><div tooltip-placement="top"
-          tooltip="If true, this advice is applied automatically and cannot be assigned directly by the user">Computed</div>
+          uib-tooltip="If true, this advice is applied automatically and cannot be assigned directly by the user">Computed</div>
       </th>
       <th style="width: 3%;"></th>
       <th style="width: 3%;"></th>
@@ -510,11 +507,11 @@
       </td>
 
       <td>
-        <button class="btn btn-sm btn-primary" ng-click="updateAdvice(advice)"
+        <button class="btn btn-xs btn-primary" ng-click="updateAdvice(advice)"
           ng-show="isComponentChanged(advice) == true">Save</button>
       </td>
       <td>
-        <div tooltip-placement="top" tooltip="Delete advice">
+        <div tooltip-placement="top" uib-tooltip="Delete advice">
           <i class="glyphicon glyphicon-remove" ng-click="deleteAdvice(advice)"></i>
         </div>
       </td>
@@ -522,7 +519,7 @@
 
   </tbody>
 </table>
-<button class="btn btn-sm btn-warning" ng-click="revertUnsavedAdvices()"
+<button class="btn btn-xs btn-warning" ng-click="revertUnsavedAdvices()"
   ng-show="adviceInEditingPerformed() == true">Cancel Unsaved Edits</button>
 
 <form>
@@ -569,25 +566,25 @@
     </tbody>
   </table>
 
-  <button class="btn btn-sm btn-primary"
+  <button class="btn btn-xs btn-primary"
     ng-click="submitNewMapAdvice(newAdviceName, newAdviceDetail, newAllowableForNullTarget, newIsComputed); 
           newAdviceName = ''; newAdviceDetail = ''; newAllowableForNullTarget = false; newIsComputed = false; ">Submit</button>
 </form>
 
-</accordion-group> <accordion-group> <accordion-heading>
+</uib-accordion-group> <uib-accordion-group> <uib-accordion-heading>
 <h5>
   <span tooltip-placement="right"
-    tooltip="List of the map relations for the application."> Map
+    uib-tooltip="List of the map relations for the application."> Map
     Relations </span>
 </h5>
-</accordion-heading> <pagination ng-show="mapRelations.length > pageSize" direction-links="false"
-  boundary-links="true" total-items="pagedRelationCount"
-  items-per-page="pageSize" page="pageRelation"
-  on-select-page="getPagedRelations(page, relationFilter)"></pagination>
+</uib-accordion-heading> <uib-pagination ng-show="mapRelations.length > pageSize"
+  direction-links="false" boundary-links="true" total-items="pagedRelationCount"
+  items-per-page="pageSize" ng-model="pageRelation"
+  ng-change="getPagedRelations(page, relationFilter)"> </uib-pagination>
 <form>
   <input type="text" ng-model="relationFilter"
-    ng-change="getPagedRelations(1, relationFilter)"> <input
-    type="submit" value="Reset Filter" ng-click="resetRelationFilter()">
+    ng-change="getPagedRelations(1, relationFilter)">
+  <button class="btn btn-xs btn-warning" ng-click="resetRelationFilter()">Reset</button>
 </form>
 
 <table class="table pure-table" style="width: 100%; margin-bottom: 5px;">
@@ -595,14 +592,14 @@
     <tr>
       <th style="width: 12%;">Id</th>
       <th style="width: 25%;"><div tooltip-placement="top"
-          tooltip="Short code abbreviation for this relation, if applicable">Code</div>
+          uib-tooltip="Short code abbreviation for this relation, if applicable">Code</div>
       <th style="width: 43%;"><div tooltip-placement="top"
-          tooltip="The full name of this map relation">Name</div>
+          uib-tooltip="The full name of this map relation">Name</div>
       <th style="width: 7%;"><div tooltip-placement="top"
-          tooltip="Whether this relation can be applied to entries with no target">Allowable
+          uib-tooltip="Whether this relation can be applied to entries with no target">Allowable
           for Null Target</div>
       <th style="width: 7%;"><div tooltip-placement="top"
-          tooltip="If true, this relation is applied automatically and cannot be assigned directly by the user">Computed</div>
+          uib-tooltip="If true, this relation is applied automatically and cannot be assigned directly by the user">Computed</div>
       <th style="width: 3%;"></th>
       <th style="width: 3%;"></th>
     </tr>
@@ -635,13 +632,13 @@
         </select>
       </td>
       <td>
-        <button class="btn btn-sm btn-primary"
+        <button class="btn btn-xs btn-primary"
           ng-click="updateRelation(relation)"
           ng-show="isComponentChanged(relation) == true">Save</button>
       </td>
 
       <td>
-        <div tooltip-placement="top" tooltip="Delete relation">
+        <div tooltip-placement="top" uib-tooltip="Delete relation">
           <i class="glyphicon glyphicon-remove"
             ng-click="deleteRelation(relation)"></i>
         </div>
@@ -650,7 +647,7 @@
 
   </tbody>
 </table>
-<button class="btn btn-sm btn-warning" ng-click="revertUnsavedRelations()"
+<button class="btn btn-xs btn-warning" ng-click="revertUnsavedRelations()"
   ng-show="relationInEditingPerformed() == true">Cancel Unsaved Edits</button>
 
 
@@ -705,7 +702,7 @@
       </tr>
       <tr>
         <td>
-          <button class="btn btn-sm btn-primary"
+          <button class="btn btn-xs btn-primary"
             ng-click="submitNewMapRelation(newRelationName, newRelationAbbreviation, newRelationTerminologyId, 
         newRelationAllowableForNullTarget, newRelationIsComputed); 
         newRelationName = ''; newRelationAbbreviation = ''; newRelationTerminologyId = '';
@@ -716,21 +713,22 @@
     </tbody>
   </table>
 </form>
-</accordion-group> <accordion-group> <accordion-heading>
+</uib-accordion-group> <uib-accordion-group> <uib-accordion-heading>
 <h5>
   <span tooltip-placement="right"
-    tooltip="List of the map principles in this application."> Map
+    uib-tooltip="List of the map principles in this application."> Map
     Principles </span>
 </h5>
-</accordion-heading> <pagination ng-show="mapPrinciples.length > pageSize" direction-links="false"
-  boundary-links="true" total-items="pagedPrincipleCount"
-  items-per-page="pageSize" page="pagePrinciple"
-  on-select-page="getPagedPrinciples(page, principleFilter)"></pagination>
-<form>
+</uib-accordion-heading> <uib-pagination ng-show="mapPrinciples.length > pageSize"
+  direction-links="false" boundary-links="true"
+  total-items="pagedPrincipleCount" items-per-page="pageSize"
+  ng-model="pagePrinciple" ng-change="getPagedPrinciples(page, principleFilter)"></uib-pagination>
+
+<span>
   <input type="text" ng-model="principleFilter"
-    ng-change="getPagedPrinciples(1, principleFilter)"> <input
-    type="submit" value="Reset Filter" ng-click="resetPrincipleFilter()">
-</form>
+    ng-change="getPagedPrinciples(1, principleFilter)">
+  <button class="btn btn-xs btn-warning" ng-click="resetPrincipleFilter()">Reset</button>
+</span>
 
 <table class="table pure-table" style="width: 100%; margin-bottom: 5px;">
   <thead>
@@ -759,13 +757,13 @@
           ng-change="setEditingPerformed(principle)" style="width: 100%;"></input>
       </td>
       <td>
-        <button class="btn btn-sm btn-primary"
+        <button class="btn btn-xs btn-primary"
           ng-click="updatePrinciple(principle)"
           ng-show="isComponentChanged(principle) == true">Save</button>
       </td>
 
       <td>
-        <div tooltip-placement="top" tooltip="Delete principle">
+        <div tooltip-placement="top" uib-tooltip="Delete principle">
           <i class="glyphicon glyphicon-remove"
             ng-click="deletePrinciple(principle)"></i>
         </div>
@@ -773,7 +771,7 @@
     </tr>
   </tbody>
 </table>
-<button class="btn btn-sm btn-warning" ng-click="revertUnsavedPrinciples()"
+<button class="btn btn-xs btn-warning" ng-click="revertUnsavedPrinciples()"
   ng-show="principleInEditingPerformed() == true">Cancel Unsaved Edits</button>
 
 <form>
@@ -819,7 +817,7 @@
       </tr>
       <tr>
         <td>
-          <button class="btn btn-sm btn-primary" style="margin-bottom: 15px;"
+          <button class="btn btn-xs btn-primary" style="margin-bottom: 15px;"
             ng-click="submitNewMapPrinciple(newPrincipleName, newPrincipleId, newPrincipleDetail, newPrincipleSectionRef);
          newPrincipleName = ''; newPrincipleId = ''; newPrincipleDetail = ''; newPrincipleSectionRef = '';">Submit</button>
         </td>
@@ -831,13 +829,13 @@
 <!-- <div style="margin-top:15px;"><b>Upload Map Principle Handbook</b></div>                 
       <div>
         <input type="file" ng-file-select="onFileSelect($files)">
-      </div>       --> </accordion-group> <accordion-group> <accordion-heading>
+      </div>       --> </uib-accordion-group> <uib-accordion-group> <uib-accordion-heading>
 <h5>
   <span tooltip-placement="right"
-    tooltip="List of the preset age ranges used for rule construction in this application">
+    uib-tooltip="List of the preset age ranges used for rule construction in this application">
     Preset Age Ranges </span>
 </h5>
-</accordion-heading>
+</uib-accordion-heading>
 <table style="width: 100%" class="table pure-table" style="margin-bottom: 5px;">
   <thead>
     <tr>
@@ -891,13 +889,13 @@
       </td>
 
       <td>
-        <button class="btn btn-sm btn-primary"
+        <button class="btn btn-xs btn-primary"
           ng-click="updateAgeRange(ageRange)"
           ng-show="isComponentChanged(ageRange) == true">Save</button>
       </td>
 
       <td>
-        <div tooltip-placement="top" tooltip="Delete age range">
+        <div tooltip-placement="top" uib-tooltip="Delete age range">
           <i class="glyphicon glyphicon-remove"
             ng-click="deleteAgeRange(ageRange)"></i>
         </div>
@@ -906,7 +904,7 @@
     </tr>
   </tbody>
 </table>
-<button class="btn btn-sm btn-warning" ng-click="revertUnsavedAgeRanges()"
+<button class="btn btn-xs btn-warning" ng-click="revertUnsavedAgeRanges()"
   ng-show="ageRangeInEditingPerformed() == true">Cancel Unsaved Edits</button>
 
 
@@ -976,7 +974,7 @@
       </tr>
       <tr>
         <td>
-          <button class="btn btn-sm btn-primary"
+          <button class="btn btn-xs btn-primary"
             ng-click="submitNewMapAgeRange(newAgeRangeName, newAgeRangeLowerInclusive, newAgeRangeLowerUnits,
          newAgeRangeLowerValue, newAgeRangeUpperInclusive, newAgeRangeUpperUnits, newAgeRangeUpperValue);
          newAgeRangeName = ''; newAgeRangeLowerInclusive = ''; newAgeRangeLowerUnits = '';
@@ -989,23 +987,24 @@
   </table>
 </form>
 
-</accordion-group> <accordion-group> <accordion-heading>
+</uib-accordion-group> <uib-accordion-group> <uib-accordion-heading>
 <h5>
   <span tooltip-placement="right"
-    tooltip="List of the report definitions for the application."> Report
-    Definitions</span>
+    uib-tooltip="List of the report definitions for the application.">
+    Report Definitions</span>
 </h5>
-</accordion-heading> <pagination ng-show="reportDefinitions.length > pageSize"
+</uib-accordion-heading> <uib-pagination ng-show="reportDefinitions.length > pageSize"
   direction-links="false" boundary-links="true"
   total-items="pagedReportDefinitionCount" items-per-page="pageSize"
-  page="pageReportDefinition"
-  on-select-page="getPagedReportDefinitions(page, reportDefinitionFilter)"></pagination>
+  ng-model="pageReportDefinition"
+  ng-change="getPagedReportDefinitions(page, reportDefinitionFilter)"></uib-pagination>
 
-<form>
+<span>
   <input type="text" ng-model="reportDefinitionFilter"
-    ng-change="getPagedReportDefinitions(1, reportDefinitionFilter)"> <input
-    type="submit" value="Reset Filter" ng-click="resetReportDefinitionFilter()">
-</form>
+    ng-change="getPagedReportDefinitions(1, reportDefinitionFilter)">
+  <button class="btn btn-xs btn-warning"
+    ng-click="resetReportDefinitionFilter()">Reset</button>
+</span>
 
 <table style="width: 100%" class="table pure-table" style="margin-bottom: 5px;">
   <thead>
@@ -1031,7 +1030,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr tooltip-placement="top" tooltip="Name of report definition">
+            <tr tooltip-placement="top" uib-tooltip="Name of report definition">
               <td style="width: 40%;">Name</td>
               <td style="width: 60%;">
                 <input style="width: 100%;" ng-model="definition.name"
@@ -1039,7 +1038,7 @@
               </td>
             </tr>
             <tr tooltip-placement="top"
-              tooltip="Query frequency to calculate report results">
+              uib-tooltip="Query frequency to calculate report results">
               <td style="width: 40%;">Frequency</td>
               <td style="width: 60%;">
                 <select style="width: 100%;" ng-model="definition.frequency"
@@ -1048,7 +1047,7 @@
               </td>
             </tr>
             <tr tooltip-placement="top"
-              tooltip="Project role required to view report results">
+              uib-tooltip="Project role required to view report results">
               <td style="width: 40%;">Role Required</td>
               <td style="width: 60%;">
                 <select style="width: 100%;" ng-model="definition.roleRequired"
@@ -1058,7 +1057,7 @@
               </td>
             </tr>
             <tr tooltip-placement="top"
-              tooltip="Type of object this report counts">
+              uib-tooltip="Type of object this report counts">
               <td style="width: 40%;">Result Type</td>
               <td style="width: 60%;">
                 <select style="width: 100%;" ng-model="definition.resultType"
@@ -1068,7 +1067,7 @@
               </td>
             </tr>
             <tr tooltip-placement="top"
-              tooltip="Whether this report is a difference report between two other reports">
+              uib-tooltip="Whether this report is a difference report between two other reports">
               <td style="width: 40%;">Is Diff Report?</td>
               <td style="width: 60%;">
                 <select style="width: 100%;" ng-model="definition.diffReport"
@@ -1079,7 +1078,7 @@
 
             <!--  Non-diff-report parameters -->
             <tr ng-show="definition.diffReport == false" tooltip-placement="top"
-              tooltip="Query type/engine used to retrieve report results">
+              uib-tooltip="Query type/engine used to retrieve report results">
               <td style="width: 40%;">Query Type</td>
               <td style="width: 60%;">
                 <select style="width: 100%;" ng-model="definition.queryType"
@@ -1090,7 +1089,7 @@
 
             <!--  Diff-report parameters -->
             <tr ng-show="definition.diffReport == true" tooltip-placement="top"
-              tooltip="Time period this difference report operates over">
+              uib-tooltip="Time period this difference report operates over">
               <td style="width: 40%;">Diff Report Time Period</td>
               <td style="width: 60%;">
                 <select style="width: 100%;" ng-model="definition.timePeriod"
@@ -1099,7 +1098,7 @@
               </td>
             </tr>
             <tr ng-show="definition.diffReport == true" tooltip-placement="top"
-              tooltip="Report used to calculate difference statistics">
+              uib-tooltip="Report used to calculate difference statistics">
               <td style="width: 40%;">Diff Report Base Definition
               <td style="width: 60%;">
                 <select style="width: 100%;"
@@ -1127,7 +1126,7 @@
                     ng-show="definition.diffReport == false && definition.queryType != 'NONE'"
                     style="overflow: auto; width: 100%; min-height: 98px"
                     tooltip-placement="top"
-                    tooltip="Query executed to retrieve report results"
+                    uib-tooltip="Query executed to retrieve report results"
                     ng-model="definition.query"
                     ng-change="setEditingPerformed(definition); definition.testReportSuccess = false;"></textarea>
                   <div ng-show="definition.diffReport == true"
@@ -1171,7 +1170,7 @@
               <td>
                 <textarea style="overflow: auto; width: 100%;"
                   tooltip-placement="top"
-                  tooltip="Description and details regarding report definition"
+                  uib-tooltip="Description and details regarding report definition"
                   ng-model="definition.description"
                   ng-change="setEditingPerformed(definition);">
 											</textarea>
@@ -1181,23 +1180,23 @@
         </table>
       </td>
       <td>
-        <button class="btn btn-sm btn-primary"
+        <button class="btn btn-xs btn-primary"
           ng-click="updateReportDefinition(definition)"
           ng-show="isComponentChanged(definition) == true && definition.testReportSuccess != false">Save</button>
 
-        <button class="btn btn-sm btn-primary"
+        <button class="btn btn-xs btn-primary"
           ng-click="testReportDefinition(definition)"
           ng-show="isComponentChanged(definition) == true && definition.testReportSuccess == false">Test</button>
 
         <div ng-show="isComponentChanged(definition) == true"
           style="padding-top: 10px;">
-          <button class="btn btn-sm btn-warning"
+          <button class="btn btn-xs btn-warning"
             ng-click="revertUnsavedReportDefinition(definition)">Cancel</button>
         </div>
       </td>
 
       <td>
-        <div tooltip-placement="top" tooltip="Delete report definition">
+        <div tooltip-placement="top" uib-tooltip="Delete report definition">
           <i class="glyphicon glyphicon-remove"
             ng-click="deleteReportDefinition(definition)"></i>
         </div>
@@ -1205,15 +1204,15 @@
     </tr>
   </tbody>
 </table>
-<button class="btn btn-sm btn-primary"
+<button class="btn btn-xs btn-primary"
   ng-click="revertUnsavedReportDefinitions()"
   ng-show="reportDefinitionInEditingPerformed() == true">Revert Unsaved</button>
 
-<!--  second pagination controls for convenience --> <pagination
+<!--  second pagination controls for convenience --> <uib-pagination
   ng-show="reportDefinitions.length > pageSize" direction-links="false"
   boundary-links="true" total-items="pagedReportDefinitionCount"
-  items-per-page="pageSize" page="pageReportDefinition"
-  on-select-page="getPagedReportDefinitions(page, reportDefinitionFilter)"></pagination>
+  items-per-page="pageSize" ng-model="pageReportDefinition"
+  ng-change="getPagedReportDefinitions(page, reportDefinitionFilter)"></uib-pagination>
 
 
 <form name="reportDefinitionForm">
@@ -1241,14 +1240,15 @@
               </tr>
             </thead>
             <tbody>
-              <tr tooltip-placement="top" tooltip="Name of report newDefinition">
+              <tr tooltip-placement="top"
+                uib-tooltip="Name of report newDefinition">
                 <td style="width: 40%;">Name</td>
                 <td style="width: 60%;">
                   <input style="width: 100%;" ng-model="newDefinition.name">
                 </td>
               </tr>
               <tr tooltip-placement="top"
-                tooltip="Query frequency to calculate report results">
+                uib-tooltip="Query frequency to calculate report results">
                 <td style="width: 40%;">Frequency</td>
                 <td style="width: 60%;">
                   <select style="width: 100%;"
@@ -1258,7 +1258,7 @@
                 </td>
               </tr>
               <tr tooltip-placement="top"
-                tooltip="Project role required to view report results">
+                uib-tooltip="Project role required to view report results">
                 <td style="width: 40%;">Role Required</td>
                 <td style="width: 60%;">
                   <select style="width: 100%;"
@@ -1269,7 +1269,7 @@
                 </td>
               </tr>
               <tr tooltip-placement="top"
-                tooltip="Type of object this report counts">
+                uib-tooltip="Type of object this report counts">
                 <td style="width: 40%;">Result Type</td>
                 <td style="width: 60%;">
                   <select style="width: 100%;"
@@ -1280,7 +1280,7 @@
                 </td>
               </tr>
               <tr tooltip-placement="top"
-                tooltip="Whether this report is a difference report between two other reports">
+                uib-tooltip="Whether this report is a difference report between two other reports">
                 <td style="width: 40%;">Is Diff Report?</td>
                 <td style="width: 60%;">
                   <select style="width: 100%;"
@@ -1293,7 +1293,7 @@
               <!--  Non-diff-report parameters -->
               <tr ng-show="newDefinition.diffReport == false"
                 tooltip-placement="top"
-                tooltip="Query type/engine used to retrieve report results">
+                uib-tooltip="Query type/engine used to retrieve report results">
                 <td style="width: 40%;">Query Type</td>
                 <td style="width: 60%;">
                   <select style="width: 100%;"
@@ -1306,7 +1306,7 @@
               <!--  Diff-report parameters -->
               <tr ng-show="newDefinition.diffReport == true"
                 tooltip-placement="top"
-                tooltip="Time period this difference report operates over">
+                uib-tooltip="Time period this difference report operates over">
                 <td style="width: 40%;">Diff Report Time Period</td>
                 <td style="width: 60%;">
                   <select style="width: 100%;"
@@ -1316,7 +1316,7 @@
               </tr>
               <tr ng-show="newDefinition.diffReport == true"
                 tooltip-placement="top"
-                tooltip="Report used to calculate difference statistics">
+                uib-tooltip="Report used to calculate difference statistics">
                 <td style="width: 40%;">Diff Report Base Definition
                 <td style="width: 60%;">
                   <select style="width: 100%;"
@@ -1345,7 +1345,7 @@
                       ng-show="newDefinition.diffReport == false && newDefinition.queryType != 'NONE'"
                       style="overflow: auto; width: 100%; min-height: 170px"
                       tooltip-placement="top"
-                      tooltip="Query executed to retrieve report results"
+                      uib-tooltip="Query executed to retrieve report results"
                       ng-model="newDefinition.query"
                       ng-change="newDefinition.testReportSuccess = false; newReportAdded = false"></textarea>
                     <div ng-show="newDefinition.diffReport == true"
@@ -1371,7 +1371,7 @@
                 <td>
                   <textarea style="overflow: auto; width: 100%;"
                     tooltip-placement="top"
-                    tooltip="Description and details regarding report"
+                    uib-tooltip="Description and details regarding report"
                     ng-model="newDefinition.description"
                     ng-change="newReportAdded = false;">
 											</textarea>
@@ -1388,12 +1388,12 @@
 						 Note that width is formally set due to ng-disabled resizing disabled buttons -->
           <button
             ng-disabled="newDefinition.testReportSuccess != true && newDefinition.diffReport == false"
-            class="btn btn-sm btn-primary" style="width: 59px"
+            class="btn btn-xs btn-primary" style="width: 59px"
             ng-click="submitNewReportDefinition(newDefinition); newDefinition = {};">Submit</button>
 
           <button ng-disabled="newDefinition.testReportSuccess == true"
             ng-show="newDefinition.diffReport == false"
-            class="btn btn-sm btn-primary" style="width: 41px"
+            class="btn btn-xs btn-primary" style="width: 41px"
             ng-click="testReportDefinition(newDefinition); newReportAdded = false;">Test</button>
 
 
@@ -1419,23 +1419,23 @@
     </tbody>
   </table>
 </form>
-</accordion-group> <accordion-group> <accordion-heading>
+</uib-accordion-group> <uib-accordion-group> <uib-accordion-heading>
 <h5>
   <span tooltip-placement="right"
-    tooltip="List of the QA check definitions for the application."> QA
-    Check Definitions</span>
+    uib-tooltip="List of the QA check definitions for the application.">
+    QA Check Definitions</span>
 </h5>
-</accordion-heading> <pagination ng-show="qaCheckDefinitions.length > pageSize"
+</uib-accordion-heading> <uib-pagination ng-show="qaCheckDefinitions.length > pageSize"
   direction-links="false" boundary-links="true"
   total-items="pagedQaDefinitionCount" items-per-page="pageSize"
-  page="pageQaDefinition"
-  on-select-page="getPagedQaDefinitions(page, qaCheckDefinitionFilter)"></pagination>
+  ng-model="pageQaDefinition"
+  ng-change="getPagedQaDefinitions(page, qaCheckDefinitionFilter)"></uib-pagination>
 
-<form>
+<span>
   <input type="text" ng-model="qaCheckDefinitionFilter"
-    ng-change="getPagedQaDefinitions(1, qaCheckDefinitionFilter)"> <input
-    type="submit" value="Reset Filter" ng-click="resetQaDefinitionFilter()">
-</form>
+    ng-change="getPagedQaDefinitions(1, qaCheckDefinitionFilter)">
+  <button class="btn btn-xs btn-warning" ng-click="resetQaDefinitionFilter()">Reset</button>
+</span>
 
 <table style="width: 100%" class="table pure-table" style="margin-bottom: 5px;">
   <thead>
@@ -1463,7 +1463,7 @@
               <th style="width: 60%;">Value</th>
             </tr>
           </thead>
-          <tr tooltip-placement="top" tooltip="QA Check Name">
+          <tr tooltip-placement="top" uib-tooltip="QA Check Name">
             <td style="width: 40%">Name
             <td style="width: 60%;">
               <input style="width: 100%;" ng-model="definition.name"
@@ -1471,7 +1471,7 @@
             </td>
           </tr>
           <tr tooltip-placement="top"
-            tooltip="Project role required to view qa check results">
+            uib-tooltip="Project role required to view qa check results">
             <td style="width: 40%;">Role Required</td>
             <td style="width: 60%;">
               <select style="width: 100%;" ng-model="definition.roleRequired"
@@ -1481,7 +1481,7 @@
             </td>
           </tr>
           <tr tooltip-placement="top"
-            tooltip="Type of object this qa check counts">
+            uib-tooltip="Type of object this qa check counts">
             <td style="width: 40%;">Result Type</td>
             <td style="width: 60%;">
               <select style="width: 100%;" ng-model="definition.resultType"
@@ -1490,7 +1490,7 @@
             </td>
           </tr>
           <tr tooltip-placement="top"
-            tooltip="Query type/engine used to retrieve qa check results">
+            uib-tooltip="Query type/engine used to retrieve qa check results">
             <td style="width: 40%;">Query Type</td>
             <td style="width: 60%;">
               <select style="width: 100%;" ng-model="definition.queryType"
@@ -1518,7 +1518,7 @@
                   <textarea ng-show="definition.queryType != 'NONE'"
                     style="overflow: auto; width: 100%; min-height: 98px"
                     tooltip-placement="top"
-                    tooltip="Query executed to retrieve report results"
+                    uib-tooltip="Query executed to retrieve report results"
                     ng-model="definition.query"
                     ng-change="setEditingPerformed(definition); definition.testQaSuccess = false"></textarea>
 
@@ -1560,7 +1560,7 @@
               <td>
                 <textarea style="overflow: auto; width: 100%;"
                   tooltip-placement="top"
-                  tooltip="Description and details regarding report"
+                  uib-tooltip="Description and details regarding report"
                   ng-model="definition.description"
                   ng-change="setEditingPerformed(definition);">
 											</textarea>
@@ -1571,22 +1571,22 @@
       </td>
 
       <td>
-        <button class="btn btn-sm btn-primary"
+        <button class="btn btn-xs btn-primary"
           ng-click="updateQaDefinition(definition)"
           ng-show="isComponentChanged(definition) == true && definition.testQaSuccess != false">Save</button>
 
-        <button class="btn btn-sm btn-primary"
+        <button class="btn btn-xs btn-primary"
           ng-click="testQaDefinition(definition)"
           ng-show="isComponentChanged(definition) == true && definition.testQaSuccess == false && definition.queryType != 'NONE'">Test</button>
         <div ng-show="isComponentChanged(definition) == true"
           style="padding-top: 10px;">
-          <button class="btn btn-sm btn-warning"
+          <button class="btn btn-xs btn-warning"
             ng-click="revertUnsavedReportDefinition(definition)">Cancel</button>
         </div>
       </td>
 
       <td>
-        <div tooltip-placement="top" tooltip="Delete qa check definition">
+        <div tooltip-placement="top" uib-tooltip="Delete qa check definition">
           <i class="glyphicon glyphicon-remove"
             ng-click="deleteQaDefinition(definition)"></i>
         </div>
@@ -1594,15 +1594,15 @@
     </tr>
   </tbody>
 </table>
-<button class="btn btn-sm btn-primary" ng-click="revertUnsavedQaDefinitions()"
+<button class="btn btn-xs btn-primary" ng-click="revertUnsavedQaDefinitions()"
   ng-show="qaCheckDefinitionInEditingPerformed() == true">Revert
   Unsaved</button>
 
-<!--  second pagination controls for convenience --> <pagination
+<!--  second pagination controls for convenience --> <uib-pagination
   ng-show="qaCheckDefinitions.length > pageSize" direction-links="false"
   boundary-links="true" total-items="pagedQaDefinitionCount"
-  items-per-page="pageSize" page="pageQaDefinition"
-  on-select-page="getPagedQaDefinitions(page, qaCheckDefinitionFilter)"></pagination>
+  items-per-page="pageSize" ng-model="pageQaDefinition"
+  ng-change="getPagedQaDefinitions(page, qaCheckDefinitionFilter)"></uib-pagination>
 
 
 <form name="qaDefinitionForm">
@@ -1629,7 +1629,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr tooltip-placement="top" tooltip="Name of qa check">
+              <tr tooltip-placement="top" uib-tooltip="Name of qa check">
                 <td style="width: 40%;">Name</td>
                 <td style="width: 60%;">
                   <input style="width: 100%;" ng-model="newQaDefinition.name"
@@ -1638,7 +1638,7 @@
               </tr>
 
               <tr tooltip-placement="top"
-                tooltip="Project role required to view report results">
+                uib-tooltip="Project role required to view report results">
                 <td style="width: 40%;">Role Required</td>
                 <td style="width: 60%;">
                   <select style="width: 100%;"
@@ -1649,7 +1649,7 @@
                 </td>
               </tr>
               <tr tooltip-placement="top"
-                tooltip="Type of object this report counts">
+                uib-tooltip="Type of object this report counts">
                 <td style="width: 40%;">Result Type</td>
                 <td style="width: 60%;">
                   <select style="width: 100%;"
@@ -1661,7 +1661,7 @@
               </tr>
 
               <tr tooltip-placement="top"
-                tooltip="Query type/engine used to retrieve report results">
+                uib-tooltip="Query type/engine used to retrieve report results">
                 <td style="width: 40%;">Query Type</td>
                 <td style="width: 60%;">
                   <select style="width: 100%;"
@@ -1691,7 +1691,7 @@
                     <textarea
                       style="overflow: auto; width: 100%; min-height: 170px"
                       tooltip-placement="top"
-                      tooltip="Query executed to retrieve report results"
+                      uib-tooltip="Query executed to retrieve report results"
                       ng-model="newQaDefinition.query"
                       ng-change="newQaDefinition.testReportSuccess = false; newQaReportAdded = false;"></textarea>
 
@@ -1712,7 +1712,7 @@
                 <td>
                   <textarea style="overflow: auto; width: 100%;"
                     tooltip-placement="top"
-                    tooltip="Description and details regarding report"
+                    uib-tooltip="Description and details regarding report"
                     ng-model="newQaDefinition.description"
                     ng-change="newQaReportAdded = false"></textarea>
                 </td>
@@ -1727,11 +1727,11 @@
           <!-- show submit button only if diff report OR the query has passed test
 						 Note that width is formally set due to ng-disabled resizing disabled buttons -->
           <button ng-disabled="newQaDefinition.testQaSuccess != true"
-            class="btn btn-sm btn-primary" style="width: 59px"
+            class="btn btn-xs btn-primary" style="width: 59px"
             ng-click="submitNewQaDefinition(newQaDefinition); newQaDefinition = {};">Submit</button>
 
           <button ng-disabled="newQaDefinition.testQaSuccess == true"
-            class="btn btn-sm btn-primary" style="width: 40px"
+            class="btn btn-xs btn-primary" style="width: 40px"
             ng-click="testQaDefinition(newQaDefinition)">Test</button>
 
 
@@ -1768,4 +1768,4 @@
   </table>
 </form>
 
-</accordion-group></accordion>
+</uib-accordion-group></uib-accordion>

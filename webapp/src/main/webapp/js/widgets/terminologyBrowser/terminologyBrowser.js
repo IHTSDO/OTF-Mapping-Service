@@ -16,12 +16,13 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
     });
   })
 
-.controller(
+angular.module('mapProjectApp').controller(
   'terminologyBrowserWidgetCtrl',
   function($scope, $rootScope, $q, $timeout, $http, $routeParams, $location, localStorageService,
     utilService, gpService) {
 
     // Scope variables
+    $scope.paging = {};
     $scope.listMode = false;
     $scope.focusProject = localStorageService.get('focusProject');
     $scope.userToken = localStorageService.get('userToken');
@@ -39,13 +40,19 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
     $scope.treeQuery = '';
     $scope.searchResults = [];
     $scope.selectedResult = null;
-
-    // Paging
-    $scope.pageSize = 5;
-    $scope.pagedSearchResults = [];
-    $scope.paging = {};
-    $scope.paging['search'] = {
+    $scope.paging.tree = {
       page : 1,
+      pageSize : 10,
+      pages : null,
+      totalCount : null
+
+    }
+
+    // Paging -- list view
+    $scope.pagedSearchResults = [];
+    $scope.paging.search = {
+      page : 1,
+      pageSize : 10,
       filter : '',
       sortField : null
     };
@@ -97,7 +104,6 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
 
     // function called on storage listener event
     function onStorageEvent(storageEvent) {
-      console.debug(storageEvent);
       var targetCode = localStorage.getItem('targetCode');
 
       // if target code is set, focus window, remove from storage, and set
@@ -152,7 +158,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
 
     // Handler for the "Search" button
     // Perform a search - list or tree depending on the state
-    $scope.search = function() {
+    $scope.search = function(page) {
 
       // Query is implied
       if (!$scope.query) {
@@ -164,6 +170,9 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
         return;
       }
 
+      // set the srt parameters
+      $scope.srtParameters.query = $scope.query;
+
       // clear the search results
       $scope.searchResults = [];
 
@@ -172,6 +181,9 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
         $scope.performSearch($scope.query);
       } else {
         // Perform tree search
+        if (!page) {
+          $scope.paging.tree.page = 1;
+        }
         $scope.treeQuery = $scope.query;
         $scope.getRootTreeWithQuery(true);
       }
@@ -197,14 +209,17 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
     // Search a terminologyId in the tree from the list
     $scope.selectResult = function(result) {
       $scope.selectedResult = result;
+      $scope.srtParameters.query = result.terminologyId;
+      $scope.query = result.terminologyId;
       $scope.treeQuery = result.terminologyId;
       $scope.getRootTreeWithQuery(true);
+      $scope.toggleListMode(true);
     };
 
     // Page search results
     $scope.getPagedSearchResults = function() {
       $scope.pagedSearchResults = utilService.getPagedArray($scope.searchResults,
-        $scope.paging['search'], $scope.pageSize);
+        $scope.paging['search'], $scope.paging['search'].pageSize);
     };
 
     // Perform a query search for a list
@@ -252,7 +267,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
 
     // function to get the root nodes
     $scope.getRootTree = function() {
-      console.debug('get root tree');
+
       $rootScope.glassPane++;
       $http({
         url : root_mapping + 'treePosition/project/id/' + $scope.focusProject.id + '/destination',
@@ -261,13 +276,13 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
           'Content-Type' : 'application/json'
         }
       }).success(function(response) {
-        console.debug('  tree = ' + response.date);
         $rootScope.glassPane--;
-        $scope.terminologyTree = response.treePosition;
-        for (var i = 0; i < $scope.terminologyTree; i++) {
-          $scope.terminologyTree[i].isOpen = false;
-          $scope.terminologyTree[i].isConceptOpen = false;
+
+        for (var i = 0; i < response.treePosition; i++) {
+          $scope.response[i].treePosition.isOpen = false;
+          $scope.response[i].treePosition.isConceptOpen = false;
         }
+        $scope.terminologyTree = response.treePosition;
       }).error(function(data, status, headers, config) {
         $rootScope.glassPane--;
         $rootScope.handleHttpError(data, status, headers, config);
@@ -287,29 +302,35 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
       }
       $scope.searchStatus = 'Searching...';
       $scope.terminologyTree = [];
-      console.debug('get root tree with query', $scope.treeQuery);
       $rootScope.glassPane++;
-      $http(
-        {
-          url : root_mapping + 'treePosition/project/id/' + $scope.focusProject.id + '?query='
-            + encodeURIComponent($scope.treeQuery),
-          method : 'GET',
-          headers : {
-            'Content-Type' : 'application/json'
-          }
-        }).success(function(response) {
+      var pfs = {
+        'startIndex' : ($scope.paging.tree.page - 1) * $scope.paging.tree.pageSize,
+        'maxResults' : $scope.paging.tree.pageSize,
+        'sortField' : 'ancestorPath',
+        'queryRestriction' : $scope.query
+      };
+      $http.post(
+
+        root_mapping + 'treePosition/project/id/' + $scope.focusProject.id + '?query='
+          + encodeURIComponent($scope.treeQuery), pfs).success(function(response) {
         $scope.searchStatus = '';
-        console.debug('  result = ', response.data);
         $rootScope.glassPane--;
 
-        // limit result count to 10 root tree positions
-        for (var x = 0; x < response.treePosition.length && x < 10; x++) {
-          $scope.terminologyTree[x] = response.treePosition[x];
+        $scope.terminologyTree = response.treePosition;
+
+        $scope.paging.tree.pages = Math.ceil(response.totalCount / $scope.paging.tree.pageSize);
+        $scope.paging.tree.totalCount = response.totalCount
+
+        if (response.totalCount == 1 && $scope.terminology.indexOf('ICD10') == 0) {
+          $scope.srtParameters.expandAll = true;
+        } else {
+          $scope.srtParameters.expandAll = false;
         }
+
         if ($scope.terminologyTree.length == 0) {
           $scope.searchStatus = 'No results';
         }
-        $scope.expandAll($scope.terminologyTree);
+
         if (isNewSearch) {
           $scope.manageStack($scope.treeQuery);
         }
@@ -384,32 +405,30 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
     };
 
     $scope.gotoReferencedConcept = function(referencedConcept) {
+      $scope.query = referencedConcept.terminologyId;
       $scope.treeQuery = referencedConcept.terminologyId;
+      $scope.srtParameters.query = referencedConcept.terminologyId;
       $scope.getRootTreeWithQuery(true);
     };
 
     $scope.getLocalTree = function(terminologyId) {
       var deferred = $q.defer();
-      $timeout(function() {
-        $rootScope.glassPane++;
-        console.debug('get local tree', terminologyId);
-        $http(
-          {
-            url : root_mapping + 'treePosition/project/id/' + $scope.focusProject.id
-              + '/concept/id/' + terminologyId,
-            method : 'GET',
-            headers : {
-              'Content-Type' : 'application/json'
-            }
-          }).success(function(response) {
-          console.debug('  tree = ', response.data);
-          $rootScope.glassPane--;
-          deferred.resolve(response);
-        }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
-          $rootScope.handleHttpError(data, status, headers, config);
-        });
 
+      $rootScope.glassPane++;
+      $http(
+        {
+          url : root_mapping + 'treePosition/project/id/' + $scope.focusProject.id + '/concept/id/'
+            + terminologyId,
+          method : 'GET',
+          headers : {
+            'Content-Type' : 'application/json'
+          }
+        }).success(function(response) {
+        $rootScope.glassPane--;
+        deferred.resolve(response);
+      }).error(function(data, status, headers, config) {
+        $rootScope.glassPane--;
+        $rootScope.handleHttpError(data, status, headers, config);
       });
 
       return deferred.promise;
@@ -436,11 +455,11 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
           $scope.getConceptDetails(treePositions[i]);
 
           /*
-           * // expand children, but do not expand their info panels for (var j =
-           * 0; j < treePositions[i].children.length; i++) {
-           * 
-           * treePositions[i].children[j].isOpen = true; }
-           */
+                     * // expand children, but do not expand their info panels for (var j = 0; j <
+                     * treePositions[i].children.length; i++) {
+                     * 
+                     * treePositions[i].children[j].isOpen = true; }
+                     */
 
           // stop recursive expansion here;
           retval = true;
@@ -455,7 +474,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
             return false;
           }
 
-          $scope.getConceptDetails(treePositions[i]);
+          // $scope.getConceptDetails(treePositions[i]);
           retval = true;
         }
 
@@ -466,35 +485,34 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
     };
 
     // Toggle the list/tree mode
-    $scope.toggleListMode = function() {
+    $scope.toggleListMode = function(skipSearch) {
       $scope.listMode = !$scope.listMode;
+      if (!skipSearch) {
+        $scope.search(1);
+      }
     }
 
     // Toggle child nodes
-    $scope.toggleChildren = function(node) {
-      node.isOpen = !node.isOpen;
+    $scope.getTreeChildren = function(node) {
 
-      // only perform actions if node is open
-      if (node.isOpen == true) {
-        // check if this node has been retrieved
-        if (node.children.length == 0 && node.childrenCount > 0) {
-          $scope.getLocalTree(node.terminologyId).then(function(response) {
+      var deferred = $q.defer();
 
-            // shorthand for the conceptTrees (may be multiple paths)
-            var data = response.treePosition;
+      $scope.getLocalTree(node.terminologyId).then(function(response) {
 
-            // find the tree path along this node
-            for (var i = 0; i < data.length; i++) {
-              if (data[i].ancestorPath === node.ancestorPath) {
-                node.children = node.children.concat(data[i].children);
-              }
-            }
-          });
-        } else {
-          // do nothing, content already loaded
+        // shorthand for the conceptTrees (may be multiple paths)
+        var data = response.treePosition;
+
+        // find the tree path along this node
+        for (var i = 0; i < data.length; i++) {
+          if (data[i].ancestorPath === node.ancestorPath) {
+            deferred.resolve(data[i].children);
+          }
         }
+      }, function(error) {
+        deferred.reject(error);
+      });
 
-      }
+      return deferred.promise;
 
     };
 
@@ -658,4 +676,19 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
         concept : node
       });
     };
+
+    //
+    // Search Result Tree Renderer callbacks
+    //
+    $scope.srtCallbacks = {
+      getTreeChildren : $scope.getTreeChildren,
+      selectConcept : $scope.selectConcept,
+      gotoReferencedConcept : $scope.gotoReferencedConcept
+    }
+
+    $scope.srtParameters = {
+      query : $scope.query,
+      expandAll : false
+    }
+
   });
