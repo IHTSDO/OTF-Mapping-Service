@@ -15,7 +15,7 @@ a {
 
 .glyphicon {
 	cursor: pointer;
-	min-width: 15px; 
+	min-width: 15px;
 }
 
 .term-browser-icon {
@@ -225,9 +225,9 @@ body {
 }
 
 .noul {
- color: #337ab7;
- cursor: pointer;
- text-decoration: none;
+	color: #337ab7;
+	cursor: pointer;
+	text-decoration: none;
 }
 
 /* Make the pagination control smaller so it works with btn-xs */
@@ -242,7 +242,7 @@ body {
 }
 
 .mapping-container {
-	width:95%;
+	width: 95%;
 	margin-left: auto;
 	margin-right: auto;
 }
@@ -254,4 +254,18 @@ body {
 
 .highlighted {
 	background: yellow
+}
+
+.drop-box {
+	background: #F8F8F8;
+	border: 5px dashed #DDD;
+	width: 200px;
+	height: 65px;
+	text-align: center;
+	padding-top: 25px;
+	margin: 10px;
+}
+
+.dragover {
+	border: 5px dashed blue;
 }

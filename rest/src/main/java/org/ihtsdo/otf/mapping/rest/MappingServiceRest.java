@@ -3956,7 +3956,7 @@ public class MappingServiceRest extends RootServiceRest {
   @POST
   @Path("/upload/{mapProjectId}")
   // Swagger does not support this
-  @ApiOperation(value = "Upload a mapping handbook file for a project", notes = "Uploads a mapping handbook file for the specified project.", response = TreePositionListJpa.class)
+  @ApiOperation(value = "Upload a mapping handbook file for a project", notes = "Uploads a mapping handbook file for the specified project.")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   public Response uploadMappingHandbookFile(
     @FormDataParam("file") InputStream fileInputStream,
