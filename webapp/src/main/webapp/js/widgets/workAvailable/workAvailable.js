@@ -81,14 +81,11 @@ angular
       // watch for project change and modify the local variable if necessary
       // coupled with $watch below, this avoids premature work fetching
       $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
-        console.debug('WorkAvailableCtrl:  Detected change in focus project');
         $scope.focusProject = parameters.focusProject;
       });
 
       // on unassign notification, refresh the available work widget
       $scope.$on('workAssignedWidget.notification.unassignWork', function(event, parameters) {
-        console.debug('WorkAvailableCtrl:  Detected unassign work notification', parameters);
-        console.debug($scope.queryAvailableWork, $scope.queryAvailableConflicts);
         $scope.retrieveAvailableWork(1, $scope.queryAvailableWork);
         $scope.retrieveAvailableQAWork(1, $scope.queryAvailableQaWork);
         if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Admin') {
@@ -99,7 +96,6 @@ angular
 
       // on computation of workflow, refresh the available work widget
       $scope.$on('mapProjectWidget.notification.workflowComputed', function(event, parameters) {
-        console.debug('WorkAvailableCtrl:  Detected recomputation of workflow');
         $scope.retrieveAvailableWork($scope.availableWorkPage);
         $scope.retrieveAvailableQAWork($scope.availableQAWorkPage);
         if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Admin') {
@@ -110,14 +106,11 @@ angular
 
       // on creation of qa work, refresh the available work widget
       $scope.$on('qaCheckWidget.notification.qaWorkCreated', function(event, parameters) {
-        console.debug('WorkAvailableCtrl:  Detected new qa work');
         $scope.retrieveAvailableQAWork($scope.availableQAWorkPage);
       });
 
       // watch for first retrieval of last tab for this session
       $scope.$watch('availableTab', function() {
-        console.debug('availableTab retrieved', $scope.availableTab);
-
         // unidentified source is resetting the tab to 0 after initial load
         // introduced a brief timeout to ensure correct tab is picked
         setTimeout(function() {
@@ -129,7 +122,6 @@ angular
       $scope.setTab = function(tabNumber) {
         if (tabNumber == null)
           tabNumber = 0;
-        console.debug('Setting tab', tabNumber);
         angular.forEach($scope.tabs, function(tab) {
           tab.active = (tab.id == tabNumber ? true : false);
         });
@@ -144,7 +136,6 @@ angular
 
       // on retrieval, set the user drop-down lists to the current user
       $scope.$watch([ 'currentUser' ], function() {
-        console.debug('user changed');
         $scope.assignedMapUser = $scope.currentUser;
         $scope.assignedMapLead = $scope.currentUser;
       });
@@ -152,8 +143,6 @@ angular
       // on retrieval of either focus project or user token, try to retrieve
       // work
       $scope.$watch([ 'focusProject', 'userToken', 'currentUser', 'currentRole' ], function() {
-        console.debug('workAvailableWidget:  scope project changed!');
-
         // both variables must be non-null
         if ($scope.focusProject != null && $scope.userToken != null && $scope.currentUser != null
           && $scope.currentRole != null) {
@@ -163,9 +152,6 @@ angular
 
           // construct the list of users
           $scope.mapUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
-          console.debug('Project Users:');
-          console.debug($scope.projectUsers);
-
           $scope.retrieveLabels();
           $scope.retrieveAvailableWork($scope.availableWorkPage);
           $scope.retrieveAvailableQAWork($scope.availableQAWorkPage);
@@ -177,8 +163,6 @@ angular
       });
 
       $scope.retrieveLabels = function() {
-        console.debug('workAvailableCtrl: Retrieving labels');
-
         $rootScope.glassPane++;
         $http({
           url : root_reporting + 'qaLabel/qaLabels/' + $scope.focusProject.id,
@@ -188,8 +172,6 @@ angular
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          console.debug('Success in getting qa labels.');
-
           $rootScope.glassPane--;
           for (var i = 0; i < data.searchResult.length; i++) {
             $scope.labelNames.push(data.searchResult[i].value);
@@ -203,7 +185,6 @@ angular
       $scope.retrieveAvailableConflicts = function(page, pquery, puser) {
         var query = pquery;
         var user = puser;
-        console.debug('workAvailableCtrl: Retrieving available conflicts');
 
         // clear local conflict error message
         $scope.errorConflict = null;
@@ -246,13 +227,11 @@ angular
           }).success(function(data) {
           $rootScope.glassPane--;
 
-          console.debug('Retrieve conflicts', data);
-
           $scope.availableConflicts = data.searchResult;
 
           // set pagination
-          $scope.nAvailableConflicts = data.totalCount;
           $scope.numAvailableConflictsPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
+          $scope.nAvailableConflicts = data.totalCount;
 
           // set title
           $scope.tabs[1].title = 'Conflicts (' + data.totalCount + ')';
@@ -267,7 +246,6 @@ angular
       $scope.retrieveAvailableWork = function(page, pquery, puser) {
         var query = pquery;
         var user = puser;
-        console.debug('workAvailableCtrl: Retrieving available work');
 
         // clear local error
         $scope.error = null;
@@ -309,20 +287,15 @@ angular
             }
           }).success(function(data) {
           $rootScope.glassPane--;
-
-          console.debug(data);
-
           $scope.availableWork = data.searchResult;
 
           // set pagination
-          $scope.nAvailableWork = data.totalCount;
           $scope.numAvailableWorkPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
+          $scope.nAvailableWork = data.totalCount;
 
           // set title
           $scope.tabs[0].title = 'Concepts (' + data.totalCount + ')';
-          console.debug($scope.numAvailableWorkPages);
           $scope.availableCount = data.totalCount;
-          console.debug(data.totalCount);
 
         }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
@@ -332,8 +305,6 @@ angular
 
       $scope.retrieveAvailableQAWork = function(page, pquery) {
         var query = pquery;
-        console.debug('workAvailableCtrl: Retrieving available qa work');
-
         // clear local error
         $scope.error = null;
 
@@ -375,8 +346,8 @@ angular
           $scope.availableQAWork = data.searchResult;
 
           // set pagination
-          $scope.nAvailableQAWork = data.totalCount;
           $scope.numAvailableQAWorkPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
+          $scope.nAvailableQAWork = data.totalCount;
 
           // set title
           $scope.tabs[3].title = 'QA (' + data.totalCount + ')';
@@ -396,8 +367,6 @@ angular
       };
 
       $scope.removeQaWork = function(conceptId, query, page) {
-        console.debug('workAvailableCtrl: Removing qa work for ' + conceptId);
-
         $rootScope.glassPane++;
 
         // clear local error
@@ -430,7 +399,6 @@ angular
 
       $scope.removeAllQaWork = function(pquery) {
         var query = pquery;
-        console.debug('workAvailableCtrl: Removing available qa work');
 
         $rootScope.glassPane++;
 
@@ -552,8 +520,8 @@ angular
           $scope.availableReviewWork = data.searchResult;
 
           // set pagination
-          $scope.nAvailableReviewWork = data.totalCount;
           $scope.numAvailableReviewWorkPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
+          $scope.nAvailableReviewWork = data.totalCount;
 
           // set title
           $scope.tabs[2].title = 'Review (' + data.totalCount + ')';
@@ -619,8 +587,6 @@ angular
 
       // assign a batch of records to the current user
       $scope.assignBatch = function(mapUser, batchSize, query) {
-        console.debug('workAvailable, assignBatch:', mapUser, batchSize, query);
-
         // set query to null string if not provided
         if (query == undefined)
           query == null;
@@ -659,9 +625,6 @@ angular
           })
           .success(
             function(data) {
-
-              console.debug('Claim batch:  Checking against viewed concepts');
-
               var trackingRecords = data.searchResult;
               var conceptListValid = true;
 
@@ -686,9 +649,6 @@ angular
 
                   terminologyIds.push(trackingRecords[i].terminologyId);
                 }
-
-                console.debug('Calling batch assignment API');
-
                 $http(
                   {
                     url : root_workflow + 'assignBatch/project/id/' + $scope.focusProject.id
@@ -714,10 +674,9 @@ angular
                   $rootScope.glassPane--;
 
                   $rootScope.handleHttpError(data, status, headers, config);
-                  console.debug('Could not retrieve available work when assigning batch.');
                 });
               } else {
-                console.debug('Unexpected error in assigning batch');
+                $rootScope.glassPane--;
               }
             }).error(function(data, status, headers, config) {
             $rootScope.glassPane--;
@@ -729,9 +688,6 @@ angular
 
       // assign a batch of conflicts to the current user
       $scope.assignBatchConflict = function(mapUser, batchSize, query) {
-
-        console.debug('workAvailable, assignBatchConflict', mapUser, batchSize, query);
-
         // set query to null string if not provided
         if (query == undefined)
           query == null;
@@ -763,9 +719,6 @@ angular
           })
           .success(
             function(data) {
-
-              console.debug('Claim batch:  Checking against viewed conflicts');
-
               var trackingRecords = data.searchResult;
               var conceptListValid = true;
 
@@ -791,9 +744,6 @@ angular
 
                   terminologyIds.push(trackingRecords[i].terminologyId);
                 }
-
-                console.debug('Calling batch assignment API');
-
                 $http(
                   {
                     url : root_workflow + 'assignBatch/project/id/' + $scope.focusProject.id
@@ -817,13 +767,10 @@ angular
                   $scope.retrieveAvailableConflicts(1, query, mapUser);
                 }).error(function(data, status, headers, config) {
                   $rootScope.glassPane--;
-
                   $rootScope.handleHttpError(data, status, headers, config);
-                  console.debug('Could not retrieve available work when assigning batch.');
                 });
               } else {
                 $rootScope.glassPane--;
-                console.debug('Unexpected error in assigning batch');
               }
             }).error(function(data, status, headers, config) {
             $rootScope.glassPane--;
@@ -867,9 +814,6 @@ angular
           })
           .success(
             function(data) {
-
-              console.debug('Claim batch:  Checking against viewed review work');
-
               var trackingRecords = data.searchResult;
               var conceptListValid = true;
 
@@ -896,7 +840,6 @@ angular
 
                   terminologyIds.push(trackingRecords[i].terminologyId);
                 }
-                console.debug('Calling batch assignment API');
 
                 $http(
                   {
@@ -921,13 +864,10 @@ angular
                   $scope.retrieveAvailableReviewWork(1, query, mapUser);
                 }).error(function(data, status, headers, config) {
                   $rootScope.glassPane--;
-
                   $rootScope.handleHttpError(data, status, headers, config);
-                  console.debug('Could not retrieve available review work when assigning batch.');
                 });
               } else {
                 $rootScope.glassPane--;
-                console.debug('Unexpected error in assigning review batch');
               }
             }).error(function(data, status, headers, config) {
             $rootScope.glassPane--;
@@ -971,9 +911,6 @@ angular
           })
           .success(
             function(data) {
-
-              console.debug('Claim batch:  Checking against viewed qa work');
-
               var trackingRecords = data.searchResult;
               var conceptListValid = true;
 
@@ -1000,8 +937,6 @@ angular
                   terminologyIds.push(trackingRecords[i].terminologyId);
                 }
 
-                console.debug('Calling batch assignment API');
-
                 $http(
                   {
                     url : root_workflow + 'assignBatch/project/id/' + $scope.focusProject.id
@@ -1025,12 +960,9 @@ angular
                   $scope.retrieveAvailableQAWork(1, query, mapUser);
                 }).error(function(data, status, headers, config) {
                   $rootScope.glassPane--;
-
                   $rootScope.handleHttpError(data, status, headers, config);
-                  console.debug('Could not retrieve available qa work when assigning batch.');
                 });
               } else {
-                console.debug('Unexpected error in assigning qa batch');
                 $rootScope.glassPane--;
               }
             }).error(function(data, status, headers, config) {

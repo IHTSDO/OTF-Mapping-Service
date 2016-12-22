@@ -84,7 +84,6 @@ angular.module('mapProjectApp.widgets.metadataList', [ 'adf.provider' ]).config(
 
   // watch for project change
   $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
-    console.debug('metadataCtrl:  Detected change in focus project');
     $scope.terminology = parameters.focusProject.sourceTerminology;
   });
 
