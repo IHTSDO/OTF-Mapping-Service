@@ -4,40 +4,40 @@
 
   <h4>{{project.name}}</h4>
 
-  <button class="btn btn-sm btn-primary" ng-click="goProjectDetails()">Project
+  <button class="btn btn-xs btn-primary" ng-click="goProjectDetails()">Project
     Details</button>
-  <button class="btn btn-sm btn-primary" ng-click="goMapRecords()">Map
+  <button class="btn btn-xs btn-primary" ng-click="goMapRecords()">Map
     Records</button>
   <button ng-show="project.sourceTerminology === 'SNOMEDCT'"
-    class="btn btn-sm btn-primary" ng-click="openConceptBrowser()">SNOMEDCT
+    class="btn btn-xs btn-primary" ng-click="openConceptBrowser()">SNOMEDCT
     Browser</button>
 
-  <button class="btn btn-sm btn-primary" ng-show="indexViewerExists == true"
+  <button class="btn btn-xs btn-primary" ng-show="indexViewerExists == true"
     ng-click="openIndexViewer()">Index Viewer</button>
   <span ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
-    <button class="btn btn-sm btn-primary" ng-click="showDelta()">Show
+    <button class="btn btn-xs btn-primary" ng-click="showDelta()">Show
       Delta</button>
   </span>
   <span ng-show="currentRole=='Administrator'">
-    <button class="btn btn-sm btn-primary" ng-click="computeWorkflow()">Compute
+    <button class="btn btn-xs btn-primary" ng-click="computeWorkflow()">Compute
       Workflow</button>
   </span>
 
 
   <!--  REMOVED FOR LIVE VERSION
    <span ng-show="currentRole === 'Administrator'">
-    <button class="btn btn-sm btn-primary" ng-click="generateTestingStateForKLININ()">Reset Records for KLI/NIN</button>
+    <button class="btn btn-xs btn-primary" ng-click="generateTestingStateForKLININ()">Reset Records for KLI/NIN</button>
   </span>
   
    <span ng-show="currentRole === 'Administrator'">
-    <button class="btn btn-sm btn-primary" ng-click="generateTestingStateForBHEKRE()">Reset Records for BHE/KRE</button>
+    <button class="btn btn-xs btn-primary" ng-click="generateTestingStateForBHEKRE()">Reset Records for BHE/KRE</button>
       Workflow</button>
   </span>
   
   <div ng-show="currentRole === 'Administrator'">
   <hr>
   <form>
-  <button class="btn btn-sm btn-primary" 
+  <button class="btn btn-xs btn-primary" 
   		  ng-click="generateTestData()"
   		  ">Generate Test Data</button>
 

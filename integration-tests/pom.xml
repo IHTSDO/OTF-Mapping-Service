@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
-    <version>1.5.15</version>
+    <version>1.5.16</version>
     <relativePath>../parent</relativePath>
   </parent>
 
@@ -91,7 +91,7 @@
           </additionalClasspathElements>
           <skipTests>${skipTests}</skipTests>
           <excludes>
-            <exclude>**/ResetDemoDatabase.java</exclude>
+            <exclude>>**/org/ihtsdo/otf/mapping/test/mojo/ResetDemoDatabase.java</exclude>
           </excludes>
         </configuration>
       </plugin>
@@ -109,7 +109,7 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <includes>
-                <include>**/ResetDevDatabase.java</include>
+                <include>**/ResetDemoDatabase.java</include>
               </includes>
               <additionalClasspathElements>
                 <additionalClasspathElement>src/main/resources</additionalClasspathElement>

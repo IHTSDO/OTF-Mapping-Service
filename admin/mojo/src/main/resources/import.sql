@@ -38,5 +38,7 @@ CREATE INDEX x_tree_positions_1 on tree_positions (ancestorPath(255));
 
 CREATE INDEX x_tree_positions_2 on tree_positions (terminology);
 
+CREATE INDEX x_map_records_map_notes_AUD on map_records_map_notes_AUD(map_records_id);
+
 
 

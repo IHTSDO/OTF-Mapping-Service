@@ -133,11 +133,11 @@ hr {
 }
 
 /** from bootstrap.css - changes advice and principles buttons to fill space */
-button[disabled] {
+/* button[disabled] {
 	cursor: default;
 	width: 100%;
 	text-align: left;
-}
+} */
 
 /** from bootstrap.css - changes margin between panels in a group */
 .panel-group {
@@ -228,4 +228,30 @@ body {
  color: #337ab7;
  cursor: pointer;
  text-decoration: none;
+}
+
+/* Make the pagination control smaller so it works with btn-xs */
+.pagination-sm>li>a, .pagination-sm>li>span {
+	padding: 3px 5.5px;
+	font-size: 12px;
+	line-height: 1.5;
+}
+
+.yscroll {
+	overflow-y: scroll;
+}
+
+.mapping-container {
+	width:95%;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.angular-ui-tree-handle {
+	font-weight: 400 !important;
+	cursor: auto !important;
+}
+
+.highlighted {
+	background: yellow
 }

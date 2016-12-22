@@ -18,17 +18,23 @@ angular
     'mapRecordWidgetCtrl',
     [
       '$scope',
+      '$window',
       '$rootScope',
       '$http',
       '$routeParams',
       '$location',
       '$sce',
-      '$modal',
-      '$window',
+      '$uibModal',
       'localStorageService',
       'utilService',
-      function($scope, $rootScope, $http, $routeParams, $location, $sce, $modal, $window,
+      function($scope, $window, $rootScope, $http, $routeParams, $location, $sce, $uibModal,
         localStorageService, utilService) {
+
+        // Attach an onbeforeunload function
+        $window.onbeforeunload = function() {
+          $window.onbeforeunload = null;
+          return "If you leave this page data may be lost!";
+        }
 
         // ///////////////////////////////////
         // Map Record Controller Functions //
@@ -550,7 +556,7 @@ angular
           // adds entry as
           // well
 
-          window.scrollTo(0, 0);
+          $window.window.scrollTo(0, 0);
 
           broadcastRecord();
         };
@@ -975,10 +981,13 @@ angular
         };
 
         $scope.addRecordNote = function(record, note) {
+
           // check if note non-empty
           if (note === '' || note == null) {
             $scope.errorAddRecordNote = 'Note cannot be empty';
           } else {
+
+            $scope.errorAddRecordNote = null;
 
             // construct note object
             var mapNote = new Object();
@@ -989,9 +998,8 @@ angular
             mapNote.user = $scope.user;
 
             // add note to record
-            record['mapNote'].addElement(mapNote);
+            addElementWithId(record.mapNote, mapNote);
 
-            // set the text area to null
             $scope.tinymceContent = null;
 
           }
@@ -1000,7 +1008,8 @@ angular
         };
 
         $scope.removeRecordNote = function(record, note) {
-          record['mapNote'].removeElement(note);
+          var index = record.mapNote.indexOf(note);
+          record['mapNote'].splice(index, 1);
           $scope.record = record;
           broadcastRecord();
 
@@ -1382,11 +1391,9 @@ angular
         // Removes a map group if it exists
         $scope.deleteMapGroup = function(group) {
 
-          var groupsTreeTemp = new Array();
-          $.map($scope.groupsTree, function(v, i) {
-            if (v['mapGroup'] != group['mapGroup'])
-              groupsTreeTemp.push(v);
-          });
+          var groupsTreeTemp = $scope.groupsTree.filter(function(g) {
+            return g.mapGroup != group.mapGroup
+          })
 
           $scope.groupsTree = groupsTreeTemp;
 
@@ -1415,30 +1422,18 @@ angular
 
         // function to add an element and assign a local id if not
         // tracked by hibernate
-        Array.prototype.addElement = function(elem) {
+        function addElementWithId(array, elem) {
 
-          // if hibernate id, simply add
-          if (elem.id != null && elem.id != '') {
-            this.push(elem);
-
-            // otherwise, assign a unique localid
-          } else {
-
-            // get the maximum local id already assigned in this
-            // array
-            var maxLocalId = -1;
-            $.map(this, function(v, i) {
-              if (v.hasOwnProperty('localId')) {
-                if (v['localId'] > maxLocalId)
-                  maxLocalId = v['localId'];
-              }
-            });
-
+          // if no hibernate id, assign local id
+          if (elem.id == null || elem.id === '') {
+            var maxLocalId = Math.max.apply(null, array.map(function(v) {
+              return v.id;
+            }));
             elem['localId'] = maxLocalId == -1 ? 1 : maxLocalId + 1;
           }
-
-          this.push(elem);
-        };
+          array.push(elem);
+        }
+        ;
 
         // function to remove an element by id or localid
         // instantiated to negate necessity for equals methods for

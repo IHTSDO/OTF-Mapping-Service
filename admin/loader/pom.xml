@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
-    <version>1.5.15</version>
+    <version>1.5.16</version>
     <relativePath>../../parent</relativePath>
   </parent>
 
@@ -254,6 +254,7 @@
                 </goals>
                 <configuration>
                   <inputFile>${input.file}</inputFile>
+                  <parChdFile>${par.chd.file}</parChdFile>
                   <terminology>${terminology}</terminology>
                   <version>${version}</version>
                 </configuration>

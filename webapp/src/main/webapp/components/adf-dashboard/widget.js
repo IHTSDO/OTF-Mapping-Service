@@ -25,7 +25,7 @@
 'use strict';
 
 angular.module('adf')
-  .directive('adfWidget', function($log, $modal, dashboard) {
+  .directive('adfWidget', function($log, $uibModal, dashboard) {
 
     function preLink($scope, $element, $attr){
       var definition = $scope.definition;
@@ -92,7 +92,7 @@ angular.module('adf')
             opts.controller = widget.edit.controller;
           }
 
-          var instance = $modal.open(opts);
+          var instance = $uibModal.open(opts);
           editScope.closeDialog = function() {
             instance.close();
             editScope.$destroy();
