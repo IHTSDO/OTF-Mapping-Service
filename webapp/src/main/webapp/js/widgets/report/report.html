@@ -11,11 +11,11 @@
               ng-change="getReports(1, selectedDefinition, queryReport)"
               ng-model="selectedDefinition"></select>
           <td style="padding: 5px">
-            <button class="btn btn-sm btn-primary"
+            <button class="btn btn-xs btn-primary"
               ng-click="getReports(1, null, queryReport); selectedDefinition = null;">Reset</button>
             <button ng-show="selectedDefinition != null"
               ng-click="generateNewReport(selectedDefinition)"
-              class="btn btn-sm btn-primary">Generate</button>
+              class="btn btn-xs btn-primary">Generate</button>
           </td>
         </tr>
 
@@ -29,10 +29,10 @@
       ng-bind-html="to_trusted(selectedDefinition.description)"></div>
   </div>
 
-  <pagination ng-show="nReportPages > 1" total-items="nReports"
-    page="reportPage" max-size="5" class="pagination-sm" boundary-links="true"
-    rotate="true" num-pages="nReportPages"
-    on-select-page="getReports(page, selectedDefinition, queryReport)"></pagination>
+  <uib-pagination ng-show="nReportPages > 1" total-items="nReports"
+    ng-model="reportPage" max-size="5" class="pagination-sm"
+    boundary-links="true" rotate="true" num-pages="nReportPages"
+    ng-change="getReports(reportPage, selectedDefinition, queryReport)"></uib-pagination>
 
   <div ng-show="nReports != 0">
 
@@ -121,10 +121,11 @@
               {{result.value}}
 
               <div ng-show="!result.isCollapsed">
-                <pagination ng-show="result.nPages > 1" total-items="result.ct"
-                  page="result.page" max-size="5" class="pagination-sm"
-                  boundary-links="true" rotate="true" num-pages="result.nPages"
-                  on-select-page="getResultItems(result, page)"></pagination>
+                <uib-pagination ng-show="result.nPages > 1"
+                  total-items="result.ct" ng-model="result.page" max-size="5"
+                  class="pagination-sm" boundary-links="true" rotate="true"
+                  num-pages="result.nPages"
+                  ng-change="getResultItems(result, result.page)"></uib-pagination>
 
                 <table class="table">
                   <thead>
@@ -148,7 +149,7 @@
         </tbody>
       </table>
 
-      <button class="btn btn-sm btn-primary"
+      <button class="btn btn-xs btn-primary"
         ng-show="reportDisplayed.results.length > 0"
         ng-click="exportReport(reportDisplayed)">Export</button>
     </div>

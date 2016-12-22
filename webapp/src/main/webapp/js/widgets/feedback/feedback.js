@@ -12,7 +12,7 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
   })
   .controller(
     'feedbackCtrl',
-    function($scope, $rootScope, $http, $location, $modal, $sce, localStorageService) {
+    function($scope, $rootScope, $http, $location, $uibModal, $sce, localStorageService) {
       $scope.currentUser = null;
       $scope.currentRole = null;
       $scope.focusProject = null;

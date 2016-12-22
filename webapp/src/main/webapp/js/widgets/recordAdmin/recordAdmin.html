@@ -1,8 +1,9 @@
-<tabset> <tab heading="Single Record Administration">
+<uib-tabset> <uib-tab heading="Single Record Administration">
 <form>
   MapRecord Id: <input type="text" id="mapRecordId" ng-model="mapRecordId">
-  <button type="submit" ng-click="getRecord(mapRecordId, false)">Retrieve</button>
-  <button type="submit" ng-click="getRecord(mapRecordId, true)">Create
+  <button class="btn btn-xs btn-primary"
+    ng-click="getRecord(mapRecordId, false)">Retrieve</button>
+  <button class="btn btn-xs btn-primary" ng-click="getRecord(mapRecordId, true)">Create
     QA Record</button>
 </form>
 
@@ -31,18 +32,18 @@
     </tr>
   </table>
 
-  <button class="btn btn-sm btn-primary" ng-click="saveRecord()">Save</button>
-  <button class="btn btn-sm btn-danger pull-right" ng-click="deleteRecord()">Delete</button>
+  <button class="btn btn-xs btn-primary" ng-click="saveRecord()">Save</button>
+  <button class="btn btn-xs btn-danger pull-right" ng-click="deleteRecord()">Delete</button>
 </div>
-</tab> <tab heading="Batch delete">
+</uib-tab> <uib-tab heading="Batch delete">
 
 <h4>Enter Terminology Ids</h4>
 Note: Must be delimited by either whitespace or commas.
 <p></p>
 <textarea style="width: 100%; height: 250px" ng-model="conceptIdsToRemove"></textarea>
-<button class="btn btn-sm btn-primary"
+<button class="btn btn-xs btn-primary"
   ng-click="removeRecordBatch(conceptIdsToRemove)">Delete Records</button>
-<button class="btn btn-sm btn-danger" ng-click="conceptIdsToRemove = ''">Clear</button>
+<button class="btn btn-xs btn-danger" ng-click="conceptIdsToRemove = ''">Clear</button>
 
 <!--  Display results of batch operation -->
 <div ng-show="validationResult != null">
@@ -69,7 +70,7 @@ Note: Must be delimited by either whitespace or commas.
   </div>
 </div>
 
-</tab> <tab heading="Assign Fix Errors">
+</uib-tab> <uib-tab heading="Assign FixErrors">
 
 <h4>Enter Terminology Ids to Assign Along Fix Error Path</h4>
 
@@ -79,10 +80,10 @@ Note: Must be delimited by either whitespace or commas.
 </div>
 Note: Must be delimited by either whitespace or commas.<br>
 <textarea style="width: 100%; height: 250px" ng-model="conceptIdsToAssign"></textarea>
-<button class="btn btn-sm btn-primary"
+<button class="btn btn-xs btn-primary"
   ng-click="assignFixError(conceptIdsToAssign, userToAssign)">Assign
   Records</button>
-<button class="btn btn-sm btn-danger" ng-click="conceptIdsToRemove = ''">Clear</button>
+<button class="btn btn-xs btn-danger" ng-click="conceptIdsToRemove = ''">Clear</button>
 
 <!--  Display results of batch operation -->
 <div ng-show="validationResultAssign != null">
@@ -108,4 +109,4 @@ Note: Must be delimited by either whitespace or commas.<br>
       <li ng-repeat="error in validationResultAssign.errors">{{error}}</li>
     </ul>
   </div>
-</div></tabset>
+</div></uib-tabset>

@@ -25,9 +25,8 @@ angular
       '$rootScope',
       '$location',
       'localStorageService',
-      '$upload',
       '$q',
-      function($scope, $http, $sce, $rootScope, $location, localStorageService, $upload, $q) {
+      function($scope, $http, $sce, $rootScope, $location, localStorageService, $q) {
 
         $scope.page = 'project';
 
@@ -2085,9 +2084,11 @@ angular
               }
             }).success(function(data) {
               $scope.reportDefinitions = data.reportDefinition;
-              for (var j = 0; j < $scope.focusProject.reportDefinition.length; j++) {
-                if (reportDefinition.id === $scope.focusProject.reportDefinition[j].id) {
-                  $scope.focusProject.reportDefinition[j] = reportDefinition;
+              if (reportDefinition) {
+                for (var j = 0; j < $scope.focusProject.reportDefinition.length; j++) {
+                  if (reportDefinition.id === $scope.focusProject.reportDefinition[j].id) {
+                    $scope.focusProject.reportDefinition[j] = reportDefinition;
+                  }
                 }
               }
               localStorageService.add('reportDefinitions', data.reportDefinition);
@@ -2663,15 +2664,15 @@ angular
           // has name, size, and type.
           for (var i = 0; i < $files.length; i++) {
             var $file = $files[i];
-            $upload.upload({
-              url : root_mapping + 'upload/' + $scope.focusProject.id,
-              file : $file,
-              progress : function(e) {
-                // n/a
-              }
-            }).then(function(data, status, headers, config) {
-              // file is uploaded successfully
-            });
+            // $upload.upload({
+            // url : root_mapping + 'upload/' + $scope.focusProject.id,
+            // file : $file,
+            // progress : function(e) {
+            // // n/a
+            // }
+            // }).then(function(data, status, headers, config) {
+            // // file is uploaded successfully
+            // });
           }
         };
       } ]);

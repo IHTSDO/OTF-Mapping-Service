@@ -3395,7 +3395,7 @@ public class MappingServiceRest extends RootServiceRest {
 
     Logger.getLogger(MappingServiceRest.class)
         .info("RESTful call (Mapping): /treePosition/project/id/"
-            + mapProjectId.toString());
+            + mapProjectId.toString() + "/destination");
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
@@ -3471,7 +3471,7 @@ public class MappingServiceRest extends RootServiceRest {
 
     Logger.getLogger(MappingServiceRest.class)
         .info("RESTful call (Mapping): /treePosition/project/id/"
-            + mapProjectId.toString());
+            + mapProjectId.toString() + "/source");
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
@@ -3531,11 +3531,12 @@ public class MappingServiceRest extends RootServiceRest {
    *
    * @param query the query
    * @param mapProjectId the map project id
+   * @param pfsParameter the pfs parameter
    * @param authToken the auth token
    * @return the root-level trees corresponding to the query
    * @throws Exception the exception
    */
-  @GET
+  @POST
   @Path("/treePosition/project/id/{projectId}")
   @ApiOperation(value = "Get tree positions for query", notes = "Gets a list of tree positions for the specified parameters.", response = TreePositionListJpa.class)
   @Produces({
@@ -3544,6 +3545,7 @@ public class MappingServiceRest extends RootServiceRest {
   public TreePositionList getTreePositionGraphsForQueryAndMapProject(
     @ApiParam(value = "Terminology browser query, e.g. 'cholera'", required = true) @QueryParam("query") String query,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long mapProjectId,
+    @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = false) PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
@@ -3580,7 +3582,8 @@ public class MappingServiceRest extends RootServiceRest {
 
       // TODO: need to figure out what "paging" means - it really has to do
       // with the number of tree positions under the root node, I think.
-      final PfsParameter pfs = new PfsParameterJpa();
+      final PfsParameter pfs =
+          pfsParameter != null ? pfsParameter : new PfsParameterJpa();
       // pfs.setStartIndex(0);
       // pfs.setMaxResults(10);
 
@@ -3596,8 +3599,7 @@ public class MappingServiceRest extends RootServiceRest {
         if (plusFlag) {
           treePositions = contentService.getTreePositionGraphForQuery(
               mapProject.getDestinationTerminology(),
-              mapProject.getDestinationTerminologyVersion(), query,
-              pfs);
+              mapProject.getDestinationTerminologyVersion(), query, pfs);
         }
         if (treePositions.getCount() == 0) {
           return new TreePositionListJpa();
@@ -3677,7 +3679,7 @@ public class MappingServiceRest extends RootServiceRest {
 
     Logger.getLogger(MappingServiceRest.class)
         .info("RESTful call (Mapping): /record/project/id/" + mapProjectId
-            + "/user/id" + username + "/edited");
+            + "/user/id/" + username + "/edited");
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
