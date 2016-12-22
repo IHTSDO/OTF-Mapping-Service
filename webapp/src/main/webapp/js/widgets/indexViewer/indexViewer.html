@@ -78,7 +78,7 @@
     ng-repeat="domainTab in domainTabs  | orderBy: 'name'"
     heading="{{domainTab.domain.name}}" select="selectDomainTab(domainTab)">
   <!-- Domain page tabset --> <uib-tabset> <!--  Domain page selection -->
-  <uib-tab active="pageTab.active" ng-click="selectPage(pageTab.name)"
+  <uib-tab active="pageTab.active"
     ng-repeat="pageTab in domainTab.pageTabs | orderBy:'name'"
     heading="{{pageTab.name}}">
 
