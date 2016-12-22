@@ -119,9 +119,10 @@
 
 
 
-<pagination total-items="nRecords" ng-model="searchParameters.page"
+<uib-pagination total-items="nRecords" ng-model="searchParameters.page"
   max-size="10" class="pagination-sm" boundary-links="true" rotate="true"
-  num-pages="numRecordPages" ng-change="retrieveRecords(page)"> </uib-pagination>
+  num-pages="numRecordPages" ng-change="retrieveRecords(searchParameters.page)">
+</uib-pagination>
 
 
 
@@ -147,8 +148,9 @@
 </div>
 
 
-<pagination total-items="nRecords" ng-model="searchParameters.page"
+<uib-pagination total-items="nRecords" ng-model="searchParameters.page"
   max-size="10" class="pagination-sm" boundary-links="true" rotate="true"
-  num-pages="numRecordPages" ng-change="retrieveRecords(page)"> </uib-pagination>
+  num-pages="numRecordPages" ng-change="retrieveRecords(searchParameters.page)">
+</uib-pagination>
 
 <div ng-include src="'./partials/footer.html'"></div>

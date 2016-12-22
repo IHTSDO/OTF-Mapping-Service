@@ -343,9 +343,10 @@
   <span tooltip-placement="right" uib-tooltip="List of the map users.">
     Map Users </span>
 </h5>
-</uib-accordion-heading> <uib-pagination direction-links="false" boundary-links="true"
-  total-items="pagedUserCount" items-per-page="pageSize" ng-model="pageUser"
-  ng-change="getPagedUsers(page, userFilter)"> </uib-pagination> <span>
+</uib-accordion-heading> <uib-pagination direction-links="false"
+  boundary-links="true" total-items="pagedUserCount" items-per-page="pageSize"
+  ng-model="pageUser" ng-change="getPagedUsers(pageUser, userFilter)">
+</uib-pagination> <span>
   <input id="userSearch" type="text" ng-model="userFilter"
     ng-change="getPagedUsers(1, userFilter)">
   <button ng-click="resetUserFilter()" class="btn btn-xs btn-warning">Reset</button>
@@ -460,7 +461,7 @@
 </h5>
 </uib-accordion-heading> <uib-pagination direction-links="false" boundary-links="true"
   total-items="pagedAdviceCount" items-per-page="pageSize" ng-model="pageAdvice"
-  ng-change="getPagedAdvices(page, adviceFilter)"></uib-pagination> <span>
+  ng-change="getPagedAdvices(pageAdvice, adviceFilter)"></uib-pagination> <span>
   <input id="adviceSearch" type="text" ng-model="adviceFilter"
     ng-change="getPagedAdvices(1, adviceFilter)">
   <button xs class="btn btn-xs btn-warning" ng-click="resetAdviceFilter()">Reset</button>
@@ -580,7 +581,7 @@
 </uib-accordion-heading> <uib-pagination ng-show="mapRelations.length > pageSize"
   direction-links="false" boundary-links="true" total-items="pagedRelationCount"
   items-per-page="pageSize" ng-model="pageRelation"
-  ng-change="getPagedRelations(page, relationFilter)"> </uib-pagination>
+  ng-change="getPagedRelations(pageRelation, relationFilter)"> </uib-pagination>
 <form>
   <input type="text" ng-model="relationFilter"
     ng-change="getPagedRelations(1, relationFilter)">
@@ -722,7 +723,7 @@
 </uib-accordion-heading> <uib-pagination ng-show="mapPrinciples.length > pageSize"
   direction-links="false" boundary-links="true"
   total-items="pagedPrincipleCount" items-per-page="pageSize"
-  ng-model="pagePrinciple" ng-change="getPagedPrinciples(page, principleFilter)"></uib-pagination>
+  ng-model="pagePrinciple" ng-change="getPagedPrinciples(pagePrinciple, principleFilter)"></uib-pagination>
 
 <span>
   <input type="text" ng-model="principleFilter"
@@ -997,7 +998,7 @@
   direction-links="false" boundary-links="true"
   total-items="pagedReportDefinitionCount" items-per-page="pageSize"
   ng-model="pageReportDefinition"
-  ng-change="getPagedReportDefinitions(page, reportDefinitionFilter)"></uib-pagination>
+  ng-change="getPagedReportDefinitions(pageReportDefinition, reportDefinitionFilter)"></uib-pagination>
 
 <span>
   <input type="text" ng-model="reportDefinitionFilter"
@@ -1212,7 +1213,7 @@
   ng-show="reportDefinitions.length > pageSize" direction-links="false"
   boundary-links="true" total-items="pagedReportDefinitionCount"
   items-per-page="pageSize" ng-model="pageReportDefinition"
-  ng-change="getPagedReportDefinitions(page, reportDefinitionFilter)"></uib-pagination>
+  ng-change="getPagedReportDefinitions(pageReportDefinition, reportDefinitionFilter)"></uib-pagination>
 
 
 <form name="reportDefinitionForm">
@@ -1429,7 +1430,7 @@
   direction-links="false" boundary-links="true"
   total-items="pagedQaDefinitionCount" items-per-page="pageSize"
   ng-model="pageQaDefinition"
-  ng-change="getPagedQaDefinitions(page, qaCheckDefinitionFilter)"></uib-pagination>
+  ng-change="getPagedQaDefinitions(pageQaDefinition, qaCheckDefinitionFilter)"></uib-pagination>
 
 <span>
   <input type="text" ng-model="qaCheckDefinitionFilter"
@@ -1602,7 +1603,7 @@
   ng-show="qaCheckDefinitions.length > pageSize" direction-links="false"
   boundary-links="true" total-items="pagedQaDefinitionCount"
   items-per-page="pageSize" ng-model="pageQaDefinition"
-  ng-change="getPagedQaDefinitions(page, qaCheckDefinitionFilter)"></uib-pagination>
+  ng-change="getPagedQaDefinitions(pageQaDefinition, qaCheckDefinitionFilter)"></uib-pagination>
 
 
 <form name="qaDefinitionForm">
