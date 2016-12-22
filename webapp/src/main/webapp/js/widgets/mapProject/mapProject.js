@@ -25,9 +25,7 @@ angular
 
       // watch for project change
       $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
-        console.debug('on localStorageModule.notification.setFocusProject');
         $scope.project = parameters.focusProject;
-        console.debug($scope.project);
       });
 
       // the only local storage variable required for this app is

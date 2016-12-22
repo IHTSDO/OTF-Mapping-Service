@@ -78,14 +78,9 @@ angular
         if (tabNumber == null) {
           tabNumber = 0;
         }
-
-        console.debug('setting tab', tabNumber);
-
         angular.forEach($scope.tabs, function(tab) {
           tab.active = (tab.id == tabNumber ? true : false);
         });
-
-        console.debug($scope.tabs);
 
         // set flag for ByUser tab, i.e. whether viewing user's own work
         if (tabNumber == 3)
@@ -121,14 +116,11 @@ angular
 
       // watch for project change
       $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
-        console.debug('on focus project change');
         $scope.focusProject = parameters.focusProject;
       });
 
       // watch for first retrieval of last tab for this session
       $scope.$watch('assignedTab', function() {
-        console.debug('watch assigned tab', $scope.assignedTab);
-
         // unidentified source is resetting the tab to 0 after initial load
         // introduced a brief timeout to ensure correct tab is picked
         setTimeout(function() {
@@ -139,8 +131,6 @@ angular
 
       // Event on assigned work being ready
       $scope.$on('workAvailableWidget.notification.assignWork', function(event, parameters) {
-        console.debug('on available work ready', parameters);
-
         // perform action based on notification parameters
         // Expect:
         // - assignUser: String, IHTSDO username (e.g. dmo, kli)
@@ -247,8 +237,6 @@ angular
 
       // on any change of relevant scope variables, retrieve work
       $scope.$watch([ 'focusProject', 'user', 'userToken', 'currentRole' ], function() {
-        console.debug('on focusProject ready');
-
         if ($scope.focusProject != null && $scope.currentUser != null
           && $scope.currentUserToken != null && $scope.currentRole != null) {
           $http.defaults.headers.common.Authorization = $scope.currentUserToken;
@@ -312,8 +300,8 @@ angular
           $scope.assignedConflicts = data.searchResult;
 
           // set pagination
-          $scope.nAssignedConflicts = data.totalCount;
           $scope.numAssignedConflictsPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
+          $scope.nAssignedConflicts = data.totalCount;
 
           // set title
           $scope.tabs[1].title = 'Conflicts (' + data.totalCount + ')';
@@ -455,7 +443,7 @@ angular
           $scope.assignedQAWork = data.searchResult;
 
           // set pagination
-          $scope.numAssignedRecordPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
+          $scope.numAssignedQAWorkPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
           $scope.nAssignedQAWork = data.totalCount;
 
           // set title
@@ -523,7 +511,7 @@ angular
           $scope.assignedReviewWork = data.searchResult;
 
           // set pagination
-          $scope.numAssignedRecordPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
+          $scope.numAssignedReviewWorkPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
           $scope.nAssignedReviewWork = data.totalCount;
 
           // set title
@@ -590,36 +578,24 @@ angular
             headers : {
               'Content-Type' : 'application/json'
             }
-          })
-          .success(
-            function(data) {
-              $rootScope.glassPane--;
+          }).success(function(data) {
+          $rootScope.glassPane--;
 
-              $scope.assignedWorkForUserPage = page;
-              $scope.assignedRecordsForUser = data.searchResult;
+          $scope.assignedWorkForUserPage = page;
+          $scope.assignedRecordsForUser = data.searchResult;
 
-              // set pagination
-              $scope.numAssignedRecordPagesForUser = Math.ceil(data.totalCount
-                / $scope.itemsPerPage);
-              $scope.nAssignedRecordsForUser = data.totalCount;
-              $scope.numRecordPagesForUser = Math.ceil($scope.nAssignedRecordsForUser
-                / $scope.itemsPerPage);
+          // set pagination
+          $scope.numAssignedRecordPagesForUser = Math.ceil(data.totalCount / $scope.itemsPerPage);
+          $scope.nAssignedRecordsForUser = data.totalCount;
 
-              $scope.tabs[3].title = 'By User (' + data.totalCount + ')';
+          $scope.tabs[3].title = 'By User (' + data.totalCount + ')';
 
-            }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
-            $rootScope.handleHttpError(data, status, headers, config);
-          });
+        }).error(function(data, status, headers, config) {
+          $rootScope.glassPane--;
+          $rootScope.handleHttpError(data, status, headers, config);
+        });
 
       };
-
-      // set the pagination variables
-      function setPagination(assignedRecordsPerPage, nAssignedRecords) {
-
-        $scope.assignedRecordsPerPage = assignedRecordsPerPage;
-        $scope.numRecordPages = Math.ceil($scope.nAssignedRecords / assignedRecordsPerPage);
-      }
 
       // on notification, update assigned work
       $scope.assignWork = function(newRecords) {
@@ -632,9 +608,6 @@ angular
 
       // function to relinquish work (i.e. unassign the user)
       $scope.unassignWork = function(record, mapUser, workType) {
-
-        console.debug('unassignWork', mapUser, workType);
-
         // show a confirmation dialog if requested
         // NOTE: workflow status is contained in terminologyVersion for a
         // searchResult object
@@ -658,10 +631,7 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-
           $rootScope.glassPane--;
-
-          console.debug('broadcasting', mapUser, workType)
 
           // trigger reload of this type of work via broadcast
           // notification
@@ -866,8 +836,6 @@ angular
         // check arguments
         if (workflowStatus != null && workflowStatus.indexOf('_IN_PROGRESS') == -1
           && workflowStatus.indexOf('_RESOLVED') == -1) {
-          console
-            .error('Invalid workflow status passed to finishOrPublish, must be *_IN_PROGRESS or *_RESOLVED');
         }
         // determine type of work
         var apiWorkflowText;
@@ -924,7 +892,6 @@ angular
       $scope.openFinishOrPublishModal = function(records) {
 
         if (records == null || records.length == 0) {
-          console.error('openPerformBatchActionModal called with no records');
           return;
         }
 
