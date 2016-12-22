@@ -1,7 +1,7 @@
 'use strict';
 
 var mapProjectAppControllers = angular.module('mapProjectAppControllers', [ 'ui.bootstrap',
-  'ui.sortable', 'mapProjectAppDirectives', 'mapProjectAppDashboards' ]);
+  'mapProjectAppDirectives', 'mapProjectAppDashboards' ]);
 
 var root_url = '/mapping-rest/';
 var root_mapping = root_url + 'mapping/';
@@ -11,8 +11,14 @@ var root_workflow = root_url + 'workflow/';
 var root_security = root_url + 'security/';
 var root_reporting = root_url + 'reporting/';
 
+mapProjectAppControllers.config(function(localStorageServiceProvider) {
+
+  localStorageServiceProvider.setPrefix('mapping').setStorageType('sessionStorage').setNotify(true,
+    true)
+});
+
 mapProjectAppControllers
-  .run(function($rootScope, $http, localStorageService, $location, utilService) {
+  .run(function($rootScope, $window, $http, $location, utilService) {
 
     // global function to handle any type of error. Currently only
     // specifically implemented for authorization failures.
@@ -22,7 +28,7 @@ mapProjectAppControllers
       if (status == '401') {
         $location.path('/');
       }
-      window.scrollTo(0, 0);
+      $window.scrollTo(0, 0);
     };
 
     // global function to handle an error that returns user to dashboard
@@ -30,7 +36,7 @@ mapProjectAppControllers
     $rootScope.handleReturnToDashboardError = function(errorString, currentRole) {
       $rootScope.globalError = errorString;
       $location.path('/' + currentRole.toLowerCase() + '/dash');
-      window.scrollTo(0, 0);
+      $window.scrollTo(0, 0);
 
     };
 
@@ -47,11 +53,6 @@ mapProjectAppControllers
     // global variable, contains user-viewable error text displayed one very
     // page if not empty
     $rootScope.resetGlobalError();
-
-    // check if local storage service can be accessed
-    if (localStorageService.isSupported() == false) {
-      $rootScope.globalError = 'It appears your browsers security settings will prevent the tool from functioning correctly.  Check that cookies are enabled and/or that your browser allows setting local data, then reload this page.';
-    }
 
     // variable to indicate whether the current page is 'dirty'
     // i.e. leaving this page might cause data to be lost

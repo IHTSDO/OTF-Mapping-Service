@@ -22,6 +22,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
@@ -128,6 +129,7 @@ public class TreePositionJpa implements TreePosition {
     this.id = id;
   }
 
+
   /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
@@ -167,11 +169,14 @@ public class TreePositionJpa implements TreePosition {
     this.terminologyVersion = terminologyVersion;
   }
 
-  /* see superclass */
+
+  @Fields({
+      @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO),
+      @Field(name = "terminologyIdAnalyzed", index = Index.YES, analyze = Analyze.YES, store = Store.NO, analyzer = @Analyzer(definition = "noStopWord"))
+  })
   @Override
-  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public String getTerminologyId() {
-    return terminologyId;
+	  return terminologyId;
   }
 
   /* see superclass */

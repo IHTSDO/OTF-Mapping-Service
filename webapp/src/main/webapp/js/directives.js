@@ -157,3 +157,185 @@ mapProjectAppDirectives.directive('droppable', function() {
     }
   };
 });
+
+//Content controller
+mapProjectAppDirectives.directive('treeSearchResult', [
+  '$q',
+  '$sce',
+  function($q, $sce) {
+    console.debug('configure trees directive');
+    return {
+      restrict : 'A',
+      scope : {
+
+        // set search results if viewing trees for search
+        searchResults : '=',
+
+        // pass parameters for styling (e.g. extension highlighting)
+        parameters : '=',
+
+        // callbacks functions from parent scope
+        callbacks : '='
+      },
+      templateUrl : 'partials/treeSearchResult.html',
+      link : function(scope, element, attrs) {
+        
+        console.debug('callbacks', scope.callbacks);
+
+        // page sizes
+        scope.pageSizeSibling = 10;
+
+        // computed tooltip html for derived labels
+        // NOTE: Must not be null or empty string, or uib-tooltip-html
+        // will not properly register the first mouseover event
+        scope.labelTooltipHtml = "&nbsp;";
+
+        function concatSiblings(tree, siblings) {
+
+          var existingIds = tree.map(function(item) {
+            return item.terminologyId;
+          });
+
+          var newSiblings = tree.concat(siblings.filter(function(sibling) {
+            return existingIds.indexOf(sibling.terminologyId) == -1;
+          }));
+
+          newSiblings.sort(function(a, b) {
+
+            if (a.defaultPreferredName < b.defaultPreferredName) {
+              return -1;
+            } else {
+              return 1;
+            }
+
+          });
+
+          return newSiblings;
+        }
+
+        // retrieves the children for a node (from DOM)
+        scope.getTreeChildrenFromTree = function(nodeScope) {
+          var tree = nodeScope.$modelValue;
+          scope.getTreeChildren(tree).then(function(children) {
+            tree.children = concatSiblings(tree.children, children);
+          });
+        };
+        
+        scope.selectConcept = function(tree) {
+          console.debug('in directive select concept');
+          scope.callbacks.selectConcept(tree);
+        }
+
+        // retrieves children for a node (not from DOM)
+        scope.getTreeChildren = function(tree) {
+
+          var deferred = $q.defer();
+
+          if (!tree) {
+            utilService.setError('getChildren called with null node');
+            deferred.resolve([]);
+          }
+
+          // get the next page of children based on start index of current
+          // children length
+          // NOTE: Offset by 1 to incorporate the (possibly) already loaded item
+
+          scope.callbacks.getTreeChildren(tree, scope.metadata.terminology.organizingClassType,
+            tree.children.length - 1).then(function(data) {
+            deferred.resolve(data.trees);
+          }, function(error) {
+            utilService.setError('Unexpected error retrieving children');
+            deferred.resolve([]);
+          });
+
+          return deferred.promise;
+        };
+
+        // toggles a node (from DOM)
+        scope.toggleTree = function(nodeScope) {
+          var tree = nodeScope.$modelValue;
+          
+          console.debug('toggleTree', nodeScope.collapsed, tree);
+
+          // if not expanded, expand
+          if (!nodeScope.collapsed) {      
+            
+            // get children if not already present
+            if (tree.children.length == 0 && tree.childrenCount > 0) {
+              console.debug('get children');
+              scope.callbacks.getTreeChildren(tree).then(function(children) {
+                tree.children = concatSiblings(tree.children, children);
+              });
+              
+              console.debug('isOpen', nodeScope.isOpen)
+            } else {
+              nodeScope.toggle();
+            }
+          }
+
+          // otherwise, collapse
+          else {
+            nodeScope.toggle();
+          }
+        };
+
+        // returns the display icon for a node (from DOM)
+        scope.getTreeNodeIcon = function(nodeScope) {
+          var tree = nodeScope.$modelValue;
+
+          // NOTE: This is redundant, leaf icon is set directly in html
+          if (tree.childrenCount == 0) {
+            return 'glyphicon-leaf';
+          }
+
+          // if collapsed or unloaded
+          else if (nodeScope.collapsed || (tree.childrenCount > 0 && tree.children.length == 0)) {
+            return 'glyphicon-chevron-right';
+          }
+
+          // if formally collapsed or less than sibling page size retrieved
+          // children, return plus sign
+          else if (tree.children.length != tree.childrenCount
+            && tree.children.length < scope.pageSizeSibling) {
+            return 'glyphicon-chevron-down';
+          }
+
+          // otherwise, return minus sign
+          else if (!nodeScope.collapsed) {
+            return 'glyphicon-chevron-down';
+          }
+
+          // if no matches, return a ? because something is seriously wrong
+          else {
+            return 'glyphicon-question-sign';
+          }
+
+        };
+
+        scope.truncate = function(string, plength) {
+          var length = plength;
+          if (length == null)
+            length = 150;
+          if (string.length > length)
+            return string.slice(0, length - 3);
+          else
+            return string;
+        };
+
+        scope.truncated = function(string, plength) {
+          var length = plength;
+          if (length == null)
+            length = 150;
+          if (string.length > length)
+            return true;
+          else
+            return false;
+        };
+        
+        scope.isMatchingNode = function(tree) {
+          return scope.parameters.query && scope.parameters.query.toLowerCase() === tree.terminologyId;
+        }
+
+      }
+    };
+  } ]);

@@ -1,13 +1,10 @@
-<form>
+<form ng-submit="retrieveEditedWork(1, queryTerms)">
   <input type="text" id="editQueryInput" ng-model="queryTerms">
-  <button type="submit" style="padding-top: 10px;"
-    class="btn btn-sm btn-primary"
-    ng-click="retrieveEditedWork(1, queryTerms)">Search</button>
-  <button type="submit" style="padding-top: 10px;"
-    class="btn btn-sm btn-primary" ng-click="clearSearch(); queryTerms = ''">Reset</button>
+  <button type="submit" class="btn btn-xs btn-primary">Search</button>
+  <span class="btn btn-xs btn-primary" ng-click="clearSearch(); queryTerms = ''">Reset</span>
   <a>
     <i class="glyphicon glyphicon-info-sign" tooltip-placement="top"
-      tooltip="You may search by concept id or terms in the concept's name (e.g. closed fracture, 704020004, ...). Only exact phrases will match, e.g. 'phalanx thumb' will not match the phrase 'phalanx of thumb'.  AND/OR/NOT operators are not supported."></i>
+      uib-tooltip="You may search by concept id or terms in the concept's name (e.g. closed fracture, 704020004, ...). Only exact phrases will match, e.g. 'phalanx thumb' will not match the phrase 'phalanx of thumb'.  AND/OR/NOT operators are not supported."></i>
   </a>
 
 </form>
@@ -42,7 +39,7 @@
           ]
         </a>
         {{record.conceptName}}
-        <div collapse="record.isCollapsed == true">
+        <div uib-collapse="record.isCollapsed == true">
           <hr>
           <div otf-map-record-wide record="record" project="focusProject"
             show-title="false"></div>

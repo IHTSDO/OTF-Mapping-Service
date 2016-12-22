@@ -35,8 +35,8 @@ angular
   })
   .controller(
     'projectRecordsCtrl',
-    function($scope, $rootScope, $http, $routeParams, $location, $modal, $q, localStorageService,
-      $sce, appConfig) {
+    function($scope, $rootScope, $http, $routeParams, $location, $uibModal, $q,
+      localStorageService, $sce, appConfig) {
       $scope.appConfig = appConfig;
       $scope.page = 'records';
 
@@ -48,8 +48,6 @@ angular
 
       // status variables
       $scope.unmappedDescendantsPresent = false;
-      $scope.mapNotesPresent = false;
-      $scope.mapAdvicesPresent = false;
 
       // error variables
       $scope.errorProject = '';
@@ -174,20 +172,6 @@ angular
 
             // check if icon legends are necessary
             $scope.unmappedDescendantsPresent = false;
-            $scope.mapNotesPresent = false;
-            $scope.mapAdvicesPresent = false;
-
-            // check if any notes or advices are present
-            for (var i = 0; i < $scope.records.length; i++) {
-              if ($scope.records[i].mapNote.length > 0) {
-                $scope.mapNotesPresent = true;
-              }
-              for (var j = 0; j < $scope.records[i].mapEntry.length; j++) {
-                if ($scope.records[i].mapEntry[j].mapAdvice.length > 0) {
-                  $scope.mapAdvicesPresent = true;
-                }
-              }
-            }
 
             // check relation syle flags
             if ($scope.project.mapRelationStyle === 'MAP_CATEGORY_STYLE') {
@@ -440,7 +424,7 @@ angular
       };
 
       $scope.openViewerFeedbackModal = function(lrecord, currentUser) {
-        var modalInstance = $modal.open({
+        var modalInstance = $uibModal.open({
           templateUrl : 'js/widgets/projectRecords/projectRecordsViewerFeedback.html',
           controller : ViewerFeedbackModalCtrl,
           resolve : {
@@ -455,7 +439,7 @@ angular
 
       };
 
-      var ViewerFeedbackModalCtrl = function($scope, $modalInstance, record) {
+      var ViewerFeedbackModalCtrl = function($scope, $uibModalInstance, record) {
         console.debug('Entered modal control', record);
 
         $scope.record = record;
@@ -500,9 +484,9 @@ angular
           }).success(function(data) {
             console.debug('success to sendFeedbackEmail.');
             $rootScope.glassPane--;
-            $modalInstance.close();
+            $uibModalInstance.close();
           }).error(function(data, status, headers, config) {
-            $modalInstance.close();
+            $uibModalInstance.close();
             $scope.recordError = 'Error sending feedback email.';
             $rootScope.glassPane--;
             $rootScope.handleHttpError(data, status, headers, config);
@@ -511,7 +495,7 @@ angular
         };
 
         $scope.cancel = function() {
-          $modalInstance.dismiss('cancel');
+          $uibModalInstance.dismiss('cancel');
         };
 
         function validateEmail(email) {
@@ -559,6 +543,8 @@ angular
         targetName : null,
         adviceContained : true,
         adviceName : null,
+        principleContained : true,
+        principleName : null,
 
         // search display data
         roots : [], // source terminology root concepts
@@ -578,6 +564,8 @@ angular
         $scope.searchParameters.ancestorId = null;
         $scope.searchParameters.adviceName = null;
         $scope.searchParameters.adviceContained = true;
+        $scope.searchParameters.principleName = null;
+        $scope.searchParameters.principleContained = true;
 
         $scope.retrieveRecords(1);
       };
@@ -604,6 +592,7 @@ angular
             });
 
         $scope.searchParameters.advices = $scope.focusProject.mapAdvice;
+        $scope.searchParameters.principles = $scope.focusProject.mapPrinciple;
       };
 
       // toggle advanced search
@@ -653,6 +642,13 @@ angular
             queryRestrictions.push(($scope.searchParameters.adviceContained ? '' : 'NOT ')
               + 'mapEntries.mapAdvices.name:"' + $scope.searchParameters.adviceName + '"');
           }
+
+          // check map principles
+          if ($scope.searchParameters.principleName) {
+            queryRestrictions.push(($scope.searchParameters.principleContained ? '' : 'NOT ')
+              + 'mapPrinciples.name:"' + $scope.searchParameters.principleName + '"');
+          }
+
           for (var i = 0; i < queryRestrictions.length; i++) {
             pfs.queryRestriction += (pfs.queryRestriction.length > 0 ? ' AND ' : '')
               + queryRestrictions[i];
@@ -679,7 +675,7 @@ angular
                   .handleError('Mismatch between QA record retrieval and existing results. Aborting QA.');
               } else {
 
-                var modalInstance = $modal.open({
+                var modalInstance = $uibModal.open({
                   templateUrl : 'js/widgets/projectRecords/qa-records.html',
                   controller : QaRecordsCtrl,
                   resolve : {
@@ -704,7 +700,7 @@ angular
       };
 
       // QA records modal controller
-      var QaRecordsCtrl = function($scope, $modalInstance, $q, utilService, records) {
+      var QaRecordsCtrl = function($scope, $uibModalInstance, $q, utilService, records) {
         console.debug('Entered modal control', records);
 
         if (records.length == 0) {
@@ -740,7 +736,7 @@ angular
 
         // Close
         $scope.close = function() {
-          $modalInstance.close();
+          $uibModalInstance.close();
         };
 
         // Create QA records
