@@ -311,7 +311,7 @@
 </h5>
 </uib-accordion-heading> <uib-pagination direction-links="false" boundary-links="true"
   total-items="pagedAdviceCount" items-per-page="pageSize" ng-model="pageAdvice"
-  ng-change="getPagedAdvices(page, adviceFilter)"></uib-pagination> <span>
+  ng-change="getPagedAdvices(pageAdvice, adviceFilter)"></uib-pagination> <span>
   <input id="adviceSearch" type="text" ng-model="adviceFilter"
     ng-change="getPagedAdvices(1, adviceFilter)">
   <button class="btn btn-xs btn-warning" ng-click="resetAdviceFilter()">Reset</button>
@@ -431,7 +431,7 @@
 </uib-accordion-heading> <uib-pagination ng-show="focusProject.mapRelation.length > pageSize"
   direction-links="false" boundary-links="true" total-items="pagedRelationCount"
   items-per-page="pageSize" ng-model="pageRelation"
-  ng-change="getPagedRelations(page, relationFilter)"></uib-pagination>
+  ng-change="getPagedRelations(pageRelation, relationFilter)"></uib-pagination>
 <form ng-submit="resetRelationFilter()">
   <input type="text" ng-model="relationFilter"
     ng-change="getPagedRelations(1, relationFilter)">
@@ -566,7 +566,7 @@
   direction-links="false" boundary-links="true"
   total-items="pagedReportDefinitionCount" items-per-page="pageSize"
   ng-model="pageDefinition"
-  ng-change="getPagedReportDefinitions(page, reportDefinitionFilter)"></uib-pagination>
+  ng-change="getPagedReportDefinitions(pageDefinition, reportDefinitionFilter)"></uib-pagination>
 <form ng-submit="resetReportDefinitionFilter(); reportDefinitionFilter = '';">
   <input type="text" ng-model="reportDefinitionFilter"
     ng-change="getPagedReportDefinitions(1, reportDefinitionFilter)">
@@ -663,7 +663,7 @@
   direction-links="false" boundary-links="true"
   total-items="pagedQACheckDefinitionCount" items-per-page="pageSize"
   ng-model="pagedQACheckDefinition"
-  ng-change="getPagedQACheckDefinitions(page, qaCheckDefinitionFilter)"></uib-pagination>
+  ng-change="getPagedQACheckDefinitions(pagedQACheckDefinition, qaCheckDefinitionFilter)"></uib-pagination>
 <form ng-submit="resetQACheckDefinitionFilter(); qaCheckDefinitionFilter = '';">
   <input type="text" ng-model="qaCheckDefinitionFilter"
     ng-change="getPagedQACheckDefinitions(1, qaCheckDefinitionFilter)">
@@ -753,7 +753,7 @@
 </uib-accordion-heading> <uib-pagination ng-show="focusProject.mapPrinciple.length > pageSize"
   direction-links="false" boundary-links="true"
   total-items="pagedPrincipleCount" items-per-page="pageSize"
-  ng-model="pagePrinciple" ng-change="getPagedPrinciples(page, principleFilter)"></uib-pagination>
+  ng-model="pagePrinciple" ng-change="getPagedPrinciples(pagePrinciple, principleFilter)"></uib-pagination>
 <form ng-submit="resetPrincipleFilter()">
   <input type="text" ng-model="principleFilter"
     ng-change="getPagedPrinciples(1, principleFilter)">
@@ -1116,7 +1116,7 @@
 </uib-accordion-heading> <uib-pagination direction-links="false" boundary-links="true"
   total-items="pagedScopeConceptCount" items-per-page="pageSize"
   max-size="maxSize" ng-model="pageScopeConcept"
-  ng-change="getPagedScopeConcepts(page)"></uib-pagination> <!-- <form ng-submit="resetScopeConceptFilter()">
+  ng-change="getPagedScopeConcepts(pageScopeConcept)"></uib-pagination> <!-- <form ng-submit="resetScopeConceptFilter()">
       <input id="scopeConceptSearch" type="text" ng-model="scopeConceptFilter" ng-change="getPagedScopeConcepts(1)">
   <button type="submit" class="btn btn-xs btn-primary">Reset Filter</button>
     </form>  -->
@@ -1183,7 +1183,7 @@
 </uib-accordion-heading> <uib-pagination direction-links="false" boundary-links="true"
   total-items="pagedScopeExcludedConceptCount" items-per-page="pageSize"
   max-size="maxSize" ng-model="pageScopeExcludedConcept"
-  ng-change="getPagedScopeExcludedConcepts(page)"></uib-pagination> <!--<form ng-submit="resetScopeExcludedConceptFilter()">
+  ng-change="getPagedScopeExcludedConcepts(pageScopeExcludedConcept)"></uib-pagination> <!--<form ng-submit="resetScopeExcludedConceptFilter()">
       <input id="scopeExcludedConceptSearch" type="text" ng-model="scopeExcludedConceptFilter" ng-change="getPagedScopeExcludedConcepts(1)">
   <button type="submit" class="btn btn-xs btn-primary">Reset Filter</button>
     </form>  -->
