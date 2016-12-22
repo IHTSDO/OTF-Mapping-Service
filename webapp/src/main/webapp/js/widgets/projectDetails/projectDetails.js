@@ -77,8 +77,8 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
     '$location',
     'localStorageService',
     '$q',
-    function($scope, $http, $sce, $rootScope, $location, localStorageService, $q) {
-
+    'Upload',
+    function($scope, $http, $sce, $rootScope, $location, localStorageService, $q, Upload) {
       $scope.page = 'project';
 
       $scope.currentRole = localStorageService.get('currentRole');
@@ -1608,30 +1608,30 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         return deferred.promise;
       };
 
-      $scope.onFileSelect = function($files) {
-        // $files: an array of files selected, each file
-        // has name, size, and type.
-        for (var i = 0; i < $files.length; i++) {
-          var $file = $files[i];
-          $rootScope.glassPane++;
-          // $upload.upload({
-          // url : root_mapping + 'upload/' + $scope.focusProject.id,
-          // file : $file,
-          // progress : function(e) {
-          // // n/a
-          // }
-          // }).error(function(data, status, headers, config) {
-          // // file is not uploaded successfully
-          // $scope.recordError = 'Error updating map project.';
-          // $rootScope.handleHttpError(data, status, headers, config);
-          // $rootScope.glassPane--;
-          // }).success(function(data) {
-          // // file is uploaded successfully
-          // confirm('The mapping principle handbook file upload is complete.');
-          // $rootScope.glassPane--;
-          //            $scope.focusProject.mapPrincipleSourceDocument = data.substring(1, data.length - 1);
-          //          });
-        }
+      $scope.uploadFile = function(file) {
+
+        $rootScope.glassPane++;
+        Upload.upload({
+          url : root_mapping + 'upload/' + $scope.focusProject.id,
+          data : {
+            file : file
+          }
+        }).then(
+        // Success
+        function(response) {
+          $rootScope.glassPane--;
+        },
+        // error
+        function(response) {
+          $rootScope.handleHttpError(response.data, response.status, response.headers, response.config);          
+          $rootScope.glassPane--;
+        },
+        // event
+        function(evt) {
+          var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
+          console.debug('progress: ' + progressPercentage + '% ' + evt.config.data.file.name);
+        });
+
       };
 
     } ]);
