@@ -25,10 +25,11 @@
   </tr>
   <tr>
     <td style="padding: 5px;" colspan=2>
-      <uib-pagination ng-show="nConcepts > pageSize" total-items="nConcepts"
-        ng-model="page" class="pagination-sm" max-size="5" boundary-links="true"
-        rotate="true" num-pages="numConceptPages"
-        ng-change="getConcepts(page, queryConcepts)"></uib-pagination>
+      <uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
+        first-text="&laquo;" last-text="&raquo;" ng-show="nConcepts > pageSize"
+        total-items="nConcepts" ng-model="page" class="pagination-sm"
+        max-size="5" boundary-links="true" rotate="true"
+        num-pages="numConceptPages" ng-change="getConcepts(page, queryConcepts)"></uib-pagination>
     </td>
   </tr>
 </table>
