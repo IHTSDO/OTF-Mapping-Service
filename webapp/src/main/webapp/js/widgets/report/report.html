@@ -29,9 +29,11 @@
       ng-bind-html="to_trusted(selectedDefinition.description)"></div>
   </div>
 
-  <uib-pagination ng-show="nReportPages > 1" total-items="nReports"
-    ng-model="reportPage" max-size="5" class="pagination-sm"
-    boundary-links="true" rotate="true" num-pages="nReportPages"
+  <uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
+    first-text="&laquo;" last-text="&raquo;" ng-show="nReportPages > 1"
+    total-items="nReports" ng-model="reportPage" max-size="5"
+    class="pagination-sm" boundary-links="true" rotate="true"
+    num-pages="nReportPages"
     ng-change="getReports(reportPage, selectedDefinition, queryReport)"></uib-pagination>
 
   <div ng-show="nReports != 0">
@@ -121,10 +123,11 @@
               {{result.value}}
 
               <div ng-show="!result.isCollapsed">
-                <uib-pagination ng-show="result.nPages > 1"
-                  total-items="result.ct" ng-model="result.page" max-size="5"
-                  class="pagination-sm" boundary-links="true" rotate="true"
-                  num-pages="result.nPages"
+                <uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
+                  first-text="&laquo;" last-text="&raquo;"
+                  ng-show="result.nPages > 1" total-items="result.ct"
+                  ng-model="result.page" max-size="5" class="pagination-sm"
+                  boundary-links="true" rotate="true" num-pages="result.nPages"
                   ng-change="getResultItems(result, result.page)"></uib-pagination>
 
                 <table class="table">
