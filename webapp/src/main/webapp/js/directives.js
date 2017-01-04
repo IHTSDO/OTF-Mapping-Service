@@ -158,12 +158,11 @@ mapProjectAppDirectives.directive('droppable', function() {
   };
 });
 
-//Content controller
+// tree search result directive
 mapProjectAppDirectives.directive('treeSearchResult', [
   '$q',
   '$sce',
   function($q, $sce) {
-    console.debug('configure trees directive');
     return {
       restrict : 'A',
       scope : {
@@ -179,9 +178,6 @@ mapProjectAppDirectives.directive('treeSearchResult', [
       },
       templateUrl : 'partials/treeSearchResult.html',
       link : function(scope, element, attrs) {
-        
-        console.debug('callbacks', scope.callbacks);
-
         // page sizes
         scope.pageSizeSibling = 10;
 
@@ -220,9 +216,8 @@ mapProjectAppDirectives.directive('treeSearchResult', [
             tree.children = concatSiblings(tree.children, children);
           });
         };
-        
+
         scope.selectConcept = function(tree) {
-          console.debug('in directive select concept');
           scope.callbacks.selectConcept(tree);
         }
 
@@ -254,20 +249,16 @@ mapProjectAppDirectives.directive('treeSearchResult', [
         // toggles a node (from DOM)
         scope.toggleTree = function(nodeScope) {
           var tree = nodeScope.$modelValue;
-          
-          console.debug('toggleTree', nodeScope.collapsed, tree);
 
           // if not expanded, expand
-          if (!nodeScope.collapsed) {      
-            
+          if (!nodeScope.collapsed) {
+
             // get children if not already present
             if (tree.children.length == 0 && tree.childrenCount > 0) {
-              console.debug('get children');
               scope.callbacks.getTreeChildren(tree).then(function(children) {
                 tree.children = concatSiblings(tree.children, children);
               });
-              
-              console.debug('isOpen', nodeScope.isOpen)
+
             } else {
               nodeScope.toggle();
             }
@@ -331,9 +322,10 @@ mapProjectAppDirectives.directive('treeSearchResult', [
           else
             return false;
         };
-        
+
         scope.isMatchingNode = function(tree) {
-          return scope.parameters.query && scope.parameters.query.toLowerCase() === tree.terminologyId;
+          return scope.parameters.query
+            && scope.parameters.query.toLowerCase() === tree.terminologyId;
         }
 
       }
