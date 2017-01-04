@@ -14,7 +14,7 @@
 
   <!-- Support tree/list mode switching -->
   <div class="col-md-2 pull-right">
-    <span ng-show="listMode">
+    <span class="nobreak" ng-show="listMode">
       <i style="margin-right: 20px"
         class="pull-right noul glyphicon glyphicon-tree-conifer"
         ng-click="toggleListMode()" title="Switch to tree view"></i>
@@ -22,7 +22,7 @@
       <i class="pull-right glyphicon glyphicon-th-list"
         uib-tooltip="Currently in list mode"></i>
     </span>
-    
+
     <span ng-show="!listMode">
       <i style="margin-right: 20px"
         class="pull-right glyphicon glyphicon-tree-conifer"
@@ -42,8 +42,7 @@
   <div ng-show="listMode && searchResults.length > 0"
     style="margin-bottom: 5px;">
     <span style="display: block;">
-      <uib-pagination style="margin-top:5px; margin-bottom:5px"
-        items-per-page="paging['search'].pageSize"
+      <uib-pagination items-per-page="paging['search'].pageSize"
         total-items="searchResults.length" previous-text="&lsaquo;"
         next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
         ng-model="paging['search'].page" max-size="5" class="pagination-sm"

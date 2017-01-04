@@ -241,7 +241,6 @@ angular
         $scope.recordsInProject = [];
         $scope.recordsNotInProject = [];
 
-        console.debug('Filtering records (' + $scope.records.length + ')');
         for (var i = 0; i < $scope.records.length; i++) {
           if ($scope.records[i].mapProjectId === $scope.focusProject.id) {
             $scope.recordsInProject.push($scope.records[i]);
@@ -255,7 +254,6 @@ angular
               for (var j = 0; j < $scope.recordsNotInProject.length; j++) {
 
                 if ($scope.recordsNotInProject[j][0].mapProjectId === $scope.records[i].mapProjectId) {
-                  console.debug('Found match for ' + $scope.records[i].mapProjectId);
                   $scope.recordsNotInProject[j].push($scope.records[i]);
                   projectExists = true;
                 }
@@ -335,7 +333,6 @@ angular
               record.mapEntry[i].mapAdvice = [];
           }
 
-          console.debug('Edit record clicked, assigning record if necessary');
           $http({
             url : root_workflow + 'assignFromRecord/user/id/' + $scope.currentUser.userName,
             method : 'POST',
@@ -347,7 +344,6 @@ angular
           })
             .success(
               function(data) {
-                console.debug('Assignment successful');
                 $http(
                   {
                     url : root_workflow + 'record/project/id/' + $scope.focusProject.id
@@ -458,17 +454,13 @@ angular
             if ($scope.records[i].mapEntry[j].targetId === '') {
               // get the object for easy handling
               var jsonObj = $scope.records[i].mapEntry[j].mapAdvice;
-
-              console.debug('Relation', $scope.records[i].mapEntry[j].mapRelation);
-
               var relationAsAdvice = {
                 'id' : '0',
                 'name' : $scope.records[i].mapEntry[j].mapRelation.abbreviation,
                 'detail' : $scope.records[i].mapEntry[j].mapRelation.name,
                 'objectId' : '0'
               };
-
-              console.debug(relationAsAdvice);
+              
               // add the serialized advice
               jsonObj.push(relationAsAdvice);
               $scope.records[i].mapEntry[j].mapAdvice = jsonObj;
@@ -481,12 +473,7 @@ angular
       // specified
       // record
       $scope.changeFocusProjectByRecord = function(record) {
-
-        console.debug('changeFocusProjectByRecord:  record project id = ' + record.mapProjectId);
-
-        console.debug($scope.mapProjects);
         for (var i = 0; i < $scope.mapProjects.length; i++) {
-          console.debug('  comparing to project id = ' + $scope.mapProjects[i].id);
           if ($scope.mapProjects[i].id = record.mapProjectId) {
 
             $scope.changeFocusProject($scope.mapProjects[i]);
@@ -518,7 +505,6 @@ angular
       // function to change project from the header
       $scope.changeFocusProject = function(mapProject) {
         $scope.focusProject = mapProject;
-        console.debug('changing project to ' + $scope.focusProject.name);
 
         // update and broadcast the new focus project
         localStorageService.add('focusProject', $scope.focusProject);
@@ -561,7 +547,6 @@ angular
         } else {
           path = 'help/' + $scope.currentRole + 'DashboardHelp.html';
         }
-        console.debug('go to help page ' + path);
         // redirect page
         $location.path(path);
       };
@@ -586,7 +571,6 @@ angular
       };
 
       $scope.openIndexViewer = function() {
-        console.debug('page location is', window.location.href);
         var currentUrl = window.location.href;
         var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
         var newUrl = baseUrl + '/index/viewer';
@@ -605,7 +589,6 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-          console.debug('Success in getting viewable indexes.');
           if (data.searchResult.length > 0) {
             $scope.indexViewerExists = true;
           } else {
@@ -617,9 +600,6 @@ angular
       }
 
       $scope.openViewerFeedbackModal = function(lrecord, currentUser) {
-
-        console.debug('openViewerFeedbackModal with ', lrecord, currentUser);
-
         var modalInstance = $uibModal.open({
           templateUrl : 'js/widgets/projectRecords/projectRecordsViewerFeedback.html',
           controller : ViewerFeedbackModalCtrl,
@@ -636,9 +616,6 @@ angular
       };
 
       var ViewerFeedbackModalCtrl = function($scope, $uibModalInstance, record) {
-
-        console.debug('Entered modal control', record);
-
         $scope.record = record;
         $scope.project = localStorageService.get('focusProject');
         $scope.currentUser = localStorageService.get('currentUser');
@@ -646,7 +623,6 @@ angular
         $scope.feedbackInput = '';
 
         $scope.sendFeedback = function(record, feedbackMessage, name, email) {
-          console.debug('Sending feedback email', record);
 
           if (feedbackMessage == null || feedbackMessage == undefined || feedbackMessage === '') {
             window.alert('The feedback field cannot be blank. ');

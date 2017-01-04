@@ -64,8 +64,6 @@ angular
 
       // watch for changes to focus project
       $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
-        console.debug('ProjectRecordCtrl:  Detected change in focus project',
-          parameters.focusProject);
         $scope.focusProject = parameters.focusProject;
 
         $scope.getRecordsForProject();
@@ -84,9 +82,6 @@ angular
       // once focus project retrieved, retrieve the concept and records
       $scope.userToken = localStorageService.get('userToken');
       $scope.$watch([ 'focusProject', 'userToken' ], function() {
-
-        console.debug('Detected project or user change', $scope.focusProject, $scope.userToken);
-
         // need both focus project and user token set before executing main
         // functions
         if ($scope.focusProject != null && $scope.userToken != null) {
@@ -153,8 +148,6 @@ angular
 
       // function to retrieve records for a specified page
       $scope.retrieveRecords = function(page) {
-        console.debug('Retrieving records', page);
-
         // construct html parameters parameter
         var pfsParameterObj = $scope.getPfsFromSearchParameters(page);
 
@@ -301,8 +294,6 @@ angular
       // function to change project from the header
       $scope.changeFocusProject = function(mapProject) {
         $scope.focusProject = mapProject;
-        console.debug('changing project to ' + $scope.focusProject.name);
-
         // update and broadcast the new focus project
         localStorageService.add('focusProject', $scope.focusProject);
         $rootScope.$broadcast('localStorageModule.notification.setFocusProject', {
@@ -371,7 +362,7 @@ angular
           })
             .success(
               function(data) {
-                console.debug('Assignment successful');
+                console.debug('Assignment successful',data);
                 $http(
                   {
                     url : root_workflow + 'record/project/id/' + $scope.focusProject.id

@@ -37,10 +37,12 @@
 
 
 <div ng-show="nAssignedRecords > 0">
-  <uib-pagination ng-show="numAssignedRecordPages > 1"
-    total-items="nAssignedRecords" ng-model="assignedWorkPage"
-    class="pagination-sm" max-size="5" boundary-links="true" rotate="true"
-    ng-change="retrieveAssignedWork(page, queryAssigned, assignedWorkType)"></uib-pagination>
+  <uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
+    first-text="&laquo;" last-text="&raquo;"
+    ng-show="numAssignedRecordPages > 1" total-items="nAssignedRecords"
+    ng-model="assignedWorkPage" class="pagination-sm" max-size="5"
+    boundary-links="true" items-per-page="itemsPerPage"
+    ng-change="retrieveAssignedWork(assignedWorkPage, queryAssigned, assignedWorkType)"></uib-pagination>
 
 
   <table class="table" style="margin-top: 10px;">
@@ -216,11 +218,11 @@
 </div>
 
 <div ng-show="nAssignedConflicts > 0">
-
-  <uib-pagination total-items="nAssignedConflicts"
+  <uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
+    first-text="&laquo;" last-text="&raquo;" total-items="nAssignedConflicts"
     ng-show="numAssignedConflictsPages > 1" ng-model="assignedConflictsPage"
     class="pagination-sm" boundary-links="true" rotate="true" max-size="5"
-    ng-change="retrieveAssignedConflicts(page, queryConflict, assignedConflictType)"></uib-pagination>
+    ng-change="retrieveAssignedConflicts(assignedConflictsPage, queryConflict, assignedConflictType)"></uib-pagination>
 
   <table class="table">
 
@@ -358,10 +360,11 @@
 
 <div ng-show="nAssignedReviewWork > 0">
 
-  <uib-pagination total-items="nAssignedReviewWork"
+  <uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
+    first-text="&laquo;" last-text="&raquo;" total-items="nAssignedReviewWork"
     ng-show="numAssignedReviewWorkPages > 1" ng-model="assignedReviewWorkPage"
     class="pagination-sm" boundary-links="true" rotate="true" max-size="5"
-    ng-change="retrieveAssignedReviewWork(page, queryReviewWork, assignedReviewWorkType)"></uib-pagination>
+    ng-change="retrieveAssignedReviewWork(assignedReviewWorkPage, queryReviewWork, assignedReviewWorkType)"></uib-pagination>
 
   <table class="table">
 
@@ -500,7 +503,7 @@
   ng-show="selected.mapUserViewed != null && numAssignedRecordPagesForUser > 1"
   total-items="nAssignedRecordsForUser" ng-model="assignedWorkPageForUser"
   class="pagination-sm" max-size="5" boundary-links="true" rotate="true"
-  ng-change="retrieveAssignedWorkForUser(page, selected.mapUserViewed.userName, queryAssignedForUser, assignedWorkForUserType)"></uib-pagination>
+  ng-change="retrieveAssignedWorkForUser(assignedWorkPageForUser, selected.mapUserViewed.userName, queryAssignedForUser, assignedWorkForUserType)"></uib-pagination>
 
 <!--  do not display controls if no records are assigned and the query term is null and a map user is selected-->
 <div style="padding: 10px;" ng-show="nAssignedRecordsForUser == 0">
@@ -590,10 +593,11 @@
 
 <div ng-show="nAssignedQAWork > 0">
 
-  <uib-pagination total-items="nAssignedQAWork"
+  <uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
+    first-text="&laquo;" last-text="&raquo;" total-items="nAssignedQAWork"
     ng-show="numAssignedQAWorkPages > 1" ng-model="assignedQAWorkPage"
     class="pagination-sm" boundary-links="true" rotate="true" max-size="5"
-    ng-change="retrieveAssignedQAWork(page, queryQAWork, assignedQAWorkType)"></uib-pagination>
+    ng-change="retrieveAssignedQAWork(assignedQAWorkPage, queryQAWork, assignedQAWorkType)"></uib-pagination>
 
   <table class="table">
 
