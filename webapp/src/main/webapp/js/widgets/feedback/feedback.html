@@ -22,10 +22,11 @@
     ng-options="item as item for item in resolvedTypes">
   </select>
 </div>
-<uib-pagination total-items="nRecords" ng-model="recordPage"
-  max-size="recordsPerPage" class="pagination-sm" boundary-links="true"
-  rotate="true"
-  ng-change="retrieveFeedback(page, feedbackType, reviewedType, resolvedType, query)"></uib-pagination>
+<uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
+  first-text="&laquo;" last-text="&raquo;" total-items="nRecords"
+  ng-model="recordPage" max-size="recordsPerPage" class="pagination-sm"
+  boundary-links="true" rotate="true"
+  ng-change="retrieveFeedback(recordPage, feedbackType, reviewedType, resolvedType, query)"></uib-pagination>
 
 <div ng-show="feedbackConversations.length > 0">
   <table class="table" style="margin-top: 10px;">

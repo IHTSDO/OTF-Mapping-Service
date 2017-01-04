@@ -137,7 +137,6 @@ angular
 
         if (confirm('ARE YOU ABSOLUTELY SURE?\n\n  Deleting records through this interface requires recomputing workflow and rerunning indexes, and may cause workflow problems for other records.') == false)
           return;
-        console.debug('Removing batch of records by terminologyId', terminologyIdsUnsplit);
 
         var terminologyIds = terminologyIdsUnsplit.split(/,\s*|\s+/);
 
@@ -172,8 +171,6 @@ angular
         if (confirm('ARE YOU ABSOLUTELY SURE? Any eligible concepts in this list will be re-inserted into the workflow') == false)
           return;
 
-        console.debug('Removing batch of records by terminologyId', terminologyIdsUnsplit);
-
         var terminologyIds = terminologyIdsUnsplit.split(/,\s*|\s+/);
 
         $rootScope.glassPane++;
@@ -190,7 +187,6 @@ angular
           }).success(function(data) {
           $rootScope.glassPane--;
           $scope.validationResultAssign = data;
-          console.debug('validation result: ', $scope.validationResultAssign);
         }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
           $rootScope.handleHttpError(data, status, headers, config);
