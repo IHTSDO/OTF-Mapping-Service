@@ -866,7 +866,7 @@ public class MappingServiceJpa extends RootServiceJpa
     if (localPfsParameter.getStartIndex() != -1
         && localPfsParameter.getMaxResults() != -1) {
       query.setFirstResult(localPfsParameter.getStartIndex())
-          .setMaxResults(localPfsParameter.getMaxResults());
+          .setMaxResults(localPfsParameter.getMaxResults() * 3);
 
     }
 
@@ -886,23 +886,22 @@ public class MappingServiceJpa extends RootServiceJpa
     final MapRecordListJpa mapRecordList = new MapRecordListJpa();
     // mapRecordList.setTotalCount(editedRecords.size());
 
-    // only add one copy -- note this results in uneven page sizes
-    final List<MapRecord> uniqueRecords = new ArrayList<>();
-    for (final MapRecord mapRecord : editedRecords) {
-      boolean recordExists = false;
-      for (final MapRecord mr : uniqueRecords) {
-        if (mr.getId().equals(mapRecord.getId()))
-          recordExists = true;
-      }
-      if (!recordExists)
-        uniqueRecords.add(mapRecord);
-    }
+    // Avoid uniquing -> it just makes results not intuitive.
+//    final Set<String> seen = new HashSet<>();
+//    int ct = 0;
+//    for (final MapRecord mapRecord : editedRecords) {
+//      // Stop at 10
+//      if (++ct > 10) {
+//        break;
+//      }
+//      if (seen.contains(mapRecord.getConceptId())) {
+//        continue;
+//      }
+//      handleMapRecordLazyInitialization(mapRecord);
+//      mapRecordList.getMapRecords().add(mapRecord);
+//      seen.add(mapRecord.getConceptId());
+//    }
 
-    // handle all lazy initializations
-    for (final MapRecord mapRecord : uniqueRecords) {
-      handleMapRecordLazyInitialization(mapRecord);
-    }
-    mapRecordList.setMapRecords(uniqueRecords);
     return mapRecordList;
   }
 
