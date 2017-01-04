@@ -309,9 +309,11 @@
   <span tooltip-placement="right"
     uib-tooltip="List of the map advice for this project."> Map Advices </span>
 </h5>
-</uib-accordion-heading> <uib-pagination direction-links="false" boundary-links="true"
-  total-items="pagedAdviceCount" items-per-page="pageSize" ng-model="pageAdvice"
-  ng-change="getPagedAdvices(page, adviceFilter)"></uib-pagination> <span>
+</uib-accordion-heading> <uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
+  first-text="&laquo;" last-text="&raquo;" direction-links="false"
+  boundary-links="true" total-items="pagedAdviceCount" items-per-page="pageSize"
+  ng-model="pageAdvice" ng-change="getPagedAdvices(pageAdvice, adviceFilter)"></uib-pagination>
+<span>
   <input id="adviceSearch" type="text" ng-model="adviceFilter"
     ng-change="getPagedAdvices(1, adviceFilter)">
   <button class="btn btn-xs btn-warning" ng-click="resetAdviceFilter()">Reset</button>
@@ -428,10 +430,12 @@
     uib-tooltip="List of the map relations for this project."> Map
     Relations </span>
 </h5>
-</uib-accordion-heading> <uib-pagination ng-show="focusProject.mapRelation.length > pageSize"
-  direction-links="false" boundary-links="true" total-items="pagedRelationCount"
+</uib-accordion-heading> <uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
+  first-text="&laquo;" last-text="&raquo;"
+  ng-show="focusProject.mapRelation.length > pageSize" direction-links="false"
+  boundary-links="true" total-items="pagedRelationCount"
   items-per-page="pageSize" ng-model="pageRelation"
-  ng-change="getPagedRelations(page, relationFilter)"></uib-pagination>
+  ng-change="getPagedRelations(pageRelation, relationFilter)"></uib-pagination>
 <form ng-submit="resetRelationFilter()">
   <input type="text" ng-model="relationFilter"
     ng-change="getPagedRelations(1, relationFilter)">
@@ -562,11 +566,13 @@
     Report Definitions </span>
 </h5>
 
-</uib-accordion-heading> <uib-pagination ng-show="focusProject.reportDefinition.length > pageSize"
+</uib-accordion-heading> <uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
+  first-text="&laquo;" last-text="&raquo;"
+  ng-show="focusProject.reportDefinition.length > pageSize"
   direction-links="false" boundary-links="true"
   total-items="pagedReportDefinitionCount" items-per-page="pageSize"
   ng-model="pageDefinition"
-  ng-change="getPagedReportDefinitions(page, reportDefinitionFilter)"></uib-pagination>
+  ng-change="getPagedReportDefinitions(pageDefinition, reportDefinitionFilter)"></uib-pagination>
 <form ng-submit="resetReportDefinitionFilter(); reportDefinitionFilter = '';">
   <input type="text" ng-model="reportDefinitionFilter"
     ng-change="getPagedReportDefinitions(1, reportDefinitionFilter)">
@@ -659,11 +665,13 @@
     uib-tooltip="List of the qa check definitions for this project."> QA
     Check Definitions </span>
 </h5>
-</uib-accordion-heading> <uib-pagination ng-show="focusProject.reportDefinition.length > pageSize"
+</uib-accordion-heading> <uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
+  first-text="&laquo;" last-text="&raquo;"
+  ng-show="focusProject.reportDefinition.length > pageSize"
   direction-links="false" boundary-links="true"
   total-items="pagedQACheckDefinitionCount" items-per-page="pageSize"
   ng-model="pagedQACheckDefinition"
-  ng-change="getPagedQACheckDefinitions(page, qaCheckDefinitionFilter)"></uib-pagination>
+  ng-change="getPagedQACheckDefinitions(pagedQACheckDefinition, qaCheckDefinitionFilter)"></uib-pagination>
 <form ng-submit="resetQACheckDefinitionFilter(); qaCheckDefinitionFilter = '';">
   <input type="text" ng-model="qaCheckDefinitionFilter"
     ng-change="getPagedQACheckDefinitions(1, qaCheckDefinitionFilter)">
@@ -750,10 +758,12 @@
     uib-tooltip="List of the map principles for this project."> Map
     Principles </span>
 </h5>
-</uib-accordion-heading> <uib-pagination ng-show="focusProject.mapPrinciple.length > pageSize"
-  direction-links="false" boundary-links="true"
-  total-items="pagedPrincipleCount" items-per-page="pageSize"
-  ng-model="pagePrinciple" ng-change="getPagedPrinciples(page, principleFilter)"></uib-pagination>
+</uib-accordion-heading> <uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
+  first-text="&laquo;" last-text="&raquo;"
+  ng-show="focusProject.mapPrinciple.length > pageSize" direction-links="false"
+  boundary-links="true" total-items="pagedPrincipleCount"
+  items-per-page="pageSize" ng-model="pagePrinciple"
+  ng-change="getPagedPrinciples(pagePrinciple, principleFilter)"></uib-pagination>
 <form ng-submit="resetPrincipleFilter()">
   <input type="text" ng-model="principleFilter"
     ng-change="getPagedPrinciples(1, principleFilter)">
@@ -868,12 +878,28 @@
 </form>
 <hr>
 
-<div ng-show="editModeEnabled == true && currentRole == 'Administrator'">
+<div
+  ng-show="editModeEnabled == true && currentRole == 'Administrator' || currentRole == 'Lead'">
   <div style="margin-top: 15px;">
     <b>Add New Map Principle Document</b>
   </div>
-  <hr>
-  <input type="file" ng-file-select="onFileSelect($files)">
+
+  <div style="margin-top: 10px;">
+    <button style="margin-left: 15px" type="file" ngf-select ng-model="file"
+      name="file" ngf-pattern="*txt,*doc,*docx" ngf-max-size="20MB"
+      class="btn btn-xs btn-primary">Browse for File</button>
+    <div ngf-drop ng-model="file" class="drop-box"
+      ngf-drag-over-class="'dragover'" ngf-max-size="20MB"
+      ngf-pattern="*txt,*doc,*docx">Drop file here</div>
+  </div>
+  <div ng-show="file">
+    {{file.name}} &nbsp;
+    <button ng-show="file" class="btn btn-xs btn-primary"
+      ng-click="uploadFile(file)">Upload Files</button>
+  </div>
+
+
+
 </div>
 <div
   ng-show="focusProject.mapPrincipleSourceDocument != null &&
@@ -1097,10 +1123,11 @@
     uib-tooltip="List of the concepts in scope for this project."> Scope
     Concepts </span>
 </h5>
-</uib-accordion-heading> <uib-pagination direction-links="false" boundary-links="true"
-  total-items="pagedScopeConceptCount" items-per-page="pageSize"
-  max-size="maxSize" ng-model="pageScopeConcept"
-  ng-change="getPagedScopeConcepts(page)"></uib-pagination> <!-- <form ng-submit="resetScopeConceptFilter()">
+</uib-accordion-heading> <uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
+  first-text="&laquo;" last-text="&raquo;" direction-links="false"
+  boundary-links="true" total-items="pagedScopeConceptCount"
+  items-per-page="pageSize" max-size="maxSize" ng-model="pageScopeConcept"
+  ng-change="getPagedScopeConcepts(pageScopeConcept)"></uib-pagination> <!-- <form ng-submit="resetScopeConceptFilter()">
       <input id="scopeConceptSearch" type="text" ng-model="scopeConceptFilter" ng-change="getPagedScopeConcepts(1)">
   <button type="submit" class="btn btn-xs btn-primary">Reset Filter</button>
     </form>  -->
@@ -1164,10 +1191,13 @@
     uib-tooltip="List of the concepts excluded from scope for this project.">
     Scope Excluded Concepts </span>
 </h5>
-</uib-accordion-heading> <uib-pagination direction-links="false" boundary-links="true"
-  total-items="pagedScopeExcludedConceptCount" items-per-page="pageSize"
-  max-size="maxSize" ng-model="pageScopeExcludedConcept"
-  ng-change="getPagedScopeExcludedConcepts(page)"></uib-pagination> <!--<form ng-submit="resetScopeExcludedConceptFilter()">
+</uib-accordion-heading> <uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
+  first-text="&laquo;" last-text="&raquo;" direction-links="false"
+  boundary-links="true" total-items="pagedScopeExcludedConceptCount"
+  items-per-page="pageSize" max-size="maxSize"
+  ng-model="pageScopeExcludedConcept"
+  ng-change="getPagedScopeExcludedConcepts(pageScopeExcludedConcept)"></uib-pagination>
+<!--<form ng-submit="resetScopeExcludedConceptFilter()">
       <input id="scopeExcludedConceptSearch" type="text" ng-model="scopeExcludedConceptFilter" ng-change="getPagedScopeExcludedConcepts(1)">
   <button type="submit" class="btn btn-xs btn-primary">Reset Filter</button>
     </form>  -->

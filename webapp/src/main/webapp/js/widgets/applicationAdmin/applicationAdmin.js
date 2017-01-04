@@ -104,14 +104,12 @@ angular
 
         // Event for focus project change
         $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
-          console.debug('focus project changed');
           $scope.focusProject = parameters.focusProject;
         });
 
         // Event for map project metadata change
         $scope.$on('localStorageModule.notification.setMapProjectMetadata', function(event,
           parameters) {
-          console.debug('project metadata changed');
           $scope.mapProjectMetadata = parameters.value;
           initializeMapProjectMetadata();
           // force the gui to update the

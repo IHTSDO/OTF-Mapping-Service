@@ -55,11 +55,12 @@
 
 <div ng-show="nAvailableWork != 0">
 
-  <uib-pagination ng-show="numAvailableWorkPages > 1"
+  <uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
+    first-text="&laquo;" last-text="&raquo;" ng-show="numAvailableWorkPages > 1"
     total-items="nAvailableWork" ng-model="availableWorkPage" max-size="5"
     class="pagination-sm" boundary-links="true" rotate="true"
     num-pages="numAvailableWorkPages"
-    ng-change="retrieveAvailableWork(page, queryAvailable, assignedMapUser)"></uib-pagination>
+    ng-change="retrieveAvailableWork(availableWorkPage, queryAvailable, assignedMapUser)"></uib-pagination>
 
   <table class="table" ng-show="nAvailableWork > 0">
 
@@ -146,11 +147,12 @@
 
 <div ng-show="nAvailableConflicts != 0">
 
-  <uib-pagination ng-show="numAvailableConflictsPages > 1"
-    total-items="nAvailableConflicts" ng-model="availableConflictsPage"
-    max-size="5" class="pagination-sm" boundary-links="true" rotate="true"
-    num-pages="numAvailableConflictsPages"
-    ng-change="retrieveAvailableConflicts(page, queryAvailableConflict)"></uib-pagination>
+  <uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
+    first-text="&laquo;" last-text="&raquo;"
+    ng-show="numAvailableConflictsPages > 1" total-items="nAvailableConflicts"
+    ng-model="availableConflictsPage" max-size="5" class="pagination-sm"
+    boundary-links="true" rotate="true" num-pages="numAvailableConflictsPages"
+    ng-change="retrieveAvailableConflicts(availableConflictsPage, queryAvailableConflict)"></uib-pagination>
 
   <table class="table" ng-show="nAvailableConflicts > 0">
 
@@ -230,11 +232,12 @@
 <div ng-show="nAvailableReviewWork != 0">
 
 
-  <uib-pagination ng-show="numAvailableReviewWorkPages > 1"
-    total-items="nAvailableReviewWork" ng-model="availableReviewWorkPage"
-    max-size="5" class="pagination-sm" boundary-links="true" rotate="true"
-    num-pages="numAvailableReviewWorkPages"
-    ng-change="retrieveAvailableReviewWork(page, queryAvailableReview)"></uib-pagination>
+  <uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
+    first-text="&laquo;" last-text="&raquo;"
+    ng-show="numAvailableReviewWorkPages > 1" total-items="nAvailableReviewWork"
+    ng-model="availableReviewWorkPage" max-size="5" class="pagination-sm"
+    boundary-links="true" rotate="true" num-pages="numAvailableReviewWorkPages"
+    ng-change="retrieveAvailableReviewWork(availableReviewWorkPage, queryAvailableReview)"></uib-pagination>
 
   <table class="table" ng-show="nAvailableReviewWork > 0">
 
@@ -323,11 +326,12 @@
 
 <div ng-show="nAvailableQAWork != 0">
 
-  <uib-pagination ng-show="numAvailableQAWorkPages > 1"
-    total-items="nAvailableQAWork" ng-model="availableQAWorkPage" max-size="5"
-    class="pagination-sm" boundary-links="true" rotate="true"
-    num-pages="numAvailableQAWorkPages"
-    ng-change="retrieveAvailableQAWork(page, selectedQaLabel, assignedMapUser)"></uib-pagination>
+  <uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
+    first-text="&laquo;" last-text="&raquo;"
+    ng-show="numAvailableQAWorkPages > 1" total-items="nAvailableQAWork"
+    ng-model="availableQAWorkPage" max-size="5" class="pagination-sm"
+    boundary-links="true" rotate="true" num-pages="numAvailableQAWorkPages"
+    ng-change="retrieveAvailableQAWork(availableQAWorkPage, selectedQaLabel, assignedMapUser)"></uib-pagination>
 
   <table class="table" ng-show="nAvailableQAWork > 0">
 

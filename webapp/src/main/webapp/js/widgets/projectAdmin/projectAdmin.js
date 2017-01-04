@@ -32,12 +32,8 @@ angular
 
       $scope.userToken = localStorageService.get('userToken');
       $scope.$watch([ 'focusProject', 'userToken' ], function() {
-        console.debug('editedListCtrl:  Detected project set/change');
-
         if ($scope.focusProject != null && $scope.userToken != null) {
-
           $http.defaults.headers.common.Authorization = $scope.userToken;
-
         }
       });
 
@@ -56,7 +52,6 @@ angular
           }
         }).success(function(data) {
           $rootScope.glassPane--;
-          console.debug('Successfully retrieved project ' + data.name);
           $scope.adminProject = data;
 
           // check for duplicate ref set id
