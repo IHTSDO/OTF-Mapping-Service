@@ -43,7 +43,7 @@ angular
       $scope.returnRecipients = new Array();
       $scope.multiSelectSettings = {
         displayProp : 'name',
-        scrollableHeight : '50px',
+        scrollableHeight : '150px',
         scrollable : true,
         showCheckAll : false,
         showUncheckAll : false
@@ -214,7 +214,7 @@ angular
       $scope.tinymceOptions = {
         menubar : false,
         statusbar : false,
-        plugins : 'autolink autoresize link image charmap searchreplace',
+        plugins : 'autolink link image charmap searchreplace',
         toolbar : 'undo redo | styleselect | bold italic underline strikethrough | charmap link image',
       };
 

@@ -17,7 +17,8 @@ angular
     })
   .controller(
     'compareRecordsCtrl',
-    function($scope, $rootScope, $http, $routeParams, $location, localStorageService, $sce) {
+    function($scope, $rootScope, $http, $routeParams, $location, $timeout, localStorageService,
+      $sce) {
 
       // ///////////////////////////////////
       // Map Record Controller Functions //
@@ -56,7 +57,7 @@ angular
       $scope.allUsers = new Array();
       $scope.multiSelectSettings = {
         displayProp : 'name',
-        scrollableHeight : '50px',
+        scrollableHeight : '150px',
         scrollable : true,
         showCheckAll : false,
         showUncheckAll : false
@@ -188,6 +189,10 @@ angular
               $scope.record1 = data.mapRecord[0];
               $scope.record1.displayName = data.mapRecord[0].owner.name;
               $scope.record2 = null;
+              // auto-populate if there is only one, no split-screen
+              $timeout(function() {
+                $scope.populateMapRecord($scope.record1);
+              }, 200);
 
             } else if (data.totalCount == 2) {
 
@@ -980,8 +985,9 @@ angular
       $scope.tinymceOptions = {
         menubar : false,
         statusbar : false,
-        plugins : 'autolink autoresize link image charmap searchreplace',
+        plugins : 'autolink link image charmap searchreplace',
         toolbar : 'undo redo | styleselect | bold italic underline strikethrough | charmap link image',
+        height : "150"
       };
 
       // add current user to list of viewers who have seen the feedback

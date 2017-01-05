@@ -1,9 +1,4 @@
 <!-- Feedback link - unless no user or guest user -->
-
-<!-- disable preventing reload on this editing page -->
-<script type="text/javascript">
-  window.onbeforeunload = null;
-</script>
 <div
   ng-include="currentUser.name != null && currentUser.name != 'Guest' ? './partials/feedback.html' : null"></div>
 
