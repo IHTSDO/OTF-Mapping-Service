@@ -8,7 +8,6 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function($sc
 
   // Attach an onbeforeunload function
   window.onbeforeunload = function() {
-    window.onbeforeunload = null;
     return "If you leave this page data may be lost!";
   }
 
@@ -301,6 +300,9 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function($sc
 mapProjectAppDashboards.controller('FeedbackConversationsDashboardCtrl', function($scope,
   $routeParams, $rootScope, $location, $window, localStorageService, appConfig) {
 
+  // Attach an onbeforeunload function
+  window.onbeforeunload = null;
+
   // model variable
   $scope.appConfig = appConfig;
   $scope.model = null;
@@ -533,8 +535,12 @@ mapProjectAppDashboards.controller('FeedbackConversationsDashboardCtrl', functio
   };
 });
 
+// Main dashboard controller?
 mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope, $http, $location,
   $window, localStorageService, utilService, appConfig) {
+
+  // Attach an onbeforeunload function
+  window.onbeforeunload = null;
 
   $scope.appConfig = appConfig;
   $scope.model = null;
@@ -1104,7 +1110,6 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function($scope, $r
 
   // Attach an onbeforeunload function
   window.onbeforeunload = function() {
-    window.onbeforeunload = null;
     return "If you leave this page data may be lost!";
   }
 
@@ -1371,6 +1376,9 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function($scope, $r
 mapProjectAppDashboards.controller('ProjectDetailsDashboardCtrl', function($rootScope, $scope,
   $http, $location, $window, localStorageService, utilService, appConfig) {
 
+  // Attach an onbeforeunload function
+  window.onbeforeunload = null;
+
   $scope.appConfig = appConfig;
   // On initialization, reset all values to null -- used to
   // ensure watch
@@ -1526,6 +1534,9 @@ mapProjectAppDashboards.controller('ProjectDetailsDashboardCtrl', function($root
 mapProjectAppDashboards.controller('ProjectRecordsDashboardCtrl', function($rootScope, $scope,
   $http, $location, $window, localStorageService, utilService, appConfig) {
 
+  // Attach an onbeforeunload function
+  window.onbeforeunload = null;
+
   $scope.appConfig = appConfig;
   // On initialization, reset all values to null -- used to ensure watch
   // functions work correctly
@@ -1665,6 +1676,9 @@ mapProjectAppDashboards.controller('ProjectRecordsDashboardCtrl', function($root
 mapProjectAppDashboards.controller('RecordConceptDashboardCtrl', function($rootScope, $scope,
   $http, $location, $window, localStorageService, utilService, appConfig) {
 
+  // Attach an onbeforeunload function
+  window.onbeforeunload = null;
+
   $scope.appConfig = appConfig;
   // On initialization, reset all values to null -- used to ensure watch
   // functions work correctly
@@ -1803,7 +1817,8 @@ mapProjectAppDashboards.controller('RecordConceptDashboardCtrl', function($rootS
 
 mapProjectAppDashboards.controller('IndexViewerDashboardCtrl', function($rootScope, $scope, $http,
   $location, $window, localStorageService, appConfig) {
-
+  // Attach an onbeforeunload function
+  window.onbeforeunload = null;
   $scope.appConfig = appConfig;
   // On initialization, reset all values to null -- used to ensure watch
   // functions work correctly
