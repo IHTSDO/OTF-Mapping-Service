@@ -14,8 +14,8 @@ var mapProjectApp = angular.module(
     'mapProjectApp.widgets.recordAdmin', 'mapProjectApp.widgets.feedback',
     'mapProjectApp.widgets.feedbackConversation', 'mapProjectApp.widgets.applicationAdmin',
     'mapProjectApp.widgets.report', 'mapProjectApp.widgets.qaCheck',
-    'mapProjectApp.widgets.indexViewer', 'LocalStorageModule' ]).value('prefix', '').config(
-  function(dashboardProvider) {
+    'mapProjectApp.widgets.indexViewer', 'LocalStorageModule', 'angularjs-dropdown-multiselect' ])
+  .value('prefix', '').config(function(dashboardProvider) {
 
     dashboardProvider.structure('6-6', {
       rows : [ {

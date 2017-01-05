@@ -679,7 +679,7 @@ angular
 
           menubar : false,
           statusbar : false,
-          plugins : 'autolink autoresize link image charmap searchreplace lists paste',
+          plugins : 'autolink link image charmap searchreplace lists paste',
           toolbar : 'undo redo | styleselect lists | bold italic underline strikethrough | charmap link image',
 
           setup : function(ed) {
