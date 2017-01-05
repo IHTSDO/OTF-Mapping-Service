@@ -6,6 +6,12 @@ var mapProjectAppDashboards = angular.module('mapProjectAppDashboards', [ 'adf',
 mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function($scope, $routeParams,
   $rootScope, $location, $window, $http, localStorageService, utilService, appConfig) {
 
+  // Attach an onbeforeunload function
+  window.onbeforeunload = function() {
+    window.onbeforeunload = null;
+    return "If you leave this page data may be lost!";
+  }
+
   // model variable
   $scope.appConfig = appConfig;
   $scope.model = null;
@@ -1095,6 +1101,12 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
 
 mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function($scope, $rootScope, $http,
   $routeParams, $location, $window, localStorageService, appConfig) {
+
+  // Attach an onbeforeunload function
+  window.onbeforeunload = function() {
+    window.onbeforeunload = null;
+    return "If you leave this page data may be lost!";
+  }
 
   $scope.appConfig = appConfig;
   $scope.model = null;
