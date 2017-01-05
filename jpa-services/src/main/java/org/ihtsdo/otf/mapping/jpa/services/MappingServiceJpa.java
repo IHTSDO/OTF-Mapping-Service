@@ -884,23 +884,23 @@ public class MappingServiceJpa extends RootServiceJpa
 
     // create the mapRecordList and set total size
     final MapRecordListJpa mapRecordList = new MapRecordListJpa();
-    // mapRecordList.setTotalCount(editedRecords.size());
+    mapRecordList.setTotalCount(editedRecords.size());
 
     // Avoid uniquing -> it just makes results not intuitive.
-//    final Set<String> seen = new HashSet<>();
-//    int ct = 0;
-//    for (final MapRecord mapRecord : editedRecords) {
-//      // Stop at 10
+    // final Set<String> seen = new HashSet<>();
+    // int ct = 0;
+    for (final MapRecord mapRecord : editedRecords) {
+      // Stop at 10
 //      if (++ct > 10) {
 //        break;
 //      }
 //      if (seen.contains(mapRecord.getConceptId())) {
 //        continue;
 //      }
-//      handleMapRecordLazyInitialization(mapRecord);
-//      mapRecordList.getMapRecords().add(mapRecord);
-//      seen.add(mapRecord.getConceptId());
-//    }
+      handleMapRecordLazyInitialization(mapRecord);
+      mapRecordList.getMapRecords().add(mapRecord);
+      //      seen.add(mapRecord.getConceptId());
+    }
 
     return mapRecordList;
   }
