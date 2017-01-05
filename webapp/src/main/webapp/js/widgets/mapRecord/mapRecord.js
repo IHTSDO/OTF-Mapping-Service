@@ -30,12 +30,6 @@ angular
       function($scope, $window, $rootScope, $http, $routeParams, $location, $sce, $uibModal,
         localStorageService, utilService) {
 
-        // Attach an onbeforeunload function
-        $window.onbeforeunload = function() {
-          $window.onbeforeunload = null;
-          return "If you leave this page data may be lost!";
-        }
-
         // ///////////////////////////////////
         // Map Record Controller Functions //
         // ///////////////////////////////////
