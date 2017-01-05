@@ -866,7 +866,7 @@ public class MappingServiceJpa extends RootServiceJpa
     if (localPfsParameter.getStartIndex() != -1
         && localPfsParameter.getMaxResults() != -1) {
       query.setFirstResult(localPfsParameter.getStartIndex())
-          .setMaxResults(localPfsParameter.getMaxResults() * 3);
+          .setMaxResults(localPfsParameter.getMaxResults());
 
     }
 
