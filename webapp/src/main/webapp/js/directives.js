@@ -197,8 +197,12 @@ mapProjectAppDirectives.directive('treeSearchResult', [
           }));
 
           newSiblings.sort(function(a, b) {
+            
+            // if ICD9 or ICD10, sort by terminologyId; otherwise, by name
+            var sortField = a.terminology.toLowerCase().startsWith('icd') ? 
+              'terminologyId' : 'defaultPreferredName';
 
-            if (a.defaultPreferredName < b.defaultPreferredName) {
+            if (a[sortField] < b[sortField]) {
               return -1;
             } else {
               return 1;
