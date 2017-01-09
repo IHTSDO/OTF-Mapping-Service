@@ -277,11 +277,7 @@ angular.module('mapProjectApp').controller(
         }
       }).success(function(response) {
         $rootScope.glassPane--;
-
-        for (var i = 0; i < response.treePosition; i++) {
-          $scope.response[i].treePosition.isOpen = false;
-          $scope.response[i].treePosition.isConceptOpen = false;
-        }
+        
         $scope.terminologyTree = response.treePosition;
       }).error(function(data, status, headers, config) {
         $rootScope.glassPane--;
