@@ -68,6 +68,7 @@ import org.ihtsdo.otf.mapping.rf2.jpa.SimpleMapRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.SimpleRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 /**
  * The Content Services for the Jpa model.
@@ -1523,15 +1524,9 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
               .setParameter("terminologyVersion", terminologyVersion)
               .getResultList();
     }
-    // Sort by terminology id (alpha sort)
-    Collections.sort(treePositions, new Comparator<TreePosition>() {
-      @Override
-      public int compare(TreePosition o1, TreePosition o2) {
-        return o1.getTerminologyId().compareTo(o2.getTerminologyId());
-      }
-
-    });
+  
     final TreePositionListJpa treePositionList = new TreePositionListJpa();
+    sortTreePositions(treePositions);
     treePositionList.setTreePositions(treePositions);
     treePositionList.setTotalCount(treePositions.size());
 
@@ -2220,7 +2215,9 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
         this.getTreePositions(terminologyId, terminology, terminologyVersion);
 
     for (final TreePosition tp : treePositionList.getTreePositions()) {
-      tp.setChildren(this.getChildTreePositions(tp).getTreePositions());
+    	List<TreePosition> children = getChildTreePositions(tp).getTreePositions();
+    	sortTreePositions(children);
+    	tp.setChildren(children);
     }
 
     return treePositionList;
@@ -2281,6 +2278,65 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
     return results > 0;
 
+  }
+  
+  private void sortTreePositions(List<TreePosition> treePositions) {
+	  
+	  if (treePositions != null && treePositions.size() > 0) {
+		  
+		final String terminology = treePositions.get(0).getTerminology();
+
+	    // check for roman numerals and sort if found
+		boolean nonRomanFound = false;
+	    for (final TreePosition treepos : treePositions) {
+	      if (!ConfigUtility
+	          .isRomanNumeral(treepos.getTerminologyId())) {
+	        nonRomanFound = true;
+	        break;
+	      }
+	    }
+	    if (!nonRomanFound) {
+	      Collections.sort(treePositions, new Comparator<TreePosition>() {
+	        @Override
+	        public int compare(TreePosition o1, TreePosition o2) {
+	          try {
+	            return ConfigUtility.toArabic(o1.getTerminologyId())
+	                - ConfigUtility.toArabic(o2.getTerminologyId());
+	          } catch (Exception e) {
+	            // just return zero, don't worry about handling the error
+	            e.printStackTrace();
+	            return 0;
+	          }
+	        }
+
+	      });
+	    } else {
+	    	
+	    	// explicit check for ICD terminologies -- sort by terminology id
+	    	if (terminology.toLowerCase().startsWith("icd")) {
+	    		Collections.sort(treePositions, new Comparator<TreePosition>() {
+					@Override
+					public int compare(TreePosition o1, TreePosition o2) {
+						return o1.getTerminologyId().compareTo(o2.getTerminologyId());
+					}
+			
+				});
+	    	} 
+	    	
+	    	// otherwise, sort by name
+	    	else {
+		    	
+				Collections.sort(treePositions, new Comparator<TreePosition>() {
+					@Override
+					public int compare(TreePosition o1, TreePosition o2) {
+						return o1.getDefaultPreferredName().compareTo(o2.getDefaultPreferredName());
+					}
+			
+				});
+	    	}
+	        
+	    }
+	  }
   }
 
 }
