@@ -61,15 +61,15 @@
   ng-show="displayEdit() == true">Edit record</button>
 <span ng-show="conversation.active == false" class="alert alert-warning"
   disabled> Record is inactive. </span>
-<input type="checkbox" ng-model="markUnviewed"
+<input type="checkbox" ng-model="markUnviewed" ng-init="markUnviewed = false"
   ng-click="markUnviewed ? 
-   markViewed(conversation, currentUser) : markFeedbackUnviewed(conversation)">
+   markFeedbackUnviewed(conversation) : markViewed(conversation, currentUser)">
 Mark unviewed
 <span
   ng-show="conversation.userName == currentUser.userName || currentRole == 'Lead'">
   <input type="checkbox" ng-model="conversation.resolved"
-    ng-click="conversation.resolved ? 
-    markActive(conversation) : markFeedbackResolved(conversation)">
-  Mark resolved
+    ng-click="conversation.resolved ? markFeedbackResolved(conversation) :
+    markActive(conversation)">
+  Mark resolved {{conversation.resolved}}
 </span>
 <br>

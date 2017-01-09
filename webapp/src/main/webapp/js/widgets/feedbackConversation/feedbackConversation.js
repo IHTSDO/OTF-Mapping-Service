@@ -354,12 +354,12 @@ angular
       };
 
       $scope.markActive = function(conversation) {
-        conversation.resolved = 'false';
+        conversation.resolved = false;
         updateFeedbackConversation(conversation);
       };
 
       $scope.markFeedbackResolved = function(conversation) {
-        conversation.resolved = 'true';
+        conversation.resolved = true;;
         updateFeedbackConversation(conversation);
       };
 
