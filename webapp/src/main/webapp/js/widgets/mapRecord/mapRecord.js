@@ -1212,7 +1212,7 @@ angular
             // name
           } else {
             var allNotes = utilService.getNotes($scope.project.id);
-            var notes = allNotes[entry.targetId] ? allNotes[entry.targetId] : '';
+            var notes = (allNotes && allNotes[entry.targetId]) ? allNotes[entry.targetId] : '';
             entrySummary += entry.targetId + notes + ' ' + entry.targetName;
           }
 
