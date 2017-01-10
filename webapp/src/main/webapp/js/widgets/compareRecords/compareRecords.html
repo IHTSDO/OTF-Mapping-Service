@@ -17,7 +17,7 @@
       ng-click="populateMapRecord(record1)">Start here</button>
     <hr>
 
-    <div ng-if="record1 && record2" ng-show="conversation1.feedback.length > 0">
+    <div ng-show="conversation1.feedback.length > 0">
       <div ng-repeat="feedback in conversation1.feedback">
         <div class="alert alert-warning" disabled>
           [By {{feedback.sender.name}} to
@@ -33,7 +33,7 @@
       <hr>
     </div>
 
-    <div ng-if="record1 && record2" style="margin-top: 8px; margin-left: 4px;">
+    <div style="margin-top: 8px; margin-left: 4px;">
       <table>
         <tr>
           <td colspan="2">
@@ -125,7 +125,7 @@
 
   <div style="width: 100%" id="report">
     <uib-accordion close-others="false"> <!-- If there is no "record2", just put feedback for record1 inline -->
-    <uib-accordion-group ng-if="record1 && !record2" is-open="isFeedbackOpen">
+    <uib-accordion-group ng-show="record1 && !record2" is-open="isFeedbackOpen">
     <uib-accordion-heading> Feedback<i
       class="pull-right glyphicon"
       ng-class="{'glyphicon-chevron-down': isFeedbackOpen, 'glyphicon-chevron-right': !isFeedbackOpen}"></i>
