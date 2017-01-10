@@ -1,10 +1,5 @@
-<!DOCTYPE HTML>
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
 
-</head>
-<body>
-
+<div >
   <!--  Record 1 -->
   <div ng-show="record1 && record2"
     style="float: left; width: 50%; padding: 10px; border-right: thin solid black;">
@@ -120,10 +115,13 @@
       </div>
     </div>
 
-    <hr>
   </div>
+</div>
 
+<div class="col-md-12 col-xs-12">
+  ABC
   <div style="width: 100%" id="report">
+
     <uib-accordion close-others="false"> <!-- If there is no "record2", just put feedback for record1 inline -->
     <uib-accordion-group ng-show="record1 && !record2" is-open="isFeedbackOpen">
     <uib-accordion-heading> Feedback<i
@@ -257,6 +255,5 @@
     </div>
     </uib-accordion-group> </uib-accordion>
   </div>
+</div>
 
-</body>
-</html>

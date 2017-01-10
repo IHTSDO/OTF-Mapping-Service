@@ -1927,11 +1927,6 @@ angular
             }).success(function(data) {
               $scope.reportDefinitions = data.reportDefinition;
               $scope.resetReportDefinitionFilter();
-              for (var j = 0; j < $scope.focusProject.reportDefinition.length; j++) {
-                if (reportDefinition.id === $scope.focusProject.reportDefinition[j].id) {
-                  $scope.focusProject.reportDefinition[j] = reportDefinition;
-                }
-              }
               localStorageService.add('reportDefinitions', data.reportDefinition);
               $rootScope.$broadcast('localStorageModule.notification.setReportDefinitions', {
                 key : 'reportDefinitions',
@@ -2032,13 +2027,10 @@ angular
               }
             }).success(function(data) {
             $rootScope.glassPane--;
-
-            definition.testReportSuccess = data === 'true' ? true : false;
+            definition.testReportSuccess = true
             definition.testReportError = null;
-            // NOTE: Do not handle this
-            // as normal http error
-            // instead set a local error
-            // variable
+            // NOTE: Do not handle this as normal http error
+            // instead set a local error variable
           }).error(function(data, status, headers, config) {
             $rootScope.glassPane--;
             definition.testReportSuccess = false;
@@ -2082,7 +2074,7 @@ angular
               }
             }).success(function(data) {
               $scope.reportDefinitions = data.reportDefinition;
-              if (reportDefinition) {
+              if ($scope.reportDefinition) {
                 for (var j = 0; j < $scope.focusProject.reportDefinition.length; j++) {
                   if (reportDefinition.id === $scope.focusProject.reportDefinition[j].id) {
                     $scope.focusProject.reportDefinition[j] = reportDefinition;
@@ -2201,11 +2193,6 @@ angular
             }).success(function(data) {
               $scope.qaCheckDefinitions = data.reportDefinition;
               $scope.resetQaDefinitionFilter();
-              for (var j = 0; j < $scope.focusProject.qaCheckDefinition.length; j++) {
-                if (qaCheckDefinition.id === $scope.focusProject.qaCheckDefinition[j].id) {
-                  $scope.focusProject.qaCheckDefinition[j] = qaCheckDefinition;
-                }
-              }
               localStorageService.add('qaCheckDefinitions', data.qaCheckDefinition);
               $rootScope.$broadcast('localStorageModule.notification.setQaDefinitions', {
                 key : 'reportDefinitions',
