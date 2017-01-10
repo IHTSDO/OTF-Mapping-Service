@@ -1,9 +1,11 @@
 package org.ihtsdo.otf.mapping.rest;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.ws.rs.Consumes;
@@ -414,10 +416,12 @@ public class ReportServiceRest extends RootServiceRest {
       // clear report result items
       final MapUserRole userRole =
           securityService.getMapProjectRoleForToken(authToken, projectId);
+      final List<Report> reports = new ArrayList<>();
       for (final Report report : reportList.getReports()) {
         // Only process roles the user has priveleges for
         if (userRole
             .hasPrivilegesOf(report.getReportDefinition().getRoleRequired())) {
+          reports.add(report);
           for (final ReportResult result : report.getResults()) {
             // trigger setting of ct
             result.getCt();
@@ -425,6 +429,7 @@ public class ReportServiceRest extends RootServiceRest {
           }
         }
       }
+      reportList.setReports(reports);
       return reportList;
     } catch (Exception e) {
       handleException(e, "trying to get all reports", user, projectName, "");
