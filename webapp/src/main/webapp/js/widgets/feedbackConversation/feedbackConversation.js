@@ -21,6 +21,8 @@ angular
       $scope.focusProject = null;
       $scope.conversation = null;
       $scope.record = null;
+      // Mark false because loading this is viewing the record
+      $scope.markUnviewed = false;
 
       // initialize as empty to indicate still initializing database
       // connection
@@ -91,7 +93,7 @@ angular
           }
         }).success(function(data) {
           $scope.conversation = data;
-          $scope.markViewed($scope.conversation, $scope.currentUser);
+          $scope.markFeedbackViewed($scope.conversation, $scope.currentUser);
           initializeReturnRecipients($scope.conversation);
 
           $scope.record = null;
@@ -173,7 +175,8 @@ angular
           // keep main record and both conflict records if they exist
           // do nothing - keep all records
 
-          // MAP-1354: always show all records involved in a feedback conversation
+          // MAP-1354: always show all records involved in a feedback
+          // conversation
           // } else if ($scope.currentRole == 'Specialist') {
           // // check if owner of main record
           // if ($scope.record.owner.userName == $scope.currentUser.userName) {
@@ -262,7 +265,7 @@ angular
 
       // add current user to list of viewers who have seen the feedback
       // conversation
-      $scope.markViewed = function(conversation, user) {
+      $scope.markFeedbackViewed = function(conversation, user) {
         var needToUpdate = false;
         for (var i = 0; i < conversation.feedback.length; i++) {
           var alreadyViewedBy = conversation.feedback[i].viewedBy;
@@ -281,6 +284,29 @@ angular
           updateFeedbackConversation(conversation);
         }
       };
+
+      // Makr this conversation as unviewed and save.
+      $scope.markFeedbackUnviewed = function(conversation) {
+        for (var i = conversation.feedback.length; i--;) {
+          var alreadyViewedBy = conversation.feedback[i].viewedBy;
+          for (var j = 0; j < alreadyViewedBy.length; j++) {
+            if (alreadyViewedBy[j].userName == $scope.currentUser.userName) {
+              alreadyViewedBy.splice(j, 1);
+              updateFeedbackConversation(conversation);
+              break;
+            }
+          }
+        }
+      };
+
+      // Toggle mark unviewed flag
+      $scope.toggleMarkUnviewed = function() {
+        if ($scope.markUnviewed) {
+          $scope.markFeedbackUnviewed($scope.conversation);
+        } else {
+          $scope.markFeedbackViewed($scope.conversation, $scope.currentUser);
+        }
+      }
 
       // opens SNOMED CT browser
       $scope.getBrowserUrl = function() {
@@ -343,29 +369,6 @@ angular
           return false;
       };
 
-      $scope.markFeedbackUnviewed = function(conversation) {
-        for (var i = conversation.feedback.length; i--;) {
-          var alreadyViewedBy = conversation.feedback[i].viewedBy;
-          for (var j = 0; j < alreadyViewedBy.length; j++) {
-            if (alreadyViewedBy[j].userName == $scope.currentUser.userName) {
-              alreadyViewedBy.splice(j, 1);
-              updateFeedbackConversation(conversation);
-            }
-          }
-        }
-      };
-
-      $scope.markActive = function(conversation) {
-        conversation.resolved = false;
-        updateFeedbackConversation(conversation);
-      };
-
-      $scope.markFeedbackResolved = function(conversation) {
-        conversation.resolved = true;
-        ;
-        updateFeedbackConversation(conversation);
-      };
-
       // determines default recipients dependending on the conversation
       function initializeReturnRecipients(conversation) {
 
@@ -395,6 +398,10 @@ angular
         return;
       }
 
+      // Scope function for updating feedback conversation
+      $scope.updateFeedbackConversation = function(conversation) {
+        updateFeedbackConversation(conversation);
+      }
       function updateFeedbackConversation(conversation) {
         $rootScope.glassPane++;
 

@@ -46,7 +46,8 @@
   <textarea id="tinymce-feedback" ui-tinymce="tinymceOptions"
     ng-model="feedbackInput"></textarea>
 
-  <button class="pull-right" class="btn btn-xs btn-primary"
+  <button class="btn btn-xs btn-primary pull-right"
+    class="btn btn-xs btn-primary"
     ng-click="sendFeedback(record, feedbackInput, conversation, returnRecipients); feedbackInput = ''">Send
     Feedback</button>
 </span>
@@ -61,15 +62,11 @@
   ng-show="displayEdit() == true">Edit record</button>
 <span ng-show="conversation.active == false" class="alert alert-warning"
   disabled> Record is inactive. </span>
-<input type="checkbox" ng-model="markUnviewed" ng-init="markUnviewed = false"
-  ng-click="markUnviewed ? 
-   markFeedbackUnviewed(conversation) : markViewed(conversation, currentUser)">
+<input type="checkbox" ng-model="markUnviewed" ng-click="toggleMarkUnviewed()">
 Mark unviewed
 <span
   ng-show="conversation.userName == currentUser.userName || currentRole == 'Lead'">
   <input type="checkbox" ng-model="conversation.resolved"
-    ng-click="conversation.resolved ? markFeedbackResolved(conversation) :
-    markActive(conversation)">
-  Mark resolved {{conversation.resolved}}
+    ng-click="updateFeedbackConversation(conversation)"> Mark resolved
 </span>
 <br>
