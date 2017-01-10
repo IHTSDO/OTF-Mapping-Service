@@ -172,30 +172,32 @@ angular
         if ($scope.currentRole == 'Lead') {
           // keep main record and both conflict records if they exist
           // do nothing - keep all records
-        } else if ($scope.currentRole == 'Specialist') {
-          // check if owner of main record
-          if ($scope.record.owner.userName == $scope.currentUser.userName) {
-            // set blank conflict records
-            $scope.record1 = null;
-            $scope.record2 = null;
-          } else {
-            // check if owner of either conflict record
-            if ($scope.record1 != null
-              && $scope.record1.owner.userName == $scope.currentUser.userName) {
-              // set blank main record and other conflict record
-              $scope.record = null;
-              $scope.record2 = null;
-            } else if ($scope.record2 != null
-              && $scope.record2.owner.userName == $scope.currentUser.userName) {
-              // set blank main record and other conflict record
-              $scope.record = null;
-              $scope.record1 = null;
-            } else { // specialist is not involved
-              // display only main record, if exists
-              $scope.record1 = null;
-              $scope.record2 = null;
-            }
-          }
+
+          // MAP-1354: always show all records involved in a feedback conversation
+          // } else if ($scope.currentRole == 'Specialist') {
+          // // check if owner of main record
+          // if ($scope.record.owner.userName == $scope.currentUser.userName) {
+          // // set blank conflict records
+          // $scope.record1 = null;
+          // $scope.record2 = null;
+          // } else {
+          // // check if owner of either conflict record
+          // if ($scope.record1 != null
+          // && $scope.record1.owner.userName == $scope.currentUser.userName) {
+          // // set blank main record and other conflict record
+          // $scope.record = null;
+          // $scope.record2 = null;
+          // } else if ($scope.record2 != null
+          // && $scope.record2.owner.userName == $scope.currentUser.userName) {
+          // // set blank main record and other conflict record
+          // $scope.record = null;
+          // $scope.record1 = null;
+          // } else { // specialist is not involved
+          // // display only main record, if exists
+          // $scope.record1 = null;
+          // $scope.record2 = null;
+          // }
+          // }
         }
       }
 
@@ -359,7 +361,8 @@ angular
       };
 
       $scope.markFeedbackResolved = function(conversation) {
-        conversation.resolved = true;;
+        conversation.resolved = true;
+        ;
         updateFeedbackConversation(conversation);
       };
 
