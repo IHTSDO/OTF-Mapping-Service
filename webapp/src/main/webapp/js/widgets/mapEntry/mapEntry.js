@@ -232,11 +232,15 @@ angular
                 $scope.allowableMapRelations = getAllowableRelations(entry,
                   $scope.project.mapRelation);
 
-                for (var i = 0; i < $scope.allowableMapRelations.length; i++) {
-                  var relation = $scope.allowableMapRelations[i];
-                  if (relation.id == data.id) {
-                    entry.mapRelation = relation;
-                    break;
+                if (data.isComputed) {
+                  entry.mapRelation = data;
+                } else {
+                  for (var i = 0; i < $scope.allowableMapRelations.length; i++) {
+                    var relation = $scope.allowableMapRelations[i];
+                    if (relation.id == data.id) {
+                      entry.mapRelation = relation;
+                      break;
+                    }
                   }
                 }
 
@@ -784,9 +788,8 @@ angular
           return allowableAdvices;
         }
 
-        // Function for MapAdvice and MapRelations, returns allowable lists
-        // based
-        // on null target and element properties
+        // Allowable MapRelations
+        // based on null target and element properties
         function getAllowableRelations(entry, relations) {
           var allowableRelations = [];
 

@@ -63,17 +63,16 @@
       <td style="vertical-align: top; padding: 5px; width: 50px;">
         <strong>Relation</strong>
       </td>
-      <td style="vertical-align: top; padding: 5px;">
+       <td style="vertical-align: top; padding: 5px;">
         <span style="color: lightgray;"
-          ng-show="allowableMapRelations.length == 0">No relations
+          ng-show="allowableMapRelations.length == 0 && !entry.mapRelation">No relations
           available to select.</span>
-        <span ng-show="allowableMapRelations.length > 0">
-          <select style="max-width: 150px" ng-model="entry.mapRelation"
+        <span ng-show="allowableMapRelations.length > 0 || entry.mapRelation">
+          <select ng-show="allowableMapRelations.length > 0" style="max-width:90%" ng-model="entry.mapRelation"
             ng-init="entry.mapRelation" ng-change="selectMapRelation()"
             ng-options="mapRelation as mapRelation.name for mapRelation in allowableMapRelations"></select>
-          &nbsp;&nbsp;
-          <span ng-show="entry.mapRelation">{{entry.mapRelation.name}}</span>
-
+        <span ng-show="allowableMapRelations.length > 0 && entry.mapRelation"><br/></span>
+         <span ng-show="entry.mapRelation">{{entry.mapRelation.name}}</span>
         </span>
       </td>
     </tr>
