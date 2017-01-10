@@ -297,7 +297,7 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function($sc
   };
 });
 
-mapProjectAppDashboards.controller('FeedbackConversationsDashboardCtrl', function($scope,
+mapProjectAppDashboards.controller('FeedbackConversationsDashboardCtrl', function($scope, $http,
   $routeParams, $rootScope, $location, $window, localStorageService, appConfig) {
 
   // Attach an onbeforeunload function

@@ -153,13 +153,17 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     //
     final Set<MapRelation> mapRelations = new HashSet<>();
     for (final String rel : new String[] {
-        "exact", "partial", "narrower", "broader"
+        "exact", "partial", "narrower", "broader", "none"
     }) {
       final String ucRel = rel.substring(0, 1).toUpperCase() + rel.substring(1);
       final MapRelation relation = new MapRelationJpa();
       relation.setAbbreviation(ucRel);
       relation.setAllowableForNullTarget(false);
       relation.setComputed(false);
+      if (rel.equals("none")) {
+        relation.setAllowableForNullTarget(true);
+        relation.setComputed(true);
+      }
       relation.setName(ucRel + " match");
       relation.setTerminologyId(rel);
       mappingService.addMapRelation(relation);
