@@ -3746,6 +3746,10 @@ public class MappingServiceRest extends RootServiceRest {
           workflowService.getTrackingRecordForMapProjectAndConcept(project,
               mapRecord.getConceptId());
 
+      if (trackingRecord == null) {
+        throw new LocalException(
+            "Tracking record is unexpectedly missing for this project/concept");
+      }
       // instantiate workflow handler for this tracking record
       WorkflowPathHandler handler = workflowService
           .getWorkflowPathHandler(trackingRecord.getWorkflowPath().toString());
