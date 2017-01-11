@@ -543,7 +543,8 @@ public class WorkflowServiceJpa extends MappingServiceJpa
 
       String notificationRecipients =
           config.getProperty("send.notification.recipients");
-      if (!notificationRecipients.isEmpty()) {
+      if (!notificationRecipients.isEmpty()
+          && "true".equals(config.getProperty("mail.enabled"))) {
 
         String from;
         if (config.containsKey("mail.smtp.from")) {
