@@ -465,8 +465,10 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
                 + mapUser.getUserName());
             break;
           case "EDITING_DONE":
-            sb.append(" AND userAndWorkflowStatusPairs:REVIEW_NEEDED_"
-                + mapUser.getUserName());
+            // This is intended to return nothing -> fix error path for
+            // specialists never show "finished" work because it's gone
+            // on for review.
+            sb.append(" AND userAndWorkflowStatusPairs:XXX");
             break;
           default:
             sb.append(
