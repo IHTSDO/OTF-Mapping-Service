@@ -25,7 +25,7 @@ angular
       $scope.focusProject = localStorageService.get('focusProject');
 
       // pagination variables
-      $scope.pageSize = 2;
+      $scope.pageSize = 10;
       $scope.editedRecordsPage = 1;
 
       // watch for project change

@@ -30,12 +30,6 @@ angular
       function($scope, $window, $rootScope, $http, $routeParams, $location, $sce, $uibModal,
         localStorageService, utilService) {
 
-        // Attach an onbeforeunload function
-        $window.onbeforeunload = function() {
-          $window.onbeforeunload = null;
-          return "If you leave this page data may be lost!";
-        }
-
         // ///////////////////////////////////
         // Map Record Controller Functions //
         // ///////////////////////////////////
@@ -59,7 +53,7 @@ angular
         $scope.returnRecipients = new Array();
         $scope.multiSelectSettings = {
           displayProp : 'name',
-          scrollableHeight : '50px',
+          scrollableHeight : '150',
           scrollable : true,
           showCheckAll : false,
           showUncheckAll : false
@@ -937,7 +931,7 @@ angular
 
           menubar : false,
           statusbar : false,
-          plugins : 'autolink autoresize link image charmap searchreplace lists paste',
+          plugins : 'autolink link image charmap searchreplace lists paste',
           toolbar : 'undo redo | styleselect lists | bold italic underline strikethrough | charmap link image',
 
           setup : function(ed) {
@@ -1218,7 +1212,7 @@ angular
             // name
           } else {
             var allNotes = utilService.getNotes($scope.project.id);
-            var notes = allNotes[entry.targetId] ? allNotes[entry.targetId] : '';
+            var notes = (allNotes && allNotes[entry.targetId]) ? allNotes[entry.targetId] : '';
             entrySummary += entry.targetId + notes + ' ' + entry.targetName;
           }
 
