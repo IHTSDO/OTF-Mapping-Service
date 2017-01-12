@@ -134,8 +134,7 @@
 
   <div style="float: right; width: 3%;">
 
-<!-- Allow everyone to submit feedback -->
-    <a title="Submit Feedback" 
+    <a title="Submit Feedback" ng-show="currentRole === 'Viewer'"
       ng-click="openViewerFeedbackModal(record, currentUser.userName)">
       <i class="glyphicon glyphicon glyphicon-comment"></i>
     </a>
