@@ -97,22 +97,23 @@ angular
       $scope.assignedWorkPage = 1;
       $scope.assignedConflictsPage = 1;
       $scope.assignedReviewWorkPage = 1;
-      $scope.assignedQaWorkPage = 1;
+      $scope.assignedQAWorkPage = 1;
       $scope.assignedWorkForUserPage = 1;
 
       // query variables
       $scope.queryAssigned = null;
       $scope.queryConflict = null;
       $scope.queryReviewWork = null;
-      $scope.queryQaWork = null;
+      $scope.queryQAWork = null;
       $scope.queryAssignedForUser = null;
 
       // work type filter variables
-      $scope.assignedWorkType = 'NEW'; // initialize variable to track
-      $scope.assignedConflictType = 'CONFLICT_NEW'; // initialize variable
-      $scope.assignedReviewWorkType = 'REVIEW_NEW';
-      $scope.assignedWorkForUserType = 'ALL'; // initialize variable to
-      $scope.assignedQAWorkType = 'QA_NEW';
+      $scope.assignedTypes = {};
+      $scope.assignedTypes.work = 'ALL';
+      $scope.assignedTypes.conflict = 'ALL';
+      $scope.assignedTypes.review = 'ALL';
+      $scope.assignedTypes.forUser = 'ALL';
+      $scope.assignedTypes.qa = 'ALL';
 
       // watch for project change
       $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
@@ -148,8 +149,7 @@ angular
               $scope.setTab(0);
 
               // retrieve the work
-              $scope.retrieveAssignedWork($scope.assignedWorkPage, $scope.queryAssigned,
-                $scope.assignedWorkType);
+              $scope.retrieveAssignedWork($scope.assignedWorkPage, $scope.queryAssigned);
 
               // Conflicts
             } else if (parameters.assignType === 'conflict') {
@@ -157,8 +157,7 @@ angular
               $scope.setTab(1);
 
               // retrieve the work
-              $scope.retrieveAssignedConflicts($scope.assignedConflictPage, $scope.queryConflict,
-                $scope.assignedConflictType);
+              $scope.retrieveAssignedConflicts($scope.assignedConflictPage, $scope.queryConflict);
 
               // Review Work
             } else if (parameters.assignType === 'review') {
@@ -167,7 +166,7 @@ angular
 
               // retrieve the work
               $scope.retrieveAssignedReviewWork($scope.assignedReviewWorkPage,
-                $scope.queryReviewWork, $scope.assignedReviewWorkType);
+                $scope.queryReviewWork);
 
             } else if (parameters.assignType === 'conceptsByUser') {
 
@@ -183,8 +182,7 @@ angular
 
               // retrieve the work
               $scope.retrieveAssignedWorkForUser($scope.assignedWorkForUserPage,
-                parameters.assignUser.userName, $scope.queryAssignedForUser,
-                $scope.assignedWorkForUserType);
+                parameters.assignUser.userName, $scope.queryAssignedForUser);
 
               // QA Work
             } else if (parameters.assignType === 'qa') {
@@ -192,8 +190,7 @@ angular
               $scope.setTab(4);
 
               // retrieve the work
-              $scope.retrieveAssignedQAWork($scope.assignedQaWorkPage, $scope.queryQaWork,
-                $scope.assignedQaWorkType);
+              $scope.retrieveAssignedQAWork($scope.assignedQAWorkPage, $scope.queryQAWork);
             }
           } else {
 
@@ -208,8 +205,7 @@ angular
             });
 
             $scope.retrieveAssignedWorkForUser($scope.assignedWorkForUserPage,
-              parameters.assignUser.userName, $scope.queryAssignedForUser,
-              $scope.assignedWorkForUserType);
+              parameters.assignUser.userName, $scope.queryAssignedForUser);
 
           }
 
@@ -222,15 +218,13 @@ angular
             $scope.setTab(0);
 
             // retrieve the work
-            $scope.retrieveAssignedWork($scope.assignedWorkPage, $scope.assignedWorkQuery,
-              $scope.assignedWorkType);
+            $scope.retrieveAssignedWork($scope.assignedWorkPage, $scope.assignedWorkQuery);
           } else if (parameters.assignType === 'qa') {
             // set the tab
             $scope.setTab(4);
 
             // retrieve the work
-            $scope.retrieveAssignedQAWork($scope.assignedQaWorkPage, $scope.assignedQaWorkQuery,
-              $scope.assignedQaWorkType);
+            $scope.retrieveAssignedQAWork($scope.assignedQAWorkPage, $scope.assignedQAWorkQuery);
           }
         }
       });
@@ -242,23 +236,21 @@ angular
           $http.defaults.headers.common.Authorization = $scope.currentUserToken;
 
           $scope.mapUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
-          $scope.retrieveAssignedWork($scope.assignedWorkPage, null, $scope.assignedWorkType);
-          $scope.retrieveAssignedQAWork(1, null, $scope.assignedQAWorkType);
+          $scope.retrieveAssignedWork($scope.assignedWorkPage, null);
+          $scope.retrieveAssignedQAWork(1, null);
           $scope.retrieveLabels();
           if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
-            $scope.retrieveAssignedConflicts(1, null, $scope.assignedConflictType);
-            $scope.retrieveAssignedReviewWork(1, null, $scope.assignedReviewWorkType);
-            $scope.retrieveAssignedWorkForUser(1, null, $scope.selected.mapUserViewed,
-              $scope.assignedWorkForUserType);
+            $scope.retrieveAssignedConflicts(1, null);
+            $scope.retrieveAssignedReviewWork(1, null);
+            $scope.retrieveAssignedWorkForUser(1, null, $scope.selected.mapUserViewed);
           }
         }
       });
 
-      $scope.retrieveAssignedConflicts = function(page, query, assignedConflictType) {
+      $scope.retrieveAssignedConflicts = function(page, query) {
 
         // hard set the conflict PFS scope variables
         $scope.assignedConflictsPage = page;
-        $scope.assignedConflictsType = assignedConflictType;
         $scope.queryConflict = query;
 
         // ensure query is set to null if not specified
@@ -277,7 +269,7 @@ angular
           'startIndex' : page == -1 ? -1 : (page - 1) * $scope.itemsPerPage,
           'maxResults' : page == -1 ? -1 : $scope.itemsPerPage,
           'sortField' : 'sortKey',
-          'queryRestriction' : assignedConflictType
+          'queryRestriction' : $scope.assignedTypes.conflict
         };
 
         $rootScope.glassPane++;
@@ -313,14 +305,13 @@ angular
         });
       };
 
-      $scope.retrieveAssignedWork = function(page, pquery, assignedWorkType) {
+      $scope.retrieveAssignedWork = function(page, pquery) {
         var query = pquery;
         // set the scope variables
         // this is necessary due to some frustrating non-functional two-way
         // binding
         $scope.assignedWorkPage = page;
         $scope.queryAssigned = query;
-        $scope.assignedWorkType = assignedWorkType;
 
         // ensure query is set to null if undefined
         if (query == undefined)
@@ -339,7 +330,7 @@ angular
           'startIndex' : page == -1 ? -1 : (page - 1) * $scope.itemsPerPage,
           'maxResults' : page == -1 ? -1 : $scope.itemsPerPage,
           'sortField' : 'sortKey',
-          'queryRestriction' : assignedWorkType
+          'queryRestriction' : $scope.assignedTypes.work
         };
 
         $rootScope.glassPane++;
@@ -396,12 +387,12 @@ angular
         });
       };
 
-      $scope.retrieveAssignedQAWork = function(page, pquery, assignedWorkType) {
+      $scope.retrieveAssignedQAWork = function(page, pquery, type) {
+        $scope.assignedQAWorkType = type;
         var query = pquery;
         // hard set the PFS variables
-        $scope.assignedQaWorkPage = page;
-        $scope.assignedQaWorkType = assignedWorkType;
-        $scope.queryQaWork = query;
+        $scope.assignedQAWorkPage = page;
+        $scope.queryQAWork = query;
 
         // ensure query is set to null if undefined
         if (query == undefined)
@@ -420,7 +411,7 @@ angular
           'startIndex' : page == -1 ? -1 : (page - 1) * $scope.itemsPerPage,
           'maxResults' : page == -1 ? -1 : $scope.itemsPerPage,
           'sortField' : 'sortKey',
-          'queryRestriction' : assignedWorkType
+          'queryRestriction' : $scope.assignedTypes.qa
         };
 
         $rootScope.glassPane++;
@@ -463,12 +454,11 @@ angular
         });
       };
 
-      $scope.retrieveAssignedReviewWork = function(page, pquery, assignedWorkType) {
+      $scope.retrieveAssignedReviewWork = function(page, pquery) {
         var query = pquery;
 
         // hard set the PFS variables
         $scope.assignedReviewWorkPage = page;
-        $scope.assignedReviewWorkType = assignedWorkType;
         $scope.queryReviewWork = query;
 
         // ensure query is set to null if undefined
@@ -488,7 +478,7 @@ angular
           'startIndex' : page == -1 ? -1 : (page - 1) * $scope.itemsPerPage,
           'maxResults' : page == -1 ? -1 : $scope.itemsPerPage,
           'sortField' : 'sortKey',
-          'queryRestriction' : assignedWorkType
+          'queryRestriction' : $scope.assignedTypes.review
         };
 
         $rootScope.glassPane++;
@@ -523,11 +513,10 @@ angular
         });
       };
 
-      $scope.retrieveAssignedWorkForUser = function(page, mapUserName, query, assignedWorkType) {
+      $scope.retrieveAssignedWorkForUser = function(page, mapUserName, query) {
 
         // hard set the PFS variables
         $scope.assignedWorkForUserPage = page;
-        $scope.assignedWorkForUserType = assignedWorkType;
         $scope.queryAssignedForUser = query;
 
         // ensure query is set to null if undefined
@@ -563,7 +552,7 @@ angular
           'startIndex' : page == -1 ? -1 : (page - 1) * $scope.itemsPerPage,
           'maxResults' : page == -1 ? -1 : $scope.itemsPerPage,
           'sortField' : 'sortKey',
-          'queryRestriction' : assignedWorkType
+          'queryRestriction' : $scope.assignedTypes.forUser
         };
 
         $rootScope.glassPane++;
@@ -935,23 +924,19 @@ angular
             function() {
               if (workflowStatus === 'CONFLICT_IN_PROGRESS'
                 || workflowStatus === 'CONFLICT_RESOLVED') {
-                $scope.retrieveAssignedConflicts(1, null, $scope.assignedConflictType); // called
-                // on
-                // Done
+                $scope.retrieveAssignedConflicts(1, null);
               } else if (workflowStatus === 'REVIEW_IN_PROGRESS'
                 || workflowStatus === 'REVIEW_RESOLVED') {
                 if ($scope.currentRole === 'Lead') {
-                  $scope.retrieveAssignedReviewWork(1, null, $scope.assignedReviewWorkType); // called
-                  // on
-                  // Done
+                  $scope.retrieveAssignedReviewWork(1, null);
                 }
               } else if (workflowStatus === 'QA_IN_PROGRESS' || workflowStatus === 'QA_RESOLVED') {
-                $scope.retrieveAssignedQAWork(1, null, $scope.assignedQAWorkType); // called
+                $scope.retrieveAssignedQAWork(1, null); // called
                 // on
                 // Done
               } else if (workflowStatus === 'EDITING_IN_PROGRESS'
                 || workflowStatus === 'EDITING_DONE') {
-                $scope.retrieveAssignedWork(1, null, $scope.assignedWorkType); // called
+                $scope.retrieveAssignedWork(1, null); // called
                 // on
                 // Done
               } else {
@@ -962,23 +947,17 @@ angular
             }, function() {
               if (workflowStatus === 'CONFLICT_IN_PROGRESS'
                 || workflowStatus === 'CONFLICT_RESOLVED') {
-                $scope.retrieveAssignedConflicts(1, null, $scope.assignedConflictType); // called
-                // on
-                // Done
+                $scope.retrieveAssignedConflicts(1, null);
               } else if (workflowStatus === 'REVIEW_IN_PROGRESS'
                 || workflowStatus === 'REVIEW_RESOLVED') {
                 if ($scope.currentRole === 'Lead') {
-                  $scope.retrieveAssignedReviewWork(1, null, $scope.assignedReviewWorkType); // called
-                  // on
-                  // Done
+                  $scope.retrieveAssignedReviewWork(1, null);
                 }
               } else if (workflowStatus === 'QA_IN_PROGRESS' || workflowStatus === 'QA_RESOLVED') {
-                $scope.retrieveAssignedQAWork(1, null, $scope.assignedQAWorkType);
+                $scope.retrieveAssignedQAWork(1, null);
               } else if (workflowStatus === 'EDITING_IN_PROGRESS'
                 || workflowStatus === 'EDITING_DONE') {
-                $scope.retrieveAssignedWork(1, null, $scope.assignedWorkType); // called
-                // on
-                // Done
+                $scope.retrieveAssignedWork(1, null);
               } else {
                 return;
               }

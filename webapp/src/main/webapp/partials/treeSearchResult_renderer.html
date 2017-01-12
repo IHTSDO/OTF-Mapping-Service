@@ -70,12 +70,10 @@
   <!-- recursive display of next level of tree -->
   <ol ui-tree-nodes="" ng-model="tree.children"
     ng-class="{'hidden':collapsed}">
-
-
-
     <!--  render the children -->
-    <li ng-repeat="tree in tree.children | orderBy:terminologyId"
+    <li ng-repeat="tree in tree.children"
       ui-tree-node
       ng-include="'partials/treeSearchResult_renderer.html'"></li>
+      
   </ol>
 </div>

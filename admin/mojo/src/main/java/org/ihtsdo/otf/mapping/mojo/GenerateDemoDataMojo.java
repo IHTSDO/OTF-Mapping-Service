@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2015 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.text.SimpleDateFormat;
@@ -16,6 +19,7 @@ import org.ihtsdo.otf.mapping.helpers.ReportQueryType;
 import org.ihtsdo.otf.mapping.helpers.ReportResultType;
 import org.ihtsdo.otf.mapping.helpers.ReportTimePeriod;
 import org.ihtsdo.otf.mapping.helpers.WorkflowType;
+import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRelationJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
@@ -24,6 +28,7 @@ import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ReportServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
+import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.reports.ReportDefinition;
@@ -148,13 +153,17 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     //
     final Set<MapRelation> mapRelations = new HashSet<>();
     for (final String rel : new String[] {
-        "exact", "partial", "narrower", "broader"
+        "exact", "partial", "narrower", "broader", "none"
     }) {
       final String ucRel = rel.substring(0, 1).toUpperCase() + rel.substring(1);
       final MapRelation relation = new MapRelationJpa();
       relation.setAbbreviation(ucRel);
       relation.setAllowableForNullTarget(false);
       relation.setComputed(false);
+      if (rel.equals("none")) {
+        relation.setAllowableForNullTarget(true);
+        relation.setComputed(true);
+      }
       relation.setName(ucRel + " match");
       relation.setTerminologyId(rel);
       mappingService.addMapRelation(relation);
@@ -162,17 +171,38 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     }
 
     //
-    // Make a project
+    // Mapping Advice
     //
-    Logger.getLogger(getClass()).info("Create project 1");
+    final Set<MapAdvice> mapAdvices = new HashSet<>();
+    for (final String adv : new String[] {
+        "Test advice 1", "Test advice 2", "Test advice 3", "Null target advice"
+    }) {
+      final MapAdvice advice = new MapAdviceJpa();
+      advice.setAllowableForNullTarget(false);
+      advice.setComputed(false);
+      if (adv.contains("Null")) {
+        advice.setAllowableForNullTarget(true);
+        advice.setComputed(true);
+      }
+      advice.setDetail(adv);
+      advice.setName(adv);
+      mappingService.addMapAdvice(advice);
+      mapAdvices.add(advice);
+    }
+
+    //
+    // Create project Allergy to SNOMED project
+    //
+    Logger.getLogger(getClass())
+        .info("Create project ALLERGY to SNOMEDCT with REVIEW");
     MapProject project1 = new MapProjectJpa();
     project1.setDestinationTerminology("SNOMEDCT");
     project1.setDestinationTerminologyVersion("20140731");
     project1.setGroupStructure(true);
     project1.setMapRefsetPattern(MapRefsetPattern.ComplexMap);
     project1.setName("ALLERGY to SNOMEDCT with REVIEW");
-    project1
-        .setProjectSpecificAlgorithmHandlerClass("org.ihtsdo.otf.mapping.jpa.handlers.AllergyProjectSpecificAlgorithmHandler");
+    project1.setProjectSpecificAlgorithmHandlerClass(
+        "org.ihtsdo.otf.mapping.jpa.handlers.AllergyProjectSpecificAlgorithmHandler");
     project1.setPropagatedFlag(false);
     project1.setRefSetId("12345");
     project1.setRefSetName("Allergy to SNOMED Refset");
@@ -195,16 +225,17 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     Logger.getLogger(getClass()).info("  compute workflow");
     workflowService.computeWorkflow(project1);
 
-    // Create project 2
-    Logger.getLogger(getClass()).info("Create project 2");
+    // Create project MEDICATION to RXNORM with REVIEW
+    Logger.getLogger(getClass())
+        .info("Create project MEDICATION to RXNORM with REVIEW");
     MapProject project2 = new MapProjectJpa();
     project2.setDestinationTerminology("RXNORM");
     project2.setDestinationTerminologyVersion("2016AA");
     project2.setGroupStructure(true);
     project2.setMapRefsetPattern(MapRefsetPattern.ComplexMap);
     project2.setName("MEDICATION to RXNORM with REVIEW");
-    project2
-        .setProjectSpecificAlgorithmHandlerClass("org.ihtsdo.otf.mapping.jpa.handlers.MedicationProjectSpecificAlgorithmHandler");
+    project2.setProjectSpecificAlgorithmHandlerClass(
+        "org.ihtsdo.otf.mapping.jpa.handlers.MedicationProjectSpecificAlgorithmHandler");
     project2.setPropagatedFlag(false);
     project2.setRefSetId("23456");
     project2.setRefSetName("Medication to RXNORM Mapping");
@@ -227,12 +258,94 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     Logger.getLogger(getClass()).info("  compute workflow");
     workflowService.computeWorkflow(project2);
 
+    // Add project
+    Logger.getLogger(getClass()).info("  add " + project1);
+    project1 = mappingService.addMapProject(project1);
+    Logger.getLogger(getClass()).info("  compute workflow");
+    workflowService.computeWorkflow(project1);
+
+    // Create project SNOMED to ICD10
+    Logger.getLogger(getClass())
+        .info("Create project SNOMEDCT to ICD10 with NON-LEGACY");
+    MapProject project3 = new MapProjectJpa();
+    project3.setDestinationTerminology("ICD10");
+    project3.setDestinationTerminologyVersion("2016");
+    project3.setGroupStructure(true);
+    project3.setMapRefsetPattern(MapRefsetPattern.ExtendedMap);
+    project3.setName("SNOMEDCT to ICD10 with NON-LEGACY");
+    project3.setProjectSpecificAlgorithmHandlerClass(
+        "org.ihtsdo.otf.mapping.jpa.handlers.ICD10ProjectSpecificAlgorithmHandler");
+    project3.setPropagatedFlag(false);
+    project3.setRefSetId("3333333");
+    project3.setRefSetName("SNOMEDCT to ICD10");
+    project3.setSourceTerminology("SNOMEDCT");
+    project3.setSourceTerminologyVersion("20140731");
+    project3.setWorkflowType(WorkflowType.CONFLICT_PROJECT);
+    project3.setMapRelationStyle(RelationStyle.MAP_CATEGORY_STYLE);
+    project3.getScopeConcepts().add("404684003");
+    project3.setScopeDescendantsFlag(true);
+    project3.setMapRelations(mapRelations);
+    project3.setMapAdvices(mapAdvices);
+    project3.getMapLeads().add(lead1);
+    project3.getMapLeads().add(lead2);
+    project3.getMapSpecialists().add(specialist1);
+    project3.getMapSpecialists().add(specialist2);
+    project3.getMapSpecialists().add(specialist3);
+
+    // Add project
+    Logger.getLogger(getClass()).info("  add " + project3);
+    project3 = mappingService.addMapProject(project3);
+    Logger.getLogger(getClass()).info("  compute workflow");
+    workflowService.computeWorkflow(project3);
+
+    // Create project SNOMED to ICD10CM
+    Logger.getLogger(getClass())
+        .info("Create project SNOMEDCT to ICD10CM with NON-LEGACY");
+    MapProject project4 = new MapProjectJpa();
+    project4.setDestinationTerminology("ICD10CM");
+    project4.setDestinationTerminologyVersion("2016");
+    project4.setGroupStructure(true);
+    project4.setMapRefsetPattern(MapRefsetPattern.ExtendedMap);
+    project4.setName("SNOMEDCT to ICD10CM with NON-LEGACY");
+    project4.setProjectSpecificAlgorithmHandlerClass(
+        "org.ihtsdo.otf.mapping.jpa.handlers.ICD10ProjectSpecificAlgorithmHandler");
+    project4.setPropagatedFlag(false);
+    project4.setRefSetId("3333333");
+    project4.setRefSetName("SNOMEDCT to ICD10CM");
+    project4.setSourceTerminology("SNOMEDCT");
+    project4.setSourceTerminologyVersion("20140731");
+    project4.setWorkflowType(WorkflowType.CONFLICT_PROJECT);
+    project4.setMapRelationStyle(RelationStyle.MAP_CATEGORY_STYLE);
+    project4.getScopeConcepts().add("404684003");
+    project4.setScopeDescendantsFlag(true);
+    project4.setMapRelations(mapRelations);
+    project4.setMapAdvices(mapAdvices);
+    project4.getMapLeads().add(lead1);
+    project4.getMapLeads().add(lead2);
+    project4.getMapSpecialists().add(specialist1);
+    project4.getMapSpecialists().add(specialist2);
+    project4.getMapSpecialists().add(specialist3);
+
+    // Add project
+    Logger.getLogger(getClass()).info("  add " + project4);
+    project4 = mappingService.addMapProject(project4);
+    Logger.getLogger(getClass()).info("  compute workflow");
+    workflowService.computeWorkflow(project4);
+
+    //
+    // Cross-project steps
+    //
+
     // Start editing cycle
     SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd");
     project1.setEditingCycleBeginDate(DATE_FORMAT.parse("20160101"));
     mappingService.updateMapProject(project1);
     project2.setEditingCycleBeginDate(DATE_FORMAT.parse("20160101"));
     mappingService.updateMapProject(project2);
+    project2.setEditingCycleBeginDate(DATE_FORMAT.parse("20160101"));
+    mappingService.updateMapProject(project3);
+    project2.setEditingCycleBeginDate(DATE_FORMAT.parse("20160101"));
+    mappingService.updateMapProject(project4);
 
     // Reports
     ReportDefinition def1 = new ReportDefinitionJpa();
@@ -241,16 +354,16 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     def1.setFrequency(ReportFrequency.DAILY);
     def1.setName("Specialist productivity");
     def1.setQACheck(false);
-    def1.setQuery("select distinct mu.userName value, mr.conceptId itemId, mr.conceptName itemName "
-        + "from map_records_AUD mr, map_projects mp, map_users mu  "
-        + "where mp.id = :MAP_PROJECT_ID: "
-        + " and mr.lastModified >= :EDITING_CYCLE_BEGIN_DATE:    "
-        + " and mr.mapProjectId = mp.id "
-        + "  and mr.workflowStatus IN ('REVIEW_NEEDED','EDITING_DONE','QA_RESOLVED')  "
-        + "  and mu.userName not in ('loader','qa')  "
-        + "  and mr.owner_id = mu.id "
-        + "  and mr.revtype != 2 "
-        + "group by mu.userName, mr.lastModified " + "ORDER BY 1,2");
+    def1.setQuery(
+        "select distinct mu.userName value, mr.conceptId itemId, mr.conceptName itemName "
+            + "from map_records_AUD mr, map_projects mp, map_users mu  "
+            + "where mp.id = :MAP_PROJECT_ID: "
+            + " and mr.lastModified >= :EDITING_CYCLE_BEGIN_DATE:    "
+            + " and mr.mapProjectId = mp.id "
+            + "  and mr.workflowStatus IN ('REVIEW_NEEDED','EDITING_DONE','QA_RESOLVED')  "
+            + "  and mu.userName not in ('loader','qa')  "
+            + "  and mr.owner_id = mu.id " + "  and mr.revtype != 2 "
+            + "group by mu.userName, mr.lastModified " + "ORDER BY 1,2");
     def1.setQueryType(ReportQueryType.SQL);
     def1.setResultType(ReportResultType.CONCEPT);
     def1.setRoleRequired(MapUserRole.SPECIALIST);
@@ -263,22 +376,21 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     def2.setFrequency(ReportFrequency.DAILY);
     def2.setName("Lead productivity");
     def2.setQACheck(false);
-    def2.setQuery("select distinct mu.userName value, mr.conceptId itemId, mr.conceptName itemName "
-        + "from map_records_AUD mr, map_projects mp, map_users mu "
-        + "where mp.id = :MAP_PROJECT_ID:  "
-        + " and mr.lastModified >= :EDITING_CYCLE_BEGIN_DATE:   "
-        + " and mr.mapProjectId = mp.id "
-        + "  and mr.workflowStatus IN ('READY_FOR_PUBLICATION')  "
-        + "  and mu.userName != 'loader'  "
-        + "  and mr.owner_id = mu.id "
-        + "  and mr.lastModified <= :TIMESTAMP:  "
-        + "  and mr.revtype != 2 "
-        + "  and mr.conceptId IN "
-        + "  (select conceptid from map_records_AUD mr2 "
-        + "   where mapProjectId = :MAP_PROJECT_ID: "
-        + "     and workflowStatus in ('CONFLICT_RESOLVED','REVIEW_RESOLVED') "
-        + "     and mr.owner_id = mr2.owner_id) "
-        + "group by mu.userName, mr.lastModified  " + "ORDER BY 1,2");
+    def2.setQuery(
+        "select distinct mu.userName value, mr.conceptId itemId, mr.conceptName itemName "
+            + "from map_records_AUD mr, map_projects mp, map_users mu "
+            + "where mp.id = :MAP_PROJECT_ID:  "
+            + " and mr.lastModified >= :EDITING_CYCLE_BEGIN_DATE:   "
+            + " and mr.mapProjectId = mp.id "
+            + "  and mr.workflowStatus IN ('READY_FOR_PUBLICATION')  "
+            + "  and mu.userName != 'loader'  " + "  and mr.owner_id = mu.id "
+            + "  and mr.lastModified <= :TIMESTAMP:  "
+            + "  and mr.revtype != 2 " + "  and mr.conceptId IN "
+            + "  (select conceptid from map_records_AUD mr2 "
+            + "   where mapProjectId = :MAP_PROJECT_ID: "
+            + "     and workflowStatus in ('CONFLICT_RESOLVED','REVIEW_RESOLVED') "
+            + "     and mr.owner_id = mr2.owner_id) "
+            + "group by mu.userName, mr.lastModified  " + "ORDER BY 1,2");
     def2.setQueryType(ReportQueryType.SQL);
     def2.setResultType(ReportResultType.CONCEPT);
     def2.setRoleRequired(MapUserRole.LEAD);
@@ -319,15 +431,17 @@ public class GenerateDemoDataMojo extends AbstractMojo {
 
     // QA checks
     ReportDefinition qa1 = new ReportDefinitionJpa();
-    qa1.setDescription("Sample QA check to identify mappings involving the word 'peanut'");
+    qa1.setDescription(
+        "Sample QA check to identify mappings involving the word 'peanut'");
     qa1.setDiffReport(false);
     qa1.setFrequency(ReportFrequency.ON_DEMAND);
     qa1.setName("Peanut records");
     qa1.setQACheck(true);
-    qa1.setQuery("select distinct mr.conceptName value, mr.conceptId itemId, mr.conceptName itemName "
-        + "from map_records mr "
-        + "where mr.mapProjectId = :MAP_PROJECT_ID: "
-        + " and mr.conceptName like '%eanut%'");
+    qa1.setQuery(
+        "select distinct mr.conceptName value, mr.conceptId itemId, mr.conceptName itemName "
+            + "from map_records mr "
+            + "where mr.mapProjectId = :MAP_PROJECT_ID: "
+            + " and mr.conceptName like '%eanut%'");
     qa1.setQueryType(ReportQueryType.SQL);
     qa1.setResultType(ReportResultType.CONCEPT);
     qa1.setRoleRequired(MapUserRole.SPECIALIST);
@@ -349,10 +463,25 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     project2.getReportDefinitions().add(qa1);
     mappingService.updateMapProject(project2);
 
+    project3.getReportDefinitions().add(def1);
+    project3.getReportDefinitions().add(def2);
+    project3.getReportDefinitions().add(def3);
+    project3.getReportDefinitions().add(def4);
+    project3.getReportDefinitions().add(qa1);
+    mappingService.updateMapProject(project3);
+
+    project4.getReportDefinitions().add(def1);
+    project4.getReportDefinitions().add(def2);
+    project4.getReportDefinitions().add(def3);
+    project4.getReportDefinitions().add(def4);
+    project4.getReportDefinitions().add(qa1);
+    mappingService.updateMapProject(project4);
+
     // Generate the reports
     reportService.generateDailyReports(project1, lead1);
     reportService.generateDailyReports(project2, lead1);
-
+    reportService.generateDailyReports(project3, lead1);
+    reportService.generateDailyReports(project4, lead1);
 
     // TODO: add qa check for "invalid codes"
   }

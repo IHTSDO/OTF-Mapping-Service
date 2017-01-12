@@ -181,6 +181,36 @@ mapProjectAppDirectives.directive('treeSearchResult', [
         // page sizes
         scope.pageSizeSibling = 10;
 
+        // comparator to use when adding siblings
+        // NOTE: Do not apply to top-level. These are pre-sorted by back-end
+        // with no problems as per children
+        // NOTE: Unclear where, but rendering children is removing applied sort
+        // from back-end. Thus, force new sibling calls to re-sort to ensure
+        // proper display.
+        // NOTE: ui-tree-node does not particularly like orderBy in ng-repeat,
+        // with nodes model values disconnected from their display slot (i.e.
+        // clicking to expand one node will actually expand another)
+        var sortComparator = null;
+        scope.$watch('searchResults', function() {
+
+          if (scope.searchResults && scope.searchResults.length > 0) {
+            // if ICD9 or ICD10, sort by terminologyId; otherwise, by name
+            // NOTE: This should be abstracted somewhere else, like a project
+            // setting
+            var lc = scope.searchResults[0].terminology.toLowerCase();
+            var sortField = (lc.startsWith('icd') || lc.startsWith('gmdn')) ? 'terminologyId'
+              : 'defaultPreferredName';
+            sortComparator = function(a, b) {
+              if (a[sortField] < b[sortField]) {
+                return -1;
+              } else {
+                return 1;
+              }
+              return 0;
+            }
+          }
+        });
+
         // computed tooltip html for derived labels
         // NOTE: Must not be null or empty string, or uib-tooltip-html
         // will not properly register the first mouseover event
@@ -196,15 +226,7 @@ mapProjectAppDirectives.directive('treeSearchResult', [
             return existingIds.indexOf(sibling.terminologyId) == -1;
           }));
 
-          newSiblings.sort(function(a, b) {
-
-            if (a.defaultPreferredName < b.defaultPreferredName) {
-              return -1;
-            } else {
-              return 1;
-            }
-
-          });
+          newSiblings.sort(sortComparator);
 
           return newSiblings;
         }
