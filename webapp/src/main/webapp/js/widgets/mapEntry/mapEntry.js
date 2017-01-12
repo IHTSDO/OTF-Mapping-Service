@@ -47,7 +47,7 @@ angular
 
           // set the rule to null if a non-rule-based project
           // added to catch any badly constructed rules from other widgets
-          if ($scope.project.ruleBased == false)
+          if (!$scope.project.ruleBased)
             $scope.entry.rule = null;
 
           // compute relation and advice IFF a target or entry has
@@ -180,7 +180,7 @@ angular
             $scope.project.mapRelation);
 
           // if project rule based, reset rule to TRUE
-          if ($scope.project.ruleBased == true) {
+          if ($scope.project.ruleBased) {
             entry.rule = 'TRUE';
           }
 
@@ -232,11 +232,15 @@ angular
                 $scope.allowableMapRelations = getAllowableRelations(entry,
                   $scope.project.mapRelation);
 
-                for (var i = 0; i < $scope.allowableMapRelations.length; i++) {
-                  var relation = $scope.allowableMapRelations[i];
-                  if (relation.id == data.id) {
-                    entry.mapRelation = relation;
-                    break;
+                if (data.isComputed) {
+                  entry.mapRelation = data;
+                } else {
+                  for (var i = 0; i < $scope.allowableMapRelations.length; i++) {
+                    var relation = $scope.allowableMapRelations[i];
+                    if (relation.id == data.id) {
+                      entry.mapRelation = relation;
+                      break;
+                    }
                   }
                 }
 
@@ -385,7 +389,7 @@ angular
             var rule = lrule;
             // set to true if rule returned with no value and display an
             // error
-            if (rule == null || rule == undefined || rule === '') {
+            if (!rule) {
               rule = 'TRUE';
               $scope.localErrorRule = 'Invalid rule constructed, setting rule to TRUE';
             }
@@ -404,7 +408,7 @@ angular
           var ruleSummary = '';
 
           // first, rule summary
-          if ($scope.project.ruleBased == true) {
+          if ($scope.project.ruleBased) {
             if (entry.rule.toUpperCase().indexOf('TRUE') != -1)
               ruleSummary += '[TRUE] ';
             else if (entry.rule.toUpperCase().indexOf('FEMALE') != -1)
@@ -588,9 +592,8 @@ angular
                 : 'IFA 445518008 | Age at onset of clinical finding (observable entity)';
 
               if (lowerValueValid) {
-                $scope.rule += ruleText + ' | ' + (ageRange.lowerInclusive == true ? '>=' : '>')
-                  + ' ' + parseFloat(ageRange.lowerValue, 10).toFixed(1) + ' '
-                  + ageRange.lowerUnits;
+                $scope.rule += ruleText + ' | ' + (ageRange.lowerInclusive ? '>=' : '>') + ' '
+                  + parseFloat(ageRange.lowerValue, 10).toFixed(1) + ' ' + ageRange.lowerUnits;
               }
 
               if (lowerValueValid && upperValueValid) {
@@ -598,9 +601,8 @@ angular
               }
 
               if (upperValueValid) {
-                $scope.rule += ruleText + ' | ' + (ageRange.upperInclusive == true ? '<=' : '<')
-                  + ' ' + parseFloat(ageRange.upperValue, 10).toFixed(1) + ' '
-                  + ageRange.upperUnits;
+                $scope.rule += ruleText + ' | ' + (ageRange.upperInclusive ? '<=' : '<') + ' '
+                  + parseFloat(ageRange.upperValue, 10).toFixed(1) + ' ' + ageRange.upperUnits;
 
               }
             } else
@@ -619,10 +621,8 @@ angular
 
               if ($scope.presetAgeRanges[i].lowerValue != null
                 && $scope.presetAgeRanges[i].lowerValue != '-1') {
-                presetAgeRangeStr += ($scope.presetAgeRanges[i].lowerInclusive == true ? '>=' : '>')
-                  + ' '
-                  + $scope.presetAgeRanges[i].lowerValue
-                  + ' '
+                presetAgeRangeStr += ($scope.presetAgeRanges[i].lowerInclusive ? '>=' : '>') + ' '
+                  + $scope.presetAgeRanges[i].lowerValue + ' '
                   + $scope.presetAgeRanges[i].lowerUnits;
               }
 
@@ -637,10 +637,8 @@ angular
               if ($scope.presetAgeRanges[i].upperValue != null
                 && $scope.presetAgeRanges[i].upperValue != '-1') {
 
-                presetAgeRangeStr += ($scope.presetAgeRanges[i].upperInclusive == true ? '<=' : '<')
-                  + ' '
-                  + $scope.presetAgeRanges[i].upperValue
-                  + ' '
+                presetAgeRangeStr += ($scope.presetAgeRanges[i].upperInclusive ? '<=' : '<') + ' '
+                  + $scope.presetAgeRanges[i].upperValue + ' '
                   + $scope.presetAgeRanges[i].upperUnits;
               }
 
@@ -673,7 +671,7 @@ angular
                 advicePresent = true;
             }
 
-            if (advicePresent == true) {
+            if (advicePresent) {
               $scope.errorAddAdvice = 'This advice ' + advice.detail
                 + ' is already attached to this entry';
             } else {
@@ -689,7 +687,7 @@ angular
         $scope.removeEntryAdvice = function(entry, advice) {
 
           var confirmRemove = true;
-          if (advice.isComputed == true) {
+          if (advice.isComputed) {
             confirmRemove = confirm('The advice you are removing was automatically computed for this entry.  Are you sure you want to do this?');
           }
 
@@ -759,17 +757,17 @@ angular
 
           // if target is null (i.e. not valid or empty), return empty list
           if (entry.targetId != null) {
-            var nullTarget = (entry.targetId === '');
+            var nullTarget = !entry.targetId;
 
             for (var i = 0; i < advices.length; i++) {
 
               // do not add computed advices
-              if (advices[i].isComputed == false) {
+              if (!advices[i].isComputed) {
 
                 // if empty target and allowable for null target OR
                 // if valid target and not allowable for null target
-                if ((nullTarget == true && advices[i].isAllowableForNullTarget == true)
-                  || (nullTarget == false && advices[i].isAllowableForNullTarget == false)) {
+                if ((nullTarget && advices[i].isAllowableForNullTarget)
+                  || (!nullTarget && !advices[i].isAllowableForNullTarget)) {
 
                   // check that this advice is not already present on the
                   // entry
@@ -780,7 +778,7 @@ angular
                   }
 
                   // add advice if not already present
-                  if (advicePresent == false)
+                  if (!advicePresent)
                     allowableAdvices.push(advices[i]);
                 }
               }
@@ -790,9 +788,8 @@ angular
           return allowableAdvices;
         }
 
-        // Function for MapAdvice and MapRelations, returns allowable lists
-        // based
-        // on null target and element properties
+        // Allowable MapRelations
+        // based on null target and element properties
         function getAllowableRelations(entry, relations) {
           var allowableRelations = [];
 
@@ -800,14 +797,14 @@ angular
           // return an empty list, otherwise calculate
           if (entry.targetId != null) {
 
-            var nullTarget = entry.targetId === '';
+            var nullTarget = !entry.targetId;
 
             for (var i = 0; i < relations.length; i++) {
 
-              if (relations[i].isComputed == false) {
+              if (!relations[i].isComputed) {
 
-                if ((nullTarget == true && relations[i].isAllowableForNullTarget == true)
-                  || (nullTarget == false && relations[i].isAllowableForNullTarget == false)) {
+                if ((!entry.targetId && relations[i].isAllowableForNullTarget)
+                  || (entry.targetId && !relations[i].isAllowableForNullTarget)) {
 
                   allowableRelations.push(relations[i]);
                 }

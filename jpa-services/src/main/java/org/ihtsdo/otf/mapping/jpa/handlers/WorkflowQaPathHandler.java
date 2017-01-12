@@ -378,7 +378,9 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
   }
 
   /* see superclass */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({
+      "unchecked", "rawtypes"
+  })
   @Override
   public SearchResultList findAssignedWork(MapProject mapProject,
     MapUser mapUser, MapUserRole userRole, String query,
@@ -442,12 +444,19 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
       // get the map record assigned to this user -- note: can only be one
       // if QA Path properly used
       MapRecord mapRecord = null;
-      StringBuffer labelBuffer = new StringBuffer();
+      final StringBuffer labelBuffer = new StringBuffer();
       boolean keepRecord = false;
       for (final MapRecord mr : mapRecords) {
-        if (mr.getOwner().equals(mapUser)) {
-          mapRecord = mr;
+        if (!mr.getOwner().equals(mapUser)) {
+          continue;
         }
+        // Skip map records with revision status (this is a case where the same
+        // user may be owner of multiple records)
+        if (mr.getWorkflowStatus() == WorkflowStatus.REVISION) {
+          continue;
+        }
+
+        mapRecord = mr;
 
         // extract all labels for this tracking record
         for (final String label : mr.getLabels()) {
@@ -476,6 +485,7 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
                 + mapUser.getUserName() + " and concept "
                 + tr.getTerminologyId());
       }
+
       // if no label query supplied or this tracking record has the requested
       // label
       if (query == null || query.isEmpty() || query.equals("null")
@@ -491,27 +501,21 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
     }
 
     // construct local list for manual paging (need Jpa objects)
-    List<SearchResultJpa> tempResults = new ArrayList<>();
-    for (SearchResult sr : assignedWork.getSearchResults()) {
-      tempResults.add((SearchResultJpa) sr);
-    }
+    List<SearchResultJpa> tempResults =
+        new ArrayList<>((List) assignedWork.getSearchResults());
 
     // Set the assigned count.
-    assignedWork.setTotalCount(assignedWork.getCount());
+    assignedWork.setTotalCount(tempResults.size());
 
     // apply paging to the list
-    PfsParameter pfsLocal = new PfsParameterJpa(pfsParameter);
+    final PfsParameter pfsLocal = new PfsParameterJpa(pfsParameter);
     pfsLocal.setQueryRestriction("");
     pfsLocal.setSortField("");
     tempResults = workflowService.applyPfsToList(tempResults,
         SearchResultJpa.class, new int[1], pfsLocal);
 
     // reconstruct the assignedWork search result list
-    assignedWork.setSearchResults(new ArrayList<SearchResult>());
-    for (SearchResult sr : tempResults) {
-      assignedWork.addSearchResult(sr);
-    }
-
+    assignedWork.setSearchResults(new ArrayList<SearchResult>(tempResults));
     return assignedWork;
   }
 

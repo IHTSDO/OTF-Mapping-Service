@@ -154,14 +154,15 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
       };
 
       $scope.markActive = function(conversation) {
-        conversation.resolved = 'false';
+        conversation.resolved = false;
         updateFeedbackConversation(conversation);
       };
 
       $scope.markFeedbackResolved = function(conversation) {
-        conversation.resolved = 'true';
+        conversation.resolved = true;
         updateFeedbackConversation(conversation);
       };
+      
 
       function updateFeedbackConversation(conversation) {
         $rootScope.glassPane++;

@@ -62,7 +62,6 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
 
         $scope.definitions.sort();
 
-        // retrieve the first page of reports (for leads)
         if ($scope.currentRole == 'Lead') {
           $scope.getReports(1, null, null);
         }

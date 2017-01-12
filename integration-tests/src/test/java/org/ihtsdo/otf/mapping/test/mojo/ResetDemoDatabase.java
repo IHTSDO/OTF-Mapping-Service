@@ -102,8 +102,8 @@ public class ResetDemoDatabase {
     p.setProperty("run.config", System.getProperty("run.config"));
     p.setProperty("terminology", "SNOMEDCT");
     p.setProperty("version", "20140731");
-    p.setProperty("input.dir", config.getProperty("data.dir") + "/"
-        + "snomedct-20140731-mini");
+    p.setProperty("input.dir",
+        config.getProperty("data.dir") + "/" + "snomedct-20140731-mini");
     request.setProperties(p);
     request.setDebug(false);
     invoker = new DefaultInvoker();
@@ -122,10 +122,10 @@ public class ResetDemoDatabase {
     p.setProperty("run.config", System.getProperty("run.config"));
     p.setProperty("terminology", "RXNORM");
     p.setProperty("version", "2016AA");
-    p.setProperty("input.file", config.getProperty("data.dir") + "/"
-        + "rxnorm.txt");
-    p.setProperty("par.chd.file", config.getProperty("data.dir") + "/"
-        + "rxnormParChd.txt");
+    p.setProperty("input.file",
+        config.getProperty("data.dir") + "/" + "rxnorm.txt");
+    p.setProperty("par.chd.file",
+        config.getProperty("data.dir") + "/" + "rxnormParChd.txt");
     request.setProperties(p);
     request.setDebug(false);
     invoker = new DefaultInvoker();
@@ -144,8 +144,8 @@ public class ResetDemoDatabase {
     p.setProperty("run.config", System.getProperty("run.config"));
     p.setProperty("terminology", "ALLERGY");
     p.setProperty("version", "latest");
-    p.setProperty("input.file", config.getProperty("data.dir") + "/"
-        + "allergy.txt");
+    p.setProperty("input.file",
+        config.getProperty("data.dir") + "/" + "allergy.txt");
     request.setProperties(p);
     request.setDebug(false);
     invoker = new DefaultInvoker();
@@ -164,8 +164,48 @@ public class ResetDemoDatabase {
     p.setProperty("run.config", System.getProperty("run.config"));
     p.setProperty("terminology", "MEDICATION");
     p.setProperty("version", "latest");
+    p.setProperty("input.file",
+        config.getProperty("data.dir") + "/" + "medication.txt");
+    request.setProperties(p);
+    request.setDebug(false);
+    invoker = new DefaultInvoker();
+    result = invoker.execute(request);
+    if (result.getExitCode() != 0) {
+      throw result.getExecutionException();
+    }
+
+    // Load ClaML
+    Logger.getLogger(getClass()).info("Load ICD10");
+    request = new DefaultInvocationRequest();
+    request.setPomFile(new File("../admin/loader/pom.xml"));
+    request.setProfiles(Arrays.asList("ClaML"));
+    request.setGoals(Arrays.asList("clean", "install"));
+    p = new Properties();
+    p.setProperty("run.config", System.getProperty("run.config"));
+    p.setProperty("terminology", "ICD10CM");
+    p.setProperty("version", "2016");
     p.setProperty("input.file", config.getProperty("data.dir") + "/"
-        + "medication.txt");
+        + "icd10cm-2016.xml");
+    request.setProperties(p);
+    request.setDebug(false);
+    invoker = new DefaultInvoker();
+    result = invoker.execute(request);
+    if (result.getExitCode() != 0) {
+      throw result.getExecutionException();
+    }
+
+    // Load ICD10 ClaML
+    Logger.getLogger(getClass()).info("Load ICD10");
+    request = new DefaultInvocationRequest();
+    request.setPomFile(new File("../admin/loader/pom.xml"));
+    request.setProfiles(Arrays.asList("ClaML"));
+    request.setGoals(Arrays.asList("clean", "install"));
+    p = new Properties();
+    p.setProperty("run.config", System.getProperty("run.config"));
+    p.setProperty("terminology", "ICD10");
+    p.setProperty("version", "2016");
+    p.setProperty("input.file", config.getProperty("data.dir") + "/"
+        + "icd10-2016.xml");
     request.setProperties(p);
     request.setDebug(false);
     invoker = new DefaultInvoker();
