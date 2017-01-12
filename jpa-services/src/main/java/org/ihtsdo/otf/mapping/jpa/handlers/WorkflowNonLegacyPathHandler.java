@@ -1001,22 +1001,24 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
             break;
           case "EDITING_DONE":
             sb.append(" AND (userAndWorkflowStatusPairs:EDITING_DONE_"
-                + mapUser.getUserName()
-                + " OR userAndWorkflowStatusPairs:CONFLICT_DETECTED_"
                 + mapUser.getUserName() + ")");
+            // Don't show records anymore that have moved on to lead workflow
+            // + " OR userAndWorkflowStatusPairs:CONFLICT_DETECTED_"
+            // + mapUser.getUserName() + ")");
             break;
           default:
             sb.append(
                 " AND (userAndWorkflowStatusPairs:NEW_" + mapUser.getUserName()
                     + " OR userAndWorkflowStatusPairs:EDITING_IN_PROGRESS_"
-                    + mapUser.getUserName()
-                    // It's confusing to show ALL for non-legacy because mapper is done working on it, 
-                    // there's no "finish" step.
-//                    + " OR userAndWorkflowStatusPairs:EDITING_DONE_"
-//                    + mapUser.getUserName()
-//                    + " OR userAndWorkflowStatusPairs:CONFLICT_DETECTED_"
-//                    + mapUser.getUserName() + ")"
-                    );
+                    + mapUser.getUserName() + ")"
+            // It's confusing to show ALL for non-legacy because mapper is done
+            // working on it,
+            // there's no "finish" step.
+            // + " OR userAndWorkflowStatusPairs:EDITING_DONE_"
+            // + mapUser.getUserName()
+            // + " OR userAndWorkflowStatusPairs:CONFLICT_DETECTED_"
+            // + mapUser.getUserName() + ")"
+            );
             break;
         }
 

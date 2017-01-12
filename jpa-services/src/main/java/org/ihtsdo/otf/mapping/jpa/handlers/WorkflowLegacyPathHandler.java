@@ -601,21 +601,22 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
             break;
           case "EDITING_DONE":
             sb.append(" AND (userAndWorkflowStatusPairs:EDITING_DONE_"
-                + mapUser.getUserName()
-                + " OR userAndWorkflowStatusPairs:CONFLICT_DETECTED_"
                 + mapUser.getUserName() + ")");
+            // Don't show records anymore that have moved on to conflict
+            // + " OR userAndWorkflowStatusPairs:CONFLICT_DETECTED_"
+            // + mapUser.getUserName() + ")");
             break;
           default:
-            sb.append(
-                " AND (userAndWorkflowStatusPairs:NEW_" + mapUser.getUserName()
-                    + " OR userAndWorkflowStatusPairs:EDITING_IN_PROGRESS_"
+            sb.append(" AND (userAndWorkflowStatusPairs:NEW_"
+                + mapUser.getUserName()
+                + " OR userAndWorkflowStatusPairs:EDITING_IN_PROGRESS_" + ")"
             // NO more work for specialist at this point - waiting for lead,
             // don't show in all - confusing
             // + mapUser.getUserName()
             // + " OR userAndWorkflowStatusPairs:EDITING_DONE_"
             // + mapUser.getUserName()
             // + " OR userAndWorkflowStatusPairs:CONFLICT_DETECTED_"
-            // + mapUser.getUserName() + ")"
+            // + mapUser.getUserName()
             );
             break;
         }
