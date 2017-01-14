@@ -109,11 +109,11 @@ angular
 
       // work type filter variables
       $scope.assignedTypes = {};
-      $scope.assignedTypes.work = 'ALL';
-      $scope.assignedTypes.conflict = 'ALL';
-      $scope.assignedTypes.review = 'ALL';
+      $scope.assignedTypes.work = 'NEW';
+      $scope.assignedTypes.conflict = 'CONFLICT_NEW';
+      $scope.assignedTypes.review = 'REVIEW_NEW';
       $scope.assignedTypes.forUser = 'ALL';
-      $scope.assignedTypes.qa = 'ALL';
+      $scope.assignedTypes.qa = 'QA_NEW';
 
       // watch for project change
       $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {

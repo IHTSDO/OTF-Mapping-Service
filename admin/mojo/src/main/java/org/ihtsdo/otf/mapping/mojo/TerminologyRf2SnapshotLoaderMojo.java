@@ -114,7 +114,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
   private BufferedReader simpleMapRefsetsByConcept;
 
   /** The complex map refsets by concept. */
-  private BufferedReader complexMapRefsetsByConcept;
+  //private BufferedReader complexMapRefsetsByConcept;
 
   /** The extended map refsets by concept. */
   private BufferedReader extendedMapRefsetsByConcept;
@@ -291,13 +291,13 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
         }
 
         // Load ComplexMapRefSets
-        if (complexMapRefsetsByConcept != null) {
-          getLog().info("  Loading ComplexMap RefSets...");
-          startTime = System.nanoTime();
-          loadComplexMapRefSets();
-          getLog().info("    elapsed time = " + getElapsedTime(startTime) + "s"
-              + " (Ended at " + ft.format(new Date()) + ")");
-        }
+//        if (complexMapRefsetsByConcept != null) {
+//          getLog().info("  Loading ComplexMap RefSets...");
+//          startTime = System.nanoTime();
+//          loadComplexMapRefSets();
+//          getLog().info("    elapsed time = " + getElapsedTime(startTime) + "s"
+//              + " (Ended at " + ft.format(new Date()) + ")");
+//        }
 
         // Load ExtendedMapRefSets
         if (extendedMapRefsetsByConcept != null) {
@@ -407,8 +407,8 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
         new File(outputDir, "simple_refsets_by_concept.sort");
     File simpleMapRefsetsByConceptFile =
         new File(outputDir, "simple_map_refsets_by_concept.sort");
-    File complexMapRefsetsByConceptFile =
-        new File(outputDir, "complex_map_refsets_by_concept.sort");
+//    File complexMapRefsetsByConceptFile =
+//        new File(outputDir, "complex_map_refsets_by_concept.sort");
     File extendedMapRefsetsByConceptsFile =
         new File(outputDir, "extended_map_refsets_by_concept.sort");
 
@@ -451,10 +451,10 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
           new BufferedReader(new FileReader(simpleMapRefsetsByConceptFile));
     }
     // Complex map reader
-    if (complexMapRefsetsByConceptFile != null) {
-      complexMapRefsetsByConcept =
-          new BufferedReader(new FileReader(complexMapRefsetsByConceptFile));
-    }
+//    if (complexMapRefsetsByConceptFile != null) {
+//      complexMapRefsetsByConcept =
+//          new BufferedReader(new FileReader(complexMapRefsetsByConceptFile));
+//    }
     // Extended map reader
     if (extendedMapRefsetsByConceptsFile != null) {
       extendedMapRefsetsByConcept =
@@ -570,7 +570,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     File coreSimpleRefsetInputFile = null;
     File coreAssociationReferenceInputFile = null;
     File coreAttributeValueInputFile = null;
-    File coreComplexMapInputFile = null;
+//    File coreComplexMapInputFile = null;
     File coreExtendedMapInputFile = null;
     File coreSimpleMapInputFile = null;
     File coreLanguageInputFile = null;
@@ -693,18 +693,18 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
         + " " + coreCrossmapInputDir.exists());
 
     // Complex map file
-    for (File f : coreCrossmapInputDir.listFiles()) {
-      if (f.getName().contains("ComplexMap")) {
-        if (coreComplexMapInputFile != null)
-          throw new MojoFailureException("Multiple Complex Map Files!");
-        coreComplexMapInputFile = f;
-      }
-    }
-    if (coreComplexMapInputFile != null) {
-      getLog().info(
-          "        Complex map file = " + coreComplexMapInputFile.toString()
-              + " " + coreComplexMapInputFile.exists());
-    }
+//    for (File f : coreCrossmapInputDir.listFiles()) {
+//      if (f.getName().contains("ComplexMap")) {
+//        if (coreComplexMapInputFile != null)
+//          throw new MojoFailureException("Multiple Complex Map Files!");
+//        coreComplexMapInputFile = f;
+//      }
+//    }
+//    if (coreComplexMapInputFile != null) {
+//      getLog().info(
+//          "        Complex map file = " + coreComplexMapInputFile.toString()
+//              + " " + coreComplexMapInputFile.exists());
+//    }
 
     // Extended map file
     for (File f : coreCrossmapInputDir.listFiles()) {
@@ -774,8 +774,8 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
         new File(outputDir, "simple_refsets_by_concept.sort");
     File simpleMapRefsetsByConceptFile =
         new File(outputDir, "simple_map_refsets_by_concept.sort");
-    File complexMapRefsetsByConceptFile =
-        new File(outputDir, "complex_map_refsets_by_concept.sort");
+//    File complexMapRefsetsByConceptFile =
+//        new File(outputDir, "complex_map_refsets_by_concept.sort");
     File extendedMapRefsetsByConceptsFile =
         new File(outputDir, "extended_map_refsets_by_concept.sort");
 
@@ -833,9 +833,9 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
       sortRf2File(coreSimpleMapInputFile, simpleMapRefsetsByConceptFile, 5);
     }
     // Sort complex map file
-    if (coreComplexMapInputFile != null) {
-      sortRf2File(coreComplexMapInputFile, complexMapRefsetsByConceptFile, 5);
-    }
+//    if (coreComplexMapInputFile != null) {
+//      sortRf2File(coreComplexMapInputFile, complexMapRefsetsByConceptFile, 5);
+//    }
     // sort extended map file
     if (coreExtendedMapInputFile != null) {
       sortRf2File(coreExtendedMapInputFile, extendedMapRefsetsByConceptsFile,
@@ -955,9 +955,9 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     if (simpleMapRefsetsByConcept != null) {
       simpleMapRefsetsByConcept.close();
     }
-    if (complexMapRefsetsByConcept != null) {
-      complexMapRefsetsByConcept.close();
-    }
+//    if (complexMapRefsetsByConcept != null) {
+//      complexMapRefsetsByConcept.close();
+//    }
     if (extendedMapRefsetsByConcept != null) {
       extendedMapRefsetsByConcept.close();
     }
@@ -1595,83 +1595,83 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
    * 
    * @throws Exception the exception
    */
-  private void loadComplexMapRefSets() throws Exception {
-
-    String line = "";
-    objectCt = 0;
-
-    // begin transaction
-    final ContentService contentService = new ContentServiceJpa();
-    contentService.setTransactionPerOperation(false);
-    contentService.beginTransaction();
-
-    while ((line = complexMapRefsetsByConcept.readLine()) != null) {
-
-      line = line.replace("\r", "");
-      final String fields[] = line.split("\t");
-
-      if (!fields[0].equals("id")) { // header
-        final ComplexMapRefSetMember complexMapRefSetMember =
-            new ComplexMapRefSetMemberJpa();
-
-        complexMapRefSetMember.setTerminologyId(fields[0]);
-        complexMapRefSetMember.setEffectiveTime(dt.parse(fields[1]));
-        complexMapRefSetMember.setActive(fields[2].equals("1") ? true : false);
-        complexMapRefSetMember.setModuleId(Long.valueOf(fields[3]));
-        complexMapRefSetMember.setRefSetId(fields[4]);
-        // conceptId
-
-        // ComplexMap unique attributes
-        complexMapRefSetMember.setMapGroup(Integer.parseInt(fields[6]));
-        complexMapRefSetMember.setMapPriority(Integer.parseInt(fields[7]));
-        complexMapRefSetMember.setMapRule(fields[8]);
-        complexMapRefSetMember.setMapAdvice(fields[9]);
-        complexMapRefSetMember.setMapTarget(fields[10]);
-        complexMapRefSetMember.setMapRelationId(Long.valueOf(fields[11]));
-
-        // ComplexMap unique attributes NOT set by file (mapBlock
-        // elements)
-        complexMapRefSetMember.setMapBlock(0); // default value
-        complexMapRefSetMember.setMapBlockRule(null); // no default
-        complexMapRefSetMember.setMapBlockAdvice(null); // no default
-
-        // Terminology attributes
-        complexMapRefSetMember.setTerminology(terminology);
-        complexMapRefSetMember.setTerminologyVersion(version);
-
-        // set Concept
-        final Concept concept = conceptCache.get(fields[5]);
-
-        if (concept != null) {
-          complexMapRefSetMember.setConcept(concept);
-          contentService.addComplexMapRefSetMember(complexMapRefSetMember);
-
-          // regularly commit at intervals
-          if (++objectCt % commitCt == 0) {
-            getLog().info("    commit = " + objectCt);
-            contentService.commit();
-            contentService.beginTransaction();
-          }
-        } else {
-          getLog().info("complexMapRefSetMember "
-              + complexMapRefSetMember.getTerminologyId()
-              + " references non-existent concept " + fields[5]);
-        }
-
-      }
-    }
-
-    // commit any remaining objects
-    contentService.commit();
-    contentService.close();
-
-    // print memory information
-    Runtime runtime = Runtime.getRuntime();
-    getLog().info("MEMORY USAGE:");
-    getLog().info(" Total: " + runtime.totalMemory());
-    getLog().info(" Free:  " + runtime.freeMemory());
-    getLog().info(" Max:   " + runtime.maxMemory());
-  }
+//  private void loadComplexMapRefSets() throws Exception {
+//
+//    String line = "";
+//    objectCt = 0;
+//
+//    // begin transaction
+//    final ContentService contentService = new ContentServiceJpa();
+//    contentService.setTransactionPerOperation(false);
+//    contentService.beginTransaction();
+//
+//    while ((line = complexMapRefsetsByConcept.readLine()) != null) {
+//
+//      line = line.replace("\r", "");
+//      final String fields[] = line.split("\t");
+//
+//      if (!fields[0].equals("id")) { // header
+//        final ComplexMapRefSetMember complexMapRefSetMember =
+//            new ComplexMapRefSetMemberJpa();
+//
+//        complexMapRefSetMember.setTerminologyId(fields[0]);
+//        complexMapRefSetMember.setEffectiveTime(dt.parse(fields[1]));
+//        complexMapRefSetMember.setActive(fields[2].equals("1") ? true : false);
+//        complexMapRefSetMember.setModuleId(Long.valueOf(fields[3]));
+//        complexMapRefSetMember.setRefSetId(fields[4]);
+//        // conceptId
+//
+//        // ComplexMap unique attributes
+//        complexMapRefSetMember.setMapGroup(Integer.parseInt(fields[6]));
+//        complexMapRefSetMember.setMapPriority(Integer.parseInt(fields[7]));
+//        complexMapRefSetMember.setMapRule(fields[8]);
+//        complexMapRefSetMember.setMapAdvice(fields[9]);
+//        complexMapRefSetMember.setMapTarget(fields[10]);
+//        complexMapRefSetMember.setMapRelationId(Long.valueOf(fields[11]));
+//
+//        // ComplexMap unique attributes NOT set by file (mapBlock
+//        // elements)
+//        complexMapRefSetMember.setMapBlock(0); // default value
+//        complexMapRefSetMember.setMapBlockRule(null); // no default
+//        complexMapRefSetMember.setMapBlockAdvice(null); // no default
+//
+//        // Terminology attributes
+//        complexMapRefSetMember.setTerminology(terminology);
+//        complexMapRefSetMember.setTerminologyVersion(version);
+//
+//        // set Concept
+//        final Concept concept = conceptCache.get(fields[5]);
+//
+//        if (concept != null) {
+//          complexMapRefSetMember.setConcept(concept);
+//          contentService.addComplexMapRefSetMember(complexMapRefSetMember);
+//
+//          // regularly commit at intervals
+//          if (++objectCt % commitCt == 0) {
+//            getLog().info("    commit = " + objectCt);
+//            contentService.commit();
+//            contentService.beginTransaction();
+//          }
+//        } else {
+//          getLog().info("complexMapRefSetMember "
+//              + complexMapRefSetMember.getTerminologyId()
+//              + " references non-existent concept " + fields[5]);
+//        }
+//
+//      }
+//    }
+//
+//    // commit any remaining objects
+//    contentService.commit();
+//    contentService.close();
+//
+//    // print memory information
+//    Runtime runtime = Runtime.getRuntime();
+//    getLog().info("MEMORY USAGE:");
+//    getLog().info(" Total: " + runtime.totalMemory());
+//    getLog().info(" Free:  " + runtime.freeMemory());
+//    getLog().info(" Max:   " + runtime.maxMemory());
+//  }
 
   /**
    * Load ExtendedMapRefSets (Crossmap).
