@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2015 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.rest;
 
 import java.io.InputStream;
@@ -234,10 +237,10 @@ public class ReportServiceRest extends RootServiceRest {
 
   /**
    * Deletes the report definitions.
-   * 
+   *
    * @param reportDefinition the report definition
    * @param authToken the auth token
-   * @throws Exception
+   * @throws Exception the exception
    */
   @DELETE
   @Path("/definition/delete")
@@ -252,7 +255,7 @@ public class ReportServiceRest extends RootServiceRest {
     Logger.getLogger(MappingServiceRest.class)
         .info("RESTful call (Report):  /definition/delete");
     String user = null;
-    final ReportService reportService = new ReportServiceJpa();
+    final ReportServiceJpa reportService = new ReportServiceJpa();
     final MappingService mappingService = new MappingServiceJpa();
 
     try {
@@ -275,12 +278,14 @@ public class ReportServiceRest extends RootServiceRest {
       }
 
       // remove all reports from all projects with given definition
-      final Set<Report> reportsToRemove = new HashSet<>();
-      for (final Report report : reportService.getReports().getReports()) {
-        if (report.getReportDefinition().getId() == reportDefinition.getId())
-          reportsToRemove.add(report);
-      }
-      for (final Report report : reportsToRemove) {
+      final javax.persistence.Query query = reportService.getEntityManager()
+          .createQuery("select a from ReportJpa a , ReportDefinitionJpa b "
+              + "where a.reportDefinition = b "
+              + "  and b.id = :reportDefinitionId");
+      query.setParameter("reportDefinitionId", reportDefinition.getId());
+      @SuppressWarnings("unchecked")
+      final List<Report> reports = query.getResultList();
+      for (final Report report : reports) {
         reportService.removeReport(report.getId());
       }
 
