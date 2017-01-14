@@ -81,7 +81,7 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
         'queryRestriction' : null
       };
 
-      $rootScope.glassPane++;
+      // $rootScope.glassPane++;
 
       // construct the url based on whether report type is
       // null
@@ -98,14 +98,14 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
           'Content-Type' : 'application/json'
         }
       }).success(function(data) {
-        $rootScope.glassPane--;
+        // $rootScope.glassPane--;
         $scope.reports = data.report;
         // set paging parameters
         $scope.nReports = data.totalCount;
         $scope.nReportPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
 
       }).error(function(data, status, headers, config) {
-        $rootScope.glassPane--;
+        // $rootScope.glassPane--;
         $scope.reports = null;
         $rootScope.handleHttpError(data, status, headers, config);
       });
