@@ -1934,20 +1934,14 @@ angular
               });
               $scope.allowableReportDefinitions = localStorageService.get('reportDefinitions');
 
-              // update
-              // and
-              // broadcast
-              // the
-              // updated
-              // focus
-              // project
+              // update and broadcast the updated focus project
               localStorageService.add('focusProject', $scope.focusProject);
               $rootScope.$broadcast('localStorageModule.notification.setFocusProject', {
                 key : 'focusProject',
                 focusProject : $scope.focusProject
               });
 
-              $scope.updateMapProject($scope.focusProject);
+              //$scope.updateMapProject($scope.focusProject);
 
             }).error(function(data, status, headers, config) {
               $rootScope.handleHttpError(data, status, headers, config);
@@ -2200,13 +2194,7 @@ angular
               });
               $scope.allowableQaDefinitions = localStorageService.get('qaCheckDefinitions');
 
-              // update
-              // and
-              // broadcast
-              // the
-              // updated
-              // focus
-              // project
+              // update and broadcast theupdated focus  project
               localStorageService.add('focusProject', $scope.focusProject);
               $rootScope.$broadcast('localStorageModule.notification.setFocusProject', {
                 key : 'focusProject',

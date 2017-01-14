@@ -200,10 +200,9 @@ public class ICD10ProjectSpecificAlgorithmHandler
       }
 
       // get the primary code (if not NC)
-      final String primaryCode = concepts.get(1).get(0) == null ? null : // the
-                                                                         // NC
-                                                                         // case
-          concepts.get(1).get(0).getTerminologyId();
+      final String primaryCode = concepts.size() == 0 || concepts.get(1) == null
+          || concepts.get(1).get(0) == null ? null
+              : concepts.get(1).get(0).getTerminologyId();
 
       // Only process these rules if these is a single entry per group
       if (concepts.keySet().size() == mapRecord.getMapEntries().size()) {

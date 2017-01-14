@@ -68,10 +68,14 @@
           ng-show="allowableMapRelations.length == 0 && !entry.mapRelation">No
           relations available to select.</span>
         <span ng-show="allowableMapRelations.length > 0 || entry.mapRelation">
-          <select ng-show="allowableMapRelations.length > 0"
-            style="max-width: 90%" ng-model="entry.mapRelation"
-            ng-init="entry.mapRelation" ng-change="selectMapRelation()"
-            ng-options="mapRelation as mapRelation.name for mapRelation in allowableMapRelations"></select>
+          <span ng-show="allowableMapRelations.length > 0 || entry.mapRelation">
+            <select ng-show="allowableMapRelations.length > 0"
+              style="max-width: 90%" ng-model="entry.mapRelation"
+              ng-init="entry.mapRelation" ng-change="selectMapRelation()"
+              ng-options="mapRelation as mapRelation.name for mapRelation in allowableMapRelations"></select>
+            <span
+              ng-show="allowableMapRelations.length == 0 && entry.mapRelation">{{entry.mapRelation.name}}</span>
+          </span>
         </span>
       </td>
     </tr>
