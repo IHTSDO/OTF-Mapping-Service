@@ -474,12 +474,12 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
             sb.append(
                 " AND (userAndWorkflowStatusPairs:NEW_" + mapUser.getUserName()
                     + " OR userAndWorkflowStatusPairs:EDITING_IN_PROGRESS_"
-                    + mapUser.getUserName()
+                    + mapUser.getUserName() + ")");
             // No last chance to "finish". Once it's in
             // REVIEW_NEEDED it belongs to the lead
             // + " OR userAndWorkflowStatusPairs:REVIEW_NEEDED_"
             // + mapUser.getUserName() + ")"
-            );
+           
             break;
         }
 

@@ -1,5 +1,5 @@
 /*
- * 
+ *    Copyright 2015 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.reports;
 
@@ -29,9 +29,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Entity
 @Audited
 @Table(name = "report_definitions", uniqueConstraints = {
-  @UniqueConstraint(columnNames = {
-    "name"
-  })
+    @UniqueConstraint(columnNames = {
+        "name"
+    })
 })
 @JsonIgnoreProperties(ignoreUnknown = true)
 @XmlRootElement(name = "reportDefinition")
@@ -83,7 +83,9 @@ public class ReportDefinitionJpa implements ReportDefinition {
   @Enumerated(EnumType.STRING)
   private MapUserRole roleRequired;
 
-  /** The report definition used for constructing diff reports (if applicable). */
+  /**
+   * The report definition used for constructing diff reports (if applicable).
+   */
   @Column(nullable = true)
   private String diffReportDefinitionName;
 
@@ -381,8 +383,8 @@ public class ReportDefinitionJpa implements ReportDefinition {
     return "ReportDefinitionJpa [id=" + id + ", name=" + name
         + ", isDiffReport=" + isDiffReport + ", isQACheck=" + isQACheck
         + ", timePeriod=" + timePeriod + ", frequency=" + frequency
-        + ", resultType=" + resultType + ", queryType=" + queryType
-        + ", query=" + query + ", roleRequired=" + roleRequired
+        + ", resultType=" + resultType + ", queryType=" + queryType + ", query="
+        + query + ", roleRequired=" + roleRequired
         + ", diffReportDefinitionName=" + diffReportDefinitionName + "]";
   }
 
@@ -443,11 +445,8 @@ public class ReportDefinitionJpa implements ReportDefinition {
     int result = 1;
     result =
         prime * result + ((description == null) ? 0 : description.hashCode());
-    result =
-        prime
-            * result
-            + ((diffReportDefinitionName == null) ? 0
-                : diffReportDefinitionName.hashCode());
+    result = prime * result + ((diffReportDefinitionName == null) ? 0
+        : diffReportDefinitionName.hashCode());
     result = prime * result + ((frequency == null) ? 0 : frequency.hashCode());
     result = prime * result + (isDiffReport ? 1231 : 1237);
     result = prime * result + (isQACheck ? 1231 : 1237);
