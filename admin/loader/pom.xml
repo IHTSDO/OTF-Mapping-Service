@@ -41,7 +41,7 @@
       For ICD9CM use: 001-999.99,E000-E999.9,V01-V91.99 For ICPC use: -,A,B,D,F,H,K,L,N,P,R,S,T,U,W,X,Y,Z -->
     <root.ids>138875005</root.ids>
     <!-- The last publication date for RF2 delta source -->
-    <last.publication.date>20150131</last.publication.date>
+    <last.publication.date></last.publication.date>
     <!-- Properties indicating how the RF2 map loader should function (simple only 
       for now -->
     <member.flag>false</member.flag>
