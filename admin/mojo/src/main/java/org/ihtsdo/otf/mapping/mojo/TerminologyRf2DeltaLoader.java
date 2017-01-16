@@ -32,7 +32,6 @@ import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.DescriptionJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.LanguageRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.RelationshipJpa;
-import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
@@ -179,19 +178,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
       setup();
       getLog().info("    terminology = " + terminology);
       getLog().info("    version = " + version);
-
-      if (lastPublicationDate == null) {
-        // NOTE: this is very MySQL-centric (native query).
-        // We want the max effective time where the "time"
-        // part of it is 00:00:00
-        final javax.persistence.Query query =
-            contentService.getEntityManager().createNativeQuery(
-                "select date_format(max(effectiveTime),'%Y%m%d') from concepts "
-                    + "where terminology = :terminology "
-                    + "  and effectiveTime = date(effectiveTime)");
-        query.setParameter("terminology", terminology);
-        lastPublicationDate = query.getSingleResult().toString();
-      }
       getLog().info("    lastPublicationDate = " + lastPublicationDate);
 
       // Precache all existing concept entries
@@ -334,6 +320,19 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     // initialize the transactions
     contentService.beginTransaction();
     mappingService.beginTransaction();
+
+    if (lastPublicationDate == null) {
+      // NOTE: this is very MySQL-centric (native query).
+      // We want the max effective time where the "time"
+      // part of it is 00:00:00
+      final javax.persistence.Query query =
+          contentService.getEntityManager().createNativeQuery(
+              "select date_format(max(effectiveTime),'%Y%m%d') from concepts "
+                  + "where terminology = :terminology "
+                  + "  and effectiveTime = date(effectiveTime)");
+      query.setParameter("terminology", terminology);
+      lastPublicationDate = query.getSingleResult().toString();
+    }
 
     // set the delta file directory=
     deltaDir = new File(inputDir);
