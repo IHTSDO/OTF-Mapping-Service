@@ -590,6 +590,9 @@ public class ICD10ProjectSpecificAlgorithmHandler
   public MapRelation computeMapRelation(MapRecord mapRecord, MapEntry mapEntry)
     throws Exception {
 
+    if (mapEntry == null) {
+      return null;
+    }
     // if entry has no target
     if (mapEntry.getTargetId() == null || mapEntry.getTargetId().isEmpty()) {
 
