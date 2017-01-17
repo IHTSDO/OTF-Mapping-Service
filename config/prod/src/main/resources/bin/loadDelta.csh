@@ -9,7 +9,8 @@
 set MAPPING_CODE=/home/ihtsdo/code
 set MAPPING_CONFIG=/home/ihtsdo/config/config.properties
 set MAPPING_DATA=/home/ihtsdo/data
-set SNOMEDCT_VERSION=20160731
+# no longer set this
+# set SNOMEDCT_VERSION=20160731
 set dir=/home/ihtsdo/data/dripFeed
 
 echo "------------------------------------------------"
@@ -93,9 +94,10 @@ if (`grep -v effectiveTime *Concept*txt | wc -l` > 0) then
 
         echo "    Load the delta ... `/bin/date`"
         cd $MAPPING_CODE/admin/loader
+        # don't do this anymore: -Dlast.publication.date=$SNOMEDCT_VERSION \
+        # null value leads to correct computation
         mvn install -PRF2-delta -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT \
-          -Dlast.publication.date=$SNOMEDCT_VERSION \
-          -Dinput.dir=$dir | sed 's/^/      /'
+            -Dinput.dir=$dir | sed 's/^/      /'
         if ($status != 0) then
             echo "ERROR processing delta data"
             exit 1
