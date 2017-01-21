@@ -199,6 +199,10 @@ public class ICD10ProjectSpecificAlgorithmHandler
         concepts.get(entry.getMapGroup()).add(concept);
       }
 
+      if (concepts.size() == 0 || concepts.get(1) == null) {
+        result.addError("Null concept in entry");
+      }
+
       // get the primary code (if not NC)
       final String primaryCode = concepts.size() == 0 || concepts.get(1) == null
           || concepts.get(1).get(0) == null ? null
