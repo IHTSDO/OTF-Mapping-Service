@@ -722,6 +722,7 @@ angular
 
         // Cancel
         $scope.cancel = function() {
+          $scope.qaCancelled= true;
           $scope.isRunning = false;
         };
 
@@ -773,12 +774,14 @@ angular
               record.labels = [];
             }
             record.labels.push(label);
-
+            $rootScope.glassPane++;
             $http.post(root_workflow + 'createQARecord', record).then(function() {
               $scope.qaSucceeded++;
+              $rootScope.glassPane--;
               deferred.resolve();
             }, function() {
               $scope.qaFailed++;
+              $rootScope.glassPane--;
               deferred.reject();
             });
           }

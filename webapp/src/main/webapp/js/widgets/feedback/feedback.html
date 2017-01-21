@@ -61,7 +61,7 @@
                    or if current user initiated the feedback conversation -->
           <span
             ng-show="feedbackConversation.userName == currentUser.userName ||
-             			currentUser.userName == feedbackConversation.feedback[0].sender.userName">
+             			currentUser.userName == feedbackConversation.feedback[0].sender.userName ||  currentRole == 'Lead'">
             <input type="checkbox" ng-model="feedbackConversation.resolved"
               ng-click="feedbackConversation.resolved ? 
    				  markFeedbackResolved(feedbackConversation) : markActive(feedbackConversation)">
@@ -70,6 +70,7 @@
           <span
             ng-show="feedbackConversation.userName != currentUser.userName &&
              			currentUser.userName != feedbackConversation.feedback[0].sender.userName &&
+                  currentRole != 'Lead' &&
              			feedbackConversation.resolved">
             <i class="glyphicon glyphicon-ok"></i>
           </span>
