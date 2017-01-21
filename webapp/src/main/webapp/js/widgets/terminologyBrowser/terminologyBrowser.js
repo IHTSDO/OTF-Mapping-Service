@@ -42,7 +42,7 @@ angular.module('mapProjectApp').controller(
     $scope.selectedResult = null;
     $scope.paging.tree = {
       page : 1,
-      pageSize : 10,
+      pageSize : 100,
       pages : null,
       totalCount : null
 
