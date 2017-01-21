@@ -37,7 +37,7 @@
 
 <div class="modal-footer">
   <button class="btn btn-xs btn-primary"
-    ng-show="qaLabel && !isRunning && !qaSucceeded && !qaFailed && !qaSkipped"
+    ng-show="qaLabel && !isRunning && !qaSucceeded && !qaFailed && !qaSkipped && !qaCancelled"
     ng-click="qaRecords(qaLabel)">Create QA Records</button>
   <button class="btn btn-xs btn-primary" ng-show="!isRunning" ng-click="close()">Close</button>
   <button class="btn btn-xs btn-warning" ng-show="isRunning" ng-click="cancel()">Cancel</button>
