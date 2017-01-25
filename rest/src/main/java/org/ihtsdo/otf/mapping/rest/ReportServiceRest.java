@@ -377,6 +377,43 @@ public class ReportServiceRest extends RootServiceRest {
     }
 
   }
+  
+  @GET
+  @Path("/report/project/id/{projectId}/{id}")
+  @ApiOperation(value = "Get a report by id", notes= "Get report by id", response = ReportJpa.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public Report getReport(
+		  @ApiParam(value = "Project id", required = true) @PathParam("projectId") Long projectId,
+		    @ApiParam(value = "Report id", required = true) @PathParam("id") Long id,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Report):  /report/projectId/" + projectId + "/" + id);
+    String user = null;
+    String projectName = "";
+
+    final ReportService reportService = new ReportServiceJpa();
+    try {
+      // authorize call
+      user = authorizeProject(projectId, authToken, MapUserRole.VIEWER,
+          "get report for project", securityService);
+      Report report = reportService.getReport(id);
+      
+      return report;
+
+    } catch (Exception e) {
+        handleException(e, "trying to get report for project", user, "",
+            id.toString());
+        return null;
+      } finally {
+        reportService.close();
+        securityService.close();
+      }
+  }
+
 
   /**
    * Returns the reports for map project.

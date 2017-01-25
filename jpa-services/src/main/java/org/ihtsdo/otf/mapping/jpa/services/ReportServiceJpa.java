@@ -129,8 +129,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     r = (Report) query.getSingleResult();
 
     // handle lazy initializations
-    r.getResults().size();
-    r.getNotes().size();
+    handleReportLazyInitialization(r);
 
     return r;
   }
@@ -613,8 +612,9 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     // reports are ALWAYS sorted in reverse order of date
     final List<Report> reports = query.getResultList();
 
+    // set report results to null
     for (final Report report : reports) {
-      handleReportLazyInitialization(report);
+      report.setResults(null);
     }
 
     reportList.setReports(reports);
