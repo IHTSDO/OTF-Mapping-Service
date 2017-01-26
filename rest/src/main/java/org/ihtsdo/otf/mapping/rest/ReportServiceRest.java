@@ -44,6 +44,7 @@ import org.ihtsdo.otf.mapping.reports.ReportDefinition;
 import org.ihtsdo.otf.mapping.reports.ReportDefinitionJpa;
 import org.ihtsdo.otf.mapping.reports.ReportJpa;
 import org.ihtsdo.otf.mapping.reports.ReportResult;
+import org.ihtsdo.otf.mapping.reports.ReportResultItem;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.ReportService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
@@ -377,21 +378,21 @@ public class ReportServiceRest extends RootServiceRest {
     }
 
   }
-  
+
   @GET
   @Path("/report/project/id/{projectId}/{id}")
-  @ApiOperation(value = "Get a report by id", notes= "Get report by id", response = ReportJpa.class)
+  @ApiOperation(value = "Get a report by id", notes = "Get report by id", response = ReportJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public Report getReport(
-		  @ApiParam(value = "Project id", required = true) @PathParam("projectId") Long projectId,
-		    @ApiParam(value = "Report id", required = true) @PathParam("id") Long id,
+    @ApiParam(value = "Project id", required = true) @PathParam("projectId") Long projectId,
+    @ApiParam(value = "Report id", required = true) @PathParam("id") Long id,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class)
-        .info("RESTful call (Report):  /report/projectId/" + projectId + "/" + id);
+    Logger.getLogger(MappingServiceRest.class).info(
+        "RESTful call (Report):  /report/projectId/" + projectId + "/" + id);
     String user = null;
     String projectName = "";
 
@@ -401,19 +402,29 @@ public class ReportServiceRest extends RootServiceRest {
       user = authorizeProject(projectId, authToken, MapUserRole.VIEWER,
           "get report for project", securityService);
       Report report = reportService.getReport(id);
-      
+
+      // clear the report result items, retrieved via separate call
+      for (ReportResult result : report.getResults()) {
+        // trigger setting of ct
+        result.getCt();
+        System.out.println(" after getCt: " + result.getCt());
+        result.setReportResultItems(null);
+        System.out.println(" after setItems: " + result.getCt());
+      }
+
+      System.out.println("Ohai");
+
       return report;
 
     } catch (Exception e) {
-        handleException(e, "trying to get report for project", user, "",
-            id.toString());
-        return null;
-      } finally {
-        reportService.close();
-        securityService.close();
-      }
+      handleException(e, "trying to get report for project", user, "",
+          id.toString());
+      return null;
+    } finally {
+      reportService.close();
+      securityService.close();
+    }
   }
-
 
   /**
    * Returns the reports for map project.

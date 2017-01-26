@@ -142,6 +142,10 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       });
 
       $scope.go = function() {
+
+        // get latest release report
+        $scope.getReleaseQaReport();
+
         console.debug('Formatting project details');
         $http({
           url : root_mapping + 'advice/advices',
@@ -151,7 +155,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          console.debug('  advices = ',data);
+          console.debug('  advices = ', data);
           $scope.mapAdvices = data.mapAdvice;
           localStorageService.add('mapAdvices', data.mapAdvice);
           $rootScope.$broadcast('localStorageModule.notification.setMapAdvices', {
@@ -271,14 +275,13 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         $scope.selectedWorkflowType = $scope.getSelectedWorkflowType();
 
         /*
-         * // determine if this project has a principles document if
-         * ($scope.focusProject.destinationTerminology == 'ICD10') {
-         * $scope.focusProject.mapPrincipleDocumentPath = 'doc/';
-         * $scope.focusProject.mapPrincipleDocument =
-         * 'ICD10_MappingPersonnelHandbook.docx';
-         * $scope.focusProject.mapPrincipleDocumentName = 'Mapping Personnel
-         * Handbook'; } else { $scope.focusProject.mapPrincipleDocument = null; }
-         */
+                 * // determine if this project has a principles document if
+                 * ($scope.focusProject.destinationTerminology == 'ICD10') {
+                 * $scope.focusProject.mapPrincipleDocumentPath = 'doc/';
+                 * $scope.focusProject.mapPrincipleDocument = 'ICD10_MappingPersonnelHandbook.docx';
+                 * $scope.focusProject.mapPrincipleDocumentName = 'Mapping Personnel Handbook'; }
+                 * else { $scope.focusProject.mapPrincipleDocument = null; }
+                 */
 
         // set the scope maps
         $scope.scopeMap = {};
@@ -386,7 +389,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       };
 
       $scope.getPagedScopeConcepts = function(page) {
-        console.debug('Called paged scope concept for page ',page);
+        console.debug('Called paged scope concept for page ', page);
 
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
@@ -407,7 +410,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          console.debug('  scope concepts = ',data);
+          console.debug('  scope concepts = ', data);
           $rootScope.glassPane--;
           $scope.pagedScopeConcept = data.searchResult;
           $scope.pagedScopeConceptCount = data.totalCount;
@@ -928,7 +931,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          console.debug('  success',data);
+          console.debug('  success', data);
         }).error(function(data, status, headers, config) {
           $scope.recordError = 'Error updating map advice.';
           $rootScope.handleHttpError(data, status, headers, config);
@@ -997,7 +1000,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           }
         }).success(function(data) {
           $rootScope.glassPane--;
-          console.debug('  success',data);
+          console.debug('  success', data);
 
           // add the new advice to the available list
           $scope.mapAdvices.push(data);
@@ -1064,7 +1067,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
 
         .success(function(data) {
           $rootScope.glassPane--;
-          console.debug('  success',data);
+          console.debug('  success', data);
           // add new relations to the sets
           $scope.mapRelations.push(data);
           $scope.allowableMapRelations.push(data);
@@ -1195,7 +1198,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          console.debug('  success',data);
+          console.debug('  success', data);
         }).error(function(data, status, headers, config) {
           $scope.recordError = 'Error updating map principle.';
           $rootScope.handleHttpError(data, status, headers, config);
@@ -1257,7 +1260,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           }
         }).success(function(data) {
           $rootScope.glassPane--;
-          console.debug('  success',data);
+          console.debug('  success', data);
 
           // add principle to the local sets
           $scope.mapPrinciples.push(data);
@@ -1319,7 +1322,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           }
         }).success(function(data) {
           $rootScope.glassPane--;
-          console.debug('  success',data);
+          console.debug('  success', data);
 
           // add principle to the local sets
           $scope.mapAgeRanges.push(data);
@@ -1379,7 +1382,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             'Content-Type' : 'text/plain'
           }
         }).success(function(data) {
-          console.debug('  success',data);
+          console.debug('  success', data);
           $rootScope.glassPane--;
 
           // re-page the scope concepts
@@ -1406,7 +1409,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          console.debug('  success',data);
+          console.debug('  success', data);
           $rootScope.glassPane--;
           $scope.getPagedScopeConcepts(1);
 
@@ -1435,7 +1438,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           }
         }).success(function(data) {
           $rootScope.glassPane--;
-          console.debug('  success',data);
+          console.debug('  success', data);
           $scope.resetScopeConceptFilter();
 
         }).error(function(data, status, headers, config) {
@@ -1464,7 +1467,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-          console.debug('  success',data);
+          console.debug('  success', data);
           $rootScope.glassPane--;
 
           $scope.getPagedScopeExcludedConcepts(currentPage);
@@ -1492,7 +1495,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             }
           }).success(function() {
           $rootScope.glassPane--;
-          console.debug('  success',data);
+          console.debug('  success', data);
           $scope.getPagedScopeExcludedConcepts(1);
 
         }).error(function(data, status, headers, config) {
@@ -1519,7 +1522,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-          console.debug('  success',data);
+          console.debug('  success', data);
           $rootScope.glassPane--;
           $scope.getPagedScopeExcludedConcepts(1);
         }).error(function(data, status, headers, config) {
@@ -1586,7 +1589,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          console.debug('  success',data);
+          console.debug('  success', data);
           $rootScope.glassPane--;
 
           // update the cached project list
@@ -1617,21 +1620,217 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             file : file
           }
         }).then(
-        // Success
-        function(response) {
-          $rootScope.glassPane--;
-        },
-        // error
-        function(response) {
-          $rootScope.handleHttpError(response.data, response.status, response.headers, response.config);          
-          $rootScope.glassPane--;
-        },
-        // event
-        function(evt) {
-          var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
-          console.debug('progress: ' + progressPercentage + '% ' + evt.config.data.file.name);
-        });
+          // Success
+          function(response) {
+            $rootScope.glassPane--;
+          },
+          // error
+          function(response) {
+            $rootScope.handleHttpError(response.data, response.status, response.headers,
+              response.config);
+            $rootScope.glassPane--;
+          },
+          // event
+          function(evt) {
+            var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
+            console.debug('progress: ' + progressPercentage + '% ' + evt.config.data.file.name);
+          });
 
       };
+
+      ///////////////////////////////////////
+      // Release Handling
+      // /////////////////////////////////////
+
+      $scope.release = {
+     
+          effectiveTime : 20170131,
+          moduleId : null,
+          inputFile : null,
+          startDate : null,
+        }
+      
+      
+      $scope.toggleResultItems = function(reportResult) {
+
+        // if open, simply close
+        if (reportResult.isCollapsed == false) {
+          reportResult.isCollapsed = true;
+
+          // if closed, re-open and get result items if
+          // necessary
+        } else {
+
+          reportResult.isCollapsed = false;
+          if (reportResult.reportResultItems == null) {
+            $scope.getResultItems(reportResult, reportResult.page);
+          }
+        }
+      };
+      $scope.itemsPerPage = 10;
+      // if closed, open
+      $scope.getResultItems = function(reportResult, page) {
+        console.debug(reportResult);
+        $rootScope.glassPane++;
+        // construct a PFS object
+        var pfsParameterObj = {
+          'startIndex' : (page - 1) * $scope.itemsPerPage,
+          'maxResults' : $scope.itemsPerPage,
+          'sortField' : null,
+          'queryRestriction' : null
+        };
+
+        // obtain the reports
+        $http({
+          url : root_reporting + 'reportResult/id/' + reportResult.id + '/items',
+          dataType : 'json',
+          data : pfsParameterObj,
+          method : 'POST',
+          headers : {
+            'Content-Type' : 'application/json'
+          }
+        }).success(function(data) {
+          $rootScope.glassPane--;
+          reportResult.reportResultItems = data.reportResultItem;
+          reportResult.page = page;
+          reportResult.nPages = Math.ceil(reportResult.ct / $scope.itemsPerPage);
+
+          return reportResult;
+        }).error(function(data, status, headers, config) {
+          $rootScope.glassPane--;
+          reportResult.reportResultItems = null;
+          $rootScope.handleHttpError(data, status, headers, config);
+          return null;
+        });
+      };
+      
+      var initializeCollapsed = function(report) {
+        for (var i = 0; i < report.results.length; i++) {
+          report.results[i].isCollapsed = true;
+          report.results[i].reportResultItems = null;
+          report.results[i].page = 1;
+          report.results[i].nPages = Math.ceil(report.results[i].ct / $scope.itemsPerPage);
+        }
+      };
+
+
+      $scope.getReleaseQaReport = function() {
+
+        var deferred = $q.defer();
+
+        // get the Release QA reports for this project
+        var definition = null;
+        console.debug('rds', $scope.focusProject.reportDefinition);
+        angular.forEach($scope.focusProject.reportDefinition, function(rd) {
+
+          if (rd.name == 'Release QA') {
+            definition = rd;
+          }
+        });
+        console.debug('Release QA definition id', definition);
+
+        if (!definition) {
+          deferred.reject('Could not find Release QA report definition');
+        } else {
+          var pfsParameterObj = {
+            'startIndex' : 0,
+            'maxResults' : 1,
+            'sortField' : null,
+            'queryRestriction' : null
+          };
+
+          // $rootScope.glassPane++;
+
+          // construct the url based on whether report type is
+          // null
+          var url = root_reporting + 'report/reports/project/id/' + $scope.focusProject.id
+            + (definition == null ? '' : '/definition/id/' + definition.id);
+
+          // obtain the reports
+          $http({
+            url : url,
+            dataType : 'json',
+            data : pfsParameterObj,
+            method : 'POST',
+            headers : {
+              'Content-Type' : 'application/json',
+            }
+
+          }).success(
+            function(data) {
+              console.debug('report data', data);
+              if (data && data.report && data.report.length > 0) {
+                var reportId = data.report[0].id;
+                $http.get(
+                  root_reporting + 'report/project/id/' + $scope.focusProject.id + '/' + reportId)
+                  .success(function(report) {
+                    initializeCollapsed(report);
+                    $scope.beginReleaseReport = report;
+
+                    deferred.resolve(data.report[0]);
+                  }, function(data, status, headers, config) {
+                    $rootScope.glassPane--;
+                    $scope.reports = null;
+                    $rootScope.handleHttpError(data, status, headers, config);
+                    deferred.reject('Failed to retrieve Release QA report');
+                  });
+              } else {
+                deferred.reject('Could not retrieve Release QA report -- none exist');
+              }
+
+            }, function(data, status, headers, config) {
+              $rootScope.glassPane--;
+              $scope.reports = null;
+              $rootScope.handleHttpError(data, status, headers, config);
+              deferred.reject('Failed to retrieve Release QA report');
+            });
+        }
+
+        return deferred.promise;
+      }
+
+      $scope.beginRelease = function() {
+        var beginTime = new Date();
+
+        $rootScope.glassPane++;
+        $http.post(
+          root_mapping + 'project/id/' + $scope.focusProject.id + '/release/'
+            + $scope.release.begin.effectiveTime + '/begin').then(
+
+        // Success
+        function(response) {
+
+          $scope.getReleaseQaReport().then(function(response) {
+
+            $rootScope.glassPane--;
+
+            if (!$scope.beginReleaseReport) {
+              utilService.handleError('Could not retrieve Release QA after beginning release');
+            } else if ($scope.beginReleaseReport.timestamp <= beginTime) {
+              utilService.handleError('Latest Release QA predates begin release');
+            }
+
+          }, function(error) {
+            utilService.handleError(error)
+          });
+
+        }, function(data, status, headers, config) {
+          $rootScope.glassPane--;
+          $scope.reports = null;
+          $rootScope.handleHttpError(data, status, headers, config);
+        });
+      };
+
+      $scope.processRelease = function() {
+
+      }
+
+      $scope.finishRelease = function() {
+
+      }
+
+      $scope.startEditingCycle = function() {
+
+      }
 
     } ]);
