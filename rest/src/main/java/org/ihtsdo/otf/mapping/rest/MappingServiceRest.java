@@ -4178,7 +4178,7 @@ public class MappingServiceRest extends RootServiceRest {
 
 	@POST
 	@Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/begin")
-	@ApiOperation(value = "Process release for map project", notes = "Generates release validation report for map project")
+	@ApiOperation(value = "Begin release for map project", notes = "Generates release validation report for map project")
 	public void beginReleaseForMapProject(
 			@ApiParam(value = "Effective Time, e.g. 20170131", required = true) @PathParam("effectiveTime") String effectiveTime,
 			@ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,

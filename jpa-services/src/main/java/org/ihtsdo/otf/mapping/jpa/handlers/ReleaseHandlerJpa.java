@@ -2063,6 +2063,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // Each individual result is stored as a Report Result Item
     Logger.getLogger(getClass()).info("  Validate records");
     boolean errorFlag = false;
+    int pubCt = 0;
     while (mapRecordsToProcess.size() != 0) {
 
       // extract the concept and remove it from list
@@ -2097,7 +2098,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           errorFlag = true;
           resultMessages.add("Failed validation check");
         } else {
-          resultMessages.add("Ready for publication");
+          pubCt++;
         }
       }
 
@@ -2129,6 +2130,15 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             mapRecord.getConceptName(), error);
       }
     }
+    
+    ReportResult pubCtResult = new ReportResultJpa();
+    pubCtResult.setReport(report);
+    pubCtResult.setProjectName(mapProject.getName());
+    pubCtResult.setValue("Ready for publication: " + pubCt);
+    pubCtResult.setReportResultItems(null);
+    report.addResult(pubCtResult);
+    
+    
 
     // CHECK: In-scope concepts with no map record
     Logger.getLogger(getClass())
