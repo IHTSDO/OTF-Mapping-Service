@@ -1643,14 +1643,13 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       // /////////////////////////////////////
 
       $scope.release = {
-     
-          effectiveTime : 20170131,
-          moduleId : null,
-          inputFile : null,
-          startDate : null,
-        }
-      
-      
+
+        effectiveTime : 20170131,
+        moduleId : null,
+        inputFile : null,
+        startDate : null,
+      }
+
       $scope.toggleResultItems = function(reportResult) {
 
         // if open, simply close
@@ -1703,7 +1702,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           return null;
         });
       };
-      
+
       var initializeCollapsed = function(report) {
         for (var i = 0; i < report.results.length; i++) {
           report.results[i].isCollapsed = true;
@@ -1712,7 +1711,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           report.results[i].nPages = Math.ceil(report.results[i].ct / $scope.itemsPerPage);
         }
       };
-
 
       $scope.getReleaseQaReport = function() {
 
@@ -1792,10 +1790,14 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       $scope.beginRelease = function() {
         var beginTime = new Date();
 
+        if (!$scope.release.effectiveTime) {
+          window.alert('Must set effective time to begin release');
+        }
+
         $rootScope.glassPane++;
         $http.post(
           root_mapping + 'project/id/' + $scope.focusProject.id + '/release/'
-            + $scope.release.begin.effectiveTime + '/begin').then(
+            + $scope.release.effectiveTime + '/begin').then(
 
         // Success
         function(response) {
@@ -1821,12 +1823,50 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         });
       };
 
-      $scope.processRelease = function() {
+      $scope.processSnapshotRelease = function() {
+        $rootScope.glassPane++;
 
+        if (!$scope.release.effectiveTime || !$scope.release.moduleId) {
+          window.alert('Must set effective time and module id to process release');
+        }
+
+        // @Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/module/id/{moduleId}/process")
+        $http.post(
+          root_mapping + 'project/id/' + $scope.focusProject.id + '/release/'
+            + $scope.release.effectiveTime + '/module/id/' + $scope.release.moduleId + '/snapshot')
+          .then(
+
+          // Success
+          function(response) {
+
+          }, function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $scope.reports = null;
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
       }
 
-      $scope.finishRelease = function() {
+      $scope.finishSnapshotRelease = function(testMode) {
+        $rootScope.glassPane++;
 
+        if (!$scope.release.effectiveTime) {
+          window.alert('Must set effective time finish or preview release');
+        }
+
+        // @Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/finish")
+        $http.post(
+          root_mapping + 'project/id/' + $scope.focusProject.id + '/release/'
+            + $scope.release.effectiveTime + '/snapshot/finish' + (testMode ? '?test=true' : ''))
+          .then(
+
+          // Success
+          function(response) {
+
+          }, function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $scope.reports = null;
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
       }
 
       $scope.startEditingCycle = function() {
