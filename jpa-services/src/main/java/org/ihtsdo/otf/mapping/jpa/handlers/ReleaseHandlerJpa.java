@@ -2058,6 +2058,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         new HashSet<>(scopeConceptTerminologyIds);
     List<MapRecord> mapRecordsToProcess = mapRecords.getMapRecords();
 
+    // create a temp set of concept ids for which a map record exists
+    // (irrespective of scope
+    Map<String, Integer> conceptMapRecordCountMap = new HashMap<>();
+
     // for each map record, check for errors
     // NOTE: Report Result names are constructed from error lists assigned
     // Each individual result is stored as a Report Result Item
@@ -2074,6 +2078,14 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
       // first, remove this concept id from the dynamic conceptsWithNoRecord set
       conceptsWithNoRecord.remove(mapRecord.getConceptId());
+
+      // instantiate or increment the number of map records for this concept id
+      if (!conceptMapRecordCountMap.containsKey(mapRecord.getConceptId())) {
+        conceptMapRecordCountMap.put(mapRecord.getConceptId(), 1);
+      } else {
+        conceptMapRecordCountMap.put(mapRecord.getConceptId(),
+            conceptMapRecordCountMap.get(mapRecord.getConceptId() + 1));
+      }
 
       // constuct a list of errors for this concept
       List<String> resultMessages = new ArrayList<>();
@@ -2124,6 +2136,41 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         // }
       }
 
+      Concept concept = contentService.getConcept(mapRecord.getConceptId(),
+          mapProject.getSourceTerminology(),
+          mapProject.getSourceTerminologyVersion());
+      // 1. Mapped concepts that are inactive in current SNOMED release
+      // 2. Mapped concepts not in snomed (e.g. because of drip feed issues)//
+      if (concept == null) {
+        resultMessages
+            .add("Mapped concept not in " + mapProject.getSourceTerminology());
+      } else if (!concept.isActive()) {
+        resultMessages.add(
+            "Mapped concept inactive in " + mapProject.getSourceTerminology());
+      }
+
+      if (!mapProject.isGroupStructure()) {
+
+      }
+
+      // if not rule based and not group based, expect only one entry
+      // MOVE THIS to validation
+
+      // make sure no multiple map records for the same source terminology id
+
+      // 3. Concept mapped to multiple (destination terminology) codes (this is
+      // A LOT for ICD, so …)
+      // a. ONLY if not a “group based” map
+      // 4. Duplicate (destination terminology) codes (only if
+      // a. ONLY if not a “group based” map
+      // 5. Destination terminology codes NOT used in previous version of the
+      // map
+      // 6. ACTIVE Source terminology concepts in previous version NOT in
+      // current version (possibly with RF2 line from previous version map as
+      // the “value”)
+
+      // confirm active snapshot
+
       // Add all reported errors to the report
       for (final String error : resultMessages) {
         addReportError(report, mapProject, mapRecord.getConceptId(),
@@ -2131,18 +2178,28 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       }
     }
     
+    // add multiple map record mappings to report if present
+    for (String conceptId :  conceptMapRecordCountMap.keySet()) {
+      if (conceptMapRecordCountMap.get(conceptId) > 1) {
+        // get the concept
+        Concept c = contentService.getConcept(conceptId,
+            mapProject.getSourceTerminology(),
+            mapProject.getSourceTerminologyVersion());
+        addReportError(report, mapProject, conceptId, c.getDefaultPreferredName(), "Multiple map records found for concept");
+      }
+    }
+
     ReportResult pubCtResult = new ReportResultJpa();
     pubCtResult.setReport(report);
     pubCtResult.setProjectName(mapProject.getName());
     pubCtResult.setValue("Ready for publication: " + pubCt);
     pubCtResult.setReportResultItems(null);
     report.addResult(pubCtResult);
-    
-    
 
     // CHECK: In-scope concepts with no map record
-    Logger.getLogger(getClass())
-        .debug("  Report in scope concepts with no record");
+    Logger.getLogger(
+
+        getClass()).debug("  Report in scope concepts with no record");
     for (final String terminologyId : conceptsWithNoRecord) {
 
       // get the concept
@@ -2244,8 +2301,11 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           .getPublishedAndReadyForPublicationMapRecordsForMapProject(
               mapProject.getId(), null);
       mapRecords = mapRecordList.getMapRecords();
-      mappingService.setTransactionPerOperation(false);
-      mappingService.beginTransaction();
+      Report report = new ReportJpa();
+      if (!testModeFlag) {
+        mappingService.setTransactionPerOperation(false);
+        mappingService.beginTransaction();
+      }
       for (final MapRecord record : mapRecords) {
 
         // Remove out of scope concepts if not in test mode
@@ -2256,6 +2316,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             Logger.getLogger(getClass())
                 .info("    REMOVE out of scope record " + record.getId());
             mappingService.removeMapRecord(record.getId());
+          } else {
+            this.addReportError(report, mapProject, record.getConceptId(),
+                record.getConceptName(), "Out of scope: removed");
+
           }
         }
 
@@ -2267,14 +2331,20 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           if (!testModeFlag) {
             record.setWorkflowStatus(WorkflowStatus.PUBLISHED);
             mappingService.updateMapRecord(record);
+          } else {
+            this.addReportError(report, mapProject, record.getConceptId(),
+                record.getConceptName(),
+                "Ready for Publication marked Published");
           }
         }
       }
       // Set latest publication date to now.
-      mapProject.setLatestPublicationDate(new Date());
-      mapProject.setPublic(true);
-      mappingService.updateMapProject(mapProject);
-      mappingService.commit();
+      if (!testModeFlag) {
+        mapProject.setLatestPublicationDate(new Date());
+        mapProject.setPublic(true);
+        mappingService.updateMapProject(mapProject);
+        mappingService.commit();
+      }
     }
 
     // skip if in test mode
@@ -2508,7 +2578,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @return the pattern for type
    */
   @SuppressWarnings("static-method")
-  private String getPatternForType(MapProject mapProject) {
+  @Override
+  public String getPatternForType(MapProject mapProject) {
     if (mapProject.getMapRefsetPattern() == MapRefsetPattern.SimpleMap) {
       return "sRefset_";
     } else if (mapProject
