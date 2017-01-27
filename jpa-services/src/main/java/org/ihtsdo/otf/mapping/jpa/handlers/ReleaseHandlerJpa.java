@@ -25,7 +25,9 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.ComplexMapRefSetMemberList;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapRefsetPattern;
+import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
+import org.ihtsdo.otf.mapping.helpers.ReportFrequency;
 import org.ihtsdo.otf.mapping.helpers.ReportQueryType;
 import org.ihtsdo.otf.mapping.helpers.ReportResultType;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
@@ -37,6 +39,7 @@ import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ReportServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapProject;
@@ -44,6 +47,7 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.reports.Report;
 import org.ihtsdo.otf.mapping.reports.ReportDefinition;
+import org.ihtsdo.otf.mapping.reports.ReportDefinitionJpa;
 import org.ihtsdo.otf.mapping.reports.ReportJpa;
 import org.ihtsdo.otf.mapping.reports.ReportResult;
 import org.ihtsdo.otf.mapping.reports.ReportResultItem;
@@ -55,11 +59,13 @@ import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 import org.ihtsdo.otf.mapping.rf2.jpa.ComplexMapRefSetMemberJpa;
+import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.SimpleMapRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.ReportService;
+import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
 
@@ -1468,7 +1474,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   @SuppressWarnings("static-method")
   private String getHash(ComplexMapRefSetMember c) {
     return c.getRefSetId() + c.getConcept().getTerminologyId() + c.getMapGroup()
-        + c.getMapRule() + c.getMapTarget();
+        + (c.getMapRule() == null ? "" : c.getMapRule()) + (c.getMapTarget() == null ? "" : c.getMapTarget());
   }
 
   /**
@@ -2037,7 +2043,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     // get all scope concept terminology ids for this project
     Logger.getLogger(getClass()).info("  Get scope concepts for map project");
-    Set<String> scopeConceptTerminologyIds = new HashSet<>();
+    final Set<String> scopeConceptTerminologyIds = new HashSet<>();
     for (final SearchResult sr : mappingService
         .findConceptsInScope(mapProject.getId(), null).getSearchResults()) {
       scopeConceptTerminologyIds.add(sr.getTerminologyId());
@@ -2048,7 +2054,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     // get all map records for this project
     Logger.getLogger(getClass()).info("  Get records for map project");
-    MapRecordList mapRecords =
+    final MapRecordList mapRecords =
         mappingService.getMapRecordsForMapProject(mapProject.getId());
 
     Logger.getLogger(getClass()).info("    count = " + mapRecords.getCount());
@@ -2056,11 +2062,26 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // create a temp set of scope terminology ids
     Set<String> conceptsWithNoRecord =
         new HashSet<>(scopeConceptTerminologyIds);
-    List<MapRecord> mapRecordsToProcess = mapRecords.getMapRecords();
+    final List<MapRecord> mapRecordsToProcess = mapRecords.getMapRecords();
 
     // create a temp set of concept ids for which a map record exists
     // (irrespective of scope
-    Map<String, Integer> conceptMapRecordCountMap = new HashMap<>();
+    final Map<String, Integer> conceptMapRecordCountMap = new HashMap<>();
+
+    // get all mapping refset members for this project
+    final Map<Long, List<ComplexMapRefSetMember>> refsetMemberMap =
+        new HashMap<>();
+    for (ComplexMapRefSetMember member : contentService
+        .getComplexMapRefSetMembersForRefSetId(mapProject.getRefSetId())
+        .getComplexMapRefSetMembers()) {
+      List<ComplexMapRefSetMember> list =
+          refsetMemberMap.get(member.getConcept().getId());
+      if (list == null) {
+        list = new ArrayList<>();
+      }
+      list.add(member);
+      refsetMemberMap.put(member.getConcept().getId(), list);
+    }
 
     // for each map record, check for errors
     // NOTE: Report Result names are constructed from error lists assigned
@@ -2071,7 +2092,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     while (mapRecordsToProcess.size() != 0) {
 
       // extract the concept and remove it from list
-      MapRecord mapRecord = mapRecordsToProcess.get(0);
+      final MapRecord mapRecord = mapRecordsToProcess.get(0);
       mapRecordsToProcess.remove(0);
       Logger.getLogger(getClass()).debug("    concept = "
           + mapRecord.getConceptId() + " " + mapRecord.getConceptName());
@@ -2084,11 +2105,11 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         conceptMapRecordCountMap.put(mapRecord.getConceptId(), 1);
       } else {
         conceptMapRecordCountMap.put(mapRecord.getConceptId(),
-            conceptMapRecordCountMap.get(mapRecord.getConceptId() + 1));
+            conceptMapRecordCountMap.get(mapRecord.getConceptId()) + 1);
       }
 
       // constuct a list of errors for this concept
-      List<String> resultMessages = new ArrayList<>();
+      final List<String> resultMessages = new ArrayList<>();
 
       // CHECK: Map record is READY_FOR_PUBLICATION or PUBLISHED
       if (!mapRecord.getWorkflowStatus()
@@ -2134,11 +2155,19 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         // .info(" REMOVE out of scope record " + mapRecord.getId());
         // mappingService.removeMapRecord(mapRecord.getId());
         // }
+
       }
+
+      //
+      // Concept and refset integrity checks
+      //
+
+      System.out.println("new checks for " + mapRecord.getConceptId());
 
       Concept concept = contentService.getConcept(mapRecord.getConceptId(),
           mapProject.getSourceTerminology(),
           mapProject.getSourceTerminologyVersion());
+
       // 1. Mapped concepts that are inactive in current SNOMED release
       // 2. Mapped concepts not in snomed (e.g. because of drip feed issues)//
       if (concept == null) {
@@ -2149,27 +2178,29 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             "Mapped concept inactive in " + mapProject.getSourceTerminology());
       }
 
-      if (!mapProject.isGroupStructure()) {
+      // Check: Destination terminology codes NOT used in previous version of
+      // the map
 
+      if (refsetMemberMap.containsKey(concept.getId())) {
+        final List<ComplexMapRefSetMember> members =
+            refsetMemberMap.get(concept.getId());
+        for (final ComplexMapRefSetMember member : members) {
+          if (member.isActive() && member.getMapTarget() != null
+              && !member.getMapTarget().isEmpty()) {
+            boolean memberTargetFound = false;
+            for (MapEntry me : mapRecord.getMapEntries()) {
+              if (member.getMapTarget().equals(me.getTargetId())) {
+                memberTargetFound = true;
+              }
+            }
+            if (!memberTargetFound) {
+              this.addReportError(report, mapProject,
+                  member.getTerminologyId(), concept.getDefaultPreferredName(),
+                  "Destination terminology code previously found on refset mapping not used");
+            }
+          }
+        }
       }
-
-      // if not rule based and not group based, expect only one entry
-      // MOVE THIS to validation
-
-      // make sure no multiple map records for the same source terminology id
-
-      // 3. Concept mapped to multiple (destination terminology) codes (this is
-      // A LOT for ICD, so …)
-      // a. ONLY if not a “group based” map
-      // 4. Duplicate (destination terminology) codes (only if
-      // a. ONLY if not a “group based” map
-      // 5. Destination terminology codes NOT used in previous version of the
-      // map
-      // 6. ACTIVE Source terminology concepts in previous version NOT in
-      // current version (possibly with RF2 line from previous version map as
-      // the “value”)
-
-      // confirm active snapshot
 
       // Add all reported errors to the report
       for (final String error : resultMessages) {
@@ -2177,15 +2208,39 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             mapRecord.getConceptName(), error);
       }
     }
-    
+
     // add multiple map record mappings to report if present
-    for (String conceptId :  conceptMapRecordCountMap.keySet()) {
+    System.out.println("Checking for multiple mappings: "
+        + conceptMapRecordCountMap.size() + " concepts");
+    for (String conceptId : conceptMapRecordCountMap.keySet()) {
+      System.out.println("Checking " + conceptId + " with ");
+      System.out.println("  " + conceptMapRecordCountMap.get(conceptId));
       if (conceptMapRecordCountMap.get(conceptId) > 1) {
+
         // get the concept
         Concept c = contentService.getConcept(conceptId,
             mapProject.getSourceTerminology(),
             mapProject.getSourceTerminologyVersion());
-        addReportError(report, mapProject, conceptId, c.getDefaultPreferredName(), "Multiple map records found for concept");
+        addReportError(report, mapProject, conceptId,
+            c.getDefaultPreferredName(),
+            "Multiple map records found for concept");
+      }
+    }
+
+    // Check: Source terminology concepts in previous version NOT in
+    // current version (possibly with RF2 line from previous version map as
+    // the “value”)
+    ComplexMapRefSetMemberList members = contentService
+        .getComplexMapRefSetMembersForRefSetId(mapProject.getRefSetId());
+    for (ComplexMapRefSetMember member : members.getComplexMapRefSetMembers()) {
+      Concept sourceConcept = member.getConcept();
+      if (sourceConcept != null && sourceConcept.isActive()
+          && !conceptMapRecordCountMap
+              .containsKey(member.getConcept().getTerminologyId())) {
+        this.addReportError(report, mapProject,
+            member.getConcept().getTerminologyId(),
+            member.getConcept().getDefaultPreferredName(),
+            "Active source concept mapped in previous version no longer mapped");
       }
     }
 
@@ -2287,6 +2342,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   /* see superclass */
   @Override
   public void finishRelease() throws Exception {
+    
+    // compare file to current records
+    compareInputFileToExistingMapRecords();
+    if (testModeFlag) {
+      throw new Exception("Done");
+    }
 
     // get all scope concept terminology ids for this project
     Logger.getLogger(getClass()).info("  Get scope concepts for map project");
@@ -2497,6 +2558,191 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     contentService.commit();
     contentService.close();
     reader.close();
+
+  }
+  
+  /**
+   * Load map refset from file.
+   *
+   * @throws Exception the exception
+   */
+  @SuppressWarnings("resource")
+  private void compareInputFileToExistingMapRecords() throws Exception {
+
+    String line = "";
+    int objectCt = 0;
+
+    // begin transaction
+    final ContentService contentService = new ContentServiceJpa();
+    
+    Logger.getLogger(getClass()).info("    Open " + inputFile);
+    File f = new File(inputFile);
+    if (!f.exists()) {
+      throw new Exception("Input file does not exist: " + f.toString());
+    }
+
+    BufferedReader reader = new BufferedReader(new FileReader(f));
+
+    final String terminology = mapProject.getSourceTerminology();
+    final String version = mapProject.getSourceTerminologyVersion();
+    
+    Map<String, List<ComplexMapRefSetMember>> conceptRefSetMap = new HashMap<>();
+    
+    while ((line = reader.readLine()) != null) {
+
+      line = line.replace("\r", "");
+      final String fields[] = line.split("\t");
+
+      // skip header and inactive refsets
+      if (!fields[0].equals("id") && fields[2].equals("1")) {
+        final ComplexMapRefSetMember member = new ComplexMapRefSetMemberJpa();
+
+        member.setTerminologyId(fields[0]);
+        member.setEffectiveTime(dateFormat.parse(fields[1]));
+        member.setActive(fields[2].equals("1") ? true : false);
+        member.setModuleId(Long.valueOf(fields[3]));
+        
+        if (moduleId == null) {
+          moduleId = fields[3];
+        }
+        member.setRefSetId(fields[4]);
+        // conceptId
+        final Concept tempConcept = new ConceptJpa();
+        tempConcept.setTerminologyId(fields[5]);
+        member.setConcept(tempConcept);
+
+        // Terminology attributes
+        member.setTerminology(terminology);
+        member.setTerminologyVersion(version);
+
+        if (mapProject.getMapRefsetPattern() != MapRefsetPattern.SimpleMap) {
+
+          // ComplexMap unique attributes
+          member.setMapGroup(Integer.parseInt(fields[6]));
+          member.setMapPriority(Integer.parseInt(fields[7]));
+          member.setMapRule(fields[8]);
+          member.setMapAdvice(fields[9]);
+          member.setMapTarget(fields[10]);
+          if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ComplexMap) {
+            member.setMapRelationId(Long.valueOf(fields[11]));
+          } else if (mapProject
+              .getMapRefsetPattern() == MapRefsetPattern.ExtendedMap) {
+            member.setMapRelationId(Long.valueOf(fields[12]));
+
+          } else {
+            throw new Exception(
+                "Unsupported map type " + mapProject.getMapRefsetPattern());
+          }
+          // ComplexMap unique attributes NOT set by file (mapBlock
+          // elements) - set defaults
+          member.setMapBlock(0);
+          member.setMapBlockRule(null);
+          member.setMapBlockAdvice(null);
+
+        } else {
+          member.setMapGroup(1);
+          member.setMapPriority(1);
+          member.setMapRule(null);
+          member.setMapAdvice(null);
+          member.setMapTarget(fields[6]);
+          member.setMapRelationId(null);
+        }
+        
+        System.out.println("member: " + member.toString());
+
+        List<ComplexMapRefSetMember> members = conceptRefSetMap.get(member.getConcept().getTerminologyId());
+        if (members == null) {
+          members = new ArrayList<>();
+        }
+        members.add(member);
+        conceptRefSetMap.put(member.getConcept().getTerminologyId(), members);
+      }
+    }
+    
+    System.out.println(conceptRefSetMap.size() + " concepts with refset members loaded");
+
+    // close any remaining objects
+    
+    reader.close();
+    
+    // construct report
+    WorkflowService workflowService = new WorkflowServiceJpa();
+    ReportService reportService = new ReportServiceJpa();
+    
+    ReportDefinition qaDef = null;
+    for (ReportDefinition definition : reportService.getReportDefinitions().getReportDefinitions()) {
+      if (definition.getName().equals("Release Finalization QA")) {
+        qaDef = definition;
+        break;
+      }
+    }
+    
+    if (qaDef == null) {
+      qaDef = new ReportDefinitionJpa();
+      qaDef.setDescription("Compares release input file to current state of mappings and identifies potential mismatches");
+      qaDef.setDiffReport(false);
+      qaDef.setFrequency(ReportFrequency.ON_DEMAND);
+      qaDef.setName("Release Finalization QA");
+      qaDef.setQACheck(false);
+      qaDef.setQueryType(ReportQueryType.NONE);
+      qaDef.setResultType(ReportResultType.CONCEPT);
+      qaDef.setRoleRequired(MapUserRole.LEAD);
+      reportService.addReportDefinition(qaDef);
+    }
+    
+    
+    Report report = new ReportJpa();
+    report.setReportDefinition(qaDef);
+    report.setMapProjectId(mapProject.getId());
+    report.setOwner(mappingService.getMapUser("qa"));
+    report.setAutoGenerated(false);
+    report.setName("Release Finalization QA");
+    report.setQuery("No query -- constructed by services");
+    report.setTimestamp(new Date().getTime());
+    
+    for (String conceptId : conceptRefSetMap.keySet()) {
+      final List<ComplexMapRefSetMember> members = conceptRefSetMap.get(conceptId);
+      Concept concept = contentService.getConcept(conceptId, mapProject.getSourceTerminology(), mapProject.getSourceTerminologyVersion());
+      
+      // get the map record for this concept id
+      MapRecord mapRecord = getMapRecordForTerminologyId(conceptId);
+      if (mapRecord == null) {
+        this.addReportError(report, mapProject, conceptId, concept.getDefaultPreferredName(), "Mappings found in release file but no mappings for concept");
+        continue;
+      }
+      
+      if (mapRecord.getMapEntries().size() != members.size()) {
+        this.addReportError(report, mapProject, conceptId, concept.getDefaultPreferredName(), "Entry size mismatch between release file and current mappings for concept");
+        // TODO Workflow QA path action here
+      }
+      
+      final Set<String> entryHashSet = new HashSet<>();
+      for (MapEntry entry : mapRecord.getMapEntries()) {
+        if (mapRecord.getConceptId() == "408861001") {
+          System.out.println("entry  : " + entry);
+          System.out.println("  hash : " + getHash(getComplexMapRefSetMemberForMapEntry(entry, mapRecord, mapProject, concept)));
+        }
+        entryHashSet.add(getHash(getComplexMapRefSetMemberForMapEntry(entry, mapRecord, mapProject, concept)));
+      }
+     
+      for (ComplexMapRefSetMember member : members) {  
+        if (member.getConcept().getTerminologyId() == "408861001") {
+          System.out.println("member : " + member);
+          System.out.println("  hash : " + getHash(member));
+        }
+        if (!entryHashSet.contains(getHash(member))) {
+          this.addReportError(report, mapProject, conceptId, concept.getDefaultPreferredName(), "Release file map refset member not present in current mappings");
+          break;
+          // TODO Workflow QA path action here
+        }
+      }
+    }
+    
+    reportService.addReport(report);
+    
+    reportService.close();
+    workflowService.close();
+    contentService.close();
 
   }
 
