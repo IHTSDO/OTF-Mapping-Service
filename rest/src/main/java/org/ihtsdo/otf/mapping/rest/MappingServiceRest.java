@@ -4493,13 +4493,13 @@ public class MappingServiceRest extends RootServiceRest {
 
       // check for existence of file
       String relPath = "/der2_" + handler.getPatternForType(mapProject)
-          + mapProject.getMapRefsetPattern() + "Snapshot_INT_" + effectiveTime
+          + mapProject.getMapRefsetPattern() + "ActiveSnapshot_INT_" + effectiveTime
           + ".txt";
       String mapFilePath = releaseDirPath + relPath;
 
       File file = new File(mapFilePath);
       if (!file.exists()) {
-        throw new LocalException("File " + relPath + " not found");
+        throw new LocalException("File " + mapFilePath + " not found");
       }
       handler.setInputFile(mapFilePath);
 

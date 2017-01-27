@@ -2202,6 +2202,8 @@ public class ContentServiceJpa extends RootServiceJpa
     list.setTotalCount(list.getCount());
     return list;
   }
+  
+  
 
   /* see superclass */
   @Override
@@ -2290,6 +2292,35 @@ public class ContentServiceJpa extends RootServiceJpa
 
       }
     }
+  }
+  
+  
+  /* see superclass */
+  @SuppressWarnings("unchecked")
+  @Override
+  public List<SimpleMapRefSetMember> getSimpleMapRefSetMembersForConcept(Long conceptId) {
+    javax.persistence.Query query = manager
+        .createQuery(
+            "select r from SimpleMapRefSetMemberJpa r where concept_id = :conceptId")
+        .setParameter("conceptId", conceptId);
+
+    List<SimpleMapRefSetMember> members = query.getResultList();
+    return members;
+
+  }
+  
+  /* see superclass */
+  @SuppressWarnings("unchecked")
+  @Override
+  public List<ComplexMapRefSetMember> getComplexMapRefSetMembersForConcept(Long conceptId) {
+    javax.persistence.Query query = manager
+        .createQuery(
+            "select r from ComplexMapRefSetMemberJpa r where concept_id = :conceptId")
+        .setParameter("conceptId", conceptId);
+
+    List<ComplexMapRefSetMember> members = query.getResultList();
+    return members;
+
   }
 
 }
