@@ -1861,11 +1861,10 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
 
           // Success
           function(response) {
-
-          }, function(data, status, headers, config) {
+          }, function(error) {
             $rootScope.glassPane--;
             $scope.reports = null;
-            $rootScope.handleHttpError(data, status, headers, config);
+            $rootScope.handleError(error);
           });
       }
 
