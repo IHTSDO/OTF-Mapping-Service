@@ -1437,6 +1437,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         }).success(function(data) {
           $rootScope.glassPane--;
           console.debug('  success', data);
+          $scope.scopeWarnings = data.warnings;
           $scope.resetScopeConceptFilter();
 
         }).error(function(data, status, headers, config) {
@@ -1633,59 +1634,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
             console.debug('progress: ' + progressPercentage + '% ' + evt.config.data.file.name);
           });
-
-      };
-
-      ///////////////////////////////////////
-      // Release Handling
-      // /////////////////////////////////////
-
-      $scope.release = {
-
-        effectiveTime : null,
-        moduleId : null,
-        inputFile : null,
-        startDate : null,
-      }
-
-      $scope.beginRelease = function() {
-        var beginTime = new Date();
-
-        if (!$scope.release.effectiveTime) {
-          window.alert('Must set effective time to begin release');
-        }
-
-        $rootScope.glassPane++;
-        $http.post(
-          root_mapping + 'project/id/' + $scope.focusProject.id + '/release/'
-            + $scope.release.effectiveTime + '/begin').then(
-
-        // Success
-        function(response) {
-          $rootScope.glassPane--;
-        }, function(response) {
-          $rootScope.glassPane--;
-          $rootScope.handleHttpError(response.data, response.status, response.headers,
-            response.config);
-        })
-      };
-
-      $scope.processRelease = function() {
-        $rootScope.glassPane++;
-
-        if (!$scope.release.effectiveTime || !$scope.release.moduleId) {
-          window.alert('Must set effective time and module id to process release');
-        }
-
-        // @Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/module/id/{moduleId}/process")
-        $http.post(
-          root_mapping + 'project/id/' + $scope.focusProject.id + '/release/'
-            + $scope.release.effectiveTime + '/module/id/' + $scope.release.moduleId
-            + '/process').then(
-
-        // Success
-        function(response) {
-          $rootScope.glassPane--;
 
         }, function(response) {
           $rootScope.glassPane--;
