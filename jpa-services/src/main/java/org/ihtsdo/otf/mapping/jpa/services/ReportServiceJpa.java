@@ -132,9 +132,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     report.getNotes().size();
     report.getResults().size();
     
-    System.out.println(report.getResults().size());
     for (final ReportResult result : report.getResults()) {
-      System.out.println(result.getReportResultItems().size());
       result.getReportResultItems().size();
     }
 
@@ -413,8 +411,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     report.getNotes().size();
     report.getResults().size();
     
-    System.out.println(report.getResults().size());
-    for (final ReportResult result : report.getResults()) {
+   for (final ReportResult result : report.getResults()) {
       result.getReportResultItems().size();
     }
 
