@@ -133,7 +133,7 @@ endif
 
 echo "    Compute workflow ...`/bin/date`"
 cd $MAPPING_CODE/admin/loader
-mvn install -PComputeWorkflow -Drun.config=$MAPPING_CONFIG -Drefset.id=447562003,467614008,467614008 -Dsend.notification=true | sed 's/^/      /'
+mvn install -PComputeWorkflow -Drun.config=$MAPPING_CONFIG -Drefset.id=447562003,467614008,446608001 -Dsend.notification=true | sed 's/^/      /'
 if ($status != 0) then
     echo "ERROR computing workflow"
     exit 1
