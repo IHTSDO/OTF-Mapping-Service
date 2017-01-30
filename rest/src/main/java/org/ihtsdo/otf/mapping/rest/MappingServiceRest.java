@@ -4503,14 +4503,14 @@ public class MappingServiceRest extends RootServiceRest {
 
       File file = new File(mapFilePath);
       if (!file.exists()) {
-        throw new LocalException("File " + mapFilePath + " not found");
+        throw new LocalException("Release file " + mapFilePath + " not found");
       }
       handler.setInputFile(mapFilePath);
 
       // process release
       handler.finishRelease();
     } catch (Exception e) {
-      handleException(e, "trying to compute names", user, project, "");
+      handleException(e, "trying to finish release", user, project, "");
     } finally {
 
       mappingService.close();
@@ -4519,16 +4519,15 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   @POST
-  @Path("/project/id/{id:[0-9][0-9]*}/release/startEditing/date/{date}")
+  @Path("/project/id/{id:[0-9][0-9]*}/release/startEditing")
   @ApiOperation(value = "Start editing cycle for map project", notes = "Start editing cycle for map project")
   public void startEditingCycleForMapProject(
-    @ApiParam(value = "Start date, e.g. 1/1/2017", required = true) @PathParam("date") Date startDate,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(WorkflowServiceRest.class)
         .info("RESTful call (Mapping): /project/id/" + mapProjectId.toString()
-            + "/release/startEditing/date/" + startDate.toString());
+            + "/release/startEditing");
 
     String user = null;
     String project = "";
