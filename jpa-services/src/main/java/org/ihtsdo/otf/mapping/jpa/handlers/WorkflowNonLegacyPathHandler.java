@@ -818,9 +818,11 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
 
       case LEAD:
         sb.append(" AND userAndWorkflowStatusPairs:CONFLICT_DETECTED_*");
+        sb.append(" AND NOT assignedUserNames:" + mapUser.getUserName());
         sb.append(" AND NOT (" + "userAndWorkflowStatusPairs:CONFLICT_NEW_* OR "
             + "userAndWorkflowStatusPairs:CONFLICT_IN_PROGRESS_* OR "
             + "userAndWorkflowStatusPairs:CONFLICT_RESOLVED_*)");
+
         break;
 
       case SPECIALIST:
