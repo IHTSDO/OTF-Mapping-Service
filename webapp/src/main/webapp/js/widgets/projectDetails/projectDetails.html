@@ -1074,13 +1074,13 @@
 </uib-accordion-heading> <uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
   first-text="&laquo;" last-text="&raquo;" direction-links="false"
   boundary-links="true" total-items="pagedScopeConceptCount"
-  items-per-page="pageSize" max-size="maxSize"
-  ng-model="pageScopeConcept"
-  ng-change="getPagedScopeConcepts(pageScopeConcept)"></uib-pagination>
-<!-- <form ng-submit="resetScopeConceptFilter()">
-      <input id="scopeConceptSearch" type="text" ng-model="scopeConceptFilter" ng-change="getPagedScopeConcepts(1)">
+  items-per-page="pageSize" max-size="maxSize" ng-model="pageScopeConcept"
+  ng-change="getPagedScopeConcepts(pageScopeConcept)"></uib-pagination> <!-- 
+<form ng-submit="resetScopeConceptFilter()">
+  <input id="scopeConceptSearch" type="text" ng-model="scopeConceptFilter"
+    ng-change="getPagedScopeConcepts(1)">
   <button type="submit" class="btn btn-xs btn-primary">Reset Filter</button>
-    </form>  -->
+</form> -->
 
 <table style="width: 100%" class="table pure-table">
   <thead>
@@ -1127,10 +1127,14 @@
     ng-model="scopeConceptsToAdd"></textarea>
   <button class="btn btn-xs btn-primary"
     ng-click="submitNewScopeIncludedConcepts(scopeConceptsToAdd)">Add</button>
-  <button class="btn btn-xs btn-warning"
-    ng-click="scopeConceptsToAdd = null">Clear</button>
-  </uib-tab> <uib-tab heading="Remove Concepts"> Enter concept
-  terminology ids, delimited by either whitespace or commas. <textarea
+  <button class="btn btn-xs btn-warning" ng-click="scopeConceptsToAdd = null">Clear</button>
+  <div ng-show="scopeWarnings.length>0">
+    <span style="margin-top: 10px;" ng-repeat="warning in scopeWarnings" class="alert alert-warning">
+      {{warning}}<br />
+    </span>
+  </div>
+  </uib-tab> <uib-tab heading="Remove Concepts"> Enter concept terminology ids,
+  delimited by either whitespace or commas. <textarea
     style="width: 100%; height: 100px" ng-model="scopeConceptsToRemove"></textarea>
   <button class="btn btn-xs btn-primary"
     ng-click="removeScopeIncludedConcepts(scopeConceptsToRemove)">Remove</button>
