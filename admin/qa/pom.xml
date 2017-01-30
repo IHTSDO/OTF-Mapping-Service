@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
-    <version>1.5.21</version>
+    <version>1.5.22</version>
     <relativePath>../../parent</relativePath>
   </parent>
 
@@ -241,7 +241,7 @@
                     <property>
                       <name>Map project scope concepts should exist</name>
                       <value>
-                        SELECT a.id, a.name
+                        SELECT a.id, a.name, b.scopeConcepts
                         FROM map_projects a,
                         map_projects_scope_concepts b
                         WHERE a.id = b.id

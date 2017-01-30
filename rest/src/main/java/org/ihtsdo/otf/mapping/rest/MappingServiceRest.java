@@ -40,6 +40,7 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.dto.KeyValuePair;
 import org.ihtsdo.otf.mapping.dto.KeyValuePairList;
 import org.ihtsdo.otf.mapping.dto.KeyValuePairLists;
+import org.ihtsdo.otf.mapping.helpers.ConceptList;
 import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceListJpa;
@@ -87,6 +88,7 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.model.MapUserPreferences;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Description;
+import org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Relationship;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
@@ -662,11 +664,11 @@ public class MappingServiceRest extends RootServiceRest {
    */
   @POST
   @Path("/project/id/{projectId}/scopeConcepts/add")
-  @ApiOperation(value = "Adds a list of scope concepts to a map project", notes = "Adds a list of scope concepts to a map project.", response = Response.class)
+  @ApiOperation(value = "Adds a list of scope concepts to a map project", notes = "Adds a list of scope concepts to a map project.", response = ValidationResultJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public void addScopeConceptsToMapProject(
+  public ValidationResult addScopeConceptsToMapProject(
     @ApiParam(value = "List of concepts to add, e.g. {'100073004', '100075006'", required = true) List<String> terminologyIds,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
@@ -677,6 +679,7 @@ public class MappingServiceRest extends RootServiceRest {
     String projectName = "";
     String user = "";
     final MappingService mappingService = new MappingServiceJpa();
+    final ContentService contentService = new ContentServiceJpa();
 
     try {
       // authorize call
@@ -685,18 +688,29 @@ public class MappingServiceRest extends RootServiceRest {
 
       final MapProject mapProject = mappingService.getMapProject(projectId);
 
+      //
+      final ValidationResult result = new ValidationResultJpa();
       for (final String terminologyId : terminologyIds) {
-        mapProject.addScopeConcept(terminologyId);
+        if (contentService.getConcept(terminologyId,
+            mapProject.getSourceTerminology(),
+            mapProject.getSourceTerminologyVersion()) != null) {
+          mapProject.addScopeConcept(terminologyId);
+        } else {
+          result.addWarning(
+              "Concept " + terminologyId + " does not exist, skipping");
+        }
       }
       mappingService.updateMapProject(mapProject);
-
+      return result;
     } catch (Exception e) {
       this.handleException(e, "trying to add scope concept to project", user,
           projectName, "");
     } finally {
       mappingService.close();
+      contentService.close();
       securityService.close();
     }
+    return null;
   }
 
   /**
@@ -4134,6 +4148,140 @@ public class MappingServiceRest extends RootServiceRest {
       handleException(e, "trying to get all terminology notes", user, "", "");
       return null;
     } finally {
+      mappingService.close();
+      securityService.close();
+    }
+  }
+
+  /**
+   * Compute default preferred names.
+   *
+   * @param mapProjectId the map project id
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  @POST
+  @Path("/project/id/{id:[0-9][0-9]*}/names")
+  @ApiOperation(value = "Compute default preferred names for a map project.", notes = "Recomputes default preferred names for the specified map project.")
+  public void computeDefaultPreferredNames(
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /project/id/" + mapProjectId.toString()
+            + "/names");
+
+    String user = null;
+    String project = "";
+
+    final MappingService mappingService = new MappingServiceJpa();
+    ContentService contentService = new ContentServiceJpa();
+    try {
+      // authorize call
+      user = authorizeProject(mapProjectId, authToken,
+          MapUserRole.ADMINISTRATOR, "compute names", securityService);
+
+      final MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      final String terminology = mapProject.getSourceTerminology();
+      final String version = mapProject.getSourceTerminologyVersion();
+      final Long dpnTypeId = 900000000000003001L;
+      final Long dpnrefsetId = 900000000000509007L;
+      final Long dpnAcceptabilityId = 900000000000548007L;
+      // FROM ComputeDefaultPreferredNameMojo
+      Logger.getLogger(getClass())
+          .info("Starting comput default preferred names");
+      Logger.getLogger(getClass()).info("  terminology = " + terminology);
+      Logger.getLogger(getClass()).info("  terminologyVersion = " + version);
+
+      contentService.setTransactionPerOperation(false);
+      contentService.beginTransaction();
+
+      // Setup vars
+      int dpnNotFoundCt = 0;
+      int dpnFoundCt = 0;
+      int dpnSkippedCt = 0;
+      int objectCt = 0;
+
+      final ConceptList concepts =
+          contentService.getAllConcepts(terminology, version);
+      contentService.clear();
+
+      // Iterate over concepts
+      for (final Concept concept2 : concepts.getConcepts()) {
+        final Concept concept = contentService.getConcept(concept2.getId());
+        // Skip if inactive
+        if (!concept.isActive()) {
+          dpnSkippedCt++;
+          continue;
+        }
+        Logger.getLogger(getClass())
+            .debug("  Concept " + concept.getTerminologyId());
+        boolean dpnFound = false;
+        // Iterate over descriptions
+        for (Description description : concept.getDescriptions()) {
+
+          // If active andn preferred type
+          if (description.isActive()
+              && description.getTypeId().equals(dpnTypeId)) {
+            // Iterate over language refset members
+            for (LanguageRefSetMember language : description
+                .getLanguageRefSetMembers()) {
+              // If prefrred and has correct refset
+              if (new Long(language.getRefSetId()).equals(dpnrefsetId)
+                  && language.isActive()
+                  && language.getAcceptabilityId().equals(dpnAcceptabilityId)) {
+                // print warning for multiple names found
+                if (dpnFound) {
+                  Logger.getLogger(getClass()).warn(
+                      "Multiple default preferred names found for concept "
+                          + concept.getTerminologyId());
+                  Logger.getLogger(getClass()).warn(
+                      "  " + "Existing: " + concept.getDefaultPreferredName());
+                  Logger.getLogger(getClass())
+                      .warn("  " + "Replaced with: " + description.getTerm());
+                }
+                // Set preferred name
+                concept.setDefaultPreferredName(description.getTerm());
+                // set found to true
+                dpnFound = true;
+              }
+            }
+          }
+        }
+
+        // Pref name not found
+        if (!dpnFound) {
+          dpnNotFoundCt++;
+          Logger.getLogger(getClass())
+              .warn("Could not find defaultPreferredName for concept "
+                  + concept.getTerminologyId());
+          concept.setDefaultPreferredName("[Could not be determined]");
+        } else {
+          dpnFoundCt++;
+        }
+
+        // periodically comit
+        if (++objectCt % 5000 == 0) {
+          Logger.getLogger(getClass()).info("    count = " + objectCt);
+          contentService.commit();
+          contentService.clear();
+          contentService.beginTransaction();
+        }
+      }
+
+      contentService.commit();
+      Logger.getLogger(getClass()).info("  found =  " + dpnFoundCt);
+      Logger.getLogger(getClass()).info("  not found = " + dpnNotFoundCt);
+      Logger.getLogger(getClass()).info("  skipped = " + dpnSkippedCt);
+
+      Logger.getLogger(getClass()).info("Done...");
+
+      return;
+    } catch (Exception e) {
+      handleException(e, "trying to compute names", user, project, "");
+    } finally {
+      contentService.close();
       mappingService.close();
       securityService.close();
     }
