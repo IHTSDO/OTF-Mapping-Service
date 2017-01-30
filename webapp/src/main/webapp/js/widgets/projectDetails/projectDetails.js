@@ -151,7 +151,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          console.debug('  advices = ',data);
+          console.debug('  advices = ', data);
           $scope.mapAdvices = data.mapAdvice;
           localStorageService.add('mapAdvices', data.mapAdvice);
           $rootScope.$broadcast('localStorageModule.notification.setMapAdvices', {
@@ -386,7 +386,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       };
 
       $scope.getPagedScopeConcepts = function(page) {
-        console.debug('Called paged scope concept for page ',page);
+        console.debug('Called paged scope concept for page ', page);
 
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
@@ -407,7 +407,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          console.debug('  scope concepts = ',data);
+          console.debug('  scope concepts = ', data);
           $rootScope.glassPane--;
           $scope.pagedScopeConcept = data.searchResult;
           $scope.pagedScopeConceptCount = data.totalCount;
@@ -928,7 +928,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          console.debug('  success',data);
+          console.debug('  success', data);
         }).error(function(data, status, headers, config) {
           $scope.recordError = 'Error updating map advice.';
           $rootScope.handleHttpError(data, status, headers, config);
@@ -997,7 +997,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           }
         }).success(function(data) {
           $rootScope.glassPane--;
-          console.debug('  success',data);
+          console.debug('  success', data);
 
           // add the new advice to the available list
           $scope.mapAdvices.push(data);
@@ -1064,7 +1064,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
 
         .success(function(data) {
           $rootScope.glassPane--;
-          console.debug('  success',data);
+          console.debug('  success', data);
           // add new relations to the sets
           $scope.mapRelations.push(data);
           $scope.allowableMapRelations.push(data);
@@ -1195,7 +1195,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          console.debug('  success',data);
+          console.debug('  success', data);
         }).error(function(data, status, headers, config) {
           $scope.recordError = 'Error updating map principle.';
           $rootScope.handleHttpError(data, status, headers, config);
@@ -1257,7 +1257,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           }
         }).success(function(data) {
           $rootScope.glassPane--;
-          console.debug('  success',data);
+          console.debug('  success', data);
 
           // add principle to the local sets
           $scope.mapPrinciples.push(data);
@@ -1319,7 +1319,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           }
         }).success(function(data) {
           $rootScope.glassPane--;
-          console.debug('  success',data);
+          console.debug('  success', data);
 
           // add principle to the local sets
           $scope.mapAgeRanges.push(data);
@@ -1379,7 +1379,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             'Content-Type' : 'text/plain'
           }
         }).success(function(data) {
-          console.debug('  success',data);
+          console.debug('  success', data);
           $rootScope.glassPane--;
 
           // re-page the scope concepts
@@ -1406,7 +1406,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          console.debug('  success',data);
+          console.debug('  success', data);
           $rootScope.glassPane--;
           $scope.getPagedScopeConcepts(1);
 
@@ -1435,7 +1435,8 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           }
         }).success(function(data) {
           $rootScope.glassPane--;
-          console.debug('  success',data);
+          console.debug('  success', data);
+          $scope.scopeWarnings = data.warnings;
           $scope.resetScopeConceptFilter();
 
         }).error(function(data, status, headers, config) {
@@ -1464,7 +1465,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-          console.debug('  success',data);
+          console.debug('  success', data);
           $rootScope.glassPane--;
 
           $scope.getPagedScopeExcludedConcepts(currentPage);
@@ -1492,7 +1493,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             }
           }).success(function() {
           $rootScope.glassPane--;
-          console.debug('  success',data);
+          console.debug('  success', data);
           $scope.getPagedScopeExcludedConcepts(1);
 
         }).error(function(data, status, headers, config) {
@@ -1519,7 +1520,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-          console.debug('  success',data);
+          console.debug('  success', data);
           $rootScope.glassPane--;
           $scope.getPagedScopeExcludedConcepts(1);
         }).error(function(data, status, headers, config) {
@@ -1586,7 +1587,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          console.debug('  success',data);
+          console.debug('  success', data);
           $rootScope.glassPane--;
 
           // update the cached project list
@@ -1617,20 +1618,21 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             file : file
           }
         }).then(
-        // Success
-        function(response) {
-          $rootScope.glassPane--;
-        },
-        // error
-        function(response) {
-          $rootScope.handleHttpError(response.data, response.status, response.headers, response.config);          
-          $rootScope.glassPane--;
-        },
-        // event
-        function(evt) {
-          var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
-          console.debug('progress: ' + progressPercentage + '% ' + evt.config.data.file.name);
-        });
+          // Success
+          function(response) {
+            $rootScope.glassPane--;
+          },
+          // error
+          function(response) {
+            $rootScope.handleHttpError(response.data, response.status, response.headers,
+              response.config);
+            $rootScope.glassPane--;
+          },
+          // event
+          function(evt) {
+            var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
+            console.debug('progress: ' + progressPercentage + '% ' + evt.config.data.file.name);
+          });
 
       };
 

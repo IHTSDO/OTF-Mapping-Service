@@ -165,6 +165,24 @@ angular
         });
       };
 
+      // Compute names
+      $scope.computeNames = function() {
+        $rootScope.glassPane++;
+        $http({
+          url : root_mapping + 'project/id/' + $scope.project.id + '/names',
+          dataType : 'json',
+          method : 'POST',
+          headers : {
+            'Content-Type' : 'application/json'
+          }
+        }).success(function(data) {
+          $rootScope.glassPane--;
+        }).error(function(data, status, headers, config) {
+          $rootScope.glassPane--;
+          $rootScope.handleHttpError(data, status, headers, config);
+        });
+      };
+
       var ShowDeltaModalCtrl = function($scope, $http, $uibModalInstance, terminology, version) {
 
         $scope.pageSize = 10;
