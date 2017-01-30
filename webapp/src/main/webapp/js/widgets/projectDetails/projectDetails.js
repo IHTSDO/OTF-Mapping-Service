@@ -143,9 +143,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
 
       $scope.go = function() {
 
-        // get latest release report
-        $scope.getReleaseQaReport();
-
         console.debug('Formatting project details');
         $http({
           url : root_mapping + 'advice/advices',
@@ -1650,143 +1647,6 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         startDate : null,
       }
 
-      $scope.toggleResultItems = function(reportResult) {
-
-        // if open, simply close
-        if (reportResult.isCollapsed == false) {
-          reportResult.isCollapsed = true;
-
-          // if closed, re-open and get result items if
-          // necessary
-        } else {
-
-          reportResult.isCollapsed = false;
-          if (reportResult.reportResultItems == null) {
-            $scope.getResultItems(reportResult, reportResult.page);
-          }
-        }
-      };
-      $scope.itemsPerPage = 10;
-      // if closed, open
-      $scope.getResultItems = function(reportResult, page) {
-        console.debug(reportResult);
-        $rootScope.glassPane++;
-        // construct a PFS object
-        var pfsParameterObj = {
-          'startIndex' : (page - 1) * $scope.itemsPerPage,
-          'maxResults' : $scope.itemsPerPage,
-          'sortField' : null,
-          'queryRestriction' : null
-        };
-
-        // obtain the reports
-        $http({
-          url : root_reporting + 'reportResult/id/' + reportResult.id + '/items',
-          dataType : 'json',
-          data : pfsParameterObj,
-          method : 'POST',
-          headers : {
-            'Content-Type' : 'application/json'
-          }
-        }).success(function(data) {
-          $rootScope.glassPane--;
-          reportResult.reportResultItems = data.reportResultItem;
-          reportResult.page = page;
-          reportResult.nPages = Math.ceil(reportResult.ct / $scope.itemsPerPage);
-
-          return reportResult;
-        }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
-          reportResult.reportResultItems = null;
-          $rootScope.handleHttpError(data, status, headers, config);
-          return null;
-        });
-      };
-
-      var initializeCollapsed = function(report) {
-        for (var i = 0; i < report.results.length; i++) {
-          report.results[i].isCollapsed = true;
-          report.results[i].reportResultItems = null;
-          report.results[i].page = 1;
-          report.results[i].nPages = Math.ceil(report.results[i].ct / $scope.itemsPerPage);
-        }
-      };
-
-      $scope.getReleaseQaReport = function() {
-
-        var deferred = $q.defer();
-
-        // get the Release QA reports for this project
-        var definition = null;
-        console.debug('rds', $scope.focusProject.reportDefinition);
-        angular.forEach($scope.focusProject.reportDefinition, function(rd) {
-
-          if (rd.name == 'Release QA') {
-            definition = rd;
-          }
-        });
-        console.debug('Release QA definition id', definition);
-
-        if (!definition) {
-          deferred.reject('Could not find Release QA report definition');
-        } else {
-          var pfsParameterObj = {
-            'startIndex' : 0,
-            'maxResults' : 1,
-            'sortField' : null,
-            'queryRestriction' : null
-          };
-
-          // $rootScope.glassPane++;
-
-          // construct the url based on whether report type is
-          // null
-          var url = root_reporting + 'report/reports/project/id/' + $scope.focusProject.id
-            + (definition == null ? '' : '/definition/id/' + definition.id);
-
-          // obtain the reports
-          $http({
-            url : url,
-            dataType : 'json',
-            data : pfsParameterObj,
-            method : 'POST',
-            headers : {
-              'Content-Type' : 'application/json',
-            }
-
-          }).success(
-            function(data) {
-              console.debug('report data', data);
-              if (data && data.report && data.report.length > 0) {
-                var reportId = data.report[0].id;
-                $http.get(
-                  root_reporting + 'report/project/id/' + $scope.focusProject.id + '/' + reportId)
-                  .success(function(report) {
-                    initializeCollapsed(report);
-                    $scope.beginReleaseReport = report;
-
-                    deferred.resolve(data.report[0]);
-                  }, function(data, status, headers, config) {
-                    $rootScope.glassPane--;
-                    $scope.reports = null;
-                    $rootScope.handleHttpError(data, status, headers, config);
-                    deferred.reject('Failed to retrieve Release QA report');
-                  });
-              } else {
-                deferred.reject('Could not retrieve Release QA report -- none exist');
-              }
-
-            }, function(data, status, headers, config) {
-              $rootScope.glassPane--;
-              $scope.reports = null;
-              $rootScope.handleHttpError(data, status, headers, config);
-              deferred.reject('Failed to retrieve Release QA report');
-            });
-        }
-
-        return deferred.promise;
-      }
-
       $scope.beginRelease = function() {
         var beginTime = new Date();
 
@@ -1801,21 +1661,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
 
         // Success
         function(response) {
-
-          $scope.getReleaseQaReport().then(function(response) {
-
-            $rootScope.glassPane--;
-
-            if (!$scope.beginReleaseReport) {
-              utilService.handleError('Could not retrieve Release QA after beginning release');
-            } else if ($scope.beginReleaseReport.timestamp <= beginTime) {
-              utilService.handleError('Latest Release QA predates begin release');
-            }
-
-          }, function(error) {
-            utilService.handleError(error)
-          });
-
+          $rootScope.glassPane--;
         }, function(data, status, headers, config) {
           $rootScope.glassPane--;
           $scope.reports = null;
@@ -1833,17 +1679,18 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         // @Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/module/id/{moduleId}/process")
         $http.post(
           root_mapping + 'project/id/' + $scope.focusProject.id + '/release/'
-            + $scope.release.effectiveTime + '/module/id/' + $scope.release.moduleId + '/snapshot')
-          .then(
+            + $scope.release.effectiveTime + '/module/id/' + $scope.release.moduleId
+            + '/snapshot/process').then(
 
-          // Success
-          function(response) {
+        // Success
+        function(response) {
+          $rootScope.glassPane--;
 
-          }, function(data, status, headers, config) {
-            $rootScope.glassPane--;
-            $scope.reports = null;
-            $rootScope.handleHttpError(data, status, headers, config);
-          });
+        }, function(data, status, headers, config) {
+          $rootScope.glassPane--;
+          $scope.reports = null;
+          $rootScope.handleHttpError(data, status, headers, config);
+        });
       }
 
       $scope.finishSnapshotRelease = function(testMode) {
@@ -1851,6 +1698,13 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
 
         if (!$scope.release.effectiveTime) {
           window.alert('Must set effective time finish or preview release');
+          $rootScope.glassPane--;
+          return;
+        }
+
+        if (!testMode && !window.confirm("Are you absolutely sure? This action cannot be undone")) {
+          $rootScope.glassPane--;
+          return;
         }
 
         // @Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/finish")
@@ -1858,15 +1712,33 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           root_mapping + 'project/id/' + $scope.focusProject.id + '/release/'
             + $scope.release.effectiveTime + '/snapshot/finish' + (testMode ? '?test=true' : ''))
           .then(
-
           // Success
           function(response) {
+            $rootScope.glassPane--;
           }, function(error) {
             $rootScope.glassPane--;
             $scope.reports = null;
             $rootScope.handleError(error);
           });
       }
+
+      // Compute Workflow
+      $scope.computeWorkflow = function() {
+        $rootScope.glassPane++;
+        $http({
+          url : root_workflow + 'project/id/' + $scope.focusProject.id + '/compute',
+          dataType : 'json',
+          method : 'POST',
+          headers : {
+            'Content-Type' : 'application/json'
+          }
+        }).success(function(data) {
+          $rootScope.glassPane--;
+        }).error(function(data, status, headers, config) {
+          $rootScope.glassPane--;
+          $rootScope.handleHttpError(data, status, headers, config);
+        });
+      };
 
       $scope.startEditingCycle = function() {
 
