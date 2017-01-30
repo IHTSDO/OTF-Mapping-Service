@@ -2141,11 +2141,18 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       conceptsWithNoRecord.remove(mapRecord.getConceptId());
 
       // instantiate or increment the number of map records for this concept id
-      if (!conceptMapRecordCountMap.containsKey(mapRecord.getConceptId())) {
-        conceptMapRecordCountMap.put(mapRecord.getConceptId(), 1);
-      } else {
-        conceptMapRecordCountMap.put(mapRecord.getConceptId(),
-            conceptMapRecordCountMap.get(mapRecord.getConceptId()) + 1);
+      // NOTE: Only for published/ready for publication
+      if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)
+          || mapRecord.getWorkflowStatus()
+              .equals(WorkflowStatus.READY_FOR_PUBLICATION)) {
+
+        if (!conceptMapRecordCountMap.containsKey(mapRecord.getConceptId())) {
+          conceptMapRecordCountMap.put(mapRecord.getConceptId(), 1);
+        } else {
+          conceptMapRecordCountMap.put(mapRecord.getConceptId(),
+              conceptMapRecordCountMap.get(mapRecord.getConceptId()) + 1);
+        }
+
       }
 
       // constuct a list of errors for this concept
@@ -2194,10 +2201,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       // Concept and refset integrity checks
       //
 
-      System.out.println("new checks for " + mapRecord.getConceptId());
-
-      Concept concept = contentService.getConcept(mapRecord.getConceptId(),
-          mapProject.getSourceTerminology(),
+      final Concept concept = contentService.getConcept(
+          mapRecord.getConceptId(), mapProject.getSourceTerminology(),
           mapProject.getSourceTerminologyVersion());
 
       // 1. Mapped concepts that are inactive in current SNOMED release
@@ -2233,6 +2238,29 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             }
           }
         }
+
+        // check: concept mapped to multiple codes (non-group-based only)
+        // check: concept mapped to duplicate codes (non-group-based only)
+        if (mapProject.isGroupStructure()) {
+          final Set<String> targetIds = new HashSet<>();
+          for (MapEntry entry : mapRecord.getMapEntries()) {
+            if (entry.getTargetId() != null && !entry.getTargetId().isEmpty()) {
+              if (targetIds.contains(entry.getTargetId())) {
+                this.addReportError(report, mapProject,
+                    mapRecord.getConceptId(), concept.getDefaultPreferredName(),
+                    "Concept mapped to duplicate "
+                        + mapProject.getDestinationTerminology() + " codes");
+                break;
+              }
+
+            }
+          }
+          if (targetIds.size() > 1) {
+            this.addReportError(report, mapProject, mapRecord.getConceptId(),
+                concept.getDefaultPreferredName(), "Concept mapped to multiple "
+                    + mapProject.getDestinationTerminology() + " codes");
+          }
+        }
       }
 
       // Add all reported errors to the report
@@ -2243,11 +2271,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     }
 
     // add multiple map record mappings to report if present
-    System.out.println("Checking for multiple mappings: "
-        + conceptMapRecordCountMap.size() + " concepts");
     for (String conceptId : conceptMapRecordCountMap.keySet()) {
-      System.out.println("Checking " + conceptId + " with ");
-      System.out.println("  " + conceptMapRecordCountMap.get(conceptId));
       if (conceptMapRecordCountMap.get(conceptId) > 1) {
 
         // get the concept
@@ -2435,7 +2459,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
       // Set latest publication date to now.
       if (!testModeFlag) {
-        System.out.println("Committing changes...");
 
         mapProject.setLatestPublicationDate(new Date());
         mapProject.setPublic(true);
@@ -2461,7 +2484,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     reportService.addReport(report);
     reportService.close();
 
-    Logger.getLogger(getClass()).info("Finished " + (testModeFlag ? "test mode " : "") + "release successfully");
+    Logger.getLogger(getClass()).info("Finished "
+        + (testModeFlag ? "test mode " : "") + "release successfully");
   }
 
   /**
@@ -2702,9 +2726,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       }
     }
 
-    System.out.println(
-        conceptRefSetMap.size() + " concepts with refset members loaded");
-
     // close any remaining objects
 
     reader.close();
@@ -2780,18 +2801,23 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         // to stop release where true errors exist
       }
       if (mapRecord == null) {
-        System.out.println("NO MAP RECORD for " + conceptId);
         discrepancyFound = true;
       }
+      // skip records still in the workflow
+      else if (!mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)
+          && !mapRecord.getWorkflowStatus()
+              .equals(WorkflowStatus.READY_FOR_PUBLICATION)) {
+        continue;
+      }
 
+      // if entries are mismatched in size, automatic flag
       else if (mapRecord.getMapEntries().size() != members.size()) {
-        System.out.println("SIZE MISMATCH for " + conceptId);
         discrepancyFound = true;
       }
 
+      // otherwise, check for discrepancies in entries
       else {
 
-        // check current mappings against release mappings
         for (MapEntry recordEntry : mapRecord.getMapEntries()) {
           boolean entryMatched = false;
           for (ComplexMapRefSetMember member : members) {
@@ -2801,7 +2827,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             }
           }
           if (!entryMatched) {
-            System.out.println("ENTRY NOT FOUND for " + conceptId);
             discrepancyFound = true;
           }
         }
@@ -2821,15 +2846,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             if (getHash(recordEntry).equals(memberHash)) {
               entryMatched = true;
               if (entryMatched && !releaseEntry.isEquivalent(recordEntry)) {
-                System.out.println(
-                    "MEMBER MATCHED BUT NOT EQUIVALENT for " + conceptId);
                 discrepancyFound = true;
               }
             }
           }
 
           if (!entryMatched) {
-            System.out.println("MEMBER NOT MATCHED for " + conceptId);
             discrepancyFound = true;
           }
 
@@ -2842,8 +2864,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         Logger.getLogger(getClass()).info("Discrepancy found for " + conceptId
             + "|" + concept.getDefaultPreferredName() + "|");
         if (mapRecord != null) {
-          
-          System.out.println("release record: " + releaseRecord.toString());
+
           if (!testModeFlag) {
             // clear and update map entries to ensure proper behavior
             mapRecord.setMapEntries(new ArrayList<MapEntry>());
@@ -2855,21 +2876,19 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               concept.getDefaultPreferredName(),
               "Map record discrepancy -- updated to release version");
         } else {
-        
+
           this.addReportError(report, mapProject, conceptId,
               concept.getDefaultPreferredName(),
               "Map record found in release but no current record found -- no action taken");
-        } 
+        }
 
       } else {
         matchCt++;
       }
-      
-    
+
     }
-    
-    this.addReportError(report, mapProject, "",
-        "Aggregate result (no content)",
+
+    this.addReportError(report, mapProject, "", "Aggregate result (no content)",
         matchCt + " records matched between release and current records");
 
     reportService.close();
