@@ -668,11 +668,11 @@ public class MappingServiceRest extends RootServiceRest {
    */
   @POST
   @Path("/project/id/{projectId}/scopeConcepts/add")
-  @ApiOperation(value = "Adds a list of scope concepts to a map project", notes = "Adds a list of scope concepts to a map project.", response = Response.class)
+  @ApiOperation(value = "Adds a list of scope concepts to a map project", notes = "Adds a list of scope concepts to a map project.", response = ValidationResultJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public void addScopeConceptsToMapProject(
+  public ValidationResult addScopeConceptsToMapProject(
     @ApiParam(value = "List of concepts to add, e.g. {'100073004', '100075006'", required = true) List<String> terminologyIds,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
@@ -683,6 +683,7 @@ public class MappingServiceRest extends RootServiceRest {
     String projectName = "";
     String user = "";
     final MappingService mappingService = new MappingServiceJpa();
+    final ContentService contentService = new ContentServiceJpa();
 
     try {
       // authorize call
@@ -691,18 +692,29 @@ public class MappingServiceRest extends RootServiceRest {
 
       final MapProject mapProject = mappingService.getMapProject(projectId);
 
+      //
+      final ValidationResult result = new ValidationResultJpa();
       for (final String terminologyId : terminologyIds) {
-        mapProject.addScopeConcept(terminologyId);
+        if (contentService.getConcept(terminologyId,
+            mapProject.getSourceTerminology(),
+            mapProject.getSourceTerminologyVersion()) != null) {
+          mapProject.addScopeConcept(terminologyId);
+        } else {
+          result.addWarning(
+              "Concept " + terminologyId + " does not exist, skipping");
+        }
       }
       mappingService.updateMapProject(mapProject);
-
+      return result;
     } catch (Exception e) {
       this.handleException(e, "trying to add scope concept to project", user,
           projectName, "");
     } finally {
       mappingService.close();
+      contentService.close();
       securityService.close();
     }
+    return null;
   }
 
   /**
