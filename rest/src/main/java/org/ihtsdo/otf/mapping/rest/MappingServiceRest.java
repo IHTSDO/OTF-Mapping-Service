@@ -71,6 +71,7 @@ import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRelationJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserPreferencesJpa;
+import org.ihtsdo.otf.mapping.jpa.handlers.BeginEditingCycleHandlerJpa;
 import org.ihtsdo.otf.mapping.jpa.handlers.ReleaseHandlerJpa;
 import org.ihtsdo.otf.mapping.jpa.helpers.TerminologyUtility;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
@@ -96,6 +97,7 @@ import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
+import org.ihtsdo.otf.mapping.services.helpers.BeginEditingCycleHandler;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
 import org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler;
@@ -4400,7 +4402,7 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   @POST
-  @Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/module/id/{moduleId}/snapshot/process")
+  @Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/module/id/{moduleId}/process")
   @ApiOperation(value = "Process release for map project", notes = "Processes release and creates release files for map project")
   public void processReleaseForMapProject(
     @ApiParam(value = "Module Id, e.g. 20170131", required = true) @PathParam("moduleId") String moduleId,
@@ -4411,7 +4413,7 @@ public class MappingServiceRest extends RootServiceRest {
     Logger.getLogger(WorkflowServiceRest.class)
         .info("RESTful call (Mapping): /project/id/" + mapProjectId.toString()
             + "/release/" + effectiveTime + "/module/id/" + moduleId
-            + "/snapshot");
+            + "/process");
 
     String user = null;
     String project = "";
@@ -4420,7 +4422,7 @@ public class MappingServiceRest extends RootServiceRest {
     try {
       // authorize call
       user = authorizeProject(mapProjectId, authToken, MapUserRole.LEAD,
-          "process snapshot release", securityService);
+          "process release", securityService);
 
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
 
@@ -4430,7 +4432,7 @@ public class MappingServiceRest extends RootServiceRest {
       handler.setMapProject(mapProject);
       handler.setModuleId(moduleId);
       handler.setWriteSnapshot(true);
-      handler.setWriteDelta(false);
+      handler.setWriteDelta(true);
 
       // compute output directory
       // NOTE: Use same directory as map principles for access via webapp
@@ -4458,7 +4460,7 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   @POST
-  @Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/snapshot/finish")
+  @Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/finish")
   @ApiOperation(value = "Finish release for map project", notes = "Finishes release for map project from release files")
   public void finishReleaseForMapProject(
     @ApiParam(value = "Preview mode", required = false) @QueryParam("test") boolean testModeFlag,
@@ -4492,6 +4494,8 @@ public class MappingServiceRest extends RootServiceRest {
           this.getReleaseDirectoryPath(mapProject, effectiveTime);
 
       // check for existence of file
+      // TODO This computation should be moved into the ReleaseHandler and
+      // made handler-specific
       String relPath = "/der2_" + handler.getPatternForType(mapProject)
           + mapProject.getMapRefsetPattern() + "ActiveSnapshot_INT_" + effectiveTime
           + ".txt";
@@ -4536,6 +4540,12 @@ public class MappingServiceRest extends RootServiceRest {
           "start editing cycle", securityService);
 
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      
+      // Begin the release
+      BeginEditingCycleHandler handler = new BeginEditingCycleHandlerJpa();
+    
+      handler.setMapProject(mapProject);
+      handler.beginEditingCycle();
 
     } catch (Exception e) {
       handleException(e, "trying to start editing cycle", user, project, "");

@@ -34,6 +34,7 @@ import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
+import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.helpers.TerminologyUtility;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
@@ -45,6 +46,7 @@ import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
+import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.reports.Report;
 import org.ihtsdo.otf.mapping.reports.ReportDefinition;
 import org.ihtsdo.otf.mapping.reports.ReportDefinitionJpa;
@@ -781,8 +783,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           // used to check if entries are duplicated on parent
           String parent = tp.getAncestorPath()
               .substring(tp.getAncestorPath().lastIndexOf("~") + 1);
-          // TODO: this really should be parent(s) (e.g. via the "concept"
-          // object) and not just a single parent.
           MapRecord mrParent = getMapRecordForTerminologyId(parent);
 
           // get the map record corresponding to this specific
@@ -1474,7 +1474,47 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   @SuppressWarnings("static-method")
   private String getHash(ComplexMapRefSetMember c) {
     return c.getRefSetId() + c.getConcept().getTerminologyId() + c.getMapGroup()
-        + (c.getMapRule() == null ? "" : c.getMapRule()) + (c.getMapTarget() == null ? "" : c.getMapTarget());
+        + (c.getMapRule() == null ? "" : c.getMapRule())
+        + (c.getMapTarget() == null ? "" : c.getMapTarget());
+  }
+
+  private String getHash(MapEntry entry) {
+    return mapProject.getRefSetId() + entry.getMapRecord().getConceptId()
+        + entry.getMapGroup() + (entry.getRule() == null ? "" : entry.getRule())
+        + (entry.getTargetId() == null ? "" : entry.getTargetId());
+  }
+
+  private Map<String, MapRelation> relations = null;
+
+  private List<MapAdvice> advices = null;
+
+  private MapEntry getMapEntryForComplexMapRefSetMember(
+    ComplexMapRefSetMember member) throws Exception {
+    if (relations == null) {
+      relations = new HashMap<>();
+      for (MapRelation m : mappingService.getMapRelations().getMapRelations()) {
+        relations.put(m.getTerminologyId(), m);
+      }
+      ;
+    }
+    if (advices == null) {
+      advices = mappingService.getMapAdvices().getMapAdvices();
+    }
+    final MapEntry entry = new MapEntryJpa();
+    for (MapAdvice advice : advices) {
+      if (member.getMapAdvice() != null
+          && member.getMapAdvice().contains(advice.getName())) {
+        entry.addMapAdvice(advice);
+      }
+    }
+
+    entry.setRule(member.getMapRule());
+    entry.setMapBlock(member.getMapBlock());
+    entry.setMapGroup(member.getMapGroup());
+    entry.setMapPriority(member.getMapPriority());
+    entry.setMapRelation(relations.get(member.getMapRelationId()));
+    entry.setTargetId(member.getMapTarget());
+    return entry;
   }
 
   /**
@@ -2115,7 +2155,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       if (!mapRecord.getWorkflowStatus()
           .equals(WorkflowStatus.READY_FOR_PUBLICATION)
           && !mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)) {
-        resultMessages.add("Not marked ready for publication");
+        resultMessages.add("Map record not marked ready for publication");
         errorFlag = true;
         // if record is ready for publication
       } else {
@@ -2129,17 +2169,18 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         if (!result.isValid()) {
           Logger.getLogger(getClass()).debug("    FAILED");
           errorFlag = true;
-          resultMessages.add("Failed validation check");
+          resultMessages.add("Map record failed validation check");
         } else {
           pubCt++;
         }
       }
 
-      // Remove out of scope concepts if not in test mode
+      // Check for out of scope map records
       if (!scopeConceptTerminologyIds.contains(mapRecord.getConceptId())) {
 
         // construct message based on whether record is to be removed
-        String reportMsg = "Concept not in scope";
+        String reportMsg =
+            mapProject.getSourceTerminology() + " concept not in scope";
 
         // separate error-type by previously-published or this-cycle-edited
         if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)) {
@@ -2147,15 +2188,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         } else {
           resultMessages.add(reportMsg + " - edited this cycle");
         }
-
-        // This happens in "finish release" now.
-        // // remove record if flag set
-        // if (!testModeFlag) {
-        // Logger.getLogger(getClass())
-        // .info(" REMOVE out of scope record " + mapRecord.getId());
-        // mappingService.removeMapRecord(mapRecord.getId());
-        // }
-
       }
 
       //
@@ -2194,9 +2226,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               }
             }
             if (!memberTargetFound) {
-              this.addReportError(report, mapProject,
-                  member.getTerminologyId(), concept.getDefaultPreferredName(),
-                  "Destination terminology code previously found on refset mapping not used");
+              this.addReportError(report, mapProject, member.getTerminologyId(),
+                  concept.getDefaultPreferredName(),
+                  mapProject.getDestinationTerminology()
+                      + " target code from previous release not used");
             }
           }
         }
@@ -2222,8 +2255,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             mapProject.getSourceTerminology(),
             mapProject.getSourceTerminologyVersion());
         addReportError(report, mapProject, conceptId,
-            c.getDefaultPreferredName(),
-            "Multiple map records found for concept");
+            c.getDefaultPreferredName(), "Concept has multiple map records");
       }
     }
 
@@ -2240,7 +2272,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         this.addReportError(report, mapProject,
             member.getConcept().getTerminologyId(),
             member.getConcept().getDefaultPreferredName(),
-            "Active source concept mapped in previous version no longer mapped");
+            "Concept mapped in previous version no longer mapped");
       }
     }
 
@@ -2342,12 +2374,14 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   /* see superclass */
   @Override
   public void finishRelease() throws Exception {
-    
+
+    Logger.getLogger(getClass())
+        .info(testModeFlag ? "Preview Finish Release" : "Finish Release");
+
     // compare file to current records
-    compareInputFileToExistingMapRecords();
-    if (testModeFlag) {
-      throw new Exception("Done");
-    }
+    Report report = compareInputFileToExistingMapRecords();
+
+    int pubCt = 0;
 
     // get all scope concept terminology ids for this project
     Logger.getLogger(getClass()).info("  Get scope concepts for map project");
@@ -2362,7 +2396,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           .getPublishedAndReadyForPublicationMapRecordsForMapProject(
               mapProject.getId(), null);
       mapRecords = mapRecordList.getMapRecords();
-      Report report = new ReportJpa();
+
       if (!testModeFlag) {
         mappingService.setTransactionPerOperation(false);
         mappingService.beginTransaction();
@@ -2379,7 +2413,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             mappingService.removeMapRecord(record.getId());
           } else {
             this.addReportError(report, mapProject, record.getConceptId(),
-                record.getConceptName(), "Out of scope: removed");
+                record.getConceptName(),
+                "Map record for concept out of scope will be removed");
 
           }
         }
@@ -2393,20 +2428,24 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             record.setWorkflowStatus(WorkflowStatus.PUBLISHED);
             mappingService.updateMapRecord(record);
           } else {
-            this.addReportError(report, mapProject, record.getConceptId(),
-                record.getConceptName(),
-                "Ready for Publication marked Published");
+            pubCt++;
           }
         }
       }
+
       // Set latest publication date to now.
       if (!testModeFlag) {
+        System.out.println("Committing changes...");
+
         mapProject.setLatestPublicationDate(new Date());
         mapProject.setPublic(true);
         mappingService.updateMapProject(mapProject);
         mappingService.commit();
       }
     }
+
+    this.addReportError(report, mapProject, "", "Aggregate result (no content)",
+        pubCt + " map records marked will be marked Published");
 
     // skip if in test mode
     if (!testModeFlag) {
@@ -2418,6 +2457,11 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       loadMapRefSet();
     }
 
+    ReportService reportService = new ReportServiceJpa();
+    reportService.addReport(report);
+    reportService.close();
+
+    Logger.getLogger(getClass()).info("Finished " + (testModeFlag ? "test mode " : "") + "release successfully");
   }
 
   /**
@@ -2560,21 +2604,20 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     reader.close();
 
   }
-  
+
   /**
    * Load map refset from file.
    *
    * @throws Exception the exception
    */
   @SuppressWarnings("resource")
-  private void compareInputFileToExistingMapRecords() throws Exception {
+  private Report compareInputFileToExistingMapRecords() throws Exception {
 
     String line = "";
-    int objectCt = 0;
 
     // begin transaction
     final ContentService contentService = new ContentServiceJpa();
-    
+
     Logger.getLogger(getClass()).info("    Open " + inputFile);
     File f = new File(inputFile);
     if (!f.exists()) {
@@ -2585,9 +2628,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     final String terminology = mapProject.getSourceTerminology();
     final String version = mapProject.getSourceTerminologyVersion();
-    
-    Map<String, List<ComplexMapRefSetMember>> conceptRefSetMap = new HashMap<>();
-    
+
+    Map<String, List<ComplexMapRefSetMember>> conceptRefSetMap =
+        new HashMap<>();
+
     while ((line = reader.readLine()) != null) {
 
       line = line.replace("\r", "");
@@ -2601,7 +2645,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         member.setEffectiveTime(dateFormat.parse(fields[1]));
         member.setActive(fields[2].equals("1") ? true : false);
         member.setModuleId(Long.valueOf(fields[3]));
-        
+
         if (moduleId == null) {
           moduleId = fields[3];
         }
@@ -2647,10 +2691,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           member.setMapTarget(fields[6]);
           member.setMapRelationId(null);
         }
-        
-        System.out.println("member: " + member.toString());
 
-        List<ComplexMapRefSetMember> members = conceptRefSetMap.get(member.getConcept().getTerminologyId());
+        List<ComplexMapRefSetMember> members =
+            conceptRefSetMap.get(member.getConcept().getTerminologyId());
         if (members == null) {
           members = new ArrayList<>();
         }
@@ -2658,28 +2701,31 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         conceptRefSetMap.put(member.getConcept().getTerminologyId(), members);
       }
     }
-    
-    System.out.println(conceptRefSetMap.size() + " concepts with refset members loaded");
+
+    System.out.println(
+        conceptRefSetMap.size() + " concepts with refset members loaded");
 
     // close any remaining objects
-    
+
     reader.close();
-    
+
     // construct report
     WorkflowService workflowService = new WorkflowServiceJpa();
     ReportService reportService = new ReportServiceJpa();
-    
+
     ReportDefinition qaDef = null;
-    for (ReportDefinition definition : reportService.getReportDefinitions().getReportDefinitions()) {
+    for (ReportDefinition definition : reportService.getReportDefinitions()
+        .getReportDefinitions()) {
       if (definition.getName().equals("Release Finalization QA")) {
         qaDef = definition;
         break;
       }
     }
-    
+
     if (qaDef == null) {
       qaDef = new ReportDefinitionJpa();
-      qaDef.setDescription("Compares release input file to current state of mappings and identifies potential mismatches");
+      qaDef.setDescription(
+          "Compares release input file to current state of mappings and identifies potential mismatches");
       qaDef.setDiffReport(false);
       qaDef.setFrequency(ReportFrequency.ON_DEMAND);
       qaDef.setName("Release Finalization QA");
@@ -2689,8 +2735,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       qaDef.setRoleRequired(MapUserRole.LEAD);
       reportService.addReportDefinition(qaDef);
     }
-    
-    
+
     Report report = new ReportJpa();
     report.setReportDefinition(qaDef);
     report.setMapProjectId(mapProject.getId());
@@ -2699,50 +2744,139 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     report.setName("Release Finalization QA");
     report.setQuery("No query -- constructed by services");
     report.setTimestamp(new Date().getTime());
-    
+
+    // get loader user for construction/update of records
+    MapUser loaderUser = mappingService.getMapUser("loader");
+
+    // counter for number of records matching between current and release
+    int matchCt = 0;
+
     for (String conceptId : conceptRefSetMap.keySet()) {
-      final List<ComplexMapRefSetMember> members = conceptRefSetMap.get(conceptId);
-      Concept concept = contentService.getConcept(conceptId, mapProject.getSourceTerminology(), mapProject.getSourceTerminologyVersion());
-      
+      final List<ComplexMapRefSetMember> members =
+          conceptRefSetMap.get(conceptId);
+      Concept concept = contentService.getConcept(conceptId,
+          mapProject.getSourceTerminology(),
+          mapProject.getSourceTerminologyVersion());
+
+      boolean discrepancyFound = false;
+
+      Date nowDate = new Date();
+      MapRecord releaseRecord = new MapRecordJpa();
+      releaseRecord.setMapProjectId(mapProject.getId());
+      releaseRecord.setConceptId(conceptId);
+      releaseRecord.setConceptName(concept.getDefaultPreferredName());
+      releaseRecord.setLastModified(nowDate.getTime());
+      releaseRecord.setLastModifiedBy(loaderUser);
+      releaseRecord.setTimestamp(nowDate.getTime());
+      releaseRecord.setOwner(loaderUser);
+      releaseRecord.setWorkflowStatus(WorkflowStatus.PUBLISHED);
+
       // get the map record for this concept id
-      MapRecord mapRecord = getMapRecordForTerminologyId(conceptId);
+      MapRecord mapRecord = null;
+      try {
+        mapRecord = getMapRecordForTerminologyId(conceptId);
+      } catch (Exception e) {
+        // do nothing, getMapRecord throws exception intended
+        // to stop release where true errors exist
+      }
       if (mapRecord == null) {
-        this.addReportError(report, mapProject, conceptId, concept.getDefaultPreferredName(), "Mappings found in release file but no mappings for concept");
-        continue;
+        System.out.println("NO MAP RECORD for " + conceptId);
+        discrepancyFound = true;
+      }
+
+      else if (mapRecord.getMapEntries().size() != members.size()) {
+        System.out.println("SIZE MISMATCH for " + conceptId);
+        discrepancyFound = true;
+      }
+
+      else {
+
+        // check current mappings against release mappings
+        for (MapEntry recordEntry : mapRecord.getMapEntries()) {
+          boolean entryMatched = false;
+          for (ComplexMapRefSetMember member : members) {
+            if (getHash(recordEntry).equals(getHash(member))) {
+              entryMatched = true;
+              break;
+            }
+          }
+          if (!entryMatched) {
+            System.out.println("ENTRY NOT FOUND for " + conceptId);
+            discrepancyFound = true;
+          }
+        }
+
+        // check release mappings against current mappings
+        for (ComplexMapRefSetMember member : members) {
+
+          final String memberHash = getHash(member);
+
+          MapEntry releaseEntry =
+              this.getMapEntryForComplexMapRefSetMember(member);
+          releaseEntry.setMapRecord(mapRecord);
+          releaseRecord.addMapEntry(releaseEntry);
+
+          boolean entryMatched = false;
+          for (MapEntry recordEntry : mapRecord.getMapEntries()) {
+            if (getHash(recordEntry).equals(memberHash)) {
+              entryMatched = true;
+              if (entryMatched && !releaseEntry.isEquivalent(recordEntry)) {
+                System.out.println(
+                    "MEMBER MATCHED BUT NOT EQUIVALENT for " + conceptId);
+                discrepancyFound = true;
+              }
+            }
+          }
+
+          if (!entryMatched) {
+            System.out.println("MEMBER NOT MATCHED for " + conceptId);
+            discrepancyFound = true;
+          }
+
+        }
+
+      }
+
+      // if discrepancy found, add or update the map record
+      if (discrepancyFound) {
+        Logger.getLogger(getClass()).info("Discrepancy found for " + conceptId
+            + "|" + concept.getDefaultPreferredName() + "|");
+        if (mapRecord != null) {
+          
+          System.out.println("release record: " + releaseRecord.toString());
+          if (!testModeFlag) {
+            // clear and update map entries to ensure proper behavior
+            mapRecord.setMapEntries(new ArrayList<MapEntry>());
+            mappingService.updateMapRecord(mapRecord);
+            mapRecord.setMapEntries(releaseRecord.getMapEntries());
+            mappingService.updateMapRecord(mapRecord);
+          }
+          this.addReportError(report, mapProject, conceptId,
+              concept.getDefaultPreferredName(),
+              "Map record discrepancy -- updated to release version");
+        } else {
+        
+          this.addReportError(report, mapProject, conceptId,
+              concept.getDefaultPreferredName(),
+              "Map record found in release but no current record found -- no action taken");
+        } 
+
+      } else {
+        matchCt++;
       }
       
-      if (mapRecord.getMapEntries().size() != members.size()) {
-        this.addReportError(report, mapProject, conceptId, concept.getDefaultPreferredName(), "Entry size mismatch between release file and current mappings for concept");
-        // TODO Workflow QA path action here
-      }
-      
-      final Set<String> entryHashSet = new HashSet<>();
-      for (MapEntry entry : mapRecord.getMapEntries()) {
-        if (mapRecord.getConceptId() == "408861001") {
-          System.out.println("entry  : " + entry);
-          System.out.println("  hash : " + getHash(getComplexMapRefSetMemberForMapEntry(entry, mapRecord, mapProject, concept)));
-        }
-        entryHashSet.add(getHash(getComplexMapRefSetMemberForMapEntry(entry, mapRecord, mapProject, concept)));
-      }
-     
-      for (ComplexMapRefSetMember member : members) {  
-        if (member.getConcept().getTerminologyId() == "408861001") {
-          System.out.println("member : " + member);
-          System.out.println("  hash : " + getHash(member));
-        }
-        if (!entryHashSet.contains(getHash(member))) {
-          this.addReportError(report, mapProject, conceptId, concept.getDefaultPreferredName(), "Release file map refset member not present in current mappings");
-          break;
-          // TODO Workflow QA path action here
-        }
-      }
+    
     }
     
-    reportService.addReport(report);
-    
+    this.addReportError(report, mapProject, "",
+        "Aggregate result (no content)",
+        matchCt + " records matched between release and current records");
+
     reportService.close();
     workflowService.close();
     contentService.close();
+
+    return report;
 
   }
 
