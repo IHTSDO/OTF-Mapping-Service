@@ -78,7 +78,8 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
     'localStorageService',
     '$q',
     'Upload',
-    function($scope, $http, $sce, $rootScope, $location, localStorageService, $q, Upload) {
+    'utilService', 
+    function($scope, $http, $sce, $rootScope, $location, localStorageService, $q, Upload, utilService) {
       $scope.page = 'project';
 
       $scope.currentRole = localStorageService.get('currentRole');
@@ -1641,7 +1642,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
 
       $scope.release = {
 
-        effectiveTime : 20170131,
+        effectiveTime : null,
         moduleId : null,
         inputFile : null,
         startDate : null,
@@ -1662,14 +1663,14 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         // Success
         function(response) {
           $rootScope.glassPane--;
-        }, function(data, status, headers, config) {
+        }, function(response) {
           $rootScope.glassPane--;
-          $scope.reports = null;
-          $rootScope.handleHttpError(data, status, headers, config);
-        });
+          $rootScope.handleHttpError(response.data, response.status, response.headers,
+            response.config);
+        })
       };
 
-      $scope.processSnapshotRelease = function() {
+      $scope.processRelease = function() {
         $rootScope.glassPane++;
 
         if (!$scope.release.effectiveTime || !$scope.release.moduleId) {
@@ -1680,24 +1681,24 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         $http.post(
           root_mapping + 'project/id/' + $scope.focusProject.id + '/release/'
             + $scope.release.effectiveTime + '/module/id/' + $scope.release.moduleId
-            + '/snapshot/process').then(
+            + '/process').then(
 
         // Success
         function(response) {
           $rootScope.glassPane--;
 
-        }, function(data, status, headers, config) {
+        }, function(response) {
           $rootScope.glassPane--;
-          $scope.reports = null;
-          $rootScope.handleHttpError(data, status, headers, config);
-        });
+          $rootScope.handleHttpError(response.data, response.status, response.headers,
+            response.config);
+        })
       }
 
-      $scope.finishSnapshotRelease = function(testMode) {
+      $scope.finishRelease = function(testMode) {
         $rootScope.glassPane++;
 
         if (!$scope.release.effectiveTime) {
-          window.alert('Must set effective time finish or preview release');
+          window.alert('Must set effective time to finish or preview release');
           $rootScope.glassPane--;
           return;
         }
@@ -1710,15 +1711,15 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         // @Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/finish")
         $http.post(
           root_mapping + 'project/id/' + $scope.focusProject.id + '/release/'
-            + $scope.release.effectiveTime + '/snapshot/finish' + (testMode ? '?test=true' : ''))
+            + $scope.release.effectiveTime + '/finish' + (testMode ? '?test=true' : ''))
           .then(
           // Success
           function(response) {
             $rootScope.glassPane--;
-          }, function(error) {
+          }, function(response) {
             $rootScope.glassPane--;
-            $scope.reports = null;
-            $rootScope.handleError(error);
+            $rootScope.handleHttpError(response.data, response.status, response.headers,
+              response.config);
           });
       }
 
@@ -1734,14 +1735,31 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           }
         }).success(function(data) {
           $rootScope.glassPane--;
-        }).error(function(data, status, headers, config) {
+        }, function(response) {
           $rootScope.glassPane--;
-          $rootScope.handleHttpError(data, status, headers, config);
-        });
+          $rootScope.handleHttpError(response.data, response.status, response.headers,
+            response.config);
+        })
       };
 
+      // Start editing cycle
+      // @Path("/project/id/{id:[0-9][0-9]*}/release/startEditing")
       $scope.startEditingCycle = function() {
-
+        $rootScope.glassPane++;
+        $http({
+          url : root_workflow + 'project/id/' + $scope.focusProject.id + '/release/startEditing',
+          dataType : 'json',
+          method : 'POST',
+          headers : {
+            'Content-Type' : 'application/json'
+          }
+        }).then(function(data) {
+          $rootScope.glassPane--;
+        }, function(response) {
+          $rootScope.glassPane--;
+          $rootScope.handleHttpError(response.data, response.status, response.headers,
+            response.config);
+        });
       }
 
     } ]);
