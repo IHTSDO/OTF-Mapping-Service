@@ -78,8 +78,9 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
     'localStorageService',
     '$q',
     'Upload',
-    'utilService', 
-    function($scope, $http, $sce, $rootScope, $location, localStorageService, $q, Upload, utilService) {
+    'utilService',
+    function($scope, $http, $sce, $rootScope, $location, localStorageService, $q, Upload,
+      utilService) {
       $scope.page = 'project';
 
       $scope.currentRole = localStorageService.get('currentRole');
@@ -1635,12 +1636,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             console.debug('progress: ' + progressPercentage + '% ' + evt.config.data.file.name);
           });
 
-        }, function(response) {
-          $rootScope.glassPane--;
-          $rootScope.handleHttpError(response.data, response.status, response.headers,
-            response.config);
-        })
-      }
+      };
 
       $scope.finishRelease = function(testMode) {
         $rootScope.glassPane++;
@@ -1659,12 +1655,12 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         // @Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/finish")
         $http.post(
           root_mapping + 'project/id/' + $scope.focusProject.id + '/release/'
-            + $scope.release.effectiveTime + '/finish' + (testMode ? '?test=true' : ''))
-          .then(
+            + $scope.release.effectiveTime + '/finish' + (testMode ? '?test=true' : '')).then(
           // Success
           function(response) {
             $rootScope.glassPane--;
-          }, function(response) {
+          },
+          function(response) {
             $rootScope.glassPane--;
             $rootScope.handleHttpError(response.data, response.status, response.headers,
               response.config);
@@ -1681,13 +1677,15 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           headers : {
             'Content-Type' : 'application/json'
           }
-        }).success(function(data) {
-          $rootScope.glassPane--;
-        }, function(response) {
-          $rootScope.glassPane--;
-          $rootScope.handleHttpError(response.data, response.status, response.headers,
-            response.config);
-        })
+        }).success(
+          function(data) {
+            $rootScope.glassPane--;
+          },
+          function(response) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(response.data, response.status, response.headers,
+              response.config);
+          })
       };
 
       // Start editing cycle
@@ -1695,19 +1693,23 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       $scope.startEditingCycle = function() {
         $rootScope.glassPane++;
         $http({
-          url : root_workflow + 'project/id/' + $scope.focusProject.id + '/release/startEditing',
+          url : root_mapping + 'project/id/' + $scope.focusProject.id + '/release/startEditing',
           dataType : 'json',
           method : 'POST',
           headers : {
             'Content-Type' : 'application/json'
           }
-        }).then(function(data) {
-          $rootScope.glassPane--;
-        }, function(response) {
-          $rootScope.glassPane--;
-          $rootScope.handleHttpError(response.data, response.status, response.headers,
-            response.config);
-        });
+        }).then(
+          function(data) {
+            $scope.focusProject.editingCycleBeginDate = new Date();
+            localStorageService.add('focusProject', $scope.focusProject);
+            $rootScope.glassPane--;
+          },
+          function(response) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(response.data, response.status, response.headers,
+              response.config);
+          });
       }
 
     } ]);
