@@ -78,7 +78,9 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
     'localStorageService',
     '$q',
     'Upload',
-    function($scope, $http, $sce, $rootScope, $location, localStorageService, $q, Upload) {
+    'utilService',
+    function($scope, $http, $sce, $rootScope, $location, localStorageService, $q, Upload,
+      utilService) {
       $scope.page = 'project';
 
       $scope.currentRole = localStorageService.get('currentRole');
@@ -142,6 +144,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       });
 
       $scope.go = function() {
+
         console.debug('Formatting project details');
         $http({
           url : root_mapping + 'advice/advices',
@@ -271,14 +274,13 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         $scope.selectedWorkflowType = $scope.getSelectedWorkflowType();
 
         /*
-         * // determine if this project has a principles document if
-         * ($scope.focusProject.destinationTerminology == 'ICD10') {
-         * $scope.focusProject.mapPrincipleDocumentPath = 'doc/';
-         * $scope.focusProject.mapPrincipleDocument =
-         * 'ICD10_MappingPersonnelHandbook.docx';
-         * $scope.focusProject.mapPrincipleDocumentName = 'Mapping Personnel
-         * Handbook'; } else { $scope.focusProject.mapPrincipleDocument = null; }
-         */
+                 * // determine if this project has a principles document if
+                 * ($scope.focusProject.destinationTerminology == 'ICD10') {
+                 * $scope.focusProject.mapPrincipleDocumentPath = 'doc/';
+                 * $scope.focusProject.mapPrincipleDocument = 'ICD10_MappingPersonnelHandbook.docx';
+                 * $scope.focusProject.mapPrincipleDocumentName = 'Mapping Personnel Handbook'; }
+                 * else { $scope.focusProject.mapPrincipleDocument = null; }
+                 */
 
         // set the scope maps
         $scope.scopeMap = {};
@@ -1635,5 +1637,139 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           });
 
       };
+
+      ///////////////////////////////////////
+      // Release Handling
+      // /////////////////////////////////////
+
+      $scope.release = {
+
+        effectiveTime : null,
+        moduleId : null,
+        inputFile : null,
+        startDate : null,
+      }
+
+      $scope.beginRelease = function() {
+        var beginTime = new Date();
+
+        if (!$scope.release.effectiveTime) {
+          window.alert('Must set effective time to begin release');
+        }
+
+        $rootScope.glassPane++;
+        $http.post(
+          root_mapping + 'project/id/' + $scope.focusProject.id + '/release/'
+            + $scope.release.effectiveTime + '/begin').then(
+
+          // Success
+          function(response) {
+            $rootScope.glassPane--;
+          },
+          function(response) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(response.data, response.status, response.headers,
+              response.config);
+          })
+      };
+
+      $scope.processRelease = function() {
+        $rootScope.glassPane++;
+
+        if (!$scope.release.effectiveTime || !$scope.release.moduleId) {
+          window.alert('Must set effective time and module id to process release');
+        }
+
+        // @Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/module/id/{moduleId}/process")
+        $http.post(
+          root_mapping + 'project/id/' + $scope.focusProject.id + '/release/'
+            + $scope.release.effectiveTime + '/module/id/' + $scope.release.moduleId + '/process')
+          .then(
+
+            // Success
+            function(response) {
+              $rootScope.glassPane--;
+
+            },
+            function(response) {
+              $rootScope.glassPane--;
+              $rootScope.handleHttpError(response.data, response.status, response.headers,
+                response.config);
+            })
+      }
+
+      $scope.finishRelease = function(testMode) {
+        $rootScope.glassPane++;
+
+        if (!$scope.release.effectiveTime) {
+          window.alert('Must set effective time to finish or preview release');
+          $rootScope.glassPane--;
+          return;
+        }
+
+        if (!testMode && !window.confirm("Are you absolutely sure? This action cannot be undone")) {
+          $rootScope.glassPane--;
+          return;
+        }
+
+        // @Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/finish")
+        $http.post(
+          root_mapping + 'project/id/' + $scope.focusProject.id + '/release/'
+            + $scope.release.effectiveTime + '/finish' + (testMode ? '?test=true' : '')).then(
+          // Success
+          function(response) {
+            $rootScope.glassPane--;
+          },
+          function(response) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(response.data, response.status, response.headers,
+              response.config);
+          });
+      }
+
+      // Compute Workflow
+      $scope.computeWorkflow = function() {
+        $rootScope.glassPane++;
+        $http({
+          url : root_workflow + 'project/id/' + $scope.focusProject.id + '/compute',
+          dataType : 'json',
+          method : 'POST',
+          headers : {
+            'Content-Type' : 'application/json'
+          }
+        }).success(
+          function(data) {
+            $rootScope.glassPane--;
+          },
+          function(response) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(response.data, response.status, response.headers,
+              response.config);
+          })
+      };
+
+      // Start editing cycle
+      // @Path("/project/id/{id:[0-9][0-9]*}/release/startEditing")
+      $scope.startEditingCycle = function() {
+        $rootScope.glassPane++;
+        $http({
+          url : root_mapping + 'project/id/' + $scope.focusProject.id + '/release/startEditing',
+          dataType : 'json',
+          method : 'POST',
+          headers : {
+            'Content-Type' : 'application/json'
+          }
+        }).then(
+          function(data) {
+            $scope.focusProject.editingCycleBeginDate = new Date();
+            localStorageService.add('focusProject', $scope.focusProject);
+            $rootScope.glassPane--;
+          },
+          function(response) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(response.data, response.status, response.headers,
+              response.config);
+          });
+      }
 
     } ]);

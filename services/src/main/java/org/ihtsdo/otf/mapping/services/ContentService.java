@@ -24,6 +24,7 @@ import org.ihtsdo.otf.mapping.rf2.SimpleMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.SimpleRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
+// TODO: Auto-generated Javadoc
 /**
  * Generically represents a service for accessing terminology content.
  */
@@ -791,7 +792,7 @@ public interface ContentService extends RootService {
     String refSetId) throws Exception;
 
   /**
-   * Indicates whether or not concept is descendant along a hierarchical path
+   * Indicates whether or not concept is descendant along a hierarchical path.
    *
    * @param ancestorPath the ancestor path
    * @param terminologyId the terminology id
@@ -802,5 +803,23 @@ public interface ContentService extends RootService {
    */
   public boolean isDescendantOfPath(String ancestorPath, String terminologyId,
     String terminology, String terminologyVersion) throws Exception;
+
+  /**
+   * Gets the simple map ref set members for concept.
+   *
+   * @param conceptId the concept id
+   * @return the simple map ref set members for concept
+   */
+  public List<SimpleMapRefSetMember> getSimpleMapRefSetMembersForConcept(
+    Long conceptId);
+
+  /**
+   * Gets the complex map ref set members for concept.
+   *
+   * @param conceptId the concept id
+   * @return the complex map ref set members for concept
+   */
+  public List<ComplexMapRefSetMember> getComplexMapRefSetMembersForConcept(
+    Long conceptId);
 
 }

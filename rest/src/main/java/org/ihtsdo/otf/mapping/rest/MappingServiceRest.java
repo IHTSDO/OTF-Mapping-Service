@@ -71,6 +71,8 @@ import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRelationJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserPreferencesJpa;
+import org.ihtsdo.otf.mapping.jpa.handlers.BeginEditingCycleHandlerJpa;
+import org.ihtsdo.otf.mapping.jpa.handlers.ReleaseHandlerJpa;
 import org.ihtsdo.otf.mapping.jpa.helpers.TerminologyUtility;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
@@ -95,7 +97,9 @@ import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
+import org.ihtsdo.otf.mapping.services.helpers.BeginEditingCycleHandler;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
+import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
 import org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
@@ -2742,7 +2746,8 @@ public class MappingServiceRest extends RootServiceRest {
           // determine which results are for descendant concepts
           for (final SearchResult sr : searchResults.getSearchResults()) {
 
-            // if this terminology is a descendant OR is the concept itself
+            // if this terminology is a descendant OR is the concept
+            // itself
             if (sr.getTerminologyId().equals(ancestorId)
                 || descSet.contains(sr.getTerminologyId())) {
 
@@ -2791,7 +2796,8 @@ public class MappingServiceRest extends RootServiceRest {
         // set search results total count to number of eligible results
         searchResults.setTotalCount(eligibleResults.getCount());
 
-        // workaround for typing problems between List<SearchResultJpa> and
+        // workaround for typing problems between List<SearchResultJpa>
+        // and
         // List<SearchResult>
         List<SearchResultJpa> results = new ArrayList<>();
         for (SearchResult sr : eligibleResults.getSearchResults()) {
@@ -3578,7 +3584,8 @@ public class MappingServiceRest extends RootServiceRest {
 
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
 
-      // formulate an "and" search from the query if it doesn't use special
+      // formulate an "and" search from the query if it doesn't use
+      // special
       // chars
       boolean plusFlag = false;
       final StringBuilder qb = new StringBuilder();
@@ -3594,7 +3601,8 @@ public class MappingServiceRest extends RootServiceRest {
         qb.append(query);
       }
 
-      // TODO: need to figure out what "paging" means - it really has to do
+      // TODO: need to figure out what "paging" means - it really has to
+      // do
       // with the number of tree positions under the root node, I think.
       final PfsParameter pfs =
           pfsParameter != null ? pfsParameter : new PfsParameterJpa();
@@ -3645,7 +3653,8 @@ public class MappingServiceRest extends RootServiceRest {
       mappingService.setTreePositionTerminologyNotes(mapProject, treePositions,
           handler);
 
-      // TODO: if there are too many tree positions, then chop the tree off (2
+      // TODO: if there are too many tree positions, then chop the tree
+      // off (2
       // levels?)
       return treePositions;
 
@@ -3774,7 +3783,8 @@ public class MappingServiceRest extends RootServiceRest {
 
       return mapRecords;
 
-      // return mappingService.getOriginMapRecordsForConflict(mapRecordId);
+      // return
+      // mappingService.getOriginMapRecordsForConflict(mapRecordId);
 
     } catch (Exception e) {
       handleException(e, "trying to get origin records for user review", user,
@@ -4347,6 +4357,213 @@ public class MappingServiceRest extends RootServiceRest {
       if (destination != null) {
         destination.close();
       }
+    }
+  }
+
+  @POST
+  @Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/begin")
+  @ApiOperation(value = "Begin release for map project", notes = "Generates release validation report for map project")
+  public void beginReleaseForMapProject(
+    @ApiParam(value = "Effective Time, e.g. 20170131", required = true) @PathParam("effectiveTime") String effectiveTime,
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Mapping): /project/id/" + mapProjectId.toString()
+            + "/release/begin");
+
+    String user = null;
+    String project = "";
+
+    final MappingService mappingService = new MappingServiceJpa();
+    try {
+      // authorize call
+      user = authorizeProject(mapProjectId, authToken, MapUserRole.LEAD,
+          "begin release", securityService);
+
+      final MapProject mapProject = mappingService.getMapProject(mapProjectId);
+
+      // create release handler in test mode
+      ReleaseHandler handler = new ReleaseHandlerJpa(true);
+      handler.setEffectiveTime(effectiveTime);
+      handler.setMapProject(mapProject);
+      handler.beginRelease();
+    } catch (Exception e) {
+      handleException(e, "trying to begin release", user, project, "");
+    } finally {
+
+      mappingService.close();
+      securityService.close();
+    }
+  }
+
+  private String getReleaseDirectoryPath(MapProject mapProject,
+    String effectiveTime) throws Exception {
+    String rootPath = ConfigUtility.getConfigProperties()
+        .getProperty("map.principle.source.document.dir");
+    if (!rootPath.endsWith("/") && !rootPath.endsWith("\\")) {
+      rootPath += "/";
+    }
+
+    String path = rootPath + "release/" + mapProject.getSourceTerminology()
+        + "_to_" + mapProject.getDestinationTerminology() + "/" + effectiveTime
+        + "/";
+    path.replaceAll("\\s", "");
+    return path;
+
+  }
+
+  @POST
+  @Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/module/id/{moduleId}/process")
+  @ApiOperation(value = "Process release for map project", notes = "Processes release and creates release files for map project")
+  public void processReleaseForMapProject(
+    @ApiParam(value = "Module Id, e.g. 20170131", required = true) @PathParam("moduleId") String moduleId,
+    @ApiParam(value = "Effective Time, e.g. 20170131", required = true) @PathParam("effectiveTime") String effectiveTime,
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Mapping): /project/id/" + mapProjectId.toString()
+            + "/release/" + effectiveTime + "/module/id/" + moduleId
+            + "/process");
+
+    String user = null;
+    String project = "";
+
+    final MappingService mappingService = new MappingServiceJpa();
+    try {
+      // authorize call
+      user = authorizeProject(mapProjectId, authToken, MapUserRole.LEAD,
+          "process release", securityService);
+
+      final MapProject mapProject = mappingService.getMapProject(mapProjectId);
+
+      // create release handler in test mode
+      ReleaseHandler handler = new ReleaseHandlerJpa(true);
+      handler.setEffectiveTime(effectiveTime);
+      handler.setMapProject(mapProject);
+      handler.setModuleId(moduleId);
+      handler.setWriteSnapshot(true);
+      handler.setWriteDelta(true);
+
+      // compute output directory
+      // NOTE: Use same directory as map principles for access via webapp
+      String outputDir =
+          this.getReleaseDirectoryPath(mapProject, effectiveTime);
+      handler.setOutputDir(outputDir);
+
+      File file = new File(outputDir);
+      System.out.println("  exists: " + file.exists());
+      // make output directory if does not exist
+      if (!file.exists()) {
+        System.out.println("  making directory: " + file.getAbsolutePath());
+        file.mkdirs();
+      }
+
+      // process release
+      handler.processRelease();
+    } catch (Exception e) {
+      handleException(e, "trying to process release", user, project, "");
+    } finally {
+
+      mappingService.close();
+      securityService.close();
+    }
+  }
+
+  @POST
+  @Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/finish")
+  @ApiOperation(value = "Finish release for map project", notes = "Finishes release for map project from release files")
+  public void finishReleaseForMapProject(
+    @ApiParam(value = "Preview mode", required = false) @QueryParam("test") boolean testModeFlag,
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+    @ApiParam(value = "Effective Time, e.g. 20170131", required = true) @PathParam("effectiveTime") String effectiveTime,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Mapping): /project/id/" + mapProjectId.toString()
+            + "/release/begin");
+
+    String user = null;
+    String project = "";
+
+    final MappingService mappingService = new MappingServiceJpa();
+    try {
+      // authorize call
+      user = authorizeProject(mapProjectId, authToken, MapUserRole.LEAD,
+          "compute names", securityService);
+
+      final MapProject mapProject = mappingService.getMapProject(mapProjectId);
+
+      // create release handler NOT in test mode
+      // TODO Decide whether to remove the out of scope map records,
+      // currently thinking NO
+      // but we do want to replace the simple/complex/extended maps
+      ReleaseHandler handler = new ReleaseHandlerJpa(testModeFlag);
+      handler.setMapProject(mapProject);
+      handler.setEffectiveTime(effectiveTime);
+      String releaseDirPath =
+          this.getReleaseDirectoryPath(mapProject, effectiveTime);
+
+      // check for existence of file
+      // TODO This computation should be moved into the ReleaseHandler and
+      // made handler-specific
+      String relPath = "/der2_" + handler.getPatternForType(mapProject)
+          + mapProject.getMapRefsetPattern() + "ActiveSnapshot_INT_" + effectiveTime
+          + ".txt";
+      String mapFilePath = releaseDirPath + relPath;
+
+      File file = new File(mapFilePath);
+      if (!file.exists()) {
+        throw new LocalException("Release file " + mapFilePath + " not found");
+      }
+      handler.setInputFile(mapFilePath);
+
+      // process release
+      handler.finishRelease();
+    } catch (Exception e) {
+      handleException(e, "trying to finish release", user, project, "");
+    } finally {
+
+      mappingService.close();
+      securityService.close();
+    }
+  }
+
+  @POST
+  @Path("/project/id/{id:[0-9][0-9]*}/release/startEditing")
+  @ApiOperation(value = "Start editing cycle for map project", notes = "Start editing cycle for map project")
+  public void startEditingCycleForMapProject(
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Mapping): /project/id/" + mapProjectId.toString()
+            + "/release/startEditing");
+
+    String user = null;
+    String project = "";
+
+    final MappingService mappingService = new MappingServiceJpa();
+    try {
+      // authorize call
+      user = authorizeProject(mapProjectId, authToken, MapUserRole.LEAD,
+          "start editing cycle", securityService);
+
+      final MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      
+      // Begin the release
+      BeginEditingCycleHandler handler = new BeginEditingCycleHandlerJpa();
+    
+      handler.setMapProject(mapProject);
+      handler.beginEditingCycle();
+
+    } catch (Exception e) {
+      handleException(e, "trying to start editing cycle", user, project, "");
+    } finally {
+
+      mappingService.close();
+      securityService.close();
     }
   }
 }
