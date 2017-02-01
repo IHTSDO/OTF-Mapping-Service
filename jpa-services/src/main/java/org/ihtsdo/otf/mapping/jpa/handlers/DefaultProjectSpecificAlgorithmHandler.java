@@ -100,6 +100,19 @@ public class DefaultProjectSpecificAlgorithmHandler
       return validationResult;
     }
 
+    // FATAL ERROR: multiple entries in groups for non-rule based
+    if (!mapProject.isRuleBased()) {
+      for (Integer key : entryGroups.keySet()) {
+        if (entryGroups.get(key).size() > 1) {
+          validationResult.addError(
+              "Project has no rule structure but multiple map entries found in group "
+                  + key);
+        }
+      }
+      if (!validationResult.isValid()) {
+        return validationResult;
+      }
+    }
     // Verify that groups begin at index 1 and are sequential (i.e. no empty
     // groups)
     validationResult

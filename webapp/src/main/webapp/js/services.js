@@ -69,6 +69,7 @@ mapProjectApp
           if (!$rootScope.globalError) {
             $rootScope.globalError = 'Unexpected server side error.';
           }
+          console.debug('setting error', $rootScope.globalError);
           // If authtoken expired, relogin
           if ($rootScope.globalError && $rootScope.globalError.indexOf('AuthToken') != -1) {
             // Reroute back to login page with 'auth token has expired' message
