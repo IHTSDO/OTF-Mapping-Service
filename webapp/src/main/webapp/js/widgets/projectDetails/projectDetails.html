@@ -8,17 +8,14 @@
 
 <div ng-show="currentRole == 'Administrator' || currentRole == 'Lead'"
   align="right">
-  <span style="font-size: 16px">
-    <a href="" title="Reset to last saved settings"
-      ng-show="editModeEnabled == true" ng-click="resetModel()">
-      <i class="fa fa-undo"></i>
-    </a>
-    &nbsp;
-    <a href=""
-      title="{{editModeEnabled == true ? 'save & disable edit mode' : 'enable edit mode'}}"
-      ng-click="toggleEditMode()">
-      <i class="fa fa-edit"></i>
-    </a>
+  <span style="font-size: 16px"> <a href=""
+    title="Reset to last saved settings"
+    ng-show="editModeEnabled == true" ng-click="resetModel()"> <i
+      class="fa fa-undo"></i>
+  </a> &nbsp; <a href=""
+    title="{{editModeEnabled == true ? 'save & disable edit mode' : 'enable edit mode'}}"
+    ng-click="toggleEditMode()"> <i class="fa fa-edit"></i>
+  </a>
   </span>
 </div>
 
@@ -26,8 +23,8 @@
   is-open="true"> <uib-accordion-heading>
 <h5>
   <span tooltip-placement="right"
-    uib-tooltip="List of the details for this project."> Map Project
-    Details </span>
+    uib-tooltip="List of the details for this project."> Map
+    Project Details </span>
 </h5>
 </uib-accordion-heading>
 
@@ -127,7 +124,8 @@
 <uib-accordion-heading>
 <h5>
   <span tooltip-placement="right"
-    uib-tooltip="List of the map leads for this project."> Map Leads </span>
+    uib-tooltip="List of the map leads for this project."> Map
+    Leads </span>
 </h5>
 </uib-accordion-heading>
 <table style="width: 100%" class="table pure-table">
@@ -145,9 +143,10 @@
       <td>{{lead.name}}</td>
       <td>{{lead.userName}}</td>
       <td ng-show="isEmailViewable(lead.email) == true">{{lead.email}}</td>
-      <td ng-show="isEmailViewable(lead.email) == false">Private email</td>
-      <td ng-show="editModeEnabled == true">
-        <i class="glyphicon glyphicon-remove" ng-click="deleteLead(lead)"></i>
+      <td ng-show="isEmailViewable(lead.email) == false">Private
+        email</td>
+      <td ng-show="editModeEnabled == true"><i
+        class="glyphicon glyphicon-remove" ng-click="deleteLead(lead)"></i>
       </td>
       <td ng-show="editModeEnabled == false"></td>
     </tr>
@@ -162,17 +161,18 @@
       <th style="width: 3%;"></th>
     </tr>
   </thead>
-  <tbody ng-repeat="mapUser in mapUsers | elementFilter:focusProject.mapLead">
+  <tbody
+    ng-repeat="mapUser in mapUsers | elementFilter:focusProject.mapLead">
     <tr>
       <td>{{mapUser.name}}</td>
-      <td>
-        <i class="glyphicon glyphicon-plus" ng-click="addLead(mapUser)"></i>
-      </td>
+      <td><i class="glyphicon glyphicon-plus"
+        ng-click="addLead(mapUser)"></i></td>
     </tr>
   </tbody>
 </table>
 
-<form ng-show="editModeEnabled == true && currentRole == 'Administrator'">
+<form
+  ng-show="editModeEnabled == true && currentRole == 'Administrator'">
   <div style="margin-top: 15px;">
     <b>Add New Map Lead to Project</b>
   </div>
@@ -186,21 +186,18 @@
     <tbody>
       <tr>
         <td>Login Name</td>
-        <td>
-          <input id="newLeadUserName" type="text" ng-model="newLead.userName">
-        </td>
+        <td><input id="newLeadUserName" type="text"
+          ng-model="newLead.userName"></td>
       </tr>
       <tr>
         <td>Full Name</td>
-        <td>
-          <input id="newLeadNname" type="text" ng-model="newLead.name">
-        </td>
+        <td><input id="newLeadNname" type="text"
+          ng-model="newLead.name"></td>
       </tr>
       <tr>
         <td>Email</td>
-        <td>
-          <input id="newLeadEmail" type="text" ng-model="newLead.email">
-        </td>
+        <td><input id="newLeadEmail" type="text"
+          ng-model="newLead.email"></td>
       </tr>
     </tbody>
   </table>
@@ -214,8 +211,8 @@
 <uib-accordion-heading>
 <h5>
   <span tooltip-placement="right"
-    uib-tooltip="List of the map specialists for this project."> Map
-    Specialists </span>
+    uib-tooltip="List of the map specialists for this project.">
+    Map Specialists </span>
 </h5>
 </uib-accordion-heading>
 <table style="width: 100%" class="table pure-table">
@@ -235,10 +232,9 @@
       <td ng-show="isEmailViewable(specialist.email) == true">{{specialist.email}}</td>
       <td ng-show="isEmailViewable(specialist.email) == false">Private
         email</td>
-      <td ng-show="editModeEnabled == true">
-        <i class="glyphicon glyphicon-remove"
-          ng-click="deleteSpecialist(specialist)"></i>
-      </td>
+      <td ng-show="editModeEnabled == true"><i
+        class="glyphicon glyphicon-remove"
+        ng-click="deleteSpecialist(specialist)"></i></td>
       <td ng-show="editModeEnabled == false"></td>
     </tr>
   </tbody>
@@ -256,13 +252,13 @@
     ng-repeat="mapUser in mapUsers | elementFilter:focusProject.mapSpecialist">
     <tr>
       <td>{{mapUser.name}}</td>
-      <td>
-        <i class="glyphicon glyphicon-plus" ng-click="addSpecialist(mapUser)"></i>
-      </td>
+      <td><i class="glyphicon glyphicon-plus"
+        ng-click="addSpecialist(mapUser)"></i></td>
     </tr>
   </tbody>
 </table>
-<form ng-show="editModeEnabled == true && currentRole == 'Administrator'">
+<form
+  ng-show="editModeEnabled == true && currentRole == 'Administrator'">
   <div style="margin-top: 15px;">
     <b>Add New Map Specialist to Project</b>
   </div>
@@ -276,24 +272,18 @@
     <tbody>
       <tr>
         <td>Login Name</td>
-        <td>
-          <input id="newSpecialistUserName" type="text"
-            ng-model="newSpecialist.userName">
-        </td>
+        <td><input id="newSpecialistUserName" type="text"
+          ng-model="newSpecialist.userName"></td>
       </tr>
       <tr>
         <td>Full Name</td>
-        <td>
-          <input id="newSpecialistName" type="text"
-            ng-model="newSpecialist.name">
-        </td>
+        <td><input id="newSpecialistName" type="text"
+          ng-model="newSpecialist.name"></td>
       </tr>
       <tr>
         <td>Email</td>
-        <td>
-          <input id="newSpecialistEmail" type="text"
-            ng-model="newSpecialist.email">
-        </td>
+        <td><input id="newSpecialistEmail" type="text"
+          ng-model="newSpecialist.email"></td>
       </tr>
     </tbody>
   </table>
@@ -307,15 +297,16 @@
 <uib-accordion-heading>
 <h5>
   <span tooltip-placement="right"
-    uib-tooltip="List of the map advice for this project."> Map Advices </span>
+    uib-tooltip="List of the map advice for this project."> Map
+    Advices </span>
 </h5>
 </uib-accordion-heading> <uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
   first-text="&laquo;" last-text="&raquo;" direction-links="false"
-  boundary-links="true" total-items="pagedAdviceCount" items-per-page="pageSize"
-  ng-model="pageAdvice" ng-change="getPagedAdvices(pageAdvice, adviceFilter)"></uib-pagination>
-<span>
-  <input id="adviceSearch" type="text" ng-model="adviceFilter"
-    ng-change="getPagedAdvices(1, adviceFilter)">
+  boundary-links="true" total-items="pagedAdviceCount"
+  items-per-page="pageSize" ng-model="pageAdvice"
+  ng-change="getPagedAdvices(pageAdvice, adviceFilter)"></uib-pagination>
+<span> <input id="adviceSearch" type="text"
+  ng-model="adviceFilter" ng-change="getPagedAdvices(1, adviceFilter)">
   <button class="btn btn-xs btn-warning" ng-click="resetAdviceFilter()">Reset</button>
 </span>
 
@@ -340,22 +331,20 @@
       <td></td>
     </tr>
     <tr ng-show="editModeEnabled == true">
-      <td>
-        {{advice.name}}
-        <!-- <input ng-model="advice.name" 
+      <td>{{advice.name}} <!-- <input ng-model="advice.name" 
                   style="width:100%;" ng-change="updateAdvice(advice)"></input> -->
       </td>
       <td>{{advice.isAllowableForNullTarget}}</td>
       <td>{{advice.isComputed}}</td>
-      <td>
-        <i class="glyphicon glyphicon-remove" ng-click="deleteAdvice(advice)"></i>
-      </td>
+      <td><i class="glyphicon glyphicon-remove"
+        ng-click="deleteAdvice(advice)"></i></td>
     </tr>
 
   </tbody>
 </table>
 
-<table ng-show="editModeEnabled == true && currentRole == 'Administrator'"
+<table
+  ng-show="editModeEnabled == true && currentRole == 'Administrator'"
   style="width: 50%" class="table pure-table">
   <thead>
     <tr>
@@ -367,14 +356,14 @@
     ng-repeat="advice in allowableMapAdvices | elementFilter:focusProject.mapAdvice | orderBy:'name'">
     <tr>
       <td>{{advice.name}}</td>
-      <td>
-        <i class="glyphicon glyphicon-plus" ng-click="addAdvice(advice)"></i>
-      </td>
+      <td><i class="glyphicon glyphicon-plus"
+        ng-click="addAdvice(advice)"></i></td>
     </tr>
   </tbody>
 </table>
 
-<form ng-show="editModeEnabled == true && currentRole == 'Administrator'">
+<form
+  ng-show="editModeEnabled == true && currentRole == 'Administrator'">
   <div style="margin-top: 15px;">
     <b>Add New Map Advice to Project</b>
   </div>
@@ -388,31 +377,25 @@
     <tbody>
       <tr>
         <td>Advice Name</td>
-        <td>
-          <input id="newAdviceName" type="text" ng-model="newAdviceName">
-        </td>
+        <td><input id="newAdviceName" type="text"
+          ng-model="newAdviceName"></td>
       </tr>
       <tr>
         <td>Advice Detail</td>
-        <td>
-          <input id="newAdviceDetail" type="text" ng-model="newAdviceDetail">
-        </td>
+        <td><input id="newAdviceDetail" type="text"
+          ng-model="newAdviceDetail"></td>
       </tr>
       <tr>
         <td>Allowable for Null Target</td>
-        <td>
-          <select ng-model="newAllowableForNullTarget"
-            ng-options="item for item in [true, false]">
-          </select>
-        </td>
+        <td><select ng-model="newAllowableForNullTarget"
+          ng-options="item for item in [true, false]">
+        </select></td>
       </tr>
       <tr>
         <td>Is Computed</td>
-        <td>
-          <select ng-model="newIsComputed"
-            ng-options="item for item in [true, false]">
-          </select>
-        </td>
+        <td><select ng-model="newIsComputed"
+          ng-options="item for item in [true, false]">
+        </select></td>
       </tr>
     </tbody>
   </table>
@@ -427,19 +410,21 @@
 <uib-accordion-heading>
 <h5>
   <span tooltip-placement="right"
-    uib-tooltip="List of the map relations for this project."> Map
-    Relations </span>
+    uib-tooltip="List of the map relations for this project.">
+    Map Relations </span>
 </h5>
 </uib-accordion-heading> <uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
   first-text="&laquo;" last-text="&raquo;"
-  ng-show="focusProject.mapRelation.length > pageSize" direction-links="false"
-  boundary-links="true" total-items="pagedRelationCount"
-  items-per-page="pageSize" ng-model="pageRelation"
+  ng-show="focusProject.mapRelation.length > pageSize"
+  direction-links="false" boundary-links="true"
+  total-items="pagedRelationCount" items-per-page="pageSize"
+  ng-model="pageRelation"
   ng-change="getPagedRelations(pageRelation, relationFilter)"></uib-pagination>
 <form ng-submit="resetRelationFilter()">
   <input type="text" ng-model="relationFilter"
     ng-change="getPagedRelations(1, relationFilter)">
-  <button type="submit" class="btn btn-xs btn-primary">Reset Filter</button>
+  <button type="submit" class="btn btn-xs btn-primary">Reset
+    Filter</button>
 </form>
 
 <table style="width: 100%" class="table pure-table">
@@ -463,17 +448,16 @@
     style="border: 2px solid #ccc;">
     <tr>
       <td>{{relation.terminologyId}}</td>
-      <td>
-        <span ng-show="relation.abbreviation != 'none'">{{relation.abbreviation}}</span>
+      <td><span ng-show="relation.abbreviation != 'none'">{{relation.abbreviation}}</span>
       </td>
       <td>{{relation.name}}</td>
       <td>{{relation.isAllowableForNullTarget}}</td>
       <td>{{relation.isComputed}}</td>
-      <td ng-show="editModeEnabled == true">
-        <i class="glyphicon glyphicon-remove"
-          ng-click="deleteRelation(relation)"></i>
-      </td>
-      <td ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
+      <td ng-show="editModeEnabled == true"><i
+        class="glyphicon glyphicon-remove"
+        ng-click="deleteRelation(relation)"></i></td>
+      <td
+        ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
     </tr>
 
   </tbody>
@@ -491,14 +475,14 @@
     ng-repeat="relation in allowableMapRelations | elementFilter:focusProject.mapRelation | orderBy:'name'">
     <tr>
       <td>{{relation.name}}</td>
-      <td>
-        <i class="glyphicon glyphicon-plus" ng-click="addRelation(relation)"></i>
-      </td>
+      <td><i class="glyphicon glyphicon-plus"
+        ng-click="addRelation(relation)"></i></td>
     </tr>
   </tbody>
 </table>
 
-<form ng-show="editModeEnabled == true && currentRole == 'Administrator'">
+<form
+  ng-show="editModeEnabled == true && currentRole == 'Administrator'">
   <div style="margin-top: 15px;">
     <b>Add New Map Relation to Project</b>
   </div>
@@ -513,39 +497,30 @@
     <tbody>
       <tr>
         <td>Relation Terminology Id</td>
-        <td>
-          <input id="newRelationTerminologyId" type="text"
-            ng-model="newRelation.terminologyId">
-        </td>
+        <td><input id="newRelationTerminologyId" type="text"
+          ng-model="newRelation.terminologyId"></td>
       </tr>
       <tr>
         <td>Relation Code</td>
-        <td>
-          <input id="newRelationAbbreviation" type="text"
-            ng-model="newRelation.abbreviation">
-        </td>
+        <td><input id="newRelationAbbreviation" type="text"
+          ng-model="newRelation.abbreviation"></td>
       </tr>
       <tr>
         <td>Relation Name</td>
-        <td>
-          <input id="newRelationName" type="text" ng-model="newRelation.name">
-        </td>
+        <td><input id="newRelationName" type="text"
+          ng-model="newRelation.name"></td>
       </tr>
       <tr>
         <td>Allowable for Null Target</td>
-        <td>
-          <select ng-model="newRelation.allowableForNullTarget"
-            ng-options="item for item in [true, false]">
-          </select>
-        </td>
+        <td><select ng-model="newRelation.allowableForNullTarget"
+          ng-options="item for item in [true, false]">
+        </select></td>
       </tr>
       <tr>
         <td>Is Computed</td>
-        <td>
-          <select ng-model="newRelation.isComputed"
-            ng-options="item for item in [true, false]">
-          </select>
-        </td>
+        <td><select ng-model="newRelation.isComputed"
+          ng-options="item for item in [true, false]">
+        </select></td>
       </tr>
       <tr>
         <td>
@@ -573,10 +548,12 @@
   total-items="pagedReportDefinitionCount" items-per-page="pageSize"
   ng-model="pageDefinition"
   ng-change="getPagedReportDefinitions(pageDefinition, reportDefinitionFilter)"></uib-pagination>
-<form ng-submit="resetReportDefinitionFilter(); reportDefinitionFilter = '';">
+<form
+  ng-submit="resetReportDefinitionFilter(); reportDefinitionFilter = '';">
   <input type="text" ng-model="reportDefinitionFilter"
     ng-change="getPagedReportDefinitions(1, reportDefinitionFilter)">
-  <button type="submit" class="btn btn-xs btn-primary">Reset Filter</button>
+  <button type="submit" class="btn btn-xs btn-primary">Reset
+    Filter</button>
 </form>
 
 
@@ -600,11 +577,9 @@
     <tr>
       <td>
         <div class="dropdown">
-          <a class="dropdown-toggle">
-            <i class="glyphicon glyphicon-info-sign"></i>
-          </a>
-          &nbsp;
-          <span>{{definition.name}} </span>
+          <a class="dropdown-toggle"> <i
+            class="glyphicon glyphicon-info-sign"></i>
+          </a> &nbsp; <span>{{definition.name}} </span>
           <div class="dropdown-menu">
             <p>Description:</p>
             <p style="word-wrap: break-word;"
@@ -614,11 +589,11 @@
       </td>
       <td>{{definition.roleRequired}}</td>
       <td>{{definition.diffReport == true ? 'true' : 'false'}}</td>
-      <td ng-show="editModeEnabled == true">
-        <i class="glyphicon glyphicon-remove"
-          ng-click="deleteReportDefinition(definition)"></i>
-      </td>
-      <td ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
+      <td ng-show="editModeEnabled == true"><i
+        class="glyphicon glyphicon-remove"
+        ng-click="deleteReportDefinition(definition)"></i></td>
+      <td
+        ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
     </tr>
 
   </tbody>
@@ -637,11 +612,9 @@
     <tr>
       <td>
         <div class="dropdown">
-          <a class="dropdown-toggle">
-            <i class="glyphicon glyphicon-info-sign"></i>
-          </a>
-          &nbsp;
-          <span>{{definition.name}} </span>
+          <a class="dropdown-toggle"> <i
+            class="glyphicon glyphicon-info-sign"></i>
+          </a> &nbsp; <span>{{definition.name}} </span>
           <div class="dropdown-menu">
             <p>Description:</p>
             <p style="word-wrap: break-word;"
@@ -649,10 +622,8 @@
           </div>
         </div>
       </td>
-      <td>
-        <i class="glyphicon glyphicon-plus"
-          ng-click="addReportDefinition(definition)"></i>
-      </td>
+      <td><i class="glyphicon glyphicon-plus"
+        ng-click="addReportDefinition(definition)"></i></td>
     </tr>
   </tbody>
 </table>
@@ -662,8 +633,8 @@
 <uib-accordion-heading>
 <h5>
   <span tooltip-placement="right"
-    uib-tooltip="List of the qa check definitions for this project."> QA
-    Check Definitions </span>
+    uib-tooltip="List of the qa check definitions for this project.">
+    QA Check Definitions </span>
 </h5>
 </uib-accordion-heading> <uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
   first-text="&laquo;" last-text="&raquo;"
@@ -672,10 +643,12 @@
   total-items="pagedQACheckDefinitionCount" items-per-page="pageSize"
   ng-model="pagedQACheckDefinition"
   ng-change="getPagedQACheckDefinitions(pagedQACheckDefinition, qaCheckDefinitionFilter)"></uib-pagination>
-<form ng-submit="resetQACheckDefinitionFilter(); qaCheckDefinitionFilter = '';">
+<form
+  ng-submit="resetQACheckDefinitionFilter(); qaCheckDefinitionFilter = '';">
   <input type="text" ng-model="qaCheckDefinitionFilter"
     ng-change="getPagedQACheckDefinitions(1, qaCheckDefinitionFilter)">
-  <button type="submit" class="btn btn-xs btn-primary">Reset Filter</button>
+  <button type="submit" class="btn btn-xs btn-primary">Reset
+    Filter</button>
 </form>
 
 
@@ -689,16 +662,15 @@
           Role</div></th>
     </tr>
   </thead>
-  <tbody ng-repeat="definition in pagedQACheckDefinition | orderBy: 'name'"
+  <tbody
+    ng-repeat="definition in pagedQACheckDefinition | orderBy: 'name'"
     style="border: 2px solid #ccc;">
     <tr>
       <td>
         <div class="dropdown">
-          <a class="dropdown-toggle">
-            <i class="glyphicon glyphicon-info-sign"></i>
-          </a>
-          &nbsp;
-          <span>{{definition.name}} </span>
+          <a class="dropdown-toggle"> <i
+            class="glyphicon glyphicon-info-sign"></i>
+          </a> &nbsp; <span>{{definition.name}} </span>
           <div class="dropdown-menu">
             <p>Description:</p>
             <p style="word-wrap: break-word;"
@@ -707,11 +679,11 @@
         </div>
       </td>
       <td>{{definition.roleRequired}}</td>
-      <td ng-show="editModeEnabled == true">
-        <i class="glyphicon glyphicon-remove"
-          ng-click="deleteQACheckDefinition(definition)"></i>
-      </td>
-      <td ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
+      <td ng-show="editModeEnabled == true"><i
+        class="glyphicon glyphicon-remove"
+        ng-click="deleteQACheckDefinition(definition)"></i></td>
+      <td
+        ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
     </tr>
 
   </tbody>
@@ -730,11 +702,9 @@
     <tr>
       <td>
         <div class="dropdown">
-          <a class="dropdown-toggle">
-            <i class="glyphicon glyphicon-info-sign"></i>
-          </a>
-          &nbsp;
-          <span>{{definition.name}} </span>
+          <a class="dropdown-toggle"> <i
+            class="glyphicon glyphicon-info-sign"></i>
+          </a> &nbsp; <span>{{definition.name}} </span>
           <div class="dropdown-menu">
             <p>Description:</p>
             <p style="word-wrap: break-word;"
@@ -742,10 +712,8 @@
           </div>
         </div>
       </td>
-      <td>
-        <i class="glyphicon glyphicon-plus"
-          ng-click="addQACheckDefinition(definition)"></i>
-      </td>
+      <td><i class="glyphicon glyphicon-plus"
+        ng-click="addQACheckDefinition(definition)"></i></td>
     </tr>
   </tbody>
 </table>
@@ -755,19 +723,21 @@
 <uib-accordion-heading>
 <h5>
   <span tooltip-placement="right"
-    uib-tooltip="List of the map principles for this project."> Map
-    Principles </span>
+    uib-tooltip="List of the map principles for this project.">
+    Map Principles </span>
 </h5>
 </uib-accordion-heading> <uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
   first-text="&laquo;" last-text="&raquo;"
-  ng-show="focusProject.mapPrinciple.length > pageSize" direction-links="false"
-  boundary-links="true" total-items="pagedPrincipleCount"
-  items-per-page="pageSize" ng-model="pagePrinciple"
+  ng-show="focusProject.mapPrinciple.length > pageSize"
+  direction-links="false" boundary-links="true"
+  total-items="pagedPrincipleCount" items-per-page="pageSize"
+  ng-model="pagePrinciple"
   ng-change="getPagedPrinciples(pagePrinciple, principleFilter)"></uib-pagination>
 <form ng-submit="resetPrincipleFilter()">
   <input type="text" ng-model="principleFilter"
     ng-change="getPagedPrinciples(1, principleFilter)">
-  <button type="submit" class="btn btn-xs btn-primary">Reset Filter</button>
+  <button type="submit" class="btn btn-xs btn-primary">Reset
+    Filter</button>
 </form>
 
 <table style="width: 100%" class="table pure-table">
@@ -786,21 +756,18 @@
       <td>{{principle.principleId}}</td>
       <td>
         <div class="dropdown">
-          <a class="dropdown-toggle">
-            <i class="glyphicon glyphicon-info-sign"></i>
-          </a>
-          &nbsp;
-          <span>{{principle.name}} </span>
+          <a class="dropdown-toggle"> <i
+            class="glyphicon glyphicon-info-sign"></i>
+          </a> &nbsp; <span>{{principle.name}} </span>
           <div class="dropdown-menu">
             <p>Reference: {{principle.sectionRef}}</p>
             <p ng-bind-html="to_trusted(principle.detail)"></p>
           </div>
         </div>
       </td>
-      <td ng-show="editModeEnabled == true">
-        <i class="glyphicon glyphicon-remove"
-          ng-click="deletePrinciple(principle)"></i>
-      </td>
+      <td ng-show="editModeEnabled == true"><i
+        class="glyphicon glyphicon-remove"
+        ng-click="deletePrinciple(principle)"></i></td>
       <td ng-show="editModeEnabled == false"></td>
     </tr>
   </tbody>
@@ -818,14 +785,14 @@
     ng-repeat="principle in allowableMapPrinciples | elementFilter:focusProject.mapPrinciple | orderBy:'principleId'">
     <tr>
       <td>{{principle.principleId}}: {{principle.name}}</td>
-      <td>
-        <i class="glyphicon glyphicon-plus" ng-click="addPrinciple(principle)"></i>
-      </td>
+      <td><i class="glyphicon glyphicon-plus"
+        ng-click="addPrinciple(principle)"></i></td>
     </tr>
   </tbody>
 </table>
 
-<form ng-show="editModeEnabled == true && currentRole == 'Administrator'">
+<form
+  ng-show="editModeEnabled == true && currentRole == 'Administrator'">
   <div style="margin-top: 15px;">
     <b>Add New Map Principle to Project</b>
   </div>
@@ -840,35 +807,28 @@
     <tbody>
       <tr>
         <td>Principle Name</td>
-        <td>
-          <input id="newPrincipleName" style="width: 100%;" type="text"
-            ng-model="newPrinciple.name">
-        </td>
+        <td><input id="newPrincipleName" style="width: 100%;"
+          type="text" ng-model="newPrinciple.name"></td>
       </tr>
       <tr>
         <td>Principle Id</td>
-        <td>
-          <input id="newPrincipleId" style="width: 100%;" type="text"
-            ng-model="newPrinciple.principleId">
-        </td>
+        <td><input id="newPrincipleId" style="width: 100%;"
+          type="text" ng-model="newPrinciple.principleId"></td>
       </tr>
       <tr>
         <td>Principle Detail</td>
-        <td>
-          <input id="newPrincipleDetail" style="width: 100%;" type="text"
-            ng-model="newPrinciple.detail">
-        </td>
+        <td><input id="newPrincipleDetail" style="width: 100%;"
+          type="text" ng-model="newPrinciple.detail"></td>
       </tr>
       <tr>
         <td>Principle Section Ref</td>
-        <td>
-          <input id="newPrincipleSectionRef" style="width: 100%;" type="text"
-            ng-model="newPrinciple.sectionRef">
-        </td>
+        <td><input id="newPrincipleSectionRef" style="width: 100%;"
+          type="text" ng-model="newPrinciple.sectionRef"></td>
       </tr>
       <tr>
         <td>
-          <button class="btn btn-xs btn-primary" style="margin-bottom: 15px;"
+          <button class="btn btn-xs btn-primary"
+            style="margin-bottom: 15px;"
             ng-click="submitNewMapPrinciple(newPrinciple);newPrinciple=null;">Submit</button>
         </td>
         <td></td>
@@ -885,9 +845,10 @@
   </div>
 
   <div style="margin-top: 10px;">
-    <button style="margin-left: 15px" type="file" ngf-select ng-model="file"
-      name="file" ngf-pattern="*txt,*doc,*docx" ngf-max-size="20MB"
-      class="btn btn-xs btn-primary">Browse for File</button>
+    <button style="margin-left: 15px" type="file" ngf-select
+      ng-model="file" name="file" ngf-pattern="*txt,*doc,*docx"
+      ngf-max-size="20MB" class="btn btn-xs btn-primary">Browse
+      for File</button>
     <div ngf-drop ng-model="file" class="drop-box"
       ngf-drag-over-class="'dragover'" ngf-max-size="20MB"
       ngf-pattern="*txt,*doc,*docx">Drop file here</div>
@@ -904,9 +865,9 @@
 <div
   ng-show="focusProject.mapPrincipleSourceDocument != null &&
                     focusProject.mapPrincipleSourceDocument != ''">
-  Principles taken from
-  <a href="doc/{{focusProject.mapPrincipleSourceDocument}}" target="_blank">Map
-    Principles Document</a>
+  Principles taken from <a
+    href="doc/{{focusProject.mapPrincipleSourceDocument}}"
+    target="_blank">Map Principles Document</a>
 </div>
 </uib-accordion-group> <uib-accordion-group
   ng-show="focusProject.mapAgeRange.length > 0 || editModeEnabled == true">
@@ -927,7 +888,8 @@
   </thead>
 
 
-  <tbody ng-repeat="ageRange in focusProject.mapAgeRange | orderBy: 'name'">
+  <tbody
+    ng-repeat="ageRange in focusProject.mapAgeRange | orderBy: 'name'">
 
     <tr>
       <td>{{ageRange.name}}</td>
@@ -953,11 +915,11 @@
           {{ageRange.upperValue}} {{ageRange.upperUnits}}
         </div>
       </td>
-      <td ng-show="editModeEnabled == true">
-        <i class="glyphicon glyphicon-remove"
-          ng-click="deleteAgeRange(ageRange)"></i>
-      </td>
-      <td ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
+      <td ng-show="editModeEnabled == true"><i
+        class="glyphicon glyphicon-remove"
+        ng-click="deleteAgeRange(ageRange)"></i></td>
+      <td
+        ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
     </tr>
   </tbody>
 </table>
@@ -974,14 +936,14 @@
     ng-repeat="ageRange in allowableMapAgeRanges | elementFilter:focusProject.mapAgeRange | orderBy:'name'">
     <tr>
       <td>{{ageRange.name}}</td>
-      <td>
-        <i class="glyphicon glyphicon-plus" ng-click="addAgeRange(ageRange)"></i>
-      </td>
+      <td><i class="glyphicon glyphicon-plus"
+        ng-click="addAgeRange(ageRange)"></i></td>
     </tr>
   </tbody>
 </table>
 
-<form ng-show="editModeEnabled == true && currentRole == 'Administrator'"
+<form
+  ng-show="editModeEnabled == true && currentRole == 'Administrator'"
   name="ageRangeForm">
   <div style="margin-top: 15px;">
     <b>Add New Map Age Range to Project</b>
@@ -997,53 +959,40 @@
     <tbody>
       <tr>
         <td>Age Range Name</td>
-        <td>
-          <input id="newAgeRangeName" type="text" ng-model="newAgeRange.name">
-        </td>
+        <td><input id="newAgeRangeName" type="text"
+          ng-model="newAgeRange.name"></td>
       </tr>
       <tr>
         <td>Age Range Lower Value</td>
-        <td>
-          <input id="newAgeRangeLowerValue" type="text"
-            ng-model="newAgeRange.lowerValue">
-        </td>
+        <td><input id="newAgeRangeLowerValue" type="text"
+          ng-model="newAgeRange.lowerValue"></td>
       </tr>
       <tr>
         <td>Age Range Lower Units</td>
-        <td>
-          <input id="newAgeRangeLowerUnits" type="text"
-            ng-model="newAgeRange.lowerUnits">
-        </td>
+        <td><input id="newAgeRangeLowerUnits" type="text"
+          ng-model="newAgeRange.lowerUnits"></td>
       </tr>
       <tr>
         <td>Age Range Lower Inclusive</td>
-        <td>
-          <select ng-model="newAgeRange.lowerInclusive"
-            ng-options="item for item in [true, false]">
-          </select>
-        </td>
+        <td><select ng-model="newAgeRange.lowerInclusive"
+          ng-options="item for item in [true, false]">
+        </select></td>
       </tr>
       <tr>
         <td>Age Range Upper Value</td>
-        <td>
-          <input id="newAgeRangeUpperValue" type="text"
-            ng-model="newAgeRange.upperValue">
-        </td>
+        <td><input id="newAgeRangeUpperValue" type="text"
+          ng-model="newAgeRange.upperValue"></td>
       </tr>
       <tr>
         <td>Age Range Upper Units</td>
-        <td>
-          <input id="newAgeRangeUpperUnits" type="text"
-            ng-model="newAgeRange.upperUnits">
-        </td>
+        <td><input id="newAgeRangeUpperUnits" type="text"
+          ng-model="newAgeRange.upperUnits"></td>
       </tr>
       <tr>
         <td>Age Range Upper Inclusive</td>
-        <td>
-          <select ng-model="newAgeRange.upperInclusive"
-            ng-options="item for item in [true, false]">
-          </select>
-        </td>
+        <td><select ng-model="newAgeRange.upperInclusive"
+          ng-options="item for item in [true, false]">
+        </select></td>
       </tr>
       <tr>
         <td>
@@ -1077,11 +1026,11 @@
     <tr>
       <td>{{errorMessage}}</td>
 
-      <td ng-show="editModeEnabled == true">
-        <i class="glyphicon glyphicon-remove"
-          ng-click="deleteErrorMessage(errorMessage)"></i>
-      </td>
-      <td ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
+      <td ng-show="editModeEnabled == true"><i
+        class="glyphicon glyphicon-remove"
+        ng-click="deleteErrorMessage(errorMessage)"></i></td>
+      <td
+        ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
     </tr>
   </tbody>
 </table>
@@ -1100,9 +1049,8 @@
     <tbody>
       <tr>
         <td>Error Message</td>
-        <td>
-          <input id="newErrorMessage" type="text" ng-model="newErrorMessage">
-        </td>
+        <td><input id="newErrorMessage" type="text"
+          ng-model="newErrorMessage"></td>
       </tr>
 
       <tr>
@@ -1120,8 +1068,8 @@
 </uib-accordion-group> <uib-accordion-group> <uib-accordion-heading>
 <h5>
   <span tooltip-placement="right"
-    uib-tooltip="List of the concepts in scope for this project."> Scope
-    Concepts </span>
+    uib-tooltip="List of the concepts in scope for this project.">
+    Scope Concepts </span>
 </h5>
 </uib-accordion-heading> <uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
   first-text="&laquo;" last-text="&raquo;" direction-links="false"
@@ -1147,24 +1095,25 @@
     <tr>
       <td>{{scopeConcept.terminologyId}}</td>
       <td>{{scopeConcept.value}}</td>
-      <td ng-show="editModeEnabled == true">
-        <i class="glyphicon glyphicon-remove"
-          ng-click="removeScopeIncludedConcept(scopeConcept)"></i>
-      </td>
-      <td ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
+      <td ng-show="editModeEnabled == true"><i
+        class="glyphicon glyphicon-remove"
+        ng-click="removeScopeIncludedConcept(scopeConcept)"></i></td>
+      <td
+        ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
     </tr>
 
   </tbody>
 </table>
 
-<div ng-show="focusProject.scopeDescendantsFlag == true">Scope Descendants
-  Included</div>
+<div ng-show="focusProject.scopeDescendantsFlag == true">Scope
+  Descendants Included</div>
 <div ng-show="focusProject.scopeDescendantsFlag == false">Scope
   Descendants Not Included</div>
 
 <div ng-show="editModeEnabled == true">
   Scope Descendants Included <select
-    ng-model="focusProject.scopeDescendantsFlag" ng-change="updateMapProject()"
+    ng-model="focusProject.scopeDescendantsFlag"
+    ng-change="updateMapProject()"
     ng-options="item for item in [true, false]">
   </select>
 
@@ -1172,9 +1121,10 @@
     <b>Add New Scope Included Concept(s) to Project</b>
   </div>
   <hr>
-  <uib-tabset> <uib-tab heading="Add Concepts"> Enter
-  concept terminology ids, delimited by either whitespace or commas. <textarea
-    style="width: 100%; height: 100px" ng-model="scopeConceptsToAdd"></textarea>
+  <uib-tabset> <uib-tab heading="Add Concepts">
+  Enter concept terminology ids, delimited by either whitespace or
+  commas. <textarea style="width: 100%; height: 100px"
+    ng-model="scopeConceptsToAdd"></textarea>
   <button class="btn btn-xs btn-primary"
     ng-click="submitNewScopeIncludedConcepts(scopeConceptsToAdd)">Add</button>
   <button class="btn btn-xs btn-warning" ng-click="scopeConceptsToAdd = null">Clear</button>
@@ -1188,7 +1138,8 @@
     style="width: 100%; height: 100px" ng-model="scopeConceptsToRemove"></textarea>
   <button class="btn btn-xs btn-primary"
     ng-click="removeScopeIncludedConcepts(scopeConceptsToRemove)">Remove</button>
-  <button class="btn btn-xs btn-warning" ng-click="scopeConceptsToRemove = null">Clear</button>
+  <button class="btn btn-xs btn-warning"
+    ng-click="scopeConceptsToRemove = null">Clear</button>
   </uib-tab> </tabset>
 </div>
 
@@ -1222,11 +1173,12 @@
     <tr>
       <td>{{scopeExcludedConcept.terminologyId}}</td>
       <td>{{scopeExcludedConcept.value}}</td>
-      <td ng-show="editModeEnabled == true">
-        <i class="glyphicon glyphicon-remove"
-          ng-click="removeScopeExcludedConcept(scopeExcludedConcept, pageScopeExcludedConcept)"></i>
+      <td ng-show="editModeEnabled == true"><i
+        class="glyphicon glyphicon-remove"
+        ng-click="removeScopeExcludedConcept(scopeExcludedConcept, pageScopeExcludedConcept)"></i>
       </td>
-      <td ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
+      <td
+        ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
     </tr>
   </tbody>
 </table>
@@ -1241,28 +1193,136 @@
 <div ng-show="editModeEnabled == true">
   Scope Descendants Included <select
     ng-model="focusProject.scopeExcludedDescendantsFlag"
-    ng-change="updateMapProject()" ng-options="item for item in [true, false]">
+    ng-change="updateMapProject()"
+    ng-options="item for item in [true, false]">
   </select>
 
   <div style="margin-top: 15px;">
     <b>Add New Scope Excluded Concept(s) to Project</b>
   </div>
   <hr>
-  <uib-tabset> <uib-tab heading="Add Concepts"> Enter
-  concept terminology ids, delimited by either whitespace or commas. <textarea
-    style="width: 100%; height: 100px" ng-model="scopeExcludedConceptsToAdd"></textarea>
+  <uib-tabset> <uib-tab heading="Add Concepts">
+  Enter concept terminology ids, delimited by either whitespace or
+  commas. <textarea style="width: 100%; height: 100px"
+    ng-model="scopeExcludedConceptsToAdd"></textarea>
   <button class="btn btn-xs btn-primary"
     ng-click="submitNewScopeExcludedConcepts(scopeExcludedConceptsToAdd)">Add</button>
   <button class="btn btn-xs btn-warning"
     ng-click="scopeExcludedConceptsToAdd = null">Clear</button>
-  </uib-tab> <uib-tab heading="Remove Concepts"> Enter concept terminology ids,
-  delimited by either whitespace or commas. <textarea
-    style="width: 100%; height: 100px" ng-model="scopeExcludedConceptsToRemove"></textarea>
+  </uib-tab> <uib-tab heading="Remove Concepts"> Enter concept
+  terminology ids, delimited by either whitespace or commas. <textarea
+    style="width: 100%; height: 100px"
+    ng-model="scopeExcludedConceptsToRemove"></textarea>
   <button class="btn btn-xs btn-primary"
     ng-click="removeScopeExcludedConcepts(scopeExcludedConceptsToRemove)">Remove</button>
   <button class="btn btn-xs btn-warning"
     ng-click="scopeExcludedConceptsToRemove = null">Clear</button>
   </uib-tab> </uib-tabset>
 </div>
+
+</uib-accordion-group> <!--  Release Handling --> <uib-accordion-group
+  ng-show="currentRole == 'Administrator' || currentRole == 'Lead'">
+<uib-accordion-heading>
+<h5>Release Handling</h5>
+</uib-accordion-heading> <!-- TODO Add compute workflow button -->
+<div class="row">
+
+  <div class="col-md-6">
+
+    <h4>Release Actions</h4>
+    <table class="table">
+      <tr>
+        <td>
+          <button class="btn btn-primary btn-xs"
+            ng-click="computeWorkflow()">Compute Workflow</button>
+        </td>
+        <td>Recompute workflow. Provided to check for available
+          work prior to running release</td>
+      </tr>
+      <tr>
+        <td>
+          <button ng-disabled="!release.effectiveTime"
+            class="btn btn-primary btn-xs" ng-click="beginRelease()">Begin</button>
+        </td>
+        <td>Creates QA Validation Report. Requires effective time.</td>
+      </tr>
+      <tr>
+        <td>
+          <button
+            ng-disabled="!release.effectiveTime || !release.moduleId"
+            class="btn btn-primary btn-xs" ng-click="processRelease()">Process
+          </button>
+        </td>
+        <td>Creates release files. Requires effective time and
+          module id.</td>
+      </tr>
+      <tr>
+        <td>
+          <button ng-disabled="!release.effectiveTime"
+            class="btn btn-primary btn-xs"
+            ng-click="finishRelease(true)">Preview
+            Finish</button>
+        </td>
+        <td>Previews results of finish using file generated by
+          Process Release. Requires effective time. Expects file to be
+          present on server.</td>
+      </tr>
+      <tr>
+        <td>
+          <button ng-disabled="!release.effectiveTime"
+            class="btn btn-danger btn-xs"
+            ng-click="finishRelease(false)">Finish</button>
+        </td>
+        <td>Updates map records and refsets from file generated by
+          Process Release. Requires effective time. Expects file to be
+          present on server. <br>
+        <strong style="color: red">Cannot be undone.</strong>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <button class="btn btn-primary btn-xs"
+            ng-click="startEditingCycle()">Start Editing Cycle</button>
+        </td>
+        <td>Sets the editing cycle start date for the project to
+          today's date. Current value:
+          {{focusProject.editingCycleBeginDate | date:'short'}}</td>
+      </tr>
+    </table>
+
+
+
+  </div>
+
+  <div class="col-md-6">
+    <h4>Parameters</h4>
+    <table class="table">
+
+      <tr>
+        <td>Effective Time:</td>
+        <td><input ng-model="release.effectiveTime"></td>
+
+      </tr>
+      <tr>
+        <td>Module Id</td>
+        <td><input ng-model="release.moduleId"></td>
+
+      </tr>
+    </table>
+
+
+
+    <h4>Notes</h4>
+    <ul>
+      <li>Reports generated from "Begin Release" are available on
+        the dashboard under "Release QA".</li>
+      <li>Reports generated from "Preview Finish" are available on
+        the dashboard under "Release Finalization QA"</li>
+    </ul>
+  </div>
+</div>
+
+
+
 
 </uib-accordion-group> </uib-accordion>

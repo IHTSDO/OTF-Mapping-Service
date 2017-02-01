@@ -461,7 +461,7 @@ public class MapEntryJpa implements MapEntry {
     // rules must be identical
     if (this.rule == null && me.getRule() != null)
       return false;
-    if (!this.rule.equals(me.getRule()))
+    if (this.rule != null && !this.rule.equals(me.getRule()))
       return false;
 
     // relation must be identical
