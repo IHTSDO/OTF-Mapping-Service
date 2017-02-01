@@ -2242,9 +2242,16 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
           String str = "";
           for (final String unusedTargetCode : unusedTargetCodes) {
-            str += unusedTargetCode + ", ";
+            final Concept targetConcept = contentService.getConcept(
+                unusedTargetCode, mapProject.getDestinationTerminology(),
+                mapProject.getDestinationTerminologyVersion());
+            str += unusedTargetCode + " "
+                + targetConcept.getDefaultPreferredName() + "; ";
           }
-          str = str.substring(0, str.length() - 2);
+
+          // truncate too-long strings (db constraint)
+          str = str.substring(0, Math.min(255, str.length() - 2));
+
           // add names of target codes instead of source concept default
           // preferred name
           this.addReportError(report, mapProject, concept.getTerminologyId(),
