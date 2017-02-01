@@ -1012,6 +1012,8 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
             sb.append(
                 " AND (userAndWorkflowStatusPairs:NEW_" + mapUser.getUserName()
                     + " OR userAndWorkflowStatusPairs:EDITING_IN_PROGRESS_"
+                    + mapUser.getUserName()
+                    + " OR userAndWorkflowStatusPairs:EDITING_DONE_"
                     + mapUser.getUserName() + ")"
             // It's confusing to show ALL for non-legacy because mapper is done
             // working on it,
