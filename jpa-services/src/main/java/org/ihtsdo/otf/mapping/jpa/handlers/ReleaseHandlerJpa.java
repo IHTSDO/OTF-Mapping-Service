@@ -2211,15 +2211,15 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       // 2. Mapped concepts not in snomed (e.g. because of drip feed issues)//
       if (concept == null) {
         resultMessages
-            .add("Mapped concept not in " + mapProject.getSourceTerminology());
+            .add(mapProject.getSourceTerminology() + " concept does not exist");
       } else if (!concept.isActive()) {
-        resultMessages.add(
-            "Mapped concept inactive in " + mapProject.getSourceTerminology());
+        resultMessages
+            .add(mapProject.getSourceTerminology() + " concept inactive");
       }
 
       // Check: Destination terminology codes NOT used in previous version of
       // the map
-
+      final Set<String> unusedTargetCodes = new HashSet<>();
       if (refsetMemberMap.containsKey(concept.getId())) {
         final List<ComplexMapRefSetMember> members =
             refsetMemberMap.get(concept.getId());
@@ -2233,12 +2233,23 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               }
             }
             if (!memberTargetFound) {
-              this.addReportError(report, mapProject, member.getTerminologyId(),
-                  concept.getDefaultPreferredName(),
-                  mapProject.getDestinationTerminology()
-                      + " target code from previous release not used");
+              unusedTargetCodes.add(member.getMapTarget());
             }
           }
+        }
+
+        if (unusedTargetCodes.size() > 0) {
+
+          String str = "";
+          for (final String unusedTargetCode : unusedTargetCodes) {
+            str += unusedTargetCode + ", ";
+          }
+          str = str.substring(0, str.length() - 2);
+          // add names of target codes instead of source concept default
+          // preferred name
+          this.addReportError(report, mapProject, concept.getTerminologyId(),
+              str, mapProject.getDestinationTerminology()
+                  + " target code from previous release not used");
         }
 
         // check: concept mapped to multiple codes (non-group-based only)
@@ -2454,7 +2465,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           if (!testModeFlag) {
             record.setWorkflowStatus(WorkflowStatus.PUBLISHED);
             mappingService.updateMapRecord(record);
-          } 
+          }
         }
       }
 

@@ -44,7 +44,6 @@ import org.ihtsdo.otf.mapping.reports.ReportDefinition;
 import org.ihtsdo.otf.mapping.reports.ReportDefinitionJpa;
 import org.ihtsdo.otf.mapping.reports.ReportJpa;
 import org.ihtsdo.otf.mapping.reports.ReportResult;
-import org.ihtsdo.otf.mapping.reports.ReportResultItem;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.ReportService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
@@ -394,8 +393,7 @@ public class ReportServiceRest extends RootServiceRest {
     Logger.getLogger(MappingServiceRest.class).info(
         "RESTful call (Report):  /report/projectId/" + projectId + "/" + id);
     String user = null;
-    String projectName = "";
-
+   
     final ReportService reportService = new ReportServiceJpa();
     try {
       // authorize call
@@ -407,12 +405,8 @@ public class ReportServiceRest extends RootServiceRest {
       for (ReportResult result : report.getResults()) {
         // trigger setting of ct
         result.getCt();
-        System.out.println(" after getCt: " + result.getCt());
         result.setReportResultItems(null);
-        System.out.println(" after setItems: " + result.getCt());
       }
-
-      System.out.println("Ohai");
 
       return report;
 
