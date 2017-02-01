@@ -607,9 +607,10 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
             // + mapUser.getUserName() + ")");
             break;
           default:
-            sb.append(" AND (userAndWorkflowStatusPairs:NEW_"
-                + mapUser.getUserName()
-                + " OR userAndWorkflowStatusPairs:EDITING_IN_PROGRESS_" + ")"
+            sb.append(
+                " AND (userAndWorkflowStatusPairs:NEW_" + mapUser.getUserName()
+                    + " OR userAndWorkflowStatusPairs:EDITING_IN_PROGRESS_"
+                    + " OR userAndWorkflowStatusPairs:EDITING_DONE_" + ")"
             // NO more work for specialist at this point - waiting for lead,
             // don't show in all - confusing
             // + mapUser.getUserName()
