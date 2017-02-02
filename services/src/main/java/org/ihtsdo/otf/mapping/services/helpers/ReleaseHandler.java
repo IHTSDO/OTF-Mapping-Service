@@ -95,4 +95,6 @@ public interface ReleaseHandler {
    * @param inputFile the input file
    */
   public void setInputFile(String inputFile);
+
+  public String getPatternForType(MapProject mapProject);
 }
