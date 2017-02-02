@@ -1,5 +1,5 @@
 
-<div >
+<div>
   <!--  Record 1 -->
   <div ng-show="record1 && record2"
     style="float: left; width: 50%; padding: 10px; border-right: thin solid black;">
@@ -47,6 +47,7 @@
       </table>
       <div>
         <button class="btn btn-xs btn-primary" style="margin: 4px"
+          ng-disabled="!feedbackComment1"
           ng-show="selectedErrorMessage1 == errorMessages[0]"
           ng-click="submitNewFeedback(record1, selectedErrorMessage1, feedbackComment1); feedbackComment1 = ''; selectedErrorMessage1 = errorMessages[0];">Submit
           feedback</button>
@@ -105,6 +106,7 @@
       </table>
       <div>
         <button class="btn btn-xs btn-primary" style="margin: 4px"
+          ng-disabled="!feedbackComment2"
           ng-show="selectedErrorMessage2 == errorMessages[0]"
           ng-click="submitNewFeedback(record2, selectedErrorMessage2, feedbackComment2); feedbackComment2 = ''; selectedErrorMessage2 = errorMessages[0];">Submit
           feedback</button>
@@ -119,7 +121,7 @@
 </div>
 
 <div class="col-md-12 col-xs-12">
-  
+
   <div style="width: 100%" id="report">
 
     <uib-accordion close-others="false"> <!-- If there is no "record2", just put feedback for record1 inline -->
