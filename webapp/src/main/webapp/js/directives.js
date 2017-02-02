@@ -243,6 +243,11 @@ mapProjectAppDirectives.directive('treeSearchResult', [
           scope.callbacks.selectConcept(tree);
         }
 
+        // follow link to referenced concept
+        scope.gotoReferencedConcept = function(concept) {
+          scope.callbacks.gotoReferencedConcept(concept);
+        }
+        
         // retrieves children for a node (not from DOM)
         scope.getTreeChildren = function(tree) {
 

@@ -69,6 +69,7 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
     });
 
     $scope.getReports = function(page, pdefinition, queryReport) {
+      console.debug('*** Get reports', page, pdefinition, queryReport)
       var definition = pdefinition;
       // force reportType to null if undefined or blank string
       if (definition == undefined || definition === '')
@@ -112,10 +113,26 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
     };
 
     $scope.viewReport = function(report) {
-      initializeCollapsed(report); // set the collapses
-      // to true
-      $scope.reportDisplayed = report; // set the displayed
-      // report
+      console.debug('view report', $scope.focusProject, report);
+      
+      // retrieve the report
+      $rootScope.glassPane++;
+      // obtain the record
+      $http.get(root_reporting + 'report/project/id/' + $scope.focusProject.id
+            + '/' + report.id).success(function(report) {
+        $rootScope.glassPane--;
+        
+        
+        initializeCollapsed(report); // set the collapses
+        // to true
+        $scope.reportDisplayed = report; // set the displayed
+        // report
+      }).error(function(data, status, headers, config) {
+        $rootScope.glassPane--;
+        $scope.generatedReport = null;
+        $rootScope.handleHttpError(data, status, headers, config);
+      });
+  
     };
 
     // function to return trusted html code (for advice content)

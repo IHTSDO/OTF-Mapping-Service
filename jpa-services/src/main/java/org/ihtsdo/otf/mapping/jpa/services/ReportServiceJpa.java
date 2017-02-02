@@ -120,19 +120,23 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
   /* see superclass */
   @Override
   public Report getReport(Long reportId) {
-    Report r = null;
+    Report report = null;
 
     final javax.persistence.Query query =
         manager.createQuery("select r from ReportJpa r where id = :id");
     query.setParameter("id", reportId);
 
-    r = (Report) query.getSingleResult();
+    report = (Report) query.getSingleResult();
 
-    // handle lazy initializations
-    r.getResults().size();
-    r.getNotes().size();
+    // handle lazy initialization
+    report.getNotes().size();
+    report.getResults().size();
+    
+    for (final ReportResult result : report.getResults()) {
+      result.getReportResultItems().size();
+    }
 
-    return r;
+    return report;
   }
 
   /* see superclass */
@@ -406,8 +410,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
   private void handleReportLazyInitialization(Report report) {
     report.getNotes().size();
     report.getResults().size();
-
-    for (final ReportResult result : report.getResults()) {
+    
+   for (final ReportResult result : report.getResults()) {
       result.getReportResultItems().size();
     }
 
@@ -613,8 +617,10 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     // reports are ALWAYS sorted in reverse order of date
     final List<Report> reports = query.getResultList();
 
+    // set report results to null
     for (final Report report : reports) {
-      handleReportLazyInitialization(report);
+      report.setNotes(new ArrayList<ReportNote>());
+      report.setResults(new ArrayList<ReportResult>());
     }
 
     reportList.setReports(reports);

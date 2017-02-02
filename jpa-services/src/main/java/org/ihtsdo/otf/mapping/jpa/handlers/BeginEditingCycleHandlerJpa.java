@@ -5,6 +5,7 @@ package org.ihtsdo.otf.mapping.jpa.handlers;
 
 import java.util.Date;
 
+import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.services.MappingService;
@@ -66,6 +67,7 @@ public class BeginEditingCycleHandlerJpa implements BeginEditingCycleHandler {
     if (mapProject == null) {
       throw new Exception("Map project is null.");
     }
+    Logger.getLogger(getClass()).info("Begin editing cycle for map project " + mapProject.getId());
     MappingService mappingService = new MappingServiceJpa();
     mapProject.setEditingCycleBeginDate(new Date());
     mappingService.updateMapProject(mapProject);
