@@ -114,7 +114,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     try {
       // authorize call
       user = authorizeProject(mapProjectId, authToken,
-          MapUserRole.ADMINISTRATOR, "compute workflow", securityService);
+          MapUserRole.LEAD, "compute workflow", securityService);
 
       final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
