@@ -48,13 +48,8 @@
       <div>
         <button class="btn btn-xs btn-primary" style="margin: 4px"
           ng-disabled="!feedbackComment1"
-          ng-show="selectedErrorMessage1 == errorMessages[0]"
           ng-click="submitNewFeedback(record1, selectedErrorMessage1, feedbackComment1); feedbackComment1 = ''; selectedErrorMessage1 = errorMessages[0];">Submit
           feedback</button>
-        <button class="btn btn-xs btn-primary" style="margin: 4px"
-          ng-show="selectedErrorMessage1 != errorMessages[0]"
-          ng-click="submitNewFeedback(record1, selectedErrorMessage1, feedbackComment1); feedbackComment1 = ''; selectedErrorMessage1 = errorMessages[0];">Submit
-          error</button>
       </div>
     </div>
 
@@ -110,10 +105,6 @@
           ng-show="selectedErrorMessage2 == errorMessages[0]"
           ng-click="submitNewFeedback(record2, selectedErrorMessage2, feedbackComment2); feedbackComment2 = ''; selectedErrorMessage2 = errorMessages[0];">Submit
           feedback</button>
-        <button class="btn btn-xs btn-primary" style="margin: 4px"
-          ng-show="selectedErrorMessage2 != errorMessages[0]"
-          ng-click="submitNewFeedback(record2, selectedErrorMessage2, feedbackComment2); feedbackComment2 = ''; selectedErrorMessage2 = errorMessages[0];">Submit
-          error</button>
       </div>
     </div>
 
