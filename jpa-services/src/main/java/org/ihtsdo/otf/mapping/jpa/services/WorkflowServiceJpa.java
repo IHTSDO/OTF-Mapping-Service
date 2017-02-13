@@ -1660,7 +1660,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     Properties config = ConfigUtility.getConfigProperties();
     String feedbackUserRecipient =
         config.getProperty("mail.smtp.to.feedback.user");
-    String baseUrlWebapp = config.getProperty("base.url.webapp");
+    String baseUrlWebapp = config.getProperty("base.url");
     String conceptUrl = baseUrlWebapp + "/#/record/conceptId/" + conceptId
         + "/autologin?refSetId=" + refSetId;
 
