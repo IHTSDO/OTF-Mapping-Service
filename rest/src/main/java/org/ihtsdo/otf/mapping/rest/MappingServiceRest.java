@@ -664,6 +664,7 @@ public class MappingServiceRest extends RootServiceRest {
    * @param terminologyIds the terminology ids
    * @param projectId the project id
    * @param authToken the auth token
+   * @return the validation result
    * @throws Exception the exception
    */
   @POST
@@ -4360,6 +4361,14 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
+  /**
+   * Begin release for map project.
+   *
+   * @param effectiveTime the effective time
+   * @param mapProjectId the map project id
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
   @POST
   @Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/begin")
   @ApiOperation(value = "Begin release for map project", notes = "Generates release validation report for map project")
@@ -4397,6 +4406,15 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
+  /**
+   * Returns the release directory path.
+   *
+   * @param mapProject the map project
+   * @param effectiveTime the effective time
+   * @return the release directory path
+   * @throws Exception the exception
+   */
+  @SuppressWarnings("static-method")
   private String getReleaseDirectoryPath(MapProject mapProject,
     String effectiveTime) throws Exception {
     String rootPath = ConfigUtility.getConfigProperties()
@@ -4413,6 +4431,15 @@ public class MappingServiceRest extends RootServiceRest {
 
   }
 
+  /**
+   * Process release for map project.
+   *
+   * @param moduleId the module id
+   * @param effectiveTime the effective time
+   * @param mapProjectId the map project id
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
   @POST
   @Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/module/id/{moduleId}/process")
   @ApiOperation(value = "Process release for map project", notes = "Processes release and creates release files for map project")
@@ -4471,6 +4498,15 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
+  /**
+   * Finish release for map project.
+   *
+   * @param testModeFlag the test mode flag
+   * @param mapProjectId the map project id
+   * @param effectiveTime the effective time
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
   @POST
   @Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/finish")
   @ApiOperation(value = "Finish release for map project", notes = "Finishes release for map project from release files")
@@ -4509,8 +4545,8 @@ public class MappingServiceRest extends RootServiceRest {
       // TODO This computation should be moved into the ReleaseHandler and
       // made handler-specific
       String relPath = "/der2_" + handler.getPatternForType(mapProject)
-          + mapProject.getMapRefsetPattern() + "ActiveSnapshot_INT_" + effectiveTime
-          + ".txt";
+          + mapProject.getMapRefsetPattern() + "ActiveSnapshot_INT_"
+          + effectiveTime + ".txt";
       String mapFilePath = releaseDirPath + relPath;
 
       File file = new File(mapFilePath);
@@ -4530,6 +4566,13 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
+  /**
+   * Start editing cycle for map project.
+   *
+   * @param mapProjectId the map project id
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
   @POST
   @Path("/project/id/{id:[0-9][0-9]*}/release/startEditing")
   @ApiOperation(value = "Start editing cycle for map project", notes = "Start editing cycle for map project")
@@ -4551,10 +4594,10 @@ public class MappingServiceRest extends RootServiceRest {
           "start editing cycle", securityService);
 
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
-      
+
       // Begin the release
       BeginEditingCycleHandler handler = new BeginEditingCycleHandlerJpa();
-    
+
       handler.setMapProject(mapProject);
       handler.beginEditingCycle();
 

@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2015 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.jpa.services;
 
 import java.lang.reflect.Field;
@@ -2202,8 +2205,6 @@ public class ContentServiceJpa extends RootServiceJpa
     list.setTotalCount(list.getCount());
     return list;
   }
-  
-  
 
   /* see superclass */
   @Override
@@ -2232,6 +2233,12 @@ public class ContentServiceJpa extends RootServiceJpa
 
   }
 
+  /**
+   * Sort tree positions.
+   *
+   * @param treePositions the tree positions
+   */
+  @SuppressWarnings("static-method")
   private void sortTreePositions(List<TreePosition> treePositions) {
 
     if (treePositions != null && treePositions.size() > 0) {
@@ -2293,12 +2300,12 @@ public class ContentServiceJpa extends RootServiceJpa
       }
     }
   }
-  
-  
+
   /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
-  public List<SimpleMapRefSetMember> getSimpleMapRefSetMembersForConcept(Long conceptId) {
+  public List<SimpleMapRefSetMember> getSimpleMapRefSetMembersForConcept(
+    Long conceptId) {
     javax.persistence.Query query = manager
         .createQuery(
             "select r from SimpleMapRefSetMemberJpa r where concept_id = :conceptId")
@@ -2308,11 +2315,12 @@ public class ContentServiceJpa extends RootServiceJpa
     return members;
 
   }
-  
+
   /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
-  public List<ComplexMapRefSetMember> getComplexMapRefSetMembersForConcept(Long conceptId) {
+  public List<ComplexMapRefSetMember> getComplexMapRefSetMembersForConcept(
+    Long conceptId) {
     javax.persistence.Query query = manager
         .createQuery(
             "select r from ComplexMapRefSetMemberJpa r where concept_id = :conceptId")
