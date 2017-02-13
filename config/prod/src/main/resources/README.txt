@@ -65,7 +65,7 @@ service tomcat7 start
 
 sleep 40
 
-cd /var/lib/tomcat7/webapps/ROOT
+cd /var/lib/tomcat7/webapps/mapping-rest
 ln -s ~ihtsdo/data/doc
 chmod -R ga+rwx ~ihtsdo/data/doc
 
