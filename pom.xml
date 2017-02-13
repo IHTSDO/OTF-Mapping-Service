@@ -20,7 +20,6 @@
     <module>services</module>
     <module>jpa-services</module>
     <module>rest</module>
-    <module>webapp</module>
     <module>admin</module>
     <module>integration-tests</module>
   </modules>
