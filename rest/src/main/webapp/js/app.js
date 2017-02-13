@@ -91,7 +91,7 @@ mapProjectApp.run([
 
     // Request properties from the server
     gpService.increment();
-    $http.get('/mapping-rest/security/properties').then(
+    $http.get('/security/properties').then(
       // success
       function(response) {
         gpService.decrement();

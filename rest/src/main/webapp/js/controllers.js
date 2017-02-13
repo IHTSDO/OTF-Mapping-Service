@@ -3,7 +3,7 @@
 var mapProjectAppControllers = angular.module('mapProjectAppControllers', [ 'ui.bootstrap',
   'mapProjectAppDirectives', 'mapProjectAppDashboards' ]);
 
-var root_url = '/mapping-rest/';
+var root_url = '/';
 var root_mapping = root_url + 'mapping/';
 var root_content = root_url + 'content/';
 var root_metadata = root_url + 'metadata/';
