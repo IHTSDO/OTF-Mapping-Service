@@ -57,12 +57,9 @@ mvn -Dconfig.artifactId=mapping-config-prod clean install
 service tomcat7 stop
 /bin/rm -rf /var/lib/tomcat7/work/Catalina/localhost/mapping-rest
 /bin/rm -rf /var/lib/tomcat7/webapps/mapping-rest
-/bin/rm -rf /var/lib/tomcat7/webapps/ROOT
 /bin/rm -rf /var/lib/tomcat7/webapps/mapping-rest.war
-/bin/rm -rf /var/lib/tomcat7/webapps/ROOT.war
 
 /bin/cp -f ~/code/rest/target/mapping-rest*war /var/lib/tomcat7/webapps/mapping-rest.war
-/bin/cp -f ~/code/webapp/target/mapping-webapp*war /var/lib/tomcat7/webapps/ROOT.war
 
 service tomcat7 start
 
