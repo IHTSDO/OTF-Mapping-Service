@@ -71,6 +71,10 @@
     <servlet-name>default</servlet-name>
     <url-pattern>/lib/*</url-pattern>
   </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>default</servlet-name>
+    <url-pattern>/doc/*</url-pattern>
+  </servlet-mapping>
   <!-- application files -->
   <servlet-mapping>
     <servlet-name>default</servlet-name>
