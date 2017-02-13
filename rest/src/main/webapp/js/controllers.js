@@ -3,13 +3,12 @@
 var mapProjectAppControllers = angular.module('mapProjectAppControllers', [ 'ui.bootstrap',
   'mapProjectAppDirectives', 'mapProjectAppDashboards' ]);
 
-var root_url = '/';
-var root_mapping = root_url + 'mapping/';
-var root_content = root_url + 'content/';
-var root_metadata = root_url + 'metadata/';
-var root_workflow = root_url + 'workflow/';
-var root_security = root_url + 'security/';
-var root_reporting = root_url + 'reporting/';
+var root_mapping = 'mapping/';
+var root_content = 'content/';
+var root_metadata = 'metadata/';
+var root_workflow = 'workflow/';
+var root_security = 'security/';
+var root_reporting = 'reporting/';
 
 mapProjectAppControllers.config(function(localStorageServiceProvider) {
 
