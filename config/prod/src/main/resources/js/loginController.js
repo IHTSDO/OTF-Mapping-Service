@@ -29,7 +29,7 @@ mapProjectAppControllers.controller('LoginCtrl', [
     $scope.login = function() {
       // This line requires maven filtering
       window.location.href = appConfig['security.handler.IMS.url'] + '/#/login?serviceReferer='
-        + appConfig['base.url.webapp'];
+        + appConfig['base.url'] + '/index.html';
     }
 
     // / / login button directs to next page based on role selected
