@@ -378,6 +378,15 @@ public class ReportServiceRest extends RootServiceRest {
 
   }
 
+  /**
+   * Returns the report.
+   *
+   * @param projectId the project id
+   * @param id the id
+   * @param authToken the auth token
+   * @return the report
+   * @throws Exception the exception
+   */
   @GET
   @Path("/report/project/id/{projectId}/{id}")
   @ApiOperation(value = "Get a report by id", notes = "Get report by id", response = ReportJpa.class)
@@ -393,7 +402,7 @@ public class ReportServiceRest extends RootServiceRest {
     Logger.getLogger(MappingServiceRest.class).info(
         "RESTful call (Report):  /report/projectId/" + projectId + "/" + id);
     String user = null;
-   
+
     final ReportService reportService = new ReportServiceJpa();
     try {
       // authorize call
