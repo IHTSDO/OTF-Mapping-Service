@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2015 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.services.helpers;
 
 import java.util.List;
@@ -96,5 +99,11 @@ public interface ReleaseHandler {
    */
   public void setInputFile(String inputFile);
 
+  /**
+   * Returns the pattern for type.
+   *
+   * @param mapProject the map project
+   * @return the pattern for type
+   */
   public String getPatternForType(MapProject mapProject);
 }

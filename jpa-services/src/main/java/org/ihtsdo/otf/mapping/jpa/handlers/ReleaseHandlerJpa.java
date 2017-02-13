@@ -1,5 +1,5 @@
 /*
- * 
+ *    Copyright 2015 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
@@ -1480,16 +1480,31 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         + (c.getMapTarget() == null ? "" : c.getMapTarget());
   }
 
+  /**
+   * Returns the hash.
+   *
+   * @param entry the entry
+   * @return the hash
+   */
   private String getHash(MapEntry entry) {
     return mapProject.getRefSetId() + entry.getMapRecord().getConceptId()
         + entry.getMapGroup() + (entry.getRule() == null ? "" : entry.getRule())
         + (entry.getTargetId() == null ? "" : entry.getTargetId());
   }
 
+  /** The relations. */
   private Map<String, MapRelation> relations = null;
 
+  /** The advices. */
   private List<MapAdvice> advices = null;
 
+  /**
+   * Returns the map entry for complex map ref set member.
+   *
+   * @param member the member
+   * @return the map entry for complex map ref set member
+   * @throws Exception the exception
+   */
   private MapEntry getMapEntryForComplexMapRefSetMember(
     ComplexMapRefSetMember member) throws Exception {
     if (relations == null) {
@@ -1497,7 +1512,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       for (MapRelation m : mappingService.getMapRelations().getMapRelations()) {
         relations.put(m.getTerminologyId(), m);
       }
-      ;
+
     }
     if (advices == null) {
       advices = mappingService.getMapAdvices().getMapAdvices();
@@ -2245,8 +2260,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             final Concept targetConcept = contentService.getConcept(
                 unusedTargetCode, mapProject.getDestinationTerminology(),
                 mapProject.getDestinationTerminologyVersion());
-            str += unusedTargetCode + " "
-                + targetConcept.getDefaultPreferredName() + "; ";
+            str +=
+                unusedTargetCode + " " + (targetConcept == null ? "Unknown name"
+                    : targetConcept.getDefaultPreferredName()) + "; ";
           }
 
           // truncate too-long strings (db constraint)
@@ -2654,6 +2670,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   /**
    * Load map refset from file.
    *
+   * @return the report
    * @throws Exception the exception
    */
   @SuppressWarnings("resource")
@@ -3025,7 +3042,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @param mapProject the map project
    * @return the pattern for type
    */
-  @SuppressWarnings("static-method")
   @Override
   public String getPatternForType(MapProject mapProject) {
     if (mapProject.getMapRefsetPattern() == MapRefsetPattern.SimpleMap) {
