@@ -186,6 +186,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
         <configuration>
+          <warName>mapping-rest</warName>
           <attachClasses>true</attachClasses>
           <filteringDeploymentDescriptors>true</filteringDeploymentDescriptors>
           <webResources>
@@ -197,7 +198,21 @@
                 <exclude>config*.properties</exclude>
               </excludes>
             </resource>
-           </webResources>
+            <resource>
+              <directory>src/main/webapp</directory>
+              <filtering>true</filtering>
+              <includes>
+                <include>js/appConfig.js</include>
+              </includes>
+            </resource>
+            <resource>
+              <directory>src/main/webapp</directory>
+              <filtering>false</filtering>
+              <excludes>
+                <exclude>js/appConfig.js</exclude>
+              </excludes>
+            </resource>
+          </webResources>
         </configuration>
       </plugin>
 
