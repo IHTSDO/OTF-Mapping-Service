@@ -19,7 +19,6 @@
   <modules>
     <module>empty</module>
     <module>dev-windows</module>
-    <module>uat</module>
     <module>prod</module>
     <module>wci</module>
   </modules>
