@@ -75,6 +75,10 @@
     <servlet-name>default</servlet-name>
     <url-pattern>/doc/*</url-pattern>
   </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>default</servlet-name>
+    <url-pattern>/indexViewerData/*</url-pattern>
+  </servlet-mapping>
   <!-- application files -->
   <servlet-mapping>
     <servlet-name>default</servlet-name>
