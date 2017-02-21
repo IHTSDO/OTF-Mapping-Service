@@ -180,5 +180,12 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @return the list
    */
   public List<TreePosition> limitTreePositions(List<TreePosition> treePositions);
+  
+  /**
+   * Checks if is one to one constrained.
+   *
+   * @return true, if is one to one constrained
+   */
+  public boolean isOneToOneConstrained();
 
 }
