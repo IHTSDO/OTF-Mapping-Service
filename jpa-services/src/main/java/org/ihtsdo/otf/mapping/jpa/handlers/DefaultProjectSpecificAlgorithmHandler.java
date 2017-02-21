@@ -941,4 +941,9 @@ public class DefaultProjectSpecificAlgorithmHandler
   public void setProperties(Properties properties) {
     // n/a
   }
+  
+  @Override
+  public boolean isOneToOneConstrained() {
+    return false;
+  }
 }
