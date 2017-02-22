@@ -2181,13 +2181,13 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         // check for violation of target codes
         if (algorithmHandler.recordViolatesOneToOneConstraint(mapRecord)) {
           resultMessages
-              .add("Map record violates one-to-one mapping constraint");
+              .add(mapProject.getDestinationTerminology() + " target used more than once");
         }
 
         // check for than one entry
         if (mapRecord.getMapEntries().size() > 1) {
           resultMessages.add(
-              "Map record has more than one map entry under one-to-one mapping constraint");
+              "Map record has more than one entry");
         }
 
       }
