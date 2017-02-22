@@ -2174,6 +2174,11 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
       // constuct a list of errors for this concept
       final List<String> resultMessages = new ArrayList<>();
+      
+      // CHECK: One to one project record has unique mapping
+      if (algorithmHandler.isOneToOneConstrained() && algorithmHandler.recordViolatesOneToOneConstraint(mapRecord)) {
+        resultMessages.add("Map record violates one-to-one mapping constraint");
+      }
 
       // CHECK: Map record is READY_FOR_PUBLICATION or PUBLISHED
       if (!mapRecord.getWorkflowStatus()

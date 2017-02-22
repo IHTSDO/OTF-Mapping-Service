@@ -11,6 +11,7 @@ import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
+// TODO: Auto-generated Javadoc
 /**
  * Represents a collection of project specific algorithms that can override
  * defaults.
@@ -187,5 +188,14 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @return true, if is one to one constrained
    */
   public boolean isOneToOneConstrained();
+  
+  /**
+   * Record violates one to one constraint
+   *
+   * @param record the record
+   * @return true, if violates constraint
+   * @throws Exception 
+   */
+  public boolean recordViolatesOneToOneConstraint(MapRecord record) throws Exception;
 
 }
