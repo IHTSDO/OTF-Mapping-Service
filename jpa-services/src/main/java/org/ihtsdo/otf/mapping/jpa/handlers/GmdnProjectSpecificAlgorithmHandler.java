@@ -45,7 +45,7 @@ public class GmdnProjectSpecificAlgorithmHandler
         for (final MapRecord r : records) {
           // NOTE: id not currently indexed, cannot include in query
           if (r.getId() != record.getId()) {
-            result.addError("Target code " + entry.getTargetId()
+            result.getWarnings().add("Target code " + entry.getTargetId()
                 + " already mapped from concept " + r.getConceptId() + " | "
                 + r.getConceptName() + " |");
           }
