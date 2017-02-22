@@ -30,28 +30,7 @@ public class GmdnProjectSpecificAlgorithmHandler
   public ValidationResult validateTargetCodes(MapRecord record)
     throws Exception {
     final ValidationResult result = new ValidationResultJpa();
-    final ContentService service = new ContentServiceJpa();
-
-    // check for one to one constraint (if not blank)
-    for (final MapEntry entry : record.getMapEntries()) {
-      if (entry.getTargetId() != null && !entry.getTargetId().isEmpty()) {
-        final int[] totalCt = new int[1];
-        @SuppressWarnings("unchecked")
-        List<MapRecord> records = (List<MapRecord>) service.getQueryResults(
-            "mapProjectId:" + mapProject.getId()
-                + " AND (workflowStatus:PUBLISHED OR workflowStatus:READY_FOR_PUBLICATION)"
-                + " AND mapEntries.targetId:\"" + entry.getTargetId() + "\"",
-            MapRecordJpa.class, MapRecordJpa.class, null, totalCt);
-        for (final MapRecord r : records) {
-          // NOTE: id not currently indexed, cannot include in query
-          if (r.getId() != record.getId()) {
-            result.getWarnings().add("Target code " + entry.getTargetId()
-                + " already mapped from concept " + r.getConceptId() + " | "
-                + r.getConceptName() + " |");
-          }
-        }
-      }
-    }
+    result.merge(this.recordViolatesOneToOneConstraintHelper(record));
     return result;
   }
 
@@ -171,6 +150,49 @@ public class GmdnProjectSpecificAlgorithmHandler
   @Override
   public boolean isOneToOneConstrained() {
     return true;
+  }
+
+  @Override
+  public boolean recordViolatesOneToOneConstraint(MapRecord record)
+    throws Exception {
+    final ValidationResult result =
+        recordViolatesOneToOneConstraintHelper(record);
+
+    return result.getWarnings().size() > 0;
+  }
+
+  private ValidationResult recordViolatesOneToOneConstraintHelper(
+    MapRecord record) throws Exception {
+    final ContentService service = new ContentServiceJpa();
+    final ValidationResult result = new ValidationResultJpa();
+    try {
+      // check for one to one constraint (if not blank)
+      for (final MapEntry entry : record.getMapEntries()) {
+        if (entry.getTargetId() != null && !entry.getTargetId().isEmpty()) {
+          final int[] totalCt = new int[1];
+          @SuppressWarnings("unchecked")
+          List<MapRecord> records = (List<MapRecord>) service.getQueryResults(
+              "mapProjectId:" + mapProject.getId()
+                  + " AND (workflowStatus:PUBLISHED OR workflowStatus:READY_FOR_PUBLICATION)"
+                  + " AND mapEntries.targetId:\"" + entry.getTargetId() + "\"",
+              MapRecordJpa.class, MapRecordJpa.class, null, totalCt);
+          for (final MapRecord r : records) {
+            // NOTE: id not currently indexed, cannot include in query
+            if (!r.getConceptId().equals(record.getConceptId())) {
+              result.getWarnings()
+                  .add("Target code " + entry.getTargetId()
+                      + " already mapped from concept " + r.getConceptId()
+                      + " | " + r.getConceptName() + " |");
+            }
+          }
+        }
+      }
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      service.close();
+    }
+    return result;
   }
 
 }

@@ -941,9 +941,16 @@ public class DefaultProjectSpecificAlgorithmHandler
   public void setProperties(Properties properties) {
     // n/a
   }
-  
+
+  /* see superclass */
   @Override
   public boolean isOneToOneConstrained() {
+    return false;
+  }
+
+  /* see superclass */
+  @Override
+  public boolean recordViolatesOneToOneConstraint(MapRecord record) throws Exception {
     return false;
   }
 }
