@@ -487,7 +487,7 @@
   <tbody>
     <tr ng-repeat="result in assignedRecordsForUser">
       <td style="width: 12%; padding: 5px;">
-        <a href="#/record/conceptId/{{result.terminologyId}}">{{result.terminologyId}}</a>
+        {{result.terminologyId}}
       </td>
       <td style="width: 60%; padding: 5px;">{{result.value}}</td>
       <td style="width: 25%; padding: 5px;">{{result.terminology |
