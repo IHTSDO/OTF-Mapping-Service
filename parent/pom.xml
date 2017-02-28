@@ -9,7 +9,7 @@
 
   <groupId>org.ihtsdo.otf.mapping</groupId>
   <artifactId>mapping-parent</artifactId>
-  <version>1.5.26</version>
+  <version>1.5.27-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>IHTSDO Mapping Service Parent</name>
   <description>Parent project for mapping service</description>
