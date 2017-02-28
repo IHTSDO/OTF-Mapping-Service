@@ -1,5 +1,5 @@
 /*
- *    Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2017 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.jpa.services;
 
@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.Set;
 
@@ -1401,29 +1402,24 @@ public class WorkflowServiceJpa extends MappingServiceJpa
   }
 
   /* see superclass */
-  @SuppressWarnings("unchecked")
   @Override
   public FeedbackConversation getFeedbackConversation(Long id)
     throws Exception {
 
-    // construct query
-    javax.persistence.Query query = manager.createQuery(
-        "select m from FeedbackConversationJpa m where mapRecordId = :recordId");
+    try {
+      // construct query
+      javax.persistence.Query query = manager.createQuery(
+          "select m from FeedbackConversationJpa m where id = :id");
 
-    // Try query
-    query.setParameter("recordId", id);
-    List<FeedbackConversation> feedbackConversations = query.getResultList();
+      // Try query
+      query.setParameter("id", id);
+      final FeedbackConversation feedbackConversation =
+          (FeedbackConversation) query.getSingleResult();
+      return feedbackConversation;
+    } catch (NoSuchElementException e) {
+      return null;
+    }
 
-    if (feedbackConversations != null && feedbackConversations.size() > 0)
-      handleFeedbackConversationLazyInitialization(
-          feedbackConversations.get(0));
-
-    Logger.getLogger(this.getClass())
-        .debug("Returning feedback conversation id... "
-            + ((feedbackConversations != null) ? id.toString() : "null"));
-
-    return feedbackConversations != null && feedbackConversations.size() > 0
-        ? feedbackConversations.get(0) : null;
   }
 
   /**
