@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2017 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
 import java.util.ArrayList;
@@ -161,6 +164,13 @@ public class GmdnProjectSpecificAlgorithmHandler
     return result.getWarnings().size() > 0;
   }
 
+  /**
+   * Record violates one to one constraint helper.
+   *
+   * @param record the record
+   * @return the validation result
+   * @throws Exception the exception
+   */
   private ValidationResult recordViolatesOneToOneConstraintHelper(
     MapRecord record) throws Exception {
     final ContentService service = new ContentServiceJpa();
