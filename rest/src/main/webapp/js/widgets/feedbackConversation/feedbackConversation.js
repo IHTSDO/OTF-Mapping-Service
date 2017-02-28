@@ -414,6 +414,7 @@ angular
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
+          $scope.getFeedbackConversation();
           $rootScope.glassPane--;
         }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
