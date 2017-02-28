@@ -1711,12 +1711,21 @@ public class WorkflowServiceRest extends RootServiceRest {
         final FeedbackConversation oldConvo =
             workflowService.getFeedbackConversation(conversation.getId());
         // Find the "new" messages from this conversation and add them
+        boolean found = false;
         for (final Feedback feedback : conversation.getFeedbacks()) {
           if (feedback.getId() == null) {
+            found = true;
             oldConvo.getFeedbacks().add(feedback);
           }
         }
-        workflowService.updateFeedbackConversation(oldConvo);
+        // If a "new" one is found, add to the "old" convo
+        if (found) {
+          workflowService.updateFeedbackConversation(oldConvo);
+        }
+        // Otherwise, just update this
+        else {
+          workflowService.updateFeedbackConversation(conversation);
+        }
       }
 
       // add debug
