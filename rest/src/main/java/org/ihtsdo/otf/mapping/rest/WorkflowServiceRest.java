@@ -1,5 +1,5 @@
 /*
- * 
+ *    Copyright 2017 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.rest;
 
@@ -47,6 +47,7 @@ import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ReportServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
+import org.ihtsdo.otf.mapping.model.Feedback;
 import org.ihtsdo.otf.mapping.model.FeedbackConversation;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
@@ -79,10 +80,13 @@ public class WorkflowServiceRest extends RootServiceRest {
   /** The security service. */
   private SecurityService securityService;
 
+  /** The Constant lock. */
+  private final static String lock = "LOCK";
+
   /**
    * Instantiates an empty {@link WorkflowServiceRest}.
-   * 
-   * @throws Exception
+   *
+   * @throws Exception the exception
    */
   public WorkflowServiceRest() throws Exception {
     securityService = new SecurityServiceJpa();
@@ -113,8 +117,8 @@ public class WorkflowServiceRest extends RootServiceRest {
     final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
-      user = authorizeProject(mapProjectId, authToken,
-          MapUserRole.LEAD, "compute workflow", securityService);
+      user = authorizeProject(mapProjectId, authToken, MapUserRole.LEAD,
+          "compute workflow", securityService);
 
       final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
@@ -1050,10 +1054,10 @@ public class WorkflowServiceRest extends RootServiceRest {
 
   /**
    * Attempt to validate and finish work on a record.
-   * 
+   *
    * @param mapRecord the completed map record
-   * @param authToken
-   * @throws Exception
+   * @param authToken the auth token
+   * @throws Exception the exception
    */
   @POST
   @Path("/finish")
@@ -1108,11 +1112,11 @@ public class WorkflowServiceRest extends RootServiceRest {
 
   /**
    * Attempt to publish a previously resolved record This action is only
-   * available to map leads, and only for resolved conflict or review work
-   * 
+   * available to map leads, and only for resolved conflict or review work.
+   *
    * @param mapRecord the completed map record
-   * @param authToken
-   * @throws Exception
+   * @param authToken the auth token
+   * @throws Exception the exception
    */
   @POST
   @Path("/publish")
@@ -1397,12 +1401,12 @@ public class WorkflowServiceRest extends RootServiceRest {
 
   /**
    * Gets the assigned map record from the existing workflow for concept and map
-   * user, if it exists
-   * 
+   * user, if it exists.
+   *
    * @param mapProjectId the map project id
    * @param terminologyId the terminology id
    * @param userName the user name
-   * @param authToken
+   * @param authToken the auth token
    * @return the assigned map record for concept and map user
    * @throws Exception the exception
    */
@@ -1701,7 +1705,19 @@ public class WorkflowServiceRest extends RootServiceRest {
       authorizeProject(conversation.getMapProjectId(), authToken,
           MapUserRole.VIEWER, "udpate feedback conversation", securityService);
 
-      workflowService.updateFeedbackConversation(conversation);
+      // Lock so only one can do this at a time.
+      synchronized (lock) {
+        // Get the old conversation
+        final FeedbackConversation oldConvo =
+            workflowService.getFeedbackConversation(conversation.getId());
+        // Find the "new" messages from this conversation and add them
+        for (final Feedback feedback : conversation.getFeedbacks()) {
+          if (feedback.getId() == null) {
+            oldConvo.getFeedbacks().add(feedback);
+          }
+        }
+        workflowService.updateFeedbackConversation(oldConvo);
+      }
 
       // add debug
       final int ct = conversation.getFeedbacks().size();
@@ -1742,15 +1758,28 @@ public class WorkflowServiceRest extends RootServiceRest {
 
     final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
-      final FeedbackConversation conversation =
-          workflowService.getFeedbackConversation(mapRecordId);
-
-      if (conversation != null) {
+      final List<FeedbackConversation> conversations =
+          workflowService.getFeedbackConversationsForRecord(mapRecordId)
+              .getFeedbackConversations();
+      if (conversations.size() > 0) {
         // authorize call
-        authorizeProject(conversation.getMapProjectId(), authToken,
+        authorizeProject(conversations.get(0).getMapProjectId(), authToken,
             MapUserRole.VIEWER, "get feedback conversation", securityService);
+
+        // lazy initialize
+        for (final Feedback feedback : conversations.get(0).getFeedbacks()) {
+          feedback.getSender().getName();
+          for (final MapUser recipient : feedback.getRecipients())
+            recipient.getName();
+          for (final MapUser viewedBy : feedback.getViewedBy())
+            viewedBy.getName();
+        }
+      } else {
+        return null;
       }
-      return conversation;
+
+      return conversations.get(0);
+
     } catch (Exception e) {
       handleException(e, "trying to get the feedback conversation");
       return null;
@@ -2020,8 +2049,8 @@ public class WorkflowServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(WorkflowServiceRest.class).info(
-        "RESTful call (Workflow): /message");
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /message");
 
     String userName = "";
     WorkflowService workflowService = new WorkflowServiceJpa();
@@ -2031,26 +2060,24 @@ public class WorkflowServiceRest extends RootServiceRest {
       userName = securityService.getUsernameForToken(authToken);
       MapUserRole role = securityService.getApplicationRoleForToken(authToken);
       if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
-        throw new WebApplicationException(
-            Response
-                .status(401)
-                .entity(
-                    "User does not have permissions to add a feedback conversation.")
-                .build());
+        throw new WebApplicationException(Response.status(401)
+            .entity(
+                "User does not have permissions to add a feedback conversation.")
+            .build());
 
-      Logger.getLogger(WorkflowServiceRest.class).info(
-          "RESTful call (Workflow): /message msg: " + messageInfo);
+      Logger.getLogger(WorkflowServiceRest.class)
+          .info("RESTful call (Workflow): /message msg: " + messageInfo);
 
       // Split up message and send parts
-      workflowService.sendFeedbackEmail(messageInfo.get(0),
-          messageInfo.get(1), messageInfo.get(2), messageInfo.get(3), 
-          messageInfo.get(4), messageInfo.get(5));
-      
-      
+      workflowService.sendFeedbackEmail(messageInfo.get(0), messageInfo.get(1),
+          messageInfo.get(2), messageInfo.get(3), messageInfo.get(4),
+          messageInfo.get(5));
+
       return null;
 
     } catch (Exception e) {
-      handleException(e, "send a message email", userName, "", messageInfo.get(0));
+      handleException(e, "send a message email", userName, "",
+          messageInfo.get(0));
       return null;
     } finally {
       workflowService.close();
