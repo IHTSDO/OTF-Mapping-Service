@@ -281,7 +281,7 @@ angular
         }
 
         if (needToUpdate == true) {
-          updateFeedbackConversation(conversation);
+          updateFeedbackConversation(conversation, false);
         }
       };
 
@@ -399,10 +399,10 @@ angular
       }
 
       // Scope function for updating feedback conversation
-      $scope.updateFeedbackConversation = function(conversation) {
-        updateFeedbackConversation(conversation);
+      $scope.updateFeedbackConversation = function(conversation, refreshFlag) {
+        updateFeedbackConversation(conversation, refreshFlag);
       }
-      function updateFeedbackConversation(conversation) {
+      function updateFeedbackConversation(conversation, refreshFlag) {
         $rootScope.glassPane++;
 
         $http({
@@ -414,7 +414,9 @@ angular
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          $scope.getFeedbackConversation();
+          if (refreshFlag) {
+            $scope.getFeedbackConversation();
+          }
           $rootScope.glassPane--;
         }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
