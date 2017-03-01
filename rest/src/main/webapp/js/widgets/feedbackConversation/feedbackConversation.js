@@ -280,22 +280,26 @@ angular
           }
         }
 
-        if (needToUpdate == true) {
+        if (needToUpdate) {
           updateFeedbackConversation(conversation, false);
         }
       };
 
-      // Makr this conversation as unviewed and save.
+      // Mark this conversation as unviewed and save.
       $scope.markFeedbackUnviewed = function(conversation) {
+        var needToUpdate = false;
         for (var i = conversation.feedback.length; i--;) {
           var alreadyViewedBy = conversation.feedback[i].viewedBy;
           for (var j = 0; j < alreadyViewedBy.length; j++) {
             if (alreadyViewedBy[j].userName == $scope.currentUser.userName) {
               alreadyViewedBy.splice(j, 1);
-              updateFeedbackConversation(conversation);
+              needToUpdate = true;
               break;
             }
           }
+        }
+        if (needToUpdate) {
+          updateFeedbackConversation(conversation, false);
         }
       };
 
