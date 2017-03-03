@@ -1720,6 +1720,10 @@ public class WorkflowServiceRest extends RootServiceRest {
         }
         // If a "new" one is found, add to the "old" convo
         if (found) {
+          // Set fields
+          oldConvo.setDiscrepancyReview(conversation.isDiscrepancyReview());
+          oldConvo.setResolved(conversation.isResolved());
+          oldConvo.setTitle(conversation.getTitle());
           workflowService.updateFeedbackConversation(oldConvo);
         }
         // Otherwise, just update this
