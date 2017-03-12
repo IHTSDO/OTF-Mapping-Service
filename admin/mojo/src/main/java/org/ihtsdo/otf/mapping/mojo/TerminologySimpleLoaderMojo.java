@@ -147,7 +147,7 @@ public class TerminologySimpleLoaderMojo extends AbstractMojo {
           new BufferedReader(new FileReader(new File(inputFile)));
       while ((line = in.readLine()) != null) {
         line = line.replace("\r", "");
-        final String[] fields = line.split("\t");
+        final String[] fields = line.split("\\|");
         // skip header
         if (fields[0].equals("code")) {
           continue;
@@ -229,7 +229,7 @@ public class TerminologySimpleLoaderMojo extends AbstractMojo {
             new BufferedReader(new FileReader(new File(parChdFile)));
         while ((line = in2.readLine()) != null) {
           line = line.replace("\r", "");
-          final String[] fields = line.split("\t");
+          final String[] fields = line.split("\\|");
           if (fields.length != 2) {
             throw new Exception("Unexpected number of fields: " + fields.length);
           }

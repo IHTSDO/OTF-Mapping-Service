@@ -146,7 +146,6 @@ angular
         }).error(function(data, status, headers, config) {
           $rootScope.handleHttpError(data, status, headers, config);
         }).then(function() {
-
           $scope.getRecordsForConceptHistorical();
 
           // check relation style flags
@@ -247,9 +246,7 @@ angular
           } else if ($scope.getProject($scope.records[i])) {
             var project = $scope.getProject($scope.records[i]);
             var projectPublic = project.public;
-            if ($scope.currentUser.name == 'Administrator' || $scope.currentUser.name == 'Lead'
-              || $scope.currentUser.name == 'Specialist'
-              || ($scope.currentUser.name == 'Guest' && projectPublic == true)) {
+            if (projectPublic == true) {
               var projectExists = false;
               for (var j = 0; j < $scope.recordsNotInProject.length; j++) {
 
