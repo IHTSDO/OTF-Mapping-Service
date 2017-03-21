@@ -118,7 +118,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
   @Override
   public void execute() throws MojoExecutionException {
     getLog().info("Starting loading Claml terminology");
-    getLog().info("  inputFile = inputFile");
+    getLog().info("  inputFile = " + inputFile);
     getLog().info("  terminology = " + terminology);
     getLog().info("  version = " + version);
 
