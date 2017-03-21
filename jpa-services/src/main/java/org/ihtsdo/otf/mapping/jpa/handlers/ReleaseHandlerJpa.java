@@ -2059,7 +2059,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         if (contentService
             .getComplexMapRefSetMembersForRefSetId(mapProject.getRefSetId())
             .getCount() == 0) {
-          throw new Exception(
+          throw new LocalException(
               "Map has published records but no refset member entries. "
                   + "Reload previous release version file into refset table");
         }
