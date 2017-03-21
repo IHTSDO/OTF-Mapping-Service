@@ -1710,16 +1710,30 @@ public class WorkflowServiceRest extends RootServiceRest {
         // Get the old conversation
         final FeedbackConversation oldConvo =
             workflowService.getFeedbackConversation(conversation.getId());
+        // hack to prevent duplicate feedback msgs from being added
+        Set<String> oldFeedbackMsgs = new HashSet<>();
+        for (Feedback f : oldConvo.getFeedbacks()) {
+        	oldFeedbackMsgs.add(f.getMessage());
+        }
         // Find the "new" messages from this conversation and add them
         boolean found = false;
-        for (final Feedback feedback : conversation.getFeedbacks()) {
+        boolean noUpdate = false;
+        for (final Feedback feedback : conversation.getFeedbacks()) {        
           if (feedback.getId() == null) {
+              // check if "new" msg matches any already on conversation
+        	if (oldFeedbackMsgs.contains(feedback.getMessage())) {
+              noUpdate = true;
+              continue;
+            }
             found = true;
             oldConvo.getFeedbacks().add(feedback);
           }
         }
+        if (noUpdate) {
+          // do nothing - this is a duplicate request - msg matched exactly
+        }
         // If a "new" one is found, add to the "old" convo
-        if (found) {
+        else if (found) {
           // Set fields
           oldConvo.setDiscrepancyReview(conversation.isDiscrepancyReview());
           oldConvo.setResolved(conversation.isResolved());
