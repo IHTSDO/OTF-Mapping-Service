@@ -377,37 +377,48 @@ mapProjectAppControllers.controller('LoginCtrl', [
       // / ims.ihtsdotools.org
       $rootScope.glassPane++;
       $http.get('ims-api/account').then(
-        // / / Success
-        function(response) {
+      // / / Success
+      function(response) {
+
+        if (response.status == '302' || response.status == 302) {
+
+          $rootScope.glassPane--;
+
+          //https://ims.ihtsdotools.org/#/login?serviceReferer=https:%2F%2Fauthoring.ihtsdotools.org%2F#%2Fhome
+          var referer = $location.protocol() + '://' + $location.host();
+          var redirectUrl = response.headers['Location'] + '?serviceReferer=' + encodeURIComponent(referer);
+          $location.path(redirectUrl);
+
+        } else {
 
           // / / Call "go" function
           $scope.userName = response.data.login;
           $scope.password = JSON.stringify(response.data);
           $rootScope.glassPane--;
           $scope.go();
+        }
 
-        },
-        // / / Error
+      },
+      // Error
 
-        function(data, status, headers, config) {
+      function(data, status, headers, config) {
 
-          if (response.status == '302' || response.status == 302) {
-            
-            $rootScope.glassPane--;
+        if (status == '302' || status == 302) {
 
-            //https://ims.ihtsdotools.org/#/login?serviceReferer=https:%2F%2Fauthoring.ihtsdotools.org%2F#%2Fhome
-            var referer = $location.protocol() + '://' + $location.host();
-            var redirectUrl = response.headers['Location'] + '?serviceReferer='
-              + encodeURIComponent(referer);
-            $location.path(redirectUrl);
+          $rootScope.glassPane--;
 
-          } else {
-            // / / $rootScope.globalError = response;
-            // / / Show login buttons
-            $scope.pending = false;
-            $rootScope.glassPane--;
-          }
-        });
+          //https://ims.ihtsdotools.org/#/login?serviceReferer=https:%2F%2Fauthoring.ihtsdotools.org%2F#%2Fhome
+          var referer = $location.protocol() + '://' + $location.host();
+          var redirectUrl = headers['Location'] + '?serviceReferer=' + encodeURIComponent(referer);
+          $location.path(redirectUrl);
+
+        } else {
+          // / / $rootScope.globalError = response;
+          // / / Show login buttons
+          $scope.pending = false;
+          $rootScope.glassPane--;
+        }
+      });
 
     }
 
