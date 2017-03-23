@@ -376,7 +376,7 @@ mapProjectAppControllers.controller('LoginCtrl', [
       // / / THis requires an nginx setup to redirect ims-api to
       // / ims.ihtsdotools.org
       $rootScope.glassPane++;
-      $http.get('ims-api/account').then(
+      $http.get('http://uat-ims.ihtsdotools.org/api/account').then(
         // / / Success
         function(response) {
           if (response.status == '302' || response.status == 302) {
