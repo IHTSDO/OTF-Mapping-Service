@@ -400,6 +400,7 @@ mapProjectAppControllers.controller('LoginCtrl', [
           // / / Show login buttons
           $scope.pending = false;
           $rootScope.glassPane--;
+          utilService.setError('Unexpected error calling IMS');
         });
 
     }
