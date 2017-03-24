@@ -43,7 +43,7 @@ public class AdHocMojo extends AbstractMojo {
     getLog().info("Start Ad hoc mojo");
 
     try {
-      WorkflowService workflowService = new WorkflowServiceJpa();
+      workflowService = new WorkflowServiceJpa();
       // For UAT
       Long[] ids = {
               252L, 253L
