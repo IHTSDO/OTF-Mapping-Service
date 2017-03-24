@@ -44,11 +44,10 @@ public class AdHocMojo extends AbstractMojo {
 
     try {
       WorkflowService workflowService = new WorkflowServiceJpa();
-      Long[] ids = {1L, 2L};
       // For UAT
-      /*Long[] ids = {
-              252L, 253L, 5544L, 6009L
-          };*/
+      Long[] ids = {
+              252L, 253L
+          };
       for (Long id : ids) {
     	  FeedbackConversation conversation = workflowService.getFeedbackConversation(id);
     	  Set<Date> timestamps = new HashSet<>();
