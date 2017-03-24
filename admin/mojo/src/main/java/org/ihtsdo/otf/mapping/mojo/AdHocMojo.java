@@ -1,6 +1,8 @@
 package org.ihtsdo.otf.mapping.mojo;
 
+import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -8,12 +10,17 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.services.ReportServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
+import org.ihtsdo.otf.mapping.model.Feedback;
+import org.ihtsdo.otf.mapping.model.FeedbackConversation;
 import org.ihtsdo.otf.mapping.reports.Report;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.SimpleRefSetMember;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.ReportService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
+
+import com.google.common.util.concurrent.Service;
 
 /**
  * Customizable mojo to run ad hoc code
@@ -36,6 +43,44 @@ public class AdHocMojo extends AbstractMojo {
     getLog().info("Start Ad hoc mojo");
 
     try {
+      WorkflowService workflowService = new WorkflowServiceJpa();
+      Long[] ids = {1L, 2L};
+      // For UAT
+      /*Long[] ids = {
+              252L, 253L, 5544L, 6009L
+          };*/
+      for (Long id : ids) {
+    	  FeedbackConversation conversation = workflowService.getFeedbackConversation(id);
+    	  Set<Date> timestamps = new HashSet<>();
+    	  Set<Feedback> feedbackToRemove = new HashSet<>();
+    	  List<Feedback> feedbacks = conversation.getFeedbacks();
+    	  for (Feedback f : feedbacks) {
+    		  if (!timestamps.contains(f.getTimestamp())) {
+    			  timestamps.add(f.getTimestamp());
+    		  } else {
+    			  feedbackToRemove.add(f);
+    		  }
+    	  }
+    	  for (Feedback f : feedbackToRemove) {
+    	    feedbacks.remove(f);
+    	    conversation.setFeedbacks(feedbacks);
+    	    workflowService.updateFeedbackConversation(conversation);
+    	  }
+      }
+    } catch (Exception e) {
+        e.printStackTrace();
+        throw new MojoExecutionException("Ad-hoc mojo failed to complete", e);
+    }  finally {
+        try {
+            workflowService.close();
+          } catch (Exception e) {
+            e.printStackTrace();
+            throw new MojoExecutionException(
+                "Ad-hoc mojo failed to close services.", e);
+          }
+        }
+    
+    /*try {
       ReportService reportService = new ReportServiceJpa();
 
       Long[] ids = {
@@ -59,7 +104,7 @@ public class AdHocMojo extends AbstractMojo {
     } catch (Exception e1) {
       // TODO Auto-generated catch block
       e1.printStackTrace();
-    }
+    }*/
     /**
      * Put ad hoc code below:
      * 
@@ -74,7 +119,7 @@ public class AdHocMojo extends AbstractMojo {
      *     If it does not exist
      *   Add advice “THIS MAP REQUIRES A DAGGER CODE AS WELL AS AN ASTERISK CODE”
      *     If it does not exist
-     * If there are more than one map entries, for each entry whose targetId is an asterisk code:
+     * If there are more than one map ent)ries, for each entry whose targetId is an asterisk code:
      *   Remove advice “THIS CODE IS NOT TO BE USED IN THE PRIMARY POSITION”
      * If it exists
      *   Add  advice “THIS CODE MAY BE USED IN THE PRIMARY POSITION WHEN THE MANIFESTATION IS THE PRIMARY FOCUS OF CARE”
@@ -224,7 +269,6 @@ public class AdHocMojo extends AbstractMojo {
       throw new MojoExecutionException("Ad-hoc mojo failed to complete", e);
     } finally {
       try {
-        contentService.close();
         workflowService.close();
       } catch (Exception e) {
         e.printStackTrace();
