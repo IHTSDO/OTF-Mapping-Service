@@ -17,12 +17,18 @@
 
   <properties>
     <execFinalName>exec-${project.build.finalName}.jar</execFinalName>
-    <packageName>${project.parent.artifactId}-rest</packageName>
+    <!--  <packageName>${project.parent.artifactId}-rest</packageName> -->
+    <packageName>mapping-service</packageName>
 
     <!-- Specify the config artifact parameters -->
     <config.groupId>org.ihtsdo.otf.mapping</config.groupId>
     <config.artifactId>mapping-config-dev-windows</config.artifactId>
     <config.version>${releaseVersion}</config.version>
+    
+
+		<tomcat7-maven-plugin-version>2.1</tomcat7-maven-plugin-version>
+		<jdeb.version>1.1.1</jdeb.version>  
+    
   </properties>
 
   <dependencies>
@@ -220,7 +226,7 @@
       <plugin>
         <groupId>org.apache.tomcat.maven</groupId>
         <artifactId>tomcat7-maven-plugin</artifactId>
-        <version>2.1</version>
+        <version>${tomcat7-maven-plugin-version}</version>
         <executions>
           <execution>
             <id>tomcat-run</id>
@@ -239,7 +245,7 @@
       <plugin>
         <groupId>org.vafer</groupId>
         <artifactId>jdeb</artifactId>
-        <version>1.1.1</version>
+        <version>${jdeb.version}</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -247,7 +253,7 @@
               <goal>jdeb</goal>
             </goals>
             <configuration>
-              <deb>${project.build.directory}/${packageName}-${releaseVersion}-all.deb</deb>
+              <deb>${project.build.directory}/${packageName}-${releaseVersion}.deb</deb>
               <controlDir>${basedir}/src/deb/control</controlDir>
               <snapshotExpand>true</snapshotExpand>
               <snapshotEnv>BUILD_NUMBER</snapshotEnv>

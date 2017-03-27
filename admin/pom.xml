@@ -78,5 +78,6 @@
     <module>qa</module>
     <module>release</module>
     <module>daily-build</module>
+    <module>deb</module>
   </modules>
 </project>
