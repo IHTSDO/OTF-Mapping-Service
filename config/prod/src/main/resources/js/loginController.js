@@ -377,7 +377,7 @@ mapProjectAppControllers.controller('LoginCtrl', [
       // / ims.ihtsdotools.org
       $rootScope.glassPane++;
 
-      var imsUrl = ($location.host().toLowerCase().startsWith('uat') ? 'uat-' : '')
+      var imsUrl = 'https://' + ($location.host().toLowerCase().startsWith('uat') ? 'uat-' : '')
         + 'ims.ihtsdotools.org/api/account';
 
       $http.get(imsUrl).then(
