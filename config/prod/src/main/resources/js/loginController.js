@@ -389,7 +389,7 @@ mapProjectAppControllers.controller('LoginCtrl', [
             var referer = $location.protocol() + '://' + $location.host();
             var redirectUrl = response.headers['Location'] + '?serviceReferer='
               + encodeURIComponent(referer + '/#');
-            $location.path(redirectUrl);
+            window.location.href(redirectUrl);
           } else {
             // / / Call "go" function
             $scope.userName = response.data.login;
