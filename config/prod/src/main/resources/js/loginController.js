@@ -376,15 +376,19 @@ mapProjectAppControllers.controller('LoginCtrl', [
       // / / THis requires an nginx setup to redirect ims-api to
       // / ims.ihtsdotools.org
       $rootScope.glassPane++;
-      $http.get('http://uat-ims.ihtsdotools.org/api/account').then(
+
+      var imsUrl = ($location.host().toLowerCase().startsWith('uat') ? 'uat-' : '')
+        + 'ims.ihtsdotools.org/api/account';
+
+      $http.get(imsUrl).then(
         // / / Success
         function(response) {
           if (response.status == '302' || response.status == 302) {
-            
+
             //https://ims.ihtsdotools.org/#/login?serviceReferer=https:%2F%2Fauthoring.ihtsdotools.org%2F#%2Fhome
             var referer = $location.protocol() + '://' + $location.host();
             var redirectUrl = response.headers['Location'] + '?serviceReferer='
-              + encodeURIComponent(referer);
+              + encodeURIComponent(referer + '/#');
             $location.path(redirectUrl);
           } else {
             // / / Call "go" function
