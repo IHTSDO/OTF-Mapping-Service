@@ -377,19 +377,20 @@ mapProjectAppControllers.controller('LoginCtrl', [
       // / ims.ihtsdotools.org
       $rootScope.glassPane++;
 
-      var imsUrl = 'https://' + ($location.host().toLowerCase().startsWith('uat') ? 'uat-' : '')
+      var imsUrl = ($location.host().toLowerCase().startsWith('uat') ? 'uat-' : '')
         + 'ims.ihtsdotools.org/api/account';
 
       $http.get(imsUrl).then(
         // / / Success
         function(response) {
           if (response.status == '302' || response.status == 302) {
-
+            $scope.pending = false;
+            $rootScope.glassPane--;
             //https://ims.ihtsdotools.org/#/login?serviceReferer=https:%2F%2Fauthoring.ihtsdotools.org%2F#%2Fhome
-            var referer = $location.protocol() + '://' + $location.host();
-            var redirectUrl = response.headers['Location'] + '?serviceReferer='
-              + encodeURIComponent(referer + '/#');
-            window.location.href(redirectUrl);
+//            var referer = $location.protocol() + '://' + $location.host();
+//            var redirectUrl = response.headers['Location'] + '?serviceReferer='
+//              + encodeURIComponent(referer + '/#');
+//            window.location.href(redirectUrl);
           } else {
             // / / Call "go" function
             $scope.userName = response.data.login;
