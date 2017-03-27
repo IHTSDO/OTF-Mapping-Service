@@ -132,7 +132,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       contentService.beginTransaction();
 
       if (!new File(inputFile).exists()) {
-        throw new MojoFailureException("Specified input file does not exist");
+        throw new MojoFailureException("Specified input file does not exist " + inputFile);
       }
 
       // open input file and get effective time and version
