@@ -267,7 +267,7 @@
                   <type>file</type>
                   <mapper>
                     <type>perm</type>
-                    <prefix>/opt/${packageName}/lib/</prefix>
+                    <prefix>/opt/${packageName}/lib</prefix>
                   </mapper>
                 </data>
                 <data>
