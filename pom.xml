@@ -6,7 +6,7 @@
   <!-- Module Metadata - no parent -->
   <groupId>org.ihtsdo.otf.mapping</groupId>
   <artifactId>ihtsdo-mapping-service</artifactId>
-  <version>1.5.31-SNAPSHOT</version>
+  <version>1.5.31</version>
   <packaging>pom</packaging>
   <name>IHTSDO RF2 Data Model</name>
   <description>Aggregator and parent for interfaces and default implementations of RF2 data model for OTF services</description>
