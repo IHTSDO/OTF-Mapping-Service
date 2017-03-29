@@ -42,9 +42,9 @@ mapProjectAppControllers.controller('LoginCtrl', [
 
       // / / check that user has been selected
       if ($scope.userName == null) {
-        alert('You must specify a user');
+        $scope.pending = false;
       } else if ($scope.password == null) {
-        alert('You must enter a password');
+        $scope.pending = false;
       } else {
 
         // / / authenticate the user
