@@ -324,6 +324,10 @@
                     <path>/var/opt/${packageName}</path>
                     <path>/var/opt/${packageName}/run</path>
                     <path>/var/opt/${packageName}/logs</path>
+                    <path>/var/log/tomcat7</path>
+                    <path>/var/cache/tomcat7</path>
+                    <path>/var/lib/tomcat7</path>
+                    <path>/var/lib/tomcat7/indexes/lucene/indexes</path>
                   </paths>
                   <mapper>
                     <type>perm</type>
