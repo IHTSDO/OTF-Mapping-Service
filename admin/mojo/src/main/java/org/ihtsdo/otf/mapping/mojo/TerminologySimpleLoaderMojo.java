@@ -92,9 +92,8 @@ public class TerminologySimpleLoaderMojo extends AbstractMojo {
       int objCt = 1000;
 
       final Date now = new Date();
-      SimpleMetadataHelper helper =
-          new SimpleMetadataHelper(terminology, version,
-              dateFormat.format(now), contentService);
+      SimpleMetadataHelper helper = new SimpleMetadataHelper(terminology,
+          version, dateFormat.format(now), contentService);
       getLog().info("  Create concept metadata");
       Map<String, Concept> conceptMap = helper.createMetadata();
 
@@ -111,10 +110,10 @@ public class TerminologySimpleLoaderMojo extends AbstractMojo {
       rootConcept.setEffectiveTime(now);
       // assume active
       rootConcept.setActive(true);
-      rootConcept.setModuleId(Long.parseLong(conceptMap.get("defaultModule")
-          .getTerminologyId()));
-      rootConcept.setDefinitionStatusId(Long.parseLong(conceptMap.get(
-          "defaultDefinitionStatus").getTerminologyId()));
+      rootConcept.setModuleId(
+          Long.parseLong(conceptMap.get("defaultModule").getTerminologyId()));
+      rootConcept.setDefinitionStatusId(Long.parseLong(
+          conceptMap.get("defaultDefinitionStatus").getTerminologyId()));
       rootConcept.setTerminology(terminology);
       rootConcept.setTerminologyVersion(version);
       rootConcept.setDefaultPreferredName(terminology + " Root Concept");
@@ -123,17 +122,17 @@ public class TerminologySimpleLoaderMojo extends AbstractMojo {
       rootDesc.setTerminologyId("root");
       rootDesc.setEffectiveTime(now);
       rootDesc.setActive(true);
-      rootDesc.setModuleId(Long.parseLong(conceptMap.get("defaultModule")
-          .getTerminologyId()));
+      rootDesc.setModuleId(
+          Long.parseLong(conceptMap.get("defaultModule").getTerminologyId()));
       rootDesc.setTerminology(terminology);
       rootDesc.setTerminologyVersion(version);
       rootDesc.setTerm(terminology + " Root Concept");
       rootDesc.setConcept(rootConcept);
-      rootDesc.setCaseSignificanceId(new Long(conceptMap.get(
-          "defaultCaseSignificance").getTerminologyId()));
+      rootDesc.setCaseSignificanceId(new Long(
+          conceptMap.get("defaultCaseSignificance").getTerminologyId()));
       rootDesc.setLanguageCode("en");
-      rootDesc.setTypeId(Long.parseLong(conceptMap.get("preferred")
-          .getTerminologyId()));
+      rootDesc.setTypeId(
+          Long.parseLong(conceptMap.get("preferred").getTerminologyId()));
       rootConcept.addDescription(rootDesc);
       rootConcept = contentService.addConcept(rootConcept);
       conceptMap.put(rootConcept.getTerminologyId(), rootConcept);
@@ -147,7 +146,8 @@ public class TerminologySimpleLoaderMojo extends AbstractMojo {
           new BufferedReader(new FileReader(new File(inputFile)));
       while ((line = in.readLine()) != null) {
         line = line.replace("\r", "");
-        final String[] fields = line.split("\\|");
+        final String[] fields =
+            line.indexOf('\t') != -1 ? line.split("\t") : line.split("\\|");
         // skip header
         if (fields[0].equals("code")) {
           continue;
@@ -163,10 +163,10 @@ public class TerminologySimpleLoaderMojo extends AbstractMojo {
         concept.setEffectiveTime(now);
         // assume active
         concept.setActive(true);
-        concept.setModuleId(Long.parseLong(conceptMap.get("defaultModule")
-            .getTerminologyId()));
-        concept.setDefinitionStatusId(Long.parseLong(conceptMap.get(
-            "defaultDefinitionStatus").getTerminologyId()));
+        concept.setModuleId(
+            Long.parseLong(conceptMap.get("defaultModule").getTerminologyId()));
+        concept.setDefinitionStatusId(Long.parseLong(
+            conceptMap.get("defaultDefinitionStatus").getTerminologyId()));
         concept.setTerminology(terminology);
         concept.setTerminologyVersion(version);
         concept.setDefaultPreferredName(preferred);
@@ -175,17 +175,17 @@ public class TerminologySimpleLoaderMojo extends AbstractMojo {
         pref.setTerminologyId(++objCt + "");
         pref.setEffectiveTime(now);
         pref.setActive(true);
-        pref.setModuleId(Long.parseLong(conceptMap.get("defaultModule")
-            .getTerminologyId()));
+        pref.setModuleId(
+            Long.parseLong(conceptMap.get("defaultModule").getTerminologyId()));
         pref.setTerminology(terminology);
         pref.setTerminologyVersion(version);
         pref.setTerm(preferred);
         pref.setConcept(concept);
-        pref.setCaseSignificanceId(new Long(conceptMap.get(
-            "defaultCaseSignificance").getTerminologyId()));
+        pref.setCaseSignificanceId(new Long(
+            conceptMap.get("defaultCaseSignificance").getTerminologyId()));
         pref.setLanguageCode("en");
-        pref.setTypeId(Long.parseLong(conceptMap.get("preferred")
-            .getTerminologyId()));
+        pref.setTypeId(
+            Long.parseLong(conceptMap.get("preferred").getTerminologyId()));
         concept.addDescription(pref);
 
         for (int i = 2; i < fields.length; i++) {
@@ -193,23 +193,22 @@ public class TerminologySimpleLoaderMojo extends AbstractMojo {
           sy.setTerminologyId(++objCt + "");
           sy.setEffectiveTime(now);
           sy.setActive(true);
-          sy.setModuleId(Long.parseLong(conceptMap.get("defaultModule")
-              .getTerminologyId()));
+          sy.setModuleId(Long
+              .parseLong(conceptMap.get("defaultModule").getTerminologyId()));
           sy.setTerminology(terminology);
           sy.setTerminologyVersion(version);
           sy.setTerm(fields[i]);
           sy.setConcept(concept);
-          sy.setCaseSignificanceId(new Long(conceptMap.get(
-              "defaultCaseSignificance").getTerminologyId()));
+          sy.setCaseSignificanceId(new Long(
+              conceptMap.get("defaultCaseSignificance").getTerminologyId()));
           sy.setLanguageCode("en");
-          sy.setTypeId(Long.parseLong(conceptMap.get("synonym")
-              .getTerminologyId()));
+          sy.setTypeId(
+              Long.parseLong(conceptMap.get("synonym").getTerminologyId()));
           concept.addDescription(sy);
         }
 
-        getLog().info(
-            "  concept = " + concept.getTerminologyId() + ", "
-                + concept.getDefaultPreferredName());
+        getLog().info("  concept = " + concept.getTerminologyId() + ", "
+            + concept.getDefaultPreferredName());
         concept = contentService.addConcept(concept);
         conceptMap.put(concept.getTerminologyId(), concept);
         concept = contentService.getConcept(concept.getId());
@@ -229,9 +228,12 @@ public class TerminologySimpleLoaderMojo extends AbstractMojo {
             new BufferedReader(new FileReader(new File(parChdFile)));
         while ((line = in2.readLine()) != null) {
           line = line.replace("\r", "");
-          final String[] fields = line.split("\\|");
+          final String[] fields =
+              line.indexOf('\t') != -1 ? line.split("\t") : line.split("\\|");
+
           if (fields.length != 2) {
-            throw new Exception("Unexpected number of fields: " + fields.length);
+            throw new Exception(
+                "Unexpected number of fields: " + fields.length);
           }
           final Concept par = conceptMap.get(fields[0]);
           if (par == null) {
