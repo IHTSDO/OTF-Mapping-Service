@@ -29,7 +29,7 @@ mapProjectAppControllers.controller('LoginCtrl', [
     $scope.login = function() {
       // This line requires maven filtering
       window.location.href = appConfig['security.handler.IMS.url'] + '/#/login?serviceReferer='
-        + appConfig['base.url.webapp'];
+        + appConfig['base.url'] + '/index.html';
     }
 
     // / / login button directs to next page based on role selected
@@ -376,22 +376,32 @@ mapProjectAppControllers.controller('LoginCtrl', [
       // / / THis requires an nginx setup to redirect ims-api to
       // / ims.ihtsdotools.org
       $rootScope.glassPane++;
-      $http.get('ims-api/account').then(
-      // / / Success
-      function(response) {
-        // / / Call "go" function
-        $scope.userName = response.data.login;
-        $scope.password = JSON.stringify(response.data);
-        $rootScope.glassPane--;
-        $scope.go();
-      },
-      // / / Error
-      function(response) {
-        // / / $rootScope.globalError = response;
-        // / / Show login buttons
-        $scope.pending = false;
-        $rootScope.glassPane--;
-      });
+      $http.get('http://uat-ims.ihtsdotools.org/api/account').then(
+        // / / Success
+        function(response) {
+          if (response.status == '302' || response.status == 302) {
+            
+            //https://ims.ihtsdotools.org/#/login?serviceReferer=https:%2F%2Fauthoring.ihtsdotools.org%2F#%2Fhome
+            var referer = $location.protocol() + '://' + $location.host();
+            var redirectUrl = response.headers['Location'] + '?serviceReferer='
+              + encodeURIComponent(referer);
+            $location.path(redirectUrl);
+          } else {
+            // / / Call "go" function
+            $scope.userName = response.data.login;
+            $scope.password = JSON.stringify(response.data);
+            $rootScope.glassPane--;
+            $scope.go();
+          }
+        },
+        // / / Error
+        function(data, status, headers, config) {
+          // / / $rootScope.globalError = response;
+          // / / Show login buttons
+          $scope.pending = false;
+          $rootScope.glassPane--;
+          utilService.setError('Unexpected error calling IMS');
+        });
 
     }
 

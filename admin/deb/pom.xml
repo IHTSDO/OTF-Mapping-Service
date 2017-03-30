@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.ihtsdo.otf.mapping</groupId>
+		<artifactId>mapping-parent</artifactId>
+		<version>1.5.31-SNAPSHOT</version>
+		<relativePath>../../parent</relativePath>
+	</parent>
+
+	<artifactId>mapping-service-admin</artifactId>
+	<name>IHTSDO Mapping Management Service</name>
+	<description>IHTSDO Mapping Web Service Admin files deb creation</description>
+	<url>https://mapping.ihtsdotools.org/</url>
+
+
+	<properties>
+		<packageName>${project.artifactId}</packageName>
+		<jdeb.version>1.1.1</jdeb.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.ihtsdo.otf.mapping</groupId>
+			<artifactId>mapping-admin-updatedb</artifactId>
+			<version>${project.version}</version>
+			<type>pom</type>
+		</dependency>
+
+		<dependency>
+			<groupId>org.ihtsdo.otf.mapping</groupId>
+			<artifactId>mapping-admin-remover</artifactId>
+			<version>${project.version}</version>
+			<type>pom</type>
+		</dependency>
+
+		<!-- <dependency> <groupId>org.ihtsdo.otf.mapping</groupId> <artifactId>mapping-parent</artifactId> 
+			<version>${project.version}</version> <type>pom</type> </dependency> -->
+		<dependency>
+			<groupId>org.ihtsdo.otf.mapping</groupId>
+			<artifactId>mapping-admin-mojo</artifactId>
+			<version>${project.version}</version>
+			<type>jar</type>
+		</dependency>
+
+
+		<dependency>
+			<groupId>org.ihtsdo.otf.mapping</groupId>
+			<artifactId>mapping-admin</artifactId>
+			<version>${project.version}</version>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>org.ihtsdo.otf.mapping</groupId>
+			<artifactId>mapping-config-prod</artifactId>
+			<version>${project.version}</version>
+			<type>zip</type>
+		</dependency>
+
+		<!-- <dependency> <groupId>org.ihtsdo.otf.mapping</groupId> <artifactId>mapping-config-uat</artifactId> 
+			<version>${project.version}</version> <type>zip</type> </dependency> -->
+
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>2.10</version>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/deps</outputDirectory>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>false</overWriteSnapshots>
+							<overWriteIfNewer>true</overWriteIfNewer>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- create deb -->
+			<plugin>
+				<groupId>org.vafer</groupId>
+				<artifactId>jdeb</artifactId>
+				<version>${jdeb.version}</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>jdeb</goal>
+						</goals>
+						<configuration>
+							<deb>${project.build.directory}/${packageName}-${project.version}.deb</deb>
+							<controlDir>${basedir}/control</controlDir>
+							<snapshotExpand>true</snapshotExpand>
+							<snapshotEnv>BUILD_NUMBER</snapshotEnv>
+							<verbose>true</verbose>
+							<classifier>all</classifier>
+							<signPackage>false</signPackage>
+							<dataSet>
+								<!-- <data> <src>${project.build.directory}/deps</src> <type>directory</type> 
+									<includes>mapping-*.jar</includes> <mapper> <type>perm</type> <prefix>/opt/${packageName}/jars</prefix> 
+									</mapper> </data> -->
+								<data>
+									<src>${project.build.directory}/deps</src>
+									<type>directory</type>
+									<includes>mapping-admin*.pom</includes>
+									<mapper>
+										<type>perm</type>
+										<prefix>/opt/${packageName}/pom</prefix>
+									</mapper>
+								</data>
+								<!-- <data> <src>${project.build.directory}/deps</src> <type>directory</type> 
+									<includes>mapping-parent*.pom</includes> <mapper> <type>perm</type> <prefix>/opt/${packageName}/parent</prefix> 
+									</mapper> </data> -->
+								<data>
+									<src>${project.build.directory}/deps</src>
+									<type>directory</type>
+									<includes>mapping-*.zip</includes>
+									<mapper>
+										<type>perm</type>
+										<prefix>/opt/${packageName}/zips</prefix>
+									</mapper>
+								</data>
+								<!-- <data> <src>${basedir}/deb/setupconfdata.sh</src> <dst>/opt/${packageName}/setupconfdata.sh</dst> 
+									<type>file</type> <mapper> <type>perm</type> <filemode>0750</filemode> </mapper> 
+									</data> <data> <src>${basedir}/deb/setupconfdata_mvn.sh</src> <dst>/opt/${packageName}/pom/setupconfdata_mvn.sh</dst> 
+									<type>file</type> <mapper> <type>perm</type> <filemode>0750</filemode> </mapper> 
+									</data> -->
+							</dataSet>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>
