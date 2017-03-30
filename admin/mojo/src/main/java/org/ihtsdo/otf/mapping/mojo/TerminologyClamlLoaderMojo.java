@@ -118,7 +118,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
   @Override
   public void execute() throws MojoExecutionException {
     getLog().info("Starting loading Claml terminology");
-    getLog().info("  inputFile = inputFile");
+    getLog().info("  inputFile = " + inputFile);
     getLog().info("  terminology = " + terminology);
     getLog().info("  version = " + version);
 
@@ -132,7 +132,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       contentService.beginTransaction();
 
       if (!new File(inputFile).exists()) {
-        throw new MojoFailureException("Specified input file does not exist");
+        throw new MojoFailureException("Specified input file does not exist " + inputFile);
       }
 
       // open input file and get effective time and version
