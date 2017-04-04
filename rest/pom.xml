@@ -324,6 +324,9 @@
                     <path>/var/opt/${packageName}</path>
                     <path>/var/opt/${packageName}/run</path>
                     <path>/var/opt/${packageName}/logs</path>
+                    <path>/opt/${packageName}</path>
+                    <path>/opt/${packageName}/run</path>
+                    <path>/opt/${packageName}/logs</path>
                     <path>/var/log/tomcat7</path>
                     <path>/var/cache/tomcat7</path>
                     <path>/var/lib/tomcat7</path>
