@@ -113,7 +113,7 @@
 								<data>
 									<src>${project.build.directory}/deps</src>
 									<type>directory</type>
-									<includes>mapping-admin*.pom</includes>
+									<includes>*.pom</includes>
 									<mapper>
 										<type>perm</type>
 										<prefix>/opt/${packageName}/pom</prefix>
@@ -125,10 +125,19 @@
 								<data>
 									<src>${project.build.directory}/deps</src>
 									<type>directory</type>
-									<includes>mapping-*.zip</includes>
+									<includes>*.zip</includes>
 									<mapper>
 										<type>perm</type>
 										<prefix>/opt/${packageName}/zips</prefix>
+									</mapper>
+								</data>
+								<data>
+									<src>${project.build.directory}/deps</src>
+									<type>directory</type>
+									<includes>*.jar</includes>
+									<mapper>
+										<type>perm</type>
+										<prefix>/opt/${packageName}/jars</prefix>
 									</mapper>
 								</data>
 								<!-- <data> <src>${basedir}/deb/setupconfdata.sh</src> <dst>/opt/${packageName}/setupconfdata.sh</dst> 
