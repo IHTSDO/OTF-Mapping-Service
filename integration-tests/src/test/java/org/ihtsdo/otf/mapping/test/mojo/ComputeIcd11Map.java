@@ -459,46 +459,46 @@ public class ComputeIcd11Map {
       //
       Logger.getLogger(getClass()).info(" Load ICD10-11 mappings");
       final Map<String, Set<WhoMap>> icd10To11 = new HashMap<>();
-      // 10To11MapToOneCategory.txt
-      lines = FileUtils
-          .readLines(new File(icd11Dir, "10To11MapToOneCategory.txt"), "UTF-8");
-      ct = 0;
-      skipCt = 0;
-      for (final String line : lines) {
-        final String[] fields = line.split("\\t");
-        // Skip header (no skipct++)
-        if (fields[0].equals("10ClassKind")) {
-          // skipCt++;
-          continue;
-        }
-        final WhoMap map = new WhoMap(line);
-        final String code = map.getCode();
-        // Skip cases where the code or target code are not in scope
-        if (!icd10Scope.contains(map.getCode())) {
-          skipCt++;
-          Logger.getLogger(getClass())
-              .debug("SKIP (scope " + map.getCode() + "): " + line);
-          continue;
-        }
-        if (!map.getTargetCode().equals("No Mapping")
-            && !icd11Scope.contains(map.getTargetCode())) {
-          skipCt++;
-          Logger.getLogger(getClass())
-              .debug("SKIP (scope " + map.getTargetCode() + "): " + line);
-          continue;
-        }
-        if (!icd10To11.containsKey(code)) {
-          icd10To11.put(code, new HashSet<WhoMap>());
-        }
-        icd10To11.get(code).add(map);
-        if (ct < sampleCt) {
-          Logger.getLogger(getClass())
-              .debug(code + " => " + icd10To11.get(code));
-        }
-        ct++;
-      }
-      Logger.getLogger(getClass()).info("   ct = " + ct);
-      Logger.getLogger(getClass()).info("   skipCt =  " + skipCt);
+      // 10To11MapToOneCategory.txt - this is redundant in MultipleCategory file
+      // lines = FileUtils
+      // .readLines(new File(icd11Dir, "10To11MapToOneCategory.txt"), "UTF-8");
+      // ct = 0;
+      // skipCt = 0;
+      // for (final String line : lines) {
+      // final String[] fields = line.split("\\t");
+      // // Skip header (no skipct++)
+      // if (fields[0].equals("10ClassKind")) {
+      // // skipCt++;
+      // continue;
+      // }
+      // final WhoMap map = new WhoMap(line);
+      // final String code = map.getCode();
+      // // Skip cases where the code or target code are not in scope
+      // if (!icd10Scope.contains(map.getCode())) {
+      // skipCt++;
+      // Logger.getLogger(getClass())
+      // .debug("SKIP (scope " + map.getCode() + "): " + line);
+      // continue;
+      // }
+      // if (!map.getTargetCode().equals("No Mapping")
+      // && !icd11Scope.contains(map.getTargetCode())) {
+      // skipCt++;
+      // Logger.getLogger(getClass())
+      // .debug("SKIP (scope " + map.getTargetCode() + "): " + line);
+      // continue;
+      // }
+      // if (!icd10To11.containsKey(code)) {
+      // icd10To11.put(code, new HashSet<WhoMap>());
+      // }
+      // icd10To11.get(code).add(map);
+      // if (ct < sampleCt) {
+      // Logger.getLogger(getClass())
+      // .debug(code + " => " + icd10To11.get(code));
+      // }
+      // ct++;
+      // }
+      // Logger.getLogger(getClass()).info(" ct = " + ct);
+      // Logger.getLogger(getClass()).info(" skipCt = " + skipCt);
 
       //
       // 10To11MapToMultipleCategories.txt - HEADER
@@ -905,7 +905,7 @@ public class ComputeIcd11Map {
               map11.setMapCategoryId("447638001");
             } else {
               // Determine category
-              if (maxScore > 4.0) {
+              if (maxScore >= 3.0) {
                 localCategory = HIGH;
               } else if (maxScore < 1.5) {
                 localCategory = LOW;
@@ -1351,7 +1351,7 @@ public class ComputeIcd11Map {
         // 9 - icd11Chapter
         // 10 - chapterMatch
         // 11 - icd11Title
-        // 12 - Relationq
+        // 12 - Relation
         // 13 - Linearization
         // 14 - StatementDistance
         // 15 - IssueType
@@ -1372,7 +1372,7 @@ public class ComputeIcd11Map {
           targetChapter = fields[9];
           chapterMatch = "True".equals(fields[10]);
           targetName = fields[11];
-          relation = fields[7];
+          relation = fields[12];
           distance = fields[14];
           issueType = "";
           issueType = fields[15];
