@@ -2415,16 +2415,16 @@ angular
             headers : {
               'Content-Type' : 'application/json'
             }
-          }).success(function(data) {
-            removeComponentFromArray(editingPerformed, project);
-
+          }).success(function() {
+   
             // update the cached project list
             for (var i = 0; i < $scope.mapProjects.length; i++) {
-              if ($scope.mapProjects[i].id = data.id) {
-                $scope.mapProjects[i] = data;
+              if ($scope.mapProjects[i].id = project.id) {
+                $scope.mapProjects[i] = project;
               }
             }
-            localStorageService.add('mapProjects', $scope.mapProjects[i]);
+            // update the local cache
+            localStorageService.add('mapProjects', $scope.mapProjects);
 
             deferred.resolve();
 
