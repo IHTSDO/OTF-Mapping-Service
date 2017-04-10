@@ -321,6 +321,38 @@ public class ComputeIcd11Map {
       Logger.getLogger(getClass()).info("   skipCt =  " + skipCt);
 
       //
+      // Cache ICD11 PAR/CHD
+      // par|chd
+      //
+      Logger.getLogger(getClass()).info(" Load ICD11 par/chd (for scope)");
+      lines =
+          FileUtils.readLines(new File(icd11Dir, "icd11ParChd.txt"), "UTF-8");
+      final Map<String, Set<String>> icd11ParChd = new HashMap<>();
+      ct = 0;
+      skipCt = 0;
+      for (final String line : lines) {
+        final String[] fields = line.split("\\|");
+        // Skip if out of scope
+        if (!icd11Scope.contains(fields[1])) {
+          skipCt++;
+          continue;
+        }
+        if (!icd11ParChd.containsKey(fields[0])) {
+          icd11ParChd.put(fields[0], new HashSet<String>());
+        }
+        icd11ParChd.get(fields[0]).add(fields[1]);
+
+        if (ct < sampleCt) {
+          Logger.getLogger(getClass())
+              .debug(fields[0] + " => CHD " + icd11ParChd.get(fields[0]));
+        }
+
+        ct++;
+      }
+      Logger.getLogger(getClass()).info("   ct = " + ct);
+      Logger.getLogger(getClass()).info("   skipCt =  " + skipCt);
+
+      //
       // Cache the SCT->ICD10 rollup (these are code suggestions based on
       // descendants) - noheader
       // 102594003|R94.3|105|
@@ -652,34 +684,37 @@ public class ComputeIcd11Map {
           // later.
           final RuleDetails rule1 = new RuleDetails(1);
           if (sctIcd11Equivalence.containsKey(sctid)) {
-            rule1.getScoreMap().put(sctIcd11Equivalence.get(sctid), 5.0);
+            rule1.addScore(sctIcd11Equivalence.get(sctid), 5.0);
+            rule1.appendType(sctIcd11Equivalence.get(sctid),
+                sctIcd11EquivalenceType.get(sctid));
           }
 
           // RULE2 - the 10-11 equivalence map
           final RuleDetails rule2 = new RuleDetails(2);
-          if (icd10To11.containsKey(sctid)) {
+          if (icd10To11.containsKey(map10.getMapTarget())) {
             // Equivalent = 100%
             // InterSects
             // PotentialIntersect
             // StatementDistance
             // Subclass
             // Superclass
-            for (final WhoMap map : icd10To11.get(sctid)) {
+            for (final WhoMap map : icd10To11.get(map10.getMapTarget())) {
               final String code = map.getTargetCode();
               if (code.equals("No Mapping")) {
                 rule2.addNcScore(1);
               } else if (map.getRelation().equals("Equivalent")) {
-                rule2.addScore(code, 1.0);
-                rule2.getTypeMap().put(code, "Equivalent");
+                rule2.addScore(code, 2.0);
+                rule2.appendType(code, "Equivalent");
               } else {
-                rule2.addScore(code, 0.5);
+                rule2.addScore(code, 0.75);
                 rule2.appendType(code, map.getRelation());
               }
             }
           }
-          if (icd11To10Reverse.containsKey(sctid)) {
+          if (icd11To10Reverse.containsKey(map10.getMapTarget())) {
             // stated = 100%
-            for (final WhoMap map : icd11To10Reverse.get(sctid)) {
+            for (final WhoMap map : icd11To10Reverse
+                .get(map10.getMapTarget())) {
               final String code = map.getTargetCode();
               if (code.equals("No Mapping")) {
                 rule2.addNcScore(1);
@@ -701,10 +736,10 @@ public class ComputeIcd11Map {
               }
               // bump high scores
               else if (score.getScore() > 12) {
-                rule3.addScore(code, 1.25);
+                rule3.addScore(code, 2.0);
                 rule3.appendType(code, "EXACT PT");
               } else if (score.getScore() > 10) {
-                rule3.addScore(code, 1.0);
+                rule3.addScore(code, 1.5);
                 rule3.appendType(code, "EXACT");
               }
               // handle other scores
@@ -780,14 +815,37 @@ public class ComputeIcd11Map {
             }
 
             // Calculate rule scores - ignore RULE0
-            // Add scores from RULES 1,2,3,4
+            // Add scores from RULES 1,2,3
             for (final RuleDetails rule : new RuleDetails[] {
-                rule1, rule2, rule3, rule4
+                rule1, rule2, rule3
             }) {
               for (final String code : rule.getScoreMap().keySet()) {
                 double prevScore = candidates.get(code);
                 double score = rule.getScore(code);
                 candidates.put(code, score + prevScore);
+              }
+            }
+
+            // Calculate rule scores - ignore RULE0
+            // Boost rule4
+            for (final RuleDetails rule : new RuleDetails[] {
+                rule4
+            }) {
+              for (final String code : rule.getScoreMap().keySet()) {
+                if (candidates.containsKey(code)) {
+                  double prevScore = candidates.get(code);
+                  candidates.put(code, 1.5 * prevScore);
+                }
+                // check children of the rule4 code too, and boost those
+                // as well
+                if (icd11ParChd.containsKey(code)) {
+                  for (final String chd : icd11ParChd.get(code)) {
+                    if (candidates.containsKey(chd)) {
+                      double prevScore = candidates.get(chd);
+                      candidates.put(chd, 1.5 * prevScore);
+                    }
+                  }
+                }
               }
             }
 
@@ -805,8 +863,39 @@ public class ComputeIcd11Map {
               }
             }
 
-            // If the NC score is higher than the max score, stick with NC.
-            if (ncScore > maxScore) {
+            // If no scores, decide what to do - handles otherwise UNKNOWN
+            if (maxScore == 0 && ncScore == 0) {
+
+              // If ICD10 had no target,this is NO MAP
+              if (icd10Map.containsKey(sctid) && icd10Map.get(sctid).iterator()
+                  .next().getMapTarget().equals("")) {
+                localCategory = NO_MAP;
+                category = NO_MAP;
+                targetId = "";
+                candidates.put(targetId, ncScore);
+                map11.setMapAdvice(
+                    "MAP SOURCE CONCEPT CANNOT BE CLASSIFIED WITH AVAILABLE DATA");
+                map11.setMapCategoryId("447638001");
+              }
+
+              // Otherwise, it's "low" because there is probably something
+              else {
+                if (icd10Map.containsKey(sctid) && icd10Map.get(sctid)
+                    .iterator().next().getMapTarget().equals("")) {
+                  localCategory = LOW;
+                  if (category < localCategory) {
+                    category = LOW;
+                  }
+                  targetId = "";
+                  candidates.put(targetId, ncScore);
+                  map11.setMapAdvice(
+                      "MAP SOURCE CONCEPT CANNOT BE CLASSIFIED WITH AVAILABLE DATA");
+                  map11.setMapCategoryId("447638001");
+                }
+              }
+
+              // if NC is greater than max score, use NC
+            } else if (ncScore > maxScore) {
               localCategory = NO_MAP;
               category = NO_MAP;
               targetId = "";
@@ -862,8 +951,9 @@ public class ComputeIcd11Map {
           if (category == NO_MAP) {
             noteSb.append("NO MAP");
           }
-          noteSb.append(": ").append(targetId).append(" (")
-              .append(candidates.get(targetId)).append(")\n");
+          noteSb.append(": ").append(" (").append(candidates.get(targetId))
+              .append(") ").append(targetId).append(" ")
+              .append(icd11Concepts.get(targetId)).append("\n");
           boolean first = false;
           for (final String other : candidates.keySet()) {
             if (other.equals(targetId)) {
@@ -2005,9 +2095,10 @@ public class ComputeIcd11Map {
       for (final String key : scoreMap.keySet()) {
         sb.append("  ");
         if (typeMap.containsKey(key)) {
-          sb.append(key).append(" (").append(scoreMap.get(key)).append(") ");
+          sb.append(typeMap.get(key)).append(" (").append(scoreMap.get(key))
+              .append(") ").append(key).append(" ");
         } else {
-          sb.append(scoreMap.get(key)).append(" ");
+          sb.append(scoreMap.get(key)).append(" ").append(key).append(" ");
         }
         sb.append(icd11Concepts.get(key)).append("\n");
       }
