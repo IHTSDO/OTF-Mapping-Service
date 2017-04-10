@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
-    <version>1.5.31-SNAPSHOT</version>
+    <version>1.5.32-SNAPSHOT</version>
     <relativePath>../parent</relativePath>
   </parent>
 
@@ -238,6 +238,8 @@
               <path>/mapping-rest</path>
               <finalName>exec-${project.build.finalName}.jar</finalName>
               <enableNaming>true</enableNaming>
+              <serverXml>/opt/${packageName}/conf/server.xml</serverXml>
+              <contextFile>/opt/${packageName}/conf/context.xml</contextFile>
             </configuration>
           </execution>
         </executions>
@@ -267,7 +269,7 @@
                   <type>file</type>
                   <mapper>
                     <type>perm</type>
-                    <prefix>/opt/${packageName}/lib/</prefix>
+                    <prefix>/opt/${packageName}/lib</prefix>
                   </mapper>
                 </data>
                 <data>
@@ -288,6 +290,28 @@
                   </mapper>
                 </data>
                 <data>
+                  <src>${basedir}/src/deb/tomcat/context.xml</src>
+                  <dst>/opt/${packageName}/conf/context.xml</dst>
+                  <type>file</type>
+                 <!--  <conffile>true</conffile> --> 
+                  <mapper>
+                    <type>perm</type>
+                    <group>${packageName}</group>
+                    <filemode>0640</filemode>
+                  </mapper>
+                </data>
+                <data>
+                  <src>${basedir}/src/deb/tomcat/server.xml</src>
+                  <dst>/opt/${packageName}/conf/server.xml</dst>
+                  <type>file</type>
+                 <!--  <conffile>true</conffile> --> 
+                  <mapper>
+                    <type>perm</type>
+                    <group>${packageName}</group>
+                    <filemode>0640</filemode>
+                  </mapper>
+                </data>
+                <data>
                   <type>template</type>
                   <paths>
                     <path>/etc/opt/${packageName}</path>
@@ -300,6 +324,13 @@
                     <path>/var/opt/${packageName}</path>
                     <path>/var/opt/${packageName}/run</path>
                     <path>/var/opt/${packageName}/logs</path>
+                    <path>/opt/${packageName}</path>
+                    <path>/opt/${packageName}/run</path>
+                    <path>/opt/${packageName}/logs</path>
+                    <path>/var/log/tomcat7</path>
+                    <path>/var/cache/tomcat7</path>
+                    <path>/var/lib/tomcat7</path>
+                    <path>/var/lib/tomcat7/indexes/lucene/indexes</path>
                   </paths>
                   <mapper>
                     <type>perm</type>
