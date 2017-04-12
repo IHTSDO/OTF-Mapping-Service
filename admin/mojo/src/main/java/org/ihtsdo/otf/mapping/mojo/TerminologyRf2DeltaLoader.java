@@ -43,7 +43,7 @@ import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
  * 
  * @goal load-rf2-delta
  * 
- * @phase package
+ * @phase package ***
  */
 public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
