@@ -42,9 +42,9 @@ mapProjectAppControllers.controller('LoginCtrl', [
 
       // / / check that user has been selected
       if ($scope.userName == null) {
-        alert('You must specify a user');
+        $scope.pending = false;
       } else if ($scope.password == null) {
-        alert('You must enter a password');
+        $scope.pending = false;
       } else {
 
         // / / authenticate the user
@@ -376,33 +376,30 @@ mapProjectAppControllers.controller('LoginCtrl', [
       // / / THis requires an nginx setup to redirect ims-api to
       // / ims.ihtsdotools.org
       $rootScope.glassPane++;
-      $http.get('http://uat-ims.ihtsdotools.org/api/account').then(
-        // / / Success
-        function(response) {
-          if (response.status == '302' || response.status == 302) {
-            
-            //https://ims.ihtsdotools.org/#/login?serviceReferer=https:%2F%2Fauthoring.ihtsdotools.org%2F#%2Fhome
-            var referer = $location.protocol() + '://' + $location.host();
-            var redirectUrl = response.headers['Location'] + '?serviceReferer='
-              + encodeURIComponent(referer);
-            $location.path(redirectUrl);
-          } else {
-            // / / Call "go" function
-            $scope.userName = response.data.login;
-            $scope.password = JSON.stringify(response.data);
-            $rootScope.glassPane--;
-            $scope.go();
-          }
-        },
-        // / / Error
-        function(data, status, headers, config) {
-          // / / $rootScope.globalError = response;
+
+      $http.get('ims-api/account').then(
+      // / / Success
+      function(response) {
+        console.debug('ims response: ', response.data);
+        if (response.data) {
+          // / / Call "go" function
+          $scope.userName = response.data.login;
+          $scope.password = JSON.stringify(response.data);
+          $rootScope.glassPane--;
+          $scope.go();
+        } else {
           // / / Show login buttons
           $scope.pending = false;
           $rootScope.glassPane--;
-          utilService.setError('Unexpected error calling IMS');
-        });
-
+        }
+      },
+      // / / Error
+      function(response) {
+        // / / $rootScope.globalError = response;
+        // / / Show login buttons
+        $scope.pending = false;
+        $rootScope.glassPane--;
+      });
     }
 
     // / / Otherwise, checked if we are logged in

@@ -349,12 +349,14 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     // Previous computation of terminology version is based on file name
     // but for delta/daily build files, this is not the current version
     // look up the current version instead
-    final MetadataService metadataService = new MetadataServiceJpa();
-    version = metadataService.getLatestVersion(terminology);
     if (version == null) {
-      throw new Exception("Unable to determine terminology version.");
+      final MetadataService metadataService = new MetadataServiceJpa();
+      version = metadataService.getLatestVersion(terminology);
+      if (version == null) {
+        throw new Exception("Unable to determine terminology version.");
+      }
+      metadataService.close();
     }
-    metadataService.close();
 
     // set the parameters for determining defaultPreferredNames
     String prop = config.getProperty("loader.defaultPreferredNames.typeId");
