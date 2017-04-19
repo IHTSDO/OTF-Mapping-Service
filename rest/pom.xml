@@ -28,6 +28,7 @@
 
 		<tomcat7-maven-plugin-version>2.1</tomcat7-maven-plugin-version>
 		<jdeb.version>1.1.1</jdeb.version>  
+		<webapp-runner.version>8.5.11.3</webapp-runner.version>
     
   </properties>
 
@@ -223,7 +224,7 @@
       </plugin>
 
       <!-- Executable tomcat war file and debian build -->
-      <plugin>
+      <!--  <plugin>
         <groupId>org.apache.tomcat.maven</groupId>
         <artifactId>tomcat7-maven-plugin</artifactId>
         <version>${tomcat7-maven-plugin-version}</version>
@@ -243,7 +244,28 @@
             </configuration>
           </execution>
         </executions>
-      </plugin>
+      </plugin> -->
+      <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <version>2.3</version>
+            <executions>
+                <execution>
+                    <phase>package</phase>
+                    <goals><goal>copy</goal></goals>
+                    <configuration>
+                        <artifactItems>
+                            <artifactItem>
+                                <groupId>com.github.jsimone</groupId>
+                                <artifactId>webapp-runner</artifactId>
+                                <version>${webapp-runner.version}</version>
+                                <destFileName>webapp-runner.jar</destFileName>
+                            </artifactItem>
+                        </artifactItems>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
       <plugin>
         <groupId>org.vafer</groupId>
         <artifactId>jdeb</artifactId>
@@ -263,9 +285,27 @@
               <classifier>all</classifier>
               <signPackage>false</signPackage>
               <dataSet>
-                <data>
+               <!--  <data>
                   <src>${project.build.directory}/${execFinalName}</src>
                   <dst>app.jar</dst>
+                  <type>file</type>
+                  <mapper>
+                    <type>perm</type>
+                    <prefix>/opt/${packageName}/lib</prefix>
+                  </mapper>
+                </data>  -->
+                <data>
+                  <src>${project.build.directory}/dependency/webapp-runner.jar</src>
+                  <dst>webapp-runner.jar</dst>
+                  <type>file</type>
+                  <mapper>
+                    <type>perm</type>
+                    <prefix>/opt/${packageName}/lib</prefix>
+                  </mapper>
+                </data>
+                <data>
+                  <src>${project.build.directory}/mapping-rest.war</src>
+                  <dst>mapping-rest.war</dst>
                   <type>file</type>
                   <mapper>
                     <type>perm</type>
