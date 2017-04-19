@@ -31,7 +31,14 @@
             <phase>package</phase>
             <configuration>
               <fileset>
-                <directory>src/main/resources</directory>
+               <!--   <directory>src/main/resources</directory> -->
+               <directory>${basedir}</directory>
+               <excludes>
+                  <exclude>.gitignore</exclude>
+                  <exclude>**/deb/**</exclude>
+                  <exclude>**/mojo/**</exclude>
+                  <exclude>**/target/**</exclude>
+                </excludes>
                 <outputDirectory>${project.build.directory}/mapping-admin-${releaseVersion}.zip</outputDirectory>
               </fileset>
             </configuration>
