@@ -5,7 +5,7 @@ See Confluence:
 * https://confluence.ihtsdotools.org/display/MT/Redeploy+Instructions
 
 Tomcat Settings
-* config file = /etc/tomcat7/tomcat7.conf (add -Drun.config= parameter here)
+#* config file = /etc/tomcat7/tomcat7.conf (add -Drun.config= parameter here)
 * webapps dir = /opt/tomcat8/webapps
 
 MYSQL Settings
