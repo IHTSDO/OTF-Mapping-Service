@@ -21,21 +21,21 @@ echo "MAPPING_DATA = $MAPPING_CODE"
 echo "MAPPING_CONFIG = $MAPPING_CODE"
 
 echo "Taking down the server"
-service tomcat7 stop
+service tomcat stop
 if ($status != 0) then
         echo "ERROR stopping server"
         exit 1
 endif
 
 # Redeploy code
-#/bin/rm -rf /var/lib/tomcat7/work/Catalina/localhost/mapping-rest
-#/bin/rm -rf /var/lib/tomcat7/webapps/mapping-rest
-#/bin/rm -rf /var/lib/tomcat7/webapps/ROOT
-#/bin/rm -rf /var/lib/tomcat7/webapps/mapping-rest.war
-#/bin/rm -rf /var/lib/tomcat7/webapps/ROOT.war
+#/bin/rm -rf /opt/tomcat8/work/Catalina/localhost/mapping-rest
+#/bin/rm -rf /opt/tomcat8/webapps/mapping-rest
+#/bin/rm -rf /opt/tomcat8/webapps/ROOT
+#/bin/rm -rf /opt/tomcat8/webapps/mapping-rest.war
+#/bin/rm -rf /opt/tomcat8/webapps/ROOT.war
 
-#/bin/cp -f ~/code/rest/target/mapping-rest*war /var/lib/tomcat7/webapps/mapping-rest.war
-#/bin/cp -f ~/code/webapp/target/mapping-webapp*war /var/lib/tomcat7/webapps/ROOT.war
+#/bin/cp -f ~/code/rest/target/mapping-rest*war /opt/tomcat8/webapps/mapping-rest.war
+#/bin/cp -f ~/code/webapp/target/mapping-webapp*war /opt/tomcat8/webapps/ROOT.war
 
 echo "    Delete last delta ...`/bin/date`"
 cd $dir
@@ -113,7 +113,7 @@ if (`grep -v effectiveTime *Concept*txt | wc -l` > 0) then
 
         # optimize tree positions table
         echo "Clear indexes directory"
-        /bin/rm -rf /var/lib/tomcat7/indexes/lucene/indexes/org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa/*
+        /bin/rm -rf /opt/tomcat8/indexes/lucene/indexes/org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa/*
         echo "Reindex other tree positions"
          cd $MAPPING_CODE/admin/lucene
         mvn install -PReindex -Drun.config=$MAPPING_CONFIG -Dindexed.objects=TreePositionJpa | sed 's/^/      /'
@@ -139,13 +139,13 @@ if ($status != 0) then
     exit 1
 endif
 
-echo "    Restarting tomcat7 server ...`/bin/date`"
-service tomcat7 start
+echo "    Restarting tomcat server ...`/bin/date`"
+service tomcat start
 
 # reconnect "doc" directory
 #sleep 40
 
-#cd /var/lib/tomcat7/webapps/ROOT
+#cd /opt/tomcat8/webapps/ROOT
 #ln -s ~ihtsdo/data/doc
 #chmod -R ga+rwx ~ihtsdo/data/doc
 
