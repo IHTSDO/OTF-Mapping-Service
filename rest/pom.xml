@@ -368,7 +368,7 @@
                     <path>/opt/${packageName}/run</path>
                     <path>/opt/${packageName}/logs</path>
                     <path>/opt/tomcat8/logs</path>
-                    <path>/var/cache/tomcat7</path>
+                    <!-- <path>/var/cache/tomcat7</path> -->
                     <path>/opt/tomcat8</path>
                     <path>/opt/tomcat8/indexes/lucene/indexes</path>
                   </paths>
