@@ -54,14 +54,14 @@ cd ~/code
 git pull
 mvn -Dconfig.artifactId=mapping-config-prod clean install
 
-service tomcat stop
+sudo service tomcat stop
 /bin/rm -rf /opt/tomcat8/work/Catalina/localhost/mapping-rest
 /bin/rm -rf /opt/tomcat8/webapps/mapping-rest
 /bin/rm -rf /opt/tomcat8/webapps/mapping-rest.war
 
 /bin/cp -f ~/code/rest/target/mapping-rest*war /opt/tomcat8/webapps/mapping-rest.war
 
-service tomcat start
+sudo service tomcat start
 
 sleep 40
 
