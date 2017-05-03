@@ -161,6 +161,13 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
+        	// reconstruct emails for ihtsdo.gov users - privacy caution
+            // others will remain as 'Private email'
+        	for (var i = 0; i < data.mapUser.length; i++) {
+              if (data.mapUser[i].email != 'Private email') {
+                data.mapUser[i].email = data.mapUser[i].email + '@ihtsdo.gov';
+              }
+            }
             $scope.mapUsers = data.mapUser;
             localStorageService.add('mapUsers', data.mapUser);
             $rootScope.$broadcast('localStorageModule.notification.setMapUsers', {
@@ -1104,6 +1111,13 @@ angular
             // no need to update project as if user is
             // attached, delete will fail
             .success(function(data) {
+              // reconstruct emails for ihtsdo.gov users - privacy caution
+              // others will remain as 'Private email'
+              for (var i = 0; i < data.mapUser.length; i++) {
+                  if (data.mapUser[i].email != 'Private email') {
+                    data.mapUser[i].email = data.mapUser[i].email + '@ihtsdo.gov';
+                  }
+              }
               $scope.mapUsers = data.mapUser;
               $scope.resetUserFilter();
 
@@ -1208,6 +1222,13 @@ angular
                 'Content-Type' : 'application/json'
               }
             }).success(function(data) {
+              // reconstruct emails for ihtsdo.gov users - privacy caution
+              // others will remain as 'Private email'
+              for (var i = 0; i < data.mapUser.length; i++) {
+                  if (data.mapUser[i].email != 'Private email') {
+                    data.mapUser[i].email = data.mapUser[i].email + '@ihtsdo.gov';
+                  }
+              }
               $scope.mapUsers = data.mapUser;
               for (var j = 0; j < $scope.focusProject.mapSpecialist.length; j++) {
                 if (user.id === $scope.focusProject.mapSpecialist[j].id) {
@@ -1344,6 +1365,13 @@ angular
                 'Content-Type' : 'application/json'
               }
             }).success(function(data) {
+              // reconstruct emails for ihtsdo.gov users - privacy caution
+              // others will remain as 'Private email'
+              for (var i = 0; i < data.mapUser.length; i++) {
+                  if (data.mapUser[i].email != 'Private email') {
+                    data.mapUser[i].email = data.mapUser[i].email + '@ihtsdo.gov';
+                  }
+              }
               $scope.mapUsers = data.mapUser;
               $scope.resetUserFilter();
               localStorageService.add('mapUsers', data.mapUser);
