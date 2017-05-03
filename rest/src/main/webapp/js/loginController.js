@@ -99,12 +99,23 @@ mapProjectAppControllers.controller('LoginCtrl', [
                     'Content-Type' : 'application/json'
                   }
                 }).success(function(data) {
+                	// reconstruct emails for ihtsdo.gov users - privacy caution
+                    // others will remain as 'Private email'
+                    for (var i = 0; i < data.mapUser.length; i++) {
+                      if (data.mapUser[i].email != 'Private email') {
+                        data.mapUser[i].email = data.mapUser[i].email + '@ihtsdo.gov';
+                      }
+                    }
+                    
                   $scope.mapUsers = data.mapUser;
                   localStorageService.add('mapUsers', data.mapUser);
                   $rootScope.$broadcast('localStorageModule.notification.setMapUsers', {
                     key : 'mapUsers',
                     mapUsers : data.mapUsers
                   });
+                  
+                  
+                  
                   // find the mapUser object
                   for (var i = 0; i < $scope.mapUsers.length; i++) {
                     if ($scope.mapUsers[i].userName === $scope.userName) {
