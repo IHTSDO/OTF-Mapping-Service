@@ -41,7 +41,7 @@ mvn -Drun.config=$OTF_MAPPING_CONFIG -PUpdatedb -Dhibernate.hbm2ddl.auto=update 
 
 REDEPLOY SCRIPTS - after build
 cd
-echo "A" | unzip ~/code/config/prod/target/map*zip "bin/*"
+echo "A" | unzip ~/code/config/nlm/target/map*zip "bin/*"
 
 DEPLOY INSTRUCTIONS
 
@@ -52,7 +52,7 @@ git checkout develop
 
 cd ~/code
 git pull
-mvn -Dconfig.artifactId=mapping-config-prod clean install
+mvn -Dconfig.artifactId=mapping-config-nlm clean install
 
 sudo service tomcat stop
 /bin/rm -rf /opt/tomcat8/work/Catalina/localhost/mapping-rest
