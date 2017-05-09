@@ -548,19 +548,43 @@ public class MappingServiceRest extends RootServiceRest {
       // authorize call
       user = authorizeApp(authToken, MapUserRole.VIEWER, "get map users",
           securityService);
+      
+      
 
-      final MapUserListJpa mapLeads =
+      final MapUserListJpa mapUsers =
           (MapUserListJpa) mappingService.getMapUsers();
-      mapLeads.sortBy(new Comparator<MapUser>() {
+      mapUsers.sortBy(new Comparator<MapUser>() {
         @Override
         public int compare(MapUser o1, MapUser o2) {
           return o1.getName().compareTo(o2.getName());
         }
       });
-      return mapLeads;
+      // remove non-ihtsdo emails to address privacy concerns
+      // ihtsdo emails will be truncated to remove the domain, 
+      // domain will be appended again on client side
+      for (MapUser mapUser : mapUsers.getMapUsers()) {
+    	if (mapUser.getEmail().endsWith("ihtsdo.gov")) {
+    	  mapUser.setEmail(mapUser.getEmail().substring(0, mapUser.getEmail().indexOf('@')));
+    	} else {
+    	  mapUser.setEmail("Private email"); 
+    	}
+      }
+      
+      // do not return this private information if user is a guest
+      if (user.equals("guest")) {
+    	for (MapUser mapUser : mapUsers.getMapUsers()) {
+    	    if (mapUser.getUserName().equals("guest")) {
+    	      MapUserListJpa list = new MapUserListJpa();
+    	      list.addMapUser(mapUser);
+    	      list.setTotalCount(1);
+    	      return list;
+    	    }
+    	}
+      }
+      return mapUsers;
 
     } catch (Exception e) {
-      handleException(e, "trying to get a concept", user, "", "");
+      handleException(e, "trying to get map users", user, "", "");
       return null;
     } finally {
       mappingService.close();
