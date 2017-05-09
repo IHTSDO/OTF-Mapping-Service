@@ -10,10 +10,10 @@
     <relativePath>../../parent</relativePath>
   </parent>
 
-  <artifactId>mapping-config-prod</artifactId>
+  <artifactId>mapping-config-nlm</artifactId>
   <packaging>pom</packaging>
-  <name>Mapping Config - PROD</name>
-  <description>Mapping tool configuration for production environment</description>
+  <name>Mapping Config - NLM</name>
+  <description>NLM Mapping tool configuration for production environment</description>
 
   <properties>
     <!-- Specify index viewer data -->
