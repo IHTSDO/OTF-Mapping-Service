@@ -29,6 +29,7 @@
 		<tomcat7-maven-plugin-version>2.1</tomcat7-maven-plugin-version>
 		<jdeb.version>1.1.1</jdeb.version>  
 		<webapp-runner.version>8.5.11.3</webapp-runner.version>
+		<deb.suffix></deb.suffix>
     
   </properties>
 
@@ -277,7 +278,7 @@
               <goal>jdeb</goal>
             </goals>
             <configuration>
-              <deb>${project.build.directory}/${packageName}-${releaseVersion}.deb</deb>
+              <deb>${project.build.directory}/${packageName}${deb.suffix}-${releaseVersion}.deb</deb>
               <controlDir>${basedir}/src/deb/control</controlDir>
               <snapshotExpand>true</snapshotExpand>
               <snapshotEnv>BUILD_NUMBER</snapshotEnv>
