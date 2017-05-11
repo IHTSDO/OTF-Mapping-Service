@@ -19,6 +19,8 @@
 	<properties>
 		<packageName>${project.artifactId}</packageName>
 		<jdeb.version>1.1.1</jdeb.version>
+		<package_username>mapping-service</package_username>
+		<deb.suffix></deb.suffix>
 	</properties>
 
 	<dependencies>
@@ -99,7 +101,7 @@
 							<goal>jdeb</goal>
 						</goals>
 						<configuration>
-							<deb>${project.build.directory}/${packageName}-${project.version}.deb</deb>
+							<deb>${project.build.directory}/${packageName}${deb.suffix}-${project.version}.deb</deb>
 							<controlDir>${basedir}/control</controlDir>
 							<snapshotExpand>true</snapshotExpand>
 							<snapshotEnv>BUILD_NUMBER</snapshotEnv>
@@ -131,20 +133,27 @@
 										<prefix>/opt/${packageName}/zips</prefix>
 									</mapper>
 								</data>
-								<!-- <data>
-									<src>${project.build.directory}/deps</src>
-									<type>directory</type>
-									<includes>*.jar</includes>
-									<mapper>
-										<type>perm</type>
-										<prefix>/opt/${packageName}/jars</prefix>
-									</mapper>
-								</data> -->
+								<!-- <data> <src>${project.build.directory}/deps</src> <type>directory</type> 
+									<includes>*.jar</includes> <mapper> <type>perm</type> <prefix>/opt/${packageName}/jars</prefix> 
+									</mapper> </data> -->
 								<!-- <data> <src>${basedir}/deb/setupconfdata.sh</src> <dst>/opt/${packageName}/setupconfdata.sh</dst> 
 									<type>file</type> <mapper> <type>perm</type> <filemode>0750</filemode> </mapper> 
 									</data> <data> <src>${basedir}/deb/setupconfdata_mvn.sh</src> <dst>/opt/${packageName}/pom/setupconfdata_mvn.sh</dst> 
 									<type>file</type> <mapper> <type>perm</type> <filemode>0750</filemode> </mapper> 
 									</data> -->
+								<data>
+									<type>template</type>
+									<paths>
+										<path>/opt/${packageName}</path>
+									</paths>
+									<mapper>
+										<type>perm</type>
+										<user>${package_username}</user>
+										<group>${package_username}</group>
+										<dirmode>0750</dirmode>
+										<filemode>0750</filemode>
+									</mapper>
+								</data>
 							</dataSet>
 						</configuration>
 					</execution>
