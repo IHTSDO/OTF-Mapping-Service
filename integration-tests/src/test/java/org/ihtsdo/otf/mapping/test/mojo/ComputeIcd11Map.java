@@ -4,8 +4,6 @@
 package org.ihtsdo.otf.mapping.test.mojo;
 
 import java.io.File;
-import java.io.FileWriter;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -15,8 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TreeMap;
-import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -39,18 +35,6 @@ import org.junit.Test;
  * A mechanism to reset to the stock demo database.
  */
 public class ComputeIcd11Map {
-
-  /** The Constant NO_MAP. */
-  final static int NO_MAP = 4;
-
-  /** The Constant HIGH. */
-  final static int HIGH = 3;
-
-  /** The Constant MEDIUM. */
-  final static int MEDIUM = 2;
-
-  /** The Constant LOW. */
-  final static int LOW = 1;
 
   /** The properties. */
   static Properties config;
@@ -88,7 +72,6 @@ public class ComputeIcd11Map {
    *
    * @throws Exception the exception
    */
-
   @SuppressWarnings("unchecked")
   @Test
   public void test() throws Exception {
@@ -110,48 +93,22 @@ public class ComputeIcd11Map {
 
       //
       // Cache ICD11 concepts (by id) - noheader
-      // sctid|name|pt
       //
-      Logger.getLogger(getClass()).info(" Load SNOMED concepts");
+      Logger.getLogger(getClass()).info(" Load ICD11 concepts");
       List<String> lines =
-          FileUtils.readLines(new File(icd11Dir, "sctScopeDesc.txt"), "UTF-8");
-      final Map<String, String> sctConcepts = new HashMap<>();
+          FileUtils.readLines(new File(icd11Dir, "icd11Concepts.txt"), "UTF-8");
+      final Map<String, String> icd11Concepts = new HashMap<>();
       int ct = 0;
       int skipCt = 0;
       for (final String line : lines) {
         final String[] fields = line.split("\\|");
-        // entityCode already has URL stripped - http://id.who.int/icd/entity
-        if (fields[2].equals("0")) {
-          continue;
-        }
-        final String code = fields[0];
-        sctConcepts.put(code, fields[1]);
-        if (ct < sampleCt) {
-          Logger.getLogger(getClass()).debug(code + " => " + fields[1]);
-        }
-        ct++;
-      }
-      Logger.getLogger(getClass()).info("   ct = " + ct);
-      Logger.getLogger(getClass()).info("   skipCt =  " + skipCt);
-
-      //
-      // Cache ICD11 concepts (by id) - noheader
-      // entityCode|code: name
-      //
-      Logger.getLogger(getClass()).info(" Load ICD11 concepts");
-      lines =
-          FileUtils.readLines(new File(icd11Dir, "icd11Concepts.txt"), "UTF-8");
-      final Map<String, String> icd11Concepts = new HashMap<>();
-      ct = 0;
-      skipCt = 0;
-      for (final String line : lines) {
-        final String[] fields = line.split("\\|");
-        // entityCode already has URL stripped - http://id.who.int/icd/entity
-        final String code = fields[0];
+        final String code = fields[0]
+            .replaceAll("http\\:\\/\\/id.who.int\\/icd\\/entity\\/", "");
         icd11Concepts.put(code, fields[1]);
         if (ct < sampleCt) {
           Logger.getLogger(getClass()).debug(code + " => " + fields[1]);
         }
+
         ct++;
       }
       Logger.getLogger(getClass()).info("   ct = " + ct);
@@ -159,7 +116,6 @@ public class ComputeIcd11Map {
 
       //
       // Cache ICD11 scope (by id) - noheader
-      // entityCode
       //
       Logger.getLogger(getClass()).info(" Load ICD11 scope");
       lines =
@@ -168,8 +124,9 @@ public class ComputeIcd11Map {
       ct = 0;
       skipCt = 0;
       for (final String line : lines) {
-        // entityCode already has URL stripped - http://id.who.int/icd/entity
-        final String code = line;
+
+        final String code =
+            line.replaceAll("http\\:\\/\\/id.who.int\\/icd\\/entity\\/", "");
         icd11Scope.add(code);
 
         if (ct < sampleCt) {
@@ -207,7 +164,6 @@ public class ComputeIcd11Map {
 
       //
       // Cache ICD10 scope (by code) - noheader
-      // code
       //
       Logger.getLogger(getClass()).info(" Load ICD10 scope");
       lines =
@@ -225,40 +181,8 @@ public class ComputeIcd11Map {
       Logger.getLogger(getClass()).info("   ct = " + ct);
       Logger.getLogger(getClass()).info("   skipCt =  " + skipCt);
 
-      // Cache ICD10 map (by SCTID)
-      Logger.getLogger(getClass()).info(" Load ICD10 map");
-      lines = FileUtils.readLines(new File(icd11Dir, "icd10Map.txt"), "UTF-8");
-      final Map<String, List<IcdMap>> icd10Map = new HashMap<>();
-      ct = 0;
-      skipCt = 0;
-      for (final String line : lines) {
-        final String[] fields = line.split("\\t");
-        // id effectiveTime active moduleId refsetId referencedComponentId
-        // mapGroup mapPriority mapRule mapAdvice mapTarget correlationId
-        // mapCategoryId
-
-        // Skip header (no skipCt++)
-        if (fields[0].equals("id")) {
-          // skipCt++;
-          continue;
-        }
-        // Create a map entry - assumes the file is ordered
-        if (!icd10Map.containsKey(fields[5])) {
-          icd10Map.put(fields[5], new ArrayList<IcdMap>());
-        }
-        icd10Map.get(fields[5]).add(new IcdMap(line));
-        if (ct < sampleCt) {
-          Logger.getLogger(getClass())
-              .debug(fields[5] + " => " + icd10Map.get(fields[5]));
-        }
-        ct++;
-      }
-      Logger.getLogger(getClass()).info("   ct = " + ct);
-      Logger.getLogger(getClass()).info("   skipCt =  " + skipCt);
-
       //
       // Cache SCT scope - noheader
-      // sctid
       //
       Logger.getLogger(getClass()).info(" Load SCT scope");
       lines = FileUtils.readLines(new File(icd11Dir, "sctScope.txt"), "UTF-8");
@@ -277,21 +201,19 @@ public class ComputeIcd11Map {
 
       //
       // Cache SCT ancDesc and descAnc - noheader
-      // anc|desc|depth
       //
       Logger.getLogger(getClass()).info(" Load SCT anc/desc (for scope)");
       lines = FileUtils.readLines(new File(icd11Dir, "sctScopeAncDesc.txt"),
           "UTF-8");
       final Map<String, Set<Depth>> sctAncDesc = new HashMap<>();
       final Map<String, Set<Depth>> sctDescAnc = new HashMap<>();
-      final Map<String, Set<String>> sctChdPar = new HashMap<>();
       ct = 0;
       skipCt = 0;
       for (final String line : lines) {
         final String[] fields = line.split("\\|");
         // skip if if self-row
         if (fields[2].equals("0")) {
-          skipCt++;
+          skipCt = 0;
           // no need to log this, it is very common and verified
           continue;
         }
@@ -302,49 +224,13 @@ public class ComputeIcd11Map {
 
         if (!sctDescAnc.containsKey(fields[1])) {
           sctDescAnc.put(fields[1], new HashSet<Depth>());
-          sctChdPar.put(fields[1], new HashSet<String>());
         }
         sctDescAnc.get(fields[1]).add(new Depth(line, false));
-        if (fields[2].equals("1")) {
-          sctChdPar.get(fields[1]).add(fields[0]);
-        }
         if (ct < sampleCt) {
           Logger.getLogger(getClass())
-              .debug(fields[0] + " => DESC " + sctAncDesc.get(fields[0]));
+              .debug(fields[0] + " => " + sctAncDesc.get(fields[0]) + " CHD");
           Logger.getLogger(getClass())
-              .debug(fields[1] + " => ANC " + sctDescAnc.get(fields[1]));
-        }
-
-        ct++;
-      }
-      Logger.getLogger(getClass()).info("   ct = " + ct);
-      Logger.getLogger(getClass()).info("   skipCt =  " + skipCt);
-
-      //
-      // Cache ICD11 PAR/CHD
-      // par|chd
-      //
-      Logger.getLogger(getClass()).info(" Load ICD11 par/chd (for scope)");
-      lines =
-          FileUtils.readLines(new File(icd11Dir, "icd11ParChd.txt"), "UTF-8");
-      final Map<String, Set<String>> icd11ParChd = new HashMap<>();
-      ct = 0;
-      skipCt = 0;
-      for (final String line : lines) {
-        final String[] fields = line.split("\\|");
-        // Skip if out of scope
-        if (!icd11Scope.contains(fields[1])) {
-          skipCt++;
-          continue;
-        }
-        if (!icd11ParChd.containsKey(fields[0])) {
-          icd11ParChd.put(fields[0], new HashSet<String>());
-        }
-        icd11ParChd.get(fields[0]).add(fields[1]);
-
-        if (ct < sampleCt) {
-          Logger.getLogger(getClass())
-              .debug(fields[0] + " => CHD " + icd11ParChd.get(fields[0]));
+              .debug(fields[1] + " => " + sctDescAnc.get(fields[1]) + " PAR");
         }
 
         ct++;
@@ -366,7 +252,7 @@ public class ComputeIcd11Map {
       ct = 0;
       skipCt = 0;
       for (final String line : lines) {
-        final String[] fields = line.split("\\|");
+        final String[] fields = line.split("\\t");
         if (!sctIcd10Rollup.containsKey(fields[0])) {
           sctIcd10Rollup.put(fields[0], new HashSet<Depth>());
         }
@@ -399,8 +285,9 @@ public class ComputeIcd11Map {
       for (final String line : lines) {
         final String[] fields = line.split("\\t");
         // Skip header (no skipCt++)
-        if (fields[2].equals("mms")) {
+        if (!fields[2].equals("mms")) {
           // skipCt++;
+          Logger.getLogger(getClass()).debug("SKIP: " + line);
           continue;
         }
         // // Skip if "MMS" flag != Y
@@ -409,13 +296,14 @@ public class ComputeIcd11Map {
         // Logger.getLogger(getClass()).debug("SKIP: " + line);
         // continue;
         // }
-        final String code = fields[0];
-        sctIcd11Equivalence.put(fields[1], code);
-        sctIcd11EquivalenceType.put(fields[1], fields[3]);
+        final String code = fields[0]
+            .replaceAll("http\\:\\/\\/id.who.int\\/icd\\/entity\\/", "");
+        sctIcd11Equivalence.put(code, fields[1]);
+        sctIcd11EquivalenceType.put(code, fields[3]);
         if (ct < sampleCt) {
           Logger.getLogger(getClass())
-              .debug(fields[1] + " => " + sctIcd11Equivalence.get(fields[1])
-                  + ", " + sctIcd11EquivalenceType.get(fields[1]));
+              .debug(code + " => " + sctIcd11Equivalence.get(code) + ", "
+                  + sctIcd11EquivalenceType.get(code));
         }
         ct++;
       }
@@ -452,53 +340,54 @@ public class ComputeIcd11Map {
 
       //
       // Cache ICD10-11 mappings (provided in frozen release) - HEADER
-      // 10ClassKind 10DepthInKind icd10Code icd10Chapter icd10Title
-      // 11ClassKind 11DepthInKind icd11Id icd11Code icd11Chapter
-      // chapterMatch icd11Title Relation Linearization
-      // StatementDistance IssueType Match Type 2017-Mar-24
       //
-      Logger.getLogger(getClass()).info(" Load ICD10-11 mappings");
+      Logger.getLogger(getClass()).info(" Load ICD10-ICD11 mappings");
       final Map<String, Set<WhoMap>> icd10To11 = new HashMap<>();
-      // 10To11MapToOneCategory.txt - this is redundant in MultipleCategory file
-      // lines = FileUtils
-      // .readLines(new File(icd11Dir, "10To11MapToOneCategory.txt"), "UTF-8");
-      // ct = 0;
-      // skipCt = 0;
-      // for (final String line : lines) {
-      // final String[] fields = line.split("\\t");
-      // // Skip header (no skipct++)
-      // if (fields[0].equals("10ClassKind")) {
-      // // skipCt++;
-      // continue;
-      // }
-      // final WhoMap map = new WhoMap(line);
-      // final String code = map.getCode();
-      // // Skip cases where the code or target code are not in scope
-      // if (!icd10Scope.contains(map.getCode())) {
-      // skipCt++;
-      // Logger.getLogger(getClass())
-      // .debug("SKIP (scope " + map.getCode() + "): " + line);
-      // continue;
-      // }
-      // if (!map.getTargetCode().equals("No Mapping")
-      // && !icd11Scope.contains(map.getTargetCode())) {
-      // skipCt++;
-      // Logger.getLogger(getClass())
-      // .debug("SKIP (scope " + map.getTargetCode() + "): " + line);
-      // continue;
-      // }
-      // if (!icd10To11.containsKey(code)) {
-      // icd10To11.put(code, new HashSet<WhoMap>());
-      // }
-      // icd10To11.get(code).add(map);
-      // if (ct < sampleCt) {
-      // Logger.getLogger(getClass())
-      // .debug(code + " => " + icd10To11.get(code));
-      // }
-      // ct++;
-      // }
-      // Logger.getLogger(getClass()).info(" ct = " + ct);
-      // Logger.getLogger(getClass()).info(" skipCt = " + skipCt);
+      // 10To11MapToOneCategory.txt
+      lines = FileUtils
+          .readLines(new File(icd11Dir, "10To11MapToOneCategory.txt"), "UTF-8");
+      ct = 0;
+      skipCt = 0;
+      for (final String line : lines) {
+        final String[] fields = line.split("\\|");
+        final WhoMap map = new WhoMap(line);
+        // Skip header (no skipCt++
+        if (fields[0].equals("10ClassKind")) {
+          // skipCt++;
+          Logger.getLogger(getClass()).debug("SKIP: " + line);
+          continue;
+        }
+        // Skip if "No Mapping"
+        if (fields[4].equals("No Mapping")) {
+          skipCt++;
+          Logger.getLogger(getClass()).debug("SKIP: " + line);
+          continue;
+        }
+        // Skip cases where the code or target code are not in scope
+        if (!icd10Scope.contains(map.getCode())) {
+          skipCt++;
+          Logger.getLogger(getClass()).debug("SKIP: " + line);
+          continue;
+        }
+        if (!icd11Scope.contains(map.getTargetCode())) {
+          skipCt++;
+          Logger.getLogger(getClass()).debug("SKIP: " + line);
+          continue;
+        }
+        final String code = fields[0]
+            .replaceAll("http\\:\\/\\/id.who.int\\/icd\\/entity\\/", "");
+        if (!icd10To11.containsKey(code)) {
+          icd10To11.put(code, new HashSet<WhoMap>());
+        }
+        icd10To11.get(code).add(map);
+        if (ct < sampleCt) {
+          Logger.getLogger(getClass())
+              .debug(code + " => " + icd10To11.get(code));
+        }
+        ct++;
+      }
+      Logger.getLogger(getClass()).info("   ct = " + ct);
+      Logger.getLogger(getClass()).info("   skipCt =  " + skipCt);
 
       //
       // 10To11MapToMultipleCategories.txt - HEADER
@@ -508,29 +397,31 @@ public class ComputeIcd11Map {
       ct = 0;
       skipCt = 0;
       for (final String line : lines) {
-        final String[] fields = line.split("\\t");
+        final String[] fields = line.split("\\|");
+        final WhoMap map = new WhoMap(line);
         // Skip header (no skipCt++
         if (fields[0].equals("10ClassKind")) {
           // skipCt++;
           continue;
         } // Skip if "No Mapping"
-        final WhoMap map = new WhoMap(line);
-        final String code = map.getCode();
-
+        if (fields[4].equals("No Mapping")) {
+          skipCt++;
+          Logger.getLogger(getClass()).debug("SKIP: " + line);
+          continue;
+        }
         // Skip cases where the code or target code are not in scope
         if (!icd10Scope.contains(map.getCode())) {
           skipCt++;
-          Logger.getLogger(getClass())
-              .debug("SKIP (scope " + map.getCode() + "): " + line);
+          Logger.getLogger(getClass()).debug("SKIP: " + line);
           continue;
         }
-        if (!map.getTargetCode().equals("No Mapping")
-            && !icd11Scope.contains(map.getTargetCode())) {
+        if (!icd11Scope.contains(map.getTargetCode())) {
           skipCt++;
-          Logger.getLogger(getClass())
-              .debug("SKIP (scope " + map.getTargetCode() + "): " + line);
+          Logger.getLogger(getClass()).debug("SKIP: " + line);
           continue;
         }
+        final String code = fields[0]
+            .replaceAll("http\\:\\/\\/id.who.int\\/icd\\/entity\\/", "");
         if (!icd10To11.containsKey(code)) {
           icd10To11.put(code, new HashSet<WhoMap>());
         }
@@ -555,29 +446,32 @@ public class ComputeIcd11Map {
       ct = 0;
       skipCt = 0;
       for (final String line : lines) {
-        final String[] fields = line.split("\\t");
+        final String[] fields = line.split("\\|");
         // Skip header (no skipCt++
         if (fields[0].equals("icd11Id")) {
           // skipCt++;
+          Logger.getLogger(getClass()).debug("SKIP: " + line);
+          continue;
+        }
+        // Skip if "No Mapping"
+        if (fields[3].equals("No Mapping")) {
+          skipCt++;
+          Logger.getLogger(getClass()).debug("SKIP: " + line);
           continue;
         }
 
         final WhoMap map = new WhoMap(line);
-        final String code = map.getCode();
         // Skip cases where the code or target code are not in scope
         if (!icd11Scope.contains(map.getCode())) {
           skipCt++;
-          Logger.getLogger(getClass())
-              .debug("SKIP (scope " + map.getCode() + "): " + line);
           continue;
         }
-        if (!map.getTargetCode().equals("No Mapping")
-            && !icd10Scope.contains(map.getTargetCode())) {
+        if (!icd10Scope.contains(map.getTargetCode())) {
           skipCt++;
-          Logger.getLogger(getClass())
-              .debug("SKIP (scope " + map.getTargetCode() + "): " + line);
           continue;
         }
+        final String code = fields[3]
+            .replaceAll("http\\:\\/\\/id.who.int\\/icd\\/entity\\/", "");
         if (!icd11To10Reverse.containsKey(code)) {
           icd11To10Reverse.put(code, new HashSet<WhoMap>());
         }
@@ -595,470 +489,32 @@ public class ComputeIcd11Map {
       // PROCESSING
       //
 
-      // Tracking vars
       final String refsetId = "icd11RefsetId";
       final String moduleId = "icd11ModuleId";
-      final Map<String, List<IcdMap>> icd11Map = new TreeMap<>();
-      final Map<String, String> icd11MapNotes = new TreeMap<>();
+      final Map<String, List<IcdMap>> icd11Map = new HashMap<>();
+      final Map<String, String> icd11MapNotes = new HashMap<>();
 
       //
-      // Reverse sort SNOMED concepts by max depth (e.g. top-down search)
+      // Iterate through SNOMED concepts (in reverse max depth order)
       //
       Collections.sort(sctScope, new Comparator<String>() {
-
-        /* see superclass */
         @Override
         public int compare(String c1, String c2) {
-          // Sort by thing with most descendants first
-          int ct1 = 0;
-          if (sctAncDesc.containsKey(c1)) {
-            ct1 = sctAncDesc.get(c1).size();
-          }
-          int ct2 = 0;
-          if (sctAncDesc.containsKey(c2)) {
-            ct2 = sctAncDesc.get(c2).size();
-          }
-
-          return ct2 - ct1;
+          return getMaxDepth(c2, sctAncDesc) - getMaxDepth(c1, sctAncDesc);
         }
       });
-      // Verify
-      Logger.getLogger(getClass()).info("   SORT (top) = " + sctScope.get(0));
-      Logger.getLogger(getClass()).info("   SORT (top) = " + sctScope.get(1));
-      Logger.getLogger(getClass())
-          .info("   SORT (leaf) = " + sctScope.get(sctScope.size() - 2));
-      Logger.getLogger(getClass())
-          .info("   SORT (leaf) = " + sctScope.get(sctScope.size() - 1));
 
-      // Write maps
-      final PrintWriter mapOut =
-          new PrintWriter(new FileWriter(new File(icd11Dir, "icd11Map.txt")));
-      final PrintWriter notesOut = new PrintWriter(
-          new FileWriter(new File(icd11Dir, "icd11MapNotes.txt")));
-      final PrintWriter statsOut = new PrintWriter(
-          new FileWriter(new File(icd11Dir, "icd11MapStats.txt")));
-      final int[] stats = new int[5];
+      // Go through SNOMED concepts now in depth-first order
+      // This is so that subsequent lookups can determine the mapping of a
+      // parent
 
-      // Iterate through SNOMED concepts in sorted orde
-      int sctidCt = 0;
+      // For 10-11 maps
+      // Equivalent (highest)
+      // Subclass (higher)
+      // Relation (medium)
 
-      for (final String sctid : sctScope) {
-        // skip header
-        if (sctid.equals("referencedComponentId")) {
-          continue;
-        }
-        // initialize category
-        int category = 0;
-        sctidCt++;
-        Logger.getLogger(getClass()).info("------------------------------");
-        Logger.getLogger(getClass())
-            .info("SCTID = " + sctid + " " + sctConcepts.get(sctid));
-
-        // Prep maps for this SNOMED concept
-        icd11Map.put(sctid, new ArrayList<IcdMap>());
-
-        // for each ICD10 map, consider an ICD11 map.
-        // NOTE: we could probably do more here by paying attention to
-        // first/second maps
-        for (final IcdMap map10 : icd10Map.get(sctid)) {
-
-          // Initialize map (copy advices, etc.), default category
-          final IcdMap map11 = new IcdMap(map10);
-          map11.setMapCategoryId("447637006");
-
-          // Get the ICD10 code
-          final String icd10Code = map10.getMapTarget();
-          final String icd10Name = icd10Code.equals("") ? "No Mapping"
-              : icd10Concepts.get(map10.getMapTarget());
-          Logger.getLogger(getClass()).info(
-              "  ICD10 Map = " + icd10Code + ", " + icd10Name + ", " + map10);
-
-          // RULE 0 - "no mapping"
-          final RuleDetails rule0 = new RuleDetails(0);
-          if (icd10Code.equals("")) {
-            rule0.addNcScore(1);
-          }
-
-          // RULE1 - David Robinson's map
-          // Any match is a good match and will be factored in score calculation
-          // later.
-          final RuleDetails rule1 = new RuleDetails(1);
-          if (sctIcd11Equivalence.containsKey(sctid)) {
-            rule1.addScore(sctIcd11Equivalence.get(sctid), 5.0);
-            rule1.appendType(sctIcd11Equivalence.get(sctid),
-                sctIcd11EquivalenceType.get(sctid));
-          }
-
-          // RULE2 - the 10-11 equivalence map
-          final RuleDetails rule2 = new RuleDetails(2);
-          if (icd10To11.containsKey(map10.getMapTarget())) {
-            // Equivalent = 100%
-            // InterSects
-            // PotentialIntersect
-            // StatementDistance
-            // Subclass
-            // Superclass
-            for (final WhoMap map : icd10To11.get(map10.getMapTarget())) {
-              final String code = map.getTargetCode();
-              if (code.equals("No Mapping")) {
-                rule2.addNcScore(1);
-              } else if (map.getRelation().equals("Equivalent")) {
-                rule2.addScore(code, 2.0);
-                rule2.appendType(code, "Equivalent");
-              } else {
-                rule2.addScore(code, 0.75);
-                rule2.appendType(code, map.getRelation());
-              }
-            }
-          }
-          if (icd11To10Reverse.containsKey(map10.getMapTarget())) {
-            // stated = 100%
-            for (final WhoMap map : icd11To10Reverse
-                .get(map10.getMapTarget())) {
-              final String code = map.getTargetCode();
-              if (code.equals("No Mapping")) {
-                rule2.addNcScore(1);
-              } else if (map.isStated()) {
-                rule2.addScore(code, 1.0);
-                rule2.appendType(code, "stated");
-              }
-            }
-          }
-
-          // RULE3 - Lexical Match
-          final RuleDetails rule3 = new RuleDetails(3);
-          if (sctIcd11Lexical.containsKey(sctid)) {
-            for (final Score score : sctIcd11Lexical.get(sctid)) {
-              final String code = score.getCode();
-              // skip low scores
-              if (score.getScore() < 5) {
-                continue;
-              }
-              // bump high scores
-              else if (score.getScore() > 12) {
-                rule3.addScore(code, 2.0);
-                rule3.appendType(code, "EXACT PT");
-              } else if (score.getScore() > 10) {
-                rule3.addScore(code, 1.5);
-                rule3.appendType(code, "EXACT");
-              }
-              // handle other scores
-              else {
-                rule3.addScore(code, score.getScore() / 10.0);
-                rule3.appendType(code, "MATCH");
-              }
-            }
-          }
-          // RULE4 - Matching parent map
-          final RuleDetails rule4 = new RuleDetails(4);
-          // All parents should have maps at this point.
-          if (sctChdPar.containsKey(sctid)) {
-            for (final String par : sctChdPar.get(sctid)) {
-              if (!icd11Map.containsKey(par)) {
-                // should be top-level things
-                Logger.getLogger(getClass()).warn(sctid + " without PAR map "
-                    + par + " " + sctConcepts.get(par));
-                continue;
-              }
-              final Map<String, Integer> parentMaps = new HashMap<>();
-              int totalCt = 0;
-              for (final IcdMap map : icd11Map.get(par)) {
-                totalCt++;
-                final String code = map.getMapTarget();
-                if (!parentMaps.containsKey(code)) {
-                  parentMaps.put(code, 1);
-                } else {
-                  parentMaps.put(code, parentMaps.get(code) + 1);
-                }
-              }
-              for (final String code : parentMaps.keySet()) {
-                if (code.equals("")) {
-                  rule4.addNcScore((parentMaps.get(code) * 1.0) / totalCt);
-                  rule4.appendType(code, "NC");
-                } else {
-                  rule4.addScore(code, (parentMaps.get(code) * 1.0) / totalCt);
-                  rule4.appendType(code, parentMaps.get(code) + " PARENTS ");
-                }
-              }
-            }
-          }
-
-          // Determine category and targetId
-          String targetId = "UNKNOWN";
-          int localCategory = 0;
-          final Map<String, Double> candidates = new HashMap<>();
-
-          // Compute NC Score
-          final double ncScore = rule0.getNcScore() + rule1.getNcScore()
-              + rule2.getNcScore() + rule3.getNcScore() + rule0.getNcScore();
-          Logger.getLogger(getClass()).info("  NC SCORE = " + ncScore);
-          // If NC score is high enough, assign cateogry 4 and move on.
-          if (ncScore > 3.0) {
-            localCategory = NO_MAP;
-            category = NO_MAP;
-            targetId = "";
-            candidates.put(targetId, ncScore);
-            map11.setMapAdvice(
-                "MAP SOURCE CONCEPT CANNOT BE CLASSIFIED WITH AVAILABLE DATA");
-            map11.setMapCategoryId("447638001");
-          }
-
-          // Compute scores from the RuleDetails
-          else {
-            // Initialize all candidate scores at 0
-            for (final RuleDetails rule : new RuleDetails[] {
-                rule1, rule2, rule3, rule4
-            }) {
-              for (final String code : rule.getScoreMap().keySet()) {
-                candidates.put(code, 0.0);
-              }
-            }
-
-            // Calculate rule scores - ignore RULE0
-            // Add scores from RULES 1,2,3
-            for (final RuleDetails rule : new RuleDetails[] {
-                rule1, rule2, rule3
-            }) {
-              for (final String code : rule.getScoreMap().keySet()) {
-                double prevScore = candidates.get(code);
-                double score = rule.getScore(code);
-                candidates.put(code, score + prevScore);
-              }
-            }
-
-            // Calculate rule scores - ignore RULE0
-            // Boost rule4
-            for (final RuleDetails rule : new RuleDetails[] {
-                rule4
-            }) {
-              for (final String code : rule.getScoreMap().keySet()) {
-                if (candidates.containsKey(code)) {
-                  double prevScore = candidates.get(code);
-                  candidates.put(code, 1.5 * prevScore);
-                }
-                // check children of the rule4 code too, and boost those
-                // as well
-                if (icd11ParChd.containsKey(code)) {
-                  for (final String chd : icd11ParChd.get(code)) {
-                    if (candidates.containsKey(chd)) {
-                      double prevScore = candidates.get(chd);
-                      candidates.put(chd, 1.5 * prevScore);
-                    }
-                  }
-                }
-              }
-            }
-
-            // Find the max score (or the first one with that value)
-            double maxScore = 0.0;
-            for (final String code : candidates.keySet()) {
-              if (maxScore < candidates.get(code)) {
-                maxScore = candidates.get(code);
-              }
-            }
-            for (final String code : candidates.keySet()) {
-              if (candidates.get(code).equals(maxScore)) {
-                targetId = code;
-                break;
-              }
-            }
-
-            // If no scores, decide what to do - handles otherwise UNKNOWN
-            if (maxScore == 0 && ncScore == 0) {
-
-              // If ICD10 had no target,this is NO MAP
-              if (icd10Map.containsKey(sctid) && icd10Map.get(sctid).iterator()
-                  .next().getMapTarget().equals("")) {
-                localCategory = NO_MAP;
-                category = NO_MAP;
-                targetId = "";
-                candidates.put(targetId, ncScore);
-                map11.setMapAdvice(
-                    "MAP SOURCE CONCEPT CANNOT BE CLASSIFIED WITH AVAILABLE DATA");
-                map11.setMapCategoryId("447638001");
-              }
-
-              // Otherwise, it's "low" because there is probably something
-              else {
-                if (icd10Map.containsKey(sctid) && icd10Map.get(sctid)
-                    .iterator().next().getMapTarget().equals("")) {
-                  localCategory = LOW;
-                  if (category < localCategory) {
-                    category = LOW;
-                  }
-                  targetId = "";
-                  candidates.put(targetId, ncScore);
-                  map11.setMapAdvice(
-                      "MAP SOURCE CONCEPT CANNOT BE CLASSIFIED WITH AVAILABLE DATA");
-                  map11.setMapCategoryId("447638001");
-                }
-              }
-
-              // if NC is greater than max score, use NC
-            } else if (ncScore > maxScore) {
-              localCategory = NO_MAP;
-              category = NO_MAP;
-              targetId = "";
-              candidates.put(targetId, ncScore);
-              map11.setMapAdvice(
-                  "MAP SOURCE CONCEPT CANNOT BE CLASSIFIED WITH AVAILABLE DATA");
-              map11.setMapCategoryId("447638001");
-            } else {
-              // Determine category
-              if (maxScore >= 3.0) {
-                localCategory = HIGH;
-              } else if (maxScore < 1.5) {
-                localCategory = LOW;
-              } else {
-                localCategory = MEDIUM;
-              }
-
-              // determine whether this category is lower or higher than
-              // previous,
-              // because this is a stat for the whole concept
-              if (category == 0) {
-                category = localCategory;
-              } else {
-                category = Math.min(localCategory, category);
-              }
-              // Set map advice
-              if (map11.getMapAdvice().startsWith("ALWAYS")) {
-                map11.setMapAdvice(map11.getMapAdvice()
-                    .replaceAll("ALWAYS ([^\\s])+", "ALWAYS " + targetId));
-              } else {
-                map11.setMapAdvice("ALWAYS " + targetId);
-              }
-              map11.setMapCategoryId("447637006");
-            }
-          }
-
-          map11.setMapTarget(targetId);
-
-          // add map here
-          icd11Map.get(sctid).add(map11);
-          // Assemble the note
-          final StringBuilder noteSb = new StringBuilder();
-          noteSb.append("\n");
-          if (category == LOW) {
-            noteSb.append("LOW");
-          }
-          if (category == MEDIUM) {
-            noteSb.append("MEDIUM");
-          }
-          if (category == HIGH) {
-            noteSb.append("HIGH");
-          }
-          if (category == NO_MAP) {
-            noteSb.append("NO MAP");
-          }
-          noteSb.append(": ").append(" (").append(candidates.get(targetId))
-              .append(") ").append(targetId).append(" ")
-              .append(icd11Concepts.get(targetId)).append("\n");
-          boolean first = false;
-          for (final String other : candidates.keySet()) {
-            if (other.equals(targetId)) {
-              continue;
-            }
-            if (!first) {
-              noteSb.append("  Candidates: ");
-              first = true;
-            } else {
-              noteSb.append("              ");
-            }
-            noteSb.append("(").append(candidates.get(other)).append(") ")
-                .append(other).append(" ");
-            if (!other.equals("No Mapping")) {
-              noteSb.append(icd11Concepts.get(other));
-            }
-            noteSb.append("\n");
-          }
-          for (final RuleDetails rule : new RuleDetails[] {
-              rule0, rule1, rule2, rule3, rule4
-          }) {
-            if (rule.hasCandidates()) {
-              noteSb.append(rule.toNote(icd11Concepts));
-            }
-          }
-          icd11MapNotes.put(sctid, noteSb.toString().replaceAll("\\n", "<br>"));
-          Logger.getLogger(getClass()).info(noteSb.toString());
-
-          // If we encountered a NOMAP, go to the next
-          if (category == NO_MAP) {
-            break;
-          }
-        }
-
-        // Increment the category for this concept
-        stats[category]++;
-
-      }
-
-      Logger.getLogger(getClass()).info("------------------------------------");
-      Logger.getLogger(getClass()).info("STATS");
-      Logger.getLogger(getClass()).info("------------------------------------");
-      Logger.getLogger(getClass()).info("TOTAL = " + sctidCt);
-      Logger.getLogger(getClass()).info("HIGH = " + stats[HIGH]);
-      Logger.getLogger(getClass()).info("MEDIUM = " + stats[MEDIUM]);
-      Logger.getLogger(getClass()).info("LOW = " + stats[LOW]);
-      Logger.getLogger(getClass()).info("NO MAP = " + stats[NO_MAP]);
-      statsOut.println("TOTAL = " + sctidCt);
-      statsOut.println("HIGH = " + stats[HIGH]);
-      statsOut.println("MEDIUM = " + stats[MEDIUM]);
-      statsOut.println("LOW = " + stats[LOW]);
-      statsOut.println("NO MAP = " + stats[NO_MAP]);
-      statsOut.close();
-
-      // Write icd11Map.txt - head er
-      mapOut.print(
-          "id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tmapGroup\t"
-              + "mapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId\tmapCategoryId\r\n");
-      // Write icd11Map.txt - data
-      for (final String sctid : icd11Map.keySet()) {
-        for (final IcdMap map : icd11Map.get(sctid)) {
-          final StringBuilder sb = new StringBuilder();
-          sb.append(UUID.randomUUID().toString()).append("\t");
-          sb.append("20170401\t1\t");
-          sb.append(moduleId).append("\t");
-          sb.append(refsetId).append("\t");
-          sb.append(sctid).append("\t");
-          sb.append(map.getMapGroup()).append("\t");
-          sb.append(map.getMapPriority()).append("\t");
-          sb.append(map.getMapRule()).append("\t");
-          sb.append(map.getMapAdvice()).append("\t");
-          sb.append(map.getMapTarget()).append("\t");
-          sb.append("447561005\t");
-          sb.append(map.getMapCategoryId()).append("\t");
-          sb.append("\r\n");
-          mapOut.print(sb.toString());
-        }
-      }
-      // private String conceptId;
-      //
-      // /** The map group. */
-      // private int mapGroup;
-      //
-      // /** The map priority. */
-      // private int mapPriority;
-      //
-      // /** The map rule. */
-      // private String mapRule;
-      //
-      // /** The map advice. */
-      // private String mapAdvice;
-      //
-      // /** The map target. */
-      // private String mapTarget;
-      //
-      // /** The map category id. */
-      // private String mapCategoryId;
-      // Write icd11MapNotes.txt - header
-      notesOut.print(
-          "id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\tfullySpecifiedName\tannotation\r\n");
-
-      // Write icd11MapNotes.txt - data
-
-      mapOut.close();
-      notesOut.close();
+      // For 11-10 maps
+      // stated = true (higher)
 
       Logger.getLogger(getClass()).info("Finished compute ICD11");
 
@@ -1081,21 +537,18 @@ public class ComputeIcd11Map {
    * @param sctAncDesc the sct anc desc
    * @return the max depth
    */
-  // @SuppressWarnings("static-method")
-  // private int getMaxDepth(String cid, Map<String, Set<Depth>> sctAncDesc) {
-  // final Set<Depth> depths = sctAncDesc.get(cid);
-  // if (depths == null) {
-  // return 0;
-  // }
-  // int maxDepth = 0;
-  // for (final Depth depth : depths) {
-  // if (depth.getDepth() > maxDepth) {
-  // maxDepth = depth.getDepth();
-  // }
-  // }
-  // // a max depth of 0 is a leaf node, something with no children.
-  // return maxDepth;
-  // }
+  @SuppressWarnings("static-method")
+  public int getMaxDepth(String cid, Map<String, Set<Depth>> sctAncDesc) {
+    final Set<Depth> depths = sctAncDesc.get(cid);
+    int maxDepth = 0;
+    for (final Depth depth : depths) {
+      if (depth.getDepth() > maxDepth) {
+        maxDepth = depth.getDepth();
+      }
+    }
+    // a max depth of 0 is a leaf node, something with no children.
+    return maxDepth;
+  }
 
   /**
    * Teardown class.
@@ -1266,35 +719,26 @@ public class ComputeIcd11Map {
    */
   class WhoMap {
 
+    /** The id. */
+    private String id;
+
     /** The kind. */
     private String kind;
-
-    /** The depth in kind. */
-    private int depthInKind;
 
     /** The code. */
     private String code;
 
-    /** The chapter. */
-    private String chapter;
-
     /** The name. */
     private String name;
+
+    /** The target id. */
+    private String targetId;
 
     /** The target kind. */
     private String targetKind;
 
-    /** The target depth in kind. */
-    private int targetDepthInKind;
-
     /** The target code. */
     private String targetCode;
-
-    /** The target chapter. */
-    private String targetChapter;
-
-    /** The chapter match. */
-    private boolean chapterMatch = false;
 
     /** The target name. */
     private String targetName;
@@ -1307,18 +751,6 @@ public class ComputeIcd11Map {
 
     /** The issue type. */
     private String issueType;
-
-    /** The match type. */
-    private String matchType;
-
-    // 5128 EquivalentMatch
-    // 1 Match Type
-    // 302 MatchElseWhere
-    // 92 NoMapping
-    // 546 NoMappingDueToMaptoGroupingWithoutResidual
-    // 2279 ToBroaderInTheSame3Char
-    // 1792 ToBroaderInTheSameBlock
-    // 2344 ToBroaderInTheSameChapter
 
     /** The states. */
     private boolean stated;
@@ -1338,79 +770,77 @@ public class ComputeIcd11Map {
      */
     public WhoMap(String line) throws Exception {
       final String[] fields = line.split("\\t");
-      if (fields.length == 17 || fields.length == 18 || fields.length == 15) {
+      if (fields.length == 12 || fields.length == 11) {
         // 0 - 10ClassKind
-        // 1 - 10DepthInKind
-        // 2 - icd10Code
-        // 3 - icd10Chapter
-        // 4 - icd10Title
-        // 5 - 11ClassKind
-        // 6 - 11DepthInKind
-        // 7 - icd11Id
-        // 8 - icd11Code
-        // 9 - icd11Chapter
-        // 10 - chapterMatch
-        // 11 - icd11Title
-        // 12 - Relation
-        // 13 - Linearization
-        // 14 - StatementDistance
-        // 15 - IssueType
-        // 16 - MatchType
-        // 17 - 2017-Mar-24
+        // 1 - icd10Code
+        // 2 - icd10Title
+        // 3 - 11ClassKind
+        // 4 - icd11Id
+        // 5 - icd11Code
+        // 6 - icd11Title
+        // 7 - Relation
+        // 8 - Linearization
+        // 9 - StatementDistance
+        // 10 - IssueType
+        // 11 - 2015-May-31
         kind = fields[0];
-        depthInKind = Integer.parseInt(fields[1]);
-        code = fields[2].replaceAll("http\\:\\/\\/id.who.int\\/icd\\/entity\\/",
+        code = fields[1].replaceAll("http\\:\\/\\/id.who.int\\/icd\\/entity\\/",
             "");
-        chapter = fields[3];
-        name = fields[4];
-        targetKind = fields[5];
-        targetCode = fields[7]
+        name = fields[2];
+        targetKind = fields[3];
+        targetId = fields[4]
             .replaceAll("http\\:\\/\\/id.who.int\\/icd\\/entity\\/", "");
-        if (!targetCode.equals("No Mapping")) {
-          targetDepthInKind = Integer.parseInt(fields[6]);
-          // skip fields[8]
-          targetChapter = fields[9];
-          chapterMatch = "True".equals(fields[10]);
-          targetName = fields[11];
-          relation = fields[12];
-          distance = fields[14];
-          issueType = "";
-          issueType = fields[15];
-          matchType = fields[16];
-        }
+        targetCode = fields[5]
+            .replaceAll("http\\:\\/\\/id.who.int\\/icd\\/entity\\/", "");
 
-      } else if (fields.length == 10 || fields.length == 11) {
+        targetName = fields[6];
+        relation = fields[7];
+        distance = fields[9];
+        issueType = fields[10];
+
+      } else if (fields.length == 8 || fields.length == 7) {
         // 0 - icd11Id
         // 1 - icd11Code
-        // 2 - icd11Chapter
-        // 3 - icd11Title
-        // 4 - icd10Code
-        // 5 - icd10Chapter
-        // 6 - chapterMatch
-        // 7 - icd10Title
-        // 8 - Relation
-        // 9 - Stated{0}|Deduced
-        // 10 - 2015-May-31
-        // http://id.who.int/icd/entity/588616678 01 Gastroenteritis and colitis
-        // of infectious origin A00-A09 I True Intestinal infectious diseases
-        // Equival
-        code = fields[0].replaceAll("http\\:\\/\\/id.who.int\\/icd\\/entity\\/",
+        // 2 - icd11Title
+        // 3 - icd10Code
+        // 4 - icd10Title
+        // 5 - Relation
+        // 6 - Stated{0}|Deduced
+        // 7 - 2015-May-31
+        // http://id.who.int/icd/entity/434814373 Infections due to Bacteria No
+        // Mapping -1
+        id = fields[0].replaceAll("http\\:\\/\\/id.who.int\\/icd\\/entity\\/",
             "");
-        // skip fields[1]
-        chapter = fields[2];
-        name = fields[3];
-        targetCode = fields[4]
+        code = fields[1];
+        name = fields[2];
+        targetCode = fields[3]
             .replaceAll("http\\:\\/\\/id.who.int\\/icd\\/entity\\/", "");
 
-        targetChapter = fields[5];
-        chapterMatch = "True".equals(fields[6]);
-        targetName = fields[7];
-        relation = fields[8];
-        stated = fields[9].equals("0");
+        targetName = fields[4];
+        relation = fields[5];
+        stated = fields[6].equals("0");
       } else {
         throw new Exception(
             "Unexpected number of fields - " + fields.length + ", " + line);
       }
+    }
+
+    /**
+     * Returns the id.
+     *
+     * @return the id
+     */
+    public String getId() {
+      return id;
+    }
+
+    /**
+     * Sets the id.
+     *
+     * @param id the id
+     */
+    public void setId(String id) {
+      this.id = id;
     }
 
     /**
@@ -1465,6 +895,24 @@ public class ComputeIcd11Map {
      */
     public void setName(String name) {
       this.name = name;
+    }
+
+    /**
+     * Returns the target id.
+     *
+     * @return the target id
+     */
+    public String getTargetId() {
+      return targetId;
+    }
+
+    /**
+     * Sets the target id.
+     *
+     * @param targetId the target id
+     */
+    public void setTargetId(String targetId) {
+      this.targetId = targetId;
     }
 
     /**
@@ -1596,121 +1044,11 @@ public class ComputeIcd11Map {
     /* see superclass */
     @Override
     public String toString() {
-      return "WhoMap [kind=" + kind + ", depthInKind=" + depthInKind + ", code="
-          + code + ", chapter=" + chapter + ", name=" + name + ", targetKind="
-          + targetKind + ", targetDepthInKind=" + targetDepthInKind
-          + ", targetCode=" + targetCode + ", targetChapter=" + targetChapter
-          + ", chapterMatch=" + chapterMatch + ", targetName=" + targetName
-          + ", relation=" + relation + ", distance=" + distance + ", issueType="
-          + issueType + ", matchType=" + matchType + ", stated=" + stated + "]";
-    }
-
-    /**
-     * Returns the depth in kind.
-     *
-     * @return the depth in kind
-     */
-    public int getDepthInKind() {
-      return depthInKind;
-    }
-
-    /**
-     * Sets the depth in kind.
-     *
-     * @param depthInKind the depth in kind
-     */
-    public void setDepthInKind(int depthInKind) {
-      this.depthInKind = depthInKind;
-    }
-
-    /**
-     * Returns the chapter.
-     *
-     * @return the chapter
-     */
-    public String getChapter() {
-      return chapter;
-    }
-
-    /**
-     * Sets the chapter.
-     *
-     * @param chapter the chapter
-     */
-    public void setChapter(String chapter) {
-      this.chapter = chapter;
-    }
-
-    /**
-     * Returns the target depth in kind.
-     *
-     * @return the target depth in kind
-     */
-    public int getTargetDepthInKind() {
-      return targetDepthInKind;
-    }
-
-    /**
-     * Sets the target depth in kind.
-     *
-     * @param targetDepthInKind the target depth in kind
-     */
-    public void setTargetDepthInKind(int targetDepthInKind) {
-      this.targetDepthInKind = targetDepthInKind;
-    }
-
-    /**
-     * Returns the target chapter.
-     *
-     * @return the target chapter
-     */
-    public String getTargetChapter() {
-      return targetChapter;
-    }
-
-    /**
-     * Sets the target chapter.
-     *
-     * @param targetChapter the target chapter
-     */
-    public void setTargetChapter(String targetChapter) {
-      this.targetChapter = targetChapter;
-    }
-
-    /**
-     * Indicates whether or not chapter match is the case.
-     *
-     * @return <code>true</code> if so, <code>false</code> otherwise
-     */
-    public boolean isChapterMatch() {
-      return chapterMatch;
-    }
-
-    /**
-     * Sets the chapter match.
-     *
-     * @param chapterMatch the chapter match
-     */
-    public void setChapterMatch(boolean chapterMatch) {
-      this.chapterMatch = chapterMatch;
-    }
-
-    /**
-     * Returns the match type.
-     *
-     * @return the match type
-     */
-    public String getMatchType() {
-      return matchType;
-    }
-
-    /**
-     * Sets the match type.
-     *
-     * @param matchType the match type
-     */
-    public void setMatchType(String matchType) {
-      this.matchType = matchType;
+      return "WhoMap [id=" + id + ", kind=" + kind + ", code=" + code
+          + ", name=" + name + ", targetId=" + targetId + ", targetKind="
+          + targetKind + ", targetCode=" + targetCode + ", targetName="
+          + targetName + ", relation=" + relation + ", distance=" + distance
+          + ", issueType=" + issueType + ", stated=" + stated + "]";
     }
   }
 
@@ -1718,9 +1056,6 @@ public class ComputeIcd11Map {
    * The Class IcdMap.
    */
   class IcdMap {
-
-    /** The concept id. */
-    private String conceptId;
 
     /** The map group. */
     private int mapGroup;
@@ -1749,37 +1084,21 @@ public class ComputeIcd11Map {
     /**
      * Instantiates a {@link IcdMap} from the specified parameters.
      *
-     * @param line the line
+     * @param mapGroup the map group
+     * @param mapPriority the map priority
+     * @param mapRule the map rule
+     * @param mapAdvice the map advice
+     * @param mapTarget the map target
+     * @param mapCategoryId the map category id
      */
-    public IcdMap(String line) {
-      // id effectiveTime active moduleId refsetId referencedComponentId
-      // mapGroup mapPriority mapRule mapAdvice mapTarget correlationId
-      // mapCorrelationId
-      final String[] fields = line.split("\\t");
-      this.mapGroup = Integer.valueOf(fields[6]);
-      this.mapPriority = Integer.valueOf(fields[7]);
-      this.mapRule = fields[8];
-      this.mapAdvice = fields[9];
-      // fields[9].replaceAll("ALWAYS [A-Z\\.0-9]+( \\|)?", "").replace(
-      // "MAP SOURCE CONCEPT CANNOT BE CLASSIFIED WITH AVAILABLE DATA",
-      // "");
-      this.mapTarget = fields[10];
-      this.mapCategoryId = fields[12];
-    }
-
-    /**
-     * Instantiates a {@link IcdMap} from the specified parameters.
-     *
-     * @param copy the copy
-     */
-    public IcdMap(IcdMap copy) {
-      mapGroup = copy.getMapGroup();
-      mapPriority = copy.getMapPriority();
-      mapRule = copy.getMapRule();
-      mapAdvice = copy.getMapAdvice();
-      mapTarget = copy.getMapTarget();
-      mapCategoryId = copy.getMapCategoryId();
-      conceptId = copy.getConceptId();
+    public IcdMap(int mapGroup, int mapPriority, String mapRule,
+        String mapAdvice, String mapTarget, String mapCategoryId) {
+      this.mapGroup = mapGroup;
+      this.mapPriority = mapPriority;
+      this.mapRule = mapRule;
+      this.mapAdvice = mapAdvice;
+      this.mapTarget = mapTarget;
+      this.mapCategoryId = mapCategoryId;
     }
 
     /**
@@ -1897,214 +1216,5 @@ public class ComputeIcd11Map {
           + ", mapRule=" + mapRule + ", mapAdvice=" + mapAdvice + ", mapTarget="
           + mapTarget + ", mapCategoryId=" + mapCategoryId + "]";
     }
-
-    /**
-     * Returns the concept id.
-     *
-     * @return the concept id
-     */
-    public String getConceptId() {
-      return conceptId;
-    }
-
-    /**
-     * Sets the concept id.
-     *
-     * @param conceptId the concept id
-     */
-    public void setConceptId(String conceptId) {
-      this.conceptId = conceptId;
-    }
   }
-
-  /**
-   * Class for representing rule details.
-   */
-  class RuleDetails {
-
-    /** The number. */
-    private int number;
-
-    /** The nc score. */
-    private double ncScore = 0;
-
-    /** The score map. */
-    private Map<String, Double> scoreMap = new HashMap<>(5);
-
-    /** The type map. */
-    private Map<String, String> typeMap = new HashMap<>(5);
-
-    /**
-     * Instantiates an empty {@link RuleDetails}.
-     *
-     * @param number the number
-     */
-    public RuleDetails(int number) {
-      this.number = number;
-    }
-
-    /**
-     * Returns the number.
-     *
-     * @return the number
-     */
-    public int getNumber() {
-      return number;
-    }
-
-    /**
-     * Sets the number.
-     *
-     * @param number the number
-     */
-    public void setNumber(int number) {
-      this.number = number;
-    }
-
-    /**
-     * Returns the score map.
-     *
-     * @return the score map
-     */
-    public Map<String, Double> getScoreMap() {
-      return scoreMap;
-    }
-
-    /**
-     * Sets the score map.
-     *
-     * @param scoreMap the score map
-     */
-    public void setScoreMap(Map<String, Double> scoreMap) {
-      this.scoreMap = scoreMap;
-    }
-
-    /**
-     * Adds the score.
-     *
-     * @param code the code
-     * @param score the score
-     */
-    public void addScore(String code, Double score) {
-      if (!scoreMap.containsKey(code)) {
-        scoreMap.put(code, score);
-      } else {
-        scoreMap.put(code, score + scoreMap.get(code));
-      }
-    }
-
-    /**
-     * Returns the score.
-     *
-     * @param code the code
-     * @return the score
-     */
-    public double getScore(String code) {
-      if (!scoreMap.containsKey(code)) {
-        return 0.0;
-      } else {
-        return scoreMap.get(code);
-      }
-    }
-
-    /**
-     * Returns the type map.
-     *
-     * @return the type map
-     */
-    public Map<String, String> getTypeMap() {
-      return typeMap;
-    }
-
-    /**
-     * Sets the type map.
-     *
-     * @param typeMap the type map
-     */
-    public void setTypeMap(Map<String, String> typeMap) {
-      this.typeMap = typeMap;
-    }
-
-    /**
-     * Append type.
-     *
-     * @param code the code
-     * @param type the type
-     */
-    public void appendType(String code, String type) {
-      if (!typeMap.containsKey(code)) {
-        typeMap.put(code, type);
-      } else {
-        typeMap.put(code, typeMap.get(code) + ", " + type);
-      }
-    }
-
-    /**
-     * Returns the nc score.
-     *
-     * @return the nc score
-     */
-    public double getNcScore() {
-      return ncScore;
-    }
-
-    /**
-     * Sets the nc score.
-     *
-     * @param ncScore the nc score
-     */
-    public void setNcScore(double ncScore) {
-      this.ncScore = ncScore;
-    }
-
-    /**
-     * Adds the nc score.
-     *
-     * @param ncScore the nc score
-     */
-    public void addNcScore(double ncScore) {
-      this.ncScore += ncScore;
-    }
-
-    /**
-     * Checks for candidates.
-     *
-     * @return true, if successful
-     */
-    public boolean hasCandidates() {
-      return scoreMap.size() > 0;
-    }
-
-    /**
-     * To note.
-     *
-     * @param icd11Concepts the icd 11 concepts
-     * @return the string
-     */
-    public String toNote(Map<String, String> icd11Concepts) {
-      // RULE1: 1 matches
-      // 1.0 1359329403/.9 Other specified disorders of the sleep-wake schedule
-      //
-      // RULE2: 2 matches
-      // MATCH 0.8 - 2142880493/.8 Risk factors related to personal history of
-      // other specified health problems
-      // MATCH 1.0 - 1359329403/.9 Other specified disorders of the sleep-wake
-      // schedule
-      final StringBuilder sb = new StringBuilder();
-      sb.append("RULE" + number + ": " + scoreMap.size() + " matches\n");
-      for (final String key : scoreMap.keySet()) {
-        sb.append("  ");
-        if (typeMap.containsKey(key)) {
-          sb.append(typeMap.get(key)).append(" (").append(scoreMap.get(key))
-              .append(") ").append(key).append(" ");
-        } else {
-          sb.append(scoreMap.get(key)).append(" ").append(key).append(" ");
-        }
-        sb.append(icd11Concepts.get(key)).append("\n");
-      }
-      return sb.toString();
-    }
-
-  }
-
 }

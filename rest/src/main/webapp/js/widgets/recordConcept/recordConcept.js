@@ -146,6 +146,7 @@ angular
         }).error(function(data, status, headers, config) {
           $rootScope.handleHttpError(data, status, headers, config);
         }).then(function() {
+
           $scope.getRecordsForConceptHistorical();
 
           // check relation style flags
