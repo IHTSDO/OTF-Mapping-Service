@@ -43,7 +43,7 @@ import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
  * 
  * @goal load-rf2-delta
  * 
- * @phase package
+ * @phase package ***
  */
 public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
@@ -349,12 +349,14 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     // Previous computation of terminology version is based on file name
     // but for delta/daily build files, this is not the current version
     // look up the current version instead
-    final MetadataService metadataService = new MetadataServiceJpa();
-    version = metadataService.getLatestVersion(terminology);
     if (version == null) {
-      throw new Exception("Unable to determine terminology version.");
+      final MetadataService metadataService = new MetadataServiceJpa();
+      version = metadataService.getLatestVersion(terminology);
+      if (version == null) {
+        throw new Exception("Unable to determine terminology version.");
+      }
+      metadataService.close();
     }
-    metadataService.close();
 
     // set the parameters for determining defaultPreferredNames
     String prop = config.getProperty("loader.defaultPreferredNames.typeId");
@@ -526,7 +528,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
         // Track all delta concept ids so we can properly remove concepts later.
         deltaConceptIds.add(fields[0]);
-        recomputePnConceptIds.add(fields[0]);
 
         // Setup delta concept (either new or based on existing one)
         Concept newConcept = null;
@@ -549,6 +550,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
         // If concept is new, add it
         if (concept == null) {
           getLog().info("        add concept " + newConcept.getTerminologyId());
+          recomputePnConceptIds.add(fields[0]);
           contentService.addConcept(newConcept);
           objectsAdded++;
         }
@@ -557,6 +559,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
         else if (!newConcept.equals(concept)) {
           getLog()
               .info("        update concept " + newConcept.getTerminologyId());
+          recomputePnConceptIds.add(fields[0]);
           contentService.updateConcept(newConcept);
           objectsUpdated++;
         }
@@ -613,8 +616,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
           concept = contentService.getConcept(fields[4], terminology, version);
         }
 
-        recomputePnConceptIds.add(fields[4]);
-
         // if the concept is not null
         if (concept != null) {
 
@@ -665,6 +666,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
           if (description == null) {
             getLog().info(
                 "        add description " + newDescription.getTerminologyId());
+            recomputePnConceptIds.add(fields[4]);
             contentService.addDescription(newDescription);
             cacheDescription(newDescription);
             objectsAdded++;
@@ -674,6 +676,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
           else if (!newDescription.equals(description)) {
             getLog().info("        update description "
                 + newDescription.getTerminologyId());
+            recomputePnConceptIds.add(fields[4]);
             contentService.updateDescription(newDescription);
             cacheDescription(newDescription);
             objectsUpdated++;
@@ -754,9 +757,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
         }
 
-        // add to recompute pn
-        recomputePnConceptIds.add(description.getConcept().getTerminologyId());
-
         // Cache concept and description
         cacheConcept(concept);
         cacheDescription(description);
@@ -807,6 +807,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
         if (languageRefSetMember == null) {
           getLog().info("        add language "
               + newLanguageRefSetMember.getTerminologyId());
+          recomputePnConceptIds.add(description.getConcept().getTerminologyId());
           contentService.addLanguageRefSetMember(newLanguageRefSetMember);
           cacheLanguageRefSetMember(newLanguageRefSetMember);
           objectsAdded++;
@@ -816,6 +817,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
         else if (!newLanguageRefSetMember.equals(languageRefSetMember)) {
           getLog().info("        update language "
               + newLanguageRefSetMember.getTerminologyId());
+          recomputePnConceptIds.add(description.getConcept().getTerminologyId());
           contentService.updateLanguageRefSetMember(newLanguageRefSetMember);
           cacheLanguageRefSetMember(newLanguageRefSetMember);
           objectsUpdated++;
@@ -1014,7 +1016,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
         getLog().info("  Checking description " + description.getTerminologyId()
             + ", active = " + description.isActive() + ", typeId = "
             + description.getTypeId());
-        // If active andn preferred type
+        // If active and preferred type
         if (description.isActive()
             && description.getTypeId().equals(dpnTypeId)) {
 
