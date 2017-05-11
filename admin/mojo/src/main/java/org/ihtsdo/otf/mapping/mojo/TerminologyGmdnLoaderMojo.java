@@ -140,26 +140,29 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
 
       // Validate inputDir
       File termFile = null;
-      File collectivetermFile = null;
-      File cttreenodeFile = null;
-      File termcollectivetermFile = null;
+//      File collectivetermFile = null;
+//      File cttreenodeFile = null;
+//      File termcollectivetermFile = null;
       for (final File file : new File(inputDir).listFiles()) {
-        if (file.getName().contains("termcollectiveterm")) {
-          termcollectivetermFile = file;
-        } else if (file.getName().contains("collectiveterm")) {
-          collectivetermFile = file;
-        } else if (file.getName().contains("cttreenode")) {
-          cttreenodeFile = file;
-        } else if (file.getName().contains("term")) {
+//        if (file.getName().contains("termcollectiveterm")) {
+//          termcollectivetermFile = file;
+//        } else if (file.getName().contains("collectiveterm")) {
+//          collectivetermFile = file;
+//        } else if (file.getName().contains("cttreenode")) {
+//          cttreenodeFile = file;
+//        } else 
+        	if (file.getName().contains("gmdnData")) {
           termFile = file;
         }
       }
-      if (termFile == null || collectivetermFile == null
-          || cttreenodeFile == null || termcollectivetermFile == null) {
+      if (termFile == null
+//    		  || collectivetermFile == null
+//          || cttreenodeFile == null || termcollectivetermFile == null
+          ) {
         getLog().error("term = " + termFile);
-        getLog().error("collectiveterm = " + collectivetermFile);
-        getLog().error("termcollectiveterm = " + termcollectivetermFile);
-        getLog().error("cttreenode = " + cttreenodeFile);
+//        getLog().error("collectiveterm = " + collectivetermFile);
+//        getLog().error("termcollectiveterm = " + termcollectivetermFile);
+//        getLog().error("cttreenode = " + cttreenodeFile);
         throw new Exception("Input dir does not have all necessary files.");
       }
 
@@ -202,71 +205,71 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
       inputStream.close();
       reader.close();
 
-      //
-      // Parse the collectivetermVV_V.xml file
-      //
-
-      // Prep SAX parser
-      getLog().info("  Process collectiveterm file");
-      factory = SAXParserFactory.newInstance();
-      factory.setValidating(false);
-      saxParser = factory.newSAXParser();
-      handler = new CollectiveTermHandler();
-
-      // Open XML and begin parsing
-      fis = new FileInputStream(collectivetermFile);
-      inputStream = checkForBOM(fis);
-      reader = new InputStreamReader(inputStream, charSet);
-      is = new InputSource(reader);
-      is.setEncoding(charSet);
-      saxParser.parse(is, handler);
-      fis.close();
-      inputStream.close();
-      reader.close();
-
-      //
-      // Parse the termcollectivetermVV_V.xml file
-      //
-
-      // Prep SAX parser
-      getLog().info("  Process termcollectiveterm file");
-      factory = SAXParserFactory.newInstance();
-      factory.setValidating(false);
-      saxParser = factory.newSAXParser();
-      handler = new TermCollectiveTermHandler();
-
-      // Open XML and begin parsing
-      fis = new FileInputStream(termcollectivetermFile);
-      inputStream = checkForBOM(fis);
-      reader = new InputStreamReader(inputStream, charSet);
-      is = new InputSource(reader);
-      is.setEncoding(charSet);
-      saxParser.parse(is, handler);
-      fis.close();
-      inputStream.close();
-      reader.close();
-
-      //
-      // Parse the cttreenode.xml file
-      //
-
-      // Prep SAX parser
-      getLog().info("  Process cttreenode file");
-      factory = SAXParserFactory.newInstance();
-      factory.setValidating(false);
-      saxParser = factory.newSAXParser();
-      handler = new CtTreeNodeHandler();
-
-      // Open XML and begin parsing
-      fis = new FileInputStream(cttreenodeFile);
-      inputStream = checkForBOM(fis);
-      reader = new InputStreamReader(inputStream, charSet);
-      is = new InputSource(reader);
-      is.setEncoding(charSet);
-      saxParser.parse(is, handler);
-      fis.close();
-      inputStream.close();
-      reader.close();
+//      //
+//      // Parse the collectivetermVV_V.xml file
+//      //
+//
+//      // Prep SAX parser
+//      getLog().info("  Process collectiveterm file");
+//      factory = SAXParserFactory.newInstance();
+//      factory.setValidating(false);
+//      saxParser = factory.newSAXParser();
+//      handler = new CollectiveTermHandler();
+//
+//      // Open XML and begin parsing
+//      fis = new FileInputStream(collectivetermFile);
+//      inputStream = checkForBOM(fis);
+//      reader = new InputStreamReader(inputStream, charSet);
+//      is = new InputSource(reader);
+//      is.setEncoding(charSet);
+//      saxParser.parse(is, handler);
+//      fis.close();
+//      inputStream.close();
+//      reader.close();
+//
+//      //
+//      // Parse the termcollectivetermVV_V.xml file
+//      //
+//
+//      // Prep SAX parser
+//      getLog().info("  Process termcollectiveterm file");
+//      factory = SAXParserFactory.newInstance();
+//      factory.setValidating(false);
+//      saxParser = factory.newSAXParser();
+//      handler = new TermCollectiveTermHandler();
+//
+//      // Open XML and begin parsing
+//      fis = new FileInputStream(termcollectivetermFile);
+//      inputStream = checkForBOM(fis);
+//      reader = new InputStreamReader(inputStream, charSet);
+//      is = new InputSource(reader);
+//      is.setEncoding(charSet);
+//      saxParser.parse(is, handler);
+//      fis.close();
+//      inputStream.close();
+//      reader.close();
+//
+//      //
+//      // Parse the cttreenode.xml file
+//      //
+//
+//      // Prep SAX parser
+//      getLog().info("  Process cttreenode file");
+//      factory = SAXParserFactory.newInstance();
+//      factory.setValidating(false);
+//      saxParser = factory.newSAXParser();
+//      handler = new CtTreeNodeHandler();
+//
+//      // Open XML and begin parsing
+//      fis = new FileInputStream(cttreenodeFile);
+//      inputStream = checkForBOM(fis);
+//      reader = new InputStreamReader(inputStream, charSet);
+//      is = new InputSource(reader);
+//      is.setEncoding(charSet);
+//      saxParser.parse(is, handler);
+//      fis.close();
+//      inputStream.close();
+//      reader.close();
 
       // Commit when finished
       contentService.commit();
@@ -935,7 +938,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractMojo {
   }
 
   /**
-   * SAX Parser handler for termcollectiveterm<version>.xml. This handler
+   * SAX Parser handler for cttreenode<version>.xml. This handler
    * creates "isa" relationships between "collectiveterm" and "collectiveterm"
    */
   class CtTreeNodeHandler extends BaseHandler {
