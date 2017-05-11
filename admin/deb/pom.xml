@@ -20,6 +20,7 @@
 		<packageName>${project.artifactId}</packageName>
 		<jdeb.version>1.1.1</jdeb.version>
 		<package_username>mapping-service</package_username>
+		<deb.suffix></deb.suffix>
 	</properties>
 
 	<dependencies>
@@ -100,7 +101,7 @@
 							<goal>jdeb</goal>
 						</goals>
 						<configuration>
-							<deb>${project.build.directory}/${packageName}-${project.version}.deb</deb>
+							<deb>${project.build.directory}/${packageName}${deb.suffix}-${project.version}.deb</deb>
 							<controlDir>${basedir}/control</controlDir>
 							<snapshotExpand>true</snapshotExpand>
 							<snapshotEnv>BUILD_NUMBER</snapshotEnv>
