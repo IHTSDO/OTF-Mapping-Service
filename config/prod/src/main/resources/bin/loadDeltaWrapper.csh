@@ -23,7 +23,7 @@ endif
 /home/ihtsdo/bin/loadDelta.csh
 set x = $status
 if ($x != 0) then
-    service tomcat start
+    service tomcat7 start
     return $x
 endif
 
