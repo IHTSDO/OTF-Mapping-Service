@@ -22,7 +22,8 @@
 
     <!-- Specify the config artifact parameters -->
     <config.groupId>org.ihtsdo.otf.mapping</config.groupId>
-    <config.artifactId>mapping-config-dev-windows</config.artifactId>
+    <!--  <config.artifactId>mapping-config-dev-windows</config.artifactId> -->
+    <config.artifactId>mapping-config-nlm</config.artifactId>
     <config.version>${releaseVersion}</config.version>
     
 
