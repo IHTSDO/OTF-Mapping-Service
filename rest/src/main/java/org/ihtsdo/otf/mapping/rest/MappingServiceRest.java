@@ -1475,7 +1475,7 @@ public class MappingServiceRest extends RootServiceRest {
       // Check if age range already exists and send better message
       for (final MapAgeRange range : mappingService.getMapAgeRanges()
           .getMapAgeRanges()) {
-        if (range.getName().equals(range.getName())) {
+        if (mapAgeRange.getName().equals(range.getName())) {
           throw new LocalException(
               "This map age range already exists: " + range.getName());
         }
