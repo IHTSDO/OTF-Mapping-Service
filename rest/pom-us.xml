@@ -18,11 +18,10 @@
   <properties>
     <execFinalName>exec-${project.build.finalName}.jar</execFinalName>
     <!--  <packageName>${project.parent.artifactId}-rest</packageName> -->
-    <packageName>mapping-service</packageName>
+    <packageName>mapping-service-us</packageName>
 
     <!-- Specify the config artifact parameters -->
     <config.groupId>org.ihtsdo.otf.mapping</config.groupId>
-    <!--  <config.artifactId>mapping-config-dev-windows</config.artifactId> -->
     <config.artifactId>mapping-config-nlm</config.artifactId>
     <config.version>${releaseVersion}</config.version>
     
@@ -30,6 +29,7 @@
 		<tomcat7-maven-plugin-version>2.1</tomcat7-maven-plugin-version>
 		<jdeb.version>1.1.1</jdeb.version>  
 		<webapp-runner.version>8.5.11.3</webapp-runner.version>
+		
     
   </properties>
 
