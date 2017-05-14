@@ -597,7 +597,7 @@ public class ComputeIcd11Map {
 
       // Tracking vars
       final String refsetId = "icd11RefsetId";
-      final String moduleId = "icd11ModuleId";
+      final String moduleId = "123456789";
       final Map<String, List<IcdMap>> icd11Map = new TreeMap<>();
       final Map<String, String> icd11MapNotes = new TreeMap<>();
 
@@ -706,7 +706,7 @@ public class ComputeIcd11Map {
                 rule2.addScore(code, 2.0);
                 rule2.appendType(code, "Equivalent");
               } else {
-                rule2.addScore(code, 0.75);
+                rule2.addScore(code, 1.0);
                 rule2.appendType(code, map.getRelation());
               }
             }
@@ -1056,7 +1056,21 @@ public class ComputeIcd11Map {
           "id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\tfullySpecifiedName\tannotation\r\n");
 
       // Write icd11MapNotes.txt - data
+      // Write icd11Map.txt - data
+      for (final String sctid : icd11MapNotes.keySet()) {
+        final String note = icd11MapNotes.get(sctid);
+        final StringBuilder sb = new StringBuilder();
+        sb.append(UUID.randomUUID().toString()).append("\t");
+        sb.append("20170401\t1\t");
+        sb.append(moduleId).append("\t");
+        sb.append(refsetId).append("\t");
+        sb.append(sctid).append("\t");
+        sb.append("name blank").append("\t");
+        sb.append(note.replaceAll("[\\n\\r]", "<br>"));
+        sb.append("\r\n");
+        notesOut.print(sb.toString());
 
+      }
       mapOut.close();
       notesOut.close();
 
