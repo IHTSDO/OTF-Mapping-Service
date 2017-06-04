@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -83,12 +84,48 @@ public class ComputeIcd11Map {
     config = ConfigUtility.getConfigProperties();
   }
 
+  // Vars for test
+
+  /** The sct concepts. */
+  final Map<String, String> sctConcepts = new HashMap<>();
+
+  /** The icd 11 concepts. */
+  final Map<String, String> icd11Concepts = new HashMap<>();
+
+  /** The icd 11 index. */
+  final Map<String, Set<String>> icd11Index = new HashMap<>();
+
+  /** The icd 10 concepts. */
+  final Map<String, String> icd10Concepts = new HashMap<>();
+
+  /** The icd 10 map. */
+  final Map<String, List<IcdMap>> icd10Map = new HashMap<>();
+
+  /** The sct anc desc. */
+  final Map<String, Set<String>> sctAncDesc = new HashMap<>();
+
+  /** The sct desc anc. */
+  final Map<String, Set<String>> sctDescAnc = new HashMap<>();
+
+  /** The sct chd par. */
+  final Map<String, Set<String>> sctChdPar = new HashMap<>();
+
+  /** The xt concepts, like "Recurrent". */
+  final Map<String, String> xtConcepts = new HashMap<>();
+
+  /** The advices to exclude. */
+  // Vars
+  final Set<String> advicesToExclude =
+      new HashSet<>(Arrays.asList(new String[] {
+          "THIS MAP REQUIRES A DAGGER CODE AS WELL AS AN ASTERISK CODE",
+          "THIS CODE MAY BE USED IN THE PRIMARY POSITION WHEN THE MANIFESTATION IS THE PRIMARY FOCUS OF CARE",
+      }));
+
   /**
    * Compute ICD11 Map.
    *
    * @throws Exception the exception
    */
-
   @SuppressWarnings("unchecked")
   @Test
   public void test() throws Exception {
@@ -104,23 +141,23 @@ public class ComputeIcd11Map {
       workflowService = new WorkflowServiceJpa();
       reportService = new ReportServiceJpa();
       final int sampleCt = 5;
+
       //
       // Load all data resources
       //
 
       //
-      // Cache ICD11 concepts (by id) - noheader
-      // sctid|name|pt
+      // Cache SNOMED concepts
+      // sctid|name|ptFlag
       //
       Logger.getLogger(getClass()).info(" Load SNOMED concepts");
       List<String> lines =
           FileUtils.readLines(new File(icd11Dir, "sctScopeDesc.txt"), "UTF-8");
-      final Map<String, String> sctConcepts = new HashMap<>();
       int ct = 0;
       int skipCt = 0;
       for (final String line : lines) {
         final String[] fields = line.split("\\|");
-        // entityCode already has URL stripped - http://id.who.int/icd/entity
+        // skip descriptions
         if (fields[2].equals("0")) {
           continue;
         }
@@ -141,7 +178,6 @@ public class ComputeIcd11Map {
       Logger.getLogger(getClass()).info(" Load ICD11 concepts");
       lines =
           FileUtils.readLines(new File(icd11Dir, "icd11Concepts.txt"), "UTF-8");
-      final Map<String, String> icd11Concepts = new HashMap<>();
       ct = 0;
       skipCt = 0;
       for (final String line : lines) {
@@ -151,6 +187,42 @@ public class ComputeIcd11Map {
         icd11Concepts.put(code, fields[1]);
         if (ct < sampleCt) {
           Logger.getLogger(getClass()).debug(code + " => " + fields[1]);
+        }
+        // Add single word Xt concepts
+        if (fields[1].startsWith("XT")
+            && fields[1].lastIndexOf(" ") == (fields[1].indexOf(":") + 1)) {
+          // "Recurrent" -> 1721353160
+          xtConcepts.put(
+              fields[1].substring(fields[1].indexOf(":") + 2).toLowerCase(),
+              fields[0]);
+        }
+        ct++;
+      }
+      Logger.getLogger(getClass()).info("   ct = " + ct);
+      Logger.getLogger(getClass()).info("   skipCt =  " + skipCt);
+
+      //
+      // Cache ICD11 index entries id -> Set of entries
+      // Id FoundationLocationId Code Title IndexTerm Version:Jan 31 - 23:00 UTC
+      //
+      Logger.getLogger(getClass()).info(" Load ICD11 index");
+      lines = FileUtils.readLines(
+          new File(icd11Dir, "LinearizationIndexTabulation-Morbidity-en.txt"),
+          "UTF-8");
+      ct = 0;
+      skipCt = 0;
+      for (final String line : lines) {
+        final String[] fields = line.split("\t");
+        // Strip - http://id.who.int/icd/entity
+        final String code =
+            fields[0].replace("http://id.who.int/icd/entity", "");
+        if (!icd11Index.containsKey(code)) {
+          icd11Index.put(code, new HashSet<String>());
+        }
+        icd11Index.get(code).add(fields[4].replaceAll("\"", "").toLowerCase());
+        if (ct < sampleCt) {
+          Logger.getLogger(getClass()).debug(
+              code + " => " + fields[4].replaceAll("\"", "").toLowerCase());
         }
         ct++;
       }
@@ -189,7 +261,6 @@ public class ComputeIcd11Map {
               "select c from ConceptJpa c where terminology = :terminology");
       query.setParameter("terminology", "ICD10");
       final List<Concept> concepts = query.getResultList();
-      final Map<String, String> icd10Concepts = new HashMap<>();
       ct = 0;
       skipCt = 0;
       for (final Concept concept : concepts) {
@@ -228,7 +299,6 @@ public class ComputeIcd11Map {
       // Cache ICD10 map (by SCTID)
       Logger.getLogger(getClass()).info(" Load ICD10 map");
       lines = FileUtils.readLines(new File(icd11Dir, "icd10Map.txt"), "UTF-8");
-      final Map<String, List<IcdMap>> icd10Map = new HashMap<>();
       ct = 0;
       skipCt = 0;
       for (final String line : lines) {
@@ -282,9 +352,6 @@ public class ComputeIcd11Map {
       Logger.getLogger(getClass()).info(" Load SCT anc/desc (for scope)");
       lines = FileUtils.readLines(new File(icd11Dir, "sctScopeAncDesc.txt"),
           "UTF-8");
-      final Map<String, Set<Depth>> sctAncDesc = new HashMap<>();
-      final Map<String, Set<Depth>> sctDescAnc = new HashMap<>();
-      final Map<String, Set<String>> sctChdPar = new HashMap<>();
       ct = 0;
       skipCt = 0;
       for (final String line : lines) {
@@ -296,15 +363,15 @@ public class ComputeIcd11Map {
           continue;
         }
         if (!sctAncDesc.containsKey(fields[0])) {
-          sctAncDesc.put(fields[0], new HashSet<Depth>());
+          sctAncDesc.put(fields[0], new HashSet<String>());
         }
-        sctAncDesc.get(fields[0]).add(new Depth(line, true));
+        sctAncDesc.get(fields[0]).add(new Depth(line, true).getCode());
 
         if (!sctDescAnc.containsKey(fields[1])) {
-          sctDescAnc.put(fields[1], new HashSet<Depth>());
+          sctDescAnc.put(fields[1], new HashSet<String>());
           sctChdPar.put(fields[1], new HashSet<String>());
         }
-        sctDescAnc.get(fields[1]).add(new Depth(line, false));
+        sctDescAnc.get(fields[1]).add(new Depth(line, false).getCode());
         if (fields[2].equals("1")) {
           sctChdPar.get(fields[1]).add(fields[0]);
         }
@@ -521,14 +588,14 @@ public class ComputeIcd11Map {
         if (!icd10Scope.contains(map.getCode())) {
           skipCt++;
           Logger.getLogger(getClass())
-              .debug("SKIP (scope " + map.getCode() + "): " + line);
+              .debug("SKIP (scope " + map.getCode() + ") ");// + line);
           continue;
         }
         if (!map.getTargetCode().equals("No Mapping")
             && !icd11Scope.contains(map.getTargetCode())) {
           skipCt++;
           Logger.getLogger(getClass())
-              .debug("SKIP (scope " + map.getTargetCode() + "): " + line);
+              .debug("SKIP (scope " + map.getTargetCode() + ") ");// + line);
           continue;
         }
         if (!icd10To11.containsKey(code)) {
@@ -568,14 +635,14 @@ public class ComputeIcd11Map {
         if (!icd11Scope.contains(map.getCode())) {
           skipCt++;
           Logger.getLogger(getClass())
-              .debug("SKIP (scope " + map.getCode() + "): " + line);
+              .debug("SKIP (scope " + map.getCode() + ") ");// + line);
           continue;
         }
         if (!map.getTargetCode().equals("No Mapping")
             && !icd10Scope.contains(map.getTargetCode())) {
           skipCt++;
           Logger.getLogger(getClass())
-              .debug("SKIP (scope " + map.getTargetCode() + "): " + line);
+              .debug("SKIP (scope " + map.getTargetCode() + ") ");// + line);
           continue;
         }
         if (!icd11To10Reverse.containsKey(code)) {
@@ -638,6 +705,7 @@ public class ComputeIcd11Map {
       final PrintWriter statsOut = new PrintWriter(
           new FileWriter(new File(icd11Dir, "icd11MapStats.txt")));
       final int[] stats = new int[5];
+      final Map<String, String> sctIdCategories = new HashMap<>();
 
       // Iterate through SNOMED concepts in sorted orde
       int sctidCt = 0;
@@ -673,15 +741,19 @@ public class ComputeIcd11Map {
           Logger.getLogger(getClass()).info(
               "  ICD10 Map = " + icd10Code + ", " + icd10Name + ", " + map10);
 
+          //
           // RULE 0 - "no mapping"
+          //
           final RuleDetails rule0 = new RuleDetails(0);
           if (icd10Code.equals("")) {
             rule0.addNcScore(1);
           }
 
+          //
           // RULE1 - David Robinson's map
           // Any match is a good match and will be factored in score calculation
           // later.
+          //
           final RuleDetails rule1 = new RuleDetails(1);
           if (sctIcd11Equivalence.containsKey(sctid)) {
             rule1.addScore(sctIcd11Equivalence.get(sctid), 5.0);
@@ -689,7 +761,9 @@ public class ComputeIcd11Map {
                 sctIcd11EquivalenceType.get(sctid));
           }
 
+          //
           // RULE2 - the 10-11 equivalence map
+          //
           final RuleDetails rule2 = new RuleDetails(2);
           if (icd10To11.containsKey(map10.getMapTarget())) {
             // Equivalent = 100%
@@ -725,7 +799,9 @@ public class ComputeIcd11Map {
             }
           }
 
+          //
           // RULE3 - Lexical Match
+          //
           final RuleDetails rule3 = new RuleDetails(3);
           if (sctIcd11Lexical.containsKey(sctid)) {
             for (final Score score : sctIcd11Lexical.get(sctid)) {
@@ -749,7 +825,10 @@ public class ComputeIcd11Map {
               }
             }
           }
+
+          //
           // RULE4 - Matching parent map
+          //
           final RuleDetails rule4 = new RuleDetails(4);
           // All parents should have maps at this point.
           if (sctChdPar.containsKey(sctid)) {
@@ -783,7 +862,9 @@ public class ComputeIcd11Map {
             }
           }
 
+          //
           // Determine category and targetId
+          //
           String targetId = "UNKNOWN";
           int localCategory = 0;
           final Map<String, Double> candidates = new HashMap<>();
@@ -921,12 +1002,19 @@ public class ComputeIcd11Map {
               } else {
                 category = Math.min(localCategory, category);
               }
+
               // Set map advice
               if (map11.getMapAdvice().startsWith("ALWAYS")) {
                 map11.setMapAdvice(map11.getMapAdvice()
                     .replaceAll("ALWAYS ([^\\s])+", "ALWAYS " + targetId));
               } else {
                 map11.setMapAdvice("ALWAYS " + targetId);
+              }
+
+              // Remove all ICD10 excluded advices
+              for (final String adviceToRemove : advicesToExclude) {
+                map11.setMapAdvice(
+                    getWithoutAdvice(map11.getMapAdvice(), adviceToRemove));
               }
               map11.setMapCategoryId("447637006");
             }
@@ -936,7 +1024,10 @@ public class ComputeIcd11Map {
 
           // add map here
           icd11Map.get(sctid).add(map11);
+
+          //
           // Assemble the note
+          //
           final StringBuilder noteSb = new StringBuilder();
           noteSb.append("\n");
           if (category == LOW) {
@@ -979,20 +1070,53 @@ public class ComputeIcd11Map {
               noteSb.append(rule.toNote(icd11Concepts));
             }
           }
-          icd11MapNotes.put(sctid, noteSb.toString().replaceAll("\\n", "<br>"));
+
+          //
+          // Apply rule overrides here
+          //
+          int[] categoryWrapper = new int[] {
+              category
+          };
+          boolean override = false;
+          if (!override) {
+            override = applyXhNeoplasmRule(sctid, icd10Map.get(sctid),
+                icd11Map.get(sctid), noteSb, candidates, categoryWrapper);
+          }
+          if (!override) {
+            override = applyXtAdditionRule(sctid, icd10Map.get(sctid),
+                icd11Map.get(sctid), noteSb, candidates, categoryWrapper);
+          }
+
+          // If there are already notes (e.g. an earlier category) append these
+          // notes
+          if (icd11MapNotes.containsKey(sctid)) {
+            icd11MapNotes.put(icd11MapNotes.get(sctid) + "<br><br>",
+                noteSb.toString().replaceAll("\\n", "<br>"));
+          } else {
+            icd11MapNotes.put(sctid,
+                noteSb.toString().replaceAll("\\n", "<br>"));
+          }
           Logger.getLogger(getClass()).info(noteSb.toString());
 
-          // If we encountered a NOMAP, go to the next
+          // If we encountered a NOMAP, go to the next concept
+          if (override) {
+            category = categoryWrapper[0];
+            break;
+          }
+
+          // If we encountered a NOMAP, go to the next concept
           if (category == NO_MAP) {
             break;
           }
         }
 
-        // Increment the category for this concept
+        // Increment the category for this concept (counted at the concept
+        // level, not entry level)
         stats[category]++;
-
+        sctIdCategories.put(sctid, getCategoryString(category));
       }
 
+      // Log statistics
       Logger.getLogger(getClass()).info("------------------------------------");
       Logger.getLogger(getClass()).info("STATS");
       Logger.getLogger(getClass()).info("------------------------------------");
@@ -1006,6 +1130,9 @@ public class ComputeIcd11Map {
       statsOut.println("MEDIUM = " + stats[MEDIUM]);
       statsOut.println("LOW = " + stats[LOW]);
       statsOut.println("NO MAP = " + stats[NO_MAP]);
+      for (final String key : sctIdCategories.keySet()) {
+        statsOut.println("  " + key + " = " + sctIdCategories.get(key));
+      }
       statsOut.close();
 
       // Write icd11Map.txt - head er
@@ -1032,25 +1159,7 @@ public class ComputeIcd11Map {
           mapOut.print(sb.toString());
         }
       }
-      // private String conceptId;
-      //
-      // /** The map group. */
-      // private int mapGroup;
-      //
-      // /** The map priority. */
-      // private int mapPriority;
-      //
-      // /** The map rule. */
-      // private String mapRule;
-      //
-      // /** The map advice. */
-      // private String mapAdvice;
-      //
-      // /** The map target. */
-      // private String mapTarget;
-      //
-      // /** The map category id. */
-      // private String mapCategoryId;
+
       // Write icd11MapNotes.txt - header
       notesOut.print(
           "id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\tfullySpecifiedName\tannotation\r\n");
@@ -1089,27 +1198,218 @@ public class ComputeIcd11Map {
   }
 
   /**
-   * Returns the max depth.
+   * Apply xh neoplasm rule.
    *
-   * @param cid the cid
-   * @param sctAncDesc the sct anc desc
-   * @return the max depth
+   * @param sctid the sctid
+   * @param icd10Map the icd 10 map
+   * @param icd11Map the icd 11 map
+   * @param noteSb the note sb
+   * @param candidates the candidates
+   * @param category the category
+   * @return true, if successful
    */
-  // @SuppressWarnings("static-method")
-  // private int getMaxDepth(String cid, Map<String, Set<Depth>> sctAncDesc) {
-  // final Set<Depth> depths = sctAncDesc.get(cid);
-  // if (depths == null) {
-  // return 0;
-  // }
-  // int maxDepth = 0;
-  // for (final Depth depth : depths) {
-  // if (depth.getDepth() > maxDepth) {
-  // maxDepth = depth.getDepth();
-  // }
-  // }
-  // // a max depth of 0 is a leaf node, something with no children.
-  // return maxDepth;
-  // }
+  private boolean applyXhNeoplasmRule(String sctid, List<IcdMap> icd10Map,
+    List<IcdMap> icd11Map, StringBuilder noteSb, Map<String, Double> candidates,
+    int[] category) {
+
+    if (sctid.equals("99741000119100")) {
+      System.out.println("here");
+    }
+
+    // If nomap, pass on this
+    if (category[0] == NO_MAP) {
+      return false;
+    }
+
+    // For descendants of 55342001 | Neoplastic disease (disorder) |
+    // - and NOT descendant of 118599009 | Hodgkin's disease (disorder) |
+    // - and NOT descendant of 118601006 | Non-Hodgkin's lymphoma
+    // AND icd10Map has a single entry for the concept
+    // AND icd11Map has a XH code as primary map with score >= 2.0;
+    // AND candidates includes one stem code (starting with 2) and score > 1.5
+    String stemCode = null;
+    boolean override = false;
+    double score = 0;
+    if (sctAncDesc.get("55342001").contains(sctid)
+        && !sctAncDesc.get("118599009").contains(sctid)
+        && !sctAncDesc.get("118601006").contains(sctid) && icd10Map.size() == 1
+        && icd11Map.size() == 1) {
+      final String targetId = icd11Map.iterator().next().getMapTarget();
+      final String targetCode = icd11Concepts.get(targetId);
+      if (targetCode != null && targetCode.startsWith("XH")
+          && candidates.get(targetId) >= 2.0) {
+        score += candidates.get(targetId);
+        for (final String otherTargetId : candidates.keySet()) {
+          final String otherTargetCode = icd11Concepts.get(otherTargetId);
+          if (otherTargetCode != null && otherTargetCode.startsWith("2")
+              && candidates.get(otherTargetId) > 1.5) {
+            score += candidates.get(otherTargetId);
+            stemCode = otherTargetId;
+            break;
+          }
+        }
+        if (stemCode != null) {
+          override = true;
+        }
+      }
+    }
+
+    // => Add a second icd11 map entry to first position with stem code
+    // => remove advice POSSIBLE REQUIREMENT FOR MORPHOLOGY CODE
+    // => Add a note override
+    // => Bump category to HIGH
+    // => return true
+    if (override) {
+      final IcdMap origMap = icd11Map.iterator().next();
+      final IcdMap stemMap = new IcdMap(origMap);
+      stemMap.setMapTarget(stemCode);
+      icd11Map.add(0, stemMap);
+      fixAdvice(stemMap, stemCode);
+      stemMap.setMapAdvice(getWithoutAdvice(stemMap.getMapAdvice(),
+          "POSSIBLE REQUIREMENT FOR MORPHOLOGY CODE"));
+      origMap.setMapAdvice(getWithoutAdvice(origMap.getMapAdvice(),
+          "POSSIBLE REQUIREMENT FOR MORPHOLOGY CODE"));
+      noteSb.append("\n\nOVERRIDE HIGH: (" + score
+          + "): XH Neoplasm Rule (added stem code)");
+      category[0] = HIGH;
+    }
+
+    return override;
+  }
+
+  /**
+   * Apply xt addition rule
+   *
+   * @param sctid the sctid
+   * @param icd10Map the icd 10 map
+   * @param icd11Map the icd 11 map
+   * @param noteSb the note sb
+   * @param candidates the candidates
+   * @param category the category
+   * @return true, if successful
+   */
+  private boolean applyXtAdditionRule(String sctid, List<IcdMap> icd10Map,
+    List<IcdMap> icd11Map, StringBuilder noteSb, Map<String, Double> candidates,
+    int[] category) {
+
+    if (sctid.equals("276288002")) {
+      System.out.println("here");
+    }
+
+    // If nomap, pass on this
+    if (category[0] == NO_MAP) {
+      return false;
+    }
+
+    // For descendants of 40733004 | Infectious disease (disorder) |
+    // AND icd10Map has a single entry for the concept
+    // AND icd11Map has a stem code (starting with 1) and a score > 1.0
+    // AND and the snomed term contains an XT word (especially at beginning of
+    // the word),
+    String xtCode = null;
+    String xtName = null;
+    boolean override = false;
+    double score = 0;
+    if (sctAncDesc.get("40733004").contains(sctid) && icd10Map.size() == 1
+        && icd11Map.size() == 1) {
+      final String targetId = icd11Map.iterator().next().getMapTarget();
+      final String targetCode = icd11Concepts.get(targetId);
+      if (targetCode != null && targetCode.startsWith("1")
+          && candidates.get(targetId) >= 1.0) {
+        score += candidates.get(targetId);
+        for (final String key : xtConcepts.keySet()) {
+          if (sctConcepts.get(sctid).toLowerCase()
+              .startsWith(xtConcepts.get(key))) {
+            xtCode = xtConcepts.get(key);
+            xtName = key;
+            category[0] = category[0] <= HIGH ? HIGH : category[0] + 1;
+            break;
+          }
+          if (icd11Index.get(targetId).contains(xtConcepts.get(key) + " "
+              + sctConcepts.get(sctid).toLowerCase())) {
+            xtCode = xtConcepts.get(key);
+            xtName = key;
+            category[0] = HIGH;
+            break;
+          }
+        }
+        if (xtCode != null) {
+          override = true;
+        }
+      }
+    }
+
+    // => Add a second icd11 map entry at the end for the XT code
+    // => Add a note override
+    // => Bump category by 1 position
+    // => return true
+    if (override) {
+      final IcdMap origMap = icd11Map.iterator().next();
+      final IcdMap xtMap = new IcdMap(origMap);
+      xtMap.setMapTarget(xtCode);
+      icd11Map.add(xtMap);
+      noteSb.append("\n\nOVERRIDE " + getCategoryString(category[0]) + ": ("
+          + score + "): XT Addition Rule - " + xtName);
+    }
+
+    return override;
+  }
+
+  /**
+   * Fix advice.
+   *
+   * @param map11 the map 11
+   * @param targetId the target id
+   */
+  private void fixAdvice(IcdMap map11, String targetId) {
+    if (map11.getMapAdvice().startsWith("ALWAYS")) {
+      map11.setMapAdvice(map11.getMapAdvice().replaceAll("ALWAYS ([^\\s])+",
+          "ALWAYS " + targetId));
+    } else {
+      map11.setMapAdvice("ALWAYS " + targetId);
+    }
+
+    // Remove all ICD10 excluded advices
+    for (final String adviceToRemove : advicesToExclude) {
+      map11
+          .setMapAdvice(getWithoutAdvice(map11.getMapAdvice(), adviceToRemove));
+    }
+  }
+
+  /**
+   * Removes the advice.
+   *
+   * @param allAdvice the all advice
+   * @param adviceToRemove the advice to remove
+   * @return the string
+   */
+  @SuppressWarnings("static-method")
+  private String getWithoutAdvice(String allAdvice, String adviceToRemove) {
+    return allAdvice.replace(adviceToRemove, "").replace(" \\|  \\| ", " \\| ")
+        .replace(" \\| $", "");
+  }
+
+  /**
+   * Returns the category string.
+   *
+   * @param category the category
+   * @return the category string
+   */
+  @SuppressWarnings("static-method")
+  private String getCategoryString(int category) {
+    switch (category) {
+      case 4:
+        return "NOMAP";
+      case 3:
+        return "HIGH";
+      case 2:
+        return "MEDIUM";
+      case 1:
+        return "LOW";
+      default:
+        return "UNKNOWN";
+    }
+  }
 
   /**
    * Teardown class.
