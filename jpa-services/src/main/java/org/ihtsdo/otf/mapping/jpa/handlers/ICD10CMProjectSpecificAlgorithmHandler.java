@@ -273,7 +273,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
         return new MapAdviceListJpa();
       }
 
-      // Remove any advices that are purlely computed and keep only manually
+      // Remove any advices that are purely computed and keep only manually
       // assigned ones
       final List<MapAdvice> notComputed = new ArrayList<>();
       for (final MapAdvice advice : advices) {
@@ -284,40 +284,162 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       advices.clear();
       advices.addAll(notComputed);
 
-
+      //
+      // PREDICATE: All codes in range S00-T88, except T36-T65, unless there is 
+      // a second map group with codes in this chapter External causes of morbidity 
+      // (V00-Y99) and does not have the
+      // advice "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE"
+      // ACTION: add the advice
+      //
+      boolean found = false;
+      for (MapEntry entry : mapRecord.getMapEntries()) {
+    	 if (entry.getMapGroup() == 2 &&
+    			 entry.getTargetId().matches("(V..|W..|X..|Y..).*")) {
+    		 found = true;
+    		 break;
+    	 }
+      }
+      final String adviceP01 = "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE";
+      if (!found && mapEntry.getTargetId().matches("(S[0-9].|T[0-8][0-8]).*") &&
+    		  !mapEntry.getTargetId().matches("(T[3-9][6-9].|T[6-9][0-5]).*")) {
+    	
+        if (!TerminologyUtility.hasAdvice(mapEntry, adviceP01)) {
+          advices.add(TerminologyUtility.getAdvice(mapProject, adviceP01));
+        }
+      } 
 
  
       //
-      // PREDICATE: Map target is in the range C00-D48 and does not have the
-      // advice "POSSIBLE REQUIREMENT FOR MORPHOLOGY CODE"
+      // PREDICATE: Map target code ends in '?' and does not have the
+      // advice "EPISODE OF CARE INFORMATION NEEDED"
       // ACTION: add the advice
       //
-      final String adviceP05 = "POSSIBLE REQUIREMENT FOR MORPHOLOGY CODE";
-      if (mapEntry.getTargetId().matches("(C..|D[0-3].|D4[0-8]).*")) {
-        if (!TerminologyUtility.hasAdvice(mapEntry, adviceP05)) {
-          advices.add(TerminologyUtility.getAdvice(mapProject, adviceP05));
+      final String adviceP02 = "EPISODE OF CARE INFORMATION NEEDED";
+      if (mapEntry.getTargetId().endsWith("?")) {
+        if (!TerminologyUtility.hasAdvice(mapEntry, adviceP02)) {
+          advices.add(TerminologyUtility.getAdvice(mapProject, adviceP02));
         }
-      } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP05)) {
-        advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP05));
+      } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP02)) {
+        advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP02));
       }
 
       //
-      // PREDICATE: Primary map target is T31 or T32 and does not have the
-      // advice
-      // "USE AS PRIMARY CODE ONLY IF SITE OF BURN UNSPECIFIED, OTHERWISE USE AS
-      // A SUPPLEMENTARY CODE WITH CATEGORIES T20-T29 (Burns)"
+      // PREDICATE: All target codes in the chapter Pregnancy, childbirth and the puerperium (O00-O99), 
+      // with ‘unspecified trimester’ in their descriptions and does not have the
+      // advice "CONSIDER TRIMESTER SPECIFICATION"
+      // ACTION: add the advice
+      //
+      final String adviceP04 =
+          "CONSIDER TRIMESTER SPECIFICATION";
+      if (mapEntry.getTargetId().startsWith("O")
+          && !TerminologyUtility.hasAdvice(mapEntry, adviceP04)) {
+        advices.add(TerminologyUtility.getAdvice(mapProject, adviceP04));
+      }
+
+      //
+      // PREDICATE: All target codes with these prefixes: O31, O32, O33.3-O33.6, O35, 
+      // O36, O40, O41, O60.1-O60.2, O64, O69; and ending with the 7th character= 0  (‘fetus unspecified’)
+      // and does not have the advice
+      // "CONSIDER WHICH FETUS IS AFFECTED BY THE MATERNAL CONDITION"
+      // ACTION: add the advice
+      //
+      final String adviceP05 =
+          "CONSIDER WHICH FETUS IS AFFECTED BY THE MATERNAL CONDITION";
+      if ((mapEntry.getTargetId().startsWith("O31") ||
+    	   mapEntry.getTargetId().startsWith("O32") ||
+    	   mapEntry.getTargetId().matches("(O33.[3-6])*") ||
+    	   mapEntry.getTargetId().startsWith("O35") ||
+    	   mapEntry.getTargetId().startsWith("O36") ||
+    	   mapEntry.getTargetId().startsWith("O40") ||
+    	   mapEntry.getTargetId().startsWith("O41") ||
+    	   mapEntry.getTargetId().matches("(O60.[1-2]*)") ||
+    	   mapEntry.getTargetId().startsWith("O64") ||
+    	   mapEntry.getTargetId().startsWith("O69")) 
+    	  && mapEntry.getTargetId().matches("\\D\\d{2}.\\d{3}0$")
+          && !TerminologyUtility.hasAdvice(mapEntry, adviceP05)) {
+        advices.add(TerminologyUtility.getAdvice(mapProject, adviceP05));
+      }           
+      
+      //
+      // PREDICATE: All target codes in this chapter External causes of 
+      // morbidity (V00-Y99) that occur in Map Group 1 without advice
+      // "THIS IS AN EXTERNAL CAUSE CODE FOR USE IN A SECONDARY POSITION"
       // ACTION: add the advice
       //
       final String adviceP06 =
-          "USE AS PRIMARY CODE ONLY IF SITE OF BURN UNSPECIFIED, OTHERWISE USE AS A SUPPLEMENTARY CODE WITH CATEGORIES T20-T29 (Burns)";
-      if (mapEntry.getTargetId().matches("(T31|T32).*")
-          && mapEntry.getMapGroup() == 1 && mapEntry.getMapPriority() == 1
+          "THIS IS AN EXTERNAL CAUSE CODE FOR USE IN A SECONDARY POSITION";
+      if (mapEntry.getTargetId().matches("^[VWXY].*")
+          && mapEntry.getMapGroup() == 1 
           && !TerminologyUtility.hasAdvice(mapEntry, adviceP06)) {
         advices.add(TerminologyUtility.getAdvice(mapProject, adviceP06));
+      } 
+
+      //
+      // PREDICATE: Primary map target is T31 and does not have the
+      // advice
+      // "USE AS PRIMARY CODE ONLY IF SITE OF BURN UNSPECIFIED, OTHERWISE 
+      // USE AS A SUPPLEMENTARY CODE WITH CATEGORIES T20-T25 (Burns)"
+      // ACTION: add the advice
+      //
+      final String adviceP07 =
+          "USE AS PRIMARY CODE ONLY IF SITE OF BURN UNSPECIFIED, OTHERWISE USE AS A SUPPLEMENTARY CODE WITH CATEGORIES T20-T25 (Burns)";
+      if (mapEntry.getTargetId().startsWith("T31")
+          && !TerminologyUtility.hasAdvice(mapEntry, adviceP07)) {
+        advices.add(TerminologyUtility.getAdvice(mapProject, adviceP07));
       }
 
- 
+      //
+      // PREDICATE: Primary map target is T32 and does not have the
+      // advice
+      // "USE AS PRIMARY CODE ONLY IF SITE OF CORROSION UNSPECIFIED, OTHERWISE 
+      // USE AS A SUPPLEMENTARY CODE WITH CATEGORIES T20-T25 (Burns)"
+      // ACTION: add the advice
+      //
+      final String adviceP08 =
+          "USE AS PRIMARY CODE ONLY IF SITE OF CORROSION UNSPECIFIED, OTHERWISE USE AS A SUPPLEMENTARY CODE WITH CATEGORIES T20-T25 (Burns)";
+      if (mapEntry.getTargetId().startsWith("T32")
+          && !TerminologyUtility.hasAdvice(mapEntry, adviceP08)) {
+        advices.add(TerminologyUtility.getAdvice(mapProject, adviceP08));
+      }
+      
+      //
+      // PREDICATE: All target codes with prefixes H40.10-H40.14, H40.20, H40.22, H40.3-H40.6 
+      // and does not have the advice
+      // "CONSIDER STAGE OF GLAUCOMA SPECIFICATION"
+      // ACTION: add the advice
+      //
+      final String adviceP09 =
+          "CONSIDER STAGE OF GLAUCOMA SPECIFICATION";
+      if (mapEntry.getTargetId().startsWith("H40.20") ||
+    	   mapEntry.getTargetId().startsWith("H40.22") ||
+    	   mapEntry.getTargetId().matches("(H40.1[0-4])*") ||
+    	   mapEntry.getTargetId().matches("(H40.[3-9]*|H40.[0-6])*")
+          && !TerminologyUtility.hasAdvice(mapEntry, adviceP09)) {
+        advices.add(TerminologyUtility.getAdvice(mapProject, adviceP09));
+      }      
+      
+      //
+      // PREDICATE: All target codes with prefix M1A and does not have the
+      // advice "CONSIDER TOPHUS SPECIFICATION"
+      // ACTION: add the advice
+      //
+      final String adviceP10 = "CONSIDER TOPHUS SPECIFICATION";
+      if (mapEntry.getTargetId().startsWith("M1A")
+          && !TerminologyUtility.hasAdvice(mapEntry, adviceP10)) {
+        advices.add(TerminologyUtility.getAdvice(mapProject, adviceP10));
+      }
 
+      //
+      // PREDICATE: All target codes with prefix R40.2 and does not have the
+      // advice "CONSIDER TIME OF COMA SCALE SPECIFICATION"
+      // ACTION: add the advice
+      //
+      final String adviceP11 = "CONSIDER TIME OF COMA SCALE SPECIFICATION";
+      if (mapEntry.getTargetId().startsWith("R40.2")
+          && !TerminologyUtility.hasAdvice(mapEntry, adviceP11)) {
+        advices.add(TerminologyUtility.getAdvice(mapProject, adviceP11));
+      }
+      
       MapAdviceList mapAdviceList = new MapAdviceListJpa();
       mapAdviceList.setMapAdvices(advices);
       return mapAdviceList;
@@ -567,7 +689,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
     }
 
     // Verify HLC concepts must not have explicit concept exclusion rules ...Wed
-    // -- up propagation checks the threshold already - this is to
+    // -- up propagation checks the threshold already - this is too
     // expensive to double-check again here
 
     // Verify advice MAP IS CONTEXT DEPENDENT FOR GENDER should only apply to
