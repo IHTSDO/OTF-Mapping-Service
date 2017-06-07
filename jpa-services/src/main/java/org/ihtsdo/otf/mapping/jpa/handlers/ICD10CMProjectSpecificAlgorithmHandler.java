@@ -347,15 +347,15 @@ public class ICD10CMProjectSpecificAlgorithmHandler
           "CONSIDER WHICH FETUS IS AFFECTED BY THE MATERNAL CONDITION";
       if ((mapEntry.getTargetId().startsWith("O31") ||
     	   mapEntry.getTargetId().startsWith("O32") ||
-    	   mapEntry.getTargetId().matches("(O33.[3-6])*") ||
+    	   mapEntry.getTargetId().matches("(O33.[3-6]).*") ||
     	   mapEntry.getTargetId().startsWith("O35") ||
     	   mapEntry.getTargetId().startsWith("O36") ||
     	   mapEntry.getTargetId().startsWith("O40") ||
     	   mapEntry.getTargetId().startsWith("O41") ||
-    	   mapEntry.getTargetId().matches("(O60.[1-2]*)") ||
+    	   mapEntry.getTargetId().matches("(O60.[1-2]).*") ||
     	   mapEntry.getTargetId().startsWith("O64") ||
     	   mapEntry.getTargetId().startsWith("O69")) 
-    	  && mapEntry.getTargetId().matches("\\D\\d{2}.\\d{3}0$")
+    	  && mapEntry.getTargetId().matches("\\D\\d{2}.\\w{3}0$")
           && !TerminologyUtility.hasAdvice(mapEntry, adviceP05)) {
         advices.add(TerminologyUtility.getAdvice(mapProject, adviceP05));
       }           
@@ -412,8 +412,8 @@ public class ICD10CMProjectSpecificAlgorithmHandler
           "CONSIDER STAGE OF GLAUCOMA SPECIFICATION";
       if (mapEntry.getTargetId().startsWith("H40.20") ||
     	   mapEntry.getTargetId().startsWith("H40.22") ||
-    	   mapEntry.getTargetId().matches("(H40.1[0-4])*") ||
-    	   mapEntry.getTargetId().matches("(H40.[3-9]*|H40.[0-6])*")
+    	   mapEntry.getTargetId().matches("(^H40.1).*") ||
+    	   mapEntry.getTargetId().matches("(^H40.[3-6]).*")
           && !TerminologyUtility.hasAdvice(mapEntry, adviceP09)) {
         advices.add(TerminologyUtility.getAdvice(mapProject, adviceP09));
       }      
