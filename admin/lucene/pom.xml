@@ -249,5 +249,141 @@
       </build>
     </profile>
 
+   <!-- Convert index files to HTML and lucene indexes and package -->
+    <profile>
+      <id>ConvertICD10CMXmlToHtmlAndLucene</id>
+      <build>
+        <plugins>
+          <!-- Apply mojo to unpacked .xml files -->
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <!-- Generate HTML for Neoplasm data -->
+              <execution>
+                <id>execution1</id>
+                <phase>compile</phase>
+                <configuration>
+                  <inputDir>${input.dir}</inputDir>
+                  <inputFile>icd10cm_neoplasm_2017.xml</inputFile>
+                  <domain>Neoplasm</domain>
+                  <terminology>ICD10CM</terminology>
+                  <terminologyVersion>2017</terminologyVersion>
+                </configuration>
+                <goals>
+                  <goal>convert-to-html</goal>
+                </goals>
+              </execution>
+              <!-- Generate HTML for Index data -->
+              <execution>
+                <id>execution1b</id>
+                <phase>compile</phase>
+                <configuration>
+                  <inputDir>${input.dir}</inputDir>
+                  <inputFile>icd10cm_index_2017.xml</inputFile>
+                  <domain>Indexes</domain>
+                  <terminology>ICD10CM</terminology>
+                  <terminologyVersion>2017</terminologyVersion>
+                </configuration>
+                <goals>
+                  <goal>convert-to-html</goal>
+                </goals>
+              </execution>
+              <!-- Generate HTML for EIndex data -->
+              <execution>
+                <id>execution1c</id>
+                <phase>compile</phase>
+                <configuration>
+                  <inputDir>${input.dir}</inputDir>
+                  <inputFile>icd10cm_eindex_2017.xml</inputFile>
+                  <domain>EIndex</domain>
+                  <terminology>ICD10CM</terminology>
+                  <terminologyVersion>2017</terminologyVersion>
+                </configuration>
+                <goals>
+                  <goal>convert-to-html</goal>
+                </goals>
+              </execution>
+               <!-- Generate HTML for Drug data -->
+              <execution>
+                <id>execution1d</id>
+                <phase>compile</phase>
+                <configuration>
+                  <inputDir>${input.dir}</inputDir>
+                  <inputFile>icd10cm_drug_2017.xml</inputFile>
+                  <domain>Drug</domain>
+                  <terminology>ICD10CM</terminology>
+                  <terminologyVersion>2017</terminologyVersion>
+                </configuration>
+                <goals>
+                  <goal>convert-to-html</goal>
+                </goals>
+              </execution>
+              
+              <!-- Generate Lucene indexes for Neoplasm data -->
+              <execution>
+                <id>execution2a</id>
+                <phase>compile</phase>
+                <configuration>
+                  <inputDir>${input.dir}</inputDir>
+                  <inputFile>icd10cm_neoplasm_2017.xml</inputFile>
+                  <domain>Neoplasm</domain>
+                  <terminology>ICD10CM</terminology>
+                  <terminologyVersion>2017</terminologyVersion>
+                </configuration>
+                <goals>
+                  <goal>convert-to-lucene</goal>
+                </goals>
+              </execution>
+              <!-- Generate Lucene indexes for Index data -->
+              <execution>
+                <id>execution2b</id>
+                <phase>compile</phase>
+                <configuration>
+                  <inputDir>${input.dir}</inputDir>
+                  <inputFile>icd10cm_index_2017.xml</inputFile>
+                  <domain>Index</domain>
+                  <terminology>ICD10CM</terminology>
+                  <terminologyVersion>2017</terminologyVersion>
+                </configuration>
+                <goals>
+                  <goal>convert-to-lucene</goal>
+                </goals>
+              </execution>
+              <!-- Generate Lucene indexes for EIndex data -->
+              <execution>
+                <id>execution2c</id>
+                <phase>compile</phase>
+                <configuration>
+                  <inputDir>${input.dir}</inputDir>
+                  <inputFile>icd10cm_eindex_2017.xml</inputFile>
+                  <domain>Eindex</domain>
+                  <terminology>ICD10CM</terminology>
+                  <terminologyVersion>2017</terminologyVersion>
+                </configuration>
+                <goals>
+                  <goal>convert-to-lucene</goal>
+                </goals>
+              </execution>
+              <!-- Generate Lucene indexes for Drug data -->
+              <execution>
+                <id>execution2d</id>
+                <phase>compile</phase>
+                <configuration>
+                  <inputDir>${input.dir}</inputDir>
+                  <inputFile>icd10cm_drug_2017.xml</inputFile>
+                  <domain>Drug</domain>
+                  <terminology>ICD10CM</terminology>
+                  <terminologyVersion>2017</terminologyVersion>
+                </configuration>
+                <goals>
+                  <goal>convert-to-lucene</goal>
+                </goals>
+              </execution>              
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 </project>
