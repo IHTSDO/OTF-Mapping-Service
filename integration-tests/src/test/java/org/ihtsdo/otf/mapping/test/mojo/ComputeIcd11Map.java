@@ -906,6 +906,8 @@ public class ComputeIcd11Map {
           final RuleDetails rule4 = new RuleDetails(4);
           // All parents should have maps at this point.
           if (sctChdPar.containsKey(sctid)) {
+            final Map<String, Integer> parentMaps = new HashMap<>();
+            int totalCt = 0;
             for (final String par : sctChdPar.get(sctid)) {
               if (!icd11Map.containsKey(par)) {
                 // should be top-level things
@@ -913,8 +915,6 @@ public class ComputeIcd11Map {
                     + par + " " + sctConcepts.get(par));
                 continue;
               }
-              final Map<String, Integer> parentMaps = new HashMap<>();
-              int totalCt = 0;
               for (final IcdMap map : icd11Map.get(par)) {
                 totalCt++;
                 final String code = map.getMapTarget();
@@ -923,15 +923,17 @@ public class ComputeIcd11Map {
                 } else {
                   parentMaps.put(code, parentMaps.get(code) + 1);
                 }
+                // Only consider primary code
+                break;
               }
-              for (final String code : parentMaps.keySet()) {
-                if (code.equals("")) {
-                  rule4.addNcScore((parentMaps.get(code) * 1.0) / totalCt);
-                  rule4.appendType(code, "NC");
-                } else {
-                  rule4.addScore(code, (parentMaps.get(code) * 1.0) / totalCt);
-                  rule4.appendType(code, parentMaps.get(code) + " PARENTS ");
-                }
+            }
+            for (final String code : parentMaps.keySet()) {
+              if (code.equals("")) {
+                rule4.addNcScore((parentMaps.get(code) * 1.0) / totalCt);
+                rule4.appendType(code, "NC");
+              } else {
+                rule4.addScore(code, (parentMaps.get(code) * 1.0) / totalCt);
+                rule4.appendType(code, parentMaps.get(code) + " PARENTS ");
               }
             }
           }
@@ -989,8 +991,13 @@ public class ComputeIcd11Map {
               for (final String code : rule.getScoreMap().keySet()) {
                 if (candidates.containsKey(code)) {
                   double prevScore = candidates.get(code);
+                  // Use basic low score - .3 if no other rules
+                  if (prevScore == 0) {
+                    prevScore = .3;
+                  }
                   candidates.put(code, 1.5 * prevScore);
                 }
+
                 // check children of the rule4 code too, and boost those
                 // as well
                 if (icd11ParChd.containsKey(code)) {
@@ -1377,19 +1384,22 @@ public class ComputeIcd11Map {
 
     // For descendants of 40733004 | Infectious disease (disorder) |
     // AND icd10Map has a single entry for the concept
-    // AND icd11Map has a stem code (starting with 1) and a score > 1.0
+    // AND icd11Map has a stem code (starting with 1) and a score > .4
     // AND and the snomed term contains an XT word (especially at beginning of
     // the word),
     String xtCode = null;
     String xtName = null;
     boolean override = false;
     double score = 0;
+    if (sctid.equals("276288002")) {
+      System.out.println("here");
+    }
     if (sctAncDesc.get("40733004").contains(sctid) && icd10Map.size() == 1
         && icd11Map.size() == 1) {
       final String targetId = icd11Map.iterator().next().getMapTarget();
       final String targetCode = icd11Concepts.get(targetId);
       if (targetCode != null && targetCode.startsWith("1")
-          && candidates.get(targetId) >= 1.0) {
+          && candidates.get(targetId) >= 0.4) {
         score += 2.0;
         for (final String key : xtConcepts.keySet()) {
           if (icd11Index.get(targetId) != null && sctName.startsWith(key)
