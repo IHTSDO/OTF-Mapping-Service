@@ -19,27 +19,44 @@
       CT Browser</button>
     <button class="btn btn-xs btn-primary" ng-show="indexViewerExists == true"
       ng-click="openIndexViewer()">Index Viewer</button>
-    <span style="display: inline" class="dropdown"
+    <span style="display: inline" class="dropdown" uib-dropdown
       ng-show="concept.relationship.length > 0">
-      <button class="dropdown-toggle btn btn-xs btn-primary">Parents</button>
-      <ul class="dropdown-menu">
+      <button class="dropdown-toggle btn btn-xs btn-primary" uib-dropdown-toggle>Parents</button>
+      <!-- <ul class="dropdown-menu">
         <b>Parents</b>
         <li
           ng-repeat="relationship in concept.relationship | orderBy:'destinationConceptPreferredName'">
           <a href="#/record/conceptId/{{relationship.destinationConceptId}}">{{relationship.destinationConceptId}}:
             {{relationship.destinationConceptPreferredName}}</a>
         </li>
-      </ul>
+      </ul> -->
+      <div class="dropdown-menu" uib-dropdown-menu
+              style="position: absolute; width: 350px; text-align: right; padding: 15px;">             
+        <b>Parents</b>
+        <div ng-repeat="relationship in concept.relationship  | orderBy:'destinationConceptPreferredName'">
+          <a href="#/record/conceptId/{{relationship.destinationConceptId}}">{{relationship.destinationConceptId}}:
+            {{relationship.destinationConceptPreferredName}}</a>
+        </div>
+      </div>
     </span>
-    <span style="display: inline" class="dropdown"
+    <span style="display: inline" class="dropdown" uib-dropdown
       ng-show="concept.children.length > 0">
-      <button class="dropdown-toggle btn btn-xs btn-primary">Children</button>
-      <ul class="dropdown-menu">
+      <button class="dropdown-toggle btn btn-xs btn-primary" uib-dropdown-toggle>Children</button>
+      <!-- <ul class="dropdown-menu" >
         <b>Children</b>
         <li ng-repeat="concept in concept.children | orderBy: 'value'"><a
             href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}:
             {{concept.value}}</a></li>
-      </ul>
+      </ul> -->
+      <div class="dropdown-menu" uib-dropdown-menu
+              style="position: absolute; width: 350px; text-align: right; padding: 15px;">
+        <b>Children</b>
+        <div ng-repeat="concept in concept.children | orderBy: 'value'">
+          <a
+            href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}:
+            {{concept.value}}</a>
+		</div>
+      </div>
     </span>
   </h4>
 
