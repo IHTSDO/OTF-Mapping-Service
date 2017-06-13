@@ -2244,6 +2244,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       if (concept == null) {
         resultMessages
             .add(mapProject.getSourceTerminology() + " concept does not exist");
+        continue;
       } else if (!concept.isActive()) {
         resultMessages
             .add(mapProject.getSourceTerminology() + " concept inactive");
