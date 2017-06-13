@@ -16,7 +16,7 @@
   <description>NLM Mapping tool configuration for production environment</description>
 
   <properties>
-    <!-- Specify index viewer data -->
+    <!-- Specify index viewer data for icd10cm -->
     <index.viewer.groupId>org.ihtsdo.otf.mapping</index.viewer.groupId>
     <index.viewer.artifactId>index-viewer-data-icd10cm</index.viewer.artifactId>
     <index.viewer.version>1.5.0</index.viewer.version>
