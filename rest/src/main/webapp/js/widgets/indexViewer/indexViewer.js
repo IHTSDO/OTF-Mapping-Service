@@ -446,8 +446,8 @@ angular
 
       $scope.getPageUrl = function(domainName, page) {
         return 'indexViewerData/' + $scope.focusProject.destinationTerminology + '/'
-          + $scope.focusProject.destinationTerminologyVersion + '/html/' + domainName + '/' + page
-          + '.html';
+          + $scope.focusProject.destinationTerminologyVersion + encodeURIComponent('/html/' + domainName + '/' + page
+          + '.html');
       };
 
       $scope.cacheUrls = function(domain) {
