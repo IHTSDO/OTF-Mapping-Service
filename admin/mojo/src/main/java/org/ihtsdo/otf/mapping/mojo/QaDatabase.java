@@ -119,7 +119,7 @@ public class QaDatabase extends AbstractMojo {
           } else {
             from = config.getProperty("mail.smtp.user");
           }
-          String deployTitle = config.containsKey("deploy.title");
+          String deployTitle = config.getProperty("deploy.title");
           Properties props = new Properties();
           props.put("mail.smtp.user", config.getProperty("mail.smtp.user"));
           props.put("mail.smtp.password",
