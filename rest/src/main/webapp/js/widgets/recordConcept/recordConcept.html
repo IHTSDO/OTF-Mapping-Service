@@ -22,14 +22,7 @@
     <span style="display: inline" class="dropdown" uib-dropdown
       ng-show="concept.relationship.length > 0">
       <button class="dropdown-toggle btn btn-xs btn-primary" uib-dropdown-toggle>Parents</button>
-      <!-- <ul class="dropdown-menu">
-        <b>Parents</b>
-        <li
-          ng-repeat="relationship in concept.relationship | orderBy:'destinationConceptPreferredName'">
-          <a href="#/record/conceptId/{{relationship.destinationConceptId}}">{{relationship.destinationConceptId}}:
-            {{relationship.destinationConceptPreferredName}}</a>
-        </li>
-      </ul> -->
+      
       <div class="dropdown-menu" uib-dropdown-menu
               style="position: absolute; width: 350px; text-align: right; padding: 15px;">             
         <b>Parents</b>
@@ -42,12 +35,7 @@
     <span style="display: inline" class="dropdown" uib-dropdown
       ng-show="concept.children.length > 0">
       <button class="dropdown-toggle btn btn-xs btn-primary" uib-dropdown-toggle>Children</button>
-      <!-- <ul class="dropdown-menu" >
-        <b>Children</b>
-        <li ng-repeat="concept in concept.children | orderBy: 'value'"><a
-            href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}:
-            {{concept.value}}</a></li>
-      </ul> -->
+      
       <div class="dropdown-menu" uib-dropdown-menu
               style="position: absolute; width: 350px; text-align: right; padding: 15px;">
         <b>Children</b>
