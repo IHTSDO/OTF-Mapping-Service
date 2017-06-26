@@ -1467,8 +1467,13 @@ angular
         };
 
         $scope.getBrowserUrl = function() {
-          return 'http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1='
+          if ($scope.project.sourceTerminology === 'SNOMEDCT_US') {
+            return 'https://dailybuild.ihtsdotools.org/us.html?perspective=full&conceptId1='
             + $scope.record.conceptId + '&acceptLicense=true';
+          } else {
+        	return 'http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1='
+            + $scope.record.conceptId + '&acceptLicense=true';
+          }
         };
 
         $scope.openConceptBrowser = function() {

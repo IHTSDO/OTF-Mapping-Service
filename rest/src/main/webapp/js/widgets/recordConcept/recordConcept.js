@@ -14,7 +14,7 @@ angular
   .controller(
     'recordConceptCtrl',
     function($scope, $rootScope, $http, $routeParams, $location, $uibModal, localStorageService, $sce,
-      appConfig) {
+      appConfig, utilService) {
 
       // scope variables
       $scope.appConfig = appConfig;
@@ -88,6 +88,7 @@ angular
           }).success(
           function(data) {
             $scope.concept = data;
+            $scope.concept.relationship = utilService.uniq($scope.concept.relationship, 'destinationConceptPreferredName');
             setTitle($scope.focusProject.sourceTerminology, $routeParams.conceptId,
               $scope.concept.defaultPreferredName);
             $scope.getRecordsForConcept();
@@ -106,7 +107,7 @@ angular
                 }
               }).success(function(data) {
               console.debug(data);
-              $scope.concept.children = data.searchResult;
+              $scope.concept.children = utilService.uniq(data.searchResult, 'value');
 
             }).error(function(data, status, headers, config) {
               $rootScope.handleHttpError(data, status, headers, config);
@@ -130,7 +131,9 @@ angular
       $scope.to_trusted = function(html_code) {
         return $sce.trustAsHtml(html_code);
       };
+      
 
+    	  
       $scope.getRecordsForConcept = function() {
         // retrieve all records with this concept id
         $http({
@@ -272,6 +275,7 @@ angular
         }
       };
 
+        
       $scope.isEditable = function(record) {
 
         if (($scope.currentRole === 'Specialist' || $scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator')
@@ -555,12 +559,16 @@ angular
 
       // opens SNOMED CT browser
       $scope.getBrowserUrl = function() {
-        if ($scope.currentUser.userName === 'guest')
+        if ($scope.currentUser.userName === 'guest') {
           return 'http://browser.ihtsdotools.org/index.html?perspective=full&conceptId1='
             + $scope.conceptId + '&acceptLicense=true';
-        else
+        } else if ($scope.focusProject.sourceTerminology === 'SNOMEDCT_US') {
+          return 'https://dailybuild.ihtsdotools.org/us.html?perspective=full&conceptId1='
+            + $scope.conceptId + '&acceptLicense=true';
+        } else {
           return 'http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1='
             + $scope.conceptId + '&acceptLicense=true';
+        }
       };
 
       $scope.openConceptBrowser = function() {

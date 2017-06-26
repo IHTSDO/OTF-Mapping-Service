@@ -119,6 +119,7 @@ public class QaDatabase extends AbstractMojo {
           } else {
             from = config.getProperty("mail.smtp.user");
           }
+          String deployTitle = config.getProperty("deploy.title");
           Properties props = new Properties();
           props.put("mail.smtp.user", config.getProperty("mail.smtp.user"));
           props.put("mail.smtp.password",
@@ -128,7 +129,7 @@ public class QaDatabase extends AbstractMojo {
           props.put("mail.smtp.starttls.enable",
               config.getProperty("mail.smtp.starttls.enable"));
           props.put("mail.smtp.auth", config.getProperty("mail.smtp.auth"));
-          ConfigUtility.sendEmail("[OTF-Mapping-Tool] Database QA Results",
+          ConfigUtility.sendEmail("[OTF-Mapping-Tool] Database QA Results " + deployTitle,
               from, notificationRecipients, msg.toString(), props,
               "true".equals(config.getProperty("mail.smtp.auth")));
 
