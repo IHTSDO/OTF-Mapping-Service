@@ -79,6 +79,12 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
    * @parameter
    */
   private boolean sendNotification = false;
+  
+  /**
+   * Whether to create tree positions
+   * @parameter
+   */
+  private boolean treePositions = true;
 
   /** the defaultPreferredNames type id. */
   private Long dpnTypeId = 900000000000003001L;
@@ -324,50 +330,53 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
         // Close files/readers
         closeAllSortedFiles();
 
-        // Create tree positions
-        final MetadataService metadataService = new MetadataServiceJpa();
-        Map<String, String> hierRelTypeMap = metadataService
+        if (treePositions) {
+          // Create tree positions
+          final MetadataService metadataService = new MetadataServiceJpa();
+          Map<String, String> hierRelTypeMap = metadataService
             .getHierarchicalRelationshipTypes(terminology, version);
-        String isaRelType =
+          String isaRelType =
             hierRelTypeMap.keySet().iterator().next().toString();
-        getLog().info("  Start creating tree positions.");
-        metadataService.close();
+          getLog().info("  Start creating tree positions.");
+          metadataService.close();
 
-        final ContentService contentService = new ContentServiceJpa();
+          final ContentService contentService = new ContentServiceJpa();
 
-        // Walk up tree to the root
-        // ASSUMPTION: single root
-        String conceptId = isaRelType;
-        String rootId = null;
-        OUTER: while (true) {
-          getLog().info("    Walk up tree from " + conceptId);
-          Concept c =
+          // Walk up tree to the root
+          // ASSUMPTION: single root
+          String conceptId = isaRelType;
+          String rootId = null;
+          OUTER: while (true) {
+            getLog().info("    Walk up tree from " + conceptId);
+            Concept c =
               contentService.getConcept(conceptId, terminology, version);
-          for (Relationship r : c.getRelationships()) {
-            if (r.isActive()
+            for (Relationship r : c.getRelationships()) {
+              if (r.isActive()
                 && r.getTypeId().equals(Long.valueOf(isaRelType))) {
-              conceptId = r.getDestinationConcept().getTerminologyId();
-              continue OUTER;
+                conceptId = r.getDestinationConcept().getTerminologyId();
+                continue OUTER;
+              }
             }
+            rootId = conceptId;
+            break;
           }
-          rootId = conceptId;
-          break;
-        }
-        getLog().info("    Compute tree from rootId " + conceptId);
-        ValidationResult result = contentService
+          getLog().info("    Compute tree from rootId " + conceptId);
+          ValidationResult result = contentService
             .computeTreePositions(terminology, version, isaRelType, rootId);
-        if (sendNotification && !result.isValid()) {
-          ConfigUtility.sendValidationResultEmail(
+          if (sendNotification && !result.isValid()) {
+            ConfigUtility.sendValidationResultEmail(
               config.getProperty("notification.recipients"),
               "OTF-Mapping-Tool:  Errors in computing " + terminology + ", "
                   + version + " hierarchical tree positions",
               "Hello,\n\nErrors were detected when computing hierarchical tree positions for "
                   + terminology + ", " + version,
               result);
-        }
+          }
+        
+          // Close service
+          contentService.close();
 
-        // Close service
-        contentService.close();
+        }
 
         // Final logging messages
         getLog().info(

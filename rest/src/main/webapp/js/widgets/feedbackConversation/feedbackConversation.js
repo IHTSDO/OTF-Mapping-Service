@@ -317,7 +317,9 @@ angular
         if ($scope.currentUser.userName === 'guest') {
           return 'http://browser.ihtsdotools.org/index.html?perspective=full&conceptId1='
             + $scope.conversation.terminologyId + '&acceptLicense=true';
-
+        } else if ($scope.focusProject.sourceTerminology === 'SNOMEDCT_US') {
+          return 'https://dailybuild.ihtsdotools.org/us.html?perspective=full&conceptId1='
+          + $scope.conversation.terminologyId + '&acceptLicense=true';
         } else {
           return 'http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1='
             + $scope.conversation.terminologyId + '&acceptLicense=true';
