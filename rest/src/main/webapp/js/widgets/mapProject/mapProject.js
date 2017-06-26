@@ -234,6 +234,9 @@ angular
         if ($scope.currentUser.userName === 'guest')
           myWindow = window.open('http://browser.ihtsdotools.org/index.html?perspective=full'
             + '&acceptLicense=true');
+        else if ($scope.project.sourceTerminology === 'SNOMEDCT_US') 
+          myWindow = window.open('https://dailybuild.ihtsdotools.org/us.html?perspective=full'
+            + '&acceptLicense=true');
         else
           myWindow = window.open('http://dailybuild.ihtsdotools.org/index.html?perspective=full'
             + '&acceptLicense=true');

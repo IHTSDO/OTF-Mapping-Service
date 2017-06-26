@@ -60,7 +60,7 @@ mapProjectAppControllers
     // - compareRecords.html
     $rootScope.currentPageDirty = false;
 
-    $rootScope.title = 'IHTSDO Mapping';
+    $rootScope.title = 'Mapping Tool';
 
     // root watcher to check for page changes, reload events, window closes,
     // etc

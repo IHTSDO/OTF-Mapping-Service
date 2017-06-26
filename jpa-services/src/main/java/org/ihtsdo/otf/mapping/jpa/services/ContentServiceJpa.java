@@ -2064,9 +2064,11 @@ public class ContentServiceJpa extends RootServiceJpa
     javax.persistence.Query query = manager
         .createQuery("select d from DescriptionJpa d"
             + " where effectiveTime >= :releaseDate"
-            + " and terminology = :terminology")
+            + " and terminology = :terminology"
+            + " and terminologyVersion = :terminologyVersion")
         .setParameter("releaseDate", date)
-        .setParameter("terminology", terminology);
+        .setParameter("terminology", terminology)
+        .setParameter("terminologyVersion", "latest");
 
     results.setDescriptions(query.getResultList());
     return results;
@@ -2082,9 +2084,11 @@ public class ContentServiceJpa extends RootServiceJpa
     javax.persistence.Query query = manager
         .createQuery("select r from RelationshipJpa r"
             + " where effectiveTime >= :releaseDate"
-            + " and terminology = :terminology")
+            + " and terminology = :terminology"
+            + " and terminologyVersion = :terminologyVersion")
         .setParameter("releaseDate", date)
-        .setParameter("terminology", terminology);
+        .setParameter("terminology", terminology)
+        .setParameter("terminologyVersion", "latest");
 
     results.setRelationships(query.getResultList());
 
@@ -2101,9 +2105,11 @@ public class ContentServiceJpa extends RootServiceJpa
     javax.persistence.Query query = manager
         .createQuery("select l from LanguageRefSetMemberJpa l"
             + " where effectiveTime >= :releaseDate"
-            + " and terminology = :terminology")
+            + " and terminology = :terminology"
+            + " and terminologyVersion = :terminologyVersion")
         .setParameter("releaseDate", date)
-        .setParameter("terminology", terminology);
+        .setParameter("terminology", terminology)
+        .setParameter("terminologyVersion", "latest");
 
     results.setLanguageRefSetMembers(query.getResultList());
 
