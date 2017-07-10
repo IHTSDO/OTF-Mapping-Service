@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2015 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
 import java.util.ArrayList;
@@ -1571,6 +1574,26 @@ public class ICD11ProjectSpecificAlgorithmHandler
       }
     }
     return map;
+  }
+
+  /**
+   * Check map record rules.  Override the rule about non-terminating true rules.
+   * TODO: implement a rule that all TRUE rules must be at the end.
+   *
+   * @param mapRecord the map record
+   * @param entryGroups the entry groups
+   * @return the validation result
+   */
+  public ValidationResult checkMapRecordRules(MapRecord mapRecord,
+    Map<Integer, List<MapEntry>> entryGroups) {
+    ValidationResult result = super.checkMapRecordRules(mapRecord, entryGroups);
+    // Remove "Found non-terminating entry with TRUE rule." errors
+    for (final String error : result.getErrors()) {
+      if (error.startsWith("Found non-terminating entry with TRUE rule.")) {
+        result.removeError(error);
+      }
+    }
+    return result;
   }
 
   /**
