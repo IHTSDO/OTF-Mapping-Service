@@ -1519,7 +1519,7 @@ public class ComputeIcd11Map {
       final IcdMap stemMap = new IcdMap(origMap);
       stemMap.setMapTarget(stemCode);
       icd11Map.add(0, stemMap);
-      origMap.setMapGroup(2);
+      origMap.setMapPriority(2);
       fixAdvice(stemMap, stemCode);
       stemMap.setMapAdvice(getWithoutAdvice(stemMap.getMapAdvice(),
           "POSSIBLE REQUIREMENT FOR MORPHOLOGY CODE"));
@@ -1603,7 +1603,7 @@ public class ComputeIcd11Map {
       final IcdMap origMap = icd11Map.iterator().next();
       final IcdMap xtMap = new IcdMap(origMap);
       xtMap.setMapTarget(xtCode);
-      xtMap.setMapGroup(2);
+      xtMap.setMapPriority(2);
       icd11Map.add(xtMap);
       noteSb.append("\nOVERRIDE " + getCategoryString(category[0]) + ": ("
           + score + "): XT Addition Rule - " + xtName + "\n");
@@ -1815,7 +1815,7 @@ public class ComputeIcd11Map {
       final IcdMap origMap = icd11Map.iterator().next();
       final IcdMap xaMap = new IcdMap(origMap);
       xaMap.setMapTarget(xaCode);
-      xaMap.setMapGroup(2);
+      xaMap.setMapPriority(2);
       icd11Map.add(xaMap);
       fixAndClearAdvice(xaMap, xaCode);
       if (score > 3.0) {
