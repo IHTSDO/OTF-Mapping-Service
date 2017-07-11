@@ -1099,6 +1099,8 @@ angular
             };
 
             localFeedback.push(feedback);
+            $scope.tinymceContent = null;
+
             $scope.conversation.feedback = localFeedback;
 
             console.debug('update conversation', $scope.conversation);
