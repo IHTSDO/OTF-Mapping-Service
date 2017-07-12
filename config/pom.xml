@@ -21,6 +21,7 @@
     <module>dev-windows</module>
     <module>prod</module>
     <module>wci</module>
+    <module>nlm</module>
   </modules>
 </project>
 

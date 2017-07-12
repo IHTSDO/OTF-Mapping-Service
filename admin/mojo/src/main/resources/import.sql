@@ -19,9 +19,11 @@ CREATE INDEX x_map_records_AUD_1 on map_records_AUD (lastModifiedBy_id);
 
 -- NOTE: this works with Oracle and MySQL but may not work for other environments.
 CREATE INDEX x_map_records_AUD_2 on map_records_AUD (conceptId);
+CREATE INDEX x_map_records_2 on map_record (conceptId);
 
 -- NOTE: this works with Oracle and MySQL but may not work for other environments.
 CREATE INDEX x_map_records_AUD_3 on map_records_AUD (mapProjectId);
+CREATE INDEX x_map_records on map_records(mapProjectId);
 
 -- NOTE: this works with Oracle and MySQL but may not work for other environments.
 CREATE INDEX x_map_records_AUD_4 on map_records_AUD (id);

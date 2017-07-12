@@ -533,8 +533,10 @@ angular
 
         // copy the relevant information into the map lead's record
         $scope.leadRecord.mapEntry = angular.copy(record.mapEntry);
-        $scope.leadRecord.mapNotes = angular.copy(record.mapNotes);
-        $scope.leadRecord.mapPrinciples = angular.copy(record.mapPrinciples);
+        if (!$scope.leadRecord.mapNote.length) {
+          $scope.leadRecord.mapNote = angular.copy(record.mapNote);
+        }
+        $scope.leadRecord.mapPrinciples = angular.copy(record.mapPrinciple);
 
         // null the ids of the notes (for later creation as new jpa objects)
         for (var i = 0; i < $scope.leadRecord.mapNote.length; i++) {

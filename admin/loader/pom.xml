@@ -42,6 +42,8 @@
     <root.ids>138875005</root.ids>
     <!-- The last publication date for RF2 delta source -->
     <last.publication.date></last.publication.date>
+    <!-- Indicates if tree positions should be loaded or not -->
+    <tree.positions>true</tree.positions>
     <!-- Properties indicating how the RF2 map loader should function (simple only 
       for now -->
     <member.flag>false</member.flag>
@@ -94,6 +96,7 @@
                   <terminology>${terminology}</terminology>
                   <version>${version}</version>
                   <sendNotification>${send.notification}</sendNotification>
+                  <tree.positions>${tree.positions}</tree.positions>
                 </configuration>
               </execution>
             </executions>
