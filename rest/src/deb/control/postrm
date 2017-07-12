@@ -3,8 +3,8 @@
 #For debugging uncomment these two lines
 #set -x
 #echo $*
-
-APP_NAME=[[packageName]]
+#APP_NAME=[[packageName]]
+APP_NAME=mapping-service
 
 case $1 in
 	purge)

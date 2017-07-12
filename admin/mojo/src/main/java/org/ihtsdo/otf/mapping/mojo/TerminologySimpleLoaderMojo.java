@@ -237,11 +237,11 @@ public class TerminologySimpleLoaderMojo extends AbstractMojo {
           }
           final Concept par = conceptMap.get(fields[0]);
           if (par == null) {
-            throw new Exception("Unable to find parent concept " + fields[0]);
+            throw new Exception("Unable to find parent concept " + line);
           }
           final Concept chd = conceptMap.get(fields[1]);
           if (chd == null) {
-            throw new Exception("Unable to find child concept " + fields[0]);
+            throw new Exception("Unable to find child concept " + line);
           }
           helper.createIsaRelationship(par, chd, ++objCt + "", terminology,
               version, dateFormat.format(now));
