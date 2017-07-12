@@ -4,6 +4,8 @@
 package org.ihtsdo.otf.mapping.test.mojo;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -14,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -37,6 +40,18 @@ import org.junit.Test;
  */
 public class ComputeIcd11Map {
 
+	  /** The Constant NO_MAP. */
+	  final static int NO_MAP = 4;
+
+	  /** The Constant HIGH. */
+	  final static int HIGH = 3;
+
+	  /** The Constant MEDIUM. */
+	  final static int MEDIUM = 2;
+
+	  /** The Constant LOW. */
+	  final static int LOW = 1;
+	  
   /** The properties. */
   static Properties config;
 
@@ -150,7 +165,11 @@ public class ComputeIcd11Map {
         if (ct < sampleCt) {
           Logger.getLogger(getClass()).debug(code + " => " + fields[1]);
         }
-
+        ct++;
+       }
+      Logger.getLogger(getClass()).info("   ct = " + ct);
+      Logger.getLogger(getClass()).info("   skipCt =  " + skipCt);
+    
       //
       // Cache ICD11 concepts (by id) - noheader
       // entityCode|code: name
@@ -709,7 +728,9 @@ public class ComputeIcd11Map {
       Collections.sort(sctScope, new Comparator<String>() {
         @Override
         public int compare(String c1, String c2) {
-          return getMaxDepth(c2, sctAncDesc) - getMaxDepth(c1, sctAncDesc);
+          // TODO restore this and remove fake line below
+          // return getMaxDepth(c2, sctAncDesc) - getMaxDepth(c1, sctAncDesc);
+          return c2.compareTo(c1);
         }
       });
 
@@ -725,6 +746,28 @@ public class ComputeIcd11Map {
 
       // For 11-10 maps
       // stated = true (higher)
+      // Write maps
+      final PrintWriter mapOut =
+          new PrintWriter(new FileWriter(new File(icd11Dir, "icd11Map.txt")));
+      final PrintWriter notesOut = new PrintWriter(
+          new FileWriter(new File(icd11Dir, "icd11MapNotes.txt")));
+      final PrintWriter statsOut = new PrintWriter(
+          new FileWriter(new File(icd11Dir, "icd11MapStats.txt")));
+      final int[] stats = new int[5];
+
+      int sctidCt = 0;
+
+      for (final String sctid : sctScope) {
+        // skip header
+        if (sctid.equals("referencedComponentId")) {
+          continue;
+        }
+        // initialize category
+        int category = 0;
+        sctidCt++;
+        Logger.getLogger(getClass()).info("------------------------------");
+        Logger.getLogger(getClass())
+            .info("SCTID = " + sctid + " " + sctConcepts.get(sctid));
 
         // Prep maps for this SNOMED concept
         icd11Map.put(sctid, new ArrayList<IcdMap>());
@@ -2312,6 +2355,9 @@ public class ComputeIcd11Map {
    */
   class IcdMap {
 
+	/** The concept id. */
+	private String conceptId;
+	    
     /** The map group. */
     private int mapGroup;
 
@@ -2336,6 +2382,42 @@ public class ComputeIcd11Map {
     public IcdMap() {
     }
 
+    /**
+     * Instantiates a {@link IcdMap} from the specified parameters.
+     *
+     * @param line the line
+     */
+    public IcdMap(String line) {
+      // id effectiveTime active moduleId refsetId referencedComponentId
+      // mapGroup mapPriority mapRule mapAdvice mapTarget correlationId
+      // mapCorrelationId
+      final String[] fields = line.split("\\t");
+      this.mapGroup = Integer.valueOf(fields[6]);
+      this.mapPriority = Integer.valueOf(fields[7]);
+      this.mapRule = fields[8];
+      this.mapAdvice = fields[9];
+      // fields[9].replaceAll("ALWAYS [A-Z\\.0-9]+( \\|)?", "").replace(
+      // "MAP SOURCE CONCEPT CANNOT BE CLASSIFIED WITH AVAILABLE DATA",
+      // "");
+      this.mapTarget = fields[10];
+      this.mapCategoryId = fields[12];
+    }
+
+    /**
+     * Instantiates a {@link IcdMap} from the specified parameters.
+     *
+     * @param copy the copy
+     */
+    public IcdMap(IcdMap copy) {
+      mapGroup = copy.getMapGroup();
+      mapPriority = copy.getMapPriority();
+      mapRule = copy.getMapRule();
+      mapAdvice = copy.getMapAdvice();
+      mapTarget = copy.getMapTarget();
+      mapCategoryId = copy.getMapCategoryId();
+      conceptId = copy.getConceptId();
+    }
+    
     /**
      * Instantiates a {@link IcdMap} from the specified parameters.
      *
@@ -2471,6 +2553,25 @@ public class ComputeIcd11Map {
           + ", mapRule=" + mapRule + ", mapAdvice=" + mapAdvice + ", mapTarget="
           + mapTarget + ", mapCategoryId=" + mapCategoryId + "]";
     }
+    
+    /**
+     * Returns the concept id.
+     *
+     * @return the concept id
+     */
+    public String getConceptId() {
+      return conceptId;
+    }
+
+    /**
+     * Sets the concept id.
+     *
+     * @param conceptId the concept id
+     */
+    public void setConceptId(String conceptId) {
+      this.conceptId = conceptId;
+    }
+    
   }
 
   /**
