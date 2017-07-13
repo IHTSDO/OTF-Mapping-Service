@@ -3,6 +3,7 @@
  */
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -484,7 +485,7 @@ public class ICD11ProjectSpecificAlgorithmHandler
     Map<Integer, List<MapEntry>> entryGroups) {
     ValidationResult result = super.checkMapRecordRules(mapRecord, entryGroups);
     // Remove "Found non-terminating entry with TRUE rule." errors
-    for (final String error : result.getErrors()) {
+    for (final String error : new ArrayList<>(result.getErrors())) {
       if (error.startsWith("Found non-terminating entry with TRUE rule.")) {
         result.removeError(error);
       }
