@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
-    <version>1.5.32-SNAPSHOT</version>
+    <version>1.5.33-SNAPSHOT</version>
     <relativePath>../../parent</relativePath>
   </parent>
 
@@ -265,10 +265,10 @@
                 <phase>compile</phase>
                 <configuration>
                   <inputDir>${input.dir}</inputDir>
-                  <inputFile>icd10cm_neoplasm_2017.xml</inputFile>
+                  <inputFile>icd10cm_neoplasm_2018.xml</inputFile>
                   <domain>Neoplasm</domain>
                   <terminology>ICD10CM</terminology>
-                  <terminologyVersion>2017</terminologyVersion>
+                  <terminologyVersion>2018</terminologyVersion>
                 </configuration>
                 <goals>
                   <goal>convert-to-html</goal>
@@ -280,10 +280,10 @@
                 <phase>compile</phase>
                 <configuration>
                   <inputDir>${input.dir}</inputDir>
-                  <inputFile>icd10cm_index_2017.xml</inputFile>
+                  <inputFile>icd10cm_index_2018.xml</inputFile>
                   <domain>Indexes</domain>
                   <terminology>ICD10CM</terminology>
-                  <terminologyVersion>2017</terminologyVersion>
+                  <terminologyVersion>2018</terminologyVersion>
                 </configuration>
                 <goals>
                   <goal>convert-to-html</goal>
@@ -295,10 +295,10 @@
                 <phase>compile</phase>
                 <configuration>
                   <inputDir>${input.dir}</inputDir>
-                  <inputFile>icd10cm_eindex_2017.xml</inputFile>
+                  <inputFile>icd10cm_eindex_2018.xml</inputFile>
                   <domain>EIndex</domain>
                   <terminology>ICD10CM</terminology>
-                  <terminologyVersion>2017</terminologyVersion>
+                  <terminologyVersion>2018</terminologyVersion>
                 </configuration>
                 <goals>
                   <goal>convert-to-html</goal>
@@ -310,10 +310,10 @@
                 <phase>compile</phase>
                 <configuration>
                   <inputDir>${input.dir}</inputDir>
-                  <inputFile>icd10cm_drug_2017.xml</inputFile>
+                  <inputFile>icd10cm_drug_2018.xml</inputFile>
                   <domain>Drug</domain>
                   <terminology>ICD10CM</terminology>
-                  <terminologyVersion>2017</terminologyVersion>
+                  <terminologyVersion>2018</terminologyVersion>
                 </configuration>
                 <goals>
                   <goal>convert-to-html</goal>
@@ -326,10 +326,10 @@
                 <phase>compile</phase>
                 <configuration>
                   <inputDir>${input.dir}</inputDir>
-                  <inputFile>icd10cm_neoplasm_2017.xml</inputFile>
+                  <inputFile>icd10cm_neoplasm_2018.xml</inputFile>
                   <domain>Neoplasm</domain>
                   <terminology>ICD10CM</terminology>
-                  <terminologyVersion>2017</terminologyVersion>
+                  <terminologyVersion>2018</terminologyVersion>
                 </configuration>
                 <goals>
                   <goal>convert-to-lucene</goal>
@@ -341,10 +341,10 @@
                 <phase>compile</phase>
                 <configuration>
                   <inputDir>${input.dir}</inputDir>
-                  <inputFile>icd10cm_index_2017.xml</inputFile>
+                  <inputFile>icd10cm_index_2018.xml</inputFile>
                   <domain>Index</domain>
                   <terminology>ICD10CM</terminology>
-                  <terminologyVersion>2017</terminologyVersion>
+                  <terminologyVersion>2018</terminologyVersion>
                 </configuration>
                 <goals>
                   <goal>convert-to-lucene</goal>
@@ -356,10 +356,10 @@
                 <phase>compile</phase>
                 <configuration>
                   <inputDir>${input.dir}</inputDir>
-                  <inputFile>icd10cm_eindex_2017.xml</inputFile>
+                  <inputFile>icd10cm_eindex_2018.xml</inputFile>
                   <domain>Eindex</domain>
                   <terminology>ICD10CM</terminology>
-                  <terminologyVersion>2017</terminologyVersion>
+                  <terminologyVersion>2018</terminologyVersion>
                 </configuration>
                 <goals>
                   <goal>convert-to-lucene</goal>
@@ -371,10 +371,10 @@
                 <phase>compile</phase>
                 <configuration>
                   <inputDir>${input.dir}</inputDir>
-                  <inputFile>icd10cm_drug_2017.xml</inputFile>
+                  <inputFile>icd10cm_drug_2018.xml</inputFile>
                   <domain>Drug</domain>
                   <terminology>ICD10CM</terminology>
-                  <terminologyVersion>2017</terminologyVersion>
+                  <terminologyVersion>2018</terminologyVersion>
                 </configuration>
                 <goals>
                   <goal>convert-to-lucene</goal>
