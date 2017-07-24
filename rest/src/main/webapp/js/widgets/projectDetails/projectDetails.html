@@ -172,7 +172,7 @@
 </table>
 
 <form
-  ng-show="editModeEnabled == true && currentRole == 'Administrator'">
+  ng-show="editModeEnabled == true">
   <div style="margin-top: 15px;">
     <b>Add New Map Lead to Project</b>
   </div>
@@ -258,7 +258,7 @@
   </tbody>
 </table>
 <form
-  ng-show="editModeEnabled == true && currentRole == 'Administrator'">
+  ng-show="editModeEnabled == true">
   <div style="margin-top: 15px;">
     <b>Add New Map Specialist to Project</b>
   </div>
@@ -305,10 +305,12 @@
   boundary-links="true" total-items="pagedAdviceCount"
   items-per-page="pageSize" ng-model="pageAdvice"
   ng-change="getPagedAdvices(pageAdvice, adviceFilter)"></uib-pagination>
-<span> <input id="adviceSearch" type="text"
-  ng-model="adviceFilter" ng-change="getPagedAdvices(1, adviceFilter)">
-  <button class="btn btn-xs btn-warning" ng-click="resetAdviceFilter()">Reset</button>
-</span>
+<form ng-submit="resetAdviceFilter()">
+  <input type="text" ng-model="adviceFilter"
+    ng-change="getPagedAdvices(1, adviceFilter)">
+  <button type="submit" class="btn btn-xs btn-primary">Reset
+    Filter</button>
+</form>
 
 <table style="width: 100%" class="table pure-table">
   <thead>
@@ -344,7 +346,7 @@
 </table>
 
 <table
-  ng-show="editModeEnabled == true && currentRole == 'Administrator'"
+  ng-show="editModeEnabled == true"
   style="width: 50%" class="table pure-table">
   <thead>
     <tr>
@@ -363,7 +365,7 @@
 </table>
 
 <form
-  ng-show="editModeEnabled == true && currentRole == 'Administrator'">
+  ng-show="editModeEnabled == true">
   <div style="margin-top: 15px;">
     <b>Add New Map Advice to Project</b>
   </div>
@@ -482,7 +484,7 @@
 </table>
 
 <form
-  ng-show="editModeEnabled == true && currentRole == 'Administrator'">
+  ng-show="editModeEnabled == true">
   <div style="margin-top: 15px;">
     <b>Add New Map Relation to Project</b>
   </div>
@@ -792,7 +794,7 @@
 </table>
 
 <form
-  ng-show="editModeEnabled == true && currentRole == 'Administrator'">
+  ng-show="editModeEnabled == true">
   <div style="margin-top: 15px;">
     <b>Add New Map Principle to Project</b>
   </div>
@@ -839,7 +841,7 @@
 <hr>
 
 <div
-  ng-show="editModeEnabled == true && currentRole == 'Administrator' || currentRole == 'Lead'">
+  ng-show="editModeEnabled == true">
   <div style="margin-top: 15px;">
     <b>Add New Map Principle Document</b>
   </div>
@@ -943,7 +945,7 @@
 </table>
 
 <form
-  ng-show="editModeEnabled == true && currentRole == 'Administrator'"
+  ng-show="editModeEnabled == true"
   name="ageRangeForm">
   <div style="margin-top: 15px;">
     <b>Add New Map Age Range to Project</b>
