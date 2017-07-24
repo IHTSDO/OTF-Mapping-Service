@@ -58,13 +58,7 @@ public class ICD11ProjectSpecificAlgorithmHandler
   // private MapRuleParser parser = new MapRuleParser();
 
   /**
-   * For ICD10, a target code is valid if: - Concept exists - Concept has at
-   * least 3 characters - The second character is a number (e.g. XVII is
-   * invalid, but B10 is) - Concept does not contain a dash (-) character
-   *
-   * @param mapRecord the map record
-   * @return the validation result
-   * @throws Exception the exception
+   * For ICD11, it has to be a leaf node.
    */
   @Override
   public ValidationResult validateTargetCodes(MapRecord mapRecord)
@@ -86,33 +80,17 @@ public class ICD11ProjectSpecificAlgorithmHandler
       } else if (mapEntry.getTargetId() != null
           && !mapEntry.getTargetId().equals("")) {
 
-        // first, check terminology id based on above rules
-        if (!mapEntry.getTargetId().equals("")
-            && (!mapEntry.getTargetId().matches(".[0-9].*")
-                || mapEntry.getTargetId().contains("-"))) {
+        // Validate the code
+        if (!isTargetCodeValid(mapEntry.getTargetId())) {
+
           validationResult
-              .addError("Invalid target code " + mapEntry.getTargetId()
-                  + "!  For ICD10, valid target codes must contain 3 digits and must not contain a dash."
+              .addError("Target code " + mapEntry.getTargetId()
+                  + " is an invalid code, use a child code instead. "
                   + " Entry:"
                   + (mapProject.isGroupStructure() ? " group "
                       + Integer.toString(mapEntry.getMapGroup()) + "," : "")
-                  + " map priority "
+                  + " map  priority "
                   + Integer.toString(mapEntry.getMapPriority()));
-        } else {
-
-          // Validate the code
-          if (!isTargetCodeValid(mapEntry.getTargetId())) {
-
-            validationResult
-                .addError("Target code " + mapEntry.getTargetId()
-                    + " is an invalid code, use a child code instead. "
-                    + " Entry:"
-                    + (mapProject.isGroupStructure() ? " group "
-                        + Integer.toString(mapEntry.getMapGroup()) + "," : "")
-                    + " map  priority "
-                    + Integer.toString(mapEntry.getMapPriority()));
-
-          }
 
         }
 
@@ -490,6 +468,10 @@ public class ICD11ProjectSpecificAlgorithmHandler
         result.removeError(error);
       }
     }
+
+    // TODO: could enforce stem/stem/X/X logic and ensure
+    // all entries with the same "rule" are adjacent to each other
+
     return result;
   }
 
