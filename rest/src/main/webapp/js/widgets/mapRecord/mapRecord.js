@@ -1079,6 +1079,7 @@ angular
             }).success(function(data) {
               console.debug('  data = ', data);
               $scope.conversation = feedbackConversation;
+              $scope.tinymceContent = null;
             }).error(function(data, status, headers, config) {
               $scope.recordError = 'Error adding new feedback conversation.';
               $rootScope.handleHttpError(data, status, headers, config);
