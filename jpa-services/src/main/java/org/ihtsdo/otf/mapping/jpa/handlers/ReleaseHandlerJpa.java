@@ -1493,7 +1493,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   }
 
   /** The relations. */
-  private Map<String, MapRelation> relations = null;
+  private Map<Long, MapRelation> relations = null;
 
   /** The advices. */
   private List<MapAdvice> advices = null;
@@ -1510,7 +1510,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     if (relations == null) {
       relations = new HashMap<>();
       for (MapRelation m : mappingService.getMapRelations().getMapRelations()) {
-        relations.put(m.getTerminologyId(), m);
+        relations.put(Long.valueOf(m.getTerminologyId()), m);
       }
 
     }
@@ -2468,6 +2468,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         .findConceptsInScope(mapProject.getId(), null).getSearchResults()) {
       scopeConceptTerminologyIds.add(sr.getTerminologyId());
     }
+    Logger.getLogger(getClass()).info("  scope concepts: " + scopeConceptTerminologyIds.size());
+    
 
     if (mapRecords == null || mapRecords.isEmpty()) {
       MapRecordList mapRecordList = mappingService
