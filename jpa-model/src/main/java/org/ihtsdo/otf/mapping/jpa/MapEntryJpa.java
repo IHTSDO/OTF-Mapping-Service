@@ -17,6 +17,7 @@ import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
+
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Analyzer;
@@ -448,21 +449,24 @@ public class MapEntryJpa implements MapEntry {
   public boolean isEquivalent(MapEntry me) {
 
     // if comparison entry is null, return false
-    if (me == null)
+    if (me == null) {
       return false;
+    }
 
     // targets must be equal
     final String id1 = this.targetId == null ? "" : this.targetId;
     final String id2 = me.getTargetId() == null ? "" : me.getTargetId();
-    if (!id1.equals(id2)) {
+    if (!id1.equals(id2)) {       
       return false;
     }
 
     // rules must be identical
-    if (this.rule == null && me.getRule() != null)
+    if (this.rule == null && me.getRule() != null) {
       return false;
-    if (this.rule != null && !this.rule.equals(me.getRule()))
+    }
+    if (this.rule != null && !this.rule.equals(me.getRule())) {
       return false;
+    }
 
     // relation must be identical
     if (this.mapRelation != null) {
@@ -488,14 +492,15 @@ public class MapEntryJpa implements MapEntry {
     if (this.mapAdvices == null && me.getMapAdvices() != null) {
       return false;
     } else if (this.mapAdvices != null && me.getMapAdvices() == null) {
-      return false;
+        return false;
     } else if (mapAdvices != null
         && mapAdvices.size() != me.getMapAdvices().size()) {
-      return false;
+        return false;
     } else if (mapAdvices != null) {
       for (MapAdvice ma : this.mapAdvices) {
-        if (!me.getMapAdvices().contains(ma))
+        if (!me.getMapAdvices().contains(ma)) {
           return false;
+        }
       }
     }
 
