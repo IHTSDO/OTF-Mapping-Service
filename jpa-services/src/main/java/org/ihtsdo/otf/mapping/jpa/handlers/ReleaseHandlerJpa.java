@@ -2747,8 +2747,18 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           // ComplexMap unique attributes
           member.setMapGroup(Integer.parseInt(fields[6]));
           member.setMapPriority(Integer.parseInt(fields[7]));
-          member.setMapRule(fields[8]);
-          member.setMapAdvice(fields[9]);
+          if (fields[8].equals("OTHERWISE TRUE")) {
+        	member.setMapRule("TRUE");
+          } else {
+            member.setMapRule(fields[8]);
+          }
+          if (fields[9].contains("|")) {
+        	member.setMapAdvice(fields[9].substring(fields[9].indexOf("|") + 1));
+        	Logger.getLogger(getClass())
+            .info("trimmed advice on " + fields[5] + "*" + member.getMapAdvice() + "*");
+          } else {
+            member.setMapAdvice(fields[9]);
+          }
           member.setMapTarget(fields[10]);
           if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ComplexMap) {
             member.setMapRelationId(Long.valueOf(fields[11]));
