@@ -2753,7 +2753,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             member.setMapRule(fields[8]);
           }
           if (fields[9].contains("|")) {
-        	member.setMapAdvice(fields[9].substring(fields[9].indexOf("|") + 1));
+        	member.setMapAdvice(fields[9].substring(fields[9].indexOf("|") + 2));
         	Logger.getLogger(getClass())
             .info("trimmed advice on " + fields[5] + "*" + member.getMapAdvice() + "*");
           } else {
