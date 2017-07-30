@@ -460,11 +460,11 @@ public class ICD11ProjectSpecificAlgorithmHandler
     // lazy initialize map notes map
     if (mapNotes == null) {
       mapNotes = new HashMap<>();
-      final String notesFile =
+      String notesFile =
           ConfigUtility.getConfigProperties().getProperty("icd11.notes");
       if (notesFile == null) {
-        throw new Exception(
-            "Unexpectedly missing icd11.notes property in config file");
+        // Override to work around jenkins/ansible and need for this to be in the config file
+        notesFile = "/opt/mapping-data/ICD11/notes/icd11MapNotes.txt";
       }
       if (!new File(notesFile).exists()) {
         throw new Exception("Notes file does not exist = " + notesFile);
@@ -492,7 +492,7 @@ public class ICD11ProjectSpecificAlgorithmHandler
       }
     }
     if (!found) {
-      mapRecord.addMapNote(new MapNoteJpa(null, null, note, null));
+      mapRecord.addMapNote(new MapNoteJpa(null, mapRecord.getLastModifiedBy(), note, null));
     }
   }
 
