@@ -388,9 +388,11 @@ public class WorkflowServiceJpa extends MappingServiceJpa
             + workflowAction.toString());
     if (mapRecord != null) {
       Logger.getLogger(WorkflowServiceJpa.class)
-          .info("  Record attached: " + mapRecord.toString());
+          .info("  Record attached: " + mapRecord.getConceptId());
     }
 
+    // TODO: this is terrible - transaction scope should be managed externally
+    // from here as this makes it very hard to do batch things.
     setTransactionPerOperation(true);
 
     // instantiate the algorithm handler for this project

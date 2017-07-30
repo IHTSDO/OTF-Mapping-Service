@@ -463,7 +463,8 @@ public class ICD11ProjectSpecificAlgorithmHandler
       String notesFile =
           ConfigUtility.getConfigProperties().getProperty("icd11.notes");
       if (notesFile == null) {
-        // Override to work around jenkins/ansible and need for this to be in the config file
+        // Override to work around jenkins/ansible and need for this to be in
+        // the config file
         notesFile = "/opt/mapping-data/ICD11/notes/icd11MapNotes.txt";
       }
       if (!new File(notesFile).exists()) {
@@ -492,8 +493,17 @@ public class ICD11ProjectSpecificAlgorithmHandler
       }
     }
     if (!found) {
-      mapRecord.addMapNote(new MapNoteJpa(null, mapRecord.getLastModifiedBy(), note, null));
+      mapRecord.addMapNote(
+          new MapNoteJpa(null, mapRecord.getLastModifiedBy(), note, null));
     }
+  }
+
+  /* see superclass */
+  @Override
+  public ValidationResult validateSemanticChecks(MapRecord mapRecord)
+    throws Exception {
+    final ValidationResult result = new ValidationResultJpa();
+    return result;
   }
 
   /**
