@@ -1493,7 +1493,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   }
 
   /** The relations. */
-  private Map<String, MapRelation> relations = null;
+  private Map<Long, MapRelation> relations = null;
 
   /** The advices. */
   private List<MapAdvice> advices = null;
@@ -1510,7 +1510,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     if (relations == null) {
       relations = new HashMap<>();
       for (MapRelation m : mappingService.getMapRelations().getMapRelations()) {
-        relations.put(m.getTerminologyId(), m);
+        relations.put(Long.valueOf(m.getTerminologyId()), m);
       }
 
     }
@@ -2468,6 +2468,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         .findConceptsInScope(mapProject.getId(), null).getSearchResults()) {
       scopeConceptTerminologyIds.add(sr.getTerminologyId());
     }
+    Logger.getLogger(getClass()).info("  scope concepts: " + scopeConceptTerminologyIds.size());
+    
 
     if (mapRecords == null || mapRecords.isEmpty()) {
       MapRecordList mapRecordList = mappingService
@@ -2745,8 +2747,18 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           // ComplexMap unique attributes
           member.setMapGroup(Integer.parseInt(fields[6]));
           member.setMapPriority(Integer.parseInt(fields[7]));
-          member.setMapRule(fields[8]);
-          member.setMapAdvice(fields[9]);
+          if (fields[8].equals("OTHERWISE TRUE")) {
+        	member.setMapRule("TRUE");
+          } else {
+            member.setMapRule(fields[8]);
+          }
+          if (fields[9].contains("|")) {
+        	member.setMapAdvice(fields[9].substring(fields[9].indexOf("|") + 2));
+        	Logger.getLogger(getClass())
+            .info("trimmed advice on " + fields[5] + "*" + member.getMapAdvice() + "*");
+          } else {
+            member.setMapAdvice(fields[9]);
+          }
           member.setMapTarget(fields[10]);
           if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ComplexMap) {
             member.setMapRelationId(Long.valueOf(fields[11]));
