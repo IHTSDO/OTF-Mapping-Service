@@ -16,6 +16,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
+import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
@@ -169,6 +170,6 @@ public class AdHocMojo extends AbstractMojo {
 
     // process the workflow action
     workflowService.processWorkflowAction(mapProject, concept, mapUser,
-        mapRecord, WorkflowAction.CREATE_QA_RECORD);
+        new MapRecordJpa(mapRecord, true), WorkflowAction.CREATE_QA_RECORD);
   }
 }
