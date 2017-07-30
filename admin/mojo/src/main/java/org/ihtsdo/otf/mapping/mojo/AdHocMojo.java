@@ -132,10 +132,13 @@ public class AdHocMojo extends AbstractMojo {
     for (final String conceptId : conceptIds) {
       final MapRecordList list = mappingService
           .getMapRecordsForProjectAndConcept(project.getId(), conceptId);
-      if (list.getCount() != 1) {
+      if (list.getCount() > 1) {
         throw new Exception("Unexpected number of records (" + list.getCount()
             + ") for project " + project.getId() + ", conceptId = "
             + conceptId);
+      }
+      if (list.getCount() == 0) {
+        getLog().warn("No mappings for conceptId = " + conceptId);
       }
       createQARecord(workflowService, contentService, project,
           list.getMapRecords().get(0));

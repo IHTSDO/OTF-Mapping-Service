@@ -381,7 +381,7 @@ public class ComputeIcd11Map {
       //
       Logger.getLogger(getClass()).info(" Load SCT starterSet");
       lines =
-          FileUtils.readLines(new File(icd11Dir, "starterSet.txt"), "UTF-8");
+          FileUtils.readLines(new File(icd11Dir, "nonStarterSet.txt"), "UTF-8");
       final List<String> starterSet = new ArrayList<>();
       ct = 0;
       skipCt = 0;
@@ -789,7 +789,7 @@ public class ComputeIcd11Map {
       //
 
       // Tracking vars
-      final String refsetId = "icd11RefsetId";
+      final String refsetId = "icd11RefsetId-b";
       final String moduleId = "123456789";
       final Map<String, List<IcdMap>> icd11Map = new TreeMap<>();
       final Map<String, String> icd11MapNotes = new TreeMap<>();
