@@ -855,6 +855,9 @@ public class ComputeIcd11Map {
         // NOTE: we could probably do more here by paying attention to
         // first/second maps
         final StringBuilder noteSb = new StringBuilder();
+        if (!icd10Map.containsKey(sctid)) {
+          Logger.getLogger(getClass()).error("  No ICD10 map for SCTID: " + sctid);
+        }
         for (final IcdMap map10 : icd10Map.get(sctid)) {
 
           // Initialize map (copy advices, etc.), default category
@@ -1564,6 +1567,12 @@ public class ComputeIcd11Map {
                 icd11Map.get(sctid), noteSb, candidates, categoryWrapper);
           }
 
+          // Override "event" cases to be HIGH
+          if (sctAncDesc.get("272379006").contains(sctid)) {
+            override = true;
+            categoryWrapper[0] = HIGH;
+          }
+          
           // If we encountered a NOMAP, go to the next concept
           if (override) {
             category = categoryWrapper[0];
@@ -1585,7 +1594,7 @@ public class ComputeIcd11Map {
 
         // Increment the category for this concept (counted at the concept
         // level, not entry level)
-        noteSb.append("FINAL CATEGORY: " + getCategoryString(category) + "\n");
+        noteSb.append("FINAL CATEGORY " + getCategoryString(category) + "\n");
 
         // Add note
         icd11MapNotes.put(sctid, noteSb.toString().replaceAll("\\n", "<br>"));
