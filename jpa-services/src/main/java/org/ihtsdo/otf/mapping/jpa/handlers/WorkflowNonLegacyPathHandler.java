@@ -140,10 +140,11 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
         .addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
             WorkflowStatus.CONFLICT_DETECTED, WorkflowStatus.CONFLICT_DETECTED,
             WorkflowStatus.CONFLICT_RESOLVED)));
-    trackingRecordStateToActionMap.put(leadFinishedState,
-        new HashSet<>(
-            Arrays.asList(WorkflowAction.FINISH_EDITING, WorkflowAction.PUBLISH,
-                WorkflowAction.SAVE_FOR_LATER, WorkflowAction.UNASSIGN)));
+    trackingRecordStateToActionMap
+        .put(leadFinishedState,
+            new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING,
+                WorkflowAction.PUBLISH, WorkflowAction.SAVE_FOR_LATER,
+                WorkflowAction.UNASSIGN)));
 
     // Terminal State: No tracking record
   }
@@ -458,6 +459,7 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
                   .forName(mapProject.getProjectSpecificAlgorithmHandlerClass())
                   .newInstance();
           handler.setMapProject(mapProject);
+          newRecord.setLastModifiedBy(mapUser);
           handler.computeIdentifyAlgorithms(newRecord);
 
         }
