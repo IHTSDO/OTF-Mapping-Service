@@ -68,12 +68,6 @@ public class AdHocMojo extends AbstractMojo {
         final MappingService mappingService = new MappingServiceJpa()) {
 
       if (mode != null && mode.equals("icd11")) {
-        workflowService.setTransactionPerOperation(false);
-        workflowService.beginTransaction();
-        mappingService.setTransactionPerOperation(false);
-        mappingService.beginTransaction();
-        contentService.setTransactionPerOperation(false);
-        contentService.beginTransaction();
         handleIcd11(refsetId, inputFile, workflowService, contentService,
             mappingService);
       }
@@ -128,6 +122,12 @@ public class AdHocMojo extends AbstractMojo {
         + project.getRefSetId() + ", " + project.getName());
 
     // Iterate through, load concept, load records, make QA record
+    // find the qa user
+    MapUser mapUser = null;
+    for (final MapUser user : workflowService.getMapUsers().getMapUsers()) {
+      if (user.getUserName().equals("qa"))
+        mapUser = user;
+    }
     int ct = 0;
     for (final String conceptId : conceptIds) {
       final MapRecordList list = mappingService
@@ -140,22 +140,12 @@ public class AdHocMojo extends AbstractMojo {
       if (list.getCount() == 0) {
         getLog().warn("No mappings for conceptId = " + conceptId);
       }
-      createQARecord(workflowService, contentService, project,
+
+      createQARecord(workflowService, contentService, project, mapUser,
           list.getMapRecords().get(0));
 
       if (++ct % 500 == 0) {
         getLog().info("    count = " + ct);
-      }
-      if (++ct % 2000 == 0) {
-        mappingService.commit();
-        mappingService.clear();
-        mappingService.beginTransaction();
-        workflowService.commit();
-        workflowService.clear();
-        workflowService.beginTransaction();
-        contentService.commit();
-        contentService.clear();
-        contentService.beginTransaction();
       }
     }
 
@@ -170,19 +160,12 @@ public class AdHocMojo extends AbstractMojo {
    * @throws Exception the exception
    */
   private void createQARecord(WorkflowService workflowService,
-    ContentService contentService, MapProject mapProject, MapRecord mapRecord)
-    throws Exception {
+    ContentService contentService, MapProject mapProject, MapUser mapUser,
+    MapRecord mapRecord) throws Exception {
 
     final Concept concept = contentService.getConcept(mapRecord.getConceptId(),
         mapProject.getSourceTerminology(),
         mapProject.getSourceTerminologyVersion());
-
-    // find the qa user
-    MapUser mapUser = null;
-    for (final MapUser user : workflowService.getMapUsers().getMapUsers()) {
-      if (user.getUserName().equals("qa"))
-        mapUser = user;
-    }
 
     // process the workflow action
     workflowService.processWorkflowAction(mapProject, concept, mapUser,
