@@ -215,13 +215,13 @@ public class WorkflowServiceJpa extends MappingServiceJpa
   /* see superclass */
   @Override
   public TrackingRecord getTrackingRecord(MapProject mapProject,
-    Concept concept) throws Exception {
+    String terminologyId) throws Exception {
 
     javax.persistence.Query query = manager
         .createQuery(
             "select tr from TrackingRecordJpa tr where mapProjectId = :mapProjectId and terminologyId = :terminologyId")
         .setParameter("mapProjectId", mapProject.getId())
-        .setParameter("terminologyId", concept.getTerminologyId());
+        .setParameter("terminologyId", terminologyId);
 
     return (TrackingRecord) query.getSingleResult();
   }
@@ -409,7 +409,8 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     // depending on workflow path
     TrackingRecord trackingRecord = null;
     try {
-      trackingRecord = getTrackingRecord(mapProject, concept);
+      trackingRecord =
+          getTrackingRecord(mapProject, concept.getTerminologyId());
     } catch (NoResultException e) {
       // do nothing (leave trackingRecord null)
     }
@@ -907,6 +908,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
 
       // if concept could not be retrieved, throw exception
       if (concept == null) {
+        contentService.close();
         throw new Exception("Failed to retrieve concept " + terminologyId);
       }
 
