@@ -191,7 +191,7 @@ public class MapRecordJpa implements MapRecord {
     this.mapProjectId = mapRecord.getMapProjectId();
     this.conceptId = mapRecord.getConceptId();
     this.conceptName = mapRecord.getConceptName();
-    this.originIds = mapRecord.getOriginIds();
+    this.originIds = new HashSet<>(mapRecord.getOriginIds());
     this.flagForMapLeadReview = mapRecord.isFlagForMapLeadReview();
     this.flagForEditorialReview = mapRecord.isFlagForEditorialReview();
     this.flagForConsensusReview = mapRecord.isFlagForConsensusReview();
@@ -214,13 +214,9 @@ public class MapRecordJpa implements MapRecord {
     for (MapNote mapNote : mapRecord.getMapNotes()) {
       addMapNote(new MapNoteJpa(mapNote, keepIds));
     }
-    for (String label : mapRecord.getLabels()) {
-      addLabel(label);
-    }
+    labels = new HashSet<>(mapRecord.getLabels());
+    reasonsForConflict = new HashSet<>(mapRecord.getReasonsForConflict());
 
-    for (String reason : mapRecord.getReasonsForConflict()) {
-      addReasonForConflict(reason);
-    }
   }
 
   /**
@@ -690,28 +686,23 @@ public class MapRecordJpa implements MapRecord {
     result = prime * result + (flagForMapLeadReview ? 1231 : 1237);
     result =
         prime * result + ((lastModified == null) ? 0 : lastModified.hashCode());
-    result =
-        prime * result
-            + ((lastModifiedBy == null) ? 0 : lastModifiedBy.hashCode());
+    result = prime * result
+        + ((lastModifiedBy == null) ? 0 : lastModifiedBy.hashCode());
     result =
         prime * result + ((mapEntries == null) ? 0 : mapEntries.hashCode());
     result = prime * result + ((mapNotes == null) ? 0 : mapNotes.hashCode());
-    result =
-        prime * result
-            + ((mapPrinciples == null) ? 0 : mapPrinciples.hashCode());
+    result = prime * result
+        + ((mapPrinciples == null) ? 0 : mapPrinciples.hashCode());
     result =
         prime * result + ((mapProjectId == null) ? 0 : mapProjectId.hashCode());
     result = prime * result + ((originIds == null) ? 0 : originIds.hashCode());
     result = prime * result + ((owner == null) ? 0 : owner.hashCode());
     result = prime * result + ((timestamp == null) ? 0 : timestamp.hashCode());
-    result =
-        prime * result
-            + ((workflowStatus == null) ? 0 : workflowStatus.hashCode());
+    result = prime * result
+        + ((workflowStatus == null) ? 0 : workflowStatus.hashCode());
     result = prime * result + ((labels == null) ? 0 : labels.hashCode());
-    result =
-        prime
-            * result
-            + ((reasonsForConflict == null) ? 0 : reasonsForConflict.hashCode());
+    result = prime * result
+        + ((reasonsForConflict == null) ? 0 : reasonsForConflict.hashCode());
     return result;
   }
 
@@ -809,12 +800,12 @@ public class MapRecordJpa implements MapRecord {
         + lastModified + ", mapProjectId=" + mapProjectId + ", conceptId="
         + conceptId + ", conceptName=" + conceptName + ", mapEntries="
         + mapEntries.size() + ", mapNotes=" + mapNotes + ", mapPrinciples="
-        + mapPrinciples + ", originIds=" + originIds
-        + ", flagForMapLeadReview=" + flagForMapLeadReview
-        + ", flagForEditorialReview=" + flagForEditorialReview
-        + ", flagForConsensusReview=" + flagForConsensusReview
-        + ", workflowStatus=" + workflowStatus + ", labels=" + labels
-        + ", reasonsForConflict=" + reasonsForConflict + "]";
+        + mapPrinciples + ", originIds=" + originIds + ", flagForMapLeadReview="
+        + flagForMapLeadReview + ", flagForEditorialReview="
+        + flagForEditorialReview + ", flagForConsensusReview="
+        + flagForConsensusReview + ", workflowStatus=" + workflowStatus
+        + ", labels=" + labels + ", reasonsForConflict=" + reasonsForConflict
+        + "]";
   }
 
 }
