@@ -85,7 +85,6 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
 public class MappingServiceJpa extends RootServiceJpa
     implements MappingService {
 
-
   /**
    * Instantiates an empty {@link MappingServiceJpa}.
    * 
@@ -889,15 +888,15 @@ public class MappingServiceJpa extends RootServiceJpa
     // int ct = 0;
     for (final MapRecord mapRecord : editedRecords) {
       // Stop at 10
-//      if (++ct > 10) {
-//        break;
-//      }
-//      if (seen.contains(mapRecord.getConceptId())) {
-//        continue;
-//      }
+      // if (++ct > 10) {
+      // break;
+      // }
+      // if (seen.contains(mapRecord.getConceptId())) {
+      // continue;
+      // }
       handleMapRecordLazyInitialization(mapRecord);
       mapRecordList.getMapRecords().add(mapRecord);
-      //      seen.add(mapRecord.getConceptId());
+      // seen.add(mapRecord.getConceptId());
     }
 
     return mapRecordList;
@@ -951,6 +950,13 @@ public class MappingServiceJpa extends RootServiceJpa
         .setParameter("mapProjectId", mapProjectId);
     MapRecordList mapRecordList = new MapRecordListJpa();
     mapRecordList.setMapRecords(query.getResultList());
+    // This will make things slow (but it's needed if compute workflow has >
+    // 1000 records
+    // to deal with
+    for (final MapRecord mapRecord : mapRecordList.getMapRecords()) {
+      handleMapRecordLazyInitialization(mapRecord);
+    }
+
     return mapRecordList;
   }
 
