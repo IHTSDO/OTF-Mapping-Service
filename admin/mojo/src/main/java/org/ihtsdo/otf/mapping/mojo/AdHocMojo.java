@@ -142,6 +142,7 @@ public class AdHocMojo extends AbstractMojo {
       }
       if (list.getCount() == 0) {
         getLog().warn("No mappings for conceptId = " + conceptId);
+        continue;
       }
 
       createQARecord(workflowService, contentService, project, mapUser,
