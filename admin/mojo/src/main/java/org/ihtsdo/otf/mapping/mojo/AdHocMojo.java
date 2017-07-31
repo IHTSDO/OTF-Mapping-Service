@@ -17,6 +17,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
+import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
@@ -24,6 +25,7 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.Concept;
+import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
@@ -127,7 +129,7 @@ public class AdHocMojo extends AbstractMojo {
     MapUser mapUser = null;
     for (final MapUser user : workflowService.getMapUsers().getMapUsers()) {
       if (user.getUserName().equals("qa"))
-        mapUser = user;
+        mapUser = new MapUserJpa(user);
     }
     int ct = 0;
     for (final String conceptId : conceptIds) {
@@ -164,9 +166,11 @@ public class AdHocMojo extends AbstractMojo {
     ContentService contentService, MapProject mapProject, MapUser mapUser,
     MapRecord mapRecord) throws Exception {
 
-    final Concept concept = contentService.getConcept(mapRecord.getConceptId(),
-        mapProject.getSourceTerminology(),
-        mapProject.getSourceTerminologyVersion());
+    mapRecord.addLabel("HIGH");
+    final Concept concept = new ConceptJpa();
+    concept.setTerminology(mapRecord.getConceptId());
+    concept.setTerminology(mapProject.getSourceTerminology());
+    concept.setTerminologyVersion(mapProject.getSourceTerminologyVersion());
 
     // process the workflow action
     workflowService.processWorkflowAction(mapProject, concept, mapUser,
