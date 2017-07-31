@@ -2403,9 +2403,9 @@ public class MappingServiceJpa extends RootServiceJpa
       mapEntry.getMapAdvices().size();
     }
     // initialize map record
-    for (final MapNote note : mapRecord.getMapNotes()) {
-      note.getNote();
-    }
+    // for (final MapNote note : mapRecord.getMapNotes()) {
+    // note.getNote();
+    // }
   }
 
   /**
