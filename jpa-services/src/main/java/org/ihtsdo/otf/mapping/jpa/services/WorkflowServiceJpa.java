@@ -845,7 +845,6 @@ public class WorkflowServiceJpa extends MappingServiceJpa
 
     // get the current records
     MapRecordList mapRecords = getMapRecordsForMapProject(mapProject.getId());
-
     Logger.getLogger(WorkflowServiceJpa.class).info(
         "Processing existing records (" + mapRecords.getCount() + " found)");
 
