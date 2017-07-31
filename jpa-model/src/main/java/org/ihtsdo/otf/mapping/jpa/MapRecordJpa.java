@@ -690,7 +690,6 @@ public class MapRecordJpa implements MapRecord {
         + ((lastModifiedBy == null) ? 0 : lastModifiedBy.hashCode());
     result =
         prime * result + ((mapEntries == null) ? 0 : mapEntries.hashCode());
-    result = prime * result + ((mapNotes == null) ? 0 : mapNotes.hashCode());
     result = prime * result
         + ((mapPrinciples == null) ? 0 : mapPrinciples.hashCode());
     result =
@@ -746,11 +745,6 @@ public class MapRecordJpa implements MapRecord {
       if (other.mapEntries != null)
         return false;
     } else if (!mapEntries.equals(other.mapEntries))
-      return false;
-    if (mapNotes == null) {
-      if (other.mapNotes != null)
-        return false;
-    } else if (!mapNotes.equals(other.mapNotes))
       return false;
     if (mapPrinciples == null) {
       if (other.mapPrinciples != null)
