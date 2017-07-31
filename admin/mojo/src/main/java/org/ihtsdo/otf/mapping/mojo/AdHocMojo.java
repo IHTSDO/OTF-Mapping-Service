@@ -167,10 +167,14 @@ public class AdHocMojo extends AbstractMojo {
     MapRecord mapRecord) throws Exception {
 
     mapRecord.addLabel("HIGH");
+    final Concept concept2 = contentService.getConcept(mapRecord.getConceptId(),
+        mapProject.getSourceTerminology(),
+        mapProject.getSourceTerminologyVersion());
     final Concept concept = new ConceptJpa();
     concept.setTerminology(mapRecord.getConceptId());
     concept.setTerminology(mapProject.getSourceTerminology());
     concept.setTerminologyVersion(mapProject.getSourceTerminologyVersion());
+    concept.setDefaultPreferredName(concept2.getDefaultPreferredName());
 
     // process the workflow action
     workflowService.processWorkflowAction(mapProject, concept, mapUser,
