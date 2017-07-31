@@ -960,11 +960,6 @@ public class WorkflowServiceJpa extends MappingServiceJpa
               "    Adding existing map record " + mr.getId() + ", owned by "
                   + mr.getOwner().getUserName() + " to tracking record for "
                   + trackingRecord.getTerminologyId());
-
-          // initialize map record
-          for (final MapNote note : mr.getMapNotes()) {
-            note.getNote();
-          }
           
           // Setup tracking record
           trackingRecord.addMapRecordId(mr.getId());
