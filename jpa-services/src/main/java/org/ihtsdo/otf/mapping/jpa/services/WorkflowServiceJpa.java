@@ -436,27 +436,28 @@ public class WorkflowServiceJpa extends MappingServiceJpa
       trackingRecord.setTerminologyId(concept.getTerminologyId());
       trackingRecord.setDefaultPreferredName(concept.getDefaultPreferredName());
 
-      // get the tree positions for this concept and set the sort key //
-      // to
-      // the first retrieved
-      final ContentService contentService = new ContentServiceJpa();
-      try {
-        TreePositionList treePositionsList = contentService
-            .getTreePositionsWithDescendants(concept.getTerminologyId(),
-                concept.getTerminology(), concept.getTerminologyVersion());
-
-        // handle inactive concepts - which don't have tree positions
-        if (treePositionsList.getCount() == 0) {
-          trackingRecord.setSortKey("");
-        } else {
-          trackingRecord.setSortKey(
-              treePositionsList.getTreePositions().get(0).getAncestorPath());
-        }
-      } catch (Exception e) {
-        throw e;
-      } finally {
-        contentService.close();
-      }
+      // This block of code is way too slow for any batch mode.
+      trackingRecord.setSortKey(concept.getTerminologyId());
+      // // get the tree positions for this concept and set the sort key //
+      // // to the first retrieved
+      // final ContentService contentService = new ContentServiceJpa();
+      // try {
+      // TreePositionList treePositionsList = contentService
+      // .getTreePositionsWithDescendants(concept.getTerminologyId(),
+      // concept.getTerminology(), concept.getTerminologyVersion());
+      //
+      // // handle inactive concepts - which don't have tree positions
+      // if (treePositionsList.getCount() == 0) {
+      // trackingRecord.setSortKey("");
+      // } else {
+      // trackingRecord.setSortKey(
+      // treePositionsList.getTreePositions().get(0).getAncestorPath());
+      // }
+      // } catch (Exception e) {
+      // throw e;
+      // } finally {
+      // contentService.close();
+      // }
 
       // if Qa Path, instantiate Qa Path handler
       if (workflowAction.equals(WorkflowAction.CREATE_QA_RECORD)) {
