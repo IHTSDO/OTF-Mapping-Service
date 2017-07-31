@@ -171,7 +171,7 @@ public class AdHocMojo extends AbstractMojo {
         mapProject.getSourceTerminology(),
         mapProject.getSourceTerminologyVersion());
     final Concept concept = new ConceptJpa();
-    concept.setTerminology(mapRecord.getConceptId());
+    concept.setTerminologyId(mapRecord.getConceptId());
     concept.setTerminology(mapProject.getSourceTerminology());
     concept.setTerminologyVersion(mapProject.getSourceTerminologyVersion());
     concept.setDefaultPreferredName(concept2.getDefaultPreferredName());
