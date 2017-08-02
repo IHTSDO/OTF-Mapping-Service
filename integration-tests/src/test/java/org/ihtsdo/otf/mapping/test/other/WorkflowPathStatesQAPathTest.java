@@ -376,7 +376,7 @@ public class WorkflowPathStatesQAPathTest {
 
     // sleep 1s before retrieving tracking record
     Thread.sleep(1000);
-    trackingRecord = workflowService.getTrackingRecord(mapProject, concept);
+    trackingRecord = workflowService.getTrackingRecord(mapProject, concept.getTerminologyId());
   }
 
 }

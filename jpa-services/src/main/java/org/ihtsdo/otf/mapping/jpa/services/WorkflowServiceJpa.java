@@ -53,6 +53,7 @@ import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowQaPathHandler;
 import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowReviewProjectPathHandler;
 import org.ihtsdo.otf.mapping.model.Feedback;
 import org.ihtsdo.otf.mapping.model.FeedbackConversation;
+import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -215,13 +216,13 @@ public class WorkflowServiceJpa extends MappingServiceJpa
   /* see superclass */
   @Override
   public TrackingRecord getTrackingRecord(MapProject mapProject,
-    Concept concept) throws Exception {
+    String terminologyId) throws Exception {
 
     javax.persistence.Query query = manager
         .createQuery(
             "select tr from TrackingRecordJpa tr where mapProjectId = :mapProjectId and terminologyId = :terminologyId")
         .setParameter("mapProjectId", mapProject.getId())
-        .setParameter("terminologyId", concept.getTerminologyId());
+        .setParameter("terminologyId", terminologyId);
 
     return (TrackingRecord) query.getSingleResult();
   }
@@ -388,9 +389,11 @@ public class WorkflowServiceJpa extends MappingServiceJpa
             + workflowAction.toString());
     if (mapRecord != null) {
       Logger.getLogger(WorkflowServiceJpa.class)
-          .info("  Record attached: " + mapRecord.toString());
+          .info("  Record attached: " + mapRecord.getConceptId());
     }
 
+    // TODO: this is terrible - transaction scope should be managed externally
+    // from here as this makes it very hard to do batch things.
     setTransactionPerOperation(true);
 
     // instantiate the algorithm handler for this project
@@ -407,7 +410,8 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     // depending on workflow path
     TrackingRecord trackingRecord = null;
     try {
-      trackingRecord = getTrackingRecord(mapProject, concept);
+      trackingRecord =
+          getTrackingRecord(mapProject, concept.getTerminologyId());
     } catch (NoResultException e) {
       // do nothing (leave trackingRecord null)
     }
@@ -433,27 +437,28 @@ public class WorkflowServiceJpa extends MappingServiceJpa
       trackingRecord.setTerminologyId(concept.getTerminologyId());
       trackingRecord.setDefaultPreferredName(concept.getDefaultPreferredName());
 
-      // get the tree positions for this concept and set the sort key //
-      // to
-      // the first retrieved
-      final ContentService contentService = new ContentServiceJpa();
-      try {
-        TreePositionList treePositionsList = contentService
-            .getTreePositionsWithDescendants(concept.getTerminologyId(),
-                concept.getTerminology(), concept.getTerminologyVersion());
-
-        // handle inactive concepts - which don't have tree positions
-        if (treePositionsList.getCount() == 0) {
-          trackingRecord.setSortKey("");
-        } else {
-          trackingRecord.setSortKey(
-              treePositionsList.getTreePositions().get(0).getAncestorPath());
-        }
-      } catch (Exception e) {
-        throw e;
-      } finally {
-        contentService.close();
-      }
+      // This block of code is way too slow for any batch mode.
+      trackingRecord.setSortKey(concept.getTerminologyId());
+      // // get the tree positions for this concept and set the sort key //
+      // // to the first retrieved
+      // final ContentService contentService = new ContentServiceJpa();
+      // try {
+      // TreePositionList treePositionsList = contentService
+      // .getTreePositionsWithDescendants(concept.getTerminologyId(),
+      // concept.getTerminology(), concept.getTerminologyVersion());
+      //
+      // // handle inactive concepts - which don't have tree positions
+      // if (treePositionsList.getCount() == 0) {
+      // trackingRecord.setSortKey("");
+      // } else {
+      // trackingRecord.setSortKey(
+      // treePositionsList.getTreePositions().get(0).getAncestorPath());
+      // }
+      // } catch (Exception e) {
+      // throw e;
+      // } finally {
+      // contentService.close();
+      // }
 
       // if Qa Path, instantiate Qa Path handler
       if (workflowAction.equals(WorkflowAction.CREATE_QA_RECORD)) {
@@ -840,7 +845,6 @@ public class WorkflowServiceJpa extends MappingServiceJpa
 
     // get the current records
     MapRecordList mapRecords = getMapRecordsForMapProject(mapProject.getId());
-
     Logger.getLogger(WorkflowServiceJpa.class).info(
         "Processing existing records (" + mapRecords.getCount() + " found)");
 
@@ -905,6 +909,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
 
       // if concept could not be retrieved, throw exception
       if (concept == null) {
+        contentService.close();
         throw new Exception("Failed to retrieve concept " + terminologyId);
       }
 
@@ -954,7 +959,8 @@ public class WorkflowServiceJpa extends MappingServiceJpa
               "    Adding existing map record " + mr.getId() + ", owned by "
                   + mr.getOwner().getUserName() + " to tracking record for "
                   + trackingRecord.getTerminologyId());
-
+          
+          // Setup tracking record
           trackingRecord.addMapRecordId(mr.getId());
           trackingRecord.addAssignedUserName(mr.getOwner().getUserName());
           trackingRecord.addUserAndWorkflowStatusPair(

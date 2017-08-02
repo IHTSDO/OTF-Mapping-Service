@@ -874,7 +874,7 @@ public class WorkflowActionReviewProjectPathTest {
   private void getTrackingRecord() throws Exception {
     workflowService.computeWorkflow(mapProject);
     Thread.sleep(1000);
-    trackingRecord = workflowService.getTrackingRecord(mapProject, concept);
+    trackingRecord = workflowService.getTrackingRecord(mapProject, concept.getTerminologyId());
   }
 
   /**
