@@ -1446,7 +1446,7 @@ public class WorkflowServiceRest extends RootServiceRest {
           mapProject.getSourceTerminologyVersion());
 
       final TrackingRecord trackingRecord =
-          workflowService.getTrackingRecord(mapProject, concept);
+          workflowService.getTrackingRecord(mapProject, concept.getTerminologyId());
 
       for (final MapRecord mr : workflowService
           .getMapRecordsForTrackingRecord(trackingRecord)) {
