@@ -7,7 +7,7 @@ import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 /**
  * Generically represents a service, with common functionality.
  */
-public interface RootService {
+public interface RootService extends AutoCloseable {
 
   /**
    * Open the factory.
@@ -86,8 +86,8 @@ public interface RootService {
    * @return the list
    * @throws Exception the exception
    */
-  public <T> List<T> applyPfsToList(List<T> list, Class<T> clazz,
-    int[] totalCt, PfsParameter pfs) throws Exception;
+  public <T> List<T> applyPfsToList(List<T> list, Class<T> clazz, int[] totalCt,
+    PfsParameter pfs) throws Exception;
 
   /**
    * Returns the query results.

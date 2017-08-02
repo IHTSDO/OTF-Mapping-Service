@@ -85,9 +85,6 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
 public class MappingServiceJpa extends RootServiceJpa
     implements MappingService {
 
-  /** The commit count. */
-  private final static int commitCt = 2000;
-
   /**
    * Instantiates an empty {@link MappingServiceJpa}.
    * 
@@ -891,15 +888,15 @@ public class MappingServiceJpa extends RootServiceJpa
     // int ct = 0;
     for (final MapRecord mapRecord : editedRecords) {
       // Stop at 10
-//      if (++ct > 10) {
-//        break;
-//      }
-//      if (seen.contains(mapRecord.getConceptId())) {
-//        continue;
-//      }
+      // if (++ct > 10) {
+      // break;
+      // }
+      // if (seen.contains(mapRecord.getConceptId())) {
+      // continue;
+      // }
       handleMapRecordLazyInitialization(mapRecord);
       mapRecordList.getMapRecords().add(mapRecord);
-      //      seen.add(mapRecord.getConceptId());
+      // seen.add(mapRecord.getConceptId());
     }
 
     return mapRecordList;
@@ -953,6 +950,13 @@ public class MappingServiceJpa extends RootServiceJpa
         .setParameter("mapProjectId", mapProjectId);
     MapRecordList mapRecordList = new MapRecordListJpa();
     mapRecordList.setMapRecords(query.getResultList());
+    // This will make things slow (but it's needed if compute workflow has >
+    // 1000 records
+    // to deal with
+    for (final MapRecord mapRecord : mapRecordList.getMapRecords()) {
+      handleMapRecordLazyInitialization(mapRecord);
+    }
+
     return mapRecordList;
   }
 
@@ -2058,48 +2062,6 @@ public class MappingServiceJpa extends RootServiceJpa
 
   }
 
-  /* see superclass */
-  @Override
-  public boolean getTransactionPerOperation() {
-    return transactionPerOperation;
-  }
-
-  /* see superclass */
-  @Override
-  public void setTransactionPerOperation(boolean transactionPerOperation) {
-    this.transactionPerOperation = transactionPerOperation;
-  }
-
-  /* see superclass */
-  @Override
-  public void beginTransaction() {
-
-    if (getTransactionPerOperation())
-      throw new IllegalStateException(
-          "Error attempting to begin a transaction when using transactions per operation mode.");
-    else if (tx != null && tx.isActive())
-      throw new IllegalStateException(
-          "Error attempting to begin a transaction when there "
-              + "is already an active transaction");
-    tx = manager.getTransaction();
-    tx.begin();
-  }
-
-  /* see superclass */
-  @Override
-  public void commit() {
-
-    if (getTransactionPerOperation()) {
-      throw new IllegalStateException(
-          "Error attempting to commit a transaction when using transactions per operation mode.");
-    } else if (tx == null || (tx != null && !tx.isActive())) {
-      throw new IllegalStateException(
-          "Error attempting to commit a transaction when there "
-              + "is no active transaction");
-    }
-    tx.commit();
-  }
-
   // ////////////////////////
   // AGE RANGE FUNCTIONS
   // ////////////////////////
@@ -2446,7 +2408,10 @@ public class MappingServiceJpa extends RootServiceJpa
         mapEntry.getMapRelation().getName();
       mapEntry.getMapAdvices().size();
     }
-
+    // initialize map record
+    // for (final MapNote note : mapRecord.getMapNotes()) {
+    // note.getNote();
+    // }
   }
 
   /**

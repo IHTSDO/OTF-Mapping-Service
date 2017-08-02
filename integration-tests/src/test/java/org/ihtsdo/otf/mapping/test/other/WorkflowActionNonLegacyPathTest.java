@@ -1418,7 +1418,7 @@ public class WorkflowActionNonLegacyPathTest {
 	@SuppressWarnings("static-method")
 	private void getTrackingRecord() throws Exception {
 		workflowService.computeWorkflow(mapProject);
-		trackingRecord = workflowService.getTrackingRecord(mapProject, concept);
+		trackingRecord = workflowService.getTrackingRecord(mapProject, concept.getTerminologyId());
 	}
 
 	/**

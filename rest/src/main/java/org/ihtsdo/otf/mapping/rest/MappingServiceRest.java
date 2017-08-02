@@ -1118,7 +1118,7 @@ public class MappingServiceRest extends RootServiceRest {
 
     try {
       // authorize call
-      userName = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+      userName = authorizeApp(authToken, MapUserRole.LEAD,
           "add a user", securityService);
 
       // Check if user already exists and send better message
@@ -1166,7 +1166,7 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "update a user",
+      user = authorizeApp(authToken, MapUserRole.LEAD, "update a user",
           securityService);
 
       mappingService.updateMapUser(mapUser);
@@ -1202,7 +1202,7 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "remove a user",
+      user = authorizeApp(authToken, MapUserRole.LEAD, "remove a user",
           securityService);
 
       mappingService.removeMapUser(mapUser.getId());
@@ -1292,7 +1292,7 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+      user = authorizeApp(authToken, MapUserRole.LEAD,
           "add map advice", securityService);
 
       // Check if advice already exists and send better message
@@ -1342,7 +1342,7 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+      user = authorizeApp(authToken, MapUserRole.LEAD,
           "update map advice", securityService);
 
       mappingService.updateMapAdvice(mapAdvice);
@@ -1378,7 +1378,7 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+      user = authorizeApp(authToken, MapUserRole.LEAD,
           "remove map advice", securityService);
 
       mappingService.removeMapAdvice(mapAdvice.getId());
@@ -1469,7 +1469,7 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+      user = authorizeApp(authToken, MapUserRole.LEAD,
           "add map age range", securityService);
 
       // Check if age range already exists and send better message
@@ -1519,7 +1519,7 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+      user = authorizeApp(authToken, MapUserRole.LEAD,
           "udpate age range", securityService);
 
       mappingService.updateMapAgeRange(mapAgeRange);
@@ -1555,7 +1555,7 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+      user = authorizeApp(authToken, MapUserRole.LEAD,
           "remove age range", securityService);
 
       mappingService.removeMapAgeRange(mapAgeRange.getId());
@@ -1643,7 +1643,7 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+      user = authorizeApp(authToken, MapUserRole.LEAD,
           "add map relation", securityService);
 
       // Check if relation already exists and send better message
@@ -1693,7 +1693,7 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+      user = authorizeApp(authToken, MapUserRole.LEAD,
           "update map relation", securityService);
 
       mappingService.updateMapRelation(mapRelation);
@@ -1729,7 +1729,7 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+      user = authorizeApp(authToken, MapUserRole.LEAD,
           "remove map relation", securityService);
 
       mappingService.removeMapRelation(mapRelation.getId());
@@ -1864,7 +1864,7 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+      user = authorizeApp(authToken, MapUserRole.LEAD,
           "add map principle", securityService);
 
       // Check if principle already exists and send better message
@@ -1915,7 +1915,7 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+      user = authorizeApp(authToken, MapUserRole.LEAD,
           "update map principle", securityService);
 
       mappingService.updateMapPrinciple(mapPrinciple);
@@ -1952,7 +1952,7 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+      user = authorizeApp(authToken, MapUserRole.LEAD,
           "remove map principle", securityService);
 
       mappingService.removeMapPrinciple(principle.getId());
@@ -4215,7 +4215,7 @@ public class MappingServiceRest extends RootServiceRest {
     try {
       // authorize call
       user = authorizeProject(mapProjectId, authToken,
-          MapUserRole.ADMINISTRATOR, "compute names", securityService);
+          MapUserRole.LEAD, "compute names", securityService);
 
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
       final String terminology = mapProject.getSourceTerminology();
