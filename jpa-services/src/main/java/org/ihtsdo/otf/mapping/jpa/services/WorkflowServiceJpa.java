@@ -53,7 +53,6 @@ import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowQaPathHandler;
 import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowReviewProjectPathHandler;
 import org.ihtsdo.otf.mapping.model.Feedback;
 import org.ihtsdo.otf.mapping.model.FeedbackConversation;
-import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -808,6 +807,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     clearWorkflowForMapProject(mapProject);
 
     // open the services
+    @SuppressWarnings("resource")
     ContentService contentService = new ContentServiceJpa();
 
     String workflowPath;
@@ -933,6 +933,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
 
         // if no tree position, throw exception
         if (treePositionsList.getCount() == 0) {
+          contentService.close();
           throw new Exception(
               "Active concept " + terminologyId + " has no tree positions");
         }
@@ -959,7 +960,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
               "    Adding existing map record " + mr.getId() + ", owned by "
                   + mr.getOwner().getUserName() + " to tracking record for "
                   + trackingRecord.getTerminologyId());
-          
+
           // Setup tracking record
           trackingRecord.addMapRecordId(mr.getId());
           trackingRecord.addAssignedUserName(mr.getOwner().getUserName());
