@@ -75,6 +75,11 @@ public class AdHocMojo extends AbstractMojo {
             mappingService);
       }
 
+      if (mode != null && mode.equals("icd11-editing-done")) {
+        handleIcd11EditingDone(refsetId, inputFile, workflowService,
+            contentService, mappingService);
+      }
+
     } catch (Exception e) {
       e.printStackTrace();
       throw new MojoExecutionException("Ad-hoc mojo failed to complete", e);
@@ -153,6 +158,58 @@ public class AdHocMojo extends AbstractMojo {
       }
     }
 
+  }
+
+  /**
+   * Handle icd 11 editing done.
+   *
+   * @param refsetId the refset id
+   * @param inputFile the input file
+   * @param workflowService the workflow service
+   * @param contentService the content service
+   * @param mappingService the mapping service
+   * @throws Exception the exception
+   */
+  private void handleIcd11EditingDone(String refsetId, String inputFile,
+    WorkflowService workflowService, ContentService contentService,
+    MappingService mappingService) throws Exception {
+
+    // Load the map project
+    final Map<String, MapProject> mapProjectMap = new HashMap<>();
+    for (MapProject project : mappingService.getMapProjects().getIterable()) {
+      mapProjectMap.put(project.getRefSetId(), project);
+    }
+    final MapProject project = mapProjectMap.get(refsetId);
+
+    MapUser mapUser = null;
+    for (final MapUser user : workflowService.getMapUsers().getMapUsers()) {
+      if (user.getUserName().equals("loader"))
+        mapUser = new MapUserJpa(user);
+    }
+
+    // Get map records for the project
+    final MapRecordList list =
+        mappingService.getMapRecordsForMapProject(project.getId());
+    for (final MapRecord record : list.getMapRecords()) {
+      if (record.getWorkflowStatus().equals("EDITING_IN_PROGRESS")
+          && record.getOwner().getUserName().equals("loader")) {
+        // Referesh the map record
+        final MapRecord mapRecord =
+            workflowService.getMapRecord(record.getId());
+        // Get the concept
+        final Concept concept2 = contentService.getConcept(
+            mapRecord.getConceptId(), project.getSourceTerminology(),
+            project.getSourceTerminologyVersion());
+        final Concept concept = new ConceptJpa();
+        concept.setTerminologyId(mapRecord.getConceptId());
+        concept.setTerminology(project.getSourceTerminology());
+        concept.setTerminologyVersion(project.getSourceTerminologyVersion());
+        concept.setDefaultPreferredName(concept2.getDefaultPreferredName());
+        // Perform the workflow action 
+        workflowService.processWorkflowAction(project, concept, mapUser,
+            mapRecord, WorkflowAction.FINISH_EDITING);
+      }
+    }
   }
 
   /**
