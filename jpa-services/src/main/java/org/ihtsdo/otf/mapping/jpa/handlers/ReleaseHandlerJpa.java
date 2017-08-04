@@ -133,6 +133,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
   /** The date format. */
   final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+  
+  /** Records that will not be PUBLISHED because they've been edited during the release period */
+  private Set<Long> recentlyEditedRecords = new HashSet<>();
 
   /**
    * The Enum for statistics reporting.
@@ -2468,6 +2471,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         .findConceptsInScope(mapProject.getId(), null).getSearchResults()) {
       scopeConceptTerminologyIds.add(sr.getTerminologyId());
     }
+    Logger.getLogger(getClass()).info("  scope concepts: " + scopeConceptTerminologyIds.size());
+    
 
     if (mapRecords == null || mapRecords.isEmpty()) {
       MapRecordList mapRecordList = mappingService
@@ -2475,10 +2480,18 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               mapProject.getId(), null);
       mapRecords = mapRecordList.getMapRecords();
 
-      if (!testModeFlag) {
+      /*if (!testModeFlag) {
         mappingService.setTransactionPerOperation(false);
         mappingService.beginTransaction();
+      }*/
+      
+      // Log recently edited records that won't be PUBLISHED
+      for (Long recordId : recentlyEditedRecords) {
+    	  Logger.getLogger(getClass())
+          .info("    Recently edited record will not be PUBLISHED " + recordId);
       }
+      
+      
       for (final MapRecord record : mapRecords) {
 
         // Remove out of scope concepts if not in test mode
@@ -2496,18 +2509,32 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
           }
         }
-
+        // Record not marked as PUBLISHED because it has been modified again since
+        // the publication date
+        else if (record
+                .getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION &&
+                		recentlyEditedRecords.contains(record.getId()) ) {
+              Logger.getLogger(getClass()).info("  Record not updated to PUBLISHED for "
+                  + record.getConceptId() + " " + record.getConceptName());
+              
+        }
         // Mark record as PUBLISHED if READY FOR PUBLICATION and in scope
         else if (record
-            .getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION) {
+            .getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION &&
+            !recentlyEditedRecords.contains(record.getId())) {
           Logger.getLogger(getClass()).info("  Update record to PUBLISHED for "
               + record.getConceptId() + " " + record.getConceptName());
           pubCt++;
+          // regularly log at intervals
+          if (pubCt % 200 == 0) {
+            Logger.getLogger(getClass()).info("    published count = " + pubCt);
+          }
           if (!testModeFlag) {
             record.setWorkflowStatus(WorkflowStatus.PUBLISHED);
             mappingService.updateMapRecord(record);
           }
         }
+        
       }
 
       // Set latest publication date to now.
@@ -2516,7 +2543,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         mapProject.setLatestPublicationDate(new Date());
         mapProject.setPublic(true);
         mappingService.updateMapProject(mapProject);
-        mappingService.commit();
+        //mappingService.commit();
       }
     }
 
@@ -2745,8 +2772,16 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           // ComplexMap unique attributes
           member.setMapGroup(Integer.parseInt(fields[6]));
           member.setMapPriority(Integer.parseInt(fields[7]));
-          member.setMapRule(fields[8]);
-          member.setMapAdvice(fields[9]);
+          if (fields[8].equals("OTHERWISE TRUE")) {
+        	member.setMapRule("TRUE");
+          } else {
+            member.setMapRule(fields[8]);
+          }
+          if (fields[9].contains("|")) {
+        	member.setMapAdvice(fields[9].substring(fields[9].indexOf("|") + 2));
+          } else {
+            member.setMapAdvice(fields[9]);
+          }
           member.setMapTarget(fields[10]);
           if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ComplexMap) {
             member.setMapRelationId(Long.valueOf(fields[11]));
@@ -2949,15 +2984,24 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             + "|" + concept.getDefaultPreferredName() + "|");
         if (mapRecord != null) {
 
-          if (!testModeFlag) {
-            // remove and re-add map record to clear previous entries
-            mappingService.removeMapRecord(mapRecord.getId());
-            mappingService.addMapRecord(releaseRecord);
-          }
-          this.addReportError(report, mapProject, conceptId,
+          if (new Date(mapRecord.getLastModified()).after(mapProject.getEditingCycleBeginDate())) {
+        	Logger.getLogger(getClass()).info("Recently edited discrepancy found for " + conceptId
+        	            + "|" + concept.getDefaultPreferredName() + "|");  
+        	recentlyEditedRecords.add(mapRecord.getId());
+        	this.addReportError(report, mapProject, conceptId,
+                    concept.getDefaultPreferredName(),
+                    "Map record discrepancy with recent edits-- will not be updated to release version");
+          } else {
+            if (!testModeFlag) {
+              // remove and re-add map record to clear previous entries
+              mappingService.removeMapRecord(mapRecord.getId());
+              mappingService.addMapRecord(releaseRecord);
+            }
+            this.addReportError(report, mapProject, conceptId,
               concept.getDefaultPreferredName(),
               "Map record discrepancy -- " + (testModeFlag ? "will be " : "")
                   + "updated to release version");
+          }
         } else {
 
           this.addReportError(report, mapProject, conceptId,
