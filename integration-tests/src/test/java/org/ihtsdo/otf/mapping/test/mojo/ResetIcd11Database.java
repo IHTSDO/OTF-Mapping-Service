@@ -140,7 +140,7 @@ public class ResetIcd11Database {
     p = new Properties();
     p.setProperty("run.config", System.getProperty("run.config"));
     p.setProperty("terminology", "ICD11");
-    p.setProperty("version", "2016");
+    p.setProperty("version", "latest");
     p.setProperty("input.file",
         System.getProperty("icd11.dir") + "/" + "icd11Concepts.txt");
     p.setProperty("par.chd.file",
@@ -153,32 +153,6 @@ public class ResetIcd11Database {
       throw result.getExecutionException();
     }
 
-    // Load ClaML
-    Logger.getLogger(getClass()).info("Load ICD10");
-    request = new DefaultInvocationRequest();
-    request.setPomFile(new File("../admin/loader/pom.xml"));
-    request.setProfiles(Arrays.asList("ClaML"));
-    request.setGoals(Arrays.asList("clean", "install"));
-    p = new Properties();
-    p.setProperty("run.config", System.getProperty("run.config"));
-    p.setProperty("terminology", "ICD10");
-    p.setProperty("version", "2016");
-    if (System.getProperty("icd11.dir") == null) {
-      throw new Exception("Property icd11.dir must be set");
-    }
-    p.setProperty("input.file",
-        System.getProperty("icd11.dir") + "/" + "icd10-2016.xml");
-    request.setProperties(p);
-    request.setDebug(false);
-    invoker = new DefaultInvoker();
-    result = invoker.execute(request);
-    if (result.getExitCode() != 0) {
-      throw result.getExecutionException();
-    }
-
-    // Create projects and users and all that
-    loadIcd11Data();
-
     // Load RF2 snapshot
     Logger.getLogger(getClass()).info("Load SNOMED");
     request = new DefaultInvocationRequest();
@@ -188,7 +162,7 @@ public class ResetIcd11Database {
     p = new Properties();
     p.setProperty("run.config", System.getProperty("run.config"));
     p.setProperty("terminology", "SNOMEDCT");
-    p.setProperty("version", "20140731");
+    p.setProperty("version", "latest");
     if (System.getProperty("sct.dir") == null) {
       throw new Exception("Property sct.dir must be set");
     }
@@ -201,8 +175,11 @@ public class ResetIcd11Database {
       throw result.getExecutionException();
     }
 
+    // Create projects and users and all that
+    loadIcd11Project();
+
     // Load map records
-    Logger.getLogger(getClass()).info("Load ICD10 Maps");
+    Logger.getLogger(getClass()).info("Load ICD11 Maps");
     request = new DefaultInvocationRequest();
     request.setPomFile(new File("../admin/loader/pom.xml"));
     request.setProfiles(Arrays.asList("MapRecords"));
@@ -210,7 +187,7 @@ public class ResetIcd11Database {
     p = new Properties();
     p.setProperty("run.config", System.getProperty("run.config"));
     p.setProperty("input.file",
-        System.getProperty("icd11.dir") + "/icd10Map.txt");
+        System.getProperty("icd11.dir") + "/icd11Map.txt");
     p.setProperty("member.flag", "false");
     p.setProperty("record.flag", "true");
     request.setProperties(p);
@@ -220,7 +197,9 @@ public class ResetIcd11Database {
       throw result.getExecutionException();
     }
 
-    // Reindex -- required at least for ConceptJpa, possibly others
+    // Reindex
+    // Using this load mechanism, reindexing is requrired for ConceptJpa,
+    // possibly others
     Logger.getLogger(getClass()).info("Reindex concepts");
     request = new DefaultInvocationRequest();
     request.setPomFile(new File("../admin/lucene/pom.xml"));
@@ -263,7 +242,7 @@ public class ResetIcd11Database {
    *
    * @throws Exception the exception
    */
-  private void loadIcd11Data() throws Exception {
+  private void loadIcd11Project() throws Exception {
     securityService = new SecurityServiceJpa();
     contentService = new ContentServiceJpa();
     mappingService = new MappingServiceJpa();
@@ -384,26 +363,18 @@ public class ResetIcd11Database {
     //
     final Set<MapAdvice> mapAdvices = new HashSet<>();
     for (final String adv : new String[] {
-        "FIFTH CHARACTER REQUIRED TO FURTHER SPECIFY THE SITE",
-        "APPED FOLLOWING SNOMED GUIDANCE", "MAPPED FOLLOWING WHO GUIDANCE",
-        "POSSIBLE REQUIREMENT FOR ADDITIONAL CODE TO FULLY DESCRIBE DISEASE OR CONDITION",
-        "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE",
-        "POSSIBLE REQUIREMENT FOR CAUSATIVE AGENT CODE",
-        "POSSIBLE REQUIREMENT FOR MORPHOLOGY CODE",
-        "POSSIBLE REQUIREMENT FOR PLACE OF OCCURRENCE",
-        "THIS CODE IS NOT TO BE USED IN THE PRIMARY POSITION",
+        "ADDITIONAL CODES MAY BE ADDED AS SANCTIONED BY WHO",
+        "CODES SANCTIONED BY WHO MAY BE ADDED FROM CHAPTER 23 EXTERNAL CAUSES AND DRUG EXTENSION CODES IF RELEVANT",
+        "CODES SANCTIONED BY WHO MAY BE ADDED FROM CHAPTER 23 EXTERNAL CAUSES AND EXTENSION CODES IF RELEVANT",
+        "EXTENSION CODES SANCTIONED BY WHO MAY BE ADDED IF RELEVANT",
+        "MAPPED FOLLOWING SNOMED GUIDANCE", "MAPPED FOLLOWING WHO GUIDANCE",
+        "POSSIBLE REQUIREMENT FOR INFECTIOUS AGENT EXTENSION CODE",
         "THIS CODE MAY BE USED IN THE PRIMARY POSITION WHEN THE MANIFESTATION IS THE PRIMARY FOCUS OF CARE",
-        "THIS IS AN EXTERNAL CAUSE CODE FOR USE IN A SECONDARY POSITION",
-        "THIS MAP REQUIRES A DAGGER CODE AS WELL AS AN ASTERISK CODE",
-        "USE AS PRIMARY CODE ONLY IF SITE OF BURN UNSPECIFIED, OTHERWISE USE AS A SUPPLEMENTARY CODE WITH CATEGORIES T20-T29 (Burns)",
+        "THIS IS AN EXTERNAL CAUSE CODE AND/OR EXTENSION CODE FOR USE IN A SECONDARY POSITION"
     }) {
       final MapAdvice advice = new MapAdviceJpa();
       advice.setAllowableForNullTarget(false);
       advice.setComputed(false);
-      if (adv.contains("Null")) {
-        advice.setAllowableForNullTarget(true);
-        advice.setComputed(true);
-      }
       advice.setDetail(adv);
       advice.setName(adv);
       mappingService.addMapAdvice(advice);
@@ -411,20 +382,22 @@ public class ResetIcd11Database {
     }
 
     // Create project SNOMED to ICD10
-    Logger.getLogger(getClass()).info("Create project SNOMEDCT to ICD10");
+    Logger.getLogger(getClass()).info("Create project SNOMEDCT to ICD11");
     MapProject project3 = new MapProjectJpa();
-    project3.setDestinationTerminology("ICD10");
-    project3.setDestinationTerminologyVersion("2016");
+    project3.setDestinationTerminology("ICD11");
+    project3.setDestinationTerminologyVersion("latest");
     project3.setGroupStructure(true);
     project3.setMapRefsetPattern(MapRefsetPattern.ExtendedMap);
-    project3.setName("SNOMEDCT to ICD10");
+    project3.setName("SNOMEDCT to ICD11 Pilot");
     project3.setProjectSpecificAlgorithmHandlerClass(
-        "org.ihtsdo.otf.mapping.jpa.handlers.ICD10ProjectSpecificAlgorithmHandler");
+        "org.ihtsdo.otf.mapping.jpa.handlers.ICD11ProjectSpecificAlgorithmHandler");
     project3.setPropagatedFlag(false);
-    project3.setRefSetId("447562003");
-    project3.setRefSetName("SNOMEDCT to ICD10");
+    project3.setRefSetId("icd11RefsetId");
+    project3.setRefSetName("SNOMEDCT to ICD11");
     project3.setSourceTerminology("SNOMEDCT");
-    project3.setSourceTerminologyVersion("20170131");
+    project3.setSourceTerminologyVersion("latest");
+    project3.setRuleBased(true);
+    project3.setGroupStructure(true);
     project3.setWorkflowType(WorkflowType.CONFLICT_PROJECT);
     project3.setMapRelationStyle(RelationStyle.MAP_CATEGORY_STYLE);
     project3.getScopeConcepts().add("243796009");
@@ -442,43 +415,8 @@ public class ResetIcd11Database {
     // Add project
     Logger.getLogger(getClass()).info("  add " + project3);
     project3 = mappingService.addMapProject(project3);
-    // Logger.getLogger(getClass()).info(" compute workflow");
-    // workflowService.computeWorkflow(project3);
-
-    // Create project SNOMED to ICD11
-    Logger.getLogger(getClass()).info("Create project SNOMEDCT to ICD11");
-    MapProject project4 = new MapProjectJpa();
-    project4.setDestinationTerminology("ICD11");
-    project4.setDestinationTerminologyVersion("2016");
-    project4.setGroupStructure(true);
-    project4.setMapRefsetPattern(MapRefsetPattern.ExtendedMap);
-    project4.setName("SNOMEDCT to ICD11");
-    project4.setProjectSpecificAlgorithmHandlerClass(
-        "org.ihtsdo.otf.mapping.jpa.handlers.ICD11ProjectSpecificAlgorithmHandler");
-    project4.setPropagatedFlag(false);
-    project4.setRefSetId("icd11RefsetId");
-    project4.setRefSetName("SNOMEDCT to ICD10CM");
-    project4.setSourceTerminology("SNOMEDCT");
-    project4.setSourceTerminologyVersion("20170131");
-    project4.setWorkflowType(WorkflowType.CONFLICT_PROJECT);
-    project4.setMapRelationStyle(RelationStyle.MAP_CATEGORY_STYLE);
-    project4.getScopeConcepts().add("243796009");
-    project4.getScopeConcepts().add("272379006");
-    project4.getScopeConcepts().add("404684003");
-    project4.setScopeDescendantsFlag(true);
-    project4.setMapRelations(mapRelations);
-    project4.setMapAdvices(mapAdvices);
-    project4.getMapLeads().add(lead1);
-    project4.getMapLeads().add(lead2);
-    project4.getMapSpecialists().add(specialist1);
-    project4.getMapSpecialists().add(specialist2);
-    project4.getMapSpecialists().add(specialist3);
-
-    // Add project
-    Logger.getLogger(getClass()).info("  add " + project4);
-    project4 = mappingService.addMapProject(project4);
-    // Logger.getLogger(getClass()).info(" compute workflow");
-    // workflowService.computeWorkflow(project4);
+    Logger.getLogger(getClass()).info(" compute workflow");
+    workflowService.computeWorkflow(project3);
 
   }
 

@@ -183,7 +183,7 @@ public class AdHocMojo extends AbstractMojo {
 
     MapUser mapUser = null;
     for (final MapUser user : workflowService.getMapUsers().getMapUsers()) {
-      if (user.getUserName().equals("loader"))
+      if (user.getId().equals(59L))
         mapUser = new MapUserJpa(user);
     }
 
@@ -191,7 +191,7 @@ public class AdHocMojo extends AbstractMojo {
     final MapRecordList list =
         mappingService.getMapRecordsForMapProject(project.getId());
     for (final MapRecord record : list.getMapRecords()) {
-      if (record.getWorkflowStatus().equals("EDITING_IN_PROGRESS")
+      if (record.getWorkflowStatus().toString().equals("EDITING_IN_PROGRESS")
           && record.getOwner().getUserName().equals("loader")) {
         // Referesh the map record
         final MapRecord mapRecord =
@@ -205,7 +205,7 @@ public class AdHocMojo extends AbstractMojo {
         concept.setTerminology(project.getSourceTerminology());
         concept.setTerminologyVersion(project.getSourceTerminologyVersion());
         concept.setDefaultPreferredName(concept2.getDefaultPreferredName());
-        // Perform the workflow action 
+        // Perform the workflow action
         workflowService.processWorkflowAction(project, concept, mapUser,
             mapRecord, WorkflowAction.FINISH_EDITING);
       }
