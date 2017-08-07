@@ -3604,8 +3604,7 @@ public class MappingServiceRest extends RootServiceRest {
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
 
       // formulate an "and" search from the query if it doesn't use
-      // special
-      // chars
+      // special chars
       boolean plusFlag = false;
       final StringBuilder qb = new StringBuilder();
       if (!query.contains("\"") && !query.contains("-") && !query.contains("+")
