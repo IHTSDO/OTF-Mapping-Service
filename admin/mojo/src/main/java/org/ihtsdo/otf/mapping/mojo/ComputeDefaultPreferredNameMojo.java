@@ -43,7 +43,7 @@ public class ComputeDefaultPreferredNameMojo extends AbstractMojo {
   private Long dpnTypeId = 900000000000003001L;
 
   /** The dpn ref set id. */
-  private Long dpnrefsetId = 900000000000509007L;
+  private Long dpnRefsetId = 900000000000509007L;
 
   /** The dpn acceptability id. */
   private Long dpnAcceptabilityId = 900000000000548007L;
@@ -60,6 +60,9 @@ public class ComputeDefaultPreferredNameMojo extends AbstractMojo {
       getLog().info("Starting comput default preferred names");
       getLog().info("  terminology = " + terminology);
       getLog().info("  terminologyVersion = " + terminologyVersion);
+      getLog().info("  dpnTypeId = " + dpnTypeId);
+      getLog().info("  dpnRefsetId = " + dpnRefsetId);
+      getLog().info("  dpnAcceptabilityId = " + dpnAcceptabilityId);
 
       computeDefaultPreferredNames();
 
@@ -110,22 +113,23 @@ public class ComputeDefaultPreferredNameMojo extends AbstractMojo {
       boolean dpnFound = false;
 
       // Iterate over descriptions
-      for (Description description : concept.getDescriptions()) {
+      OUTER: for (Description description : concept.getDescriptions()) {
 
         // If active andn preferred type
-        if (description.isActive() && description.getTypeId().equals(dpnTypeId)) {
+        if (description.isActive()
+            && description.getTypeId().equals(dpnTypeId)) {
 
           // Iterate over language refset members
           for (LanguageRefSetMember language : description
               .getLanguageRefSetMembers()) {
             // If prefrred and has correct refset
-            if (new Long(language.getRefSetId()).equals(dpnrefsetId)
+            if (new Long(language.getRefSetId()).equals(dpnRefsetId)
                 && language.isActive()
                 && language.getAcceptabilityId().equals(dpnAcceptabilityId)) {
               // print warning for multiple names found
               if (dpnFound) {
-                getLog().warn(
-                    "Multiple default preferred names found for concept "
+                getLog()
+                    .warn("Multiple default preferred names found for concept "
                         + concept.getTerminologyId());
                 getLog().warn(
                     "  " + "Existing: " + concept.getDefaultPreferredName());
@@ -134,10 +138,10 @@ public class ComputeDefaultPreferredNameMojo extends AbstractMojo {
 
               // Set preferred name
               concept.setDefaultPreferredName(description.getTerm());
-
+              contentService.updateConcept(concept);
               // set found to true
               dpnFound = true;
-
+              break OUTER;
             }
           }
         }
@@ -147,9 +151,8 @@ public class ComputeDefaultPreferredNameMojo extends AbstractMojo {
       // Pref name not found
       if (!dpnFound) {
         dpnNotFoundCt++;
-        getLog().warn(
-            "Could not find defaultPreferredName for concept "
-                + concept.getTerminologyId());
+        getLog().warn("Could not find defaultPreferredName for concept "
+            + concept.getTerminologyId());
         concept.setDefaultPreferredName("[Could not be determined]");
       } else {
         dpnFoundCt++;
