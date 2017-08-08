@@ -381,7 +381,7 @@ public class ComputeIcd11Map {
       //
       Logger.getLogger(getClass()).info(" Load SCT starterSet");
       lines =
-          FileUtils.readLines(new File(icd11Dir, "starterSet.txt"), "UTF-8");
+          FileUtils.readLines(new File(icd11Dir, "nonStarterSet.txt"), "UTF-8");
       final List<String> starterSet = new ArrayList<>();
       ct = 0;
       skipCt = 0;
@@ -789,7 +789,7 @@ public class ComputeIcd11Map {
       //
 
       // Tracking vars
-      final String refsetId = "icd11RefsetId";
+      final String refsetId = "icd11RefsetId-b";
       final String moduleId = "123456789";
       final Map<String, List<IcdMap>> icd11Map = new TreeMap<>();
       final Map<String, String> icd11MapNotes = new TreeMap<>();
@@ -856,7 +856,8 @@ public class ComputeIcd11Map {
         // first/second maps
         final StringBuilder noteSb = new StringBuilder();
         if (!icd10Map.containsKey(sctid)) {
-          Logger.getLogger(getClass()).error("  No ICD10 map for SCTID: " + sctid);
+          Logger.getLogger(getClass())
+              .error("  No ICD10 map for SCTID: " + sctid);
         }
         for (final IcdMap map10 : icd10Map.get(sctid)) {
 
@@ -1443,7 +1444,8 @@ public class ComputeIcd11Map {
               // Replace advices where appropriate
               String advice = map11.getMapAdvice();
               for (final String advice10 : advicesToReplace.keySet()) {
-                advice.replace(advice10, advicesToReplace.get(advice10));
+                advice =
+                    advice.replace(advice10, advicesToReplace.get(advice10));
               }
               map11.setMapAdvice(advice);
               map11.setMapCategoryId("447637006");
@@ -1572,7 +1574,7 @@ public class ComputeIcd11Map {
             override = true;
             categoryWrapper[0] = HIGH;
           }
-          
+
           // If we encountered a NOMAP, go to the next concept
           if (override) {
             category = categoryWrapper[0];

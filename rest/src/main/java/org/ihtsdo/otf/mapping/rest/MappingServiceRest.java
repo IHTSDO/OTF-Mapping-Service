@@ -548,8 +548,6 @@ public class MappingServiceRest extends RootServiceRest {
       // authorize call
       user = authorizeApp(authToken, MapUserRole.VIEWER, "get map users",
           securityService);
-      
-      
 
       final MapUserListJpa mapUsers =
           (MapUserListJpa) mappingService.getMapUsers();
@@ -560,26 +558,27 @@ public class MappingServiceRest extends RootServiceRest {
         }
       });
       // remove non-ihtsdo emails to address privacy concerns
-      // ihtsdo emails will be truncated to remove the domain, 
+      // ihtsdo emails will be truncated to remove the domain,
       // domain will be appended again on client side
       for (MapUser mapUser : mapUsers.getMapUsers()) {
-    	if (mapUser.getEmail().endsWith("ihtsdo.gov")) {
-    	  mapUser.setEmail(mapUser.getEmail().substring(0, mapUser.getEmail().indexOf('@')));
-    	} else {
-    	  mapUser.setEmail("Private email"); 
-    	}
+        if (mapUser.getEmail().endsWith("ihtsdo.gov")) {
+          mapUser.setEmail(
+              mapUser.getEmail().substring(0, mapUser.getEmail().indexOf('@')));
+        } else {
+          mapUser.setEmail("Private email");
+        }
       }
-      
+
       // do not return this private information if user is a guest
       if (user.equals("guest")) {
-    	for (MapUser mapUser : mapUsers.getMapUsers()) {
-    	    if (mapUser.getUserName().equals("guest")) {
-    	      MapUserListJpa list = new MapUserListJpa();
-    	      list.addMapUser(mapUser);
-    	      list.setTotalCount(1);
-    	      return list;
-    	    }
-    	}
+        for (MapUser mapUser : mapUsers.getMapUsers()) {
+          if (mapUser.getUserName().equals("guest")) {
+            MapUserListJpa list = new MapUserListJpa();
+            list.addMapUser(mapUser);
+            list.setTotalCount(1);
+            return list;
+          }
+        }
       }
       return mapUsers;
 
@@ -1118,8 +1117,8 @@ public class MappingServiceRest extends RootServiceRest {
 
     try {
       // authorize call
-      userName = authorizeApp(authToken, MapUserRole.LEAD,
-          "add a user", securityService);
+      userName = authorizeApp(authToken, MapUserRole.LEAD, "add a user",
+          securityService);
 
       // Check if user already exists and send better message
       for (final MapUser user : mappingService.getMapUsers().getMapUsers()) {
@@ -1292,8 +1291,8 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.LEAD,
-          "add map advice", securityService);
+      user = authorizeApp(authToken, MapUserRole.LEAD, "add map advice",
+          securityService);
 
       // Check if advice already exists and send better message
       for (final MapAdvice advice : mappingService.getMapAdvices()
@@ -1342,8 +1341,8 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.LEAD,
-          "update map advice", securityService);
+      user = authorizeApp(authToken, MapUserRole.LEAD, "update map advice",
+          securityService);
 
       mappingService.updateMapAdvice(mapAdvice);
     } catch (Exception e) {
@@ -1378,8 +1377,8 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.LEAD,
-          "remove map advice", securityService);
+      user = authorizeApp(authToken, MapUserRole.LEAD, "remove map advice",
+          securityService);
 
       mappingService.removeMapAdvice(mapAdvice.getId());
     } catch (Exception e) {
@@ -1469,8 +1468,8 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.LEAD,
-          "add map age range", securityService);
+      user = authorizeApp(authToken, MapUserRole.LEAD, "add map age range",
+          securityService);
 
       // Check if age range already exists and send better message
       for (final MapAgeRange range : mappingService.getMapAgeRanges()
@@ -1519,8 +1518,8 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.LEAD,
-          "udpate age range", securityService);
+      user = authorizeApp(authToken, MapUserRole.LEAD, "udpate age range",
+          securityService);
 
       mappingService.updateMapAgeRange(mapAgeRange);
     } catch (Exception e) {
@@ -1555,8 +1554,8 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.LEAD,
-          "remove age range", securityService);
+      user = authorizeApp(authToken, MapUserRole.LEAD, "remove age range",
+          securityService);
 
       mappingService.removeMapAgeRange(mapAgeRange.getId());
     } catch (Exception e) {
@@ -1643,8 +1642,8 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.LEAD,
-          "add map relation", securityService);
+      user = authorizeApp(authToken, MapUserRole.LEAD, "add map relation",
+          securityService);
 
       // Check if relation already exists and send better message
       for (final MapRelation relation : mappingService.getMapRelations()
@@ -1693,8 +1692,8 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.LEAD,
-          "update map relation", securityService);
+      user = authorizeApp(authToken, MapUserRole.LEAD, "update map relation",
+          securityService);
 
       mappingService.updateMapRelation(mapRelation);
     } catch (Exception e) {
@@ -1729,8 +1728,8 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.LEAD,
-          "remove map relation", securityService);
+      user = authorizeApp(authToken, MapUserRole.LEAD, "remove map relation",
+          securityService);
 
       mappingService.removeMapRelation(mapRelation.getId());
     } catch (Exception e) {
@@ -1864,8 +1863,8 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.LEAD,
-          "add map principle", securityService);
+      user = authorizeApp(authToken, MapUserRole.LEAD, "add map principle",
+          securityService);
 
       // Check if principle already exists and send better message
       for (final MapPrinciple principle : mappingService.getMapPrinciples()
@@ -1915,8 +1914,8 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.LEAD,
-          "update map principle", securityService);
+      user = authorizeApp(authToken, MapUserRole.LEAD, "update map principle",
+          securityService);
 
       mappingService.updateMapPrinciple(mapPrinciple);
 
@@ -1952,8 +1951,8 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.LEAD,
-          "remove map principle", securityService);
+      user = authorizeApp(authToken, MapUserRole.LEAD, "remove map principle",
+          securityService);
 
       mappingService.removeMapPrinciple(principle.getId());
 
@@ -3158,12 +3157,13 @@ public class MappingServiceRest extends RootServiceRest {
    * Computes a map advice (if any) for a map entry's current state.
    *
    * @param mapRecord the map record
+   * @param entryIndex the entry index
    * @param authToken the auth token
    * @return Response the response
    * @throws Exception the exception
    */
   @POST
-  @Path("/advice/compute")
+  @Path("/advice/compute/{entryIndex}")
   @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
@@ -3172,6 +3172,7 @@ public class MappingServiceRest extends RootServiceRest {
   })
   @ApiOperation(value = "Compute map advices", notes = "Gets the computed map advices for the indicated map entry of the map record.", response = MapAdviceJpa.class)
   public MapAdviceList computeMapAdvice(
+    @ApiParam(value = "Index of entries in map record to compute advice for", required = true) @PathParam("entryIndex") Integer entryIndex,
     @ApiParam(value = "Map record, in JSON or XML POST data", required = true) MapRecordJpa mapRecord,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -3183,6 +3184,12 @@ public class MappingServiceRest extends RootServiceRest {
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
+      // Bail if there are no entries for entryIndex
+      if (mapRecord == null || mapRecord.getMapEntries() == null
+          || mapRecord.getMapEntries().size() <= entryIndex) {
+        return new MapAdviceListJpa();
+      }
+
       // authorize call
       user = authorizeProject(mapRecord.getMapProjectId(), authToken,
           MapUserRole.SPECIALIST, "compute map advice", securityService);
@@ -3191,20 +3198,7 @@ public class MappingServiceRest extends RootServiceRest {
           mappingService.getProjectSpecificAlgorithmHandler(
               mappingService.getMapProject(mapRecord.getMapProjectId()));
 
-      // We need the full in-memory (and unsaved) representation of the
-      // map record.
-      // The entry in question is (hackishly identified by having an id of
-      // -1);
-      MapEntry mapEntry = null;
-      for (final MapEntry entry : mapRecord.getMapEntries()) {
-        if (entry.getId() != null && entry.getId() == -1) {
-          if (mapEntry != null) {
-            throw new Exception(
-                "More than one map entry is indicated as the one to compute advice for.");
-          }
-          mapEntry = entry;
-        }
-      }
+      final MapEntry mapEntry = mapRecord.getMapEntries().get(entryIndex);
 
       // bail if not ready yet
       if (mapEntry == null || mapEntry.getTargetId() == null) {
@@ -3610,8 +3604,7 @@ public class MappingServiceRest extends RootServiceRest {
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
 
       // formulate an "and" search from the query if it doesn't use
-      // special
-      // chars
+      // special chars
       boolean plusFlag = false;
       final StringBuilder qb = new StringBuilder();
       if (!query.contains("\"") && !query.contains("-") && !query.contains("+")
@@ -4214,8 +4207,8 @@ public class MappingServiceRest extends RootServiceRest {
     ContentService contentService = new ContentServiceJpa();
     try {
       // authorize call
-      user = authorizeProject(mapProjectId, authToken,
-          MapUserRole.LEAD, "compute names", securityService);
+      user = authorizeProject(mapProjectId, authToken, MapUserRole.LEAD,
+          "compute names", securityService);
 
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
       final String terminology = mapProject.getSourceTerminology();
