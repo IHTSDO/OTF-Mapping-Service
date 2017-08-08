@@ -1098,9 +1098,18 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
         valueMap.put(value, reportResult);
       }
     }
-
+    
+    // sort results by value field
+    Comparator<ReportResult> comparator = new Comparator<ReportResult>() {
+    	  public int compare(ReportResult o1, ReportResult o2) {
+    	    return o1.getValue().compareTo(o2.getValue());
+    	  }
+    	};  	
+    List<ReportResult> reportResultList = new ArrayList<>(valueMap.values());
+    Collections.sort(reportResultList, comparator);
+    
     // add each report result to the report
-    for (final ReportResult reportResult : valueMap.values()) {
+    for (final ReportResult reportResult : reportResultList) {
       report.addResult(reportResult);
     }
     return report;
