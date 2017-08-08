@@ -1349,17 +1349,19 @@ public class MappingServiceJpa extends RootServiceJpa
         return false;
     }
 
-    ContentService contentService = new ContentServiceJpa();
-    for (final TreePosition tp : contentService.getTreePositionsWithDescendants(
-        conceptId, project.getSourceTerminology(),
-        project.getSourceTerminologyVersion()).getIterable()) {
-      String ancestorPath = tp.getAncestorPath();
-      if (project.isScopeDescendantsFlag()
-          && ancestorPath.contains(conceptId)) {
-        return false;
+    try (ContentService contentService = new ContentServiceJpa()) {
+      for (final TreePosition tp : contentService
+          .getTreePositionsWithDescendants(conceptId,
+              project.getSourceTerminology(),
+              project.getSourceTerminologyVersion())
+          .getIterable()) {
+        String ancestorPath = tp.getAncestorPath();
+        if (project.isScopeDescendantsFlag()
+            && ancestorPath.contains(conceptId)) {
+          return false;
+        }
       }
     }
-    contentService.close();
     return true;
   }
 
@@ -1873,6 +1875,8 @@ public class MappingServiceJpa extends RootServiceJpa
       Random random = new Random();
 
       if (mapUser == null) {
+        metadataService.close();
+        contentService.close();
         throw new Exception("Loader user could not be found");
       }
 
