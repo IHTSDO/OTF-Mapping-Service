@@ -35,6 +35,9 @@ angular
         // watch for entry change
         $scope.$on('mapRecordWidget.notification.changeSelectedEntry',
           function(event, parameters) {
+            console.debug(
+              '  => on mapRecordWidget.notification.changeSelectedEntry = ',
+              parameters.record, parameters.entry);
             $scope.entry = parameters.entry;
             $scope.record = parameters.record;
             $scope.project = parameters.project;
@@ -48,8 +51,9 @@ angular
 
             // set the rule to null if a non-rule-based project
             // added to catch any badly constructed rules from other widgets
-            if (!$scope.project.ruleBased)
+            if (!$scope.project.ruleBased) {
               $scope.entry.rule = null;
+            }
 
             // compute relation and advice IFF a target or entry has
             // been set attempt to autocompute the map relation, then update the
@@ -63,6 +67,9 @@ angular
           .$on(
             'mapRecordWidget.notification.deleteSelectedEntry',
             function(event, parameters) {
+              console.debug(
+                ' => on mapRecordWidget.notification.deleteSelectedEntry = ',
+                parameters.entry);
               // if the currently viewed entry is the one being viewed,
               // clear the displayed entry
               if (($scope.entry.localId && $scope.entry.localId == parameters.entry.localId)
@@ -87,6 +94,9 @@ angular
 
         // broadcasts an update from the map entry to the map record widget
         function updateEntry(entry) {
+          console.debug(
+            'broadcast mapEntryWidget.notification.modifySelectedEntry = ',
+            entry);
           $rootScope.$broadcast(
             'mapEntryWidget.notification.modifySelectedEntry', {
               action : 'save',
@@ -119,7 +129,7 @@ angular
             }).success(
             function(data) {
               $rootScope.glassPane--;
-
+              console.debug('  valid target = ', data)
               // if target found and valid
               if (data) {
                 $scope.entry.targetId = data.terminologyId;
@@ -147,6 +157,8 @@ angular
         // watch for concept selection from terminology browser
         $scope.$on('terminologyBrowser.selectConcept', function(event,
           parameters) {
+          console.debug(' => on terminologyBrowser.selectConcept = ',
+            parameters.concept);
           // get the relative position of the inside of the map entry widget
 
           var rect = document.getElementById('mapEntryWidgetTop')
@@ -181,6 +193,8 @@ angular
           entry.mapRelation = null;
           entry.mapAdvice = [];
 
+          console
+            .debug('broadcast mapEntryWidget.notification.clearTargetConcept');
           $rootScope
             .$broadcast('mapEntryWidget.notification.clearTargetConcept');
 
@@ -236,7 +250,7 @@ angular
           })
             .success(
               function(data) {
-
+                console.debug('  relation = ', data);
                 if (data) {
 
                   // get the allowable advices and relations
@@ -293,7 +307,9 @@ angular
             // Success
             function(data) {
               // Update the entry
-              updateEntry(data);
+              if (data) {
+                updateEntry(data);
+              }
             });
           }
         }
@@ -343,6 +359,7 @@ angular
             }
           }).success(
             function(data) {
+              console.debug('  advice = ', data);
               if (data) {
                 entry.mapAdvice = data.mapAdvice;
                 // get the allowable advices and relations for this entry
