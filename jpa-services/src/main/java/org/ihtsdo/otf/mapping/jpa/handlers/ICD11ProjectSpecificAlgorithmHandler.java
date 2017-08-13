@@ -465,9 +465,12 @@ public class ICD11ProjectSpecificAlgorithmHandler
       if (notesFile == null) {
         // Override to work around jenkins/ansible and need for this to be in
         // the config file
-        notesFile = "/opt/mapping-data/ICD11/notes/icd11MapNotes.txt";
         notesFile =
-            "c:/Users/bcarlsen/workspace/ihtsdo-mapping-tool-data/ICD11/tmp/icd11MapNotes.txt";
+            "c:/Users/bcar/Desktop/workspace/ihtsdo-mapping-tool-data/ICD11/tmp/icd11MapNotes.txt";
+        if (!new File(notesFile).exists()) {
+          notesFile = "/opt/mapping-data/ICD11/notes/icd11MapNotes.txt";
+        }
+
       }
       if (!new File(notesFile).exists()) {
         throw new Exception("Notes file does not exist = " + notesFile);

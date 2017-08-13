@@ -130,7 +130,26 @@ public class ResetIcd11Database {
     if (result.getExitCode() != 0) {
       throw result.getExecutionException();
     }
-
+    
+    // Load ICD10 ClaML
+    Logger.getLogger(getClass()).info("Load ICD10");
+    request = new DefaultInvocationRequest();
+    request.setPomFile(new File("../admin/loader/pom.xml"));
+    request.setProfiles(Arrays.asList("ClaML"));
+    request.setGoals(Arrays.asList("clean", "install"));
+    p = new Properties();
+    p.setProperty("run.config", System.getProperty("run.config"));
+    p.setProperty("terminology", "ICD10");
+    p.setProperty("version", "2016");
+    p.setProperty("input.file", config.getProperty("data.dir") + "/"
+        + "icd10-2016.xml");
+    request.setProperties(p);
+    request.setDebug(false);
+    invoker = new DefaultInvoker();
+    result = invoker.execute(request);
+    if (result.getExitCode() != 0) {
+      throw result.getExecutionException();
+    }
     // Load ICD11 from simple files
     Logger.getLogger(getClass()).info("Load ICD11");
     request = new DefaultInvocationRequest();
