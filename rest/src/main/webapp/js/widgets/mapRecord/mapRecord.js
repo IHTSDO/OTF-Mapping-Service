@@ -178,6 +178,13 @@ angular
             console.debug(
               '  => on compareRecordsWidget.notification.selectRecord = ',
               parameters.record);
+
+            // If not QA_NEW, REVIEW_NEW, or CONFLICT_NEW, bail here
+            // and let the "retrieveRecord" load this record.
+            if (!$scope.record.workflowStatus.endsWith('NEW')) {
+              return;
+            }
+
             $scope.record = parameters.record;
 
             // This MUST not be removed for 'Start here' to work
@@ -214,7 +221,10 @@ angular
             if ($scope.project != null && $scope.userToken != null) {
               $http.defaults.headers.common.Authorization = $scope.userToken;
               setIndexViewerStatus();
+
+              // Retrieve the record upon being loaded
               retrieveRecord();
+
               // Initialize terminology notes
               utilService.initializeTerminologyNotes($scope.project.id);
             }
@@ -245,6 +255,7 @@ angular
         // function to initially retrieve the project
 
         function retrieveRecord() {
+
           // obtain the record
           console.debug('Get record', $routeParams.recordId);
           $http({
@@ -257,17 +268,32 @@ angular
           })
             .success(
               function(data) {
-                console.debug('  record = ', data);
-                $scope.record = data;
+                console
+                  .debug('  record = ', data.id, data.workflowStatus, data);
 
-                // verify that all entries on this record with no
-                // target have 'No
-                // target' set as target name
-                for (var i = 0; i < $scope.record.mapEntry.length; i++) {
-                  if ($scope.record.mapEntry[i].targetId == null
-                    || $scope.record.mapEntry[i].targetId == null
-                    || $scope.record.mapEntry[i].targetId === '')
-                    $scope.record.mapEntry[i].targetName = 'No target';
+                // *_NEW workflowStatus is a case where we are going to copy a
+                // record from compareRecords to get started so wait for the
+                // notification for "selectRecord" happen
+                if (!data.workflowStatus.endsWith('NEW')) {
+                  $scope.record = data;
+
+                  // verify that all entries on this record with no
+                  // target have 'No
+                  // target' set as target name
+                  for (var i = 0; i < $scope.record.mapEntry.length; i++) {
+                    if ($scope.record.mapEntry[i].targetId == null
+                      || $scope.record.mapEntry[i].targetId == null
+                      || $scope.record.mapEntry[i].targetId === '')
+                      $scope.record.mapEntry[i].targetName = 'No target';
+                  }
+                } else {
+                  // Set basic stuff for the "then.." below
+                  $scope.record = {};
+                  // used by selectRecord
+                  $scope.record.workflowStatus = data.workflowStatus;
+                  $scope.record.conceptId = data.conceptId;
+                  $scope.record.owner = {};
+                  $scope.record.owner.userName = data.owner.userName;
                 }
 
               })
@@ -308,28 +334,34 @@ angular
                     $rootScope.handleHttpError(data, status, headers, config);
                   });
 
-                  // initialize the entries
-                  initializeGroupsTree();
+                  // IF id was set above, do this - otherwise it will get done
+                  // later
+                  if ($scope.record.id) {
+                    // initialize the entries
+                    initializeGroupsTree();
 
-                  // add code to get feedback conversations
-                  console.debug('Get feedback conversation for record',
-                    $scope.record.id);
-                  $http(
-                    {
-                      url : root_workflow + 'conversation/id/'
-                        + $scope.record.id,
-                      dataType : 'json',
-                      method : 'GET',
-                      headers : {
-                        'Content-Type' : 'application/json'
-                      }
-                    }).success(function(data) {
-                    console.debug('  conversation = ', data);
-                    $scope.conversation = data;
-                    initializeReturnRecipients();
-                  }).error(function(data, status, headers, config) {
-                    $rootScope.handleHttpError(data, status, headers, config);
-                  });
+                    // add code to get feedback conversations
+                    console.debug('Get feedback conversation for record',
+                      $scope.record.id);
+                    $http(
+                      {
+                        url : root_workflow + 'conversation/id/'
+                          + $scope.record.id,
+                        dataType : 'json',
+                        method : 'GET',
+                        headers : {
+                          'Content-Type' : 'application/json'
+                        }
+                      }).success(function(data) {
+                      console.debug('  conversation = ', data);
+                      $scope.conversation = data;
+                      initializeReturnRecipients();
+                    }).error(
+                      function(data, status, headers, config) {
+                        $rootScope.handleHttpError(data, status, headers,
+                          config);
+                      });
+                  }
                 }
               });
 
