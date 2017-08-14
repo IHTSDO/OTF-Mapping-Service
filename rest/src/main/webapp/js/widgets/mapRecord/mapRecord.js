@@ -181,7 +181,7 @@ angular
 
             // If not QA_NEW, REVIEW_NEW, or CONFLICT_NEW, bail here
             // and let the "retrieveRecord" load this record.
-            if (!$scope.record.workflowStatus.endsWith('NEW')) {
+            if (!$scope.record.workflowStatus.endsWith('_NEW')) {
               return;
             }
 
@@ -274,7 +274,7 @@ angular
                 // *_NEW workflowStatus is a case where we are going to copy a
                 // record from compareRecords to get started so wait for the
                 // notification for "selectRecord" happen
-                if (!data.workflowStatus.endsWith('NEW')) {
+                if (!data.workflowStatus.endsWith('_NEW')) {
                   $scope.record = data;
 
                   // verify that all entries on this record with no
