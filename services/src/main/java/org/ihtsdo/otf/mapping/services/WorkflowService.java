@@ -36,12 +36,12 @@ public interface WorkflowService extends MappingService {
    * Gets the workflow tracking record.
    *
    * @param mapProject the map project
-   * @param concept the concept
+   * @param terminologyId the concept terminology id
    * @return the workflow tracking record
    * @throws Exception the exception
    */
   public TrackingRecord getTrackingRecord(MapProject mapProject,
-    Concept concept) throws Exception;
+    String terminologyId) throws Exception;
 
   /**
    * Gets the workflow tracking records.
@@ -111,7 +111,7 @@ public interface WorkflowService extends MappingService {
    */
   public void processWorkflowAction(MapProject mapProject, Concept concept,
     MapUser mapUser, MapRecord mapRecord, WorkflowAction workflowAction)
-      throws Exception;
+    throws Exception;
 
   /**
    * Synchronize workflow tracking record given the new version and the old
@@ -376,7 +376,7 @@ public interface WorkflowService extends MappingService {
    */
   public FeedbackConversationList findFeedbackConversationsForProject(
     Long mapProjectId, String userName, String query, PfsParameter pfsParameter)
-      throws Exception;
+    throws Exception;
 
   /**
    * Returns the feedback conversations for concept.
@@ -429,8 +429,7 @@ public interface WorkflowService extends MappingService {
    */
   public void sendFeedbackEmail(String name, String email, String conceptId,
     String conceptName, String refSetId, String feedbackMessage)
-      throws Exception;
-
+    throws Exception;
 
   /**
    * Find available work.

@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
-    <version>1.5.32</version>
+    <version>1.5.33</version>
     <relativePath>../../parent</relativePath>
   </parent>
 
@@ -48,6 +48,7 @@
       for now -->
     <member.flag>false</member.flag>
     <record.flag>false</record.flag>
+    <workflow.status>PUBLISHED</workflow.status>
   </properties>
 
   <profiles>
@@ -312,7 +313,7 @@
                 </goals>
                 <configuration>
                   <inputFile>${input.file}</inputFile>
-                  <workflowStatus>PUBLISHED</workflowStatus>
+                  <workflowStatus>${workflow.status}</workflowStatus>
                   <memberFlag>${member.flag}</memberFlag>
                   <recordFlag>${record.flag}</recordFlag>
                 </configuration>
@@ -572,6 +573,9 @@
                   <goal>run-ad-hoc</goal>
                 </goals>
                 <configuration>
+                  <mode>${mode}</mode>
+                  <refsetId>${refset.id}</refsetId>
+                  <inputFile>${input.file}</inputFile>
                 </configuration>
               </execution>
             </executions>

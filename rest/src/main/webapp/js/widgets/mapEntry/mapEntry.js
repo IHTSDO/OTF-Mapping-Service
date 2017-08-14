@@ -24,8 +24,8 @@ angular
       '$location',
       '$anchorScroll',
       'localStorageService',
-      function($scope, $window, $rootScope, $q, $http, $routeParams, $uibModal, $location,
-        $anchorScroll, localStorageService) {
+      function($scope, $window, $rootScope, $q, $http, $routeParams, $uibModal,
+        $location, $anchorScroll, localStorageService) {
 
         // for this widget, the only local storage service variable used is
         // user
@@ -33,40 +33,51 @@ angular
         $scope.userToken = localStorageService.get('userToken');
 
         // watch for entry change
-        $scope.$on('mapRecordWidget.notification.changeSelectedEntry', function(event, parameters) {
-          $scope.entry = parameters.entry;
-          $scope.record = parameters.record;
-          $scope.project = parameters.project;
+        $scope.$on('mapRecordWidget.notification.changeSelectedEntry',
+          function(event, parameters) {
+            console.debug(
+              '  => on mapRecordWidget.notification.changeSelectedEntry = ',
+              parameters.record, parameters.entry);
+            $scope.entry = parameters.entry;
+            $scope.record = parameters.record;
+            $scope.project = parameters.project;
 
-          // get the allowable advices
-          $scope.allowableAdvices = getAllowableAdvices(parameters.entry,
-            parameters.project.mapAdvice);
-          sortByKey($scope.allowableAdvices, 'detail');
-          $scope.allowableMapRelations = getAllowableRelations(parameters.entry,
-            parameters.project.mapRelation);
+            // get the allowable advices
+            $scope.allowableAdvices = getAllowableAdvices(parameters.entry,
+              parameters.project.mapAdvice);
+            sortByKey($scope.allowableAdvices, 'detail');
+            $scope.allowableMapRelations = getAllowableRelations(
+              parameters.entry, parameters.project.mapRelation);
 
-          // set the rule to null if a non-rule-based project
-          // added to catch any badly constructed rules from other widgets
-          if (!$scope.project.ruleBased)
-            $scope.entry.rule = null;
+            // set the rule to null if a non-rule-based project
+            // added to catch any badly constructed rules from other widgets
+            if (!$scope.project.ruleBased) {
+              $scope.entry.rule = null;
+            }
 
-          // compute relation and advice IFF a target or entry has
-          // been set attempt to autocompute the map relation, then update the
-          // entry
-          $scope.computeParameters(false);
+            // compute relation and advice IFF a target or entry has
+            // been set attempt to autocompute the map relation, then update the
+            // entry
+            $scope.computeParameters(false);
 
-        });
+          });
 
         // watch for entry deletion from map record page
-        $scope.$on('mapRecordWidget.notification.deleteSelectedEntry', function(event, parameters) {
-          // if the currently viewed entry is the one being viewed,
-          // clear the displayed entry
-          if (($scope.entry.localId && $scope.entry.localId == parameters.entry.localId)
-            || ($scope.entry.id && $scope.entry.id == parameters.entry.id)) {
-            $scope.entry = null;
-          }
+        $scope
+          .$on(
+            'mapRecordWidget.notification.deleteSelectedEntry',
+            function(event, parameters) {
+              console.debug(
+                ' => on mapRecordWidget.notification.deleteSelectedEntry = ',
+                parameters.entry);
+              // if the currently viewed entry is the one being viewed,
+              // clear the displayed entry
+              if (($scope.entry.localId && $scope.entry.localId == parameters.entry.localId)
+                || ($scope.entry.id && $scope.entry.id == parameters.entry.id)) {
+                $scope.entry = null;
+              }
 
-        });
+            });
 
         // local variables
         $scope.isTargetOpen = true;
@@ -83,12 +94,16 @@ angular
 
         // broadcasts an update from the map entry to the map record widget
         function updateEntry(entry) {
-          $rootScope.$broadcast('mapEntryWidget.notification.modifySelectedEntry', {
-            action : 'save',
-            entry : angular.copy(entry),
-            record : $scope.record,
-            project : $scope.project
-          });
+          console.debug(
+            'broadcast mapEntryWidget.notification.modifySelectedEntry = ',
+            entry);
+          $rootScope.$broadcast(
+            'mapEntryWidget.notification.modifySelectedEntry', {
+              action : 'save',
+              entry : angular.copy(entry),
+              record : $scope.record,
+              project : $scope.project
+            });
         }
 
         $scope.setTarget = function(targetCode) {
@@ -105,32 +120,34 @@ angular
           $rootScope.glassPane++;
           $http(
             {
-              url : root_mapping + 'project/id/' + $scope.project.id + '/concept/' + targetCode
-                + '/isValid',
+              url : root_mapping + 'project/id/' + $scope.project.id
+                + '/concept/' + targetCode + '/isValid',
               method : 'GET',
               headers : {
                 'Content-Type' : 'application/json'
               }
-            }).success(function(data) {
-            $rootScope.glassPane--;
+            }).success(
+            function(data) {
+              $rootScope.glassPane--;
+              console.debug('  valid target = ', data)
+              // if target found and valid
+              if (data) {
+                $scope.entry.targetId = data.terminologyId;
+                $scope.entry.targetName = data.defaultPreferredName;
 
-            // if target found and valid
-            if (data) {
-              $scope.entry.targetId = data.terminologyId;
-              $scope.entry.targetName = data.defaultPreferredName;
+                // attempt to autocompute the map relation, then update the
+                // entry
+                $scope.computeParameters(false);
 
-              // attempt to autocompute the map relation, then update the
-              // entry
-              $scope.computeParameters(false);
+              } else {
 
-            } else {
+                $scope.getValidTargetError = targetCode
+                  + ' is not a valid target';
+                $scope.entry.targetName = null;
 
-              $scope.getValidTargetError = targetCode + ' is not a valid target';
-              $scope.entry.targetName = null;
+              }
 
-            }
-
-          }).error(function(data, status, headers, config) {
+            }).error(function(data, status, headers, config) {
             $rootScope.glassPane--;
 
             $rootScope.handleHttpError(data, status, headers, config);
@@ -138,10 +155,14 @@ angular
         };
 
         // watch for concept selection from terminology browser
-        $scope.$on('terminologyBrowser.selectConcept', function(event, parameters) {
+        $scope.$on('terminologyBrowser.selectConcept', function(event,
+          parameters) {
+          console.debug(' => on terminologyBrowser.selectConcept = ',
+            parameters.concept);
           // get the relative position of the inside of the map entry widget
 
-          var rect = document.getElementById('mapEntryWidgetTop').getBoundingClientRect();
+          var rect = document.getElementById('mapEntryWidgetTop')
+            .getBoundingClientRect();
 
           // scroll to (mapEntry left, mapEntry top + scroll offset -
           // header/widget header width)
@@ -159,7 +180,8 @@ angular
           $scope.computeParameters(false);
 
           // get the allowable advices and relations
-          $scope.allowableAdvices = getAllowableAdvices($scope.entry, $scope.project.mapAdvice);
+          $scope.allowableAdvices = getAllowableAdvices($scope.entry,
+            $scope.project.mapAdvice);
           sortByKey($scope.allowableAdvices, 'detail');
           $scope.allowableMapRelations = getAllowableRelations($scope.entry,
             $scope.project.mapRelation);
@@ -171,10 +193,14 @@ angular
           entry.mapRelation = null;
           entry.mapAdvice = [];
 
-          $rootScope.$broadcast('mapEntryWidget.notification.clearTargetConcept');
+          console
+            .debug('broadcast mapEntryWidget.notification.clearTargetConcept');
+          $rootScope
+            .$broadcast('mapEntryWidget.notification.clearTargetConcept');
 
           // get the allowable advices and relations
-          $scope.allowableAdvices = getAllowableAdvices($scope.entry, $scope.project.mapAdvice);
+          $scope.allowableAdvices = getAllowableAdvices($scope.entry,
+            $scope.project.mapAdvice);
           sortByKey($scope.allowableAdvices, 'detail');
           $scope.allowableMapRelations = getAllowableRelations($scope.entry,
             $scope.project.mapRelation);
@@ -221,45 +247,47 @@ angular
             headers : {
               'Content-Type' : 'application/json'
             }
-          }).success(
-            function(data) {
+          })
+            .success(
+              function(data) {
+                console.debug('  relation = ', data);
+                if (data) {
 
-              if (data) {
+                  // get the allowable advices and relations
+                  $scope.allowableAdvices = getAllowableAdvices(entry,
+                    $scope.project.mapAdvice);
+                  sortByKey($scope.allowableAdvices, 'detail');
+                  $scope.allowableMapRelations = getAllowableRelations(entry,
+                    $scope.project.mapRelation);
 
-                // get the allowable advices and relations
-                $scope.allowableAdvices = getAllowableAdvices(entry, $scope.project.mapAdvice);
-                sortByKey($scope.allowableAdvices, 'detail');
-                $scope.allowableMapRelations = getAllowableRelations(entry,
-                  $scope.project.mapRelation);
-
-                if (data.isComputed) {
-                  entry.mapRelation = data;
-                } else {
-                  for (var i = 0; i < $scope.allowableMapRelations.length; i++) {
-                    var relation = $scope.allowableMapRelations[i];
-                    if (relation.id == data.id) {
-                      entry.mapRelation = relation;
-                      break;
+                  if (data.isComputed) {
+                    entry.mapRelation = data;
+                  } else {
+                    for (var i = 0; i < $scope.allowableMapRelations.length; i++) {
+                      var relation = $scope.allowableMapRelations[i];
+                      if (relation.id == data.id) {
+                        entry.mapRelation = relation;
+                        break;
+                      }
                     }
                   }
+
+                  $rootScope.glassPane--;
+
+                  // return the promise
+                  deferred.resolve(entry);
+                } else {
+                  $rootScope.glassPane--;
+                  deferred.resolve(entry);
                 }
+              }).error(function(data, status, headers, config) {
+              $rootScope.glassPane--;
+              $rootScope.handleHttpError(data, status, headers, config);
 
-                $rootScope.glassPane--;
+              // reject the promise
+              deferred.reject();
 
-                // return the promise
-                deferred.resolve(entry);
-              } else {
-                $rootScope.glassPane--;
-                deferred.resolve(entry);
-              }
-            }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
-            $rootScope.handleHttpError(data, status, headers, config);
-
-            // reject the promise
-            deferred.reject();
-
-          });
+            });
 
           return deferred.promise;
         }
@@ -279,7 +307,9 @@ angular
             // Success
             function(data) {
               // Update the entry
-              updateEntry(data);
+              if (data) {
+                updateEntry(data);
+              }
             });
           }
         }
@@ -295,45 +325,47 @@ angular
 
           $rootScope.glassPane++;
 
-          var entryIsScopeEntry = matchingEntry(entry, $scope.entry);
+          // var entryIsScopeEntry = matchingEntry(entry, $scope.entry);
 
           // Replace in the record the entry being edited
           // so the changes are reflected. All other entries
           // are sync'd with map record display.
-          var copy = angular.copy($scope.record);
-          var entryCopy = angular.copy(entry);
-          entryCopy.id = -1;
-          copy.mapEntry.splice(index, 1, entryCopy);
-
-          // Also need to replace the scope record with the edited
-          // one in cases where we are checking other entries
-          for (var i = 0; i < copy.mapEntry.length; i++) {
-            // if localId or Id matches $scope record, replace it
-            if (matchingEntry(copy.mapEntry[i], $scope.entry)) {
-              var entryCopy2 = angular.copy($scope.entry);
-              if (entryIsScopeEntry) {
-                entryCopy2.id = -1;
-              }
-              copy.mapEntry.splice(i, 1, entryCopy2);
-              break;
-            }
-          }
+          // var copy = angular.copy($scope.record);
+          // var entryCopy = angular.copy(entry);
+          // entryCopy.id = -1;
+          // copy.mapEntry.splice(index, 1, entryCopy);
+          //
+          // // Also need to replace the scope record with the edited
+          // // one in cases where we are checking other entries
+          // for (var i = 0; i < copy.mapEntry.length; i++) {
+          // // if localId or Id matches $scope record, replace it
+          // if (matchingEntry(copy.mapEntry[i], $scope.entry)) {
+          // var entryCopy2 = angular.copy($scope.entry);
+          // if (entryIsScopeEntry) {
+          // entryCopy2.id = -1;
+          // }
+          // copy.mapEntry.splice(i, 1, entryCopy2);
+          // break;
+          // }
+          // }
 
           $http({
-            url : root_mapping + 'advice/compute',
+            url : root_mapping + 'advice/compute/' + index,
             dataType : 'json',
-            data : copy,
+            data : $scope.record,
             method : 'POST',
             headers : {
               'Content-Type' : 'application/json'
             }
           }).success(
             function(data) {
+              console.debug('  advice = ', data);
               if (data) {
                 entry.mapAdvice = data.mapAdvice;
                 // get the allowable advices and relations for this entry
                 if (matchingEntry(entry, $scope.entry)) {
-                  $scope.allowableAdvices = getAllowableAdvices(entry, $scope.project.mapAdvice);
+                  $scope.allowableAdvices = getAllowableAdvices(entry,
+                    $scope.project.mapAdvice);
                   sortByKey($scope.allowableAdvices, 'detail');
                   $scope.allowableMapRelations = getAllowableRelations(entry,
                     $scope.project.mapRelation);
@@ -383,23 +415,24 @@ angular
             }
           });
 
-          modalInstance.result.then(
-          // Success
-          function(lrule) {
-            var rule = lrule;
-            // set to true if rule returned with no value and display an
-            // error
-            if (!rule) {
-              rule = 'TRUE';
-              $scope.localErrorRule = 'Invalid rule constructed, setting rule to TRUE';
-            }
+          modalInstance.result
+            .then(
+            // Success
+            function(lrule) {
+              var rule = lrule;
+              // set to true if rule returned with no value and display an
+              // error
+              if (!rule) {
+                rule = 'TRUE';
+                $scope.localErrorRule = 'Invalid rule constructed, setting rule to TRUE';
+              }
 
-            $scope.entry.rule = rule;
-            $scope.entry.ruleSummary = $scope.getRuleSummary($scope.entry);
+              $scope.entry.rule = rule;
+              $scope.entry.ruleSummary = $scope.getRuleSummary($scope.entry);
 
-            // compute relation and advice (if any), then update entry
-            $scope.computeParameters(false);
-          });
+              // compute relation and advice (if any), then update entry
+              $scope.computeParameters(false);
+            });
         };
 
         // Returns a summary string for the entry rule type
@@ -422,12 +455,15 @@ angular
 
               ruleSummary += '[AGE ';
 
-              if (lowerBound != null && lowerBound != '' && lowerBound.length > 0) {
+              if (lowerBound != null && lowerBound != ''
+                && lowerBound.length > 0) {
                 ruleSummary += lowerBound[0];
-                if (upperBound != null && upperBound != '' && upperBound.length > 0)
+                if (upperBound != null && upperBound != ''
+                  && upperBound.length > 0)
                   ruleSummary += ' AND ';
               }
-              if (upperBound != null && upperBound != '' && upperBound.length > 0)
+              if (upperBound != null && upperBound != ''
+                && upperBound.length > 0)
                 ruleSummary += upperBound[0];
 
               ruleSummary += '] ';
@@ -439,8 +475,8 @@ angular
         };
 
         // controller for the modal
-        var RuleConstructorModalCtrl = function($scope, $http, $uibModalInstance, presetAgeRanges,
-          entry) {
+        var RuleConstructorModalCtrl = function($scope, $http,
+          $uibModalInstance, presetAgeRanges, entry) {
 
           $scope.ruleError = '';
           $scope.customAgeRange = {
@@ -515,7 +551,8 @@ angular
             }
 
             // if an age range rule
-            else if (ruleCategory === 'Age - Chronological' || ruleCategory === 'Age - At Onset') {
+            else if (ruleCategory === 'Age - Chronological'
+              || ruleCategory === 'Age - At Onset') {
 
               // if age range not yet specified, do not construct rule
               if (ageRange == null || ageRange == undefined)
@@ -523,9 +560,11 @@ angular
 
               // determine if lower and upper values are complete by checking
               // for null values
-              var lowerValueValid = ageRange.lowerValue != '-1' && ageRange.lowerValue != undefined
+              var lowerValueValid = ageRange.lowerValue != '-1'
+                && ageRange.lowerValue != undefined
                 && ageRange.lowerValue != null && ageRange.lowerValue != '';
-              var upperValueValid = ageRange.upperValue != '-1' && ageRange.upperValue != undefined
+              var upperValueValid = ageRange.upperValue != '-1'
+                && ageRange.upperValue != undefined
                 && ageRange.lowerValue != null && ageRange.upperValue != '';
 
               // stop if neither value has been fully specified
@@ -583,7 +622,8 @@ angular
 
               // if both specified, check that upper value is greater than
               // lower value
-              if (lowerValueValid && upperValueValid && lowerValue >= upperValue) {
+              if (lowerValueValid && upperValueValid
+                && lowerValue >= upperValue) {
                 $scope.ruleError += 'Upper bound value must be greater than lower bound value';
               }
 
@@ -592,8 +632,10 @@ angular
                 : 'IFA 445518008 | Age at onset of clinical finding (observable entity)';
 
               if (lowerValueValid) {
-                $scope.rule += ruleText + ' | ' + (ageRange.lowerInclusive ? '>=' : '>') + ' '
-                  + parseFloat(ageRange.lowerValue, 10).toFixed(1) + ' ' + ageRange.lowerUnits;
+                $scope.rule += ruleText + ' | '
+                  + (ageRange.lowerInclusive ? '>=' : '>') + ' '
+                  + parseFloat(ageRange.lowerValue, 10).toFixed(1) + ' '
+                  + ageRange.lowerUnits;
               }
 
               if (lowerValueValid && upperValueValid) {
@@ -601,8 +643,10 @@ angular
               }
 
               if (upperValueValid) {
-                $scope.rule += ruleText + ' | ' + (ageRange.upperInclusive ? '<=' : '<') + ' '
-                  + parseFloat(ageRange.upperValue, 10).toFixed(1) + ' ' + ageRange.upperUnits;
+                $scope.rule += ruleText + ' | '
+                  + (ageRange.upperInclusive ? '<=' : '<') + ' '
+                  + parseFloat(ageRange.upperValue, 10).toFixed(1) + ' '
+                  + ageRange.upperUnits;
 
               }
             } else
@@ -621,8 +665,11 @@ angular
 
               if ($scope.presetAgeRanges[i].lowerValue != null
                 && $scope.presetAgeRanges[i].lowerValue != '-1') {
-                presetAgeRangeStr += ($scope.presetAgeRanges[i].lowerInclusive ? '>=' : '>') + ' '
-                  + $scope.presetAgeRanges[i].lowerValue + ' '
+                presetAgeRangeStr += ($scope.presetAgeRanges[i].lowerInclusive ? '>='
+                  : '>')
+                  + ' '
+                  + $scope.presetAgeRanges[i].lowerValue
+                  + ' '
                   + $scope.presetAgeRanges[i].lowerUnits;
               }
 
@@ -637,8 +684,11 @@ angular
               if ($scope.presetAgeRanges[i].upperValue != null
                 && $scope.presetAgeRanges[i].upperValue != '-1') {
 
-                presetAgeRangeStr += ($scope.presetAgeRanges[i].upperInclusive ? '<=' : '<') + ' '
-                  + $scope.presetAgeRanges[i].upperValue + ' '
+                presetAgeRangeStr += ($scope.presetAgeRanges[i].upperInclusive ? '<='
+                  : '<')
+                  + ' '
+                  + $scope.presetAgeRanges[i].upperValue
+                  + ' '
                   + $scope.presetAgeRanges[i].upperUnits;
               }
 
@@ -733,7 +783,8 @@ angular
 
           // either target or relation must be non-null to compute
           // relation/advice
-          if ($scope.entry.targetId || $scope.entry.mapRelation || ignoreNullValues) {
+          if ($scope.entry.targetId || $scope.entry.mapRelation
+            || ignoreNullValues) {
 
             computeRelation($scope.entry).then(
             // Success

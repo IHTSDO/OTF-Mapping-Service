@@ -139,8 +139,8 @@ public class WorkflowPathStatesReviewProjectPathTest {
     mapProject.setMapRelationStyle(RelationStyle.MAP_CATEGORY_STYLE);
     mapProject.setName("Test Project");
     mapProject.setPropagatedFlag(false);
-    mapProject
-        .setProjectSpecificAlgorithmHandlerClass("org.ihtsdo.otf.mapping.jpa.handlers.ICD10ProjectSpecificAlgorithmHandler");
+    mapProject.setProjectSpecificAlgorithmHandlerClass(
+        "org.ihtsdo.otf.mapping.jpa.handlers.ICD10ProjectSpecificAlgorithmHandler");
     mapProject.setPublic(true);
     mapProject.setRefSetId("refsetId");
     mapProject.setRuleBased(true);
@@ -160,20 +160,18 @@ public class WorkflowPathStatesReviewProjectPathTest {
   @Test
   public void testLegalWorkflowCombinations() throws Exception {
 
-    Logger.getLogger(WorkflowPathStatesReviewProjectPathTest.class).info(
-        "Testing all possible combinations against legal states...");
+    Logger.getLogger(WorkflowPathStatesReviewProjectPathTest.class)
+        .info("Testing all possible combinations against legal states...");
 
     // test empty state
     if (handler.isEmptyWorkflowAllowed()) {
-      assertTrue(
-          "Empty workflow permitted",
-          handler
-              .isWorkflowCombinationInTrackingRecordStates(new WorkflowStatusCombination()));
+      assertTrue("Empty workflow permitted",
+          handler.isWorkflowCombinationInTrackingRecordStates(
+              new WorkflowStatusCombination()));
     } else {
-      assertTrue(
-          "Empty workflow not permitted",
-          !handler
-              .isWorkflowCombinationInTrackingRecordStates(new WorkflowStatusCombination()));
+      assertTrue("Empty workflow not permitted",
+          !handler.isWorkflowCombinationInTrackingRecordStates(
+              new WorkflowStatusCombination()));
     }
 
     // test declared states
@@ -218,14 +216,15 @@ public class WorkflowPathStatesReviewProjectPathTest {
       int maxResults = statuses.length ^ (nRecords - 1);
 
       // while combinations less than max results and less than desired results
-      while (combinations.size() < nResults && combinations.size() < maxResults) {
+      while (combinations.size() < nResults
+          && combinations.size() < maxResults) {
 
         // create a new random combination
         WorkflowStatusCombination combination = new WorkflowStatusCombination();
         for (int i = 0; i < nRecords; i++) {
 
-          combination.addWorkflowStatus(statuses[random
-              .nextInt(statuses.length)]);
+          combination
+              .addWorkflowStatus(statuses[random.nextInt(statuses.length)]);
 
         }
         if (!handler.isWorkflowCombinationInTrackingRecordStates(combination)) {
@@ -272,8 +271,8 @@ public class WorkflowPathStatesReviewProjectPathTest {
   @AfterClass
   public static void cleanup() throws Exception {
 
-    Logger.getLogger(WorkflowPathStatesReviewProjectPathTest.class).info(
-        "Clean-up");
+    Logger.getLogger(WorkflowPathStatesReviewProjectPathTest.class)
+        .info("Clean-up");
     resetRecords();
 
     mappingService.removeMapProject(mapProject.getId());
@@ -347,7 +346,7 @@ public class WorkflowPathStatesReviewProjectPathTest {
     // switch on size of combination
     switch (combination.getWorkflowStatuses().size()) {
 
-    // empty workflow
+      // empty workflow
       case 1:
         mappingService
             .addMapRecord(createRecord(specialist, statusIter.next()));
@@ -367,7 +366,8 @@ public class WorkflowPathStatesReviewProjectPathTest {
 
     // sleep 1s before retrieving tracking record
     Thread.sleep(1000);
-    trackingRecord = workflowService.getTrackingRecord(mapProject, concept);
+    trackingRecord = workflowService.getTrackingRecord(mapProject,
+        concept.getTerminologyId());
   }
 
 }

@@ -15,7 +15,7 @@
     style="vertical-align: top; display: inline-block; padding: 1px">
     {{label}}</div>
 </div>
-Map Entries
+<div ng-show="record.mapEntry.length > 0">Map Entries</div>
 
 <div style="padding: 0px;"
   ng-repeat="entry in record.mapEntry | orderBy:['mapGroup', 'mapPriority']">
