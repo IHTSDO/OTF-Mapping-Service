@@ -201,11 +201,10 @@ angular
               $scope.record1.displayName = data.mapRecord[0].owner.name;
               $scope.record2 = null;
 
-              // NO NEED to do this, it will already be populated in mapRecord section
               // auto-populate if there is only one, no split-screen
-              // $timeout(function() {
-              // $scope.populateMapRecord($scope.record1);
-              // }, 200);
+              $timeout(function() {
+                $scope.populateMapRecord($scope.record1);
+              }, 200);
 
             } else if (data.totalCount == 2) {
 
@@ -553,6 +552,7 @@ angular
         }
       }
 
+      // Populates lead record and fires a "selected" event
       $scope.populateMapRecord = function(record) {
 
         var localId = 1;
