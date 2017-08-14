@@ -3,6 +3,11 @@
  */
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -11,14 +16,17 @@ import java.util.Set;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
+import org.ihtsdo.otf.mapping.jpa.MapNoteJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
+import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 /**
  * The {@link ProjectSpecificAlgorithmHandler} for ICD11 projects.
@@ -47,6 +55,8 @@ public class ICD11ProjectSpecificAlgorithmHandler
   /** The qa true rule in group. */
   private boolean qaTrueRuleInGroup = false;
 
+  /** The map notes. */
+  private Map<String, String> mapNotes = null;
   /**
    * The parser.
    *
@@ -57,13 +67,7 @@ public class ICD11ProjectSpecificAlgorithmHandler
   // private MapRuleParser parser = new MapRuleParser();
 
   /**
-   * For ICD10, a target code is valid if: - Concept exists - Concept has at
-   * least 3 characters - The second character is a number (e.g. XVII is
-   * invalid, but B10 is) - Concept does not contain a dash (-) character
-   *
-   * @param mapRecord the map record
-   * @return the validation result
-   * @throws Exception the exception
+   * For ICD11, it has to be a leaf node.
    */
   @Override
   public ValidationResult validateTargetCodes(MapRecord mapRecord)
@@ -85,33 +89,17 @@ public class ICD11ProjectSpecificAlgorithmHandler
       } else if (mapEntry.getTargetId() != null
           && !mapEntry.getTargetId().equals("")) {
 
-        // first, check terminology id based on above rules
-        if (!mapEntry.getTargetId().equals("")
-            && (!mapEntry.getTargetId().matches(".[0-9].*")
-                || mapEntry.getTargetId().contains("-"))) {
+        // Validate the code
+        if (!isTargetCodeValid(mapEntry.getTargetId())) {
+
           validationResult
-              .addError("Invalid target code " + mapEntry.getTargetId()
-                  + "!  For ICD10, valid target codes must contain 3 digits and must not contain a dash."
+              .addError("Target code " + mapEntry.getTargetId()
+                  + " is an invalid code, use a child code instead. "
                   + " Entry:"
                   + (mapProject.isGroupStructure() ? " group "
                       + Integer.toString(mapEntry.getMapGroup()) + "," : "")
-                  + " map priority "
+                  + " map  priority "
                   + Integer.toString(mapEntry.getMapPriority()));
-        } else {
-
-          // Validate the code
-          if (!isTargetCodeValid(mapEntry.getTargetId())) {
-
-            validationResult
-                .addError("Target code " + mapEntry.getTargetId()
-                    + " is an invalid code, use a child code instead. "
-                    + " Entry:"
-                    + (mapProject.isGroupStructure() ? " group "
-                        + Integer.toString(mapEntry.getMapGroup()) + "," : "")
-                    + " map  priority "
-                    + Integer.toString(mapEntry.getMapPriority()));
-
-          }
 
         }
 
@@ -469,7 +457,62 @@ public class ICD11ProjectSpecificAlgorithmHandler
   /* see superclass */
   @Override
   public void computeIdentifyAlgorithms(MapRecord mapRecord) throws Exception {
+    // lazy initialize map notes map
+    if (mapNotes == null) {
+      mapNotes = new HashMap<>();
+      String notesFile =
+          ConfigUtility.getConfigProperties().getProperty("icd11.notes");
+      if (notesFile == null) {
+        // Override to work around jenkins/ansible and need for this to be in
+        // the config file
+        notesFile =
+            "c:/Users/bcarl/Desktop/workspace/ihtsdo-mapping-tool-data/ICD11/tmp/icd11MapNotes.txt";
+        if (!new File(notesFile).exists()) {
+          notesFile = "/opt/mapping-data/ICD11/notes/icd11MapNotes.txt";
+        }
 
+      }
+      if (!new File(notesFile).exists()) {
+        throw new Exception("Notes file does not exist = " + notesFile);
+
+      }
+      try (final BufferedReader in =
+          new BufferedReader(new FileReader(new File(notesFile)))) {
+        String line = null;
+        while ((line = in.readLine()) != null) {
+          final String[] tokens = line.split("\t");
+          mapNotes.put(tokens[5], tokens[7].replaceAll("\\r", ""));
+        }
+      }
+    }
+
+    // Get the note
+    final String note = mapNotes.get(mapRecord.getConceptId());
+
+    // Bail if no notes
+    if (note != null) {
+
+      // See if there is matching note
+      boolean found = false;
+      for (final MapNote mapNote : mapRecord.getMapNotes()) {
+        if (mapNote.getNote().equals(note)) {
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        mapRecord.addMapNote(
+            new MapNoteJpa(null, mapRecord.getLastModifiedBy(), note, null));
+      }
+    }
+  }
+
+  /* see superclass */
+  @Override
+  public ValidationResult validateSemanticChecks(MapRecord mapRecord)
+    throws Exception {
+    final ValidationResult result = new ValidationResultJpa();
+    return result;
   }
 
   /**
@@ -484,11 +527,15 @@ public class ICD11ProjectSpecificAlgorithmHandler
     Map<Integer, List<MapEntry>> entryGroups) {
     ValidationResult result = super.checkMapRecordRules(mapRecord, entryGroups);
     // Remove "Found non-terminating entry with TRUE rule." errors
-    for (final String error : result.getErrors()) {
+    for (final String error : new ArrayList<>(result.getErrors())) {
       if (error.startsWith("Found non-terminating entry with TRUE rule.")) {
         result.removeError(error);
       }
     }
+
+    // TODO: could enforce stem/stem/X/X logic and ensure
+    // all entries with the same "rule" are adjacent to each other
+
     return result;
   }
 

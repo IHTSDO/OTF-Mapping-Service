@@ -17,8 +17,8 @@ angular
     })
   .controller(
     'compareRecordsCtrl',
-    function($scope, $rootScope, $http, $routeParams, $location, $timeout, localStorageService,
-      $sce) {
+    function($scope, $rootScope, $http, $routeParams, $location, $timeout,
+      localStorageService, $sce) {
 
       // ///////////////////////////////////
       // Map Record Controller Functions //
@@ -74,11 +74,13 @@ angular
 
       // watch for project change and modify the local variable if necessary
       // coupled with $watch below, this avoids premature work fetching
-      $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
+      $scope.$on('localStorageModule.notification.setFocusProject', function(
+        event, parameters) {
         $scope.project = parameters.focusProject;
         $scope.errorMessages = $scope.project.errorMessages;
         $scope.errorMessages.unshift('None');
-        $scope.allUsers = $scope.project.mapSpecialist.concat($scope.project.mapLead);
+        $scope.allUsers = $scope.project.mapSpecialist
+          .concat($scope.project.mapLead);
         organizeUsers($scope.allUsers);
       });
 
@@ -93,18 +95,21 @@ angular
           if ($scope.leadRecord == null) {
             $scope.getRecordsInConflict();
 
-            $scope.allUsers = $scope.project.mapSpecialist.concat($scope.project.mapLead);
+            $scope.allUsers = $scope.project.mapSpecialist
+              .concat($scope.project.mapLead);
             organizeUsers($scope.allUsers);
 
             $rootScope.glassPane++;
-            $http({
-              url : root_workflow + 'record/id/' + $routeParams.recordId + '/isFalseConflict',
-              dataType : 'json',
-              method : 'GET',
-              headers : {
-                'Content-Type' : 'application/json'
-              }
-            }).success(function(data) {
+            $http(
+              {
+                url : root_workflow + 'record/id/' + $routeParams.recordId
+                  + '/isFalseConflict',
+                dataType : 'json',
+                method : 'GET',
+                headers : {
+                  'Content-Type' : 'application/json'
+                }
+              }).success(function(data) {
               $rootScope.glassPane--;
               $scope.isFalseConflict = data === 'true' ? true : false;
             }).error(function(data, status, headers, config) {
@@ -156,18 +161,22 @@ angular
             $rootScope.glassPane++;
             $http(
               {
-                url : root_content + 'concept/id/' + $scope.project.sourceTerminology + '/'
-                  + $scope.project.sourceTerminologyVersion + '/' + $scope.leadRecord.conceptId,
+                url : root_content + 'concept/id/'
+                  + $scope.project.sourceTerminology + '/'
+                  + $scope.project.sourceTerminologyVersion + '/'
+                  + $scope.leadRecord.conceptId,
                 dataType : 'json',
                 method : 'GET',
                 headers : {
                   'Content-Type' : 'application/json'
                 }
-              }).success(function(data) {
-              $rootScope.glassPane--;
-              $scope.concept = data;
-              setAccordianTitle($scope.concept.terminologyId, $scope.concept.defaultPreferredName);
-            }).error(function(data, status, headers, config) {
+              }).success(
+              function(data) {
+                $rootScope.glassPane--;
+                $scope.concept = data;
+                setAccordianTitle($scope.concept.terminologyId,
+                  $scope.concept.defaultPreferredName);
+              }).error(function(data, status, headers, config) {
               $rootScope.glassPane--;
               $rootScope.handleHttpError(data, status, headers, config);
             });
@@ -175,20 +184,23 @@ angular
 
         // get the conflict records
         $rootScope.glassPane++;
-        $http({
-          url : root_mapping + 'record/id/' + $routeParams.recordId + '/conflictOrigins',
-          dataType : 'json',
-          method : 'GET',
-          headers : {
-            'Content-Type' : 'application/json'
-          }
-        }).success(
+        $http(
+          {
+            url : root_mapping + 'record/id/' + $routeParams.recordId
+              + '/conflictOrigins',
+            dataType : 'json',
+            method : 'GET',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(
           function(data) {
             $rootScope.glassPane--;
             if (data.totalCount == 1) {
               $scope.record1 = data.mapRecord[0];
               $scope.record1.displayName = data.mapRecord[0].owner.name;
               $scope.record2 = null;
+
               // auto-populate if there is only one, no split-screen
               $timeout(function() {
                 $scope.populateMapRecord($scope.record1);
@@ -263,31 +275,35 @@ angular
 
             if ($scope.leadRecord != null) {
               $rootScope.glassPane++;
-              $http({
-                url : root_workflow + 'conversation/id/' + $scope.leadRecord.id,
-                dataType : 'json',
-                method : 'GET',
-                headers : {
-                  'Content-Type' : 'application/json'
-                }
-              }).success(function(data) {
-                $rootScope.glassPane--;
-                $scope.leadConversation = data;
+              $http(
+                {
+                  url : root_workflow + 'conversation/id/'
+                    + $scope.leadRecord.id,
+                  dataType : 'json',
+                  method : 'GET',
+                  headers : {
+                    'Content-Type' : 'application/json'
+                  }
+                }).success(
+                function(data) {
+                  $rootScope.glassPane--;
+                  $scope.leadConversation = data;
 
-                // if no prior conversation, initialize with the specialists
-                if ($scope.leadConversation == null || $scope.leadConversation == '') {
+                  // if no prior conversation, initialize with the specialists
+                  if ($scope.leadConversation == null
+                    || $scope.leadConversation == '') {
 
-                  if ($scope.record1 != null)
-                    $scope.returnRecipients.push($scope.record1.owner);
+                    if ($scope.record1 != null)
+                      $scope.returnRecipients.push($scope.record1.owner);
 
-                  if ($scope.record2 != null)
-                    $scope.returnRecipients.push($scope.record2.owner);
+                    if ($scope.record2 != null)
+                      $scope.returnRecipients.push($scope.record2.owner);
 
-                  // otherwise initialize with recipients on prior feedback
-                } else {
-                  initializeReturnRecipients($scope.leadConversation);
-                }
-              }).error(function(data, status, headers, config) {
+                    // otherwise initialize with recipients on prior feedback
+                  } else {
+                    initializeReturnRecipients($scope.leadConversation);
+                  }
+                }).error(function(data, status, headers, config) {
                 $rootScope.glassPane--;
                 $rootScope.handleHttpError(data, status, headers, config);
               });
@@ -311,8 +327,9 @@ angular
               $rootScope.glassPane++;
               $http(
                 {
-                  url : root_mapping + 'validation/record/id/' + $scope.record1.id + '/record/id/'
-                    + $scope.record2.id + '/compare',
+                  url : root_mapping + 'validation/record/id/'
+                    + $scope.record1.id + '/record/id/' + $scope.record2.id
+                    + '/compare',
                   dataType : 'json',
                   method : 'GET',
                   headers : {
@@ -374,7 +391,8 @@ angular
 
           // cycle over the entries and assign to group bins
           for (var i = 0; i < $scope.record1.mapEntry.length; i++) {
-            $scope.entries1[$scope.record1.mapEntry[i].mapGroup].push($scope.record1.mapEntry[i]);
+            $scope.entries1[$scope.record1.mapEntry[i].mapGroup]
+              .push($scope.record1.mapEntry[i]);
           }
 
           // cycle over group bins and sort contents by map priority
@@ -409,7 +427,8 @@ angular
 
             // cycle over the entries and assign to group bins
             for (var i = 0; i < $scope.record2.mapEntry.length; i++) {
-              $scope.entries2[$scope.record2.mapEntry[i].mapGroup].push($scope.record2.mapEntry[i]);
+              $scope.entries2[$scope.record2.mapEntry[i].mapGroup]
+                .push($scope.record2.mapEntry[i]);
             }
 
             // cycle over group bins and sort contents by map priority
@@ -435,7 +454,8 @@ angular
         var ruleSummary = '';
 
         // first, rule summary
-        if ($scope.project.ruleBased == true && entry.rule != null && entry.rule != undefined) {
+        if ($scope.project.ruleBased == true && entry.rule != null
+          && entry.rule != undefined) {
           if (entry.rule.toUpperCase().indexOf('TRUE') != -1)
             ruleSummary += '[TRUE] ';
           else if (entry.rule.toUpperCase().indexOf('FEMALE') != -1)
@@ -451,7 +471,8 @@ angular
 
             if (lowerBound != null && lowerBound != '' && lowerBound.length > 0) {
               ruleSummary += lowerBound[0];
-              if (upperBound != null && upperBound != '' && upperBound.length > 0)
+              if (upperBound != null && upperBound != ''
+                && upperBound.length > 0)
                 ruleSummary += ' AND ';
             }
             if (upperBound != null && upperBound != '' && upperBound.length > 0)
@@ -475,8 +496,10 @@ angular
         $scope.groups1 = new Array();
         for (var i = 0; i < $scope.record1.mapEntry.length; i++) {
 
-          if ($scope.groups1.indexOf(parseInt($scope.record1.mapEntry[i].mapGroup, 10)) == -1) {
-            $scope.groups1.push(parseInt($scope.record1.mapEntry[i].mapGroup, 10));
+          if ($scope.groups1.indexOf(parseInt(
+            $scope.record1.mapEntry[i].mapGroup, 10)) == -1) {
+            $scope.groups1.push(parseInt($scope.record1.mapEntry[i].mapGroup,
+              10));
           }
 
         }
@@ -490,8 +513,10 @@ angular
         if ($scope.record2 != null) {
           for (var i = 0; i < $scope.record2.mapEntry.length; i++) {
 
-            if ($scope.groups2.indexOf(parseInt($scope.record2.mapEntry[i].mapGroup, 10)) == -1) {
-              $scope.groups2.push(parseInt($scope.record2.mapEntry[i].mapGroup, 10));
+            if ($scope.groups2.indexOf(parseInt(
+              $scope.record2.mapEntry[i].mapGroup, 10)) == -1) {
+              $scope.groups2.push(parseInt($scope.record2.mapEntry[i].mapGroup,
+                10));
             }
 
           }
@@ -527,6 +552,7 @@ angular
         }
       }
 
+      // Populates lead record and fires a "selected" event
       $scope.populateMapRecord = function(record) {
 
         var localId = 1;
@@ -552,9 +578,13 @@ angular
         }
 
         // broadcast to the map record widget
-        $rootScope.$broadcast('compareRecordsWidget.notification.selectRecord', {
-          record : $scope.leadRecord
-        });
+        console.debug(
+          'broadcastcompareRecordsWidget.notification.selectRecord = ',
+          $scope.leadRecord);
+        $rootScope.$broadcast('compareRecordsWidget.notification.selectRecord',
+          {
+            record : $scope.leadRecord
+          });
 
       };
 
@@ -585,13 +615,15 @@ angular
 
       };
 
-      $scope.submitNewFeedback = function(recordInError, errorMessage, feedbackMessage) {
+      $scope.submitNewFeedback = function(recordInError, errorMessage,
+        feedbackMessage) {
         var currentConversation = $scope.getCurrentConversation(recordInError);
 
         // determine if feedback is an error or not and remove 'None' text
         var mapError = '';
         var isError = false;
-        if (errorMessage != null && errorMessage != '' && errorMessage != 'None') {
+        if (errorMessage != null && errorMessage != ''
+          && errorMessage != 'None') {
           isError = true;
           mapError = errorMessage;
         }
@@ -698,7 +730,8 @@ angular
           window.alert('The group feedback message field cannot be blank');
           return;
         }
-        var currentConversation = $scope.getCurrentConversation($scope.leadRecord);
+        var currentConversation = $scope
+          .getCurrentConversation($scope.leadRecord);
 
         var localFeedback = currentConversation.feedback;
 
@@ -754,14 +787,17 @@ angular
             headers : {
               'Content-Type' : 'application/json'
             }
-          }).success(function(data) {
-            $rootScope.glassPane--;
-            $scope.leadConversation = data;
-          }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
-            $scope.recordError = 'Error adding new feedback conversation for group feedback.';
-            $rootScope.handleHttpError(data, status, headers, config);
-          });
+          })
+            .success(function(data) {
+              $rootScope.glassPane--;
+              $scope.leadConversation = data;
+            })
+            .error(
+              function(data, status, headers, config) {
+                $rootScope.glassPane--;
+                $scope.recordError = 'Error adding new feedback conversation for group feedback.';
+                $rootScope.handleHttpError(data, status, headers, config);
+              });
 
         } else { // already started a conversation
 
@@ -791,13 +827,16 @@ angular
             headers : {
               'Content-Type' : 'application/json'
             }
-          }).success(function(data) {
-            $rootScope.glassPane--;
-          }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
-            $scope.recordError = 'Error updating feedback conversation for group feedback.';
-            $rootScope.handleHttpError(data, status, headers, config);
-          });
+          })
+            .success(function(data) {
+              $rootScope.glassPane--;
+            })
+            .error(
+              function(data, status, headers, config) {
+                $rootScope.glassPane--;
+                $scope.recordError = 'Error updating feedback conversation for group feedback.';
+                $rootScope.handleHttpError(data, status, headers, config);
+              });
         }
 
       };
@@ -824,11 +863,13 @@ angular
           for (var j = 0; j < groupEntries.length; j++) {
 
             var entry = groupEntries[j];
-            recordText += ' (' + j + ') ' + entry.targetId + ' - ' + entry.targetName + '<br>';
+            recordText += ' (' + j + ') ' + entry.targetId + ' - '
+              + entry.targetName + '<br>';
             if ($scope.project.ruleBased == true)
               recordText += '      RULE:     ' + entry.rule + '<br>';
             if (entry.mapRelation != null)
-              recordText += '      RELATION: ' + entry.mapRelation.name + '<br>';
+              recordText += '      RELATION: ' + entry.mapRelation.name
+                + '<br>';
             if (entry.mapAdvice.length != 0) {
               recordText += '      ADVICES:  ';
 
@@ -864,8 +905,8 @@ angular
           recordText += 'Notes:' + '<br>';
 
           for (var i = 0; i < record.mapNote.length; i++) {
-            recordText += '   [' + record.mapNote[i].user.userName + '] ' + record.mapNote[i].note
-              + '<br>';
+            recordText += '   [' + record.mapNote[i].user.userName + '] '
+              + record.mapNote[i].note + '<br>';
           }
 
           recordText += '<br>';
@@ -920,7 +961,8 @@ angular
 
         $http(
           {
-            url : root_workflow + 'record/id/' + $routeParams.recordId + '/falseConflict/'
+            url : root_workflow + 'record/id/' + $routeParams.recordId
+              + '/falseConflict/'
               + ($scope.isFalseConflict == true ? 'false' : 'true'),
             method : 'POST',
             headers : {
@@ -948,7 +990,8 @@ angular
       $scope.getCurrentConversation = function(currentRecord) {
         if (currentRecord.id == $scope.record1.id)
           return $scope.conversation1;
-        else if ($scope.record2 != null && currentRecord.id == $scope.record2.id)
+        else if ($scope.record2 != null
+          && currentRecord.id == $scope.record2.id)
           return $scope.conversation2;
         else if (currentRecord.id == $scope.leadRecord.id)
           return $scope.leadConversation;

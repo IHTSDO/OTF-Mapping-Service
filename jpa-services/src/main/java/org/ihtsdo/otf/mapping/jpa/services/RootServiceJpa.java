@@ -28,6 +28,9 @@ import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
  */
 public abstract class RootServiceJpa implements RootService {
 
+  /** The commit count. */
+  final static int commitCt = 2000;
+
   /** The factory. */
   protected static EntityManagerFactory factory;
 
@@ -67,8 +70,8 @@ public abstract class RootServiceJpa implements RootService {
     // if factory has not been instantiated or has been closed, open it
     if (factory == null || !factory.isOpen()) {
 
-      Logger.getLogger(this.getClass()).info(
-          "Setting root service entity manager factory.");
+      Logger.getLogger(this.getClass())
+          .info("Setting root service entity manager factory.");
       Properties config = ConfigUtility.getConfigProperties();
       factory =
           Persistence.createEntityManagerFactory("MappingServiceDS", config);
@@ -201,24 +204,22 @@ public abstract class RootServiceJpa implements RootService {
     // TODO Removed this to allow blank queries for map records, discuss if this
     // impacts other areas of application
     if (query == null || query.isEmpty()) {
-      //Logger.getLogger(this.getClass()).info("Empty query supplied");
+      // Logger.getLogger(this.getClass()).info("Empty query supplied");
       // throw new Exception("Unexpected empty query.");
     }
 
     FullTextQuery fullTextQuery = null;
     try {
-      fullTextQuery =
-          IndexUtility.applyPfsToLuceneQuery(clazz, fieldNamesKey, query, pfs,
-              manager);
+      fullTextQuery = IndexUtility.applyPfsToLuceneQuery(clazz, fieldNamesKey,
+          query, pfs, manager);
     } catch (ParseException e) {
       // If parse exception, try a literal query
       StringBuilder escapedQuery = new StringBuilder();
       if (query != null && !query.isEmpty()) {
         escapedQuery.append(QueryParser.escape(query));
       }
-      fullTextQuery =
-          IndexUtility.applyPfsToLuceneQuery(clazz, fieldNamesKey,
-              escapedQuery.toString(), pfs, manager);
+      fullTextQuery = IndexUtility.applyPfsToLuceneQuery(clazz, fieldNamesKey,
+          escapedQuery.toString(), pfs, manager);
     }
 
     totalCt[0] = fullTextQuery.getResultSize();
@@ -229,8 +230,8 @@ public abstract class RootServiceJpa implements RootService {
 
   // this is called by REST layer and so needs to be exposed through RootService
   @Override
-  public <T> List<T> applyPfsToList(List<T> list, Class<T> clazz,
-    int[] totalCt, PfsParameter pfs) throws Exception {
+  public <T> List<T> applyPfsToList(List<T> list, Class<T> clazz, int[] totalCt,
+    PfsParameter pfs) throws Exception {
 
     // Skip empty pfs
     if (pfs == null) {
@@ -288,9 +289,8 @@ public abstract class RootServiceJpa implements RootService {
     totalCt[0] = result.size();
 
     // Handle filtering based on toString()
-    if (pfs != null
-        && (pfs.getQueryRestriction() != null && !pfs.getQueryRestriction()
-            .isEmpty())) {
+    if (pfs != null && (pfs.getQueryRestriction() != null
+        && !pfs.getQueryRestriction().isEmpty())) {
 
       // Strip last char off if it is a *
       String match = pfs.getQueryRestriction();
