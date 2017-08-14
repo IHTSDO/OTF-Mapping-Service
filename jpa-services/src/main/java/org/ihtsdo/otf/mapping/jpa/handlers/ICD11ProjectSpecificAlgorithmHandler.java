@@ -489,17 +489,21 @@ public class ICD11ProjectSpecificAlgorithmHandler
     // Get the note
     final String note = mapNotes.get(mapRecord.getConceptId());
 
-    // See if there is matching note
-    boolean found = false;
-    for (final MapNote mapNote : mapRecord.getMapNotes()) {
-      if (mapNote.getNote().equals(note)) {
-        found = true;
-        break;
+    // Bail if no notes
+    if (note != null) {
+
+      // See if there is matching note
+      boolean found = false;
+      for (final MapNote mapNote : mapRecord.getMapNotes()) {
+        if (mapNote.getNote().equals(note)) {
+          found = true;
+          break;
+        }
       }
-    }
-    if (!found) {
-      mapRecord.addMapNote(
-          new MapNoteJpa(null, mapRecord.getLastModifiedBy(), note, null));
+      if (!found) {
+        mapRecord.addMapNote(
+            new MapNoteJpa(null, mapRecord.getLastModifiedBy(), note, null));
+      }
     }
   }
 
