@@ -604,7 +604,7 @@ angular
               if ($scope.mapProjectMetadata.keyValuePairList[i].name == 'Workflow Types') {
                 for (var j = 0; j < $scope.mapProjectMetadata.keyValuePairList[i].keyValuePair.length; j++) {
                   $scope.allowableWorkflowTypes
-                    .push($scope.mapProjectMetadata.keyValuePairList[i].keyValuePair[j].key);
+                    .push($scope.mapProjectMetadata.keyValuePairList[i].keyValuePair[j]);
                 }
               }
 
@@ -665,7 +665,8 @@ angular
 
         $scope.getWorkflowType = function(project) {
           for (var i = $scope.allowableWorkflowTypes.length; i--;) {
-            if ($scope.allowableWorkflowTypes[i] === project.workflowType)
+            if ($scope.allowableWorkflowTypes[i].key === project.workflowType ||
+            		$scope.allowableWorkflowTypes[i].key == project.workflowType.key)
               return $scope.allowableWorkflowTypes[i];
           }
         };
@@ -2416,15 +2417,17 @@ angular
          * strings instead of individual fields
          */
         $scope.updateMapProjectFromList = function(project) {
+          var projectCopy =	angular.copy(project);
           // get source and version and dest and version
           var src = project.sourceTerminologyAndVersion.split(' ');
-          project.sourceTerminology = src[0];
-          project.sourceTerminologyVersion = src[1];
+          projectCopy.sourceTerminology = src[0];
+          projectCopy.sourceTerminologyVersion = src[1];
           var res = project.destinationTerminologyAndVersion.split(' ');
-          project.destinationTerminology = res[0];
-          project.destinationTerminologyVersion = res[1];
+          projectCopy.destinationTerminology = res[0];
+          projectCopy.destinationTerminologyVersion = res[1];
+          projectCopy.workflowType = project.workflowType.key;
 
-          $scope.updateMapProject(project);
+          $scope.updateMapProject(projectCopy);
         };
 
         /**
@@ -2447,7 +2450,7 @@ angular
    
             // update the cached project list
             for (var i = 0; i < $scope.mapProjects.length; i++) {
-              if ($scope.mapProjects[i].id = project.id) {
+              if ($scope.mapProjects[i].id == project.id) {
                 $scope.mapProjects[i] = project;
               }
             }
