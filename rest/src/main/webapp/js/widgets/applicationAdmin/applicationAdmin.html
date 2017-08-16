@@ -139,10 +139,10 @@
           ng-options="item for item in allowableMapTypes"
           ng-change="setEditingPerformed(project)"
           style="margin-bottom: 5px; width: 100%;">
-        </select> <select tooltip-placement="top" uib-tooltip="Workflow Type"
+        </select><select tooltip-placement="top" uib-tooltip="Workflow Type"
           ng-init="project.workflowType=getWorkflowType(project)"
           ng-model="project.workflowType"
-          ng-options="item for item in allowableWorkflowTypes"
+          ng-options="workflowType as workflowType.value for workflowType in allowableWorkflowTypes"
           ng-change="setEditingPerformed(project)"
           style="margin-bottom: 5px; width: 100%;">
         </select> <select tooltip-placement="top" uib-tooltip="Map Relation Style"
