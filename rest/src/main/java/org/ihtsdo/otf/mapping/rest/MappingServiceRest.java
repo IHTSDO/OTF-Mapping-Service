@@ -3939,19 +3939,19 @@ public class MappingServiceRest extends RootServiceRest {
    * @throws Exception the exception
    */
   @GET
-  @Path("/project/id/{mapProjectId}/concept/{terminologyId}/isValid")
+  @Path("/project/id/{mapProjectId}/concept/isValid")
   @ApiOperation(value = "Indicate whether a target code is valid", notes = "Gets either a valid concept corresponding to the id, or returns null if not valid.", response = TreePositionListJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public Concept isTargetCodeValid(
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("mapProjectId") Long mapProjectId,
-    @ApiParam(value = "Concept terminology id, e.g. 22298006", required = true) @PathParam("terminologyId") String terminologyId,
+    @ApiParam(value = "Concept terminology id, e.g. 22298006", required = true) @QueryParam("terminologyId") String terminologyId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(MappingServiceRest.class)
         .info("RESTful call (Mapping): /project/id/" + mapProjectId
-            + "/concept/" + terminologyId + "/isValid");
+            + "/concept/isValid " + terminologyId);
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
