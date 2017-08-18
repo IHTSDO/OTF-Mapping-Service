@@ -47,7 +47,12 @@
           ng-model="project.refSetId" ng-change="setEditingPerformed(project)"
           style="width: 100%;"></input>
         <div tooltip-placement="top" uib-tooltip="Ref Set Name">{{project.refSetName}}</div>
+        
+        <div>Module Id: <input tooltip-placement="top" uib-tooltip="Team Based"
+          ng-model="project.moduleId" ng-change="setEditingPerformed(project)"
+          style="width: 100%;"></input></div>
       </td>
+      
       <td>
         <table>
           <tbody>
@@ -136,7 +141,7 @@
         <select tooltip-placement="top" uib-tooltip="Map Type"
           ng-init="project.mapRefsetPattern=getMapType(project)"
           ng-model="project.mapRefsetPattern"
-          ng-options="item for item in allowableMapTypes"
+          ng-options="mapRefsetPattern as mapRefsetPattern.value for mapRefsetPattern in allowableMapTypes"
           ng-change="setEditingPerformed(project)"
           style="margin-bottom: 5px; width: 100%;">
         </select><select tooltip-placement="top" uib-tooltip="Workflow Type"
@@ -148,7 +153,7 @@
         </select> <select tooltip-placement="top" uib-tooltip="Map Relation Style"
           ng-init="project.mapRelationStyle=getMapRelationStyle(project)"
           ng-model="project.mapRelationStyle"
-          ng-options="item for item in allowableMapRelationStyles"
+          ng-options="mapRelationStyle as mapRelationStyle.value for mapRelationStyle in allowableMapRelationStyles"
           ng-change="setEditingPerformed(project)"
           style="margin-bottom: 5px; width: 100%;">
         </select> <input tooltip-placement="top"
@@ -218,6 +223,13 @@
           <input id="newMapProjectRefSetId" type="text"
             ng-model="newMapProjectRefSetId">
       <tr>
+      <tr>
+        <td>Module Id</td>
+        <td>
+          <input id="newMapProjectModuleId" type="text"
+            ng-model="newMapProjectModuleId">
+      <tr>
+      
         <td>Published</td>
         <td>
           <select ng-model="newMapProjectPublished"
@@ -287,7 +299,7 @@
         <td>Map Type</td>
         <td>
           <select ng-model="newMapProjectMapType"
-            ng-options="item for item in allowableMapTypes">
+            ng-options="mapRefsetPattern as mapRefsetPattern.value for mapRefsetPattern in allowableMapTypes">
           </select>
         </td>
       </tr>
@@ -295,7 +307,7 @@
         <td>Workflow Type</td>
         <td>
           <select ng-model="newWorkflowType"
-            ng-options="item for item in allowableWorkflowTypes">
+            ng-options="workflowType as workflowType.value for workflowType in allowableWorkflowTypes">
           </select>
         </td>
       </tr>
@@ -303,7 +315,7 @@
         <td>Map Relation Style</td>
         <td>
           <select ng-model="newMapRelationStyle"
-            ng-options="item for item in allowableMapRelationStyles">
+            ng-options="mapRelationStyle as mapRelationStyle.value for mapRelationStyle in allowableMapRelationStyles">
           </select>
         </td>
       </tr>
@@ -319,13 +331,14 @@
         <td>
           <button class="btn btn-xs btn-primary"
             ng-click="submitNewMapProject(newMapProjectName, newMapProjectSourceVersion, 
-        newMapProjectDestinationVersion, newMapProjectRefSetId, newMapProjectPublished, 
-        newMapProjectRuleBased, newMapProjectGroupStructure, newMapProjectPublic, 
+        newMapProjectDestinationVersion, newMapProjectRefSetId,newMapProjectModuleId,
+         newMapProjectPublished,newMapProjectRuleBased, newMapProjectGroupStructure, newMapProjectPublic, 
         newMapProjectScopeDescendantsFlag, newMapProjectScopeExcludedDescendantsFlag, 
         newMapProjectMapType, newWorkflowType, newMapRelationStyle, newHandler, 
         newMapProjectPropagationFlag,
         newMapProjectPropagationThreshold); 
           newMapProjectName = ''; newMapProjectRefSetId = ''; newHandler = '';
+          newMapProjectName = ''; newMapProjectModuleId = ''; newHandler = '';
           newMapProjectSourceVersion = ''; newMapProjectDestinationVersion = '';
           newMapProjectPropagationThreshold = '0'; newMapProjectPublished = false; 
           newMapProjectRuleBased = false; newMapProjectGroupStructure = false; 
