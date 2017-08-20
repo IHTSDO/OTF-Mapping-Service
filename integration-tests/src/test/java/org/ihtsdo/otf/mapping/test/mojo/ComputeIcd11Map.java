@@ -89,6 +89,9 @@ public class ComputeIcd11Map {
   /** The sct concepts. */
   final Map<String, String> sctConcepts = new HashMap<>();
 
+  /**  The icd 11 map edits. */
+  final Map<String, List<IcdMap>> icd11MapEdits = new HashMap<>();
+
   /** The icd 11 concepts. */
   final Map<String, String> icd11Concepts = new HashMap<>();
 
@@ -101,6 +104,7 @@ public class ComputeIcd11Map {
   /** The icd 10 map. */
   final Map<String, List<IcdMap>> icd10Map = new HashMap<>();
 
+  
   /** The sct anc desc. */
   final Map<String, Set<String>> sctAncDesc = new HashMap<>();
 
@@ -188,6 +192,36 @@ public class ComputeIcd11Map {
         sctConcepts.put(code, fields[1]);
         if (ct < sampleCt) {
           Logger.getLogger(getClass()).debug(code + " => " + fields[1]);
+        }
+        ct++;
+      }
+      Logger.getLogger(getClass()).info("   ct = " + ct);
+      Logger.getLogger(getClass()).info("   skipCt =  " + skipCt);
+
+      // Cache ICD11 map (by SCTID)
+      Logger.getLogger(getClass()).info(" Load ICD11 map edits");
+      lines = FileUtils.readLines(new File(icd11Dir, "icd11MapEdits.txt"), "UTF-8");
+      ct = 0;
+      skipCt = 0;
+      for (final String line : lines) {
+        final String[] fields = line.split("\\t");
+        // id effectiveTime active moduleId refsetId referencedComponentId
+        // mapGroup mapPriority mapRule mapAdvice mapTarget correlationId
+        // mapCategoryId
+
+        // Skip header (no skipCt++)
+        if (fields[0].equals("id")) {
+          // skipCt++;
+          continue;
+        }
+        // Create a map entry - assumes the file is ordered
+        if (!icd11MapEdits.containsKey(fields[5])) {
+          icd11MapEdits.put(fields[5], new ArrayList<IcdMap>());
+        }
+        icd11MapEdits.get(fields[5]).add(new IcdMap(line));
+        if (ct < sampleCt) {
+          Logger.getLogger(getClass())
+              .debug(fields[5] + " => " + icd11MapEdits.get(fields[5]));
         }
         ct++;
       }
@@ -1547,7 +1581,6 @@ public class ComputeIcd11Map {
               category
           };
           boolean override = false;
-
           if (!override) {
             override = applyXhNeoplasmRule(sctid, icd10Map.get(sctid),
                 icd11Map.get(sctid), noteSb, candidates, categoryWrapper);
@@ -1575,7 +1608,7 @@ public class ComputeIcd11Map {
             categoryWrapper[0] = HIGH;
           }
 
-          // If we encountered a NOMAP, go to the next concept
+          // If we encountered an override
           if (override) {
             category = categoryWrapper[0];
             break;
@@ -1598,6 +1631,13 @@ public class ComputeIcd11Map {
         // level, not entry level)
         noteSb.append("FINAL CATEGORY " + getCategoryString(category) + "\n");
 
+        // If the map was edited already, override it here with the acutal map used
+        // (This is mostly to seed RULE4 properly
+        if (icd11MapEdits.containsKey(sctid)) {
+          icd11Map.put(sctid, icd11MapEdits.get(sctid));
+          noteSb.append("MAP EDITED\n");
+        }
+        
         // Add note
         icd11MapNotes.put(sctid, noteSb.toString().replaceAll("\\n", "<br>"));
         Logger.getLogger(getClass()).info(noteSb.toString());
