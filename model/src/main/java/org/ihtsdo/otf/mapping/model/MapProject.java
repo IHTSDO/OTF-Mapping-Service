@@ -101,11 +101,26 @@ public interface MapProject {
   public String getRefSetId();
 
   /**
-   * Sets the ref set id.
+   * Sets the module id.
    * 
-   * @param refSetId the ref set id
+   * @param moduleId the module id
+   */
+  public void setModuleId(String moduleId);
+  
+  /**
+   * Returns the module id.
+   * 
+   * @return the module id
+   */
+  public String getModuleId();
+
+  /**
+   * Sets the module id.
+   * 
+   * @param moduleId the module id
    */
   public void setRefSetId(String refSetId);
+
 
   /**
    * Returns the ref set name.
