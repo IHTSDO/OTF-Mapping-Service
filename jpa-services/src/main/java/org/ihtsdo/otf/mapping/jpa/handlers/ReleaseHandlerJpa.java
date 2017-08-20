@@ -623,11 +623,13 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           result = algorithmHandler.validateForRelease(member);
 
           if (result != null && !result.isValid()) {
-            // skip this one if in test mode.
+            // LEt it pass if in test mode
             if (testModeFlag) {
               Logger.getLogger(getClass())
-                  .info("      Skipping invalid map entry " + member);
-              continue;
+              .info("      WARNING: invalid map entry: " + member);
+              Logger.getLogger(getClass())
+              .info("        errors = " + result.getErrors());
+              //continue;
             } else {
               throw new Exception("Invalid member for "
                   + member.getConcept().getTerminologyId() + " - " + result);
