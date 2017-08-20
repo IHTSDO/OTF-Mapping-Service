@@ -362,6 +362,10 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
         // must have a REVIEW_NEEDED tag with any user
         sb.append(" AND userAndWorkflowStatusPairs:REVIEW_NEEDED_*");
 
+        // And was not edited by this lead
+        sb.append(" AND NOT (userAndWorkflowStatusPairs:REVIEW_NEEDED_"
+            + mapUser.getUserName() + ")");
+
         // there must not be an already claimed review record
         sb.append(" AND NOT (userAndWorkflowStatusPairs:REVIEW_NEW_*"
             + " OR userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_*"
