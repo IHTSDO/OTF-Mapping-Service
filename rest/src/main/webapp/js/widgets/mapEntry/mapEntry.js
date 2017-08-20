@@ -121,7 +121,7 @@ angular
           $http(
             {
               url : root_mapping + 'project/id/' + $scope.project.id
-                + '/concept/' + targetCode + '/isValid',
+                + '/concept/isValid' + '?terminologyId=' + encodeURIComponent(targetCode),
               method : 'GET',
               headers : {
                 'Content-Type' : 'application/json'

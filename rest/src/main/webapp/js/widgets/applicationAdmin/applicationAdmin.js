@@ -592,19 +592,19 @@ angular
               if ($scope.mapProjectMetadata.keyValuePairList[i].name == 'Map Refset Patterns') {
                 for (var j = 0; j < $scope.mapProjectMetadata.keyValuePairList[i].keyValuePair.length; j++) {
                   $scope.allowableMapTypes
-                    .push($scope.mapProjectMetadata.keyValuePairList[i].keyValuePair[j].key);
+                    .push($scope.mapProjectMetadata.keyValuePairList[i].keyValuePair[j]);
                 }
               }
               if ($scope.mapProjectMetadata.keyValuePairList[i].name == 'Relation Styles') {
                 for (var j = 0; j < $scope.mapProjectMetadata.keyValuePairList[i].keyValuePair.length; j++) {
                   $scope.allowableMapRelationStyles
-                    .push($scope.mapProjectMetadata.keyValuePairList[i].keyValuePair[j].key);
+                    .push($scope.mapProjectMetadata.keyValuePairList[i].keyValuePair[j]);
                 }
               }
               if ($scope.mapProjectMetadata.keyValuePairList[i].name == 'Workflow Types') {
                 for (var j = 0; j < $scope.mapProjectMetadata.keyValuePairList[i].keyValuePair.length; j++) {
                   $scope.allowableWorkflowTypes
-                    .push($scope.mapProjectMetadata.keyValuePairList[i].keyValuePair[j].key);
+                    .push($scope.mapProjectMetadata.keyValuePairList[i].keyValuePair[j]);
                 }
               }
 
@@ -617,6 +617,7 @@ angular
               }
             }
             $scope.newMapProjectMapType = $scope.allowableMapTypes[0];
+           alert("AAA: " +  $scope.newMapProjectMapType[1].key);
             $scope.newMapRelationStyle = $scope.allowableMapRelationStyles[0];
             $scope.newWorkflowType = $scope.allowableWorkflowTypes[0];
             $scope.newHandler = $scope.defaultProjectSpecificAlgorithmHandler;
@@ -658,21 +659,24 @@ angular
 
         $scope.getMapType = function(project) {
           for (var i = $scope.allowableMapTypes.length; i--;) {
-            if ($scope.allowableMapTypes[i] === project.mapRefsetPattern)
+            if ($scope.allowableMapTypes[i].key === project.mapRefsetPattern ||
+            		$scope.allowableMapTypes[i].key == project.mapRefsetPattern.key)
               return $scope.allowableMapTypes[i];
           }
         };
 
         $scope.getWorkflowType = function(project) {
           for (var i = $scope.allowableWorkflowTypes.length; i--;) {
-            if ($scope.allowableWorkflowTypes[i] === project.workflowType)
+            if ($scope.allowableWorkflowTypes[i].key === project.workflowType ||
+            		$scope.allowableWorkflowTypes[i].key == project.workflowType.key)
               return $scope.allowableWorkflowTypes[i];
           }
         };
 
         $scope.getMapRelationStyle = function(project) {
           for (var i = $scope.allowableMapRelationStyles.length; i--;) {
-            if ($scope.allowableMapRelationStyles[i] === project.mapRelationStyle)
+            if ($scope.allowableMapRelationStyles[i].key === project.mapRelationStyle ||
+            		$scope.allowableMapRelationStyles[i].key == project.mapRelationStyle.key)
               return $scope.allowableMapRelationStyles[i];
           }
         };
@@ -2416,15 +2420,19 @@ angular
          * strings instead of individual fields
          */
         $scope.updateMapProjectFromList = function(project) {
+          var projectCopy =	angular.copy(project);
           // get source and version and dest and version
           var src = project.sourceTerminologyAndVersion.split(' ');
-          project.sourceTerminology = src[0];
-          project.sourceTerminologyVersion = src[1];
+          projectCopy.sourceTerminology = src[0];
+          projectCopy.sourceTerminologyVersion = src[1];
           var res = project.destinationTerminologyAndVersion.split(' ');
-          project.destinationTerminology = res[0];
-          project.destinationTerminologyVersion = res[1];
+          projectCopy.destinationTerminology = res[0];
+          projectCopy.destinationTerminologyVersion = res[1];
+          projectCopy.workflowType = project.workflowType.key;
+          projectCopy.mapRelationStyle = project.mapRelationStyle.key;
+          projectCopy.mapRefsetPattern = project.mapRefsetPattern.key;
 
-          $scope.updateMapProject(project);
+          $scope.updateMapProject(projectCopy);
         };
 
         /**
@@ -2447,7 +2455,7 @@ angular
    
             // update the cached project list
             for (var i = 0; i < $scope.mapProjects.length; i++) {
-              if ($scope.mapProjects[i].id = project.id) {
+              if ($scope.mapProjects[i].id == project.id) {
                 $scope.mapProjects[i] = project;
               }
             }
@@ -2506,11 +2514,11 @@ angular
         };
 
         $scope.submitNewMapProject = function(newMapProjectName, newMapProjectSourceVersion,
-          newMapProjectDestinationVersion, newMapProjectRefSetId, newMapProjectPublished,
-          newMapProjectRuleBased, newMapProjectGroupStructure, newMapProjectPublic,
+          newMapProjectDestinationVersion, newMapProjectRefSetId, newMapProjectModuleId,
+          newMapProjectPublished,newMapProjectRuleBased, newMapProjectGroupStructure, newMapProjectPublic,
           newMapProjectScopeDescendantsFlag, newMapProjectScopeExcludedDescendantsFlag,
-          newMapProjectMapType, newWorkflowType, newMapRelationStyle, newHandler,
-          newMapProjectPropagationFlag, newMapProjectPropagationThreshold) {
+          newMapProjectMapType, newWorkflowType, newMapRelationStyle, 
+          newHandler,newMapProjectPropagationFlag,newMapProjectPropagationThreshold) {
 
           var errors = '';
           if (newMapProjectSourceVersion == null) {
@@ -2522,6 +2530,9 @@ angular
           if (newMapProjectRefSetId == null) {
             errors += 'You must specify a ref set id.\n';
           }
+          if (newMapProjectModuleId == null) {
+              errors += 'You must specify a module id.\n';
+            }
           if (newMapProjectName == null) {
             errors += 'You must specify a project name.\n';
           }
@@ -2534,6 +2545,12 @@ angular
               errors += 'The refset id specified must be unique, but is used by project '
                 + $scope.mapProjects[i].name;
           }
+          
+          for (var i = 0; i < $scope.mapProjects.length; i++) {
+              if ($scope.mapProjects[i].moduleId === newMapProjectModuleId)
+                errors += 'The module id specified must be unique, but is used by project '
+                  + $scope.mapProjects[i].name;
+            }
 
           if (errors.length > 0) {
             alert(errors);
@@ -2574,13 +2591,14 @@ angular
               'destinationTerminology' : newMapProjectDestination,
               'destinationTerminologyVersion' : newMapProjectDestinationVersion,
               'refSetId' : newMapProjectRefSetId,
+              'moduleId' : newMapProjectModuleId,
               'refSetName' : newMapProjectRefSetName,
               'published' : newMapProjectPublished,
               'ruleBased' : newMapProjectRuleBased,
               'groupStructure' : newMapProjectGroupStructure,
-              'mapRefsetPattern' : newMapProjectMapType,
-              'workflowType' : newWorkflowType,
-              'mapRelationStyle' : newMapRelationStyle,
+              'mapRefsetPattern' : newMapProjectMapType.key,
+              'workflowType' : newWorkflowType.key,
+              'mapRelationStyle' : newMapRelationStyle.key,
               'public' : newMapProjectPublic,
               'projectSpecificAlgorithmHandlerClass' : newHandler,
               'scopeDescendantsFlag' : newMapProjectScopeDescendantsFlag,
@@ -2594,6 +2612,11 @@ angular
               alert('The ref set id you provided is not unique.');
               return;
             }
+            
+            if ($scope.checkModuleId(project) == false) {
+                alert('The module id you provided is not unique.');
+                return;
+              }
 
             $rootScope.glassPane++;
 
@@ -2658,6 +2681,16 @@ angular
           }
           return true;
         };
+        
+        $scope.checkModuleId = function(project) {
+            for (var i = 0; i < $scope.mapProjects.length; i++) {
+              if ($scope.mapProjects[i].id != project.id
+                && $scope.mapProjects[i].moduleId === project.moduleId) {
+                return false;
+              }
+            }
+            return true;
+          };
 
         // Upload file
         $scope.onFileSelect = function($files) {
