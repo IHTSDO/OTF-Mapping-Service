@@ -24,7 +24,7 @@
 <h5>
   <span tooltip-placement="right"
     uib-tooltip="List of the details for this project."> Map
-    Project Details </span>
+    Project Details</span>
 </h5>
 </uib-accordion-heading>
 
@@ -59,7 +59,16 @@
         </div>
       </td>
       <td width="82%">{{focusProject.refSetName}},
-        {{focusProject.refSetId}}</td>
+        {{focusproject.refsetId}}</td>
+    </tr>
+    <tr>
+      <td width="18%">
+        <div tooltip-placement="right"
+          uib-tooltip="The module identifier representing this map project.">
+          <b>Module Id</b>
+        </div>
+      </td>
+      <td width="82%">{{focusProject.moduleId}}</td>
     </tr>
     <tr>
       <td>
@@ -786,7 +795,7 @@
   <tbody
     ng-repeat="principle in allowableMapPrinciples | elementFilter:focusProject.mapPrinciple | orderBy:'principleId'">
     <tr>
-      <td>{{principle.principleId}}: {{principle.name}}</td>
+      <td>{{principle.principleId}}: {{principle.name}}1234</td>
       <td><i class="glyphicon glyphicon-plus"
         ng-click="addPrinciple(principle)"></i></td>
     </tr>
