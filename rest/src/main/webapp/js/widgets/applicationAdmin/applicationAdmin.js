@@ -2476,6 +2476,10 @@ angular
 
           if (confirm('ARE YOU ABSOLUTELY SURE?\n\n  Deleting a project is final and cannot be undone.') == false)
             return;
+          
+          project.workflowType = project.workflowType.key;
+          project.mapRelationStyle = project.mapRelationStyle.key;
+          project.mapRefsetPattern = project.mapRefsetPattern.key;
 
           $rootScope.glassPane++;
           $http({
