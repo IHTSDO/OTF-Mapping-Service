@@ -304,6 +304,14 @@ public class MappingServiceJpa extends RootServiceJpa
       MapProject mp = manager.find(MapProjectJpa.class, mapProjectId);
       mp.setMapLeads(null);
       mp.setMapSpecialists(null);
+      mp.setMapAdvices(null);
+      mp.setMapRelations(null);
+      mp.setMapPrinciples(null);
+      mp.setPresetAgeRanges(null);
+      mp.setErrorMessages(null);
+      mp.setReportDefinitions(null);
+      mp.setScopeConcepts(null);
+      mp.setScopeExcludedConcepts(null);
       tx.commit();
 
       // now remove the entry
