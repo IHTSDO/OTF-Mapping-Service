@@ -617,7 +617,7 @@ angular
               }
             }
             $scope.newMapProjectMapType = $scope.allowableMapTypes[0];
-           alert("AAA: " +  $scope.newMapProjectMapType[1].key);
+           //alert("AAA: " +  $scope.newMapProjectMapType[1].key);
             $scope.newMapRelationStyle = $scope.allowableMapRelationStyles[0];
             $scope.newWorkflowType = $scope.allowableWorkflowTypes[0];
             $scope.newHandler = $scope.defaultProjectSpecificAlgorithmHandler;
