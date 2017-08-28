@@ -207,7 +207,7 @@ public interface MappingService extends RootService {
    * @throws Exception the exception
    */
   public MapProject addMapProject(MapProject mapProject) throws Exception;
-
+  
   /**
    * Adds the map record.
    * 
