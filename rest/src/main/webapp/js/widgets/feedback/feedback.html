@@ -49,11 +49,13 @@
 
     <tbody>
       <tr ng-repeat="feedbackConversation in feedbackConversations">
-        <td ng-show="!isFeedbackViewed(feedbackConversation)">
-          <a title="Unviewed Feedback"
-            href="#/conversation/recordId/{{feedbackConversation.mapRecordId}}">
-            <i class="glyphicon glyphicon-eye-close pull-right"></i>
-          </a>
+      <td ng-show="!isFeedbackViewed(feedbackConversation)"> 
+      <a title="Unviewed Feedback" > 
+      <i ng-click = "markFeedbackViewed(feedbackConversation)" 
+         class="glyphicon glyphicon-eye-close pull-right"></i>
+          </a>       
+           <!--href="#/conversation/recordId/{{feedbackConversation.mapRecordId}}">  --> 
+             
         </td>
         <td ng-show="isFeedbackViewed(feedbackConversation)"></td>
         <td>

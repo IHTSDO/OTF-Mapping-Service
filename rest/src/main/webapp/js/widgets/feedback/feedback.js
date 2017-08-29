@@ -141,7 +141,7 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
       // that conversation is not yet viewed
       $scope.isFeedbackViewed = function(conversation) {
         for (var i = 0; i < conversation.feedback.length; i++) {
-          var alreadyViewedBy = conversation.feedback[i].viewedBy;
+          var alreadyViewedBy = conversation.feedback[i].viewedBy;	
           var found = false;
           for (var j = 0; j < alreadyViewedBy.length; j++) {
             if (alreadyViewedBy[j].userName == $scope.currentUser.userName)
@@ -163,7 +163,15 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
         updateFeedbackConversation(conversation);
       };
       
-
+      $scope.markFeedbackViewed = function(conversation) {
+        for (var i = 0; i < conversation.feedback.length; i++) {
+          var alreadyViewedBy = conversation.feedback[i].viewedBy;
+          alreadyViewedBy.push($scope.currentUser);
+          conversation.feedback[i].viewedBy = alreadyViewedBy;
+        }
+        updateFeedbackConversation(conversation);
+      };
+      
       function updateFeedbackConversation(conversation) {
         $rootScope.glassPane++;
 
