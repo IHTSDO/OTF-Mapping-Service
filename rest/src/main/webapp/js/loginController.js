@@ -72,6 +72,7 @@ mapProjectAppControllers.controller('LoginCtrl', [
               method : 'GET',
               headers : {
                 'Content-Type' : 'application/json'
+                	
               }
 
             }).success(function(data) {
@@ -89,7 +90,7 @@ mapProjectAppControllers.controller('LoginCtrl', [
               function(data) {
 
                 console.debug('retrieving users');
-
+                
                 // retrieve users
                 $http({
                   url : root_mapping + 'user/users',
@@ -185,6 +186,7 @@ mapProjectAppControllers.controller('LoginCtrl', [
                       if ($scope.focusProject == null) {
                         $scope.focusProject = $scope.mapProjects[0];
                       }
+                      
 
                       localStorageService.add('focusProject', $scope.focusProject);
                       localStorageService.add('userPreferences', $scope.preferences);
@@ -226,7 +228,7 @@ mapProjectAppControllers.controller('LoginCtrl', [
                             $scope.role = 'Administrator';
                           else
                             $scope.role = 'Viewer';
-
+                          
                           if (autologinLocation) {
                             path = autologinLocation;
                           } else if ($scope.role.toLowerCase() == 'specialist') {
