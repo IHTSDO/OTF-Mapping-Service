@@ -416,6 +416,101 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
+  @PUT
+  @Path("/clone")
+  @ApiOperation(value = "Clone map project", notes = "Adds the specified map project, which is a potentially modified copy of another map project", response = MapProjectJpa.class)
+  public MapProject cloneMapProject(
+    @ApiParam(value = "MapProject PUT data", required = false) MapProjectJpa mapProject,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info("RESTful call PUT (Mapping): /clone "
+        + mapProject.getId() + ", " + mapProject);
+
+    String user = null;
+
+    final MappingService mappingService = new MappingServiceJpa();
+    try {
+    	// authorize call
+        user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+            "clone a map project", securityService);
+
+      mappingService.setTransactionPerOperation(false);
+      mappingService.beginTransaction();
+
+      // Add the map project (null the id)
+      final Long mapProjectId = mapProject.getId();
+      final MapProject originMapProject = mappingService.getMapProject(mapProjectId);
+
+      // Determine if refset with this id already exists in this project.
+      /*if (originRefset.getTerminologyId().equals(refset.getTerminologyId())
+          && originRefset.getProject().getId()
+              .equals(refset.getProject().getId())) {
+        throw new LocalException(
+            "Duplicate refset terminology id within the project, "
+                + "please change terminology id");
+      }*/
+      final Set<MapUser> mapLeads = originMapProject.getMapLeads();
+      // lazy init
+      mapLeads.size();
+
+      
+      // copy map specialists and leads
+      for (MapUser mapLead : originMapProject.getMapLeads()) {
+    	  mapLead.setId(null);
+      }
+      for (MapUser mapSpecialist : originMapProject.getMapSpecialists()) {
+    	  mapSpecialist.setId(null);
+      }
+      // clear error messages
+      mapProject.setErrorMessages(new HashSet<String>());
+      MapProject newMapProject = mappingService.addMapProject(mapProject);
+
+/*      // Copy all the members if EXTENSIONAL
+      if (refset.getType() == Refset.Type.EXTENSIONAL) {
+
+        // Get the original reference set
+        for (final ConceptRefsetMember originMember : originMembers) {
+          final ConceptRefsetMember member =
+              new ConceptRefsetMemberJpa(originMember);
+          member.setPublished(false);
+          member.setPublishable(true);
+          member.setRefset(newRefset);
+          member.setEffectiveTime(null);
+          // Insert new members
+          member.setId(null);
+          member.setLastModifiedBy(userName);
+          refsetService.addMember(member);
+        }
+        // Resolve definition if INTENSIONAL
+      } else if (refset.getType() == Refset.Type.INTENSIONAL) {
+        // Copy inclusions and exclusions from origin refset
+        for (final ConceptRefsetMember member : originMembers) {
+          if (member.getMemberType() == Refset.MemberType.INCLUSION
+              || member.getMemberType() == Refset.MemberType.EXCLUSION) {
+            final ConceptRefsetMember member2 =
+                new ConceptRefsetMemberJpa(member);
+            member2.setRefset(newRefset);
+            member2.setId(null);
+            refsetService.addMember(member2);
+            newRefset.addMember(member2);
+          }
+        }
+        refsetService.resolveRefsetDefinition(newRefset);
+      }*/
+      
+      // done
+      mappingService.commit();
+      return newMapProject;
+    } catch (Exception e) {
+      handleException(e, "trying to clone a map project");
+      return null;
+    } finally {
+      mappingService.close();
+      securityService.close();
+    }
+  }
+
+  
   /**
    * Returns all map projects for a lucene query.
    *

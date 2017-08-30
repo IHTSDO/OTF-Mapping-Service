@@ -617,7 +617,6 @@ angular
               }
             }
             $scope.newMapProjectMapType = $scope.allowableMapTypes[0];
-           alert("AAA: " +  $scope.newMapProjectMapType[1].key);
             $scope.newMapRelationStyle = $scope.allowableMapRelationStyles[0];
             $scope.newWorkflowType = $scope.allowableWorkflowTypes[0];
             $scope.newHandler = $scope.defaultProjectSpecificAlgorithmHandler;
@@ -1171,8 +1170,10 @@ angular
               for (var j = 0; j < $scope.focusProject.mapAdvice.length; j++) {
                 if (advice.id === $scope.focusProject.mapAdvice[j].id) {
                   $scope.focusProject.mapAdvice[j] = advice;
+                  
                 }
               }
+              
               localStorageService.add('mapAdvices', data.mapAdvice);
               $rootScope.$broadcast('localStorageModule.notification.setMapAdvices', {
                 key : 'mapAdvices',
@@ -2476,6 +2477,10 @@ angular
 
           if (confirm('ARE YOU ABSOLUTELY SURE?\n\n  Deleting a project is final and cannot be undone.') == false)
             return;
+          
+          project.workflowType = project.workflowType.key;
+          project.mapRelationStyle = project.mapRelationStyle.key;
+          project.mapRefsetPattern = project.mapRefsetPattern.key;
 
           $rootScope.glassPane++;
           $http({
