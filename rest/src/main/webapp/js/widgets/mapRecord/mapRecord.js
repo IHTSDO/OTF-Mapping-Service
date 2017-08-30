@@ -186,6 +186,11 @@ angular
             }
 
             $scope.record = parameters.record;
+            
+            // open principles accordion if one was copied from selectedRecord
+            if ($scope.record.mapPrinciple && $scope.record.mapPrinciple.length > 0) {
+              $scope.isPrinciplesOpen = true;
+            }
 
             // This MUST not be removed for 'Start here' to work
             initializeGroupsTree();
