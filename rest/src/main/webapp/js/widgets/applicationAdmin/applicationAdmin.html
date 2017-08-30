@@ -25,21 +25,21 @@
       <td>
         <input tooltip-placement="top" uib-tooltip="Project Name"
           ng-model="project.name" ng-change="setEditingPerformed(project)"
-          style="margin-bottom: 5px; width: 100%;"></input> <select
-          tooltip-placement="top" uib-tooltip="Source Terminology and Version"
-          ng-init="project.sourceTerminologyAndVersion = getSourceVersion(project)"
+          style="margin-bottom: 5px; width: 100%;"></input> <span
+          tooltip-placement="top" uib-tooltip="Source Terminology and Version">
+          <select ng-init="project.sourceTerminologyAndVersion = getSourceVersion(project)"
           ng-model="project.sourceTerminologyAndVersion"
           ng-options="item for item in terminologyVersionPairs"
           ng-change="setEditingPerformed(project)"
           style="margin-bottom: 5px; width: 100%;">
-        </select> <select tooltip-placement="top"
-          uib-tooltip="Destination Terminology and Version"
-          ng-init="project.destinationTerminologyAndVersion = getDestinationVersion(project)"
+        </select></span> <span tooltip-placement="top"
+          uib-tooltip="Destination Terminology and Version" >
+          <select ng-init="project.destinationTerminologyAndVersion = getDestinationVersion(project)"
           ng-model="project.destinationTerminologyAndVersion"
           ng-options="item for item in terminologyVersionPairs"
           ng-change="setEditingPerformed(project)"
           style="margin-bottom: 5px; width: 100%;">
-        </select> Team Based: <input type="checkbox" ng-model="project.teamBased"
+        </select> </span> Team Based: <input type="checkbox" ng-model="project.teamBased"
           ng-change="setEditingPerformed(project)">
       </td>
       <td>
@@ -138,25 +138,25 @@
         </table>
       </td>
       <td>
-        <select tooltip-placement="top" uib-tooltip="Map Type"
+        <span tooltip-placement="top" uib-tooltip="Map Type"> <select
           ng-init="project.mapRefsetPattern=getMapType(project)"
           ng-model="project.mapRefsetPattern"
           ng-options="mapRefsetPattern as mapRefsetPattern.value for mapRefsetPattern in allowableMapTypes"
           ng-change="setEditingPerformed(project)"
           style="margin-bottom: 5px; width: 100%;">
-        </select><select tooltip-placement="top" uib-tooltip="Workflow Type"
+        </select> </span><span tooltip-placement="top" uib-tooltip="Workflow Type"><select
           ng-init="project.workflowType=getWorkflowType(project)"
           ng-model="project.workflowType"
           ng-options="workflowType as workflowType.value for workflowType in allowableWorkflowTypes"
           ng-change="setEditingPerformed(project)"
           style="margin-bottom: 5px; width: 100%;">
-        </select> <select tooltip-placement="top" uib-tooltip="Map Relation Style"
+        </select> </span> <span tooltip-placement="top" uib-tooltip="Map Relation Style"><select 
           ng-init="project.mapRelationStyle=getMapRelationStyle(project)"
           ng-model="project.mapRelationStyle"
           ng-options="mapRelationStyle as mapRelationStyle.value for mapRelationStyle in allowableMapRelationStyles"
           ng-change="setEditingPerformed(project)"
           style="margin-bottom: 5px; width: 100%;">
-        </select> <input tooltip-placement="top"
+        </select></span> <input tooltip-placement="top"
           uib-tooltip="Project Specific Algorithm Handler"
           ng-model="project.projectSpecificAlgorithmHandlerClass"
           ng-change="setEditingPerformed(project)"
@@ -363,7 +363,7 @@
 </uib-pagination> <span>
   <input id="userSearch" type="text" ng-model="userFilter"
     ng-change="getPagedUsers(1, userFilter)">
-  <button ng-click="resetUserFilter()" class="btn btn-xs btn-warning">Reset</button>
+  <button class="btn btn-xs btn-warning" ng-click="resetUserFilter(1, 'null', userFilter); userFilter=null;" >Reset</button>
 </span>
 
 <table class="table pure-table" style="width: 100%; margin-bottom: 5px;">
@@ -480,7 +480,7 @@
 <span>
   <input id="adviceSearch" type="text" ng-model="adviceFilter"
     ng-change="getPagedAdvices(1, adviceFilter)">
-  <button xs class="btn btn-xs btn-warning" ng-click="resetAdviceFilter()">Reset</button>
+  <button xs class="btn btn-xs btn-warning" ng-click="resetAdviceFilter(1, 'null', adviceFilter); adviceFilter=null;">Reset</button>
 </span>
 
 <table class="table pure-table" style="width: 100%; margin-bottom: 5px;">
@@ -528,8 +528,8 @@
           ng-show="isComponentChanged(advice) == true">Save</button>
       </td>
       <td>
-        <div tooltip-placement="top" title="Delete advice">
-          <i class="noul glyphicon glyphicon-remove" ng-click="deleteAdvice(advice)"></i>
+        <div tooltip-placement="top">
+          <i class="noul glyphicon glyphicon-remove" title="Delete advice from application" ng-click="deleteAdvice(advice)"></i>
         </div>
       </td>
     </tr>
@@ -604,7 +604,7 @@
 <div>
   <input type="text" ng-model="relationFilter"
     ng-change="getPagedRelations(1, relationFilter)">
-  <button class="btn btn-xs btn-warning" ng-click="resetRelationFilter()">Reset</button>
+  <button class="btn btn-xs btn-warning" ng-click="resetRelationFilter(1, 'null', relationFilter); relationFilter=null;">Reset</button>
 </div>
 
 <table class="table pure-table" style="width: 100%; margin-bottom: 5px;">
@@ -749,7 +749,7 @@
 <span>
   <input type="text" ng-model="principleFilter"
     ng-change="getPagedPrinciples(1, principleFilter)">
-  <button class="btn btn-xs btn-warning" ng-click="resetPrincipleFilter()">Reset</button>
+  <button class="btn btn-xs btn-warning" ng-click="resetPrincipleFilter(1, 'null',principleFilter); principleFilter= null;">Reset</button>
 </span>
 
 <table class="table pure-table" style="width: 100%; margin-bottom: 5px;">

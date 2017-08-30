@@ -23,7 +23,7 @@ angular
       $scope.searchPerformed = false;
       $scope.user = localStorageService.get('currentUser');
       $scope.focusProject = localStorageService.get('focusProject');
-
+       
       // pagination variables
       $scope.pageSize = 10;
       $scope.editedRecordsPage = 1;
@@ -32,6 +32,7 @@ angular
       $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
         $scope.focusProject = parameters.focusProject;
       });
+      
 
       $scope.$on('availableWork.notification.editWork', function(event, parameters) {
         $scope.editWork(parameters.editedWork);
@@ -44,6 +45,7 @@ angular
           $http.defaults.headers.common.Authorization = $scope.userToken;
         }
       });
+     
 
       // called by user-click, not automatically loaded
       $scope.retrieveEditedWork = function(page, queryTerms) {
@@ -91,7 +93,8 @@ angular
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
-
+      
+      
       // returns a short summary of the record based on number of entries
       $scope.getRecordSummary = function(record) {
 
