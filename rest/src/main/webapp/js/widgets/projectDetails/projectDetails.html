@@ -24,7 +24,7 @@
 <h5>
   <span tooltip-placement="right"
     uib-tooltip="List of the details for this project."> Map
-    Project Details </span>
+    Project Details</span>
 </h5>
 </uib-accordion-heading>
 
@@ -59,7 +59,16 @@
         </div>
       </td>
       <td width="82%">{{focusProject.refSetName}},
-        {{focusProject.refSetId}}</td>
+        {{focusProject.refsetId}}</td>
+    </tr>
+    <tr>
+      <td width="18%">
+        <div tooltip-placement="right"
+          uib-tooltip="The module identifier representing this map project.">
+          <b>Module Id</b>
+        </div>
+      </td>
+      <td width="82%">{{focusProject.moduleId}}</td>
     </tr>
     <tr>
       <td>
@@ -146,7 +155,9 @@
       <td ng-show="isEmailViewable(lead.email) == false">Private
         email</td>
       <td ng-show="editModeEnabled == true"><i
-        class="glyphicon glyphicon-remove" ng-click="deleteLead(lead)"></i>
+        class="glyphicon glyphicon-remove" 
+        title="Remove lead from project"
+        ng-click="deleteLead(lead)"></i>
       </td>
       <td ng-show="editModeEnabled == false"></td>
     </tr>
@@ -234,6 +245,7 @@
         email</td>
       <td ng-show="editModeEnabled == true"><i
         class="glyphicon glyphicon-remove"
+        title = "Remove Specailist from this project"
         ng-click="deleteSpecialist(specialist)"></i></td>
       <td ng-show="editModeEnabled == false"></td>
     </tr>
@@ -338,7 +350,8 @@
       </td>
       <td>{{advice.isAllowableForNullTarget}}</td>
       <td>{{advice.isComputed}}</td>
-      <td><i class="glyphicon glyphicon-remove"
+      <td><i class="glyphicon glyphicon-remove" title="Remove advice from project"
+        title="Remove advice from project"
         ng-click="deleteAdvice(advice)"></i></td>
     </tr>
 
@@ -457,6 +470,7 @@
       <td>{{relation.isComputed}}</td>
       <td ng-show="editModeEnabled == true"><i
         class="glyphicon glyphicon-remove"
+        title="Remove relation from project"
         ng-click="deleteRelation(relation)"></i></td>
       <td
         ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
@@ -593,6 +607,7 @@
       <td>{{definition.diffReport == true ? 'true' : 'false'}}</td>
       <td ng-show="editModeEnabled == true"><i
         class="glyphicon glyphicon-remove"
+        title="Remove report definition from project"
         ng-click="deleteReportDefinition(definition)"></i></td>
       <td
         ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
@@ -683,6 +698,7 @@
       <td>{{definition.roleRequired}}</td>
       <td ng-show="editModeEnabled == true"><i
         class="glyphicon glyphicon-remove"
+        title="Remove QA check definition from project"
         ng-click="deleteQACheckDefinition(definition)"></i></td>
       <td
         ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
@@ -720,8 +736,8 @@
   </tbody>
 </table>
 
-</uib-accordion-group> <uib-accordion-group
-  ng-show="focusProject.mapPrinciple.length > 0 || editModeEnabled == true">
+
+  </uib-accordion-group> <uib-accordion-group>
 <uib-accordion-heading>
 <h5>
   <span tooltip-placement="right"
@@ -786,7 +802,7 @@
   <tbody
     ng-repeat="principle in allowableMapPrinciples | elementFilter:focusProject.mapPrinciple | orderBy:'principleId'">
     <tr>
-      <td>{{principle.principleId}}: {{principle.name}}</td>
+      <td>{{principle.principleId}}: {{principle.name}}1234</td>
       <td><i class="glyphicon glyphicon-plus"
         ng-click="addPrinciple(principle)"></i></td>
     </tr>
@@ -1007,9 +1023,7 @@
   </table>
 </form>
 
-</uib-accordion-group> <uib-accordion-group
-  ng-show="focusProject.errorMessages.length > 0 || editModeEnabled == true">
-<uib-accordion-heading>
+</uib-accordion-group> <uib-accordion-group> <uib-accordion-heading>
 <h5>
   <span tooltip-placement="right"
     uib-tooltip="List of the potential error messages available for this project.">
@@ -1028,7 +1042,7 @@
     <tr>
       <td>{{errorMessage}}</td>
 
-      <td ng-show="editModeEnabled == true"><i
+      <td ng-show="editModeEnabled == true"> <i
         class="glyphicon glyphicon-remove"
         ng-click="deleteErrorMessage(errorMessage)"></i></td>
       <td
@@ -1099,6 +1113,7 @@
       <td>{{scopeConcept.value}}</td>
       <td ng-show="editModeEnabled == true"><i
         class="glyphicon glyphicon-remove"
+        title="Remove scope included concept from project"
         ng-click="removeScopeIncludedConcept(scopeConcept)"></i></td>
       <td
         ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
@@ -1307,8 +1322,8 @@
       </tr>
       <tr>
         <td>Module Id</td>
-        <td><input ng-model="release.moduleId"></td>
-
+        <td><input ng-model="focusProject.moduleId"></td>
+        
       </tr>
     </table>
 
