@@ -170,9 +170,8 @@ angular
         if ($scope.currentRole != 'Administrator' && $scope.currentRole != 'Lead'
           && $scope.currentRole != 'Specialist')
           return;
-        for (var i = 0; i < $scope.records.length; i++) {
-          validateRecord($scope.records[i]);
-
+        for (var i = 0; i < $scope.recordsInProject.length; i++) {
+          validateRecord($scope.recordsInProject[i]);
         }
       }
 
