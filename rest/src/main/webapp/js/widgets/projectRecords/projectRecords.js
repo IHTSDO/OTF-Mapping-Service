@@ -178,9 +178,7 @@ angular
             if ($scope.records.length > 0) {
               getUnmappedDescendants(0);
             }
-            if ($scope.currentUser.userName == 'guest') {
-              alert (' The selected mapping project is SNOMED to GMDN.  The project can be changed from the Project picklist in the application header.')
-            } 
+            
           });     
       };
       
