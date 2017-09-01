@@ -1157,6 +1157,13 @@ public class WorkflowServiceRest extends RootServiceRest {
       // execute the workflow call
       workflowService.processWorkflowAction(mapProject, concept, mapUser,
           mapRecord, WorkflowAction.PUBLISH);
+      
+      // mark all related feedback conversations resolved
+      for (FeedbackConversation conv : workflowService.getFeedbackConversationsForConcept(mapProject.getId(), 
+    	  concept.getTerminologyId()).getFeedbackConversations()) {
+    	  conv.setResolved(true);
+    	  workflowService.updateFeedbackConversation(conv);
+      }
 
     } catch (Exception e) {
       handleException(e, "trying to publish work", user, project,
