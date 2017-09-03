@@ -562,7 +562,7 @@ angular
         if (!$scope.leadRecord.mapNote.length) {
           $scope.leadRecord.mapNote = angular.copy(record.mapNote);
         }
-        $scope.leadRecord.mapPrinciples = angular.copy(record.mapPrinciple);
+        $scope.leadRecord.mapPrinciple = angular.copy(record.mapPrinciple);
 
         // null the ids of the notes (for later creation as new jpa objects)
         for (var i = 0; i < $scope.leadRecord.mapNote.length; i++) {
@@ -576,7 +576,7 @@ angular
           $scope.leadRecord.mapEntry[i].localId = localId++;
           $scope.leadRecord.mapEntry[i].id = null;
         }
-
+        
         // broadcast to the map record widget
         console.debug(
           'broadcastcompareRecordsWidget.notification.selectRecord = ',
