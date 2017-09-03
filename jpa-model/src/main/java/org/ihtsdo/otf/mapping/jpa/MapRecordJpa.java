@@ -85,6 +85,7 @@ public class MapRecordJpa implements MapRecord {
   /** The owner. */
   @ManyToOne(targetEntity = MapUserJpa.class, fetch = FetchType.EAGER)
   @JoinColumn(nullable = false)
+  @IndexedEmbedded(targetElement = MapUserJpa.class)
   private MapUser owner;
 
   /** The timestamp. */
