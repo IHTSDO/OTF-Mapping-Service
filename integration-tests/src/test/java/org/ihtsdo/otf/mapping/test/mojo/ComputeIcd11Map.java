@@ -1135,7 +1135,6 @@ public class ComputeIcd11Map {
                 }
               }
             }
-
           }
 
           //
@@ -1496,7 +1495,7 @@ public class ComputeIcd11Map {
               break;
             }
           }
-          // Skip if this has already been added
+          // Do not map to the same target in separate entries
           if (flag) {
             continue;
           }
