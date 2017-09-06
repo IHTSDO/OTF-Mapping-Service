@@ -153,7 +153,7 @@ angular
         // NOTE: Glass Pane and error handling are done in helper function
         $scope.retrieveRecordsHelper(pfsParameterObj).then(
           function(data) {
-
+            
             $scope.records = data.mapRecord;
             $scope.statusRecordLoad = '';
 
@@ -177,9 +177,6 @@ angular
             // get unmapped descendants (checking done in routine)
             if ($scope.records.length > 0) {
               getUnmappedDescendants(0);
-            }
-            if ($scope.currentUser.userName == 'guest') {
-              alert (' The selected mapping project is SNOMED to GMDN.  The project can be changed from the Project picklist in the application header.')
             } 
           });     
       };
