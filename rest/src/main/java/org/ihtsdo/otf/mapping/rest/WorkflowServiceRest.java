@@ -10,6 +10,7 @@ import java.util.Set;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -40,10 +41,13 @@ import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.helpers.WorkflowType;
 import org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa;
+import org.ihtsdo.otf.mapping.jpa.FeedbackJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
+import org.ihtsdo.otf.mapping.jpa.MapRelationJpa;
 import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowFixErrorPathHandler;
 import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowQaPathHandler;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ReportServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
@@ -55,6 +59,7 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.reports.Report;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
+import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.ReportService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
@@ -376,6 +381,74 @@ public class WorkflowServiceRest extends RootServiceRest {
       return null;
     } finally {
       workflowService.close();
+      securityService.close();
+    }
+  }
+  
+  @DELETE
+  @Path("/conversation/delete")
+  @ApiOperation(value = "Remove a feedback conversation", notes = "Removes the specified feedback conversation.", response = FeedbackConversationJpa.class)
+  public void removeFeedbackConversation(
+    @ApiParam(value = "Feedback conversation, in JSON or XML POST data", required = true) FeedbackConversationJpa feedbackConversation,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    // log call
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /conversation/delete for user "
+            + feedbackConversation.getFeedbacks());
+
+    String user = null;
+    final WorkflowService workflowService = new WorkflowServiceJpa();
+    try {
+      // authorize call
+      user = authorizeApp(authToken, MapUserRole.VIEWER, "remove feedback conversation",
+          securityService);
+      
+      /*for(Feedback feedback:feedbackConversation.getFeedbacks()){
+    	  workflowService.removeFeedback(feedback.getId());
+      }*/
+      workflowService.removeFeedbackConversation(feedbackConversation.getId());
+    } catch (Exception e) {
+      LocalException le = new LocalException(
+          "Unable to delete feedback conversation. This is likely because the conversation is being used by a map project or map entry");
+      handleException(le, "", user, "", "");
+    } finally {
+    	workflowService.close();
+      securityService.close();
+    }
+  }
+
+  @DELETE
+  @Path("/feedback/delete")
+  @ApiOperation(value = "Remove a feedback", notes = "Removes the specified feedback.", response = FeedbackJpa.class)
+  public void removeFeedback(
+    @ApiParam(value = "Feedback, in JSON or XML POST data", required = true) FeedbackJpa feedback,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    // log call
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Workflow): /feedback/delete for user "
+            + feedback);
+
+    String user = null;
+    final WorkflowService workflowService = new WorkflowServiceJpa();
+    try {
+      // authorize call
+      user = authorizeApp(authToken, MapUserRole.VIEWER, "remove feedback",
+          securityService);
+      
+      /*for(Feedback feedback:feedbackConversation.getFeedbacks()){
+    	  workflowService.removeFeedback(feedback.getId());
+      }*/
+      workflowService.removeFeedback(feedback.getId());
+    } catch (Exception e) {
+      LocalException le = new LocalException(
+          "Unable to delete feedback");
+      handleException(le, "", user, "", "");
+    } finally {
+    	workflowService.close();
       securityService.close();
     }
   }
