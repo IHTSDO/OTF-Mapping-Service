@@ -1622,7 +1622,21 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         }).then(
           // Success
           function(response) {
-            $rootScope.glassPane--;
+            
+            $http({
+              url : root_mapping + 'project/id/' + $scope.focusProject.id,
+              method : 'GET',
+              headers : {
+                'Content-Type' : 'application/json'
+              }
+            }).success(function(data) {
+              $rootScope.glassPane--;
+              $scope.focusProject = data;
+
+            }).error(function(data, status, headers, config) {
+              $rootScope.glassPane--;
+              $scope.errorMsg = 'Could not retrieve map project';
+            });
           },
           // error
           function(response) {
