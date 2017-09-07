@@ -53,6 +53,12 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
       $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
         $scope.focusProject = parameters.focusProject;
       });
+      
+      // on publish, update feedbacks to display newly resolved
+      $scope.$on('feedbackWidget.notification.retrieveFeedback', function(event, parameters) {
+          $scope.retrieveFeedback(1, $scope.feedbackType, $scope.reviewedType,
+                  $scope.resolvedType, $scope.query);
+      });
 
       // on any change of focusProject, retrieve new available work
       $scope
