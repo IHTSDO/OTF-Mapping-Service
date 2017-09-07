@@ -939,6 +939,27 @@ angular
           });
 
         };
+        
+        $scope.removeFeedback = function(conversation) {
+          // confirm delete
+          if (confirm('Are you sure that you want to delete a feedback conversation?') == false)
+            return;
+
+          $http({
+            url : root_workflow + 'feedback/delete',
+            dataType : 'json',
+            data : conversation,
+            method : 'DELETE',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+            $scope.conversation = null;
+          }).error(function(data, status, headers, config) {
+            $scope.recordError = 'Error deleting feedback conversation from application.';
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        }
 
         $scope.addRecordPrinciple = function(record, principle) {
 
