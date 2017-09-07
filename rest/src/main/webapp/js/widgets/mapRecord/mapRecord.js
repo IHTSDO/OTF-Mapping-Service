@@ -186,6 +186,16 @@ angular
             }
 
             $scope.record = parameters.record;
+            for (var i = 0; i < $scope.record.mapNote.length; i++) {
+              $scope.record.mapNote[i].user = $scope.user;
+              $scope.record.mapNote[i].timestamp = new Date();
+            }
+
+            // open principles accordion if one was copied from selectedRecord
+            if ($scope.record.mapPrinciple
+              && $scope.record.mapPrinciple.length > 0) {
+              $scope.isPrinciplesOpen = true;
+            }
 
             // This MUST not be removed for 'Start here' to work
             initializeGroupsTree();

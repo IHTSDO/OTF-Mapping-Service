@@ -1104,6 +1104,11 @@ angular
               }
             }, function(response) {
               $scope.error('Unexpected error finishing record.');
+            }).then(function() {
+            	// publish resolves related feedback, so feedback needs to be refreshed
+            	if ($scope.action == 'publish') {
+            	  $rootScope.$broadcast('feedbackWidget.notification.retrieveFeedback', {});
+            	}
             });
           }
         };
@@ -1155,6 +1160,11 @@ angular
                 // flag current record as finished
                 $scope.currentRecord.isFinished = true;
 
+                // publish resolves related feedback, so feedback needs to be refreshed
+                if ($scope.action == 'publish') {
+                	  $rootScope.$broadcast('feedbackWidget.notification.retrieveFeedback', {});
+                }
+                	
                 // call the helper again if more records
                 if ($scope.index < $scope.records.length)
                   finishAllRecordsHelper();
@@ -1193,6 +1203,7 @@ angular
 
           // call the sequential finishAllRecords helper function
           finishAllRecordsHelper();
+          
         };
 
         $scope.done = function() {
