@@ -19,13 +19,8 @@
 </div>
 <!-- display items in feedback conversation -->
 <div ng-show="conversation.feedback.length > 0" style="margin-top: 3px;">
-  <div ng-repeat="feedback in conversation.feedback">
-  <i> <span class="glyphicon glyphicon-remove pull-right" 
-        ng-click="removeFeedback(feedback)"
-        ng-show = "currentRole == 'Lead'" style="padding-left: 20px;"></i> 
-  
-  
-
+  <div ng-repeat="feedback in conversation.feedback" >
+   
     <!--  display related feedback -->
     <div class="alert alert-warning" disabled>
       [By {{feedback.sender.name}} to
@@ -34,6 +29,9 @@
         <span ng-if="$last == false">,</span>
       </span>
       on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
+      <i class="glyphicon glyphicon-remove pull-right" 
+        ng-click="removeFeedback(feedback)"
+        ng-show = "currentRole == 'Lead'" ></i>
       <div ng-show="feedback.mapError != 'None'" style="padding-left: 20px;"
         ng-bind-html="to_trusted(feedback.mapError)"></div>
       <div style="padding-left: 20px;"

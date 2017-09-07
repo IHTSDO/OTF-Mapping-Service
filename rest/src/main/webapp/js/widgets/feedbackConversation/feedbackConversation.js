@@ -446,7 +446,16 @@ angular
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-         //$scope.conversation = null;
+            $http({
+              url : root_workflow + 'conversation/id/' + $scope.recordId,
+              dataType : 'json',
+              method : 'GET',
+              headers : {
+                'Content-Type' : 'application/json'
+              }
+            }).success(function(data) {
+              $scope.conversation = data;
+            });
         }).error(function(data, status, headers, config) {
           $scope.recordError = 'Error deleting feedback conversation from application.';
           $rootScope.handleHttpError(data, status, headers, config);
