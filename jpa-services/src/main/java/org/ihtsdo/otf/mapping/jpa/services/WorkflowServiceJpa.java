@@ -130,6 +130,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
 
   }
   
+  /* see superclass */
   @Override
   public void removeFeedbackConversation(Long feedbackId) throws Exception {
 
@@ -155,6 +156,8 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     }
 
   }
+  
+  /* see superclass */
   @Override
   public void removeFeedback(Long feedbackId) throws Exception {
 
@@ -163,35 +166,20 @@ public class WorkflowServiceJpa extends MappingServiceJpa
       tx.begin();
       Feedback fa =
           manager.find(FeedbackJpa.class, feedbackId);
-      /*fa.setFeedbackConversation(null);
-	  fa.setRecipients(null);
-	  fa.setSender(null);
-	  fa.setViewedBy(null);
-         tx.commit();
-         tx.begin();*/
       
       final FeedbackConversation conv = fa.getFeedbackConversation();
-        conv.removeFeedback(fa);
-        manager.merge(conv);
+      conv.removeFeedback(fa);
+      manager.merge(conv);
       tx.commit();
-      if (manager.contains(fa)) {
-        manager.remove(fa);
-      } else {
-        manager.remove(manager.merge(fa));
-      }
-      tx.commit();
+      
     } else {
-    	Feedback fa =
+      Feedback fa =
           manager.find(FeedbackJpa.class, feedbackId);
-    	  /*fa.setFeedbackConversation(null);
-    	  fa.setRecipients(null);
-    	  fa.setSender(null);
-    	  fa.setViewedBy(null);*/
-      if (manager.contains(fa)) {
-        manager.remove(fa);
-      } else {
-        manager.remove(manager.merge(fa));
-      }
+    	  
+      final FeedbackConversation conv = fa.getFeedbackConversation();
+      conv.removeFeedback(fa);
+      manager.merge(conv);
+     
     }
 
   }
