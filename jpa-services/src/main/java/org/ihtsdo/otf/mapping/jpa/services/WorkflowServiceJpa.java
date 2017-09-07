@@ -45,6 +45,7 @@ import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.helpers.WorkflowType;
 import org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa;
+import org.ihtsdo.otf.mapping.jpa.FeedbackJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.handlers.AbstractWorkflowPathHandler;
 import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowFixErrorPathHandler;
@@ -116,7 +117,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
       } else {
         manager.remove(manager.merge(ma));
       }
-      tx.commit();
+      tx.commit(); 
     } else {
       TrackingRecord ma =
           manager.find(TrackingRecordJpa.class, trackingRecordId);
@@ -124,6 +125,72 @@ public class WorkflowServiceJpa extends MappingServiceJpa
         manager.remove(ma);
       } else {
         manager.remove(manager.merge(ma));
+      }
+    }
+
+  }
+  
+  @Override
+  public void removeFeedbackConversation(Long feedbackId) throws Exception {
+
+    if (getTransactionPerOperation()) {
+      tx = manager.getTransaction();
+      tx.begin();
+      FeedbackConversation fa =
+          manager.find(FeedbackConversationJpa.class, feedbackId);
+      if (manager.contains(fa)) {
+        manager.remove(fa);
+      } else {
+        manager.remove(manager.merge(fa));
+      }
+      tx.commit();
+    } else {
+    	FeedbackConversation fa =
+          manager.find(FeedbackConversationJpa.class, feedbackId);
+   if (manager.contains(fa)) {
+        manager.remove(fa);
+      } else {
+        manager.remove(manager.merge(fa));
+      }
+    }
+
+  }
+  @Override
+  public void removeFeedback(Long feedbackId) throws Exception {
+
+    if (getTransactionPerOperation()) {
+      tx = manager.getTransaction();
+      tx.begin();
+      Feedback fa =
+          manager.find(FeedbackJpa.class, feedbackId);
+      /*fa.setFeedbackConversation(null);
+	  fa.setRecipients(null);
+	  fa.setSender(null);
+	  fa.setViewedBy(null);
+         tx.commit();
+         tx.begin();*/
+      
+      final FeedbackConversation conv = fa.getFeedbackConversation();
+        conv.removeFeedback(fa);
+        manager.merge(conv);
+      tx.commit();
+      if (manager.contains(fa)) {
+        manager.remove(fa);
+      } else {
+        manager.remove(manager.merge(fa));
+      }
+      tx.commit();
+    } else {
+    	Feedback fa =
+          manager.find(FeedbackJpa.class, feedbackId);
+    	  /*fa.setFeedbackConversation(null);
+    	  fa.setRecipients(null);
+    	  fa.setSender(null);
+    	  fa.setViewedBy(null);*/
+      if (manager.contains(fa)) {
+        manager.remove(fa);
+      } else {
+        manager.remove(manager.merge(fa));
       }
     }
 
