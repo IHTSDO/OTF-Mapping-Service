@@ -82,11 +82,11 @@ Notes <i class="pull-right glyphicon"
 <div ng-show="record.mapNote.length > 0">
   <div ng-repeat="note in record.mapNote">
     <div class="alert alert-warning" disabled>
-      <i class="glyphicon glyphicon-remove pull-right"
+        <i class="glyphicon glyphicon-remove pull-right"
         ng-click="removeRecordNote(record, note)"></i>
-      <!-- <i class="glyphicon glyphicon-pencil pull-right"
+      <i class="glyphicon glyphicon-pencil pull-right"
 					ng-click="editRecordNote(record, note); noteInput = note.note"></i>
-	 -->
+	
       [By
       <a href="mailto:{{user.email}}">{{note.user.name}}</a>
       on {{note.timestamp | date:'MM-dd-yyyy HH:mm'}}]
@@ -103,10 +103,10 @@ Notes <i class="pull-right glyphicon"
     ng-disabled="!noteInput"
     ng-click="addRecordNote(record, noteInput); noteInput = null;">Add
     Note</button>
-  <!-- <input ng-show="noteEditMode == true" class="pull-right" type="submit"  accesskey="a" value="Save Editing"
+  <input ng-show="noteEditMode == true" class="pull-right" type="submit"  accesskey="a" value="Save Editing"
 		ng-click="saveEditRecordNote(record, noteInput); noteInput = ''">
 		<input ng-show="noteEditMode == true" class="pull-right" type="submit"  accesskey="a" value="Cancel Editing"
-		ng-click="cancelEditRecordNote(); noteInput = ''"> -->
+		ng-click="cancelEditRecordNote(); noteInput = ''">
   <span class="pull-right">
     Shortcut to add note:
     <code>Tab</code>
