@@ -89,7 +89,7 @@ public class ComputeIcd11Map {
   /** The sct concepts. */
   final Map<String, String> sctConcepts = new HashMap<>();
 
-  /**  The icd 11 map edits. */
+  /** The icd 11 map edits. */
   final Map<String, List<IcdMap>> icd11MapEdits = new HashMap<>();
 
   /** The icd 11 concepts. */
@@ -104,7 +104,6 @@ public class ComputeIcd11Map {
   /** The icd 10 map. */
   final Map<String, List<IcdMap>> icd10Map = new HashMap<>();
 
-  
   /** The sct anc desc. */
   final Map<String, Set<String>> sctAncDesc = new HashMap<>();
 
@@ -117,15 +116,29 @@ public class ComputeIcd11Map {
   /** The xt concepts, like "Recurrent". */
   final Map<String, String> xtConcepts = new HashMap<>();
 
-  /** The advices to exclude. */
-  // Vars
+  /** The advices to include. */
+  final Set<String> advicesToInclude =
+      new HashSet<>(Arrays.asList(new String[] {
+          "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE",
+          "THIS CODE IS NOT TO BE USED IN THE PRIMARY POSITION",
+          "THIS IS AN EXTERNAL CAUSE CODE FOR USE IN A SECONDARY POSITION"
+      }));
+
   final Set<String> advicesToExclude =
       new HashSet<>(Arrays.asList(new String[] {
-          "THIS CODE MAY BE USED IN THE PRIMARY POSITION WHEN THE MANIFESTATION IS THE PRIMARY FOCUS OF CARE",
-          "THIS MAP REQUIRES A DAGGER CODE AS WELL AS AN ASTERISK CODE",
           "FIFTH CHARACTER REQUIRED TO FURTHER SPECIFY THE SITE",
+          "MAP IS CONTEXT DEPENDENT FOR GENDER",
+          "MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT",
+          "MAPPED FOLLOWING IHTSDO GUIDANCE", "MAPPED FOLLOWING WHO GUIDANCE",
+          "MAPPING GUIDANCE FROM WHO IS AMBIGUOUS",
+          "POSSIBLE REQUIREMENT FOR ADDITIONAL CODE TO FULLY DESCRIBE DISEASE OR CONDITION",
+          "POSSIBLE REQUIREMENT FOR CAUSATIVE AGENT CODE",
           "POSSIBLE REQUIREMENT FOR MORPHOLOGY CODE",
+          "POSSIBLE REQUIREMENT FOR PLACE OF OCCURRENCE",
+          "SOURCE SNOMED CONCEPT IS AMBIGUOUS",
+          "SOURCE SNOMED CONCEPT IS INCOMPLETELY MODELED",
           "THIS CODE MAY BE USED IN THE PRIMARY POSITION WHEN THE MANIFESTATION IS THE PRIMARY FOCUS OF CARE",
+
           "THIS MAP REQUIRES A DAGGER CODE AS WELL AS AN ASTERISK CODE",
           "USE AS PRIMARY CODE ONLY IF SITE OF BURN UNSPECIFIED, OTHERWISE USE AS A SUPPLEMENTARY CODE WITH CATEGORIES T20-T29 (Burns)"
       }));
@@ -133,19 +146,6 @@ public class ComputeIcd11Map {
   final Map<String, String> advicesToReplace = new HashMap<>();
   // Initializer
   {
-    advicesToReplace.put(
-        "POSSIBLE REQUIREMENT FOR ADDITIONAL CODE TO FULLY DESCRIBE DISEASE OR CONDITION",
-        "ADDITIONAL CODES MAY BE ADDED AS SANCTIONED BY WHO");
-    advicesToReplace.put("POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE",
-        "CODES SANCTIONED BY WHO MAY BE ADDED FROM CHAPTER 23 EXTERNAL CAUSES AND EXTENSION CODES IF RELEVANT");
-    advicesToReplace.put("POSSIBLE REQUIREMENT FOR CAUSATIVE AGENT CODE",
-        "POSSIBLE REQUIREMENT FOR INFECTIOUS AGENT EXTENSION CODE");
-    advicesToReplace.put("POSSIBLE REQUIREMENT FOR PLACE OF OCCURRENCE",
-        "EXTENSION CODES SANCTIONED BY WHO MAY BE ADDED IF RELEVANT");
-    advicesToReplace.put(
-        "THIS IS AN EXTERNAL CAUSE CODE FOR USE IN A SECONDARY POSITION",
-        "THIS IS AN EXTERNAL CAUSE CODE AND/OR EXTENSION CODE FOR USE IN A SECONDARY POSITION");
-
   }
 
   /**
@@ -200,7 +200,8 @@ public class ComputeIcd11Map {
 
       // Cache ICD11 map (by SCTID)
       Logger.getLogger(getClass()).info(" Load ICD11 map edits");
-      lines = FileUtils.readLines(new File(icd11Dir, "icd11MapEdits.txt"), "UTF-8");
+      lines =
+          FileUtils.readLines(new File(icd11Dir, "icd11MapEdits.txt"), "UTF-8");
       ct = 0;
       skipCt = 0;
       for (final String line : lines) {
@@ -1630,13 +1631,14 @@ public class ComputeIcd11Map {
         // level, not entry level)
         noteSb.append("FINAL CATEGORY " + getCategoryString(category) + "\n");
 
-        // If the map was edited already, override it here with the acutal map used
+        // If the map was edited already, override it here with the acutal map
+        // used
         // (This is mostly to seed RULE4 properly
         if (icd11MapEdits.containsKey(sctid)) {
           icd11Map.put(sctid, icd11MapEdits.get(sctid));
           noteSb.append("MAP EDITED\n");
         }
-        
+
         // Add note
         icd11MapNotes.put(sctid, noteSb.toString().replaceAll("\\n", "<br>"));
         Logger.getLogger(getClass()).info(noteSb.toString());
