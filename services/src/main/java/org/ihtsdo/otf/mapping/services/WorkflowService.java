@@ -97,7 +97,7 @@ public interface WorkflowService extends MappingService {
    * @throws Exception the exception
    */
   public void removeTrackingRecord(Long trackingRecordId) throws Exception;
-
+  
   /**
    * Called by REST services, performs a specific action given a project,
    * concept, and user.
@@ -490,5 +490,21 @@ public interface WorkflowService extends MappingService {
    */
   public WorkflowPathHandler getWorkflowPathHandlerForMapProject(
     MapProject mapProject) throws Exception;
+
+  /**
+   * Removes the feedback conversation.
+   *
+   * @param feedbackId the feedback id
+   * @throws Exception the exception
+   */
+  public void removeFeedbackConversation(Long feedbackId) throws Exception; 
+  
+  /**
+   * Removes the feedback.
+   *
+   * @param feedbackId the feedback id
+   * @throws Exception the exception
+   */
+  public void removeFeedback(Long feedbackId) throws Exception;
 
 }
