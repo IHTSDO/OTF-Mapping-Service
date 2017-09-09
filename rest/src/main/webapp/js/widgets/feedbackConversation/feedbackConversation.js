@@ -430,6 +430,37 @@ angular
           $rootScope.handleHttpError(data, status, headers, config);
         });
       }
+      
+   // Delete feedback message
+      $scope.removeFeedback = function(message) {
+        // confirm delete
+        if (confirm('Are you sure that you want to delete a feedback message?') == false)
+          return;
+
+        $http({
+          url : root_workflow + 'feedback/delete',
+          dataType : 'json',
+          data : message,
+          method : 'DELETE',
+          headers : {
+            'Content-Type' : 'application/json'
+          }
+        }).success(function(data) {
+            $http({
+              url : root_workflow + 'conversation/id/' + $scope.recordId,
+              dataType : 'json',
+              method : 'GET',
+              headers : {
+                'Content-Type' : 'application/json'
+              }
+            }).success(function(data) {
+              $scope.conversation = data;
+            });
+        }).error(function(data, status, headers, config) {
+          $scope.recordError = 'Error deleting feedback conversation from application.';
+          $rootScope.handleHttpError(data, status, headers, config);
+        });
+      }
 
       function organizeUsers(arr) {
         // remove Current user

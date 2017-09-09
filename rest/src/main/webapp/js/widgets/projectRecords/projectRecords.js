@@ -153,7 +153,7 @@ angular
         // NOTE: Glass Pane and error handling are done in helper function
         $scope.retrieveRecordsHelper(pfsParameterObj).then(
           function(data) {
-
+            
             $scope.records = data.mapRecord;
             $scope.statusRecordLoad = '';
 
@@ -177,8 +177,7 @@ angular
             // get unmapped descendants (checking done in routine)
             if ($scope.records.length > 0) {
               getUnmappedDescendants(0);
-            }
-            
+            } 
           });     
       };
       
