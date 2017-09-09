@@ -13,13 +13,13 @@
 
 <p>
 <form ng-submit="retrieveRecords(1)">
-  <input ng-model="searchParameters.query">
-  <i style="margin-left: 5px; margin-right: 10px;"
+  <input ng-model="searchParameters.query"> <i
+    style="margin-left: 5px; margin-right: 10px;"
     ng-click="toggleAdvancedSearch()" class="noul glyphicon glyphicon-cog"></i>
   <i style="margin-right: 10px;" title='Open Index Viewer'
     ng-show="indexViewerExists == true" ng-click="openIndexViewer()"
     class="noul glyphicon glyphicon-book"></i>
- 
+
   <button class="btn btn-xs btn-primary">Search</button>
   <span class="btn btn-xs btn-warning" ng-click="resetSearch()">Reset</span>
   <span class="btn btn-xs btn-primary"
@@ -33,8 +33,8 @@
     <hr>
     <div class="row" style="padding: 5px;">
       <div class="col-md-3" style="padding-right: 0px;">
-        {{focusProject.sourceTerminology}} Ancestor Id
-        <i class="glyphicon glyphicon-remove pull-right"
+        {{focusProject.sourceTerminology}} Ancestor Id <i
+          class="glyphicon glyphicon-remove pull-right"
           ng-click="searchParameters.ancestorId = null"
           ng-show="searchParameters.ancestorId"></i>
       </div>
@@ -45,8 +45,8 @@
 
     <div class="row" style="padding: 5px;">
       <div class="col-md-3" style="padding-right: 0px;">
-        {{focusProject.destinationTerminology}} Target Id
-        <i class="glyphicon glyphicon-remove pull-right"
+        {{focusProject.destinationTerminology}} Target Id <i
+          class="glyphicon glyphicon-remove pull-right"
           ng-click="searchParameters.targetId = null"
           ng-show="searchParameters.targetId"></i>
       </div>
@@ -56,8 +56,8 @@
     </div>
     <div class="row" style="padding: 5px;">
       <div class="col-md-3" style="padding-right: 0px;">
-        {{focusProject.destinationTerminology}} Target Id Range
-        <i class="glyphicon glyphicon-remove pull-right"
+        {{focusProject.destinationTerminology}} Target Id Range <i
+          class="glyphicon glyphicon-remove pull-right"
           ng-click="searchParameters.targetIdRangeStart = null; searchParameters.targetIdRangeEnd = null;"
           ng-show="searchParameters.targetIdRangeStart || searchParameters.targetIdRangeEnd"></i>
       </div>
@@ -68,8 +68,8 @@
     </div>
     <div class="row" style="padding: 5px;">
       <div class="col-md-3" style="padding-right: 0px;">
-        {{focusProject.destinationTerminology}} Target Name
-        <i class="glyphicon glyphicon-remove pull-right"
+        {{focusProject.destinationTerminology}} Target Name <i
+          class="glyphicon glyphicon-remove pull-right"
           ng-click="searchParameters.targetName = null"
           ng-show="searchParameters.targetName"></i>
       </div>
@@ -77,52 +77,64 @@
         <input ng-model="searchParameters.targetName">
       </div>
     </div>
-
-    <!-- Search by map advice -->
-    <div ng-show="searchParameters.advices.length > 0" class="row"
-      style="padding: 5px;">
-      <div class="col-md-3" style="padding-right: 0px;">
-        Map Advice
-        <i class="glyphicon glyphicon-remove pull-right"
-          ng-click="searchParameters.adviceName = null"
-          ng-show="searchParameters.adviceName"></i>
+    <div class="row" style="padding: 5px;">
+      <div class="col-md-4" style="padding-right: 0px;">
+        <input type="checkbox" value="Flag for Map Lead Review"
+          ng-model="searchParameters.flagForMapLeadReview">
       </div>
-      <div class="col-md-9">
-        <select style="width: 15%" ng-model="searchParameters.adviceContained"
-          ng-options="o.val as o.key for o in [{ key: 'contains', val: true }, { key: 'does not contain', val: false }]">
-        </select> <select style="width: 83%" ng-model="searchParameters.adviceName"
-          style="width: 98%;"
-          ng-options="mapAdvice.name as mapAdvice.name for mapAdvice in searchParameters.advices | orderBy:'name'"></select>
+      <div class="col-md-4" style="padding-right: 0px;">
+        <input type="checkbox" value="Flag for Editorial Review"
+          ng-model="searchParameters.flagForEditorialReview">
+      </div>
+      <div class="col-md-4" style="padding-right: 0px;">
+        <input type="checkbox" value="Flag for Consensus Review"
+          ng-model="searchParameters.flagForConsensusReview">
       </div>
     </div>
+  </div>
 
-    <!--  Search by map principles -->
-    <div ng-show="searchParameters.principles.length > 0" class="row"
-      style="padding: 5px;">
-      <div class="col-md-3" style="padding-right: 0px;">
-        Map Principle
-        <i class="glyphicon glyphicon-remove pull-right"
-          ng-click="searchParameters.principleName = null"
-          ng-show="searchParameters.principleName"></i>
-      </div>
-      <div class="col-md-9">
-        <select style="width: 15%"
-          ng-model="searchParameters.principleContained"
-          ng-options="o.val as o.key for o in [{ key: 'contains', val: true }, { key: 'does not contain', val: false }]">
-        </select> <select style="width: 83%" ng-model="searchParameters.principleName"
-          style="width: 98%;"
-          ng-options="mapPrinciple.name as mapPrinciple.name for mapPrinciple in searchParameters.principles | orderBy:'name'"></select>
-      </div>
+  <!-- Search by map advice -->
+  <div ng-show="searchParameters.advices.length > 0" class="row"
+    style="padding: 5px;">
+    <div class="col-md-3" style="padding-right: 0px;">
+      Map Advice <i class="glyphicon glyphicon-remove pull-right"
+        ng-click="searchParameters.adviceName = null"
+        ng-show="searchParameters.adviceName"></i>
     </div>
+    <div class="col-md-9">
+      <select style="width: 15%" ng-model="searchParameters.adviceContained"
+        ng-options="o.val as o.key for o in [{ key: 'contains', val: true }, { key: 'does not contain', val: false }]">
+      </select> <select style="width: 83%" ng-model="searchParameters.adviceName"
+        style="width: 98%;"
+        ng-options="mapAdvice.name as mapAdvice.name for mapAdvice in searchParameters.advices | orderBy:'name'"></select>
+    </div>
+  </div>
+
+  <!--  Search by map principles -->
+  <div ng-show="searchParameters.principles.length > 0" class="row"
+    style="padding: 5px;">
+    <div class="col-md-3" style="padding-right: 0px;">
+      Map Principle <i class="glyphicon glyphicon-remove pull-right"
+        ng-click="searchParameters.principleName = null"
+        ng-show="searchParameters.principleName"></i>
+    </div>
+    <div class="col-md-9">
+      <select style="width: 15%" ng-model="searchParameters.principleContained"
+        ng-options="o.val as o.key for o in [{ key: 'contains', val: true }, { key: 'does not contain', val: false }]">
+      </select> <select style="width: 83%" ng-model="searchParameters.principleName"
+        style="width: 98%;"
+        ng-options="mapPrinciple.name as mapPrinciple.name for mapPrinciple in searchParameters.principles | orderBy:'name'"></select>
+    </div>
+  </div>
   </div>
 </form>
 
 
 
-<uib-pagination total-items="nRecords"
-  ng-model="searchParameters.page" max-size="10" class="pagination-sm"
-  boundary-links="true" rotate="true" num-pages="numRecordPages"
-  ng-change="retrieveRecords(searchParameters.page)"> </uib-pagination>
+<uib-pagination total-items="nRecords" ng-model="searchParameters.page"
+  max-size="10" class="pagination-sm" boundary-links="true" rotate="true"
+  num-pages="numRecordPages" ng-change="retrieveRecords(searchParameters.page)">
+</uib-pagination>
 
 
 
@@ -148,9 +160,9 @@
 </div>
 
 
-<uib-pagination  total-items="nRecords"
-  ng-model="searchParameters.page" max-size="10" class="pagination-sm"
-  boundary-links="true" rotate="true" num-pages="numRecordPages"
-  ng-change="retrieveRecords(searchParameters.page)"> </uib-pagination>
+<uib-pagination total-items="nRecords" ng-model="searchParameters.page"
+  max-size="10" class="pagination-sm" boundary-links="true" rotate="true"
+  num-pages="numRecordPages" ng-change="retrieveRecords(searchParameters.page)">
+</uib-pagination>
 
 <div ng-include src="'./partials/footer.html'"></div>
