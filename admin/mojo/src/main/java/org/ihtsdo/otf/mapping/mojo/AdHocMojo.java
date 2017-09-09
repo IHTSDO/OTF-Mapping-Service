@@ -84,8 +84,11 @@ public class AdHocMojo extends AbstractMojo {
       }
 
       if (mode != null && mode.equals("icd11-advice")) {
+        mappingService.setTransactionPerOperation(false);
+        mappingService.beginTransaction();
         handleIcd11Advice(refsetId, inputFile, workflowService, contentService,
             mappingService);
+        mappingService.commit();
       }
 
     } catch (Exception e) {
