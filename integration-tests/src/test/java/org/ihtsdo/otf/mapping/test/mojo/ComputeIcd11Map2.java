@@ -795,12 +795,13 @@ public class ComputeIcd11Map2 {
    * Score map evidence.
    *
    * @param sctid the sctid
-   * @param index the index
+   * @param map10 the map 10
    * @param rules the rules
    * @return the rule scores
+   * @throws Exception the exception
    */
   public RuleScores scoreMapEvidence(String sctid, IcdMap map10,
-    RuleDetails[] rules) {
+    RuleDetails[] rules) throws Exception {
 
     // Initialize map (copy advices, etc.), default category
     final IcdMap map11 = new IcdMap(map10);
@@ -1042,6 +1043,10 @@ public class ComputeIcd11Map2 {
       }
     }
 
+    if (!targetId.equals("") && !icd11Concepts.containsKey(targetId)) {
+      throw new Exception(
+          "Invalid target id, not in icd11Concepts.txt - " + targetId);
+    }
     map11.setMapTarget(targetId);
 
     //
