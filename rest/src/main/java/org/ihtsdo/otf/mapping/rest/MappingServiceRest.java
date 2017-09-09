@@ -248,6 +248,8 @@ public class MappingServiceRest extends RootServiceRest {
       mapProject.getMapSpecialists().size();
       mapProject.getMapPrinciples().size();
       mapProject.getPresetAgeRanges().size();
+      mapProject.getErrorMessages().size();
+      mapProject.getReportDefinitions().size();
       return mapProject;
 
     } catch (Exception e) {
