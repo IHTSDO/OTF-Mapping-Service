@@ -418,6 +418,14 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
+  /**
+   * Clone map project.
+   *
+   * @param mapProject the map project
+   * @param authToken the auth token
+   * @return the map project
+   * @throws Exception the exception
+   */
   @PUT
   @Path("/clone")
   @ApiOperation(value = "Clone map project", notes = "Adds the specified map project, which is a potentially modified copy of another map project", response = MapProjectJpa.class)
@@ -428,78 +436,65 @@ public class MappingServiceRest extends RootServiceRest {
     Logger.getLogger(getClass()).info("RESTful call PUT (Mapping): /clone "
         + mapProject.getId() + ", " + mapProject);
 
-    String user = null;
-
     final MappingService mappingService = new MappingServiceJpa();
     try {
-    	// authorize call
-        user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-            "clone a map project", securityService);
+      // authorize call
+      authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "clone a map project",
+          securityService);
 
       mappingService.setTransactionPerOperation(false);
       mappingService.beginTransaction();
 
       // Add the map project (null the id)
       final Long mapProjectId = mapProject.getId();
-      final MapProject originMapProject = mappingService.getMapProject(mapProjectId);
+      final MapProject originMapProject =
+          mappingService.getMapProject(mapProjectId);
 
       // Determine if refset with this id already exists in this project.
-      /*if (originRefset.getTerminologyId().equals(refset.getTerminologyId())
-          && originRefset.getProject().getId()
-              .equals(refset.getProject().getId())) {
-        throw new LocalException(
-            "Duplicate refset terminology id within the project, "
-                + "please change terminology id");
-      }*/
+      /*
+       * if (originRefset.getTerminologyId().equals(refset.getTerminologyId())
+       * && originRefset.getProject().getId()
+       * .equals(refset.getProject().getId())) { throw new LocalException(
+       * "Duplicate refset terminology id within the project, " +
+       * "please change terminology id"); }
+       */
       final Set<MapUser> mapLeads = originMapProject.getMapLeads();
       // lazy init
       mapLeads.size();
 
-      
       // copy map specialists and leads
       for (MapUser mapLead : originMapProject.getMapLeads()) {
-    	  mapLead.setId(null);
+        mapLead.setId(null);
       }
       for (MapUser mapSpecialist : originMapProject.getMapSpecialists()) {
-    	  mapSpecialist.setId(null);
+        mapSpecialist.setId(null);
       }
       // clear error messages
       mapProject.setErrorMessages(new HashSet<String>());
       MapProject newMapProject = mappingService.addMapProject(mapProject);
 
-/*      // Copy all the members if EXTENSIONAL
-      if (refset.getType() == Refset.Type.EXTENSIONAL) {
+      /*
+       * // Copy all the members if EXTENSIONAL if (refset.getType() ==
+       * Refset.Type.EXTENSIONAL) {
+       * 
+       * // Get the original reference set for (final ConceptRefsetMember
+       * originMember : originMembers) { final ConceptRefsetMember member = new
+       * ConceptRefsetMemberJpa(originMember); member.setPublished(false);
+       * member.setPublishable(true); member.setRefset(newRefset);
+       * member.setEffectiveTime(null); // Insert new members
+       * member.setId(null); member.setLastModifiedBy(userName);
+       * refsetService.addMember(member); } // Resolve definition if INTENSIONAL
+       * } else if (refset.getType() == Refset.Type.INTENSIONAL) { // Copy
+       * inclusions and exclusions from origin refset for (final
+       * ConceptRefsetMember member : originMembers) { if
+       * (member.getMemberType() == Refset.MemberType.INCLUSION ||
+       * member.getMemberType() == Refset.MemberType.EXCLUSION) { final
+       * ConceptRefsetMember member2 = new ConceptRefsetMemberJpa(member);
+       * member2.setRefset(newRefset); member2.setId(null);
+       * refsetService.addMember(member2); newRefset.addMember(member2); } }
+       * refsetService.resolveRefsetDefinition(newRefset); }
+       */
 
-        // Get the original reference set
-        for (final ConceptRefsetMember originMember : originMembers) {
-          final ConceptRefsetMember member =
-              new ConceptRefsetMemberJpa(originMember);
-          member.setPublished(false);
-          member.setPublishable(true);
-          member.setRefset(newRefset);
-          member.setEffectiveTime(null);
-          // Insert new members
-          member.setId(null);
-          member.setLastModifiedBy(userName);
-          refsetService.addMember(member);
-        }
-        // Resolve definition if INTENSIONAL
-      } else if (refset.getType() == Refset.Type.INTENSIONAL) {
-        // Copy inclusions and exclusions from origin refset
-        for (final ConceptRefsetMember member : originMembers) {
-          if (member.getMemberType() == Refset.MemberType.INCLUSION
-              || member.getMemberType() == Refset.MemberType.EXCLUSION) {
-            final ConceptRefsetMember member2 =
-                new ConceptRefsetMemberJpa(member);
-            member2.setRefset(newRefset);
-            member2.setId(null);
-            refsetService.addMember(member2);
-            newRefset.addMember(member2);
-          }
-        }
-        refsetService.resolveRefsetDefinition(newRefset);
-      }*/
-      
       // done
       mappingService.commit();
       return newMapProject;
@@ -512,7 +507,6 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  
   /**
    * Returns all map projects for a lucene query.
    *
@@ -1191,6 +1185,8 @@ public class MappingServiceRest extends RootServiceRest {
    * Adds a map user.
    *
    * @param mapUser the map user
+   * @param projectId the project id
+   * @param mapUserRole the map user role
    * @param authToken the auth token
    * @return Response the response
    * @throws Exception the exception
@@ -1203,6 +1199,8 @@ public class MappingServiceRest extends RootServiceRest {
   @ApiOperation(value = "Add a user", notes = "Adds the specified user.", response = MapUserJpa.class)
   public MapUser addMapUser(
     @ApiParam(value = "User, in JSON or XML POST data", required = true) MapUserJpa mapUser,
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "Map user role, e.g. LEAD", required = true) @QueryParam("userRole") MapUserRole mapUserRole,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
@@ -1213,10 +1211,15 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
 
     try {
-      // authorize call
-      userName = authorizeApp(authToken, MapUserRole.LEAD, "add a user",
-          securityService);
-
+      if (projectId == null) {
+        // authorize call
+        userName = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+            "add map user", securityService);
+      } else {
+        // authorize call
+        userName = authorizeProject(projectId, authToken, MapUserRole.LEAD,
+            "add map user", securityService);
+      }
       // Check if user already exists and send better message
       for (final MapUser user : mappingService.getMapUsers().getMapUsers()) {
         if (user.getName().equals(mapUser.getName())) {
@@ -1224,8 +1227,21 @@ public class MappingServiceRest extends RootServiceRest {
               "This map user already exists: " + user.getName());
         }
       }
-      mappingService.addMapUser(mapUser);
-      return mapUser;
+      final MapUser newMapUser = mappingService.addMapUser(mapUser);
+
+      if (projectId != null && mapUserRole != null) {
+        final MapProject project = mappingService.getMapProject(projectId);
+        if (mapUserRole == MapUserRole.SPECIALIST) {
+          project.addMapSpecialist(newMapUser);
+        }
+        if (mapUserRole == MapUserRole.LEAD) {
+          project.addMapLead(newMapUser);
+        } else {
+          throw new Exception("Illegal map user role - " + mapUserRole);
+        }
+        mappingService.updateMapProject(project);
+      }
+      return newMapUser;
 
     } catch (Exception e) {
       handleException(e, "trying to add a user", userName, "", "");
@@ -1365,6 +1381,7 @@ public class MappingServiceRest extends RootServiceRest {
    * Adds a map advice.
    *
    * @param mapAdvice the map advice
+   * @param projectId the project id
    * @param authToken the auth token
    * @return Response the response
    * @throws Exception the exception
@@ -1377,6 +1394,7 @@ public class MappingServiceRest extends RootServiceRest {
   @ApiOperation(value = "Add an advice", notes = "Adds the specified map advice.", response = MapAdviceJpa.class)
   public MapAdvice addMapAdvice(
     @ApiParam(value = "Map advice, in JSON or XML POST data", required = true) MapAdviceJpa mapAdvice,
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
@@ -1387,9 +1405,15 @@ public class MappingServiceRest extends RootServiceRest {
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
-      // authorize call
-      user = authorizeApp(authToken, MapUserRole.LEAD, "add map advice",
-          securityService);
+      if (projectId == null) {
+        // authorize call
+        user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+            "add map advice", securityService);
+      } else {
+        // authorize call
+        user = authorizeProject(projectId, authToken, MapUserRole.LEAD,
+            "add map advice to project", securityService);
+      }
 
       // Check if advice already exists and send better message
       for (final MapAdvice advice : mappingService.getMapAdvices()
@@ -1400,8 +1424,15 @@ public class MappingServiceRest extends RootServiceRest {
         }
       }
 
-      mappingService.addMapAdvice(mapAdvice);
-      return mapAdvice;
+      final MapAdvice newMapAdvice = mappingService.addMapAdvice(mapAdvice);
+
+      if (projectId != null) {
+        final MapProject project = mappingService.getMapProject(projectId);
+        project.addMapAdvice(newMapAdvice);
+        mappingService.updateMapProject(project);
+      }
+
+      return newMapAdvice;
 
     } catch (Exception e) {
       handleException(e, "trying to add an advice", user, "", "");
@@ -1542,6 +1573,7 @@ public class MappingServiceRest extends RootServiceRest {
    * Adds a map age range.
    *
    * @param mapAgeRange the map ageRange
+   * @param projectId the project id
    * @param authToken the auth token
    * @return Response the response
    * @throws Exception the exception
@@ -1554,6 +1586,7 @@ public class MappingServiceRest extends RootServiceRest {
   @ApiOperation(value = "Add an age range", notes = "Adds the specified age range.", response = MapAgeRangeJpa.class)
   public MapAgeRange addMapAgeRange(
     @ApiParam(value = "Age range, in JSON or XML POST data", required = true) MapAgeRangeJpa mapAgeRange,
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
@@ -1564,9 +1597,15 @@ public class MappingServiceRest extends RootServiceRest {
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
-      // authorize call
-      user = authorizeApp(authToken, MapUserRole.LEAD, "add map age range",
-          securityService);
+      if (projectId == null) {
+        // authorize call
+        user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+            "add map age range", securityService);
+      } else {
+        // authorize call
+        user = authorizeProject(projectId, authToken, MapUserRole.LEAD,
+            "add map age range to project", securityService);
+      }
 
       // Check if age range already exists and send better message
       for (final MapAgeRange range : mappingService.getMapAgeRanges()
@@ -1577,8 +1616,15 @@ public class MappingServiceRest extends RootServiceRest {
         }
       }
 
-      mappingService.addMapAgeRange(mapAgeRange);
-      return mapAgeRange;
+      final MapAgeRange newMapAgeRange =
+          mappingService.addMapAgeRange(mapAgeRange);
+
+      if (projectId != null) {
+        final MapProject project = mappingService.getMapProject(projectId);
+        project.addPresetAgeRange(newMapAgeRange);
+        mappingService.updateMapProject(project);
+      }
+      return newMapAgeRange;
 
     } catch (Exception e) {
       handleException(e, "trying to add an age range", user, "", "");
@@ -1716,6 +1762,7 @@ public class MappingServiceRest extends RootServiceRest {
    * Adds a map relation.
    *
    * @param mapRelation the map relation
+   * @param projectId the project id
    * @param authToken the auth token
    * @return Response the response
    * @throws Exception the exception
@@ -1728,6 +1775,7 @@ public class MappingServiceRest extends RootServiceRest {
   @ApiOperation(value = "Add a map relation", notes = "Adds the specified map relation.", response = MapRelationJpa.class)
   public MapRelation addMapRelation(
     @ApiParam(value = "Map relation, in JSON or XML POST data", required = true) MapRelationJpa mapRelation,
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
@@ -1738,9 +1786,15 @@ public class MappingServiceRest extends RootServiceRest {
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
-      // authorize call
-      user = authorizeApp(authToken, MapUserRole.LEAD, "add map relation",
-          securityService);
+      if (projectId == null) {
+        // authorize call
+        user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+            "add map relation", securityService);
+      } else {
+        // authorize call
+        user = authorizeProject(projectId, authToken, MapUserRole.LEAD,
+            "add map relation to project", securityService);
+      }
 
       // Check if relation already exists and send better message
       for (final MapRelation relation : mappingService.getMapRelations()
@@ -1751,8 +1805,15 @@ public class MappingServiceRest extends RootServiceRest {
         }
       }
 
-      mappingService.addMapRelation(mapRelation);
-      return mapRelation;
+      final MapRelation newMapRelation =
+          mappingService.addMapRelation(mapRelation);
+
+      if (projectId != null) {
+        final MapProject project = mappingService.getMapProject(projectId);
+        project.addMapRelation(newMapRelation);
+        mappingService.updateMapProject(project);
+      }
+      return newMapRelation;
 
     } catch (Exception e) {
       handleException(e, "trying to add a relation", user, "", "");
@@ -1934,6 +1995,7 @@ public class MappingServiceRest extends RootServiceRest {
    * Adds a map user principle object.
    *
    * @param mapPrinciple the map user principle object to be added
+   * @param projectId the project id
    * @param authToken the auth token
    * @return result the newly created map user principle object
    * @throws Exception the exception
@@ -1949,6 +2011,7 @@ public class MappingServiceRest extends RootServiceRest {
   @ApiOperation(value = "Add a map principle", notes = "Adds the specified map principle.", response = MapPrincipleJpa.class)
   public MapPrinciple addMapPrinciple(
     @ApiParam(value = "Map principle, in JSON or XML POST data", required = true) MapPrincipleJpa mapPrinciple,
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
@@ -1959,9 +2022,15 @@ public class MappingServiceRest extends RootServiceRest {
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
-      // authorize call
-      user = authorizeApp(authToken, MapUserRole.LEAD, "add map principle",
-          securityService);
+      if (projectId == null) {
+        // authorize call
+        user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+            "add map principle", securityService);
+      } else {
+        // authorize call
+        user = authorizeProject(projectId, authToken, MapUserRole.LEAD,
+            "add map principle to project", securityService);
+      }
 
       // Check if principle already exists and send better message
       for (final MapPrinciple principle : mappingService.getMapPrinciples()
@@ -1973,8 +2042,15 @@ public class MappingServiceRest extends RootServiceRest {
         }
       }
 
-      final MapPrinciple result = mappingService.addMapPrinciple(mapPrinciple);
-      return result;
+      final MapPrinciple newMapPrinciple =
+          mappingService.addMapPrinciple(mapPrinciple);
+
+      if (projectId != null) {
+        final MapProject project = mappingService.getMapProject(projectId);
+        project.addMapPrinciple(newMapPrinciple);
+        mappingService.updateMapProject(project);
+      }
+      return newMapPrinciple;
     } catch (Exception e) {
       handleException(e, "trying to add a map principle", user, "", "");
       return null;
