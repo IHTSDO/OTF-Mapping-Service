@@ -115,14 +115,14 @@ public class MapRecordRemoverMojo extends AbstractMojo {
         getLog().debug("    Remove map records for " + mapProject.getName());
         for (final MapRecord record : mappingService
             .getMapRecordsForMapProject(mapProject.getId()).getMapRecords()) {
-          getLog().info("    Removing map record " + record.getId() + " from "
-              + mapProject.getName());
           // If either inputFile is null, or the concept id exists, remove it
           if (inputFile == null || toRemove.contains(record.getConceptId())) {
+            getLog().info("    Removing map record " + record.getId() + " from "
+                + mapProject.getName());
             mappingService.removeMapRecord(record.getId());
-          }
-          if (++ct % 500 == 0) {
-            getLog().info("      " + ct + " records processed");
+            if (++ct % 500 == 0) {
+              getLog().info("      " + ct + " records processed");
+            }
           }
         }
       }
