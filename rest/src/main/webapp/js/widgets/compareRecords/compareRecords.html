@@ -19,6 +19,8 @@
           <span ng-repeat="recipient in feedback.recipients">
             {{recipient.name}}</span>
           on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
+          <i> <span class="glyphicon glyphicon-remove pull-right"
+        ng-click="removeFeedback(conversation1)"></i>
           <div ng-show="feedback.mapError != 'None'" style="padding-left: 20px;"
             ng-bind-html="to_trusted(feedback.mapError)"></div>
           <div style="padding-left: 20px;"
@@ -73,6 +75,8 @@
           <span ng-repeat="recipient in feedback.recipients">
             {{recipient.name}}</span>
           on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
+          <i> <span class="glyphicon glyphicon-remove pull-right"
+        ng-click="removeFeedback(conversation2)"></i>
           <div ng-show="feedback.mapError != 'None'" style="padding-left: 20px;"
             ng-bind-html="to_trusted(feedback.mapError)"></div>
           <div style="padding-left: 20px;"
@@ -178,6 +182,8 @@
             <span ng-if="$last == false">,</span>
           </span>
           on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
+          <i> <span class="glyphicon glyphicon-remove pull-right"
+        ng-click="removeFeedback(leadConversation)"></i>
           <div style="padding-left: 20px;"
             ng-bind-html="to_trusted(feedback.message)"></div>
         </div>

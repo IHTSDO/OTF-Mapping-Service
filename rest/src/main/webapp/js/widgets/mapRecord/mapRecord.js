@@ -949,6 +949,27 @@ angular
           });
 
         };
+        
+        $scope.removeFeedback = function(conversation) {
+          // confirm delete
+          if (confirm('Are you sure that you want to delete a feedback conversation?') == false)
+            return;
+
+          $http({
+            url : root_workflow + 'feedback/delete',
+            dataType : 'json',
+            data : conversation,
+            method : 'DELETE',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+            $scope.conversation = null;
+          }).error(function(data, status, headers, config) {
+            $scope.recordError = 'Error deleting feedback conversation from application.';
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        }
 
         $scope.addRecordPrinciple = function(record, principle) {
 
@@ -1030,11 +1051,12 @@ angular
             // find the existing note
             for (var i = 0; i < record.mapNote.length; i++) {
               // if this note, overwrite it
-              if ($scope.noteEditId = record.mapNote[i].localId) {
+              if ($scope.noteEditId == record.mapNote[i].localId) {
                 noteFound = true;
                 record.mapNote[i].note = note;
               }
             }
+            $scope.noteEditMode = false;
           }
         };
 
@@ -1076,7 +1098,7 @@ angular
             $scope.cancelEditRecordNote();
           }
         };
-
+          
         $scope.sendFeedback = function(record, feedbackMessage, recipientList) {
 
           if (feedbackMessage == null || feedbackMessage == undefined
