@@ -77,36 +77,38 @@
         <input ng-model="searchParameters.targetName">
       </div>
     </div>
+
+    <!-- Search by map advice -->
+    <div ng-show="searchParameters.advices.length > 0" class="row"
+      style="padding: 5px;">
+      <div class="col-md-3" style="padding-right: 0px;">
+        Map Advice <i class="glyphicon glyphicon-remove pull-right"
+          ng-click="searchParameters.adviceName = null"
+          ng-show="searchParameters.adviceName"></i>
+      </div>
+      <div class="col-md-9">
+        <select style="width: 15%" ng-model="searchParameters.adviceContained"
+          ng-options="o.val as o.key for o in [{ key: 'contains', val: true }, { key: 'does not contain', val: false }]">
+        </select> <select style="width: 83%" ng-model="searchParameters.adviceName"
+          style="width: 98%;"
+          ng-options="mapAdvice.name as mapAdvice.name for mapAdvice in searchParameters.advices | orderBy:'name'"></select>
+      </div>
+    </div>
+
+    <!--  search by flags -->
     <div class="row" style="padding: 5px;">
       <div class="col-md-4" style="padding-right: 0px;">
-        <input type="checkbox" value="Flag for Map Lead Review"
+        <input type="checkbox" name="Flag for Map Lead Review"
           ng-model="searchParameters.flagForMapLeadReview">
       </div>
       <div class="col-md-4" style="padding-right: 0px;">
-        <input type="checkbox" value="Flag for Editorial Review"
+        <input type="checkbox" name="Flag for Editorial Review"
           ng-model="searchParameters.flagForEditorialReview">
       </div>
       <div class="col-md-4" style="padding-right: 0px;">
-        <input type="checkbox" value="Flag for Consensus Review"
+        <input type="checkbox" name="Flag for Consensus Review"
           ng-model="searchParameters.flagForConsensusReview">
       </div>
-    </div>
-  </div>
-
-  <!-- Search by map advice -->
-  <div ng-show="searchParameters.advices.length > 0" class="row"
-    style="padding: 5px;">
-    <div class="col-md-3" style="padding-right: 0px;">
-      Map Advice <i class="glyphicon glyphicon-remove pull-right"
-        ng-click="searchParameters.adviceName = null"
-        ng-show="searchParameters.adviceName"></i>
-    </div>
-    <div class="col-md-9">
-      <select style="width: 15%" ng-model="searchParameters.adviceContained"
-        ng-options="o.val as o.key for o in [{ key: 'contains', val: true }, { key: 'does not contain', val: false }]">
-      </select> <select style="width: 83%" ng-model="searchParameters.adviceName"
-        style="width: 98%;"
-        ng-options="mapAdvice.name as mapAdvice.name for mapAdvice in searchParameters.advices | orderBy:'name'"></select>
     </div>
   </div>
 
