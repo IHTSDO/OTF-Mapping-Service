@@ -142,15 +142,29 @@ public class ComputeIcd11Map2 {
   /** The body part sct map. */
   final Map<String, Set<String>> bodyPartSctMap = new HashMap<>();
 
-  /** The advices to exclude. */
-  // Vars
+  /** The advices to include. */
+  final Set<String> advicesToInclude =
+      new HashSet<>(Arrays.asList(new String[] {
+          "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE",
+          "THIS CODE IS NOT TO BE USED IN THE PRIMARY POSITION",
+          "THIS IS AN EXTERNAL CAUSE CODE FOR USE IN A SECONDARY POSITION"
+      }));
+
   final Set<String> advicesToExclude =
       new HashSet<>(Arrays.asList(new String[] {
-          "THIS CODE MAY BE USED IN THE PRIMARY POSITION WHEN THE MANIFESTATION IS THE PRIMARY FOCUS OF CARE",
-          "THIS MAP REQUIRES A DAGGER CODE AS WELL AS AN ASTERISK CODE",
           "FIFTH CHARACTER REQUIRED TO FURTHER SPECIFY THE SITE",
+          "MAP IS CONTEXT DEPENDENT FOR GENDER",
+          "MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT",
+          "MAPPED FOLLOWING IHTSDO GUIDANCE", "MAPPED FOLLOWING WHO GUIDANCE",
+          "MAPPING GUIDANCE FROM WHO IS AMBIGUOUS",
+          "POSSIBLE REQUIREMENT FOR ADDITIONAL CODE TO FULLY DESCRIBE DISEASE OR CONDITION",
+          "POSSIBLE REQUIREMENT FOR CAUSATIVE AGENT CODE",
           "POSSIBLE REQUIREMENT FOR MORPHOLOGY CODE",
+          "POSSIBLE REQUIREMENT FOR PLACE OF OCCURRENCE",
+          "SOURCE SNOMED CONCEPT IS AMBIGUOUS",
+          "SOURCE SNOMED CONCEPT IS INCOMPLETELY MODELED",
           "THIS CODE MAY BE USED IN THE PRIMARY POSITION WHEN THE MANIFESTATION IS THE PRIMARY FOCUS OF CARE",
+
           "THIS MAP REQUIRES A DAGGER CODE AS WELL AS AN ASTERISK CODE",
           "USE AS PRIMARY CODE ONLY IF SITE OF BURN UNSPECIFIED, OTHERWISE USE AS A SUPPLEMENTARY CODE WITH CATEGORIES T20-T29 (Burns)"
       }));
@@ -159,18 +173,6 @@ public class ComputeIcd11Map2 {
   final Map<String, String> advicesToReplace = new HashMap<>();
   // Initializer
   {
-    advicesToReplace.put(
-        "POSSIBLE REQUIREMENT FOR ADDITIONAL CODE TO FULLY DESCRIBE DISEASE OR CONDITION",
-        "ADDITIONAL CODES MAY BE ADDED AS SANCTIONED BY WHO");
-    advicesToReplace.put("POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE",
-        "CODES SANCTIONED BY WHO MAY BE ADDED FROM CHAPTER 23 EXTERNAL CAUSES AND EXTENSION CODES IF RELEVANT");
-    advicesToReplace.put("POSSIBLE REQUIREMENT FOR CAUSATIVE AGENT CODE",
-        "POSSIBLE REQUIREMENT FOR INFECTIOUS AGENT EXTENSION CODE");
-    advicesToReplace.put("POSSIBLE REQUIREMENT FOR PLACE OF OCCURRENCE",
-        "EXTENSION CODES SANCTIONED BY WHO MAY BE ADDED IF RELEVANT");
-    advicesToReplace.put(
-        "THIS IS AN EXTERNAL CAUSE CODE FOR USE IN A SECONDARY POSITION",
-        "THIS IS AN EXTERNAL CAUSE CODE AND/OR EXTENSION CODE FOR USE IN A SECONDARY POSITION");
 
   }
 
@@ -291,44 +293,46 @@ public class ComputeIcd11Map2 {
 
         // Gather evidence for map, score, and add any maps.
         for (int i = 1; i <= icd10Map.get(sctid).size(); i++) {
+          final IcdMap map10 = icd10Map.get(sctid).get(i - 1);
           final RuleDetails[] rules = gatherMapEvidence(sctid, i);
 
           // Check for evidence to consider a secondary map
-          // evidence
-          if (i > 1) {
+          if (map10.getMapGroup() > 1 && map10.getMapPriority() == 1) {
             // Bail if RULE2 does not offer any reason for a higher map - bail
             if (rules[2].getScoreMap().size() == 0) {
               break;
             }
           }
 
-          final RuleScores scores = scoreMapEvidence(sctid, i, rules);
+          final RuleScores scores = scoreMapEvidence(sctid, map10, rules);
           // Initialize the category for the primary map
           if (i == 1) {
             primaryScores = scores;
             category = scores.getCategory();
           }
 
-          // PIck up initial advice from ICD10 (though may not be appropriate if
+          // Pick up initial advice from ICD10 (though may not be appropriate if
           // RULE2 wasn't used
           if (rules[2].getScoreMap().size() > 0) {
-            scores.getMap()
-                .setMapAdvice(icd10Map.get(sctid).get(i - 1).getMapAdvice());
+            scores.getMap().setMapAdvice(map10.getMapAdvice());
             fixAdvice(scores.getMap(), scores.getMap().getMapTarget());
           }
 
-          // Add map to list unless already there
-          boolean flag = false;
-          for (final IcdMap map : mapList) {
-            if (map.getMapTarget().equals(scores.getMap().getMapTarget())) {
-              flag = true;
+          // Add map to list unless already there (for priority 1s)
+          if (map10.getMapPriority() == 1) {
+            boolean flag = false;
+            for (final IcdMap map : mapList) {
+              if (map.getMapTarget().equals(scores.getMap().getMapTarget())) {
+                flag = true;
+                break;
+              }
+            }
+            // Do not map to the same target in separate entries
+            if (flag) {
               break;
             }
           }
-          // Do not map to the same target in separate entries
-          if (flag) {
-            continue;
-          }
+
           mapList.add(scores.getMap());
 
           // Overall map should have the lowest matching category
@@ -795,15 +799,12 @@ public class ComputeIcd11Map2 {
    * @param rules the rules
    * @return the rule scores
    */
-  public RuleScores scoreMapEvidence(String sctid, int index,
+  public RuleScores scoreMapEvidence(String sctid, IcdMap map10,
     RuleDetails[] rules) {
 
     // Initialize map (copy advices, etc.), default category
-    final IcdMap map11 = new IcdMap();
+    final IcdMap map11 = new IcdMap(map10);
     map11.setMapCategoryId("447637006");
-    map11.setMapGroup(index);
-    map11.setMapPriority(1);
-    map11.setMapRule("");
 
     //
     // Determine category and targetId
@@ -892,7 +893,7 @@ public class ComputeIcd11Map2 {
       requiredWords.put("acute-on-chronic", "acute");
       requiredWords.put("acute", "acute");
       requiredWords.put("chronic", "chronic");
-      requiredWords.put("natal","natal");
+      requiredWords.put("natal", "natal");
       for (final String word : requiredWords.keySet()) {
         // Lower match if snomed contains word and ICD does not = /2
         if (sctConcepts.get(sctid).toLowerCase().contains(word)) {
@@ -1206,7 +1207,8 @@ public class ComputeIcd11Map2 {
     int i = 0;
     for (final IcdMap map11 : mapList) {
 
-      // For first map, if primary scores contain no RULE2 data for the map target, clear advice
+      // For first map, if primary scores contain no RULE2 data for the map
+      // target, clear advice
       if (i == 0) {
         if (!primaryScores.getRuleDetails()[2].getScoreMap()
             .containsKey(map11.getMapTarget())) {
