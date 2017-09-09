@@ -1233,8 +1233,7 @@ public class MappingServiceRest extends RootServiceRest {
         final MapProject project = mappingService.getMapProject(projectId);
         if (mapUserRole == MapUserRole.SPECIALIST) {
           project.addMapSpecialist(newMapUser);
-        }
-        if (mapUserRole == MapUserRole.LEAD) {
+        } else if (mapUserRole == MapUserRole.LEAD) {
           project.addMapLead(newMapUser);
         } else {
           throw new Exception("Illegal map user role - " + mapUserRole);
