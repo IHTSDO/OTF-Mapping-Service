@@ -6,6 +6,7 @@ package org.ihtsdo.otf.mapping.mojo;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -21,6 +22,8 @@ import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
+import org.ihtsdo.otf.mapping.model.MapAdvice;
+import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -78,6 +81,11 @@ public class AdHocMojo extends AbstractMojo {
       if (mode != null && mode.equals("icd11-editing-done")) {
         handleIcd11EditingDone(refsetId, inputFile, workflowService,
             contentService, mappingService);
+      }
+
+      if (mode != null && mode.equals("icd11-advice")) {
+        handleIcd11Advice(refsetId, inputFile, workflowService, contentService,
+            mappingService);
       }
 
     } catch (Exception e) {
@@ -237,5 +245,93 @@ public class AdHocMojo extends AbstractMojo {
     // process the workflow action
     workflowService.processWorkflowAction(mapProject, concept, mapUser,
         new MapRecordJpa(mapRecord, true), WorkflowAction.CREATE_QA_RECORD);
+  }
+
+  /**
+   * Handle icd 11 editing done.
+   *
+   * @param refsetId the refset id
+   * @param inputFile the input file
+   * @param workflowService the workflow service
+   * @param contentService the content service
+   * @param mappingService the mapping service
+   * @throws Exception the exception
+   */
+  private void handleIcd11Advice(String refsetId, String inputFile,
+    WorkflowService workflowService, ContentService contentService,
+    MappingService mappingService) throws Exception {
+
+    // Load the map project
+    final Map<String, MapProject> mapProjectMap = new HashMap<>();
+    for (MapProject project : mappingService.getMapProjects().getIterable()) {
+      mapProjectMap.put(project.getRefSetId(), project);
+    }
+    final MapProject project = mapProjectMap.get(refsetId);
+
+    MapUser mapUser = null;
+    for (final MapUser user : workflowService.getMapUsers().getMapUsers()) {
+      if (user.getId().equals(59L))
+        mapUser = new MapUserJpa(user);
+    }
+
+    MapAdvice externalCauseCodeAdvice = null;
+    for (final MapAdvice advice : mappingService.getMapAdvices()
+        .getMapAdvices()) {
+      if (advice.getName().equals(
+          "THIS IS AN EXTERNAL CAUSE CODE FOR USE IN A SECONDARY POSITION")) {
+        externalCauseCodeAdvice = advice;
+      }
+    }
+
+    // Get map records for the project
+    final MapRecordList list =
+        mappingService.getMapRecordsForMapProject(project.getId());
+    for (final MapRecord record : list.getMapRecords()) {
+      boolean change = false;
+      for (final MapEntry entry : record.getMapEntries()) {
+        for (final MapAdvice advice : new ArrayList<>(entry.getMapAdvices())) {
+
+          // Only keep these advices for "loader" records
+          if (record.getOwner().getId().longValue() == 59L
+              && !advice.getName()
+                  .equals("POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE")
+              && !advice.getName()
+                  .equals("THIS CODE IS NOT TO BE USED IN THE PRIMARY POSITION")
+              && !advice.getName().equals(
+                  "THIS IS AN EXTERNAL CAUSE CODE FOR USE IN A SECONDARY POSITION")) {
+            entry.removeMapAdvice(advice);
+            getLog().info("  remove advice from (loader record) "
+                + record.getConceptId() + ", " + advice.getName());
+            change = true;
+          }
+
+          // Remove these
+          if (advice.getName()
+              .equals("ADDITIONAL CODES MAY BE ADDED AS SANCTIONED BY WHO")
+              && advice.getName().equals(
+                  "CODES SANCTIONED BY WHO MAY BE ADDED FROM CHAPTER 23 EXTERNAL CAUSES AND DRUG EXTENSION CODES IF RELEVANT")
+              && advice.getName().equals(
+                  "CODES SANCTIONED BY WHO MAY BE ADDED FROM CHAPTER 23 EXTERNAL CAUSES AND EXTENSION CODES IF RELEVANT")) {
+            entry.removeMapAdvice(advice);
+            getLog().info("  remove advice from " + record.getConceptId() + ", "
+                + advice.getName());
+            change = true;
+          }
+          // Modify these
+          if (advice.getName().equals(
+              "THIS IS AN EXTERNAL CAUSE CODE AND/OR EXTENSION CODE FOR USE IN A SECONDARY POSITION")) {
+            entry.removeMapAdvice(advice);
+            entry.addMapAdvice(externalCauseCodeAdvice);
+            getLog().info("  fix advice on " + record.getConceptId() + ", "
+                + externalCauseCodeAdvice.getName());
+            change = true;
+          }
+        }
+      }
+      if (change) {
+        mappingService.updateMapRecord(record);
+      }
+
+    }
   }
 }
