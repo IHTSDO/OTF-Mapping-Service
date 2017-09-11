@@ -842,32 +842,61 @@ angular
       };
       
    // Delete feedback conversation
-       var group;
-      $scope.removeFeedback = function(conversation) {
+      $scope.removeFeedback = function(message,recordType) {
         // confirm delete
-        if (confirm('Are you sure that you want to delete a feedback conversation?') == false)
+        if (confirm('Are you sure that you want to delete a feedback message?') == false)
           return;
 
         $http({
           url : root_workflow + 'feedback/delete',
           dataType : 'json',
-          data : conversation,
+          data : message,
           method : 'DELETE',
           headers : {
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          /*if($scope.leadConversation.feedback.length>0){
-            $scope.group = null  
-          }*/
-         $scope.conversation1 = null  
-          $scope.conversation2 = null  
-          $scope.leadConversation = null  
-        }).error(function(data, status, headers, config) {
-          $scope.recordError = 'Error deleting feedback conversation from application.';
-          $rootScope.handleHttpError(data, status, headers, config);
-        });
-      }
+          if(recordType == 'record1'){
+          $http({
+            url : root_workflow + 'conversation/id/'+ $scope.record1.id,
+            dataType : 'json',
+            method : 'GET',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+            $scope.conversation1 = data;
+          });
+          }
+          if(recordType == 'record2'){
+          $http({
+            url : root_workflow + 'conversation/id/'+ $scope.record2.id,
+            dataType : 'json',
+            method : 'GET',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+            $scope.conversation2 = data;
+          });
+          }
+          if(recordType == 'leadRecord'){
+            $http({
+              url : root_workflow + 'conversation/id/'+ $scope.leadRecord.id,
+              dataType : 'json',
+              method : 'GET',
+              headers : {
+                'Content-Type' : 'application/json'
+              }
+            }).success(function(data) {
+              $scope.leadConversation = data;
+            });
+            }
+      }).error(function(data, status, headers, config) {
+        $scope.recordError = 'Error deleting feedback conversation from application.';
+        $rootScope.handleHttpError(data, status, headers, config);
+      });
+    }
       
       
 
