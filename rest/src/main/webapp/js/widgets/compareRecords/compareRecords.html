@@ -20,7 +20,7 @@
             {{recipient.name}}</span>
           on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
           <i> <span class="glyphicon glyphicon-remove pull-right"
-        ng-click="removeFeedback(conversation1)"></i>
+        ng-click="removeFeedback(feedback,'record1')"></i>
           <div ng-show="feedback.mapError != 'None'" style="padding-left: 20px;"
             ng-bind-html="to_trusted(feedback.mapError)"></div>
           <div style="padding-left: 20px;"
@@ -76,7 +76,7 @@
             {{recipient.name}}</span>
           on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
           <i> <span class="glyphicon glyphicon-remove pull-right"
-        ng-click="removeFeedback(conversation2)"></i>
+        ng-click="removeFeedback(feedback, 'record2')"></i>
           <div ng-show="feedback.mapError != 'None'" style="padding-left: 20px;"
             ng-bind-html="to_trusted(feedback.mapError)"></div>
           <div style="padding-left: 20px;"
@@ -183,7 +183,7 @@
           </span>
           on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
           <i> <span class="glyphicon glyphicon-remove pull-right"
-        ng-click="removeFeedback(leadConversation)"></i>
+        ng-click="removeFeedback(feedback,'leadRecord')"></i>
           <div style="padding-left: 20px;"
             ng-bind-html="to_trusted(feedback.message)"></div>
         </div>
