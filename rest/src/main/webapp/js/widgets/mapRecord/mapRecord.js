@@ -950,26 +950,36 @@ angular
 
         };
         
-        $scope.removeFeedback = function(conversation) {
+        $scope.removeFeedback = function(message) {
           // confirm delete
-          if (confirm('Are you sure that you want to delete a feedback conversation?') == false)
+          if (confirm('Are you sure that you want to delete a feedback message?') == false)
             return;
 
           $http({
             url : root_workflow + 'feedback/delete',
             dataType : 'json',
-            data : conversation,
+            data : message,
             method : 'DELETE',
             headers : {
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-            $scope.conversation = null;
-          }).error(function(data, status, headers, config) {
-            $scope.recordError = 'Error deleting feedback conversation from application.';
-            $rootScope.handleHttpError(data, status, headers, config);
-          });
-        }
+            $http({
+              url : root_workflow + 'conversation/id/' + $routeParams.recordId,
+              dataType : 'json',
+              method : 'GET',
+              headers : {
+                'Content-Type' : 'application/json'
+              }
+            }).success(function(data) {
+              $scope.conversation = data;
+            });
+        }).error(function(data, status, headers, config) {
+          $scope.recordError = 'Error deleting feedback conversation from application.';
+          $rootScope.handleHttpError(data, status, headers, config);
+        });
+      }
+
 
         $scope.addRecordPrinciple = function(record, principle) {
 
