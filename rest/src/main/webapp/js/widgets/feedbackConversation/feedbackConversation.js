@@ -259,7 +259,7 @@ angular
         localFeedback.push(feedback);
         conversation.feedback = localFeedback;
 
-        updateFeedbackConversation(conversation);
+        updateFeedbackConversation(conversation, true);
 
       };
 
