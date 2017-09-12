@@ -1175,7 +1175,7 @@ angular
               }
             }).success(function(data) {
               console.debug('  feedback conversation = ', data);
-              $scope.conversation = feedbackConversation;
+              $scope.conversation = data;
               $scope.tinymceContent = null;
             }).error(function(data, status, headers, config) {
               $scope.recordError = 'Error adding new feedback conversation.';
@@ -1212,6 +1212,16 @@ angular
               }
             }).success(function(data) {
               console.debug('  conversation updated = ', data);
+              $http({
+                url : root_workflow + 'conversation/id/' + $scope.record.id,
+                dataType : 'json',
+                method : 'GET',
+                headers : {
+                  'Content-Type' : 'application/json'
+                }
+              }).success(function(data) {
+                $scope.conversation = data;
+              });
             }).error(function(data, status, headers, config) {
               $scope.recordError = 'Error updating feedback conversation.';
               $rootScope.handleHttpError(data, status, headers, config);
