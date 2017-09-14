@@ -135,6 +135,17 @@ angular
                 $scope.entry.targetId = data.terminologyId;
                 $scope.entry.targetName = data.defaultPreferredName;
 
+                // make sure that the mapEntry is up to date before computing advice and relations
+                for (var i = 0; i < $scope.record.mapEntry.length; i++) {
+                    var entry = $scope.record.mapEntry[i];
+                    // Use the scoped entry if the local id matches or if the actual id
+                    // matches
+                    if (matchingEntry(entry, $scope.entry)) {
+                      $scope.record.mapEntry[i].targetId = $scope.entry.targetId;
+                      $scope.record.mapEntry[i].targetName = $scope.entry.targetName;
+                    } 
+                }
+                
                 // attempt to autocompute the map relation, then update the
                 // entry
                 $scope.computeParameters(false);
@@ -349,6 +360,7 @@ angular
           // }
           // }
 
+          
           $http({
             url : root_mapping + 'advice/compute/' + index,
             dataType : 'json',
