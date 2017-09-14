@@ -949,7 +949,7 @@ angular
           });
 
         };
-        
+
         $scope.removeFeedback = function(message) {
           // confirm delete
           if (confirm('Are you sure that you want to delete a feedback message?') == false)
@@ -963,23 +963,28 @@ angular
             headers : {
               'Content-Type' : 'application/json'
             }
-          }).success(function(data) {
-            $http({
-              url : root_workflow + 'conversation/id/' + $routeParams.recordId,
-              dataType : 'json',
-              method : 'GET',
-              headers : {
-                'Content-Type' : 'application/json'
-              }
-            }).success(function(data) {
-              $scope.conversation = data;
-            });
-        }).error(function(data, status, headers, config) {
-          $scope.recordError = 'Error deleting feedback conversation from application.';
-          $rootScope.handleHttpError(data, status, headers, config);
-        });
-      }
-
+          })
+            .success(
+              function(data) {
+                $http(
+                  {
+                    url : root_workflow + 'conversation/id/'
+                      + $routeParams.recordId,
+                    dataType : 'json',
+                    method : 'GET',
+                    headers : {
+                      'Content-Type' : 'application/json'
+                    }
+                  }).success(function(data) {
+                  $scope.conversation = data;
+                });
+              })
+            .error(
+              function(data, status, headers, config) {
+                $scope.recordError = 'Error deleting feedback conversation from application.';
+                $rootScope.handleHttpError(data, status, headers, config);
+              });
+        }
 
         $scope.addRecordPrinciple = function(record, principle) {
 
@@ -1108,7 +1113,7 @@ angular
             $scope.cancelEditRecordNote();
           }
         };
-          
+
         $scope.sendFeedback = function(record, feedbackMessage, recipientList) {
 
           if (feedbackMessage == null || feedbackMessage == undefined
