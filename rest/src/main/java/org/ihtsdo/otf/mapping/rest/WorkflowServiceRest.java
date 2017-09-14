@@ -1809,7 +1809,7 @@ public class WorkflowServiceRest extends RootServiceRest {
             oldConvo.getFeedbacks().add(feedback);
           }
         }
-        if (noUpdate) {
+        if (noUpdate && !found) {
           // do nothing - this is a duplicate request - msg matched exactly
         }
         // If a "new" one is found, add to the "old" convo
