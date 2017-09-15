@@ -58,6 +58,13 @@ angular
         buttonDefaultText : 'Select Users'
       };
 
+      // start note edit mode in off mode
+      $scope.feedbackEditMode = false;
+      $scope.feedbackEditId = null;
+      $scope.content = {
+      	text : ''
+      };
+      
       // watch for project change
       $scope.$on('localStorageModule.notification.setFocusProject', function(
         event, parameters) {
@@ -191,6 +198,41 @@ angular
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
+
+      $scope.editFeedback = function(feedback) {
+          $scope.content.text = feedback.message;
+          $scope.feedbackEditMode = true;
+          $scope.feedbackEditId = feedback.id ? feedback.id : feedback.localId;
+        };
+
+        $scope.cancelEditFeedback = function() {
+          $scope.content.text = '';
+          $scope.feedbackEditMode = false;
+          $scope.feedbackEditId = null;
+          $scope.tinymceContent = '';
+        };
+
+        $scope.saveEditFeedback = function(feedback) {
+
+          if ($scope.feedbackEditMode == true) {
+            var feedbackFound = false;
+            // find the existing feedback
+            for (var i = 0; i < $scope.conversation.feedback.length; i++) {
+              // if this feedback, overwrite it
+              if ($scope.feedbackEditId == $scope.conversation.feedback[i].localId ||
+            		  $scope.feedbackEditId == $scope.conversation.feedback[i].id) {
+                feedbackFound = true;
+                $scope.conversation.feedback[i].message = feedback;
+                //$scope.conversation.feedback[i].id = currentLocalId++;
+              }
+            }
+            $scope.feedbackEditMode = false;
+            $scope.tinymceContent = null;
+            
+            updateFeedbackConversation($scope.conversation, true);
+          }
+        };
+
 
       function setDisplayRecords() {
         if ($scope.currentRole == 'Lead') {
