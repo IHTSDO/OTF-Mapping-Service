@@ -15,12 +15,27 @@ public interface MapUserPreferences {
    */
   public Long getId();
 
+ 
   /**
    * Sets the id.
    * 
    * @param id the id
    */
   public void setId(Long id);
+  /**
+   * Sets the lastAssigned.
+   * 
+   * @param lastAssigned the lastAssignedTab
+   */
+  public String getlastAssignedTab();
+  
+  /**
+   * Returns the lastAssigned.
+   * 
+   * @return the lastAssignedTab
+   */
+  public void setlastAssignedTab(String lastAssignedTab);
+
 
   /**
    * Returns the map user.
