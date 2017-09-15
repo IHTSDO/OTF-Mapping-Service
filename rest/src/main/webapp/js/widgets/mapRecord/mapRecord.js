@@ -80,7 +80,9 @@ angular
         // start note edit mode in off mode
         $scope.noteEditMode = false;
         $scope.noteEditId = null;
-        $scope.noteInput = '';
+        $scope.content = {
+        		text : ''
+        };
 
         // tooltip for Save/Next button
         $scope.dynamicTooltip = '';
@@ -488,7 +490,7 @@ angular
 
           // check that note box does not contain unsaved material
           if ($scope.tinymceContent != '' && $scope.tinymceContent != null) {
-            if (confirm('You have unsaved text into the Map Notes. Do you wish to continue saving? The note will be lost.') == false) {
+            if (confirm('You have unsaved text in the Map Notes. Do you wish to continue saving? The note will be lost.') == false) {
               return;
             }
           }
@@ -1048,15 +1050,16 @@ angular
         };
 
         $scope.editRecordNote = function(record, mapNote) {
-          $scope.noteInput = 'HELLO HELLO';
+          $scope.content.text = mapNote.note;
           $scope.noteEditMode = true;
-          $scope.noteEditId = mapNote.localId;
+          $scope.noteEditId = mapNote.id ? mapNote.id : mapNote.localId;
         };
 
         $scope.cancelEditRecordNote = function() {
-          $scope.noteInput = '';
+          $scope.content.text = '';
           $scope.noteEditMode = false;
           $scope.noteEditId = null;
+          $scope.tinymceContent = '';
         };
 
         $scope.saveEditRecordNote = function(record, note) {
@@ -1066,12 +1069,15 @@ angular
             // find the existing note
             for (var i = 0; i < record.mapNote.length; i++) {
               // if this note, overwrite it
-              if ($scope.noteEditId == record.mapNote[i].localId) {
+              if ($scope.noteEditId == record.mapNote[i].localId ||
+            		  $scope.noteEditId == record.mapNote[i].id) {
                 noteFound = true;
                 record.mapNote[i].note = note;
+                record.mapNote[i].id = currentLocalId++;
               }
             }
             $scope.noteEditMode = false;
+            $scope.tinymceContent = null;
           }
         };
 
@@ -1092,7 +1098,7 @@ angular
             mapNote.timestamp = (new Date()).getTime();
             mapNote.user = $scope.user;
 
-            // add note to record
+            // add note to record with new localId
             addElementWithId(record.mapNote, mapNote);
 
             $scope.tinymceContent = null;
