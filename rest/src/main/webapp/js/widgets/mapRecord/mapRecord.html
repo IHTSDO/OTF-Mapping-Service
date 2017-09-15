@@ -82,10 +82,10 @@ Notes <i class="pull-right glyphicon"
 <div ng-show="record.mapNote.length > 0">
   <div ng-repeat="note in record.mapNote">
     <div class="alert alert-warning" disabled>
-        <i class="glyphicon glyphicon-remove pull-right"
+      <i class="glyphicon glyphicon-remove pull-right"
         ng-click="removeRecordNote(record, note)"></i>
       <i class="glyphicon glyphicon-pencil pull-right"
-					ng-click="editRecordNote(record, note); content.text = note.note"></i>
+		ng-click="editRecordNote(record, note); content.text = note.note"></i>
 	
       [By
       <a href="mailto:{{user.email}}">{{note.user.name}}</a>
@@ -98,15 +98,22 @@ Notes <i class="pull-right glyphicon"
 <span style="color: red">{{errorAddRecordNote}}</span> <!--  tinymce text area -->
 <form>
   <textarea id="tinymce-notes" ui-tinymce="tinymceOptions" ng-model="content.text"></textarea>
-  <button class="btn btn-xs btn-primary" class="btn btn-xs btn-primary"
+  <button class="btn btn-xs btn-primary" 
     ng-show="noteEditMode == false" class="pull-right" accesskey="a"
     ng-disabled="!content.text"
     ng-click="addRecordNote(record, content.text); content.text = null;">Add
     Note</button>
-  <input ng-show="noteEditMode == true" class="pull-right" type="submit"  accesskey="a" value="Save Editing"
-		ng-click="saveEditRecordNote(record, content.text); content.text = ''">
-		<input ng-show="noteEditMode == true" class="pull-right" type="submit"  accesskey="a" value="Cancel Editing"
-		ng-click="cancelEditRecordNote(); content.text = ''">
+  
+  <button class="btn btn-xs btn-primary" 
+    ng-show="noteEditMode == true" class="pull-right" accesskey="a"
+    ng-disabled="!content.text"
+    ng-click="saveEditRecordNote(record, content.text); content.text = ''">Save
+    Editing</button>
+  <button class="btn btn-xs btn-primary" 
+    ng-show="noteEditMode == true" class="pull-right" accesskey="a"
+    ng-disabled="!content.text"
+    ng-click="cancelEditRecordNote(); content.text = ''">Cancel
+    Editing</button>
   <span class="pull-right">
     Shortcut to add note:
     <code>Tab</code>
