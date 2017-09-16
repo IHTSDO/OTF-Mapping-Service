@@ -14,16 +14,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
-import org.ihtsdo.otf.mapping.rf2.Concept;
-import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -50,12 +46,6 @@ public class ComputeIcd11Map2 {
     NO_MAP;
   }
 
-  /** The properties. */
-  static Properties config;
-
-  /** The content service. */
-  ContentServiceJpa contentService = null;
-
   /**
    * Create test fixtures for class.
    *
@@ -63,7 +53,7 @@ public class ComputeIcd11Map2 {
    */
   @BeforeClass
   public static void setupClass() throws Exception {
-    config = ConfigUtility.getConfigProperties();
+    //
   }
 
   /** The icd 11 map. */
@@ -149,6 +139,7 @@ public class ComputeIcd11Map2 {
           "THIS IS AN EXTERNAL CAUSE CODE FOR USE IN A SECONDARY POSITION"
       }));
 
+  /** The advices to exclude. */
   final Set<String> advicesToExclude =
       new HashSet<>(Arrays.asList(new String[] {
           "FIFTH CHARACTER REQUIRED TO FURTHER SPECIFY THE SITE",
@@ -162,9 +153,7 @@ public class ComputeIcd11Map2 {
           "POSSIBLE REQUIREMENT FOR PLACE OF OCCURRENCE",
           "SOURCE SNOMED CONCEPT IS AMBIGUOUS",
           "SOURCE SNOMED CONCEPT IS INCOMPLETELY MODELED",
-          "THIS CODE MAY BE USED IN THE PRIMARY POSITION WHEN THE MANIFESTATION IS THE PRIMARY FOCUS OF CARE",
-          "THIS MAP REQUIRES A DAGGER CODE AS WELL AS AN ASTERISK CODE",
-          "USE AS PRIMARY CODE ONLY IF SITE OF BURN UNSPECIFIED, OTHERWISE USE AS A SUPPLEMENTARY CODE WITH CATEGORIES T20-T29 (Burns)"
+          "THIS CODE MAY BE USED IN THE PRIMARY POSITION WHEN THE MANIFESTATION IS THE PRIMARY FOCUS OF CARE"
       }));
 
   /** The advices to replace. */
@@ -201,8 +190,6 @@ public class ComputeIcd11Map2 {
     Logger.getLogger(getClass()).info("  refsetId = " + refsetId);
 
     try {
-      contentService = new ContentServiceJpa();
-
       //
       // Load all data resources
       //
@@ -218,7 +205,8 @@ public class ComputeIcd11Map2 {
 
       //
       // Reverse sort SNOMED concepts by max depth (e.g. top-down search)
-      // This ensures ancestors are processed (and have available maps) before
+      // This ensures ancestors are processed (and have available maps)
+      // before
       // descendants
       //
       Collections.sort(sctScope, new Comparator<String>() {
@@ -270,7 +258,8 @@ public class ComputeIcd11Map2 {
           System.out.println("xxx");
         }
 
-        // Set up initial map (if no ICD10 map -> should be out of scope)
+        // Set up initial map (if no ICD10 map -> should be out of
+        // scope)
 
         // initialize category
         Category category = Category.UNKNOWN;
@@ -286,7 +275,8 @@ public class ComputeIcd11Map2 {
               .error("  No ICD10 map for SCTID: " + sctid);
         }
 
-        // Prep maps for this SNOMED concept - this is what we are computing
+        // Prep maps for this SNOMED concept - this is what we are
+        // computing
         final List<IcdMap> mapList = new ArrayList<>();
         icd11Map.put(sctid, new ArrayList<IcdMap>());
 
@@ -297,7 +287,8 @@ public class ComputeIcd11Map2 {
 
           // Check for evidence to consider a secondary map
           if (map10.getMapGroup() > 1 && map10.getMapPriority() == 1) {
-            // Bail if RULE2 does not offer any reason for a higher map - bail
+            // Bail if RULE2 does not offer any reason for a higher
+            // map - bail
             if (rules[2].getScoreMap().size() == 0) {
               break;
             }
@@ -310,7 +301,8 @@ public class ComputeIcd11Map2 {
             category = scores.getCategory();
           }
 
-          // Pick up initial advice from ICD10 (though may not be appropriate if
+          // Pick up initial advice from ICD10 (though may not be
+          // appropriate if
           // RULE2 wasn't used
           if (rules[2].getScoreMap().size() > 0) {
             scores.getMap().setMapAdvice(map10.getMapAdvice());
@@ -346,18 +338,22 @@ public class ComputeIcd11Map2 {
 
         }
 
-        // Now with complete map, consider the override rules to change the map
-        // NOTE: this can change the number of maps in the list and/or the
+        // Now with complete map, consider the override rules to change
+        // the map
+        // NOTE: this can change the number of maps in the list and/or
+        // the
         // category
         category = applyOverrides(sctid, mapList, category, primaryScores);
 
-        // Finally with the complete map, consider the advice that should exist
+        // Finally with the complete map, consider the advice that
+        // should exist
         applyAdvices(sctid, mapList, primaryScores);
 
         // Add the resulting maps to the final map
         icd11Map.get(sctid).addAll(mapList);
 
-        // Increment the category for this concept (counted at the concept
+        // Increment the category for this concept (counted at the
+        // concept
         // level, not entry level)
         noteSb.append("FINAL CATEGORY " + category.toString());
 
@@ -452,14 +448,9 @@ public class ComputeIcd11Map2 {
 
           getClass()).info("Finished compute ICD11");
 
-    } catch (
-
-    Exception e) {
+    } catch (Exception e) {
       throw e;
-    } finally {
-      contentService.close();
     }
-
   }
 
   /**
@@ -582,7 +573,8 @@ public class ComputeIcd11Map2 {
           rules[2].addScore(code, 0.25 * modifier);
           rules[2].appendType(code, map.getRelation());
         } else if (map.getRelation().equals("Subclass")) {
-          // These are going to be a more specific code in ICD11 than in
+          // These are going to be a more specific code in ICD11 than
+          // in
           // SNOMED based on the ID map -> keep this low too.
           rules[2].addScore(code, 0.25 * modifier);
           rules[2].appendType(code, map.getRelation());
@@ -676,9 +668,10 @@ public class ComputeIcd11Map2 {
         }
         // handle other scores
         else {
-          // All other things being equal, favor "other" and "unspecified"
+          // All other things being equal, favor "other" and
+          // "unspecified"
           if (code.endsWith("other") || code.endsWith("unspecified")) {
-            rules[3].addScore(code, finalScore / 7.0);
+            rules[3].addScore(code, finalScore / 7.5);
             rules[3].appendType(code, "MATCH O/S");
           } else {
             rules[3].addScore(code, finalScore / 8.0);
@@ -689,14 +682,15 @@ public class ComputeIcd11Map2 {
       }
 
       // Boost "unspecified" codes if there are no EXACT matches
-      // and there more than 5 lower quality matches
+      // and there more than 5 lower quality matches (
+      // TODO: need to define "lower quality matches")
       if (!exact && rules[3].getScoreMap().size() > 5) {
         for (final String code : new HashSet<>(
             rules[3].getScoreMap().keySet())) {
           if (code.endsWith("unspecified")) {
             final double score = rules[3].getScore(code);
             final String type = rules[3].getTypeMap().get(code);
-            rules[3].addScore(code, score * 1.5);
+            rules[3].addScore(code, score * 1.25);
             rules[3].getTypeMap().put(code, type + " USBOOST");
           }
         }
@@ -911,7 +905,8 @@ public class ComputeIcd11Map2 {
             }
           }
         }
-        // Lower match if ICD contains word and SNOMED does not = minimal
+        // Lower match if ICD contains word and SNOMED does not =
+        // minimal
         // 0.1
         if (!sctConcepts.get(sctid).toLowerCase().contains(word)) {
           for (final String key : new HashSet<>(candidates.keySet())) {
@@ -959,7 +954,8 @@ public class ComputeIcd11Map2 {
       else {
         for (final String key : new HashSet<>(candidates.keySet())) {
           if (icd11BodyPartMap.containsKey(key)) {
-            // (unless its a body part ending in "system" -> because of
+            // (unless its a body part ending in "system" -> because
+            // of
             // granularity differences)
             if (icd11BodyPartMap.get(key).toLowerCase().endsWith(" system")) {
               continue;
@@ -1211,7 +1207,8 @@ public class ComputeIcd11Map2 {
     int i = 0;
     for (final IcdMap map11 : mapList) {
 
-      // For first map, if primary scores contain no RULE2 data for the map
+      // For first map, if primary scores contain no RULE2 data for the
+      // map
       // target, clear advice
       if (i == 0) {
         if (!primaryScores.getRuleDetails()[2].getScoreMap()
@@ -1275,7 +1272,8 @@ public class ComputeIcd11Map2 {
     // - and NOT descendant of 118601006 | Non-Hodgkin's lymphoma
     // AND icd10Map has a single entry for the concept
     // AND icd11MapOrig has a XH code as primary map with score >= 2.0;
-    // AND candidates includes one stem code (starting with 2) and score > 1.5
+    // AND candidates includes one stem code (starting with 2) and score >
+    // 1.5
     String stemCode = null;
     boolean override = false;
     double score = 0;
@@ -1359,7 +1357,8 @@ public class ComputeIcd11Map2 {
     // OR 128139000 | Inflammatory disease |
     // AND icd10Map has a single entry for the concept
     // AND icd11MapOrig has a stem code (starting with 1) and a score > .4
-    // AND and the snomed term contains an XT word (especially at beginning of
+    // AND and the snomed term contains an XT word (especially at beginning
+    // of
     // the word),
     String xtCode = null;
     String xtName = null;
@@ -1438,7 +1437,8 @@ public class ComputeIcd11Map2 {
       return false;
     }
 
-    // For SNOMED concepts containing two parts (via " with " or " associated
+    // For SNOMED concepts containing two parts (via " with " or "
+    // associated
     // with ")
     // where ICD10 has a single code
     // And there are two candidates with > 1.5 codes (and exactly 2)
@@ -1668,7 +1668,8 @@ public class ComputeIcd11Map2 {
 
     // For descendants of 55342001 | Neoplastic disease (disorder) |
     // AND icd10Map has a single entry for the concept
-    // AND icd11Map has an single entry with a stem code (starting with 2) and
+    // AND icd11Map has an single entry with a stem code (starting with 2)
+    // and
     // score >= 1.5
     // AND there is an XA candidate with a score > .5
     String xaCode = null;
@@ -1798,7 +1799,8 @@ public class ComputeIcd11Map2 {
     skipCt = 0;
     for (final String line : lines) {
       final String[] fields = line.split("\\|");
-      // entityCode already has URL stripped - http://id.who.int/icd/entity
+      // entityCode already has URL stripped -
+      // http://id.who.int/icd/entity
       final String code = fields[0];
       icd11Concepts.put(code, fields[1]);
       if (ct < sampleCt) {
@@ -1821,7 +1823,8 @@ public class ComputeIcd11Map2 {
 
     //
     // Cache ICD11 index entries id -> Set of entries
-    // Id FoundationLocationId Code Title IndexTerm Version:Jan 31 - 23:00 UTC
+    // Id FoundationLocationId Code Title IndexTerm Version:Jan 31 - 23:00
+    // UTC
     //
     Logger.getLogger(getClass()).info(" Load ICD11 index");
     lines = FileUtils.readLines(
@@ -1856,7 +1859,8 @@ public class ComputeIcd11Map2 {
     ct = 0;
     skipCt = 0;
     for (final String line : lines) {
-      // entityCode already has URL stripped - http://id.who.int/icd/entity
+      // entityCode already has URL stripped -
+      // http://id.who.int/icd/entity
       final String code = line;
       if (code.equals("300B")) {
         continue;
@@ -1878,21 +1882,17 @@ public class ComputeIcd11Map2 {
     // Cache ICD10 concepts (by code) - noheader (from DB)
     //
     Logger.getLogger(getClass()).info(" Load ICD10 concepts");
-    final javax.persistence.Query query =
-        contentService.getEntityManager().createQuery(
-            "select c from ConceptJpa c where terminology = :terminology");
-    query.setParameter("terminology", "ICD10");
-    @SuppressWarnings("unchecked")
-    final List<Concept> concepts = query.getResultList();
+    lines =
+        FileUtils.readLines(new File(icd11Dir, "icd10Concepts.txt"), "UTF-8");
     ct = 0;
     skipCt = 0;
-    for (final Concept concept : concepts) {
-      icd10Concepts.put(concept.getTerminologyId(),
-          concept.getDefaultPreferredName());
+    for (final String line : lines) {
 
+      final String[] fields = line.split("\t");
+      final String code = fields[0];
+      icd10Concepts.put(code, fields[1]);
       if (ct < sampleCt) {
-        Logger.getLogger(getClass()).debug(concept.getTerminology() + " => "
-            + concept.getDefaultPreferredName());
+        Logger.getLogger(getClass()).debug(code + " => " + fields[1]);
       }
       ct++;
     }
@@ -2196,7 +2196,8 @@ public class ComputeIcd11Map2 {
 
     //
     // Cache ICD10-11 matches - noheader
-    // 10065003|545442245/morbidity/other|12.5|Excoriated acne|Excoriated acne
+    // 10065003|545442245/morbidity/other|12.5|Excoriated acne|Excoriated
+    // acne
     //
     Logger.getLogger(getClass()).info(" Load SCT-ICD11 lexical matches");
     lines =
@@ -2225,7 +2226,8 @@ public class ComputeIcd11Map2 {
     // // 10To11MapToOneCategory.txt - this is redundant in MultipleCategory
     // file
     // lines = FileUtils
-    // .readLines(new File(icd11Dir, "10To11MapToOneCategory.txt"), "UTF-8");
+    // .readLines(new File(icd11Dir, "10To11MapToOneCategory.txt"),
+    // "UTF-8");
     // ct = 0;
     // skipCt = 0;
     // for (final String line : lines) {
@@ -2257,7 +2259,8 @@ public class ComputeIcd11Map2 {
     // }
     // icd10To11.get(code).add(map);
     // if (ct < sampleCt) {
-    // Logger.getLogger(getClass()).debug(code + " => " + icd10To11.get(code));
+    // Logger.getLogger(getClass()).debug(code + " => " +
+    // icd10To11.get(code));
     // }
     // ct++;
     // }
@@ -2285,7 +2288,8 @@ public class ComputeIcd11Map2 {
       if (!icd10Scope.contains(map.getCode())) {
         skipCt++;
         Logger.getLogger(getClass())
-            .debug("SKIP (scope " + map.getCode() + ") ");// + line);
+            .debug("SKIP (scope " + map.getCode() + ") ");// +
+                                                          // line);
         continue;
       }
       // AVOID this part, allow RULE2 to look for child codes
@@ -2331,14 +2335,16 @@ public class ComputeIcd11Map2 {
       if (!icd11Scope.contains(map.getCode())) {
         skipCt++;
         Logger.getLogger(getClass())
-            .debug("SKIP (scope " + map.getCode() + ") ");// + line);
+            .debug("SKIP (scope " + map.getCode() + ") ");// +
+                                                          // line);
         continue;
       }
       if (!map.getTargetCode().equals("No Mapping")
           && !icd10Scope.contains(map.getTargetCode())) {
         skipCt++;
         Logger.getLogger(getClass())
-            .debug("SKIP (scope " + map.getTargetCode() + ") ");// + line);
+            .debug("SKIP (scope " + map.getTargetCode() + ") ");// +
+                                                                // line);
         continue;
       }
       if (!icd11To10Reverse.containsKey(code)) {
@@ -2477,7 +2483,8 @@ public class ComputeIcd11Map2 {
      * @param line the line
      */
     public Score(String line) {
-      // 10065003|545442245/morbidity/other|12.5|Excoriated acne|Excoriated acne
+      // 10065003|545442245/morbidity/other|12.5|Excoriated
+      // acne|Excoriated acne
       final String[] fields = line.split("\\|");
       code = fields[1];
       score = Double.valueOf(fields[2]);
@@ -2681,8 +2688,10 @@ public class ComputeIcd11Map2 {
         // 8 - Relation
         // 9 - Stated{0}|Deduced
         // 10 - 2015-May-31
-        // http://id.who.int/icd/entity/588616678 01 Gastroenteritis and colitis
-        // of infectious origin A00-A09 I True Intestinal infectious diseases
+        // http://id.who.int/icd/entity/588616678 01 Gastroenteritis and
+        // colitis
+        // of infectious origin A00-A09 I True Intestinal infectious
+        // diseases
         // Equival
         code = fields[0].replaceAll("http\\:\\/\\/id.who.int\\/icd\\/entity\\/",
             "");
@@ -3383,12 +3392,15 @@ public class ComputeIcd11Map2 {
      */
     public String toNote(Map<String, String> icd11Concepts) {
       // RULE1: 1 matches
-      // 1.0 1359329403/.9 Other specified disorders of the sleep-wake schedule
+      // 1.0 1359329403/.9 Other specified disorders of the sleep-wake
+      // schedule
       //
       // RULE2: 2 matches
-      // MATCH 0.8 - 2142880493/.8 Risk factors related to personal history of
+      // MATCH 0.8 - 2142880493/.8 Risk factors related to personal
+      // history of
       // other specified health problems
-      // MATCH 1.0 - 1359329403/.9 Other specified disorders of the sleep-wake
+      // MATCH 1.0 - 1359329403/.9 Other specified disorders of the
+      // sleep-wake
       // schedule
       final StringBuilder sb = new StringBuilder();
       sb.append("RULE" + number + ": " + scoreMap.size() + " matches\n");
