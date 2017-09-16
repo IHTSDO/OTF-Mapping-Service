@@ -271,18 +271,23 @@ public class AdHocMojo extends AbstractMojo {
     }
     final MapProject project = mapProjectMap.get(refsetId);
 
-    MapUser mapUser = null;
-    for (final MapUser user : workflowService.getMapUsers().getMapUsers()) {
-      if (user.getId().equals(59L))
-        mapUser = new MapUserJpa(user);
-    }
+    // MapUser mapUser = null;
+    // for (final MapUser user : workflowService.getMapUsers().getMapUsers()) {
+    // if (user.getId().equals(59L))
+    // mapUser = new MapUserJpa(user);
+    // }
 
     MapAdvice externalCauseCodeAdvice = null;
+    MapAdvice secondaryCauseCodeAdvice = null;
     for (final MapAdvice advice : mappingService.getMapAdvices()
         .getMapAdvices()) {
       if (advice.getName().equals(
-          "THIS IS AN EXTERNAL CAUSE CODE FOR USE IN A SECONDARY POSITION")) {
+          "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE AND EXTENSION CODE(S)")) {
         externalCauseCodeAdvice = advice;
+      }
+      if (advice.getName().equals(
+          "THIS IS AN EXTERNAL CAUSE CODE FOR USE IN A SECONDARY POSITION")) {
+        secondaryCauseCodeAdvice = advice;
       }
     }
 
@@ -297,8 +302,6 @@ public class AdHocMojo extends AbstractMojo {
           // Only keep these advices for "loader" records
           if (record.getOwner().getId().longValue() == 59L
               && !advice.getName()
-                  .equals("POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE")
-              && !advice.getName()
                   .equals("THIS CODE IS NOT TO BE USED IN THE PRIMARY POSITION")
               && !advice.getName().equals(
                   "THIS IS AN EXTERNAL CAUSE CODE FOR USE IN A SECONDARY POSITION")) {
@@ -310,11 +313,7 @@ public class AdHocMojo extends AbstractMojo {
 
           // Remove these
           if (advice.getName()
-              .equals("ADDITIONAL CODES MAY BE ADDED AS SANCTIONED BY WHO")
-              && advice.getName().equals(
-                  "CODES SANCTIONED BY WHO MAY BE ADDED FROM CHAPTER 23 EXTERNAL CAUSES AND DRUG EXTENSION CODES IF RELEVANT")
-              && advice.getName().equals(
-                  "CODES SANCTIONED BY WHO MAY BE ADDED FROM CHAPTER 23 EXTERNAL CAUSES AND EXTENSION CODES IF RELEVANT")) {
+              .equals("ADDITIONAL CODES MAY BE ADDED AS SANCTIONED BY WHO")) {
             entry.removeMapAdvice(advice);
             getLog().info("  remove advice from " + record.getConceptId() + ", "
                 + advice.getName());
@@ -322,11 +321,20 @@ public class AdHocMojo extends AbstractMojo {
           }
           // Modify these
           if (advice.getName().equals(
-              "THIS IS AN EXTERNAL CAUSE CODE AND/OR EXTENSION CODE FOR USE IN A SECONDARY POSITION")) {
+              "CODES SANCTIONED BY WHO MAY BE ADDED FROM CHAPTER 23 EXTERNAL CAUSES AND "
+                  + "EXTENSION CODES IF RELEVANT")) {
             entry.removeMapAdvice(advice);
             entry.addMapAdvice(externalCauseCodeAdvice);
             getLog().info("  fix advice on " + record.getConceptId() + ", "
                 + externalCauseCodeAdvice.getName());
+            change = true;
+          }
+          if (advice.getName().equals(
+              "THIS IS AN EXTERNAL CAUSE CODE AND/OR EXTENSION CODE FOR USE IN A SECONDARY POSITION")) {
+            entry.removeMapAdvice(advice);
+            entry.addMapAdvice(secondaryCauseCodeAdvice);
+            getLog().info("  fix advice on " + record.getConceptId() + ", "
+                + secondaryCauseCodeAdvice.getName());
             change = true;
           }
         }
