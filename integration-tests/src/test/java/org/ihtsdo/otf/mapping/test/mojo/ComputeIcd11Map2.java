@@ -145,7 +145,6 @@ public class ComputeIcd11Map2 {
   /** The advices to include. */
   final Set<String> advicesToInclude =
       new HashSet<>(Arrays.asList(new String[] {
-          "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE",
           "THIS CODE IS NOT TO BE USED IN THE PRIMARY POSITION",
           "THIS IS AN EXTERNAL CAUSE CODE FOR USE IN A SECONDARY POSITION"
       }));
@@ -164,7 +163,6 @@ public class ComputeIcd11Map2 {
           "SOURCE SNOMED CONCEPT IS AMBIGUOUS",
           "SOURCE SNOMED CONCEPT IS INCOMPLETELY MODELED",
           "THIS CODE MAY BE USED IN THE PRIMARY POSITION WHEN THE MANIFESTATION IS THE PRIMARY FOCUS OF CARE",
-
           "THIS MAP REQUIRES A DAGGER CODE AS WELL AS AN ASTERISK CODE",
           "USE AS PRIMARY CODE ONLY IF SITE OF BURN UNSPECIFIED, OTHERWISE USE AS A SUPPLEMENTARY CODE WITH CATEGORIES T20-T29 (Burns)"
       }));
@@ -173,7 +171,8 @@ public class ComputeIcd11Map2 {
   final Map<String, String> advicesToReplace = new HashMap<>();
   // Initializer
   {
-
+    advicesToReplace.put("POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE",
+        "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE AND EXTENSION CODE(S)");
   }
 
   /** The sample ct. */
