@@ -658,8 +658,9 @@ public class ComputeIcd11Map2 {
 			}
 
 			// Boost "unspecified" codes if there are no EXACT matches
-			// and there more than 5 lower quality matches
-			if (!exact && rules[3].getScoreMap().size() > 5) {
+			// and there more than 5 lower quality matches (
+			// TODO: need to define "lower quality matches")
+			if (!exact && rules[3].getScoreMap().size() > 6) {
 				for (final String code : new HashSet<>(rules[3].getScoreMap().keySet())) {
 					if (code.endsWith("unspecified")) {
 						final double score = rules[3].getScore(code);
@@ -1837,8 +1838,7 @@ public class ComputeIcd11Map2 {
 		ct = 0;
 		skipCt = 0;
 		for (final String line : lines) {
-			System.out.println("line="+line);
-			
+
 			final String[] fields = line.split("\t");
 			final String code = fields[0];
 			icd10Concepts.put(code, fields[1]);
