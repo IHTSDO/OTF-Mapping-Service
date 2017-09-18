@@ -268,7 +268,6 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       final Concept concept = contentService.getConcept(mapEntry.getTargetId(),
           mapProject.getDestinationTerminology(),
           mapProject.getDestinationTerminologyVersion());
-
       // lazy initialize
       if (concept != null) {
         concept.getDescriptions().size();
@@ -461,6 +460,25 @@ public class ICD10CMProjectSpecificAlgorithmHandler
         advices.add(TerminologyUtility.getAdvice(mapProject, adviceP11));
       }
       
+      //
+      // PREDICATE: All codes with description notes starting with 'use_additional', 'code_first'
+      // 'code_also' or if any of their ancestors* have description notes starting with these
+      // phrases should be givene the advice "CONSIDER ADDITIONAL CODE TO IDENTIFY SPECIFIC CONDITION OR DISEASE"
+      // *ancestors: are only searched up till one layer above the 3 character level (e.g. T36-T50)
+      // ACTION: add the advice
+      //
+      final String adviceP12 = "CONSIDER ADDITIONAL CODE TO IDENTIFY SPECIFIC CONDITION OR DISEASE";
+      final Concept conceptP12 = contentService.getConcept(mapEntry.getTargetId(),
+              mapProject.getDestinationTerminology(),
+              mapProject.getDestinationTerminologyVersion()); 
+      boolean matchingNote = isMatchingDescriptionNote(conceptP12);
+      if(matchingNote
+    		  && !TerminologyUtility.hasAdvice(mapEntry, adviceP12)) {
+    	advices.add(TerminologyUtility.getAdvice(mapProject, adviceP12));
+      } else if (!matchingNote) {
+    	advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP12));
+      }
+        
       MapAdviceList mapAdviceList = new MapAdviceListJpa();
       mapAdviceList.setMapAdvices(advices);
       return mapAdviceList;
@@ -471,6 +489,33 @@ public class ICD10CMProjectSpecificAlgorithmHandler
     }
   }
 
+  /**
+   * Helper method to calculate if concept or its ancestors match specified 
+   * descriptions indicating if advice should be added.
+   * @param concept
+   * @return 
+   * @throws Exception
+   */
+  private boolean isMatchingDescriptionNote(Concept concept) throws Exception {
+	  for (Description description : concept.getDescriptions()) {
+    	  if (description.getTerm().toLowerCase().startsWith("use_additional") ||
+    		  description.getTerm().toLowerCase().startsWith("code_first") ||
+    		  description.getTerm().toLowerCase().startsWith("code_also")) {
+    		return true;
+    	  }
+      }
+	  // if we are already one level above the 3 character level (e.g. T36-T50)
+	  // and we haven't found a match, we stop searching
+	  if (concept.getTerminologyId().contains("-")) {
+		  return false;
+	  }
+	  final List<Concept> parents = TerminologyUtility.getActiveParents(concept);
+	  for (Concept parent : parents) {
+		  return isMatchingDescriptionNote(parent);
+	  }
+	  return false;
+  }
+  
   /* see superclass */
   @Override
   public boolean isTargetCodeValid(String terminologyId) throws Exception {
