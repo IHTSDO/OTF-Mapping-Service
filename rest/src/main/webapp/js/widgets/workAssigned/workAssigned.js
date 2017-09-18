@@ -21,6 +21,7 @@ angular
       $scope.focusProject = null;
       $scope.assignedTab = null;
       $scope.currentUserToken = null;
+      $scope.preferences = null;
       $scope.assignedRecords = [];
 
       // retrieve the necessary scope variables from local storage service
@@ -28,8 +29,9 @@ angular
       $scope.currentRole = localStorageService.get('currentRole');
       $scope.focusProject = localStorageService.get('focusProject');
       $scope.currentUserToken = localStorageService.get('userToken');
+      $scope.preferences = localStorageService.get('preferences');
       $scope.assignedTab = localStorageService.get('assignedTab');
-
+      
       // tab variables
       $scope.tabs = [ {
         id : 0,
@@ -89,7 +91,30 @@ angular
           $scope.ownTab = true;
 
         // add the tab to the loocal storage service for the next visit
+        
+        $scope.preferences.lastAssignedTab = tabNumber;
         localStorageService.add('assignedTab', tabNumber);
+       
+        
+        // update the user preferences
+        $http({
+          url : root_mapping + 'userPreferences/update',
+          dataType : 'json',
+          data : $scope.preferences,
+          method : 'POST',
+          headers : {
+            'Content-Type' : 'application/json'
+          }
+        }).success(function(data) {
+          // do nothing
+
+        }).error(function(data) {
+          if (response.indexOf('HTTP Status 401') != -1) {
+            $rootScope.globalError = 'Authorization failed.  Please log in again.';
+            $location.path('/');
+          }
+        });
+
       };
 
       // pagination variables

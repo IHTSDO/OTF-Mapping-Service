@@ -663,7 +663,7 @@ angular
             'userName' : recordInError.owner.userName
           };
 
-          $rootScope.glassPane++;
+          console.debug('add conversation', feedbackConversation);
           $http({
             url : root_workflow + 'conversation/add',
             dataType : 'json',
@@ -673,7 +673,7 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-            $rootScope.glassPane--;
+            console.debug('  feedback conversation = ', data);
             if (recordInError.id == $scope.record1.id)
               $scope.conversation1 = data;
             else
@@ -704,7 +704,6 @@ angular
           currentConversation.feedback = localFeedback;
           currentConversation.title = $scope.getTitle(false, errorMessage);
 
-          $rootScope.glassPane++;
           $http({
             url : root_workflow + 'conversation/update',
             dataType : 'json',
@@ -714,7 +713,35 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-            $rootScope.glassPane--;
+            console.debug('  conversation updated = ', data);
+            if (recordInError.id == $scope.record1.id) {
+              $http({
+                url : root_workflow + 'conversation/id/' + recordInError.id,
+                dataType : 'json',
+                method : 'GET',
+                headers : {
+                  'Content-Type' : 'application/json'
+                }
+              }).success(function(data) {
+
+                $scope.conversation1 = data;
+
+              });
+            } else {
+              $http({
+                url : root_workflow + 'conversation/id/' + recordInError.id,
+                dataType : 'json',
+                method : 'GET',
+                headers : {
+                  'Content-Type' : 'application/json'
+                }
+              }).success(function(data) {
+
+                $scope.conversation2 = data;
+
+              });
+            }
+
           }).error(function(data, status, headers, config) {
             $rootScope.glassPane--;
             $scope.recordError = 'Error updating feedback conversation.';
@@ -778,7 +805,7 @@ angular
             'mapProjectId' : $scope.project.id,
             'userName' : $scope.leadRecord.owner.userName
           };
-          $rootScope.glassPane++;
+
           $http({
             url : root_workflow + 'conversation/add',
             dataType : 'json',
@@ -789,12 +816,12 @@ angular
             }
           })
             .success(function(data) {
-              $rootScope.glassPane--;
+
               $scope.leadConversation = data;
             })
             .error(
               function(data, status, headers, config) {
-                $rootScope.glassPane--;
+
                 $scope.recordError = 'Error adding new feedback conversation for group feedback.';
                 $rootScope.handleHttpError(data, status, headers, config);
               });
@@ -818,7 +845,7 @@ angular
           currentConversation.discrepancyReview = $scope.indicateDiscrepancyReview;
           currentConversation.title = $scope.getTitle(true, '');
 
-          $rootScope.glassPane++;
+          console.debug('update conversation', $scope.conversation);
           $http({
             url : root_workflow + 'conversation/update',
             dataType : 'json',
@@ -828,9 +855,22 @@ angular
               'Content-Type' : 'application/json'
             }
           })
-            .success(function(data) {
-              $rootScope.glassPane--;
-            })
+            .success(
+              function(data) {
+                console.debug('  conversation updated = ', data);
+                $http(
+                  {
+                    url : root_workflow + 'conversation/id/'
+                      + $scope.leadRecord.id,
+                    dataType : 'json',
+                    method : 'GET',
+                    headers : {
+                      'Content-Type' : 'application/json'
+                    }
+                  }).success(function(data) {
+                  $scope.leadConversation = data;
+                });
+              })
             .error(
               function(data, status, headers, config) {
                 $rootScope.glassPane--;
