@@ -19,6 +19,7 @@ set dir=$tempdir/map/daily/dripFeed
 
 set buildStatus = "Progress Status"
 set buildOk = "completed,"
+set buildOk2 = "completed"
 set numrels = 50
 
 echo "------------------------------------------------"
@@ -72,7 +73,7 @@ wget "$buildreport" -O $tempdir/buildrep.$$.json
 set buildstat = `grep "$buildStatus" $tempdir/buildrep.$$.json | cut -d\: -f 2- | sed 's/ "//; s/"//'`
 
 echo "buildstat = "$buildstat
-if($buildstat == $buildOk) then
+if($buildstat == $buildOk || $buildstat == $buildOk2) then
 echo "buildOK"
 set buildOKbool = true
 echo "OK release = "$latestRelease
