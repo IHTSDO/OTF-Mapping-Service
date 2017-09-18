@@ -32,6 +32,8 @@
       <i class="glyphicon glyphicon-remove pull-right" 
         ng-click="removeFeedback(feedback)"
         ng-show = "currentRole == 'Lead'" ></i>
+      <i class="glyphicon glyphicon-pencil pull-right"
+		ng-click="editFeedback(feedback); content.text = feedback.message"></i>
       <div ng-show="feedback.mapError != 'None'" style="padding-left: 20px;"
         ng-bind-html="to_trusted(feedback.mapError)"></div>
       <div style="padding-left: 20px;"
@@ -47,12 +49,24 @@
 <!--  tinymce text area -->
 <span>
   <textarea id="tinymce-feedback" ui-tinymce="tinymceOptions"
-    ng-model="feedbackInput"></textarea>
+    ng-model="content.text"></textarea>
 
   <button class="btn btn-xs btn-primary pull-right"
-    class="btn btn-xs btn-primary" ng-disabled="!feedbackInput"
-    ng-click="sendFeedback(record, feedbackInput, conversation, returnRecipients); feedbackInput = ''">Send
+    ng-disabled="!content.text"
+    ng-show = "feedbackEditMode == false"
+    ng-click="sendFeedback(record, content.text, conversation, returnRecipients); content.text = ''">Send
     Feedback</button>
+  <button class="btn btn-xs btn-primary pull-right"
+    ng-disabled="!content.text"
+    ng-show = "feedbackEditMode == true"
+    ng-click="saveEditFeedback(content.text); content.text = ''">Save
+    Editing</button>
+  <button class="btn btn-xs btn-primary pull-right"
+    ng-disabled="!content.text"
+    ng-show = "feedbackEditMode == true"
+    ng-click="cancelEditFeedback(); content.text = ''">Cancel
+    Editing</button>
+  
 </span>
 <button class="btn btn-xs btn-primary"
   ng-click="goConceptView(conversation.terminologyId)">Mapped Concept
@@ -68,7 +82,8 @@
 <input type="checkbox" ng-model="markUnviewed" ng-click="toggleMarkUnviewed()">
 Mark unviewed
 <span
-  ng-show="conversation.userName == currentUser.userName || currentRole == 'Lead'">
+  ng-show="(conversation.userName == currentUser.userName || currentRole == 'Lead') &&
+  conversation.feedback && conversation.feedback.length > 0">
   <input type="checkbox" ng-model="conversation.resolved"
     ng-click="updateFeedbackConversation(conversation)"> Mark resolved
 </span>
