@@ -61,6 +61,13 @@ angular
         $scope.multiSelectCustomTexts = {
           buttonDefaultText : 'Select Leads'
         };
+        
+     // start note edit mode in off mode
+        $scope.feedbackEditMode = false;
+        $scope.feedbackEditId = null;
+        $scope.content = {
+          text : ''
+        };
 
         // validation result storage variable
         $scope.savedValidationWarnings = [];
@@ -378,6 +385,66 @@ angular
               });
 
         }
+        
+        $scope.editFeedback = function(feedback) {
+          $scope.content.text = feedback.message;
+          $scope.feedbackEditMode = true;
+          $scope.feedbackEditId = feedback.id ? feedback.id : feedback.localId;
+        };
+
+        $scope.cancelEditFeedback = function() {
+          $scope.content.text = '';
+          $scope.feedbackEditMode = false;
+          $scope.feedbackEditId = null;
+          $scope.tinymceContent = '';
+        };
+
+        $scope.saveEditFeedback = function(feedback) {
+          
+          if ($scope.feedbackEditMode == true) {
+            var feedbackFound = false;
+            // find the existing feedback
+            for (var i = 0; i < $scope.conversation.feedback.length; i++) {
+              // if this feedback, overwrite it
+              if ($scope.feedbackEditId == $scope.conversation.feedback[i].localId ||
+                  $scope.feedbackEditId == $scope.conversation.feedback[i].id) {
+                feedbackFound = true;
+                $scope.conversation.feedback[i].message = feedback;
+                //$scope.conversation.feedback[i].id = currentLocalId++;
+              }
+            }
+            $scope.feedbackEditMode = false;
+            $scope.tinymceContent = null;
+            
+           
+
+            console.debug('update conversation', $scope.conversation);
+            $http({
+              url : root_workflow + 'conversation/update',
+              dataType : 'json',
+              data : $scope.conversation,
+              method : 'POST',
+              headers : {
+                'Content-Type' : 'application/json'
+              }
+            }).success(function(data) {
+              console.debug('  conversation updated = ', data);
+              $http({
+                url : root_workflow + 'conversation/id/' + $scope.record.id,
+                dataType : 'json',
+                method : 'GET',
+                headers : {
+                  'Content-Type' : 'application/json'
+                }
+              }).success(function(data) {
+                $scope.conversation = data;
+              });
+            }).error(function(data, status, headers, config) {
+              $scope.recordError = 'Error updating feedback conversation.';
+              $rootScope.handleHttpError(data, status, headers, config);
+            });
+          }
+        };
 
         function setIndexViewerStatus() {
           console.debug('Get index viewer status',
