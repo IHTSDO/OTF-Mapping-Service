@@ -65,6 +65,13 @@ angular
       $scope.multiSelectCustomTexts = {
         buttonDefaultText : 'Select Users'
       };
+      
+      // start note edit mode in off mode
+            $scope.feedbackEditMode = false;
+            $scope.feedbackEditId = null;
+            $scope.content = {
+             text : ''
+            };
 
       $scope.errorMessages = $scope.project.errorMessages;
       $scope.errorMessages.sort();
@@ -135,6 +142,108 @@ angular
           }
         }
       });
+      
+      $scope.editFeedback = function(feedback) {
+        $scope.content.text = feedback.message;
+        $scope.content.text1 = feedback.message1;
+        $scope.content.text2 = feedback.message2;
+        $scope.feedbackEditMode = true;
+        $scope.feedbackEditId = feedback.id ? feedback.id : feedback.localId;
+      };
+
+      $scope.cancelEditFeedback = function() {
+        $scope.content.text = '';
+        $scope.content.text1 = '';
+        $scope.content.text2 = '';
+        $scope.feedbackEditMode = false;
+        $scope.feedbackEditId = null;
+        $scope.tinymceContent = '';
+      };
+
+      $scope.saveEditFeedback = function(recordInError,feedback) {
+        
+        var currentConversation = $scope.getCurrentConversation(recordInError);
+        if ($scope.feedbackEditMode == true) {
+          var feedbackFound = false;
+          // find the existing feedback
+          for (var i = 0; i < currentConversation.feedback.length; i++) {
+            // if this feedback, overwrite it
+            if ($scope.feedbackEditId == currentConversation.feedback[i].localId ||
+                $scope.feedbackEditId == currentConversation.feedback[i].id) {
+              feedbackFound = true;
+              currentConversation.feedback[i].message = feedback;
+              //$scope.conversation.feedback[i].id = currentLocalId++;
+            }
+          }
+          $scope.feedbackEditMode = false;
+          $scope.tinymceContent = null;
+          
+          console.debug('update conversation', currentConversation);
+          $http({
+            url : root_workflow + 'conversation/update',
+            dataType : 'json',
+            data : currentConversation,
+            method : 'POST',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+            console.debug('  conversation updated = ', data);
+            if (recordInError.id == $scope.record1.id) {
+              $http({
+                url : root_workflow + 'conversation/id/' + recordInError.id,
+                dataType : 'json',
+                method : 'GET',
+                headers : {
+                  'Content-Type' : 'application/json'
+                }
+              }).success(function(data) {
+
+                $scope.conversation1 = data;
+
+              });
+            } if (recordInError.id == $scope.record2.id) {
+              
+              $http({
+                url : root_workflow + 'conversation/id/' + recordInError.id,
+                dataType : 'json',
+                method : 'GET',
+                headers : {
+                  'Content-Type' : 'application/json'
+                }
+              }).success(function(data) {
+
+                $scope.conversation2 = data;
+
+              });
+              
+            }
+            else{
+              console.debug('  conversation updated = ', data);
+              $http(
+                {
+                  url : root_workflow + 'conversation/id/'
+                    + $scope.leadRecord.id,
+                  dataType : 'json',
+                  method : 'GET',
+                  headers : {
+                    'Content-Type' : 'application/json'
+                  }
+                }).success(function(data) {
+                $scope.leadConversation = data;
+              });
+              
+            }
+
+          }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $scope.recordError = 'Error updating feedback conversation.';
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        }
+      };
+
+      
 
       $scope.getRecordsInConflict = function() {
         // initialize local variables
