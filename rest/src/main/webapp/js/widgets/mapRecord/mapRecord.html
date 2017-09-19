@@ -205,6 +205,8 @@ review<br>
         on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
         <i class="glyphicon glyphicon-remove pull-right"
         ng-click="removeFeedback(feedback)"></i>
+        <i class="glyphicon glyphicon-pencil pull-right"
+		ng-click="editFeedback(feedback); content.text = feedback.message"></i>
         <div ng-show="feedback.mapError != 'None'" style="padding-left: 20px;"
           ng-bind-html="to_trusted(feedback.mapError)"></div>
         <div style="padding-left: 20px;"
@@ -218,11 +220,22 @@ review<br>
       selected-model="returnRecipients" extra-settings="multiSelectSettings"
       translation-texts="multiSelectCustomTexts"></div>
     <textarea id="tinymce-feedback" ui-tinymce="tinymceOptions"
-      ng-model="feedbackInput"></textarea>
+      ng-model="content.text"></textarea>
     <button class="btn btn-xs btn-primary pull-right"
-      ng-disabled="!feedbackInput"
-      ng-click="sendFeedback(record, feedbackInput, returnRecipients); feedbackInput = ''">
+      ng-disabled="!content.text"
+       ng-show = "feedbackEditMode == false"
+      ng-click="sendFeedback(record, content.text, returnRecipients); content.text = ''">
       Send Feedback</button>
+       <button class="btn btn-xs btn-primary pull-right"
+      ng-disabled="!content.text"
+      ng-show = "feedbackEditMode == true"
+      ng-click="saveEditFeedback(content.text); content.text = ''">Save
+      Editing</button>
+    <button class="btn btn-xs btn-primary pull-right"
+     ng-disabled="!content.text"
+     ng-show = "feedbackEditMode == true"
+     ng-click="cancelEditFeedback(); content.text = ''">Cancel
+     Editing</button>
     <span class="pull-right">
       Shortcut to send feedback:
       <code>Tab</code>
