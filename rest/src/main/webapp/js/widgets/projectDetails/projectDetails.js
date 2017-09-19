@@ -987,7 +987,10 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           'isAllowableForNullTarget' : allowableForNullTarget,
           'isComputed' : isComputed
         };
-
+        if($scope.submitNewMapAdvice.mapAdviceDetail == null || $scope.submitNewMapAdvice.mapAdviceDetail == ''){
+          window.alert("AdviceDetail cannot be empty");
+          return;
+        }
         $rootScope.glassPane++;
         $http({
           url : root_mapping + 'advice/add',
@@ -1000,7 +1003,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         }).success(function(data) {
           $rootScope.glassPane--;
           console.debug('  success', data);
-
+          
           // add the new advice to the available list
           $scope.mapAdvices.push(data);
           $scope.allowableMapAdvices.push(data);
