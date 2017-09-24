@@ -568,6 +568,7 @@ angular
         for (var i = 0; i < $scope.leadRecord.mapNote.length; i++) {
           $scope.leadRecord.mapNote[i].localId = localId++;
           $scope.leadRecord.mapNote[i].id = null;
+          $scope.leadRecord.mapNote[i].user = $scope.user;
         }
 
         // null the ids of all the entries (for later creation as new jpa
@@ -576,7 +577,7 @@ angular
           $scope.leadRecord.mapEntry[i].localId = localId++;
           $scope.leadRecord.mapEntry[i].id = null;
         }
-        
+
         // broadcast to the map record widget
         console.debug(
           'broadcastcompareRecordsWidget.notification.selectRecord = ',
@@ -840,9 +841,9 @@ angular
         }
 
       };
-      
-   // Delete feedback conversation
-       var group;
+
+      // Delete feedback conversation
+      var group;
       $scope.removeFeedback = function(conversation) {
         // confirm delete
         if (confirm('Are you sure that you want to delete a feedback conversation?') == false)
@@ -856,20 +857,22 @@ angular
           headers : {
             'Content-Type' : 'application/json'
           }
-        }).success(function(data) {
-          /*if($scope.leadConversation.feedback.length>0){
-            $scope.group = null  
-          }*/
-         $scope.conversation1 = null  
-          $scope.conversation2 = null  
-          $scope.leadConversation = null  
-        }).error(function(data, status, headers, config) {
-          $scope.recordError = 'Error deleting feedback conversation from application.';
-          $rootScope.handleHttpError(data, status, headers, config);
-        });
+        })
+          .success(function(data) {
+            /*
+             * if($scope.leadConversation.feedback.length>0){ $scope.group =
+             * null }
+             */
+            $scope.conversation1 = null
+            $scope.conversation2 = null
+            $scope.leadConversation = null
+          })
+          .error(
+            function(data, status, headers, config) {
+              $scope.recordError = 'Error deleting feedback conversation from application.';
+              $rootScope.handleHttpError(data, status, headers, config);
+            });
       }
-      
-      
 
       function recordToText(record) {
 
