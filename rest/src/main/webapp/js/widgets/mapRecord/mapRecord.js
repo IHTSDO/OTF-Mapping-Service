@@ -186,10 +186,11 @@ angular
             }
 
             $scope.record = parameters.record;
-            for (var i = 0; i < $scope.record.mapNote.length; i++) {
-              $scope.record.mapNote[i].user = $scope.user;
-              $scope.record.mapNote[i].timestamp = new Date();
-            }
+            // Don't overwrite the owner or timestamp of the notes
+            // for (var i = 0; i < $scope.record.mapNote.length; i++) {
+            // $scope.record.mapNote[i].user = $scope.user;
+            // $scope.record.mapNote[i].timestamp = new Date();
+            // }
 
             // open principles accordion if one was copied from selectedRecord
             if ($scope.record.mapPrinciple
