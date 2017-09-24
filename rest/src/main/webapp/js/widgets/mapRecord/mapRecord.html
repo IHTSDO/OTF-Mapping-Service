@@ -8,22 +8,18 @@
 </uib-accordion-heading>
 <table>
   <tr>
+    <td style="vertical-align: top; padding: 5px;"><strong>Id</strong></td>
     <td style="vertical-align: top; padding: 5px;">
-      <strong>Id</strong>
-    </td>
-    <td style="vertical-align: top; padding: 5px;">
-      {{concept.terminology}},{{concept.terminologyId}} &nbsp;
-      <i title='Open SNOMED Browser' class="noul glyphicon glyphicon-info-sign"
-        ng-click="openConceptBrowser()"></i>
-      <a title='Open Index Viewer' ng-show="indexViewerExists == true">
+      {{concept.terminology}},{{concept.terminologyId}} &nbsp; <i
+      title='Open SNOMED Browser' class="noul glyphicon glyphicon-info-sign"
+      ng-click="openConceptBrowser()"></i> <a title='Open Index Viewer'
+        ng-show="indexViewerExists == true">
         <i ng-click="openIndexViewer()" class="glyphicon glyphicon-book"></i>
       </a>
     </td>
   </tr>
   <tr>
-    <td style="vertical-align: top; padding: 5px;">
-      <strong>Name</strong>
-    </td>
+    <td style="vertical-align: top; padding: 5px;"><strong>Name</strong></td>
     <td style="vertical-align: top; padding: 5px;">{{concept.defaultPreferredName}}</td>
   </tr>
 </table>
@@ -80,14 +76,12 @@ Notes <i class="pull-right glyphicon"
   ng-class="{'glyphicon-chevron-down': isNotesOpen, 'glyphicon-chevron-right': !isNotesOpen}"></i>
 </uib-accordion-heading>
 <div ng-show="record.mapNote.length > 0">
-  <div ng-repeat="note in record.mapNote">
+  <div ng-repeat="notde in record.mapNote">
     <div class="alert alert-warning" disabled>
-        <i class="glyphicon glyphicon-remove pull-right"
-        ng-click="removeRecordNote(record, note)"></i>
-      <i class="glyphicon glyphicon-pencil pull-right"
-					ng-click="editRecordNote(record, note); noteInput = note.note"></i>
-	
-      [By
+      <i class="glyphicon glyphicon-remove pull-right"
+        ng-click="removeRecordNote(record, note)"></i> <i
+        class="glyphicon glyphicon-pencil pull-right"
+        ng-click="editRecordNote(record, note); noteInput = note.note"></i> [By
       <a href="mailto:{{user.email}}">{{note.user.name}}</a>
       on {{note.timestamp | date:'MM-dd-yyyy HH:mm'}}]
       <div style="padding-left: 20px;" ng-bind-html="to_trusted(note.note)"></div>
@@ -103,10 +97,12 @@ Notes <i class="pull-right glyphicon"
     ng-disabled="!noteInput"
     ng-click="addRecordNote(record, noteInput); noteInput = null;">Add
     Note</button>
-  <input ng-show="noteEditMode == true" class="pull-right" type="submit"  accesskey="a" value="Save Editing"
-		ng-click="saveEditRecordNote(record, noteInput); noteInput = ''">
-		<input ng-show="noteEditMode == true" class="pull-right" type="submit"  accesskey="a" value="Cancel Editing"
-		ng-click="cancelEditRecordNote(); noteInput = ''">
+  <input ng-show="noteEditMode == true" class="pull-right" type="submit"
+    accesskey="a" value="Save Editing"
+    ng-click="saveEditRecordNote(record, noteInput); noteInput = ''"> <input
+    ng-show="noteEditMode == true" class="pull-right" type="submit"
+    accesskey="a" value="Cancel Editing"
+    ng-click="cancelEditRecordNote(); noteInput = ''">
   <span class="pull-right">
     Shortcut to add note:
     <code>Tab</code>
@@ -197,9 +193,9 @@ review<br>
           {{recipient.name}}
           <span ng-if="$last == false">,</span>
         </span>
-        on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
-        <i> <span class="glyphicon glyphicon-remove pull-right"
-        ng-click="removeFeedback(conversation)"></i>
+        on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}] <i> <span
+            class="glyphicon glyphicon-remove pull-right"
+            ng-click="removeFeedback(conversation)"></i>
         <div ng-show="feedback.mapError != 'None'" style="padding-left: 20px;"
           ng-bind-html="to_trusted(feedback.mapError)"></div>
         <div style="padding-left: 20px;"
