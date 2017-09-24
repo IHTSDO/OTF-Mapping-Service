@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2015 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
 import java.util.ArrayList;
@@ -22,7 +25,9 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
+import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
+import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
 /**
  * Reference implementation of {@link ProjectSpecificAlgorithmHandler}.
@@ -950,7 +955,14 @@ public class DefaultProjectSpecificAlgorithmHandler
 
   /* see superclass */
   @Override
-  public boolean recordViolatesOneToOneConstraint(MapRecord record) throws Exception {
+  public boolean recordViolatesOneToOneConstraint(MapRecord record)
+    throws Exception {
     return false;
+  }
+
+  /* see superclass */
+  public String getSortKey(Concept concept, TrackingRecord record)
+    throws Exception {
+    return null;
   }
 }
