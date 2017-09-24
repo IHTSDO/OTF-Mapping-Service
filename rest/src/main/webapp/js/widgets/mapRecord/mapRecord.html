@@ -76,7 +76,7 @@ Notes <i class="pull-right glyphicon"
   ng-class="{'glyphicon-chevron-down': isNotesOpen, 'glyphicon-chevron-right': !isNotesOpen}"></i>
 </uib-accordion-heading>
 <div ng-show="record.mapNote.length > 0">
-  <div ng-repeat="notde in record.mapNote">
+  <div ng-repeat="note in record.mapNote">
     <div class="alert alert-warning" disabled>
       <i class="glyphicon glyphicon-remove pull-right"
         ng-click="removeRecordNote(record, note)"></i> <i
