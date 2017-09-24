@@ -568,7 +568,6 @@ angular
         for (var i = 0; i < $scope.leadRecord.mapNote.length; i++) {
           $scope.leadRecord.mapNote[i].localId = localId++;
           $scope.leadRecord.mapNote[i].id = null;
-          $scope.leadRecord.mapNote[i].user = $scope.user;
         }
 
         // null the ids of all the entries (for later creation as new jpa
