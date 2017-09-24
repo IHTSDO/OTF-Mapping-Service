@@ -300,6 +300,8 @@ angular
                   // Set basic stuff for the "then.." below
                   $scope.record = {};
                   // used by selectRecord
+                  $scope.record.id = data.id;
+                  $scope.record.mapEntry = new Array();
                   $scope.record.workflowStatus = data.workflowStatus;
                   $scope.record.conceptId = data.conceptId;
                   $scope.record.owner = {};
@@ -949,7 +951,7 @@ angular
           });
 
         };
-        
+
         $scope.removeFeedback = function(conversation) {
           // confirm delete
           if (confirm('Are you sure that you want to delete a feedback conversation?') == false)
@@ -963,12 +965,15 @@ angular
             headers : {
               'Content-Type' : 'application/json'
             }
-          }).success(function(data) {
-            $scope.conversation = null;
-          }).error(function(data, status, headers, config) {
-            $scope.recordError = 'Error deleting feedback conversation from application.';
-            $rootScope.handleHttpError(data, status, headers, config);
-          });
+          })
+            .success(function(data) {
+              $scope.conversation = null;
+            })
+            .error(
+              function(data, status, headers, config) {
+                $scope.recordError = 'Error deleting feedback conversation from application.';
+                $rootScope.handleHttpError(data, status, headers, config);
+              });
         }
 
         $scope.addRecordPrinciple = function(record, principle) {
@@ -1098,7 +1103,7 @@ angular
             $scope.cancelEditRecordNote();
           }
         };
-          
+
         $scope.sendFeedback = function(record, feedbackMessage, recipientList) {
 
           if (feedbackMessage == null || feedbackMessage == undefined

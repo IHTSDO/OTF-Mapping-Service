@@ -991,15 +991,8 @@ public class WorkflowServiceJpa extends MappingServiceJpa
       trackingRecord.setDefaultPreferredName(concept.getDefaultPreferredName());
       trackingRecord.setSortKey(sortKey);
 
-      // Allow for project-specific override.
-      final String overrideSortKey =
-          algorithmHandler.getSortKey(concept, trackingRecord);
-      if (overrideSortKey != null) {
-        trackingRecord.setSortKey(overrideSortKey);
-      }
-
       // add any existing map records to this tracking record
-      Set<MapRecord> mapRecordsForTrackingRecord = new HashSet<>();
+      final Set<MapRecord> mapRecordsForTrackingRecord = new HashSet<>();
       if (unpublishedRecords.containsKey(trackingRecord.getTerminologyId())) {
         for (final MapRecord mr : unpublishedRecords
             .get(trackingRecord.getTerminologyId())) {
@@ -1017,6 +1010,13 @@ public class WorkflowServiceJpa extends MappingServiceJpa
           // add to the local set for workflow calculation
           mapRecordsForTrackingRecord.add(mr);
         }
+      }
+
+      // Allow for project-specific override.
+      final String overrideSortKey =
+          algorithmHandler.getSortKey(concept, trackingRecord);
+      if (overrideSortKey != null) {
+        trackingRecord.setSortKey(overrideSortKey);
       }
 
       // check against current workflow and universal workflows (currently Fix
