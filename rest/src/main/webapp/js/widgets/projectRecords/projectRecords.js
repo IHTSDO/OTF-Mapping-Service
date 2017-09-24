@@ -664,6 +664,12 @@ angular
                 + $scope.searchParameters.adviceName + '"');
           }
 
+          // check map group
+          if ($scope.searchParameters.mapGroup) {
+            queryRestrictions.push('mapEntries.mapGroup:'
+              + $scope.searchParameters.mapGroup);
+          }
+
           // check map principles
           if ($scope.searchParameters.principleName) {
             queryRestrictions

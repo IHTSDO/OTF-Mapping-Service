@@ -313,7 +313,7 @@ angular
               // auto-populate if there is only one, no split-screen
               $timeout(function() {
                 $scope.populateMapRecord($scope.record1);
-              }, 300);
+              }, 400);
 
             } else if (data.totalCount == 2) {
 

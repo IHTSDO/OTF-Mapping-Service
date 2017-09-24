@@ -183,7 +183,7 @@ public class ComputeIcd11Map2 {
     }
     final String icd11Dir = System.getProperty("icd11.dir");
     // Tracking vars
-    final String refsetId = "icd11RefsetId";
+    final String refsetId = "icd11RefsetId-b";
     final String moduleId = "123456789";
     Logger.getLogger(getClass()).info("  icd11Dir = " + icd11Dir);
     Logger.getLogger(getClass()).info("  moduleId = " + moduleId);
@@ -349,6 +349,8 @@ public class ComputeIcd11Map2 {
         // should exist
         applyAdvices(sctid, mapList, primaryScores);
 
+        // TODO: clean up stem/extension code stuff ...
+        
         // Add the resulting maps to the final map
         icd11Map.get(sctid).addAll(mapList);
 
@@ -593,7 +595,7 @@ public class ComputeIcd11Map2 {
           if (code.endsWith("unspecified")) {
             final double score = rules[2].getScore(code);
             final String type = rules[2].getTypeMap().get(code);
-            rules[2].addScore(code, score * 1.5);
+            rules[2].getScoreMap().put(code, score * 1.5);
             rules[2].getTypeMap().put(code, type + " USBOOST");
           }
         }
@@ -690,7 +692,7 @@ public class ComputeIcd11Map2 {
           if (code.endsWith("unspecified")) {
             final double score = rules[3].getScore(code);
             final String type = rules[3].getTypeMap().get(code);
-            rules[3].addScore(code, score * 1.25);
+            rules[3].getScoreMap().put(code, score * 1.5);
             rules[3].getTypeMap().put(code, type + " USBOOST");
           }
         }
@@ -894,9 +896,9 @@ public class ComputeIcd11Map2 {
           for (final String key : new HashSet<>(candidates.keySet())) {
             if (icd11Concepts.containsKey(key) && !icd11Concepts.get(key)
                 .toLowerCase().contains(requiredWords.get(word))) {
-              candidates.put(key, candidates.get(key) * 0.75d);
+              candidates.put(key, candidates.get(key) * 0.45d);
               rules[5].addScore(key, 1d);
-              rules[5].appendType(key, "BOOST-DOWN (" + word + ") 0.75");
+              rules[5].appendType(key, "BOOST-DOWN (" + word + ") 0.45");
             } else if (icd11Concepts.containsKey(key) && icd11Concepts.get(key)
                 .toLowerCase().contains(requiredWords.get(word))) {
               candidates.put(key, candidates.get(key) * 1.5d);
@@ -1312,7 +1314,7 @@ public class ComputeIcd11Map2 {
       final IcdMap stemMap = new IcdMap(origMap);
       stemMap.setMapTarget(stemCode);
       icd11Map.add(0, stemMap);
-      origMap.setMapGroup(2);
+      origMap.setMapPriority(2);
       fixAdvice(stemMap, stemCode);
       stemMap.setMapAdvice(getWithoutAdvice(stemMap.getMapAdvice(),
           "POSSIBLE REQUIREMENT FOR MORPHOLOGY CODE"));
@@ -1403,7 +1405,7 @@ public class ComputeIcd11Map2 {
       icd11Map.add(origMap);
       final IcdMap xtMap = new IcdMap(origMap);
       xtMap.setMapTarget(xtCode);
-      xtMap.setMapGroup(2);
+      xtMap.setMapPriority(2);
       icd11Map.add(xtMap);
       noteSb.append("\nOVERRIDE " + category[0].toString() + ": (" + score
           + "): XT Addition Rule - " + xtName + "\n");
@@ -1706,7 +1708,7 @@ public class ComputeIcd11Map2 {
       icd11Map.add(origMap);
       final IcdMap xaMap = new IcdMap(origMap);
       xaMap.setMapTarget(xaCode);
-      xaMap.setMapGroup(2);
+      xaMap.setMapPriority(2);
       icd11Map.add(xaMap);
       fixAndClearAdvice(xaMap, xaCode);
       if (score > 3.0) {
@@ -1970,7 +1972,7 @@ public class ComputeIcd11Map2 {
     // Cache starter set
     //
     Logger.getLogger(getClass()).info(" Load SCT starterSet");
-    lines = FileUtils.readLines(new File(icd11Dir, "starterSet.txt"), "UTF-8");
+    lines = FileUtils.readLines(new File(icd11Dir, "nonStarterSet.txt"), "UTF-8");
     ct = 0;
     skipCt = 0;
     for (final String line : lines) {
