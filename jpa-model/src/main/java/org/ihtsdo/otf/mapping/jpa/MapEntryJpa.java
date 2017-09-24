@@ -329,6 +329,7 @@ public class MapEntryJpa implements MapEntry {
 
  
   /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public int getMapGroup() {
     return this.mapGroup;
