@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2015 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.helpers;
 
 import java.util.List;
@@ -9,9 +12,10 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
+import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
+import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
-// TODO: Auto-generated Javadoc
 /**
  * Represents a collection of project specific algorithms that can override
  * defaults.
@@ -103,7 +107,8 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @param record2 the record2
    * @return the validation result
    */
-  public ValidationResult compareMapRecords(MapRecord record1, MapRecord record2);
+  public ValidationResult compareMapRecords(MapRecord record1,
+    MapRecord record2);
 
   /**
    * Compute target terminology notes. These notes are passed back when looking
@@ -180,22 +185,34 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @param treePositions the tree positions
    * @return the list
    */
-  public List<TreePosition> limitTreePositions(List<TreePosition> treePositions);
-  
+  public List<TreePosition> limitTreePositions(
+    List<TreePosition> treePositions);
+
   /**
    * Checks if is one to one constrained.
    *
    * @return true, if is one to one constrained
    */
   public boolean isOneToOneConstrained();
-  
+
   /**
    * Record violates one to one constraint
    *
    * @param record the record
    * @return true, if violates constraint
-   * @throws Exception 
+   * @throws Exception
    */
-  public boolean recordViolatesOneToOneConstraint(MapRecord record) throws Exception;
+  public boolean recordViolatesOneToOneConstraint(MapRecord record)
+    throws Exception;
 
+  /**
+   * Returns the sort key.
+   *
+   * @param concept the concept
+   * @param record the record
+   * @return the sort key
+   * @throws Exception the exception
+   */
+  public String getSortKey(Concept concept, TrackingRecord record)
+    throws Exception;
 }
