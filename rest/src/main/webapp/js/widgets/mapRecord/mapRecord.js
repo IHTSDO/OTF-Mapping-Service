@@ -61,13 +61,6 @@ angular
         $scope.multiSelectCustomTexts = {
           buttonDefaultText : 'Select Leads'
         };
-        
-     // start note edit mode in off mode
-        $scope.feedbackEditMode = false;
-        $scope.feedbackEditId = null;
-        $scope.content = {
-          text : ''
-        };
 
         // validation result storage variable
         $scope.savedValidationWarnings = [];
@@ -87,9 +80,7 @@ angular
         // start note edit mode in off mode
         $scope.noteEditMode = false;
         $scope.noteEditId = null;
-        $scope.content = {
-        		text : ''
-        };
+        $scope.noteInput = '';
 
         // tooltip for Save/Next button
         $scope.dynamicTooltip = '';
@@ -309,6 +300,8 @@ angular
                   // Set basic stuff for the "then.." below
                   $scope.record = {};
                   // used by selectRecord
+                  $scope.record.id = data.id;
+                  $scope.record.mapEntry = new Array();
                   $scope.record.workflowStatus = data.workflowStatus;
                   $scope.record.conceptId = data.conceptId;
                   $scope.record.owner = {};
@@ -385,66 +378,6 @@ angular
               });
 
         }
-        
-        $scope.editFeedback = function(feedback) {
-          $scope.content.text = feedback.message;
-          $scope.feedbackEditMode = true;
-          $scope.feedbackEditId = feedback.id ? feedback.id : feedback.localId;
-        };
-
-        $scope.cancelEditFeedback = function() {
-          $scope.content.text = '';
-          $scope.feedbackEditMode = false;
-          $scope.feedbackEditId = null;
-          $scope.tinymceContent = '';
-        };
-
-        $scope.saveEditFeedback = function(feedback) {
-          
-          if ($scope.feedbackEditMode == true) {
-            var feedbackFound = false;
-            // find the existing feedback
-            for (var i = 0; i < $scope.conversation.feedback.length; i++) {
-              // if this feedback, overwrite it
-              if ($scope.feedbackEditId == $scope.conversation.feedback[i].localId ||
-                  $scope.feedbackEditId == $scope.conversation.feedback[i].id) {
-                feedbackFound = true;
-                $scope.conversation.feedback[i].message = feedback;
-                //$scope.conversation.feedback[i].id = currentLocalId++;
-              }
-            }
-            $scope.feedbackEditMode = false;
-            $scope.tinymceContent = null;
-            
-           
-
-            console.debug('update conversation', $scope.conversation);
-            $http({
-              url : root_workflow + 'conversation/update',
-              dataType : 'json',
-              data : $scope.conversation,
-              method : 'POST',
-              headers : {
-                'Content-Type' : 'application/json'
-              }
-            }).success(function(data) {
-              console.debug('  conversation updated = ', data);
-              $http({
-                url : root_workflow + 'conversation/id/' + $scope.record.id,
-                dataType : 'json',
-                method : 'GET',
-                headers : {
-                  'Content-Type' : 'application/json'
-                }
-              }).success(function(data) {
-                $scope.conversation = data;
-              });
-            }).error(function(data, status, headers, config) {
-              $scope.recordError = 'Error updating feedback conversation.';
-              $rootScope.handleHttpError(data, status, headers, config);
-            });
-          }
-        };
 
         function setIndexViewerStatus() {
           console.debug('Get index viewer status',
@@ -557,7 +490,7 @@ angular
 
           // check that note box does not contain unsaved material
           if ($scope.tinymceContent != '' && $scope.tinymceContent != null) {
-            if (confirm('You have unsaved text in the Map Notes. Do you wish to continue saving? The note will be lost.') == false) {
+            if (confirm('You have unsaved text into the Map Notes. Do you wish to continue saving? The note will be lost.') == false) {
               return;
             }
           }
@@ -1019,35 +952,23 @@ angular
 
         };
 
-        $scope.removeFeedback = function(message) {
+        $scope.removeFeedback = function(conversation) {
           // confirm delete
-          if (confirm('Are you sure that you want to delete a feedback message?') == false)
+          if (confirm('Are you sure that you want to delete a feedback conversation?') == false)
             return;
 
           $http({
             url : root_workflow + 'feedback/delete',
             dataType : 'json',
-            data : message,
+            data : conversation,
             method : 'DELETE',
             headers : {
               'Content-Type' : 'application/json'
             }
           })
-            .success(
-              function(data) {
-                $http(
-                  {
-                    url : root_workflow + 'conversation/id/'
-                      + $routeParams.recordId,
-                    dataType : 'json',
-                    method : 'GET',
-                    headers : {
-                      'Content-Type' : 'application/json'
-                    }
-                  }).success(function(data) {
-                  $scope.conversation = data;
-                });
-              })
+            .success(function(data) {
+              $scope.conversation = null;
+            })
             .error(
               function(data, status, headers, config) {
                 $scope.recordError = 'Error deleting feedback conversation from application.';
@@ -1117,16 +1038,15 @@ angular
         };
 
         $scope.editRecordNote = function(record, mapNote) {
-          $scope.content.text = mapNote.note;
+          $scope.noteInput = 'HELLO HELLO';
           $scope.noteEditMode = true;
-          $scope.noteEditId = mapNote.id ? mapNote.id : mapNote.localId;
+          $scope.noteEditId = mapNote.localId;
         };
 
         $scope.cancelEditRecordNote = function() {
-          $scope.content.text = '';
+          $scope.noteInput = '';
           $scope.noteEditMode = false;
           $scope.noteEditId = null;
-          $scope.tinymceContent = '';
         };
 
         $scope.saveEditRecordNote = function(record, note) {
@@ -1136,15 +1056,12 @@ angular
             // find the existing note
             for (var i = 0; i < record.mapNote.length; i++) {
               // if this note, overwrite it
-              if ($scope.noteEditId == record.mapNote[i].localId ||
-            		  $scope.noteEditId == record.mapNote[i].id) {
+              if ($scope.noteEditId == record.mapNote[i].localId) {
                 noteFound = true;
                 record.mapNote[i].note = note;
-                record.mapNote[i].id = currentLocalId++;
               }
             }
             $scope.noteEditMode = false;
-            $scope.tinymceContent = null;
           }
         };
 
@@ -1165,7 +1082,7 @@ angular
             mapNote.timestamp = (new Date()).getTime();
             mapNote.user = $scope.user;
 
-            // add note to record with new localId
+            // add note to record
             addElementWithId(record.mapNote, mapNote);
 
             $scope.tinymceContent = null;
@@ -1253,7 +1170,7 @@ angular
               }
             }).success(function(data) {
               console.debug('  feedback conversation = ', data);
-              $scope.conversation = data;
+              $scope.conversation = feedbackConversation;
               $scope.tinymceContent = null;
             }).error(function(data, status, headers, config) {
               $scope.recordError = 'Error adding new feedback conversation.';
@@ -1290,16 +1207,6 @@ angular
               }
             }).success(function(data) {
               console.debug('  conversation updated = ', data);
-              $http({
-                url : root_workflow + 'conversation/id/' + $scope.record.id,
-                dataType : 'json',
-                method : 'GET',
-                headers : {
-                  'Content-Type' : 'application/json'
-                }
-              }).success(function(data) {
-                $scope.conversation = data;
-              });
             }).error(function(data, status, headers, config) {
               $scope.recordError = 'Error updating feedback conversation.';
               $rootScope.handleHttpError(data, status, headers, config);
@@ -1680,14 +1587,6 @@ angular
           var myWindow = window.open($scope.getBrowserUrl(), 'browserWindow');
           myWindow.focus();
         };
-        
-        $scope.openTerminologyBrowser = function(){
-          var currentUrl = window.location.href;
-          var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
-          var newUrl = baseUrl + '/terminology/browser';
-          var myWindow = window.open(newUrl, 'terminologyBrowserWindow');
-          myWindow.focus();
-        }
 
         $scope.isFeedbackViewed = function() {
           if ($scope.conversation == null || $scope.conversation == '')
