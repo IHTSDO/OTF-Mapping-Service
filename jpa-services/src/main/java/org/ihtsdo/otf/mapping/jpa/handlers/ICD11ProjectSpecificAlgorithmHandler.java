@@ -547,14 +547,14 @@ public class ICD11ProjectSpecificAlgorithmHandler
     final String pairs = record.getUserAndWorkflowStatusPairs();
     // Sort LOW above MEDIUM, then use tree position (record.getSortKey)
     if (pairs == null || pairs.equals("NULL")) {
-      sb.append("01~");
-    } else if (pairs.split(" ").length == 1 && pairs.startsWith("EDITING_DONE_")
+      sb.append("09~");
+    } else if (pairs.split(" ").length == 1 && pairs.startsWith("EDITING_")
         && !pairs.endsWith("loader")) {
-      sb.append("01~");
+      sb.append("09~");
     } else if (pairs.equals("EDITING_DONE_loader")) {
-      sb.append("02~");
+      sb.append("08~");
     } else {
-      sb.append("03~");
+      sb.append("07~");
     }
     sb.append(record.getSortKey());
     return sb.toString();
