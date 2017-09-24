@@ -8,24 +8,18 @@
 </uib-accordion-heading>
 <table>
   <tr>
+    <td style="vertical-align: top; padding: 5px;"><strong>Id</strong></td>
     <td style="vertical-align: top; padding: 5px;">
-      <strong>Id</strong>
-    </td>
-    <td style="vertical-align: top; padding: 5px;">
-      {{concept.terminology}},{{concept.terminologyId}} &nbsp;
-      <i title='Open SNOMED Browser' class="noul glyphicon glyphicon-info-sign"
-        ng-click="openConceptBrowser()"></i>
-      <a> <i title='Open Terminology Browser' class="glyphicon glyphicon-list-alt"
-         ng-click="openTerminologyBrowser()"></i> </a>
-      <a title='Open Index Viewer' ng-show="indexViewerExists == true">
+      {{concept.terminology}},{{concept.terminologyId}} &nbsp; <i
+      title='Open SNOMED Browser' class="noul glyphicon glyphicon-info-sign"
+      ng-click="openConceptBrowser()"></i> <a title='Open Index Viewer'
+        ng-show="indexViewerExists == true">
         <i ng-click="openIndexViewer()" class="glyphicon glyphicon-book"></i>
       </a>
     </td>
   </tr>
   <tr>
-    <td style="vertical-align: top; padding: 5px;">
-      <strong>Name</strong>
-    </td>
+    <td style="vertical-align: top; padding: 5px;"><strong>Name</strong></td>
     <td style="vertical-align: top; padding: 5px;">{{concept.defaultPreferredName}}</td>
   </tr>
 </table>
@@ -82,14 +76,12 @@ Notes <i class="pull-right glyphicon"
   ng-class="{'glyphicon-chevron-down': isNotesOpen, 'glyphicon-chevron-right': !isNotesOpen}"></i>
 </uib-accordion-heading>
 <div ng-show="record.mapNote.length > 0">
-  <div ng-repeat="note in record.mapNote">
+  <div ng-repeat="notde in record.mapNote">
     <div class="alert alert-warning" disabled>
       <i class="glyphicon glyphicon-remove pull-right"
-        ng-click="removeRecordNote(record, note)"></i>
-      <i class="glyphicon glyphicon-pencil pull-right"
-		ng-click="editRecordNote(record, note); content.text = note.note"></i>
-	
-      [By
+        ng-click="removeRecordNote(record, note)"></i> <i
+        class="glyphicon glyphicon-pencil pull-right"
+        ng-click="editRecordNote(record, note); noteInput = note.note"></i> [By
       <a href="mailto:{{user.email}}">{{note.user.name}}</a>
       on {{note.timestamp | date:'MM-dd-yyyy HH:mm'}}]
       <div style="padding-left: 20px;" ng-bind-html="to_trusted(note.note)"></div>
@@ -99,23 +91,18 @@ Notes <i class="pull-right glyphicon"
 </div>
 <span style="color: red">{{errorAddRecordNote}}</span> <!--  tinymce text area -->
 <form>
-  <textarea id="tinymce-notes" ui-tinymce="tinymceOptions" ng-model="content.text"></textarea>
-  <button class="btn btn-xs btn-primary" 
+  <textarea id="tinymce-notes" ui-tinymce="tinymceOptions" ng-model="noteInput"></textarea>
+  <button class="btn btn-xs btn-primary" class="btn btn-xs btn-primary"
     ng-show="noteEditMode == false" class="pull-right" accesskey="a"
-    ng-disabled="!content.text"
-    ng-click="addRecordNote(record, content.text); content.text = null;">Add
+    ng-disabled="!noteInput"
+    ng-click="addRecordNote(record, noteInput); noteInput = null;">Add
     Note</button>
-  
-  <button class="btn btn-xs btn-primary" 
-    ng-show="noteEditMode == true" class="pull-right" accesskey="a"
-    ng-disabled="!content.text"
-    ng-click="saveEditRecordNote(record, content.text); content.text = ''">Save
-    Editing</button>
-  <button class="btn btn-xs btn-primary" 
-    ng-show="noteEditMode == true" class="pull-right" accesskey="a"
-    ng-disabled="!content.text"
-    ng-click="cancelEditRecordNote(); content.text = ''">Cancel
-    Editing</button>
+  <input ng-show="noteEditMode == true" class="pull-right" type="submit"
+    accesskey="a" value="Save Editing"
+    ng-click="saveEditRecordNote(record, noteInput); noteInput = ''"> <input
+    ng-show="noteEditMode == true" class="pull-right" type="submit"
+    accesskey="a" value="Cancel Editing"
+    ng-click="cancelEditRecordNote(); noteInput = ''">
   <span class="pull-right">
     Shortcut to add note:
     <code>Tab</code>
@@ -124,7 +111,9 @@ Notes <i class="pull-right glyphicon"
     &nbsp;&nbsp;
   </span>
 </form>
-</uib-accordion-group> </uib-accordion> <!--  PRINCIPLES PANEL --> <uib-accordion
+<!-- Original text area box
+	<textarea style="width: 100%;" ng-model="noteInput" name="noteInputTextArea"></textarea>
+	 --> </uib-accordion-group> </uib-accordion> <!--  PRINCIPLES PANEL --> <uib-accordion
   ng-show="project.mapPrinciple.length > 0"> <uib-accordion-group
   is-open="isPrinciplesOpen"> <uib-accordion-heading>
 Principles <i class="pull-right glyphicon"
@@ -204,11 +193,9 @@ review<br>
           {{recipient.name}}
           <span ng-if="$last == false">,</span>
         </span>
-        on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
-        <i class="glyphicon glyphicon-remove pull-right"
-        ng-click="removeFeedback(feedback)"></i>
-        <i class="glyphicon glyphicon-pencil pull-right"
-		ng-click="editFeedback(feedback); content.text = feedback.message"></i>
+        on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}] <i> <span
+            class="glyphicon glyphicon-remove pull-right"
+            ng-click="removeFeedback(conversation)"></i>
         <div ng-show="feedback.mapError != 'None'" style="padding-left: 20px;"
           ng-bind-html="to_trusted(feedback.mapError)"></div>
         <div style="padding-left: 20px;"
@@ -222,22 +209,11 @@ review<br>
       selected-model="returnRecipients" extra-settings="multiSelectSettings"
       translation-texts="multiSelectCustomTexts"></div>
     <textarea id="tinymce-feedback" ui-tinymce="tinymceOptions"
-      ng-model="content.text"></textarea>
+      ng-model="feedbackInput"></textarea>
     <button class="btn btn-xs btn-primary pull-right"
-      ng-disabled="!content.text"
-       ng-show = "feedbackEditMode == false"
-      ng-click="sendFeedback(record, content.text, returnRecipients); content.text = ''">
+      ng-disabled="!feedbackInput"
+      ng-click="sendFeedback(record, feedbackInput, returnRecipients); feedbackInput = ''">
       Send Feedback</button>
-       <button class="btn btn-xs btn-primary pull-right"
-      ng-disabled="!content.text"
-      ng-show = "feedbackEditMode == true"
-      ng-click="saveEditFeedback(content.text); content.text = ''">Save
-      Editing</button>
-    <button class="btn btn-xs btn-primary pull-right"
-     ng-disabled="!content.text"
-     ng-show = "feedbackEditMode == true"
-     ng-click="cancelEditFeedback(); content.text = ''">Cancel
-     Editing</button>
     <span class="pull-right">
       Shortcut to send feedback:
       <code>Tab</code>
