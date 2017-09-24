@@ -449,7 +449,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     setTransactionPerOperation(true);
 
     // instantiate the algorithm handler for this project
-    ProjectSpecificAlgorithmHandler algorithmHandler =
+    final ProjectSpecificAlgorithmHandler algorithmHandler =
         (ProjectSpecificAlgorithmHandler) Class
             .forName(mapProject.getProjectSpecificAlgorithmHandlerClass())
             .newInstance();
@@ -830,6 +830,13 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     Logger.getLogger(WorkflowServiceJpa.class)
         .info("Start computing workflow for " + mapProject.getName());
 
+    // instantiate the algorithm handler for this project
+    final ProjectSpecificAlgorithmHandler algorithmHandler =
+        (ProjectSpecificAlgorithmHandler) Class
+            .forName(mapProject.getProjectSpecificAlgorithmHandlerClass())
+            .newInstance();
+    algorithmHandler.setMapProject(mapProject);
+
     // set the transaction parameter and tracking variables
     setTransactionPerOperation(false);
     int commitCt = 1000;
@@ -983,6 +990,13 @@ public class WorkflowServiceJpa extends MappingServiceJpa
       trackingRecord.setTerminologyVersion(concept.getTerminologyVersion());
       trackingRecord.setDefaultPreferredName(concept.getDefaultPreferredName());
       trackingRecord.setSortKey(sortKey);
+
+      // Allow for project-specific override.
+      final String overrideSortKey =
+          algorithmHandler.getSortKey(concept, trackingRecord);
+      if (overrideSortKey != null) {
+        trackingRecord.setSortKey(overrideSortKey);
+      }
 
       // add any existing map records to this tracking record
       Set<MapRecord> mapRecordsForTrackingRecord = new HashSet<>();
