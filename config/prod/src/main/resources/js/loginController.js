@@ -154,6 +154,7 @@ mapProjectAppControllers.controller('LoginCtrl', [
                       $scope.preferences = data;
                       $scope.preferences.lastLogin = new Date().getTime();
                       localStorageService.add('preferences', $scope.preferences);
+                      localStorageService.add('assignedTab', $scope.preferences.lastAssignedTab);
 
                       if (typeof refSetId === 'undefined') {
                         // / / check for a
