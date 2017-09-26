@@ -3266,7 +3266,7 @@ public class MappingServiceRest extends RootServiceRest {
    * @throws Exception the exception
    */
   @POST
-  @Path("/relation/compute")
+  @Path("/relation/compute/{entryIndex}")
   @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
@@ -3275,6 +3275,7 @@ public class MappingServiceRest extends RootServiceRest {
   })
   @ApiOperation(value = "Compute map relation", notes = "Gets the computed map relation for the indicated map entry of the map record.", response = MapRelationJpa.class)
   public MapRelation computeMapRelation(
+    @ApiParam(value = "Index of entries in map record to compute relation for", required = true) @PathParam("entryIndex") Integer entryIndex,
     @ApiParam(value = "Map record, in JSON or XML POST data", required = true) MapRecordJpa mapRecord,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -3286,6 +3287,12 @@ public class MappingServiceRest extends RootServiceRest {
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
+      // Bail if there are no entries for entryIndex
+      if (mapRecord == null || mapRecord.getMapEntries() == null
+          || mapRecord.getMapEntries().size() <= entryIndex) {
+        return new MapRelationJpa();
+      }
+
       // authorize call
       user = authorizeProject(mapRecord.getMapProjectId(), authToken,
           MapUserRole.SPECIALIST, "compute map relation", securityService);
@@ -3294,16 +3301,11 @@ public class MappingServiceRest extends RootServiceRest {
           mappingService.getProjectSpecificAlgorithmHandler(
               mappingService.getMapProject(mapRecord.getMapProjectId()));
 
-      // We need the full in-memory (and unsaved) representation of the
-      // map
-      // record.
-      // The entry in question is (hackishly identified by having an id of
-      // -1);
-      MapEntry mapEntry = null;
-      for (final MapEntry entry : mapRecord.getMapEntries()) {
-        if (entry.getId() != null && entry.getId() == -1) {
-          mapEntry = entry;
-        }
+      final MapEntry mapEntry = mapRecord.getMapEntries().get(entryIndex);
+
+      // bail if not ready yet
+      if (mapEntry == null || mapEntry.getTargetId() == null) {
+        return new MapRelationJpa();
       }
 
       // Make sure map entries are sortedy by mapGroup/mapPriority
