@@ -11,6 +11,11 @@
   <button ng-show="project.sourceTerminology === 'SNOMEDCT' || project.sourceTerminology === 'SNOMEDCT_US'"
     class="btn btn-xs btn-primary" ng-click="openConceptBrowser()">SNOMEDCT
     Browser</button>
+    
+    <button 
+    class="btn btn-xs btn-primary" ng-click="openTerminologyBrowser()">Terminology
+    Browser</button>
+
 
   <button class="btn btn-xs btn-primary" ng-show="indexViewerExists == true"
     ng-click="openIndexViewer()">Index Viewer</button>

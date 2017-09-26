@@ -195,6 +195,11 @@ mapProjectApp.config([ '$rootScopeProvider', '$routeProvider',
       templateUrl : 'partials/otf-dashboard.html',
       controller : 'IndexViewerDashboardCtrl'
     });
+    
+    $routeProvider.when('/terminology/browser', {
+      templateUrl : 'partials/otf-dashboard.html',
+      controller : 'terminologyBrowserDashboardCtrl'
+    });
 
     // ////////////////////////////
     // HELP PAGES

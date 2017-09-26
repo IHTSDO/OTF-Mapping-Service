@@ -242,6 +242,14 @@ angular
             + '&acceptLicense=true');
         myWindow.focus();
       };
+    //TODO Opening a new window for Terminology browser  
+      $scope.openTerminologyBrowser = function(){
+        var currentUrl = window.location.href;
+        var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
+        var newUrl = baseUrl + '/terminology/browser';
+        var myWindow = window.open(newUrl, 'indexViewerWindow');
+        myWindow.focus();
+      }
 
       // Open index viewer
       $scope.openIndexViewer = function() {
