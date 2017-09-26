@@ -241,9 +241,9 @@ angular
 
           $rootScope.glassPane++;
           $http({
-            url : root_mapping + 'relation/compute/' + index,,
+            url : root_mapping + 'relation/compute/' + index,
             dataType : 'json',
-            data : copy,
+            data : $scope.record,
             method : 'POST',
             headers : {
               'Content-Type' : 'application/json'
@@ -783,11 +783,21 @@ angular
           if ($scope.entry.targetId || $scope.entry.mapRelation
             || ignoreNullValues) {
 
-            computeRelation($scope.entry).then(
-            // Success
-            function() {
-              computeAdvices($scope.record);
-            });
+            for (var i = 0; i < record.mapEntry.length; i++) {
+              var entry = record.mapEntry[i];
+              // Use the scoped entry if the local id matches or if the actual
+              // id
+              // matches
+              if (matchingEntry(entry, $scope.entry)) {
+                computeRelation($scope.entry, i).then(
+                // Success
+                function() {
+                  computeAdvices($scope.record);
+                });
+
+              }
+              break;
+            }
 
             // set these to null for consistency
           } else {
