@@ -121,7 +121,8 @@ angular
           $http(
             {
               url : root_mapping + 'project/id/' + $scope.project.id
-                + '/concept/isValid' + '?terminologyId=' + encodeURIComponent(targetCode),
+                + '/concept/isValid' + '?terminologyId='
+                + encodeURIComponent(targetCode),
               method : 'GET',
               headers : {
                 'Content-Type' : 'application/json'
@@ -228,7 +229,7 @@ angular
           updateEntry($scope.entry);
         };
 
-        function computeRelation(entry) {
+        function computeRelation(entry, index) {
           var deferred = $q.defer();
 
           // ensure mapRelation is deserializable
@@ -236,22 +237,22 @@ angular
             entry.mapRelation = null;
           }
 
-          // Fake the ID of this entry with -1 id, copy, then set it back
-          // This is hacky, but we do not have a good way to send 2 objects
-          // and the entry may not have an id yet because it could be new.
-          var copy = angular.copy($scope.record);
-          // Find the matching localId and replace it and set the id to -1
-          for (var i = 0; i < copy.mapEntry.length; i++) {
-            if (entry.localId == copy.mapEntry[i].localId) {
-              var entryCopy = angular.copy(entry);
-              entryCopy.id = -1;
-              copy.mapEntry.splice(i, 1, entryCopy);
-            }
-          }
+          // // Fake the ID of this entry with -1 id, copy, then set it back
+          // // This is hacky, but we do not have a good way to send 2 objects
+          // // and the entry may not have an id yet because it could be new.
+          // var copy = angular.copy($scope.record);
+          // // Find the matching localId and replace it and set the id to -1
+          // for (var i = 0; i < copy.mapEntry.length; i++) {
+          // if (entry.localId == copy.mapEntry[i].localId) {
+          // var entryCopy = angular.copy(entry);
+          // entryCopy.id = -1;
+          // copy.mapEntry.splice(i, 1, entryCopy);
+          // }
+          // }
 
           $rootScope.glassPane++;
           $http({
-            url : root_mapping + 'relation/compute',
+            url : root_mapping + 'relation/compute/' + index,,
             dataType : 'json',
             data : copy,
             method : 'POST',
@@ -638,7 +639,6 @@ angular
 
               // base text for both lower and upper value sections
               var ruleText = 'IFA 424144002 | Current chronological age (observable entity)';
-
 
               if (lowerValueValid) {
                 $scope.rule += ruleText + ' | '
