@@ -1061,6 +1061,8 @@ angular
               if ($scope.noteEditId == record.mapNote[i].localId) {
                 noteFound = true;
                 record.mapNote[i].note = note;
+                record.mapNote[i].timestamp = (new Date()).getTime();
+                record.mapNote[i].user =$scope.user;
               }
             }
             $scope.noteEditMode = false;
