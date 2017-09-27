@@ -3318,9 +3318,9 @@ public class MappingServiceRest extends RootServiceRest {
 
     } catch (Exception e) {
       handleException(e, "trying to compute the map relations", user,
-          mapRecord == null && mapRecord.getMapProjectId() != null ? ""
+          (mapRecord == null || mapRecord.getMapProjectId() == null) ? ""
               : mapRecord.getMapProjectId().toString(),
-          mapRecord == null && mapRecord.getId() != null ? ""
+          (mapRecord == null || mapRecord.getId() == null) ? ""
               : mapRecord.getId().toString());
       return null;
     } finally {
@@ -3391,10 +3391,11 @@ public class MappingServiceRest extends RootServiceRest {
 
     } catch (Exception e) {
       handleException(e, "trying to compute the map advice", user,
-          mapRecord == null && mapRecord.getMapProjectId() != null ? ""
+          (mapRecord == null || mapRecord.getMapProjectId() == null) ? ""
               : mapRecord.getMapProjectId().toString(),
-          mapRecord == null && mapRecord.getId() != null ? ""
+          (mapRecord == null || mapRecord.getId() == null) ? ""
               : mapRecord.getId().toString());
+
       return null;
     } finally {
       mappingService.close();
