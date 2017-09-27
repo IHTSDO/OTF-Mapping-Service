@@ -181,7 +181,9 @@ angular
 
             // If not QA_NEW, REVIEW_NEW, or CONFLICT_NEW, bail here
             // and let the "retrieveRecord" load this record.
-            if (!$scope.record.workflowStatus.endsWith('_NEW')) {
+            console.debug("XXX parameters",parameters);
+            if (!parameters.forceOverride
+              && !$scope.record.workflowStatus.endsWith('_NEW')) {
               return;
             }
 
@@ -299,15 +301,8 @@ angular
                   }
                 } else {
                   // Set basic stuff for the "then.." below
-                  $scope.record = {};
-                  // used by selectRecord
-                  $scope.record.id = data.id;
-                  $scope.record.mapEntry = new Array();
-                  $scope.record.workflowStatus = data.workflowStatus;
-                  $scope.record.conceptId = data.conceptId;
-                  $scope.record.owner = {};
-                  $scope.record.owner.userName = data.owner.userName;
-                  $scope.record.mapProjectId = $scope.project.id;
+                  $scope.record = data;
+
                 }
 
               })
