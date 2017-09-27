@@ -593,6 +593,14 @@ angular
         $scope.searchParameters.advancedMode = !$scope.searchParameters.advancedMode;
       };
 
+      $scope.openTerminologyBrowser = function(){
+          var currentUrl = window.location.href;
+          var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
+          var newUrl = baseUrl + '/terminology/browser';
+          var myWindow = window.open(newUrl, 'terminologyBrowserWindow');
+          myWindow.focus();
+        }
+      
       $scope.getPfsFromSearchParameters = function(page) {
         $scope.searchParameters.page = page;
         console.debug('Getting pfs from search parameters', $scope.searchParameters);
