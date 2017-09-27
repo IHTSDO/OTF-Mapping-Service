@@ -1040,7 +1040,7 @@ angular
         };
 
         $scope.editRecordNote = function(record, mapNote) {
-          $scope.noteInput = 'HELLO HELLO';
+          $scope.noteInput = mapNote.note;
           $scope.noteEditMode = true;
           $scope.noteEditId = mapNote.localId;
         };
@@ -1062,7 +1062,7 @@ angular
                 noteFound = true;
                 record.mapNote[i].note = note;
                 record.mapNote[i].timestamp = (new Date()).getTime();
-                record.mapNote[i].user =$scope.user;
+                record.mapNote[i].user = $scope.user;
               }
             }
             $scope.noteEditMode = false;
