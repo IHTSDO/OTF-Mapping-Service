@@ -783,8 +783,8 @@ angular
           if ($scope.entry.targetId || $scope.entry.mapRelation
             || ignoreNullValues) {
 
-            for (var i = 0; i < record.mapEntry.length; i++) {
-              var entry = record.mapEntry[i];
+            for (var i = 0; i < $scope.record.mapEntry.length; i++) {
+              var entry = $scope.record.mapEntry[i];
               // Use the scoped entry if the local id matches or if the actual
               // id
               // matches
