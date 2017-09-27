@@ -307,6 +307,7 @@ angular
                   $scope.record.conceptId = data.conceptId;
                   $scope.record.owner = {};
                   $scope.record.owner.userName = data.owner.userName;
+                  $scope.record.mapProjectId = $scope.project.id;
                 }
 
               })
