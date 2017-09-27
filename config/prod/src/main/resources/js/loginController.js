@@ -154,8 +154,29 @@ mapProjectAppControllers.controller('LoginCtrl', [
                       $scope.preferences = data;
                       $scope.preferences.lastLogin = new Date().getTime();
                       localStorageService.add('preferences', $scope.preferences);
+                      localStorageService.add('assignedTab', $scope.preferences.lastAssignedTab);
 
-                      if (typeof refSetId === 'undefined') {
+                      // if user is a guest, set a default project to avoid confusion to 
+                      //  the users if previous guest exited on non-default project
+                      if ($scope.userName == 'guest') {
+                    	for (var i = 0; i< $scope.mapProjects.length; i++) {
+                    	  if ($scope.mapProjects[i].name.indexOf('SNOMEDCT_US') > 0 
+                            && $scope.mapProjects[i].name.indexOf('ICD10CM') > 0) {
+                            $scope.focusProject = $scope.mapProjects[i];
+                            break;
+                          }
+                    	  if ($scope.mapProjects[i].name.indexOf('SNOMEDCT') > 0 
+                    		&& $scope.mapProjects[i].name.indexOf('ICD11') > 0) {
+                    		$scope.focusProject = $scope.mapProjects[i];
+                    		break;
+                    	  }
+                    	  if ($scope.mapProjects[i].name.indexOf('SNOMEDCT') > 0 
+                          	&& $scope.mapProjects[i].name.indexOf('ICD10') > 0) {
+                          	$scope.focusProject = $scope.mapProjects[i];
+                          	break;
+                          }
+                    	}
+                      } else if (typeof refSetId === 'undefined') {
                         // / / check for a
                         // / / last-visited
                         // / / project
