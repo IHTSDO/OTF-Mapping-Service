@@ -203,7 +203,7 @@ angular
 
               // auto-populate if there is only one, no split-screen
               $timeout(function() {
-                $scope.populateMapRecord($scope.record1);
+                $scope.populateMapRecord($scope.record1,false);
               }, 400);
 
             } else if (data.totalCount == 2) {
@@ -553,7 +553,7 @@ angular
       }
 
       // Populates lead record and fires a "selected" event
-      $scope.populateMapRecord = function(record) {
+      $scope.populateMapRecord = function(record, flag) {
 
         var localId = 1;
 
@@ -583,7 +583,7 @@ angular
           $scope.leadRecord);
         $rootScope.$broadcast('compareRecordsWidget.notification.selectRecord',
           {
-            record : $scope.leadRecord
+            record : $scope.leadRecord, forceOverride : flag
           });
 
       };
@@ -1005,7 +1005,7 @@ angular
           $scope.isFalseConflict = !$scope.isFalseConflict;
 
           // if record marked in conflict, broadcast the first record
-          $scope.populateMapRecord($scope.record1);
+          $scope.populateMapRecord($scope.record1, true);
 
         }).error(function(data, status, headers, config) {
           $scope.recordError = 'Error setting false conflict.';
