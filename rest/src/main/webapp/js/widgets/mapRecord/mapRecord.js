@@ -1371,6 +1371,7 @@ angular
           $rootScope.$broadcast(
             'mapRecordWidget.notification.changeSelectedEntry', {
               key : 'changeSelectedEntry',
+              // Copy the entry, it is updated here via the "modifySelectedEntry" event
               entry : angular.copy(entry),
               record : $scope.record,
               project : $scope.project
