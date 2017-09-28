@@ -135,7 +135,7 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
       }
     }
     if (rootId == null)
-      throw new Exception("Simple refsets concept cannot be found.");
+      throw new Exception("Simple refsets concept cannot be found for " + terminology + " " + version + ".\n" + results.getSearchResults());
 
     Map<String, String> result =
         getDescendantMap(contentService, rootId, terminology, version);
