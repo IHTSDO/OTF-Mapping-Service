@@ -573,7 +573,15 @@ angular
       $scope.openConceptBrowser = function() {
         window.open($scope.getBrowserUrl(), 'browserWindow');
       };
-
+      
+      $scope.openTerminologyBrowser = function(){
+        var currentUrl = window.location.href;
+        var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
+        var newUrl = baseUrl + '/terminology/browser';
+        var myWindow = window.open(newUrl, 'terminologyBrowserWindow');
+        myWindow.focus();
+      }
+      
       $scope.openIndexViewer = function() {
         var currentUrl = window.location.href;
         var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
