@@ -167,16 +167,16 @@ mapProjectAppControllers.controller('LoginCtrl', [
                             && $scope.mapProjects[i].name.indexOf('ICD10CM') > 0) {
                             $scope.focusProject = $scope.mapProjects[i];
                             break;
-                          }
-                    	  if ($scope.mapProjects[i].name.indexOf('SNOMEDCT') > 0 
+                          } else if ($scope.mapProjects[i].name.indexOf('SNOMEDCT') > 0 
                     		&& $scope.mapProjects[i].name.indexOf('ICD11') > 0) {
                     		$scope.focusProject = $scope.mapProjects[i];
                     		break;
-                    	  }
-                    	  if ($scope.mapProjects[i].name.indexOf('SNOMEDCT') > 0 
+                    	  } else if ($scope.mapProjects[i].name.indexOf('SNOMEDCT') > 0 
                           	&& $scope.mapProjects[i].name.indexOf('ICD10') > 0) {
                           	$scope.focusProject = $scope.mapProjects[i];
                           	break;
+                          } else {
+                        	$scope.focusProject = $scope.mapProjects[0];
                           }
                     	}
                       } else if (typeof refSetId === 'undefined') {

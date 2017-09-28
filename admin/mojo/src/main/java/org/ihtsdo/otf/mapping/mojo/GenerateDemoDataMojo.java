@@ -204,6 +204,7 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     project1.setProjectSpecificAlgorithmHandlerClass(
         "org.ihtsdo.otf.mapping.jpa.handlers.AllergyProjectSpecificAlgorithmHandler");
     project1.setPropagatedFlag(false);
+    project1.setPublic(true);
     project1.setRefSetId("12345");
     project1.setRefSetName("Allergy to SNOMED Refset");
     project1.setSourceTerminology("ALLERGY");
@@ -237,6 +238,7 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     project2.setProjectSpecificAlgorithmHandlerClass(
         "org.ihtsdo.otf.mapping.jpa.handlers.MedicationProjectSpecificAlgorithmHandler");
     project2.setPropagatedFlag(false);
+    project2.setPublic(true);
     project2.setRefSetId("23456");
     project2.setRefSetName("Medication to RXNORM Mapping");
     project2.setSourceTerminology("MEDICATION");
@@ -276,6 +278,7 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     project3.setProjectSpecificAlgorithmHandlerClass(
         "org.ihtsdo.otf.mapping.jpa.handlers.ICD10ProjectSpecificAlgorithmHandler");
     project3.setPropagatedFlag(false);
+    project3.setPublic(true);
     project3.setRefSetId("3333333");
     project3.setRefSetName("SNOMEDCT to ICD10");
     project3.setSourceTerminology("SNOMEDCT");
@@ -310,6 +313,7 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     project4.setProjectSpecificAlgorithmHandlerClass(
         "org.ihtsdo.otf.mapping.jpa.handlers.ICD10ProjectSpecificAlgorithmHandler");
     project4.setPropagatedFlag(false);
+    project4.setPublic(true);
     project4.setRefSetId("3333333");
     project4.setRefSetName("SNOMEDCT to ICD10CM");
     project4.setSourceTerminology("SNOMEDCT");
