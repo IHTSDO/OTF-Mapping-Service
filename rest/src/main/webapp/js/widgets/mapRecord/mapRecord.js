@@ -1680,6 +1680,14 @@ angular
           var myWindow = window.open($scope.getBrowserUrl(), 'browserWindow');
           myWindow.focus();
         };
+        
+        $scope.openTerminologyBrowser = function(){
+          var currentUrl = window.location.href;
+          var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
+          var newUrl = baseUrl + '/terminology/browser';
+          var myWindow = window.open(newUrl, 'terminologyBrowserWindow');
+          myWindow.focus();
+        }
 
         $scope.isFeedbackViewed = function() {
           if ($scope.conversation == null || $scope.conversation == '')
