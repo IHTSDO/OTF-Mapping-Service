@@ -107,7 +107,7 @@ angular
         }
 
         $scope.setTarget = function(targetCode) {
-          $scope.getValidTargetError = '';
+            $scope.getValidTargetError = '';
 
           // if target code is empty, compute parameters and return
           if (!targetCode) {
@@ -789,7 +789,6 @@ angular
          * relation
          */
         $scope.computeParameters = function(ignoreNullValues) {
-
           // either target or relation must be non-null to compute
           // relation/advice
           if ($scope.entry.targetId || $scope.entry.mapRelation
@@ -798,17 +797,15 @@ angular
             for (var i = 0; i < $scope.record.mapEntry.length; i++) {
               var entry = $scope.record.mapEntry[i];
               // Use the scoped entry if the local id matches or if the actual
-              // id
-              // matches
+              // id matches
               if (matchingEntry(entry, $scope.entry)) {
                 computeRelation($scope.entry, i).then(
                 // Success
                 function() {
                   computeAdvices($scope.record);
                 });
-
+                break;
               }
-              break;
             }
 
             // set these to null for consistency
