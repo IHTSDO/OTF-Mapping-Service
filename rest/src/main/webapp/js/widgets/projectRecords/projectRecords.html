@@ -98,8 +98,7 @@
     <!-- Search by map Group -->
     <div class="row" style="padding: 5px;">
       <div class="col-md-3" style="padding-right: 0px;">
-        Map Group <i
-          class="glyphicon glyphicon-remove pull-right"
+        Map Group <i class="glyphicon glyphicon-remove pull-right"
           ng-click="searchParameters.mapGroup = null"
           ng-show="searchParameters.mapGroup"></i>
       </div>
@@ -125,25 +124,28 @@
         Consensus Review"
       </div>
     </div>
+
+    <!--  Search by map principles -->
+    <div ng-show="searchParameters.principles.length > 0" class="row"
+      style="padding: 5px;">
+      <div class="col-md-3" style="padding-right: 0px;">
+        Map Principle <i class="glyphicon glyphicon-remove pull-right"
+          ng-click="searchParameters.principleName = null"
+          ng-show="searchParameters.principleName"></i>
+      </div>
+      <div class="col-md-9">
+        <select style="width: 15%"
+          ng-model="searchParameters.principleContained"
+          ng-options="o.val as o.key for o in [{ key: 'contains', val: true }, { key: 'does not contain', val: false }]">
+        </select> <select style="width: 83%" ng-model="searchParameters.principleName"
+          style="width: 98%;"
+          ng-options="mapPrinciple.name as mapPrinciple.name for mapPrinciple in searchParameters.principles | orderBy:'name'"></select>
+      </div>
+    </div>
+
+
   </div>
 
-  <!--  Search by map principles -->
-  <div ng-show="searchParameters.principles.length > 0" class="row"
-    style="padding: 5px;">
-    <div class="col-md-3" style="padding-right: 0px;">
-      Map Principle <i class="glyphicon glyphicon-remove pull-right"
-        ng-click="searchParameters.principleName = null"
-        ng-show="searchParameters.principleName"></i>
-    </div>
-    <div class="col-md-9">
-      <select style="width: 15%" ng-model="searchParameters.principleContained"
-        ng-options="o.val as o.key for o in [{ key: 'contains', val: true }, { key: 'does not contain', val: false }]">
-      </select> <select style="width: 83%" ng-model="searchParameters.principleName"
-        style="width: 98%;"
-        ng-options="mapPrinciple.name as mapPrinciple.name for mapPrinciple in searchParameters.principles | orderBy:'name'"></select>
-    </div>
-  </div>
-  </div>
 </form>
 
 
