@@ -181,7 +181,6 @@ angular
 
             // If not QA_NEW, REVIEW_NEW, or CONFLICT_NEW, bail here
             // and let the "retrieveRecord" load this record.
-            console.debug("XXX parameters",parameters);
             if (!parameters.forceOverride
               && !$scope.record.workflowStatus.endsWith('_NEW')) {
               return;
