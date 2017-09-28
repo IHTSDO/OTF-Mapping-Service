@@ -111,7 +111,7 @@ mapProjectApp.run([
         for ( var key in appConfig) {
           if (appConfig.hasOwnProperty(key)) {
             console.debug('  ' + key + ': ' + appConfig[key]);
-            if (appConfig[key].startsWith('${')) {
+            if (appConfig[key].startsWith('${') && !key.startsWith('projectVersion')) {
               errMsg += 'Configuration property ' + key
                 + ' not set in project or configuration file';
             }
