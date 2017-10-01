@@ -352,6 +352,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       final String adviceP04 =
           "CONSIDER TRIMESTER SPECIFICATION";
       if (mapEntry.getTargetId().startsWith("O")
+    	  && (mapEntry.getTargetName().toLowerCase().indexOf("unspecified trimester") != -1)
           && !TerminologyUtility.hasAdvice(mapEntry, adviceP04)) {
         advices.add(TerminologyUtility.getAdvice(mapProject, adviceP04));
       }
