@@ -183,7 +183,7 @@ public class ComputeIcd11Map2 {
     }
     final String icd11Dir = System.getProperty("icd11.dir");
     // Tracking vars
-    final String refsetId = "icd11RefsetId-b";
+    final String refsetId = "icd11RefsetId";
     final String moduleId = "123456789";
     Logger.getLogger(getClass()).info("  icd11Dir = " + icd11Dir);
     Logger.getLogger(getClass()).info("  moduleId = " + moduleId);
@@ -1972,7 +1972,7 @@ public class ComputeIcd11Map2 {
     // Cache starter set
     //
     Logger.getLogger(getClass()).info(" Load SCT starterSet");
-    lines = FileUtils.readLines(new File(icd11Dir, "nonStarterSet.txt"), "UTF-8");
+    lines = FileUtils.readLines(new File(icd11Dir, "starterSet.txt"), "UTF-8");
     ct = 0;
     skipCt = 0;
     for (final String line : lines) {
