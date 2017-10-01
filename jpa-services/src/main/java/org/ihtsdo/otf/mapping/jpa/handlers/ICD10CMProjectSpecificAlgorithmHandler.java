@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceListJpa;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
+import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.jpa.helpers.TerminologyUtility;
@@ -27,6 +28,7 @@ import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Description;
+import org.ihtsdo.otf.mapping.rf2.Relationship;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
@@ -352,6 +354,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       final String adviceP04 =
           "CONSIDER TRIMESTER SPECIFICATION";
       if (mapEntry.getTargetId().startsWith("O")
+    	  && (mapEntry.getTargetName().toLowerCase().indexOf("unspecified trimester") != -1)
           && !TerminologyUtility.hasAdvice(mapEntry, adviceP04)) {
         advices.add(TerminologyUtility.getAdvice(mapProject, adviceP04));
       }
@@ -532,62 +535,18 @@ public class ICD10CMProjectSpecificAlgorithmHandler
         // {
         return false;
       }
-
-      // SPECIFIC CASE: for M14.__, codes with fifth digit are not assignable
-      if (terminologyId.toUpperCase().startsWith("M14")
-          && terminologyId.length() == 6)
-        return false;
-
-      // if a three digit code
-      if (terminologyId.matches(".[0-9].")) {
-
-        // SPECIFIC CASE for W00-W19, X00-X09, Y10-Y34, fourth digit not
-        // required,
-        // return true for codes with 3 or more digits
-        if (terminologyId.toUpperCase().matches("W..|X..|Y[0-2].|Y3[0-4]")
-            && !terminologyId.toUpperCase().startsWith("W26")
-            && !terminologyId.toUpperCase().startsWith("Y06")
-            && !terminologyId.toUpperCase().startsWith("Y07")
-            && !terminologyId.toUpperCase().startsWith("Y35")
-            && !terminologyId.toUpperCase().startsWith("Y36")
-            && !terminologyId.toUpperCase().startsWith("X34")
-            && !terminologyId.toUpperCase().startsWith("X59")) {
-          // n/a
-        }
-
-        // Check other 3 digit codes
-        else {
-
-          cacheCodes();
-
-          // Is it a valid 3 digit code?
-          return valid3DigitCodes.contains(terminologyId.toUpperCase());
-
-        }
-      }
-
-      // if a four digit code is all
-      else if (terminologyId.matches(".[0-9].\\..")) {
-
-        // SPECIFIC CASE for W00-W19, X00-X09, Y10-Y34, fourth digit not
-        // required,
-        // return true for codes with 3 or more digits
-        if (terminologyId.toUpperCase().matches("(W..|X..|Y[0-2].|Y3[0-4])..")
-            && !terminologyId.toUpperCase().startsWith("W26")
-            && !terminologyId.toUpperCase().startsWith("Y06")
-            && !terminologyId.toUpperCase().startsWith("Y07")
-            && !terminologyId.toUpperCase().startsWith("Y35")
-            && !terminologyId.toUpperCase().startsWith("Y36")
-            && !terminologyId.toUpperCase().startsWith("X34")
-            && !terminologyId.toUpperCase().startsWith("X59")) {
-          return false;
-        }
-
-      }
+   
       // verify concept exists in database
       final Concept concept = contentService.getConcept(terminologyId,
           mapProject.getDestinationTerminology(),
           mapProject.getDestinationTerminologyVersion());
+      
+      TreePositionList list = contentService.getTreePositions(terminologyId, mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
+      for (TreePosition tp : list.getTreePositions()) {
+    	  if (tp.getDescendantCount() > 0) {
+    		  return false;
+    	  }
+      }
 
       if (concept == null) {
         return false;
@@ -958,47 +917,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
         daggerCodes.add(concept.getTerminologyId());
       }
 
-      // Look up valid 3 digit codes. This is actually just a manual list
-      // derived from this query:
-      // select terminologyId from concepts
-      // where terminology = 'ICD10'
-      // and terminologyVersion = '2010'
-      // and length(terminologyId) = 3
-      // and terminologyId NOT IN
-      // (select substring_index(ancestorPath, '~',-1)
-      // from tree_positions
-      // where terminology='ICD10'
-      // and terminologyVersion = '2010');
-      //
-      valid3DigitCodes.addAll(Arrays.asList(new String[] {
-          "A33", "A34", "A35", "A38", "A46", "A55", "A57", "A58", "A64", "A65",
-          "A70", "A78", "A86", "A89", "A90", "A91", "A94", "A99", "B03", "B04",
-          "B07", "B09", "B24", "B49", "B54", "B59", "B64", "B72", "B73", "B75",
-          "B79", "B80", "B86", "B89", "B91", "B92", "B99", "C01", "C07", "C12",
-          "C19", "C20", "C23", "C33", "C37", "C52", "C55", "C56", "C58", "C61",
-          "C64", "C65", "C66", "C73", "C97", "D24", "D27", "D34", "D45", "D62",
-          "D65", "D66", "D67", "D70", "D71", "D77", "E02", "E15", "E40", "E41",
-          "E42", "E43", "E45", "E46", "E52", "E54", "E58", "E59", "E60", "E65",
-          "E68", "E86", "E90", "F03", "F04", "F09", "F21", "F24", "F28", "F29",
-          "F39", "F54", "F55", "F59", "F61", "F69", "F82", "F83", "F88", "F89",
-          "F99", "G01", "G07", "G08", "G09", "G10", "G14", "G20", "G22", "G26",
-          "G35", "G64", "G92", "G98", "H46", "H55", "H71", "H82", "I00", "I10",
-          "I38", "I64", "I81", "I99", "J00", "J09", "J13", "J14", "J22", "J36",
-          "J40", "J42", "J46", "J47", "J60", "J61", "J64", "J65", "J80", "J81",
-          "J82", "J90", "J91", "K20", "K30", "K36", "K37", "L00", "L14", "L22",
-          "L26", "L42", "L45", "L52", "L80", "L82", "L83", "L84", "L86", "L88",
-          "L97", "N10", "N12", "N19", "N23", "N26", "N40", "N44", "N46", "N47",
-          "N61", "N62", "N63", "N72", "N86", "N96", "O11", "O13", "O16", "O25",
-          "O40", "O48", "O85", "O94", "O95", "P38", "P53", "P60", "P75", "P77",
-          "P90", "P93", "P95", "Q02", "R02", "R05", "R11", "R12", "R13", "R14",
-          "R15", "R17", "R18", "R21", "R31", "R32", "R33", "R34", "R35", "R36",
-          "R42", "R51", "R53", "R54", "R55", "R58", "R64", "R69", "R71", "R72",
-          "R75", "R80", "R81", "R91", "R92", "R98", "R99", "S16", "S18", "S47",
-          "T07", "T16", "T55", "T58", "T64", "T66", "T68", "T71", "T96", "T97",
-          "U85", "U88", "V98", "V99", "Y66", "Y69", "Y86", "Y95", "Y96", "Y97",
-          "Y98", "Z21", "Z33"
-      }));
-      // for 2016 removed: I48 R95
+      
 
       // Report to log
       Logger.getLogger(getClass()).info("  asterisk codes = " + asteriskCodes);
