@@ -486,7 +486,6 @@ public class MapProjectJpa implements MapProject {
   }
 
   /* see superclass */
-  @XmlTransient
   @Override
   public WorkflowType getWorkflowType() {
     return workflowType;
