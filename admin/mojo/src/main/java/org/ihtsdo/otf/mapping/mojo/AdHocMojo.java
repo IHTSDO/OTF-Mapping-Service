@@ -414,9 +414,13 @@ public class AdHocMojo extends AbstractMojo {
             } else {
               entry.setMapGroup(1);
               entry.setMapPriority(1);
-
             }
           }
+          // Log reordered
+          getLog().info("   REORDERED");
+          logRecord(record, "    ");
+          // mappingService.updateMapRecord(record);
+          continue;
 
         } else {
           getLog().info("    skipping = " + record.getMapEntries().size());
