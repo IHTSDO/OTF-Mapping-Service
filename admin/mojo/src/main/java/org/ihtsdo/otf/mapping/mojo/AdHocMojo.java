@@ -419,11 +419,11 @@ public class AdHocMojo extends AbstractMojo {
           // Log reordered
           getLog().info("   REORDERED");
           logRecord(record, "    ");
-          // mappingService.updateMapRecord(record);
+          mappingService.updateMapRecord(record);
           continue;
 
         } else {
-          getLog().info("    skipping = " + record.getMapEntries().size());
+          getLog().info("    skipping = " + record.getConceptId());
           continue;
         }
 
@@ -433,6 +433,7 @@ public class AdHocMojo extends AbstractMojo {
       if (xOnlyFlag) {
         getLog().info("  Only X flags = ");
         logRecord(record, "    ");
+        getLog().info("    skipping = " + record.getConceptId());
         continue;
       }
 
@@ -440,6 +441,7 @@ public class AdHocMojo extends AbstractMojo {
       if (xOnlyFlag && record.getMapEntries().size() == 1) {
         getLog().info("  candidate as X only, no action = ");
         logRecord(record, "    ");
+        getLog().info("    skipping = " + record.getConceptId());
         continue;
       }
 
@@ -463,7 +465,7 @@ public class AdHocMojo extends AbstractMojo {
         // Log reordered
         getLog().info("   REORDERED");
         logRecord(record, "    ");
-        // mappingService.updateMapRecord(record);
+        mappingService.updateMapRecord(record);
 
       }
     }
