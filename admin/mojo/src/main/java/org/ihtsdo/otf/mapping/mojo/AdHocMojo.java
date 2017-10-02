@@ -393,32 +393,50 @@ public class AdHocMojo extends AbstractMojo {
         if (entry.getMapGroup() > 1) {
           groupFlag = true;
         }
-        if (!entry.getTargetId().startsWith("X")) {
+        if (!entry.getTargetName().startsWith("X")) {
           stemFlag = true;
         }
       }
 
       // Check for >1 codes, starting with X code (and including stem code)
       boolean xFollowedByStemFlag = record.getMapEntries().size() > 1
-          && record.getMapEntries().get(0).getTargetId().startsWith("X")
-          && !record.getMapEntries().get(1).getTargetId().startsWith("X");
+          && record.getMapEntries().get(0).getTargetName().startsWith("X")
+          && !record.getMapEntries().get(1).getTargetName().startsWith("X");
 
       if (xFollowedByStemFlag) {
         getLog().info("  candidate as X followed by stem flag = ");
         logRecord(record, "    ");
-        continue;
+        if (record.getMapEntries().size() == 2) {
+          for (final MapEntry entry : record.getMapEntries()) {
+            if (entry.getTargetName().startsWith("X")) {
+              entry.setMapGroup(1);
+              entry.setMapPriority(2);
+            } else {
+              entry.setMapGroup(1);
+              entry.setMapPriority(1);
+
+            }
+          }
+
+        } else {
+          getLog().info("    skipping = " + record.getMapEntries().size());
+          continue;
+        }
+
       }
       // Check for >1 codes, starting with X code (and not including stem code)
       boolean xOnlyFlag = record.getMapEntries().size() > 1 && !stemFlag;
       if (xOnlyFlag) {
-        getLog().info("  candidate as X followed by stem flag = ");
+        getLog().info("  Only X flags = ");
         logRecord(record, "    ");
+        continue;
       }
 
       // Check for single X code only => NO ACTION
       if (xOnlyFlag && record.getMapEntries().size() == 1) {
         getLog().info("  candidate as X only, no action = ");
         logRecord(record, "    ");
+        continue;
       }
 
       if (groupFlag && !priorityFlag && stemFlag) {
@@ -428,7 +446,7 @@ public class AdHocMojo extends AbstractMojo {
         int priority = 0;
         for (final MapEntry entry : record.getMapEntries()) {
           // If blank or a stem code, increment group, reset priority
-          if (!entry.getTargetId().startsWith("X")) {
+          if (!entry.getTargetName().startsWith("X")) {
             group++;
             priority = 1;
           } else {
@@ -441,7 +459,7 @@ public class AdHocMojo extends AbstractMojo {
         // Log reordered
         getLog().info("   REORDERED");
         logRecord(record, "    ");
-        mappingService.updateMapRecord(record);
+        // mappingService.updateMapRecord(record);
 
       }
     }
