@@ -7,6 +7,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -91,7 +93,7 @@ public class AdHocMojo extends AbstractMojo {
         mappingService.commit();
       }
 
-      if (mode != null && mode.equals("icd11-priority")) {
+      if (mode != null && mode.equals("icd11-principle")) {
         mappingService.setTransactionPerOperation(false);
         mappingService.beginTransaction();
         handleIcd11Principle(refsetId, inputFile, workflowService,
@@ -375,12 +377,21 @@ public class AdHocMojo extends AbstractMojo {
 
       // Determine whether this map is subject to change (e.g. doesn't use
       // priority != 1 and has mapGroup>1
+      Collections.sort(record.getMapEntries(), new Comparator<MapEntry>() {
+
+        @Override
+        public int compare(MapEntry o1, MapEntry o2) {
+          return ((o1.getMapGroup() * 10) + o1.getMapPriority())
+              - ((o2.getMapGroup() * 10) + o2.getMapPriority());
+        }
+
+      });
       for (final MapEntry entry : record.getMapEntries()) {
         if (entry.getMapPriority() > 1) {
           priorityFlag = true;
         }
         if (entry.getMapGroup() > 1) {
-          priorityFlag = true;
+          groupFlag = true;
         }
         if (!entry.getTargetId().startsWith("X")) {
           stemFlag = true;
