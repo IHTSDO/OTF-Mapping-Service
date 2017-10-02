@@ -91,6 +91,14 @@ public class AdHocMojo extends AbstractMojo {
         mappingService.commit();
       }
 
+      if (mode != null && mode.equals("icd11-priority")) {
+        mappingService.setTransactionPerOperation(false);
+        mappingService.beginTransaction();
+        handleIcd11Principle(refsetId, inputFile, workflowService,
+            contentService, mappingService);
+        mappingService.commit();
+      }
+
     } catch (Exception e) {
       e.printStackTrace();
       throw new MojoExecutionException("Ad-hoc mojo failed to complete", e);
@@ -342,6 +350,105 @@ public class AdHocMojo extends AbstractMojo {
       if (change) {
         mappingService.updateMapRecord(record);
       }
+
+    }
+  }
+
+  private void handleIcd11Principle(String refsetId, String inputFile,
+    WorkflowService workflowService, ContentService contentService,
+    MappingService mappingService) throws Exception {
+
+    // Load the map project
+    final Map<String, MapProject> mapProjectMap = new HashMap<>();
+    for (MapProject project : mappingService.getMapProjects().getIterable()) {
+      mapProjectMap.put(project.getRefSetId(), project);
+    }
+    final MapProject project = mapProjectMap.get(refsetId);
+
+    // Get map records for the project
+    final MapRecordList list =
+        mappingService.getMapRecordsForMapProject(project.getId());
+    for (final MapRecord record : list.getMapRecords()) {
+      boolean groupFlag = false;
+      boolean priorityFlag = false;
+      boolean stemFlag = false;
+
+      // Determine whether this map is subject to change (e.g. doesn't use
+      // priority != 1 and has mapGroup>1
+      for (final MapEntry entry : record.getMapEntries()) {
+        if (entry.getMapPriority() > 1) {
+          priorityFlag = true;
+        }
+        if (entry.getMapGroup() > 1) {
+          priorityFlag = true;
+        }
+        if (!entry.getTargetId().startsWith("X")) {
+          stemFlag = true;
+        }
+      }
+
+      // Check for >1 codes, starting with X code (and including stem code)
+      boolean xFollowedByStemFlag = record.getMapEntries().size() > 1
+          && record.getMapEntries().get(0).getTargetId().startsWith("X")
+          && !record.getMapEntries().get(1).getTargetId().startsWith("X");
+
+      if (xFollowedByStemFlag) {
+        getLog().info("  candidate as X followed by stem flag = ");
+        logRecord(record, "    ");
+        continue;
+      }
+      // Check for >1 codes, starting with X code (and not including stem code)
+      boolean xOnlyFlag = record.getMapEntries().size() > 1 && !stemFlag;
+      if (xOnlyFlag) {
+        getLog().info("  candidate as X followed by stem flag = ");
+        logRecord(record, "    ");
+      }
+
+      // Check for single X code only => NO ACTION
+      if (xOnlyFlag && record.getMapEntries().size() == 1) {
+        getLog().info("  candidate as X only, no action = ");
+        logRecord(record, "    ");
+      }
+
+      if (groupFlag && !priorityFlag && stemFlag) {
+        getLog().info("  candidate for reordering found = ");
+        logRecord(record, "    ");
+        int group = 0;
+        int priority = 0;
+        for (final MapEntry entry : record.getMapEntries()) {
+          // If blank or a stem code, increment group, reset priority
+          if (!entry.getTargetId().startsWith("X")) {
+            group++;
+            priority = 1;
+          } else {
+            priority++;
+          }
+          entry.setMapGroup(group);
+          entry.setMapPriority(priority);
+        }
+
+        // Log reordered
+        getLog().info("   REORDERED");
+        logRecord(record, "    ");
+        mappingService.updateMapRecord(record);
+
+      }
+    }
+  }
+
+  /**
+   * Log record.
+   *
+   * @param record the record
+   * @param indent the indent
+   */
+  private void logRecord(MapRecord record, String indent) {
+    getLog().info(indent + "Record " + record.getConceptId() + " "
+        + record.getConceptName());
+    for (final MapEntry entry : record.getMapEntries()) {
+      getLog().info(
+          indent + "  " + entry.getMapGroup() + "/" + entry.getMapPriority()
+              + " " + entry.getTargetId() + " " + entry.getTargetName());
 
     }
   }
