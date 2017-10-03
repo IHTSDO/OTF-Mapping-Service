@@ -387,10 +387,10 @@ public class AdHocMojo extends AbstractMojo {
 
       });
       for (final MapEntry entry : record.getMapEntries()) {
-        if (entry.getMapPriority() > 1) {
+        if (entry.getMapPriority() > 1 || entry.getMapPriority() == 0) {
           priorityFlag = true;
         }
-        if (entry.getMapGroup() > 1) {
+        if (entry.getMapGroup() > 1 || entry.getMapGroup() == 0) {
           groupFlag = true;
         }
         if (!entry.getTargetName().startsWith("X")) {
