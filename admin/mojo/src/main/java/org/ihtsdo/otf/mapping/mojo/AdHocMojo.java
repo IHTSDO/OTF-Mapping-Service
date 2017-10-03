@@ -356,6 +356,16 @@ public class AdHocMojo extends AbstractMojo {
     }
   }
 
+  /**
+   * Handle icd 11 principle.
+   *
+   * @param refsetId the refset id
+   * @param inputFile the input file
+   * @param workflowService the workflow service
+   * @param contentService the content service
+   * @param mappingService the mapping service
+   * @throws Exception the exception
+   */
   private void handleIcd11Principle(String refsetId, String inputFile,
     WorkflowService workflowService, ContentService contentService,
     MappingService mappingService) throws Exception {
@@ -387,10 +397,10 @@ public class AdHocMojo extends AbstractMojo {
 
       });
       for (final MapEntry entry : record.getMapEntries()) {
-        if (entry.getMapPriority() > 1 || entry.getMapPriority() == 0) {
+        if (entry.getMapPriority() > 1) {
           priorityFlag = true;
         }
-        if (entry.getMapGroup() > 1 || entry.getMapGroup() == 0) {
+        if (entry.getMapGroup() > 1) {
           groupFlag = true;
         }
         if (!entry.getTargetName().startsWith("X")) {
@@ -402,15 +412,35 @@ public class AdHocMojo extends AbstractMojo {
       boolean xFollowedByStemFlag = record.getMapEntries().size() > 1
           && record.getMapEntries().get(0).getTargetName().startsWith("X")
           && !record.getMapEntries().get(1).getTargetName().startsWith("X");
+      boolean xFollowedByStemFlag2 = record.getMapEntries().size() > 1
+          && !record.getMapEntries().get(0).getTargetName().startsWith("X")
+          && record.getMapEntries().get(1).getTargetName().startsWith("X");
+      boolean xxFollowedByStemFlag = record.getMapEntries().size() > 2
+          && record.getMapEntries().get(0).getTargetName().startsWith("X")
+          && record.getMapEntries().get(1).getTargetName().startsWith("X")
+          && !record.getMapEntries().get(2).getTargetName().startsWith("X");
+      boolean xxFollowedByStemFlag2 = record.getMapEntries().size() > 2
+          && !record.getMapEntries().get(0).getTargetName().startsWith("X")
+          && record.getMapEntries().get(1).getTargetName().startsWith("X")
+          && record.getMapEntries().get(2).getTargetName().startsWith("X");
+      boolean xxFollowedByStemFlag3 = record.getMapEntries().size() > 2
+          && record.getMapEntries().get(0).getTargetName().startsWith("X")
+          && !record.getMapEntries().get(1).getTargetName().startsWith("X")
+          && record.getMapEntries().get(2).getTargetName().startsWith("X");
 
-      if (xFollowedByStemFlag) {
+      if (xFollowedByStemFlag || xxFollowedByStemFlag || xFollowedByStemFlag2
+          || xxFollowedByStemFlag2 || xxFollowedByStemFlag3) {
         getLog().info("  candidate as X followed by stem flag = ");
         logRecord(record, "    ");
-        if (record.getMapEntries().size() == 2) {
+        if ((record.getMapEntries().size() == 2
+            && (xFollowedByStemFlag || xFollowedByStemFlag2))
+            || (record.getMapEntries().size() == 3 && (xxFollowedByStemFlag
+                || xxFollowedByStemFlag2 || xxFollowedByStemFlag3))) {
+          int priority = 1;
           for (final MapEntry entry : record.getMapEntries()) {
             if (entry.getTargetName().startsWith("X")) {
               entry.setMapGroup(1);
-              entry.setMapPriority(2);
+              entry.setMapPriority(++priority);
             } else {
               entry.setMapGroup(1);
               entry.setMapPriority(1);
@@ -445,7 +475,7 @@ public class AdHocMojo extends AbstractMojo {
         continue;
       }
 
-      if (groupFlag && !priorityFlag && stemFlag) {
+      if (groupFlag && stemFlag) {
         getLog().info("  candidate for reordering found = ");
         logRecord(record, "    ");
         int group = 0;
