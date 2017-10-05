@@ -41,6 +41,9 @@
           ng-show="searchParameters.ancestorId"></i>
       </div>
       <div class="col-md-9">
+       <select style="width: 15%" ng-model="searchParameters.descendantsMapped"
+          ng-options="o.val as o.key for o in [{ key: 'mapped', val: true }, { key: 'unmapped', val: false }]">
+        </select>
         <input ng-model="searchParameters.ancestorId">
       </div>
     </div>
@@ -64,6 +67,9 @@
           ng-show="searchParameters.targetIdRangeStart || searchParameters.targetIdRangeEnd"></i>
       </div>
       <div class="col-md-9">
+        <select style="width: 15%" ng-model="searchParameters.targetIdRangeIncluded"
+          ng-options="o.val as o.key for o in [{ key: 'includes', val: true }, { key: 'excludes', val: false }]">
+        </select>
         <input ng-model="searchParameters.targetIdRangeStart"> to <input
           ng-model="searchParameters.targetIdRangeEnd">
       </div>
@@ -91,7 +97,7 @@
       </div>
       <div class="col-md-9">
         <select style="width: 15%" ng-model="searchParameters.adviceContained"
-          ng-options="o.val as o.key for o in [{ key: 'contains', val: true }, { key: 'does not contain', val: false }]">
+          ng-options="adviceOption as adviceOption for adviceOption in searchParameters.adviceOptions">
         </select> <select style="width: 83%" ng-model="searchParameters.adviceName"
           style="width: 98%;"
           ng-options="mapAdvice.name as mapAdvice.name for mapAdvice in searchParameters.advices | orderBy:'name'"></select>
