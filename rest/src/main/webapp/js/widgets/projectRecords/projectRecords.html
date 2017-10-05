@@ -86,6 +86,20 @@
       </div>
     </div>
 
+    <div class="row" style="padding: 5px;">
+      <div class="col-md-3" style="padding-right: 0px;">
+        Map Rule
+        <i class="glyphicon glyphicon-remove pull-right"
+          ng-click="searchParameters.ruleCategory = null"
+          ng-show="searchParameters.ruleCategory"></i>
+      </div>
+      <div class="col-md-9">
+        <select style="width: 15%" ng-model="searchParameters.ruleCategory"
+          ng-options="ruleCategory for ruleCategory in searchParameters.ruleCategories">
+        </select>
+      </div>
+    </div>
+
     <!-- Search by map advice -->
     <div ng-show="searchParameters.advices.length > 0" class="row"
       style="padding: 5px;">
@@ -97,7 +111,7 @@
       </div>
       <div class="col-md-9">
         <select style="width: 15%" ng-model="searchParameters.adviceContained"
-          ng-options="adviceOption as adviceOption for adviceOption in searchParameters.adviceOptions">
+          ng-options="adviceOption for adviceOption in searchParameters.adviceOptions">
         </select> <select style="width: 83%" ng-model="searchParameters.adviceName"
           style="width: 98%;"
           ng-options="mapAdvice.name as mapAdvice.name for mapAdvice in searchParameters.advices | orderBy:'name'"></select>
