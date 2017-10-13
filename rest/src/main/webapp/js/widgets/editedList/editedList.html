@@ -1,12 +1,48 @@
 <form ng-submit="retrieveEditedWork(1, queryTerms)">
-  <input type="text" id="editQueryInput" ng-model="queryTerms">
-  <button type="submit" class="btn btn-xs btn-primary">Search</button>
-  <span class="btn btn-xs btn-primary" ng-click="clearSearch(); queryTerms = ''">Reset</span>
-  <a>
-    <i class="glyphicon glyphicon-info-sign" tooltip-placement="top"
-      uib-tooltip="You may search by concept id or terms in the concept's name (e.g. closed fracture, 704020004, ...). Only exact phrases will match, e.g. 'phalanx thumb' will not match the phrase 'phalanx of thumb'.  AND/OR/NOT operators are not supported."></i>
-  </a>
 
+	
+	<div class="col-xs-2">
+		<p class="input-group input-group-sm">
+			<input type="text" id="editQueryInput" ng-model="queryTerms.input">
+		</p>
+	</div>
+
+	<div class="col-xs-4">
+		<p class="input-group input-group-sm">
+			<input type="text" class="form-control" uib-datepicker-popup="{{dateFormat}}"
+				ng-model="queryTerms.dateRangeStart" is-open="dateRangeStart.opened" 
+				datepicker-options="dateOptions" ng-required="false" 
+				close-text="Close" alt-input-formats="altInputFormats"
+				placeholder="Start Date {{dateFormat}}">
+			<span class="input-group-btn">
+				<span class="btn btn-default" ng-click="openDateRangeStart()">
+					<i class="glyphicon glyphicon-calendar"></i>
+				</span>
+			</span>
+			<input type="text" class="form-control" uib-datepicker-popup="{{dateFormat}}"
+				ng-model="queryTerms.dateRangeEnd" is-open="dateRangeEnd.opened" 
+				datepicker-options="dateOptions" ng-required="false" 
+				close-text="Close" alt-input-formats="altInputFormats"
+				placeholder="End Date {{dateFormat}}">
+			<span class="input-group-btn">
+				<span class="btn btn-default" ng-click="openDateRangeEnd()">
+					<i class="glyphicon glyphicon-calendar"></i>
+				</span>
+			</span>
+		</p>
+	</div>
+
+			
+
+
+	<button type="submit" class="btn btn-xs btn-primary">Search</button>
+	<span class="btn btn-xs btn-primary" ng-click="clearSearch(); queryTerms = ''">Reset</span>
+	<a>
+		<i class="glyphicon glyphicon-info-sign" tooltip-placement="top"
+			uib-tooltip="You may search by concept id or terms in the concept's name (e.g. closed fracture, 704020004, ...). Only exact phrases will match, e.g. 'phalanx thumb' will not match the phrase 'phalanx of thumb'.  AND/OR/NOT operators are not supported.">
+		</i>
+	</a>
+	
 </form>
 <br>
 
