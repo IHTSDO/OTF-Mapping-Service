@@ -13,15 +13,13 @@
 
 <p>
 <form ng-submit="retrieveRecords(1)">
-  <input ng-model="searchParameters.query">
-  <i style="margin-left: 5px; margin-right: 10px;"
+  <input ng-model="searchParameters.query"> <i
+    style="margin-left: 5px; margin-right: 10px;"
     ng-click="toggleAdvancedSearch()" class="noul glyphicon glyphicon-cog"></i>
-  <a> <i style="margin-right: 10px;" title='Open Terminology Browser'
-	ng-click="openTerminologyBrowser()" class="glyphicon glyphicon-list-alt"></i> </a>
-  <a> <i style="margin-right: 10px;" title='Open Index Viewer'
+  <i style="margin-right: 10px;" title='Open Index Viewer'
     ng-show="indexViewerExists == true" ng-click="openIndexViewer()"
-    class="noul glyphicon glyphicon-book"></i> </a>
- 
+    class="noul glyphicon glyphicon-book"></i>
+
   <button class="btn btn-xs btn-primary">Search</button>
   <span class="btn btn-xs btn-warning" ng-click="resetSearch()">Reset</span>
   <span class="btn btn-xs btn-primary"
@@ -35,14 +33,14 @@
     <hr>
     <div class="row" style="padding: 5px;">
       <div class="col-md-3" style="padding-right: 0px;">
-        {{focusProject.sourceTerminology}} Ancestor Id
-        <i class="glyphicon glyphicon-remove pull-right"
+        {{focusProject.sourceTerminology}} Ancestor Id <i
+          class="glyphicon glyphicon-remove pull-right"
           ng-click="searchParameters.ancestorId = null"
           ng-show="searchParameters.ancestorId"></i>
       </div>
       <div class="col-md-9">
-       <select style="width: 15%" ng-model="searchParameters.descendantsMapped"
-          ng-options="o.val as o.key for o in [{ key: 'mapped', val: true }, { key: 'unmapped', val: false }]">
+       <select style="width: 15%" ng-model="searchParameters.descendants"
+          ng-options="descendants for descendants in searchParameters.descendantsOptions">
         </select>
         <input ng-model="searchParameters.ancestorId">
       </div>
@@ -53,10 +51,12 @@
         {{focusProject.destinationTerminology}} Target Id
         <i class="glyphicon glyphicon-remove pull-right"
           ng-click="searchParameters.targetId = null"
-          ng-show="searchParameters.targetId"></i>
+          ng-show="searchParameters.targetId.length > 0"></i>
       </div>
       <div class="col-md-9">
-        <input ng-model="searchParameters.targetId">
+        <input ng-model="searchParameters.targetId[0]">
+        <input ng-model="searchParameters.targetId[1]">
+        <input ng-model="searchParameters.targetId[2]">
       </div>
     </div>
     <div class="row" style="padding: 5px;">
@@ -72,6 +72,21 @@
         </select>
         <input ng-model="searchParameters.targetIdRangeStart"> to <input
           ng-model="searchParameters.targetIdRangeEnd">
+      </div>
+    </div>
+    <div class="row" style="padding: 5px;">
+      <div class="col-md-3" style="padding-right: 0px;">
+        {{focusProject.destinationTerminology}} Target Id Range
+        <i class="glyphicon glyphicon-remove pull-right"
+          ng-click="searchParameters.targetId2RangeStart = null; searchParameters.targetId2RangeEnd = null;"
+          ng-show="searchParameters.targetId2RangeStart || searchParameters.targetId2RangeEnd"></i>
+      </div>
+      <div class="col-md-9">
+        <select style="width: 15%" ng-model="searchParameters.targetId2RangeIncluded"
+          ng-options="o.val as o.key for o in [{ key: 'includes', val: true }, { key: 'excludes', val: false }]">
+        </select>
+        <input ng-model="searchParameters.targetId2RangeStart"> to <input
+          ng-model="searchParameters.targetId2RangeEnd">
       </div>
     </div>
     <div class="row" style="padding: 5px;">
@@ -104,8 +119,7 @@
     <div ng-show="searchParameters.advices.length > 0" class="row"
       style="padding: 5px;">
       <div class="col-md-3" style="padding-right: 0px;">
-        Map Advice
-        <i class="glyphicon glyphicon-remove pull-right"
+        Map Advice <i class="glyphicon glyphicon-remove pull-right"
           ng-click="searchParameters.adviceName = null"
           ng-show="searchParameters.adviceName"></i>
       </div>
@@ -118,12 +132,41 @@
       </div>
     </div>
 
+    <!-- Search by map Group -->
+    <div class="row" style="padding: 5px;">
+      <div class="col-md-3" style="padding-right: 0px;">
+        Map Group <i class="glyphicon glyphicon-remove pull-right"
+          ng-click="searchParameters.mapGroup = null"
+          ng-show="searchParameters.mapGroup"></i>
+      </div>
+      <div class="col-md-9">
+        <input ng-model="searchParameters.mapGroup">
+      </div>
+    </div>
+
+    <!--  search by flags -->
+    <div class="row" style="padding: 5px;">
+      <div class="col-md-4" style="padding-right: 0px;">
+        <input type="checkbox" ng-model="searchParameters.flagForMapLeadReview">Flag
+        for Map Lead Review
+      </div>
+      <div class="col-md-4" style="padding-right: 0px;">
+        <input type="checkbox"
+          ng-model="searchParameters.flagForEditorialReview">Flag for
+        Editorial Review
+      </div>
+      <div class="col-md-4" style="padding-right: 0px;">
+        <input type="checkbox"
+          ng-model="searchParameters.flagForConsensusReview">Flag for
+        Consensus Review"
+      </div>
+    </div>
+
     <!--  Search by map principles -->
     <div ng-show="searchParameters.principles.length > 0" class="row"
       style="padding: 5px;">
       <div class="col-md-3" style="padding-right: 0px;">
-        Map Principle
-        <i class="glyphicon glyphicon-remove pull-right"
+        Map Principle <i class="glyphicon glyphicon-remove pull-right"
           ng-click="searchParameters.principleName = null"
           ng-show="searchParameters.principleName"></i>
       </div>
@@ -136,15 +179,18 @@
           ng-options="mapPrinciple.name as mapPrinciple.name for mapPrinciple in searchParameters.principles | orderBy:'name'"></select>
       </div>
     </div>
+
+
   </div>
+
 </form>
 
 
 
-<uib-pagination total-items="nRecords"
-  ng-model="searchParameters.page" max-size="10" class="pagination-sm"
-  boundary-links="true" rotate="true" num-pages="numRecordPages"
-  ng-change="retrieveRecords(searchParameters.page)"> </uib-pagination>
+<uib-pagination total-items="nRecords" ng-model="searchParameters.page"
+  max-size="10" class="pagination-sm" boundary-links="true" rotate="true"
+  num-pages="numRecordPages" ng-change="retrieveRecords(searchParameters.page)">
+</uib-pagination>
 
 
 
@@ -170,9 +216,9 @@
 </div>
 
 
-<uib-pagination  total-items="nRecords"
-  ng-model="searchParameters.page" max-size="10" class="pagination-sm"
-  boundary-links="true" rotate="true" num-pages="numRecordPages"
-  ng-change="retrieveRecords(searchParameters.page)"> </uib-pagination>
+<uib-pagination total-items="nRecords" ng-model="searchParameters.page"
+  max-size="10" class="pagination-sm" boundary-links="true" rotate="true"
+  num-pages="numRecordPages" ng-change="retrieveRecords(searchParameters.page)">
+</uib-pagination>
 
 <div ng-include src="'./partials/footer.html'"></div>
