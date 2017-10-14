@@ -2642,6 +2642,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
     @ApiParam(value = "Ancestor concept (inclusive) to restrict search results to", required = true) @QueryParam("ancestorId") String ancestorId,
     @ApiParam(value = "Incudes or excludes mapped descendants of ancestor id ", required = false) @QueryParam("descendantsMapped") boolean descendantsMapped,
+    @ApiParam(value = "Excludes descendants of ancestor id ", required = false) @QueryParam("excludeDescendants") boolean excludeDescendants,
     @ApiParam(value = "Search query string", required = false) @QueryParam("query") String query,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -2757,16 +2758,16 @@ public class MappingServiceRest extends RootServiceRest {
             // itself
             if (sr.getTerminologyId().equals(ancestorId)
                 || descSet.contains(sr.getTerminologyId())) {
-
-              // add to eligible results
-              eligibleResults.addSearchResult(sr);
+              if(!excludeDescendants)
+	              // add to eligible results
+	              eligibleResults.addSearchResult(sr);
             }
           }
         }
 
         // Otherwise, just get all descendants
         else {
-        	if(descendantsMapped)
+        	if(!descendantsMapped)
         		eligibleResults.addSearchResults(mappingService
                     .findUnmappedDescendantsForConcept(ancestorId, mapProjectId, null));
         	else {
@@ -2790,12 +2791,17 @@ public class MappingServiceRest extends RootServiceRest {
 	
 	          // Look up map records
 	          final StringBuilder sb = new StringBuilder();
+	          if(excludeDescendants) {
+	        	  sb.append("NOT ");
+	          }
 	          sb.append("(");
+	          boolean append = false;
 	          for (final SearchResult sr : descendants) {
-	            if (sb.length() > 1) {
+	            if (append) {
 	              sb.append(" OR ");
 	            }
 	            sb.append("conceptId:" + sr.getTerminologyId());
+	            append = true;
 	          }
 	          sb.append(")");
 	          eligibleResults.addSearchResults(
