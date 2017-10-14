@@ -39,8 +39,8 @@
           ng-show="searchParameters.ancestorId"></i>
       </div>
       <div class="col-md-9">
-       <select style="width: 15%" ng-model="searchParameters.descendantsMapped"
-          ng-options="o.val as o.key for o in [{ key: 'mapped', val: true }, { key: 'unmapped', val: false }]">
+       <select style="width: 15%" ng-model="searchParameters.descendants"
+          ng-options="descendants for descendants in searchParameters.descendantsOptions">
         </select>
         <input ng-model="searchParameters.ancestorId">
       </div>
@@ -48,19 +48,21 @@
 
     <div class="row" style="padding: 5px;">
       <div class="col-md-3" style="padding-right: 0px;">
-        {{focusProject.destinationTerminology}} Target Id <i
-          class="glyphicon glyphicon-remove pull-right"
+        {{focusProject.destinationTerminology}} Target Id
+        <i class="glyphicon glyphicon-remove pull-right"
           ng-click="searchParameters.targetId = null"
-          ng-show="searchParameters.targetId"></i>
+          ng-show="searchParameters.targetId.length > 0"></i>
       </div>
       <div class="col-md-9">
-        <input ng-model="searchParameters.targetId">
+        <input ng-model="searchParameters.targetId[0]">
+        <input ng-model="searchParameters.targetId[1]">
+        <input ng-model="searchParameters.targetId[2]">
       </div>
     </div>
     <div class="row" style="padding: 5px;">
       <div class="col-md-3" style="padding-right: 0px;">
-        {{focusProject.destinationTerminology}} Target Id Range <i
-          class="glyphicon glyphicon-remove pull-right"
+        {{focusProject.destinationTerminology}} Target Id Range
+        <i class="glyphicon glyphicon-remove pull-right"
           ng-click="searchParameters.targetIdRangeStart = null; searchParameters.targetIdRangeEnd = null;"
           ng-show="searchParameters.targetIdRangeStart || searchParameters.targetIdRangeEnd"></i>
       </div>
@@ -74,8 +76,23 @@
     </div>
     <div class="row" style="padding: 5px;">
       <div class="col-md-3" style="padding-right: 0px;">
-        {{focusProject.destinationTerminology}} Target Name <i
-          class="glyphicon glyphicon-remove pull-right"
+        {{focusProject.destinationTerminology}} Target Id Range
+        <i class="glyphicon glyphicon-remove pull-right"
+          ng-click="searchParameters.targetId2RangeStart = null; searchParameters.targetId2RangeEnd = null;"
+          ng-show="searchParameters.targetId2RangeStart || searchParameters.targetId2RangeEnd"></i>
+      </div>
+      <div class="col-md-9">
+        <select style="width: 15%" ng-model="searchParameters.targetId2RangeIncluded"
+          ng-options="o.val as o.key for o in [{ key: 'includes', val: true }, { key: 'excludes', val: false }]">
+        </select>
+        <input ng-model="searchParameters.targetId2RangeStart"> to <input
+          ng-model="searchParameters.targetId2RangeEnd">
+      </div>
+    </div>
+    <div class="row" style="padding: 5px;">
+      <div class="col-md-3" style="padding-right: 0px;">
+        {{focusProject.destinationTerminology}} Target Name
+        <i class="glyphicon glyphicon-remove pull-right"
           ng-click="searchParameters.targetName = null"
           ng-show="searchParameters.targetName"></i>
       </div>
