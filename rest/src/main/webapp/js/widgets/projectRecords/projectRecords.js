@@ -123,7 +123,13 @@ angular
           + ($scope.searchParameters.ancestorId
             && $scope.searchParameters.advancedMode ? $scope.searchParameters.ancestorId
             : '') + '&query='
-          + encodeURIComponent($scope.searchParameters.query);
+          + encodeURIComponent($scope.searchParameters.query)
+          + '&descendantsMapped='
+          + ($scope.searchParameters.advancedMode && $scope.searchParameters.descendants == 'unmapped' ? 'false'
+                  : 'true') 
+        + '&excludeDescendants='
+        + ($scope.searchParameters.advancedMode && $scope.searchParameters.descendants == 'excludes' ? 'true'
+                : 'false') ;
 
         $rootScope.glassPane++;
 
@@ -541,15 +547,27 @@ angular
 
         // advanced options
         ancestorId : null,
+        descendants : null,
         rootId : null,
-        targetId : null,
+        targetId : [],
         targetIdRangeStart : null,
         targetIdRangeEnd : null,
+        targetIdRangeIncluded: true,
+        targetIdRange2Start : null,
+        targetIdRange2End : null,
+        targetIdRange2Included: true,
         targetName : null,
-        adviceContained : true,
+        adviceContained : null,
         adviceName : null,
         principleContained : true,
         principleName : null,
+        ruleCategory : null,
+        descendantsOptions :
+    		  ['mapped', 'unmapped', 'excludes'],
+    	        adviceOptions :
+    	    		  ['contains', 'does not contain', 'none'],
+    	ruleCategories : [ 'TRUE', 'Gender - Male', 'Gender - Female',
+    		                            'Age - Chronological', 'Age - At Onset' ],
 
         // search display data
         roots : [], // source terminology root concepts
@@ -561,14 +579,20 @@ angular
       $scope.resetSearch = function() {
         $scope.searchParameters.query = null;
         $scope.searchParameters.page = 1;
-        $scope.searchParameters.targetId = null;
+        $scope.searchParameters.targetId = [];
+        $scope.searchParameters.descendants = null;
         $scope.searchParameters.targetIdRangeStart = null;
-        $scope.searchParameters.targetIdRangEnd = null;
+        $scope.searchParameters.targetIdRangeEnd = null;
+        $scope.searchParameters.targetIdRangeIncluded = true;
+        $scope.searchParameters.targetIdRange2Start = null;
+        $scope.searchParameters.targetIdRange2End = null;
+        $scope.searchParameters.targetIdRange2Included = true;
         $scope.searchParameters.targetName = null;
         $scope.searchParameters.rootId = null;
         $scope.searchParameters.ancestorId = null;
         $scope.searchParameters.adviceName = null;
-        $scope.searchParameters.adviceContained = true;
+        $scope.searchParameters.adviceContained = null;
+        $scope.searchParameters.ruleCategory = null;
         $scope.searchParameters.principleName = null;
         $scope.searchParameters.principleContained = true;
 
@@ -629,16 +653,28 @@ angular
           // check target id
           if ($scope.searchParameters.targetId
             && $scope.searchParameters.targetId.length > 0) {
-            queryRestrictions.push('mapEntries.targetId:'
-              + $scope.searchParameters.targetId);
+        	  $scope.searchParameters.targetId.forEach(function (s) {
+		            queryRestrictions.push('mapEntries.targetId:'
+		              + s);
+          		}
+            );
           }
 
           // check target id range
           if ($scope.searchParameters.targetIdRangeStart
             && $scope.searchParameters.targetIdRangeEnd) {
-            queryRestrictions.push('mapEntries.targetId:['
+              queryRestrictions.push(($scope.searchParameters.targetIdRangeIncluded ? '' : '!')
+                + 'mapEntries.targetId:['
               + $scope.searchParameters.targetIdRangeStart + ' TO '
               + $scope.searchParameters.targetIdRangeEnd + ']')
+          }
+
+          if ($scope.searchParameters.targetIdRange2Start
+                  && $scope.searchParameters.targetIdRange2End) {
+              queryRestrictions.push(($scope.searchParameters.targetIdRange2Included ? '' : '!')
+                      + 'mapEntries.targetId:['
+                    + $scope.searchParameters.targetIdRange2Start + ' TO '
+                    + $scope.searchParameters.targetIdRang2eEnd + ']')
           }
 
           // check target name
@@ -649,13 +685,40 @@ angular
           }
 
           // check map advices
-          if ($scope.searchParameters.adviceName) {
-            queryRestrictions
-              .push(($scope.searchParameters.adviceContained ? '' : 'NOT ')
-                + 'mapEntries.mapAdvices.name:"'
-                + $scope.searchParameters.adviceName + '"');
-          }
-
+          switch ($scope.searchParameters.adviceContained) {
+    	  	case $scope.searchParameters.adviceOptions[0] : if ($scope.searchParameters.adviceName) { queryRestrictions.push(
+    	  			'mapEntries.mapAdvices.name:"' + $scope.searchParameters.adviceName + '"'); }
+    	  	break;
+    	  	case $scope.searchParameters.adviceOptions[1] : if ($scope.searchParameters.adviceName) { queryRestrictions.push(
+    	  			'NOT mapEntries.mapAdvices.name:"' + $scope.searchParameters.adviceName + '"'); }
+    	  	
+    	  	break;
+    	  	case $scope.searchParameters.adviceOptions[2] : queryRestrictions.push('-mapEntries.mapAdvices.name:[* TO *]');
+    	  	break;
+    	  }
+    	  
+		  switch ($scope.searchParameters.ruleCategory) {
+    		  case $scope.searchParameters.ruleCategories[0] : {
+    			  queryRestrictions.push('mapEntries.rule:' + $scope.searchParameters.ruleCategories[0]);
+    		  	}
+    		  break;
+    		  case $scope.searchParameters.ruleCategories[1] : {
+    			  queryRestrictions.push('mapEntries.rule:' + 'IFA 248153007');
+    		  	}
+      	  	  break;
+    		  case $scope.searchParameters.ruleCategories[2] : {
+    			  queryRestrictions.push('mapEntries.rule:' + 'IFA 248152002');
+    		  	}
+      	  	  break;
+    		  case $scope.searchParameters.ruleCategories[3] : {
+    			  queryRestrictions.push('mapEntries.rule:' + 'IFA 424144002');
+    		  	}
+    		  case $scope.searchParameters.ruleCategories[4] : {
+    			  queryRestrictions.push('mapEntries.rule:' + 'IFA 445518008');
+    		  	}
+    		  break;
+		  }
+    	  
           // check map group
           if ($scope.searchParameters.mapGroup) {
             queryRestrictions.push('mapEntries.mapGroup:'
