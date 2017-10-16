@@ -923,7 +923,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       Logger.getLogger(getClass()).info("  asterisk codes = " + asteriskCodes);
       Logger.getLogger(getClass()).info("  dagger codes = " + daggerCodes);
       Logger.getLogger(getClass())
-          .info("  valid 3 digit codes = " + valid3DigitCodes);
+          .info("  valid 3 digit codes* = " + valid3DigitCodes);
     } catch (Exception e) {
       throw e;
     } finally {
