@@ -2039,6 +2039,12 @@ public class MappingServiceRest extends RootServiceRest {
           throw new LocalException("This map principle already exists: "
               + principle.getPrincipleId() + ", " + principle.getName());
         }
+        if (principle.getName().equals(mapPrinciple.getName())) {
+          throw new LocalException("A map principle with this name already exists: " + principle.getName());
+        }
+        if (principle.getPrincipleId().equals(mapPrinciple.getPrincipleId())) {
+          throw new LocalException("A map principle with this id already exists: " + principle.getPrincipleId());
+        }
       }
 
       final MapPrinciple newMapPrinciple =

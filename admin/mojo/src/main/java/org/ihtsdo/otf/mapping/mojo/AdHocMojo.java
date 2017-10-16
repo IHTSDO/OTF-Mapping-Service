@@ -7,6 +7,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -88,6 +90,14 @@ public class AdHocMojo extends AbstractMojo {
         mappingService.beginTransaction();
         handleIcd11Advice(refsetId, inputFile, workflowService, contentService,
             mappingService);
+        mappingService.commit();
+      }
+
+      if (mode != null && mode.equals("icd11-principle")) {
+        mappingService.setTransactionPerOperation(false);
+        mappingService.beginTransaction();
+        handleIcd11Principle(refsetId, inputFile, workflowService,
+            contentService, mappingService);
         mappingService.commit();
       }
 
@@ -342,6 +352,168 @@ public class AdHocMojo extends AbstractMojo {
       if (change) {
         mappingService.updateMapRecord(record);
       }
+
+    }
+  }
+
+  /**
+   * Handle icd 11 principle.
+   *
+   * @param refsetId the refset id
+   * @param inputFile the input file
+   * @param workflowService the workflow service
+   * @param contentService the content service
+   * @param mappingService the mapping service
+   * @throws Exception the exception
+   */
+  private void handleIcd11Principle(String refsetId, String inputFile,
+    WorkflowService workflowService, ContentService contentService,
+    MappingService mappingService) throws Exception {
+
+    // Load the map project
+    final Map<String, MapProject> mapProjectMap = new HashMap<>();
+    for (MapProject project : mappingService.getMapProjects().getIterable()) {
+      mapProjectMap.put(project.getRefSetId(), project);
+    }
+    final MapProject project = mapProjectMap.get(refsetId);
+
+    // Get map records for the project
+    final MapRecordList list =
+        mappingService.getMapRecordsForMapProject(project.getId());
+    for (final MapRecord record : list.getMapRecords()) {
+      boolean groupFlag = false;
+      boolean priorityFlag = false;
+      boolean stemFlag = false;
+
+      // Determine whether this map is subject to change (e.g. doesn't use
+      // priority != 1 and has mapGroup>1
+      Collections.sort(record.getMapEntries(), new Comparator<MapEntry>() {
+
+        @Override
+        public int compare(MapEntry o1, MapEntry o2) {
+          return ((o1.getMapGroup() * 10) + o1.getMapPriority())
+              - ((o2.getMapGroup() * 10) + o2.getMapPriority());
+        }
+
+      });
+      for (final MapEntry entry : record.getMapEntries()) {
+        if (entry.getMapPriority() > 1) {
+          priorityFlag = true;
+        }
+        if (entry.getMapGroup() > 1) {
+          groupFlag = true;
+        }
+        if (!entry.getTargetName().startsWith("X")) {
+          stemFlag = true;
+        }
+      }
+
+      // Check for >1 codes, starting with X code (and including stem code)
+      boolean xFollowedByStemFlag = record.getMapEntries().size() > 1
+          && record.getMapEntries().get(0).getTargetName().startsWith("X")
+          && !record.getMapEntries().get(1).getTargetName().startsWith("X");
+      boolean xFollowedByStemFlag2 = record.getMapEntries().size() > 1
+          && !record.getMapEntries().get(0).getTargetName().startsWith("X")
+          && record.getMapEntries().get(1).getTargetName().startsWith("X");
+      boolean xxFollowedByStemFlag = record.getMapEntries().size() > 2
+          && record.getMapEntries().get(0).getTargetName().startsWith("X")
+          && record.getMapEntries().get(1).getTargetName().startsWith("X")
+          && !record.getMapEntries().get(2).getTargetName().startsWith("X");
+      boolean xxFollowedByStemFlag2 = record.getMapEntries().size() > 2
+          && !record.getMapEntries().get(0).getTargetName().startsWith("X")
+          && record.getMapEntries().get(1).getTargetName().startsWith("X")
+          && record.getMapEntries().get(2).getTargetName().startsWith("X");
+      boolean xxFollowedByStemFlag3 = record.getMapEntries().size() > 2
+          && record.getMapEntries().get(0).getTargetName().startsWith("X")
+          && !record.getMapEntries().get(1).getTargetName().startsWith("X")
+          && record.getMapEntries().get(2).getTargetName().startsWith("X");
+
+      if (xFollowedByStemFlag || xxFollowedByStemFlag || xFollowedByStemFlag2
+          || xxFollowedByStemFlag2 || xxFollowedByStemFlag3) {
+        getLog().info("  candidate as X followed by stem flag = ");
+        logRecord(record, "    ");
+        if ((record.getMapEntries().size() == 2
+            && (xFollowedByStemFlag || xFollowedByStemFlag2))
+            || (record.getMapEntries().size() == 3 && (xxFollowedByStemFlag
+                || xxFollowedByStemFlag2 || xxFollowedByStemFlag3))) {
+          int priority = 1;
+          for (final MapEntry entry : record.getMapEntries()) {
+            if (entry.getTargetName().startsWith("X")) {
+              entry.setMapGroup(1);
+              entry.setMapPriority(++priority);
+            } else {
+              entry.setMapGroup(1);
+              entry.setMapPriority(1);
+            }
+          }
+          // Log reordered
+          getLog().info("   REORDERED");
+          logRecord(record, "    ");
+          mappingService.updateMapRecord(record);
+          continue;
+
+        } else {
+          getLog().info("    skipping = " + record.getConceptId());
+          continue;
+        }
+
+      }
+      // Check for >1 codes, starting with X code (and not including stem code)
+      boolean xOnlyFlag = record.getMapEntries().size() > 1 && !stemFlag;
+      if (xOnlyFlag) {
+        getLog().info("  Only X flags = ");
+        logRecord(record, "    ");
+        getLog().info("    skipping = " + record.getConceptId());
+        continue;
+      }
+
+      // Check for single X code only => NO ACTION
+      if (xOnlyFlag && record.getMapEntries().size() == 1) {
+        getLog().info("  candidate as X only, no action = ");
+        logRecord(record, "    ");
+        getLog().info("    skipping = " + record.getConceptId());
+        continue;
+      }
+
+      if (groupFlag && stemFlag) {
+        getLog().info("  candidate for reordering found = ");
+        logRecord(record, "    ");
+        int group = 0;
+        int priority = 0;
+        for (final MapEntry entry : record.getMapEntries()) {
+          // If blank or a stem code, increment group, reset priority
+          if (!entry.getTargetName().startsWith("X")) {
+            group++;
+            priority = 1;
+          } else {
+            priority++;
+          }
+          entry.setMapGroup(group);
+          entry.setMapPriority(priority);
+        }
+
+        // Log reordered
+        getLog().info("   REORDERED");
+        logRecord(record, "    ");
+        mappingService.updateMapRecord(record);
+
+      }
+    }
+  }
+
+  /**
+   * Log record.
+   *
+   * @param record the record
+   * @param indent the indent
+   */
+  private void logRecord(MapRecord record, String indent) {
+    getLog().info(indent + "Record " + record.getConceptId() + " "
+        + record.getConceptName());
+    for (final MapEntry entry : record.getMapEntries()) {
+      getLog().info(
+          indent + "  " + entry.getMapGroup() + "/" + entry.getMapPriority()
+              + " " + entry.getTargetId() + " " + entry.getTargetName());
 
     }
   }
