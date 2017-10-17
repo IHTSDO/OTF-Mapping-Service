@@ -158,6 +158,7 @@ mapProjectAppControllers.controller('LoginCtrl', [
                       $scope.preferences.lastLogin = new Date().getTime();
                       localStorageService.add('preferences', $scope.preferences);
                       localStorageService.add('assignedTab', $scope.preferences.lastAssignedTab);
+                      localStorageService.add('assignedRadio', $scope.preferences.lastAssignedRadio);
 
                       // if user is a guest, set a default project to avoid confusion to 
                       //  the users if previous guest exited on non-default project
