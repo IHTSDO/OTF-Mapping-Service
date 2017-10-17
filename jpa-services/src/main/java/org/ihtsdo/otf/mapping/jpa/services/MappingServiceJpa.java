@@ -2178,7 +2178,7 @@ public class MappingServiceJpa extends RootServiceJpa
       // set a default project to 1st project found
       m.setLastMapProjectId(
           mapProjects.getIterable().iterator().next().getId());
-      m.setlastAssignedTab("0");
+      m.setLastAssignedTab("0");
 
       // add object
       addMapUserPreferences(m);

@@ -13,7 +13,7 @@ angular
   })
   .controller(
     'workAssignedCtrl',
-    function($scope, $rootScope, $http, $location, $uibModal, localStorageService) {
+    function($scope, $rootScope, $http, $location, $uibModal, $timeout, localStorageService) {
 
       // on initialization, explicitly assign to null and/or empty array
       $scope.currentUser = null;
@@ -90,33 +90,80 @@ angular
         else
           $scope.ownTab = true;
 
-        // add the tab to the loocal storage service for the next visit
-        
+        // add the tab to the local storage service for the next visit       
         $scope.preferences.lastAssignedTab = tabNumber;
         localStorageService.add('assignedTab', tabNumber);
-       
         
-        // update the user preferences
-        $http({
-          url : root_mapping + 'userPreferences/update',
-          dataType : 'json',
-          data : $scope.preferences,
-          method : 'POST',
-          headers : {
-            'Content-Type' : 'application/json'
-          }
-        }).success(function(data) {
-          // do nothing
-
-        }).error(function(data) {
-          if (response.indexOf('HTTP Status 401') != -1) {
-            $rootScope.globalError = 'Authorization failed.  Please log in again.';
-            $location.path('/');
-          }
-        });
-
+        $scope.getRadio();
       };
+      
+      $scope.getRadio = function() {
+    	// retrieve the user preferences
+        $http({
+            url : root_mapping + 'userPreferences/user/id/' + $scope.currentUser.userName,
+            dataType : 'json',
+            method : 'GET',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+        }).success(function(data) {
+          $scope.preferences.lastAssignedRadio = localStorageService.get('assignedRadio');
+          
+          if ($scope.preferences.lastAssignedRadio.includes('NEW')) {
+            $scope.assignedTypes.work = 'NEW';
+            $scope.assignedTypes.conflict = 'CONFLICT_NEW';
+            $scope.assignedTypes.review = 'REVIEW_NEW';
+            $scope.assignedTypes.forUser = 'NEW';
+            $scope.assignedTypes.qa = 'QA_NEW';
+          } else if ($scope.preferences.lastAssignedRadio.includes('ALL')) {
+            $scope.assignedTypes.work = 'ALL';
+            $scope.assignedTypes.conflict = 'ALL';
+            $scope.assignedTypes.review = 'ALL';
+            $scope.assignedTypes.forUser = 'ALL';
+            $scope.assignedTypes.qa = 'ALL'
+          } else if ($scope.preferences.lastAssignedRadio.includes('IN_PROGRESS')) {
+            $scope.assignedTypes.work = 'EDITING_IN_PROGRESS';
+            $scope.assignedTypes.conflict = 'CONFLICT_IN_PROGRESS';
+            $scope.assignedTypes.review = 'REVIEW_IN_PROGRESS';
+            $scope.assignedTypes.forUser = 'EDITING_IN_PROGRESS';
+            $scope.assignedTypes.qa = 'QA_IN_PROGRESS';
+          } else if ($scope.preferences.lastAssignedRadio.includes('RESOLVED') ||
+          		$scope.preferences.lastAssignedRadio.includes('DONE')) {
+            $scope.assignedTypes.work = 'EDITING_DONE';
+            $scope.assignedTypes.conflict = 'CONFLICT_RESOLVED';
+            $scope.assignedTypes.review = 'REVIEW_RESOLVED';
+            $scope.assignedTypes.forUser = 'EDITING_DONE';
+            $scope.assignedTypes.qa = 'QA_RESOLVED';
+          }         
+        }); 
+      }
+      
+      $scope.setRadio = function(type) {
+          // add the radio button to the local storage service for the next visit       
+          $scope.preferences.lastAssignedRadio = type;
+          localStorageService.add('assignedRadio', type);
+          
+          // update the user preferences
+          $http({
+            url : root_mapping + 'userPreferences/update',
+            dataType : 'json',
+            data : $scope.preferences,
+            method : 'POST',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+            // do nothing
 
+          }).error(function(data) {
+            if (response.indexOf('HTTP Status 401') != -1) {
+              $rootScope.globalError = 'Authorization failed.  Please log in again.';
+              $location.path('/');
+            }
+          });
+      }
+      
+      
       // pagination variables
       $scope.itemsPerPage = 10;
       $scope.assignedWorkPage = 1;
@@ -134,11 +181,7 @@ angular
 
       // work type filter variables
       $scope.assignedTypes = {};
-      $scope.assignedTypes.work = 'NEW';
-      $scope.assignedTypes.conflict = 'CONFLICT_NEW';
-      $scope.assignedTypes.review = 'REVIEW_NEW';
-      $scope.assignedTypes.forUser = 'ALL';
-      $scope.assignedTypes.qa = 'QA_NEW';
+     
 
       // watch for project change
       $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
@@ -259,15 +302,31 @@ angular
         if ($scope.focusProject != null && $scope.currentUser != null
           && $scope.currentUserToken != null && $scope.currentRole != null) {
           $http.defaults.headers.common.Authorization = $scope.currentUserToken;
-
+          
+          $scope.getRadio();
           $scope.mapUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
-          $scope.retrieveAssignedWork($scope.assignedWorkPage, null);
-          $scope.retrieveAssignedQAWork(1, null);
+          // add a wait, if getting reading in radio button setting isn't complete
+          if ($scope.assignedTypes.work == undefined) {
+            $timeout(function() {
+            	  $scope.retrieveAssignedWork($scope.assignedWorkPage, null);
+                  $scope.retrieveAssignedQAWork(1, null);
+              }, 1000);
+          } else {
+            $scope.retrieveAssignedWork($scope.assignedWorkPage, null);
+            $scope.retrieveAssignedQAWork(1, null);
+          }
           $scope.retrieveLabels();
           if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
             $scope.retrieveAssignedConflicts(1, null);
-            $scope.retrieveAssignedReviewWork(1, null);
-            $scope.retrieveAssignedWorkForUser(1, null, $scope.selected.mapUserViewed);
+            if ($scope.assignedTypes.review == undefined) {
+                $timeout(function() {
+                    $scope.retrieveAssignedReviewWork(1, null);
+                    $scope.retrieveAssignedWorkForUser(1, null, $scope.selected.mapUserViewed);
+                }, 1000);
+              } else {
+                  $scope.retrieveAssignedReviewWork(1, null);
+                  $scope.retrieveAssignedWorkForUser(1, null, $scope.selected.mapUserViewed);
+              }
           }
         }
       });
@@ -388,6 +447,8 @@ angular
           $rootScope.glassPane--;
           $rootScope.handleHttpError(data, status, headers, config);
         });
+       
+
       };
 
       $scope.retrieveLabels = function() {
@@ -497,7 +558,7 @@ angular
           $scope.searchPerformed = true;
 
         }
-
+        
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
           'startIndex' : page == -1 ? -1 : (page - 1) * $scope.itemsPerPage,
@@ -531,6 +592,7 @@ angular
 
           // set title
           $scope.tabs[2].title = 'Review (' + $scope.nAssignedReviewWork + ')';
+
 
         }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
@@ -603,6 +665,7 @@ angular
           $scope.nAssignedRecordsForUser = data.totalCount;
 
           $scope.tabs[3].title = 'By User (' + data.totalCount + ')';
+
 
         }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
