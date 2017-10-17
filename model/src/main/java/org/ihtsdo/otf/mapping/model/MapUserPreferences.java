@@ -27,15 +27,28 @@ public interface MapUserPreferences {
    * 
    * @param lastAssigned the lastAssignedTab
    */
-  public String getlastAssignedTab();
+  public String getLastAssignedTab();
   
   /**
    * Returns the lastAssigned.
    * 
    * @return the lastAssignedTab
    */
-  public void setlastAssignedTab(String lastAssignedTab);
+  public void setLastAssignedTab(String lastAssignedTab);
 
+  /**
+   * Gets the last assigned radio button.
+   *
+   * @return the last assigned radio button
+   */
+  public String getLastAssignedRadio();
+  
+  /**
+   * Sets the last assigned radio button.
+   *
+   * @param lastAssignedRadio the new last assigned radio button
+   */
+  public void setLastAssignedRadio(String lastAssignedRadio);
 
   /**
    * Returns the map user.
