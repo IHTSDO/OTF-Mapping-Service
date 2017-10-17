@@ -53,8 +53,14 @@ public class MapUserPreferencesJpa implements MapUserPreferences {
   @Column(nullable = false)
   private Long mapProjectId;
   
+  /** The last tab on the Assigned Work widget on which the user was working. */
   @Column(nullable = false)
   private String lastAssignedTab;
+  
+  /** The last radio button that was selected on the Assigned Work widget. */
+  @Column(nullable = true)
+  private String lastAssignedRadio;
+
 
   /** The map of name to model dashboards. */
   @ElementCollection(fetch = FetchType.EAGER)
@@ -138,17 +144,37 @@ public class MapUserPreferencesJpa implements MapUserPreferences {
    * @return the last assigned tab
    */
   @Override
-  public String getlastAssignedTab() {
+  public String getLastAssignedTab() {
     return lastAssignedTab;
   }
 
+  /**
+   * Gets the last assigned radio.
+   *
+   * @return the last assigned radio
+   */
+  @Override
+  public String getLastAssignedRadio() {
+		return lastAssignedRadio;
+  }
+
+  /**
+   * Sets the last assigned radio.
+   *
+   * @param lastAssignedRadio the new last assigned radio
+   */
+  @Override
+  public void setLastAssignedRadio(String lastAssignedRadio) {
+		this.lastAssignedRadio = lastAssignedRadio;
+  }
+	
   /**
    * Sets the last assigned tab.
    * 
    * @param lastLogin the new last assigned tab
    */
   @Override
-  public void setlastAssignedTab(String lastAssignedTab){
+  public void setLastAssignedTab(String lastAssignedTab){
     this.lastAssignedTab = lastAssignedTab;
   }
 
@@ -259,6 +285,7 @@ public class MapUserPreferencesJpa implements MapUserPreferences {
     result = prime * result + (digestForm ? 1231 : 1237);
     result = prime * result + ((lastLogin == null) ? 0 : lastLogin.hashCode());
     result = prime * result + ((lastAssignedTab == null) ? 0 : lastAssignedTab.hashCode());
+    result = prime * result + ((lastAssignedRadio == null) ? 0 : lastAssignedRadio.hashCode());
     result =
         prime * result + ((mapProjectId == null) ? 0 : mapProjectId.hashCode());
     result = prime * result + ((mapUser == null) ? 0 : mapUser.hashCode());
@@ -297,6 +324,11 @@ public class MapUserPreferencesJpa implements MapUserPreferences {
           return false;
       } else if (!lastAssignedTab.equals(other.lastAssignedTab))
         return false;
+    if (lastAssignedRadio == null) {
+        if (other.lastAssignedRadio != null)
+          return false;
+      } else if (!lastAssignedRadio.equals(other.lastAssignedRadio))
+        return false;
     if (mapProjectId == null) {
       if (other.mapProjectId != null)
         return false;
@@ -322,9 +354,12 @@ public class MapUserPreferencesJpa implements MapUserPreferences {
     return "MapUserPreferencesJpa [id=" + id + ", mapUser="
         + mapUser.getUserName() + ", lastLogin=" + lastLogin
         + ", mapProjectId=" + mapProjectId + ",lastAssignedTab=" 
-        + lastAssignedTab + ", dashboardModels="
+        + lastAssignedTab + ",lastAssignedRadio=" 
+                + lastAssignedRadio+ ", dashboardModels="
         + dashboardModels + ", notifiedByEmail=" + notifiedByEmail
         + ", digestForm=" + digestForm + "]";
   }
+
+
 
 }
