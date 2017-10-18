@@ -58,7 +58,7 @@ angular
           'startIndex' : (page - 1) * $scope.pageSize,
           'maxResults' : $scope.pageSize,
           'sortField' : 'lastModified',
-          'queryRestriction' : queryTerms ? queryTerms : ''
+          'queryRestriction' : queryTerms ? JSON.stringify(queryTerms) : ''
         };
 
         $rootScope.glassPane++;
@@ -194,6 +194,25 @@ angular
 
       $scope.gotoConcept = function(terminologyId) {
         $location.path('#/record/conceptId/' + terminologyId);
+      };
+      
+      //date format
+      $scope.dateFormat = 'MM/dd/yyyy';
+      
+      $scope.dateRangeStart = {
+    		  opened: false
+      };
+      
+      $scope.dateRangeEnd = {
+    		  opened: false
+      };
+      
+      $scope.openDateRangeStart = function() {
+    		  $scope.dateRangeStart.opened = true;
+      };
+      
+      $scope.openDateRangeEnd = function() {
+		  $scope.dateRangeEnd.opened = true;
       };
 
     });
