@@ -3,6 +3,9 @@
  */
 package org.ihtsdo.otf.mapping.jpa.services;
 
+import java.util.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -78,6 +81,7 @@ import org.ihtsdo.otf.mapping.rf2.jpa.ComplexMapRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
+import org.json.JSONObject;
 
 /**
  * JPA implementation of the {@link MappingService}.
@@ -833,15 +837,10 @@ public class MappingServiceJpa extends RootServiceJpa
 
     AuditReader reader = AuditReaderFactory.get(manager);
     PfsParameter localPfsParameter = pfsParameter;
-
+    
     // if no pfsParameter supplied, construct a default one
     if (localPfsParameter == null)
       localPfsParameter = new PfsParameterJpa();
-
-    // split the query restrictions
-    if (localPfsParameter.getQueryRestriction() != null) {
-      // do nothing
-    }
 
     // construct the query
     AuditQuery query = reader.createQuery()
@@ -857,7 +856,7 @@ public class MappingServiceJpa extends RootServiceJpa
         .add(AuditEntity.property("workflowStatus").ne(WorkflowStatus.NEW))
         .add(AuditEntity.property("workflowStatus")
             .ne(WorkflowStatus.PUBLISHED));
-
+    
     // if sort field specified
     if (localPfsParameter.getSortField() != null) {
       query.addOrder(
@@ -877,11 +876,31 @@ public class MappingServiceJpa extends RootServiceJpa
 
     // if query terms specified, add
     if (pfsParameter != null && pfsParameter.getQueryRestriction() != null) {
-      String[] queryTerms = pfsParameter.getQueryRestriction().split(" ");
-      query.add(AuditEntity.or(AuditEntity.property("conceptId").in(queryTerms),
-          AuditEntity.property("conceptName")
-              .like(pfsParameter.getQueryRestriction(), MatchMode.ANYWHERE)));
 
+    	JSONObject jsonObject = new JSONObject(pfsParameter.getQueryRestriction());
+        final String terms = jsonObject.getString("input");
+        final Long dateRangeStart = (jsonObject.has("dateRangeStart") 
+        		&& !jsonObject.isNull("dateRangeStart"))
+        		? convertDateString(jsonObject.getString("dateRangeStart")) 
+        		: null;
+        final Long dateRangeEnd = (jsonObject.has("dateRangeEnd") 
+        		&& !jsonObject.isNull("dateRangeEnd"))
+        		? convertDateString(jsonObject.getString("dateRangeEnd")) 
+        		: null;
+      
+      //split the query restrictions    	
+      String[] queryTerms = terms.split(" ");
+      query.add(AuditEntity.or(AuditEntity.property("conceptId").in(queryTerms),
+          AuditEntity.property("conceptName")  
+          	.like(terms, MatchMode.ANYWHERE)));
+
+      if (dateRangeStart != null) {
+    	  query.add(AuditEntity.property("lastModified").gt(dateRangeStart));
+      }
+      if (dateRangeEnd != null) {
+    	  query.add(AuditEntity.property("lastModified").lt(dateRangeEnd));
+      }
+      
     }
 
     // execute the query
@@ -2178,7 +2197,6 @@ public class MappingServiceJpa extends RootServiceJpa
       // set a default project to 1st project found
       m.setLastMapProjectId(
           mapProjects.getIterable().iterator().next().getId());
-      m.setLastAssignedTab("0");
 
       // add object
       addMapUserPreferences(m);
@@ -2930,6 +2948,24 @@ public class MappingServiceJpa extends RootServiceJpa
     contentService.close();
 
     return searchResultList;
+  }
+  
+  /* Convert ISO 8601 date time string to milliseconds */
+  private long convertDateString(String dateString) {
+	  
+		long milliseconds = 0l;
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+
+		Date d;
+		try {
+			d = (Date) format.parse(dateString);
+			milliseconds = d.getTime();
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return milliseconds;
   }
 
 }
