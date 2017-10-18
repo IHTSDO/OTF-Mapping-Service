@@ -107,7 +107,7 @@ angular
         }
 
         $scope.setTarget = function(targetCode) {
-            $scope.getValidTargetError = '';
+          $scope.getValidTargetError = '';
 
           // if target code is empty, compute parameters and return
           if (!targetCode) {
@@ -121,8 +121,7 @@ angular
           $http(
             {
               url : root_mapping + 'project/id/' + $scope.project.id
-                + '/concept/isValid' + '?terminologyId='
-                + encodeURIComponent(targetCode),
+                + '/concept/isValid' + '?terminologyId=' + encodeURIComponent(targetCode),
               method : 'GET',
               headers : {
                 'Content-Type' : 'application/json'
@@ -229,7 +228,7 @@ angular
           updateEntry($scope.entry);
         };
 
-        function computeRelation(entry, index) {
+        function computeRelation(entry) {
           var deferred = $q.defer();
 
           // ensure mapRelation is deserializable
@@ -237,24 +236,24 @@ angular
             entry.mapRelation = null;
           }
 
-          // // Fake the ID of this entry with -1 id, copy, then set it back
-          // // This is hacky, but we do not have a good way to send 2 objects
-          // // and the entry may not have an id yet because it could be new.
-          // var copy = angular.copy($scope.record);
-          // // Find the matching localId and replace it and set the id to -1
-          // for (var i = 0; i < copy.mapEntry.length; i++) {
-          // if (entry.localId == copy.mapEntry[i].localId) {
-          // var entryCopy = angular.copy(entry);
-          // entryCopy.id = -1;
-          // copy.mapEntry.splice(i, 1, entryCopy);
-          // }
-          // }
+          // Fake the ID of this entry with -1 id, copy, then set it back
+          // This is hacky, but we do not have a good way to send 2 objects
+          // and the entry may not have an id yet because it could be new.
+          var copy = angular.copy($scope.record);
+          // Find the matching localId and replace it and set the id to -1
+          for (var i = 0; i < copy.mapEntry.length; i++) {
+            if (entry.localId == copy.mapEntry[i].localId) {
+              var entryCopy = angular.copy(entry);
+              entryCopy.id = -1;
+              copy.mapEntry.splice(i, 1, entryCopy);
+            }
+          }
 
           $rootScope.glassPane++;
           $http({
-            url : root_mapping + 'relation/compute/' + index,
+            url : root_mapping + 'relation/compute',
             dataType : 'json',
-            data : $scope.record,
+            data : copy,
             method : 'POST',
             headers : {
               'Content-Type' : 'application/json'
@@ -506,7 +505,7 @@ angular
           initializePresetAgeRanges();
 
           $scope.ruleCategories = [ 'TRUE', 'Gender - Male', 'Gender - Female',
-            'Age - Chronological' ];
+            'Age - Chronological', 'Age - At Onset' ];
 
           if (entry != null && entry.rule != null) {
             if (entry.rule.indexOf('Male') > -1)
@@ -515,6 +514,8 @@ angular
               $scope.ruleCategory = 'Gender - Female';
             else if (entry.rule.indexOf('chronological') > -1)
               $scope.ruleCategory = 'Age - Chronological';
+            else if (entry.rule.indexOf('onset') > -1)
+              $scope.ruleCategory = 'Age - At Onset';
             else
               $scope.ruleCategory = 'TRUE';
           } else
@@ -562,7 +563,8 @@ angular
             }
 
             // if an age range rule
-            else if (ruleCategory === 'Age - Chronological') {
+            else if (ruleCategory === 'Age - Chronological'
+              || ruleCategory === 'Age - At Onset') {
 
               // if age range not yet specified, do not construct rule
               if (ageRange == null || ageRange == undefined)
@@ -638,7 +640,8 @@ angular
               }
 
               // base text for both lower and upper value sections
-              var ruleText = 'IFA 424144002 | Current chronological age (observable entity)';
+              var ruleText = (ruleCategory === 'Age - Chronological') ? 'IFA 424144002 | Current chronological age (observable entity)'
+                : 'IFA 445518008 | Age at onset of clinical finding (observable entity)';
 
               if (lowerValueValid) {
                 $scope.rule += ruleText + ' | '
@@ -789,24 +792,17 @@ angular
          * relation
          */
         $scope.computeParameters = function(ignoreNullValues) {
+
           // either target or relation must be non-null to compute
           // relation/advice
           if ($scope.entry.targetId || $scope.entry.mapRelation
             || ignoreNullValues) {
 
-            for (var i = 0; i < $scope.record.mapEntry.length; i++) {
-              var entry = $scope.record.mapEntry[i];
-              // Use the scoped entry if the local id matches or if the actual
-              // id matches
-              if (matchingEntry(entry, $scope.entry)) {
-                computeRelation($scope.entry, i).then(
-                // Success
-                function() {
-                  computeAdvices($scope.record);
-                });
-                break;
-              }
-            }
+            computeRelation($scope.entry).then(
+            // Success
+            function() {
+              computeAdvices($scope.record);
+            });
 
             // set these to null for consistency
           } else {

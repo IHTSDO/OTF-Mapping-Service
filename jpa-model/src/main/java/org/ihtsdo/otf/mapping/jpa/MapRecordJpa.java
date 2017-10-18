@@ -465,7 +465,6 @@ public class MapRecordJpa implements MapRecord {
 
   /* see superclass */
   @Override
-  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public boolean isFlagForMapLeadReview() {
     return flagForMapLeadReview;
   }
@@ -478,7 +477,6 @@ public class MapRecordJpa implements MapRecord {
 
   /* see superclass */
   @Override
-  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public boolean isFlagForEditorialReview() {
     return flagForEditorialReview;
   }
@@ -491,7 +489,6 @@ public class MapRecordJpa implements MapRecord {
 
   /* see superclass */
   @Override
-  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public boolean isFlagForConsensusReview() {
     return flagForConsensusReview;
   }
@@ -609,7 +606,6 @@ public class MapRecordJpa implements MapRecord {
 
   /* see superclass */
   @Override
-  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public boolean isDiscrepancyReview() {
     return isDiscrepancyReview;
   }
