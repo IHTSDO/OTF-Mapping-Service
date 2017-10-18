@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
-    <version>1.5.31</version>
+    <version>1.5.34-SNAPSHOT</version>
     <relativePath>../../parent</relativePath>
   </parent>
 
@@ -150,6 +150,7 @@
                 </goals>
                 <configuration>
                   <refsetId>${refset.id}</refsetId>
+                  <inputFile>${input.file}</inputFile>
                 </configuration>
               </execution>
             </executions>

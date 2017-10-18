@@ -14,8 +14,8 @@ case $1 in
 		if test -d /var/opt/$APP_NAME; then
 			rm -r /var/opt/$APP_NAME
 		fi
-	    if test -d /var/lib/tomcat7/indexes; then
-			rm -rf /var/lib/tomcat7/indexes
+	    if test -d /opt/tomcat8/indexes; then
+			rm -rf /opt/tomcat8/indexes
 		fi
 	;;
 esac
