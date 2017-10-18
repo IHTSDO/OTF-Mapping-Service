@@ -27,7 +27,6 @@ import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
-import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
 /**
  * The {@link ProjectSpecificAlgorithmHandler} for ICD11 projects.
@@ -538,26 +537,6 @@ public class ICD11ProjectSpecificAlgorithmHandler
     // all entries with the same "rule" are adjacent to each other
 
     return result;
-  }
-
-  /* see superclass */
-  public String getSortKey(Concept concept, TrackingRecord record)
-    throws Exception {
-    final StringBuilder sb = new StringBuilder();
-    final String pairs = record.getUserAndWorkflowStatusPairs();
-    // Sort LOW above MEDIUM, then use tree position (record.getSortKey)
-    if (pairs == null || pairs.equals("NULL")) {
-      sb.append("09~");
-    } else if (pairs.split(" ").length == 1 && pairs.startsWith("EDITING_")
-        && !pairs.endsWith("loader")) {
-      sb.append("09~");
-    } else if (pairs.equals("EDITING_DONE_loader")) {
-      sb.append("08~");
-    } else {
-      sb.append("07~");
-    }
-    sb.append(record.getSortKey());
-    return sb.toString();
   }
 
 }
