@@ -18,7 +18,7 @@ echo "MAPPING_DATA = $MAPPING_DATA"
 echo "MAPPING_CONFIG = $MAPPING_CONFIG"
 
 echo "Taking down the server"
-service tomcat7 stop
+service tomcat stop
 if ($status != 0) then
 	echo "ERROR stopping server"
 	exit 1
@@ -34,13 +34,13 @@ mvn install -PGenerateDailyReports -Drun.config=$MAPPING_CONFIG -Dstart.date=$to
 
 if ($status != 0) then
     echo "ERROR generating daily reports"
-    echo "    Restarting tomcat7 server ...`/bin/date`"
-    service tomcat7 start
+    echo "    Restarting tomcat server ...`/bin/date`"
+    service tomcat start
     exit 1
 endif
 
-echo "    Restarting tomcat7 server ...`/bin/date`"
-service tomcat7 start
+echo "    Restarting tomcat server ...`/bin/date`"
+service tomcat start
 
 echo "------------------------------------------------"
 echo "Finished ...`/bin/date`"

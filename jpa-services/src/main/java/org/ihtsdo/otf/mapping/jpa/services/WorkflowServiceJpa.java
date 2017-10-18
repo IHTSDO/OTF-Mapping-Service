@@ -117,7 +117,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
       } else {
         manager.remove(manager.merge(ma));
       }
-      tx.commit();
+      tx.commit(); 
     } else {
       TrackingRecord ma =
           manager.find(TrackingRecordJpa.class, trackingRecordId);
@@ -129,7 +129,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     }
 
   }
-
+  
   /* see superclass */
   @Override
   public void removeFeedbackConversation(Long feedbackId) throws Exception {
@@ -146,9 +146,9 @@ public class WorkflowServiceJpa extends MappingServiceJpa
       }
       tx.commit();
     } else {
-      FeedbackConversation fa =
+    	FeedbackConversation fa =
           manager.find(FeedbackConversationJpa.class, feedbackId);
-      if (manager.contains(fa)) {
+   if (manager.contains(fa)) {
         manager.remove(fa);
       } else {
         manager.remove(manager.merge(fa));
@@ -156,7 +156,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     }
 
   }
-
+  
   /* see superclass */
   @Override
   public void removeFeedback(Long feedbackId) throws Exception {
@@ -164,20 +164,22 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     if (getTransactionPerOperation()) {
       tx = manager.getTransaction();
       tx.begin();
-      Feedback fa = manager.find(FeedbackJpa.class, feedbackId);
-
+      Feedback fa =
+          manager.find(FeedbackJpa.class, feedbackId);
+      
       final FeedbackConversation conv = fa.getFeedbackConversation();
       conv.removeFeedback(fa);
       manager.merge(conv);
       tx.commit();
-
+      
     } else {
-      Feedback fa = manager.find(FeedbackJpa.class, feedbackId);
-
+      Feedback fa =
+          manager.find(FeedbackJpa.class, feedbackId);
+    	  
       final FeedbackConversation conv = fa.getFeedbackConversation();
       conv.removeFeedback(fa);
       manager.merge(conv);
-
+     
     }
 
   }
@@ -449,7 +451,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     setTransactionPerOperation(true);
 
     // instantiate the algorithm handler for this project
-    final ProjectSpecificAlgorithmHandler algorithmHandler =
+    ProjectSpecificAlgorithmHandler algorithmHandler =
         (ProjectSpecificAlgorithmHandler) Class
             .forName(mapProject.getProjectSpecificAlgorithmHandlerClass())
             .newInstance();
@@ -489,8 +491,28 @@ public class WorkflowServiceJpa extends MappingServiceJpa
       trackingRecord.setTerminologyId(concept.getTerminologyId());
       trackingRecord.setDefaultPreferredName(concept.getDefaultPreferredName());
 
-      // Set sort key to the terminology id (treepos is too slow)
+      // This block of code is way too slow for any batch mode.
       trackingRecord.setSortKey(concept.getTerminologyId());
+      // // get the tree positions for this concept and set the sort key //
+      // // to the first retrieved
+      // final ContentService contentService = new ContentServiceJpa();
+      // try {
+      // TreePositionList treePositionsList = contentService
+      // .getTreePositionsWithDescendants(concept.getTerminologyId(),
+      // concept.getTerminology(), concept.getTerminologyVersion());
+      //
+      // // handle inactive concepts - which don't have tree positions
+      // if (treePositionsList.getCount() == 0) {
+      // trackingRecord.setSortKey("");
+      // } else {
+      // trackingRecord.setSortKey(
+      // treePositionsList.getTreePositions().get(0).getAncestorPath());
+      // }
+      // } catch (Exception e) {
+      // throw e;
+      // } finally {
+      // contentService.close();
+      // }
 
       // if Qa Path, instantiate Qa Path handler
       if (workflowAction.equals(WorkflowAction.CREATE_QA_RECORD)) {
@@ -830,13 +852,6 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     Logger.getLogger(WorkflowServiceJpa.class)
         .info("Start computing workflow for " + mapProject.getName());
 
-    // instantiate the algorithm handler for this project
-    final ProjectSpecificAlgorithmHandler algorithmHandler =
-        (ProjectSpecificAlgorithmHandler) Class
-            .forName(mapProject.getProjectSpecificAlgorithmHandlerClass())
-            .newInstance();
-    algorithmHandler.setMapProject(mapProject);
-
     // set the transaction parameter and tracking variables
     setTransactionPerOperation(false);
     int commitCt = 1000;
@@ -992,7 +1007,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
       trackingRecord.setSortKey(sortKey);
 
       // add any existing map records to this tracking record
-      final Set<MapRecord> mapRecordsForTrackingRecord = new HashSet<>();
+      Set<MapRecord> mapRecordsForTrackingRecord = new HashSet<>();
       if (unpublishedRecords.containsKey(trackingRecord.getTerminologyId())) {
         for (final MapRecord mr : unpublishedRecords
             .get(trackingRecord.getTerminologyId())) {
@@ -1010,13 +1025,6 @@ public class WorkflowServiceJpa extends MappingServiceJpa
           // add to the local set for workflow calculation
           mapRecordsForTrackingRecord.add(mr);
         }
-      }
-
-      // Allow for project-specific override.
-      final String overrideSortKey =
-          algorithmHandler.getSortKey(concept, trackingRecord);
-      if (overrideSortKey != null) {
-        trackingRecord.setSortKey(overrideSortKey);
       }
 
       // check against current workflow and universal workflows (currently Fix

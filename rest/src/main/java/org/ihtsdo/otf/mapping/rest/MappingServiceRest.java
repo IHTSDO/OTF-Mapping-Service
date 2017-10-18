@@ -248,6 +248,8 @@ public class MappingServiceRest extends RootServiceRest {
       mapProject.getMapSpecialists().size();
       mapProject.getMapPrinciples().size();
       mapProject.getPresetAgeRanges().size();
+      mapProject.getErrorMessages().size();
+      mapProject.getReportDefinitions().size();
       return mapProject;
 
     } catch (Exception e) {
@@ -416,6 +418,101 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
+  @PUT
+  @Path("/clone")
+  @ApiOperation(value = "Clone map project", notes = "Adds the specified map project, which is a potentially modified copy of another map project", response = MapProjectJpa.class)
+  public MapProject cloneMapProject(
+    @ApiParam(value = "MapProject PUT data", required = false) MapProjectJpa mapProject,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info("RESTful call PUT (Mapping): /clone "
+        + mapProject.getId() + ", " + mapProject);
+
+    String user = null;
+
+    final MappingService mappingService = new MappingServiceJpa();
+    try {
+    	// authorize call
+        user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+            "clone a map project", securityService);
+
+      mappingService.setTransactionPerOperation(false);
+      mappingService.beginTransaction();
+
+      // Add the map project (null the id)
+      final Long mapProjectId = mapProject.getId();
+      final MapProject originMapProject = mappingService.getMapProject(mapProjectId);
+
+      // Determine if refset with this id already exists in this project.
+      /*if (originRefset.getTerminologyId().equals(refset.getTerminologyId())
+          && originRefset.getProject().getId()
+              .equals(refset.getProject().getId())) {
+        throw new LocalException(
+            "Duplicate refset terminology id within the project, "
+                + "please change terminology id");
+      }*/
+      final Set<MapUser> mapLeads = originMapProject.getMapLeads();
+      // lazy init
+      mapLeads.size();
+
+      
+      // copy map specialists and leads
+      for (MapUser mapLead : originMapProject.getMapLeads()) {
+    	  mapLead.setId(null);
+      }
+      for (MapUser mapSpecialist : originMapProject.getMapSpecialists()) {
+    	  mapSpecialist.setId(null);
+      }
+      // clear error messages
+      mapProject.setErrorMessages(new HashSet<String>());
+      MapProject newMapProject = mappingService.addMapProject(mapProject);
+
+/*      // Copy all the members if EXTENSIONAL
+      if (refset.getType() == Refset.Type.EXTENSIONAL) {
+
+        // Get the original reference set
+        for (final ConceptRefsetMember originMember : originMembers) {
+          final ConceptRefsetMember member =
+              new ConceptRefsetMemberJpa(originMember);
+          member.setPublished(false);
+          member.setPublishable(true);
+          member.setRefset(newRefset);
+          member.setEffectiveTime(null);
+          // Insert new members
+          member.setId(null);
+          member.setLastModifiedBy(userName);
+          refsetService.addMember(member);
+        }
+        // Resolve definition if INTENSIONAL
+      } else if (refset.getType() == Refset.Type.INTENSIONAL) {
+        // Copy inclusions and exclusions from origin refset
+        for (final ConceptRefsetMember member : originMembers) {
+          if (member.getMemberType() == Refset.MemberType.INCLUSION
+              || member.getMemberType() == Refset.MemberType.EXCLUSION) {
+            final ConceptRefsetMember member2 =
+                new ConceptRefsetMemberJpa(member);
+            member2.setRefset(newRefset);
+            member2.setId(null);
+            refsetService.addMember(member2);
+            newRefset.addMember(member2);
+          }
+        }
+        refsetService.resolveRefsetDefinition(newRefset);
+      }*/
+      
+      // done
+      mappingService.commit();
+      return newMapProject;
+    } catch (Exception e) {
+      handleException(e, "trying to clone a map project");
+      return null;
+    } finally {
+      mappingService.close();
+      securityService.close();
+    }
+  }
+
+  
   /**
    * Returns all map projects for a lucene query.
    *
@@ -549,18 +646,41 @@ public class MappingServiceRest extends RootServiceRest {
       user = authorizeApp(authToken, MapUserRole.VIEWER, "get map users",
           securityService);
 
-      final MapUserListJpa mapLeads =
+      final MapUserListJpa mapUsers =
           (MapUserListJpa) mappingService.getMapUsers();
-      mapLeads.sortBy(new Comparator<MapUser>() {
+      mapUsers.sortBy(new Comparator<MapUser>() {
         @Override
         public int compare(MapUser o1, MapUser o2) {
           return o1.getName().compareTo(o2.getName());
         }
       });
-      return mapLeads;
+      // remove non-ihtsdo emails to address privacy concerns
+      // ihtsdo emails will be truncated to remove the domain,
+      // domain will be appended again on client side
+      for (MapUser mapUser : mapUsers.getMapUsers()) {
+        if (mapUser.getEmail().endsWith("ihtsdo.gov")) {
+          mapUser.setEmail(
+              mapUser.getEmail().substring(0, mapUser.getEmail().indexOf('@')));
+        } else {
+          mapUser.setEmail("Private email");
+        }
+      }
+
+      // do not return this private information if user is a guest
+      if (user.equals("guest")) {
+        for (MapUser mapUser : mapUsers.getMapUsers()) {
+          if (mapUser.getUserName().equals("guest")) {
+            MapUserListJpa list = new MapUserListJpa();
+            list.addMapUser(mapUser);
+            list.setTotalCount(1);
+            return list;
+          }
+        }
+      }
+      return mapUsers;
 
     } catch (Exception e) {
-      handleException(e, "trying to get a concept", user, "", "");
+      handleException(e, "trying to get map users", user, "", "");
       return null;
     } finally {
       mappingService.close();
@@ -1094,8 +1214,8 @@ public class MappingServiceRest extends RootServiceRest {
 
     try {
       // authorize call
-      userName = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-          "add a user", securityService);
+      userName = authorizeApp(authToken, MapUserRole.LEAD, "add a user",
+          securityService);
 
       // Check if user already exists and send better message
       for (final MapUser user : mappingService.getMapUsers().getMapUsers()) {
@@ -1142,7 +1262,7 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "update a user",
+      user = authorizeApp(authToken, MapUserRole.LEAD, "update a user",
           securityService);
 
       mappingService.updateMapUser(mapUser);
@@ -1178,7 +1298,7 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "remove a user",
+      user = authorizeApp(authToken, MapUserRole.LEAD, "remove a user",
           securityService);
 
       mappingService.removeMapUser(mapUser.getId());
@@ -1268,8 +1388,8 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-          "add map advice", securityService);
+      user = authorizeApp(authToken, MapUserRole.LEAD, "add map advice",
+          securityService);
 
       // Check if advice already exists and send better message
       for (final MapAdvice advice : mappingService.getMapAdvices()
@@ -1318,8 +1438,8 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-          "update map advice", securityService);
+      user = authorizeApp(authToken, MapUserRole.LEAD, "update map advice",
+          securityService);
 
       mappingService.updateMapAdvice(mapAdvice);
     } catch (Exception e) {
@@ -1354,8 +1474,8 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-          "remove map advice", securityService);
+      user = authorizeApp(authToken, MapUserRole.LEAD, "remove map advice",
+          securityService);
 
       mappingService.removeMapAdvice(mapAdvice.getId());
     } catch (Exception e) {
@@ -1445,13 +1565,13 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-          "add map age range", securityService);
+      user = authorizeApp(authToken, MapUserRole.LEAD, "add map age range",
+          securityService);
 
       // Check if age range already exists and send better message
       for (final MapAgeRange range : mappingService.getMapAgeRanges()
           .getMapAgeRanges()) {
-        if (range.getName().equals(range.getName())) {
+        if (mapAgeRange.getName().equals(range.getName())) {
           throw new LocalException(
               "This map age range already exists: " + range.getName());
         }
@@ -1495,8 +1615,8 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-          "udpate age range", securityService);
+      user = authorizeApp(authToken, MapUserRole.LEAD, "udpate age range",
+          securityService);
 
       mappingService.updateMapAgeRange(mapAgeRange);
     } catch (Exception e) {
@@ -1531,8 +1651,8 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-          "remove age range", securityService);
+      user = authorizeApp(authToken, MapUserRole.LEAD, "remove age range",
+          securityService);
 
       mappingService.removeMapAgeRange(mapAgeRange.getId());
     } catch (Exception e) {
@@ -1619,8 +1739,8 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-          "add map relation", securityService);
+      user = authorizeApp(authToken, MapUserRole.LEAD, "add map relation",
+          securityService);
 
       // Check if relation already exists and send better message
       for (final MapRelation relation : mappingService.getMapRelations()
@@ -1669,8 +1789,8 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-          "update map relation", securityService);
+      user = authorizeApp(authToken, MapUserRole.LEAD, "update map relation",
+          securityService);
 
       mappingService.updateMapRelation(mapRelation);
     } catch (Exception e) {
@@ -1705,8 +1825,8 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-          "remove map relation", securityService);
+      user = authorizeApp(authToken, MapUserRole.LEAD, "remove map relation",
+          securityService);
 
       mappingService.removeMapRelation(mapRelation.getId());
     } catch (Exception e) {
@@ -1840,8 +1960,8 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-          "add map principle", securityService);
+      user = authorizeApp(authToken, MapUserRole.LEAD, "add map principle",
+          securityService);
 
       // Check if principle already exists and send better message
       for (final MapPrinciple principle : mappingService.getMapPrinciples()
@@ -1891,8 +2011,8 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-          "update map principle", securityService);
+      user = authorizeApp(authToken, MapUserRole.LEAD, "update map principle",
+          securityService);
 
       mappingService.updateMapPrinciple(mapPrinciple);
 
@@ -1928,8 +2048,8 @@ public class MappingServiceRest extends RootServiceRest {
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-          "remove map principle", securityService);
+      user = authorizeApp(authToken, MapUserRole.LEAD, "remove map principle",
+          securityService);
 
       mappingService.removeMapPrinciple(principle.getId());
 
@@ -2641,8 +2761,6 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
     @ApiParam(value = "Ancestor concept (inclusive) to restrict search results to", required = true) @QueryParam("ancestorId") String ancestorId,
-    @ApiParam(value = "Incudes or excludes mapped descendants of ancestor id ", required = false) @QueryParam("descendantsMapped") boolean descendantsMapped,
-    @ApiParam(value = "Excludes descendants of ancestor id ", required = false) @QueryParam("excludeDescendants") boolean excludeDescendants,
     @ApiParam(value = "Search query string", required = false) @QueryParam("query") String query,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -2650,7 +2768,7 @@ public class MappingServiceRest extends RootServiceRest {
     // log call
     Logger.getLogger(MappingServiceRest.class)
         .info("RESTful call (Mapping): /record/project/id/" + mapProjectId + " "
-            + ancestorId + ", " + descendantsMapped  + ", " + query);
+            + ancestorId + ", " + query);
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
 
@@ -2735,19 +2853,14 @@ public class MappingServiceRest extends RootServiceRest {
                 "Too many descendants for ancestor id, choose a more specific concept: "
                     + ct);
           }
-          List<SearchResult> results = null;
-          if(descendantsMapped)
-        	  results = mappingService
-                  .findUnmappedDescendantsForConcept(ancestorId, mapProjectId, null).getSearchResults();
-          else
-        	  results = contentService
-                      .findDescendantConcepts(ancestorId,
-                              mapProject.getSourceTerminology(),
-                              mapProject.getSourceTerminologyVersion(), null)
-                          .getSearchResults();
+
           // Find descendants and put into a set for quick lookup
           final Set<String> descSet = new HashSet<>();
-          for (final SearchResult sr : results) {
+          for (final SearchResult sr : contentService
+              .findDescendantConcepts(ancestorId,
+                  mapProject.getSourceTerminology(),
+                  mapProject.getSourceTerminologyVersion(), null)
+              .getSearchResults()) {
             descSet.add(sr.getTerminologyId());
           }
 
@@ -2758,57 +2871,49 @@ public class MappingServiceRest extends RootServiceRest {
             // itself
             if (sr.getTerminologyId().equals(ancestorId)
                 || descSet.contains(sr.getTerminologyId())) {
-              if(!excludeDescendants)
-	              // add to eligible results
-	              eligibleResults.addSearchResult(sr);
+
+              // add to eligible results
+              eligibleResults.addSearchResult(sr);
             }
           }
         }
 
         // Otherwise, just get all descendants
         else {
-        	if(!descendantsMapped)
-        		eligibleResults.addSearchResults(mappingService
-                    .findUnmappedDescendantsForConcept(ancestorId, mapProjectId, null));
-        	else {
-	          // Check descendant concept count
-	          final int ct = contentService.getDescendantConceptsCount(ancestorId,
-	              mapProject.getSourceTerminology(),
-	              mapProject.getSourceTerminologyVersion());
-	          if (ct > 2000) {
-	            throw new LocalException(
-	                "Too many descendants for ancestor id, choose a more specific concept: "
-	                    + ct);
-	          }
-	
-	          // Look up descendants, then convert to map records
-	          final List<SearchResult> descendants = contentService
-	              .findDescendantConcepts(ancestorId,
-	                  mapProject.getSourceTerminology(),
-	                  mapProject.getSourceTerminologyVersion(), null)
-	              .getSearchResults();
-	          descendants.add(new SearchResultJpa(0L, ancestorId, null, null));
-	
-	          // Look up map records
-	          final StringBuilder sb = new StringBuilder();
-	          if(excludeDescendants) {
-	        	  sb.append("NOT ");
-	          }
-	          sb.append("(");
-	          boolean append = false;
-	          for (final SearchResult sr : descendants) {
-	            if (append) {
-	              sb.append(" OR ");
-	            }
-	            sb.append("conceptId:" + sr.getTerminologyId());
-	            append = true;
-	          }
-	          sb.append(")");
-	          eligibleResults.addSearchResults(
-	              mappingService.findMapRecordsForQuery(sb.toString(), pfsLocal));
-	
-	        }
+
+          // Check descendant concept count
+          final int ct = contentService.getDescendantConceptsCount(ancestorId,
+              mapProject.getSourceTerminology(),
+              mapProject.getSourceTerminologyVersion());
+          if (ct > 2000) {
+            throw new LocalException(
+                "Too many descendants for ancestor id, choose a more specific concept: "
+                    + ct);
+          }
+
+          // Look up descendants, then convert to map records
+          final List<SearchResult> descendants = contentService
+              .findDescendantConcepts(ancestorId,
+                  mapProject.getSourceTerminology(),
+                  mapProject.getSourceTerminologyVersion(), null)
+              .getSearchResults();
+          descendants.add(new SearchResultJpa(0L, ancestorId, null, null));
+
+          // Look up map records
+          final StringBuilder sb = new StringBuilder();
+          sb.append("(");
+          for (final SearchResult sr : descendants) {
+            if (sb.length() > 1) {
+              sb.append(" OR ");
+            }
+            sb.append("conceptId:" + sr.getTerminologyId());
+          }
+          sb.append(")");
+          eligibleResults.addSearchResults(
+              mappingService.findMapRecordsForQuery(sb.toString(), pfsLocal));
+
         }
+
         // set search results total count to number of eligible results
         searchResults.setTotalCount(eligibleResults.getCount());
 
@@ -3149,12 +3254,13 @@ public class MappingServiceRest extends RootServiceRest {
    * Computes a map advice (if any) for a map entry's current state.
    *
    * @param mapRecord the map record
+   * @param entryIndex the entry index
    * @param authToken the auth token
    * @return Response the response
    * @throws Exception the exception
    */
   @POST
-  @Path("/advice/compute")
+  @Path("/advice/compute/{entryIndex}")
   @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
@@ -3163,6 +3269,7 @@ public class MappingServiceRest extends RootServiceRest {
   })
   @ApiOperation(value = "Compute map advices", notes = "Gets the computed map advices for the indicated map entry of the map record.", response = MapAdviceJpa.class)
   public MapAdviceList computeMapAdvice(
+    @ApiParam(value = "Index of entries in map record to compute advice for", required = true) @PathParam("entryIndex") Integer entryIndex,
     @ApiParam(value = "Map record, in JSON or XML POST data", required = true) MapRecordJpa mapRecord,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -3174,6 +3281,12 @@ public class MappingServiceRest extends RootServiceRest {
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
+      // Bail if there are no entries for entryIndex
+      if (mapRecord == null || mapRecord.getMapEntries() == null
+          || mapRecord.getMapEntries().size() <= entryIndex) {
+        return new MapAdviceListJpa();
+      }
+
       // authorize call
       user = authorizeProject(mapRecord.getMapProjectId(), authToken,
           MapUserRole.SPECIALIST, "compute map advice", securityService);
@@ -3182,20 +3295,7 @@ public class MappingServiceRest extends RootServiceRest {
           mappingService.getProjectSpecificAlgorithmHandler(
               mappingService.getMapProject(mapRecord.getMapProjectId()));
 
-      // We need the full in-memory (and unsaved) representation of the
-      // map record.
-      // The entry in question is (hackishly identified by having an id of
-      // -1);
-      MapEntry mapEntry = null;
-      for (final MapEntry entry : mapRecord.getMapEntries()) {
-        if (entry.getId() != null && entry.getId() == -1) {
-          if (mapEntry != null) {
-            throw new Exception(
-                "More than one map entry is indicated as the one to compute advice for.");
-          }
-          mapEntry = entry;
-        }
-      }
+      final MapEntry mapEntry = mapRecord.getMapEntries().get(entryIndex);
 
       // bail if not ready yet
       if (mapEntry == null || mapEntry.getTargetId() == null) {
@@ -3601,8 +3701,7 @@ public class MappingServiceRest extends RootServiceRest {
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
 
       // formulate an "and" search from the query if it doesn't use
-      // special
-      // chars
+      // special chars
       boolean plusFlag = false;
       final StringBuilder qb = new StringBuilder();
       if (!query.contains("\"") && !query.contains("-") && !query.contains("+")
@@ -3937,19 +4036,19 @@ public class MappingServiceRest extends RootServiceRest {
    * @throws Exception the exception
    */
   @GET
-  @Path("/project/id/{mapProjectId}/concept/{terminologyId}/isValid")
+  @Path("/project/id/{mapProjectId}/concept/isValid")
   @ApiOperation(value = "Indicate whether a target code is valid", notes = "Gets either a valid concept corresponding to the id, or returns null if not valid.", response = TreePositionListJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public Concept isTargetCodeValid(
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("mapProjectId") Long mapProjectId,
-    @ApiParam(value = "Concept terminology id, e.g. 22298006", required = true) @PathParam("terminologyId") String terminologyId,
+    @ApiParam(value = "Concept terminology id, e.g. 22298006", required = true) @QueryParam("terminologyId") String terminologyId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(MappingServiceRest.class)
         .info("RESTful call (Mapping): /project/id/" + mapProjectId
-            + "/concept/" + terminologyId + "/isValid");
+            + "/concept/isValid " + terminologyId);
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
@@ -4205,8 +4304,8 @@ public class MappingServiceRest extends RootServiceRest {
     ContentService contentService = new ContentServiceJpa();
     try {
       // authorize call
-      user = authorizeProject(mapProjectId, authToken,
-          MapUserRole.ADMINISTRATOR, "compute names", securityService);
+      user = authorizeProject(mapProjectId, authToken, MapUserRole.LEAD,
+          "compute names", securityService);
 
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
       final String terminology = mapProject.getSourceTerminology();
