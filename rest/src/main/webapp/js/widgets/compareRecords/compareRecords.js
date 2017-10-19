@@ -843,7 +843,7 @@ angular
 
       // Delete feedback conversation
       var group;
-      $scope.removeFeedback = function(conversation) {
+      $scope.removeFeedback = function(feedback) {
         // confirm delete
         if (confirm('Are you sure that you want to delete a feedback conversation?') == false)
           return;
@@ -851,7 +851,7 @@ angular
         $http({
           url : root_workflow + 'feedback/delete',
           dataType : 'json',
-          data : conversation,
+          data : feedback,
           method : 'DELETE',
           headers : {
             'Content-Type' : 'application/json'
