@@ -878,7 +878,10 @@ public class MappingServiceJpa extends RootServiceJpa
     if (pfsParameter != null && pfsParameter.getQueryRestriction() != null) {
 
     	JSONObject jsonObject = new JSONObject(pfsParameter.getQueryRestriction());
-        final String terms = jsonObject.getString("input");
+        final String terms = (jsonObject.has("input") 
+        		&& !jsonObject.isNull("input"))
+        		? jsonObject.getString("input") 
+        		: null;
         final Long dateRangeStart = (jsonObject.has("dateRangeStart") 
         		&& !jsonObject.isNull("dateRangeStart"))
         		? convertDateString(jsonObject.getString("dateRangeStart")) 
