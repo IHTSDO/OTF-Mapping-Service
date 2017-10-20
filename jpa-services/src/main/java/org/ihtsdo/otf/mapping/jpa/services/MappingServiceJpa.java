@@ -19,6 +19,7 @@ import java.util.Set;
 import javax.persistence.NoResultException;
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.envers.AuditReader;
@@ -875,7 +876,8 @@ public class MappingServiceJpa extends RootServiceJpa
     }
 
     // if query terms specified, add
-    if (pfsParameter != null && pfsParameter.getQueryRestriction() != null) {
+    if (pfsParameter != null && pfsParameter.getQueryRestriction() != null 
+    		&& StringUtils.isNotBlank(pfsParameter.getQueryRestriction())) {
 
     	JSONObject jsonObject = new JSONObject(pfsParameter.getQueryRestriction());
         final String terms = (jsonObject.has("input") 
