@@ -61,8 +61,10 @@
             <i class="glyphicon glyphicon-check"></i>
           </a></th>
 
-        <th style="width: 75%; padding: 5px;">Preferred Name</th>
-        <th style="width: 3%; padding: 5px;"><a title="Return All Work"
+        <th style="width: 72%; padding: 5px;">Preferred Name</th>
+        <th style="width: 3%; padding: 5px;"></th>
+        <th style="width: 3%; padding: 5px;">
+        <a title="Return All Work"
             ng-click="unassignAllWork(currentUser, 'concept', assignedTypes.work, queryAssigned)">
             <i
               class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i>
@@ -133,12 +135,18 @@
             <i ng-click="finishOrPublish(result)" class="glyphicon glyphicon-ok"></i>
           </a>
         </td>
-        <td style="width: 75%; padding: 5px;">{{result.value}}</td>
+        <td style="width: 72%; padding: 5px;">{{result.value}}</td>
+        <td style="width: 3%; padding: 5px;">
+          <span><a title="Send feedback to author"
+            ng-click="createJiraTicket(result)">
+            <i class="glyphicon glyphicon glyphicon-export"></i>
+          </a>
+        </td>
         <td style="width: 3%; padding: 5px;">
           <a title="Return"
             ng-click="unassignWork(result, currentUser, 'concept')">
             <i class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i>
-          </a>
+          </a></span>
         </td>
       </tr>
     </tbody>
@@ -214,7 +222,8 @@
             <i class="glyphicon glyphicon-check"></i>
           </a></th>
 
-        <th style="width: 75%; padding: 5px;">Preferred Name</th>
+        <th style="width: 72%; padding: 5px;">Preferred Name</th>
+        <th style="width: 3%; padding: 5px;"></th>
         <th style="width: 3%; padding: 5px;"><a
             title="Return All Conflicts"
             ng-click="unassignAllWork(currentUser, 'conflict', assignedTypes.conflict, queryConflict)">
@@ -268,7 +277,13 @@
           </a>
         </td>
 
-        <td style="width: 80%; padding: 5px;">{{result.value}}</td>
+        <td style="width: 77%; padding: 5px;">{{result.value}}</td>
+        <td style="width: 3%; padding: 5px;">
+          <a title="Send feedback to author"
+            ng-click="createJiraTicket(result)">
+            <i class="glyphicon glyphicon glyphicon-export"></i>
+          </a>
+        </td>
         <td style="width: 3%; padding: 5px;">
           <a title="Return"
             ng-click="unassignWork(result, currentUser, 'conflict')">
@@ -349,7 +364,8 @@
             ng-click="finishOrPublishBatch(assignedTypes.review)">
             <i class="glyphicon glyphicon-check"></i>
           </a></th>
-        <th style="width: 80%; padding: 5px;">Preferred Name</th>
+        <th style="width: 77%; padding: 5px;">Preferred Name</th>
+        <th style="width: 3%; padding: 5px;"></th>
         <th style="width: 3%; padding: 5px;"><a title="Return All Work"
             ng-click="unassignAllWork(currentUser, 'review', assignedTypes.review, queryReviewWork)">
             <i
@@ -401,7 +417,13 @@
           </a>
         </td>
 
-        <td style="width: 80%; padding: 5px;">{{result.value}}</td>
+        <td style="width: 77%; padding: 5px;">{{result.value}}</td>
+        <td style="width: 3%; padding: 5px;">
+          <a title="Send feedback to author"
+            ng-click="createJiraTicket(result)">
+            <i class="glyphicon glyphicon glyphicon-export"></i>
+          </a>
+        </td>
         <td style="width: 3%; padding: 5px;">
           <a title="Return"
             ng-click="unassignWork(result, currentUser, 'review')">
@@ -566,7 +588,8 @@
             ng-click="finishOrPublishBatch(assignedTypes.qa)">
             <i class="glyphicon glyphicon-check"></i>
           </a></th>
-        <th style="width: 77%; padding: 5px;">Preferred Name</th>
+        <th style="width: 74%; padding: 5px;">Preferred Name</th>
+        <th style="width: 3%; padding: 5px;"></th>
         <th style="width: 3%; padding: 5px;"></th>
         <th style="width: 3%; padding: 5px;"><a title="Return All Work"
             ng-click="unassignAllWork(currentUser, 'qa', assignedTypes.qa, queryQAWork)">
@@ -624,6 +647,12 @@
             tooltip-placement="top" uib-tooltip="{{result.labels}}"
             style="float: right; margin-right: 5px;">
             <i class="glyphicon glyphicon-tasks"></i>
+          </a>
+        </td>
+        <td style="width: 3%; padding: 5px;">
+          <a title="Send feedback to author"
+            ng-click="createJiraTicket(result)">
+            <i class="glyphicon glyphicon glyphicon-export"></i>
           </a>
         </td>
         <td style="width: 3%; padding: 5px;">
