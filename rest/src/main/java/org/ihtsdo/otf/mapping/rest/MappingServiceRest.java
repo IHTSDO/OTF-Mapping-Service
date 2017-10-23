@@ -3,12 +3,15 @@
  */
 package org.ihtsdo.otf.mapping.rest;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -21,6 +24,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.naming.AuthenticationException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
 import javax.ws.rs.DELETE;
@@ -37,6 +41,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONObject;
 import org.ihtsdo.otf.mapping.dto.KeyValuePair;
 import org.ihtsdo.otf.mapping.dto.KeyValuePairList;
 import org.ihtsdo.otf.mapping.dto.KeyValuePairLists;
@@ -103,6 +109,9 @@ import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
 import org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
 import com.wordnik.swagger.annotations.Api;
@@ -4722,5 +4731,235 @@ public class MappingServiceRest extends RootServiceRest {
       mappingService.close();
       securityService.close();
     }
+  }
+  
+  /**
+   * Creates the jira issue.
+   *
+   * @param conceptId the concept id
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  @POST
+  @Path("/jira/{conceptId}/{conceptAuthor}")
+  @Consumes({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  @ApiOperation(value = "Create a jira ticket for the content author.", notes = "Create a jira ticket for the content author.")
+  public void createJiraIssue(
+    @ApiParam(value = "Concept id", required = true) @PathParam("conceptId") String conceptId,
+    @ApiParam(value = "Concept author username", required = true) @PathParam("conceptAuthor") String conceptAuthor,
+    @ApiParam(value = "Message text", required = false) @QueryParam("messageText") String messageText,
+    @ApiParam(value = "Map record, in JSON or XML POST data", required = true) MapRecordJpa mapRecord,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Mapping): /jira/" + conceptId.toString() + "/"
+            + conceptAuthor);
+    Logger.getLogger(WorkflowServiceRest.class)
+        .info("RESTful call (Mapping): /jira/" + messageText);
+    try {
+
+      // get URL and authentication for JIRA api access
+      final Properties config = ConfigUtility.getConfigProperties();
+      final String jiraAuthHeader = config.getProperty("jira.authHeader");
+      final String jiraUrl = config.getProperty("jira.defaultUrl");
+
+      Client client = Client.create();
+      WebResource webResource = client.resource(jiraUrl + "/issue/");
+
+      // buffer map record contents
+      StringBuffer mapRecordContents = new StringBuffer();
+      mapRecordContents.append("Concept:").append(mapRecord.getConceptId())
+          .append(" ").append(mapRecord.getConceptName()).append("\\\\\\\\");
+      mapRecordContents.append("Map Entries").append("\\\\\\\\");
+      final Comparator<MapEntry> entriesComparator =
+          new Comparator<MapEntry>() {
+            @Override
+            public int compare(MapEntry o1, MapEntry o2) {
+              Integer mapGroup1 = new Integer(o1.getMapGroup());
+              Integer mapGroup2 = new Integer(o2.getMapGroup());
+              if (mapGroup1 == mapGroup2) {
+                Integer mapPriority1 = new Integer(o1.getMapPriority());
+                Integer mapPriority2 = new Integer(o2.getMapPriority());
+                return mapPriority1.compareTo(mapPriority2);
+              }
+              return mapGroup1.compareTo(mapGroup2);
+            }
+          };
+
+      // sort the map entries
+      Collections.sort(mapRecord.getMapEntries(), entriesComparator);
+      for (MapEntry entry : mapRecord.getMapEntries()) {
+        mapRecordContents
+            .append(entry.getMapGroup() + " / " + entry.getMapPriority())
+            .append("  ");
+        mapRecordContents.append(entry.getTargetId()).append(" ")
+            .append(entry.getTargetName()).append("\\\\\\\\");
+        mapRecordContents.append(entry.getRule()).append("\\\\\\\\");
+        for (MapAdvice mapAdvice : entry.getMapAdvices()) {
+          mapRecordContents.append(mapAdvice.getName()).append("\\\\\\\\");
+        }
+        mapRecordContents.append(entry.getMapRelation().getName())
+            .append("\\\\\\\\");
+      }
+		    /*if (mapRecord.getMapNotes().size() > 0) {
+		    	mapRecordContents.append("Notes").append("\\\\\\\\");
+		    }
+		    for (MapNote note : mapRecord.getMapNotes()) {
+		    	mapRecordContents.append(note.getUser().getName()).append(" on ").append(note.getTimestamp()).append("\\\\\\\\");
+		    	mapRecordContents.append(note.getNote().replaceAll("<br>", "\\\\\\\\\\\\\\\\").replaceAll("\\<.*?\\>", "").replaceAll("nbsp;", " ")).append("\\\\\\\\");
+		    }*/
+		    
+		    //authToken = "dshapiro";
+		    //conceptAuthor = "dshapiro";
+      
+            // create the issue object to send to JIRA Rest API
+		    String data = "{"
+            + "\"fields\": {"
+                + "\"project\":"
+                    + "{"
+                    +    "\"key\": \"MAP\""
+                    + "},"
+                + "\"summary\": \"Mapping Feedback on " + conceptId + "\","
+                + "\"assignee\": {"
+                        + "\"name\": \"" + conceptAuthor + "\""
+                    + "},"
+                 + "\"reporter\": {"
+                        + "\"name\": \"" + authToken + "\""
+                    + "},"
+                + "\"description\": \"" + messageText.replaceAll("\n", "\\\\\\\\\\\\\\\\").replaceAll("\\<.*?\\>", "") + "\\\\\\\\" + mapRecordContents.toString() + "\","
+                + "\"issuetype\": {"
+                        + "\"id\": \"10105\""
+                    + "}"
+                + "}"
+            + "}";
+      Logger.getLogger(MappingServiceRest.class)
+          .info("RESTful call (Mapping): /jira/  \n" + data);
+
+      ClientResponse response = webResource
+          .header("Authorization", jiraAuthHeader).type("application/json")
+          .accept("application/json").post(ClientResponse.class, data);
+      int statusCode = response.getStatus();
+
+      if (statusCode == 401) {
+        throw new AuthenticationException("Invalid Username or Password");
+      } else if (statusCode == 403) {
+        throw new AuthenticationException("Forbidden");
+      } else if (statusCode == 200 || statusCode == 201) {
+        Logger.getLogger(MappingServiceRest.class)
+        .info("Ticket Create successfully");
+      } else {
+        Logger.getLogger(MappingServiceRest.class)
+        .info("Http Error : " + statusCode);
+      }
+      
+      BufferedReader inputStream = new BufferedReader(
+          new InputStreamReader(response.getEntityInputStream()));
+      String line = null;
+      while ((line = inputStream.readLine()) != null) {
+        System.out.println(line);
+
+      }
+      Logger.getLogger(MappingServiceRest.class).info(response.getEntity(String.class));
+
+    } catch (MalformedURLException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+  @GET
+  @Path("/authors/{conceptId}")
+  @ApiOperation(value = "Gets authors for this concept", notes = "Gets a list of all content authors from the authoring tool.", response = SearchResultList.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public SearchResultList getConceptAuthors(
+    @ApiParam(value = "Concept id", required = true) @PathParam("conceptId") String conceptId,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping):  /authors/" + conceptId);
+    final Properties config = ConfigUtility.getConfigProperties();
+    final String authoringAuthHeader =
+        config.getProperty("authoring.authHeader");
+    final String authoringUrl = config.getProperty("authoring.defaultUrl");
+
+    Client client = Client.create();
+    WebResource webResource = client.resource(authoringUrl
+        + "/traceability-service/activities?conceptId=" + conceptId);
+
+    ClientResponse response = webResource
+        .header("Authorization", authoringAuthHeader).type("application/json")
+        .accept("application/json").get(ClientResponse.class);
+    int statusCode = response.getStatus();
+
+    if (statusCode == 401) {
+      throw new AuthenticationException("Invalid Username or Password");
+    } else if (statusCode == 403) {
+      throw new AuthenticationException("Forbidden");
+    } else if (statusCode == 200 || statusCode == 201) {
+      Logger.getLogger(MappingServiceRest.class)
+      .info("Traceability report retrieved successfully");
+    } else {
+      Logger.getLogger(MappingServiceRest.class)
+      .info("Http Error : " + statusCode);
+    }
+
+    // Parse to get the authors on all changes that were promoted to MAIN
+    String jsonText = inputStreamToString(response.getEntityInputStream());
+    JSONObject jsonObject = new JSONObject(jsonText);
+    JSONArray array = jsonObject.getJSONArray("content");
+    SearchResultList searchResultList = new SearchResultListJpa();
+    List<String> userNameList = new ArrayList<>();
+    for (int i = 0; i < array.length(); i++) {
+      JSONObject singleContent = array.getJSONObject(i);
+      if (singleContent.getString("highestPromotedBranch") == null
+          || !singleContent.getJSONObject("highestPromotedBranch")
+              .getString("branchPath").equals("MAIN")) {
+        continue;
+      }
+      String userName =
+          singleContent.getJSONObject("user").getString("username");
+      if (!userNameList.contains(userName)) {
+        userNameList.add(userName);
+      }
+    }
+    for (String userName : userNameList) {
+      SearchResult searchResult = new SearchResultJpa();
+      searchResult.setValue(userName);
+      searchResultList.addSearchResult(searchResult);
+    }
+    searchResultList.setTotalCount(userNameList.size());
+    return searchResultList;
+
+  }
+
+  /**
+   * Reads an InputStream and returns its contents as a String. Also effects
+   * rate control.
+   * @param inputStream The InputStream to read from.
+   * @return The contents of the InputStream as a String.
+   * @throws Exception on error.
+   */
+  private static String inputStreamToString(final InputStream inputStream)
+    throws Exception {
+    final StringBuilder outputBuilder = new StringBuilder();
+
+    String string;
+    if (inputStream != null) {
+      BufferedReader reader =
+          new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
+      while (null != (string = reader.readLine())) {
+        outputBuilder.append(string).append('\n');
+      }
+    }
+
+    return outputBuilder.toString();
   }
 }
