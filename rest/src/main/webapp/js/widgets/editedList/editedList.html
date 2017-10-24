@@ -32,9 +32,6 @@
 		</p>
 	</div>
 
-			
-
-
 	<button type="submit" class="btn btn-xs btn-primary">Search</button>
 	<span class="btn btn-xs btn-primary" ng-click="clearSearch(); queryTerms = ''">Reset</span>
 	<a>
@@ -42,6 +39,7 @@
 			uib-tooltip="You may search by concept id or terms in the concept's name (e.g. closed fracture, 704020004, ...). Only exact phrases will match, e.g. 'phalanx thumb' will not match the phrase 'phalanx of thumb'.  AND/OR/NOT operators are not supported.">
 		</i>
 	</a>
+	&nbsp;&nbsp;{{totalRecords}} results, page {{recordPage}} of {{numRecordPages}}
 	
 </form>
 <br>
@@ -52,6 +50,14 @@
 <div ng-show="editedRecords.length == 0 && searchPerformed == true"
   style="width: 30%; padding: 10px;" class="alert alert-in" disabled>No
   concepts found.</div>
+
+<uib-pagination 
+	previous-text="&lsaquo;" next-text="&rsaquo;"
+	first-text="&laquo;"  last-text="&raquo;" 
+	total-items="totalRecords" ng-model="recordPage" max-size="recordsPerPage" 
+	class="pagination-sm" boundary-links="true" rotate="true"
+	ng-change="retrieveEditedWork(recordPage, query)">
+</uib-pagination>
 
 <table class="table" ng-show="editedRecords.length > 0">
   <thead>
@@ -84,12 +90,3 @@
     </tr>
   </tbody>
 </table>
-
-<ul class="pager" ng-show="searchPerformed == true">
-  <li class="previous" ng-show="editedRecordsPage > 1"
-    ng-click="retrieveEditedWork(editedRecordsPage-1, queryTerms)"><a>&larr;
-      Newer</a></li>
-  <li class="next"
-    ng-click="retrieveEditedWork(editedRecordsPage+1, queryTerms)"><a>Older
-      &rarr;</a></li>
-</ul>

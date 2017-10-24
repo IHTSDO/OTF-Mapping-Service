@@ -867,13 +867,6 @@ public class MappingServiceJpa extends RootServiceJpa
     } else {
       query.addOrder(AuditEntity.property("lastModified").desc());
     }
-    // if paging request supplied, set first result and max results
-    if (localPfsParameter.getStartIndex() != -1
-        && localPfsParameter.getMaxResults() != -1) {
-      query.setFirstResult(localPfsParameter.getStartIndex())
-          .setMaxResults(localPfsParameter.getMaxResults());
-
-    }
 
     // if query terms specified, add
     if (pfsParameter != null && pfsParameter.getQueryRestriction() != null 
@@ -893,11 +886,12 @@ public class MappingServiceJpa extends RootServiceJpa
         		? convertDateString(jsonObject.getString("dateRangeEnd")) 
         		: null;
       
-      //split the query restrictions    	
-      String[] queryTerms = terms.split(" ");
-      query.add(AuditEntity.or(AuditEntity.property("conceptId").in(queryTerms),
-          AuditEntity.property("conceptName")  
-          	.like(terms, MatchMode.ANYWHERE)));
+      //split the query restrictions
+      if (terms != null) {
+    	  String[] queryTerms = terms.split(" ");
+    	  query.add(AuditEntity.or(AuditEntity.property("conceptId").in(queryTerms),
+    			  AuditEntity.property("conceptName").like(terms, MatchMode.ANYWHERE)));
+      }
 
       if (dateRangeStart != null) {
     	  query.add(AuditEntity.property("lastModified").gt(dateRangeStart));
@@ -910,6 +904,21 @@ public class MappingServiceJpa extends RootServiceJpa
 
     // execute the query
     final List<MapRecord> editedRecords = query.getResultList();
+    final List<MapRecord> editedRecordsToKeep = new ArrayList<>();
+    
+    // if paging request, return subset
+    if (editedRecords != null && editedRecords.size() > 0
+    		&& localPfsParameter.getStartIndex() != -1 
+    		&& localPfsParameter.getMaxResults() != -1) {
+    	
+    	editedRecordsToKeep.addAll(editedRecords.subList(
+    			(localPfsParameter.getStartIndex() < 0)
+    					? 0 : localPfsParameter.getStartIndex(), 
+    			(localPfsParameter.getMaxResults() < editedRecords.size()) 
+    					? localPfsParameter.getMaxResults() 
+    					: editedRecords.size()
+    			));
+    }
 
     // create the mapRecordList and set total size
     final MapRecordListJpa mapRecordList = new MapRecordListJpa();
@@ -918,7 +927,7 @@ public class MappingServiceJpa extends RootServiceJpa
     // Avoid uniquing -> it just makes results not intuitive.
     // final Set<String> seen = new HashSet<>();
     // int ct = 0;
-    for (final MapRecord mapRecord : editedRecords) {
+    for (final MapRecord mapRecord : editedRecordsToKeep) {
       // Stop at 10
       // if (++ct > 10) {
       // break;
