@@ -30,9 +30,9 @@
       </span>
       on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
       <i class="glyphicon glyphicon-remove pull-right" 
-        ng-click="removeFeedback(feedback)"
+        ng-click="removeFeedback(feedback)" ng-hide="feedback.isError"
         ng-show = "currentRole == 'Lead'" ></i>
-      <i class="glyphicon glyphicon-pencil pull-right"
+      <i class="glyphicon glyphicon-pencil pull-right" ng-hide="feedback.isError" 
 		ng-click="editFeedback(feedback); content.text = feedback.message"></i>
       <div ng-show="feedback.mapError != 'None'" style="padding-left: 20px;"
         ng-bind-html="to_trusted(feedback.mapError)"></div>
