@@ -43,11 +43,9 @@ import org.ihtsdo.otf.mapping.helpers.WorkflowType;
 import org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa;
 import org.ihtsdo.otf.mapping.jpa.FeedbackJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
-import org.ihtsdo.otf.mapping.jpa.MapRelationJpa;
 import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowFixErrorPathHandler;
 import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowQaPathHandler;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
-import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ReportServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
@@ -59,7 +57,6 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.reports.Report;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
-import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.ReportService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
@@ -429,8 +426,8 @@ public class WorkflowServiceRest extends RootServiceRest {
 
     // log call
     Logger.getLogger(WorkflowServiceRest.class)
-        .info("RESTful call (Workflow): /feedback/delete for user "
-            + feedback);
+        .info("RESTful call (Workflow): /feedback/delete  "
+            + feedback.getId() + " " + feedback.getMessage() + " " + feedback.getIsError() + "  " + feedback.getMapError());
 
     String user = null;
     final WorkflowService workflowService = new WorkflowServiceJpa();
@@ -439,10 +436,25 @@ public class WorkflowServiceRest extends RootServiceRest {
       user = authorizeApp(authToken, MapUserRole.VIEWER, "remove feedback",
           securityService);
       
-      /*for(Feedback feedback:feedbackConversation.getFeedbacks()){
-    	  workflowService.removeFeedback(feedback.getId());
-      }*/
+      // If there is one error feedback and it is to be removed, change the type of 
+      // the feedback conversation to normal Feedback.
+      if (feedback.getIsError()) {
+        FeedbackConversation conversation = workflowService.getFeedback(feedback.getId()).getFeedbackConversation();
+        int errorCt = 0;
+        for (Feedback f : conversation.getFeedbacks()) {
+          if (f.getIsError()) {
+            errorCt++;
+          }
+        }
+        if (errorCt == 1) {
+          conversation.setTitle("Feedback");
+          workflowService.updateFeedbackConversation(conversation);
+        }
+      }
+      
+      // remove the feedback
       workflowService.removeFeedback(feedback.getId());
+      
     } catch (Exception e) {
       LocalException le = new LocalException(
           "Unable to delete feedback");
