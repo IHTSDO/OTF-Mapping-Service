@@ -662,6 +662,12 @@ angular
               + $scope.searchParameters.mapGroup);
           }
 
+          // check map priority
+          if ($scope.searchParameters.mapPriority) {
+            queryRestrictions.push('mapEntries.mapPriority:'
+              + $scope.searchParameters.mapPriority);
+          }
+
           // check map principles
           if ($scope.searchParameters.principleName) {
             queryRestrictions

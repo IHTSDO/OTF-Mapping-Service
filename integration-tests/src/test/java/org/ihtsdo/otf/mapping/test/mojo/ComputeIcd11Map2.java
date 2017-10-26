@@ -254,7 +254,7 @@ public class ComputeIcd11Map2 {
           continue;
         }
 
-        if (sctid.equals("449671007")) {
+        if (sctid.equals("423093000")) {
           System.out.println("xxx");
         }
 
@@ -2411,9 +2411,9 @@ public class ComputeIcd11Map2 {
               .replaceAll(", unspecified", "").toLowerCase();
 
       final String sctNameBodyPart =
-          sctName.substring(sctName.lastIndexOf("of ") + 3);
+          sctName.substring(sctName.lastIndexOf(" of ") + 4).toLowerCase();
       final String sctNameBeforeBodyPart =
-          sctName.substring(0, sctName.lastIndexOf("of "));
+          sctName.substring(0, sctName.lastIndexOf(" of ")).toLowerCase();
       // AND icd11 map ends with .Z or .Y and score > .4
       // AND and the snomed name ends with "of <body part>"
       // - where the bodyPart is in "xaConcepts" (meaning it has an XA code)
@@ -2425,10 +2425,18 @@ public class ComputeIcd11Map2 {
 
         if (sctNameBeforeBodyPart.equals(targetName)) {
           // make sure the targetId ends with "unspecified"
-          targetId = targetId.replace("other", "unspecified");
+          if (icd11Concepts
+              .containsKey(targetId.replace("other", "unspecified"))) {
+            targetId = targetId.replace("other", "unspecified");
+            noteSb.append("\nOVERRIDE change 'other' to 'unspecified'\n");
+          }
         } else {
           // make sure the targetId ends with "other"
-          targetId = targetId.replace("unspecified", "other");
+          if (icd11Concepts
+              .containsKey(targetId.replace("unspecified", "other"))) {
+            targetId = targetId.replace("unspecified", "other");
+            noteSb.append("\nOVERRIDE change 'unspecified' to 'other'\n");
+          }
         }
 
         xaCode = xaConcepts.get(sctNameBodyPart);
@@ -2452,6 +2460,7 @@ public class ComputeIcd11Map2 {
 
       final IcdMap xtMap = new IcdMap(origMap);
       xtMap.setMapTarget(xaCode);
+      xtMap.setMapAdvice("ALWAYS " + xaCode);
       xtMap.setMapPriority(2);
       icd11Map.add(xtMap);
       noteSb.append("\nOVERRIDE " + category[0].toString() + ": (" + score
