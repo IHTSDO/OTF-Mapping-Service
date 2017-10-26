@@ -2408,7 +2408,7 @@ public class ComputeIcd11Map2 {
       final String targetCode = icd11Concepts.get(targetId);
       final String targetName =
           targetCode.substring(targetCode.indexOf(" : ") + 3)
-              .replaceAll(", unspecified", "").toLowerCase();
+              .replaceAll(", unspecified", "").replaceAll("Other specified ","").toLowerCase();
 
       final String sctNameBodyPart =
           sctName.substring(sctName.lastIndexOf(" of ") + 4).toLowerCase();
