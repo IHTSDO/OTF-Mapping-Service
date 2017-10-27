@@ -746,46 +746,6 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Adds the scope concept to map project.
-   *
-   * @param terminologyId the terminology id
-   * @param projectId the project id
-   * @param authToken the auth token
-   * @throws Exception the exception
-   */
-  @POST
-  @Path("/project/id/{projectId}/scopeConcept/add")
-  @ApiOperation(value = "Adds a single scope concept to a map project", notes = "Adds a single scope concept to a map project.", response = Response.class)
-  public void addScopeConceptToMapProject(
-    @ApiParam(value = "Concept to add, e.g. 100073004", required = true) String terminologyId,
-    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
-    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping):  /project/id/" + projectId + "/scopeConcepts");
-    String projectName = "";
-    String user = "";
-    final MappingService mappingService = new MappingServiceJpa();
-
-    try {
-      // authorize call
-      user = authorizeProject(projectId, authToken, MapUserRole.LEAD,
-          "add scope concept to project", securityService);
-
-      final MapProject mapProject = mappingService.getMapProject(projectId);
-
-      mapProject.addScopeConcept(terminologyId);
-      mappingService.updateMapProject(mapProject);
-    } catch (Exception e) {
-      this.handleException(e, "trying to add scope concept to project", user,
-          projectName, "");
-    } finally {
-      mappingService.close();
-      securityService.close();
-    }
-  }
 
   /**
    * Adds a list of scope concepts to map project.
@@ -825,16 +785,20 @@ public class MappingServiceRest extends RootServiceRest {
       //
       final ValidationResult result = new ValidationResultJpa();
       for (final String terminologyId : terminologyIds) {
-        if (contentService.getConcept(terminologyId,
+        if (mapProject.getScopeConcepts().contains(terminologyId)) {
+          result.addWarning(
+              "Concept " + terminologyId + " is already in scope, skipping.");
+        } else if (contentService.getConcept(terminologyId,
             mapProject.getSourceTerminology(),
             mapProject.getSourceTerminologyVersion()) != null) {
           mapProject.addScopeConcept(terminologyId);
+          mappingService.updateMapProject(mapProject);
+          result.addMessage("Concept " + terminologyId + " added to scope.");
         } else {
           result.addWarning(
-              "Concept " + terminologyId + " does not exist, skipping");
+              "Concept " + terminologyId + " does not exist, skipping.");
         }
       }
-      mappingService.updateMapProject(mapProject);
       return result;
     } catch (Exception e) {
       this.handleException(e, "trying to add scope concept to project", user,
@@ -858,7 +822,7 @@ public class MappingServiceRest extends RootServiceRest {
   @POST
   @Path("/project/id/{projectId}/scopeConcept/remove")
   @ApiOperation(value = "Removes a single scope concept from a map project", notes = "Removes a single scope concept from a map project.", response = Response.class)
-  public void removeScopeConceptFromMapProject(
+  public ValidationResult removeScopeConceptFromMapProject(
     @ApiParam(value = "Concept to remove, e.g. 100075006", required = true) String terminologyId,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
@@ -869,6 +833,7 @@ public class MappingServiceRest extends RootServiceRest {
     String projectName = "";
     String user = "";
     final MappingService mappingService = new MappingServiceJpa();
+    final ContentService contentService = new ContentServiceJpa();
 
     try {
       // authorize call
@@ -876,17 +841,32 @@ public class MappingServiceRest extends RootServiceRest {
           "remove scope concept from project", securityService);
 
       final MapProject mapProject = mappingService.getMapProject(projectId);
-
-      mapProject.removeScopeConcept(terminologyId);
-      mappingService.updateMapProject(mapProject);
-
+      final ValidationResult result = new ValidationResultJpa();
+      
+      if (mapProject.getScopeConcepts().contains(terminologyId)) {
+        mapProject.removeScopeConcept(terminologyId); 
+        mappingService.updateMapProject(mapProject);
+        result.addMessage("Concept " + terminologyId + " has been removed from scope.");
+      } else if (contentService.getConcept(terminologyId,
+        mapProject.getSourceTerminology(),
+        mapProject.getSourceTerminologyVersion()) == null) {
+        result.addWarning("Concept " + terminologyId + " does not exist, skipping.");
+      } else {
+        result.addWarning(
+            "Concept " + terminologyId + " was not in scope for this project, skipping.");
+      }
+     
+      return result;
+      
     } catch (Exception e) {
       this.handleException(e, "trying to remove scope concept from project",
           user, projectName, "");
     } finally {
       mappingService.close();
+      contentService.close();
       securityService.close();
     }
+    return null;
   }
 
   /**
@@ -903,7 +883,7 @@ public class MappingServiceRest extends RootServiceRest {
   @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public void removeScopeConceptsFromMapProject(
+  public ValidationResult removeScopeConceptsFromMapProject(
     @ApiParam(value = "List of concepts to remove, e.g. {'100073004', '100075006'", required = true) List<String> terminologyIds,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
@@ -915,24 +895,41 @@ public class MappingServiceRest extends RootServiceRest {
     String user = "";
 
     final MappingService mappingService = new MappingServiceJpa();
+    final ContentService contentService = new ContentServiceJpa();
+    
     try {
       // authorize call
       user = authorizeProject(projectId, authToken, MapUserRole.LEAD,
           "remove scope concepts from project", securityService);
 
       final MapProject mapProject = mappingService.getMapProject(projectId);
+      ValidationResult result = new ValidationResultJpa();
+      
       for (final String terminologyId : terminologyIds) {
-        mapProject.removeScopeConcept(terminologyId);
+        if (mapProject.getScopeConcepts().contains(terminologyId)) {
+          mapProject.removeScopeConcept(terminologyId); 
+          mappingService.updateMapProject(mapProject);
+          result.addMessage("Concept " + terminologyId + " has been removed from scope.");
+        } else if (contentService.getConcept(terminologyId,
+          mapProject.getSourceTerminology(),
+          mapProject.getSourceTerminologyVersion()) == null) {
+          result.addWarning("Concept " + terminologyId + " does not exist, skipping.");
+        } else {
+          result.addWarning(
+              "Concept " + terminologyId + " was not in scope for this project, skipping.");
+        }
       }
-      mappingService.updateMapProject(mapProject);
+      return result;
 
     } catch (Exception e) {
-      this.handleException(e, "trying to remove scope concept from project",
+      this.handleException(e, "trying to remove scope concepts from project",
           user, projectName, "");
     } finally {
       mappingService.close();
+      contentService.close();
       securityService.close();
     }
+    return null;
   }
 
   /**
@@ -983,48 +980,6 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   /**
-   * Adds the scope excluded concept to map project.
-   *
-   * @param terminologyId the terminology id
-   * @param projectId the project id
-   * @param authToken the auth token
-   * @throws Exception the exception
-   */
-  @POST
-  @Path("/project/id/{projectId}/scopeExcludedConcept/add")
-  @ApiOperation(value = "Adds a single scope excluded concept to a map project", notes = "Adds a single scope excluded concept to a map project.", response = Response.class)
-  public void addScopeExcludedConceptToMapProject(
-    @ApiParam(value = "Concept to add, e.g. 100073004", required = true) String terminologyId,
-    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
-    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-
-    Logger.getLogger(MappingServiceRest.class)
-        .info("RESTful call (Mapping):  /project/id/" + projectId
-            + "/scopeExcludedConcepts/add");
-    String projectName = "";
-    String user = "";
-    final MappingService mappingService = new MappingServiceJpa();
-
-    try {
-      // authorize call
-      user = authorizeProject(projectId, authToken, MapUserRole.LEAD,
-          "add scope excluded concept to projects", securityService);
-
-      final MapProject mapProject = mappingService.getMapProject(projectId);
-      mapProject.addScopeExcludedConcept(terminologyId);
-      mappingService.updateMapProject(mapProject);
-
-    } catch (Exception e) {
-      this.handleException(e, "trying to add scope excluded concept to project",
-          user, projectName, "");
-    } finally {
-      mappingService.close();
-      securityService.close();
-    }
-  }
-
-  /**
    * Adds a list of scope excluded concepts to map project.
    *
    * @param terminologyIds the terminology ids
@@ -1035,7 +990,7 @@ public class MappingServiceRest extends RootServiceRest {
   @POST
   @Path("/project/id/{projectId}/scopeExcludedConcepts/add")
   @ApiOperation(value = "Adds a list of scope excluded concepts to a map project", notes = "Adds a list of scope excluded concepts to a map project.", response = Response.class)
-  public void addScopeExcludedConceptsToMapProject(
+  public ValidationResult addScopeExcludedConceptsToMapProject(
     @ApiParam(value = "List of concepts to add, e.g. {'100073004', '100075006'", required = true) List<String> terminologyIds,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
@@ -1047,6 +1002,7 @@ public class MappingServiceRest extends RootServiceRest {
     String projectName = "";
     String user = "";
     final MappingService mappingService = new MappingServiceJpa();
+    final ContentService contentService = new ContentServiceJpa();
 
     try {
       // authorize call
@@ -1054,18 +1010,32 @@ public class MappingServiceRest extends RootServiceRest {
           "add scope excluded concepts to projects", securityService);
 
       final MapProject mapProject = mappingService.getMapProject(projectId);
+      final ValidationResult result = new ValidationResultJpa();
       for (final String terminologyId : terminologyIds) {
-        mapProject.addScopeExcludedConcept(terminologyId);
+        if (mapProject.getScopeExcludedConcepts().contains(terminologyId)) {
+          result.addWarning(
+              "Concept " + terminologyId + " is already in the scope excluded list, skipping.");
+        } else if (contentService.getConcept(terminologyId,
+            mapProject.getSourceTerminology(),
+            mapProject.getSourceTerminologyVersion()) != null) {
+          mapProject.addScopeExcludedConcept(terminologyId);
+          mappingService.updateMapProject(mapProject);
+          result.addMessage("Concept " + terminologyId + " added to scope excluded list.");
+        } else {
+          result.addWarning(
+              "Concept " + terminologyId + " does not exist, skipping.");
+        }
       }
-      mappingService.updateMapProject(mapProject);
-
+      return result;
     } catch (Exception e) {
       this.handleException(e, "trying to add scope excluded concept to project",
           user, projectName, "");
     } finally {
       mappingService.close();
+      contentService.close();
       securityService.close();
     }
+    return null;
   }
 
   /**
@@ -1079,7 +1049,7 @@ public class MappingServiceRest extends RootServiceRest {
   @POST
   @Path("/project/id/{projectId}/scopeExcludedConcept/remove")
   @ApiOperation(value = "Removes a single scope excluded concept from a map project", notes = "Removes a single scope excluded concept from a map project.", response = Response.class)
-  public void removeScopeExcludedConceptFromMapProject(
+  public ValidationResult removeScopeExcludedConceptFromMapProject(
     @ApiParam(value = "Concept to remove, e.g. 100075006", required = true) String terminologyId,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
@@ -1092,23 +1062,39 @@ public class MappingServiceRest extends RootServiceRest {
     String user = "";
 
     final MappingService mappingService = new MappingServiceJpa();
+    final ContentService contentService = new ContentServiceJpa();
     try {
       // authorize call
       user = authorizeProject(projectId, authToken, MapUserRole.LEAD,
           "remove scope excluded concept from projects", securityService);
 
       final MapProject mapProject = mappingService.getMapProject(projectId);
-      mapProject.removeScopeExcludedConcept(terminologyId);
-      mappingService.updateMapProject(mapProject);
-
+      final ValidationResult result = new ValidationResultJpa();
+      
+      if (mapProject.getScopeExcludedConcepts().contains(terminologyId)) {
+        mapProject.removeScopeExcludedConcept(terminologyId); 
+        mappingService.updateMapProject(mapProject);
+        result.addMessage("Concept " + terminologyId + " has been removed from scope excluded list.");
+      } else if (contentService.getConcept(terminologyId,
+        mapProject.getSourceTerminology(),
+        mapProject.getSourceTerminologyVersion()) == null) {
+        result.addWarning("Concept " + terminologyId + " does not exist, skipping.");
+      } else {
+        result.addWarning(
+            "Concept " + terminologyId + " was not in scope exluded list for this project, skipping.");
+      }
+     
+      return result;
     } catch (Exception e) {
       this.handleException(e,
           "trying to remove scope excluded concept from project", user,
           projectName, "");
     } finally {
       mappingService.close();
+      contentService.close();
       securityService.close();
     }
+    return null;
   }
 
   /**
@@ -1122,7 +1108,7 @@ public class MappingServiceRest extends RootServiceRest {
   @POST
   @Path("/project/id/{projectId}/scopeExcludedConcepts/remove")
   @ApiOperation(value = "Removes a list of scope excluded concepts from a map project", notes = "Removes a list of scope excluded concept from a map project.", response = Response.class)
-  public void removeScopeExcludedConceptsFromMapProject(
+  public ValidationResult removeScopeExcludedConceptsFromMapProject(
     @ApiParam(value = "List of concepts to remove, e.g. {'100073004', '100075006'", required = true) List<String> terminologyIds,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
@@ -1134,6 +1120,7 @@ public class MappingServiceRest extends RootServiceRest {
     String projectName = "";
     String user = "";
     final MappingService mappingService = new MappingServiceJpa();
+    final ContentService contentService = new ContentServiceJpa();
     try {
       // authorize call
       user = authorizeProject(projectId, authToken, MapUserRole.LEAD,
@@ -1141,19 +1128,35 @@ public class MappingServiceRest extends RootServiceRest {
 
       final MapProject mapProject = mappingService.getMapProject(projectId);
       projectName = mapProject.getName();
+
+      final ValidationResult result = new ValidationResultJpa();
       for (final String terminologyId : terminologyIds) {
-        mapProject.removeScopeExcludedConcept(terminologyId);
+        
+        if (mapProject.getScopeExcludedConcepts().contains(terminologyId)) {
+          mapProject.removeScopeExcludedConcept(terminologyId); 
+          mappingService.updateMapProject(mapProject);
+          result.addMessage("Concept " + terminologyId + " has been removed from scope excluded list.");
+        } else if (contentService.getConcept(terminologyId,
+          mapProject.getSourceTerminology(),
+          mapProject.getSourceTerminologyVersion()) == null) {
+          result.addWarning("Concept " + terminologyId + " does not exist, skipping.");
+        } else {
+          result.addWarning(
+              "Concept " + terminologyId + " was not in scope exluded list for this project, skipping.");
+        }
       }
-      mappingService.updateMapProject(mapProject);
+      return result;
 
     } catch (Exception e) {
       this.handleException(e,
-          "trying to remove scope excluded concept from project", user,
+          "trying to remove scope excluded concepts from project", user,
           projectName, "");
     } finally {
       mappingService.close();
+      contentService.close();
       securityService.close();
     }
+    return null;
   }
 
   /**
