@@ -65,7 +65,7 @@ angular
      // start note edit mode in off mode
         $scope.feedbackEditMode = false;
         $scope.feedbackEditId = null;
-        $scope.content = {
+        $scope.feedbackContent = {
           text : ''
         };
 
@@ -117,7 +117,7 @@ angular
             $scope.saveGroups();
           },
         };
-
+        
         // function with two purposes:
         // (1) update the group and priority of the group tree
         // (2) update the entries of the record
@@ -387,13 +387,13 @@ angular
         }
         
         $scope.editFeedback = function(feedback) {
-          $scope.content.text = feedback.message;
+          $scope.feedbackContent.text = feedback.message;
           $scope.feedbackEditMode = true;
           $scope.feedbackEditId = feedback.id ? feedback.id : feedback.localId;
         };
 
         $scope.cancelEditFeedback = function() {
-          $scope.content.text = '';
+          $scope.feedbackContent.text = '';
           $scope.feedbackEditMode = false;
           $scope.feedbackEditId = null;
           $scope.tinymceContent = '';
@@ -554,7 +554,7 @@ angular
          */
 
         $scope.finishMapRecord = function(returnBack) {
-
+        	
           // check that note box does not contain unsaved material
           if ($scope.tinymceContent != '' && $scope.tinymceContent != null) {
             if (confirm('You have unsaved text in the Map Notes. Do you wish to continue saving? The note will be lost.') == false) {
@@ -685,7 +685,7 @@ angular
 
           broadcastRecord();
         };
-
+        
         // returns the next concept to be worked on
         // used to get the next concept when Save/Next is pressed
         // also used to get next concept to display conceptId in
@@ -1117,13 +1117,13 @@ angular
         };
 
         $scope.editRecordNote = function(record, mapNote) {
-          $scope.content.text = mapNote.note;
+          $scope.noteContent.text = mapNote.note;
           $scope.noteEditMode = true;
           $scope.noteEditId = mapNote.id ? mapNote.id : mapNote.localId;
         };
 
         $scope.cancelEditRecordNote = function() {
-          $scope.content.text = '';
+          $scope.noteContent.text = '';
           $scope.noteEditMode = false;
           $scope.noteEditId = null;
           $scope.tinymceContent = '';
@@ -1506,6 +1506,7 @@ angular
           $scope.selectMapEntry(newEntry);
 
           $scope.saveGroups();
+          //$scope.saveHistory( { 'type':'groupsTree', 'value': angular.copy($scope.groupsTree) });
 
         };
 
@@ -1524,6 +1525,8 @@ angular
           if ($scope.record.mapEntry && $scope.record.mapEntry.length > 0) {
             $scope.selectMapEntry($scope.record.mapEntry[0]);
           }
+          
+      	  //$scope.saveHistory( { 'type':'groupsTree', 'value': angular.copy($scope.groupsTree) });
 
         };
 
@@ -1580,6 +1583,8 @@ angular
 
           // save the groups
           $scope.saveGroups();
+          
+          //$scope.saveHistory( { 'type':'groupsTree', 'value': angular.copy($scope.groupsTree) });
         };
 
         // Removes a map group if it exists
@@ -1598,6 +1603,8 @@ angular
           if ($scope.record.mapEntry && $scope.record.mapEntry.length > 0) {
             $scope.selectMapEntry($scope.record.mapEntry[0]);
           }
+          
+          //$scope.saveHistory( { 'type':'groupsTree', 'value': angular.copy($scope.groupsTree) });
 
         };
 
@@ -1626,8 +1633,7 @@ angular
             elem['localId'] = maxLocalId == -1 ? 1 : maxLocalId + 1;
           }
           array.push(elem);
-        }
-        ;
+        };
 
         // function to remove an element by id or localid
         // instantiated to negate necessity for equals methods for
@@ -1809,5 +1815,173 @@ angular
         $scope.orderByPrincipleId = function(principle) {
           return parseInt(principle.principleId, 10) + 1;
         };
+        
+        
+        // //////////////////////////
+        // UNDO / REDO funtionality for Entries (New)
+        //
+        // //////////////////////////        
+        
+        // history for undo/redo
+        var history = [];
+        var historyIndex = 0;
+        
+        $scope.setValues = function(item) {
+        	console.log('SET:', JSON.stringify(item))
+        	$scope.groupsTree = item['groupsTree']; 
+        	$scope.record.mapNote = item['record.mapNote'];
+        	$scope.record.mapPrinciple = item['record.mapPrinciple'];
+        	$scope.record.flagForConsensusReview = item['record.flagForConsensusReview'];
+        	$scope.record.flagForEditorialReview = item['record.flagForEditorialReview'];
+        	$scope.conversation = item['conversation'];
+        };
 
+        $scope.saveHistory = function(data) {
+        	//if data is not the same as last history then add
+        	if (JSON.stringify(data) !== JSON.stringify(history[historyIndex-1])) {
+            	console.log("saveHistory data:", data);
+            	//eliminate the future
+        		history = history.slice(0, historyIndex + 1);
+        		history.push(data);
+        		historyIndex++;
+        		//console.log("history:" + JSON.stringify(history));
+        	}
+        	return true;
+        }
+                
+        //user action to undo
+        $scope.undo = function() {
+        	historyIndex--;
+        	console.log('click undo to:', historyIndex);
+        	var h = JSON.parse(JSON.stringify(history[historyIndex-1]));
+        	//console.log("undo to: ", JSON.stringify(h));
+        	$scope.setValues(h);
+        	historyIndex--;
+        	$scope.setButtons();
+        	broadcastRecord();
+        };
+                
+        //user action to redo
+        $scope.redo = function() {
+        	historyIndex++;
+        	console.log('click redo to:', historyIndex);
+        	var h = JSON.parse(JSON.stringify(history[historyIndex+1]));
+        	console.log("redo to: ", JSON.stringify(h));
+        	$scope.setValues(h);        	
+        	historyIndex++;
+        	$scope.setButtons();
+        	broadcastRecord();
+        };
+        
+        $scope.createHistoryRecord = function() {
+        	var historyRecord = {};       	
+        	historyRecord.groupsTree = 
+        		(typeof eval($scope.groupsTree) === 'object') 
+        			? angular.copy($scope.groupsTree) 
+        			: {};
+        	historyRecord.record = {};
+        	historyRecord.record.mapNote = 
+        		(typeof $scope.record.mapNote == 'object') 
+        			? angular.copy($scope.record.mapNote) 
+        			: {};
+        	historyRecord.record.mapPrinciple = 
+        		(typeof eval($scope.record.mapPrinciple) === 'object') 
+        			? angular.copy($scope.record.mapPrinciple) 
+        			: {}; 
+        	historyRecord.record.flagForConsensusReview = 
+        		(typeof eval($scope.record.flagForConsensusReview) !== 'undefined') 
+					? angular.copy($scope.record.flagForConsensusReview) 
+					: false;
+			historyRecord.record.flagForEditorialReview = 
+				(typeof eval($scope.record.flagForEditorialReview) !== 'undefined') 
+					? angular.copy($scope.record.flagForEditorialReview) 
+					: false;
+			historyRecord.record.flagForMapLeadReview = 
+				(typeof eval($scope.record.flagForMapLeadReview) !== 'undefined') 
+					? angular.copy($scope.record.flagForMapLeadReview) 
+					: false;
+//			historyRecord.conversation = {};
+//			historyRecord.conversation.feedback = 
+//				(typeof eval($scope.conversation) !== 'undefined' 
+//				  && typeof eval($scope.conversation.feedback) !== 'undefined') 
+//					? angular.copy($scope.conversation.feedback) 
+//					: null;
+			
+			console.log("createHistoryRecord", historyRecord);
+			return historyRecord;
+        }
+           
+        //one $watch for each variable, $watchGroup was not working for all
+        //groupsTree
+        $scope.$watch('groupsTree', function(newVal, oldVal){
+        	if ((typeof(oldVal) !== 'undefined' && JSON.stringify(newVal) !== JSON.stringify(oldVal))) {
+        		$scope.saveHistory($scope.createHistoryRecord());
+        		$scope.setButtons();
+        	}
+        }, true);
+        
+        //notes
+        $scope.$watch('record.mapNote', function(newVal, oldVal){
+        	if ((typeof(oldVal) !== 'undefined' && JSON.stringify(newVal) !== JSON.stringify(oldVal))) {
+        		$scope.saveHistory($scope.createHistoryRecord());
+        		$scope.setButtons();
+        	}
+        }, true);
+        
+        //principle
+        $scope.$watch('record.mapPrinciple', function(newVal, oldVal){
+        	if ((typeof(oldVal) !== 'undefined' && JSON.stringify(newVal) !== JSON.stringify(oldVal))) {
+        		$scope.saveHistory($scope.createHistoryRecord());
+        		$scope.setButtons();
+        	}        	
+        }, true);
+        
+        //flagForConsensusReview
+        $scope.$watch('record.flagForConsensusReview', function(newVal, oldVal){
+        	if ((typeof(oldVal) !== 'undefined' && JSON.stringify(newVal) !== JSON.stringify(oldVal))) {
+        		$scope.saveHistory($scope.createHistoryRecord());
+        		$scope.setButtons();
+        	}        	
+        }, true);
+        
+        //flagForEditorialReview
+        $scope.$watch('record.flagForEditorialReview', function(newVal, oldVal){
+        	if ((typeof(oldVal) !== 'undefined' && JSON.stringify(newVal) !== JSON.stringify(oldVal))) {
+        		$scope.saveHistory($scope.createHistoryRecord());
+        		$scope.setButtons();
+        	}        	
+        }, true);
+        
+        //flagForMapLeadReview
+        $scope.$watch('record.flagForMapLeadReview', function(newVal, oldVal){
+        	if ((typeof(oldVal) !== 'undefined' && JSON.stringify(newVal) !== JSON.stringify(oldVal))) {
+        		$scope.saveHistory($scope.createHistoryRecord());
+        		$scope.setButtons();
+        	}        	
+        }, true);
+
+        //feedback
+        $scope.$watch('conversation.feedback', function(newVal, oldVal){
+        	if ((typeof(oldVal) !== 'undefined' && JSON.stringify(newVal) !== JSON.stringify(oldVal))) {
+        		$scope.saveHistory($scope.createHistoryRecord());
+        		$scope.setButtons();
+        	}
+        }, true);
+
+        //track enable/disable of buttons        
+        $scope.setButtons = function() {
+        	$scope.undoDisabled = (historyIndex > 1) ? false : true;
+            $scope.redoDisabled = (historyIndex <= (history.length - 1)) ? false : true;
+            
+            console.log("historyIndex:", historyIndex, "|size:", history.length,
+            		"|undoEnabled:", $scope.undoDisabled, "|redoEnabled:", $scope.redoDisabled);    
+        };
+        $scope.undoDisabled = true;
+        $scope.redoDisabled = true;
+
+        
+        
+        
+      //end
       } ]);
+
