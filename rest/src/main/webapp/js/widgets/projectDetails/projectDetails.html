@@ -1106,14 +1106,14 @@
 </uib-accordion-heading> <uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
   first-text="&laquo;" last-text="&raquo;" direction-links="false"
   boundary-links="true" total-items="pagedScopeConceptCount"
-  items-per-page="pageSize" max-size="maxSize" ng-model="pageScopeConcept"
-  ng-change="getPagedScopeConcepts(pageScopeConcept)"></uib-pagination> 
-  <!-- 
-<form ng-submit="resetScopeConceptFilter()">
+  items-per-page="pageSize" max-size="maxSize" ng-model="currentPage"
+  ng-change="getPagedScopeConcepts(currentPage, scopeConceptFilter)"></uib-pagination> 
+  
+<form ng-submit="resetScopeConceptFilter(); scopeConceptFilter = '';">
   <input id="scopeConceptSearch" type="text" ng-model="scopeConceptFilter"
-    ng-change="getPagedScopeConcepts(1)">
+    ng-change="getPagedScopeConcepts(1, scopeConceptFilter)">
   <button type="submit" class="btn btn-xs btn-primary">Reset Filter</button>
-</form> -->
+</form>
 
 <table style="width: 100%" class="table pure-table">
   <thead>
@@ -1159,9 +1159,12 @@
   Enter concept terminology ids, delimited by either whitespace or
   commas. <textarea style="width: 100%; height: 100px"
     ng-model="scopeConceptsToAdd"></textarea>
+    <div ng-show="scopeAddLog.length > 0" style="max-height: 100px; overflow-y: scroll;">
+        <pre>{{scopeAddLog}}</pre>
+    </div>
   <button class="btn btn-xs btn-primary"
     ng-click="submitNewScopeIncludedConcepts(scopeConceptsToAdd)">Add</button>
-  <button class="btn btn-xs btn-warning" ng-click="scopeConceptsToAdd = null">Clear</button>
+  <button class="btn btn-xs btn-warning" ng-click="scopeConceptsToAdd = null;  scopeAddLog = null;">Clear</button>
   <div ng-show="scopeWarnings.length>0">
     <span style="margin-top: 10px;" ng-repeat="warning in scopeWarnings" class="alert alert-warning">
       {{warning}}<br />
@@ -1170,11 +1173,15 @@
   </uib-tab> <uib-tab heading="Remove Concepts"> Enter concept terminology ids,
   delimited by either whitespace or commas. <textarea
     style="width: 100%; height: 100px" ng-model="scopeConceptsToRemove"></textarea>
+	<div ng-show="scopeRemoveLog.length > 0" style="max-height: 100px; overflow-y: scroll;">
+        <pre>{{scopeRemoveLog}}</pre>
+    </div>
   <button class="btn btn-xs btn-primary"
     ng-click="removeScopeIncludedConcepts(scopeConceptsToRemove)">Remove</button>
   <button class="btn btn-xs btn-warning"
-    ng-click="scopeConceptsToRemove = null">Clear</button>
+    ng-click="scopeConceptsToRemove = null; scopeRemoveLog = null;">Clear</button>
   </uib-tab> </tabset>
+    
 </div>
 
 </uib-accordion-group> <uib-accordion-group> <uib-accordion-heading>
@@ -1184,17 +1191,19 @@
     Scope Excluded Concepts </span>
     
 </h5>
-</uib-accordion-heading> <uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
+</uib-accordion-heading> 
+  
+<uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
   first-text="&laquo;" last-text="&raquo;" direction-links="false"
   boundary-links="true" total-items="pagedScopeExcludedConceptCount"
-  items-per-page="pageSize" max-size="maxSize"
-  ng-model="pageScopeExcludedConcept"
-  ng-change="getPagedScopeExcludedConcepts(pageScopeExcludedConcept)"></uib-pagination>
+  items-per-page="pageSize" max-size="maxSize" ng-model="currentExcludedPage"
+  ng-change="getPagedScopeExcludedConcepts(currentExcludedPage, scopeExcludedConceptFilter)"></uib-pagination> 
   
-<!--<form ng-submit="resetScopeExcludedConceptFilter()">
-      <input id="scopeExcludedConceptSearch" type="text" ng-model="scopeExcludedConceptFilter" ng-change="getPagedScopeExcludedConcepts(1)">
+<form ng-submit="resetScopeExcludedConceptFilter(); scopeExcludedConceptFilter = '';">
+  <input id="scopeExcludedConceptSearch" type="text" ng-model="scopeExcludedConceptFilter"
+    ng-change="getPagedScopeExcludedConcepts(1, scopeExcludedConceptFilter)">
   <button type="submit" class="btn btn-xs btn-primary">Reset Filter</button>
-    </form>  -->
+</form>
 
 <table style="width: 100%" class="table pure-table">
   <thead>
@@ -1241,18 +1250,24 @@
   Enter concept terminology ids, delimited by either whitespace or
   commas. <textarea style="width: 100%; height: 100px"
     ng-model="scopeExcludedConceptsToAdd"></textarea>
+    <div ng-show="scopeExcludedAddLog.length > 0" style="max-height: 100px; overflow-y: scroll;">
+        <pre>{{scopeExcludedAddLog}}</pre>
+    </div>
   <button class="btn btn-xs btn-primary"
     ng-click="submitNewScopeExcludedConcepts(scopeExcludedConceptsToAdd)">Add</button>
   <button class="btn btn-xs btn-warning"
-    ng-click="scopeExcludedConceptsToAdd = null">Clear</button>
+    ng-click="scopeExcludedConceptsToAdd = null; scopeExcludedAddLog = null;">Clear</button>
   </uib-tab> <uib-tab heading="Remove Concepts"> Enter concept
   terminology ids, delimited by either whitespace or commas. <textarea
     style="width: 100%; height: 100px"
     ng-model="scopeExcludedConceptsToRemove"></textarea>
+    <div ng-show="scopeExcludedRemoveLog.length > 0" style="max-height: 100px; overflow-y: scroll;">
+        <pre>{{scopeExcludedRemoveLog}}</pre>
+    </div>
   <button class="btn btn-xs btn-primary"
     ng-click="removeScopeExcludedConcepts(scopeExcludedConceptsToRemove)">Remove</button>
   <button class="btn btn-xs btn-warning"
-    ng-click="scopeExcludedConceptsToRemove = null">Clear</button>
+    ng-click="scopeExcludedConceptsToRemove = null; scopeExcludedRemoveLog = null;">Clear</button>
   </uib-tab> </uib-tabset>
 </div>
 
