@@ -18,9 +18,9 @@
           [By {{feedback.sender.name}} to
           <span ng-repeat="recipient in feedback.recipients">
             {{recipient.name}}</span>
-          on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
-          <i> <span class="glyphicon glyphicon-remove pull-right"
-        ng-click="removeFeedback({id : feedback})"></i>
+          on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}] <i> <span
+              class="glyphicon glyphicon-remove pull-right"
+              ng-click="removeFeedback({id : feedback.id},conversation1)"></i>
           <div ng-show="feedback.mapError != 'None'" style="padding-left: 20px;"
             ng-bind-html="to_trusted(feedback.mapError)"></div>
           <div style="padding-left: 20px;"
@@ -33,18 +33,15 @@
     <div style="margin-top: 8px; margin-left: 4px;">
       <table>
         <tr>
-          <td colspan="2">
-            <textarea id="tinymce-feedback1" ui-tinymce="tinymceOptions"
-              ng-model="feedbackComment1"></textarea>
+          <td colspan="2"><textarea id="tinymce-feedback1"
+              ui-tinymce="tinymceOptions" ng-model="feedbackComment1"></textarea>
           </td>
         </tr>
         <tr>
           <td>Error Message:&nbsp;</td>
-          <td>
-            <select ng-model="selectedErrorMessage1" style="margin: 4px"
-              ng-options=" msg as msg for msg in errorMessages">
-            </select>
-          </td>
+          <td><select ng-model="selectedErrorMessage1" style="margin: 4px"
+            ng-options=" msg as msg for msg in errorMessages">
+          </select></td>
         </tr>
       </table>
       <div>
@@ -74,9 +71,9 @@
           [By {{feedback.sender.name}} to
           <span ng-repeat="recipient in feedback.recipients">
             {{recipient.name}}</span>
-          on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
-          <i> <span class="glyphicon glyphicon-remove pull-right"
-        ng-click="removeFeedback({id : feedback})"></i>
+          on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}] <i> <span
+              class="glyphicon glyphicon-remove pull-right"
+              ng-click="removeFeedback({id : feedback.id},conversation2)"></i>
           <div ng-show="feedback.mapError != 'None'" style="padding-left: 20px;"
             ng-bind-html="to_trusted(feedback.mapError)"></div>
           <div style="padding-left: 20px;"
@@ -89,18 +86,15 @@
     <div style="margin-top: 8px; margin-left: 4px;">
       <table>
         <tr>
-          <td colspan="2">
-            <textarea id="tinymce-feedback2" ui-tinymce="tinymceOptions"
-              ng-model="feedbackComment2"></textarea>
+          <td colspan="2"><textarea id="tinymce-feedback2"
+              ui-tinymce="tinymceOptions" ng-model="feedbackComment2"></textarea>
           </td>
         </tr>
         <tr>
           <td>Error Message:&nbsp;</td>
-          <td>
-            <select ng-model="selectedErrorMessage2" style="margin: 4px"
-              ng-options="msg as msg for msg in errorMessages">
-            </select>
-          </td>
+          <td><select ng-model="selectedErrorMessage2" style="margin: 4px"
+            ng-options="msg as msg for msg in errorMessages">
+          </select></td>
         </tr>
       </table>
       <div>
@@ -143,18 +137,15 @@
     <div>
       <table>
         <tr>
-          <td colspan="2">
-            <textarea id="tinymce-feedback1" ui-tinymce="tinymceOptions"
-              ng-model="feedbackComment1"></textarea>
+          <td colspan="2"><textarea id="tinymce-feedback1"
+              ui-tinymce="tinymceOptions" ng-model="feedbackComment1"></textarea>
           </td>
         </tr>
         <tr ng-show="errorMessages.length>1">
           <td>Error Message:&nbsp;</td>
-          <td>
-            <select ng-model="selectedErrorMessage1" style="margin: 4px"
-              ng-options=" msg as msg for msg in errorMessages">
-            </select>
-          </td>
+          <td><select ng-model="selectedErrorMessage1" style="margin: 4px"
+            ng-options=" msg as msg for msg in errorMessages">
+          </select></td>
         </tr>
       </table>
       <div>
@@ -181,9 +172,9 @@
             {{recipient.name}}
             <span ng-if="$last == false">,</span>
           </span>
-          on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
-          <i> <span class="glyphicon glyphicon-remove pull-right"
-        ng-click="removeFeedback({id : feedback})"></i>
+          on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}] <i> <span
+              class="glyphicon glyphicon-remove pull-right"
+              ng-click="removeFeedback({id : feedback.id},leadConversation)"></i>
           <div style="padding-left: 20px;"
             ng-bind-html="to_trusted(feedback.message)"></div>
         </div>

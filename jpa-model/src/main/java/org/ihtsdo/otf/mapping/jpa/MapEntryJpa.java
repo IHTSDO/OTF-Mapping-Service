@@ -300,8 +300,8 @@ public class MapEntryJpa implements MapEntry {
    * @return the map group and priority
    */
   @XmlTransient
-  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
-  private String getMapGroupAndPriority() {
+  @Field(name="mapGroupAndPriority", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  public String getMapGroupAndPriority() {
     return getMapGroup()+","+getMapPriority();
   }
   
@@ -343,7 +343,7 @@ public class MapEntryJpa implements MapEntry {
 
  
   /* see superclass */
-  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @Field(name="mapGroup", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public int getMapGroup() {
     return this.mapGroup;

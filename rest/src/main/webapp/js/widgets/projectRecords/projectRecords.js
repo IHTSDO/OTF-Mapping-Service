@@ -673,9 +673,9 @@ angular
           // check map group AND priority
           if ($scope.searchParameters.mapPriority
             && $scope.searchParameters.mapGroup) {
-            queryRestrictions.push('mapEntries.mapGroupAndPriority:'
+            queryRestrictions.push('mapEntries.mapGroupAndPriority:"'
               + $scope.searchParameters.mapGroup + ','
-              + $scope.searchParameters.mapPriority);
+              + $scope.searchParameters.mapPriority+'"');
           }
 
           // check map principles
