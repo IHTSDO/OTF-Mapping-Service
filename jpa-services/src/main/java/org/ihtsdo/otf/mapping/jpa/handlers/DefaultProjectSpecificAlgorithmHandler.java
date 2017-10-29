@@ -213,18 +213,19 @@ public class DefaultProjectSpecificAlgorithmHandler
     }
 
     // check consensus review flag
-    if (record1.isFlagForConsensusReview()) {
-      validationResult
-          .addError("Mapping specialist #1 requests consensus review.");
-      validationResult
-          .addConciseError("Mapping specialist requests consensus review");
-    }
-    if (record2.isFlagForConsensusReview()) {
-      validationResult
-          .addError("Mapping specialist #2 requests consensus review.");
-      validationResult
-          .addConciseError("Mapping specialist requests consensus review");
-    }
+    // MAP-1523 - don't allow flag for consensus to trigger a conflict
+    // if (record1.isFlagForConsensusReview()) {
+    // validationResult
+    // .addError("Mapping specialist #1 requests consensus review.");
+    // validationResult
+    // .addConciseError("Mapping specialist requests consensus review");
+    // }
+    // if (record2.isFlagForConsensusReview()) {
+    // validationResult
+    // .addError("Mapping specialist #2 requests consensus review.");
+    // validationResult
+    // .addConciseError("Mapping specialist requests consensus review");
+    // }
 
     // check editorial review flag
     if (record1.isFlagForEditorialReview()) {

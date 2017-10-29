@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2015 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.jpa;
 
 import java.util.HashSet;
@@ -291,6 +294,17 @@ public class MapEntryJpa implements MapEntry {
     this.mapPriority = mapPriority;
   }
 
+  /**
+   * Returns the map group and priority for searching.
+   *
+   * @return the map group and priority
+   */
+  @XmlTransient
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  private String getMapGroupAndPriority() {
+    return getMapGroup()+","+getMapPriority();
+  }
+  
   /* see superclass */
   @XmlTransient
   @Override
