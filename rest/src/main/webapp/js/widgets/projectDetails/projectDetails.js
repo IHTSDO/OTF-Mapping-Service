@@ -110,6 +110,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         displayName : 'Simple Map',
         name : 'SimpleMap'
       } ];
+      
       $scope.allowableMapRelationStyles = [ {
         displayName : 'Map Category Style',
         name : 'MAP_CATEGORY_STYLE'
@@ -117,6 +118,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         displayName : 'Relationship Style',
         name : 'RELATIONSHIP_STYLE'
       } ];
+      
       $scope.allowableWorkflowTypes = [ {
         displayName : 'Conflict workflow',
         name : 'CONFLICT_PROJECT'
@@ -501,6 +503,22 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         $scope.getPagedScopeExcludedConcepts(1);
       };
 
+      $scope.clearScopeAdd = function() {
+        $scope.scopeAddLog = '';
+      }
+      
+      $scope.clearScopeRemove = function() {
+        $scope.scopeRemoveLog = '';
+      }
+      
+      $scope.clearScopeExcludedAdd = function() {
+        $scope.scopeExcludedAddLog = '';
+      }
+      
+      $scope.clearScopeExcludedRemove = function() {
+        $scope.scopeExcludedRemoveLog = '';
+      }
+      
       // element-specific functions for filtering
       // do not want to search id or objectId
 
