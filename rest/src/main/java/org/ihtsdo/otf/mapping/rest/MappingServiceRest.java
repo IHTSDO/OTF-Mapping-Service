@@ -4958,6 +4958,91 @@ public class MappingServiceRest extends RootServiceRest {
 
   }
 
+  @GET
+  @Path("/changes/{conceptId}")
+  @ApiOperation(value = "Gets authoring changes for this concept", notes = "Gets a list of all editing changes made to MAIN from the authoring tool.", response = SearchResultList.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public SearchResultList getConceptAuthoringChanges(
+    @ApiParam(value = "Concept id", required = true) @PathParam("conceptId") String conceptId,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping):  /changes/" + conceptId);
+    final Properties config = ConfigUtility.getConfigProperties();
+    final String authoringAuthHeader =
+        config.getProperty("authoring.authHeader");
+    final String authoringUrl = config.getProperty("authoring.defaultUrl");
+
+    Client client = Client.create();
+    WebResource webResource = client.resource(authoringUrl
+        + "/traceability-service/activities?conceptId=" + conceptId);
+
+    ClientResponse response = webResource
+        .header("Authorization", authoringAuthHeader).type("application/json")
+        .accept("application/json").get(ClientResponse.class);
+    int statusCode = response.getStatus();
+
+    if (statusCode == 401) {
+      throw new AuthenticationException("Invalid Username or Password");
+    } else if (statusCode == 403) {
+      throw new AuthenticationException("Forbidden");
+    } else if (statusCode == 200 || statusCode == 201) {
+      Logger.getLogger(MappingServiceRest.class)
+      .info("Traceability report retrieved successfully");
+    } else {
+      Logger.getLogger(MappingServiceRest.class)
+      .info("Http Error : " + statusCode);
+    }
+
+    // Parse to get the editing changes that were promoted to MAIN
+    String jsonText = inputStreamToString(response.getEntityInputStream());
+    JSONObject jsonObject = new JSONObject(jsonText);
+    JSONArray array = jsonObject.getJSONArray("content");
+    SearchResultList searchResultList = new SearchResultListJpa();
+    for (int i = 0; i < array.length(); i++) {
+      JSONObject singleContent = array.getJSONObject(i);
+      if (singleContent.getString("highestPromotedBranch") == null
+          || !singleContent.getJSONObject("highestPromotedBranch")
+              .getString("branchPath").equals("MAIN")) {
+        continue;
+      }
+      String userName =
+          singleContent.getJSONObject("user").getString("username");
+      String commitDate = 
+          singleContent.getString("commitDate");
+      JSONArray conceptChangesArray = singleContent.getJSONArray("conceptChanges");
+      for (int j = 0; j < conceptChangesArray.length(); j++) {
+        JSONObject conceptChange = conceptChangesArray.getJSONObject(j);
+        String cptId = conceptChange.getString("conceptId");
+        JSONArray componentChangesArray = conceptChange.getJSONArray("componentChanges");
+        for (int k = 0; k < componentChangesArray.length(); k++) {
+          JSONObject componentChange = componentChangesArray.getJSONObject(k);
+          String componentId = componentChange.getString("componentId");
+          String componentType = componentChange.getString("componentType");
+          String componentSubType = "";
+          try {
+            componentSubType = componentChange.getString("componentSubType");
+          } catch (Exception e) {
+            // do nothing
+          }
+          String changeType = componentChange.getString("changeType");
+          SearchResult searchResult = new SearchResultJpa();
+          searchResult.setValue(userName + ":" + commitDate);
+          searchResult.setValue2(cptId + ":" + componentId + ":" + componentType + ":" + componentSubType + ":" + changeType);
+          searchResultList.addSearchResult(searchResult);
+        }
+      }
+    }
+    searchResultList.setTotalCount(searchResultList.getSearchResults().size());
+    Logger.getLogger(MappingServiceRest.class)
+    .info("Traceability report contains " + searchResultList.getTotalCount() + " entries.");
+    return searchResultList;
+
+  }
+
   /**
    * Reads an InputStream and returns its contents as a String. Also effects
    * rate control.
