@@ -1419,7 +1419,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           $rootScope.glassPane--;
 
           // re-page the scope concepts
-          $scope.getPagedScopeConcepts(currentPage);
+          $scope.getPagedScopeConcepts(currentPage ? currentPage : 1);
         }).error(function(data, status, headers, config) {
 
           $rootScope.glassPane--;
@@ -1527,7 +1527,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           $scope.scopeExcludedWarnings = data.warnings;
           $rootScope.glassPane--;
 
-          $scope.getPagedScopeExcludedConcepts(currentPage);
+          $scope.getPagedScopeExcludedConcepts(currentPage ? currentPage : 1);
 
         }).error(function(data, status, headers, config) {
           $rootScope.handleHttpError(data, status, headers, config);
