@@ -1825,26 +1825,31 @@ angular
         // history for undo/redo
         var history = [];
         var historyIndex = 0;
+        var historyLock = false;
+
+        $scope.undoDisabled = true;
+        $scope.redoDisabled = true;
+
         
         $scope.setValues = function(item) {
-        	console.log('SET:', JSON.stringify(item))
+        	historyLock = true;
+        	console.debug('SET:', JSON.stringify(item))
         	$scope.groupsTree = item['groupsTree']; 
-        	$scope.record.mapNote = item['record.mapNote'];
-        	$scope.record.mapPrinciple = item['record.mapPrinciple'];
-        	$scope.record.flagForConsensusReview = item['record.flagForConsensusReview'];
-        	$scope.record.flagForEditorialReview = item['record.flagForEditorialReview'];
-        	$scope.conversation = item['conversation'];
+        	$scope.record.mapNote = item['record']['mapNote'];
+        	$scope.record.mapPrinciple = item['record']['mapPrinciple'];
+        	$scope.record.flagForConsensusReview = item['record']['flagForConsensusReview'];
+        	$scope.record.flagForEditorialReview = item['record']['flagForEditorialReview'];
+        	$scope.record.flagForMapLeadReview = item['record']['flagForMapLeadReview'];
+        	historyLock = false;
         };
 
         $scope.saveHistory = function(data) {
         	//if data is not the same as last history then add
         	if (JSON.stringify(data) !== JSON.stringify(history[historyIndex-1])) {
-            	console.log("saveHistory data:", data);
             	//eliminate the future
         		history = history.slice(0, historyIndex + 1);
         		history.push(data);
         		historyIndex++;
-        		//console.log("history:" + JSON.stringify(history));
         	}
         	return true;
         }
@@ -1854,9 +1859,8 @@ angular
         	historyIndex--;
         	console.log('click undo to:', historyIndex);
         	var h = JSON.parse(JSON.stringify(history[historyIndex-1]));
-        	//console.log("undo to: ", JSON.stringify(h));
+        	console.debug("undo to: ", JSON.stringify(h));
         	$scope.setValues(h);
-        	historyIndex--;
         	$scope.setButtons();
         	broadcastRecord();
         };
@@ -1864,11 +1868,10 @@ angular
         //user action to redo
         $scope.redo = function() {
         	historyIndex++;
-        	console.log('click redo to:', historyIndex);
-        	var h = JSON.parse(JSON.stringify(history[historyIndex+1]));
-        	console.log("redo to: ", JSON.stringify(h));
+        	console.debug('click redo to:', historyIndex);
+        	var h = JSON.parse(JSON.stringify(history[historyIndex-1]));
+        	console.debug("redo to: ", JSON.stringify(h));
         	$scope.setValues(h);        	
-        	historyIndex++;
         	$scope.setButtons();
         	broadcastRecord();
         };
@@ -1900,13 +1903,7 @@ angular
 				(typeof eval($scope.record.flagForMapLeadReview) !== 'undefined') 
 					? angular.copy($scope.record.flagForMapLeadReview) 
 					: false;
-//			historyRecord.conversation = {};
-//			historyRecord.conversation.feedback = 
-//				(typeof eval($scope.conversation) !== 'undefined' 
-//				  && typeof eval($scope.conversation.feedback) !== 'undefined') 
-//					? angular.copy($scope.conversation.feedback) 
-//					: null;
-			
+
 			console.log("createHistoryRecord", historyRecord);
 			return historyRecord;
         }
@@ -1914,7 +1911,7 @@ angular
         //one $watch for each variable, $watchGroup was not working for all
         //groupsTree
         $scope.$watch('groupsTree', function(newVal, oldVal){
-        	if ((typeof(oldVal) !== 'undefined' && JSON.stringify(newVal) !== JSON.stringify(oldVal))) {
+        	if (historyLock == false && typeof(oldVal) !== 'undefined' && JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
         		$scope.saveHistory($scope.createHistoryRecord());
         		$scope.setButtons();
         	}
@@ -1922,7 +1919,7 @@ angular
         
         //notes
         $scope.$watch('record.mapNote', function(newVal, oldVal){
-        	if ((typeof(oldVal) !== 'undefined' && JSON.stringify(newVal) !== JSON.stringify(oldVal))) {
+        	if (historyLock == false && typeof(oldVal) !== 'undefined' && JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
         		$scope.saveHistory($scope.createHistoryRecord());
         		$scope.setButtons();
         	}
@@ -1930,7 +1927,7 @@ angular
         
         //principle
         $scope.$watch('record.mapPrinciple', function(newVal, oldVal){
-        	if ((typeof(oldVal) !== 'undefined' && JSON.stringify(newVal) !== JSON.stringify(oldVal))) {
+        	if (historyLock == false && typeof(oldVal) !== 'undefined' && JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
         		$scope.saveHistory($scope.createHistoryRecord());
         		$scope.setButtons();
         	}        	
@@ -1938,7 +1935,7 @@ angular
         
         //flagForConsensusReview
         $scope.$watch('record.flagForConsensusReview', function(newVal, oldVal){
-        	if ((typeof(oldVal) !== 'undefined' && JSON.stringify(newVal) !== JSON.stringify(oldVal))) {
+        	if (historyLock == false && typeof(oldVal) !== 'undefined' && JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
         		$scope.saveHistory($scope.createHistoryRecord());
         		$scope.setButtons();
         	}        	
@@ -1946,7 +1943,7 @@ angular
         
         //flagForEditorialReview
         $scope.$watch('record.flagForEditorialReview', function(newVal, oldVal){
-        	if ((typeof(oldVal) !== 'undefined' && JSON.stringify(newVal) !== JSON.stringify(oldVal))) {
+        	if (historyLock == false && typeof(oldVal) !== 'undefined' && JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
         		$scope.saveHistory($scope.createHistoryRecord());
         		$scope.setButtons();
         	}        	
@@ -1954,19 +1951,12 @@ angular
         
         //flagForMapLeadReview
         $scope.$watch('record.flagForMapLeadReview', function(newVal, oldVal){
-        	if ((typeof(oldVal) !== 'undefined' && JSON.stringify(newVal) !== JSON.stringify(oldVal))) {
+        	if (historyLock == false && typeof(oldVal) !== 'undefined' && JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
         		$scope.saveHistory($scope.createHistoryRecord());
         		$scope.setButtons();
         	}        	
         }, true);
 
-        //feedback
-        $scope.$watch('conversation.feedback', function(newVal, oldVal){
-        	if ((typeof(oldVal) !== 'undefined' && JSON.stringify(newVal) !== JSON.stringify(oldVal))) {
-        		$scope.saveHistory($scope.createHistoryRecord());
-        		$scope.setButtons();
-        	}
-        }, true);
 
         //track enable/disable of buttons        
         $scope.setButtons = function() {
@@ -1976,12 +1966,7 @@ angular
             console.log("historyIndex:", historyIndex, "|size:", history.length,
             		"|undoEnabled:", $scope.undoDisabled, "|redoEnabled:", $scope.redoDisabled);    
         };
-        $scope.undoDisabled = true;
-        $scope.redoDisabled = true;
 
-        
-        
-        
       //end
       } ]);
 
