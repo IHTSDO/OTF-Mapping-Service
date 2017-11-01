@@ -918,10 +918,9 @@ angular
             $scope.openCreateJiraTicketModal(record);
 
           }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
-          $scope.error = 'Could not retrieve authors';
-          deferred.reject('Could not retrieve authors');
-        });
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
       };
       
 
