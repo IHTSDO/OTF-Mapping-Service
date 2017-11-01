@@ -4966,7 +4966,7 @@ public class MappingServiceRest extends RootServiceRest {
       JSONObject singleContent = array.getJSONObject(i);
       if (singleContent.getString("highestPromotedBranch") == null
           || !singleContent.getJSONObject("highestPromotedBranch")
-              .getString("branchPath").equals("MAIN")) {
+              .getString("branchPath").contains("MAIN")) {
         continue;
       }
       String userName =
@@ -5039,7 +5039,7 @@ public class MappingServiceRest extends RootServiceRest {
       JSONObject singleContent = array.getJSONObject(i);
       if (singleContent.getString("highestPromotedBranch") == null
           || !singleContent.getJSONObject("highestPromotedBranch")
-              .getString("branchPath").equals("MAIN")) {
+              .getString("branchPath").contains("MAIN")) {
         continue;
       }
       String userName =
