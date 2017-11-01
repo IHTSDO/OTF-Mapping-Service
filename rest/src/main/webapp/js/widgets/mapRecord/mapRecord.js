@@ -1833,7 +1833,7 @@ angular
         
         $scope.setValues = function(historyRecord) {
         	historyLock = true;
-        	console.debug('SET:', JSON.stringify(item))
+        	console.debug('SET:', JSON.stringify(historyRecord))
         	$scope.groupsTree = historyRecord['groupsTree']; 
         	$scope.record.mapNote = historyRecord['record']['mapNote'];
         	$scope.record.mapPrinciple = historyRecord['record']['mapPrinciple'];
@@ -1857,7 +1857,7 @@ angular
         //user action to undo
         $scope.undo = function() {
         	historyIndex--;
-        	console.log('click undo to:', historyIndex);
+        	console.debug('click undo to:', historyIndex);
         	var h = JSON.parse(JSON.stringify(history[historyIndex-1]));
         	console.debug("undo to: ", JSON.stringify(h));
         	$scope.setValues(h);
@@ -1904,7 +1904,7 @@ angular
 					? angular.copy($scope.record.flagForMapLeadReview) 
 					: false;
 
-			console.log("createHistoryRecord", historyRecord);
+			console.debug("createHistoryRecord", historyRecord);
 			return historyRecord;
         }
            
