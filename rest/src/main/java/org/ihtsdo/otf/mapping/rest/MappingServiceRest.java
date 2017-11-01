@@ -4776,7 +4776,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
     Logger.getLogger(WorkflowServiceRest.class)
         .info("RESTful call (Mapping): /jira/" + conceptId.toString() + "/"
-            + conceptAuthor);
+            + conceptAuthor );
     Logger.getLogger(WorkflowServiceRest.class)
         .info("RESTful call (Mapping): /jira/" + messageText);
     try {
@@ -4785,6 +4785,7 @@ public class MappingServiceRest extends RootServiceRest {
       final Properties config = ConfigUtility.getConfigProperties();
       final String jiraAuthHeader = config.getProperty("jira.authHeader");
       final String jiraUrl = config.getProperty("jira.defaultUrl");
+      final String jiraProject = config.getProperty("jira.project");
 
       Client client = Client.create();
       WebResource webResource = client.resource(jiraUrl + "/issue/");
@@ -4832,15 +4833,18 @@ public class MappingServiceRest extends RootServiceRest {
 		    	mapRecordContents.append(note.getNote().replaceAll("<br>", "\\\\\\\\\\\\\\\\").replaceAll("\\<.*?\\>", "").replaceAll("nbsp;", " ")).append("\\\\\\\\");
 		    }*/
 		    
-		    //authToken = "dshapiro";
-		    //conceptAuthor = "dshapiro";
+		    // if test project, override author and user
+            if (jiraProject.equals("MTFP")) {
+              conceptAuthor = "dshapiro";
+              authToken = "dshapiro";
+            }
       
             // create the issue object to send to JIRA Rest API
 		    String data = "{"
             + "\"fields\": {"
                 + "\"project\":"
                     + "{"
-                    +    "\"key\": \"MAP\""
+                    +    "\"key\": \"" + jiraProject + "\""
                     + "},"
                 + "\"summary\": \"Mapping Feedback on " + conceptId + "\","
                 + "\"assignee\": {"
@@ -4851,7 +4855,7 @@ public class MappingServiceRest extends RootServiceRest {
                     + "},"
                 + "\"description\": \"" + messageText.replaceAll("\n", "\\\\\\\\\\\\\\\\").replaceAll("\\<.*?\\>", "") + "\\\\\\\\" + mapRecordContents.toString() + "\","
                 + "\"issuetype\": {"
-                        + "\"id\": \"10105\""
+                        + "\"name\": \"Task\""
                     + "}"
                 + "}"
             + "}";
@@ -4869,7 +4873,7 @@ public class MappingServiceRest extends RootServiceRest {
         throw new AuthenticationException("Forbidden");
       } else if (statusCode == 200 || statusCode == 201) {
         Logger.getLogger(MappingServiceRest.class)
-        .info("Ticket Create successfully");
+        .info("Ticket Created successfully");
       } else {
         Logger.getLogger(MappingServiceRest.class)
         .info("Http Error : " + statusCode);
