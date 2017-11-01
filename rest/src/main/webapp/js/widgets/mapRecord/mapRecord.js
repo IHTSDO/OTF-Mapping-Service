@@ -1831,15 +1831,15 @@ angular
         $scope.redoDisabled = true;
 
         
-        $scope.setValues = function(item) {
+        $scope.setValues = function(historyRecord) {
         	historyLock = true;
         	console.debug('SET:', JSON.stringify(item))
-        	$scope.groupsTree = item['groupsTree']; 
-        	$scope.record.mapNote = item['record']['mapNote'];
-        	$scope.record.mapPrinciple = item['record']['mapPrinciple'];
-        	$scope.record.flagForConsensusReview = item['record']['flagForConsensusReview'];
-        	$scope.record.flagForEditorialReview = item['record']['flagForEditorialReview'];
-        	$scope.record.flagForMapLeadReview = item['record']['flagForMapLeadReview'];
+        	$scope.groupsTree = historyRecord['groupsTree']; 
+        	$scope.record.mapNote = historyRecord['record']['mapNote'];
+        	$scope.record.mapPrinciple = historyRecord['record']['mapPrinciple'];
+        	$scope.record.flagForConsensusReview = historyRecord['record']['flagForConsensusReview'];
+        	$scope.record.flagForEditorialReview = historyRecord['record']['flagForEditorialReview'];
+        	$scope.record.flagForMapLeadReview = historyRecord['record']['flagForMapLeadReview'];
         	historyLock = false;
         };
 
@@ -1911,49 +1911,55 @@ angular
         //one $watch for each variable, $watchGroup was not working for all
         //groupsTree
         $scope.$watch('groupsTree', function(newVal, oldVal){
-        	if (historyLock == false && typeof(oldVal) !== 'undefined' && JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
-        		$scope.saveHistory($scope.createHistoryRecord());
-        		$scope.setButtons();
+        	if (historyLock == false && typeof(oldVal) !== 'undefined' 
+        		&& JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
+        			$scope.saveHistory($scope.createHistoryRecord());
+        			$scope.setButtons();
         	}
         }, true);
         
         //notes
         $scope.$watch('record.mapNote', function(newVal, oldVal){
-        	if (historyLock == false && typeof(oldVal) !== 'undefined' && JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
-        		$scope.saveHistory($scope.createHistoryRecord());
-        		$scope.setButtons();
+        	if (historyLock == false && typeof(oldVal) !== 'undefined' 
+        		&& JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
+        			$scope.saveHistory($scope.createHistoryRecord());
+        			$scope.setButtons();
         	}
         }, true);
         
         //principle
         $scope.$watch('record.mapPrinciple', function(newVal, oldVal){
-        	if (historyLock == false && typeof(oldVal) !== 'undefined' && JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
-        		$scope.saveHistory($scope.createHistoryRecord());
-        		$scope.setButtons();
+        	if (historyLock == false && typeof(oldVal) !== 'undefined' 
+        			&& JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
+        			$scope.saveHistory($scope.createHistoryRecord());
+        			$scope.setButtons();
         	}        	
         }, true);
         
         //flagForConsensusReview
         $scope.$watch('record.flagForConsensusReview', function(newVal, oldVal){
-        	if (historyLock == false && typeof(oldVal) !== 'undefined' && JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
-        		$scope.saveHistory($scope.createHistoryRecord());
-        		$scope.setButtons();
+        	if (historyLock == false && typeof(oldVal) !== 'undefined' 
+        		&& JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
+        			$scope.saveHistory($scope.createHistoryRecord());
+        			$scope.setButtons();
         	}        	
         }, true);
         
         //flagForEditorialReview
         $scope.$watch('record.flagForEditorialReview', function(newVal, oldVal){
-        	if (historyLock == false && typeof(oldVal) !== 'undefined' && JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
-        		$scope.saveHistory($scope.createHistoryRecord());
-        		$scope.setButtons();
+        	if (historyLock == false && typeof(oldVal) !== 'undefined' 
+        		&& JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
+        			$scope.saveHistory($scope.createHistoryRecord());
+        			$scope.setButtons();
         	}        	
         }, true);
         
         //flagForMapLeadReview
         $scope.$watch('record.flagForMapLeadReview', function(newVal, oldVal){
-        	if (historyLock == false && typeof(oldVal) !== 'undefined' && JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
-        		$scope.saveHistory($scope.createHistoryRecord());
-        		$scope.setButtons();
+        	if (historyLock == false && typeof(oldVal) !== 'undefined' 
+        		&& JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
+        			$scope.saveHistory($scope.createHistoryRecord());
+        			$scope.setButtons();
         	}        	
         }, true);
 
@@ -1962,8 +1968,7 @@ angular
         $scope.setButtons = function() {
         	$scope.undoDisabled = (historyIndex > 1) ? false : true;
             $scope.redoDisabled = (historyIndex <= (history.length - 1)) ? false : true;
-            
-            console.log("historyIndex:", historyIndex, "|size:", history.length,
+            console.debug("historyIndex:", historyIndex, "|size:", history.length,
             		"|undoEnabled:", $scope.undoDisabled, "|redoEnabled:", $scope.redoDisabled);    
         };
 
