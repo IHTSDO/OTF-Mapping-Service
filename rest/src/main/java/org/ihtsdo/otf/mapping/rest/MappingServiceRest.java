@@ -4787,6 +4787,12 @@ public class MappingServiceRest extends RootServiceRest {
       final String jiraUrl = config.getProperty("jira.defaultUrl");
       final String jiraProject = config.getProperty("jira.project");
 
+      if (jiraAuthHeader == null || jiraUrl == null || jiraProject == null) {
+        this.handleException(
+            new Exception("create a JIRA issue. JIRA properties must be in configuration file"),
+            "create a JIRA issue . JIRA properties must be in configuration file", "", "", "");
+      }
+      
       Client client = Client.create();
       WebResource webResource = client.resource(jiraUrl + "/issue/");
 
@@ -4868,15 +4874,21 @@ public class MappingServiceRest extends RootServiceRest {
       int statusCode = response.getStatus();
 
       if (statusCode == 401) {
-        throw new AuthenticationException("Invalid Username or Password");
+        this.handleException(
+            new AuthenticationException("Invalid Username or Password"),
+            "Invalid Username or Password", authToken, "", "");
       } else if (statusCode == 403) {
-        throw new AuthenticationException("Forbidden");
+        this.handleException(new AuthenticationException("Forbidden"),
+            "Forbidden", authToken, "", "");
       } else if (statusCode == 200 || statusCode == 201) {
         Logger.getLogger(MappingServiceRest.class)
-        .info("Ticket Created successfully");
+            .info("Ticket Created successfully");
       } else {
+        this.handleException(
+            new AuthenticationException("Http Error : " + statusCode),
+            "Http Error : " + statusCode, authToken, "", "");
         Logger.getLogger(MappingServiceRest.class)
-        .info("Http Error : " + statusCode);
+            .info("Http Error : " + statusCode);
       }
       
       BufferedReader inputStream = new BufferedReader(
@@ -4911,6 +4923,12 @@ public class MappingServiceRest extends RootServiceRest {
     final String authoringAuthHeader =
         config.getProperty("authoring.authHeader");
     final String authoringUrl = config.getProperty("authoring.defaultUrl");
+    
+    if (authoringAuthHeader == null || authoringUrl == null) {
+      this.handleException(
+          new Exception("retrieve concept authors. Authoring properties must be in configuration file"),
+          "retrieve concept authors. Authoring properties must be in configuration file", "", "", "");
+    }
 
     Client client = Client.create();
     WebResource webResource = client.resource(authoringUrl
@@ -4922,17 +4940,22 @@ public class MappingServiceRest extends RootServiceRest {
     int statusCode = response.getStatus();
 
     if (statusCode == 401) {
-      throw new AuthenticationException("Invalid Username or Password");
+      this.handleException(
+          new AuthenticationException("Invalid Username or Password"),
+          "Invalid Username or Password", authToken, "", "");
     } else if (statusCode == 403) {
-      throw new AuthenticationException("Forbidden");
+      this.handleException(new AuthenticationException("Forbidden"),
+          "Forbidden", authToken, "", "");
     } else if (statusCode == 200 || statusCode == 201) {
       Logger.getLogger(MappingServiceRest.class)
-      .info("Traceability report retrieved successfully");
+          .info("Traceability report retrieved successfully");
     } else {
+      this.handleException(
+          new AuthenticationException("Http Error : " + statusCode),
+          "Http Error : " + statusCode, authToken, "", "");
       Logger.getLogger(MappingServiceRest.class)
-      .info("Http Error : " + statusCode);
+          .info("Http Error : " + statusCode);
     }
-
     // Parse to get the authors on all changes that were promoted to MAIN
     String jsonText = inputStreamToString(response.getEntityInputStream());
     JSONObject jsonObject = new JSONObject(jsonText);
@@ -4964,7 +4987,7 @@ public class MappingServiceRest extends RootServiceRest {
 
   @GET
   @Path("/changes/{conceptId}")
-  @ApiOperation(value = "Gets authoring changes for this concept", notes = "Gets a list of all editing changes made to MAIN from the authoring tool.", response = SearchResultList.class)
+  @ApiOperation(value = "Gets authoring history for this concept", notes = "Gets a list of all editing changes made to MAIN from the authoring tool.", response = SearchResultList.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
@@ -4979,6 +5002,12 @@ public class MappingServiceRest extends RootServiceRest {
     final String authoringAuthHeader =
         config.getProperty("authoring.authHeader");
     final String authoringUrl = config.getProperty("authoring.defaultUrl");
+    
+    if (authoringAuthHeader == null || authoringUrl == null) {
+      this.handleException(
+          new Exception("retrieve authoring history. Authoring properties must be in configuration file"),
+          "retrieve authoring history. Authoring properties must be in configuration file", "", "", "");
+    }
 
     Client client = Client.create();
     WebResource webResource = client.resource(authoringUrl
