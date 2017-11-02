@@ -657,15 +657,25 @@ angular
           }
 
           // check map group
-          if ($scope.searchParameters.mapGroup) {
+          if ($scope.searchParameters.mapGroup
+            && !$scope.searchParameters.mapPriority) {
             queryRestrictions.push('mapEntries.mapGroup:'
               + $scope.searchParameters.mapGroup);
           }
 
           // check map priority
-          if ($scope.searchParameters.mapPriority) {
+          if ($scope.searchParameters.mapPriority
+            && !$scope.searchParameters.mapGroup) {
             queryRestrictions.push('mapEntries.mapPriority:'
               + $scope.searchParameters.mapPriority);
+          }
+
+          // check map group AND priority
+          if ($scope.searchParameters.mapPriority
+            && $scope.searchParameters.mapGroup) {
+            queryRestrictions.push('mapEntries.mapGroupAndPriority:"'
+              + $scope.searchParameters.mapGroup + ','
+              + $scope.searchParameters.mapPriority+'"');
           }
 
           // check map principles

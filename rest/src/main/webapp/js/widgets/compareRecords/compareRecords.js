@@ -203,7 +203,7 @@ angular
 
               // auto-populate if there is only one, no split-screen
               $timeout(function() {
-                $scope.populateMapRecord($scope.record1,false);
+                $scope.populateMapRecord($scope.record1, false);
               }, 400);
 
             } else if (data.totalCount == 2) {
@@ -583,7 +583,8 @@ angular
           $scope.leadRecord);
         $rootScope.$broadcast('compareRecordsWidget.notification.selectRecord',
           {
-            record : $scope.leadRecord, forceOverride : flag
+            record : $scope.leadRecord,
+            forceOverride : flag
           });
 
       };
@@ -843,7 +844,7 @@ angular
 
       // Delete feedback conversation
       var group;
-      $scope.removeFeedback = function(feedback) {
+      $scope.removeFeedback = function(feedback, conversation) {
         // confirm delete
         if (confirm('Are you sure that you want to delete a feedback conversation?') == false)
           return;
@@ -858,13 +859,12 @@ angular
           }
         })
           .success(function(data) {
-            /*
-             * if($scope.leadConversation.feedback.length>0){ $scope.group =
-             * null }
-             */
-            $scope.conversation1 = null
-            $scope.conversation2 = null
-            $scope.leadConversation = null
+            for (var i = 0; i < conversation.feedback.length; i++) {
+              if (conversation.feedback[i].id == feedback.id) {
+                conversation.feedback.splice(i, 1);
+                break;
+              }
+            }
           })
           .error(
             function(data, status, headers, config) {
