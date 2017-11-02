@@ -25,9 +25,11 @@ angular
       $scope.focusProject = localStorageService.get('focusProject');
        
       // pagination variables
-      $scope.pageSize = 10;
-      $scope.editedRecordsPage = 1;
-
+      $scope.recordsPerPage = 2;
+      $scope.recordPage  = 1;
+      $scope.totalRecords = 0;
+      $scope.numRecordPages = 0;
+  		
       // watch for project change
       $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
         $scope.focusProject = parameters.focusProject;
@@ -48,19 +50,22 @@ angular
      
 
       // called by user-click, not automatically loaded
-      $scope.retrieveEditedWork = function(page, queryTerms) {
+      $scope.retrieveEditedWork = function(ppage, queryTerms) {
 
         // set the page
-        $scope.editedRecordsPage = page;
+    	var page = ppage;
+    	
+    	if (page == null)
+    		page = 1;
 
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
-          'startIndex' : (page - 1) * $scope.pageSize,
-          'maxResults' : $scope.pageSize,
+          'startIndex' : (page - 1) * $scope.recordsPerPage,
+          'maxResults' : $scope.recordsPerPage,
           'sortField' : 'lastModified',
-          'queryRestriction' : queryTerms ? queryTerms : ''
+          'queryRestriction' : queryTerms ? JSON.stringify(queryTerms) : ''
         };
-
+        
         $rootScope.glassPane++;
 
         $http(
@@ -76,9 +81,9 @@ angular
           }).success(function(data) {
           $rootScope.glassPane--;
 
-          $scope.recordPage = page;
-          $scope.nRecords = data.totalCount;
-          $scope.numRecordPages = Math.ceil($scope.nRecords / $scope.pageSize);
+          //set pagination variables
+          $scope.totalRecords = data.totalCount;
+          $scope.numRecordPages = Math.ceil(data.totalCount / $scope.recordsPerPage);
 
           $scope.editedRecords = data.mapRecord;
 
@@ -194,6 +199,25 @@ angular
 
       $scope.gotoConcept = function(terminologyId) {
         $location.path('#/record/conceptId/' + terminologyId);
+      };
+      
+      //date format
+      $scope.dateFormat = 'MM/dd/yyyy';
+      
+      $scope.dateRangeStart = {
+    		  opened: false
+      };
+      
+      $scope.dateRangeEnd = {
+    		  opened: false
+      };
+      
+      $scope.openDateRangeStart = function() {
+    		  $scope.dateRangeStart.opened = true;
+      };
+      
+      $scope.openDateRangeEnd = function() {
+		  $scope.dateRangeEnd.opened = true;
       };
 
     });

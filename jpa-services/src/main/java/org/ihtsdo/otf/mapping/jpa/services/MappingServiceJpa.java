@@ -3,6 +3,9 @@
  */
 package org.ihtsdo.otf.mapping.jpa.services;
 
+import java.util.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -16,6 +19,7 @@ import java.util.Set;
 import javax.persistence.NoResultException;
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.envers.AuditReader;
@@ -78,6 +82,7 @@ import org.ihtsdo.otf.mapping.rf2.jpa.ComplexMapRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
+import org.json.JSONObject;
 
 /**
  * JPA implementation of the {@link MappingService}.
@@ -833,15 +838,10 @@ public class MappingServiceJpa extends RootServiceJpa
 
     AuditReader reader = AuditReaderFactory.get(manager);
     PfsParameter localPfsParameter = pfsParameter;
-
+    
     // if no pfsParameter supplied, construct a default one
     if (localPfsParameter == null)
       localPfsParameter = new PfsParameterJpa();
-
-    // split the query restrictions
-    if (localPfsParameter.getQueryRestriction() != null) {
-      // do nothing
-    }
 
     // construct the query
     AuditQuery query = reader.createQuery()
@@ -857,7 +857,7 @@ public class MappingServiceJpa extends RootServiceJpa
         .add(AuditEntity.property("workflowStatus").ne(WorkflowStatus.NEW))
         .add(AuditEntity.property("workflowStatus")
             .ne(WorkflowStatus.PUBLISHED));
-
+    
     // if sort field specified
     if (localPfsParameter.getSortField() != null) {
       query.addOrder(
@@ -867,25 +867,58 @@ public class MappingServiceJpa extends RootServiceJpa
     } else {
       query.addOrder(AuditEntity.property("lastModified").desc());
     }
-    // if paging request supplied, set first result and max results
-    if (localPfsParameter.getStartIndex() != -1
-        && localPfsParameter.getMaxResults() != -1) {
-      query.setFirstResult(localPfsParameter.getStartIndex())
-          .setMaxResults(localPfsParameter.getMaxResults());
-
-    }
 
     // if query terms specified, add
-    if (pfsParameter != null && pfsParameter.getQueryRestriction() != null) {
-      String[] queryTerms = pfsParameter.getQueryRestriction().split(" ");
-      query.add(AuditEntity.or(AuditEntity.property("conceptId").in(queryTerms),
-          AuditEntity.property("conceptName")
-              .like(pfsParameter.getQueryRestriction(), MatchMode.ANYWHERE)));
+    if (pfsParameter != null && pfsParameter.getQueryRestriction() != null 
+    		&& StringUtils.isNotBlank(pfsParameter.getQueryRestriction())) {
 
+    	JSONObject jsonObject = new JSONObject(pfsParameter.getQueryRestriction());
+        final String terms = (jsonObject.has("input") 
+        		&& !jsonObject.isNull("input"))
+        		? jsonObject.getString("input") 
+        		: null;
+        final Long dateRangeStart = (jsonObject.has("dateRangeStart") 
+        		&& !jsonObject.isNull("dateRangeStart"))
+        		? convertDateString(jsonObject.getString("dateRangeStart")) 
+        		: null;
+        final Long dateRangeEnd = (jsonObject.has("dateRangeEnd") 
+        		&& !jsonObject.isNull("dateRangeEnd"))
+        		? convertDateString(jsonObject.getString("dateRangeEnd")) 
+        		: null;
+      
+      //split the query restrictions
+      if (terms != null) {
+    	  String[] queryTerms = terms.split(" ");
+    	  query.add(AuditEntity.or(AuditEntity.property("conceptId").in(queryTerms),
+    			  AuditEntity.property("conceptName").like(terms, MatchMode.ANYWHERE)));
+      }
+
+      if (dateRangeStart != null) {
+    	  query.add(AuditEntity.property("lastModified").gt(dateRangeStart));
+      }
+      if (dateRangeEnd != null) {
+    	  query.add(AuditEntity.property("lastModified").lt(dateRangeEnd));
+      }
+      
     }
 
     // execute the query
     final List<MapRecord> editedRecords = query.getResultList();
+    final List<MapRecord> editedRecordsToKeep = new ArrayList<>();
+    
+    // if paging request, return subset
+    if (editedRecords != null && editedRecords.size() > 0
+    		&& localPfsParameter.getStartIndex() != -1 
+    		&& localPfsParameter.getMaxResults() != -1) {
+    	
+    	editedRecordsToKeep.addAll(editedRecords.subList(
+    			(localPfsParameter.getStartIndex() < 0)
+    					? 0 : localPfsParameter.getStartIndex(), 
+    			(localPfsParameter.getMaxResults() < editedRecords.size()) 
+    					? localPfsParameter.getMaxResults() 
+    					: editedRecords.size()
+    			));
+    }
 
     // create the mapRecordList and set total size
     final MapRecordListJpa mapRecordList = new MapRecordListJpa();
@@ -894,7 +927,7 @@ public class MappingServiceJpa extends RootServiceJpa
     // Avoid uniquing -> it just makes results not intuitive.
     // final Set<String> seen = new HashSet<>();
     // int ct = 0;
-    for (final MapRecord mapRecord : editedRecords) {
+    for (final MapRecord mapRecord : editedRecordsToKeep) {
       // Stop at 10
       // if (++ct > 10) {
       // break;
@@ -2178,7 +2211,6 @@ public class MappingServiceJpa extends RootServiceJpa
       // set a default project to 1st project found
       m.setLastMapProjectId(
           mapProjects.getIterable().iterator().next().getId());
-      m.setLastAssignedTab("0");
 
       // add object
       addMapUserPreferences(m);
@@ -2930,6 +2962,24 @@ public class MappingServiceJpa extends RootServiceJpa
     contentService.close();
 
     return searchResultList;
+  }
+  
+  /* Convert ISO 8601 date time string to milliseconds */
+  private long convertDateString(String dateString) {
+	  
+		long milliseconds = 0l;
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+
+		Date d;
+		try {
+			d = (Date) format.parse(dateString);
+			milliseconds = d.getTime();
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return milliseconds;
   }
 
 }
