@@ -65,6 +65,7 @@ angular
      // start note edit mode in off mode
         $scope.feedbackEditMode = false;
         $scope.feedbackEditId = null;
+        $scope.newFeedbackTimestamps = new Array();
         $scope.content = {
           text : ''
         };
@@ -87,6 +88,7 @@ angular
         // start note edit mode in off mode
         $scope.noteEditMode = false;
         $scope.noteEditId = null;
+        $scope.newNoteTimestamps = new Array();
         $scope.content = {
         		text : ''
         };
@@ -384,6 +386,13 @@ angular
                 }
               });
 
+        }
+        
+        $scope.isNewFeedback = function(feedback) {
+        	if($scope.newFeedbackTimestamps.includes(Math.round(feedback.timestamp/1000)*1000)){
+        		return true;
+        	}
+        	return false;
         }
         
         $scope.editFeedback = function(feedback) {
@@ -1116,6 +1125,13 @@ angular
           }
         };
 
+        $scope.isNewNote = function (mapNote) {
+        	if($scope.newNoteTimestamps.includes(mapNote.timestamp)){
+        		return true;
+        	}
+        	return false;
+        }
+        
         $scope.editRecordNote = function(record, mapNote) {
           $scope.content.text = mapNote.note;
           $scope.noteEditMode = true;
@@ -1136,11 +1152,9 @@ angular
             // find the existing note
             for (var i = 0; i < record.mapNote.length; i++) {
               // if this note, overwrite it
-              if ($scope.noteEditId == record.mapNote[i].localId ||
-            		  $scope.noteEditId == record.mapNote[i].id) {
+              if ($scope.noteEditId == record.mapNote[i].localId) {
                 noteFound = true;
                 record.mapNote[i].note = note;
-                record.mapNote[i].id = currentLocalId++;
               }
             }
             $scope.noteEditMode = false;
@@ -1165,6 +1179,9 @@ angular
             mapNote.timestamp = (new Date()).getTime();
             mapNote.user = $scope.user;
 
+            // add note's timestamp to the newNote list
+            $scope.newNoteTimestamps.push(mapNote.timestamp);
+            
             // add note to record with new localId
             addElementWithId(record.mapNote, mapNote);
 
@@ -1196,6 +1213,7 @@ angular
           }
 
           var localFeedback = $scope.conversation.feedback;
+          var localTimestamp = new Date().getTime();
 
           // copy recipient list
           var localRecipients = recipientList.slice(0);
@@ -1215,7 +1233,7 @@ angular
             var feedback = {
               'message' : feedbackMessage,
               'mapError' : '',
-              'timestamp' : new Date(),
+              'timestamp' : localTimestamp,
               'sender' : $scope.user,
               'recipients' : newRecipients,
               'isError' : 'false',
@@ -1223,6 +1241,10 @@ angular
               'viewedBy' : [ $scope.user ]
             };
 
+            // Add to new feedback timestamps
+            // The rounding is because the timestamp in the feedback gets rounded also
+            $scope.newFeedbackTimestamps.push(Math.round(localTimestamp/1000)*1000);           
+            
             var feedbacks = new Array();
             feedbacks.push(feedback);
 
@@ -1267,13 +1289,17 @@ angular
             var feedback = {
               'message' : feedbackMessage,
               'mapError' : '',
-              'timestamp' : new Date(),
+              'timestamp' : localTimestamp,
               'sender' : $scope.user,
               'recipients' : newRecipients,
               'isError' : 'false',
               'viewedBy' : [ $scope.user ]
             };
 
+            // Add to new feedback timestamps
+            // The rounding is because the timestamp in the feedback gets rounded also
+            $scope.newFeedbackTimestamps.push(Math.round(localTimestamp/1000)*1000);           
+            
             localFeedback.push(feedback);
             $scope.tinymceContent = null;
 

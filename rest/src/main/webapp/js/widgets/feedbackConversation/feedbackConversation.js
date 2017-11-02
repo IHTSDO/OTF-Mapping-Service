@@ -61,6 +61,7 @@ angular
       // start note edit mode in off mode
       $scope.feedbackEditMode = false;
       $scope.feedbackEditId = null;
+      $scope.newFeedbackTimestamps = new Array();
       $scope.content = {
       	text : ''
       };
@@ -199,6 +200,13 @@ angular
         });
       };
 
+      $scope.isNewFeedback = function(feedback) {
+      	if($scope.newFeedbackTimestamps.includes(Math.round(feedback.timestamp/1000)*1000)){
+      		return true;
+      	}
+      	return false;
+      }
+      
       $scope.editFeedback = function(feedback) {
           $scope.content.text = feedback.message;
           $scope.feedbackEditMode = true;
@@ -301,6 +309,7 @@ angular
         // in
         // conversation
         var localFeedback = conversation.feedback;
+        var localTimestamp = new Date().getTime();
 
         // copy recipient list
         var localRecipients = recipientList.slice(0);
@@ -316,13 +325,17 @@ angular
         var feedback = {
           'message' : feedbackMessage,
           'mapError' : '',
-          'timestamp' : new Date(),
+          'timestamp' : localTimestamp,
           'sender' : $scope.currentUser,
           'recipients' : newRecipients,
           'isError' : 'false',
           'viewedBy' : [ $scope.currentUser ]
         };
 
+        // Add to new feedback timestamps
+        // The rounding is because the timestamp in the feedback gets rounded also
+        $scope.newFeedbackTimestamps.push(Math.round(localTimestamp/1000)*1000);      
+        
         localFeedback.push(feedback);
         conversation.feedback = localFeedback;
 

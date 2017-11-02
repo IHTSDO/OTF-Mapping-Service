@@ -20,9 +20,9 @@
             {{recipient.name}}</span>
           on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
           <i> <span class="glyphicon glyphicon-remove pull-right"
-        ng-click="removeFeedback(feedback,'record1')"></i>
+        ng-click="removeFeedback(feedback,'record1')"  ng-show="isNewFeedback(feedback)"></i>
         <i class="glyphicon glyphicon-pencil pull-right"
-		ng-click="editFeedback(feedback); content.text1 = feedback.message"></i>
+		ng-click="editFeedback(feedback); content.text1 = feedback.message"  ng-show="isNewFeedback(feedback)"></i>
           <div ng-show="feedback.mapError != 'None'" style="padding-left: 20px;"
             ng-bind-html="to_trusted(feedback.mapError)"></div>
           <div style="padding-left: 20px;"
