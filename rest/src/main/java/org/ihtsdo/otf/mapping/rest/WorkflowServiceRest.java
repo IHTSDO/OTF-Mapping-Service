@@ -278,6 +278,7 @@ public class WorkflowServiceRest extends RootServiceRest {
       PfsParameter localPfs = new PfsParameterJpa();
       localPfs.setQueryRestriction(pfsParameter.getQueryRestriction());
       localPfs.setSortField(pfsParameter.getSortField());
+      localPfs.setAscending(pfsParameter.isAscending());
 
       // get ALL FixErrorPath work at specialist level for the project
       WorkflowPathHandler fixErrorHandler = new WorkflowFixErrorPathHandler();
@@ -557,6 +558,7 @@ public class WorkflowServiceRest extends RootServiceRest {
       PfsParameter localPfs = new PfsParameterJpa();
       localPfs.setQueryRestriction(pfsParameter.getQueryRestriction());
       localPfs.setSortField(pfsParameter.getSortField());
+      localPfs.setAscending(pfsParameter.isAscending());
 
       SearchResultList availableWork = new SearchResultListJpa();
 
@@ -716,8 +718,9 @@ public class WorkflowServiceRest extends RootServiceRest {
       user = mapUser.getUserName();
 
       PfsParameter localPfs = new PfsParameterJpa();
-      localPfs.setSortField(pfsParameter.getSortField());
       localPfs.setQueryRestriction(pfsParameter.getQueryRestriction());
+      localPfs.setSortField(pfsParameter.getSortField());
+      localPfs.setAscending(pfsParameter.isAscending());
 
       // get ALL FixErrorPath work at specialist level for the project
       WorkflowPathHandler fixErrorHandler = new WorkflowFixErrorPathHandler();

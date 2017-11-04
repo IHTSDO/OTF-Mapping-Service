@@ -463,7 +463,7 @@ public class IndexUtility {
         Map<String, Boolean> nameToAnalyzedMap = IndexUtility
             .getNameAnalyzedPairsFromAnnotation(clazz, pfs.getSortField());
         String sortField = null;
-
+        
         if (nameToAnalyzedMap.size() == 0) {
           throw new Exception(clazz.getName()
               + " does not have declared, annotated method for field "
@@ -484,7 +484,7 @@ public class IndexUtility {
                 .equals(false)) {
           sortField = pfs.getSortField() + "Sort";
         }
-
+        
         // if none, throw exception
         if (sortField == null) {
           throw new Exception(
@@ -493,7 +493,7 @@ public class IndexUtility {
         }
 
         // Reverse sort by default - for last modified
-        Sort sort = new Sort(new SortField(sortField, SortField.STRING, true));
+        Sort sort = new Sort(new SortField(sortField, SortField.STRING, (pfs.isAscending()) ? true : false));
         fullTextQuery.setSort(sort);
       }
     }

@@ -56,15 +56,15 @@
 	first-text="&laquo;"  last-text="&raquo;" 
 	total-items="totalRecords" ng-model="recordPage" max-size="recordsPerPage" 
 	class="pagination-sm" boundary-links="true" rotate="true"
-	ng-change="retrieveEditedWork(recordPage, query)">
+	ng-change="retrieveEditedWork(recordPage, queryTerms)">
 </uib-pagination>
 
-<table class="table" ng-show="editedRecords.length > 0">
+<table class="table pointer" ng-show="editedRecords.length > 0">
   <thead>
     <tr>
-      <th>Date Edited</th>
-      <th>Concept Id</th>
-      <th>Concept Name</th>
+      <th ng-click="setSortField('lastModified')">Date Edited<span ng-bind="getSortIndicator('lastModified')"></span></th>
+      <th ng-click="setSortField('conceptId')">Concept Id<span ng-bind="getSortIndicator('conceptId')"></span></th>
+      <th ng-click="setSortField('conceptName')">Concept Name<span ng-bind="getSortIndicator('conceptName')"></span></th>
     </tr>
   </thead>
   <tbody>
