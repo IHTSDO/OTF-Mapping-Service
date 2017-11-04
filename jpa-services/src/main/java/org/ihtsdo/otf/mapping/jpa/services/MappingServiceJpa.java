@@ -860,12 +860,21 @@ public class MappingServiceJpa extends RootServiceJpa
     
     // if sort field specified
     if (localPfsParameter.getSortField() != null) {
-      query.addOrder(
-          AuditEntity.property(localPfsParameter.getSortField()).desc());
+    	if (localPfsParameter.isAscending()) {
+    		query.addOrder(AuditEntity.property(localPfsParameter.getSortField()).asc());
+    	}
+    	else {
+    		query.addOrder(AuditEntity.property(localPfsParameter.getSortField()).desc());
+    	}
 
       // otherwise, sort by last modified (descending)
     } else {
-      query.addOrder(AuditEntity.property("lastModified").desc());
+    	if (localPfsParameter.isAscending()) {
+    		query.addOrder(AuditEntity.property("lastModified").asc());
+    	}
+    	else {
+    		query.addOrder(AuditEntity.property("lastModified").desc());
+    	}
     }
 
     // if query terms specified, add

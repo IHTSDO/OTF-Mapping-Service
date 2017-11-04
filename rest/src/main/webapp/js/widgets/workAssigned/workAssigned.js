@@ -183,7 +183,34 @@ angular
       // work type filter variables
       $scope.assignedTypes = {};
      
-
+      //sort direction
+      var sortAscending = [];
+      var sortField = [];
+      
+      $scope.getSortIndicator = function(table, field){
+		if (sortField[table] !== field) return '';
+		if (sortField[table] === field && sortAscending[table]) return '▴';
+		if (sortField[table] === field && !sortAscending[table]) return '▾';
+      };
+      
+    //sort field and get data
+      $scope.setSortField = function(table, field) {
+    	  sortAscending[table] = !sortAscending[table];
+    	  sortField[table] = field;
+    	  if (table === 'concepts') {
+    		  $scope.retrieveAssignedWork(1, $scope.queryAssigned);
+    	  } else if (table === 'conflicts') {
+    		  $scope.retrieveAssignedConflicts(1, $scope.queryConflict);
+    	  } else if (table === 'review') {
+    		  $scope.retrieveAssignedReviewWork(1, $scope.queryReviewWork);
+    	  } else if (table === 'user') {
+    		  $scope.retrieveAssignedWorkForUser(1, parameters.assignUser.userName, 
+    				  $scope.queryAssignedForUser);
+    	  } else if (table === 'qa') {
+    		  $scope.retrieveAssignedQAWork(1, $scope.assignedQAWorkQuery);
+    	  }
+      };
+      
       // watch for project change
       $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
         $scope.focusProject = parameters.focusProject;
@@ -353,7 +380,8 @@ angular
         var pfsParameterObj = {
           'startIndex' : page == -1 ? -1 : (page - 1) * $scope.itemsPerPage,
           'maxResults' : page == -1 ? -1 : $scope.itemsPerPage,
-          'sortField' : 'sortKey',
+          'sortField' : (sortField['conflicts']) ? sortField['conflicts'] : 'sortKey',
+          'ascending' : sortAscending['conflicts'],
           'queryRestriction' : $scope.assignedTypes.conflict
         };
 
@@ -414,7 +442,8 @@ angular
         var pfsParameterObj = {
           'startIndex' : page == -1 ? -1 : (page - 1) * $scope.itemsPerPage,
           'maxResults' : page == -1 ? -1 : $scope.itemsPerPage,
-          'sortField' : 'sortKey',
+          'sortField' : (sortField['concepts']) ? sortField['concepts'] : 'sortKey',
+          'ascending' : sortAscending['concepts'],
           'queryRestriction' : $scope.assignedTypes.work
         };
 
@@ -497,7 +526,8 @@ angular
         var pfsParameterObj = {
           'startIndex' : page == -1 ? -1 : (page - 1) * $scope.itemsPerPage,
           'maxResults' : page == -1 ? -1 : $scope.itemsPerPage,
-          'sortField' : 'sortKey',
+          'sortField' : (sortField['qa']) ? sortField['qa'] : 'sortKey',
+          'ascending' : sortAscending['qa'],
           'queryRestriction' : $scope.assignedTypes.qa
         };
 
@@ -564,7 +594,8 @@ angular
         var pfsParameterObj = {
           'startIndex' : page == -1 ? -1 : (page - 1) * $scope.itemsPerPage,
           'maxResults' : page == -1 ? -1 : $scope.itemsPerPage,
-          'sortField' : 'sortKey',
+          'sortField' : (sortField['review']) ? sortField['review'] : 'sortKey',
+          'ascending' : sortAscending['review'],
           'queryRestriction' : $scope.assignedTypes.review
         };
 
@@ -639,7 +670,8 @@ angular
         var pfsParameterObj = {
           'startIndex' : page == -1 ? -1 : (page - 1) * $scope.itemsPerPage,
           'maxResults' : page == -1 ? -1 : $scope.itemsPerPage,
-          'sortField' : 'sortKey',
+          'sortField' : (sortField['user']) ? sortField['user'] : 'sortKey',
+          'ascending' : sortAscending['user'],
           'queryRestriction' : $scope.assignedTypes.forUser
         };
 
