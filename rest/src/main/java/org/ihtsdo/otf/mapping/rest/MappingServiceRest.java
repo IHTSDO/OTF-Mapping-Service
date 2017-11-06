@@ -3,12 +3,15 @@
  */
 package org.ihtsdo.otf.mapping.rest;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -21,6 +24,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.naming.AuthenticationException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
 import javax.ws.rs.DELETE;
@@ -37,6 +41,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONObject;
 import org.ihtsdo.otf.mapping.dto.KeyValuePair;
 import org.ihtsdo.otf.mapping.dto.KeyValuePairList;
 import org.ihtsdo.otf.mapping.dto.KeyValuePairLists;
@@ -103,6 +109,9 @@ import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
 import org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
 import com.wordnik.swagger.annotations.Api;
@@ -4001,9 +4010,9 @@ public class MappingServiceRest extends RootServiceRest {
 			copyFile(file, archiveFile);
 
 			// set both files' permissions to be readable by anyone
-			Runtime.getRuntime().exec("chmod 777 " + file.getAbsolutePath());	
-			Runtime.getRuntime().exec("chmod 777 " + archiveFile.getAbsolutePath());					
-			
+			Runtime.getRuntime().exec("chmod 777 " + file.getAbsolutePath());
+			Runtime.getRuntime().exec("chmod 777 " + archiveFile.getAbsolutePath());
+
 			// update project
 			mapProject.setMapPrincipleSourceDocument(mapProjectId + "/" + fileName + extension);
 			updateMapProject((MapProjectJpa) mapProject, authToken);
