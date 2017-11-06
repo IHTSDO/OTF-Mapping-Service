@@ -15,6 +15,7 @@ import java.net.MalformedURLException;
 import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -108,6 +109,12 @@ import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
 import org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
+
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
@@ -746,46 +753,6 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Adds the scope concept to map project.
-   *
-   * @param terminologyId the terminology id
-   * @param projectId the project id
-   * @param authToken the auth token
-   * @throws Exception the exception
-   */
-  @POST
-  @Path("/project/id/{projectId}/scopeConcept/add")
-  @ApiOperation(value = "Adds a single scope concept to a map project", notes = "Adds a single scope concept to a map project.", response = Response.class)
-  public void addScopeConceptToMapProject(
-    @ApiParam(value = "Concept to add, e.g. 100073004", required = true) String terminologyId,
-    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
-    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping):  /project/id/" + projectId + "/scopeConcepts");
-    String projectName = "";
-    String user = "";
-    final MappingService mappingService = new MappingServiceJpa();
-
-    try {
-      // authorize call
-      user = authorizeProject(projectId, authToken, MapUserRole.LEAD,
-          "add scope concept to project", securityService);
-
-      final MapProject mapProject = mappingService.getMapProject(projectId);
-
-      mapProject.addScopeConcept(terminologyId);
-      mappingService.updateMapProject(mapProject);
-    } catch (Exception e) {
-      this.handleException(e, "trying to add scope concept to project", user,
-          projectName, "");
-    } finally {
-      mappingService.close();
-      securityService.close();
-    }
-  }
 
   /**
    * Adds a list of scope concepts to map project.
@@ -825,16 +792,20 @@ public class MappingServiceRest extends RootServiceRest {
       //
       final ValidationResult result = new ValidationResultJpa();
       for (final String terminologyId : terminologyIds) {
-        if (contentService.getConcept(terminologyId,
+        if (mapProject.getScopeConcepts().contains(terminologyId)) {
+          result.addWarning(
+              "Concept " + terminologyId + " is already in scope, skipping.");
+        } else if (contentService.getConcept(terminologyId,
             mapProject.getSourceTerminology(),
             mapProject.getSourceTerminologyVersion()) != null) {
           mapProject.addScopeConcept(terminologyId);
+          mappingService.updateMapProject(mapProject);
+          result.addMessage("Concept " + terminologyId + " added to scope.");
         } else {
           result.addWarning(
-              "Concept " + terminologyId + " does not exist, skipping");
+              "Concept " + terminologyId + " does not exist, skipping.");
         }
       }
-      mappingService.updateMapProject(mapProject);
       return result;
     } catch (Exception e) {
       this.handleException(e, "trying to add scope concept to project", user,
@@ -858,7 +829,7 @@ public class MappingServiceRest extends RootServiceRest {
   @POST
   @Path("/project/id/{projectId}/scopeConcept/remove")
   @ApiOperation(value = "Removes a single scope concept from a map project", notes = "Removes a single scope concept from a map project.", response = Response.class)
-  public void removeScopeConceptFromMapProject(
+  public ValidationResult removeScopeConceptFromMapProject(
     @ApiParam(value = "Concept to remove, e.g. 100075006", required = true) String terminologyId,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
@@ -869,6 +840,7 @@ public class MappingServiceRest extends RootServiceRest {
     String projectName = "";
     String user = "";
     final MappingService mappingService = new MappingServiceJpa();
+    final ContentService contentService = new ContentServiceJpa();
 
     try {
       // authorize call
@@ -876,17 +848,32 @@ public class MappingServiceRest extends RootServiceRest {
           "remove scope concept from project", securityService);
 
       final MapProject mapProject = mappingService.getMapProject(projectId);
-
-      mapProject.removeScopeConcept(terminologyId);
-      mappingService.updateMapProject(mapProject);
-
+      final ValidationResult result = new ValidationResultJpa();
+      
+      if (mapProject.getScopeConcepts().contains(terminologyId)) {
+        mapProject.removeScopeConcept(terminologyId); 
+        mappingService.updateMapProject(mapProject);
+        result.addMessage("Concept " + terminologyId + " has been removed from scope.");
+      } else if (contentService.getConcept(terminologyId,
+        mapProject.getSourceTerminology(),
+        mapProject.getSourceTerminologyVersion()) == null) {
+        result.addWarning("Concept " + terminologyId + " does not exist, skipping.");
+      } else {
+        result.addWarning(
+            "Concept " + terminologyId + " was not in scope for this project, skipping.");
+      }
+     
+      return result;
+      
     } catch (Exception e) {
       this.handleException(e, "trying to remove scope concept from project",
           user, projectName, "");
     } finally {
       mappingService.close();
+      contentService.close();
       securityService.close();
     }
+    return null;
   }
 
   /**
@@ -903,7 +890,7 @@ public class MappingServiceRest extends RootServiceRest {
   @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public void removeScopeConceptsFromMapProject(
+  public ValidationResult removeScopeConceptsFromMapProject(
     @ApiParam(value = "List of concepts to remove, e.g. {'100073004', '100075006'", required = true) List<String> terminologyIds,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
@@ -915,24 +902,41 @@ public class MappingServiceRest extends RootServiceRest {
     String user = "";
 
     final MappingService mappingService = new MappingServiceJpa();
+    final ContentService contentService = new ContentServiceJpa();
+    
     try {
       // authorize call
       user = authorizeProject(projectId, authToken, MapUserRole.LEAD,
           "remove scope concepts from project", securityService);
 
       final MapProject mapProject = mappingService.getMapProject(projectId);
+      ValidationResult result = new ValidationResultJpa();
+      
       for (final String terminologyId : terminologyIds) {
-        mapProject.removeScopeConcept(terminologyId);
+        if (mapProject.getScopeConcepts().contains(terminologyId)) {
+          mapProject.removeScopeConcept(terminologyId); 
+          mappingService.updateMapProject(mapProject);
+          result.addMessage("Concept " + terminologyId + " has been removed from scope.");
+        } else if (contentService.getConcept(terminologyId,
+          mapProject.getSourceTerminology(),
+          mapProject.getSourceTerminologyVersion()) == null) {
+          result.addWarning("Concept " + terminologyId + " does not exist, skipping.");
+        } else {
+          result.addWarning(
+              "Concept " + terminologyId + " was not in scope for this project, skipping.");
+        }
       }
-      mappingService.updateMapProject(mapProject);
+      return result;
 
     } catch (Exception e) {
-      this.handleException(e, "trying to remove scope concept from project",
+      this.handleException(e, "trying to remove scope concepts from project",
           user, projectName, "");
     } finally {
       mappingService.close();
+      contentService.close();
       securityService.close();
     }
+    return null;
   }
 
   /**
@@ -983,48 +987,6 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   /**
-   * Adds the scope excluded concept to map project.
-   *
-   * @param terminologyId the terminology id
-   * @param projectId the project id
-   * @param authToken the auth token
-   * @throws Exception the exception
-   */
-  @POST
-  @Path("/project/id/{projectId}/scopeExcludedConcept/add")
-  @ApiOperation(value = "Adds a single scope excluded concept to a map project", notes = "Adds a single scope excluded concept to a map project.", response = Response.class)
-  public void addScopeExcludedConceptToMapProject(
-    @ApiParam(value = "Concept to add, e.g. 100073004", required = true) String terminologyId,
-    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
-    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-
-    Logger.getLogger(MappingServiceRest.class)
-        .info("RESTful call (Mapping):  /project/id/" + projectId
-            + "/scopeExcludedConcepts/add");
-    String projectName = "";
-    String user = "";
-    final MappingService mappingService = new MappingServiceJpa();
-
-    try {
-      // authorize call
-      user = authorizeProject(projectId, authToken, MapUserRole.LEAD,
-          "add scope excluded concept to projects", securityService);
-
-      final MapProject mapProject = mappingService.getMapProject(projectId);
-      mapProject.addScopeExcludedConcept(terminologyId);
-      mappingService.updateMapProject(mapProject);
-
-    } catch (Exception e) {
-      this.handleException(e, "trying to add scope excluded concept to project",
-          user, projectName, "");
-    } finally {
-      mappingService.close();
-      securityService.close();
-    }
-  }
-
-  /**
    * Adds a list of scope excluded concepts to map project.
    *
    * @param terminologyIds the terminology ids
@@ -1035,7 +997,7 @@ public class MappingServiceRest extends RootServiceRest {
   @POST
   @Path("/project/id/{projectId}/scopeExcludedConcepts/add")
   @ApiOperation(value = "Adds a list of scope excluded concepts to a map project", notes = "Adds a list of scope excluded concepts to a map project.", response = Response.class)
-  public void addScopeExcludedConceptsToMapProject(
+  public ValidationResult addScopeExcludedConceptsToMapProject(
     @ApiParam(value = "List of concepts to add, e.g. {'100073004', '100075006'", required = true) List<String> terminologyIds,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
@@ -1047,6 +1009,7 @@ public class MappingServiceRest extends RootServiceRest {
     String projectName = "";
     String user = "";
     final MappingService mappingService = new MappingServiceJpa();
+    final ContentService contentService = new ContentServiceJpa();
 
     try {
       // authorize call
@@ -1054,18 +1017,32 @@ public class MappingServiceRest extends RootServiceRest {
           "add scope excluded concepts to projects", securityService);
 
       final MapProject mapProject = mappingService.getMapProject(projectId);
+      final ValidationResult result = new ValidationResultJpa();
       for (final String terminologyId : terminologyIds) {
-        mapProject.addScopeExcludedConcept(terminologyId);
+        if (mapProject.getScopeExcludedConcepts().contains(terminologyId)) {
+          result.addWarning(
+              "Concept " + terminologyId + " is already in the scope excluded list, skipping.");
+        } else if (contentService.getConcept(terminologyId,
+            mapProject.getSourceTerminology(),
+            mapProject.getSourceTerminologyVersion()) != null) {
+          mapProject.addScopeExcludedConcept(terminologyId);
+          mappingService.updateMapProject(mapProject);
+          result.addMessage("Concept " + terminologyId + " added to scope excluded list.");
+        } else {
+          result.addWarning(
+              "Concept " + terminologyId + " does not exist, skipping.");
+        }
       }
-      mappingService.updateMapProject(mapProject);
-
+      return result;
     } catch (Exception e) {
       this.handleException(e, "trying to add scope excluded concept to project",
           user, projectName, "");
     } finally {
       mappingService.close();
+      contentService.close();
       securityService.close();
     }
+    return null;
   }
 
   /**
@@ -1079,7 +1056,7 @@ public class MappingServiceRest extends RootServiceRest {
   @POST
   @Path("/project/id/{projectId}/scopeExcludedConcept/remove")
   @ApiOperation(value = "Removes a single scope excluded concept from a map project", notes = "Removes a single scope excluded concept from a map project.", response = Response.class)
-  public void removeScopeExcludedConceptFromMapProject(
+  public ValidationResult removeScopeExcludedConceptFromMapProject(
     @ApiParam(value = "Concept to remove, e.g. 100075006", required = true) String terminologyId,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
@@ -1092,23 +1069,39 @@ public class MappingServiceRest extends RootServiceRest {
     String user = "";
 
     final MappingService mappingService = new MappingServiceJpa();
+    final ContentService contentService = new ContentServiceJpa();
     try {
       // authorize call
       user = authorizeProject(projectId, authToken, MapUserRole.LEAD,
           "remove scope excluded concept from projects", securityService);
 
       final MapProject mapProject = mappingService.getMapProject(projectId);
-      mapProject.removeScopeExcludedConcept(terminologyId);
-      mappingService.updateMapProject(mapProject);
-
+      final ValidationResult result = new ValidationResultJpa();
+      
+      if (mapProject.getScopeExcludedConcepts().contains(terminologyId)) {
+        mapProject.removeScopeExcludedConcept(terminologyId); 
+        mappingService.updateMapProject(mapProject);
+        result.addMessage("Concept " + terminologyId + " has been removed from scope excluded list.");
+      } else if (contentService.getConcept(terminologyId,
+        mapProject.getSourceTerminology(),
+        mapProject.getSourceTerminologyVersion()) == null) {
+        result.addWarning("Concept " + terminologyId + " does not exist, skipping.");
+      } else {
+        result.addWarning(
+            "Concept " + terminologyId + " was not in scope exluded list for this project, skipping.");
+      }
+     
+      return result;
     } catch (Exception e) {
       this.handleException(e,
           "trying to remove scope excluded concept from project", user,
           projectName, "");
     } finally {
       mappingService.close();
+      contentService.close();
       securityService.close();
     }
+    return null;
   }
 
   /**
@@ -1122,7 +1115,7 @@ public class MappingServiceRest extends RootServiceRest {
   @POST
   @Path("/project/id/{projectId}/scopeExcludedConcepts/remove")
   @ApiOperation(value = "Removes a list of scope excluded concepts from a map project", notes = "Removes a list of scope excluded concept from a map project.", response = Response.class)
-  public void removeScopeExcludedConceptsFromMapProject(
+  public ValidationResult removeScopeExcludedConceptsFromMapProject(
     @ApiParam(value = "List of concepts to remove, e.g. {'100073004', '100075006'", required = true) List<String> terminologyIds,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
@@ -1134,6 +1127,7 @@ public class MappingServiceRest extends RootServiceRest {
     String projectName = "";
     String user = "";
     final MappingService mappingService = new MappingServiceJpa();
+    final ContentService contentService = new ContentServiceJpa();
     try {
       // authorize call
       user = authorizeProject(projectId, authToken, MapUserRole.LEAD,
@@ -1141,19 +1135,35 @@ public class MappingServiceRest extends RootServiceRest {
 
       final MapProject mapProject = mappingService.getMapProject(projectId);
       projectName = mapProject.getName();
+
+      final ValidationResult result = new ValidationResultJpa();
       for (final String terminologyId : terminologyIds) {
-        mapProject.removeScopeExcludedConcept(terminologyId);
+        
+        if (mapProject.getScopeExcludedConcepts().contains(terminologyId)) {
+          mapProject.removeScopeExcludedConcept(terminologyId); 
+          mappingService.updateMapProject(mapProject);
+          result.addMessage("Concept " + terminologyId + " has been removed from scope excluded list.");
+        } else if (contentService.getConcept(terminologyId,
+          mapProject.getSourceTerminology(),
+          mapProject.getSourceTerminologyVersion()) == null) {
+          result.addWarning("Concept " + terminologyId + " does not exist, skipping.");
+        } else {
+          result.addWarning(
+              "Concept " + terminologyId + " was not in scope exluded list for this project, skipping.");
+        }
       }
-      mappingService.updateMapProject(mapProject);
+      return result;
 
     } catch (Exception e) {
       this.handleException(e,
-          "trying to remove scope excluded concept from project", user,
+          "trying to remove scope excluded concepts from project", user,
           projectName, "");
     } finally {
       mappingService.close();
+      contentService.close();
       securityService.close();
     }
+    return null;
   }
 
   /**
@@ -2770,7 +2780,6 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
     @ApiParam(value = "Ancestor concept (inclusive) to restrict search results to", required = true) @QueryParam("ancestorId") String ancestorId,
-    @ApiParam(value = "Incudes or excludes mapped descendants of ancestor id ", required = false) @QueryParam("descendantsMapped") boolean descendantsMapped,
     @ApiParam(value = "Excludes descendants of ancestor id ", required = false) @QueryParam("excludeDescendants") boolean excludeDescendants,
     @ApiParam(value = "Search query string", required = false) @QueryParam("query") String query,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
@@ -2779,7 +2788,7 @@ public class MappingServiceRest extends RootServiceRest {
     // log call
     Logger.getLogger(MappingServiceRest.class)
         .info("RESTful call (Mapping): /record/project/id/" + mapProjectId + " "
-            + ancestorId + ", " + descendantsMapped  + ", " + query);
+            + ancestorId + ", " + excludeDescendants  + ", " + query);
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
 
@@ -2804,6 +2813,9 @@ public class MappingServiceRest extends RootServiceRest {
       // create local pfs parameter for query restriction modification
       final PfsParameter pfsLocal = new PfsParameterJpa(pfsParameter);
       final String queryLocal = queryFlag ? query : null;
+      final PfsParameter descendantPfs = new PfsParameterJpa();
+      descendantPfs.setStartIndex(pfsLocal.getStartIndex());
+      descendantPfs.setMaxResults(pfsLocal.getMaxResults());
 
       // the revised query restriction (local variable for convenience)
       String queryRestriction = pfsLocal.getQueryRestriction();
@@ -2848,95 +2860,79 @@ public class MappingServiceRest extends RootServiceRest {
         final MapProject mapProject =
             mappingService.getMapProject(mapProjectId);
 
-        contentService = new ContentServiceJpa();
-
         final SearchResultList eligibleResults = new SearchResultListJpa();
 
         // If there was a search query, combine them
         if (queryFlag) {
+          ImmutableMap<String, SearchResult> resultsMap = Maps.uniqueIndex(searchResults.getSearchResults(), new Function<SearchResult, String>() {
 
-          // Check descendant concept count
+            @Override
+            public String apply(SearchResult input) {
+              return input.getTerminologyId();
+            }
+            
+          });
+          
+          descendantPfs.setMaxResults(10000);
+          SearchResultList descendants = mappingService
+              .findDescendants(ancestorId,
+                      mapProject.getSourceTerminology(),
+                      mapProject.getSourceTerminologyVersion(), descendantPfs, resultsMap.keySet());
+          Collection<String> descendantsList = Collections2.transform(descendants.getSearchResults(), new Function<SearchResult, String>() {
+
+            @Override
+            public String apply(SearchResult input) {
+              return input.getTerminologyId();
+            }
+
+          });
+         if(excludeDescendants) {
+           for(String result : resultsMap.keySet()) {
+             if(descendantsList.contains(result))
+               searchResults.removeSearchResult(resultsMap.get(result));
+           }
+           eligibleResults.addSearchResults(searchResults);
+         } else {
+           for(String result : resultsMap.keySet()) {
+             if(descendantsList.contains(result))
+               eligibleResults.addSearchResult(resultsMap.get(result));
+           }
+         }
+        }
+
+        // Otherwise, just get all descendants up to 1000
+        else {
+          contentService = new ContentServiceJpa();
           final int ct = contentService.getDescendantConceptsCount(ancestorId,
               mapProject.getSourceTerminology(),
               mapProject.getSourceTerminologyVersion());
-          if (ct > 2000) {
-            throw new LocalException(
-                "Too many descendants for ancestor id, choose a more specific concept: "
-                    + ct);
-          }
-          List<SearchResult> results = null;
-          if(descendantsMapped)
-        	  results = mappingService
-                  .findUnmappedDescendantsForConcept(ancestorId, mapProjectId, null).getSearchResults();
-          else
-        	  results = contentService
-                      .findDescendantConcepts(ancestorId,
-                              mapProject.getSourceTerminology(),
-                              mapProject.getSourceTerminologyVersion(), null)
-                          .getSearchResults();
-          // Find descendants and put into a set for quick lookup
-          final Set<String> descSet = new HashSet<>();
-          for (final SearchResult sr : results) {
-            descSet.add(sr.getTerminologyId());
-          }
+          descendantPfs.setMaxResults(ct > 1000 ?1000: ct);
+          // Look up descendants, then convert to map records
+          final List<SearchResult> descendants = mappingService
+              .findDescendants(ancestorId,
+                  mapProject.getSourceTerminology(),
+                  mapProject.getSourceTerminologyVersion(), descendantPfs, Collections.<String> emptySet())
+                  .getSearchResults();
+          descendants.add(new SearchResultJpa(0L, ancestorId, null, null));
 
-          // determine which results are for descendant concepts
-          for (final SearchResult sr : searchResults.getSearchResults()) {
-
-            // if this terminology is a descendant OR is the concept
-            // itself
-            if (sr.getTerminologyId().equals(ancestorId)
-                || descSet.contains(sr.getTerminologyId())) {
-              if(!excludeDescendants)
-	              // add to eligible results
-	              eligibleResults.addSearchResult(sr);
+          // Look up map records
+          final StringBuilder sb = new StringBuilder();
+          if(excludeDescendants) {
+            sb.append("NOT ");
+          }
+          sb.append("(");
+          boolean append = false;
+          for (final SearchResult sr : descendants) {
+            if (append) {
+              sb.append(" OR ");
             }
+            sb.append("conceptId:" + sr.getTerminologyId());
+            append = true;
           }
-        }
+          sb.append(")");
+          eligibleResults.addSearchResults(
+              mappingService.findMapRecordsForQuery(sb.toString(), pfsLocal));
 
-        // Otherwise, just get all descendants
-        else {
-        	if(!descendantsMapped)
-        		eligibleResults.addSearchResults(mappingService
-                    .findUnmappedDescendantsForConcept(ancestorId, mapProjectId, null));
-        	else {
-	          // Check descendant concept count
-	          final int ct = contentService.getDescendantConceptsCount(ancestorId,
-	              mapProject.getSourceTerminology(),
-	              mapProject.getSourceTerminologyVersion());
-	          if (ct > 2000) {
-	            throw new LocalException(
-	                "Too many descendants for ancestor id, choose a more specific concept: "
-	                    + ct);
-	          }
-	
-	          // Look up descendants, then convert to map records
-	          final List<SearchResult> descendants = contentService
-	              .findDescendantConcepts(ancestorId,
-	                  mapProject.getSourceTerminology(),
-	                  mapProject.getSourceTerminologyVersion(), null)
-	              .getSearchResults();
-	          descendants.add(new SearchResultJpa(0L, ancestorId, null, null));
-	
-	          // Look up map records
-	          final StringBuilder sb = new StringBuilder();
-	          if(excludeDescendants) {
-	        	  sb.append("NOT ");
-	          }
-	          sb.append("(");
-	          boolean append = false;
-	          for (final SearchResult sr : descendants) {
-	            if (append) {
-	              sb.append(" OR ");
-	            }
-	            sb.append("conceptId:" + sr.getTerminologyId());
-	            append = true;
-	          }
-	          sb.append(")");
-	          eligibleResults.addSearchResults(
-	              mappingService.findMapRecordsForQuery(sb.toString(), pfsLocal));
-	
-	        }
         }
         // set search results total count to number of eligible results
         searchResults.setTotalCount(eligibleResults.getCount());
@@ -4773,7 +4769,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
     Logger.getLogger(WorkflowServiceRest.class)
         .info("RESTful call (Mapping): /jira/" + conceptId.toString() + "/"
-            + conceptAuthor);
+            + conceptAuthor );
     Logger.getLogger(WorkflowServiceRest.class)
         .info("RESTful call (Mapping): /jira/" + messageText);
     try {
@@ -4782,7 +4778,14 @@ public class MappingServiceRest extends RootServiceRest {
       final Properties config = ConfigUtility.getConfigProperties();
       final String jiraAuthHeader = config.getProperty("jira.authHeader");
       final String jiraUrl = config.getProperty("jira.defaultUrl");
+      final String jiraProject = config.getProperty("jira.project");
 
+      if (jiraAuthHeader == null || jiraUrl == null || jiraProject == null) {
+        this.handleException(
+            new Exception("create a JIRA issue. JIRA properties must be in configuration file"),
+            "create a JIRA issue . JIRA properties must be in configuration file", "", "", "");
+      }
+      
       Client client = Client.create();
       WebResource webResource = client.resource(jiraUrl + "/issue/");
 
@@ -4829,15 +4832,18 @@ public class MappingServiceRest extends RootServiceRest {
 		    	mapRecordContents.append(note.getNote().replaceAll("<br>", "\\\\\\\\\\\\\\\\").replaceAll("\\<.*?\\>", "").replaceAll("nbsp;", " ")).append("\\\\\\\\");
 		    }*/
 		    
-		    //authToken = "dshapiro";
-		    //conceptAuthor = "dshapiro";
+		    // if test project, override author and user
+            if (jiraProject.equals("MTFP")) {
+              conceptAuthor = "dshapiro";
+              authToken = "dshapiro";
+            }
       
             // create the issue object to send to JIRA Rest API
 		    String data = "{"
             + "\"fields\": {"
                 + "\"project\":"
                     + "{"
-                    +    "\"key\": \"MAP\""
+                    +    "\"key\": \"" + jiraProject + "\""
                     + "},"
                 + "\"summary\": \"Mapping Feedback on " + conceptId + "\","
                 + "\"assignee\": {"
@@ -4848,7 +4854,7 @@ public class MappingServiceRest extends RootServiceRest {
                     + "},"
                 + "\"description\": \"" + messageText.replaceAll("\n", "\\\\\\\\\\\\\\\\").replaceAll("\\<.*?\\>", "") + "\\\\\\\\" + mapRecordContents.toString() + "\","
                 + "\"issuetype\": {"
-                        + "\"id\": \"10105\""
+                        + "\"name\": \"Task\""
                     + "}"
                 + "}"
             + "}";
@@ -4861,15 +4867,21 @@ public class MappingServiceRest extends RootServiceRest {
       int statusCode = response.getStatus();
 
       if (statusCode == 401) {
-        throw new AuthenticationException("Invalid Username or Password");
+        this.handleException(
+            new AuthenticationException("Invalid Username or Password"),
+            "Invalid Username or Password", authToken, "", "");
       } else if (statusCode == 403) {
-        throw new AuthenticationException("Forbidden");
+        this.handleException(new AuthenticationException("Forbidden"),
+            "Forbidden", authToken, "", "");
       } else if (statusCode == 200 || statusCode == 201) {
         Logger.getLogger(MappingServiceRest.class)
-        .info("Ticket Create successfully");
+            .info("Ticket Created successfully");
       } else {
+        this.handleException(
+            new AuthenticationException("Http Error : " + statusCode),
+            "Http Error : " + statusCode, authToken, "", "");
         Logger.getLogger(MappingServiceRest.class)
-        .info("Http Error : " + statusCode);
+            .info("Http Error : " + statusCode);
       }
       
       BufferedReader inputStream = new BufferedReader(
@@ -4904,6 +4916,91 @@ public class MappingServiceRest extends RootServiceRest {
     final String authoringAuthHeader =
         config.getProperty("authoring.authHeader");
     final String authoringUrl = config.getProperty("authoring.defaultUrl");
+    
+    if (authoringAuthHeader == null || authoringUrl == null) {
+      this.handleException(
+          new Exception("retrieve concept authors. Authoring properties must be in configuration file"),
+          "retrieve concept authors. Authoring properties must be in configuration file", "", "", "");
+    }
+
+    Client client = Client.create();
+    WebResource webResource = client.resource(authoringUrl
+        + "/traceability-service/activities?conceptId=" + conceptId);
+
+    ClientResponse response = webResource
+        .header("Authorization", authoringAuthHeader).type("application/json")
+        .accept("application/json").get(ClientResponse.class);
+    int statusCode = response.getStatus();
+
+    if (statusCode == 401) {
+      this.handleException(
+          new AuthenticationException("Invalid Username or Password"),
+          "Invalid Username or Password", authToken, "", "");
+    } else if (statusCode == 403) {
+      this.handleException(new AuthenticationException("Forbidden"),
+          "Forbidden", authToken, "", "");
+    } else if (statusCode == 200 || statusCode == 201) {
+      Logger.getLogger(MappingServiceRest.class)
+          .info("Traceability report retrieved successfully");
+    } else {
+      this.handleException(
+          new AuthenticationException("Http Error : " + statusCode),
+          "Http Error : " + statusCode, authToken, "", "");
+      Logger.getLogger(MappingServiceRest.class)
+          .info("Http Error : " + statusCode);
+    }
+    // Parse to get the authors on all changes that were promoted to MAIN
+    String jsonText = inputStreamToString(response.getEntityInputStream());
+    JSONObject jsonObject = new JSONObject(jsonText);
+    JSONArray array = jsonObject.getJSONArray("content");
+    SearchResultList searchResultList = new SearchResultListJpa();
+    List<String> userNameList = new ArrayList<>();
+    for (int i = 0; i < array.length(); i++) {
+      JSONObject singleContent = array.getJSONObject(i);
+      if (singleContent.getString("highestPromotedBranch") == null
+          || !singleContent.getJSONObject("highestPromotedBranch")
+              .getString("branchPath").contains("MAIN")) {
+        continue;
+      }
+      String userName =
+          singleContent.getJSONObject("user").getString("username");
+      if (!userNameList.contains(userName)) {
+        userNameList.add(userName);
+      }
+    }
+    for (String userName : userNameList) {
+      SearchResult searchResult = new SearchResultJpa();
+      searchResult.setValue(userName);
+      searchResultList.addSearchResult(searchResult);
+    }
+    searchResultList.setTotalCount(userNameList.size());
+    return searchResultList;
+
+  }
+
+  @GET
+  @Path("/changes/{conceptId}")
+  @ApiOperation(value = "Gets authoring history for this concept", notes = "Gets a list of all editing changes made to MAIN from the authoring tool.", response = SearchResultList.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public SearchResultList getConceptAuthoringChanges(
+    @ApiParam(value = "Concept id", required = true) @PathParam("conceptId") String conceptId,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping):  /changes/" + conceptId);
+    final Properties config = ConfigUtility.getConfigProperties();
+    final String authoringAuthHeader =
+        config.getProperty("authoring.authHeader");
+    final String authoringUrl = config.getProperty("authoring.defaultUrl");
+    
+    if (authoringAuthHeader == null || authoringUrl == null) {
+      this.handleException(
+          new Exception("retrieve authoring history. Authoring properties must be in configuration file"),
+          "retrieve authoring history. Authoring properties must be in configuration file", "", "", "");
+    }
 
     Client client = Client.create();
     WebResource webResource = client.resource(authoringUrl
@@ -4926,31 +5023,48 @@ public class MappingServiceRest extends RootServiceRest {
       .info("Http Error : " + statusCode);
     }
 
-    // Parse to get the authors on all changes that were promoted to MAIN
+    // Parse to get the editing changes that were promoted to MAIN
     String jsonText = inputStreamToString(response.getEntityInputStream());
     JSONObject jsonObject = new JSONObject(jsonText);
     JSONArray array = jsonObject.getJSONArray("content");
     SearchResultList searchResultList = new SearchResultListJpa();
-    List<String> userNameList = new ArrayList<>();
     for (int i = 0; i < array.length(); i++) {
       JSONObject singleContent = array.getJSONObject(i);
       if (singleContent.getString("highestPromotedBranch") == null
           || !singleContent.getJSONObject("highestPromotedBranch")
-              .getString("branchPath").equals("MAIN")) {
+              .getString("branchPath").contains("MAIN")) {
         continue;
       }
       String userName =
           singleContent.getJSONObject("user").getString("username");
-      if (!userNameList.contains(userName)) {
-        userNameList.add(userName);
+      String commitDate = 
+          singleContent.getString("commitDate");
+      JSONArray conceptChangesArray = singleContent.getJSONArray("conceptChanges");
+      for (int j = 0; j < conceptChangesArray.length(); j++) {
+        JSONObject conceptChange = conceptChangesArray.getJSONObject(j);
+        String cptId = conceptChange.getString("conceptId");
+        JSONArray componentChangesArray = conceptChange.getJSONArray("componentChanges");
+        for (int k = 0; k < componentChangesArray.length(); k++) {
+          JSONObject componentChange = componentChangesArray.getJSONObject(k);
+          String componentId = componentChange.getString("componentId");
+          String componentType = componentChange.getString("componentType");
+          String componentSubType = "";
+          try {
+            componentSubType = componentChange.getString("componentSubType");
+          } catch (Exception e) {
+            // do nothing
+          }
+          String changeType = componentChange.getString("changeType");
+          SearchResult searchResult = new SearchResultJpa();
+          searchResult.setValue(userName + ":" + commitDate);
+          searchResult.setValue2(cptId + ":" + componentId + ":" + componentType + ":" + componentSubType + ":" + changeType);
+          searchResultList.addSearchResult(searchResult);
+        }
       }
     }
-    for (String userName : userNameList) {
-      SearchResult searchResult = new SearchResultJpa();
-      searchResult.setValue(userName);
-      searchResultList.addSearchResult(searchResult);
-    }
-    searchResultList.setTotalCount(userNameList.size());
+    searchResultList.setTotalCount(searchResultList.getSearchResults().size());
+    Logger.getLogger(MappingServiceRest.class)
+    .info("Traceability report contains " + searchResultList.getTotalCount() + " entries.");
     return searchResultList;
 
   }
@@ -4977,4 +5091,5 @@ public class MappingServiceRest extends RootServiceRest {
 
     return outputBuilder.toString();
   }
+
 }
