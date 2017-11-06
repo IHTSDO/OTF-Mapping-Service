@@ -1484,6 +1484,26 @@ public class WorkflowServiceJpa extends MappingServiceJpa
 
   }
 
+  /* see superclass */
+  @Override
+  public Feedback getFeedback(Long id)
+    throws Exception {
+
+    try {
+      // construct query
+      javax.persistence.Query query = manager.createQuery(
+          "select m from FeedbackJpa m where id = :id");
+
+      // Try query
+      query.setParameter("id", id);
+      final Feedback feedback =
+          (Feedback) query.getSingleResult();
+      return feedback;
+    } catch (NoSuchElementException e) {
+      return null;
+    }
+
+  }
   /**
    * Handle feedback conversation lazy initialization.
    *
