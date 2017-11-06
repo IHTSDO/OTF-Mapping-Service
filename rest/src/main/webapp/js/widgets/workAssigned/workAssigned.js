@@ -23,6 +23,7 @@ angular
       $scope.currentUserToken = null;
       $scope.preferences = null;
       $scope.assignedRecords = [];
+      $scope.authorsList = [];
 
       // retrieve the necessary scope variables from local storage service
       $scope.currentUser = localStorageService.get('currentUser');
@@ -889,6 +890,140 @@ angular
         // redirect page
         $location.path(path);
       };
+
+      // create JIRA issue ticket to send feedback to content author
+      $scope.createJiraTicket = function(record) {
+        // retrieve the list of authors
+        $rootScope.glassPane++;
+        $http({
+          url : root_mapping + 'authors/' + record.terminologyId,
+          method : 'GET',
+          headers : {
+            'Content-Type' : 'application/json'
+          }
+        }).success(
+          function(data) {
+            $rootScope.glassPane--;
+
+            // only put valid authors on list
+            var searchResults = data.searchResult;
+            for (var i = 0; i < data.totalCount; i++) {
+              if (searchResults[i].value != 'snowowl'
+                && $scope.authorsList.indexOf(searchResults[i].value) == -1) {
+                $scope.authorsList.push(searchResults[i].value);
+              }
+            }
+
+            // Open modal that allows user to select author/recipient and compose jira issue
+            $scope.openCreateJiraTicketModal(record);
+
+          }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+      };
+      
+
+      $scope.openCreateJiraTicketModal = function(record) {
+
+        if (record == null) {
+          return;
+        }
+
+        var modalInstance = $uibModal.open({
+          templateUrl : 'js/widgets/workAssigned/createJiraTicket.html',
+          controller : CreateJiraTicketModalCtrl,
+          size : 'lg',
+          resolve : {
+            record : function() {
+              return record;
+            },
+            project : function() {
+              return $scope.focusProject;
+            },
+            user : function() {
+              return $scope.currentUser;
+            },
+            authors : function() {
+              return $scope.authorsList;
+            }
+          }
+        });
+
+        modalInstance.result.then(
+
+        // called on Done clicked by user
+        function() {
+        })
+
+      };
+        
+
+      var CreateJiraTicketModalCtrl = function($scope, $uibModalInstance, $q, user, project,
+        record, authors) {
+
+        $scope.user = user;
+        $scope.project = project;
+        $scope.record = record;
+        $scope.authors = authors;
+        $scope.selectedContentAuthor = $scope.authors[0];
+        $scope.content = {};
+        $scope.tinymceOptions = {
+          menubar : false,
+          statusbar : false,
+          plugins : 'autolink link image charmap searchreplace lists paste',
+          toolbar : 'undo redo | styleselect lists | bold italic underline strikethrough | charmap link image',
+        }
+
+        $scope.createJiraTicket = function() {
+          $http(
+            {
+              url : root_mapping + 'jira/' + $scope.currentRecord.conceptId + '/'
+                + $scope.selectedContentAuthor + '?messageText='
+                + encodeURIComponent($scope.content.text ? $scope.content.text : ''),
+              dataType : 'json',
+              data : $scope.currentRecord,
+              method : 'POST',
+              headers : {
+                'Content-Type' : 'application/json'
+              }
+            }).success(function(data) {
+            $uibModalInstance.close();
+
+          }).error(function(data, status, headers, config) {
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        }
+
+        // Load the current record
+        $scope.loadRecord = function() {
+
+          var deferred = $q.defer();
+
+          $rootScope.glassPane++;
+          // perform the retrieval call
+          $http({
+            url : root_mapping + 'record/id/' + $scope.record.id,
+            method : 'GET',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+            $rootScope.glassPane--;
+            // set scope record
+            $scope.currentRecord = data;
+
+          }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $scope.error = 'Could not retrieve record';
+            deferred.reject('Could not retrieve record');
+          });
+
+          return deferred.promise;
+        };
+        // get the  record
+        $scope.loadRecord();
+      }
 
       /**
        * Helper function to open Finish Or Publish modal (record in form of
