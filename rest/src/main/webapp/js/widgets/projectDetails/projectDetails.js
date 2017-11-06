@@ -95,6 +95,10 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       $scope.editModeEnabled = false;
       $scope.reportDefinitions = new Array();
       $scope.qaCheckDefinitions = new Array();
+      $scope.scopeAddLog = '';
+      $scope.scopeRemoveLog = '';
+      $scope.scopeExcludedAddLog = '';
+      $scope.scopeExcludedRemoveLog = '';
 
       $scope.allowableMapTypes = [ {
         displayName : 'Extended Map',
@@ -106,6 +110,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         displayName : 'Simple Map',
         name : 'SimpleMap'
       } ];
+      
       $scope.allowableMapRelationStyles = [ {
         displayName : 'Map Category Style',
         name : 'MAP_CATEGORY_STYLE'
@@ -113,6 +118,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         displayName : 'Relationship Style',
         name : 'RELATIONSHIP_STYLE'
       } ];
+      
       $scope.allowableWorkflowTypes = [ {
         displayName : 'Conflict workflow',
         name : 'CONFLICT_PROJECT'
@@ -386,14 +392,15 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           * $scope.pageSize, page * $scope.pageSize);
 
       };
-
-      $scope.getPagedScopeConcepts = function(page) {
+      
+      $scope.getPagedScopeConcepts = function(page, filter) {
         console.debug('Called paged scope concept for page ', page);
-
+        $scope.scopeConceptFilter = filter;
+        
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
-          'startIndex' : page == -1 ? -1 : (page - 1) * $scope.pageSize,
-          'maxResults' : page == -1 ? -1 : $scope.pageSize,
+          'startIndex' : 0,
+          'maxResults' : -1,
           'sortField' : '',
           'queryRestriction' : ''
         };
@@ -411,8 +418,11 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         }).success(function(data) {
           console.debug('  scope concepts = ', data);
           $rootScope.glassPane--;
-          $scope.pagedScopeConcept = data.searchResult;
-          $scope.pagedScopeConceptCount = data.totalCount;
+          $scope.pagedScopeConcept = $scope.sortByKey(data.searchResult, 'terminologyId')
+            .filter(containsScopeConceptFilter);
+          $scope.pagedScopeConceptCount = $scope.pagedScopeConcept.length;
+          $scope.pagedScopeConcept = $scope.pagedScopeConcept.slice((page - 1) * $scope.pageSize, page
+            * $scope.pageSize);
         }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
 
@@ -422,10 +432,12 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
 
       $scope.getPagedScopeExcludedConcepts = function(page, filter) {
         console.debug('Called paged scope concept for page ', page);
+        $scope.scopeExcludedConceptFilter = filter;
+        
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
-          'startIndex' : page == -1 ? -1 : (page - 1) * $scope.pageSize,
-          'maxResults' : page == -1 ? -1 : $scope.pageSize,
+          'startIndex' : 0,
+          'maxResults' : -1,
           'sortField' : '',
           'queryRestriction' : ''
         };
@@ -442,8 +454,11 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         }).success(function(data) {
           console.debug('  scope excluded = ', data);
           $rootScope.glassPane--;
-          $scope.pagedScopeExcludedConcept = data.searchResult;
-          $scope.pagedScopeExcludedConceptCount = data.totalCount;
+          $scope.pagedScopeExcludedConcept = $scope.sortByKey(data.searchResult, 'terminologyId')
+          .filter(containsScopeExcludedConceptFilter);
+          $scope.pagedScopeExcludedConceptCount = $scope.pagedScopeExcludedConcept.length;
+          $scope.pagedScopeExcludedConcept = $scope.pagedScopeExcludedConcept.slice((page - 1) * $scope.pageSize, page
+          * $scope.pageSize);
         }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
           $rootScope.handleHttpError(data, status, headers, config);
@@ -488,6 +503,22 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         $scope.getPagedScopeExcludedConcepts(1);
       };
 
+      $scope.clearScopeAdd = function() {
+        $scope.scopeAddLog = '';
+      }
+      
+      $scope.clearScopeRemove = function() {
+        $scope.scopeRemoveLog = '';
+      }
+      
+      $scope.clearScopeExcludedAdd = function() {
+        $scope.scopeExcludedAddLog = '';
+      }
+      
+      $scope.clearScopeExcludedRemove = function() {
+        $scope.scopeExcludedRemoveLog = '';
+      }
+      
       // element-specific functions for filtering
       // do not want to search id or objectId
 
@@ -564,10 +595,10 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         // otherwise check if upper-case scopeConcept
         // filter matches upper-case element name or
         // detail
-        if (element.scopeConceptId.toString().toUpperCase().indexOf(
+        if (element.terminologyId.toString().toUpperCase().indexOf(
           $scope.scopeConceptFilter.toString().toUpperCase()) != -1)
           return true;
-        if (element.name.toString().toUpperCase().indexOf(
+        if (element.value.toString().toUpperCase().indexOf(
           $scope.scopeConceptFilter.toString().toUpperCase()) != -1)
           return true;
 
@@ -578,17 +609,17 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       function containsScopeExcludedConceptFilter(element) {
 
         // check if scopeConcept filter is empty
-        if ($scope.scopeExcludesConceptFilter === '' || $scope.scopeExcludesConceptFilter == null)
+        if ($scope.scopeExcludedConceptFilter === '' || $scope.scopeExcludedConceptFilter == null)
           return true;
 
         // otherwise check if upper-case scopeConcept
         // filter matches upper-case element name or
         // detail
-        if (element.scopeExcludesConceptId.toString().toUpperCase().indexOf(
-          $scope.scopeExcludesConceptFilter.toString().toUpperCase()) != -1)
+        if (element.terminologyId.toString().toUpperCase().indexOf(
+          $scope.scopeExcludedConceptFilter.toString().toUpperCase()) != -1)
           return true;
-        if (element.name.toString().toUpperCase().indexOf(
-          $scope.scopeExcludesConceptFilter.toString().toUpperCase()) != -1)
+        if (element.value.toString().toUpperCase().indexOf(
+          $scope.scopeExcludedConceptFilter.toString().toUpperCase()) != -1)
           return true;
 
         // otherwise return false
@@ -1388,7 +1419,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           $rootScope.glassPane--;
 
           // re-page the scope concepts
-          $scope.getPagedScopeConcepts(currentPage);
+          $scope.getPagedScopeConcepts(currentPage ? currentPage : 1);
         }).error(function(data, status, headers, config) {
 
           $rootScope.glassPane--;
@@ -1412,6 +1443,17 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           }
         }).success(function(data) {
           console.debug('  success', data);
+          data.messages.sort();
+          data.warnings.sort();
+          for (var i = 0; i<data.messages.length; i++) {
+            $scope.scopeRemoveLog += data.messages[i];
+            $scope.scopeRemoveLog += '\n';
+          }
+          for (var i = 0; i<data.warnings.length; i++) {
+            $scope.scopeRemoveLog += data.warnings[i];
+            $scope.scopeRemoveLog += '\n';
+            
+          }
           $rootScope.glassPane--;
           $scope.getPagedScopeConcepts(1);
 
@@ -1441,7 +1483,17 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         }).success(function(data) {
           $rootScope.glassPane--;
           console.debug('  success', data);
-          $scope.scopeWarnings = data.warnings;
+          data.messages.sort();
+          data.warnings.sort();
+          for (var i = 0; i<data.messages.length; i++) {
+            $scope.scopeAddLog += data.messages[i];
+            $scope.scopeAddLog += '\n';
+          }
+          for (var i = 0; i<data.warnings.length; i++) {
+            $scope.scopeAddLog += data.warnings[i];
+            $scope.scopeAddLog += '\n';
+            
+          }
           $scope.resetScopeConceptFilter();
 
         }).error(function(data, status, headers, config) {
@@ -1471,9 +1523,11 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             }
           }).success(function(data) {
           console.debug('  success', data);
+          $scope.scopeExcludedMessages = data.messages;
+          $scope.scopeExcludedWarnings = data.warnings;
           $rootScope.glassPane--;
 
-          $scope.getPagedScopeExcludedConcepts(currentPage);
+          $scope.getPagedScopeExcludedConcepts(currentPage ? currentPage : 1);
 
         }).error(function(data, status, headers, config) {
           $rootScope.handleHttpError(data, status, headers, config);
@@ -1496,9 +1550,20 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             headers : {
               'Content-Type' : 'application/json'
             }
-          }).success(function() {
+          }).success(function(data) {
           $rootScope.glassPane--;
           console.debug('  success', data);
+          data.messages.sort();
+          data.warnings.sort();
+          for (var i = 0; i<data.messages.length; i++) {
+            $scope.scopeExcludedRemoveLog += data.messages[i];
+            $scope.scopeExcludedRemoveLog += '\n';
+          }
+          for (var i = 0; i<data.warnings.length; i++) {
+            $scope.scopeExcludedRemoveLog += data.warnings[i];
+            $scope.scopeExcludedRemoveLog += '\n';
+            
+          }
           $scope.getPagedScopeExcludedConcepts(1);
 
         }).error(function(data, status, headers, config) {
@@ -1516,8 +1581,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         var scopeExcludedConcepts = scopeExcludedConceptsUnsplit.split(/,\s*|\s+/);
         $http(
           {
-            url : root_mapping + 'project/id/' + $scope.focusProject.id
-              + '/scopeExcludedConcepts/add',
+            url : root_mapping + 'project/id/' + $scope.focusProject.id + '/scopeExcludedConcepts/add',
             dataType : 'json',
             data : scopeExcludedConcepts,
             method : 'POST',
@@ -1527,6 +1591,17 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           }).success(function(data) {
           console.debug('  success', data);
           $rootScope.glassPane--;
+          data.messages.sort();
+          data.warnings.sort();
+          for (var i = 0; i<data.messages.length; i++) {
+            $scope.scopeExcludedAddLog += data.messages[i];
+            $scope.scopeExcludedAddLog += '\n';
+          }
+          for (var i = 0; i<data.warnings.length; i++) {
+            $scope.scopeExcludedAddLog += data.warnings[i];
+            $scope.scopeExcludedAddLog += '\n';
+            
+          }
           $scope.getPagedScopeExcludedConcepts(1);
         }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;

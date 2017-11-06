@@ -1,0 +1,18 @@
+<div class="modal-body">
+  <div otf-map-record-narrow record="currentRecord" project="project"
+    show-title="true"></div>
+    
+  <hr>
+
+  <textarea id="tinymce-notes" ui-tinymce="tinymceOptions" ng-model="content.text"></textarea>
+
+  <div style="padding-top: 4px;">
+  <span>
+    Select recipient of feedback issue:
+    <select ng-model="selectedContentAuthor"
+        ng-options="author for author in authors | orderBy:'author'">
+    </select>
+  </span>
+  <button class="btn btn-xs btn-primary" ng-click="createJiraTicket()">Send Feedback</button>
+  </div>
+</div>
