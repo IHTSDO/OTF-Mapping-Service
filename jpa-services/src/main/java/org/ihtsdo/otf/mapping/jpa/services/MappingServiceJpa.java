@@ -4,6 +4,7 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -17,6 +18,7 @@ import javax.persistence.NoResultException;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.log4j.Logger;
+import org.apache.lucene.queryParser.QueryParser;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
@@ -75,6 +77,7 @@ import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.SimpleMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 import org.ihtsdo.otf.mapping.rf2.jpa.ComplexMapRefSetMemberJpa;
+import org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
@@ -235,7 +238,77 @@ public class MappingServiceJpa extends RootServiceJpa
     return list;
 
   }
+  
+  @SuppressWarnings("unchecked")
+  public SearchResultList findDescendants(String terminologyId, String terminology,
+    String terminologyVersion, PfsParameter pfs, Collection<String> descendants) throws Exception {
+  
+    final PfsParameter localPfs = new PfsParameterJpa();
+    localPfs.setStartIndex(0);
+    localPfs.setMaxResults(1);
 
+    String query = "terminologyId:" + terminologyId;
+    // construct the query
+    StringBuilder sb = new StringBuilder();
+    sb.append(query).append(" AND ");
+    sb.append("terminology:" + terminology + " AND terminologyVersion:"
+        + terminologyVersion);
+
+    // retrieve the query results
+    int[] totalCt = new int[1];
+    final SearchResultList list = new SearchResultListJpa();
+
+    final List<TreePosition> queriedTreePositions =
+        (List<TreePosition>) getQueryResults(sb.toString(),
+            TreePositionJpa.class, TreePositionJpa.class, localPfs, totalCt);
+    if (!queriedTreePositions.isEmpty()) {
+      String ancestorPath = queriedTreePositions.get(0).getAncestorPath();
+      if (!ancestorPath.isEmpty()) {
+        ancestorPath += "~";
+      }
+      ancestorPath += terminologyId;
+      query = "ancestorPath:" + QueryParser.escape(ancestorPath) + "*";
+      // construct the query
+      sb = new StringBuilder();
+      if(!descendants.isEmpty()) {
+        sb.append("(");
+        boolean append = false;
+        for (final String des : descendants) {
+          if (append) {
+            sb.append(" OR ");
+          }
+          sb.append("terminologyId:" + des);
+          append = true;
+        }
+        sb.append(") AND ");
+      }
+      sb.append(query).append(" AND ");
+      sb.append("terminology:" + terminology + " AND terminologyVersion:"
+          + terminologyVersion);
+      
+      pfs.setSortField("ancestorPath");
+
+      // retrieve the query results
+      
+      List<TreePosition> treePositions =
+          (List<TreePosition>) getQueryResults(sb.toString(),
+              TreePositionJpa.class, TreePositionJpa.class, pfs, totalCt);
+      for (TreePosition treePosition : treePositions) {
+        final SearchResult searchResult = new SearchResultJpa();
+        searchResult.setId(treePosition.getId());
+        searchResult.setTerminologyId(treePosition.getTerminologyId());
+        searchResult.setTerminology(treePosition.getTerminology());
+        searchResult
+            .setTerminologyVersion(treePosition.getTerminologyVersion());
+        searchResult.setValue(treePosition.getDefaultPreferredName());
+        list.addSearchResult(searchResult);
+      }
+      list.setTotalCount(totalCt[0]);
+    }
+
+    return list;
+  }
+  
   /**
    * Add a map project.
    * 
