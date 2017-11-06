@@ -507,4 +507,13 @@ public interface WorkflowService extends MappingService {
    */
   public void removeFeedback(Long feedbackId) throws Exception;
 
+  /**
+   * Gets the feedback.
+   *
+   * @param id the id
+   * @return the feedback
+   * @throws Exception the exception
+   */
+  public Feedback getFeedback(Long id) throws Exception;
+
 }
