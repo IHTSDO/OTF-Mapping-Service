@@ -21,7 +21,7 @@
           on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
           <i> <span class="glyphicon glyphicon-remove pull-right"
         ng-click="removeFeedback(feedback,'record1')"></i>
-        <i class="glyphicon glyphicon-pencil pull-right"
+        <i class="glyphicon glyphicon-pencil pull-right" ng-hide="feedback.isError"
 		ng-click="editFeedback(feedback); content.text1 = feedback.message"></i>
           <div ng-show="feedback.mapError != 'None'" style="padding-left: 20px;"
             ng-bind-html="to_trusted(feedback.mapError)"></div>
@@ -55,16 +55,17 @@
           ng-show = "feedbackEditMode == false"
           ng-click="submitNewFeedback(record1, selectedErrorMessage1, content.text1); content.text1 = ''; selectedErrorMessage1 = errorMessages[0];">Submit
           feedback</button>
-          <button class="btn btn-xs btn-primary pull-right"
-    ng-disabled="!content.text1"
-    ng-show = "feedbackEditMode == true"
-    ng-click="saveEditFeedback(record1,content.text1); content.text1 = ''">Save
-    Editing</button>
-  <button class="btn btn-xs btn-primary pull-right"
-    ng-disabled="!content.text1"
-    ng-show = "feedbackEditMode == true"
-    ng-click="cancelEditFeedback(); content.text1 = ''">Cancel
-    Editing</button>
+        <button class="btn btn-xs btn-primary"
+    		ng-disabled="!content.text1" ng-show="feedbackEditMode == true"
+    		ng-show = "feedbackEditMode == true"
+    		ng-click="saveEditFeedback(record1,content.text1); content.text1 = ''">Save
+    		Editing</button>
+  		<button class="btn btn-xs btn-primary"
+    		ng-disabled="!content.text1" ng-show="feedbackEditMode == true"
+    		ng-show = "feedbackEditMode == true"
+    		ng-click="cancelEditFeedback(); content.text1 = ''">Cancel
+    		Editing</button>
+    
       </div>
     </div>
 
@@ -90,7 +91,7 @@
           on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
           <i> <span class="glyphicon glyphicon-remove pull-right"
         ng-click="removeFeedback(feedback, 'record2')"></i>
-        <i class="glyphicon glyphicon-pencil pull-right"
+        <i class="glyphicon glyphicon-pencil pull-right" ng-hide="feedback.isError"
 		ng-click="editFeedback(feedback); content.text2 = feedback.message"></i>
           <div ng-show="feedback.mapError != 'None'" style="padding-left: 20px;"
             ng-bind-html="to_trusted(feedback.mapError)"></div>
@@ -124,16 +125,16 @@
           ng-show = "feedbackEditMode == false"
           ng-click="submitNewFeedback(record2, selectedErrorMessage2, content.text2); content.text2 = ''; selectedErrorMessage2 = errorMessages[0];">Submit
           feedback</button>
-          <button class="btn btn-xs btn-primary pull-right"
-    ng-disabled="!content.text2"
-    ng-show = "feedbackEditMode == true"
-    ng-click="saveEditFeedback(record2,content.text2); content.text2 = ''">Save
-    Editing</button>
-  <button class="btn btn-xs btn-primary pull-right"
-    ng-disabled="!content.text2"
-    ng-show = "feedbackEditMode == true"
-    ng-click="cancelEditFeedback(); content.text2 = ''">Cancel
-    Editing</button>
+        <button class="btn btn-xs btn-primary"
+    		ng-disabled="!content.text2"
+    		ng-show = "feedbackEditMode == true"
+    		ng-click="saveEditFeedback(record2,content.text2); content.text2 = ''">Save
+    		Editing</button>
+  		<button class="btn btn-xs btn-primary"
+    		ng-disabled="!content.text2"
+    		ng-show = "feedbackEditMode == true"
+    		ng-click="cancelEditFeedback(); content.text2 = ''">Cancel
+    		Editing</button>  
       </div>
     </div>
 
@@ -158,6 +159,10 @@
           <span ng-repeat="recipient in feedback.recipients">
             {{recipient.name}}</span>
           on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
+          <i> <span class="glyphicon glyphicon-remove pull-right"
+        	ng-click="removeFeedback(feedback,'record1'); content.text1 = ''"></i>
+          <i class="glyphicon glyphicon-pencil pull-right" ng-hide="feedback.isError"
+			ng-click="editFeedback(feedback); content.text1 = feedback.message;"></i>
           <div ng-show="feedback.mapError != 'None'" style="padding-left: 20px;"
             ng-bind-html="to_trusted(feedback.mapError)"></div>
           <div style="padding-left: 20px;"
@@ -171,28 +176,36 @@
         <tr>
           <td colspan="2">
             <textarea id="tinymce-feedback1" ui-tinymce="tinymceOptions"
-              ng-model="feedbackComment1"></textarea>
+              ng-model="content.text1"></textarea>
           </td>
         </tr>
         <tr ng-show="errorMessages.length>1">
           <td>Error Message:&nbsp;</td>
           <td>
             <select ng-model="selectedErrorMessage1" style="margin: 4px"
-              ng-options=" msg as msg for msg in errorMessages">
+              ng-options="msg as msg for msg in errorMessages">
             </select>
           </td>
         </tr>
       </table>
       <div>
         <button class="btn btn-xs btn-primary" style="margin: 4px"
-          ng-show="selectedErrorMessage1 == errorMessages[0]"
-          ng-click="submitNewFeedback(record1, selectedErrorMessage1, feedbackComment1); feedbackComment1 = ''; selectedErrorMessage1 = errorMessages[0];">Submit
+          ng-show="selectedErrorMessage1 == errorMessages[0] && feedbackEditMode == false"
+          ng-click="submitNewFeedback(record1, selectedErrorMessage1, content.text1); content.text1 = ''; selectedErrorMessage1 = errorMessages[0];">Submit
           feedback</button>
         <button class="btn btn-xs btn-primary" style="margin: 4px"
-          ng-show="selectedErrorMessage1 != errorMessages[0]"
-          ng-click="submitNewFeedback(record1, selectedErrorMessage1, feedbackComment1); feedbackComment1 = ''; selectedErrorMessage1 = errorMessages[0];">Submit
+          ng-show="selectedErrorMessage1 != errorMessages[0] && feedbackEditMode == false"
+          ng-click="submitNewFeedback(record1, selectedErrorMessage1, content.text1); content.text1 = ''; selectedErrorMessage1 = errorMessages[0];">Submit
           error</button>
-      </div>
+		<button class="btn btn-xs btn-primary"
+		  ng-disabled="!content.text1" ng-show="feedbackEditMode == true"
+		  ng-click="saveEditFeedback(record1,content.text1); content.text1 = ''">Save
+		  Editing</button>
+		<button class="btn btn-xs btn-primary"
+		  ng-disabled="!content.text1" ng-show="feedbackEditMode == true"
+		  ng-click="cancelEditFeedback(); content.text1 = ''">Cancel
+		  Editing</button>
+	  </div>
     </div>
     </uib-accordion-group> <uib-accordion-group is-open="isGroupFeedbackOpen"> <uib-accordion-heading>
     Group Feedback<i class="pull-right glyphicon"
@@ -210,7 +223,7 @@
           on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
           <i> <span class="glyphicon glyphicon-remove pull-right"
         ng-click="removeFeedback(feedback,'leadRecord')"></i>
-        <i class="glyphicon glyphicon-pencil pull-right"
+        <i class="glyphicon glyphicon-pencil pull-right" ng-hide="feedback.isError"
 		ng-click="editFeedback(feedback); content.text = feedback.message"></i>
           <div style="padding-left: 20px;"
             ng-bind-html="to_trusted(feedback.message)"></div>
