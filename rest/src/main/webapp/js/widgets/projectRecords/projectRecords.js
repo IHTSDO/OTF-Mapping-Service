@@ -124,9 +124,6 @@ angular
             && $scope.searchParameters.advancedMode ? $scope.searchParameters.ancestorId
             : '') + '&query='
           + encodeURIComponent($scope.searchParameters.query)
-          + '&descendantsMapped='
-          + ($scope.searchParameters.advancedMode && $scope.searchParameters.descendants == 'unmapped' ? 'false'
-                  : 'true') 
         + '&excludeDescendants='
         + ($scope.searchParameters.advancedMode && $scope.searchParameters.descendants == 'excludes' ? 'true'
                 : 'false') ;
@@ -563,7 +560,7 @@ angular
         principleName : null,
         ruleCategory : null,
         descendantsOptions :
-    		  ['mapped', 'unmapped', 'excludes'],
+    		  ['mapped', 'excludes'],
     	        adviceOptions :
     	    		  ['contains', 'does not contain', 'none'],
     	ruleCategories : [ 'TRUE', 'Gender - Male', 'Gender - Female',

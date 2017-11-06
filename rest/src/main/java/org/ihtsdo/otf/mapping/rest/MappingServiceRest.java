@@ -15,6 +15,7 @@ import java.net.MalformedURLException;
 import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -108,6 +109,12 @@ import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
 import org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
+
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
@@ -2773,7 +2780,6 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
     @ApiParam(value = "Ancestor concept (inclusive) to restrict search results to", required = true) @QueryParam("ancestorId") String ancestorId,
-    @ApiParam(value = "Incudes or excludes mapped descendants of ancestor id ", required = false) @QueryParam("descendantsMapped") boolean descendantsMapped,
     @ApiParam(value = "Excludes descendants of ancestor id ", required = false) @QueryParam("excludeDescendants") boolean excludeDescendants,
     @ApiParam(value = "Search query string", required = false) @QueryParam("query") String query,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
@@ -2782,7 +2788,7 @@ public class MappingServiceRest extends RootServiceRest {
     // log call
     Logger.getLogger(MappingServiceRest.class)
         .info("RESTful call (Mapping): /record/project/id/" + mapProjectId + " "
-            + ancestorId + ", " + descendantsMapped  + ", " + query);
+            + ancestorId + ", " + excludeDescendants  + ", " + query);
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
 
@@ -2807,6 +2813,9 @@ public class MappingServiceRest extends RootServiceRest {
       // create local pfs parameter for query restriction modification
       final PfsParameter pfsLocal = new PfsParameterJpa(pfsParameter);
       final String queryLocal = queryFlag ? query : null;
+      final PfsParameter descendantPfs = new PfsParameterJpa();
+      descendantPfs.setStartIndex(pfsLocal.getStartIndex());
+      descendantPfs.setMaxResults(pfsLocal.getMaxResults());
 
       // the revised query restriction (local variable for convenience)
       String queryRestriction = pfsLocal.getQueryRestriction();
@@ -2851,95 +2860,79 @@ public class MappingServiceRest extends RootServiceRest {
         final MapProject mapProject =
             mappingService.getMapProject(mapProjectId);
 
-        contentService = new ContentServiceJpa();
-
         final SearchResultList eligibleResults = new SearchResultListJpa();
 
         // If there was a search query, combine them
         if (queryFlag) {
+          ImmutableMap<String, SearchResult> resultsMap = Maps.uniqueIndex(searchResults.getSearchResults(), new Function<SearchResult, String>() {
 
-          // Check descendant concept count
+            @Override
+            public String apply(SearchResult input) {
+              return input.getTerminologyId();
+            }
+            
+          });
+          
+          descendantPfs.setMaxResults(10000);
+          SearchResultList descendants = mappingService
+              .findDescendants(ancestorId,
+                      mapProject.getSourceTerminology(),
+                      mapProject.getSourceTerminologyVersion(), descendantPfs, resultsMap.keySet());
+          Collection<String> descendantsList = Collections2.transform(descendants.getSearchResults(), new Function<SearchResult, String>() {
+
+            @Override
+            public String apply(SearchResult input) {
+              return input.getTerminologyId();
+            }
+
+          });
+         if(excludeDescendants) {
+           for(String result : resultsMap.keySet()) {
+             if(descendantsList.contains(result))
+               searchResults.removeSearchResult(resultsMap.get(result));
+           }
+           eligibleResults.addSearchResults(searchResults);
+         } else {
+           for(String result : resultsMap.keySet()) {
+             if(descendantsList.contains(result))
+               eligibleResults.addSearchResult(resultsMap.get(result));
+           }
+         }
+        }
+
+        // Otherwise, just get all descendants up to 1000
+        else {
+          contentService = new ContentServiceJpa();
           final int ct = contentService.getDescendantConceptsCount(ancestorId,
               mapProject.getSourceTerminology(),
               mapProject.getSourceTerminologyVersion());
-          if (ct > 2000) {
-            throw new LocalException(
-                "Too many descendants for ancestor id, choose a more specific concept: "
-                    + ct);
-          }
-          List<SearchResult> results = null;
-          if(descendantsMapped)
-        	  results = mappingService
-                  .findUnmappedDescendantsForConcept(ancestorId, mapProjectId, null).getSearchResults();
-          else
-        	  results = contentService
-                      .findDescendantConcepts(ancestorId,
-                              mapProject.getSourceTerminology(),
-                              mapProject.getSourceTerminologyVersion(), null)
-                          .getSearchResults();
-          // Find descendants and put into a set for quick lookup
-          final Set<String> descSet = new HashSet<>();
-          for (final SearchResult sr : results) {
-            descSet.add(sr.getTerminologyId());
-          }
+          descendantPfs.setMaxResults(ct > 1000 ?1000: ct);
+          // Look up descendants, then convert to map records
+          final List<SearchResult> descendants = mappingService
+              .findDescendants(ancestorId,
+                  mapProject.getSourceTerminology(),
+                  mapProject.getSourceTerminologyVersion(), descendantPfs, Collections.<String> emptySet())
+                  .getSearchResults();
+          descendants.add(new SearchResultJpa(0L, ancestorId, null, null));
 
-          // determine which results are for descendant concepts
-          for (final SearchResult sr : searchResults.getSearchResults()) {
-
-            // if this terminology is a descendant OR is the concept
-            // itself
-            if (sr.getTerminologyId().equals(ancestorId)
-                || descSet.contains(sr.getTerminologyId())) {
-              if(!excludeDescendants)
-	              // add to eligible results
-	              eligibleResults.addSearchResult(sr);
+          // Look up map records
+          final StringBuilder sb = new StringBuilder();
+          if(excludeDescendants) {
+            sb.append("NOT ");
+          }
+          sb.append("(");
+          boolean append = false;
+          for (final SearchResult sr : descendants) {
+            if (append) {
+              sb.append(" OR ");
             }
+            sb.append("conceptId:" + sr.getTerminologyId());
+            append = true;
           }
-        }
+          sb.append(")");
+          eligibleResults.addSearchResults(
+              mappingService.findMapRecordsForQuery(sb.toString(), pfsLocal));
 
-        // Otherwise, just get all descendants
-        else {
-        	if(!descendantsMapped)
-        		eligibleResults.addSearchResults(mappingService
-                    .findUnmappedDescendantsForConcept(ancestorId, mapProjectId, null));
-        	else {
-	          // Check descendant concept count
-	          final int ct = contentService.getDescendantConceptsCount(ancestorId,
-	              mapProject.getSourceTerminology(),
-	              mapProject.getSourceTerminologyVersion());
-	          if (ct > 2000) {
-	            throw new LocalException(
-	                "Too many descendants for ancestor id, choose a more specific concept: "
-	                    + ct);
-	          }
-	
-	          // Look up descendants, then convert to map records
-	          final List<SearchResult> descendants = contentService
-	              .findDescendantConcepts(ancestorId,
-	                  mapProject.getSourceTerminology(),
-	                  mapProject.getSourceTerminologyVersion(), null)
-	              .getSearchResults();
-	          descendants.add(new SearchResultJpa(0L, ancestorId, null, null));
-	
-	          // Look up map records
-	          final StringBuilder sb = new StringBuilder();
-	          if(excludeDescendants) {
-	        	  sb.append("NOT ");
-	          }
-	          sb.append("(");
-	          boolean append = false;
-	          for (final SearchResult sr : descendants) {
-	            if (append) {
-	              sb.append(" OR ");
-	            }
-	            sb.append("conceptId:" + sr.getTerminologyId());
-	            append = true;
-	          }
-	          sb.append(")");
-	          eligibleResults.addSearchResults(
-	              mappingService.findMapRecordsForQuery(sb.toString(), pfsLocal));
-	
-	        }
         }
         // set search results total count to number of eligible results
         searchResults.setTotalCount(eligibleResults.getCount());
@@ -5098,4 +5091,5 @@ public class MappingServiceRest extends RootServiceRest {
 
     return outputBuilder.toString();
   }
+
 }
