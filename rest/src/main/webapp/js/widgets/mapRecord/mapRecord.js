@@ -197,10 +197,6 @@ angular
             }
 
             $scope.record = parameters.record;
-            for (var i = 0; i < $scope.record.mapNote.length; i++) {
-              $scope.record.mapNote[i].user = $scope.user;
-              $scope.record.mapNote[i].timestamp = new Date();
-            }
 
             // open principles accordion if one was copied from selectedRecord
             if ($scope.record.mapPrinciple
@@ -1125,9 +1121,10 @@ angular
           }
         };
 
-        $scope.isNewNote = function (mapNote) {
-        	if($scope.newNoteTimestamps.includes(mapNote.timestamp)){
-        		return true;
+        $scope.isEditableNote = function (mapNote) {
+        	if (($scope.record.workflowStatus != 'PUBLISHED') &&
+        		($scope.record.workflowStatus != 'READY_FOR_PUBLICATION')) {
+    			return true;
         	}
         	return false;
         }
@@ -1155,6 +1152,8 @@ angular
               if ($scope.noteEditId == record.mapNote[i].localId) {
                 noteFound = true;
                 record.mapNote[i].note = note;
+                record.mapNote[i].timestamp = (new Date()).getTime();
+                record.mapNote[i].user = $scope.user;
               }
             }
             $scope.noteEditMode = false;
