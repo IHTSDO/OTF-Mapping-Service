@@ -1,0 +1,39 @@
+<div class="modal-body">
+  <h4>
+    {{concept.defaultPreferredName}}&nbsp;&nbsp;{{concept.terminologyId}}
+  </h4>
+  <table class="table">
+    <thead>
+      <tr>
+        <th style="width: 10%; padding: 5px;">Author</th>        
+        <th style="width: 15%; padding: 5px;">Date</th>
+        <th style="width: 15%; padding: 5px;">Concept Id</th>
+        <th style="width: 15%; padding: 5px;">Component Id</th>
+        <th style="width: 15%; padding: 5px;">Type</th>
+        <th style="width: 20%; padding: 5px;">Subcomponent Type</th>        
+        <th style="width: 10%; padding: 5px;">Action</th>       
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="result in edits">
+        <td style="width: 10%; padding: 5px;">{{result.author}}</td>
+        <td style="width: 15%; padding: 5px;">{{result.date}}</td>
+        <td style="width: 15%; padding: 5px;">{{result.conceptId}}</td>
+        <td style="width: 15%; padding: 5px;">{{result.componentId}}</td>
+        <td style="width: 15%; padding: 5px;">{{result.type}}</td>
+        <td style="width: 20%; padding: 5px;">{{result.subcomponentType}}</td>
+        <td style="width: 10%; padding: 5px;">{{result.action}}</td>
+      </tr>
+    </tbody>
+  </table>  
+</div>
+<div class="modal-footer">
+  <span style="float: left">
+    <input placeholder="Search" type="text" ng-model="filter"
+      ng-model-options="{ debounce: 500 }" ng-change="retrieveAuthoringChanges(concept)">
+
+    <button class="btn btn-xs btn-warning" ng-show="filter"
+      ng-click="filter = ''; retrieveAuthoringChanges(concept)" title="Click to clear filter text">Clear</button>
+  </span>
+  <button class="btn btn-xs btn-warning" ng-click="close()">Close</button>
+</div>
