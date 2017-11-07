@@ -147,6 +147,7 @@ angular
         $scope.content.text = feedback.message;
         $scope.content.text1 = feedback.message1;
         $scope.content.text2 = feedback.message2;
+        $scope.selectedErrorMessage1 = feedback.mapError;
         $scope.feedbackEditMode = true;
         $scope.feedbackEditId = feedback.id ? feedback.id : feedback.localId;
       };
@@ -202,7 +203,8 @@ angular
                 $scope.conversation1 = data;
 
               });
-            } if (recordInError.id == $scope.record2.id) {
+            } 
+            if ($scope.record2 != null && recordInError.id == $scope.record2.id) {
               
               $http({
                 url : root_workflow + 'conversation/id/' + recordInError.id,
