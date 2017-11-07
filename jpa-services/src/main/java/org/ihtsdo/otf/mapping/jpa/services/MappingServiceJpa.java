@@ -2979,11 +2979,7 @@ public class MappingServiceJpa extends RootServiceJpa
 
     return searchResultList;
   }
-<<<<<<< .mine
-  
-=======
-  
->>>>>>> .theirs
+
   @SuppressWarnings("unchecked")
   public SearchResultList findMapRecords(Long mapProjectId, String ancestorId, boolean excludeDescendants,
     String terminology, String terminologyVersion, PfsParameter pfsParameter, Collection<String> mapConcepts)
@@ -3083,12 +3079,4 @@ public class MappingServiceJpa extends RootServiceJpa
 
 		return milliseconds;
   }
-
-<<<<<<< .mine
-
-
-=======
- 
-
->>>>>>> .theirs
 }
