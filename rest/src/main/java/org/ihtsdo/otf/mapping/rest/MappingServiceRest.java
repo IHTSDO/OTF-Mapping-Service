@@ -15,7 +15,6 @@ import java.net.MalformedURLException;
 import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -111,9 +110,7 @@ import org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
 import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 
 import com.sun.jersey.api.client.Client;
@@ -2852,15 +2849,8 @@ public class MappingServiceRest extends RootServiceRest {
             ? mappingService.findMapRecordsForQuery(queryLocal, pfsLocal)
             : new SearchResultListJpa());
 
-        if (searchResults.getTotalCount() > 10000) {
-          throw new LocalException(searchResults.getTotalCount()
-              + " potential string matches for ancestor search. Narrow your search and try again.");
-        }
-
         final MapProject mapProject =
             mappingService.getMapProject(mapProjectId);
-
-        final SearchResultList eligibleResults = new SearchResultListJpa();
 
         // If there was a search query, combine them
         if (queryFlag) {
@@ -2870,83 +2860,33 @@ public class MappingServiceRest extends RootServiceRest {
             public String apply(SearchResult input) {
               return input.getTerminologyId();
             }
-            
-          });
-          
-          descendantPfs.setMaxResults(10000);
-          SearchResultList descendants = mappingService
-              .findDescendants(ancestorId,
-                      mapProject.getSourceTerminology(),
-                      mapProject.getSourceTerminologyVersion(), descendantPfs, resultsMap.keySet());
-          Collection<String> descendantsList = Collections2.transform(descendants.getSearchResults(), new Function<SearchResult, String>() {
-
-            @Override
-            public String apply(SearchResult input) {
-              return input.getTerminologyId();
-            }
 
           });
-         if(excludeDescendants) {
-           for(String result : resultsMap.keySet()) {
-             if(descendantsList.contains(result))
-               searchResults.removeSearchResult(resultsMap.get(result));
-           }
-           eligibleResults.addSearchResults(searchResults);
-         } else {
-           for(String result : resultsMap.keySet()) {
-             if(descendantsList.contains(result))
-               eligibleResults.addSearchResult(resultsMap.get(result));
-           }
-         }
-        }
-
-        // Otherwise, just get all descendants up to 1000
-        else {
-          contentService = new ContentServiceJpa();
-          final int ct = contentService.getDescendantConceptsCount(ancestorId,
-              mapProject.getSourceTerminology(),
-              mapProject.getSourceTerminologyVersion());
-          descendantPfs.setMaxResults(ct > 1000 ?1000: ct);
-          // Look up descendants, then convert to map records
-          final List<SearchResult> descendants = mappingService
-              .findDescendants(ancestorId,
+          searchResults = mappingService
+              .findMapRecords(mapProjectId, ancestorId, excludeDescendants,
                   mapProject.getSourceTerminology(),
-                  mapProject.getSourceTerminologyVersion(), descendantPfs, Collections.<String> emptySet())
-                  .getSearchResults();
-          descendants.add(new SearchResultJpa(0L, ancestorId, null, null));
-
-          // Look up map records
-          final StringBuilder sb = new StringBuilder();
-          if(excludeDescendants) {
-            sb.append("NOT ");
-          }
-          sb.append("(");
-          boolean append = false;
-          for (final SearchResult sr : descendants) {
-            if (append) {
-              sb.append(" OR ");
-            }
-            sb.append("conceptId:" + sr.getTerminologyId());
-            append = true;
-          }
-          sb.append(")");
-          eligibleResults.addSearchResults(
-              mappingService.findMapRecordsForQuery(sb.toString(), pfsLocal));
-
+                  mapProject.getSourceTerminologyVersion(), pfsLocal, resultsMap.keySet());
+ 
         }
-        // set search results total count to number of eligible results
-        searchResults.setTotalCount(eligibleResults.getCount());
+
+        else {
+          // Otherwise, just find all map records to include or exclude descendants
+            searchResults = mappingService
+                .findMapRecords(mapProjectId, ancestorId, excludeDescendants,
+                    mapProject.getSourceTerminology(),
+                    mapProject.getSourceTerminologyVersion(), pfsLocal, Collections.<String> emptySet());
+ 
+        }
 
         // workaround for typing problems between List<SearchResultJpa>
         // and
         // List<SearchResult>
         List<SearchResultJpa> results = new ArrayList<>();
-        for (SearchResult sr : eligibleResults.getSearchResults()) {
+        for (SearchResult sr : searchResults.getSearchResults()) {
           results.add((SearchResultJpa) sr);
         }
 
         // apply paging to the list -- note: use original pfs
-        final int[] totalCt = new int[1];
         pfsLocal.setMaxResults(pfsParameter.getMaxResults());
         pfsLocal.setStartIndex(pfsParameter.getStartIndex());
         pfsLocal.setQueryRestriction(null);
@@ -2960,9 +2900,6 @@ public class MappingServiceRest extends RootServiceRest {
             && pfsLocal.getSortField().toLowerCase().equals("conceptname")) {
           pfsLocal.setSortField("value");
         }
-
-        results = mappingService.applyPfsToList(results, SearchResultJpa.class,
-            totalCt, pfsLocal);
 
         // reconstruct the assignedWork search result list
         searchResults.setSearchResults(new ArrayList<SearchResult>(results));

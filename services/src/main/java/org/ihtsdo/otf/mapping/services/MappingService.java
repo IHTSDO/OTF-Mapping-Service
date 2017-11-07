@@ -811,15 +811,17 @@ public interface MappingService extends RootService {
     PfsParameter pfsParameter) throws Exception;
   
   /**
-   * @param terminologyId
+   * @param mapProjectd
+   * @param ancestorId
+   * @param excludeDescendants 
    * @param terminology
    * @param terminologyVersion
-   * @param pfs
-   * @param descendants
+   * @param pfsParameter
    * @return
    * @throws Exception
    */
-  public SearchResultList findDescendants(String terminologyId, String terminology,
-    String terminologyVersion, PfsParameter pfs, Collection<String> descendants) throws Exception;
+  public SearchResultList findMapRecords(Long mapProjectd, String ancestorId,
+    boolean excludeDescendants, String terminology, String terminologyVersion, PfsParameter pfsParameter, Collection<String> mapConcepts)
+    throws Exception;
 
 }
