@@ -16,7 +16,7 @@ angular
           });
     }).controller(
     'editedListCtrl',
-    function($scope, $rootScope, $http, $location, localStorageService) {
+    function($scope, $rootScope, $http, $location, localStorageService, utilService) {
 
       // initialize as empty to indicate still initializing database connection
       $scope.editedRecords = [];
@@ -25,7 +25,7 @@ angular
       $scope.focusProject = localStorageService.get('focusProject');
        
       // pagination variables
-      $scope.recordsPerPage = 2;
+      $scope.recordsPerPage = 10;
       $scope.recordPage  = 1;
       $scope.totalRecords = 0;
       $scope.numRecordPages = 0;
@@ -35,7 +35,6 @@ angular
         $scope.focusProject = parameters.focusProject;
       });
       
-
       $scope.$on('availableWork.notification.editWork', function(event, parameters) {
         $scope.editWork(parameters.editedWork);
       });
@@ -47,10 +46,27 @@ angular
           $http.defaults.headers.common.Authorization = $scope.userToken;
         }
       });
-     
-
+      
+      //sort direction
+      var sortAscending;
+      var sortField;
+      
+      $scope.getSortIndicator = function(field){
+		if (sortField !== field) return '';
+		if (sortField === field && sortAscending) return '▴';
+		if (sortField === field && !sortAscending) return '▾';
+      };
+      
+      //sort field
+      $scope.setSortField = function(field) {
+    	  sortAscending = !sortAscending;
+    	  sortField = field;
+    	  $scope.retrieveEditedWork($scope.recordPage, $scope.queryTerms);
+      };
+      
       // called by user-click, not automatically loaded
       $scope.retrieveEditedWork = function(ppage, queryTerms) {
+    	console.log("query terms", queryTerms)
 
         // set the page
     	var page = ppage;
@@ -62,8 +78,9 @@ angular
         var pfsParameterObj = {
           'startIndex' : (page - 1) * $scope.recordsPerPage,
           'maxResults' : $scope.recordsPerPage,
-          'sortField' : 'lastModified',
-          'queryRestriction' : queryTerms ? JSON.stringify(queryTerms) : ''
+          'sortField' : sortField,
+          'ascending' : sortAscending,
+          'queryRestriction' : queryTerms ? JSON.stringify(queryTerms) : ''		  
         };
         
         $rootScope.glassPane++;
