@@ -2800,7 +2800,7 @@ public class MappingServiceRest extends RootServiceRest {
 
       // determine if a query was passed
       boolean queryFlag =
-          query != null && !query.isEmpty() && !query.equals("null");
+          (query != null && !query.isEmpty() && !query.equals("null") ) || (pfsParameter.getQueryRestriction() != null && !pfsParameter.getQueryRestriction().isEmpty());
       boolean ancestorFlag = ancestorId != null && !ancestorId.isEmpty()
           && !ancestorId.equals("null");
 
@@ -2854,6 +2854,10 @@ public class MappingServiceRest extends RootServiceRest {
 
         // If there was a search query, combine them
         if (queryFlag) {
+          if (searchResults.getTotalCount() > 10000) {
+            throw new LocalException(searchResults.getTotalCount()
+                + " potential string matches for ancestor search. Narrow your search and try again.");
+          }
           ImmutableMap<String, SearchResult> resultsMap = Maps.uniqueIndex(searchResults.getSearchResults(), new Function<SearchResult, String>() {
 
             @Override

@@ -41,8 +41,8 @@
     <thead>
       <tr>
         <th style="width: 3%; padding: 5px;"></th>
-        <th style="width: 14%; padding: 5px;">Id</th>
-
+        <th class="pointer" style="width: 14%; padding: 5px;" ng-click="setSortField('concepts','terminologyId')">
+        	Id<span ng-bind="getSortIndicator('concepts','terminologyId')"></span></th>
         <!--  Extra column if on editing in progress page for dashboard finish commands -->
         <th style="width: 3%; padding: 5px;"><a
             ng-show="assignedTypes.work === 'EDITING_IN_PROGRESS'"
@@ -60,8 +60,8 @@
             ng-click="finishOrPublishBatch(assignedTypes.work)">
             <i class="glyphicon glyphicon-check"></i>
           </a></th>
-
-        <th style="width: 72%; padding: 5px;">Preferred Name</th>
+        <th class="pointer" style="width: 72%; padding: 5px;" ng-click="setSortField('concepts','defaultPreferredName')">
+        	Preferred Name<span ng-bind="getSortIndicator('concepts','defaultPreferredName')"></span></th>
         <th style="width: 3%; padding: 5px;"></th>
         <th style="width: 3%; padding: 5px;">
         <a title="Return All Work"
@@ -207,9 +207,10 @@
 
   <table class="table">
     <thead>
-      <tr>
+      <tr">
         <th style="width: 3%; padding: 5px;"></th>
-        <th style="width: 14%; padding: 5px;">Id</th>
+        <th class="pointer" style="width: 14%; padding: 5px;" ng-click="setSortField('conflicts','terminologyId')">
+			Id<span ng-bind="getSortIndicator('conflicts','terminologyId')"></span></th>
         <!--  Extra column if on editing in progress page for dashboard finish commands -->
         <th style="width: 3%; padding: 5px;"><a
             ng-show="assignedTypes.conflict === 'CONFLICT_IN_PROGRESS'"
@@ -221,8 +222,8 @@
             ng-click="finishOrPublishBatch(assignedTypes.conflict)">
             <i class="glyphicon glyphicon-check"></i>
           </a></th>
-
-        <th style="width: 72%; padding: 5px;">Preferred Name</th>
+        <th class="pointer" style="width: 72%; padding: 5px;" ng-click="setSortField('conflicts','defaultPreferredName')">
+    		Preferred Name<span ng-bind="getSortIndicator('conflicts','defaultPreferredName')"></span></th>
         <th style="width: 3%; padding: 5px;"></th>
         <th style="width: 3%; padding: 5px;"><a
             title="Return All Conflicts"
@@ -234,7 +235,6 @@
     </thead>
     <tbody>
       <tr ng-repeat="result in assignedConflicts">
-
         <td style="width: 3%; padding: 5px;">
           <!-- Display a pushpin if this record has previously been edited -->
           <!--  NOTE: the result.termionlogyVersion is overloaded with the workflow status of the record  -->
@@ -351,8 +351,8 @@
     <thead>
       <tr>
         <th style="width: 3%; padding: 5px;"></th>
-        <th style="width: 14%; padding: 5px;">Id</th>
-
+        <th class="pointer" style="width: 14%;" padding: 5px; ng-click="setSortField('review','terminologyId')">
+			Id<span ng-bind="getSortIndicator('review','terminologyId')"></span></th>
         <!--  Extra column if on editing in progress page for dashboard finish commands -->
         <th style="width: 3%; padding: 5px;"><a
             ng-show="assignedTypes.review === 'REVIEW_IN_PROGRESS'"
@@ -364,7 +364,8 @@
             ng-click="finishOrPublishBatch(assignedTypes.review)">
             <i class="glyphicon glyphicon-check"></i>
           </a></th>
-        <th style="width: 77%; padding: 5px;">Preferred Name</th>
+        <th class="pointer" style="width: 77%; padding: 5px;" ng-click="setSortField('review','defaultPreferredName')">
+    		Preferred Name<span ng-bind="getSortIndicator('review','defaultPreferredName')"></span></th>
         <th style="width: 3%; padding: 5px;"></th>
         <th style="width: 3%; padding: 5px;"><a title="Return All Work"
             ng-click="unassignAllWork(currentUser, 'review', assignedTypes.review, queryReviewWork)">
@@ -496,9 +497,12 @@
 <table class="table" ng-show="nAssignedRecordsForUser > 0">
   <thead>
     <tr>
-      <th style="width: 12%; padding: 5px;">Id</th>
-      <th style="width: 60%; padding: 5px;">Preferred Name</th>
-      <th style="width: 25%; padding: 5px;">Last Modified</th>
+      <th class="pointer" style="width: 12%; padding: 5px;" ng-click="setSortField('user','terminologyId')">
+		Id<span ng-bind="getSortIndicator('user','terminologyId')"></span></th>
+      <th class="pointer" style="width: 60%; padding: 5px;" ng-click="setSortField('user','defaultPreferredName')">
+    	Preferred Name<span ng-bind="getSortIndicator('user','defaultPreferredName')"></span></th>
+      <th class="pointer" style="width: 25%; padding: 5px;" ng-click="setSortField('user','terminology')">
+    	Last Modified<span ng-bind="getSortIndicator('user','terminology')"></span></th>
       <th style="width: 3%; padding: 5px;"><a title="Return All Work"
           ng-click="unassignAllWork(selected.mapUserViewed, 'concept', assignedTypes.forUser, queryAssignedForUser)">
           <i
@@ -575,7 +579,8 @@
     <thead>
       <tr>
         <th style="width: 3%; padding: 5px;"></th>
-        <th style="width: 14%; padding: 5px;">Id</th>
+        <th class="pointer" style="width: 14%; padding: 5px;" ng-click="setSortField('qa','terminologyId')">
+			Id<span ng-bind="getSortIndicator('qa','terminologyId')"></span></th>
 
         <!--  Extra column if on editing in progress page for dashboard finish commands -->
         <th style="width: 3%; padding: 5px;"><a
@@ -588,7 +593,8 @@
             ng-click="finishOrPublishBatch(assignedTypes.qa)">
             <i class="glyphicon glyphicon-check"></i>
           </a></th>
-        <th style="width: 74%; padding: 5px;">Preferred Name</th>
+        <th class="pointer" style="width: 74%; padding: 5px;" ng-click="setSortField('qa','defaultPreferredName')">
+    		Preferred Name<span ng-bind="getSortIndicator('qa','defaultPreferredName')"></span></th>
         <th style="width: 3%; padding: 5px;"></th>
         <th style="width: 3%; padding: 5px;"></th>
         <th style="width: 3%; padding: 5px;"><a title="Return All Work"
