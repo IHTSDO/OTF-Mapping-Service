@@ -876,12 +876,21 @@ public class MappingServiceJpa extends RootServiceJpa
     
     // if sort field specified
     if (localPfsParameter.getSortField() != null) {
-      query.addOrder(
-          AuditEntity.property(localPfsParameter.getSortField()).desc());
+    	if (localPfsParameter.isAscending()) {
+    		query.addOrder(AuditEntity.property(localPfsParameter.getSortField()).asc());
+    	}
+    	else {
+    		query.addOrder(AuditEntity.property(localPfsParameter.getSortField()).desc());
+    	}
 
       // otherwise, sort by last modified (descending)
     } else {
+    	if (localPfsParameter.isAscending()) {
+    		query.addOrder(AuditEntity.property("lastModified").asc());
+    	}
+    	else {
       query.addOrder(AuditEntity.property("lastModified").desc());
+    }
     }
 
     // if query terms specified, add
@@ -2979,8 +2988,7 @@ public class MappingServiceJpa extends RootServiceJpa
 
     return searchResultList;
   }
-
-  @SuppressWarnings("unchecked")
+   @SuppressWarnings("unchecked")
   public SearchResultList findMapRecords(Long mapProjectId, String ancestorId, boolean excludeDescendants,
     String terminology, String terminologyVersion, PfsParameter pfsParameter, Collection<String> mapConcepts)
     throws Exception {
@@ -3063,20 +3071,20 @@ public class MappingServiceJpa extends RootServiceJpa
     return searchResultList;
   }
 
-  /* Convert ISO 8601 date time string to milliseconds */
-  private long convertDateString(String dateString) {
-	  
-		long milliseconds = 0l;
-		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-		Date d;
-		try {
-			d = (Date) format.parse(dateString);
-			milliseconds = d.getTime();
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+   /* Convert ISO 8601 date time string to milliseconds */
+   private long convertDateString(String dateString) {
+ 	  
+ 		long milliseconds = 0l;
+ 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+ 		Date d;
+ 		try {
+ 			d = (Date) format.parse(dateString);
+ 			milliseconds = d.getTime();
+ 		} catch (ParseException e) {
+ 			// TODO Auto-generated catch block
+ 			e.printStackTrace();
+ 		}
 
-		return milliseconds;
-  }
+ 		return milliseconds;
+   }
 }
