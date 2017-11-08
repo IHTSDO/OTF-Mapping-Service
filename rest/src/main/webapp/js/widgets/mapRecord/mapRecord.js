@@ -1835,4 +1835,92 @@ angular
           return parseInt(principle.principleId, 10) + 1;
         };
 
+        // Open modal to display authoring history for concept
+        $scope.openAuthoringHistory = function(concept) {
+
+          if (concept == null) {
+            return;
+          }
+
+          var modalInstance = $uibModal.open({
+            templateUrl : 'js/widgets/mapRecord/authoringHistory.html',
+            controller : AuthoringHistoryModalCtrl,
+            size : 'lg',
+            resolve : {
+              concept : function() {
+                return concept;
+              }
+            }
+          });
+
+          modalInstance.result.then(
+
+          // called on Done clicked by user
+          function() {
+          })
+
+        };
+          
+
+        var AuthoringHistoryModalCtrl = function($scope, $uibModalInstance, $q, concept) {
+
+          $scope.concept = concept;
+          $scope.edits = [];
+          $scope.filter = '';
+
+          // get history of authoring changes for this concept
+          $scope.retrieveAuthoringChanges = function(concept) {
+            console.debug('AuthoringHistoryModalCtrl: retrieve Authoring Changes');
+
+            $rootScope.glassPane++;
+            $http({
+              url : root_mapping + 'changes/' + concept.terminologyId ,
+              dataType : 'json',
+              method : 'GET',
+              headers : {
+                'Content-Type' : 'application/json'
+              }
+            }).success(function(data) {
+              console.debug('Success in getting authoring changes.', $scope.filter);
+              $scope.edits = [];
+              for (var i = 0; i < data.searchResult.length; i++) {
+                var searchResult = data.searchResult[i];
+                
+                // if filter is set, but searchResult doesn't match it, continue without this result
+                if ($scope.filter && searchResult.value.indexOf($scope.filter) == -1 &&
+                  searchResult.value2.indexOf($scope.filter) == -1) {
+                  continue;
+                }
+                
+                // split the searchResult and put into edits object array
+                var value = searchResult.value.split(":");
+                var date = value[1].split("T");
+                var value2 = searchResult.value2.split(":");
+                var edit = {
+                  author:value[0],
+                  date:date[0],
+                  conceptId:value2[0],
+                  componentId:value2[1],
+                  type:value2[2],
+                  subcomponentType:value2[3],
+                  action:value2[4]
+                }
+                $scope.edits.push(edit);
+              }
+
+              $rootScope.glassPane--;
+              
+            }).error(function(data, status, headers, config) {
+              $rootScope.glassPane--;
+              $rootScope.handleHttpError(data, status, headers, config);
+            });
+          };
+          
+          $scope.close = function() {
+            $uibModalInstance.close();
+          };
+          
+          $scope.retrieveAuthoringChanges($scope.concept);
+        }
+        
       } ]);
