@@ -331,11 +331,12 @@ angular
           'isError' : 'false',
           'viewedBy' : [ $scope.currentUser ]
         };
-
+        
         // Add to new feedback timestamps
         // The rounding is because the timestamp in the feedback gets rounded also
         $scope.newFeedbackTimestamps.push(Math.round(localTimestamp/1000)*1000);      
         
+
         localFeedback.push(feedback);
         conversation.feedback = localFeedback;
 
