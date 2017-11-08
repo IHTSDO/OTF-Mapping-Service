@@ -19,6 +19,9 @@ public class PfsParameterJpa implements PfsParameter {
 
   /** The comparator for sorting */
   private String sortField = null;
+  
+  /** The ascending flag. */
+  private boolean ascending = true;
 
   /** The default constructor */
   public PfsParameterJpa() {
@@ -36,6 +39,7 @@ public class PfsParameterJpa implements PfsParameter {
       startIndex = pfs.getStartIndex();
       queryRestriction = pfs.getQueryRestriction();
       sortField = pfs.getSortField();
+      ascending = pfs.isAscending();
     }
   }
 
@@ -112,6 +116,24 @@ public class PfsParameterJpa implements PfsParameter {
   public void setSortField(String sortField) {
     this.sortField = sortField;
   }
+  
+  /**
+   * Checks if is ascending.
+   * @return true, if is ascending
+   */
+  @Override
+  public boolean isAscending() {
+    return ascending;
+  }
+
+  /**
+   * Sets the ascending.
+   * @param ascending the new ascending
+   */
+  @Override
+  public void setAscending(boolean ascending) {
+    this.ascending = ascending;
+  }
 
   /*
    * (non-Javadoc)
@@ -128,7 +150,8 @@ public class PfsParameterJpa implements PfsParameter {
   public String toString() {
     return "PfsParameterJpa [maxResults=" + maxResults + ", startIndex="
         + startIndex + ", queryRestriction=" + queryRestriction
-        + ", sortField=" + sortField + "]";
+        + ", sortField=" + sortField
+        + ", ascending=" + ascending + "]";
   }
 
 }

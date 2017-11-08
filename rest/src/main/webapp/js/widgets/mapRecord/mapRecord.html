@@ -102,22 +102,22 @@ Notes <i class="pull-right glyphicon"
 </div>
 <span style="color: red">{{errorAddRecordNote}}</span> <!--  tinymce text area -->
 <form>
-  <textarea id="tinymce-notes" ui-tinymce="tinymceOptions" ng-model="content.text"></textarea>
+  <textarea id="tinymce-notes" ui-tinymce="tinymceOptions" ng-model="noteContent.text"></textarea>
   <button class="btn btn-xs btn-primary" 
     ng-show="noteEditMode == false" class="pull-right" accesskey="a"
-    ng-disabled="!content.text"
-    ng-click="addRecordNote(record, content.text); content.text = null;">Add
+    ng-disabled="!noteContent.text"
+    ng-click="addRecordNote(record, noteContent.text); noteContent.text = null;">Add
     Note</button>
   
   <button class="btn btn-xs btn-primary" 
     ng-show="noteEditMode == true" class="pull-right" accesskey="a"
-    ng-disabled="!content.text"
-    ng-click="saveEditRecordNote(record, content.text); content.text = ''">Save
+    ng-disabled="!noteContent.text"
+    ng-click="saveEditRecordNote(record, noteContent.text); noteContent.text = ''">Save
     Editing</button>
   <button class="btn btn-xs btn-primary" 
     ng-show="noteEditMode == true" class="pull-right" accesskey="a"
-    ng-disabled="!content.text"
-    ng-click="cancelEditRecordNote(); content.text = ''">Cancel
+    ng-disabled="!noteContent.text"
+    ng-click="cancelEditRecordNote(); noteContent.text = ''">Cancel
     Editing</button>
   <span class="pull-right">
     Shortcut to add note:
@@ -225,21 +225,21 @@ review<br>
       selected-model="returnRecipients" extra-settings="multiSelectSettings"
       translation-texts="multiSelectCustomTexts"></div>
     <textarea id="tinymce-feedback" ui-tinymce="tinymceOptions"
-      ng-model="content.text"></textarea>
+      ng-model="feedbackContent.text"></textarea>
     <button class="btn btn-xs btn-primary pull-right"
-      ng-disabled="!content.text"
+      ng-disabled="!feedbackContent.text"
        ng-show = "feedbackEditMode == false"
-      ng-click="sendFeedback(record, content.text, returnRecipients); content.text = ''">
+      ng-click="sendFeedback(record, feedbackContent.text, returnRecipients); feedbackContent.text = ''">
       Send Feedback</button>
        <button class="btn btn-xs btn-primary pull-right"
-      ng-disabled="!content.text"
+      ng-disabled="!feedbackContent.text"
       ng-show = "feedbackEditMode == true"
-      ng-click="saveEditFeedback(content.text); content.text = ''">Save
+      ng-click="saveEditFeedback(feedbackContent.text); feedbackContent.text = ''">Save
       Editing</button>
     <button class="btn btn-xs btn-primary pull-right"
-     ng-disabled="!content.text"
+     ng-disabled="!feedbackContent.text"
      ng-show = "feedbackEditMode == true"
-     ng-click="cancelEditFeedback(); content.text = ''">Cancel
+     ng-click="cancelEditFeedback(); feedbackContent.text = ''">Cancel
      Editing</button>
     <span class="pull-right">
       Shortcut to send feedback:
@@ -253,6 +253,10 @@ review<br>
 <button class="btn btn-xs btn-primary" ng-click="finishMapRecord(true)">Finish</button>
 <button class="btn btn-xs btn-warning" ng-click="cancelMapRecord()">Cancel</button>
 <button class="btn btn-xs btn-danger" ng-click="clearMapRecord()">Clear</button>
+
+<button id="undo" class="btn btn-xs btn-primary" ng-click="undo()" ng-disabled="undoDisabled"><i class="fa fa-undo"></i></button>
+<button id="redo" class="btn btn-xs btn-primary" ng-click="redo()" ng-disabled="redoDisabled"><i class="fa fa-repeat"></i></button>
+ 
 <button class="btn btn-xs btn-primary" style="float: right;"
   ng-click="saveMapRecord(true)">Save For Later</button>
 <button class="btn btn-xs btn-primary" tooltip-placement="top"
