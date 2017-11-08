@@ -3022,15 +3022,16 @@ public class MappingServiceJpa extends RootServiceJpa
 
       // construct query for descendants
       String queryString = "from MapRecordJpa m "
-          + "where m.mapProjectId = :mapProjectId AND  m.conceptId " + (excludeDescendants ? " NOT " : "" )  + " IN ( select tp.terminologyId from TreePositionJpa tp "
+          + "where m.mapProjectId = :mapProjectId AND " + (excludeDescendants ? " NOT " : "" )  + " EXISTS ( select tp.terminologyId from TreePositionJpa tp "
           + "where tp.terminology = :terminology "
+          + " and m.conceptId  = tp.terminologyId "
           + "and tp.terminologyVersion = :terminologyVersion "
           + "and (tp.terminologyId = :terminologyId OR tp.ancestorPath like '" + ancestorPath + "%'))";
       if(!mapConcepts.isEmpty()) {
         queryString = queryString + "and m.conceptId IN (:mapConcepts)";
       }
       query = manager.createQuery(
-          "select distinct m " + queryString);
+          "select m " + queryString);
       query.setParameter("terminologyId", ancestorId);
       query.setParameter("terminology", terminology);
       query.setParameter("terminologyVersion", terminologyVersion);
