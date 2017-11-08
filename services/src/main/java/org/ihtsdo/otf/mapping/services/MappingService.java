@@ -3,6 +3,7 @@
  */
 package org.ihtsdo.otf.mapping.services;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -808,5 +809,19 @@ public interface MappingService extends RootService {
    */
   public SearchResultList getScopeConceptsForMapProject(MapProject mapProject,
     PfsParameter pfsParameter) throws Exception;
+  
+  /**
+   * @param mapProjectd
+   * @param ancestorId
+   * @param excludeDescendants 
+   * @param terminology
+   * @param terminologyVersion
+   * @param pfsParameter
+   * @return
+   * @throws Exception
+   */
+  public SearchResultList findMapRecords(Long mapProjectd, String ancestorId,
+    boolean excludeDescendants, String terminology, String terminologyVersion, PfsParameter pfsParameter, Collection<String> mapConcepts)
+    throws Exception;
 
 }
