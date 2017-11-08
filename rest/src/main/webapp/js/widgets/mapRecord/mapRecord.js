@@ -66,7 +66,7 @@ angular
         $scope.feedbackEditMode = false;
         $scope.feedbackEditId = null;
         $scope.newFeedbackTimestamps = new Array();
-        $scope.content = {
+        $scope.feedbackContent = {
           text : ''
         };
 
@@ -89,7 +89,7 @@ angular
         $scope.noteEditMode = false;
         $scope.noteEditId = null;
         $scope.newNoteTimestamps = new Array();
-        $scope.content = {
+        $scope.noteContent = {
         		text : ''
         };
 
