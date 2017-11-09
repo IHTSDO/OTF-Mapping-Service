@@ -1847,7 +1847,7 @@ angular
         	//if data is not the same as last history then add
         	if (JSON.stringify(data) !== JSON.stringify(history[historyIndex-1])) {
             	//eliminate the future
-        		history = history.slice(0, historyIndex + 1);
+        		history.length=(historyIndex);
         		history.push(data);
         		historyIndex++;
         	}
