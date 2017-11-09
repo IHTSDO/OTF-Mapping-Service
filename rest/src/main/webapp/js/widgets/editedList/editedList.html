@@ -1,12 +1,46 @@
 <form ng-submit="retrieveEditedWork(1, queryTerms)">
-  <input type="text" id="editQueryInput" ng-model="queryTerms">
-  <button type="submit" class="btn btn-xs btn-primary">Search</button>
-  <span class="btn btn-xs btn-primary" ng-click="clearSearch(); queryTerms = ''">Reset</span>
-  <a>
-    <i class="glyphicon glyphicon-info-sign" tooltip-placement="top"
-      uib-tooltip="You may search by concept id or terms in the concept's name (e.g. closed fracture, 704020004, ...). Only exact phrases will match, e.g. 'phalanx thumb' will not match the phrase 'phalanx of thumb'.  AND/OR/NOT operators are not supported."></i>
-  </a>
 
+	
+	<div class="col-xs-2">
+		<p class="input-group input-group-sm">
+			<input type="text" id="editQueryInput" ng-model="queryTerms.input">
+		</p>
+	</div>
+
+	<div class="col-xs-4">
+		<p class="input-group input-group-sm">
+			<input type="text" class="form-control" uib-datepicker-popup="{{dateFormat}}"
+				ng-model="queryTerms.dateRangeStart" is-open="dateRangeStart.opened" 
+				datepicker-options="dateOptions" ng-required="false" 
+				close-text="Close" alt-input-formats="altInputFormats"
+				placeholder="Start Date {{dateFormat}}">
+			<span class="input-group-btn">
+				<span class="btn btn-default" ng-click="openDateRangeStart()">
+					<i class="glyphicon glyphicon-calendar"></i>
+				</span>
+			</span>
+			<input type="text" class="form-control" uib-datepicker-popup="{{dateFormat}}"
+				ng-model="queryTerms.dateRangeEnd" is-open="dateRangeEnd.opened" 
+				datepicker-options="dateOptions" ng-required="false" 
+				close-text="Close" alt-input-formats="altInputFormats"
+				placeholder="End Date {{dateFormat}}">
+			<span class="input-group-btn">
+				<span class="btn btn-default" ng-click="openDateRangeEnd()">
+					<i class="glyphicon glyphicon-calendar"></i>
+				</span>
+			</span>
+		</p>
+	</div>
+
+	<button type="submit" class="btn btn-xs btn-primary">Search</button>
+	<span class="btn btn-xs btn-primary" ng-click="clearSearch(); queryTerms = ''">Reset</span>
+	<a>
+		<i class="glyphicon glyphicon-info-sign" tooltip-placement="top"
+			uib-tooltip="You may search by concept id or terms in the concept's name (e.g. closed fracture, 704020004, ...). Only exact phrases will match, e.g. 'phalanx thumb' will not match the phrase 'phalanx of thumb'.  AND/OR/NOT operators are not supported.">
+		</i>
+	</a>
+	&nbsp;&nbsp;{{totalRecords}} results, page {{recordPage}} of {{numRecordPages}}
+	
 </form>
 <br>
 
@@ -17,12 +51,20 @@
   style="width: 30%; padding: 10px;" class="alert alert-in" disabled>No
   concepts found.</div>
 
-<table class="table" ng-show="editedRecords.length > 0">
+<uib-pagination 
+	previous-text="&lsaquo;" next-text="&rsaquo;"
+	first-text="&laquo;"  last-text="&raquo;" 
+	total-items="totalRecords" ng-model="recordPage" max-size="recordsPerPage" 
+	class="pagination-sm" boundary-links="true" rotate="true"
+	ng-change="retrieveEditedWork(recordPage, queryTerms)">
+</uib-pagination>
+
+<table class="table pointer" ng-show="editedRecords.length > 0">
   <thead>
     <tr>
-      <th>Date Edited</th>
-      <th>Concept Id</th>
-      <th>Concept Name</th>
+      <th ng-click="setSortField('lastModified')">Date Edited<span ng-bind="getSortIndicator('lastModified')"></span></th>
+      <th ng-click="setSortField('conceptId')">Concept Id<span ng-bind="getSortIndicator('conceptId')"></span></th>
+      <th ng-click="setSortField('conceptName')">Concept Name<span ng-bind="getSortIndicator('conceptName')"></span></th>
     </tr>
   </thead>
   <tbody>
@@ -48,12 +90,3 @@
     </tr>
   </tbody>
 </table>
-
-<ul class="pager" ng-show="searchPerformed == true">
-  <li class="previous" ng-show="editedRecordsPage > 1"
-    ng-click="retrieveEditedWork(editedRecordsPage-1, queryTerms)"><a>&larr;
-      Newer</a></li>
-  <li class="next"
-    ng-click="retrieveEditedWork(editedRecordsPage+1, queryTerms)"><a>Older
-      &rarr;</a></li>
-</ul>

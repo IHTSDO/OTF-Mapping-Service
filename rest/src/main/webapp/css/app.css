@@ -269,3 +269,7 @@ body {
 .dragover {
 	border: 5px dashed blue;
 }
+
+.pointer {
+	cursor: pointer;
+}

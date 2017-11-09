@@ -164,7 +164,8 @@ public class TrackingRecordJpa implements TrackingRecord {
   }
 
   @Override
-  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  //@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Analyzer(definition = "noStopWord")
   public String getDefaultPreferredName() {
     return defaultPreferredName;
