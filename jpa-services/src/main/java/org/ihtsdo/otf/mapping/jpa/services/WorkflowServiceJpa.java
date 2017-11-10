@@ -54,6 +54,7 @@ import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowQaPathHandler;
 import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowReviewProjectPathHandler;
 import org.ihtsdo.otf.mapping.model.Feedback;
 import org.ihtsdo.otf.mapping.model.FeedbackConversation;
+import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -796,6 +797,20 @@ public class WorkflowServiceJpa extends MappingServiceJpa
 
         if (!mr.isEquivalent(getMapRecordInSet(oldRecords, mr.getId()))) {
           Logger.getLogger(WorkflowServiceJpa.class).debug("    Update record");
+          
+          /*
+           * Special handling for MapNotes based on mapRecordsMapNotes
+           * N:M FK table. Without this, updates to an already persisted 
+           * map note will violate duplicate entry constraint on the table.
+           */
+          Set<MapNote> notesToUpdate = mr.getMapNotes();
+
+          // Persist with clearing out the notes
+          mr.setMapNotes(new HashSet<MapNote>());
+          updateMapRecord(mr);
+
+          // Persist with all notes including updated ones
+          mr.setMapNotes(notesToUpdate);
           updateMapRecord(mr);
         } else {
           Logger.getLogger(WorkflowServiceJpa.class)
