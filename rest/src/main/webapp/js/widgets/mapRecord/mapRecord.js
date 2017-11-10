@@ -37,6 +37,8 @@ angular
         // this controller handles a potentially 'dirty' page
         // $rootScope.currentPageDirty = true;
 
+        var latestNoteId = null;
+
         // initialize scope variables
         $scope.record = null;
         $scope.project = localStorageService.get('focusProject');
@@ -1141,7 +1143,7 @@ angular
           $scope.noteEditId = null;
           $scope.tinymceContent = '';
         };
-
+        
         $scope.saveEditRecordNote = function(record, note) {
 
           if ($scope.noteEditMode == true) {
@@ -1149,11 +1151,13 @@ angular
             // find the existing note
             for (var i = 0; i < record.mapNote.length; i++) {
               // if this note, overwrite it
-              if ($scope.noteEditId == record.mapNote[i].localId) {
+              if ((record.mapNote[i].localId != null && $scope.noteEditId == record.mapNote[i].localId) || 
+            	  (record.mapNote[i].localId == null && $scope.noteEditId == record.mapNote[i].id))	  {
                 noteFound = true;
                 record.mapNote[i].note = note;
                 record.mapNote[i].timestamp = (new Date()).getTime();
                 record.mapNote[i].user = $scope.user;
+                broadcastRecord();
               }
             }
             $scope.noteEditMode = false;
@@ -1652,11 +1656,20 @@ angular
 
           // if no hibernate id, assign local id
           if (elem.id == null || elem.id === '') {
-            var maxLocalId = Math.max.apply(null, array.map(function(v) {
-              return v.id;
-            }));
-            elem['localId'] = maxLocalId == -1 ? 1 : maxLocalId + 1;
+        	  // If first time adding note in session, use note array's max Note Id, else use note array's max Local Id
+	          if (latestNoteId == null) {
+	        	  if (array.length == 0) {
+	        		  latestNoteId = 0;
+	        	  } else { 
+	        		  latestNoteId = Math.max.apply(null, array.map(function(v) {
+	        			  return v.id;
+	        		  }));
+	        	  }
+	          }
+	            
+	          elem['localId'] = ++latestNoteId;
           }
+
           array.push(elem);
         };
 
