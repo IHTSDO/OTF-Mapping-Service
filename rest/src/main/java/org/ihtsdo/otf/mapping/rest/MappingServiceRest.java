@@ -4719,7 +4719,7 @@ public class MappingServiceRest extends RootServiceRest {
       final Properties config = ConfigUtility.getConfigProperties();
       final String jiraAuthHeader = config.getProperty("jira.authHeader");
       final String jiraUrl = config.getProperty("jira.defaultUrl");
-      final String jiraProject = config.getProperty("jira.project");
+      String jiraProject = config.getProperty("jira.project");
 
       if (jiraAuthHeader == null || jiraUrl == null || jiraProject == null) {
         this.handleException(
@@ -4774,9 +4774,10 @@ public class MappingServiceRest extends RootServiceRest {
 		    }*/
 		    
 		    // if test project, override author and user
-            if (jiraProject.equals("MTFP")) {
+            if (jiraProject.equals("MTFP") || jiraProject.equals("MFTP")) {
               conceptAuthor = "dshapiro";
               authToken = "dshapiro";
+              jiraProject = "MTFP";
             }
       
             // create the issue object to send to JIRA Rest API
