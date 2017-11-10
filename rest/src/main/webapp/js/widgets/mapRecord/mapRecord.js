@@ -67,7 +67,7 @@ angular
      // start note edit mode in off mode
         $scope.feedbackEditMode = false;
         $scope.feedbackEditId = null;
-        $scope.newFeedbackTimestamps = new Array();
+        $scope.newFeedbackMessages = new Array();
         $scope.feedbackContent = {
           text : ''
         };
@@ -387,7 +387,7 @@ angular
         }
         
         $scope.isNewFeedback = function(feedback) {
-        	if($scope.newFeedbackTimestamps.includes(Math.round(feedback.timestamp/1000)*1000)){
+        	if($scope.newFeedbackMessages.includes(feedback.message)){
         		return true;
         	}
         	return false;
@@ -444,6 +444,7 @@ angular
                   'Content-Type' : 'application/json'
                 }
               }).success(function(data) {
+                $scope.newFeedbackMessages.push(feedback);    
                 $scope.conversation = data;
               });
             }).error(function(data, status, headers, config) {
@@ -1243,10 +1244,6 @@ angular
               'feedbackConversation' : $scope.conversation,
               'viewedBy' : [ $scope.user ]
             };
-
-            // Add to new feedback timestamps
-            // The rounding is because the timestamp in the feedback gets rounded also
-            $scope.newFeedbackTimestamps.push(Math.round(localTimestamp/1000)*1000);           
             
             var feedbacks = new Array();
             feedbacks.push(feedback);
@@ -1277,6 +1274,7 @@ angular
                 'Content-Type' : 'application/json'
               }
             }).success(function(data) {
+              $scope.newFeedbackMessages.push(feedbackMessage);           
               console.debug('  feedback conversation = ', data);
               $scope.conversation = data;
               $scope.tinymceContent = null;
@@ -1299,10 +1297,6 @@ angular
               'viewedBy' : [ $scope.user ]
             };
 
-            // Add to new feedback timestamps
-            // The rounding is because the timestamp in the feedback gets rounded also
-            $scope.newFeedbackTimestamps.push(Math.round(localTimestamp/1000)*1000);           
-            
             localFeedback.push(feedback);
             $scope.tinymceContent = null;
 
@@ -1327,6 +1321,7 @@ angular
                   'Content-Type' : 'application/json'
                 }
               }).success(function(data) {
+                $scope.newFeedbackMessages.push(feedbackMessage); 
                 $scope.conversation = data;
               });
             }).error(function(data, status, headers, config) {
