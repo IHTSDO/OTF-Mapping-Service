@@ -184,7 +184,7 @@ public class ComputeIcd11Map2 {
     final String icd11Dir = System.getProperty("icd11.dir");
     // Tracking vars
     final String refsetId = "icd11RefsetId";
-    final String moduleId = "123456789";
+    final String moduleId = "900000000000207008";
     Logger.getLogger(getClass()).info("  icd11Dir = " + icd11Dir);
     Logger.getLogger(getClass()).info("  moduleId = " + moduleId);
     Logger.getLogger(getClass()).info("  refsetId = " + refsetId);
