@@ -61,7 +61,7 @@ angular
       // start note edit mode in off mode
       $scope.feedbackEditMode = false;
       $scope.feedbackEditId = null;
-      $scope.newFeedbackTimestamps = new Array();
+      $scope.newFeedbackMessages = new Array();
       $scope.content = {
       	text : ''
       };
@@ -201,7 +201,7 @@ angular
       };
 
       $scope.isNewFeedback = function(feedback) {
-      	if($scope.newFeedbackTimestamps.includes(Math.round(feedback.timestamp/1000)*1000)){
+      	if($scope.newFeedbackMessages.includes(feedback.message)){
       		return true;
       	}
       	return false;
@@ -238,6 +238,7 @@ angular
             $scope.tinymceContent = null;
             
             updateFeedbackConversation($scope.conversation, true);
+            $scope.newFeedbackMessages.push(feedback);  
           }
         };
 
@@ -331,16 +332,13 @@ angular
           'isError' : 'false',
           'viewedBy' : [ $scope.currentUser ]
         };
-        
-        // Add to new feedback timestamps
-        // The rounding is because the timestamp in the feedback gets rounded also
-        $scope.newFeedbackTimestamps.push(Math.round(localTimestamp/1000)*1000);      
-        
+               
 
         localFeedback.push(feedback);
         conversation.feedback = localFeedback;
 
         updateFeedbackConversation(conversation, true);
+        $scope.newFeedbackMessages.push(feedbackMessage);      
 
       };
 
