@@ -89,4 +89,21 @@ public class RootServiceRest {
     return user;
   }
   
+	/**
+	 * Returns the total elapsed time str.
+	 *
+	 * @param time
+	 *            the time
+	 * @return the total elapsed time str
+	 */
+	@SuppressWarnings({ "boxing" })
+	protected static String getTotalElapsedTimeStr(long time) {
+		Long resultnum = (System.nanoTime() - time) / 1000000000;
+		String result = resultnum.toString() + "s";
+		resultnum = resultnum / 60;
+		result = result + " / " + resultnum.toString() + "m";
+		resultnum = resultnum / 60;
+		result = result + " / " + resultnum.toString() + "h";
+		return result;
+	}
 }

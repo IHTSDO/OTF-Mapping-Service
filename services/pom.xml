@@ -17,6 +17,11 @@
   <!-- Declare Project Dependency Versions -->
   <dependencies>
 
+	<dependency>
+      <groupId>javax.ws.rs</groupId>
+      <artifactId>javax.ws.rs-api</artifactId>
+  	</dependency>
+  	
     <!-- Model interfaces. -->
     <dependency>
       <groupId>org.ihtsdo.otf.mapping</groupId>
