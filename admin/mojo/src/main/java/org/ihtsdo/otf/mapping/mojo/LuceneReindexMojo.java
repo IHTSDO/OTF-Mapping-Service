@@ -7,6 +7,13 @@ import java.util.Set;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status.Family;
 
 import org.apache.lucene.util.Version;
 import org.apache.maven.plugin.AbstractMojo;
@@ -17,9 +24,11 @@ import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
+import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.reports.ReportJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa;
+import org.ihtsdo.otf.mapping.services.SecurityService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecordJpa;
 
@@ -42,6 +51,12 @@ public class LuceneReindexMojo extends AbstractMojo {
    * @parameter
    */
   private String indexedObjects;
+  
+  /**
+   * Whether to run this mojo against an active server.
+   * @parameter
+   */
+  private boolean server = false;
 
   /**
    * Instantiates a {@link LuceneReindexMojo} from the specified parameters.
@@ -57,8 +72,26 @@ public class LuceneReindexMojo extends AbstractMojo {
    */
   @Override
   public void execute() throws MojoFailureException {
-    getLog().info("Starting lucene reindexing");
-    getLog().info("  indexedObjects = " + indexedObjects);
+	  try {
+	      getLog().info("Lucene reindexing called via mojo.");
+	      getLog().info("  Indexed objects : " + indexedObjects);
+	      getLog().info("  Expect server up: " + server);
+	      Properties properties = ConfigUtility.getConfigProperties();
+
+	      boolean serverRunning = ConfigUtility.isServerActive();
+
+	      getLog()
+	          .info("Server status detected:  " + (!serverRunning ? "DOWN" : "UP"));
+
+	      if (serverRunning && !server) {
+	        throw new MojoFailureException(
+	            "Mojo expects server to be down, but server is running");
+	      }
+
+	      if (!serverRunning && server) {
+	        throw new MojoFailureException(
+	            "Mojo expects server to be running, but server is down");
+	      }
 
     // set of objects to be re-indexed
     Set<String> objectsToReindex = new HashSet<>();
@@ -84,12 +117,47 @@ public class LuceneReindexMojo extends AbstractMojo {
         objectsToReindex.add(object);
 
     }
+    
+    // authenticate
+    SecurityService service = new SecurityServiceJpa();
+    String authToken =
+        service.authenticate(properties.getProperty("admin.user"),
+            properties.getProperty("admin.password")).getAuthToken();
+    service.close();
+    
     getLog().info("Starting reindexing for:");
+    
+    if (!serverRunning) {
+        getLog().info("Running directly");
+
+        /*AdminServiceRest adminService = new AdminServiceRest();
+        adminService.luceneReindex(indexedObjects, authToken);
+         */
+    } else {
+        getLog().info("Running against server");
+
+        // invoke the client
+        getLog().info("Content Client - lucene reindex " + indexedObjects);
+
+        final Client client = ClientBuilder.newClient();
+        final WebTarget target =
+          client.target(properties.getProperty("base.url") + "/admin/reindex");
+        final Response response = target.request(MediaType.APPLICATION_XML)
+          .header("Authorization", authToken).post(Entity.text(indexedObjects));
+
+        if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+        	// do nothing
+        } else {
+        	if (response.getStatus() != 204)
+        		throw new Exception("Unexpected status " + response.getStatus());
+        }
+
+    }
+
     for (String objectToReindex : objectsToReindex) {
       getLog().info("  " + objectToReindex);
     }
 
-    try {
       Properties config = ConfigUtility.getConfigProperties();
 
       EntityManagerFactory factory =
