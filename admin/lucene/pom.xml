@@ -44,6 +44,7 @@
                 </goals>
                 <configuration>
                   <indexedObjects>${indexed.objects}</indexedObjects>
+                  <server>${server}</server>
                 </configuration>
               </execution>
             </executions>

@@ -624,9 +624,10 @@ public class ConfigUtility {
 			// Attempt to logout to verify service is up (this works like a
 			// "ping").
 			Client client = ClientBuilder.newClient();
-			WebTarget target = client.target(config.getProperty("base.url") + "/security/logout/dummy");
+			WebTarget target = client.target(config.getProperty("base.url") 
+					+ "/security/logout/user/id/dummy");
 
-			Response response = target.request(MediaType.APPLICATION_JSON).get();
+			Response response = target.request(MediaType.TEXT_PLAIN).post(null);			
 			if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
 				return true;
 			} else {
