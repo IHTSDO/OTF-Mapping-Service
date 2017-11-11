@@ -939,6 +939,7 @@ angular
 
             // only put valid authors on list
             var searchResults = data.searchResult;
+            $scope.authorsList = [];
             for (var i = 0; i < data.totalCount; i++) {
               if (searchResults[i].value != 'snowowl'
                 && $scope.authorsList.indexOf(searchResults[i].value) == -1) {

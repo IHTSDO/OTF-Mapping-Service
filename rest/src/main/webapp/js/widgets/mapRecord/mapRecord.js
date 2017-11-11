@@ -2019,6 +2019,9 @@ angular
             resolve : {
               concept : function() {
                 return concept;
+              },
+              project : function() {
+                  return $scope.project;
               }
             }
           });
@@ -2032,9 +2035,10 @@ angular
         };
           
 
-        var AuthoringHistoryModalCtrl = function($scope, $uibModalInstance, $q, concept) {
+        var AuthoringHistoryModalCtrl = function($scope, $uibModalInstance, $q, concept, project) {
 
           $scope.concept = concept;
+          $scope.projectId = project.id
           $scope.edits = [];
           $scope.filter = '';
 
@@ -2044,7 +2048,7 @@ angular
 
             $rootScope.glassPane++;
             $http({
-              url : root_mapping + 'changes/' + concept.terminologyId ,
+              url : root_mapping + 'changes/' + $scope.projectId + '/' + concept.terminologyId,
               dataType : 'json',
               method : 'GET',
               headers : {
