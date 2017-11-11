@@ -397,6 +397,7 @@ public class AdHocMojo extends AbstractMojo {
         mappingService.getMapRecordsForMapProject(project.getId());
     for (final MapRecord record : list.getMapRecords()) {
       boolean groupFlag = false;
+      @SuppressWarnings("unused")
       boolean priorityFlag = false;
       boolean stemFlag = false;
 
