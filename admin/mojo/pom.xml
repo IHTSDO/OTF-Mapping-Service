@@ -17,7 +17,7 @@
 
   <!-- Declare Project Dependency Versions -->
   <dependencies>
-
+  
     <!-- Model interfaces. -->
     <dependency>
       <groupId>org.ihtsdo.otf.mapping</groupId>
@@ -84,6 +84,17 @@
     <dependency>
       <groupId>xom</groupId>
       <artifactId>xom</artifactId>
+    </dependency>
+    
+    <!-- Maven Plugin API -->
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-plugin-api</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.maven.plugin-tools</groupId>
+      <artifactId>maven-plugin-annotations</artifactId>
     </dependency>
 
   </dependencies>

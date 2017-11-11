@@ -256,6 +256,13 @@
         <version>2.2</version>
       </dependency>
       
+	<dependency>
+        <groupId>org.apache.maven.plugin-tools</groupId>
+        <artifactId>maven-plugin-annotations</artifactId>
+        <version>3.4</version>
+        <scope>provided</scope>
+      </dependency>
+      
 	<!-- JSON -->
 	<dependency>
     	<groupId>org.json</groupId>
