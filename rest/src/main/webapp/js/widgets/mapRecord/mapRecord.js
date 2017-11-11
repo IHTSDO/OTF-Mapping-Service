@@ -1371,7 +1371,8 @@ angular
           $rootScope.$broadcast(
             'mapRecordWidget.notification.changeSelectedEntry', {
               key : 'changeSelectedEntry',
-              // Copy the entry, it is updated here via the "modifySelectedEntry" event
+              // Copy the entry, it is updated here via the
+              // "modifySelectedEntry" event
               entry : angular.copy(entry),
               record : $scope.record,
               project : $scope.project
@@ -1453,15 +1454,25 @@ angular
                   // check that the entry id
                   // matches
                   if ($scope.groupsTree[entry.mapGroup - 1].entry[entry.mapPriority - 1].localId != entry.localId) {
+                    $window
+                      .alert('Modified map entry is not in the groups tree '
+                        + entry.mapGroup + ', ' + entry.mapPriority);
                     return;
                   }
 
-                  // replace the entry
-                  $scope.groupsTree[entry.mapGroup - 1].entry[entry.mapPriority - 1] = entry;
+                  // If the only change is advice/relation, do not broadcast,
+                  // simply update locally
+                  if (parameters.adviceOnly) {
+                    $scope.groupsTree[entry.mapGroup - 1].entry[entry.mapPriority - 1].mapAdvice = entry.mapAdvice;
+                  } else if (parameters.relationOnly) {
+                    $scope.groupsTree[entry.mapGroup - 1].entry[entry.mapPriority - 1].mapRelation = entry.mapRelation;
+                  } else {
+                    $scope.groupsTree[entry.mapGroup - 1].entry[entry.mapPriority - 1] = entry;
+                  }
+                  $scope.saveGroups();
                 }
               }
 
-              $scope.saveGroups();
             });
 
         // ///////////////////////

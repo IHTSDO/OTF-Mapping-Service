@@ -2040,10 +2040,14 @@ public class MappingServiceRest extends RootServiceRest {
               + principle.getPrincipleId() + ", " + principle.getName());
         }
         if (principle.getName().equals(mapPrinciple.getName())) {
-          throw new LocalException("A map principle with this name already exists: " + principle.getName());
+          throw new LocalException(
+              "A map principle with this name already exists: "
+                  + principle.getName());
         }
         if (principle.getPrincipleId().equals(mapPrinciple.getPrincipleId())) {
-          throw new LocalException("A map principle with this id already exists: " + principle.getPrincipleId());
+          throw new LocalException(
+              "A map principle with this id already exists: "
+                  + principle.getPrincipleId());
         }
       }
 
@@ -3266,6 +3270,7 @@ public class MappingServiceRest extends RootServiceRest {
   /**
    * Computes a map relation (if any) for a map entry's current state.
    *
+   * @param entryIndex the entry index
    * @param mapRecord the map record
    * @param authToken the auth token
    * @return Response the response
@@ -3288,7 +3293,7 @@ public class MappingServiceRest extends RootServiceRest {
 
     // log call
     Logger.getLogger(MappingServiceRest.class)
-        .info("RESTful call (Mapping): /relation/compute");
+        .info("RESTful call (Mapping): /relation/compute/" + entryIndex);
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
@@ -3338,8 +3343,8 @@ public class MappingServiceRest extends RootServiceRest {
   /**
    * Computes a map advice (if any) for a map entry's current state.
    *
-   * @param mapRecord the map record
    * @param entryIndex the entry index
+   * @param mapRecord the map record
    * @param authToken the auth token
    * @return Response the response
    * @throws Exception the exception
@@ -3361,7 +3366,7 @@ public class MappingServiceRest extends RootServiceRest {
 
     // call log
     Logger.getLogger(MappingServiceRest.class)
-        .info("RESTful call (Mapping): /advice/compute");
+        .info("RESTful call (Mapping): /advice/compute/" + entryIndex);
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();

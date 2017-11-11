@@ -327,7 +327,7 @@ public class ComputeIcd11Map2 {
           mapList.add(scores.getMap());
 
           // Overall map should have the lowest matching category
-          if (category.compareTo(scores.getCategory()) > 0) {
+          if (category.compareTo(scores.getCategory()) < 0) {
             category = scores.getCategory();
           }
 
@@ -886,7 +886,8 @@ public class ComputeIcd11Map2 {
       requiredWords.put("remission", "remission");
       requiredWords.put("hereditary", "hereditary");
       requiredWords.put("congenital", "congenital");
-      requiredWords.put("acute-on-chronic", "acute");
+      //requiredWords.put("acute-on-chronic", "acute");
+      //requiredWords.put("acute on chronic", "acute");
       requiredWords.put("acute", "acute");
       requiredWords.put("chronic", "chronic");
       requiredWords.put("natal", "natal");
