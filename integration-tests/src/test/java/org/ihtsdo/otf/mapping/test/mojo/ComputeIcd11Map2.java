@@ -254,7 +254,7 @@ public class ComputeIcd11Map2 {
           continue;
         }
 
-        if (sctid.equals("423093000")) {
+        if (sctid.equals("236433006")) {
           System.out.println("xxx");
         }
 
@@ -309,6 +309,11 @@ public class ComputeIcd11Map2 {
             fixAdvice(scores.getMap(), scores.getMap().getMapTarget());
           }
 
+          // Overall map should have the lowest matching category
+          if (category.compareTo(scores.getCategory()) > 0) {
+            category = scores.getCategory();
+          }
+
           // Add map to list unless already there (for priority 1s)
           if (map10.getMapPriority() == 1) {
             boolean flag = false;
@@ -325,11 +330,6 @@ public class ComputeIcd11Map2 {
           }
 
           mapList.add(scores.getMap());
-
-          // Overall map should have the lowest matching category
-          if (category.compareTo(scores.getCategory()) < 0) {
-            category = scores.getCategory();
-          }
 
           // If we encountered NO_MAP, we're done looking
           if (scores.getCategory() == Category.NO_MAP) {
@@ -886,8 +886,7 @@ public class ComputeIcd11Map2 {
       requiredWords.put("remission", "remission");
       requiredWords.put("hereditary", "hereditary");
       requiredWords.put("congenital", "congenital");
-      //requiredWords.put("acute-on-chronic", "acute");
-      //requiredWords.put("acute on chronic", "acute");
+      requiredWords.put("acute-on-chronic", "acute");
       requiredWords.put("acute", "acute");
       requiredWords.put("chronic", "chronic");
       requiredWords.put("natal", "natal");
