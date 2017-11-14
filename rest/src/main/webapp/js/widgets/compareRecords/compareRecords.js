@@ -289,8 +289,7 @@ angular
                   $scope.leadConversation = data;
 
                   // if no prior conversation, initialize with the specialists
-                  if ($scope.leadConversation == null
-                    || $scope.leadConversation == '') {
+                  if (!$scope.leadConversation) {
 
                     if ($scope.record1 != null)
                       $scope.returnRecipients.push($scope.record1.owner);
