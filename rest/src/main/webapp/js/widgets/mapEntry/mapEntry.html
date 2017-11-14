@@ -25,7 +25,7 @@
             id="targetIdField" placeholder="Enter target code"
             ng-blur="setTarget(entry.targetId)" ng-model="entry.targetId" />
           <!-- set button is just a dummy, because of ng-blur -->
-          <button class="btn btn-xs btn-primary" type="submit">Set</button>
+          <button ng-disabled="!entry.targetId" class="btn btn-xs btn-primary" type="submit">Set</button>
           <!-- set empty target needed -->
           <span class="btn btn-xs btn-primary"
             ng-show="entry.targetId == null || entry.targetId === ''"
