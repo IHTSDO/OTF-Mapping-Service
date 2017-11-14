@@ -79,9 +79,6 @@ angular
         $scope.project = parameters.focusProject;
         $scope.errorMessages = $scope.project.errorMessages;
         $scope.errorMessages.unshift('None');
-        $scope.allUsers = $scope.project.mapSpecialist
-          .concat($scope.project.mapLead);
-        organizeUsers($scope.allUsers);
       });
 
       // watch for change in focus project
@@ -93,11 +90,13 @@ angular
 
           // if first visit, retrieve the records to be compared
           if ($scope.leadRecord == null) {
-            $scope.getRecordsInConflict();
 
+            // Set up "all users"
             $scope.allUsers = $scope.project.mapSpecialist
               .concat($scope.project.mapLead);
             organizeUsers($scope.allUsers);
+
+            $scope.getRecordsInConflict();
 
             $rootScope.glassPane++;
             $http(
