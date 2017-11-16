@@ -132,6 +132,7 @@ import com.wordnik.swagger.annotations.ApiParam;
 })
 public class MappingServiceRest extends RootServiceRest {
 
+  private static final int MAX_RESULTS = 10000;
   /** The security service. */
   private SecurityService securityService;
 
@@ -2842,7 +2843,7 @@ public class MappingServiceRest extends RootServiceRest {
 
       // if ancestor id specified, need to retrieve all results
       if (ancestorFlag) {
-        pfsLocal.setStartIndex(-1);
+        pfsLocal.setMaxResults(MAX_RESULTS);
 
         // perform lucene search
         searchResults = (queryFlag
@@ -2854,7 +2855,7 @@ public class MappingServiceRest extends RootServiceRest {
 
         // If there was a search query, combine them
         if (queryFlag) {
-          if (searchResults.getTotalCount() > 10000) {
+          if (searchResults.getTotalCount() > MAX_RESULTS) {
             throw new LocalException(searchResults.getTotalCount()
                 + " potential string matches for ancestor search. Narrow your search and try again.");
           }
@@ -2866,10 +2867,11 @@ public class MappingServiceRest extends RootServiceRest {
             }
 
           });
-          searchResults = mappingService
-              .findMapRecords(mapProjectId, ancestorId, excludeDescendants,
-                  mapProject.getSourceTerminology(),
-                  mapProject.getSourceTerminologyVersion(), pfsLocal, resultsMap.keySet());
+          if(searchResults.getCount() > 0)
+            searchResults = mappingService
+                .findMapRecords(mapProjectId, ancestorId, excludeDescendants,
+                    mapProject.getSourceTerminology(),
+                    mapProject.getSourceTerminologyVersion(), descendantPfs, resultsMap.keySet());
  
         }
 
@@ -2878,7 +2880,7 @@ public class MappingServiceRest extends RootServiceRest {
             searchResults = mappingService
                 .findMapRecords(mapProjectId, ancestorId, excludeDescendants,
                     mapProject.getSourceTerminology(),
-                    mapProject.getSourceTerminologyVersion(), pfsLocal, Collections.<String> emptySet());
+                    mapProject.getSourceTerminologyVersion(), descendantPfs, Collections.<String> emptySet());
  
         }
 
