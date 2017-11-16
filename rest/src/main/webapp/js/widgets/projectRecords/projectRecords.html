@@ -144,6 +144,18 @@
       </div>
     </div>
 
+    <!-- Search by map Priority -->
+    <div class="row" style="padding: 5px;">
+      <div class="col-md-3" style="padding-right: 0px;">
+        Map Priority <i class="glyphicon glyphicon-remove pull-right"
+          ng-click="searchParameters.mapPriority = null"
+          ng-show="searchParameters.mapPriority"></i>
+      </div>
+      <div class="col-md-9">
+        <input ng-model="searchParameters.mapPriority">
+      </div>
+    </div>
+
     <!--  search by flags -->
     <div class="row" style="padding: 5px;">
       <div class="col-md-4" style="padding-right: 0px;">
