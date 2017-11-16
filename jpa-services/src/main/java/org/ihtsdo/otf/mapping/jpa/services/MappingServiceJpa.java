@@ -88,6 +88,8 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
 public class MappingServiceJpa extends RootServiceJpa
     implements MappingService {
 
+  private static final String MAP_ENTRIES_MAP_GROUP = "mapEntries.mapGroup:";
+
   /**
    * Instantiates an empty {@link MappingServiceJpa}.
    * 
@@ -621,9 +623,9 @@ public class MappingServiceJpa extends RootServiceJpa
     int mapGroup = 0;
     if (pfsParameter != null && pfsParameter.getQueryRestriction() != null
         && !pfsParameter.getQueryRestriction().isEmpty()) {
-      mapGroupIndex = pfsParameter.getQueryRestriction().indexOf("mapEntries.mapGroup:");
+      mapGroupIndex = pfsParameter.getQueryRestriction().indexOf(MAP_ENTRIES_MAP_GROUP);
       if(mapGroupIndex > -1) {
-        mapGroupIndex += 20;
+        mapGroupIndex += MAP_ENTRIES_MAP_GROUP.length();
         mapGroup = Integer.valueOf(pfsParameter.getQueryRestriction().substring(mapGroupIndex, pfsParameter.getQueryRestriction().indexOf(" ", mapGroupIndex))).intValue();
       }
     }
