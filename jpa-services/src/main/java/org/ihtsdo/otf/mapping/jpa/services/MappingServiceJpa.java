@@ -619,19 +619,7 @@ public class MappingServiceJpa extends RootServiceJpa
         .debug(Integer.toString(records.size()) + " map records retrieved");
 
 
-    int mapGroupIndex = -1;
-    int mapGroup = 0;
-    if (pfsParameter != null && pfsParameter.getQueryRestriction() != null
-        && !pfsParameter.getQueryRestriction().isEmpty()) {
-      mapGroupIndex = pfsParameter.getQueryRestriction().indexOf(MAP_ENTRIES_MAP_GROUP);
-      if(mapGroupIndex > -1) {
-        mapGroupIndex += MAP_ENTRIES_MAP_GROUP.length();
-        mapGroup = Integer.valueOf(pfsParameter.getQueryRestriction().substring(mapGroupIndex, pfsParameter.getQueryRestriction().indexOf(" ", mapGroupIndex))).intValue();
-      }
-    }
     for (final MapRecord mapRecord : records) {
-      if(mapGroup > 0 && mapRecord.getMapEntries().size() > mapGroup)
-        continue;
       list.addSearchResult(new SearchResultJpa(mapRecord.getId(),
           mapRecord.getConceptId().toString(), mapRecord.getConceptName(), ""));
     }

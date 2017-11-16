@@ -559,6 +559,8 @@ angular
         principleContained : true,
         principleName : null,
         ruleCategory : null,
+        mapGroup : null,
+        mapPriority : null,
         descendantsOptions :
     		  ['mapped', 'excludes'],
     	        adviceOptions :
@@ -592,7 +594,8 @@ angular
         $scope.searchParameters.ruleCategory = null;
         $scope.searchParameters.principleName = null;
         $scope.searchParameters.principleContained = true;
-
+        $scope.searchParameters.mapGroup = null;
+        $scope.searchParameters.mapPriority = null;
         $scope.retrieveRecords(1);
       };
 
@@ -720,6 +723,16 @@ angular
           if ($scope.searchParameters.mapGroup) {
             queryRestrictions.push('mapEntries.mapGroup:'
               + $scope.searchParameters.mapGroup);
+            queryRestrictions.push('-mapEntries.mapGroup:{'
+              + $scope.searchParameters.mapGroup + ' TO *}');
+          }
+
+          // check map priority
+          if ($scope.searchParameters.mapPriority) {
+            queryRestrictions.push('mapEntries.mapPriority:'
+              + $scope.searchParameters.mapPriority);
+            queryRestrictions.push('-mapEntries.mapPriority:{'
+              + $scope.searchParameters.mapPriority + ' TO *}');
           }
 
           // check map principles
