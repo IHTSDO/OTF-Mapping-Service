@@ -2993,7 +2993,7 @@ public class MappingServiceJpa extends RootServiceJpa
         queryString = queryString + "and m.conceptId IN (:mapConcepts)";
       }
       query = manager.createQuery(
-          "select m " + queryString);
+          "select m " + queryString + " order by m.conceptId ");
       query.setParameter("terminologyId", ancestorId);
       query.setParameter("terminology", terminology);
       query.setParameter("terminologyVersion", terminologyVersion);
