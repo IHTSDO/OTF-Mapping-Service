@@ -581,7 +581,7 @@ angular
 
       // function to clear input box and return to initial view
       $scope.resetSearch = function() {
-        $scope.searchParameters.query = null;
+        $scope.searchParameters.query = '';
         $scope.searchParameters.page = 1;
         $scope.searchParameters.targetId = [];
         $scope.searchParameters.descendants = null;
