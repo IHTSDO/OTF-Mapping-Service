@@ -48,6 +48,18 @@
 
     <div class="row" style="padding: 5px;">
       <div class="col-md-3" style="padding-right: 0px;">
+        {{focusProject.sourceTerminology}} Relationship Name <i
+          class="glyphicon glyphicon-remove pull-right"
+          ng-click="searchParameters.relationshipName = null"
+          ng-show="searchParameters.relationshipName"></i>
+      </div>
+      <div class="col-md-9">
+        <input ng-model="searchParameters.relationshipName">
+      </div>
+    </div>
+
+    <div class="row" style="padding: 5px;">
+      <div class="col-md-3" style="padding-right: 0px;">
         {{focusProject.destinationTerminology}} Target Id
         <i class="glyphicon glyphicon-remove pull-right"
           ng-click="searchParameters.targetId = null"

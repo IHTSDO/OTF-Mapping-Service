@@ -9,6 +9,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.hibernate.annotations.Index;
 import org.hibernate.search.annotations.ContainedIn;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Relationship;
@@ -37,6 +38,7 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
 
   /** The type id. */
   @Column(nullable = false)
+  @Index(name = "type_id")
   private Long typeId;
 
   /** The characteristic type id. */
