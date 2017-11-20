@@ -2778,6 +2778,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
     @ApiParam(value = "Ancestor concept (inclusive) to restrict search results to", required = true) @QueryParam("ancestorId") String ancestorId,
+    @ApiParam(value = "Source concept relationship name", required = false) @QueryParam("relationshipName") String relationshipName,
     @ApiParam(value = "Excludes descendants of ancestor id ", required = false) @QueryParam("excludeDescendants") boolean excludeDescendants,
     @ApiParam(value = "Search query string", required = false) @QueryParam("query") String query,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
@@ -2804,6 +2805,9 @@ public class MappingServiceRest extends RootServiceRest {
           (query != null && !query.isEmpty() && !query.equals("null") ) || (pfsParameter.getQueryRestriction() != null && !pfsParameter.getQueryRestriction().isEmpty());
       boolean ancestorFlag = ancestorId != null && !ancestorId.isEmpty()
           && !ancestorId.equals("null");
+
+      boolean relationshipFlag = relationshipName != null && !relationshipName.isEmpty()
+          && !relationshipName.equals("null");
 
       // instantiate the list to be returned
       final MapRecordListJpa mapRecordList = new MapRecordListJpa();
@@ -2842,43 +2846,45 @@ public class MappingServiceRest extends RootServiceRest {
       SearchResultList searchResults;
 
       // if ancestor id specified, need to retrieve all results
-      if (ancestorFlag) {
-        pfsLocal.setMaxResults(MAX_RESULTS);
-
-        // perform lucene search
-        searchResults = (queryFlag
-            ? mappingService.findMapRecordsForQuery(queryLocal, pfsLocal)
-            : new SearchResultListJpa());
-
+      if (ancestorFlag || relationshipFlag) {
         final MapProject mapProject =
             mappingService.getMapProject(mapProjectId);
 
         // If there was a search query, combine them
         if (queryFlag) {
+          pfsLocal.setStartIndex(0);
+          pfsLocal.setMaxResults(MAX_RESULTS);
+
+          // perform lucene search
+          searchResults = (queryFlag
+              ? mappingService.findMapRecordsForQuery(queryLocal, pfsLocal)
+              : new SearchResultListJpa());
+
           if (searchResults.getTotalCount() > MAX_RESULTS) {
             throw new LocalException(searchResults.getTotalCount()
-                + " potential string matches for ancestor search. Narrow your search and try again.");
+                + " potential string matches for ancestor or relationship search. Narrow your search and try again.");
           }
-          ImmutableMap<String, SearchResult> resultsMap = Maps.uniqueIndex(searchResults.getSearchResults(), new Function<SearchResult, String>() {
+          if(searchResults.getCount() > 0) {
+            ImmutableMap<String, SearchResult> resultsMap = Maps.uniqueIndex(searchResults.getSearchResults(), new Function<SearchResult, String>() {
 
-            @Override
-            public String apply(SearchResult input) {
-              return input.getTerminologyId();
-            }
+              @Override
+              public String apply(SearchResult input) {
+                return input.getTerminologyId();
+              }
 
-          });
-          if(searchResults.getCount() > 0)
+            });
             searchResults = mappingService
-                .findMapRecords(mapProjectId, ancestorId, excludeDescendants,
+                .findMapRecords(mapProjectId, ancestorId, excludeDescendants, relationshipName,
                     mapProject.getSourceTerminology(),
                     mapProject.getSourceTerminologyVersion(), descendantPfs, resultsMap.keySet());
+          }
  
         }
 
         else {
           // Otherwise, just find all map records to include or exclude descendants
             searchResults = mappingService
-                .findMapRecords(mapProjectId, ancestorId, excludeDescendants,
+                .findMapRecords(mapProjectId, ancestorId, excludeDescendants, relationshipName, 
                     mapProject.getSourceTerminology(),
                     mapProject.getSourceTerminologyVersion(), descendantPfs, Collections.<String> emptySet());
  
