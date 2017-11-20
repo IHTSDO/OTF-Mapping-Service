@@ -2947,34 +2947,36 @@ public class MappingServiceJpa extends RootServiceJpa
 
     final SearchResultList searchResultList = new SearchResultListJpa();
 
-    javax.persistence.Query query = manager.createQuery(
-        "select tp.ancestorPath from TreePositionJpa tp where terminologyVersion = :terminologyVersion and terminology = :terminology and terminologyId = :terminologyId");
-    query.setParameter("terminology", terminology);
-    query.setParameter("terminologyVersion", terminologyVersion);
-    query.setParameter("terminologyId", ancestorId);
-
-    // get the first tree position
-    query.setMaxResults(1);
-    final List<String> ancestorPaths = query.getResultList();
-    
     String ancestorPath = null;
 
-    // skip construction if no ancestor path was found
-    if (ancestorPaths.size() != 0) {
-
-      ancestorPath = ancestorPaths.get(0);
-
-      // insert string to actually add this concept to the ancestor path
-      if (!ancestorPath.isEmpty()) {
-        ancestorPath += "~";
+    if(ancestorId != null && !ancestorId.isEmpty()) {
+      javax.persistence.Query query = manager.createQuery(
+          "select tp.ancestorPath from TreePositionJpa tp where terminologyVersion = :terminologyVersion and terminology = :terminology and terminologyId = :terminologyId");
+      query.setParameter("terminology", terminology);
+      query.setParameter("terminologyVersion", terminologyVersion);
+      query.setParameter("terminologyId", ancestorId);
+  
+      // get the first tree position
+      query.setMaxResults(1);
+      final List<String> ancestorPaths = query.getResultList();
+      
+      // skip construction if no ancestor path was found
+      if (ancestorPaths.size() != 0) {
+  
+        ancestorPath = ancestorPaths.get(0);
+  
+        // insert string to actually add this concept to the ancestor path
+        if (!ancestorPath.isEmpty()) {
+          ancestorPath += "~";
+        }
+        ancestorPath += ancestorId;
       }
-      ancestorPath += ancestorId;
     }
       
     List<Long> relationshipIds = new ArrayList<Long>();
     
     if(relationshipName != null && !relationshipName.isEmpty()) {
-      query = manager.createQuery(
+      javax.persistence.Query query = manager.createQuery(
           "select c.terminologyId from ConceptJpa c where terminologyVersion = :terminologyVersion and terminology = :terminology and defaultPreferredName like :relationshipName");
       query.setParameter("terminology", terminology);
       query.setParameter("terminologyVersion", terminologyVersion);
@@ -3006,7 +3008,7 @@ public class MappingServiceJpa extends RootServiceJpa
     }
 
 
-    query = manager.createQuery(
+    javax.persistence.Query query = manager.createQuery(
         "select distinct m " + queryString + " order by m.conceptId ");
     query.setParameter("mapProjectId", mapProjectId);
     if(ancestorPath != null) {
