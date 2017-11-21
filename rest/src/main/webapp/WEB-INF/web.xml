@@ -8,11 +8,15 @@
   <!-- Jersey configuration -->
   <servlet>
     <servlet-name>Jersey</servlet-name>
-    <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+    <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
     <init-param>
-      <param-name>com.sun.jersey.config.property.packages</param-name>
+      <param-name>jersey.config.server.provider.packages</param-name>
       <param-value>com.fasterxml.jackson.jaxrs.json;org.ihtsdo.otf.mapping.rest;org.ihtsdo.otf.mapping.model;org.ihtsdo.otf.mapping.rf2;org.ihtsdo.otf.mapping.rf2.jpa;org.ihtsdo.otf.mapping.services;org.ihtsdo.otf.mapping.jpa.services;com.wordnik.swagger.jersey.listing</param-value>
     </init-param>
+    <init-param>
+        <param-name>jersey.config.server.provider.classnames</param-name>
+        <param-value>org.glassfish.jersey.media.multipart.MultiPartFeature</param-value>
+    </init-param>    
     <load-on-startup>1</load-on-startup>
   </servlet>
 

@@ -112,7 +112,6 @@ import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
@@ -4058,14 +4057,14 @@ public class MappingServiceRest extends RootServiceRest {
    * @throws Exception the exception
    */
   @POST
-  @Path("/upload/{mapProjectId}")
+  @Path("/upload")
   // Swagger does not support this
   @ApiOperation(value = "Upload a mapping handbook file for a project", notes = "Uploads a mapping handbook file for the specified project.")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   public Response uploadMappingHandbookFile(
     @FormDataParam("file") InputStream fileInputStream,
     @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
-    @PathParam("mapProjectId") Long mapProjectId,
+    @QueryParam("mapProjectId") Long mapProjectId,
     @HeaderParam("Authorization") String authToken) throws Exception {
 
     String user = null;
