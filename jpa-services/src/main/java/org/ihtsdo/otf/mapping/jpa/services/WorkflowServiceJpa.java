@@ -1611,7 +1611,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     Logger.getLogger(getClass()).info("  query = " + sb.toString());
 
     final PfsParameter pfs = new PfsParameterJpa(pfsParameter);
-    pfs.setMaxResults(-1); //Integer.MAX_VALUE);
+    pfs.setMaxResults(-1);
     
     if (pfs.getSortField() == null || pfs.getSortField().isEmpty()) {
       pfs.setSortField("lastModified");

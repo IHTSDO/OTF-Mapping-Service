@@ -913,7 +913,7 @@ angular
             'recipients' : newRecipients,
             'isError' : 'false',
             'feedbackConversation' : currentConversation,
-            'viewedBy' : []
+            'viewedBy' : [$scope.user]
           };
           
           // Add to new feedback timestamps

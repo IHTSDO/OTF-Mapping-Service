@@ -160,12 +160,21 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
       // if any of the feedbacks are not yet viewed, return false indicating
       // that conversation is not yet viewed
       $scope.isFeedbackViewed = function(conversation) {
+    	  
+    	  if (conversation.terminologyId == '735490009') {
+      	  	console.log("conversation: " + JSON.stringify(conversation.feedback));
+      	  }
+    	  
         for (var i = 0; i < conversation.feedback.length; i++) {
           var alreadyViewedBy = conversation.feedback[i].viewedBy;	
           var found = false;
+          if (conversation.feedback[i].sender.userName === $scope.currentUser.userName)
+      	  	found = true;
+          else {
           for (var j = 0; j < alreadyViewedBy.length; j++) {
-            if (alreadyViewedBy[j].userName == $scope.currentUser.userName)
-              found = true;
+        	  if (alreadyViewedBy[j].userName == $scope.currentUser.userName)
+              	found = true;
+          	}
           }
           if (found == false)
             return false;
