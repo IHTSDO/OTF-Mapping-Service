@@ -445,9 +445,9 @@ public class MappingServiceRest extends RootServiceRest {
 
     final MappingService mappingService = new MappingServiceJpa();
     try {
-    	// authorize call
-        user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-            "clone a map project", securityService);
+      // authorize call
+      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+          "clone a map project", securityService);
 
       mappingService.setTransactionPerOperation(false);
       mappingService.beginTransaction();
@@ -471,10 +471,10 @@ public class MappingServiceRest extends RootServiceRest {
       
       // copy map specialists and leads
       for (MapUser mapLead : originMapProject.getMapLeads()) {
-    	  mapLead.setId(null);
+        mapLead.setId(null);
       }
       for (MapUser mapSpecialist : originMapProject.getMapSpecialists()) {
-    	  mapSpecialist.setId(null);
+        mapSpecialist.setId(null);
       }
       // clear error messages
       mapProject.setErrorMessages(new HashSet<String>());
@@ -846,22 +846,22 @@ public class MappingServiceRest extends RootServiceRest {
 
       final MapProject mapProject = mappingService.getMapProject(projectId);
       final ValidationResult result = new ValidationResultJpa();
-      
+
       if (mapProject.getScopeConcepts().contains(terminologyId)) {
-        mapProject.removeScopeConcept(terminologyId); 
+        mapProject.removeScopeConcept(terminologyId);
         mappingService.updateMapProject(mapProject);
         result.addMessage("Concept " + terminologyId + " has been removed from scope.");
       } else if (contentService.getConcept(terminologyId,
-        mapProject.getSourceTerminology(),
-        mapProject.getSourceTerminologyVersion()) == null) {
+          mapProject.getSourceTerminology(),
+          mapProject.getSourceTerminologyVersion()) == null) {
         result.addWarning("Concept " + terminologyId + " does not exist, skipping.");
       } else {
         result.addWarning(
             "Concept " + terminologyId + " was not in scope for this project, skipping.");
       }
-     
+
       return result;
-      
+
     } catch (Exception e) {
       this.handleException(e, "trying to remove scope concept from project",
           user, projectName, "");
@@ -900,7 +900,7 @@ public class MappingServiceRest extends RootServiceRest {
 
     final MappingService mappingService = new MappingServiceJpa();
     final ContentService contentService = new ContentServiceJpa();
-    
+
     try {
       // authorize call
       user = authorizeProject(projectId, authToken, MapUserRole.LEAD,
@@ -908,15 +908,15 @@ public class MappingServiceRest extends RootServiceRest {
 
       final MapProject mapProject = mappingService.getMapProject(projectId);
       ValidationResult result = new ValidationResultJpa();
-      
+
       for (final String terminologyId : terminologyIds) {
         if (mapProject.getScopeConcepts().contains(terminologyId)) {
-          mapProject.removeScopeConcept(terminologyId); 
+          mapProject.removeScopeConcept(terminologyId);
           mappingService.updateMapProject(mapProject);
           result.addMessage("Concept " + terminologyId + " has been removed from scope.");
         } else if (contentService.getConcept(terminologyId,
-          mapProject.getSourceTerminology(),
-          mapProject.getSourceTerminologyVersion()) == null) {
+            mapProject.getSourceTerminology(),
+            mapProject.getSourceTerminologyVersion()) == null) {
           result.addWarning("Concept " + terminologyId + " does not exist, skipping.");
         } else {
           result.addWarning(
@@ -1074,20 +1074,20 @@ public class MappingServiceRest extends RootServiceRest {
 
       final MapProject mapProject = mappingService.getMapProject(projectId);
       final ValidationResult result = new ValidationResultJpa();
-      
+
       if (mapProject.getScopeExcludedConcepts().contains(terminologyId)) {
-        mapProject.removeScopeExcludedConcept(terminologyId); 
+        mapProject.removeScopeExcludedConcept(terminologyId);
         mappingService.updateMapProject(mapProject);
         result.addMessage("Concept " + terminologyId + " has been removed from scope excluded list.");
       } else if (contentService.getConcept(terminologyId,
-        mapProject.getSourceTerminology(),
-        mapProject.getSourceTerminologyVersion()) == null) {
+          mapProject.getSourceTerminology(),
+          mapProject.getSourceTerminologyVersion()) == null) {
         result.addWarning("Concept " + terminologyId + " does not exist, skipping.");
       } else {
         result.addWarning(
             "Concept " + terminologyId + " was not in scope exluded list for this project, skipping.");
       }
-     
+
       return result;
     } catch (Exception e) {
       this.handleException(e,
@@ -1135,14 +1135,14 @@ public class MappingServiceRest extends RootServiceRest {
 
       final ValidationResult result = new ValidationResultJpa();
       for (final String terminologyId : terminologyIds) {
-        
+
         if (mapProject.getScopeExcludedConcepts().contains(terminologyId)) {
-          mapProject.removeScopeExcludedConcept(terminologyId); 
+          mapProject.removeScopeExcludedConcept(terminologyId);
           mappingService.updateMapProject(mapProject);
           result.addMessage("Concept " + terminologyId + " has been removed from scope excluded list.");
         } else if (contentService.getConcept(terminologyId,
-          mapProject.getSourceTerminology(),
-          mapProject.getSourceTerminologyVersion()) == null) {
+            mapProject.getSourceTerminology(),
+            mapProject.getSourceTerminologyVersion()) == null) {
           result.addWarning("Concept " + terminologyId + " does not exist, skipping.");
         } else {
           result.addWarning(
@@ -2785,7 +2785,7 @@ public class MappingServiceRest extends RootServiceRest {
     // log call
     Logger.getLogger(MappingServiceRest.class)
         .info("RESTful call (Mapping): /record/project/id/" + mapProjectId + " "
-            + ancestorId + ", " + excludeDescendants  + ", " + query);
+            + ancestorId + ", " + excludeDescendants + ", " + query);
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
 
@@ -2860,17 +2860,17 @@ public class MappingServiceRest extends RootServiceRest {
           }
           ImmutableMap<String, SearchResult> resultsMap = Maps.uniqueIndex(searchResults.getSearchResults(), new Function<SearchResult, String>() {
 
-            @Override
-            public String apply(SearchResult input) {
-              return input.getTerminologyId();
-            }
+                    @Override
+                    public String apply(SearchResult input) {
+                      return input.getTerminologyId();
+                    }
 
-          });
+                  });
           searchResults = mappingService
               .findMapRecords(mapProjectId, ancestorId, excludeDescendants,
                   mapProject.getSourceTerminology(),
                   mapProject.getSourceTerminologyVersion(), pfsLocal, resultsMap.keySet());
- 
+
         }
 
         else {
@@ -2879,7 +2879,7 @@ public class MappingServiceRest extends RootServiceRest {
                 .findMapRecords(mapProjectId, ancestorId, excludeDescendants,
                     mapProject.getSourceTerminology(),
                     mapProject.getSourceTerminologyVersion(), pfsLocal, Collections.<String> emptySet());
- 
+
         }
 
         // workaround for typing problems between List<SearchResultJpa>
@@ -4684,7 +4684,7 @@ public class MappingServiceRest extends RootServiceRest {
       securityService.close();
     }
   }
-  
+
   /**
    * Creates the jira issue.
    *
@@ -4710,7 +4710,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
     Logger.getLogger(WorkflowServiceRest.class)
         .info("RESTful call (Mapping): /jira/" + conceptId.toString() + "/"
-            + conceptAuthor );
+            + conceptAuthor);
     Logger.getLogger(WorkflowServiceRest.class)
         .info("RESTful call (Mapping): /jira/" + messageText);
     try {
@@ -4726,7 +4726,7 @@ public class MappingServiceRest extends RootServiceRest {
             new Exception("create a JIRA issue. JIRA properties must be in configuration file"),
             "create a JIRA issue . JIRA properties must be in configuration file", "", "", "");
       }
-      
+
       Client client = Client.create();
       WebResource webResource = client.resource(jiraUrl + "/issue/");
 
@@ -4772,15 +4772,15 @@ public class MappingServiceRest extends RootServiceRest {
 		    	mapRecordContents.append(note.getUser().getName()).append(" on ").append(note.getTimestamp()).append("\\\\\\\\");
 		    	mapRecordContents.append(note.getNote().replaceAll("<br>", "\\\\\\\\\\\\\\\\").replaceAll("\\<.*?\\>", "").replaceAll("nbsp;", " ")).append("\\\\\\\\");
 		    }*/
-		    
-		    // if test project, override author and user
-            if (jiraProject.equals("MTFP") || jiraProject.equals("MFTP")) {
-              conceptAuthor = "dshapiro";
-              authToken = "dshapiro";
-              jiraProject = "MTFP";
-            }
-      
-            // create the issue object to send to JIRA Rest API
+
+      // if test project, override author and user
+      if (jiraProject.equals("MTFP") || jiraProject.equals("MFTP")) {
+        conceptAuthor = "dshapiro";
+        authToken = "dshapiro";
+        jiraProject = "MTFP";
+      }
+
+      // create the issue object to send to JIRA Rest API
 		    String data = "{"
             + "\"fields\": {"
                 + "\"project\":"
@@ -4825,7 +4825,7 @@ public class MappingServiceRest extends RootServiceRest {
         Logger.getLogger(MappingServiceRest.class)
             .info("Http Error : " + statusCode);
       }
-      
+
       BufferedReader inputStream = new BufferedReader(
           new InputStreamReader(response.getEntityInputStream()));
       String line = null;
@@ -4841,6 +4841,7 @@ public class MappingServiceRest extends RootServiceRest {
       e.printStackTrace();
     }
   }
+
   @GET
   @Path("/authors/{conceptId}")
   @ApiOperation(value = "Gets authors for this concept", notes = "Gets a list of all content authors from the authoring tool.", response = SearchResultList.class)
@@ -4854,160 +4855,214 @@ public class MappingServiceRest extends RootServiceRest {
 
     Logger.getLogger(MappingServiceRest.class)
         .info("RESTful call (Mapping):  /authors/" + conceptId);
-    final Properties config = ConfigUtility.getConfigProperties();
-    final String authoringAuthHeader =
-        config.getProperty("authoring.authHeader");
-    final String authoringUrl = config.getProperty("authoring.defaultUrl");
-    
-    if (authoringAuthHeader == null || authoringUrl == null) {
-      this.handleException(
-          new Exception("retrieve concept authors. Authoring properties must be in configuration file"),
-          "retrieve concept authors. Authoring properties must be in configuration file", "", "", "");
-    }
 
-    Client client = Client.create();
-    WebResource webResource = client.resource(authoringUrl
-        + "/traceability-service/activities?conceptId=" + conceptId);
+    String user = null;
+    try {
+      // authorize call
+      user = authorizeApp(authToken, MapUserRole.VIEWER,
+          "gets authors for this concept", securityService);
 
-    ClientResponse response = webResource
-        .header("Authorization", authoringAuthHeader).type("application/json")
-        .accept("application/json").get(ClientResponse.class);
-    int statusCode = response.getStatus();
+      final Properties config = ConfigUtility.getConfigProperties();
+      final String authoringAuthHeader =
+          config.getProperty("authoring.authHeader");
+      final String authoringUrl = config.getProperty("authoring.defaultUrl");
 
-    if (statusCode == 401) {
-      this.handleException(
-          new AuthenticationException("Invalid Username or Password"),
-          "Invalid Username or Password", authToken, "", "");
-    } else if (statusCode == 403) {
-      this.handleException(new AuthenticationException("Forbidden"),
-          "Forbidden", authToken, "", "");
-    } else if (statusCode == 200 || statusCode == 201) {
-      Logger.getLogger(MappingServiceRest.class)
-          .info("Traceability report retrieved successfully");
-    } else {
-      this.handleException(
-          new AuthenticationException("Http Error : " + statusCode),
-          "Http Error : " + statusCode, authToken, "", "");
-      Logger.getLogger(MappingServiceRest.class)
-          .info("Http Error : " + statusCode);
-    }
-    // Parse to get the authors on all changes that were promoted to MAIN
-    String jsonText = inputStreamToString(response.getEntityInputStream());
-    JSONObject jsonObject = new JSONObject(jsonText);
-    JSONArray array = jsonObject.getJSONArray("content");
-    SearchResultList searchResultList = new SearchResultListJpa();
-    List<String> userNameList = new ArrayList<>();
-    for (int i = 0; i < array.length(); i++) {
-      JSONObject singleContent = array.getJSONObject(i);
-      if (singleContent.getString("highestPromotedBranch") == null
-          || !singleContent.getJSONObject("highestPromotedBranch")
-              .getString("branchPath").contains("MAIN")) {
-        continue;
+      if (authoringAuthHeader == null || authoringUrl == null) {
+        this.handleException(
+            new Exception(
+                "retrieve concept authors. Authoring properties must be in configuration file"),
+            "retrieve concept authors. Authoring properties must be in configuration file",
+            "", "", "");
       }
-      String userName =
-          singleContent.getJSONObject("user").getString("username");
-      if (!userNameList.contains(userName)) {
-        userNameList.add(userName);
-      }
-    }
-    for (String userName : userNameList) {
-      SearchResult searchResult = new SearchResultJpa();
-      searchResult.setValue(userName);
-      searchResultList.addSearchResult(searchResult);
-    }
-    searchResultList.setTotalCount(userNameList.size());
-    return searchResultList;
 
+      Client client = Client.create();
+      WebResource webResource = client.resource(authoringUrl
+          + "/traceability-service/activities?conceptId=" + conceptId);
+
+      ClientResponse response = webResource
+          .header("Authorization", authoringAuthHeader).type("application/json")
+          .accept("application/json").get(ClientResponse.class);
+      int statusCode = response.getStatus();
+
+      if (statusCode == 401) {
+        this.handleException(
+            new AuthenticationException("Invalid Username or Password"),
+            "Invalid Username or Password", authToken, "", "");
+      } else if (statusCode == 403) {
+        this.handleException(new AuthenticationException("Forbidden"),
+            "Forbidden", authToken, "", "");
+      } else if (statusCode == 200 || statusCode == 201) {
+        Logger.getLogger(MappingServiceRest.class)
+            .info("Traceability report retrieved successfully");
+      } else {
+        this.handleException(
+            new AuthenticationException("Http Error : " + statusCode),
+            "Http Error : " + statusCode, authToken, "", "");
+        Logger.getLogger(MappingServiceRest.class)
+            .info("Http Error : " + statusCode);
+      }
+      // Parse to get the authors on all changes that were promoted to MAIN
+      String jsonText = inputStreamToString(response.getEntityInputStream());
+      JSONObject jsonObject = new JSONObject(jsonText);
+      JSONArray array = jsonObject.getJSONArray("content");
+      SearchResultList searchResultList = new SearchResultListJpa();
+      List<String> userNameList = new ArrayList<>();
+      for (int i = 0; i < array.length(); i++) {
+        JSONObject singleContent = array.getJSONObject(i);
+        if (singleContent.getString("highestPromotedBranch") == null
+            || !singleContent.getJSONObject("highestPromotedBranch")
+                .getString("branchPath").contains("MAIN")) {
+          continue;
+        }
+        String userName =
+            singleContent.getJSONObject("user").getString("username");
+        if (!userNameList.contains(userName)) {
+          userNameList.add(userName);
+        }
+      }
+      for (String userName : userNameList) {
+        SearchResult searchResult = new SearchResultJpa();
+        searchResult.setValue(userName);
+        searchResultList.addSearchResult(searchResult);
+      }
+      searchResultList.setTotalCount(userNameList.size());
+      return searchResultList;
+    } catch (Exception e) {
+      this.handleException(e, "trying to get authors for this concept", user,
+          "", "");
+      return null;
+    } finally {
+      securityService.close();
+    }
   }
 
   @GET
-  @Path("/changes/{conceptId}")
+  @Path("/changes/{projectId}/{conceptId}")
   @ApiOperation(value = "Gets authoring history for this concept", notes = "Gets a list of all editing changes made to MAIN from the authoring tool.", response = SearchResultList.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public SearchResultList getConceptAuthoringChanges(
+    @ApiParam(value = "Project id", required = true) @PathParam("projectId") String projectId,
     @ApiParam(value = "Concept id", required = true) @PathParam("conceptId") String conceptId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class)
-        .info("RESTful call (Mapping):  /changes/" + conceptId);
-    final Properties config = ConfigUtility.getConfigProperties();
-    final String authoringAuthHeader =
-        config.getProperty("authoring.authHeader");
-    final String authoringUrl = config.getProperty("authoring.defaultUrl");
-    
-    if (authoringAuthHeader == null || authoringUrl == null) {
-      this.handleException(
-          new Exception("retrieve authoring history. Authoring properties must be in configuration file"),
-          "retrieve authoring history. Authoring properties must be in configuration file", "", "", "");
-    }
+    Logger.getLogger(MappingServiceRest.class).info(
+        "RESTful call (Mapping):  /changes/" + projectId + "/" + conceptId);
 
-    Client client = Client.create();
-    WebResource webResource = client.resource(authoringUrl
-        + "/traceability-service/activities?conceptId=" + conceptId);
+    final MappingService mappingService = new MappingServiceJpa();
+    String user = null;
+    try {
+      // authorize call
+      user = authorizeApp(authToken, MapUserRole.VIEWER,
+          "get concept authoring changes", securityService);
 
-    ClientResponse response = webResource
-        .header("Authorization", authoringAuthHeader).type("application/json")
-        .accept("application/json").get(ClientResponse.class);
-    int statusCode = response.getStatus();
+      final MapProject mapProject =
+          mappingService.getMapProject(new Long(projectId).longValue());
 
-    if (statusCode == 401) {
-      throw new AuthenticationException("Invalid Username or Password");
-    } else if (statusCode == 403) {
-      throw new AuthenticationException("Forbidden");
-    } else if (statusCode == 200 || statusCode == 201) {
+      final Date editingCycleBeginDate = mapProject.getEditingCycleBeginDate();
       Logger.getLogger(MappingServiceRest.class)
-      .info("Traceability report retrieved successfully");
-    } else {
-      Logger.getLogger(MappingServiceRest.class)
-      .info("Http Error : " + statusCode);
-    }
+          .info("editingCycleBeginDate:" + editingCycleBeginDate.toString());
 
-    // Parse to get the editing changes that were promoted to MAIN
-    String jsonText = inputStreamToString(response.getEntityInputStream());
-    JSONObject jsonObject = new JSONObject(jsonText);
-    JSONArray array = jsonObject.getJSONArray("content");
-    SearchResultList searchResultList = new SearchResultListJpa();
-    for (int i = 0; i < array.length(); i++) {
-      JSONObject singleContent = array.getJSONObject(i);
-      if (singleContent.getString("highestPromotedBranch") == null
-          || !singleContent.getJSONObject("highestPromotedBranch")
-              .getString("branchPath").contains("MAIN")) {
-        continue;
+      final Properties config = ConfigUtility.getConfigProperties();
+      final String authoringAuthHeader =
+          config.getProperty("authoring.authHeader");
+      final String authoringUrl = config.getProperty("authoring.defaultUrl");
+
+      if (authoringAuthHeader == null || authoringUrl == null) {
+        this.handleException(
+            new Exception(
+                "retrieve authoring history. Authoring properties must be in configuration file"),
+            "retrieve authoring history. Authoring properties must be in configuration file",
+            "", "", "");
       }
-      String userName =
-          singleContent.getJSONObject("user").getString("username");
-      String commitDate = 
-          singleContent.getString("commitDate");
-      JSONArray conceptChangesArray = singleContent.getJSONArray("conceptChanges");
-      for (int j = 0; j < conceptChangesArray.length(); j++) {
-        JSONObject conceptChange = conceptChangesArray.getJSONObject(j);
-        String cptId = conceptChange.getString("conceptId");
-        JSONArray componentChangesArray = conceptChange.getJSONArray("componentChanges");
-        for (int k = 0; k < componentChangesArray.length(); k++) {
-          JSONObject componentChange = componentChangesArray.getJSONObject(k);
-          String componentId = componentChange.getString("componentId");
-          String componentType = componentChange.getString("componentType");
-          String componentSubType = "";
-          try {
-            componentSubType = componentChange.getString("componentSubType");
-          } catch (Exception e) {
-            // do nothing
+
+      Client client = Client.create();
+      WebResource webResource = client.resource(authoringUrl
+          + "/traceability-service/activities?conceptId=" + conceptId);
+
+      ClientResponse response = webResource
+          .header("Authorization", authoringAuthHeader).type("application/json")
+          .accept("application/json").get(ClientResponse.class);
+      int statusCode = response.getStatus();
+
+      if (statusCode == 401) {
+        throw new AuthenticationException("Invalid Username or Password");
+      } else if (statusCode == 403) {
+        throw new AuthenticationException("Forbidden");
+      } else if (statusCode == 200 || statusCode == 201) {
+        Logger.getLogger(MappingServiceRest.class)
+            .info("Traceability report retrieved successfully");
+      } else {
+        Logger.getLogger(MappingServiceRest.class)
+            .info("Http Error : " + statusCode);
+      }
+
+      // Parse to get the editing changes that were promoted to MAIN
+      SearchResultList searchResultList = new SearchResultListJpa();
+      String jsonText = inputStreamToString(response.getEntityInputStream());
+      JSONObject jsonObject = new JSONObject(jsonText);
+      JSONArray array = jsonObject.getJSONArray("content");
+      for (int i = 0; i < array.length(); i++) {
+        JSONObject singleContent = array.getJSONObject(i);
+        if (singleContent.getString("highestPromotedBranch") == null
+            || !singleContent.getJSONObject("highestPromotedBranch")
+                .getString("branchPath").contains("MAIN")) {
+          continue;
+        }
+        String userName =
+            singleContent.getJSONObject("user").getString("username");
+        String commitDateString = singleContent.getString("commitDate");
+        final SimpleDateFormat dt = new SimpleDateFormat("yyyy-MM-dd");
+        Date commitDate = dt.parse(commitDateString);
+
+        // don't include entries that occurred before the editing cycle begin
+        // date
+        if (commitDate.before(editingCycleBeginDate)) {
+          continue;
+        }
+        JSONArray conceptChangesArray =
+            singleContent.getJSONArray("conceptChanges");
+        for (int j = 0; j < conceptChangesArray.length(); j++) {
+          JSONObject conceptChange = conceptChangesArray.getJSONObject(j);
+          String cptId = conceptChange.getString("conceptId");
+          JSONArray componentChangesArray =
+              conceptChange.getJSONArray("componentChanges");
+          for (int k = 0; k < componentChangesArray.length(); k++) {
+            JSONObject componentChange = componentChangesArray.getJSONObject(k);
+            String componentId = componentChange.getString("componentId");
+            String componentType = componentChange.getString("componentType");
+            String componentSubType = "";
+            try {
+              componentSubType = componentChange.getString("componentSubType");
+            } catch (Exception e) {
+              // do nothing
+            }
+            String changeType = componentChange.getString("changeType");
+            SearchResult searchResult = new SearchResultJpa();
+            searchResult.setValue(userName + ":" + commitDateString);
+            searchResult.setValue2(cptId + ":" + componentId + ":"
+                + componentType + ":" + componentSubType + ":" + changeType);
+            searchResultList.addSearchResult(searchResult);
           }
-          String changeType = componentChange.getString("changeType");
-          SearchResult searchResult = new SearchResultJpa();
-          searchResult.setValue(userName + ":" + commitDate);
-          searchResult.setValue2(cptId + ":" + componentId + ":" + componentType + ":" + componentSubType + ":" + changeType);
-          searchResultList.addSearchResult(searchResult);
         }
       }
+      searchResultList
+          .setTotalCount(searchResultList.getSearchResults().size());
+      Logger.getLogger(MappingServiceRest.class)
+          .info("Traceability report contains "
+              + searchResultList.getTotalCount() + " entries.");
+      return searchResultList;
+
+    } catch (Exception e) {
+      this.handleException(e, "trying to get concept authoring changes", user,
+          "", "");
+      return null;
+    } finally {
+      mappingService.close();
+      securityService.close();
     }
-    searchResultList.setTotalCount(searchResultList.getSearchResults().size());
-    Logger.getLogger(MappingServiceRest.class)
-    .info("Traceability report contains " + searchResultList.getTotalCount() + " entries.");
-    return searchResultList;
 
   }
 

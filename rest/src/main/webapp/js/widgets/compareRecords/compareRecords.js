@@ -1271,6 +1271,14 @@ angular
         height : "150"
       };
 
+      $scope.tinymceOptionsForGroupFeedback = {
+        menubar : false,
+        statusbar : false,
+        plugins : 'autolink link image charmap searchreplace',
+        toolbar : 'undo redo | styleselect | bold italic underline strikethrough | charmap link image',
+        height : "300"
+        };
+      
       // add current user to list of viewers who have seen the feedback
       // conversation
       $scope.markViewed = function() {
