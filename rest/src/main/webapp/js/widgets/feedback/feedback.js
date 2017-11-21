@@ -22,6 +22,7 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
         'Discrepancy Review Feedback' ];
       $scope.reviewedTypes = [ 'All', 'Viewed', 'Unviewed' ];
       $scope.resolvedTypes = [ 'All', 'Active', 'Resolved' ];
+      $scope.ownedByList = ['All', 'Owned By Me', 'Not Owned By Me'];
 
       // initialize as empty to indicate still initializing database connection
       $scope.currentUser = localStorageService.get('currentUser');
@@ -43,6 +44,7 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
       $scope.feedbackType = 'All Feedback';
       $scope.resolvedType = 'All';
       $scope.reviewedType = 'All';
+      $scope.ownedByMe = 'All';
       $scope.recordIdOwnerMap = new Array();
 
       // pagination variables
@@ -57,7 +59,7 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
       // on publish, update feedbacks to display newly resolved
       $scope.$on('feedbackWidget.notification.retrieveFeedback', function(event, parameters) {
           $scope.retrieveFeedback(1, $scope.feedbackType, $scope.reviewedType,
-                  $scope.resolvedType, $scope.query);
+                  $scope.resolvedType, $scope.ownedByMe, $scope.query);
       });
 
       // on any change of focusProject, retrieve new available work
@@ -71,18 +73,26 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
               $scope.mapUsers = $scope.focusProject.mapSpecialist
                 .concat($scope.focusProject.mapLead);
               $scope.retrieveFeedback(1, $scope.feedbackType, $scope.reviewedType,
-                $scope.resolvedType, $scope.query);
+                $scope.resolvedType, $scope.ownedByMe, $scope.query);
             }
           });
 
-      $scope.retrieveFeedback = function(ppage, feedbackType, reviewedType, resolvedType, pquery) {
+      $scope.retrieveFeedback = function(ppage, feedbackType, reviewedType, resolvedType, ownedByMe, pquery) {
 
+    	console.log("ppage", ppage, 
+    			"feedbackType", feedbackType,
+    			"reviewedType", reviewedType, 
+    			"resolvedType", resolvedType, 
+    			"ownedByMe", ownedByMe, 
+    			"pquery", pquery);
+    	  
         var query = pquery;
         var page = ppage;
 
         $scope.feedbackType = feedbackType;
         $scope.resolvedType = resolvedType;
         $scope.reviewedType = reviewedType;
+        $scope.ownedByMe = ownedByMe;
 
         // add a check to ensure page is not null
         if (page == null)
@@ -112,9 +122,13 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
           'startIndex' : (page - 1) * $scope.recordsPerPage,
           'maxResults' : $scope.recordsPerPage,
           'sortField' : 'lastModified',
-          'queryRestriction' : ''
+          'queryRestriction' : (ownedByMe != null && ownedByMe != 'undefined' && ownedByMe != '' && ownedByMe != 'All') 
+          			? 'ownedByMe=' + ((ownedByMe == 'Owned By Me') ? "true" : "false") 
+          			: ''
         };
-
+        
+        console.log("pfsParameterObj", pfsParameterObj);
+      
         $rootScope.glassPane++;
 
         $http(
@@ -212,6 +226,6 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
       // function to clear input box and return to initial view
       $scope.resetSearch = function() {
         $scope.query = null;
-        $scope.retrieveFeedback(1, 'All Feedback', 'All', 'All', '');
+        $scope.retrieveFeedback(1, 'All Feedback', 'All', 'All', 'All', '');
       };
     });
