@@ -920,7 +920,7 @@ angular
             'recipients' : newRecipients,
             'isError' : 'false',
             'feedbackConversation' : currentConversation,
-            'viewedBy' : []
+            'viewedBy' : [$scope.user]
           };
 
           var feedbacks = new Array();
