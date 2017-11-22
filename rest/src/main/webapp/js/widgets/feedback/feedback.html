@@ -1,6 +1,6 @@
 <div>
   <form
-    ng-submit="retrieveFeedback(1, feedbackType, reviewedType, resolvedType, query)">
+    ng-submit="retrieveFeedback(1, feedbackType, reviewedType, resolvedType, ownedByMe, query)">
     <input ng-model="query">
     <button type="sumbit" class="btn btn-xs btn-primary">Search</button>
     <span ng-click="resetSearch()" class="btn btn-xs btn-primary">Reset</span>
@@ -10,23 +10,30 @@
 <div style="margin-top: 10px">
   <select tooltip-placement="top" uib-tooltip="Feedback Type"
     ng-init="feedbackType" ng-model="feedbackType"
-    ng-change="retrieveFeedback(1, feedbackType, reviewedType, resolvedType, query)"
+    ng-change="retrieveFeedback(1, feedbackType, reviewedType, resolvedType, ownedByMe, query)"
     ng-options="item as item for item in feedbackTypes">
-  </select> <select tooltip-placement="top" uib-tooltip="Viewed Status"
+  </select>
+  <select tooltip-placement="top" uib-tooltip="Viewed Status"
     ng-init="reviewedType" ng-model="reviewedType"
-    ng-change="retrieveFeedback(1, feedbackType, reviewedType, resolvedType, query)"
+    ng-change="retrieveFeedback(1, feedbackType, reviewedType, resolvedType, ownedByMe, query)"
     ng-options="item as item for item in reviewedTypes">
-  </select> <select tooltip-placement="top" uib-tooltip="Resolved Status"
+  </select>
+  <select tooltip-placement="top" uib-tooltip="Resolved Status"
     ng-init="resolvedType" ng-model="resolvedType"
-    ng-change="retrieveFeedback(1, feedbackType, reviewedType, resolvedType, query)"
+    ng-change="retrieveFeedback(1, feedbackType, reviewedType, resolvedType, ownedByMe, query)"
     ng-options="item as item for item in resolvedTypes">
+  </select>
+  <select tooltip-placement="top" uib-tooltip="Owned By"
+    ng-init="ownedByMe" ng-model="ownedByMe"
+    ng-change="retrieveFeedback(1, feedbackType, reviewedType, resolvedType, ownedByMe, query)"
+    ng-options="item as item for item in ownedByList">
   </select>
 </div>
 <uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
   first-text="&laquo;" last-text="&raquo;" total-items="nRecords"
   ng-model="recordPage" max-size="recordsPerPage" class="pagination-sm"
   boundary-links="true" rotate="true"
-  ng-change="retrieveFeedback(recordPage, feedbackType, reviewedType, resolvedType, query)"></uib-pagination>
+  ng-change="retrieveFeedback(recordPage, feedbackType, reviewedType, resolvedType, ownedByMe, query)"></uib-pagination>
 
 <div ng-show="feedbackConversations.length > 0">
   <table class="table" style="margin-top: 10px;">
@@ -49,7 +56,7 @@
 
     <tbody>
       <tr ng-repeat="feedbackConversation in feedbackConversations">
-      <td ng-show="!isFeedbackViewed(feedbackConversation)"> 
+      <td ng-show="!isFeedbackViewed(feedbackConversation)">
       <a title="Unviewed Feedback" > 
       <i ng-click = "markFeedbackViewed(feedbackConversation)" 
          class="glyphicon glyphicon-eye-close pull-right"></i>

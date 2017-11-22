@@ -3072,6 +3072,47 @@ public class MappingServiceJpa extends RootServiceJpa
     return searchResultList;
   }
 
+  /**
+   * Retrieve latest map record for a given terminology id.
+   * 
+   * @param terminologyId the concept id
+   * @return the list of map records
+   */
+  @SuppressWarnings("unchecked")
+  @Override
+  public MapRecord getLatestMapRecordForConcept(Long mapProjectId,
+    String terminologyId) {
+    List<MapRecord> mapRecords = null;
+    MapRecord mapRecord = null;
+
+    // construct query
+    javax.persistence.Query query = manager
+        .createQuery("select m from MapRecordJpa m " + "where timestamp = " + ""
+            + " (select max(m2.timestamp) " + " from MapRecordJpa m2 "
+            + " where m2.mapProjectId = :mapProjectId "
+            + " and conceptId = :conceptId) "
+            + "and mapProjectId = :mapProjectId "
+            + "and conceptId = :conceptId ");
+
+    // Try query
+    query.setParameter("mapProjectId", mapProjectId);
+    query.setParameter("conceptId", terminologyId);
+
+    mapRecords = query.getResultList();
+    for (final MapRecord mr : mapRecords) {
+      handleMapRecordLazyInitialization(mr);
+    }
+
+    MapRecordListJpa mapRecordList = new MapRecordListJpa();
+    mapRecordList.setMapRecords(mapRecords);
+    mapRecordList.setTotalCount(mapRecords.size());
+
+    if (mapRecordList != null && mapRecordList.getMapRecords().size() > 0)
+      mapRecord = mapRecordList.getMapRecords().get(0);
+
+    return mapRecord;
+  }
+
    /* Convert ISO 8601 date time string to milliseconds */
    private long convertDateString(String dateString) {
  	  
