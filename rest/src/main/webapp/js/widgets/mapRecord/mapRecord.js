@@ -1586,7 +1586,11 @@ angular
         };
 
         $scope.getBrowserUrl = function() {
-          if ($scope.project.sourceTerminology === 'SNOMEDCT_US') {
+          if ($scope.project.destinationTerminology === 'ICD11') {
+            return 'http://browser.ihtsdotools.org/index.html?perspective=full&conceptId1='
+              + $scope.record.conceptId
+              + '&acceptLicense=true&release=v20170731';
+          } else if ($scope.project.sourceTerminology === 'SNOMEDCT_US') {
             return 'https://dailybuild.ihtsdotools.org/us.html?perspective=full&conceptId1='
               + $scope.record.conceptId + '&acceptLicense=true';
           } else {
@@ -1658,7 +1662,8 @@ angular
 
           // if no previous feedback conversations, return just
           // first map lead in list
-          if ($scope.conversation == null || $scope.conversation == '' || $scope.conversation.feedback.length == 0) {
+          if ($scope.conversation == null || $scope.conversation == ''
+            || $scope.conversation.feedback.length == 0) {
             return;
           }
 
