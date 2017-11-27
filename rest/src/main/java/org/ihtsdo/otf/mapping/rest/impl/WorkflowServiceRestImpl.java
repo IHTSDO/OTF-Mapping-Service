@@ -1,7 +1,7 @@
 /*
  *    Copyright 2017 West Coast Informatics, LLC
  */
-package org.ihtsdo.otf.mapping.rest;
+package org.ihtsdo.otf.mapping.rest.impl;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -49,6 +49,7 @@ import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ReportServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.rest.WorkflowServiceRest;
 import org.ihtsdo.otf.mapping.model.Feedback;
 import org.ihtsdo.otf.mapping.model.FeedbackConversation;
 import org.ihtsdo.otf.mapping.model.MapProject;
@@ -77,7 +78,7 @@ import com.wordnik.swagger.annotations.ApiParam;
 @Produces({
     MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 })
-public class WorkflowServiceRest extends RootServiceRest {
+public class WorkflowServiceRestImpl extends RootServiceRestImpl implements WorkflowServiceRest {
 
   /** The security service. */
   private SecurityService securityService;
@@ -86,21 +87,18 @@ public class WorkflowServiceRest extends RootServiceRest {
   private final static String lock = "LOCK";
 
   /**
-   * Instantiates an empty {@link WorkflowServiceRest}.
+   * Instantiates an empty {@link WorkflowServiceRestImpl}.
    *
    * @throws Exception the exception
    */
-  public WorkflowServiceRest() throws Exception {
+  public WorkflowServiceRestImpl() throws Exception {
     securityService = new SecurityServiceJpa();
   }
 
-  /**
-   * Compute workflow.
-   *
-   * @param mapProjectId the map project id
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#computeWorkflow(java.lang.Long, java.lang.String)
    */
+  @Override
   @POST
   @Path("/project/id/{id:[0-9][0-9]*}/compute")
   @ApiOperation(value = "Compute workflow for a map project.", notes = "Recomputes workflow for the specified map project.")
@@ -109,7 +107,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class)
+    Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Workflow): /project/id/" + mapProjectId.toString()
             + "/compute");
 
@@ -134,17 +132,10 @@ public class WorkflowServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Finds available concepts for the specified map project and user.
-   *
-   * @param mapProjectId the map project id
-   * @param userName the username
-   * @param query the query
-   * @param pfsParameter the paging parameter
-   * @param authToken the auth token
-   * @return the search result list
-   * @throws Exception the exception
-   */
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#findAvailableConcepts(java.lang.Long, java.lang.String, java.lang.String, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
+  */
+  @Override
   @POST
   @Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/availableConcepts")
   @ApiOperation(value = "Find available concepts.", notes = "Gets a list of search results for concepts available to be worked on for the specified parameters.", response = SearchResultList.class)
@@ -162,7 +153,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class)
+    Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Workflow): /project/id/" + mapProjectId.toString()
             + "/user/id/" + userName + "/availableConcepts " + query);
 
@@ -224,17 +215,10 @@ public class WorkflowServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Finds assigned concepts for the specified map project and user.
-   *
-   * @param mapProjectId the map project id
-   * @param userName the user name
-   * @param query the query
-   * @param pfsParameter the paging parameter
-   * @param authToken the auth token
-   * @return the search result list
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#findAssignedConcepts(java.lang.Long, java.lang.String, java.lang.String, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
    */
+  @Override
   @POST
   @Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/assignedConcepts")
   @ApiOperation(value = "Find assigned concepts for a map project.", notes = "Gets a list of search results of assigned concepts for the specified parameters.", response = SearchResultList.class)
@@ -252,7 +236,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class)
+    Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Workflow): /project/id/" + mapProjectId.toString()
             + "/user/id/" + userName + "/assignedConcepts " + query);
 
@@ -326,17 +310,10 @@ public class WorkflowServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Finds available conflicts for the specified map project and user.
-   *
-   * @param mapProjectId the map project id
-   * @param userName the user name
-   * @param query the query
-   * @param pfsParameter the paging parameter
-   * @param authToken the auth token
-   * @return the search result list
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#findAvailableConflicts(java.lang.Long, java.lang.String, java.lang.String, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
    */
+  @Override
   @POST
   @Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/availableConflicts")
   @ApiOperation(value = "Find available conflicts for a map project.", notes = "Gets a list of search results of available conflicts for the specified parameters.", response = SearchResultList.class)
@@ -351,7 +328,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class)
+    Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Workflow): /project/id/" + mapProjectId.toString()
             + "/user/id" + userName + "/availableConflicts " + query);
 
@@ -383,6 +360,10 @@ public class WorkflowServiceRest extends RootServiceRest {
     }
   }
   
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#removeFeedbackConversation(org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa, java.lang.String)
+   */
+  @Override
   @DELETE
   @Path("/conversation/delete")
   @ApiOperation(value = "Remove a feedback conversation", notes = "Removes the specified feedback conversation.", response = FeedbackConversationJpa.class)
@@ -392,7 +373,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(WorkflowServiceRest.class)
+    Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Workflow): /conversation/delete for user "
             + feedbackConversation.getFeedbacks());
 
@@ -417,6 +398,10 @@ public class WorkflowServiceRest extends RootServiceRest {
     }
   }
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#removeFeedback(org.ihtsdo.otf.mapping.jpa.FeedbackJpa, java.lang.String)
+   */
+  @Override
   @DELETE
   @Path("/feedback/delete")
   @ApiOperation(value = "Remove a feedback", notes = "Removes the specified feedback.", response = FeedbackJpa.class)
@@ -426,7 +411,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(WorkflowServiceRest.class)
+    Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Workflow): /feedback/delete  "
             + feedback.getId() + " " + feedback.getMessage() + " " + feedback.getIsError() + "  " + feedback.getMapError());
 
@@ -466,17 +451,10 @@ public class WorkflowServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Finds assigned conflicts for the specified map project and user.
-   *
-   * @param mapProjectId the map project id
-   * @param userName the user name
-   * @param query the query
-   * @param pfsParameter the paging parameter
-   * @param authToken the auth token
-   * @return the search result list
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#findAssignedConflicts(java.lang.Long, java.lang.String, java.lang.String, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
    */
+  @Override
   @POST
   @Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/assignedConflicts")
   @ApiOperation(value = "Find assigned conflicts for a map project.", notes = "Gets a list of search results of assigned conflicts for the specified parameters.", response = SearchResultList.class)
@@ -491,7 +469,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class)
+    Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Workflow): /project/id/" + mapProjectId.toString()
             + "/user/id/" + userName + "/assignedConflicts " + query);
     String project = "";
@@ -523,17 +501,10 @@ public class WorkflowServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Finds available review work for the specified map project and user.
-   *
-   * @param mapProjectId the map project id
-   * @param userName the user name
-   * @param query the query
-   * @param pfsParameter the paging parameter
-   * @param authToken the auth token
-   * @return the search result list
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#findAvailableReviewWork(java.lang.Long, java.lang.String, java.lang.String, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
    */
+  @Override
   @POST
   @Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/availableReviewWork")
   @ApiOperation(value = "Find available review work for a map project.", notes = "Gets a list of search results of available review work for the specified parameters.", response = SearchResultList.class)
@@ -548,7 +519,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class)
+    Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Workflow): /project/id/" + mapProjectId.toString()
             + "/user/id" + userName + "/availableReviewWork " + query);
 
@@ -627,16 +598,10 @@ public class WorkflowServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Find available qa work.
-   *
-   * @param mapProjectId the map project id
-   * @param query the query
-   * @param pfsParameter the pfs parameter
-   * @param authToken the auth token
-   * @return the search result list
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#findAvailableQAWork(java.lang.Long, java.lang.String, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
    */
+  @Override
   @POST
   @Path("/project/id/{id:[0-9][0-9]*}/availableQAWork")
   @ApiOperation(value = "Find available qa work for a map project.", notes = "Gets a list of search results of available qa work for the specified parameters.", response = SearchResultList.class)
@@ -650,7 +615,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class)
+    Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Workflow): /project/id/" + mapProjectId.toString()
             + "/availableQAWork " + query);
 
@@ -685,17 +650,10 @@ public class WorkflowServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Finds assigned review work for the specified map project and user.
-   *
-   * @param mapProjectId the map project id
-   * @param userName the user name
-   * @param query the query
-   * @param pfsParameter the paging parameter
-   * @param authToken the auth token
-   * @return the search result list
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#findAssignedReviewWork(java.lang.Long, java.lang.String, java.lang.String, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
    */
+  @Override
   @POST
   @Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/assignedReviewWork")
   @ApiOperation(value = "Find assigned review work for a map project.", notes = "Gets a list of search results of assigned review work for the specified parameters.", response = SearchResultList.class)
@@ -710,7 +668,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class)
+    Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Workflow): /project/id/" + mapProjectId.toString()
             + "/user/id/" + userName + "/assignedReviewWork " + query);
 
@@ -784,17 +742,10 @@ public class WorkflowServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Find assigned qa work.
-   *
-   * @param mapProjectId the map project id
-   * @param userName the user name
-   * @param query the query
-   * @param pfsParameter the pfs parameter
-   * @param authToken the auth token
-   * @return the search result list
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#findAssignedQAWork(java.lang.Long, java.lang.String, java.lang.String, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
    */
+  @Override
   @POST
   @Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/assignedQAWork")
   @ApiOperation(value = "Find assigned qa work for a map project.", notes = "Gets a list of search results of assigned qa work for the specified parameters.", response = SearchResultList.class)
@@ -809,7 +760,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class)
+    Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Workflow): /project/id/" + mapProjectId.toString()
             + "/user/id/" + userName + "/assignedQAWork " + query);
 
@@ -843,14 +794,10 @@ public class WorkflowServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Assign user to to work based on an existing map record.
-   *
-   * @param userName the user name
-   * @param mapRecord the map record (can be null)
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#assignConceptFromMapRecord(java.lang.String, org.ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
    */
+  @Override
   @POST
   @Path("/assignFromRecord/user/id/{userName}")
   @ApiOperation(value = "Assign user to concept", notes = "Assigns a user (specialist or lead) to a previously mapped concept.")
@@ -860,7 +807,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class)
+    Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Workflow): /assignFromRecord/user/id/" + userName
             + " with map record id " + mapRecord.getId() + " for project "
             + mapRecord.getMapProjectId() + " and concept id "
@@ -897,15 +844,10 @@ public class WorkflowServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Assigns user to unmapped concept.
-   *
-   * @param mapProjectId the map project id
-   * @param terminologyId the terminology id
-   * @param userName the user name
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#assignConcept(java.lang.Long, java.lang.String, java.lang.String, java.lang.String)
    */
+  @Override
   @POST
   @Path("/assign/project/id/{id}/concept/id/{terminologyId}/user/id/{userName}")
   @ApiOperation(value = "Assign user to concept", notes = "Assigns specified user to map the specified concept for the specified project.")
@@ -916,7 +858,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class)
+    Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Workflow): /assign/project/id/"
             + mapProjectId.toString() + "/concept/id/" + terminologyId
             + "/user/id/" + userName);
@@ -950,15 +892,10 @@ public class WorkflowServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Assign batch to user.
-   *
-   * @param mapProjectId the map project id
-   * @param userName the user name
-   * @param terminologyIds the terminology ids
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#assignBatch(java.lang.Long, java.lang.String, java.util.List, java.lang.String)
    */
+  @Override
   @POST
   @Path("/assignBatch/project/id/{id}/user/id/{userName}")
   @Consumes({
@@ -972,7 +909,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class)
+    Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Workflow): /assignBatch/project/id/" + mapProjectId
             + "/user/id/" + userName);
 
@@ -990,7 +927,7 @@ public class WorkflowServiceRest extends RootServiceRest {
       final MapUser mapUser = workflowService.getMapUser(userName);
 
       for (final String terminologyId : terminologyIds) {
-        Logger.getLogger(WorkflowServiceRest.class)
+        Logger.getLogger(WorkflowServiceRestImpl.class)
             .info("   Assigning " + terminologyId);
         final Concept concept = contentService.getConcept(terminologyId,
             mapProject.getSourceTerminology(),
@@ -1021,16 +958,10 @@ public class WorkflowServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Unassign user from a concept.
-   *
-   * @param mapProjectId the map project id
-   * @param terminologyId the terminology id
-   * @param userName the user name
-   * @param authToken the auth token
-   * @return the map record
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#unassignConcept(java.lang.Long, java.lang.String, java.lang.String, java.lang.String)
    */
+  @Override
   @POST
   @Path("/unassign/project/id/{id}/concept/id/{terminologyId}/user/id/{userName}")
   @ApiOperation(value = "Unassign user from a concept.", notes = "Unassigns specified user from the specified concept for the specified project.")
@@ -1044,7 +975,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class)
+    Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Workflow): /unassign/project/id/"
             + mapProjectId.toString() + "/concept/id/" + terminologyId
             + "/user/id/" + userName);
@@ -1080,15 +1011,10 @@ public class WorkflowServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Unassign user from a specified batch of currently assigned work.
-   *
-   * @param mapProjectId the map project id
-   * @param userName the user name
-   * @param terminologyIds the terminology ids
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#unassignWorkBatch(java.lang.Long, java.lang.String, java.util.List, java.lang.String)
    */
+  @Override
   @POST
   @Path("/unassign/project/id/{id}/user/id/{userName}/batch")
   @Consumes({
@@ -1102,7 +1028,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class)
+    Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Workflow): /unassign/project/id/"
             + mapProjectId.toString() + "/user/id/" + userName + "/batch - "
             + terminologyIds);
@@ -1140,13 +1066,10 @@ public class WorkflowServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Attempt to validate and finish work on a record.
-   *
-   * @param mapRecord the completed map record
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#finishWork(org.ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
    */
+  @Override
   @POST
   @Path("/finish")
   @Consumes({
@@ -1158,7 +1081,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class)
+    Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Workflow): /finish" + " for map record with id = "
             + mapRecord.getId().toString());
 
@@ -1198,14 +1121,10 @@ public class WorkflowServiceRest extends RootServiceRest {
 
   }
 
-  /**
-   * Attempt to publish a previously resolved record This action is only
-   * available to map leads, and only for resolved conflict or review work.
-   *
-   * @param mapRecord the completed map record
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#publishWork(org.ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
    */
+  @Override
   @POST
   @Path("/publish")
   @Consumes({
@@ -1217,7 +1136,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class)
+    Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Workflow): /publish" + " for map record with id = "
             + mapRecord.getId().toString());
 
@@ -1264,13 +1183,10 @@ public class WorkflowServiceRest extends RootServiceRest {
 
   }
 
-  /**
-   * Save map record without validation checks or workflow action.
-   *
-   * @param mapRecord the map record
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#saveWork(org.ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
    */
+  @Override
   @POST
   @Path("/save")
   @Consumes({
@@ -1282,7 +1198,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class)
+    Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Workflow): /save" + " for map record with id = "
             + mapRecord.getId().toString());
 
@@ -1329,13 +1245,10 @@ public class WorkflowServiceRest extends RootServiceRest {
 
   }
 
-  /**
-   * Cancel work for map record.
-   * 
-   * @param mapRecord the map record
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#cancelWorkForMapRecord(org.ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
    */
+  @Override
   @POST
   @Path("/cancel")
   @Consumes({
@@ -1347,7 +1260,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class)
+    Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Workflow): /cancel for map record with id = "
             + mapRecord.getId());
 
@@ -1383,13 +1296,10 @@ public class WorkflowServiceRest extends RootServiceRest {
 
   }
 
-  /**
-   * Creates the qa record.
-   * 
-   * @param mapRecord the map record
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#createQARecord(org.ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
    */
+  @Override
   @POST
   @Path("/createQARecord")
   @Consumes({
@@ -1401,7 +1311,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
+    Logger.getLogger(WorkflowServiceRestImpl.class).info(
         "RESTful call (Workflow): /createQARecord for map record with id = "
             + mapRecord.getId());
 
@@ -1445,13 +1355,10 @@ public class WorkflowServiceRest extends RootServiceRest {
 
   }
 
-  /**
-   * Creates the qa work given a report of concepts.
-   * 
-   * @param reportId the report id
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#createQAWork(java.lang.Long, java.lang.String)
    */
+  @Override
   @POST
   @Path("/createQAWork")
   @Consumes({
@@ -1463,7 +1370,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class)
+    Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Workflow): /createQAWork for report with id = "
             + reportId);
 
@@ -1494,17 +1401,10 @@ public class WorkflowServiceRest extends RootServiceRest {
 
   }
 
-  /**
-   * Gets the assigned map record from the existing workflow for concept and map
-   * user, if it exists.
-   *
-   * @param mapProjectId the map project id
-   * @param terminologyId the terminology id
-   * @param userName the user name
-   * @param authToken the auth token
-   * @return the assigned map record for concept and map user
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#getAssignedMapRecordForConceptAndMapUser(java.lang.Long, java.lang.String, java.lang.String, java.lang.String)
    */
+  @Override
   @GET
   @Path("/record/project/id/{id}/concept/id/{terminologyId}/user/id/{userName}")
   @ApiOperation(value = "Get a map record for concept and user", notes = "Gets a map record for the specified project, concept id, and user info.")
@@ -1518,7 +1418,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class)
+    Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Workflow): /assignedRecord/projectId/"
             + mapProjectId + "/concept/" + terminologyId + "/user/" + userName);
 
@@ -1563,14 +1463,10 @@ public class WorkflowServiceRest extends RootServiceRest {
 
   }
 
-  /**
-   * Is map record false conflict.
-   * 
-   * @param recordId the record id
-   * @param authToken the auth token
-   * @return the boolean
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#isMapRecordFalseConflict(java.lang.Long, java.lang.String)
    */
+  @Override
   @GET
   @Path("/record/id/{id:[0-9][0-9]*}/isFalseConflict")
   @ApiOperation(value = "Indicate whether a map record is a false conflict", notes = "Indicates whether the specified map record id is a false conflict.", response = Boolean.class)
@@ -1582,7 +1478,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
+    Logger.getLogger(WorkflowServiceRestImpl.class).info(
         "RESTful call (Workflow): /record/id/" + recordId + "/sFalseConflict");
 
     final WorkflowService workflowService = new WorkflowServiceJpa();
@@ -1626,14 +1522,10 @@ public class WorkflowServiceRest extends RootServiceRest {
   // SCRUD functions: Feedback
   // ///////////////////////////////////////////////////
 
-  /**
-   * Adds the feedback conversation.
-   *
-   * @param conversation the conversation
-   * @param authToken the auth token
-   * @return the map user
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#addFeedbackConversation(org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa, java.lang.String)
    */
+  @Override
   @PUT
   @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
@@ -1646,7 +1538,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(WorkflowServiceRest.class)
+    Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Workflow): /conversation/add");
 
     String userName = null;
@@ -1656,7 +1548,7 @@ public class WorkflowServiceRest extends RootServiceRest {
       userName = authorizeProject(conversation.getMapProjectId(), authToken,
           MapUserRole.SPECIALIST, "add feedback conversation", securityService);
 
-      Logger.getLogger(WorkflowServiceRest.class)
+      Logger.getLogger(WorkflowServiceRestImpl.class)
           .info("RESTful call (Workflow): /conversation/update feedback msg: "
               + conversation.getFeedbacks().get(0));
       workflowService.addFeedbackConversation(conversation);
@@ -1673,14 +1565,10 @@ public class WorkflowServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Sets the map record false conflict.
-   * 
-   * @param recordId the record id
-   * @param isFalseConflict the is false conflict
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#setMapRecordFalseConflict(java.lang.Long, boolean, java.lang.String)
    */
+  @Override
   @POST
   @Path("/record/id/{id:[0-9][0-9]*}/falseConflict/{isFalseConflict}")
   @ApiOperation(value = "Sets whether record is false conflict.", notes = "Sets a flag indicating a false conflict for the specified parameters.", response = Response.class)
@@ -1690,7 +1578,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class)
+    Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Workflow): /record/id/" + recordId
             + "/setFalseConflict/" + isFalseConflict);
 
@@ -1772,13 +1660,10 @@ public class WorkflowServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Updates a feedback conversation.
-   *
-   * @param conversation the conversation
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#updateFeedbackConversation(org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa, java.lang.String)
    */
+  @Override
   @POST
   @Path("/conversation/update")
   @Consumes({
@@ -1791,7 +1676,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(WorkflowServiceRest.class)
+    Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Workflow): /conversation/update");
 
     final WorkflowService workflowService = new WorkflowServiceJpa();
@@ -1843,7 +1728,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
       // add debug
       final int ct = conversation.getFeedbacks().size();
-      Logger.getLogger(WorkflowServiceRest.class)
+      Logger.getLogger(WorkflowServiceRestImpl.class)
           .info("RESTful call (Workflow): /conversation/update feedback msg: "
               + conversation.getFeedbacks().get(ct - 1));
 
@@ -1855,15 +1740,10 @@ public class WorkflowServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Returns the feedback conversation for a given id (auto-generated) in JSON
-   * format.
-   *
-   * @param mapRecordId the mapRecordId
-   * @param authToken the auth token
-   * @return the feedbackConversation
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#getFeedbackConversation(java.lang.Long, java.lang.String)
    */
+  @Override
   @GET
   @Path("/conversation/id/{id:[0-9][0-9]*}")
   @ApiOperation(value = "Get feedback conversation by map record id", notes = "Gets a feedback conversation for the specified map record id.", response = FeedbackConversation.class)
@@ -1875,7 +1755,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class).info(
+    Logger.getLogger(WorkflowServiceRestImpl.class).info(
         "RESTful call (Workflow): /conversation/id/" + mapRecordId.toString());
 
     final WorkflowService workflowService = new WorkflowServiceJpa();
@@ -1911,17 +1791,10 @@ public class WorkflowServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Returns the feedback conversations for map project.
-   *
-   * @param mapProjectId the map project id
-   * @param userName the user name
-   * @param query the query
-   * @param pfsParameter the pfs parameter
-   * @param authToken the auth token
-   * @return the feedback conversations for map project
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#findFeedbackConversationsForMapProjectAndUser(java.lang.Long, java.lang.String, java.lang.String, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
    */
+  @Override
   @POST
   @Path("/conversation/project/id/{id:[0-9][0-9]*}/{userName}")
   @ApiOperation(value = "Get feedback conversations by map project", notes = "Gets a list of feedback conversations for the specified map project and user.", response = FeedbackConversationListJpa.class)
@@ -1970,15 +1843,10 @@ public class WorkflowServiceRest extends RootServiceRest {
 
   }
 
-  /**
-   * Returns the feedback conversations for terminology id.
-   *
-   * @param mapProjectId the map project id
-   * @param conceptId the concept id
-   * @param authToken the auth token
-   * @return the feedback conversations for terminology id
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#getFeedbackConversationsForTerminologyId(java.lang.Long, java.lang.String, java.lang.String)
    */
+  @Override
   @GET
   @Path("/conversation/project/id/{id:[0-9][0-9]*}/concept/id/{terminologyId}")
   @ApiOperation(value = "Get feedback conversations by concept id.", notes = "Gets a list of feedback conversations for the specified concept and project.", response = MapRecord.class)
@@ -2015,16 +1883,10 @@ public class WorkflowServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Assign batch to fix error path.
-   *
-   * @param mapProjectId the map project id
-   * @param terminologyIds the terminology ids
-   * @param userName the user name
-   * @param authToken the auth token
-   * @return the validation result
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#assignBatchToFixErrorPath(java.lang.Long, java.util.List, java.lang.String, java.lang.String)
    */
+  @Override
   @POST
   @Path("/assign/fixErrorPath/project/id/{projectId}/user/id/{userName}")
   @ApiOperation(value = "Assign concepts to fix error path", notes = "Assigns publication-ready map records to the Fix Error Workflow Path given a list of concept ids", response = ValidationResult.class)
@@ -2148,14 +2010,10 @@ public class WorkflowServiceRest extends RootServiceRest {
 
   }
 
-  /**
-   * Sends a feedback message email.
-   *
-   * @param messageInfo the message
-   * @param authToken the auth token
-   * @return the string
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#sendFeedbackEmail(java.util.List, java.lang.String)
    */
+  @Override
   @POST
   @Path("/message")
   @ApiOperation(value = "Sends a feedback message email.", notes = "Sends a feedback message email.")
@@ -2171,7 +2029,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(WorkflowServiceRest.class)
+    Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Workflow): /message");
 
     String userName = "";
@@ -2187,7 +2045,7 @@ public class WorkflowServiceRest extends RootServiceRest {
                 "User does not have permissions to add a feedback conversation.")
             .build());
 
-      Logger.getLogger(WorkflowServiceRest.class)
+      Logger.getLogger(WorkflowServiceRestImpl.class)
           .info("RESTful call (Workflow): /message msg: " + messageInfo);
 
       // Split up message and send parts

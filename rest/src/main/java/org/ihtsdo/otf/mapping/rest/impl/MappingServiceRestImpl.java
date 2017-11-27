@@ -1,7 +1,7 @@
 /*
  *    Copyright 2015 West Coast Informatics, LLC
  */
-package org.ihtsdo.otf.mapping.rest;
+package org.ihtsdo.otf.mapping.rest.impl;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -43,10 +43,10 @@ import javax.ws.rs.core.Response;
 import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
-import org.ihtsdo.otf.mapping.dto.KeyValuePair;
-import org.ihtsdo.otf.mapping.dto.KeyValuePairList;
-import org.ihtsdo.otf.mapping.dto.KeyValuePairLists;
 import org.ihtsdo.otf.mapping.helpers.ConceptList;
+import org.ihtsdo.otf.mapping.helpers.KeyValuePair;
+import org.ihtsdo.otf.mapping.helpers.KeyValuePairList;
+import org.ihtsdo.otf.mapping.helpers.KeyValuePairLists;
 import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceListJpa;
@@ -85,6 +85,7 @@ import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.rest.MappingServiceRest;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapEntry;
@@ -130,18 +131,18 @@ import com.wordnik.swagger.annotations.ApiParam;
 @Produces({
     MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 })
-public class MappingServiceRest extends RootServiceRest {
+public class MappingServiceRestImpl extends RootServiceRestImpl implements MappingServiceRest {
 
   private static final int MAX_RESULTS = 10000;
   /** The security service. */
   private SecurityService securityService;
 
   /**
-   * Instantiates an empty {@link MappingServiceRest}.
+   * Instantiates an empty {@link MappingServiceRestImpl}.
    * 
    * @throws Exception the exception
    */
-  public MappingServiceRest() throws Exception {
+  public MappingServiceRestImpl() throws Exception {
     securityService = new SecurityServiceJpa();
   }
 
@@ -149,13 +150,10 @@ public class MappingServiceRest extends RootServiceRest {
   // SCRUD functions: Map Projects
   // ///////////////////////////////////////////////////
 
-  /**
-   * Returns all map projects in either JSON or XML format.
-   *
-   * @param authToken the auth token
-   * @return the map projects
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapProjects(java.lang.String)
    */
+  @Override
   @GET
   @Path("/project/projects")
   @ApiOperation(value = "Get map projects", notes = "Gets a list of all map projects.", response = MapProjectListJpa.class)
@@ -166,7 +164,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping):  /project/projects");
     final MappingService mappingService = new MappingServiceJpa();
     String user = null;
@@ -224,14 +222,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Returns the project for a given id (auto-generated) in JSON format.
-   *
-   * @param mapProjectId the mapProjectId
-   * @param authToken the auth token
-   * @return the mapProject
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapProject(java.lang.Long, java.lang.String)
    */
+  @Override
   @GET
   @Path("/project/id/{id:[0-9][0-9]*}")
   @ApiOperation(value = "Get map project by id", notes = "Gets a map project for the specified parameters.", response = MapProject.class)
@@ -243,7 +237,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /project/id/" + mapProjectId.toString());
 
     String user = null;
@@ -275,14 +269,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Adds a map project.
-   *
-   * @param mapProject the map project to be added
-   * @param authToken the auth token
-   * @return returns the added map project object
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#addMapProject(org.ihtsdo.otf.mapping.jpa.MapProjectJpa, java.lang.String)
    */
+  @Override
   @PUT
   @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
@@ -295,7 +285,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /project/add");
 
     String user = null;
@@ -330,13 +320,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Updates a map project.
-   *
-   * @param mapProject the map project to be added
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#updateMapProject(org.ihtsdo.otf.mapping.jpa.MapProjectJpa, java.lang.String)
    */
+  @Override
   @POST
   @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
@@ -349,7 +336,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /project/update");
 
     String user = null;
@@ -394,13 +381,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Removes a map project.
-   *
-   * @param mapProject the map project
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#removeMapProject(org.ihtsdo.otf.mapping.jpa.MapProjectJpa, java.lang.String)
    */
+  @Override
   @DELETE
   @Path("/project/delete")
   @ApiOperation(value = "Remove a map project", notes = "Removes specified map project if it already exists.", response = MapProject.class)
@@ -410,7 +394,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class).info(
+    Logger.getLogger(MappingServiceRestImpl.class).info(
         "RESTful call (Mapping): /project/delete for " + mapProject.getName());
 
     String user = null;
@@ -432,6 +416,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#cloneMapProject(org.ihtsdo.otf.mapping.jpa.MapProjectJpa, java.lang.String)
+   */
+  @Override
   @PUT
   @Path("/clone")
   @ApiOperation(value = "Clone map project", notes = "Adds the specified map project, which is a potentially modified copy of another map project", response = MapProjectJpa.class)
@@ -527,14 +515,10 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
   
-  /**
-   * Returns all map projects for a lucene query.
-   *
-   * @param query the string query
-   * @param authToken the auth token
-   * @return the map projects
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#findMapProjectsForQuery(java.lang.String, java.lang.String)
    */
+  @Override
   @GET
   @Path("/project")
   @ApiOperation(value = "Find map projects by query", notes = "Gets a list of search results for map projects matching the lucene query.", response = SearchResultList.class)
@@ -546,7 +530,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /project " + query);
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
@@ -568,14 +552,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Returns all map projects for a map user.
-   *
-   * @param mapUserName the map user name
-   * @param authToken the auth token
-   * @return the map projects
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapProjectsForUser(java.lang.String, java.lang.String)
    */
+  @Override
   @GET
   @Path("/project/user/id/{username}")
   @ApiOperation(value = "Get all map projects for a user", notes = "Gets a list of map projects for the specified user.", response = MapProjectListJpa.class)
@@ -587,7 +567,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /project/user/id/" + mapUserName);
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
@@ -633,13 +613,10 @@ public class MappingServiceRest extends RootServiceRest {
   // SCRUD functions: Map Users
   // ///////////////////////////////////////////////////
 
-  /**
-   * Returns all map leads in either JSON or XML format.
-   *
-   * @param authToken the auth token
-   * @return the map leads
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapUsers(java.lang.String)
    */
+  @Override
   @GET
   @Path("/user/users")
   @ApiOperation(value = "Get all mapping users", notes = "Gets all map users.", response = MapUserListJpa.class)
@@ -650,7 +627,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /user/users");
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
@@ -702,15 +679,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Returns the scope concepts for map project.
-   *
-   * @param projectId the project id
-   * @param pfsParameter the pfs parameter
-   * @param authToken the auth token
-   * @return the scope concepts for map project
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getScopeConceptsForMapProject(java.lang.Long, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
    */
+  @Override
   @POST
   @Path("/project/id/{projectId}/scopeConcepts")
   @ApiOperation(value = "Get scope concepts for a map project", notes = "Gets a (pageable) list of scope concepts for a map project", response = SearchResultListJpa.class)
@@ -723,7 +695,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class).info(
+    Logger.getLogger(MappingServiceRestImpl.class).info(
         "RESTful call (Mapping):  /project/id/" + projectId + "/scopeConcepts");
     String projectName = "";
     String user = "";
@@ -752,15 +724,10 @@ public class MappingServiceRest extends RootServiceRest {
   }
 
 
-  /**
-   * Adds a list of scope concepts to map project.
-   *
-   * @param terminologyIds the terminology ids
-   * @param projectId the project id
-   * @param authToken the auth token
-   * @return the validation result
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#addScopeConceptsToMapProject(java.util.List, java.lang.Long, java.lang.String)
    */
+  @Override
   @POST
   @Path("/project/id/{projectId}/scopeConcepts/add")
   @ApiOperation(value = "Adds a list of scope concepts to a map project", notes = "Adds a list of scope concepts to a map project.", response = ValidationResultJpa.class)
@@ -773,7 +740,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class).info(
+    Logger.getLogger(MappingServiceRestImpl.class).info(
         "RESTful call (Mapping):  /project/id/" + projectId + "/scopeConcepts");
     String projectName = "";
     String user = "";
@@ -816,14 +783,10 @@ public class MappingServiceRest extends RootServiceRest {
     return null;
   }
 
-  /**
-   * Removes a single scope concept from map project.
-   *
-   * @param terminologyId the terminology id
-   * @param projectId the project id
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#removeScopeConceptFromMapProject(java.lang.String, java.lang.Long, java.lang.String)
    */
+  @Override
   @POST
   @Path("/project/id/{projectId}/scopeConcept/remove")
   @ApiOperation(value = "Removes a single scope concept from a map project", notes = "Removes a single scope concept from a map project.", response = Response.class)
@@ -833,7 +796,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class).info(
+    Logger.getLogger(MappingServiceRestImpl.class).info(
         "RESTful call (Mapping):  /project/id/" + projectId + "/scopeConcepts");
     String projectName = "";
     String user = "";
@@ -874,14 +837,10 @@ public class MappingServiceRest extends RootServiceRest {
     return null;
   }
 
-  /**
-   * Removes the scope concept from map project.
-   *
-   * @param terminologyIds the terminology ids
-   * @param projectId the project id
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#removeScopeConceptsFromMapProject(java.util.List, java.lang.Long, java.lang.String)
    */
+  @Override
   @POST
   @Path("/project/id/{projectId}/scopeConcepts/remove")
   @ApiOperation(value = "Removes a list of scope concepts from a map project", notes = "Removes a list of scope concept from a map project.", response = Response.class)
@@ -894,7 +853,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class).info(
+    Logger.getLogger(MappingServiceRestImpl.class).info(
         "RESTful call (Mapping):  /project/id/" + projectId + "/scopeConcepts");
     String projectName = "";
     String user = "";
@@ -937,15 +896,10 @@ public class MappingServiceRest extends RootServiceRest {
     return null;
   }
 
-  /**
-   * Returns the scope excluded concepts for map project.
-   *
-   * @param projectId the project id
-   * @param pfsParameter the pfs parameter
-   * @param authToken the auth token
-   * @return the scope excluded concepts for map project
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getScopeExcludedConceptsForMapProject(java.lang.Long, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
    */
+  @Override
   @POST
   @Path("/project/id/{projectId}/scopeExcludedConcepts")
   @ApiOperation(value = "Get scope excluded concepts for a map project", notes = "Gets a (pageable) list of scope excluded concepts for a map project", response = SearchResultListJpa.class)
@@ -958,7 +912,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping):  /project/id/" + projectId
             + "/scopeExcludedConcepts");
     String projectName = "";
@@ -984,14 +938,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Adds a list of scope excluded concepts to map project.
-   *
-   * @param terminologyIds the terminology ids
-   * @param projectId the project id
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#addScopeExcludedConceptsToMapProject(java.util.List, java.lang.Long, java.lang.String)
    */
+  @Override
   @POST
   @Path("/project/id/{projectId}/scopeExcludedConcepts/add")
   @ApiOperation(value = "Adds a list of scope excluded concepts to a map project", notes = "Adds a list of scope excluded concepts to a map project.", response = Response.class)
@@ -1001,7 +951,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping):  /project/id/" + projectId
             + "/scopeExcludedConcepts/add");
     String projectName = "";
@@ -1043,14 +993,10 @@ public class MappingServiceRest extends RootServiceRest {
     return null;
   }
 
-  /**
-   * Removes a single scope excluded concept from map project.
-   *
-   * @param terminologyId the terminology id
-   * @param projectId the project id
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#removeScopeExcludedConceptFromMapProject(java.lang.String, java.lang.Long, java.lang.String)
    */
+  @Override
   @POST
   @Path("/project/id/{projectId}/scopeExcludedConcept/remove")
   @ApiOperation(value = "Removes a single scope excluded concept from a map project", notes = "Removes a single scope excluded concept from a map project.", response = Response.class)
@@ -1060,7 +1006,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping):  /project/id/" + projectId
             + "/scopeExcludedConcept/remove");
     String projectName = "";
@@ -1102,14 +1048,10 @@ public class MappingServiceRest extends RootServiceRest {
     return null;
   }
 
-  /**
-   * Removes a list of scope excluded concepts from map project.
-   *
-   * @param terminologyIds the terminology ids
-   * @param projectId the project id
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#removeScopeExcludedConceptsFromMapProject(java.util.List, java.lang.Long, java.lang.String)
    */
+  @Override
   @POST
   @Path("/project/id/{projectId}/scopeExcludedConcepts/remove")
   @ApiOperation(value = "Removes a list of scope excluded concepts from a map project", notes = "Removes a list of scope excluded concept from a map project.", response = Response.class)
@@ -1119,7 +1061,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping):  /project/id/" + projectId
             + "/scopeExcludedConcepts/remove");
     String projectName = "";
@@ -1164,14 +1106,10 @@ public class MappingServiceRest extends RootServiceRest {
     return null;
   }
 
-  /**
-   * Returns the user for a given id (auto-generated) in JSON format.
-   *
-   * @param mapUserName the map user name
-   * @param authToken the auth token
-   * @return the mapUser
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapUser(java.lang.String, java.lang.String)
    */
+  @Override
   @GET
   @Path("/user/id/{username}")
   @ApiOperation(value = "Get user by username", notes = "Gets a user by a username.", response = MapUser.class)
@@ -1183,7 +1121,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): user/id/" + mapUserName);
     final MappingService mappingService = new MappingServiceJpa();
     try {
@@ -1204,14 +1142,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Adds a map user.
-   *
-   * @param mapUser the map user
-   * @param authToken the auth token
-   * @return Response the response
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#addMapUser(org.ihtsdo.otf.mapping.jpa.MapUserJpa, java.lang.String)
    */
+  @Override
   @PUT
   @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
@@ -1224,7 +1158,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /user/add");
     String userName = null;
     final MappingService mappingService = new MappingServiceJpa();
@@ -1253,13 +1187,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Updates a map user.
-   *
-   * @param mapUser the map user to be added
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#updateMapUser(org.ihtsdo.otf.mapping.jpa.MapUserJpa, java.lang.String)
    */
+  @Override
   @POST
   @Path("/user/update")
   @Consumes({
@@ -1272,7 +1203,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /user/update");
 
     String user = null;
@@ -1292,13 +1223,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Removes a map user.
-   *
-   * @param mapUser the map user
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#removeMapUser(org.ihtsdo.otf.mapping.jpa.MapUserJpa, java.lang.String)
    */
+  @Override
   @DELETE
   @Path("/user/delete")
   @ApiOperation(value = "Remove a user", notes = "Removes the specified user.", response = MapUser.class)
@@ -1308,7 +1236,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class).info(
+    Logger.getLogger(MappingServiceRestImpl.class).info(
         "RESTful call (Mapping): /user/delete for user " + mapUser.getName());
 
     String user = null;
@@ -1331,14 +1259,11 @@ public class MappingServiceRest extends RootServiceRest {
   // ///////////////////////////////////////////////////
   // SCRUD functions: Map Advice
   // ///////////////////////////////////////////////////
-  /**
-   * Returns all map advices in either JSON or XML format.
-   *
-   * @param authToken the auth token
-   * @return the map advices
-   * @throws Exception the exception
+  
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapAdvices(java.lang.String)
    */
-
+  @Override
   @GET
   @Path("/advice/advices")
   @ApiOperation(value = "Get all mapping advices", notes = "Gets a list of all map advices.", response = MapAdviceListJpa.class)
@@ -1349,7 +1274,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /advice/advices");
 
     String user = null;
@@ -1378,14 +1303,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Adds a map advice.
-   *
-   * @param mapAdvice the map advice
-   * @param authToken the auth token
-   * @return Response the response
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#addMapAdvice(org.ihtsdo.otf.mapping.jpa.MapAdviceJpa, java.lang.String)
    */
+  @Override
   @PUT
   @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
@@ -1398,7 +1319,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /advice/add");
 
     String user = null;
@@ -1429,13 +1350,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Updates a map advice.
-   *
-   * @param mapAdvice the map advice to be added
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#updateMapAdvice(org.ihtsdo.otf.mapping.jpa.MapAdviceJpa, java.lang.String)
    */
+  @Override
   @POST
   @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
@@ -1448,7 +1366,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /advice/update");
 
     String user = null;
@@ -1467,13 +1385,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Removes a map advice.
-   *
-   * @param mapAdvice the map advice
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#removeMapAdvice(org.ihtsdo.otf.mapping.jpa.MapAdviceJpa, java.lang.String)
    */
+  @Override
   @DELETE
   @Path("/advice/delete")
   @ApiOperation(value = "Remove an advice", notes = "Removes the specified map advice.", response = MapAdviceJpa.class)
@@ -1483,7 +1398,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /advice/delete for user "
             + mapAdvice.getName());
 
@@ -1508,14 +1423,10 @@ public class MappingServiceRest extends RootServiceRest {
   // ///////////////////////////////////////////////////
   // SCRUD functions: Map AgeRange
   // ///////////////////////////////////////////////////
-  /**
-   * Returns all map age ranges in either JSON or XML format.
-   *
-   * @param authToken the auth token
-   * @return the map age ranges
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapAgeRanges(java.lang.String)
    */
-
+  @Override
   @GET
   @Path("/ageRange/ageRanges")
   @ApiOperation(value = "Get all mapping age ranges", notes = "Gets a list of all mapping age ranges.", response = MapAgeRangeListJpa.class)
@@ -1526,7 +1437,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /ageRange/ageRanges");
 
     String user = null;
@@ -1555,14 +1466,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Adds a map age range.
-   *
-   * @param mapAgeRange the map ageRange
-   * @param authToken the auth token
-   * @return Response the response
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#addMapAgeRange(org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa, java.lang.String)
    */
+  @Override
   @PUT
   @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
@@ -1575,7 +1482,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /ageRange/add");
 
     String user = null;
@@ -1606,13 +1513,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Updates a map age range.
-   *
-   * @param mapAgeRange the map ageRange to be added
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#updateMapAgeRange(org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa, java.lang.String)
    */
+  @Override
   @POST
   @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
@@ -1625,7 +1529,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /ageRange/update");
 
     String user = null;
@@ -1644,13 +1548,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Removes a map age range.
-   *
-   * @param mapAgeRange the map age range
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#removeMapAgeRange(org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa, java.lang.String)
    */
+  @Override
   @DELETE
   @Path("/ageRange/delete")
   @ApiOperation(value = "Remove an age range", notes = "Removes the specified age range.", response = MapAgeRangeJpa.class)
@@ -1660,7 +1561,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /ageRange/delete for user "
             + mapAgeRange.getName());
 
@@ -1684,13 +1585,10 @@ public class MappingServiceRest extends RootServiceRest {
   // SCRUD functions: Map Relation
   // ///////////////////////////////////////////////////
 
-  /**
-   * Returns all map relations in either JSON or XML format.
-   *
-   * @param authToken the auth token
-   * @return the map relations
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapRelations(java.lang.String)
    */
+  @Override
   @GET
   @Path("/relation/relations")
   @ApiOperation(value = "Get all relations", notes = "Gets a list of all map relations.", response = MapRelationListJpa.class)
@@ -1701,7 +1599,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /relation/relations");
 
     String user = null;
@@ -1729,14 +1627,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Adds a map relation.
-   *
-   * @param mapRelation the map relation
-   * @param authToken the auth token
-   * @return Response the response
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#addMapRelation(org.ihtsdo.otf.mapping.jpa.MapRelationJpa, java.lang.String)
    */
+  @Override
   @PUT
   @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
@@ -1749,7 +1643,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /relation/add");
 
     String user = null;
@@ -1780,13 +1674,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Updates a map relation.
-   *
-   * @param mapRelation the map relation to be added
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#updateMapRelation(org.ihtsdo.otf.mapping.jpa.MapRelationJpa, java.lang.String)
    */
+  @Override
   @POST
   @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
@@ -1799,7 +1690,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /relation/update");
 
     String user = null;
@@ -1818,13 +1709,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Removes a map relation.
-   *
-   * @param mapRelation the map relation
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#removeMapRelation(org.ihtsdo.otf.mapping.jpa.MapRelationJpa, java.lang.String)
    */
+  @Override
   @DELETE
   @Path("/relation/delete")
   @ApiOperation(value = "Remove a map relation", notes = "Removes the specified map relation.", response = MapRelationJpa.class)
@@ -1834,7 +1722,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /relation/delete for user "
             + mapRelation.getName());
 
@@ -1860,13 +1748,10 @@ public class MappingServiceRest extends RootServiceRest {
   // SCRUD functions: Map Principles
   // ///////////////////////////////////////////////////
 
-  /**
-   * Returns all map principles in either JSON or XML format.
-   *
-   * @param authToken the auth token
-   * @return the map principles
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapPrinciples(java.lang.String)
    */
+  @Override
   @GET
   @Path("/principle/principles")
   @ApiOperation(value = "Get all map principles", notes = "Gets a list of all map principles.", response = MapPrincipleListJpa.class)
@@ -1877,7 +1762,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /principle/principles");
 
     String user = null;
@@ -1905,14 +1790,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Returns the map principle for id.
-   *
-   * @param mapPrincipleId the map principle id
-   * @param authToken the auth token
-   * @return the map principle for id
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapPrinciple(java.lang.Long, java.lang.String)
    */
+  @Override
   @GET
   @Path("/principle/id/{id:[0-9][0-9]*}")
   @ApiOperation(value = "Get a map principle", notes = "Gets a map principle for the specified id.", response = MapPrinciple.class)
@@ -1925,7 +1806,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class).info(
+    Logger.getLogger(MappingServiceRestImpl.class).info(
         "RESTful call (Mapping): /principle/id/" + mapPrincipleId.toString());
 
     String user = null;
@@ -1947,14 +1828,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Adds a map user principle object.
-   *
-   * @param mapPrinciple the map user principle object to be added
-   * @param authToken the auth token
-   * @return result the newly created map user principle object
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#addMapPrinciple(org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa, java.lang.String)
    */
+  @Override
   @PUT
   @Path("/principle/add")
   @Consumes({
@@ -1970,7 +1847,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /principle/add");
 
     String user = null;
@@ -2002,13 +1879,10 @@ public class MappingServiceRest extends RootServiceRest {
 
   }
 
-  /**
-   * Updates a map principle.
-   *
-   * @param mapPrinciple the map principle
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#updateMapPrinciple(org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa, java.lang.String)
    */
+  @Override
   @POST
   @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
@@ -2021,7 +1895,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /principle/update");
 
     String user = null;
@@ -2041,13 +1915,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Removes a set of map user preferences.
-   *
-   * @param principle the principle
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#removeMapPrinciple(org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa, java.lang.String)
    */
+  @Override
   @DELETE
   @Path("/principle/delete")
   @ApiOperation(value = "Remove a map principle", notes = "Removes the specified map principle.")
@@ -2057,7 +1928,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /principle/delete for id "
             + principle.getId().toString());
 
@@ -2084,14 +1955,10 @@ public class MappingServiceRest extends RootServiceRest {
   // SCRUD functions: Map User Preferences
   // ///////////////////////////////////////////////////
 
-  /**
-   * Gets a map user preferences object for a specified user.
-   *
-   * @param username the username
-   * @param authToken the auth token
-   * @return result the newly created map user preferences object
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapUserPreferences(java.lang.String, java.lang.String)
    */
+  @Override
   @GET
   @Path("/userPreferences/user/id/{username}")
   @Produces({
@@ -2103,7 +1970,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call:  /userPreferences/user/id/" + username);
 
     String user = null;
@@ -2124,14 +1991,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Adds a map user preferences object.
-   *
-   * @param mapUserPreferences the map user preferences object to be added
-   * @param authToken the auth token
-   * @return result the newly created map user preferences object
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#addMapUserPreferences(org.ihtsdo.otf.mapping.jpa.MapUserPreferencesJpa, java.lang.String)
    */
+  @Override
   @PUT
   @Path("/userPreferences/add")
   @Consumes({
@@ -2147,7 +2010,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /userPreferences/add");
 
     String user = null;
@@ -2169,13 +2032,10 @@ public class MappingServiceRest extends RootServiceRest {
 
   }
 
-  /**
-   * Updates a map user preferences object.
-   *
-   * @param mapUserPreferences the map user preferences
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#updateMapUserPreferences(org.ihtsdo.otf.mapping.jpa.MapUserPreferencesJpa, java.lang.String)
    */
+  @Override
   @POST
   @Path("/userPreferences/update")
   @Consumes({
@@ -2188,7 +2048,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /userPreferences/update with \n"
             + mapUserPreferences.toString());
 
@@ -2210,14 +2070,10 @@ public class MappingServiceRest extends RootServiceRest {
 
   }
 
-  /**
-   * Removes a set of map user preferences.
-   *
-   * @param mapUserPreferences the id of the map user preferences object to be
-   *          deleted
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#removeMapUserPreferences(org.ihtsdo.otf.mapping.jpa.MapUserPreferencesJpa, java.lang.String)
    */
+  @Override
   @DELETE
   @Path("/userPreferences/remove")
   @ApiOperation(value = "Remove user preferences", notes = "Removes specified user preferences.")
@@ -2227,7 +2083,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /userPreferences/remove for id "
             + mapUserPreferences.getId().toString());
 
@@ -2252,18 +2108,10 @@ public class MappingServiceRest extends RootServiceRest {
   // SCRUD functions: Map Record
   // ///////////////////////////////////////////////////
 
-  // ///////////////////////////////////////////////////
-  // SCRUD functions: Map Record
-  // ///////////////////////////////////////////////////
-
-  /**
-   * Returns the record for a given id (auto-generated) in JSON format.
-   *
-   * @param mapRecordId the mapRecordId
-   * @param authToken the auth token
-   * @return the mapRecord
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapRecord(java.lang.Long, java.lang.String)
    */
+  @Override
   @GET
   @Path("/record/id/{id:[0-9][0-9]*}")
   @ApiOperation(value = "Get map record by id", notes = "Gets a map record for the specified id.", response = MapRecord.class)
@@ -2275,7 +2123,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /record/id/"
             + (mapRecordId == null ? "" : mapRecordId.toString()));
 
@@ -2313,14 +2161,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Adds a map record.
-   *
-   * @param mapRecord the map record to be added
-   * @param authToken the auth token
-   * @return Response the response
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#addMapRecord(org.ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
    */
+  @Override
   @PUT
   @Path("/record/add")
   @Consumes({
@@ -2336,7 +2180,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /record/add");
 
     String user = null;
@@ -2357,13 +2201,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Updates a map record.
-   *
-   * @param mapRecord the map record to be added
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#updateMapRecord(org.ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
    */
+  @Override
   @POST
   @Path("/record/update")
   @Consumes({
@@ -2376,7 +2217,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /record/update");
 
     String user = null;
@@ -2397,14 +2238,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Removes a map record given the object.
-   *
-   * @param mapRecord the map record to delete
-   * @param authToken the auth token
-   * @return Response the response
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#removeMapRecord(org.ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
    */
+  @Override
   @DELETE
   @Path("/record/delete")
   @Consumes({
@@ -2417,7 +2254,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /record/delete with map record id = "
             + mapRecord.toString());
 
@@ -2441,15 +2278,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Removes a set of map records for a project and a set of terminology ids.
-   *
-   * @param terminologyIds the terminology ids
-   * @param projectId the project id
-   * @param authToken the auth token
-   * @return Response the response
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#removeMapRecordsForMapProjectAndTerminologyIds(java.util.List, java.lang.Long, java.lang.String)
    */
+  @Override
   @DELETE
   @Path("/record/records/delete/project/id/{projectId}/batch")
   @Consumes({
@@ -2463,7 +2295,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /record/records/delete/project/id/"
             + projectId + "/batch with string argument " + terminologyIds);
 
@@ -2507,13 +2339,13 @@ public class MappingServiceRest extends RootServiceRest {
 
         // check if map records exist
         if (mapRecordList.getCount() == 0) {
-          Logger.getLogger(MappingServiceRest.class).warn(
+          Logger.getLogger(MappingServiceRestImpl.class).warn(
               "No records found for project for concept id " + terminologyId);
           validationResult
               .addWarning("No records found for concept " + terminologyId);
         } else {
           for (final MapRecord mapRecord : mapRecordList.getMapRecords()) {
-            Logger.getLogger(MappingServiceRest.class)
+            Logger.getLogger(MappingServiceRestImpl.class)
                 .info("Removing map record " + mapRecord.getId()
                     + " for concept " + mapRecord.getConceptId() + ", "
                     + mapRecord.getConceptName());
@@ -2568,16 +2400,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Returns the records for a given concept id. We don't need to know
-   * terminology or version here because we can get it from the corresponding
-   * map project.
-   *
-   * @param conceptId the concept id
-   * @param authToken the auth token
-   * @return the mapRecords
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapRecordsForConceptId(java.lang.String, java.lang.String)
    */
+  @Override
   @GET
   @Path("/record/concept/id/{conceptId}")
   @ApiOperation(value = "Get map records by concept id", notes = "Gets a list of map records for the specified concept id.", response = MapRecord.class)
@@ -2589,7 +2415,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /record/concept/id/" + conceptId);
 
     String user = null;
@@ -2658,16 +2484,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Gets the latest map record revision for each map record with given concept
-   * id.
-   *
-   * @param conceptId the concept id
-   * @param mapProjectId the map project id
-   * @param authToken the auth token
-   * @return the map records for concept id historical
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapRecordsForConceptIdHistorical(java.lang.String, java.lang.Long, java.lang.String)
    */
+  @Override
   @GET
   @Path("/record/concept/id/{conceptId}/project/id/{id:[0-9][0-9]*}/historical")
   @ApiOperation(value = "Get historical map records by concept id", notes = "Gets the latest map record revision for each map record with given concept id.", response = MapRecord.class)
@@ -2680,7 +2500,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /record/concept/id/" + conceptId
             + "/project/id/" + mapProjectId + "/historical");
 
@@ -2751,19 +2571,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Returns delimited page of Published or Ready For Publication MapRecords
-   * given a paging/filtering/sorting parameters object.
-   *
-   * @param mapProjectId the map project id
-   * @param pfsParameter the JSON object containing the paging/filtering/sorting
-   *          parameters
-   * @param ancestorId the ancestor id
-   * @param query the query
-   * @param authToken the auth token
-   * @return the list of map records
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapRecordsForMapProjectAndQuery(java.lang.Long, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String, java.lang.String, boolean, java.lang.String, java.lang.String)
    */
+  @Override
   @POST
   @Path("/record/project/id/{id:[0-9][0-9]*}")
   @ApiOperation(value = "Get published map records by project id", notes = "Gets a list of map records for the specified map project id that have a workflow status of PUBLISHED or READY_FOR_PUBLICATION.", response = MapRecordListJpa.class)
@@ -2785,7 +2596,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /record/project/id/" + mapProjectId + " "
             + ancestorId + ", " + excludeDescendants + ", " + query);
     String user = null;
@@ -2956,17 +2767,10 @@ public class MappingServiceRest extends RootServiceRest {
 
   }
 
-  /**
-   * Returns delimited page of Published or Ready For Publication MapRecords
-   * given a paging/filtering/sorting parameters object.
-   *
-   * @param mapProjectId the map project id
-   * @param pfsParameter the JSON object containing the paging/filtering/sorting
-   *          parameters
-   * @param authToken the auth token
-   * @return the list of map records
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getPublishedMapRecordsForMapProject(java.lang.Long, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
    */
+  @Override
   @POST
   @Path("/record/project/id/{id:[0-9][0-9]*}/published")
   @ApiOperation(value = "Get published map records by map project id", notes = "Gets a list of map records for the specified map project id that have a workflow status of PUBLISHED.", response = MapRecordListJpa.class)
@@ -2983,7 +2787,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     // log call
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /record/project/id/"
             + mapProjectId.toString());
 
@@ -3018,18 +2822,10 @@ public class MappingServiceRest extends RootServiceRest {
 
   }
 
-  /**
-   * Returns the map record revisions.
-   * 
-   * NOTE: currently not called, but we are going to want to call this to do
-   * history-related stuff thus it is anticipating the future dev and should be
-   * kept.
-   *
-   * @param mapRecordId the map record id
-   * @param authToken the auth token
-   * @return the map record revisions
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapRecordRevisions(java.lang.Long, java.lang.String)
    */
+  @Override
   @GET
   @Path("/record/id/{id:[0-9][0-9]*}/revisions")
   @Consumes({
@@ -3045,7 +2841,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class).info(
+    Logger.getLogger(MappingServiceRestImpl.class).info(
         "RESTful call (Mapping): /record/id/" + mapRecordId + "/revisions");
 
     String user = null;
@@ -3082,15 +2878,10 @@ public class MappingServiceRest extends RootServiceRest {
 
   }
 
-  /**
-   * Returns the map record using historical revisions if the record no longer
-   * exists.
-   *
-   * @param mapRecordId the map record id
-   * @param authToken the auth token
-   * @return the map record historical
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapRecordHistorical(java.lang.Long, java.lang.String)
    */
+  @Override
   @GET
   @Path("/record/id/{id:[0-9][0-9]*}/historical")
   @Consumes({
@@ -3106,7 +2897,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class).info(
+    Logger.getLogger(MappingServiceRestImpl.class).info(
         "RESTful call (Mapping): /record/id/" + mapRecordId + "/historical");
 
     String user = null;
@@ -3151,14 +2942,10 @@ public class MappingServiceRest extends RootServiceRest {
   // Relation and Advice Computation
   // /////////////////////////////////////////
 
-  /**
-   * Computes a map relation (if any) for a map entry's current state.
-   *
-   * @param mapRecord the map record
-   * @param authToken the auth token
-   * @return Response the response
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#computeMapRelation(org.ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
    */
+  @Override
   @POST
   @Path("/relation/compute")
   @Consumes({
@@ -3174,7 +2961,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /relation/compute");
 
     String user = null;
@@ -3219,15 +3006,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Computes a map advice (if any) for a map entry's current state.
-   *
-   * @param mapRecord the map record
-   * @param entryIndex the entry index
-   * @param authToken the auth token
-   * @return Response the response
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#computeMapAdvice(java.lang.Integer, org.ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
    */
+  @Override
   @POST
   @Path("/advice/compute/{entryIndex}")
   @Consumes({
@@ -3244,7 +3026,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
 
     // call log
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /advice/compute");
 
     String user = null;
@@ -3293,16 +3075,11 @@ public class MappingServiceRest extends RootServiceRest {
   // ///////////////////////////////////////////////
   // Role Management Services
   // ///////////////////////////////////////////////
-  /**
-   * Gets a map user's role for a given map project.
-   *
-   * @param username the username
-   * @param mapProjectId the map project id
-   * @param authToken the auth token
-   * @return result the role
-   * @throws Exception the exception
+  
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapUserRoleForMapProject(java.lang.String, java.lang.Long, java.lang.String)
    */
-
+  @Override
   @GET
   @Path("/userRole/user/id/{username}/project/id/{id:[0-9][0-9]*}")
   @Produces({
@@ -3315,7 +3092,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call:  /userRole/user/id" + username + "/project/id/"
             + mapProjectId);
 
@@ -3338,17 +3115,10 @@ public class MappingServiceRest extends RootServiceRest {
   // Descendant services
   // /////////////////////////
 
-  /**
-   * 
-   * Given concept information, returns a ConceptList of descendant concepts
-   * without associated map records.
-   *
-   * @param terminologyId the concept terminology id
-   * @param mapProjectId the map project id
-   * @param authToken the auth token
-   * @return the ConceptList of unmapped descendants
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getUnmappedDescendantsForConcept(java.lang.String, java.lang.Long, java.lang.String)
    */
+  @Override
   @GET
   @Path("/concept/id/{terminologyId}/unmappedDescendants/project/id/{id:[0-9][0-9]*}")
   @ApiOperation(value = "Find unmapped descendants of a concept", notes = "Gets a list of search results for concepts having unmapped descendants.", response = Concept.class)
@@ -3362,7 +3132,7 @@ public class MappingServiceRest extends RootServiceRest {
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /concept/id/" + terminologyId
             + "/project/id/" + mapProjectId);
 
@@ -3391,17 +3161,11 @@ public class MappingServiceRest extends RootServiceRest {
   // /////////////////////////////////////////////////////
   // Tree Position Routines for Terminology Browser
   // /////////////////////////////////////////////////////
-  /**
-   * Gets tree positions for concept.
-   *
-   * @param terminologyId the terminology id
-   * @param mapProjectId the contextual project of this tree, used for
-   *          determining valid codes
-   * @param authToken the auth token
-   * @return the search result list
-   * @throws Exception the exception
+  
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getTreePositionWithDescendantsForConceptAndMapProject(java.lang.String, java.lang.Long, java.lang.String)
    */
-
+  @Override
   @GET
   @Path("/treePosition/project/id/{mapProjectId}/concept/id/{terminologyId}")
   @ApiOperation(value = "Gets project-specific tree positions with desendants", notes = "Gets a list of tree positions and their descendants for the specified parameters. Sets flags for valid targets and assigns any terminology notes based on project.", response = TreePositionListJpa.class)
@@ -3415,7 +3179,7 @@ public class MappingServiceRest extends RootServiceRest {
 
   ) throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /treePosition/project/id/"
             + mapProjectId.toString() + "/concept/id/" + terminologyId);
 
@@ -3479,14 +3243,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Gets the root-level tree positions for a given terminology and version.
-   *
-   * @param mapProjectId the map project id
-   * @param authToken the auth token
-   * @return the search result list
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getDestinationRootTreePositionsForMapProject(java.lang.Long, java.lang.String)
    */
+  @Override
   @GET
   @Path("/treePosition/project/id/{projectId}/destination")
   @ApiOperation(value = "Get root tree positions", notes = "Gets a list of tree positions at the root of the terminology.", response = TreePositionListJpa.class)
@@ -3498,7 +3258,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /treePosition/project/id/"
             + mapProjectId.toString() + "/destination");
 
@@ -3555,14 +3315,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Gets the root-level tree positions for a given terminology and version.
-   *
-   * @param mapProjectId the map project id
-   * @param authToken the auth token
-   * @return the search result list
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getSourceRootTreePositionsForMapProject(java.lang.Long, java.lang.String)
    */
+  @Override
   @GET
   @Path("/treePosition/project/id/{projectId}/source")
   @ApiOperation(value = "Get source terminology root tree positions", notes = "Gets a list of tree positions at the root of the terminology.", response = TreePositionListJpa.class)
@@ -3574,7 +3330,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /treePosition/project/id/"
             + mapProjectId.toString() + "/source");
 
@@ -3631,16 +3387,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Gets tree positions for concept query.
-   *
-   * @param query the query
-   * @param mapProjectId the map project id
-   * @param pfsParameter the pfs parameter
-   * @param authToken the auth token
-   * @return the root-level trees corresponding to the query
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getTreePositionGraphsForQueryAndMapProject(java.lang.String, java.lang.Long, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
    */
+  @Override
   @POST
   @Path("/treePosition/project/id/{projectId}")
   @ApiOperation(value = "Get tree positions for query", notes = "Gets a list of tree positions for the specified parameters.", response = TreePositionListJpa.class)
@@ -3760,17 +3510,10 @@ public class MappingServiceRest extends RootServiceRest {
   // Workflow-related routines
   // /////////////////////////////////////////////////
 
-  /**
-   * Returns records recently edited for a project and user. Used by editedList
-   * widget.
-   *
-   * @param mapProjectId the map project id
-   * @param username the user name
-   * @param pfsParameter the pfs parameter
-   * @param authToken the auth token
-   * @return the recently edited map records
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapRecordsEditedByMapUser(java.lang.Long, java.lang.String, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
    */
+  @Override
   @POST
   @Path("/record/project/id/{id}/user/id/{username}/edited")
   @ApiOperation(value = "Get map records edited by a user", notes = "Gets a list of map records for the specified map project and user.", response = MapRecordListJpa.class)
@@ -3784,7 +3527,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /record/project/id/" + mapProjectId
             + "/user/id/" + username + "/edited");
 
@@ -3809,15 +3552,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Returns the map records that when compared lead to the specified conflict
-   * record.
-   * 
-   * @param mapRecordId the map record id
-   * @param authToken the auth token
-   * @return map records in conflict for a given conflict lead record
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getOriginMapRecordsForConflict(java.lang.Long, java.lang.String)
    */
+  @Override
   @GET
   @Path("/record/id/{id:[0-9][0-9]*}/conflictOrigins")
   @ApiOperation(value = "Get specialist records for an assigned conflict or review record", notes = "Gets a list of specialist map records corresponding to a lead conflict or review record.", response = MapRecordListJpa.class)
@@ -3826,7 +3564,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /record/id/" + mapRecordId
             + "/conflictOrigins");
     String user = null;
@@ -3885,14 +3623,10 @@ public class MappingServiceRest extends RootServiceRest {
   // Map Record Validation and Compare Services
   // //////////////////////////////////////////////
 
-  /**
-   * Validates a map record.
-   *
-   * @param mapRecord the map record to be validated
-   * @param authToken the auth token
-   * @return Response the response
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#validateMapRecord(org.ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
    */
+  @Override
   @POST
   @Path("/validation/record/validate")
   @Consumes({
@@ -3907,7 +3641,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class).info(
+    Logger.getLogger(MappingServiceRestImpl.class).info(
         "RESTful call (Mapping): /validation/record/validate for map record id = "
             + mapRecord.getId().toString());
 
@@ -3941,15 +3675,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Compare map records and return differences.
-   *
-   * @param mapRecordId1 the map record id1
-   * @param mapRecordId2 the map record id2
-   * @param authToken the auth token
-   * @return the validation result
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#compareMapRecords(java.lang.Long, java.lang.Long, java.lang.String)
    */
+  @Override
   @GET
   @Path("/validation/record/id/{recordId1}/record/id/{recordId2}/compare")
   @ApiOperation(value = "Compare two map records", notes = "Compares two map records and returns the validation results.", response = ValidationResultJpa.class)
@@ -3961,7 +3690,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Map record id, e.g. 28124", required = true) @PathParam("recordId2") Long mapRecordId2,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /validation/record/id/" + mapRecordId1
             + "record/id/" + mapRecordId1 + "/compare");
 
@@ -3995,15 +3724,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Is target code valid.
-   *
-   * @param mapProjectId the map project id
-   * @param terminologyId the terminology id
-   * @param authToken the auth token
-   * @return the concept
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#isTargetCodeValid(java.lang.Long, java.lang.String, java.lang.String)
    */
+  @Override
   @GET
   @Path("/project/id/{mapProjectId}/concept/isValid")
   @ApiOperation(value = "Indicate whether a target code is valid", notes = "Gets either a valid concept corresponding to the id, or returns null if not valid.", response = TreePositionListJpa.class)
@@ -4015,7 +3739,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Concept terminology id, e.g. 22298006", required = true) @QueryParam("terminologyId") String terminologyId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /project/id/" + mapProjectId
             + "/concept/isValid " + terminologyId);
 
@@ -4055,16 +3779,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Upload file.
-   *
-   * @param fileInputStream the file input stream
-   * @param contentDispositionHeader the content disposition header
-   * @param mapProjectId the map project id
-   * @param authToken the auth token
-   * @return the response
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#uploadMappingHandbookFile(java.io.InputStream, com.sun.jersey.core.header.FormDataContentDisposition, java.lang.Long, java.lang.String)
    */
+  @Override
   @POST
   @Path("/upload/{mapProjectId}")
   // Swagger does not support this
@@ -4138,13 +3856,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Returns all map projects metadata.
-   *
-   * @param authToken the auth token
-   * @return the map projects metadata
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapProjectMetadata(java.lang.String)
    */
+  @Override
   @GET
   @Path("/mapProject/metadata")
   @ApiOperation(value = "Get metadata for map projects", notes = "Gets the key-value pairs representing all metadata for the map projects.", response = KeyValuePairLists.class)
@@ -4155,7 +3870,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /mapProject/metadata");
 
     String user = null;
@@ -4198,14 +3913,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Returns the all terminology notes. e.g. dagger/asterisk mappings for ICD10
-   *
-   * @param mapProjectId the map project id
-   * @param authToken the auth token
-   * @return the all terminology notes
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getAllTerminologyNotes(java.lang.Long, java.lang.String)
    */
+  @Override
   @GET
   @Path("/mapProject/{mapProjectId}/notes")
   @ApiOperation(value = "Get metadata for map projects", notes = "Gets the key-value pairs representing all metadata for the map projects.", response = KeyValuePairLists.class)
@@ -4217,7 +3928,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /mapProject/" + mapProjectId + "/notes");
 
     String user = null;
@@ -4247,13 +3958,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Compute default preferred names.
-   *
-   * @param mapProjectId the map project id
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#computeDefaultPreferredNames(java.lang.Long, java.lang.String)
    */
+  @Override
   @POST
   @Path("/project/id/{id:[0-9][0-9]*}/names")
   @ApiOperation(value = "Compute default preferred names for a map project.", notes = "Recomputes default preferred names for the specified map project.")
@@ -4262,7 +3970,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(WorkflowServiceRest.class)
+    Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Workflow): /project/id/" + mapProjectId.toString()
             + "/names");
 
@@ -4444,14 +4152,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Begin release for map project.
-   *
-   * @param effectiveTime the effective time
-   * @param mapProjectId the map project id
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#beginReleaseForMapProject(java.lang.String, java.lang.Long, java.lang.String)
    */
+  @Override
   @POST
   @Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/begin")
   @ApiOperation(value = "Begin release for map project", notes = "Generates release validation report for map project")
@@ -4460,7 +4164,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(WorkflowServiceRest.class)
+    Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Mapping): /project/id/" + mapProjectId.toString()
             + "/release/begin");
 
@@ -4514,15 +4218,10 @@ public class MappingServiceRest extends RootServiceRest {
 
   }
 
-  /**
-   * Process release for map project.
-   *
-   * @param moduleId the module id
-   * @param effectiveTime the effective time
-   * @param mapProjectId the map project id
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#processReleaseForMapProject(java.lang.String, java.lang.String, java.lang.Long, java.lang.String)
    */
+  @Override
   @POST
   @Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/module/id/{moduleId}/process")
   @ApiOperation(value = "Process release for map project", notes = "Processes release and creates release files for map project")
@@ -4532,7 +4231,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(WorkflowServiceRest.class)
+    Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Mapping): /project/id/" + mapProjectId.toString()
             + "/release/" + effectiveTime + "/module/id/" + moduleId
             + "/process");
@@ -4581,15 +4280,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Finish release for map project.
-   *
-   * @param testModeFlag the test mode flag
-   * @param mapProjectId the map project id
-   * @param effectiveTime the effective time
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#finishReleaseForMapProject(boolean, java.lang.Long, java.lang.String, java.lang.String)
    */
+  @Override
   @POST
   @Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/finish")
   @ApiOperation(value = "Finish release for map project", notes = "Finishes release for map project from release files")
@@ -4599,7 +4293,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Effective Time, e.g. 20170131", required = true) @PathParam("effectiveTime") String effectiveTime,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(WorkflowServiceRest.class)
+    Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Mapping): /project/id/" + mapProjectId.toString()
             + "/release/begin");
 
@@ -4649,13 +4343,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Start editing cycle for map project.
-   *
-   * @param mapProjectId the map project id
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#startEditingCycleForMapProject(java.lang.Long, java.lang.String)
    */
+  @Override
   @POST
   @Path("/project/id/{id:[0-9][0-9]*}/release/startEditing")
   @ApiOperation(value = "Start editing cycle for map project", notes = "Start editing cycle for map project")
@@ -4663,7 +4354,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(WorkflowServiceRest.class)
+    Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Mapping): /project/id/" + mapProjectId.toString()
             + "/release/startEditing");
 
@@ -4693,13 +4384,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Creates the jira issue.
-   *
-   * @param conceptId the concept id
-   * @param authToken the auth token
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#createJiraIssue(java.lang.String, java.lang.String, java.lang.String, org.ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
    */
+    @Override
   @POST
   @Path("/jira/{conceptId}/{conceptAuthor}")
   @Consumes({
@@ -4716,10 +4404,10 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Map record, in JSON or XML POST data", required = true) MapRecordJpa mapRecord,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(WorkflowServiceRest.class)
+    Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Mapping): /jira/" + conceptId.toString() + "/"
             + conceptAuthor);
-    Logger.getLogger(WorkflowServiceRest.class)
+    Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Mapping): /jira/" + messageText);
     try {
 
@@ -4808,7 +4496,7 @@ public class MappingServiceRest extends RootServiceRest {
                     + "}"
                 + "}"
             + "}";
-      Logger.getLogger(MappingServiceRest.class)
+      Logger.getLogger(MappingServiceRestImpl.class)
           .info("RESTful call (Mapping): /jira/  \n" + data);
 
       ClientResponse response = webResource
@@ -4824,13 +4512,13 @@ public class MappingServiceRest extends RootServiceRest {
         this.handleException(new AuthenticationException("Forbidden"),
             "Forbidden", authToken, "", "");
       } else if (statusCode == 200 || statusCode == 201) {
-        Logger.getLogger(MappingServiceRest.class)
+        Logger.getLogger(MappingServiceRestImpl.class)
             .info("Ticket Created successfully");
       } else {
         this.handleException(
             new AuthenticationException("Http Error : " + statusCode),
             "Http Error : " + statusCode, authToken, "", "");
-        Logger.getLogger(MappingServiceRest.class)
+        Logger.getLogger(MappingServiceRestImpl.class)
             .info("Http Error : " + statusCode);
       }
 
@@ -4841,7 +4529,7 @@ public class MappingServiceRest extends RootServiceRest {
         System.out.println(line);
 
       }
-      Logger.getLogger(MappingServiceRest.class).info(response.getEntity(String.class));
+      Logger.getLogger(MappingServiceRestImpl.class).info(response.getEntity(String.class));
 
     } catch (MalformedURLException e) {
       e.printStackTrace();
@@ -4850,6 +4538,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getConceptAuthors(java.lang.String, java.lang.String)
+   */
+  @Override
   @GET
   @Path("/authors/{conceptId}")
   @ApiOperation(value = "Gets authors for this concept", notes = "Gets a list of all content authors from the authoring tool.", response = SearchResultList.class)
@@ -4861,7 +4553,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class)
+    Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping):  /authors/" + conceptId);
 
     String user = null;
@@ -4900,13 +4592,13 @@ public class MappingServiceRest extends RootServiceRest {
         this.handleException(new AuthenticationException("Forbidden"),
             "Forbidden", authToken, "", "");
       } else if (statusCode == 200 || statusCode == 201) {
-        Logger.getLogger(MappingServiceRest.class)
+        Logger.getLogger(MappingServiceRestImpl.class)
             .info("Traceability report retrieved successfully");
       } else {
         this.handleException(
             new AuthenticationException("Http Error : " + statusCode),
             "Http Error : " + statusCode, authToken, "", "");
-        Logger.getLogger(MappingServiceRest.class)
+        Logger.getLogger(MappingServiceRestImpl.class)
             .info("Http Error : " + statusCode);
       }
       // Parse to get the authors on all changes that were promoted to MAIN
@@ -4944,6 +4636,10 @@ public class MappingServiceRest extends RootServiceRest {
     }
   }
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getConceptAuthoringChanges(java.lang.String, java.lang.String, java.lang.String)
+   */
+  @Override
   @GET
   @Path("/changes/{projectId}/{conceptId}")
   @ApiOperation(value = "Gets authoring history for this concept", notes = "Gets a list of all editing changes made to MAIN from the authoring tool.", response = SearchResultList.class)
@@ -4956,7 +4652,7 @@ public class MappingServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class).info(
+    Logger.getLogger(MappingServiceRestImpl.class).info(
         "RESTful call (Mapping):  /changes/" + projectId + "/" + conceptId);
 
     final MappingService mappingService = new MappingServiceJpa();
@@ -4970,7 +4666,7 @@ public class MappingServiceRest extends RootServiceRest {
           mappingService.getMapProject(new Long(projectId).longValue());
 
       final Date editingCycleBeginDate = mapProject.getEditingCycleBeginDate();
-      Logger.getLogger(MappingServiceRest.class)
+      Logger.getLogger(MappingServiceRestImpl.class)
           .info("editingCycleBeginDate:" + editingCycleBeginDate.toString());
 
       final Properties config = ConfigUtility.getConfigProperties();
@@ -5000,10 +4696,10 @@ public class MappingServiceRest extends RootServiceRest {
       } else if (statusCode == 403) {
         throw new AuthenticationException("Forbidden");
       } else if (statusCode == 200 || statusCode == 201) {
-        Logger.getLogger(MappingServiceRest.class)
+        Logger.getLogger(MappingServiceRestImpl.class)
             .info("Traceability report retrieved successfully");
       } else {
-        Logger.getLogger(MappingServiceRest.class)
+        Logger.getLogger(MappingServiceRestImpl.class)
             .info("Http Error : " + statusCode);
       }
 
@@ -5058,7 +4754,7 @@ public class MappingServiceRest extends RootServiceRest {
       }
       searchResultList
           .setTotalCount(searchResultList.getSearchResults().size());
-      Logger.getLogger(MappingServiceRest.class)
+      Logger.getLogger(MappingServiceRestImpl.class)
           .info("Traceability report contains "
               + searchResultList.getTotalCount() + " entries.");
       return searchResultList;
