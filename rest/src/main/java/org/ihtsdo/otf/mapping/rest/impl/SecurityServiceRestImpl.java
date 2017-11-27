@@ -1,7 +1,7 @@
 /*
  *    Copyright 2015 West Coast Informatics, LLC
  */
-package org.ihtsdo.otf.mapping.rest;
+package org.ihtsdo.otf.mapping.rest.impl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,6 +19,7 @@ import javax.ws.rs.core.Response;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.rest.SecurityServiceRest;
 import org.ihtsdo.otf.mapping.services.SecurityService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
@@ -34,16 +35,12 @@ import com.wordnik.swagger.annotations.ApiParam;
 @Produces({
     MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 })
-public class SecurityServiceRest extends RootServiceRest {
+public class SecurityServiceRestImpl extends RootServiceRestImpl implements SecurityServiceRest {
 
-  /**
-   * Authenticate.
-   * 
-   * @param username the username
-   * @param password the password
-   * @return the string
-   * @throws Exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.SecurityServiceRest#authenticate(java.lang.String, java.lang.String)
    */
+  @Override
   @POST
   @Path("/authenticate/{username}")
   @Consumes({
@@ -58,7 +55,7 @@ public class SecurityServiceRest extends RootServiceRest {
     @ApiParam(value = "Password, as string post data", required = true) String password)
     throws Exception {
 
-    Logger.getLogger(SecurityServiceRest.class)
+    Logger.getLogger(SecurityServiceRestImpl.class)
         .info("RESTful call (Authentication): /authentication for map user = "
             + username);
     final SecurityService securityService = new SecurityServiceJpa();
@@ -76,13 +73,10 @@ public class SecurityServiceRest extends RootServiceRest {
 
   }
 
-  /**
-   * Authenticate.
-   *
-   * @param userName the user name
-   * @return the string
-   * @throws Exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.SecurityServiceRest#logout(java.lang.String)
    */
+  @Override
   @POST
   @Path("/logout/user/id/{userName}")
   @Produces(MediaType.TEXT_PLAIN)
@@ -91,7 +85,7 @@ public class SecurityServiceRest extends RootServiceRest {
     @ApiParam(value = "Username", required = true) @PathParam("userName") String userName)
     throws Exception {
 
-    Logger.getLogger(SecurityServiceRest.class)
+    Logger.getLogger(SecurityServiceRestImpl.class)
         .info("RESTful call (Logout) : /logout/user/id/" + userName);
     final SecurityService securityService = new SecurityServiceJpa();
     try {
@@ -107,11 +101,10 @@ public class SecurityServiceRest extends RootServiceRest {
     return null;
   }
 
-  /**
-   * Returns the config properties.
-   *
-   * @return the config properties
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.SecurityServiceRest#getConfigProperties()
    */
+  @Override
   @GET
   @Path("/properties")
   @Produces({
