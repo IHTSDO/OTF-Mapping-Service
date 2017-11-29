@@ -1,8 +1,5 @@
 package org.ihtsdo.otf.mapping.rest.impl;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -10,16 +7,14 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
-import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 //import org.ihtsdo.otf.mapping.jpa.algo.LuceneReindexAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.rest.AdminSerivceRest;
 import org.ihtsdo.otf.mapping.services.SecurityService;
 
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
-
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 /**
  * REST implementation for admin service.

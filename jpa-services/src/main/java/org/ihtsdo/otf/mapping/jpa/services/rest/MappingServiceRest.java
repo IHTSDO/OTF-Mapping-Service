@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.ws.rs.core.Response;
 
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.ihtsdo.otf.mapping.helpers.KeyValuePairList;
 import org.ihtsdo.otf.mapping.helpers.KeyValuePairLists;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
@@ -38,8 +39,6 @@ import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.model.MapUserPreferences;
 import org.ihtsdo.otf.mapping.rf2.Concept;
-
-import com.sun.jersey.core.header.FormDataContentDisposition;
 
 public interface MappingServiceRest {
 

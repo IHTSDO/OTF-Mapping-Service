@@ -3,13 +3,11 @@
  */
 package org.ihtsdo.otf.mapping.rest.impl;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.nio.channels.FileChannel;
@@ -26,7 +24,7 @@ import java.util.Set;
 
 import javax.naming.AuthenticationException;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.CookieParam;
+//import javax.ws.rs.CookieParam;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -37,12 +35,18 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.ihtsdo.otf.mapping.helpers.ConceptList;
 import org.ihtsdo.otf.mapping.helpers.KeyValuePair;
 import org.ihtsdo.otf.mapping.helpers.KeyValuePairList;
@@ -114,14 +118,10 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.core.header.FormDataContentDisposition;
-import com.sun.jersey.multipart.FormDataParam;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+
 
 /**
  * REST implementation for mapping service.
@@ -2584,7 +2584,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  @CookieParam(value = "userInfo")
+  //@CookieParam(value = "userInfo")
   public MapRecordListJpa getMapRecordsForMapProjectAndQuery(
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
@@ -2780,7 +2780,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  @CookieParam(value = "userInfo")
+  //@CookieParam(value = "userInfo")
   public MapRecordListJpa getPublishedMapRecordsForMapProject(
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
@@ -4423,8 +4423,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
             "create a JIRA issue . JIRA properties must be in configuration file", "", "", "");
       }
 
-      Client client = Client.create();
-      WebResource webResource = client.resource(jiraUrl + "/issue/");
+      final Client client = ClientBuilder.newClient();
+      final WebTarget target = client.target(jiraUrl + "/issue/");
 
       // buffer map record contents
       StringBuffer mapRecordContents = new StringBuffer();
@@ -4499,9 +4499,9 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       Logger.getLogger(MappingServiceRestImpl.class)
           .info("RESTful call (Mapping): /jira/  \n" + data);
 
-      ClientResponse response = webResource
-          .header("Authorization", jiraAuthHeader).type("application/json")
-          .accept("application/json").post(ClientResponse.class, data);
+      final Response response = target.request(MediaType.APPLICATION_JSON_TYPE)
+          .header("Authorization", jiraAuthHeader)
+          .accept(MediaType.APPLICATION_JSON_TYPE).post(Entity.json(data));
       int statusCode = response.getStatus();
 
       if (statusCode == 401) {
@@ -4522,14 +4522,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
             .info("Http Error : " + statusCode);
       }
 
-      BufferedReader inputStream = new BufferedReader(
-          new InputStreamReader(response.getEntityInputStream()));
-      String line = null;
-      while ((line = inputStream.readLine()) != null) {
-        System.out.println(line);
-
-      }
-      Logger.getLogger(MappingServiceRestImpl.class).info(response.getEntity(String.class));
+      System.out.println(response.readEntity(String.class));
+      Logger.getLogger(MappingServiceRestImpl.class).info(response.readEntity(String.class));
 
     } catch (MalformedURLException e) {
       e.printStackTrace();
@@ -4575,13 +4569,13 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
             "", "", "");
       }
 
-      Client client = Client.create();
-      WebResource webResource = client.resource(authoringUrl
+      final Client client = ClientBuilder.newClient();
+      final WebTarget target = client.target(authoringUrl
           + "/traceability-service/activities?conceptId=" + conceptId);
 
-      ClientResponse response = webResource
-          .header("Authorization", authoringAuthHeader).type("application/json")
-          .accept("application/json").get(ClientResponse.class);
+      final Response response = target.request(MediaType.APPLICATION_JSON_TYPE)
+          .header("Authorization", authoringAuthHeader)
+          .accept("application/json").get();
       int statusCode = response.getStatus();
 
       if (statusCode == 401) {
@@ -4602,7 +4596,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
             .info("Http Error : " + statusCode);
       }
       // Parse to get the authors on all changes that were promoted to MAIN
-      String jsonText = inputStreamToString(response.getEntityInputStream());
+      String jsonText = response.readEntity(String.class);
       JSONObject jsonObject = new JSONObject(jsonText);
       JSONArray array = jsonObject.getJSONArray("content");
       SearchResultList searchResultList = new SearchResultListJpa();
@@ -4682,13 +4676,13 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
             "", "", "");
       }
 
-      Client client = Client.create();
-      WebResource webResource = client.resource(authoringUrl
+      final Client client = ClientBuilder.newClient();
+      final WebTarget target = client.target(authoringUrl
           + "/traceability-service/activities?conceptId=" + conceptId);
 
-      ClientResponse response = webResource
-          .header("Authorization", authoringAuthHeader).type("application/json")
-          .accept("application/json").get(ClientResponse.class);
+      final Response response = target.request(MediaType.APPLICATION_JSON_TYPE)
+          .header("Authorization", authoringAuthHeader)
+          .accept(MediaType.APPLICATION_JSON_TYPE).get();
       int statusCode = response.getStatus();
 
       if (statusCode == 401) {
@@ -4705,7 +4699,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
       // Parse to get the editing changes that were promoted to MAIN
       SearchResultList searchResultList = new SearchResultListJpa();
-      String jsonText = inputStreamToString(response.getEntityInputStream());
+      String jsonText = response.readEntity(String.class);
       JSONObject jsonObject = new JSONObject(jsonText);
       JSONArray array = jsonObject.getJSONArray("content");
       for (int i = 0; i < array.length(); i++) {
@@ -4770,27 +4764,27 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
   }
 
-  /**
-   * Reads an InputStream and returns its contents as a String. Also effects
-   * rate control.
-   * @param inputStream The InputStream to read from.
-   * @return The contents of the InputStream as a String.
-   * @throws Exception on error.
-   */
-  private static String inputStreamToString(final InputStream inputStream)
-    throws Exception {
-    final StringBuilder outputBuilder = new StringBuilder();
-
-    String string;
-    if (inputStream != null) {
-      BufferedReader reader =
-          new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
-      while (null != (string = reader.readLine())) {
-        outputBuilder.append(string).append('\n');
-      }
-    }
-
-    return outputBuilder.toString();
-  }
+//  /**
+//   * Reads an InputStream and returns its contents as a String. Also effects
+//   * rate control.
+//   * @param inputStream The InputStream to read from.
+//   * @return The contents of the InputStream as a String.
+//   * @throws Exception on error.
+//   */
+//  private static String inputStreamToString(final InputStream inputStream)
+//    throws Exception {
+//    final StringBuilder outputBuilder = new StringBuilder();
+//
+//    String string;
+//    if (inputStream != null) {
+//      BufferedReader reader =
+//          new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
+//      while (null != (string = reader.readLine())) {
+//        outputBuilder.append(string).append('\n');
+//      }
+//    }
+//
+//    return outputBuilder.toString();
+//  }
 
 }

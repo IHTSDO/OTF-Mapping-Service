@@ -23,9 +23,9 @@ import org.ihtsdo.otf.mapping.jpa.services.rest.SecurityServiceRest;
 import org.ihtsdo.otf.mapping.services.SecurityService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 /**
  * REST implementation for security service.
@@ -47,14 +47,14 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements Secu
       MediaType.TEXT_PLAIN
   })
   @Produces({
-      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+      MediaType.TEXT_PLAIN
   })
   @ApiOperation(value = "Authenticate a map user.", notes = "Performs authentication on specified username and password and returns a token upon successful authentication. Throws 401 error if not.", response = String.class)
   public String authenticate(
     @ApiParam(value = "Username", required = true) @PathParam("username") String username,
     @ApiParam(value = "Password, as string post data", required = true) String password)
     throws Exception {
-
+	  
     Logger.getLogger(SecurityServiceRestImpl.class)
         .info("RESTful call (Authentication): /authentication for map user = "
             + username);

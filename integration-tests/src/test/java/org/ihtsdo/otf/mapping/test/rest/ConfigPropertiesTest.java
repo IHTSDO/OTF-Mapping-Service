@@ -1,5 +1,8 @@
 package org.ihtsdo.otf.mapping.test.rest;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
@@ -9,9 +12,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.WebResource;
 
 /**
  * Simple REST test to verify we can read config properties from the server.
@@ -48,11 +48,10 @@ public class ConfigPropertiesTest extends TestSupport {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     // It's enough that this completes
-    final Client c = Client.create();
-    final WebResource r =
-        c.resource("http://localhost:8080/mapping-rest/security/properties");
-    final String response =
-        r.accept(MediaType.APPLICATION_JSON).get(String.class);
+    final Client c = ClientBuilder.newClient();
+    final WebTarget wt = c.target("http://localhost:8080/mapping-rest/security/properties");
+    
+    final String response = wt.request().accept(MediaType.APPLICATION_JSON).get(String.class);
     Logger.getLogger(getClass()).info("  properties = " + response);
 
   }

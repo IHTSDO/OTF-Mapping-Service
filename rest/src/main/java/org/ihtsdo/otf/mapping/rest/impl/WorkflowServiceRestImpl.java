@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.CookieParam;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -66,9 +65,9 @@ import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 import org.ihtsdo.otf.mapping.workflow.WorkflowException;
 import org.ihtsdo.otf.mapping.workflow.WorkflowExceptionJpa;
 
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 /**
  * REST implementation for workflow service.
@@ -1804,7 +1803,6 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  @CookieParam(value = "userInfo")
   public FeedbackConversationList findFeedbackConversationsForMapProjectAndUser(
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Username", required = true) @PathParam("userName") String userName,
@@ -1896,7 +1894,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  @CookieParam(value = "userInfo")
+  //@CookieParam(value = "userInfo")
   public ValidationResult assignBatchToFixErrorPath(
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long mapProjectId,
     @ApiParam(value = "List of terminology ids to assign", required = true) List<String> terminologyIds,
