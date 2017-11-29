@@ -1587,9 +1587,10 @@ angular
 
         $scope.getBrowserUrl = function() {
           if ($scope.project.destinationTerminology === 'ICD11') {
-            return 'http://browser.ihtsdotools.org/index.html?perspective=full&conceptId1='
+            return 'https://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1='
               + $scope.record.conceptId
-              + '&acceptLicense=true&release=v20170731';
+              + '&edition=en-edition&release=v20180731&'
+              + 'server=https://prod-dailybuild.ihtsdotools.org/api/snomed&langRefset=900000000000509007';
           } else if ($scope.project.sourceTerminology === 'SNOMEDCT_US') {
             return 'https://dailybuild.ihtsdotools.org/us.html?perspective=full&conceptId1='
               + $scope.record.conceptId + '&acceptLicense=true';

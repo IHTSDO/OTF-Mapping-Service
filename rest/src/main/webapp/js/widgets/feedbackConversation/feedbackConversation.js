@@ -339,10 +339,11 @@ angular
 
       // opens SNOMED CT browser
       $scope.getBrowserUrl = function() {
-        if ($scope.project.destinationTerminology === 'ICD11') {
-          return 'http://browser.ihtsdotools.org/index.html?perspective=full&conceptId1='
+        if ($scope.focusProject.destinationTerminology === 'ICD11') {
+          return 'https://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1='
             + $scope.conversation.terminologyId
-            + '&acceptLicense=true&release=v20170731';
+            + '&edition=en-edition&release=v20180731&'
+            + 'server=https://prod-dailybuild.ihtsdotools.org/api/snomed&langRefset=900000000000509007';
         } else if ($scope.currentUser.userName === 'guest') {
           return 'http://browser.ihtsdotools.org/index.html?perspective=full&conceptId1='
             + $scope.conversation.terminologyId + '&acceptLicense=true';

@@ -240,8 +240,9 @@ angular
 
         if ($scope.project.destinationTerminology === 'ICD11') {
           myWindow = window
-          .open('http://browser.ihtsdotools.org/index.html?perspective=full'
-            + '&acceptLicense=true&release=20170731');
+            .open('https://dailybuild.ihtsdotools.org/index.html?perspective=full'
+              + '&edition=en-edition&release=v20180731&'
+              + 'server=https://prod-dailybuild.ihtsdotools.org/api/snomed&langRefset=900000000000509007');
         } else if ($scope.currentUser.userName === 'guest')
           myWindow = window
             .open('http://browser.ihtsdotools.org/index.html?perspective=full'
