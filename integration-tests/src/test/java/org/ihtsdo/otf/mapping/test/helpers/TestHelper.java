@@ -8,6 +8,7 @@ import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.rest.SecurityServiceRest;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
@@ -16,7 +17,7 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.model.MapUserPreferences;
-import org.ihtsdo.otf.mapping.rest.SecurityServiceRest;
+import org.ihtsdo.otf.mapping.rest.impl.SecurityServiceRestImpl;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.junit.Ignore;
@@ -43,7 +44,7 @@ public class TestHelper {
    */
   public TestHelper() throws Exception {
     contentService = new ContentServiceJpa();
-    securityService = new SecurityServiceRest();
+    securityService = new SecurityServiceRestImpl();
     workflowService = new WorkflowServiceJpa();
   }
 

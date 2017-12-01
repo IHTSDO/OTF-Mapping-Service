@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import javax.persistence.NoResultException;
 
@@ -1591,8 +1592,13 @@ public class WorkflowServiceJpa extends MappingServiceJpa
       modifiedQuery = query;
 
     final StringBuilder sb = new StringBuilder();
-    sb.append(modifiedQuery).append(" AND ");
-    sb.append("mapProjectId:" + mapProject.getId());
+    sb.append(modifiedQuery);
+    
+    if (!query.contains("mapProjectId")) {
+        sb.append(" AND ")
+            .append("mapProjectId:")
+            .append(mapProject.getId());
+    }
 
     // remove from the query the viewed parameter, if it exists
     // viewed will be handled later because it is on the Feedback object,
@@ -1605,6 +1611,8 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     Logger.getLogger(getClass()).info("  query = " + sb.toString());
 
     final PfsParameter pfs = new PfsParameterJpa(pfsParameter);
+    pfs.setMaxResults(-1);
+    
     if (pfs.getSortField() == null || pfs.getSortField().isEmpty()) {
       pfs.setSortField("lastModified");
     }
@@ -1618,6 +1626,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
         (List<FeedbackConversation>) getQueryResults(sb.toString(),
             FeedbackConversationJpa.class, FeedbackConversationJpa.class, pfs,
             totalCt);
+
 
     if (pfsParameter != null && query.contains("viewed")) {
 
@@ -1656,20 +1665,76 @@ public class WorkflowServiceJpa extends MappingServiceJpa
             conversationsToKeep.add(fc);
         }
       }
-      totalCt[0] = conversationsToKeep.size();
-      feedbackConversations.clear();
-      if (pfsParameter.getStartIndex() != -1) {
-        for (int i =
-            pfsParameter.getStartIndex(); i < pfsParameter.getStartIndex()
-                + pfsParameter.getMaxResults()
-                && i < conversationsToKeep.size(); i++) {
-          feedbackConversations.add(conversationsToKeep.get(i));
-        }
-      } else {
-        feedbackConversations.addAll(conversationsToKeep);
-      }
 
+      feedbackConversations.clear();
+      feedbackConversations.addAll(conversationsToKeep);
+      conversationsToKeep.clear();
     }
+    
+    //add ownedbyme
+    for (final FeedbackConversation fc : feedbackConversations) {
+        final MapRecord mrl = this.getLatestMapRecordForConcept(fc.getMapProjectId(), fc.getTerminologyId());
+        if (mrl != null && mrl.getLastModifiedBy() != null) {
+            fc.setUserName(mrl.getLastModifiedBy().getUserName());
+        }
+        else {
+            fc.setUserName(null);
+        }
+    }
+    
+
+    final List<FeedbackConversation> conversationsToKeep = new ArrayList<>();
+    
+    if (pfsParameter != null
+            && pfsParameter.getQueryRestriction() != null
+            && pfsParameter.getQueryRestriction().trim() != "") {
+
+        Map<String, String> queryMap = convertToMap(pfsParameter.getQueryRestriction(), ",", "=");
+                     
+        if (queryMap.get("ownedByMe") != null) {
+            final boolean owned = Boolean.parseBoolean((String) queryMap.get("ownedByMe"));
+            
+            Logger.getLogger(getClass()).debug("owned: " + owned );
+            
+            for (final FeedbackConversation fc : feedbackConversations) {
+                
+                Logger.getLogger(getClass()).debug("CHECK id: " + fc.getTerminologyId() + 
+                        " userName:" + userName + " fc.getUserName:" + fc.getUserName());
+                
+                if (   ( (owned) &&  userName.equals(fc.getUserName()))
+                    || (!(owned) && !userName.equals(fc.getUserName()))) {
+                    
+                    Logger.getLogger(getClass()).debug("MATCH id: " + fc.getTerminologyId() + 
+                            " userName:" + userName + " fc.getUserName:" + fc.getUserName());
+                    
+                    conversationsToKeep.add(fc);
+                }
+            }
+        }
+        
+        feedbackConversations.clear();  
+        feedbackConversations.addAll(conversationsToKeep);
+        conversationsToKeep.clear();
+      }
+    
+    final List<FeedbackConversation> recordsToKeep = new ArrayList<>();
+    //paging.
+    if (feedbackConversations != null && feedbackConversations.size() > 0
+        && pfsParameter.getStartIndex() != -1
+        && pfsParameter.getMaxResults() != -1 ) {
+                
+        int startIndex = (pfsParameter.getStartIndex() < 0) ? 0 : pfsParameter.getStartIndex();
+        int endIndex =  startIndex + 
+                (((startIndex + pfsParameter.getMaxResults()) < feedbackConversations.size()) 
+                    ? pfsParameter.getMaxResults() 
+                    : feedbackConversations.size() - startIndex);
+        recordsToKeep.addAll(feedbackConversations.subList(startIndex, endIndex));
+    }
+    
+    totalCt[0] = feedbackConversations.size();
+    feedbackConversations.clear();
+    feedbackConversations.addAll(recordsToKeep);
+    recordsToKeep.clear();
 
     Logger.getLogger(this.getClass())
         .debug(Integer.toString(feedbackConversations.size())
@@ -1943,5 +2008,25 @@ public class WorkflowServiceJpa extends MappingServiceJpa
         return getWorkflowPathHandler(mapProject.getWorkflowType().toString());
 
     }
+  }
+  
+  //parse query restrictions
+  private Map<String, String> convertToMap(String tokenizedString, String firstToken, String secondToken) throws Exception {
+      
+      final Map<String, String> map = new HashMap<String, String>();
+      final StringTokenizer st = new StringTokenizer(tokenizedString, firstToken);
+      
+      while(st.hasMoreTokens()) {
+          final String first = st.nextToken();
+          final String[] second = first.split(secondToken);
+          
+          if (second.length != 2) {
+              throw new Exception("Unexpeted number of tokens received.");
+          }
+          else {
+              map.put(second[0], second[1]);
+          }
+      }
+      return map;
   }
 }

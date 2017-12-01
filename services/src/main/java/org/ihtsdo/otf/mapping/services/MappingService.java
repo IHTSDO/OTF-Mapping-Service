@@ -816,12 +816,23 @@ public interface MappingService extends RootService {
    * @param excludeDescendants 
    * @param terminology
    * @param terminologyVersion
+   * @param relationshipName 
    * @param pfsParameter
    * @return
    * @throws Exception
    */
   public SearchResultList findMapRecords(Long mapProjectd, String ancestorId,
-    boolean excludeDescendants, String terminology, String terminologyVersion, PfsParameter pfsParameter, Collection<String> mapConcepts)
+    boolean excludeDescendants, String relationshipName, String terminology, String terminologyVersion, PfsParameter pfsParameter, Collection<String> mapConcepts)
     throws Exception;
+
+  /**
+   * Retrieve latest map record for a given terminology id.
+   * 
+   * @param mapProjectId the concept id
+   * @param terminologyId the concept id
+   * @return the list of map records
+   */
+  public MapRecord getLatestMapRecordForConcept(Long mapProjectId,
+    String terminologyId) throws Exception;
 
 }
