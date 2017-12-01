@@ -254,7 +254,7 @@ public class ComputeIcd11Map2 {
           continue;
         }
 
-        if (sctid.equals("423093000")) {
+        if (sctid.equals("52684005")) {
           System.out.println("xxx");
         }
 
@@ -886,7 +886,11 @@ public class ComputeIcd11Map2 {
       requiredWords.put("remission", "remission");
       requiredWords.put("hereditary", "hereditary");
       requiredWords.put("congenital", "congenital");
-      requiredWords.put("acute-on-chronic", "acute");
+      if (map10.getMapGroup() == 1) {
+        requiredWords.put("acute-on-chronic", "acute");
+      } else if (map10.getMapGroup() == 2) {
+        requiredWords.put("acute-on-chronic", "chronic");
+      }
       requiredWords.put("acute", "acute");
       requiredWords.put("chronic", "chronic");
       requiredWords.put("natal", "natal");
@@ -2408,7 +2412,8 @@ public class ComputeIcd11Map2 {
       final String targetCode = icd11Concepts.get(targetId);
       final String targetName =
           targetCode.substring(targetCode.indexOf(" : ") + 3)
-              .replaceAll(", unspecified", "").replaceAll("Other specified ","").toLowerCase();
+              .replaceAll(", unspecified", "")
+              .replaceAll("Other specified ", "").toLowerCase();
 
       final String sctNameBodyPart =
           sctName.substring(sctName.lastIndexOf(" of ") + 4).toLowerCase();
