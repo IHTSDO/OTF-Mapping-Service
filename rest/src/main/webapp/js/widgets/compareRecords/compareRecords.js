@@ -18,7 +18,7 @@ angular
   .controller(
     'compareRecordsCtrl',
     function($scope, $rootScope, $http, $routeParams, $location, $timeout,
-      localStorageService, $sce) {
+      localStorageService, $sce, $window) {
 
       // ///////////////////////////////////
       // Map Record Controller Functions //
@@ -79,9 +79,6 @@ angular
         $scope.project = parameters.focusProject;
         $scope.errorMessages = $scope.project.errorMessages;
         $scope.errorMessages.unshift('None');
-        $scope.allUsers = $scope.project.mapSpecialist
-          .concat($scope.project.mapLead);
-        organizeUsers($scope.allUsers);
       });
 
       // watch for change in focus project
@@ -93,11 +90,13 @@ angular
 
           // if first visit, retrieve the records to be compared
           if ($scope.leadRecord == null) {
-            $scope.getRecordsInConflict();
 
+            // Set up "all users"
             $scope.allUsers = $scope.project.mapSpecialist
               .concat($scope.project.mapLead);
             organizeUsers($scope.allUsers);
+
+            $scope.getRecordsInConflict();
 
             $rootScope.glassPane++;
             $http(
@@ -140,7 +139,7 @@ angular
         // initialize local variables
         var leadRecordId = $routeParams.recordId;
 
-        // get the lead record
+        // get the lead record (do everything else inside the "then")
         $rootScope.glassPane++;
         $http({
           url : root_mapping + 'record/id/' + leadRecordId,
@@ -149,136 +148,25 @@ angular
           headers : {
             'Content-Type' : 'application/json'
           }
-        }).success(function(data) {
-          $rootScope.glassPane--;
-          $scope.leadRecord = data;
-        }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
-          $rootScope.handleHttpError(data, status, headers, config);
-          // obtain the record concept - id from leadRecord
-        }).then(
-          function(data) {
-            $rootScope.glassPane++;
-            $http(
-              {
-                url : root_content + 'concept/id/'
-                  + $scope.project.sourceTerminology + '/'
-                  + $scope.project.sourceTerminologyVersion + '/'
-                  + $scope.leadRecord.conceptId,
-                dataType : 'json',
-                method : 'GET',
-                headers : {
-                  'Content-Type' : 'application/json'
-                }
-              }).success(
-              function(data) {
-                $rootScope.glassPane--;
-                $scope.concept = data;
-                setAccordianTitle($scope.concept.terminologyId,
-                  $scope.concept.defaultPreferredName);
-              }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
-              $rootScope.handleHttpError(data, status, headers, config);
-            });
-          });
-
-        // get the conflict records
-        $rootScope.glassPane++;
-        $http(
-          {
-            url : root_mapping + 'record/id/' + $routeParams.recordId
-              + '/conflictOrigins',
-            dataType : 'json',
-            method : 'GET',
-            headers : {
-              'Content-Type' : 'application/json'
-            }
-          }).success(
-          function(data) {
+        })
+          .success(function(data) {
             $rootScope.glassPane--;
-            if (data.totalCount == 1) {
-              $scope.record1 = data.mapRecord[0];
-              $scope.record1.displayName = data.mapRecord[0].owner.name;
-              $scope.record2 = null;
-
-              // auto-populate if there is only one, no split-screen
-              $timeout(function() {
-                $scope.populateMapRecord($scope.record1, false);
-              }, 400);
-
-            } else if (data.totalCount == 2) {
-
-              // if a conflict, just set the two records
-              // NOTE: Special case for Simple Path workflow where one record
-              // may be EDITING_DONE
-              if (data.mapRecord[0].workflowStatus === 'CONFLICT_DETECTED'
-                || data.mapRecord[0].workflowStatus === 'CONFLICT_DETECTED') {
-                // set the origin records (i.e. the records in conflict)
-                $scope.record1 = data.mapRecord[0];
-                $scope.record1.displayName = $scope.record1.owner.name;
-                $scope.record2 = data.mapRecord[1];
-                $scope.record2.displayName = $scope.record2.owner.name;
-
-                // otherwise a review or qa record
-              } else {
-
-                // assign the first record as the specialist's revised record
-                // assign the second record as the previously published record
-                for (var i = 0; i < 2; i++) {
-                  if (data.mapRecord[i].workflowStatus === 'REVIEW_NEEDED'
-                    || data.mapRecord[i].workflowStatus === 'QA_NEEDED') {
-                    $scope.record1 = data.mapRecord[i];
-                    $scope.record1.displayName = $scope.record1.owner.name;
-                  } else if (data.mapRecord[i].workflowStatus === 'REVISION') {
-                    $scope.record2 = data.mapRecord[i];
-                    $scope.record2.displayName = 'Previously Published';
-                  }
-                }
-              }
-            }
-
-            if ($scope.record1 != null) {
-              $rootScope.glassPane++;
-              $http({
-                url : root_workflow + 'conversation/id/' + $scope.record1.id,
-                dataType : 'json',
-                method : 'GET',
-                headers : {
-                  'Content-Type' : 'application/json'
-                }
-              }).success(function(data) {
-                $rootScope.glassPane--;
-                $scope.conversation1 = data;
-              }).error(function(data, status, headers, config) {
-                $rootScope.glassPane--;
-                $rootScope.handleHttpError(data, status, headers, config);
-              });
-            }
-
-            if ($scope.record2 != null) {
-              $rootScope.glassPane++;
-              $http({
-                url : root_workflow + 'conversation/id/' + $scope.record2.id,
-                dataType : 'json',
-                method : 'GET',
-                headers : {
-                  'Content-Type' : 'application/json'
-                }
-              }).success(function(data) {
-                $rootScope.glassPane--;
-                $scope.conversation2 = data;
-              }).error(function(data, status, headers, config) {
-                $rootScope.glassPane--;
-                $rootScope.handleHttpError(data, status, headers, config);
-              });
-            }
-
-            if ($scope.leadRecord != null) {
+            $scope.leadRecord = data;
+          })
+          .error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(data, status, headers, config);
+            // obtain the record concept - id from leadRecord
+          })
+          .then(
+            function(data) {
               $rootScope.glassPane++;
               $http(
                 {
-                  url : root_workflow + 'conversation/id/'
-                    + $scope.leadRecord.id,
+                  url : root_content + 'concept/id/'
+                    + $scope.project.sourceTerminology + '/'
+                    + $scope.project.sourceTerminologyVersion + '/'
+                    + $scope.leadRecord.conceptId,
                   dataType : 'json',
                   method : 'GET',
                   headers : {
@@ -287,73 +175,203 @@ angular
                 }).success(
                 function(data) {
                   $rootScope.glassPane--;
-                  $scope.leadConversation = data;
-
-                  // if no prior conversation, initialize with the specialists
-                  if ($scope.leadConversation == null
-                    || $scope.leadConversation == '') {
-
-                    if ($scope.record1 != null)
-                      $scope.returnRecipients.push($scope.record1.owner);
-
-                    if ($scope.record2 != null)
-                      $scope.returnRecipients.push($scope.record2.owner);
-
-                    // otherwise initialize with recipients on prior feedback
-                  } else {
-                    initializeReturnRecipients($scope.leadConversation);
-                  }
+                  $scope.concept = data;
+                  setAccordianTitle($scope.concept.terminologyId,
+                    $scope.concept.defaultPreferredName);
                 }).error(function(data, status, headers, config) {
                 $rootScope.glassPane--;
                 $rootScope.handleHttpError(data, status, headers, config);
               });
-            }
 
-          }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
-          $rootScope.handleHttpError(data, status, headers, config);
-        }).then(
-          function(data) {
-
-            // get the groups
-            if ($scope.project.groupStructure == true)
-              getGroups();
-
-            // initialize the entries
-            initializeEntries();
-
-            // obtain the validationResults from compareRecords
-            if ($scope.record2 != null) {
+              // get the conflict records
               $rootScope.glassPane++;
               $http(
                 {
-                  url : root_mapping + 'validation/record/id/'
-                    + $scope.record1.id + '/record/id/' + $scope.record2.id
-                    + '/compare',
+                  url : root_mapping + 'record/id/' + $routeParams.recordId
+                    + '/conflictOrigins',
                   dataType : 'json',
                   method : 'GET',
                   headers : {
                     'Content-Type' : 'application/json'
                   }
-                }).success(
-                function(data) {
-                  $rootScope.glassPane--;
-                  for (var i = 0; i < data.errors.length; i++) {
-                    if ($scope.record1 != null)
-                      data.errors[i] = data.errors[i].replace('Specialist 1',
-                        $scope.record1.owner.name);
+                })
+                .success(
+                  function(data) {
+                    $rootScope.glassPane--;
+                    if (data.totalCount == 1) {
+                      $scope.record1 = data.mapRecord[0];
+                      $scope.record1.displayName = data.mapRecord[0].owner.name;
+                      $scope.record2 = null;
 
-                    if ($scope.record2 != null)
-                      data.errors[i] = data.errors[i].replace('Specialist 2',
-                        $scope.record2.owner.name);
-                  }
-                  $scope.validationResult = data;
-                }).error(function(data, status, headers, config) {
-                $rootScope.glassPane--;
-                $rootScope.handleHttpError(data, status, headers, config);
-              });
-            }
-          });
+                      // auto-populate if there is only one, no split-screen
+                      $timeout(function() {
+                        $scope.populateMapRecord($scope.record1, false);
+                      }, 400);
+
+                    } else if (data.totalCount == 2) {
+
+                      // if a conflict, just set the two records
+                      // NOTE: Special case for Simple Path workflow where one
+                      // record
+                      // may be EDITING_DONE
+                      if (data.mapRecord[0].workflowStatus === 'CONFLICT_DETECTED'
+                        || data.mapRecord[0].workflowStatus === 'CONFLICT_DETECTED') {
+                        // set the origin records (i.e. the records in conflict)
+                        $scope.record1 = data.mapRecord[0];
+                        $scope.record1.displayName = $scope.record1.owner.name;
+                        $scope.record2 = data.mapRecord[1];
+                        $scope.record2.displayName = $scope.record2.owner.name;
+
+                        // otherwise a review or qa record
+                      } else {
+
+                        // assign the first record as the specialist's revised
+                        // record
+                        // assign the second record as the previously published
+                        // record
+                        for (var i = 0; i < 2; i++) {
+                          if (data.mapRecord[i].workflowStatus === 'REVIEW_NEEDED'
+                            || data.mapRecord[i].workflowStatus === 'QA_NEEDED') {
+                            $scope.record1 = data.mapRecord[i];
+                            $scope.record1.displayName = $scope.record1.owner.name;
+                          } else if (data.mapRecord[i].workflowStatus === 'REVISION') {
+                            $scope.record2 = data.mapRecord[i];
+                            $scope.record2.displayName = 'Previously Published';
+                          }
+                        }
+                      }
+                    }
+
+                    if ($scope.record1 != null) {
+                      $rootScope.glassPane++;
+                      $http(
+                        {
+                          url : root_workflow + 'conversation/id/'
+                            + $scope.record1.id,
+                          dataType : 'json',
+                          method : 'GET',
+                          headers : {
+                            'Content-Type' : 'application/json'
+                          }
+                        }).success(function(data) {
+                        $rootScope.glassPane--;
+                        $scope.conversation1 = data;
+                      }).error(
+                        function(data, status, headers, config) {
+                          $rootScope.glassPane--;
+                          $rootScope.handleHttpError(data, status, headers,
+                            config);
+                        });
+                    }
+
+                    if ($scope.record2 != null) {
+                      $rootScope.glassPane++;
+                      $http(
+                        {
+                          url : root_workflow + 'conversation/id/'
+                            + $scope.record2.id,
+                          dataType : 'json',
+                          method : 'GET',
+                          headers : {
+                            'Content-Type' : 'application/json'
+                          }
+                        }).success(function(data) {
+                        $rootScope.glassPane--;
+                        $scope.conversation2 = data;
+                      }).error(
+                        function(data, status, headers, config) {
+                          $rootScope.glassPane--;
+                          $rootScope.handleHttpError(data, status, headers,
+                            config);
+                        });
+                    }
+
+                    if ($scope.leadRecord != null) {
+                      $rootScope.glassPane++;
+                      $http(
+                        {
+                          url : root_workflow + 'conversation/id/'
+                            + $scope.leadRecord.id,
+                          dataType : 'json',
+                          method : 'GET',
+                          headers : {
+                            'Content-Type' : 'application/json'
+                          }
+                        }).success(function(data) {
+                        $rootScope.glassPane--;
+                        $scope.leadConversation = data;
+
+                        // if no prior conversation, initialize with the
+                        // specialists
+                        if (!$scope.leadConversation) {
+
+                          if ($scope.record1 != null)
+                            $scope.returnRecipients.push($scope.record1.owner);
+
+                          if ($scope.record2 != null)
+                            $scope.returnRecipients.push($scope.record2.owner);
+
+                          // otherwise initialize with recipients on prior
+                          // feedback
+                        } else {
+                          initializeReturnRecipients($scope.leadConversation);
+                        }
+                      }).error(
+                        function(data, status, headers, config) {
+                          $rootScope.glassPane--;
+                          $rootScope.handleHttpError(data, status, headers,
+                            config);
+                        });
+                    }
+
+                  }).error(function(data, status, headers, config) {
+                  $rootScope.glassPane--;
+                  $rootScope.handleHttpError(data, status, headers, config);
+                }).then(
+                  function(data) {
+
+                    // get the groups
+                    if ($scope.project.groupStructure == true)
+                      getGroups();
+
+                    // initialize the entries
+                    initializeEntries();
+
+                    // obtain the validationResults from compareRecords
+                    if ($scope.record2 != null) {
+                      $rootScope.glassPane++;
+                      $http(
+                        {
+                          url : root_mapping + 'validation/record/id/'
+                            + $scope.record1.id + '/record/id/'
+                            + $scope.record2.id + '/compare',
+                          dataType : 'json',
+                          method : 'GET',
+                          headers : {
+                            'Content-Type' : 'application/json'
+                          }
+                        }).success(
+                        function(data) {
+                          $rootScope.glassPane--;
+                          for (var i = 0; i < data.errors.length; i++) {
+                            if ($scope.record1 != null)
+                              data.errors[i] = data.errors[i].replace(
+                                'Specialist 1', $scope.record1.owner.name);
+
+                            if ($scope.record2 != null)
+                              data.errors[i] = data.errors[i].replace(
+                                'Specialist 2', $scope.record2.owner.name);
+                          }
+                          $scope.validationResult = data;
+                        }).error(
+                        function(data, status, headers, config) {
+                          $rootScope.glassPane--;
+                          $rootScope.handleHttpError(data, status, headers,
+                            config);
+                        });
+                    }
+                  });
+            });
 
       };
 
@@ -1109,8 +1127,7 @@ angular
 
         // if no previous feedback conversations, return just first map lead in
         // list
-        if (conversation == null || conversation == '') {
-          $scope.returnRecipients.push($scope.project.mapLead[0]);
+        if (conversation == null || conversation == '' || conversation.feedback.length == 0) {
           return;
         }
 

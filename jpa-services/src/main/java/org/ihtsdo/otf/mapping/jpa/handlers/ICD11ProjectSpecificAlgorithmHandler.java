@@ -540,6 +540,52 @@ public class ICD11ProjectSpecificAlgorithmHandler
     return result;
   }
 
+  /**
+   * Verify no duplicate entries in the map.
+   * 
+   * @param mapRecord the map record
+   * @return a list of errors detected
+   */
+  @SuppressWarnings("static-method")
+  public ValidationResult checkMapRecordForDuplicateEntries(
+    MapRecord mapRecord) {
+    ValidationResult validationResult = new ValidationResultJpa();
+    final List<MapEntry> entries = mapRecord.getMapEntries();
+    final Map<String, Set<String>> groupedMaps = new HashMap<>();
+
+    // cycle over all entries but last
+    for (int i = 0; i < entries.size(); i++) {
+
+      final String mapGroup = entries.get(i).getMapGroup() + "";
+      if (!groupedMaps.containsKey(mapGroup)) {
+        groupedMaps.put(mapGroup, new HashSet<String>());
+      }
+      // final String mapPriority = entries.get(i).getMapPriority() + "";
+      final String targetId = entries.get(i).getTargetId() == null
+          || entries.get(i).getTargetId().isEmpty() ? "<nc>"
+              : entries.get(i).getTargetId();
+      final String rule =
+          entries.get(i).getRule() == null || entries.get(i).getRule().isEmpty()
+              ? "" : entries.get(i).getRule();
+      groupedMaps.get(mapGroup).add(rule + " " + targetId);
+    }
+
+    for (final String key1 : groupedMaps.keySet()) {
+      for (final String key2 : groupedMaps.keySet()) {
+        if (key1.compareTo(key2) < 0) {
+
+          if (groupedMaps.get(key1).equals(groupedMaps.get(key2))) {
+            validationResult.addError("Duplicate grouped entries found: "
+                + "Group " + key1 + " (" + groupedMaps.get(key1) + "), "
+                + "Group " + key2 + " (" + groupedMaps.get(key2) + ")");
+          }
+        }
+      }
+    }
+
+    return validationResult;
+  }
+
   /* see superclass */
   public String getSortKey(Concept concept, TrackingRecord record)
     throws Exception {

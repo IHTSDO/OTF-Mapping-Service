@@ -362,8 +362,10 @@ angular
                         }
                       }).success(function(data) {
                       console.debug('  conversation = ', data);
-                      $scope.conversation = data;
-                      initializeReturnRecipients();
+                      if (data) {
+                        $scope.conversation = data;
+                        initializeReturnRecipients();
+                      }
                     }).error(
                       function(data, status, headers, config) {
                         $rootScope.handleHttpError(data, status, headers,
@@ -1371,7 +1373,8 @@ angular
           $rootScope.$broadcast(
             'mapRecordWidget.notification.changeSelectedEntry', {
               key : 'changeSelectedEntry',
-              // Copy the entry, it is updated here via the "modifySelectedEntry" event
+              // Copy the entry, it is updated here via the
+              // "modifySelectedEntry" event
               entry : angular.copy(entry),
               record : $scope.record,
               project : $scope.project
@@ -1453,15 +1456,25 @@ angular
                   // check that the entry id
                   // matches
                   if ($scope.groupsTree[entry.mapGroup - 1].entry[entry.mapPriority - 1].localId != entry.localId) {
+                    $window
+                      .alert('Modified map entry is not in the groups tree '
+                        + entry.mapGroup + ', ' + entry.mapPriority);
                     return;
                   }
 
-                  // replace the entry
-                  $scope.groupsTree[entry.mapGroup - 1].entry[entry.mapPriority - 1] = entry;
+                  // If the only change is advice/relation, do not broadcast,
+                  // simply update locally
+                  if (parameters.adviceOnly) {
+                    $scope.groupsTree[entry.mapGroup - 1].entry[entry.mapPriority - 1].mapAdvice = entry.mapAdvice;
+                  } else if (parameters.relationOnly) {
+                    $scope.groupsTree[entry.mapGroup - 1].entry[entry.mapPriority - 1].mapRelation = entry.mapRelation;
+                  } else {
+                    $scope.groupsTree[entry.mapGroup - 1].entry[entry.mapPriority - 1] = entry;
+                  }
+                  $scope.saveGroups();
                 }
               }
 
-              $scope.saveGroups();
             });
 
         // ///////////////////////
@@ -1573,7 +1586,12 @@ angular
         };
 
         $scope.getBrowserUrl = function() {
-          if ($scope.project.sourceTerminology === 'SNOMEDCT_US') {
+          if ($scope.project.destinationTerminology === 'ICD11') {
+            return 'https://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1='
+              + $scope.record.conceptId
+              + '&edition=en-edition&release=v20180731&'
+              + 'server=https://prod-dailybuild.ihtsdotools.org/api/snomed&langRefset=900000000000509007';
+          } else if ($scope.project.sourceTerminology === 'SNOMEDCT_US') {
             return 'https://dailybuild.ihtsdotools.org/us.html?perspective=full&conceptId1='
               + $scope.record.conceptId + '&acceptLicense=true';
           } else {
@@ -1645,8 +1663,8 @@ angular
 
           // if no previous feedback conversations, return just
           // first map lead in list
-          if ($scope.conversation == null || $scope.conversation == '') {
-            $scope.returnRecipients.push($scope.project.mapLead[0]);
+          if ($scope.conversation == null || $scope.conversation == ''
+            || $scope.conversation.feedback.length == 0) {
             return;
           }
 

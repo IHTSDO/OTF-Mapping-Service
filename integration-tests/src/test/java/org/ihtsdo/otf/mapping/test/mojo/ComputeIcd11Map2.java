@@ -184,7 +184,7 @@ public class ComputeIcd11Map2 {
     final String icd11Dir = System.getProperty("icd11.dir");
     // Tracking vars
     final String refsetId = "icd11RefsetId";
-    final String moduleId = "123456789";
+    final String moduleId = "900000000000207008";
     Logger.getLogger(getClass()).info("  icd11Dir = " + icd11Dir);
     Logger.getLogger(getClass()).info("  moduleId = " + moduleId);
     Logger.getLogger(getClass()).info("  refsetId = " + refsetId);
@@ -254,7 +254,7 @@ public class ComputeIcd11Map2 {
           continue;
         }
 
-        if (sctid.equals("52684005")) {
+
           System.out.println("xxx");
         }
 
@@ -309,6 +309,11 @@ public class ComputeIcd11Map2 {
             fixAdvice(scores.getMap(), scores.getMap().getMapTarget());
           }
 
+          // Overall map should have the lowest matching category
+          if (category.compareTo(scores.getCategory()) > 0) {
+            category = scores.getCategory();
+          }
+
           // Add map to list unless already there (for priority 1s)
           if (map10.getMapPriority() == 1) {
             boolean flag = false;
@@ -325,11 +330,6 @@ public class ComputeIcd11Map2 {
           }
 
           mapList.add(scores.getMap());
-
-          // Overall map should have the lowest matching category
-          if (category.compareTo(scores.getCategory()) > 0) {
-            category = scores.getCategory();
-          }
 
           // If we encountered NO_MAP, we're done looking
           if (scores.getCategory() == Category.NO_MAP) {

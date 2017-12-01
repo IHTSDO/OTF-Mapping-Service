@@ -43,11 +43,11 @@ angular
             $scope.project = parameters.project;
 
             // get the allowable advices
-            $scope.allowableAdvices = getAllowableAdvices(parameters.entry,
-              parameters.project.mapAdvice);
+            $scope.allowableAdvices = getAllowableAdvices($scope.entry,
+              $scope.project.mapAdvice);
             sortByKey($scope.allowableAdvices, 'detail');
-            $scope.allowableMapRelations = getAllowableRelations(
-              parameters.entry, parameters.project.mapRelation);
+            $scope.allowableMapRelations = getAllowableRelations($scope.entry,
+              $scope.project.mapRelation);
 
             // set the rule to null if a non-rule-based project
             // added to catch any badly constructed rules from other widgets
@@ -93,7 +93,7 @@ angular
         // //////////////////////////////////////
 
         // broadcasts an update from the map entry to the map record widget
-        function updateEntry(entry) {
+        function updateEntry(entry, relationOnly, adviceOnly) {
           console.debug(
             'broadcast mapEntryWidget.notification.modifySelectedEntry = ',
             entry);
@@ -102,12 +102,14 @@ angular
               action : 'save',
               entry : angular.copy(entry),
               record : $scope.record,
-              project : $scope.project
+              project : $scope.project,
+              relationOnly : relationOnly,
+              adviceOnly : adviceOnly
             });
         }
 
         $scope.setTarget = function(targetCode) {
-            $scope.getValidTargetError = '';
+          $scope.getValidTargetError = '';
 
           // if target code is empty, compute parameters and return
           if (!targetCode) {
@@ -136,9 +138,17 @@ angular
                 $scope.entry.targetId = data.terminologyId;
                 $scope.entry.targetName = data.defaultPreferredName;
 
-                // attempt to autocompute the map relation, then update the
-                // entry
+                // clear the relation and advices
+                $scope.entry.mapRelation = null;
+                $scope.entry.mapAdvice = [];
+
+                updateEntry($scope.entry, false, false);
+
+                // $timeout(function() {
+                // Auto compute map relation and advice
+                // Any changes will update the entry correspondingly
                 $scope.computeParameters(false);
+                // }, 100);
 
               } else {
 
@@ -168,24 +178,8 @@ angular
           // scroll to (mapEntry left, mapEntry top + scroll offset -
           // header/widget header width)
           $window.scrollTo(rect.left, rect.top + window.pageYOffset - 90);
+          $scope.setTarget(parameters.concept.terminologyId);
 
-          $scope.entry.targetId = parameters.concept.terminologyId;
-          $scope.entry.targetName = parameters.concept.defaultPreferredName;
-
-          // clear the relation and advices
-          $scope.entry.mapRelation = null;
-          $scope.entry.mapAdvice = [];
-
-          // attempt to autocompute the map relation, then update the
-          // entry
-          $scope.computeParameters(false);
-
-          // get the allowable advices and relations
-          $scope.allowableAdvices = getAllowableAdvices($scope.entry,
-            $scope.project.mapAdvice);
-          sortByKey($scope.allowableAdvices, 'detail');
-          $scope.allowableMapRelations = getAllowableRelations($scope.entry,
-            $scope.project.mapRelation);
         });
 
         $scope.clearTargetConcept = function(entry) {
@@ -211,39 +205,40 @@ angular
             entry.rule = 'TRUE';
           }
 
+          // update the entry
+          updateEntry($scope.entry, false, false);
+
           // attempt to autocompute the map relation, then update the entry
           $scope.computeParameters(false);
 
-          // update the entry
-          updateEntry($scope.entry);
         };
 
         function computeRelation(entry, index) {
+          console.debug('computeRelation', index);
           var deferred = $q.defer();
 
           // ensure mapRelation is deserializable
           if (!entry.mapRelation) {
             entry.mapRelation = null;
           }
+          var copy = angular.copy($scope.record);
 
-          // // Fake the ID of this entry with -1 id, copy, then set it back
-          // // This is hacky, but we do not have a good way to send 2 objects
-          // // and the entry may not have an id yet because it could be new.
-          // var copy = angular.copy($scope.record);
-          // // Find the matching localId and replace it and set the id to -1
-          // for (var i = 0; i < copy.mapEntry.length; i++) {
-          // if (entry.localId == copy.mapEntry[i].localId) {
-          // var entryCopy = angular.copy(entry);
-          // entryCopy.id = -1;
-          // copy.mapEntry.splice(i, 1, entryCopy);
-          // }
-          // }
+          for (var i = 0; i < copy.mapEntry.length; i++) {
+            var entry = copy.mapEntry[i];
+            // / if matching entry found, set the target id
+            // maybe other fields needed here too
+            if (matchingEntry(entry, $scope.entry)) {
+              // coyp all fields
+              entry.targetId = $scope.entry.targetId;
+              break;
+            }
+          }
 
           $rootScope.glassPane++;
           $http({
             url : root_mapping + 'relation/compute/' + index,
             dataType : 'json',
-            data : $scope.record,
+            data : copy,
             method : 'POST',
             headers : {
               'Content-Type' : 'application/json'
@@ -252,35 +247,37 @@ angular
             .success(
               function(data) {
                 console.debug('  relation = ', data);
-                if (data) {
+                if (data.id) {
 
                   // get the allowable advices and relations
-                  $scope.allowableAdvices = getAllowableAdvices(entry,
+                  // Do this block before setting the relation because
+                  // allowableMapRelations must be known
+                  $scope.allowableAdvices = getAllowableAdvices($scope.entry,
                     $scope.project.mapAdvice);
                   sortByKey($scope.allowableAdvices, 'detail');
-                  $scope.allowableMapRelations = getAllowableRelations(entry,
-                    $scope.project.mapRelation);
+                  $scope.allowableMapRelations = getAllowableRelations(
+                    $scope.entry, $scope.project.mapRelation);
 
                   if (data.isComputed) {
-                    entry.mapRelation = data;
+                    $scope.entry.mapRelation = data;
                   } else {
+
                     for (var i = 0; i < $scope.allowableMapRelations.length; i++) {
                       var relation = $scope.allowableMapRelations[i];
                       if (relation.id == data.id) {
-                        entry.mapRelation = relation;
+                        $scope.entry.mapRelation = relation;
                         break;
                       }
                     }
                   }
 
-                  $rootScope.glassPane--;
-
-                  // return the promise
-                  deferred.resolve(entry);
-                } else {
-                  $rootScope.glassPane--;
-                  deferred.resolve(entry);
+                  // Update with relationOnly=true mode
+                  updateEntry($scope.entry, true, false);
                 }
+
+                $rootScope.glassPane--;
+                deferred.resolve(entry);
+
               }).error(function(data, status, headers, config) {
               $rootScope.glassPane--;
               $rootScope.handleHttpError(data, status, headers, config);
@@ -298,20 +295,13 @@ angular
           for (var i = 0; i < record.mapEntry.length; i++) {
             var entry = record.mapEntry[i];
             // Use the scoped entry if the local id matches or if the actual id
-            // matches
+            // matches - this makes sure UI gets updated
             if (matchingEntry(entry, $scope.entry)) {
               entry = $scope.entry;
             }
             // pass the record entry, use the scoped one
             // if it is the entry currently being edited
-            computeAdvice(entry, i).then(
-            // Success
-            function(data) {
-              // Update the entry
-              if (data) {
-                updateEntry(data);
-              }
-            });
+            computeAdvice(entry, i);
           }
         }
 
@@ -326,30 +316,6 @@ angular
 
           $rootScope.glassPane++;
 
-          // var entryIsScopeEntry = matchingEntry(entry, $scope.entry);
-
-          // Replace in the record the entry being edited
-          // so the changes are reflected. All other entries
-          // are sync'd with map record display.
-          // var copy = angular.copy($scope.record);
-          // var entryCopy = angular.copy(entry);
-          // entryCopy.id = -1;
-          // copy.mapEntry.splice(index, 1, entryCopy);
-          //
-          // // Also need to replace the scope record with the edited
-          // // one in cases where we are checking other entries
-          // for (var i = 0; i < copy.mapEntry.length; i++) {
-          // // if localId or Id matches $scope record, replace it
-          // if (matchingEntry(copy.mapEntry[i], $scope.entry)) {
-          // var entryCopy2 = angular.copy($scope.entry);
-          // if (entryIsScopeEntry) {
-          // entryCopy2.id = -1;
-          // }
-          // copy.mapEntry.splice(i, 1, entryCopy2);
-          // break;
-          // }
-          // }
-
           $http({
             url : root_mapping + 'advice/compute/' + index,
             dataType : 'json',
@@ -361,16 +327,18 @@ angular
           }).success(
             function(data) {
               console.debug('  advice = ', data);
-              if (data) {
+              if (data.id) {
                 entry.mapAdvice = data.mapAdvice;
                 // get the allowable advices and relations for this entry
                 if (matchingEntry(entry, $scope.entry)) {
-                  $scope.allowableAdvices = getAllowableAdvices(entry,
+                  $scope.allowableAdvices = getAllowableAdvices($scope.entry,
                     $scope.project.mapAdvice);
                   sortByKey($scope.allowableAdvices, 'detail');
-                  $scope.allowableMapRelations = getAllowableRelations(entry,
-                    $scope.project.mapRelation);
+                  $scope.allowableMapRelations = getAllowableRelations(
+                    $scope.entry, $scope.project.mapRelation);
                 }
+                // Update with adviceOnly=true mode
+                updateEntry(entry, false, true);
               }
               $rootScope.glassPane--;
               deferred.resolve(entry);
@@ -727,7 +695,7 @@ angular
             }
           }
 
-          updateEntry($scope.entry);
+          updateEntry($scope.entry, false, true);
         };
 
         // removes advice from a map entry
@@ -740,7 +708,7 @@ angular
 
           if (confirmRemove) {
             entry.mapAdvice = removeJsonElement(entry.mapAdvice, advice);
-            updateEntry($scope.entry);
+            updateEntry($scope.entry, false, true);
           }
 
         };
@@ -777,21 +745,19 @@ angular
          * relation
          */
         $scope.computeParameters = function(ignoreNullValues) {
-          // either target or relation must be non-null to compute
-          // relation/advice
+          // either target or relation must be non-null
+          // OR ignoreNullValues can be used to compute advices for blank
+          // targetId
           if ($scope.entry.targetId || $scope.entry.mapRelation
             || ignoreNullValues) {
 
             for (var i = 0; i < $scope.record.mapEntry.length; i++) {
               var entry = $scope.record.mapEntry[i];
+              computeAdvices($scope.record);
               // Use the scoped entry if the local id matches or if the actual
               // id matches
               if (matchingEntry(entry, $scope.entry)) {
-                computeRelation($scope.entry, i).then(
-                // Success
-                function() {
-                  computeAdvices($scope.record);
-                });
+                computeRelation($scope.entry, i);
                 break;
               }
             }
@@ -852,15 +818,11 @@ angular
           // return an empty list, otherwise calculate
           if (entry.targetId != null) {
 
-            var nullTarget = !entry.targetId;
-
             for (var i = 0; i < relations.length; i++) {
-
               if (!relations[i].isComputed) {
 
                 if ((!entry.targetId && relations[i].isAllowableForNullTarget)
                   || (entry.targetId && !relations[i].isAllowableForNullTarget)) {
-
                   allowableRelations.push(relations[i]);
                 }
               }

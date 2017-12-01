@@ -12,7 +12,8 @@ angular
   })
   .controller(
     'MapProjectWidgetCtrl',
-    function($scope, $http, $rootScope, $location, $uibModal, localStorageService) {
+    function($scope, $http, $rootScope, $location, $uibModal,
+      localStorageService) {
 
       // get the local storage variables
       $scope.project = localStorageService.get('focusProject');
@@ -24,7 +25,8 @@ angular
       $scope.indexViewerExists = false;
 
       // watch for project change
-      $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
+      $scope.$on('localStorageModule.notification.setFocusProject', function(
+        event, parameters) {
         $scope.project = parameters.focusProject;
       });
 
@@ -183,7 +185,8 @@ angular
         });
       };
 
-      var ShowDeltaModalCtrl = function($scope, $http, $uibModalInstance, terminology, version) {
+      var ShowDeltaModalCtrl = function($scope, $http, $uibModalInstance,
+        terminology, version) {
 
         $scope.pageSize = 10;
         $scope.terminology = terminology; // used
@@ -202,22 +205,26 @@ angular
             'sortField' : null,
             'queryRestriction' : filter
           };
-          $http({
-            url : root_content + 'terminology/id/' + terminology + '/' + version + '/delta',
-            dataType : 'json',
-            method : 'POST',
-            data : pfsParameterObj,
-            headers : {
-              'Content-Type' : 'application/json'
-            }
-          }).success(function(data) {
-            $rootScope.glassPane--;
+          $http(
+            {
+              url : root_content + 'terminology/id/' + terminology + '/'
+                + version + '/delta',
+              dataType : 'json',
+              method : 'POST',
+              data : pfsParameterObj,
+              headers : {
+                'Content-Type' : 'application/json'
+              }
+            }).success(
+            function(data) {
+              $rootScope.glassPane--;
 
-            $scope.concepts = data.searchResult;
-            $scope.nConcepts = data.totalCount;
-            $scope.numConceptPages = Math.ceil(data.totalCount / $scope.pageSize);
+              $scope.concepts = data.searchResult;
+              $scope.nConcepts = data.totalCount;
+              $scope.numConceptPages = Math.ceil(data.totalCount
+                / $scope.pageSize);
 
-          }).error(function(data, status, headers, config) {
+            }).error(function(data, status, headers, config) {
             $rootScope.glassPane--;
             $scope.concepts = [];
             // $rootScope.handleHttpError(data, status, headers,
@@ -231,15 +238,23 @@ angular
       $scope.openConceptBrowser = function() {
         var myWindow = null;
 
-        if ($scope.currentUser.userName === 'guest')
-          myWindow = window.open('http://browser.ihtsdotools.org/index.html?perspective=full'
-            + '&acceptLicense=true');
-        else if ($scope.project.sourceTerminology === 'SNOMEDCT_US') 
-          myWindow = window.open('https://dailybuild.ihtsdotools.org/us.html?perspective=full'
-            + '&acceptLicense=true');
+        if ($scope.project.destinationTerminology === 'ICD11') {
+          myWindow = window
+            .open('https://dailybuild.ihtsdotools.org/index.html?perspective=full'
+              + '&edition=en-edition&release=v20180731&'
+              + 'server=https://prod-dailybuild.ihtsdotools.org/api/snomed&langRefset=900000000000509007');
+        } else if ($scope.currentUser.userName === 'guest')
+          myWindow = window
+            .open('http://browser.ihtsdotools.org/index.html?perspective=full'
+              + '&acceptLicense=true');
+        else if ($scope.project.sourceTerminology === 'SNOMEDCT_US')
+          myWindow = window
+            .open('https://dailybuild.ihtsdotools.org/us.html?perspective=full'
+              + '&acceptLicense=true');
         else
-          myWindow = window.open('http://dailybuild.ihtsdotools.org/index.html?perspective=full'
-            + '&acceptLicense=true');
+          myWindow = window
+            .open('http://dailybuild.ihtsdotools.org/index.html?perspective=full'
+              + '&acceptLicense=true');
         myWindow.focus();
       };
 
@@ -256,7 +271,8 @@ angular
       function setIndexViewerStatus() {
         $http(
           {
-            url : root_content + 'index/' + $scope.project.destinationTerminology + '/'
+            url : root_content + 'index/'
+              + $scope.project.destinationTerminology + '/'
               + $scope.project.destinationTerminologyVersion,
             dataType : 'json',
             method : 'GET',

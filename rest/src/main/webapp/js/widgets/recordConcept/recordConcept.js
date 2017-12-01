@@ -558,7 +558,12 @@ angular
 
       // opens SNOMED CT browser
       $scope.getBrowserUrl = function() {
-        if ($scope.currentUser.userName === 'guest') {
+        if ($scope.focusProject.destinationTerminology === 'ICD11') {
+          'https://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1='
+          + $scope.conceptId
+          + '&edition=en-edition&release=v20180731&'
+          + 'server=https://prod-dailybuild.ihtsdotools.org/api/snomed&langRefset=900000000000509007'          
+        } else  if ($scope.currentUser.userName === 'guest') {
           return 'http://browser.ihtsdotools.org/index.html?perspective=full&conceptId1='
             + $scope.conceptId + '&acceptLicense=true';
         } else if ($scope.focusProject.sourceTerminology === 'SNOMEDCT_US') {
