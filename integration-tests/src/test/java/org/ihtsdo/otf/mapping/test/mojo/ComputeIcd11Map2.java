@@ -255,6 +255,7 @@ public class ComputeIcd11Map2 {
         }
 
 
+        if (sctid.equals("236433006")) {
           System.out.println("xxx");
         }
 
