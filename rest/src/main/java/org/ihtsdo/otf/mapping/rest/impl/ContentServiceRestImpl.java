@@ -1,4 +1,4 @@
-package org.ihtsdo.otf.mapping.rest;
+package org.ihtsdo.otf.mapping.rest.impl;
 
 import java.util.Map;
 
@@ -23,6 +23,7 @@ import org.ihtsdo.otf.mapping.jpa.handlers.IndexViewerHandler;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.rest.ContentServiceRest;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember;
@@ -31,9 +32,9 @@ import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
 
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 /**
  * REST implementation for content service.
@@ -43,30 +44,24 @@ import com.wordnik.swagger.annotations.ApiParam;
 @Produces({
     MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 })
-public class ContentServiceRest extends RootServiceRest {
+public class ContentServiceRestImpl extends RootServiceRestImpl implements ContentServiceRest {
 
   /** The security service. */
   private SecurityService securityService;
 
   /**
-   * Instantiates an empty {@link ContentServiceRest}.
+   * Instantiates an empty {@link ContentServiceRestImpl}.
    *
    * @throws Exception the exception
    */
-  public ContentServiceRest() throws Exception {
+  public ContentServiceRestImpl() throws Exception {
     securityService = new SecurityServiceJpa();
   }
 
-  /**
-   * Returns the concept for id, terminology, and terminology version.
-   *
-   * @param terminologyId the terminology id
-   * @param terminology the concept terminology
-   * @param terminologyVersion the terminology version
-   * @param authToken the auth token
-   * @return the concept
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.ContentServiceRest#getConcept(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
    */
+  @Override
   @GET
   @Path("/concept/id/{terminology}/{terminolgoyVersion}/{terminologyId}")
   @ApiOperation(value = "Get concept by id, terminology, and version", notes = "Gets the concept for the specified parameters.", response = Concept.class)
@@ -80,7 +75,7 @@ public class ContentServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(ContentServiceRest.class)
+    Logger.getLogger(ContentServiceRestImpl.class)
         .info("RESTful call (Content): /concept/" + terminology + "/"
             + terminologyVersion + "/id/" + terminologyId);
 
@@ -115,16 +110,10 @@ public class ContentServiceRest extends RootServiceRest {
 
   }
 
-  /**
-   * Returns the concept for id, terminology. Looks in the latest version of the
-   * terminology.
-   *
-   * @param terminologyId the id
-   * @param terminology the concept terminology
-   * @param authToken the auth token
-   * @return the concept
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.ContentServiceRest#getConcept(java.lang.String, java.lang.String, java.lang.String)
    */
+  @Override
   @GET
   @Path("/concept/id/{terminology}/{terminologyId}")
   @ApiOperation(value = "Get the concept for the latest version of an id and terminology.", notes = "Gets the concept for the specified parameters.", response = Concept.class)
@@ -137,7 +126,7 @@ public class ContentServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(ContentServiceRest.class)
+    Logger.getLogger(ContentServiceRestImpl.class)
         .info("RESTful call (Content): /concept/" + terminology + "/id/"
             + terminologyId);
 
@@ -165,14 +154,10 @@ public class ContentServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Returns the concept for search string.
-   *
-   * @param query the lucene search string
-   * @param authToken the auth token
-   * @return the concept for id
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.ContentServiceRest#findConceptsForQuery(java.lang.String, java.lang.String)
    */
+  @Override
   @GET
   @Path("/concept")
   @ApiOperation(value = "Find concepts matching a search query.", notes = "Gets a list of search results that match the lucene query.", response = String.class)
@@ -181,7 +166,7 @@ public class ContentServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(ContentServiceRest.class)
+    Logger.getLogger(ContentServiceRestImpl.class)
         .info("RESTful call (Content): /concept " + query);
 
     final ContentService contentService = new ContentServiceJpa();
@@ -200,17 +185,10 @@ public class ContentServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Returns the descendants of a concept as mapped by relationships and inverse
-   * relationships.
-   *
-   * @param terminologyId the terminology id
-   * @param terminology the terminology
-   * @param terminologyVersion the terminology version
-   * @param authToken the auth token
-   * @return the search result list
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.ContentServiceRest#findDescendantConcepts(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
    */
+  @Override
   @GET
   @Path("/concept/id/{terminology}/{terminologyVersion}/{terminologyId}/descendants")
   @ApiOperation(value = "Find concept descendants.", notes = "Gets a list of search results for each descendant concept.", response = Concept.class)
@@ -224,7 +202,7 @@ public class ContentServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(ContentServiceRest.class)
+    Logger.getLogger(ContentServiceRestImpl.class)
         .info("RESTful call (Content): /concept/" + terminology + "/"
             + terminologyVersion + "/id/" + terminologyId + "/descendants");
 
@@ -246,16 +224,10 @@ public class ContentServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Returns the immediate children of a concept given terminology information.
-   *
-   * @param id the terminology id
-   * @param terminology the terminology
-   * @param terminologyVersion the terminology version
-   * @param authToken the auth token
-   * @return the search result list
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.ContentServiceRest#findChildConcepts(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
    */
+  @Override
   @GET
   @Path("/concept/id/{terminology}/{terminologyVersion}/{terminologyId}/children")
   @ApiOperation(value = "Find concept children.", notes = "Gets a list of search results for each child concept.", response = Concept.class)
@@ -269,7 +241,7 @@ public class ContentServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(ContentServiceRest.class)
+    Logger.getLogger(ContentServiceRestImpl.class)
         .info("RESTful call (Content): /concept/" + terminology + "/"
             + terminologyVersion + "/id/" + id.toString() + "/descendants");
 
@@ -331,16 +303,10 @@ public class ContentServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Find delta concepts for terminology.
-   *
-   * @param terminology the terminology
-   * @param terminologyVersion the terminology version
-   * @param authToken the auth token
-   * @param pfsParameter the pfs parameter
-   * @return the search result list
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.ContentServiceRest#findDeltaConceptsForTerminology(java.lang.String, java.lang.String, java.lang.String, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa)
    */
+  @Override
   @POST
   @Path("/terminology/id/{terminology}/{terminologyVersion}/delta")
   @ApiOperation(value = "Gets the most recently edited concepts", notes = "Gets a list of search results for concepts changed since the last delta run.", response = Concept.class)
@@ -354,7 +320,7 @@ public class ContentServiceRest extends RootServiceRest {
     @ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter)
     throws Exception {
 
-    Logger.getLogger(ContentServiceRest.class)
+    Logger.getLogger(ContentServiceRestImpl.class)
         .info("RESTful call (Content): /terminology/id/" + terminology + "/"
             + terminologyVersion + "/delta");
 
@@ -411,15 +377,10 @@ public class ContentServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Returns the index viewer indexes.
-   *
-   * @param terminology the terminology
-   * @param terminologyVersion the terminology version
-   * @param authToken the auth token
-   * @return the index viewer indexes
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.ContentServiceRest#getIndexDomains(java.lang.String, java.lang.String, java.lang.String)
    */
+  @Override
   @GET
   @Path("/index/{terminology}/{terminologyVersion}")
   @ApiOperation(value = "Get the index domains available for given terminology and version.", notes = "Gets the index domains available for the given terminology and version.", response = SearchResultList.class)
@@ -432,7 +393,7 @@ public class ContentServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(ContentServiceRest.class)
+    Logger.getLogger(ContentServiceRestImpl.class)
         .info("RESTful call (Content): /index/" + terminology + "/"
             + terminologyVersion);
 
@@ -453,16 +414,10 @@ public class ContentServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Returns the index viewer pages for index.
-   *
-   * @param terminology the terminology
-   * @param terminologyVersion the terminology version
-   * @param index the index
-   * @param authToken the auth token
-   * @return the index viewer pages for index
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.ContentServiceRest#getIndexViewerPagesForIndex(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
    */
+  @Override
   @GET
   @Path("/index/{terminology}/{terminologyVersion}/{index}")
   @ApiOperation(value = "Return the index page names available for given terminology, version and domain.", notes = "Returns the pages available for the given terminology, version and domain.", response = SearchResultList.class)
@@ -476,7 +431,7 @@ public class ContentServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(ContentServiceRest.class)
+    Logger.getLogger(ContentServiceRestImpl.class)
         .info("RESTful call (Content): /index/" + terminology + "/"
             + terminologyVersion + "/" + index);
 
@@ -497,17 +452,10 @@ public class ContentServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Returns the index viewer details for link.
-   *
-   * @param terminology the terminology
-   * @param terminologyVersion the terminology version
-   * @param domain the domain
-   * @param link the link
-   * @param authToken the auth token
-   * @return the index viewer details for link
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.ContentServiceRest#getIndexViewerDetailsForLink(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
    */
+  @Override
   @GET
   @Path("/index/{terminology}/{terminologyVersion}/{domain}/details/{link}")
   @ApiOperation(value = "Peform the search given the search terms.", notes = "Performs the search given the search terms in the given terminology.", response = SearchResultList.class)
@@ -522,7 +470,7 @@ public class ContentServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(ContentServiceRest.class)
+    Logger.getLogger(ContentServiceRestImpl.class)
         .info("RESTful call (Content): /index/" + terminology + "/"
             + terminologyVersion + "/" + domain + "/details/" + link);
 
@@ -543,20 +491,10 @@ public class ContentServiceRest extends RootServiceRest {
     }
   }
 
-  /**
-   * Find index viewer search result entries.
-   *
-   * @param terminology the terminology
-   * @param terminologyVersion the terminology version
-   * @param domain the domain
-   * @param searchField the search field
-   * @param subSearchField the sub search field
-   * @param subSubSearchField the sub sub search field
-   * @param allFlag the all flag
-   * @param authToken the auth token
-   * @return the search result list
-   * @throws Exception the exception
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.ContentServiceRest#findIndexViewerEntries(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean, java.lang.String)
    */
+  @Override
   @GET
   @Path("/index/{terminology}/{terminologyVersion}/{domain}/search/{searchField}/subSearch/{subSearchField}/subSubSearch/{subSubSearchField}/{allFlag}")
   @ApiOperation(value = "Peform the search given the search terms.", notes = "Performs the search given the search terms in the given terminology.", response = SearchResultList.class)
@@ -574,7 +512,7 @@ public class ContentServiceRest extends RootServiceRest {
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(ContentServiceRest.class)
+    Logger.getLogger(ContentServiceRestImpl.class)
         .info("RESTful call (Content): /index/" + terminology + "/"
             + terminologyVersion + "/" + domain + "/" + searchField + "/"
             + subSearchField + "/" + subSubSearchField + "/" + allFlag);

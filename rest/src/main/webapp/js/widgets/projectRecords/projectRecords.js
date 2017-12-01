@@ -122,6 +122,10 @@ angular
           + '?ancestorId='
           + ($scope.searchParameters.ancestorId
             && $scope.searchParameters.advancedMode ? $scope.searchParameters.ancestorId
+              : '') 
+              + '&relationshipName='
+              + ($scope.searchParameters.relationshipName
+                && $scope.searchParameters.advancedMode ? encodeURIComponent($scope.searchParameters.relationshipName)
             : '') + '&query='
           + encodeURIComponent($scope.searchParameters.query)
         + '&excludeDescendants='
@@ -544,6 +548,7 @@ angular
 
         // advanced options
         ancestorId : null,
+        relationshipName : null,
         descendants : null,
         rootId : null,
         targetId : [],
@@ -559,6 +564,8 @@ angular
         principleContained : true,
         principleName : null,
         ruleCategory : null,
+        mapGroup : null,
+        mapPriority : null,
         descendantsOptions :
     		  ['mapped', 'excludes'],
     	        adviceOptions :
@@ -574,7 +581,7 @@ angular
 
       // function to clear input box and return to initial view
       $scope.resetSearch = function() {
-        $scope.searchParameters.query = null;
+        $scope.searchParameters.query = '';
         $scope.searchParameters.page = 1;
         $scope.searchParameters.targetId = [];
         $scope.searchParameters.descendants = null;
@@ -587,12 +594,14 @@ angular
         $scope.searchParameters.targetName = null;
         $scope.searchParameters.rootId = null;
         $scope.searchParameters.ancestorId = null;
+        $scope.searchParameters.relationshipName = null;
         $scope.searchParameters.adviceName = null;
         $scope.searchParameters.adviceContained = null;
         $scope.searchParameters.ruleCategory = null;
         $scope.searchParameters.principleName = null;
         $scope.searchParameters.principleContained = true;
-
+        $scope.searchParameters.mapGroup = null;
+        $scope.searchParameters.mapPriority = null;
         $scope.retrieveRecords(1);
       };
 
@@ -720,6 +729,16 @@ angular
           if ($scope.searchParameters.mapGroup) {
             queryRestrictions.push('mapEntries.mapGroup:'
               + $scope.searchParameters.mapGroup);
+            queryRestrictions.push('-mapEntries.mapGroup:{'
+              + $scope.searchParameters.mapGroup + ' TO *}');
+          }
+
+          // check map priority
+          if ($scope.searchParameters.mapPriority) {
+            queryRestrictions.push('mapEntries.mapPriority:'
+              + $scope.searchParameters.mapPriority);
+            queryRestrictions.push('-mapEntries.mapPriority:{'
+              + $scope.searchParameters.mapPriority + ' TO *}');
           }
 
           // check map principles

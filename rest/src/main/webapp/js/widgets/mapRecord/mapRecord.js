@@ -2021,7 +2021,7 @@ angular
                 return concept;
               },
               project : function() {
-                  return $scope.project;
+                return $scope.project;
               }
             }
           });

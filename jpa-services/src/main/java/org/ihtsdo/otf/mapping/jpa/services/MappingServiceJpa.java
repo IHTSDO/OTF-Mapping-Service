@@ -22,7 +22,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-import org.apache.lucene.queryParser.QueryParser;
+
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
@@ -81,7 +81,6 @@ import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.SimpleMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 import org.ihtsdo.otf.mapping.rf2.jpa.ComplexMapRefSetMemberJpa;
-import org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
@@ -92,6 +91,8 @@ import org.json.JSONObject;
  */
 public class MappingServiceJpa extends RootServiceJpa
     implements MappingService {
+
+  private static final String MAP_ENTRIES_MAP_GROUP = "mapEntries.mapGroup:";
 
   /**
    * Instantiates an empty {@link MappingServiceJpa}.
@@ -622,19 +623,7 @@ public class MappingServiceJpa extends RootServiceJpa
         .debug(Integer.toString(records.size()) + " map records retrieved");
 
 
-    int mapGroupIndex = -1;
-    int mapGroup = 0;
-    if (pfsParameter != null && pfsParameter.getQueryRestriction() != null
-        && !pfsParameter.getQueryRestriction().isEmpty()) {
-      mapGroupIndex = pfsParameter.getQueryRestriction().indexOf("mapEntries.mapGroup:");
-      if(mapGroupIndex > -1) {
-        mapGroupIndex += 20;
-        mapGroup = Integer.valueOf(pfsParameter.getQueryRestriction().substring(mapGroupIndex, pfsParameter.getQueryRestriction().indexOf(" ", mapGroupIndex))).intValue();
-      }
-    }
     for (final MapRecord mapRecord : records) {
-      if(mapGroup > 0 && mapRecord.getMapEntries().size() > mapGroup)
-        continue;
       list.addSearchResult(new SearchResultJpa(mapRecord.getId(),
           mapRecord.getConceptId().toString(), mapRecord.getConceptName(), ""));
     }
@@ -2988,88 +2977,174 @@ public class MappingServiceJpa extends RootServiceJpa
 
     return searchResultList;
   }
-   @SuppressWarnings("unchecked")
-  public SearchResultList findMapRecords(Long mapProjectId, String ancestorId, boolean excludeDescendants,
-    String terminology, String terminologyVersion, PfsParameter pfsParameter, Collection<String> mapConcepts)
-    throws Exception {
+  @SuppressWarnings("unchecked")
+  public SearchResultList findMapRecords(Long mapProjectId, String ancestorId,
+    boolean excludeDescendants, String relationshipName, String terminology,
+    String terminologyVersion, PfsParameter pfsParameter,
+    Collection<String> mapConcepts) throws Exception {
 
     Logger.getLogger(MappingServiceJpa.class)
-        .info("findMapRecords called: " + ancestorId + ","
-            + terminology + ", " + terminologyVersion);
+        .info("findMapRecords called: " + ancestorId + "," + relationshipName
+            + "," + terminology + ", " + terminologyVersion);
 
     final SearchResultList searchResultList = new SearchResultListJpa();
 
-    javax.persistence.Query query = manager.createQuery(
-        "select tp.ancestorPath from TreePositionJpa tp where terminologyVersion = :terminologyVersion and terminology = :terminology and terminologyId = :terminologyId");
-    query.setParameter("terminology", terminology);
-    query.setParameter("terminologyVersion", terminologyVersion);
-    query.setParameter("terminologyId", ancestorId);
+    String ancestorPath = null;
 
-    // get the first tree position
-    query.setMaxResults(1);
-    final List<String> ancestorPaths = query.getResultList();
+    if (ancestorId != null && !ancestorId.isEmpty()) {
+      javax.persistence.Query query = manager.createQuery(
+          "select tp.ancestorPath from TreePositionJpa tp where terminologyVersion = :terminologyVersion and terminology = :terminology and terminologyId = :terminologyId");
+      query.setParameter("terminology", terminology);
+      query.setParameter("terminologyVersion", terminologyVersion);
+      query.setParameter("terminologyId", ancestorId);
 
-    // skip construction if no ancestor path was found
-    if (ancestorPaths.size() != 0) {
+      // get the first tree position
+      query.setMaxResults(1);
+      final List<String> ancestorPaths = query.getResultList();
 
-      String ancestorPath = ancestorPaths.get(0);
+      // skip construction if no ancestor path was found
+      if (ancestorPaths.size() != 0) {
 
-      // insert string to actually add this concept to the ancestor path
-      if (!ancestorPath.isEmpty()) {
-        ancestorPath += "~";
+        ancestorPath = ancestorPaths.get(0);
+
+        // insert string to actually add this concept to the ancestor path
+        if (!ancestorPath.isEmpty()) {
+          ancestorPath += "~";
+        }
+        ancestorPath += ancestorId;
       }
-      ancestorPath += ancestorId;
+    }
 
-      // construct query for descendants
-      String queryString = "from MapRecordJpa m "
-          + "where m.mapProjectId = :mapProjectId AND " + (excludeDescendants ? " NOT " : "" )  + " EXISTS ( select tp.terminologyId from TreePositionJpa tp "
+    List<Long> relationshipIds = new ArrayList<Long>();
+
+    if (relationshipName != null && !relationshipName.isEmpty()) {
+      javax.persistence.Query query = manager.createQuery(
+          "select c.terminologyId from ConceptJpa c where terminologyVersion = :terminologyVersion and terminology = :terminology and defaultPreferredName like :relationshipName");
+      query.setParameter("terminology", terminology);
+      query.setParameter("terminologyVersion", terminologyVersion);
+      query.setParameter("relationshipName", "%" + relationshipName + "%");
+      List<String> list = query.getResultList();
+      for (String id : list) {
+        relationshipIds.add(Long.valueOf(id));
+      }
+    }
+
+    // construct query for descendants
+    String queryString = "from MapRecordJpa m ";
+    if (!relationshipIds.isEmpty()) {
+      queryString += ", ConceptJpa c, RelationshipJpa r ";
+    }
+    queryString += "where m.mapProjectId = :mapProjectId ";
+    if (!relationshipIds.isEmpty()) {
+      queryString +=
+          "AND m.conceptId = c.terminologyId AND r.sourceConcept = c.id AND r.typeId IN :relationshipIds ";
+    }
+    if (ancestorPath != null) {
+      queryString += "AND " + (excludeDescendants ? " NOT " : "")
+          + " EXISTS ( select tp.terminologyId from TreePositionJpa tp "
           + "where tp.terminology = :terminology "
           + " and m.conceptId  = tp.terminologyId "
           + "and tp.terminologyVersion = :terminologyVersion "
-          + "and (tp.terminologyId = :terminologyId OR tp.ancestorPath like '" + ancestorPath + "%'))";
-      if(!mapConcepts.isEmpty()) {
-        queryString = queryString + "and m.conceptId IN (:mapConcepts)";
-      }
-      query = manager.createQuery(
-          "select m " + queryString);
+          + "and (tp.terminologyId = :terminologyId OR tp.ancestorPath like  :ancestorPath ))";
+    }
+
+    if (!mapConcepts.isEmpty()) {
+      queryString = queryString + "and m.conceptId IN (:mapConcepts)";
+    }
+
+    javax.persistence.Query query = manager.createQuery(
+        "select distinct m " + queryString + " order by m.conceptId ");
+    query.setParameter("mapProjectId", mapProjectId);
+    if (ancestorPath != null) {
       query.setParameter("terminologyId", ancestorId);
       query.setParameter("terminology", terminology);
       query.setParameter("terminologyVersion", terminologyVersion);
-      query.setParameter("mapProjectId", mapProjectId);
-      if(!mapConcepts.isEmpty()) {
-        query.setParameter("mapConcepts", mapConcepts);
-      }      
-      query.setMaxResults(pfsParameter.getMaxResults());
-      query.setFirstResult(pfsParameter.getStartIndex() > 0 ? pfsParameter.getStartIndex() : 0);
+      query.setParameter("ancestorPath", ancestorPath + "%");
+    }
+    if (!mapConcepts.isEmpty()) {
+      query.setParameter("mapConcepts", mapConcepts);
+    }
+    if (!relationshipIds.isEmpty()) {
+      query.setParameter("relationshipIds", relationshipIds);
+    }
+    query.setMaxResults(pfsParameter.getMaxResults());
+    query.setFirstResult(
+        pfsParameter.getStartIndex() > 0 ? pfsParameter.getStartIndex() : 0);
 
-      final List<MapRecord> mapRecords = query.getResultList();
+    final List<MapRecord> mapRecords = query.getResultList();
 
-      // set the total count of descendant concepts
-      query = manager.createQuery(
-          "select count(m) " + queryString, Long.class);
+    // set the total count of descendant concepts
+    query = manager.createQuery("select count(distinct m) " + queryString,
+        Long.class);
+    query.setParameter("mapProjectId", mapProjectId);
+    if (ancestorPath != null) {
       query.setParameter("terminologyId", ancestorId);
       query.setParameter("terminology", terminology);
       query.setParameter("terminologyVersion", terminologyVersion);
-      query.setParameter("mapProjectId", mapProjectId);
-      if(!mapConcepts.isEmpty()) {
-        query.setParameter("mapConcepts", mapConcepts);
-      }      
-      
-      searchResultList.setTotalCount(((Long)query.getSingleResult()).intValue());
+      query.setParameter("ancestorPath", ancestorPath + "%");
+    }
+    if (!mapConcepts.isEmpty()) {
+      query.setParameter("mapConcepts", mapConcepts);
+    }
 
+    if (!relationshipIds.isEmpty()) {
+      query.setParameter("relationshipIds", relationshipIds);
+    }
 
-      // construct the search results
-      for (final MapRecord c : mapRecords) {
-        final SearchResult searchResult = new SearchResultJpa();
-        searchResult.setId(c.getId());
-        searchResult.setTerminologyId(c.getConceptId());
-        searchResult.setValue(c.getConceptName());
-        searchResultList.addSearchResult(searchResult);
-      }
+    searchResultList.setTotalCount(((Long) query.getSingleResult()).intValue());
+
+    // construct the search results
+    for (final MapRecord c : mapRecords) {
+      final SearchResult searchResult = new SearchResultJpa();
+      searchResult.setId(c.getId());
+      searchResult.setTerminologyId(c.getConceptId());
+      searchResult.setValue(c.getConceptName());
+      searchResultList.addSearchResult(searchResult);
     }
 
     // return the search result list
     return searchResultList;
+  }
+
+  /**
+   * Retrieve latest map record for a given terminology id.
+   * 
+   * @param terminologyId the concept id
+   * @return the list of map records
+   */
+  @SuppressWarnings("unchecked")
+  @Override
+  public MapRecord getLatestMapRecordForConcept(Long mapProjectId,
+    String terminologyId) {
+    List<MapRecord> mapRecords = null;
+    MapRecord mapRecord = null;
+
+    // construct query
+    javax.persistence.Query query = manager
+        .createQuery("select m from MapRecordJpa m " + "where timestamp = " + ""
+            + " (select max(m2.timestamp) " + " from MapRecordJpa m2 "
+            + " where m2.mapProjectId = :mapProjectId "
+            + " and conceptId = :conceptId) "
+            + "and mapProjectId = :mapProjectId "
+            + "and conceptId = :conceptId ");
+
+    // Try query
+    query.setParameter("mapProjectId", mapProjectId);
+    query.setParameter("conceptId", terminologyId);
+
+    mapRecords = query.getResultList();
+    for (final MapRecord mr : mapRecords) {
+      handleMapRecordLazyInitialization(mr);
+    }
+
+    MapRecordListJpa mapRecordList = new MapRecordListJpa();
+    mapRecordList.setMapRecords(mapRecords);
+    mapRecordList.setTotalCount(mapRecords.size());
+
+    if (mapRecordList != null && mapRecordList.getMapRecords().size() > 0)
+      mapRecord = mapRecordList.getMapRecords().get(0);
+
+    return mapRecord;
   }
 
    /* Convert ISO 8601 date time string to milliseconds */

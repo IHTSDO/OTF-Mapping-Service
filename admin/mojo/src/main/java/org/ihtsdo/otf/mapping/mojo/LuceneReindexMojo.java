@@ -1,12 +1,8 @@
 package org.ihtsdo.otf.mapping.mojo;
 
-import java.util.HashSet;
 import java.util.Properties;
-import java.util.Set;
 
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -16,36 +12,21 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
 import org.apache.log4j.Logger;
-import org.apache.lucene.util.Version;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
-import org.hibernate.CacheMode;
-import org.hibernate.search.jpa.FullTextEntityManager;
-import org.hibernate.search.jpa.Search;
-import org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa;
-import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
-import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.algo.LuceneReindexAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
-import org.ihtsdo.otf.mapping.reports.ReportJpa;
-import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
-import org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa;
 import org.ihtsdo.otf.mapping.services.SecurityService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
-import org.ihtsdo.otf.mapping.workflow.TrackingRecordJpa;
-
-//import org.ihtsdo.otf.mapping.rest.Admin
 
 /**
  * Goal which makes lucene indexes based on hibernate-search annotations.
  * 
  * See admin/lucene/pom.xml for a sample execution.
  * 
+ * @goal reindex
+ * @phase package
  */
-@Mojo(name = "reindex", defaultPhase = LifecyclePhase.PACKAGE)
 public class LuceneReindexMojo extends AbstractMojo {
 
 	/** The manager. */
@@ -53,16 +34,14 @@ public class LuceneReindexMojo extends AbstractMojo {
 
 	/**
 	 * The specified objects to index
-	 * 
+	 * @parameter 
 	 */
-	@Parameter
 	private String indexedObjects;
 
 	/**
 	 * Whether to run this mojo against an active server.
-	 * 
+	 * @parameter 
 	 */
-	@Parameter
 	private boolean server = false;
 
 	/**

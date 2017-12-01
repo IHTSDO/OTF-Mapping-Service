@@ -5,8 +5,9 @@ import static org.junit.Assert.fail;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.rest.SecurityServiceRest;
 import org.ihtsdo.otf.mapping.model.MapUser;
-import org.ihtsdo.otf.mapping.rest.SecurityServiceRest;
+import org.ihtsdo.otf.mapping.rest.impl.SecurityServiceRestImpl;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -34,7 +35,7 @@ public class SecurityServiceNormalUseTest {
   @BeforeClass
   public static void setupClass() throws Exception {
 
-    securityService = new SecurityServiceRest();
+    securityService = new SecurityServiceRestImpl();
     mappingService = new MappingServiceJpa();
 
     // remove the users to ensure clean initial condition
@@ -70,7 +71,7 @@ public class SecurityServiceNormalUseTest {
   }
 
   /**
-   * Test normal use of the authenticate methods of {@link SecurityServiceRest}.
+   * Test normal use of the authenticate methods of {@link SecurityServiceRestImpl}.
    * 
    * @throws Exception the exception
    */
@@ -89,7 +90,7 @@ public class SecurityServiceNormalUseTest {
   }
 
   /**
-   * Test normal use of logout for {@link SecurityServiceRest}.
+   * Test normal use of logout for {@link SecurityServiceRestImpl}.
    *
    * @throws Exception the exception
    */
