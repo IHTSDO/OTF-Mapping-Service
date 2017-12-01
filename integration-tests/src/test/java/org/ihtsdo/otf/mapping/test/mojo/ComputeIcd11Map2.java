@@ -305,7 +305,9 @@ public class ComputeIcd11Map2 {
           // Pick up initial advice from ICD10 (though may not be
           // appropriate if
           // RULE2 wasn't used
-          if (rules[2].getScoreMap().size() > 0) {
+          if (rules[2].getScoreMap().size() > 0 &&
+              scores.getMap().getMapTarget() != null &&
+              !scores.getMap().getMapTarget().isEmpty()) {
             scores.getMap().setMapAdvice(map10.getMapAdvice());
             fixAdvice(scores.getMap(), scores.getMap().getMapTarget());
           }
@@ -1624,8 +1626,11 @@ public class ComputeIcd11Map2 {
 
     // Remove all ICD10 excluded advices
     for (final String adviceToRemove : advicesToExclude) {
-      map11
-          .setMapAdvice(getWithoutAdvice(map11.getMapAdvice(), adviceToRemove));
+      String updatedAdvice = getWithoutAdvice(map11.getMapAdvice(), adviceToRemove);
+      if (updatedAdvice.trim().endsWith("|")) {
+        updatedAdvice = updatedAdvice.substring(0, updatedAdvice.lastIndexOf("|")).trim();
+      }
+      map11.setMapAdvice(updatedAdvice);
     }
   }
 
