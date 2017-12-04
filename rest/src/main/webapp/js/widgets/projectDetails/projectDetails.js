@@ -823,6 +823,37 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         });
       };
 
+      $scope.compareFiles = function() {
+          
+          $rootScope.glassPane++;
+          $http({
+            url : root_mapping + 'compare/files',
+            dataType : 'json',
+            method : 'GET',
+            headers : {
+              'Content-Type' : 'application/json'
+            },
+            responseType : 'arraybuffer'
+          }).success(function(data) {
+            $scope.definitionMsg = 'Successfully exported report';
+            var blob = new Blob([ data ], {
+              type : 'application/vnd.ms-excel'
+            });
+            // hack to download store a file having its URL
+            var fileURL = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = fileURL;
+            a.target = '_blank';
+            a.download = 'test_comparison_report';
+            document.body.appendChild(a);
+            $rootScope.glassPane--;
+            a.click();
+          }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+      }      
+      
       $scope.addMapUserToMapProjectWithRole = function(user, role) {
 
         // check role
