@@ -113,9 +113,7 @@ angular
 
           // if target code is empty, compute parameters and return
           if (!targetCode) {
-            $scope.entry.targetId = '';
-            $scope.entry.targetName = 'No target';
-            $scope.computeParameters(true);
+            $scope.setNullTarget(targetCode);
             return;
           }
 
@@ -733,6 +731,7 @@ angular
           $rootScope.glassPane++;
           $scope.entry.targetId = '';
           $scope.entry.targetName = 'No target';
+          updateEntry($scope.entry, false, false);
           $scope.computeParameters(true);
           // close glass pane (setNullTarget1)
           $rootScope.glassPane--;
