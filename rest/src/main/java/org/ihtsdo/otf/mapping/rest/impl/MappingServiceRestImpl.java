@@ -3,9 +3,11 @@
  */
 package org.ihtsdo.otf.mapping.rest.impl;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -16,11 +18,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.naming.AuthenticationException;
 import javax.ws.rs.Consumes;
@@ -82,6 +87,7 @@ import org.ihtsdo.otf.mapping.jpa.MapRelationJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserPreferencesJpa;
 import org.ihtsdo.otf.mapping.jpa.handlers.BeginEditingCycleHandlerJpa;
+import org.ihtsdo.otf.mapping.jpa.handlers.ExportReportHandler;
 import org.ihtsdo.otf.mapping.jpa.handlers.ReleaseHandlerJpa;
 import org.ihtsdo.otf.mapping.jpa.helpers.TerminologyUtility;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
@@ -90,6 +96,7 @@ import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.rest.MappingServiceRest;
+import org.ihtsdo.otf.mapping.jpa.services.rest.MetadataServiceRest;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapEntry;
@@ -4762,7 +4769,346 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       securityService.close();
     }
 
+  }
+  
+
+  @GET
+  @Path("/compare/files")
+  @ApiOperation(value = "Compare two map files", notes = "Returns the differences between two map files.", response = KeyValuePairList.class)
+  @Produces("application/vnd.ms-excel")
+  public InputStream compareMapFiles(
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(MetadataServiceRest.class).info(
+        "RESTful call (Metadata): /terminologies");
+
+    String user = "";
+    final MetadataService metadataService = new MetadataServiceJpa();
+    try {
+      // authorize
+      user = authorizeApp(authToken, MapUserRole.VIEWER, "compare map files", securityService);
+            
+      /*String olderInputFile1 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170131Final\\der2_iisssccRefset_ExtendedMapSnapshot_INT_20170131.txt";
+      String newerInputFile2 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Final\\der2_iisssccRefset_ExtendedMapSnapshot_INT_20170731.txt";
+      */
+      /*String olderInputFile1 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Alpha\\xder2_sRefset_SimpleMapSnapshot_INT_20170731.txt";
+      String newerInputFile2 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20180131Alpha\\xder2_sRefset_SimpleMapSnapshot_INT_20180131.txt";
+      */
+      /*String olderInputFile1 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Alpha\\xder2_sRefset_SimpleMapDelta_INT_20170731.txt";
+      String newerInputFile2 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Beta\\xder2_sRefset_SimpleMapDelta_INT_20170731.txt";
+      */
+      String olderInputFile1 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Alpha\\xder2_iisssccRefset_ExtendedMapDelta_INT_20170731.txt";
+      String newerInputFile2 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Beta\\xder2_iisssccRefset_ExtendedMapDelta_INT_20170731.txt";
+
+      InputStream inputStream = null;
+      if (olderInputFile1.contains("Full") || newerInputFile2.contains("Full")) {
+        throw new LocalException("Full files cannot be compared with this tool.");
       }
+      if (olderInputFile1.contains("ExtendedMap") && newerInputFile2.contains("ExtendedMap")) {
+        inputStream = compareExtendedMapFiles(olderInputFile1, newerInputFile2);
+      } else if (olderInputFile1.contains("SimpleMap") && newerInputFile2.contains("SimpleMap")) {
+        inputStream = compareSimpleMapFiles(olderInputFile1, newerInputFile2);
+      } 
+
+      
+      return inputStream;
+      
+    } catch (Exception e) {
+      handleException(e,
+          "trying to compare map files", user, "", "");
+      return null;
+    } finally {
+      metadataService.close();
+      securityService.close();
+    }
+  }
+  
+  private InputStream compareExtendedMapFiles(String inputFile1, String inputFile2) throws Exception {
+    // map to list of records that have been updated (sorted by key)
+    TreeMap<String, String> updatedList = new TreeMap<>();
+    // map to list of records that are new in the second file
+    Map<String, String> newList = new LinkedHashMap<>();
+    // map to list of records that have been inactivated in the second file
+    Map<String, String> inactivatedList = new LinkedHashMap<>();
+    // map to list of records that have been removed in the second file
+    Map<String, String> removedList = new LinkedHashMap<>();
+    String line1, line2;
+    
+    BufferedReader in1 =
+        new BufferedReader(new FileReader(new File(inputFile1)));
+    final BufferedReader in2 =
+        new BufferedReader(new FileReader(new File(inputFile2)));
+    
+      int noChangeCount = 0;
+      Map<String, String> key1Map = new HashMap<>();
+      Map<String, String> key2Map = new HashMap<>();
+      
+      // populate key1Map with key1 and line1 (no UUID)
+      while((line1 = in1.readLine()) != null) {
+        String tokens1[] = line1.split("\t");
+        String key1 = tokens1[5] + ":" + tokens1[4] + ":" + tokens1[6] + ":" + tokens1[7];
+        key1Map.put(key1, line1.substring(line1.indexOf("\t")));
+      }
+      
+      while ((line2 = in2.readLine()) != null) {
+        // populate key2Map with key2 and line2 (no UUID)
+        String tokens2[] = line2.split("\t");
+        String key2 = tokens2[5] + ":" + tokens2[4] + ":" + tokens2[6] + ":" + tokens2[7];
+        key2Map.put(key2, line2.substring(line2.indexOf("\t")));
+        
+        // if key1Map has key2, this record is not new - either it hasn't changed or it has been updated
+        if (key1Map.containsKey(key2)) {
+          String line1Sub = key1Map.get(key2);
+          String line2Sub = line2.substring(line2.indexOf("\t"));
+          if (line1Sub.equals(line2Sub)) {
+            // nothing has changed
+            noChangeCount++;
+          } else {         
+            String[] line1SubTokens = line1Sub.split("\t");
+            String[] line2SubTokens = line2Sub.split("\t");
+            // check if everything other than the active flag and the effective time matches
+            if (line1SubTokens[2].equals("1") && line2SubTokens[2].equals("0")) {
+              boolean inactive = true;
+              for (int i = 3; i < line1SubTokens.length; i++) {               
+                  if (!line1SubTokens[i].equals(line2SubTokens[i])) {            
+                    inactive = false;
+                  } 
+              }
+              if (inactive) {
+                inactivatedList.put(key2, line2);
+              }
+            }
+
+            // something updated
+            // only add to list if records are active
+            if (line1SubTokens[2].equals("1") && line2SubTokens[2].equals("1")) {
+              updatedList.put(key2, line1Sub + "\t" + line2Sub);
+            }
+          }
+        // found key2 that is not in first file, it is new
+        } else {
+          newList.put(key2, line2);
+        }
+      }
+      
+      in1.close();
+      in1 = new BufferedReader(new FileReader(new File(inputFile1)));
+      
+      // determine records that were removed
+      while ((line1 = in1.readLine()) != null) {
+        String tokens1[] = line1.split("\t");
+        String key1 = tokens1[5] + ":" + tokens1[4] + ":" + tokens1[6] + ":" + tokens1[7];
+        
+        // if key2Map doesn't have key1, this record has been removed
+        if (!key2Map.containsKey(key1)) {
+          removedList.put(key1, line1);
+        }
+      }
+      
+      // log statements
+      Logger.getLogger(MetadataServiceRest.class).info(
+          "new List count:" + newList.size());
+      Logger.getLogger(MetadataServiceRest.class).info(
+          "inactivated List count:" + inactivatedList.size());
+      Logger.getLogger(MetadataServiceRest.class).info(
+          "updated List count:" + updatedList.size());
+      Logger.getLogger(MetadataServiceRest.class).info(
+          "removed List count:" + removedList.size());
+      Logger.getLogger(MetadataServiceRest.class).info(
+          "no change count:" + noChangeCount);
+      
+      in1.close();
+      in2.close();
+      // produce Excel report file
+      final ExportReportHandler handler = new ExportReportHandler();
+      return handler.exportExtendedFileComparisonReport(updatedList, newList, inactivatedList, removedList);
+  }
+  
+  private InputStream compareSimpleMapFiles(String inputFile1, String inputFile2) throws Exception {
+    
+    // map to list of records that have been updated (sorted by key)
+    TreeMap<String, String> updatedList = new TreeMap<>();
+    // map to list of records that are new in the second file
+    Map<String, String> newList = new LinkedHashMap<>();
+    // map to list of records that have been inactivated in the second file
+    Map<String, String> inactivatedList = new LinkedHashMap<>();
+    // map to list of records that have been removed in the second file
+    Map<String, String> removedList = new LinkedHashMap<>();
+    String line1, line2;
+  
+    BufferedReader in1 =
+        new BufferedReader(new FileReader(new File(inputFile1)));
+    final BufferedReader in2 =
+        new BufferedReader(new FileReader(new File(inputFile2)));
+    
+      int noChangeCount = 0;
+      Map<String, String> key1Map = new HashMap<>();
+      Map<String, String> key2Map = new HashMap<>();
+      
+      // populate key1Map with key1 and line1 (no UUID)
+      while((line1 = in1.readLine()) != null) {
+        String tokens1[] = line1.split("\t");
+        String key1 = tokens1[5] + ":" + tokens1[4];
+        key1Map.put(key1, line1.substring(line1.indexOf("\t")));
+      }
+      
+      while ((line2 = in2.readLine()) != null) {
+        // populate key2Map with key2 and line2 (no UUID)
+        String tokens2[] = line2.split("\t");
+        String key2 = tokens2[5] + ":" + tokens2[4];
+        key2Map.put(key2, line2.substring(line2.indexOf("\t")));
+        
+        // if key1Map has key2, this record is not new - either it hasn't changed or it has been updated
+        if (key1Map.containsKey(key2)) {
+          String line1Sub = key1Map.get(key2);
+          String line2Sub = line2.substring(line2.indexOf("\t"));
+          if (line1Sub.equals(line2Sub)) {
+            // nothing has changed
+            noChangeCount++;
+          } else {         
+            String[] line1SubTokens = line1Sub.split("\t");
+            String[] line2SubTokens = line2Sub.split("\t");
+            // check if everything other than the active flag and the effective time matches
+            if (line1SubTokens[2].equals("1") && line2SubTokens[2].equals("0")) {
+              boolean inactive = true;
+              for (int i = 3; i < line1SubTokens.length; i++) {               
+                  if (!line1SubTokens[i].equals(line2SubTokens[i])) {            
+                    inactive = false;
+                  } 
+              }
+              if (inactive) {
+                inactivatedList.put(key2, line2);
+              }
+            }
+
+            // something updated
+            // only add to list if records are active
+            if (line1SubTokens[2].equals("1") && line2SubTokens[2].equals("1")) {
+              updatedList.put(key2, line1Sub + "\t" + line2Sub);
+            }
+          }
+        // found key2 that is not in first file, it is new
+        } else {
+          newList.put(key2, line2);
+        }
+      }
+      
+      in1.close();
+      in1 = new BufferedReader(new FileReader(new File(inputFile1)));
+      
+      // determine records that were removed
+      while ((line1 = in1.readLine()) != null) {
+        String tokens1[] = line1.split("\t");
+        String key1 = tokens1[5] + ":" + tokens1[4];
+        
+        // if key2Map doesn't have key1, this record has been removed
+        if (!key2Map.containsKey(key1)) {
+          removedList.put(key1, line1);
+        }
+      }
+      
+      // log statements
+      Logger.getLogger(MetadataServiceRest.class).info(
+          "new List count:" + newList.size());
+      Logger.getLogger(MetadataServiceRest.class).info(
+              "inactivated List count:" + inactivatedList.size());
+      Logger.getLogger(MetadataServiceRest.class).info(
+          "updated List count:" + updatedList.size());
+      Logger.getLogger(MetadataServiceRest.class).info(
+          "removed List count:" + removedList.size());
+      Logger.getLogger(MetadataServiceRest.class).info(
+          "no change count:" + noChangeCount);
+      
+      // produce Excel report file
+      final ExportReportHandler handler = new ExportReportHandler();
+      return handler.exportSimpleFileComparisonReport(updatedList, newList, inactivatedList, removedList);
+  }
+        
+/*  @GET
+  @Path("/compare/files")
+  @ApiOperation(value = "Compare two map files", notes = "Returns the differences between two map files.", response = KeyValuePairList.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public KeyValuePairLists compareMapFiles(
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(MetadataServiceRest.class).info(
+        "RESTful call (Metadata): /terminologies");
+
+    String user = "";
+    final MetadataService metadataService = new MetadataServiceJpa();
+    try {
+      // authorize
+      user =
+          authorizeApp(authToken, MapUserRole.VIEWER,
+              "compare map files", securityService);
+      KeyValuePairLists keyValuePairLists = new KeyValuePairLists();
+      KeyValuePairList updatedKeyValuePairList = new KeyValuePairList();
+      KeyValuePairList newKeyValuePairList = new KeyValuePairList();
+      KeyValuePairList removedKeyValuePairList = new KeyValuePairList();
+      String olderInputFile1 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Alpha\\xder2_sRefset_SimpleMapSnapshot_INT_20170731.txt";
+      String newerInputFile2 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Beta\\xder2_sRefset_SimpleMapSnapshot_INT_20170731.txt";
+      final BufferedReader in1 =
+          new BufferedReader(new FileReader(new File(olderInputFile1)));
+      final BufferedReader in2 =
+          new BufferedReader(new FileReader(new File(newerInputFile2)));
+      String line1 = in1.readLine();
+      String line2 = in2.readLine();
+      while (true) {        
+        if (line1 == null) {
+          line1 = in1.readLine();
+        }
+        if (line2 == null) {
+          line2 = in2.readLine();
+        }
+
+        // edge case if last row in file
+        if (line1 == null && line2 != null) {
+          // add to new list
+        } else if (line1 != null && line2 == null) {
+          // add to retired list
+        } else if (line1 == null && line2 == null) {
+          break;
+        }
+        if (line1.compareTo(line2) == 0) {
+          line1 = null; line2 = null;
+          continue;
+        } else if (line1.compareTo(line2) != 0) {
+          String tokens1[] = line1.split("\t");
+          String tokens2[] = line2.split("\t");
+          if (tokens1[0].equals(tokens2[0])) {
+            // add to update list
+            updatedKeyValuePairList.addKeyValuePair(new KeyValuePair(line1,
+                line2));
+          } else if (tokens1[0].compareTo(tokens2[0]) < 0) {
+            // add line1 to removed list
+            removedKeyValuePairList.addKeyValuePair(new KeyValuePair("removed",
+                line1));
+            line1 = null;
+          } else {
+            // add line2 to new list
+            newKeyValuePairList.addKeyValuePair(new KeyValuePair("new", line2));
+            line2 = null;
+          }
+        }  
+      }
+      keyValuePairLists.addKeyValuePairList(updatedKeyValuePairList);
+      keyValuePairLists.addKeyValuePairList(newKeyValuePairList);
+      keyValuePairLists.addKeyValuePairList(removedKeyValuePairList);
+      return keyValuePairLists;
+    } catch (Exception e) {
+      handleException(e,
+          "trying to compare map files", user, "", "");
+      return null;
+    } finally {
+      metadataService.close();
+      securityService.close();
+    }
+  }*/
+  
 
 //  /**
 //   * Reads an InputStream and returns its contents as a String. Also effects
