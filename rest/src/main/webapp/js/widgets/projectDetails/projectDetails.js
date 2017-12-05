@@ -827,7 +827,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           
           $rootScope.glassPane++;
           $http({
-            url : root_mapping + 'compare/files',
+            url : root_mapping + 'compare/files/' + $scope.focusProject.id,
             dataType : 'json',
             method : 'GET',
             headers : {
