@@ -5,7 +5,6 @@
     Records</button>
 </h3>
 <p></p>
-<button class="btn btn-xs btn-primary" ng-click="compareFiles()">Test compare button</button>
 
 <div ng-show="currentRole == 'Administrator' || currentRole == 'Lead'"
   align="right">
@@ -1373,4 +1372,47 @@
 
 
 
-</uib-accordion-group> </uib-accordion>
+</uib-accordion-group> <!--  Release Reports --> <uib-accordion-group
+  ng-show="currentRole == 'Administrator' || currentRole == 'Lead'">
+<uib-accordion-heading>
+<h5>Release Reports</h5>
+</uib-accordion-heading> 
+<button class="btn btn-xs btn-primary" ng-click="compareFiles()">Create Release Report</button>
+
+<uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
+  first-text="&laquo;" last-text="&raquo;" direction-links="false"
+  boundary-links="true" total-items="pagedReleaseReportCount"
+  items-per-page="pageSize" max-size="maxSize" ng-model="currentPage"
+  ng-change="getPagedReleaseReports(currentPage, releaseReportFilter)"></uib-pagination> 
+  
+<form ng-submit="resetReleaseReportFilter(); releaseReportFilter = '';">
+  <input id="releaseReportSearch" type="text" ng-model="releaseReportFilter"
+    ng-change="getPagedReleaseReports(1, releaseReportFilter)">
+  <button type="submit" class="btn btn-xs btn-primary">Reset Filter</button>
+</form>
+
+<table style="width: 100%" class="table pure-table">
+  <thead>
+    <tr>
+      <th style="width: 50%;">Report Name</th>
+      <th style="width: 47%;">Creation Date</th>
+      <th style="width: 3%;"></th>
+    </tr>
+  </thead>
+  <tbody ng-repeat="report in pagedReleaseReport "
+    style="border: 2px solid #ccc;">
+    <tr>
+      <td>{{report.value}}</td>
+      <td>{{report.value2}}</td>
+      <td><a href="doc/{{focusProject.id}}/{{report.value}}"
+    	target="_blank"><i
+        class="glyphicon glyphicon-download-alt" title="Download report"></i></a></td>
+    </tr>
+
+  </tbody>
+</table>
+
+
+  </uib-accordion-group>
+  
+  </uib-accordion>

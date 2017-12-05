@@ -301,6 +301,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         $scope.getPagedScopeConcepts(1);
         $scope.getPagedScopeExcludedConcepts(1);
         $scope.getPagedReportDefinitions(1);
+        $scope.getPagedReleaseReports(1);
 
         // need to initialize selected qa check definitions since they
         // are persisted in the
@@ -465,6 +466,42 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         });
       };
 
+      $scope.getPagedReleaseReports = function(page, filter) {
+          console.debug('Called paged release reports for page ', page);
+          $scope.releaseReportFilter = filter;
+          
+          // construct a paging/filtering/sorting object
+          var pfsParameterObj = {
+            'startIndex' : 0,
+            'maxResults' : -1,
+            'sortField' : '',
+            'queryRestriction' : ''
+          };
+
+          $rootScope.glassPane++;
+
+          $http({
+            url : root_mapping + 'release/reports/' + $scope.focusProject.id,
+            dataType : 'json',
+            method : 'GET',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+            console.debug('  release reports = ', data);
+            $rootScope.glassPane--;
+            $scope.pagedReleaseReport = $scope.sortByKeyDesc(data.searchResult, 'value2')
+              .filter(containsReleaseReportFilter);
+            $scope.pagedReleaseReportCount = $scope.pagedReleaseReport.length;
+            $scope.pagedReleaseReport = $scope.pagedReleaseReport.slice((page - 1) * $scope.pageSize, page
+              * $scope.pageSize);
+          }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        };
+        
       // functions to reset the filter and retrieve
       // unfiltered results
 
@@ -483,11 +520,16 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         $scope.getPagedPrinciples(1);
       };
 
-      $scope.resetScopeConceptFilter = function() {
-        $scope.scopeConceptFilter = '';
-        $scope.getPagedScopeConcepts(1);
+      $scope.resetReleaseReportFilter = function() {
+        $scope.releaseReportFilter = '';
+        $scope.getPagedReleaseReports(1);
       };
-
+      
+      $scope.resetScopeConceptFilter = function() {
+          $scope.scopeConceptFilter = '';
+          $scope.getPagedScopeConcepts(1);
+      };
+        
       $scope.resetReportDefinitionFilter = function() {
         $scope.reportDefinitionFilter = '';
         $scope.getPagedReportDefinitions(1);
@@ -626,6 +668,26 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         return false;
       }
 
+      function containsReleaseReportFilter(element) {
+
+          // check if releaseReport filter is empty
+          if ($scope.releaseReportFilter === '' || $scope.releaseReportFilter == null)
+            return true;
+
+          // otherwise check if upper-case releaseReport
+          // filter matches upper-case element name or
+          // creation date
+          if (element.value.toString().toUpperCase().indexOf(
+            $scope.releaseReportFilter.toString().toUpperCase()) != -1)
+            return true;
+          if (element.value2.toString().toUpperCase().indexOf(
+            $scope.releaseReportFilter.toString().toUpperCase()) != -1)
+            return true;
+
+          // otherwise return false
+          return false;
+        }
+
       function containsReportDefinitionFilter(element) {
         // check if reportDefinition filter is empty
         if ($scope.reportDefinitionFilter === '' || $scope.reportDefinitionFilter == null)
@@ -679,6 +741,26 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           return 0;
         });
       };
+      
+      $scope.sortByKeyDesc = function sortById(array, key) {
+          return array.sort(function(a, b) {
+            var x, y;
+            // if a number
+            if (!isNaN(parseInt(a[key]))) {
+              x = a[key];
+              y = b[key];
+            } else {
+              x = new String(a[key]).toUpperCase();
+              y = new String(b[key]).toUpperCase();
+            }
+            if (x < y)
+              return 1;
+            if (x > y)
+              return -1;
+            return 0;
+          });
+        };
+
 
       // function to change project from the header
       $scope.changeFocusProject = function(mapProject) {
@@ -848,6 +930,8 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             document.body.appendChild(a);
             $rootScope.glassPane--;
             a.click();
+            // update the release report list
+            $scope.getPagedReleaseReports(1);
           }).error(function(data, status, headers, config) {
             $rootScope.glassPane--;
             $rootScope.handleHttpError(data, status, headers, config);
