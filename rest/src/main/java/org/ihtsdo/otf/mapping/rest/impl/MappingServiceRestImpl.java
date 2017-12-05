@@ -4773,10 +4773,11 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
   
 
   @GET
-  @Path("/compare/files")
+  @Path("/compare/files/{id:[0-9][0-9]*}")
   @ApiOperation(value = "Compare two map files", notes = "Returns the differences between two map files.", response = KeyValuePairList.class)
   @Produces("application/vnd.ms-excel")
   public InputStream compareMapFiles(
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
@@ -4802,15 +4803,38 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       String newerInputFile2 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Beta\\xder2_iisssccRefset_ExtendedMapDelta_INT_20170731.txt";
 
       InputStream inputStream = null;
+      StringBuffer reportName = new StringBuffer();
       if (olderInputFile1.contains("Full") || newerInputFile2.contains("Full")) {
         throw new LocalException("Full files cannot be compared with this tool.");
       }
       if (olderInputFile1.contains("ExtendedMap") && newerInputFile2.contains("ExtendedMap")) {
         inputStream = compareExtendedMapFiles(olderInputFile1, newerInputFile2);
+        reportName.append(olderInputFile1.substring(olderInputFile1.lastIndexOf("Extended"), olderInputFile1.lastIndexOf('.'))).append("_");
+        reportName.append(olderInputFile1.substring(newerInputFile2.lastIndexOf("Extended"), newerInputFile2.lastIndexOf('.'))).append(".xls");
       } else if (olderInputFile1.contains("SimpleMap") && newerInputFile2.contains("SimpleMap")) {
         inputStream = compareSimpleMapFiles(olderInputFile1, newerInputFile2);
+        reportName.append(olderInputFile1.substring(olderInputFile1.lastIndexOf("Simple"), olderInputFile1.lastIndexOf('.'))).append("_");
+        reportName.append(olderInputFile1.substring(newerInputFile2.lastIndexOf("Simple"), newerInputFile2.lastIndexOf('.'))).append(".xls");
       } 
 
+      // get destination directory for uploaded file
+      final Properties config = ConfigUtility.getConfigProperties();
+      final String docDir =
+          config.getProperty("map.principle.source.document.dir");
+      final File dir = new File(docDir);
+
+      final File projectDir = new File(docDir, mapProjectId.toString());
+      projectDir.mkdir();
+      
+      // compose the name of the stored file
+      final SimpleDateFormat dt = new SimpleDateFormat("yyyyMMdd");
+      final String date = dt.format(new Date());
+      
+      final File file =
+          new File(dir, mapProjectId + "/" + reportName.toString());
+
+      // save the file to the server
+      saveFile(inputStream, file.getAbsolutePath());
       
       return inputStream;
       
