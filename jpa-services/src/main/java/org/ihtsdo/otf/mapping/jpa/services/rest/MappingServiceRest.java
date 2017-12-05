@@ -840,8 +840,36 @@ public interface MappingServiceRest {
 	void createJiraIssue(String conceptId, String conceptAuthor, String messageText, MapRecordJpa mapRecord,
 			String authToken) throws Exception;
 
+	/**
+	 * Gets the concept authors.
+	 *
+	 * @param conceptId the concept id
+	 * @param authToken the auth token
+	 * @return the concept authors
+	 * @throws Exception the exception
+	 */
 	SearchResultList getConceptAuthors(String conceptId, String authToken) throws Exception;
 
+	/**
+	 * Gets the concept authoring changes.
+	 *
+	 * @param projectId the project id
+	 * @param conceptId the concept id
+	 * @param authToken the auth token
+	 * @return the concept authoring changes
+	 * @throws Exception the exception
+	 */
 	SearchResultList getConceptAuthoringChanges(String projectId, String conceptId, String authToken) throws Exception;
+
+    /**
+     * Gets the release report list.
+     *
+     * @param mapProjectId the map project id
+     * @param authToken the auth token
+     * @return the release report list
+     * @throws Exception the exception
+     */
+    SearchResultList getReleaseReportList(Long mapProjectId, String authToken)
+    throws Exception;
 
 }

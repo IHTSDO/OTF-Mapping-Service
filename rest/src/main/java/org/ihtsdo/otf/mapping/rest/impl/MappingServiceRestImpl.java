@@ -13,6 +13,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -4774,7 +4778,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
   @GET
   @Path("/compare/files/{id:[0-9][0-9]*}")
-  @ApiOperation(value = "Compare two map files", notes = "Returns the differences between two map files.", response = KeyValuePairList.class)
+  @ApiOperation(value = "Compare two map files", notes = "Returns the differences between two map files.", response = InputStream.class)
   @Produces("application/vnd.ms-excel")
   public InputStream compareMapFiles(
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
@@ -4810,11 +4814,11 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       if (olderInputFile1.contains("ExtendedMap") && newerInputFile2.contains("ExtendedMap")) {
         inputStream = compareExtendedMapFiles(olderInputFile1, newerInputFile2);
         reportName.append(olderInputFile1.substring(olderInputFile1.lastIndexOf("Extended"), olderInputFile1.lastIndexOf('.'))).append("_");
-        reportName.append(olderInputFile1.substring(newerInputFile2.lastIndexOf("Extended"), newerInputFile2.lastIndexOf('.'))).append(".xls");
+        reportName.append(newerInputFile2.substring(newerInputFile2.lastIndexOf("Extended"), newerInputFile2.lastIndexOf('.'))).append(".xls");
       } else if (olderInputFile1.contains("SimpleMap") && newerInputFile2.contains("SimpleMap")) {
         inputStream = compareSimpleMapFiles(olderInputFile1, newerInputFile2);
         reportName.append(olderInputFile1.substring(olderInputFile1.lastIndexOf("Simple"), olderInputFile1.lastIndexOf('.'))).append("_");
-        reportName.append(olderInputFile1.substring(newerInputFile2.lastIndexOf("Simple"), newerInputFile2.lastIndexOf('.'))).append(".xls");
+        reportName.append(newerInputFile2.substring(newerInputFile2.lastIndexOf("Simple"), newerInputFile2.lastIndexOf('.'))).append(".xls");
       } 
 
       // get destination directory for uploaded file
@@ -4825,10 +4829,6 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
       final File projectDir = new File(docDir, mapProjectId.toString());
       projectDir.mkdir();
-      
-      // compose the name of the stored file
-      final SimpleDateFormat dt = new SimpleDateFormat("yyyyMMdd");
-      final String date = dt.format(new Date());
       
       final File file =
           new File(dir, mapProjectId + "/" + reportName.toString());
@@ -5032,6 +5032,9 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
         }
       }
       
+      in1.close();
+      in2.close();
+      
       // log statements
       Logger.getLogger(MetadataServiceRest.class).info(
           "new List count:" + newList.size());
@@ -5049,89 +5052,57 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       return handler.exportSimpleFileComparisonReport(updatedList, newList, inactivatedList, removedList);
   }
         
-/*  @GET
-  @Path("/compare/files")
-  @ApiOperation(value = "Compare two map files", notes = "Returns the differences between two map files.", response = KeyValuePairList.class)
+  @Override
+  @GET
+  @Path("/release/reports/{id:[0-9][0-9]*}")
+  @ApiOperation(value = "Get release reports available for a given project", notes = "Gets release reports for a given project.", response = SearchResultList.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public KeyValuePairLists compareMapFiles(
+  public SearchResultList getReleaseReportList(
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MetadataServiceRest.class).info(
-        "RESTful call (Metadata): /terminologies");
-
-    String user = "";
-    final MetadataService metadataService = new MetadataServiceJpa();
+    Logger.getLogger(MappingServiceRestImpl.class)
+        .info("RESTful call (Mapping): /release/reports/ " + mapProjectId);
+    String user = null;
+    final MappingService mappingService = new MappingServiceJpa();
     try {
-      // authorize
-      user =
-          authorizeApp(authToken, MapUserRole.VIEWER,
-              "compare map files", securityService);
-      KeyValuePairLists keyValuePairLists = new KeyValuePairLists();
-      KeyValuePairList updatedKeyValuePairList = new KeyValuePairList();
-      KeyValuePairList newKeyValuePairList = new KeyValuePairList();
-      KeyValuePairList removedKeyValuePairList = new KeyValuePairList();
-      String olderInputFile1 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Alpha\\xder2_sRefset_SimpleMapSnapshot_INT_20170731.txt";
-      String newerInputFile2 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Beta\\xder2_sRefset_SimpleMapSnapshot_INT_20170731.txt";
-      final BufferedReader in1 =
-          new BufferedReader(new FileReader(new File(olderInputFile1)));
-      final BufferedReader in2 =
-          new BufferedReader(new FileReader(new File(newerInputFile2)));
-      String line1 = in1.readLine();
-      String line2 = in2.readLine();
-      while (true) {        
-        if (line1 == null) {
-          line1 = in1.readLine();
-        }
-        if (line2 == null) {
-          line2 = in2.readLine();
-        }
+      // authorize call
+      user = authorizeApp(authToken, MapUserRole.VIEWER, "get release reports",
+          securityService);
 
-        // edge case if last row in file
-        if (line1 == null && line2 != null) {
-          // add to new list
-        } else if (line1 != null && line2 == null) {
-          // add to retired list
-        } else if (line1 == null && line2 == null) {
-          break;
-        }
-        if (line1.compareTo(line2) == 0) {
-          line1 = null; line2 = null;
-          continue;
-        } else if (line1.compareTo(line2) != 0) {
-          String tokens1[] = line1.split("\t");
-          String tokens2[] = line2.split("\t");
-          if (tokens1[0].equals(tokens2[0])) {
-            // add to update list
-            updatedKeyValuePairList.addKeyValuePair(new KeyValuePair(line1,
-                line2));
-          } else if (tokens1[0].compareTo(tokens2[0]) < 0) {
-            // add line1 to removed list
-            removedKeyValuePairList.addKeyValuePair(new KeyValuePair("removed",
-                line1));
-            line1 = null;
-          } else {
-            // add line2 to new list
-            newKeyValuePairList.addKeyValuePair(new KeyValuePair("new", line2));
-            line2 = null;
-          }
-        }  
+      // get directory for release reports
+      final Properties config = ConfigUtility.getConfigProperties();
+      final String docDir =
+          config.getProperty("map.principle.source.document.dir");
+
+      final File projectDir = new File(docDir, mapProjectId.toString());
+      File[] reports = projectDir.listFiles();
+      
+      final SearchResultList searchResultList = new SearchResultListJpa();
+      for (File report : reports) {
+        SearchResult searchResult = new SearchResultJpa();
+        searchResult.setValue(report.getName());
+        BasicFileAttributes attributes = Files.readAttributes(report.toPath(), BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+        FileTime creationTime = attributes.creationTime();
+        SimpleDateFormat df = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
+        String dateCreated = df.format(creationTime.toMillis());
+        searchResult.setValue2(dateCreated);
+        searchResultList.addSearchResult(searchResult);
       }
-      keyValuePairLists.addKeyValuePairList(updatedKeyValuePairList);
-      keyValuePairLists.addKeyValuePairList(newKeyValuePairList);
-      keyValuePairLists.addKeyValuePairList(removedKeyValuePairList);
-      return keyValuePairLists;
+      return searchResultList;
+
     } catch (Exception e) {
-      handleException(e,
-          "trying to compare map files", user, "", "");
+      handleException(e, "trying to get release reports", user, "", "");
       return null;
     } finally {
-      metadataService.close();
+      mappingService.close();
       securityService.close();
     }
-  }*/
+  }
+ 
   
 
 //  /**
