@@ -137,4 +137,118 @@ public interface ContentServiceRest {
 			String searchField, String subSearchField, String subSubSearchField, boolean allFlag, String authToken)
 			throws Exception;
 
+	/**
+	 * Loads unpublished complex maps.
+	 * 
+	 * @param inputFile The input file.
+	 * @param memberFlag The members flag.
+	 * @param recordFlag The records flag.
+	 * @param workflowStatus The workflow status to assign to created map records.
+	 * @param authToken The auth token
+	 * @throws Exception The execution exception
+	 */
+	void loadMapRecordRf2ComplexMap(String inputFile, Boolean memberFlag, Boolean recordFlag,
+			String workflowStatus, String authToken) throws Exception;
+	
+	/**
+	 * Loads simple maps. - the members flag loads refset members if "true" - the
+	 * records flag loads map records if "true"
+	 *
+	 * @param inputFile The input file.
+	 * @param memberFlag
+	 * @param recordFlag
+	 * @param workflowStatus
+	 * @param authToken The auth token
+	 * @throws Exception The execution exception
+	 */
+	void loadMapRecordRf2SimpleMap(String inputFile, Boolean memberFlag, Boolean recordFlag,
+			String workflowStatus, String authToken) throws Exception;
+	
+	/**
+	 * Converts claml data to RF2 objects.
+	 * 
+	 * @param terminology The terminology.
+	 * @param version The terminology version.
+	 * @param inputDir The directory where the input files are located.
+	 * @param authToken The auth token
+	 * @throws Exception The execution exception
+	 */
+	void loadTerminologyClaml(String terminology, String version,
+			String inputDir, String authToken) throws Exception;
+	
+	/**
+	 * Converts GMDN data to RF2 objects.
+	 * 
+	 * @param terminology The terminology.
+	 * @param version The terminology version.
+	 * @param inputDir The directory where the input files are located.
+	 * @param authToken The auth token
+	 * @throws Exception The execution exception
+	 */
+	void loadTerminologyGmdn(String terminology, String version,
+			String inputDir, String authToken) throws Exception;	
+	
+	/**
+	 * Removes a terminology from a database.
+	 * 
+	 * @param refsetId Refset Id to be deleted.
+	 * @param authToken The auth token
+	 * @return boolean Indicate if success or failure.
+	 * @throws Exception The execution exception
+	 */
+	boolean removeMapRecord(String refsetId, String authToken) throws Exception;	
+	
+	/**
+	 * Removes a terminology from a database.
+	 * 
+	 * @param terminology The terminology.
+	 * @param version The terminology version.
+	 * @param authToken The auth token
+	 * @return boolean Indicate if success or failure.
+	 * @throws Exception The execution exception
+	 */
+	boolean removeTerminology(String terminology, String version,
+			String authToken) throws Exception;
+	
+	/**
+	 * Loads an RF2 Delta of SNOMED CT data.
+	 * 
+	 * @param terminology The terminology.
+	 * @param inputDir The directory where the input files are located.
+	 * @param lastPublicationDate Date (YYYYMMDD) of last publication.
+	 * @param authToken The auth token
+	 * @throws Exception The execution exception
+	 */
+	void loadTerminologyRf2Delta(String terminology, String lastPublicationDate,
+			String inputDir, String authToken) throws Exception;
+	
+	/**
+	 * Loads an RF2 Snapshot of SNOMED CT data into a database.
+	 * 
+	 * @param terminology The terminology.
+	 * @param version The terminology version.
+	 * @param inputDir The directory where the input files are located.
+	 * @param authToken The auth token
+	 * @throws Exception The execution exception
+	 */
+	void loadTerminologyRf2Snapshot(String terminology, String version,
+			String inputDir, Boolean treePositions, Boolean sendNotification,
+			String authToken) throws Exception;
+
+	/**
+	 * loads a simple code list data file.
+	 * 
+	 * The format of the file is: code|string[|synonym,...]
+	 * 
+	 * It uses the claml metadata help for metadata
+	 * 
+	 * @param terminology The terminology.
+	 * @param version The terminology version.
+	 * @param inputDir The directory where the input files are located.
+	 * @param authToken The auth token
+	 * @throws Exception The execution exception
+	 */
+	void loadTerminologySimple(String terminology, String version,
+			String inputDir, String authToken) throws Exception;
+
 }
