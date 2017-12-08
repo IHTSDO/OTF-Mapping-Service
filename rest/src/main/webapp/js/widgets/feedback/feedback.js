@@ -22,7 +22,7 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
         'Discrepancy Review Feedback' ];
       $scope.reviewedTypes = [ 'All', 'Viewed', 'Unviewed' ];
       $scope.resolvedTypes = [ 'All', 'Active', 'Resolved' ];
-      $scope.ownedByList = ['All', 'Owned By Me', 'Not Owned By Me'];
+      $scope.ownedByList = [ 'All', 'Owned By Me', 'Not Owned By Me' ];
 
       // initialize as empty to indicate still initializing database connection
       $scope.currentUser = localStorageService.get('currentUser');
@@ -129,6 +129,8 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
         
         console.log("pfsParameterObj", pfsParameterObj);
       
+        console.log("pfsParameterObj", pfsParameterObj);
+        
         $rootScope.glassPane++;
 
         $http(
@@ -166,7 +168,7 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
       	  }
     	  
         for (var i = 0; i < conversation.feedback.length; i++) {
-          var alreadyViewedBy = conversation.feedback[i].viewedBy;	
+          var alreadyViewedBy = conversation.feedback[i].viewedBy;
           var found = false;
           if (conversation.feedback[i].sender.userName === $scope.currentUser.userName)
       	  	found = true;

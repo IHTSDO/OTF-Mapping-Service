@@ -2550,18 +2550,24 @@ angular
               errors += 'The refset id specified must be unique, but is used by project '
                 + $scope.mapProjects[i].name;
           }
-          
-          for (var i = 0; i < $scope.mapProjects.length; i++) {
-              if ($scope.mapProjects[i].moduleId === newMapProjectModuleId)
-                errors += 'The module id specified must be unique, but is used by project '
-                  + $scope.mapProjects[i].name;
-            }
 
           if (errors.length > 0) {
             alert(errors);
             return;
           }
 
+          for (var i = 0; i < $scope.mapProjects.length; i++) {
+              if ($scope.mapProjects[i].moduleId === newMapProjectModuleId){
+                  var r = confirm('Module id ' + newMapProjectModuleId + ' is already used by project '
+                          + $scope.mapProjects[i].name + '.\nDo you want to proceed?');
+                  if (r == true) {
+                	    break;
+                	} else {
+                		return;
+                	}
+              }
+            }          
+          
           // get source and version and dest and version
           var res = newMapProjectSourceVersion.split(' ');
           var newMapProjectSource = res[0];
@@ -2617,11 +2623,6 @@ angular
               alert('The ref set id you provided is not unique.');
               return;
             }
-            
-            if ($scope.checkModuleId(project) == false) {
-                alert('The module id you provided is not unique.');
-                return;
-              }
 
             $rootScope.glassPane++;
 

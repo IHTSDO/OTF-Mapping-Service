@@ -5,7 +5,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * A JPA enabled implementation of the paging/filtering/sorting object
  */
-@XmlRootElement
+@XmlRootElement(name = "pfs")
 public class PfsParameterJpa implements PfsParameter {
 
   /** The maximum number of results */
@@ -135,7 +135,55 @@ public class PfsParameterJpa implements PfsParameter {
     this.ascending = ascending;
   }
 
-  /*
+
+
+  /* (non-Javadoc)
+ * @see java.lang.Object#hashCode()
+ */
+@Override
+public int hashCode() {
+	final int prime = 31;
+	int result = 1;
+	result = prime * result + (ascending ? 1231 : 1237);
+	result = prime * result + maxResults;
+	result = prime * result + ((queryRestriction == null) ? 0 : queryRestriction.hashCode());
+	result = prime * result + ((sortField == null) ? 0 : sortField.hashCode());
+	result = prime * result + startIndex;
+	return result;
+}
+
+/* (non-Javadoc)
+ * @see java.lang.Object#equals(java.lang.Object)
+ */
+@Override
+public boolean equals(Object obj) {
+	if (this == obj)
+		return true;
+	if (obj == null)
+		return false;
+	if (getClass() != obj.getClass())
+		return false;
+	PfsParameterJpa other = (PfsParameterJpa) obj;
+	if (ascending != other.ascending)
+		return false;
+	if (maxResults != other.maxResults)
+		return false;
+	if (queryRestriction == null) {
+		if (other.queryRestriction != null)
+			return false;
+	} else if (!queryRestriction.equals(other.queryRestriction))
+		return false;
+	if (sortField == null) {
+		if (other.sortField != null)
+			return false;
+	} else if (!sortField.equals(other.sortField))
+		return false;
+	if (startIndex != other.startIndex)
+		return false;
+	return true;
+}
+
+/*
    * (non-Javadoc)
    * 
    * @see org.ihtsdo.otf.mapping.helpers.PfsParameter#isIndexInRange(int)

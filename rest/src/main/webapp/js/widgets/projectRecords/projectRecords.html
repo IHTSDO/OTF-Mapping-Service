@@ -48,6 +48,18 @@
 
     <div class="row" style="padding: 5px;">
       <div class="col-md-3" style="padding-right: 0px;">
+        {{focusProject.sourceTerminology}} Relationship Name <i
+          class="glyphicon glyphicon-remove pull-right"
+          ng-click="searchParameters.relationshipName = null"
+          ng-show="searchParameters.relationshipName"></i>
+      </div>
+      <div class="col-md-9">
+        <input ng-model="searchParameters.relationshipName">
+      </div>
+    </div>
+
+    <div class="row" style="padding: 5px;">
+      <div class="col-md-3" style="padding-right: 0px;">
         {{focusProject.destinationTerminology}} Target Id
         <i class="glyphicon glyphicon-remove pull-right"
           ng-click="searchParameters.targetId = null"
@@ -141,6 +153,18 @@
       </div>
       <div class="col-md-9">
         <input ng-model="searchParameters.mapGroup">
+      </div>
+    </div>
+
+    <!-- Search by map Priority -->
+    <div class="row" style="padding: 5px;">
+      <div class="col-md-3" style="padding-right: 0px;">
+        Map Priority <i class="glyphicon glyphicon-remove pull-right"
+          ng-click="searchParameters.mapPriority = null"
+          ng-show="searchParameters.mapPriority"></i>
+      </div>
+      <div class="col-md-9">
+        <input ng-model="searchParameters.mapPriority">
       </div>
     </div>
 

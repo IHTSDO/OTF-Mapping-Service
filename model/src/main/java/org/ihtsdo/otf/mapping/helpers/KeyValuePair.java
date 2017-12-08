@@ -1,4 +1,4 @@
-package org.ihtsdo.otf.mapping.dto;
+package org.ihtsdo.otf.mapping.helpers;
 
 import javax.xml.bind.annotation.XmlRootElement;
 

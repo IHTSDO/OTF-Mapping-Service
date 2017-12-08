@@ -1,27 +1,23 @@
 package org.ihtsdo.otf.mapping.mojo;
 
-import java.util.HashSet;
 import java.util.Properties;
-import java.util.Set;
 
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status.Family;
 
-import org.apache.lucene.util.Version;
+import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
-import org.hibernate.CacheMode;
-import org.hibernate.search.jpa.FullTextEntityManager;
-import org.hibernate.search.jpa.Search;
-import org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa;
-import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
-import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
-import org.ihtsdo.otf.mapping.reports.ReportJpa;
-import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
-import org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa;
+import org.ihtsdo.otf.mapping.jpa.algo.LuceneReindexAlgorithm;
+import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
+import org.ihtsdo.otf.mapping.services.SecurityService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
-import org.ihtsdo.otf.mapping.workflow.TrackingRecordJpa;
 
 /**
  * Goal which makes lucene indexes based on hibernate-search annotations.
@@ -29,185 +25,113 @@ import org.ihtsdo.otf.mapping.workflow.TrackingRecordJpa;
  * See admin/lucene/pom.xml for a sample execution.
  * 
  * @goal reindex
- * 
  * @phase package
  */
 public class LuceneReindexMojo extends AbstractMojo {
 
-  /** The manager. */
-  private EntityManager manager;
+	/** The manager. */
+	private EntityManager manager;
 
-  /**
-   * The specified objects to index
-   * @parameter
-   */
-  private String indexedObjects;
+	/**
+	 * The specified objects to index
+	 * @parameter 
+	 */
+	private String indexedObjects;
 
-  /**
-   * Instantiates a {@link LuceneReindexMojo} from the specified parameters.
-   */
-  public LuceneReindexMojo() {
-    // do nothing
-  }
+	/**
+	 * Whether to run this mojo against an active server.
+	 * @parameter 
+	 */
+	private boolean server = false;
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.maven.plugin.Mojo#execute()
-   */
-  @Override
-  public void execute() throws MojoFailureException {
-    getLog().info("Starting lucene reindexing");
-    getLog().info("  indexedObjects = " + indexedObjects);
+	/**
+	 * Instantiates a {@link LuceneReindexMojo} from the specified parameters.
+	 */
+	public LuceneReindexMojo() {
+		// do nothing
+	}
 
-    // set of objects to be re-indexed
-    Set<String> objectsToReindex = new HashSet<>();
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.apache.maven.plugin.Mojo#execute()
+	 */
+	@Override
+	public void execute() throws MojoFailureException {
+		try {
+			getLog().info("Lucene reindexing called via mojo.");
+			getLog().info("  Indexed objects : " + indexedObjects);
+			getLog().info("  Expect server up: " + server);
+			Properties properties = ConfigUtility.getConfigProperties();
 
-    // if no parameter specified, re-index all objects
-    if (indexedObjects == null) {
-      objectsToReindex.add("ConceptJpa");
-      objectsToReindex.add("MapProjectJpa");
-      objectsToReindex.add("MapRecordJpa");
-      objectsToReindex.add("TreePositionJpa");
-      objectsToReindex.add("TrackingRecordJpa");
-      objectsToReindex.add("FeedbackConversationJpa");
-      objectsToReindex.add("ReportJpa");
+			boolean serverRunning = ConfigUtility.isServerActive();
 
-      // otherwise, construct set of indexed objects
-    } else {
+			getLog().info("Server status detected:  "
+					+ (!serverRunning ? "DOWN" : "UP"));
 
-      // remove white-space and split by comma
-      String[] objects = indexedObjects.replaceAll(" ", "").split(",");
+			if (serverRunning && !server) {
+				throw new MojoFailureException(
+						"Mojo expects server to be down, but server is running");
+			}
 
-      // add each value to the set
-      for (String object : objects)
-        objectsToReindex.add(object);
+			if (!serverRunning && server) {
+				throw new MojoFailureException(
+						"Mojo expects server to be running, but server is down");
+			}
 
-    }
-    getLog().info("Starting reindexing for:");
-    for (String objectToReindex : objectsToReindex) {
-      getLog().info("  " + objectToReindex);
-    }
+			// authenticate
+			SecurityService service = new SecurityServiceJpa();
+			String authToken = service
+					.authenticate(properties.getProperty("admin.user"),
+							properties.getProperty("admin.password"))
+					.getAuthToken();
+			service.close();
 
-    try {
-      Properties config = ConfigUtility.getConfigProperties();
+			getLog().info("Starting reindexing for:");
 
-      EntityManagerFactory factory =
-          Persistence.createEntityManagerFactory("MappingServiceDS", config);
+			if (!serverRunning) {
+				Logger.getLogger(getClass()).info("Running directly");
+				
+//				AdminServiceRestImpl adminService = new AdminServiceRestImpl();
+//				adminService.luceneReindex(indexedObjects, authToken);
+				// Track system level information
+				final LuceneReindexAlgorithm algo = new LuceneReindexAlgorithm();
+				try {
+					algo.setIndexedObjects(indexedObjects);
+					algo.compute();
+				}
+				finally
+				{
+					algo.close();
+				}
 
-      manager = factory.createEntityManager();
+			} else {
+				Logger.getLogger(getClass()).info("Running against server");
 
-      // full text entity manager
-      FullTextEntityManager fullTextEntityManager =
-          Search.getFullTextEntityManager(manager);
+				// invoke the client
+				Logger.getLogger(getClass()).info(
+						"Content Client - lucene reindex " + indexedObjects);
 
-      fullTextEntityManager.setProperty("Version", Version.LUCENE_36);
+				final Client client = ClientBuilder.newClient();
+				final WebTarget target = client.target(
+						properties.getProperty("base.url") + "/admin/reindex");
+				final Response response = target
+						.request(MediaType.APPLICATION_JSON)
+						.header("Authorization", authToken)
+						.post(Entity.text(indexedObjects));
 
-      // Concepts
-      if (objectsToReindex.contains("ConceptJpa")) {
-        getLog().info("  Creating indexes for ConceptJpa");
-        fullTextEntityManager.purgeAll(ConceptJpa.class);
-        fullTextEntityManager.flushToIndexes();
-        fullTextEntityManager.createIndexer(ConceptJpa.class)
-            .batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
-            .threadsToLoadObjects(4).threadsForSubsequentFetching(8)
-            .startAndWait();
-
-        objectsToReindex.remove("ConceptJpa");
-      }
-
-      // Map Projects
-      if (objectsToReindex.contains("MapProjectJpa")) {
-        getLog().info("  Creating indexes for MapProjectJpa");
-        fullTextEntityManager.purgeAll(MapProjectJpa.class);
-        fullTextEntityManager.flushToIndexes();
-        fullTextEntityManager.createIndexer(MapProjectJpa.class)
-            .batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
-            .threadsToLoadObjects(4).threadsForSubsequentFetching(8)
-            .startAndWait();
-
-        objectsToReindex.remove("MapProjectJpa");
-      }
-
-      // Map Records
-      if (objectsToReindex.contains("MapRecordJpa")) {
-        getLog().info("  Creating indexes for MapRecordJpa");
-        fullTextEntityManager.purgeAll(MapRecordJpa.class);
-        fullTextEntityManager.flushToIndexes();
-        fullTextEntityManager.setProperty(ROLE, ROLE);
-        fullTextEntityManager.createIndexer(MapRecordJpa.class)
-            .batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
-            .threadsToLoadObjects(4).threadsForSubsequentFetching(8)
-            .startAndWait();
-
-        objectsToReindex.remove("MapRecordJpa");
-      }
-
-      // Tree Positions
-      if (objectsToReindex.contains("TreePositionJpa")) {
-        getLog().info("  Creating indexes for TreePositionJpa");
-        fullTextEntityManager.purgeAll(TreePositionJpa.class);
-        fullTextEntityManager.flushToIndexes();
-        fullTextEntityManager.createIndexer(TreePositionJpa.class)
-            .batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
-            .threadsToLoadObjects(4).threadsForSubsequentFetching(8)
-            .startAndWait();
-
-        objectsToReindex.remove("TreePositionJpa");
-      }
-
-      // Tracking Records
-      if (objectsToReindex.contains("TrackingRecordJpa")) {
-        getLog().info("  Creating indexes for TrackingRecordJpa");
-        fullTextEntityManager.purgeAll(TrackingRecordJpa.class);
-        fullTextEntityManager.flushToIndexes();
-        fullTextEntityManager.createIndexer(TrackingRecordJpa.class)
-            .batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
-            .threadsToLoadObjects(4).threadsForSubsequentFetching(8)
-            .startAndWait();
-        objectsToReindex.remove("TrackingRecordJpa");
-      }
-
-      // Feedback Conversations
-      if (objectsToReindex.contains("FeedbackConversationJpa")) {
-        getLog().info("  Creating indexes for FeedbackConversationJpa");
-        fullTextEntityManager.purgeAll(FeedbackConversationJpa.class);
-        fullTextEntityManager.flushToIndexes();
-        fullTextEntityManager.createIndexer(FeedbackConversationJpa.class)
-            .batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
-            .threadsToLoadObjects(4).threadsForSubsequentFetching(8)
-            .startAndWait();
-        objectsToReindex.remove("FeedbackConversationJpa");
-      }
-
-      // Feedback Conversations
-      if (objectsToReindex.contains("ReportJpa")) {
-        getLog().info("  Creating indexes for ReportJpa");
-        fullTextEntityManager.purgeAll(ReportJpa.class);
-        fullTextEntityManager.flushToIndexes();
-        fullTextEntityManager.createIndexer(ReportJpa.class)
-            .batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
-            .threadsToLoadObjects(4).threadsForSubsequentFetching(8)
-            .startAndWait();
-        objectsToReindex.remove("ReportJpa");
-      }
-
-      if (objectsToReindex.size() != 0) {
-        throw new MojoFailureException(
-            "The following objects were specified for re-indexing, but do not exist as indexed objects: "
-                + objectsToReindex.toString());
-      }
-
-      // Cleanup
-      manager.close();
-      factory.close();
-
-      getLog().info("done ...");
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw new MojoFailureException("Unexpected exception:", e);
-    }
-
-  }
-
+				if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+					// do nothing
+				} else {
+					if (response.getStatus() != 204)
+						throw new Exception(
+								"Unexpected status " + response.getStatus());
+				}
+			}
+			
+		} catch (Exception e) {
+			Logger.getLogger(getClass()).error("Unexpected exception", e);
+			throw new MojoFailureException("Unexpected exception:", e);
+		}
+	}
 }
