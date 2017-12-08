@@ -1582,14 +1582,21 @@ public class WorkflowServiceJpa extends MappingServiceJpa
 
     MapProject mapProject = null;
     mapProject = getMapProject(mapProjectId);
+    Boolean ownedByMe = null; 
 
-    String modifiedQuery = "";
+    String modifiedQuery = new String(query);
     if (query.contains(" AND viewed:false"))
-      modifiedQuery = query.replace(" AND viewed:false", "");
+    	modifiedQuery = modifiedQuery.replace(" AND viewed:false", "");
     else if (query.contains(" AND viewed:true"))
-      modifiedQuery = query.replace(" AND viewed:true", "");
-    else
-      modifiedQuery = query;
+    	modifiedQuery = modifiedQuery.replace(" AND viewed:true", "");
+    
+    if (query.contains(" AND ownedByMe:true")) {
+    	ownedByMe = true;
+    	modifiedQuery = modifiedQuery.replace(" AND ownedByMe:true", "");
+    } else if (query.contains(" AND ownedByMe:false")) {
+    	ownedByMe = false;
+    	modifiedQuery = modifiedQuery.replace(" AND ownedByMe:false", "");
+    }
 
     final StringBuilder sb = new StringBuilder();
     sb.append(modifiedQuery);
@@ -1603,10 +1610,13 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     // remove from the query the viewed parameter, if it exists
     // viewed will be handled later because it is on the Feedback object,
     // not the FeedbackConversation object
-    sb.append(" AND terminology:" + mapProject.getSourceTerminology()
-        + " AND terminologyVersion:" + mapProject.getSourceTerminologyVersion()
-        + " AND " + "( feedbacks.sender.userName:" + userName + " OR "
-        + "feedbacks.recipients.userName:" + userName + ")");
+	sb.append(" AND terminology:")
+			.append(mapProject.getSourceTerminology());
+	sb.append(" AND terminologyVersion:")
+			.append(mapProject.getSourceTerminologyVersion());
+	sb.append(" AND " + "( feedbacks.sender.userName:").append(userName)
+			.append(" OR ").append("feedbacks.recipients.userName:")
+			.append(userName).append(")");
 
     Logger.getLogger(getClass()).info("  query = " + sb.toString());
 
@@ -1671,7 +1681,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
       conversationsToKeep.clear();
     }
     
-    //add ownedbyme
+    //replace username with owned by
     for (final FeedbackConversation fc : feedbackConversations) {
   	    final MapRecord mrl = this.getLatestMapRecordForConcept(fc.getMapProjectId(), fc.getTerminologyId());
     	if (mrl != null && mrl.getLastModifiedBy() != null) {
@@ -1682,39 +1692,28 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     	}
     }
     
-
-    final List<FeedbackConversation> conversationsToKeep = new ArrayList<>();
-    
-	if (pfsParameter != null
-			&& pfsParameter.getQueryRestriction() != null
-			&& pfsParameter.getQueryRestriction().trim() != "") {
-
-		Map<String, String> queryMap = convertToMap(pfsParameter.getQueryRestriction(), ",", "=");
-					 
-		if (queryMap.get("ownedByMe") != null) {
-			final boolean owned = Boolean.parseBoolean((String) queryMap.get("ownedByMe"));
+    //filter for owned by me or not owned by me
+	if (ownedByMe != null) {
+		Logger.getLogger(getClass()).debug("owned: " + ownedByMe );
+		final List<FeedbackConversation> conversationsToKeep = new ArrayList<>();		
+		
+		for (final FeedbackConversation fc : feedbackConversations) {
 			
-			Logger.getLogger(getClass()).debug("owned: " + owned );
+			Logger.getLogger(getClass()).debug("CHECK id: " + fc.getTerminologyId() + 
+					" userName:" + userName + " fc.getUserName:" + fc.getUserName());
 			
-			for (final FeedbackConversation fc : feedbackConversations) {
+			if (   ( (ownedByMe) &&  userName.equals(fc.getUserName()))
+				|| (!(ownedByMe) && !userName.equals(fc.getUserName()))) {
 				
-				Logger.getLogger(getClass()).debug("CHECK id: " + fc.getTerminologyId() + 
+				Logger.getLogger(getClass()).debug("MATCH id: " + fc.getTerminologyId() + 
 						" userName:" + userName + " fc.getUserName:" + fc.getUserName());
 				
-				if (   ( (owned) &&  userName.equals(fc.getUserName()))
-					|| (!(owned) && !userName.equals(fc.getUserName()))) {
-					
-					Logger.getLogger(getClass()).debug("MATCH id: " + fc.getTerminologyId() + 
-							" userName:" + userName + " fc.getUserName:" + fc.getUserName());
-					
-					conversationsToKeep.add(fc);
-				}
+				conversationsToKeep.add(fc);
 			}
 		}
-		
 		feedbackConversations.clear();
 		feedbackConversations.addAll(conversationsToKeep);
-	    conversationsToKeep.clear();
+		conversationsToKeep.clear();
 	}
 	
 	final List<FeedbackConversation> recordsToKeep = new ArrayList<>();
