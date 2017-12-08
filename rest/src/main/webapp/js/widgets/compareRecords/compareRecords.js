@@ -37,14 +37,17 @@ angular
       $scope.groups1 = null;
       $scope.entries1 = null;
       $scope.conversation1 = null;
+      $scope.newFeedbackMessages1 = new Array();
 
       $scope.record2 = null;
       $scope.groups2 = null;
       $scope.entries2 = null;
       $scope.conversation2 = null;
+      $scope.newFeedbackMessages2 = new Array();
 
       $scope.leadRecord = null;
       $scope.leadConversation = null;
+      $scope.newLeadFeedbackMessages = new Array();
 
       // initialize accordion variables
       $scope.isConceptOpen = true;
@@ -69,7 +72,6 @@ angular
       // start note edit mode in off mode
             $scope.feedbackEditMode = false;
             $scope.feedbackEditId = null;
-            $scope.newFeedbackTimestamps = new Array();
             $scope.content = {
              text : ''
             };
@@ -144,11 +146,17 @@ angular
         }
       });
       
-      $scope.isNewFeedback = function(feedback) {
-      	if($scope.newFeedbackTimestamps.includes(Math.round(feedback.timestamp/1000)*1000)){
-      		return true;
-      	}
-      	return false;
+      $scope.isNewFeedback = function(feedback, conversationLocation) {
+    	  if(conversationLocation == '1'){
+    		  return $scope.newFeedbackMessages1.includes(feedback.message);
+    	  }
+    	  if(conversationLocation == '2'){
+    		  return $scope.newFeedbackMessages2.includes(feedback.message);
+    	  }
+    	  if(conversationLocation == 'lead'){
+    		  return $scope.newLeadFeedbackMessages.includes(feedback.message);
+    	  }
+    	  
       }
             
       $scope.editFeedback = function(feedback) {
@@ -207,7 +215,7 @@ angular
                   'Content-Type' : 'application/json'
                 }
               }).success(function(data) {
-
+            	$scope.newFeedbackMessages1.push(feedback);
                 $scope.conversation1 = data;
 
               });
@@ -222,7 +230,7 @@ angular
                   'Content-Type' : 'application/json'
                 }
               }).success(function(data) {
-
+              	$scope.newFeedbackMessages2.push(feedback);
                 $scope.conversation2 = data;
 
               });
@@ -240,6 +248,7 @@ angular
                     'Content-Type' : 'application/json'
                   }
                 }).success(function(data) {
+                $scope.newLeadFeedbackMessages.push(feedback);
                 $scope.leadConversation = data;
               });
               
@@ -763,10 +772,6 @@ angular
             'feedbackConversation' : currentConversation,
             'viewedBy' : [ $scope.user ]
           };
-
-          // Add to new feedback timestamps
-          // The rounding is because the timestamp in the feedback gets rounded also
-          $scope.newFeedbackTimestamps.push(Math.round(localTimestamp/1000)*1000);                    
           
           var feedbacks = new Array();
           feedbacks.push(feedback);
@@ -798,10 +803,14 @@ angular
             }
           }).success(function(data) {
             console.debug('  feedback conversation = ', data);
-            if (recordInError.id == $scope.record1.id)
+            if (recordInError.id == $scope.record1.id){
+              $scope.newFeedbackMessages1.push(feedbackMessage);
               $scope.conversation1 = data;
-            else
+            }
+            else{
+              $scope.newFeedbackMessages2.push(feedbackMessage);
               $scope.conversation2 = data;
+        }
           }).error(function(data, status, headers, config) {
             $rootScope.glassPane--;
             $scope.recordError = 'Error adding new feedback conversation.';
@@ -822,10 +831,6 @@ angular
             'isError' : isError,
             'viewedBy' : [ $scope.user ]
           };
-          
-          // Add to new feedback timestamps
-          // The rounding is because the timestamp in the feedback gets rounded also
-          $scope.newFeedbackTimestamps.push(Math.round(localTimestamp/1000)*1000);           
 
           var localFeedback = currentConversation.feedback;
           localFeedback.push(feedback);
@@ -852,6 +857,7 @@ angular
                 }
               }).success(function(data) {
 
+                $scope.newFeedbackMessages1.push(feedbackMessage);
                 $scope.conversation1 = data;
 
               });
@@ -865,6 +871,7 @@ angular
                 }
               }).success(function(data) {
 
+                $scope.newFeedbackMessages2.push(feedbackMessage);
                 $scope.conversation2 = data;
 
               });
@@ -915,10 +922,6 @@ angular
             'feedbackConversation' : currentConversation,
             'viewedBy' : [$scope.user]
           };
-          
-          // Add to new feedback timestamps
-          // The rounding is because the timestamp in the feedback gets rounded also
-          $scope.newFeedbackTimestamps.push(Math.round(localTimestamp/1000)*1000);           
 
           var feedbacks = new Array();
           feedbacks.push(feedback);
@@ -949,7 +952,7 @@ angular
             }
           })
             .success(function(data) {
-
+              $scope.newLeadFeedbackMessages.push(groupFeedbackMessage);
               $scope.leadConversation = data;
             })
             .error(
@@ -971,10 +974,6 @@ angular
             'isError' : 'false',
             'viewedBy' : []
           };
-          
-          // Add to new feedback timestamps
-          // The rounding is because the timestamp in the feedback gets rounded also
-          $scope.newFeedbackTimestamps.push(Math.round(localTimestamp/1000)*1000);           
 
           var localFeedback = currentConversation.feedback;
           localFeedback.push(feedback);
@@ -1005,6 +1004,7 @@ angular
                       'Content-Type' : 'application/json'
                     }
                   }).success(function(data) {
+                  $scope.newLeadFeedbackMessages.push(groupFeedbackMessage);
                   $scope.leadConversation = data;
                 });
               })
@@ -1270,7 +1270,23 @@ angular
         toolbar : 'undo redo | styleselect | bold italic underline strikethrough | charmap link image',
         height : "150"
       };
+      
+      $scope.tinymceOptionsForGroupFeedback = {
+    	menubar : false,
+    	statusbar : false,
+    	plugins : 'autolink link image charmap searchreplace',
+    	toolbar : 'undo redo | styleselect | bold italic underline strikethrough | charmap link image',
+    	height : "300"
+      };
 
+      $scope.tinymceOptionsForGroupFeedback = {
+        menubar : false,
+        statusbar : false,
+        plugins : 'autolink link image charmap searchreplace',
+        toolbar : 'undo redo | styleselect | bold italic underline strikethrough | charmap link image',
+        height : "300"
+        };
+      
       // add current user to list of viewers who have seen the feedback
       // conversation
       $scope.markViewed = function() {

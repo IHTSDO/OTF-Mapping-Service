@@ -3,8 +3,9 @@ package org.ihtsdo.otf.mapping.test.rest;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.rest.SecurityServiceRest;
 import org.ihtsdo.otf.mapping.model.MapUser;
-import org.ihtsdo.otf.mapping.rest.SecurityServiceRest;
+import org.ihtsdo.otf.mapping.rest.impl.SecurityServiceRestImpl;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -30,7 +31,7 @@ public class SecurityServiceEdgeCasesTest {
    */
   @BeforeClass
   public static void setupClass() throws Exception {
-    securityService = new SecurityServiceRest();
+    securityService = new SecurityServiceRestImpl();
     mappingService = new MappingServiceJpa();
 
     // create map users
@@ -57,11 +58,11 @@ public class SecurityServiceEdgeCasesTest {
   @SuppressWarnings("static-method")
   @Before
   public void setup() throws Exception {
-    securityService = new SecurityServiceRest();
+    securityService = new SecurityServiceRestImpl();
   }
 
   /**
-   * Test edge cases of the authenticate methods of {@link SecurityServiceRest}.
+   * Test edge cases of the authenticate methods of {@link SecurityServiceRestImpl}.
    * 
    * @throws Exception the exception
    */
@@ -76,7 +77,7 @@ public class SecurityServiceEdgeCasesTest {
   }
 
   /**
-   * Test edge cases of logout for {@link SecurityServiceRest}.
+   * Test edge cases of logout for {@link SecurityServiceRestImpl}.
    *
    * @throws Exception the exception
    */

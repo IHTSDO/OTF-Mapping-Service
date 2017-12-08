@@ -37,10 +37,15 @@
 
     <!-- Jersey integration -->
     <dependency>
-      <groupId>com.sun.jersey</groupId>
+      <groupId>org.glassfish.jersey.core</groupId>
       <artifactId>jersey-client</artifactId>
     </dependency>
 
+	<dependency>
+    	<groupId>org.reflections</groupId>
+    	<artifactId>reflections</artifactId>
+	</dependency>
+	
   </dependencies>
 
 </project>

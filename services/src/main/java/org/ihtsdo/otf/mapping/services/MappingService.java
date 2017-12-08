@@ -208,7 +208,7 @@ public interface MappingService extends RootService {
    * @throws Exception the exception
    */
   public MapProject addMapProject(MapProject mapProject) throws Exception;
-  
+
   /**
    * Adds the map record.
    * 
@@ -675,9 +675,9 @@ public interface MappingService extends RootService {
    * @return the tree position list
    * @throws Exception the exception
    */
-  public TreePositionList setTreePositionTerminologyNotes(
-    MapProject mapProject, TreePositionList treePositions,
-    ProjectSpecificAlgorithmHandler handler) throws Exception;
+  public TreePositionList setTreePositionTerminologyNotes(MapProject mapProject,
+    TreePositionList treePositions, ProjectSpecificAlgorithmHandler handler)
+    throws Exception;
 
   /**
    * Gets the map user preferences.
@@ -809,20 +809,33 @@ public interface MappingService extends RootService {
    */
   public SearchResultList getScopeConceptsForMapProject(MapProject mapProject,
     PfsParameter pfsParameter) throws Exception;
-  
+
   /**
    * @param mapProjectd
    * @param ancestorId
-   * @param excludeDescendants 
+   * @param excludeDescendants
    * @param terminology
    * @param terminologyVersion
+   * @param relationshipName
    * @param pfsParameter
    * @return
    * @throws Exception
    */
   public SearchResultList findMapRecords(Long mapProjectd, String ancestorId,
-    boolean excludeDescendants, String terminology, String terminologyVersion, PfsParameter pfsParameter, Collection<String> mapConcepts)
-    throws Exception;
+    boolean excludeDescendants, String relationshipName, String terminology,
+    String terminologyVersion, PfsParameter pfsParameter,
+    Collection<String> mapConcepts) throws Exception;
+
+  /**
+   * Retrieve latest map record for a given terminology id.
+   *
+   * @param mapProjectId the concept id
+   * @param terminologyId the concept id
+   * @return the list of map records
+   * @throws Exception the exception
+   */
+  public MapRecord getLatestMapRecordForConcept(Long mapProjectId,
+    String terminologyId) throws Exception;
 
   /**
    * Retrieve latest map record for a given terminology id.
