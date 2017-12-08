@@ -116,15 +116,16 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
         if (resolvedType != null && resolvedType != 'undefined' && resolvedType != ''
           && resolvedType != 'All')
           query = query + ' AND resolved:' + (resolvedType == 'Active' ? 'false' : 'true');
-
+        //owned by Me
+        if (ownedByMe != null && ownedByMe != 'undefined' && ownedByMe != ''
+            && ownedByMe != 'All')
+            query = query + ' AND ownedByMe:' + (ownedByMe == 'Owned By Me' ? 'true' : 'false');
+        
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
           'startIndex' : (page - 1) * $scope.recordsPerPage,
           'maxResults' : $scope.recordsPerPage,
-          'sortField' : 'lastModified',
-          'queryRestriction' : (ownedByMe != null && ownedByMe != 'undefined' && ownedByMe != '' && ownedByMe != 'All') 
-          			? 'ownedByMe=' + ((ownedByMe == 'Owned By Me') ? "true" : "false") 
-          			: ''
+          'sortField' : 'lastModified'      
         };
         
         console.log("pfsParameterObj", pfsParameterObj);
