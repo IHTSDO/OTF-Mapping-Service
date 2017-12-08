@@ -128,9 +128,7 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
         };
         
         console.log("pfsParameterObj", pfsParameterObj);
-      
-        console.log("pfsParameterObj", pfsParameterObj);
-        
+              
         $rootScope.glassPane++;
 
         $http(
@@ -162,11 +160,7 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
       // if any of the feedbacks are not yet viewed, return false indicating
       // that conversation is not yet viewed
       $scope.isFeedbackViewed = function(conversation) {
-    	  
-    	  if (conversation.terminologyId == '735490009') {
-      	  	console.log("conversation: " + JSON.stringify(conversation.feedback));
-      	  }
-    	  
+    	      	  
         for (var i = 0; i < conversation.feedback.length; i++) {
           var alreadyViewedBy = conversation.feedback[i].viewedBy;
           var found = false;
