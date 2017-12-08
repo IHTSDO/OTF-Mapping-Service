@@ -836,14 +836,5 @@ public interface MappingService extends RootService {
    */
   public MapRecord getLatestMapRecordForConcept(Long mapProjectId,
     String terminologyId) throws Exception;
-
-  /**
-   * Retrieve latest map record for a given terminology id.
-   * 
-   * @param mapProjectId the concept id
-   * @param terminologyId the concept id
-   * @return the list of map records
-   */
-  public MapRecord getLatestMapRecordForConcept(Long mapProjectId, String terminologyId) throws Exception;
   
 }
