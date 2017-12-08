@@ -33,6 +33,7 @@ public class RemoverAlgorithm extends RootServiceJpa
 
 	/** Terminology version */
 	private String version;
+	
 
 	public RemoverAlgorithm(String terminology, String version)
 			throws Exception {
@@ -44,6 +45,8 @@ public class RemoverAlgorithm extends RootServiceJpa
 	@Override
 	public void compute() throws Exception {
 
+		EntityManagerFactory removerFactory = null;
+		
 		try {
 			Properties config = ConfigUtility.getConfigProperties();
 
@@ -51,8 +54,8 @@ public class RemoverAlgorithm extends RootServiceJpa
 			if (manager == null) {
 				// NOTE: ideal this would not use entity manager,
 				// but we do not have services for all data types yet.
-				EntityManagerFactory factory = Persistence
-					.createEntityManagerFactory("MappingServiceDS", config);
+				removerFactory = Persistence
+						.createEntityManagerFactory("MappingServiceDS", config);
 				manager = factory.createEntityManager();
 			}
 			
@@ -158,8 +161,8 @@ public class RemoverAlgorithm extends RootServiceJpa
 				if (manager != null)
 					manager.close();
 
-				if (factory != null)
-					factory.close();
+				if (removerFactory != null)
+					removerFactory.close();
 			}
 
 		} catch (Exception e) {
