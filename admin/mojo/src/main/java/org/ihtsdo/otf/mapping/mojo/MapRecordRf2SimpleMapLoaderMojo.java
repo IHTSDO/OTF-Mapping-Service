@@ -1,33 +1,9 @@
 package org.ihtsdo.otf.mapping.mojo;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
-import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
-import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
-import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
-import org.ihtsdo.otf.mapping.model.MapProject;
-import org.ihtsdo.otf.mapping.model.MapUser;
-import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
-import org.ihtsdo.otf.mapping.rf2.Concept;
-import org.ihtsdo.otf.mapping.rf2.SimpleMapRefSetMember;
-import org.ihtsdo.otf.mapping.rf2.jpa.ComplexMapRefSetMemberJpa;
-import org.ihtsdo.otf.mapping.rf2.jpa.SimpleMapRefSetMemberJpa;
-import org.ihtsdo.otf.mapping.services.ContentService;
-import org.ihtsdo.otf.mapping.services.MappingService;
+import org.ihtsdo.otf.mapping.rest.client.ContentClientRest;
+import org.ihtsdo.otf.mapping.rest.impl.ContentServiceRestImpl;
 
 /**
  * Loads simple maps. - the members flag loads refset members if "true" - the
@@ -40,232 +16,96 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  * @goal load-rf2-simple-map
  * @phase package
  */
-public class MapRecordRf2SimpleMapLoaderMojo extends AbstractMojo {
+public class MapRecordRf2SimpleMapLoaderMojo
+		extends AbstractTerminologyLoaderMojo {
 
-  /**
-   * The input file.
-   * @parameter
-   * @required
-   */
-  private String inputFile;
+	/**
+	 * Whether to run this mojo against an active server.
+	 * @parameter 
+	 */
+	private boolean server = false;
+	
+	/**
+	 * The input file.
+	 * 
+	 * @parameter
+	 * @required
+	 */
+	private String inputFile;
 
-  /**
-   * The members flag.
-   * @parameter
-   * @required
-   */
-  private boolean memberFlag;
+	/**
+	 * The members flag.
+	 * 
+	 * @parameter
+	 * @required
+	 */
+	private boolean memberFlag;
 
-  /**
-   * The records flag.
-   * @parameter
-   * @required
-   */
-  private boolean recordFlag;
+	/**
+	 * The records flag.
+	 * 
+	 * @parameter
+	 * @required
+	 */
+	private boolean recordFlag;
 
-  /**
-   * The workflow status to assign to created map records.
-   *
-   * @parameter
-   * @required
-   */
-  private String workflowStatus =
-      WorkflowStatus.READY_FOR_PUBLICATION.toString();
+	/**
+	 * The workflow status to assign to created map records.
+	 *
+	 * @parameter
+	 * @required
+	 */
+	private String workflowStatus = WorkflowStatus.READY_FOR_PUBLICATION
+			.toString();
 
-  /**
-   * Executes the plugin.
-   * @throws MojoExecutionException the mojo execution exception
-   */
-  @Override
-  public void execute() throws MojoExecutionException {
-    getLog().info("Starting loading simple map data");
-    getLog().info("  inputFile = " + inputFile);
-    getLog().info("  membersFlag = " + memberFlag);
-    getLog().info("  recordFlag = " + recordFlag);
-    getLog().info("  workflowStatus = " + workflowStatus);
+	/**
+	 * Executes the plugin.
+	 * 
+	 * @throws MojoExecutionException
+	 *             the mojo execution exception
+	 */
+	@Override
+	public void execute() throws MojoExecutionException {
 
-    // Set up map of refsetIds that we may encounter
-    MappingService mappingService = null;
-    ContentService contentService = null;
-    try {
+		getLog().info("Starting loading simple map data");
+		getLog().info("  inputFile      = " + inputFile);
+		getLog().info("  membersFlag    = " + memberFlag);
+		getLog().info("  recordFlag     = " + recordFlag);
+		getLog().info("  workflowStatus = " + workflowStatus);
 
-      // Check preconditions
-      if (inputFile == null || !new File(inputFile).exists()) {
-        throw new MojoFailureException("Specified input file missing");
-      }
+		try {
 
-      mappingService = new MappingServiceJpa();
-      contentService = new ContentServiceJpa();
+			// Track system level information
+			setProcessStartTime();
 
-      // get the loader user
-      MapUser loaderUser = mappingService.getMapUser("loader");
+			// throws exception if server is required but not running.
+			// or if server is not required but running.
+			validateServerStatus(server);
 
-      // if loader user does not exist, add it
-      if (loaderUser == null) {
-        loaderUser = new MapUserJpa();
-        loaderUser.setApplicationRole(MapUserRole.VIEWER);
-        loaderUser.setUserName("loader");
-        loaderUser.setName("Loader Record");
-        loaderUser.setEmail("none");
-        loaderUser = mappingService.addMapUser(loaderUser);
-      }
+			if (serverRunning != null && !serverRunning) {
+				getLog().info("Running directly");
 
-      // Get map projects
-      final Map<String, MapProject> mapProjectMap = new HashMap<>();
-      for (final MapProject project : mappingService.getMapProjects()
-          .getIterable()) {
-        mapProjectMap.put(project.getRefSetId(), project);
-      }
-      getLog().info("  Map projects");
-      for (final String refsetId : mapProjectMap.keySet()) {
-        final MapProject project = mapProjectMap.get(refsetId);
-        getLog().info("    project = " + project.getId() + ","
-            + project.getRefSetId() + ", " + project.getName());
+				ContentServiceRestImpl service = new ContentServiceRestImpl();
+				service.loadMapRecordRf2SimpleMap(inputFile, memberFlag,
+						recordFlag, workflowStatus, getAuthToken());
 
-      }
+			} else {
+				getLog().info("Running against server");
 
-      // load complexMapRefSetMembers from simpleMap file
-      final List<SimpleMapRefSetMember> members =
-          getSimpleMaps(new File(inputFile), mapProjectMap);
-      getLog().info("  members = " + members.size());
+				// invoke the client
+				ContentClientRest client = new ContentClientRest(properties);
+				client.loadMapRecordRf2SimpleMap(inputFile, memberFlag,
+						recordFlag, workflowStatus, getAuthToken());
+			}
 
-      // If the member flag is set, insert all of these
-      contentService.setTransactionPerOperation(false);
-      contentService.beginTransaction();
-      if (memberFlag) {
-        for (final SimpleMapRefSetMember member : members) {
-          contentService.addSimpleMapRefSetMember(member);
-        }
-      }
-      contentService.commit();
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new MojoExecutionException("Unexpected exception:", e);
+		} finally {
+			getLog().info("      elapsed time = " + getTotalElapsedTimeStr());
+			getLog().info("done ...");
+		}
 
-      // If the record flag is set, add map records
-      if (recordFlag) {
+	}
 
-        // Get the distinct refsetIds involved
-        final Set<String> refSetIds = new HashSet<>();
-        for (final SimpleMapRefSetMember member : members) {
-          refSetIds.add(member.getRefSetId());
-        }
-
-        // For each refset id
-        for (final String refSetId : refSetIds) {
-
-          // Get a list of entries for that id
-          int ct = 0;
-          final List<ComplexMapRefSetMember> complexMembers = new ArrayList<>();
-          for (final SimpleMapRefSetMember member : members) {
-            if (refSetIds.contains(member.getRefSetId())) {
-              complexMembers.add(new ComplexMapRefSetMemberJpa(member));
-              ct++;
-            }
-          }
-          getLog().info("  records = " + ct);
-
-          // Then call the mapping service to create the map records
-          final WorkflowStatus status = WorkflowStatus.valueOf(workflowStatus);
-
-          // IF loading refSet members too, these are published already
-          mappingService.createMapRecordsForMapProject(
-              mapProjectMap.get(refSetId).getId(), loaderUser, complexMembers,
-              status);
-        }
-      }
-
-      // clean-up
-      getLog().info("Done ...");
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw new MojoExecutionException(
-          "Loading of Unpublished RF2 Complex Maps failed.", e);
-    } finally {
-      try {
-        mappingService.close();
-        contentService.close();
-      } catch (Exception e) {
-        // do nothing
-      }
-    }
-
-  }
-
-  /**
-   * Load simple members from file and return as a list.
-   *
-   * @param file the file
-   * @param mapProjectMap the map project map
-   * @return the map
-   * @throws Exception the exception
-   */
-  private List<SimpleMapRefSetMember> getSimpleMaps(File file,
-    Map<String, MapProject> mapProjectMap) throws Exception {
-
-    // Open reader and service
-    final BufferedReader reader = new BufferedReader(new FileReader(file));
-    final ContentService contentService = new ContentServiceJpa();
-    try {
-      // Set up sets for any map records we encounter
-      String line = null;
-      final List<SimpleMapRefSetMember> members = new ArrayList<>();
-      final SimpleDateFormat dt = new SimpleDateFormat("yyyyMMdd");
-      while ((line = reader.readLine()) != null) {
-        line = line.replace("\r", "");
-        String fields[] = line.split("\t");
-        final SimpleMapRefSetMember member = new SimpleMapRefSetMemberJpa();
-
-        // header
-        if (!fields[0].equals("id")) {
-
-          final String refsetId = fields[4];
-          if (mapProjectMap.get(refsetId) == null) {
-            throw new Exception("Unexpected refset id in line - " + line);
-          }
-          final String terminology =
-              mapProjectMap.get(refsetId).getSourceTerminology();
-          final String version =
-              mapProjectMap.get(refsetId).getSourceTerminologyVersion();
-          // Terminology attributes
-          member.setTerminologyVersion(version);
-          member.setTerminology(terminology);
-
-          // SimpleMap attributes
-          member.setTerminologyId(fields[0]);
-          member.setEffectiveTime(dt.parse(fields[1]));
-          member.setActive(fields[2].equals("1"));
-          member.setModuleId(Long.valueOf(fields[3]));
-          member.setRefSetId(refsetId);
-          // set referenced component
-          final Concept concept = contentService.getConcept(fields[5], // referencedComponentId
-              mapProjectMap.get(refsetId).getSourceTerminology(),
-              mapProjectMap.get(refsetId).getSourceTerminologyVersion());
-          if (concept != null) {
-            member.setConcept(concept);
-          } else {
-            getLog().error("member " + member.getTerminologyId()
-                + " references non-existent concept " + fields[5]);
-            // TODO: this should throw an exception - commented out for testing
-            // throw new IllegalStateException("member "
-            // + member.getTerminologyId()
-            // + " references non-existent concept " + fields[5]);
-          }
-          // If blank last field
-          if (fields.length == 6) {
-            member.setMapTarget("");
-          } else {
-            member.setMapTarget(fields[6]);
-          }
-
-          members.add(member);
-        }
-      }
-      return members;
-
-    } catch (Exception e) {
-      throw e;
-    } finally {
-      reader.close();
-      contentService.close();
-    }
-
-  }
 }

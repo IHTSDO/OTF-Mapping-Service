@@ -35,6 +35,16 @@
       <groupId>org.ihtsdo.otf.mapping</groupId>
       <artifactId>mapping-jpa-services</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.ihtsdo.otf.mapping</groupId>
+      <artifactId>mapping-rest-client</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.ihtsdo.otf.mapping</groupId>
+      <artifactId>mapping-rest</artifactId>
+	  <classifier>classes</classifier>
+    </dependency>
+
 
     <!-- JPA dependencies -->
     <dependency>
@@ -85,8 +95,8 @@
       <groupId>xom</groupId>
       <artifactId>xom</artifactId>
     </dependency>
-    
   </dependencies>
+	
 	<build>
 		<plugins>
 			<plugin>

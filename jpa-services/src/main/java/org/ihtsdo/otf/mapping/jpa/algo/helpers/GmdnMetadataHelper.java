@@ -1,4 +1,4 @@
-package org.ihtsdo.otf.mapping.helpers;
+package org.ihtsdo.otf.mapping.jpa.algo.helpers;
 
 import java.text.SimpleDateFormat;
 import java.util.HashMap;

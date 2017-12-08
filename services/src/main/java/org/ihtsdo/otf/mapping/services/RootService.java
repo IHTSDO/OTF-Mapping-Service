@@ -2,6 +2,7 @@ package org.ihtsdo.otf.mapping.services;
 
 import java.util.List;
 
+import org.ihtsdo.otf.mapping.helpers.LogEntry;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 
 /**
@@ -103,4 +104,102 @@ public interface RootService extends AutoCloseable {
    */
   public <T> List<?> getQueryResults(String query, Class<?> fieldNamesKey,
     Class<?> clazz, PfsParameter pfs, int[] totalCt) throws Exception;
+  
+  /**
+   * Returns the last modified by.
+   *
+   * @return the last modified by
+   */
+  public String getLastModifiedBy();
+
+  /**
+   * Sets the last modified by.
+   *
+   * @param lastModifiedBy the last modified by
+   */
+  public void setLastModifiedBy(String lastModifiedBy);
+
+  /**
+   * Update log entry.
+   *
+   * @param logEntry the log entry
+   * @throws Exception the exception
+   */
+	public void updateLogEntry(LogEntry logEntry) throws Exception;
+
+  /**
+   * Removes the log entry.
+   *
+   * @param id the id
+   * @throws Exception the exception
+   */
+	public void removeLogEntry(Long id) throws Exception;
+
+  /**
+   * Gets the log entry.
+   *
+   * @param id the id
+   * @return the log entry
+   * @throws Exception the exception
+   */
+	public LogEntry getLogEntry(Long id) throws Exception;
+
+  /**
+   * Adds the log entry.
+   *
+   * @param logEntry the log entry
+   * @return the log entry
+   * @throws Exception the exception
+   */
+	public LogEntry addLogEntry(LogEntry logEntry) throws Exception;
+
+  /**
+   * Adds the log entry.
+   *
+   * @param userName the user name
+   * @param terminology the terminology
+   * @param version the version
+   * @param activityId the activity id
+   * @param workId the work id
+   * @param message the message
+   * @return the log entry
+   * @throws Exception the exception
+   */
+	public LogEntry addLogEntry(String userName, String terminology,
+			String version, String activityId, String workId, String message)
+			throws Exception;
+
+  /**
+   * Adds the log entry.
+   *
+   * @param userName the user name
+   * @param projectId the project id
+   * @param objectId the object id
+   * @param activityId the activity id
+   * @param workId the work id
+   * @param message the message
+   * @return the log entry
+   * @throws Exception the exception
+   */
+	public LogEntry addLogEntry(String userName, Long projectId, Long objectId,
+			String activityId, String workId, String message) throws Exception;
+
+  /**
+   * Adds the log entry.
+   *
+   * @param projectId the project id
+   * @param userName the user name
+   * @param terminology the terminology
+   * @param version the version
+   * @param activityId the activity id
+   * @param workId the work id
+   * @param message the message
+   * @return the log entry
+   * @throws Exception the exception
+   */
+	public LogEntry addLogEntry(final Long projectId, final String userName,
+			final String terminology, final String version,
+			final String activityId, final String workId, final String message)
+			throws Exception;
+  
 }
