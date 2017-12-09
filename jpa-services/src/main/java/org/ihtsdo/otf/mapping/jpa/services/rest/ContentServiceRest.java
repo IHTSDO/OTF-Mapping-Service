@@ -179,13 +179,12 @@ public interface ContentServiceRest {
 	/**
 	 * Converts GMDN data to RF2 objects.
 	 * 
-	 * @param terminology The terminology.
 	 * @param version The terminology version.
 	 * @param inputDir The directory where the input files are located.
 	 * @param authToken The auth token
 	 * @throws Exception The execution exception
 	 */
-	void loadTerminologyGmdn(String terminology, String version,
+	void loadTerminologyGmdn(String version,
 			String inputDir, String authToken) throws Exception;	
 	
 	/**

@@ -92,10 +92,10 @@ public class GmdnLoaderAlgorithm extends RootServiceJpa implements Algorithm {
 	/** The id ct for id assignment (descriptions and relationships). */
 	int idCt = 1000;
 
-	public GmdnLoaderAlgorithm(String terminology, String version,
+	public GmdnLoaderAlgorithm(String version,
 			String inputDir) throws Exception {
 		super();
-		this.terminology = terminology;
+		this.terminology = "GMDN";
 		this.version = version;
 		this.inputDir = inputDir;
 	}

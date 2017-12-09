@@ -22,14 +22,14 @@ import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
-import org.ihtsdo.otf.mapping.jpa.algo.Rf2DeltaLoaderAlgorithm;
-import org.ihtsdo.otf.mapping.jpa.algo.Rf2SnapshotLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.ClamlLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.GmdnLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.MapRecordRf2ComplexMapLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.MapRecordRf2SimpleMapLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.MapsRemoverAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.RemoverAlgorithm;
+import org.ihtsdo.otf.mapping.jpa.algo.Rf2DeltaLoaderAlgorithm;
+import org.ihtsdo.otf.mapping.jpa.algo.Rf2SnapshotLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.SimpleLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.handlers.IndexViewerHandler;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
@@ -43,6 +43,7 @@ import org.ihtsdo.otf.mapping.rf2.Relationship;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -709,11 +710,10 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 	/* see superclass */
 	@Override
 	@PUT
-	@Path("/terminology/load/gmdn/{terminology}/{version}")
+	@Path("/terminology/load/gmdn/{version}")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@ApiOperation(value = "Loads GMDN terminology from directory", notes = "Loads GMDN terminology from directory for specified terminology and version")
 	public void loadTerminologyGmdn(
-			@ApiParam(value = "Terminology, e.g. SNOMEDCT_US", required = true) @PathParam("terminology") String terminology,
 			@ApiParam(value = "Version, e.g. 2014_09_01", required = true) @PathParam("version") String version,
 			@ApiParam(value = "GMDN input directory", required = true) String inputDir,
 			@ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
@@ -721,9 +721,26 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
 		Logger.getLogger(getClass())
 				.info("RESTful call (Content): /terminology/load/gmdn/"
-						+ terminology + "/" + version + " from input directory "
+						+ version + " from input directory "
 						+ inputDir);
 
+	    // If inputDir set as 'GENERATE', generate based on config.properties
+	    if (inputDir.equals("GENERATE")) {
+	      inputDir = ConfigUtility.getConfigProperties()
+	          .getProperty("map.principle.source.document.dir");
+	      // Strip off final folder, and replace with "GMDN/{version}"
+	      if (inputDir.endsWith("/")) {
+	        inputDir = inputDir.substring(0, inputDir.length() - 1);
+	      }
+	      inputDir = inputDir.substring(0, inputDir.lastIndexOf("/"));
+	      inputDir = inputDir + "/GMDN/" + version;
+	    }
+		
+        Logger.getLogger(getClass())
+        .info("Input directory generated from config.properties, and set to "
+                + inputDir);
+	    
+		
 		// Track system level information
 		long startTimeOrig = System.nanoTime();
 
@@ -731,7 +748,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 				"load GMDN terminology", securityService);
 
 		try (final GmdnLoaderAlgorithm algo = new GmdnLoaderAlgorithm(
-				terminology, version, inputDir);) {
+				version, inputDir);) {
 
 			algo.compute();
 
