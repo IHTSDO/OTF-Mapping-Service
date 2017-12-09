@@ -815,7 +815,9 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 			Logger.getLogger(getClass()).info(
 					"Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
 
-			securityService.addLogEntry(userName, terminology, version, null,
+		      securityService.close();
+		      securityService = new SecurityServiceJpa();
+		      securityService.addLogEntry(userName, terminology, version, null,
 					"REMOVER", "Remove terminology");
 
 			return true;

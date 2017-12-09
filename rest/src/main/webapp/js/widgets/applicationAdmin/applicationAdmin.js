@@ -53,8 +53,16 @@ angular
         $scope.newHandler;
 
         $scope.terminologyVersionPairs = new Array();
+        $scope.terminologyVersionPairCount = 0;
         $scope.mapProjectMetadataPairs = new Array();
 
+        $scope.gmdnVersions = new Array();
+        //TODO - make service call to find all available, unloaded versions of GMDN
+        $scope.gmdnVersions.push('17_3');
+        $scope.gmdnVersions.push('17_5');
+        $scope.gmdnVersions.push('17_8');
+        $scope.gmdnVersions.push('17_12');
+        
         var editingPerformed = new Array();
         var previousUserPage = 1;
         var previousAdvicePage = 1;
@@ -102,6 +110,8 @@ angular
 
         $scope.userApplicationRoles = [ 'VIEWER', 'ADMINISTRATOR' ];
 
+        $scope.terminologyInputTypes = [ 'RF2', 'CLaML', 'GMDN xml' ];        
+        
         // Event for focus project change
         $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
           $scope.focusProject = parameters.focusProject;
@@ -131,24 +141,8 @@ angular
 
         // Load metadata once focus project is ready
         $scope.go = function() {
-          $http({
-            url : root_metadata + 'terminology/terminologies',
-            dataType : 'json',
-            method : 'GET',
-            headers : {
-              'Content-Type' : 'application/json'
-            }
-          }).success(
-            function(data) {
-              for (var i = 0; i < data.keyValuePairList.length; i++) {
-                for (var j = 0; j < data.keyValuePairList[i].keyValuePair.length; j++) {
-                  $scope.terminologyVersionPairs.push(data.keyValuePairList[i].keyValuePair[j].key
-                    + ' ' + data.keyValuePairList[i].keyValuePair[j].value);
-                }
-              }
-            }).error(function(data, status, headers, config) {
-            $rootScope.handleHttpError(data, status, headers, config);
-          });
+          // reload the application's Terminologies
+          reloadTerminologies();
 
           // initialize map project metadata variables
           initializeMapProjectMetadata();
@@ -161,9 +155,9 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-        	// reconstruct emails for ihtsdo.gov users - privacy caution
+        // reconstruct emails for ihtsdo.gov users - privacy caution
             // others will remain as 'Private email'
-        	for (var i = 0; i < data.mapUser.length; i++) {
+        for (var i = 0; i < data.mapUser.length; i++) {
               if (data.mapUser[i].email != 'Private email') {
                 data.mapUser[i].email = data.mapUser[i].email + '@ihtsdo.gov';
               }
@@ -418,6 +412,15 @@ angular
           previousQaDefinitionPage = page;
         };
 
+        $scope.getPagedTerminologies = function(terminology, filter) {
+          $scope.userFilter = filter;
+          $scope.pagedUser = $scope.sortByKey($scope.mapUsers, 'id').filter(containsUserFilter);
+          $scope.pagedUserCount = $scope.pagedUser.length;
+          $scope.pagedUser = $scope.pagedUser.slice((page - 1) * $scope.pageSize, page
+            * $scope.pageSize);
+          previousUserPage = page;
+        };        
+        
         // functions to reset the filter and retrieve
         // unfiltered results
         $scope.resetUserFilter = function() {
@@ -586,6 +589,38 @@ angular
           return false;
         }
 
+        function reloadTerminologies() {
+          
+          var deferred = $q.defer();
+
+          $http({
+            url : root_metadata + 'terminology/terminologies',
+            dataType : 'json',
+            method : 'GET',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(
+            function(data) {
+              $scope.terminologyVersionPairs = new Array();
+              for (var i = 0; i < data.keyValuePairList.length; i++) {
+                for (var j = 0; j < data.keyValuePairList[i].keyValuePair.length; j++) {
+                  $scope.terminologyVersionPairs.push(data.keyValuePairList[i].keyValuePair[j].key
+                    + ' ' + data.keyValuePairList[i].keyValuePair[j].value);
+                }
+              }
+              $scope.terminologyVersionPairCount = $scope.terminologyVersionPairs.length;
+              
+              deferred.resolve();
+              
+            }).error(function(data, status, headers, config) {
+            $rootScope.handleHttpError(data, status, headers, config);
+            deferred.reject();            
+          });
+
+          return deferred.promise;          
+        }
+        
         function initializeMapProjectMetadata() {
           if ($scope.mapProjectMetadata != null) {
             for (var i = 0; i < $scope.mapProjectMetadata.keyValuePairList.length; i++) {
@@ -659,7 +694,7 @@ angular
         $scope.getMapType = function(project) {
           for (var i = $scope.allowableMapTypes.length; i--;) {
             if ($scope.allowableMapTypes[i].key === project.mapRefsetPattern ||
-            		$scope.allowableMapTypes[i].key == project.mapRefsetPattern.key)
+            $scope.allowableMapTypes[i].key == project.mapRefsetPattern.key)
               return $scope.allowableMapTypes[i];
           }
         };
@@ -667,7 +702,7 @@ angular
         $scope.getWorkflowType = function(project) {
           for (var i = $scope.allowableWorkflowTypes.length; i--;) {
             if ($scope.allowableWorkflowTypes[i].key === project.workflowType ||
-            		$scope.allowableWorkflowTypes[i].key == project.workflowType.key)
+            $scope.allowableWorkflowTypes[i].key == project.workflowType.key)
               return $scope.allowableWorkflowTypes[i];
           }
         };
@@ -675,7 +710,7 @@ angular
         $scope.getMapRelationStyle = function(project) {
           for (var i = $scope.allowableMapRelationStyles.length; i--;) {
             if ($scope.allowableMapRelationStyles[i].key === project.mapRelationStyle ||
-            		$scope.allowableMapRelationStyles[i].key == project.mapRelationStyle.key)
+            $scope.allowableMapRelationStyles[i].key == project.mapRelationStyle.key)
               return $scope.allowableMapRelationStyles[i];
           }
         };
@@ -2421,7 +2456,7 @@ angular
          * strings instead of individual fields
          */
         $scope.updateMapProjectFromList = function(project) {
-          var projectCopy =	angular.copy(project);
+          var projectCopy =angular.copy(project);
           // get source and version and dest and version
           var src = project.sourceTerminologyAndVersion.split(' ');
           projectCopy.sourceTerminology = src[0];
@@ -2561,10 +2596,10 @@ angular
                   var r = confirm('Module id ' + newMapProjectModuleId + ' is already used by project '
                           + $scope.mapProjects[i].name + '.\nDo you want to proceed?');
                   if (r == true) {
-                	    break;
-                	} else {
-                		return;
-                	}
+                    break;
+                } else {
+                return;
+                }
               }
             }          
           
@@ -2715,4 +2750,72 @@ angular
             // });
           }
         };
+        
+        $scope.deleteTerminology = function(terminologyVersion) {
+
+          if (confirm('Are you sure that you want to delete ' + terminologyVersion + '?') == false)
+            return;
+          
+          $rootScope.glassPane++;
+
+          var termVerArray = terminologyVersion.split(' ');
+          var terminology = termVerArray[0];
+          var version = termVerArray[1];
+          
+          $http({
+            url : root_content + 'terminology/' + terminology + '/' + version,
+            method : 'DELETE',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+            //Reload terminology metadata
+            var promise = reloadTerminologies();
+            promise.then(function(data){
+              $rootScope.glassPane--;
+            });
+          }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $scope.recordError = 'Error deleting terminology from application.';
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        };        
+        
+        $scope.loadTerminologyGmdn = function(gmdnVersion) {
+          $rootScope.glassPane++;
+
+          var errors = '';
+          for (var i = 0; i < $scope.terminologyVersionPairs.length; i++) {
+            var terminologyVersionPair = $scope.terminologyVersionPairs[i];
+            if(terminologyVersionPair == 'GMDN ' + gmdnVersion){
+              errors += 'GMDN ' + gmdnVersion + ' is already loaded in the application.\n';
+              break;
+            }
+          }
+
+          if (errors.length > 0) {
+            alert(errors);
+            $rootScope.glassPane--;
+            return;
+          }
+          
+          // load the version of gmdn into the application   
+          $http({
+            url : root_content + 'terminology/load/gmdn/' + gmdnVersion,
+            data : 'GENERATE',
+            method : 'PUT',
+            headers : {
+              'Content-Type' : 'text/plain'
+            }
+            }).success(function(data) {
+              //Reload terminology metadata
+              var promise = reloadTerminologies();
+              promise.then(function(data){
+                $rootScope.glassPane--;
+              });
+            }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;          
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        };        
       } ]);
