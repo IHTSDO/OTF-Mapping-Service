@@ -43,5 +43,13 @@ public interface MetadataServiceRest {
 	   * @throws Exception the exception
 	   */
 	KeyValuePairLists getAllTerminologiesVersions(String authToken) throws Exception;
-
+	
+	/**
+	 * Returns the all downloaded gmdn versions as a semi-colon delimited string.
+	 *
+	 * @param authToken the auth token
+	 * @return the all gmdn versions
+	 * @throws Exception the exception
+	 */
+	String getAllGmdnVersions(String authToken) throws Exception;
 }
