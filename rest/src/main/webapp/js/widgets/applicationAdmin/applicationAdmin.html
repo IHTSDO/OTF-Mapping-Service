@@ -1853,7 +1853,11 @@
       </tr>
     </tbody>
   </table>
-
+  
+  <button class="btn btn-xs btn-primary"
+    ng-show="inputType == 'GMDN xml'"
+    ng-click="downloadTerminologyGmdn()">Load</button>
+  
   <button class="btn btn-xs btn-primary"
     ng-show="inputType == 'GMDN xml' && gmdnVersion != null"
     ng-click="loadTerminologyGmdn(gmdnVersion)">Load</button>

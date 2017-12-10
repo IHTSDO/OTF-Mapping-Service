@@ -23,6 +23,7 @@ import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.jpa.algo.ClamlLoaderAlgorithm;
+import org.ihtsdo.otf.mapping.jpa.algo.GmdnDownloadAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.GmdnLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.MapRecordRf2ComplexMapLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.MapRecordRf2SimpleMapLoaderAlgorithm;
@@ -706,6 +707,37 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 					"trying to load terminology claml from directory");
 		}
 	}
+	
+    /* see superclass */
+    @Override
+    @POST
+    @Path("/terminology/download/gmdn")
+    @ApiOperation(value = "Download most recent GMDN terminology from SFTP", notes = "Downloads most recent GMDN terminology from SFTP")
+    public void downloadTerminologyGmdn(
+            @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+            throws Exception {
+ 
+        Logger.getLogger(getClass())
+                .info("RESTful call (Content): /terminology/download/gmdn/");
+
+        // Track system level information
+        long startTimeOrig = System.nanoTime();
+
+        authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+                "download GMDN terminology", securityService);
+
+        try (final GmdnDownloadAlgorithm algo = new GmdnDownloadAlgorithm();) {
+
+            algo.compute();
+
+            Logger.getLogger(getClass()).info(
+                    "Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+
+        } catch (Exception e) {
+            handleException(e,
+                    "trying to download most recent terminology GMDN from SFTP");
+        }
+    }	
 	
 	/* see superclass */
 	@Override

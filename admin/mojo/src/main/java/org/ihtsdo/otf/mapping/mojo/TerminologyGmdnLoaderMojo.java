@@ -81,7 +81,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractTerminologyLoaderMojo {
 				getLog().info("Running directly");
 
 				ContentServiceRestImpl service = new ContentServiceRestImpl();
-				service.loadTerminologyGmdn(terminology, version, inputDir,
+				service.loadTerminologyGmdn(version, inputDir,
 						getAuthToken());
 
 			} else {
@@ -89,7 +89,7 @@ public class TerminologyGmdnLoaderMojo extends AbstractTerminologyLoaderMojo {
 
 				// invoke the client
 				ContentClientRest client = new ContentClientRest(properties);
-				client.loadTerminologyGmdn(terminology, version, inputDir,
+				client.loadTerminologyGmdn(version, inputDir,
 						getAuthToken());
 			}
 

@@ -92,6 +92,13 @@ public class GmdnLoaderAlgorithm extends RootServiceJpa implements Algorithm {
 	/** The id ct for id assignment (descriptions and relationships). */
 	int idCt = 1000;
 
+	/**
+	 * Instantiates a {@link GmdnLoaderAlgorithm} from the specified parameters.
+	 *
+	 * @param version the version
+	 * @param inputDir the input dir
+	 * @throws Exception the exception
+	 */
 	public GmdnLoaderAlgorithm(String version,
 			String inputDir) throws Exception {
 		super();
