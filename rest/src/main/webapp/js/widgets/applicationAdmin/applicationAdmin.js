@@ -2780,6 +2780,25 @@ angular
             $rootScope.handleHttpError(data, status, headers, config);
           });
         };        
+    
+        $scope.downloadTerminologyGmdn = function() {
+          $rootScope.glassPane++;
+         
+          // download the latest version of gmdn from SFTP   
+          $http({
+            url : root_content + 'terminology/download/gmdn',
+            method : 'POST',
+            }).success(function(data) {
+              //Reload terminology metadata
+              var promise = reloadTerminologies();
+              promise.then(function(data){
+                $rootScope.glassPane--;
+              });
+            }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;          
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        };
         
         $scope.loadTerminologyGmdn = function(gmdnVersion) {
           $rootScope.glassPane++;

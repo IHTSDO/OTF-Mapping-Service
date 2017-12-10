@@ -4,6 +4,12 @@ import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Interface ContentServiceRest.
+ *
+ * @author ${author}
+ */
 public interface ContentServiceRest {
 
 	/**
@@ -155,9 +161,9 @@ public interface ContentServiceRest {
 	 * records flag loads map records if "true"
 	 *
 	 * @param inputFile The input file.
-	 * @param memberFlag
-	 * @param recordFlag
-	 * @param workflowStatus
+	 * @param memberFlag the member flag
+	 * @param recordFlag the record flag
+	 * @param workflowStatus the workflow status
 	 * @param authToken The auth token
 	 * @throws Exception The execution exception
 	 */
@@ -175,6 +181,15 @@ public interface ContentServiceRest {
 	 */
 	void loadTerminologyClaml(String terminology, String version,
 			String inputDir, String authToken) throws Exception;
+	
+
+    /**
+     * Download terminology gmdn.
+     *
+     * @param authToken the auth token
+     * @throws Exception the exception
+     */
+    void downloadTerminologyGmdn(String authToken) throws Exception;	
 	
 	/**
 	 * Converts GMDN data to RF2 objects.
@@ -211,10 +226,10 @@ public interface ContentServiceRest {
 	
 	/**
 	 * Loads an RF2 Delta of SNOMED CT data.
-	 * 
+	 *
 	 * @param terminology The terminology.
-	 * @param inputDir The directory where the input files are located.
 	 * @param lastPublicationDate Date (YYYYMMDD) of last publication.
+	 * @param inputDir The directory where the input files are located.
 	 * @param authToken The auth token
 	 * @throws Exception The execution exception
 	 */
@@ -223,10 +238,12 @@ public interface ContentServiceRest {
 	
 	/**
 	 * Loads an RF2 Snapshot of SNOMED CT data into a database.
-	 * 
+	 *
 	 * @param terminology The terminology.
 	 * @param version The terminology version.
 	 * @param inputDir The directory where the input files are located.
+	 * @param treePositions the tree positions
+	 * @param sendNotification the send notification
 	 * @param authToken The auth token
 	 * @throws Exception The execution exception
 	 */

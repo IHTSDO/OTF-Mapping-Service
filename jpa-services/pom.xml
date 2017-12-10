@@ -117,6 +117,14 @@
     	<artifactId>json</artifactId>
     </dependency>
 
+	<!-- JSch for sftp downloading -->
+	<dependency>
+	    <groupId>com.jcraft</groupId>
+	    <artifactId>jsch</artifactId>
+	    <version>0.1.54</version>
+	    <scope>compile</scope>
+	</dependency>
+
   </dependencies>
 
 </project>
