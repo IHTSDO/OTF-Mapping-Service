@@ -1802,7 +1802,7 @@
 <table class="table pure-table" style="width: 100%; margin-bottom: 5px;">
   <thead>
     <tr>
-      <th style="width: 100%;">Loaded Terminology</th>
+      <th style="width: 100%;">Loaded Terminologies</th>
     </tr>
   </thead>
   <tbody ng-repeat="terminology in terminologyVersionPairs"
@@ -1842,21 +1842,25 @@
           </select>
         </td>
       </tr>
-      <!-- For Loading GMDN -->
+      <!-- 
+      For Loading GMDN 
+      -->
       <tr ng-show="inputType == 'GMDN xml'">
-        <td>GMDN version to load</td>
+        <td>GMDN version to load
+        <br><br>
+                 <button class="btn btn-xs btn-primary"
+            ng-show="inputType == 'GMDN xml'"
+            ng-click="downloadTerminologyGmdn()">Check for new GMDN versions</button>
+        </td>
         <td>
           <select ng-model="gmdnVersion"
-            ng-options="item for item in gmdnVersions">
-          </select>
+            ng-options="item for item in downloadedGmdnVersions">
+          </select>         
         </td>
       </tr>
     </tbody>
   </table>
   
-  <button class="btn btn-xs btn-primary"
-    ng-show="inputType == 'GMDN xml'"
-    ng-click="downloadTerminologyGmdn()">Load</button>
   
   <button class="btn btn-xs btn-primary"
     ng-show="inputType == 'GMDN xml' && gmdnVersion != null"

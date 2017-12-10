@@ -56,12 +56,7 @@ angular
         $scope.terminologyVersionPairCount = 0;
         $scope.mapProjectMetadataPairs = new Array();
 
-        $scope.gmdnVersions = new Array();
-        //TODO - make service call to find all available, unloaded versions of GMDN
-        $scope.gmdnVersions.push('17_3');
-        $scope.gmdnVersions.push('17_5');
-        $scope.gmdnVersions.push('17_8');
-        $scope.gmdnVersions.push('17_12');
+        $scope.downloadedGmdnVersions = new Array();
         
         var editingPerformed = new Array();
         var previousUserPage = 1;
@@ -143,6 +138,8 @@ angular
         $scope.go = function() {
           // reload the application's Terminologies
           reloadTerminologies();
+          
+          getDownloadedGmdnVersions();
 
           // initialize map project metadata variables
           initializeMapProjectMetadata();
@@ -620,6 +617,31 @@ angular
 
           return deferred.promise;          
         }
+        
+        function getDownloadedGmdnVersions() {
+          
+          var deferred = $q.defer();
+
+          $http({
+            url : root_metadata + 'terminology/gmdn',
+            dataType : 'text/plain',
+            method : 'GET'
+          }).success(
+            function(data) {
+              $scope.downloadedGmdnVersions = new Array();
+              var downloadedVersionArray = data.split(';');
+              for (var i = 0; i < downloadedVersionArray.length; i++) {
+                $scope.downloadedGmdnVersions.push(downloadedVersionArray[i]);
+                }            
+              deferred.resolve();
+              
+            }).error(function(data, status, headers, config) {
+            $rootScope.handleHttpError(data, status, headers, config);
+            deferred.reject();            
+          });
+
+          return deferred.promise;          
+        }        
         
         function initializeMapProjectMetadata() {
           if ($scope.mapProjectMetadata != null) {
@@ -2789,8 +2811,8 @@ angular
             url : root_content + 'terminology/download/gmdn',
             method : 'POST',
             }).success(function(data) {
-              //Reload terminology metadata
-              var promise = reloadTerminologies();
+              //Reload downloaded gmdn version metadata
+              var promise = getDownloadedGmdnVersions();
               promise.then(function(data){
                 $rootScope.glassPane--;
               });
