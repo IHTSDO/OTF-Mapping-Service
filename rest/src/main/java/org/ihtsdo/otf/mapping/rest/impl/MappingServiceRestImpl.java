@@ -5186,6 +5186,10 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       final File projectDir = new File(docDir, mapProjectId.toString() + "/reports");
       File[] reports = projectDir.listFiles();
       
+      if (reports == null) {
+        return null;
+      }
+      
       final SearchResultList searchResultList = new SearchResultListJpa();
       for (File report : reports) {
         SearchResult searchResult = new SearchResultJpa();
@@ -5295,10 +5299,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
       AmazonS3 s3Client = null;
       try {
-        s3Client = AmazonS3ClientBuilder.standard()
+        s3Client = AmazonS3ClientBuilder.standard().withRegion("us-east-1")
             .withCredentials(new InstanceProfileCredentialsProvider(false))
             .build();
       } catch (Exception e) {
+        Logger.getLogger(MappingServiceRestImpl.class)
+        .info("amazon exception:" + e.getMessage() + e.toString());
         final Properties config = ConfigUtility.getConfigProperties();
         final String accessKey = config.getProperty("aws.access.key");
         final String secretAccessKey =
