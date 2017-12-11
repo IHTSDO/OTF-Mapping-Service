@@ -128,6 +128,7 @@ import org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.BasicSessionCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
@@ -4828,7 +4829,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       /*String olderInputFile1 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170131Final\\der2_iisssccRefset_ExtendedMapSnapshot_INT_20170131.txt";
       String newerInputFile2 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Final\\der2_iisssccRefset_ExtendedMapSnapshot_INT_20170731.txt";
       */
-      String olderInputFile1 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Alpha\\xder2_sRefset_SimpleMapSnapshot_INT_20170731.txt";
+      //String olderInputFile1 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Alpha\\xder2_sRefset_SimpleMapSnapshot_INT_20170731.txt";
       /*String newerInputFile2 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20180131Alpha\\xder2_sRefset_SimpleMapSnapshot_INT_20180131.txt";
       */
       /*String olderInputFile1 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Alpha\\xder2_sRefset_SimpleMapDelta_INT_20170731.txt";
@@ -4836,43 +4837,34 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       */
       /*String olderInputFile1 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Alpha\\xder2_iisssccRefset_ExtendedMapDelta_INT_20170731.txt";
       String newerInputFile2 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Beta\\xder2_iisssccRefset_ExtendedMapDelta_INT_20170731.txt";
-*/
-      //String olderInputFile1 = files.get(0);
+       */
+      String olderInputFile1 = files.get(0);
       String newerInputFile2 = files.get(1);
       
-      /*BasicSessionCredentials sessionCredentials = new BasicSessionCredentials(
-          "ASIAIVTTC2DJP3FS64VA",
-          "rkuudlNC94EjplmrhoHXXfKzZWdfWqYDmS+OH632",
-          "FQoDYXdzEJP//////////wEaDO4TqYk5iIj4y1ZgxSK3A4tAs+5vvmPhRzLozzm+eW2I2wlZDJaJToHkWuZgNIWgv3h0mN+I7YZ547cAynCR7Ketl74m88yKc49f9Cv1/aY/0/csBOtdJYTSvbBChrD+R4O5WP7ab2Gg6smKLk+Py56TwJzsS+3lhjShq9u64w2Uxt3BFbQM5nf4Lj4eV6kGQlfAt2SuxBIya9iGivkQQyGyYaJsJDn2uFwU8ZQpwzyyuM7O0/D2MTbaduQLIikoL4jqP4n1zf302meJ2cARUC1BKEJzzwRIzwHoEPso21GfdY9/7ZC1N1xw56Do9gxkmfqt5t7CIyJfZ/e1nsswFi+X0/5mdAd1cj6oIueigCUbPW7iYxzReug0fLxs0zDOXqArwiVnCil+HDgZXBczJml/Cb+NYVzuj85JIalod5y1jTzqfVN/+H/no0PfZ03KvzlsLqEWFfK4LU3n+zCUvf6qlwKRVFaDs5NDaSjnnzOcAJaJ/X7S5zeSSP287NxaAEqKKnw3074mgjGo3MUhRXJNjOOCDwDZ/uy6sfGOAazS6lMIoKO657EvW4nSY9cb+AU0YeLt3I+YB8mNEhEHwb1/LGp+/t4olvOl0QU=");
-
+      BasicAWSCredentials awsCreds = new BasicAWSCredentials("AKIAJJ4PGN62N36DLYZQ", "b/VIs/ITbRjZuwuZsmGHk1iFZrxfILGbQKgNxB0w");
       AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
-                               .withRegion("us-east-1")
-                               .withCredentials(new AWSStaticCredentialsProvider(sessionCredentials))
-                               .build();
+          .withRegion("us-east-1")
+          .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+          .build();
+     
       
       S3Object file1 = s3Client.getObject(
           new GetObjectRequest("release-ihtsdo-prod-published", olderInputFile1));
-      InputStream objectData1 = file1.getObjectContent();*/
-      InputStream objectData1 = new FileInputStream(olderInputFile1);
+      InputStream objectData1 = file1.getObjectContent();
       
       S3Object file2 = null;
       InputStream objectData2 = null;
       if (!newerInputFile2.contains("99999999")) {
-        /*s3Client.getObject(
+        file2 = s3Client.getObject(
           new GetObjectRequest("release-ihtsdo-prod-published", newerInputFile2));
-          objectData2 = file2.getObjectContent();*/
+          objectData2 = file2.getObjectContent();
       } else {
         MapProject mapProject = mappingService.getMapProject(mapProjectId);
         final File projectDir = new File(this.getReleaseDirectoryPath(mapProject, "current"));
         String currentReleaseFile = new File(projectDir, newerInputFile2).getAbsolutePath();
         objectData2 = new FileInputStream(currentReleaseFile);
       }
-      
-      //Process the objectData stream.
-      /*BufferedReader in1 =
-          new BufferedReader(new InputStreamReader(objectData1, "UTF-8"));
-      BufferedReader in2 =
-          new BufferedReader(new InputStreamReader(objectData2, "UTF-8"));*/
+
       
       InputStream reportInputStream = null;
       StringBuffer reportName = new StringBuffer();
@@ -4903,15 +4895,22 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
       // get destination directory for uploaded file
       final Properties config = ConfigUtility.getConfigProperties();
+      
       final String docDir =
           config.getProperty("map.principle.source.document.dir");
-      final File dir = new File(docDir);
 
-      final File projectDir = new File(docDir, mapProjectId.toString() + "/reports");
-      projectDir.mkdir();
+      final File projectDir = new File(docDir, mapProjectId.toString());
+      if (!projectDir.exists()) {
+        projectDir.mkdir();
+      }
       
+      final File reportsDir = new File(projectDir, "reports");
+      if (!reportsDir.exists()) {
+        reportsDir.mkdir();
+      }
+
       final File file =
-          new File(dir, mapProjectId + "/" + reportName.toString());
+          new File(reportsDir, reportName.toString());
 
       // save the file to the server
       saveFile(reportInputStream, file.getAbsolutePath());
@@ -4928,6 +4927,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       return null;
     } finally {
       metadataService.close();
+      mappingService.close();
       securityService.close();
     }
   }
@@ -4949,6 +4949,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
         new BufferedReader(new FileReader(new File(inputFile2)));*/
     BufferedReader in1 =
         new BufferedReader(new InputStreamReader(data1, "UTF-8"));
+    in1.mark(100000000);
     BufferedReader in2 =
         new BufferedReader(new InputStreamReader(data2, "UTF-8"));
     
@@ -5005,8 +5006,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
         }
       }
       
-      in1.close();
-      in1 = new BufferedReader(new InputStreamReader(data1, "UTF-8"));
+      in1.reset();
       
       // determine records that were removed
       while ((line1 = in1.readLine()) != null) {
@@ -5056,6 +5056,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
         new BufferedReader(new FileReader(new File(inputFile2)));*/
     BufferedReader in1 =
         new BufferedReader(new InputStreamReader(data1, "UTF-8"));
+    in1.mark(100000000);
     BufferedReader in2 =
         new BufferedReader(new InputStreamReader(data2, "UTF-8"));
     
@@ -5111,8 +5112,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
         }
       }
       
-      in1.close();     
-      /*in1 = new BufferedReader(new InputStreamReader(data1, "UTF-8"));
+      in1.reset();     
       
       // determine records that were removed
       while ((line1 = in1.readLine()) != null) {
@@ -5125,7 +5125,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
         }
       }
       
-      in1.close();*/
+      in1.close();
       in2.close();
       
       // log statements
@@ -5281,14 +5281,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
       SearchResultList searchResults = new SearchResultListJpa();
 
-      BasicSessionCredentials sessionCredentials = new BasicSessionCredentials(
-          "ASIAIVXGZXYNBN4AB2TQ", "Eoe5m+KXIT8NvzxTM/J0V1GoFAWQOj1B53hqq7uw",
-          "FQoDYXdzEN7//////////wEaDHGak3v1octsRUk71yK3A9cyrSC0Afi0CD8ZK31zkfaMxwPl+P29GHlk9Wc6INbDYT+Zw10GCoM/MJSd5IdgfyBq428EdQeL/seaKmCk9hXrv6wgF4x8oLW9I++6eGpFWtyv5gvW8ej41zqyEX4hq7MmF5OD3WlgLkFjtC1fvJVntmyBcw9zJ5D9Hvrssu7EVpeed1DWBhGQY9RfeduWIQS97zix08vM8Vp0basGV8bV3biJKTNmTXbWoePlYQSLZjsGdoLRCsJHwE0ReHMdBU4JS20oe8nycnCGv1evFPfSQsa53I8HTeaDeFZQg09iIls6LQBhqJ4a1R0p8240f1FB/zqNsm4uVOyk3ooMGFW90xDxmsOvh16fRgm8iSiVFyprxKRiCaEAbr3iGEiVLvxU18PIcrkM3KS8q2zcIPRf2947ZKl/HF7XeraRU/lqPXGwr7Pu9isxue+3hsDkySyFrRkkLYzKoCFZkvW0cZCPlx3OA2E2lPQccIuDhgXAuRwSfa371JJKSpDYoZxrw2AWbOj5u60Slhfc5/TexFPN0s1+qOXYafRrHViYWHHxrVPjKiYYrXC4w1Sa2ahoImlKp2c5+ZYox7y20QU=");
-      
+      BasicAWSCredentials awsCreds = new BasicAWSCredentials("AKIAJJ4PGN62N36DLYZQ", "b/VIs/ITbRjZuwuZsmGHk1iFZrxfILGbQKgNxB0w");
       AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
           .withRegion("us-east-1")
-          .withCredentials(new AWSStaticCredentialsProvider(sessionCredentials))
+          .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
           .build();
+     
 
       ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
           .withBucketName("release-ihtsdo-prod-published");
@@ -5296,8 +5294,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
       do {
         objectListing = s3Client.listObjects(listObjectsRequest);
-      } while (objectListing.isTruncated());
-/*        for (S3ObjectSummary objectSummary : objectListing
+      
+        for (S3ObjectSummary objectSummary : objectListing
             .getObjectSummaries()) {
           // write to file with e.g. a bufferedWriter
           SearchResult result = new SearchResultJpa();
@@ -5339,11 +5337,11 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
         public int compare(SearchResult o1, SearchResult o2) {
           String releaseDate1 = o1.getTerminologyVersion();
           String releaseDate2 = o2.getTerminologyVersion();
-          return releaseDate1.compareTo(releaseDate2);
+          return releaseDate2.compareTo(releaseDate1);
         }
-      });*/
+      });
 
-      S3Object object = s3Client
+      /*S3Object object = s3Client
           .getObject(new GetObjectRequest("release-ihtsdo-prod-published",
               objectListing.getObjectSummaries().get(0).getKey()));
       InputStream objectData = object.getObjectContent();
@@ -5354,7 +5352,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
         String line = in1.readLine();
         System.out.println(line);
       }
-      objectData.close();
+      objectData.close();*/
       
       return searchResults;
     } catch (Exception e) {

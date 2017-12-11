@@ -306,6 +306,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         $scope.getPagedScopeExcludedConcepts(1);
         $scope.getPagedReportDefinitions(1);
         $scope.getPagedReleaseReports(1);
+        $scope.amazons3FilesPlusCurrent = new Array();
         $scope.getFilesFromAmazonS3();
         $scope.getCurrentReleaseFile();
 
@@ -957,7 +958,9 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
             }
           }).success(function(data) {
         	$scope.amazons3Files = data.searchResult;
-        	$scope.amazons3FilesPlusCurrent.push(data.searchResult);
+        	for (var i = 0; i < data.searchResult.length; i++) {
+        	  $scope.amazons3FilesPlusCurrent.push(data.searchResult[i]);
+        	}
             $rootScope.glassPane--;
           }).error(function(data, status, headers, config) {
             $rootScope.glassPane--;
