@@ -232,21 +232,18 @@ public class ContentClientRest extends RootClientRest
 	
 	/* see superclass */
 	@Override
-	public void loadTerminologyGmdn(String terminology, String version,
+	public void loadTerminologyGmdn(String version,
 			String inputDir, String authToken) throws Exception {
 
 		Logger.getLogger(getClass())
-				.debug("Content Client - load terminology GMDN " + terminology
-						+ ", " + version);
+				.debug("Content Client - load terminology GMDN, " + version);
 
 		validateNotEmpty(inputDir, "inputDir");
-		validateNotEmpty(terminology, "terminology");
 		validateNotEmpty(version, "version");
 
 		final Client client = ClientBuilder.newClient();
 		final WebTarget target = client.target(config.getProperty("base.url")
-				+ URL_SERVICE_ROOT + "/terminology/load/gmdn/" + terminology
-				+ "/" + version);
+				+ URL_SERVICE_ROOT + "/terminology/load/gmdn/" + version);
 		
 		final Response response = target.request(MediaType.APPLICATION_JSON)
 				.header("Authorization", authToken).put(Entity.text(inputDir));
@@ -257,6 +254,27 @@ public class ContentClientRest extends RootClientRest
 			throw new Exception("Unexpected status " + response.getStatus());
 		}
 	}
+	
+    /* see superclass */
+    @Override
+    public void downloadTerminologyGmdn(String authToken) throws Exception {
+
+        Logger.getLogger(getClass())
+                .debug("Content Client - download terminology GMDN");
+
+        final Client client = ClientBuilder.newClient();
+        final WebTarget target = client.target(config.getProperty("base.url")
+                + URL_SERVICE_ROOT + "/terminology/download/gmdn");
+        
+        final Response response = target.request(MediaType.APPLICATION_JSON)
+                .header("Authorization", authToken).post(Entity.json(null));
+
+        if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+            // do nothing
+        } else {
+            throw new Exception("Unexpected status " + response.getStatus());
+        }
+    }	
 	
 	/* see superlass */
 	@Override
