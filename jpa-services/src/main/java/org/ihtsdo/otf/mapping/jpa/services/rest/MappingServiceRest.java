@@ -19,6 +19,7 @@ import org.ihtsdo.otf.mapping.helpers.MapRelationListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
+import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
@@ -803,10 +804,12 @@ public interface MappingServiceRest {
 	   * @param moduleId the module id
 	   * @param effectiveTime the effective time
 	   * @param mapProjectId the map project id
+	   * @param writeDelta the write delta
 	   * @param authToken the auth token
 	   * @throws Exception the exception
 	   */
-	void processReleaseForMapProject(String moduleId, String effectiveTime, Long mapProjectId, String authToken)
+	void processReleaseForMapProject(String moduleId, String effectiveTime, Long mapProjectId, 
+	  boolean writeDelta, String authToken)
 			throws Exception;
 
 	/**
@@ -871,5 +874,28 @@ public interface MappingServiceRest {
      */
     SearchResultList getReleaseReportList(Long mapProjectId, String authToken)
     throws Exception;
+
+   
+    /**
+     * Gets the files from amazon s3.
+     *
+     * @param mapProjectId the map project id
+     * @param authToken the auth token
+     * @return the files from amazon s3
+     * @throws Exception the exception
+     */
+    SearchResultList getFileListFromAmazonS3(Long mapProjectId,
+      String authToken) throws Exception;
+
+    /**
+     * Gets the current release file.
+     *
+     * @param mapProjectId the map project id
+     * @param authToken the auth token
+     * @return the current release file
+     * @throws Exception the exception
+     */
+    SearchResult getCurrentReleaseFile(Long mapProjectId, String authToken)
+      throws Exception;
 
 }

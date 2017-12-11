@@ -34,13 +34,13 @@ public class PfsParameterJpa implements PfsParameter {
    * @param pfs the pfs
    */
   public PfsParameterJpa(PfsParameter pfs) {
-//    if (pfs != null) {
+    if (pfs != null) {
       maxResults = pfs.getMaxResults();
       startIndex = pfs.getStartIndex();
       queryRestriction = pfs.getQueryRestriction();
       sortField = pfs.getSortField();
       ascending = pfs.isAscending();
-//    }
+    }
   }
 
   /**

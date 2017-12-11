@@ -99,6 +99,9 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       $scope.scopeRemoveLog = '';
       $scope.scopeExcludedAddLog = '';
       $scope.scopeExcludedRemoveLog = '';
+      $scope.fileArray = new Array();
+      $scope.amazons3Files = new Array();
+      $scope.amazons3FilesPlusCurrent = new Array();
 
       $scope.allowableMapTypes = [ {
         displayName : 'Extended Map',
@@ -136,6 +139,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       // watch for focus project change
       $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
         $scope.focusProject = parameters.focusProject;
+        $scope.go();
       });
 
       $scope.userToken = localStorageService.get('userToken');
@@ -302,6 +306,8 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         $scope.getPagedScopeExcludedConcepts(1);
         $scope.getPagedReportDefinitions(1);
         $scope.getPagedReleaseReports(1);
+        $scope.getFilesFromAmazonS3();
+        $scope.getCurrentReleaseFile();
 
         // need to initialize selected qa check definitions since they
         // are persisted in the
@@ -905,33 +911,75 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         });
       };
 
+      // set selected files to be compared from the picklists
+      $scope.setFiles = function(file1, file2) {
+    	  if (file1 != null) {
+    	      $scope.fileArray[0] = file1.value2;
+          }
+      	  if (file2 != null) {
+      		  $scope.fileArray[1] = file2.value2;
+      	  }
+      }
+      
+      // call rest service to compare files in fileArray and return an Excel report of the differences
       $scope.compareFiles = function() {
           
           $rootScope.glassPane++;
           $http({
             url : root_mapping + 'compare/files/' + $scope.focusProject.id,
             dataType : 'json',
-            method : 'GET',
+            data : $scope.fileArray,
+            method : 'POST',
             headers : {
               'Content-Type' : 'application/json'
             },
             responseType : 'arraybuffer'
           }).success(function(data) {
             $scope.definitionMsg = 'Successfully exported report';
-            var blob = new Blob([ data ], {
-              type : 'application/vnd.ms-excel'
-            });
-            // hack to download store a file having its URL
-            var fileURL = URL.createObjectURL(blob);
-            var a = document.createElement('a');
-            a.href = fileURL;
-            a.target = '_blank';
-            a.download = 'test_comparison_report';
-            document.body.appendChild(a);
             $rootScope.glassPane--;
-            a.click();
             // update the release report list
             $scope.getPagedReleaseReports(1);
+          }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+      }      
+      
+      $scope.getFilesFromAmazonS3 = function() {
+          
+          $rootScope.glassPane++;
+          $http({
+            url : root_mapping + 'amazons3/files/' + $scope.focusProject.id,
+            dataType : 'json',
+            method : 'GET',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+        	$scope.amazons3Files = data.searchResult;
+        	$scope.amazons3FilesPlusCurrent.push(data.searchResult);
+            $rootScope.glassPane--;
+          }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+      }    
+      
+      $scope.getCurrentReleaseFile = function() {
+          
+          $rootScope.glassPane++;
+          $http({
+            url : root_mapping + 'current/release/' + $scope.focusProject.id,
+            dataType : 'json',
+            method : 'GET',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+        	if (data) {
+          	  $scope.amazons3FilesPlusCurrent.push(data);
+        	}
+            $rootScope.glassPane--;
           }).error(function(data, status, headers, config) {
             $rootScope.glassPane--;
             $rootScope.handleHttpError(data, status, headers, config);
@@ -1879,17 +1927,57 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           })
       };
 
+      $scope.prepareCurrentReleaseReport = function() {
+          $rootScope.glassPane++;
+
+		  if ($scope.focusProject.destinationTerminology.indexOf('ICD10') > 0) {
+			window.alert('Creating a current release file on an ICD10 project can take up to 45 minutes.\n It may be necessary to come back and refresh your browser after this waiting period.  \n At that point, you\'ll find the current release file in the picklist labeled \'Later File\'.');
+		  }
+
+		  var effectiveTime = $scope.toCurrentDate();
+
+		  $http.post(
+				  root_mapping + 'project/id/' + $scope.focusProject.id + '/release/'
+		            + effectiveTime + '/module/id/' + $scope.focusProject.moduleId + '/process' + '?current=true')
+		          .then(
+
+		          // Success
+		          function(response) {
+		            $rootScope.glassPane--;
+		            $scope.getCurrentReleaseFile();
+		          },
+		          function(response) {
+		            $rootScope.glassPane--;
+		            $rootScope.handleHttpError(response.data, response.status, response.headers,
+		              response.config);
+		          });
+        }
+      
+        $scope.toCurrentDate = function() {
+          var date = new Date();
+          var year = '' + date.getFullYear();
+          var month = '' + (date.getMonth() + 1);
+          if (month.length == 1) {
+            month = '0' + month;
+          }
+          var day = '' + date.getDate();
+          if (day.length == 1) {
+            day = '0' + day;
+          }
+          return year + month + day;
+        };
+        
       $scope.processRelease = function() {
         $rootScope.glassPane++;
 
-        if (!$scope.release.effectiveTime || !$focusProject.moduleId) {
+        if (!$scope.release.effectiveTime || !$scope.focusProject.moduleId) {
           window.alert('Must set effective time and module id to process release');
         }
 
         // @Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/module/id/{moduleId}/process")
         $http.post(
           root_mapping + 'project/id/' + $scope.focusProject.id + '/release/'
-            + $scope.release.effectiveTime + '/module/id/' + $focusProject.moduleId + '/process')
+            + $scope.release.effectiveTime + '/module/id/' + $scope.focusProject.moduleId + '/process' + '?current=false')
           .then(
 
             // Success
