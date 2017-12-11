@@ -532,20 +532,23 @@ public interface MappingServiceRest {
 			throws Exception;
 
 	/**
-	   * Returns delimited page of Published or Ready For Publication MapRecords
-	   * given a paging/filtering/sorting parameters object.
-	   *
-	   * @param mapProjectId the map project id
-	   * @param pfsParameter the JSON object containing the paging/filtering/sorting
-	   *          parameters
-	   * @param ancestorId the ancestor id
-	   * @param query the query
-	   * @param authToken the auth token
-	   * @return the list of map records
-	   * @throws Exception the exception
-	   */
+	 * Returns delimited page of Published or Ready For Publication MapRecords
+	 * given a paging/filtering/sorting parameters object.
+	 *
+	 * @param mapProjectId the map project id
+	 * @param pfsParameter the JSON object containing the paging/filtering/sorting
+	 *          parameters
+	 * @param ancestorId the ancestor id
+	 * @param relationshipName the relationship name
+	 * @param relationshipValue the relationship value
+	 * @param excludeDescendants the exclude descendants
+	 * @param query the query
+	 * @param authToken the auth token
+	 * @return the list of map records
+	 * @throws Exception the exception
+	 */
 	MapRecordListJpa getMapRecordsForMapProjectAndQuery(Long mapProjectId, PfsParameterJpa pfsParameter,
-			String ancestorId, String relationshipName, boolean excludeDescendants, String query, String authToken)
+			String ancestorId, String relationshipName, String relationshipValue, boolean excludeDescendants, String query, String authToken)
 			throws Exception;
 
 	/**
