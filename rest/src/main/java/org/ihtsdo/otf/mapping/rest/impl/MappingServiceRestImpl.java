@@ -5310,6 +5310,11 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
             .build();
         do {
           objectListing = s3Client.listObjects(listObjectsRequest);
+          for (S3ObjectSummary objectSummary : objectListing
+              .getObjectSummaries()) {
+            Logger.getLogger(MappingServiceRestImpl.class)
+            .info(objectSummary.getKey());
+          }
         } while (objectListing.isTruncated());
       } catch (Exception e) {
         Logger.getLogger(MappingServiceRestImpl.class)
