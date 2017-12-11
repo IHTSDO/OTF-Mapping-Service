@@ -99,6 +99,9 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       $scope.scopeRemoveLog = '';
       $scope.scopeExcludedAddLog = '';
       $scope.scopeExcludedRemoveLog = '';
+      $scope.fileArray = new Array();
+      $scope.amazons3Files = new Array();
+      $scope.amazons3FilesPlusCurrent = new Array();
 
       $scope.allowableMapTypes = [ {
         displayName : 'Extended Map',
@@ -136,6 +139,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       // watch for focus project change
       $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
         $scope.focusProject = parameters.focusProject;
+        $scope.go();
       });
 
       $scope.userToken = localStorageService.get('userToken');
@@ -301,6 +305,10 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         $scope.getPagedScopeConcepts(1);
         $scope.getPagedScopeExcludedConcepts(1);
         $scope.getPagedReportDefinitions(1);
+        $scope.getPagedReleaseReports(1);
+        $scope.amazons3FilesPlusCurrent = new Array();
+        $scope.getFilesFromAmazonS3();
+        $scope.getCurrentReleaseFile();
 
         // need to initialize selected qa check definitions since they
         // are persisted in the
@@ -465,6 +473,42 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         });
       };
 
+      $scope.getPagedReleaseReports = function(page, filter) {
+          console.debug('Called paged release reports for page ', page);
+          $scope.releaseReportFilter = filter;
+          
+          // construct a paging/filtering/sorting object
+          var pfsParameterObj = {
+            'startIndex' : 0,
+            'maxResults' : -1,
+            'sortField' : '',
+            'queryRestriction' : ''
+          };
+
+          $rootScope.glassPane++;
+
+          $http({
+            url : root_mapping + 'release/reports/' + $scope.focusProject.id,
+            dataType : 'json',
+            method : 'GET',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+            console.debug('  release reports = ', data);
+            $rootScope.glassPane--;
+            $scope.pagedReleaseReport = $scope.sortByKeyDesc(data.searchResult, 'value2')
+              .filter(containsReleaseReportFilter);
+            $scope.pagedReleaseReportCount = $scope.pagedReleaseReport.length;
+            $scope.pagedReleaseReport = $scope.pagedReleaseReport.slice((page - 1) * $scope.pageSize, page
+              * $scope.pageSize);
+          }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        };
+        
       // functions to reset the filter and retrieve
       // unfiltered results
 
@@ -483,11 +527,16 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         $scope.getPagedPrinciples(1);
       };
 
-      $scope.resetScopeConceptFilter = function() {
-        $scope.scopeConceptFilter = '';
-        $scope.getPagedScopeConcepts(1);
+      $scope.resetReleaseReportFilter = function() {
+        $scope.releaseReportFilter = '';
+        $scope.getPagedReleaseReports(1);
       };
-
+      
+      $scope.resetScopeConceptFilter = function() {
+          $scope.scopeConceptFilter = '';
+          $scope.getPagedScopeConcepts(1);
+      };
+        
       $scope.resetReportDefinitionFilter = function() {
         $scope.reportDefinitionFilter = '';
         $scope.getPagedReportDefinitions(1);
@@ -626,6 +675,26 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         return false;
       }
 
+      function containsReleaseReportFilter(element) {
+
+          // check if releaseReport filter is empty
+          if ($scope.releaseReportFilter === '' || $scope.releaseReportFilter == null)
+            return true;
+
+          // otherwise check if upper-case releaseReport
+          // filter matches upper-case element name or
+          // creation date
+          if (element.value.toString().toUpperCase().indexOf(
+            $scope.releaseReportFilter.toString().toUpperCase()) != -1)
+            return true;
+          if (element.value2.toString().toUpperCase().indexOf(
+            $scope.releaseReportFilter.toString().toUpperCase()) != -1)
+            return true;
+
+          // otherwise return false
+          return false;
+        }
+
       function containsReportDefinitionFilter(element) {
         // check if reportDefinition filter is empty
         if ($scope.reportDefinitionFilter === '' || $scope.reportDefinitionFilter == null)
@@ -679,6 +748,26 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           return 0;
         });
       };
+      
+      $scope.sortByKeyDesc = function sortById(array, key) {
+          return array.sort(function(a, b) {
+            var x, y;
+            // if a number
+            if (!isNaN(parseInt(a[key]))) {
+              x = a[key];
+              y = b[key];
+            } else {
+              x = new String(a[key]).toUpperCase();
+              y = new String(b[key]).toUpperCase();
+            }
+            if (x < y)
+              return 1;
+            if (x > y)
+              return -1;
+            return 0;
+          });
+        };
+
 
       // function to change project from the header
       $scope.changeFocusProject = function(mapProject) {
@@ -823,6 +912,83 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         });
       };
 
+      // set selected files to be compared from the picklists
+      $scope.setFiles = function(file1, file2) {
+    	  if (file1 != null) {
+    	      $scope.fileArray[0] = file1.value2;
+          }
+      	  if (file2 != null) {
+      		  $scope.fileArray[1] = file2.value2;
+      	  }
+      }
+      
+      // call rest service to compare files in fileArray and return an Excel report of the differences
+      $scope.compareFiles = function() {
+          
+          $rootScope.glassPane++;
+          $http({
+            url : root_mapping + 'compare/files/' + $scope.focusProject.id,
+            dataType : 'json',
+            data : $scope.fileArray,
+            method : 'POST',
+            headers : {
+              'Content-Type' : 'application/json'
+            },
+            responseType : 'arraybuffer'
+          }).success(function(data) {
+            $scope.definitionMsg = 'Successfully exported report';
+            $rootScope.glassPane--;
+            // update the release report list
+            $scope.getPagedReleaseReports(1);
+          }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+      }      
+      
+      $scope.getFilesFromAmazonS3 = function() {
+          
+          $rootScope.glassPane++;
+          $http({
+            url : root_mapping + 'amazons3/files/' + $scope.focusProject.id,
+            dataType : 'json',
+            method : 'GET',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+        	$scope.amazons3Files = data.searchResult;
+        	for (var i = 0; i < data.searchResult.length; i++) {
+        	  $scope.amazons3FilesPlusCurrent.push(data.searchResult[i]);
+        	}
+            $rootScope.glassPane--;
+          }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+      }    
+      
+      $scope.getCurrentReleaseFile = function() {
+          
+          $rootScope.glassPane++;
+          $http({
+            url : root_mapping + 'current/release/' + $scope.focusProject.id,
+            dataType : 'json',
+            method : 'GET',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+        	if (data) {
+          	  $scope.amazons3FilesPlusCurrent.push(data);
+        	}
+            $rootScope.glassPane--;
+          }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+      }      
+      
       $scope.addMapUserToMapProjectWithRole = function(user, role) {
 
         // check role
@@ -1764,6 +1930,46 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           })
       };
 
+      $scope.prepareCurrentReleaseReport = function() {
+          $rootScope.glassPane++;
+
+		  if ($scope.focusProject.destinationTerminology.indexOf('ICD10') > 0) {
+			window.alert('Creating a current release file on an ICD10 project can take up to 45 minutes.\n It may be necessary to come back and refresh your browser after this waiting period.  \n At that point, you\'ll find the current release file in the picklist labeled \'Later File\'.');
+		  }
+
+		  var effectiveTime = $scope.toCurrentDate();
+
+		  $http.post(
+				  root_mapping + 'project/id/' + $scope.focusProject.id + '/release/'
+		            + effectiveTime + '/module/id/' + $scope.focusProject.moduleId + '/process' + '?current=true')
+		          .then(
+
+		          // Success
+		          function(response) {
+		            $rootScope.glassPane--;
+		            $scope.getCurrentReleaseFile();
+		          },
+		          function(response) {
+		            $rootScope.glassPane--;
+		            $rootScope.handleHttpError(response.data, response.status, response.headers,
+		              response.config);
+		          });
+        }
+      
+        $scope.toCurrentDate = function() {
+          var date = new Date();
+          var year = '' + date.getFullYear();
+          var month = '' + (date.getMonth() + 1);
+          if (month.length == 1) {
+            month = '0' + month;
+          }
+          var day = '' + date.getDate();
+          if (day.length == 1) {
+            day = '0' + day;
+          }
+          return year + month + day;
+        };
+        
       $scope.processRelease = function() {
         $rootScope.glassPane++;
 
@@ -1774,7 +1980,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         // @Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/module/id/{moduleId}/process")
         $http.post(
           root_mapping + 'project/id/' + $scope.focusProject.id + '/release/'
-            + $scope.release.effectiveTime + '/module/id/' + $scope.focusProject.moduleId + '/process')
+            + $scope.release.effectiveTime + '/module/id/' + $scope.focusProject.moduleId + '/process' + '?current=false')
           .then(
 
             // Success
