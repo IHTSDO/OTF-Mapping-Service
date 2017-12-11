@@ -127,6 +127,8 @@ import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
 import org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.BasicSessionCredentials;
@@ -5186,6 +5188,10 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       final File projectDir = new File(docDir, mapProjectId.toString() + "/reports");
       File[] reports = projectDir.listFiles();
       
+      if (reports == null) {
+        return null;
+      }
+      
       final SearchResultList searchResultList = new SearchResultListJpa();
       for (File report : reports) {
         SearchResult searchResult = new SearchResultJpa();
@@ -5294,11 +5300,20 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       SearchResultList searchResults = new SearchResultListJpa();
 
       AmazonS3 s3Client = null;
+      ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
+          .withBucketName("release-ihtsdo-prod-published");
+      ObjectListing objectListing;
+      
       try {
-        s3Client = AmazonS3ClientBuilder.standard()
-            .withCredentials(new InstanceProfileCredentialsProvider(false))
+        s3Client = AmazonS3ClientBuilder.standard().withRegion("us-east-1")
+            .withCredentials(InstanceProfileCredentialsProvider.getInstance())           
             .build();
+        do {
+          objectListing = s3Client.listObjects(listObjectsRequest);
+        } while (objectListing.isTruncated());
       } catch (Exception e) {
+        Logger.getLogger(MappingServiceRestImpl.class)
+        .info("amazon exception:" + e.getMessage() + e.toString());
         final Properties config = ConfigUtility.getConfigProperties();
         final String accessKey = config.getProperty("aws.access.key");
         final String secretAccessKey =
@@ -5309,10 +5324,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
             .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
             .build();
       }
-
-      ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
-          .withBucketName("release-ihtsdo-prod-published");
-      ObjectListing objectListing;
+      
+      
 
       do {
         objectListing = s3Client.listObjects(listObjectsRequest);
