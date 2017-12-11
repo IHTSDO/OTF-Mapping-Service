@@ -2590,6 +2590,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
     @ApiParam(value = "Ancestor concept (inclusive) to restrict search results to", required = true) @QueryParam("ancestorId") String ancestorId,
     @ApiParam(value = "Source concept relationship name", required = false) @QueryParam("relationshipName") String relationshipName,
+    @ApiParam(value = "Destination concept relationship value", required = false) @QueryParam("relationshipValue") String relationshipValue,
     @ApiParam(value = "Excludes descendants of ancestor id ", required = false) @QueryParam("excludeDescendants") boolean excludeDescendants,
     @ApiParam(value = "Search query string", required = false) @QueryParam("query") String query,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
@@ -2685,7 +2686,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
           });
           searchResults = mappingService
-              .findMapRecords(mapProjectId, ancestorId, excludeDescendants, relationshipName,
+              .findMapRecords(mapProjectId, ancestorId, excludeDescendants, relationshipName, relationshipValue,
                   mapProject.getSourceTerminology(),
                   mapProject.getSourceTerminologyVersion(), descendantPfs, resultsMap.keySet());
           }
@@ -2695,7 +2696,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
         else {
           // Otherwise, just find all map records to include or exclude descendants
             searchResults = mappingService
-                .findMapRecords(mapProjectId, ancestorId, excludeDescendants, relationshipName, 
+                .findMapRecords(mapProjectId, ancestorId, excludeDescendants, relationshipName, relationshipValue,
                     mapProject.getSourceTerminology(),
                     mapProject.getSourceTerminologyVersion(), descendantPfs, Collections.<String> emptySet());
  
