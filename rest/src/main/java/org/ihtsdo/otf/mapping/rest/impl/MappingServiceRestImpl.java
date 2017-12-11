@@ -130,6 +130,7 @@ import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.BasicSessionCredentials;
+import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
@@ -4841,11 +4842,22 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       String olderInputFile1 = files.get(0);
       String newerInputFile2 = files.get(1);
       
-      BasicAWSCredentials awsCreds = new BasicAWSCredentials("***REMOVED***", "b/VIs/ITbRjZuwuZsmGHk1iFZrxfILGbQKgNxB0w");
-      AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
-          .withRegion("us-east-1")
-          .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-          .build();
+      AmazonS3 s3Client = null;
+      try {
+        s3Client = AmazonS3ClientBuilder.standard()
+            .withCredentials(new InstanceProfileCredentialsProvider(false))
+            .build();
+      } catch (Exception e) {
+        final Properties config = ConfigUtility.getConfigProperties();
+        final String accessKey = config.getProperty("aws.access.key");
+        final String secretAccessKey =
+            config.getProperty("aws.secret.access.key");
+        BasicAWSCredentials awsCreds =
+            new BasicAWSCredentials(accessKey, secretAccessKey);
+        s3Client = AmazonS3ClientBuilder.standard().withRegion("us-east-1")
+            .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+            .build();
+      }
      
       
       S3Object file1 = s3Client.getObject(
@@ -5281,12 +5293,22 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
       SearchResultList searchResults = new SearchResultListJpa();
 
-      BasicAWSCredentials awsCreds = new BasicAWSCredentials("***REMOVED***", "b/VIs/ITbRjZuwuZsmGHk1iFZrxfILGbQKgNxB0w");
-      AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
-          .withRegion("us-east-1")
-          .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-          .build();
-     
+      AmazonS3 s3Client = null;
+      try {
+        s3Client = AmazonS3ClientBuilder.standard()
+            .withCredentials(new InstanceProfileCredentialsProvider(false))
+            .build();
+      } catch (Exception e) {
+        final Properties config = ConfigUtility.getConfigProperties();
+        final String accessKey = config.getProperty("aws.access.key");
+        final String secretAccessKey =
+            config.getProperty("aws.secret.access.key");
+        BasicAWSCredentials awsCreds =
+            new BasicAWSCredentials(accessKey, secretAccessKey);
+        s3Client = AmazonS3ClientBuilder.standard().withRegion("us-east-1")
+            .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+            .build();
+      }
 
       ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
           .withBucketName("release-ihtsdo-prod-published");
