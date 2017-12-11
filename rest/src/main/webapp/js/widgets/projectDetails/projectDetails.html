@@ -1377,7 +1377,37 @@
 <uib-accordion-heading>
 <h5>Release Reports</h5>
 </uib-accordion-heading> 
-<button class="btn btn-xs btn-primary" ng-click="compareFiles()">Create Release Report</button>
+<div>
+  <form>
+  <table style="width: 100%" class="table pure-table">
+    <thead>
+      <tr>
+        <th style="width: 50%;">Initial File</th>
+        <th style="width: 50%;">Later File</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding: 5px;">
+          <select style="width: 500px;" id="compareFile1"
+            ng-options='file as (file.terminologyVersion + "  " + file.terminology + "  " + file.value) for file in amazons3Files'
+            ng-change="setFiles(selectedFile1, null)"
+            ng-model="selectedFile1"></select>
+        </td>
+
+        <td style="padding: 5px;">
+           <select style="width: 500px;" id="compareFile2"
+            ng-options='file as (file.terminologyVersion + "  " + file.terminology + "  " + file.value) for file in amazons3FilesPlusCurrent'
+            ng-change="setFiles(null, selectedFile2)"
+            ng-model="selectedFile2"></select>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  </form>
+  <button class="btn btn-xs btn-primary" ng-click="compareFiles()">Create Comparison Report</button>
+  <button class="btn btn-xs btn-primary" ng-click="prepareCurrentReleaseReport()">Update Current File</button>  
+</div>
 
 <uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
   first-text="&laquo;" last-text="&raquo;" direction-links="false"
@@ -1395,7 +1425,7 @@
   <thead>
     <tr>
       <th style="width: 50%;">Report Name</th>
-      <th style="width: 47%;">Creation Date</th>
+      <th style="width: 47%;">Last Modified</th>
       <th style="width: 3%;"></th>
     </tr>
   </thead>

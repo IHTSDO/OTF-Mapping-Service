@@ -7,9 +7,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.nio.channels.FileChannel;
@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.naming.AuthenticationException;
 import javax.ws.rs.Consumes;
@@ -125,6 +127,15 @@ import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
 import org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicSessionCredentials;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.ListObjectsRequest;
+import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -4237,15 +4248,16 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
   @Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/module/id/{moduleId}/process")
   @ApiOperation(value = "Process release for map project", notes = "Processes release and creates release files for map project")
   public void processReleaseForMapProject(
-    @ApiParam(value = "Module Id, e.g. 20170131", required = true) @PathParam("moduleId") String moduleId,
+    @ApiParam(value = "Module Id, e.g. 20170131", required = false) @PathParam("moduleId") String moduleId,
     @ApiParam(value = "Effective Time, e.g. 20170131", required = true) @PathParam("effectiveTime") String effectiveTime,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+    @ApiParam(value = "Current", required = false) @QueryParam("current") boolean current,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Mapping): /project/id/" + mapProjectId.toString()
             + "/release/" + effectiveTime + "/module/id/" + moduleId
-            + "/process");
+            + "/process " + current);
 
     String user = null;
     String project = "";
@@ -4257,19 +4269,33 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
           "process release", securityService);
 
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      
+      if (moduleId.equals("null") || moduleId.equals("")) {
+        moduleId = mapProject.getModuleId();
+        if (moduleId == null || moduleId.equals("")) {
+          throw new Exception("The module id must be set on the project details page.");
+        }
+      }
 
       // create release handler in test mode
       ReleaseHandler handler = new ReleaseHandlerJpa(true);
-      handler.setEffectiveTime(effectiveTime);
+      handler.setEffectiveTime(current ? "99999999" : effectiveTime);
       handler.setMapProject(mapProject);
       handler.setModuleId(moduleId);
       handler.setWriteSnapshot(true);
-      handler.setWriteDelta(true);
+      handler.setWriteActiveSnapshot(current ? false : true);
+      handler.setWriteDelta(current ? false : true);
 
       // compute output directory
       // NOTE: Use same directory as map principles for access via webapp
-      String outputDir =
-          this.getReleaseDirectoryPath(mapProject, effectiveTime);
+      String outputDir = "";
+      // if processing current/interim release for sake of file comparison,
+      // put in a directory called current
+      if (current) {
+        outputDir = this.getReleaseDirectoryPath(mapProject, "current");
+      } else {
+        outputDir = this.getReleaseDirectoryPath(mapProject, effectiveTime);
+      }
       handler.setOutputDir(outputDir);
 
       File file = new File(outputDir);
@@ -4776,20 +4802,25 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
   }
   
 
-  @GET
+  @POST
   @Path("/compare/files/{id:[0-9][0-9]*}")
   @ApiOperation(value = "Compare two map files", notes = "Returns the differences between two map files.", response = InputStream.class)
+  @Consumes({
+    MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
   @Produces("application/vnd.ms-excel")
   public InputStream compareMapFiles(
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+    @ApiParam(value = "File paths, in JSON or XML POST data", required = true) List<String> files,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MetadataServiceRest.class).info(
-        "RESTful call (Metadata): /terminologies");
+    Logger.getLogger(MappingServiceRest.class).info(
+        "RESTful call (Mapping): /compare/files" + mapProjectId + " " + files.get(0) + " " + files.get(1));
 
     String user = "";
     final MetadataService metadataService = new MetadataServiceJpa();
+    final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize
       user = authorizeApp(authToken, MapUserRole.VIEWER, "compare map files", securityService);
@@ -4797,28 +4828,77 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       /*String olderInputFile1 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170131Final\\der2_iisssccRefset_ExtendedMapSnapshot_INT_20170131.txt";
       String newerInputFile2 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Final\\der2_iisssccRefset_ExtendedMapSnapshot_INT_20170731.txt";
       */
-      /*String olderInputFile1 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Alpha\\xder2_sRefset_SimpleMapSnapshot_INT_20170731.txt";
-      String newerInputFile2 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20180131Alpha\\xder2_sRefset_SimpleMapSnapshot_INT_20180131.txt";
+      String olderInputFile1 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Alpha\\xder2_sRefset_SimpleMapSnapshot_INT_20170731.txt";
+      /*String newerInputFile2 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20180131Alpha\\xder2_sRefset_SimpleMapSnapshot_INT_20180131.txt";
       */
       /*String olderInputFile1 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Alpha\\xder2_sRefset_SimpleMapDelta_INT_20170731.txt";
       String newerInputFile2 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Beta\\xder2_sRefset_SimpleMapDelta_INT_20170731.txt";
       */
-      String olderInputFile1 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Alpha\\xder2_iisssccRefset_ExtendedMapDelta_INT_20170731.txt";
+      /*String olderInputFile1 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Alpha\\xder2_iisssccRefset_ExtendedMapDelta_INT_20170731.txt";
       String newerInputFile2 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Beta\\xder2_iisssccRefset_ExtendedMapDelta_INT_20170731.txt";
+*/
+      //String olderInputFile1 = files.get(0);
+      String newerInputFile2 = files.get(1);
+      
+      /*BasicSessionCredentials sessionCredentials = new BasicSessionCredentials(
+          "***REMOVED***",
+          "rkuudlNC94EjplmrhoHXXfKzZWdfWqYDmS+OH632",
+          "FQoDYXdzEJP//////////wEaDO4TqYk5iIj4y1ZgxSK3A4tAs+5vvmPhRzLozzm+eW2I2wlZDJaJToHkWuZgNIWgv3h0mN+I7YZ547cAynCR7Ketl74m88yKc49f9Cv1/aY/0/csBOtdJYTSvbBChrD+R4O5WP7ab2Gg6smKLk+Py56TwJzsS+3lhjShq9u64w2Uxt3BFbQM5nf4Lj4eV6kGQlfAt2SuxBIya9iGivkQQyGyYaJsJDn2uFwU8ZQpwzyyuM7O0/D2MTbaduQLIikoL4jqP4n1zf302meJ2cARUC1BKEJzzwRIzwHoEPso21GfdY9/7ZC1N1xw56Do9gxkmfqt5t7CIyJfZ/e1nsswFi+X0/5mdAd1cj6oIueigCUbPW7iYxzReug0fLxs0zDOXqArwiVnCil+HDgZXBczJml/Cb+NYVzuj85JIalod5y1jTzqfVN/+H/no0PfZ03KvzlsLqEWFfK4LU3n+zCUvf6qlwKRVFaDs5NDaSjnnzOcAJaJ/X7S5zeSSP287NxaAEqKKnw3074mgjGo3MUhRXJNjOOCDwDZ/uy6sfGOAazS6lMIoKO657EvW4nSY9cb+AU0YeLt3I+YB8mNEhEHwb1/LGp+/t4olvOl0QU=");
 
-      InputStream inputStream = null;
+      AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
+                               .withRegion("us-east-1")
+                               .withCredentials(new AWSStaticCredentialsProvider(sessionCredentials))
+                               .build();
+      
+      S3Object file1 = s3Client.getObject(
+          new GetObjectRequest("release-ihtsdo-prod-published", olderInputFile1));
+      InputStream objectData1 = file1.getObjectContent();*/
+      InputStream objectData1 = new FileInputStream(olderInputFile1);
+      
+      S3Object file2 = null;
+      InputStream objectData2 = null;
+      if (!newerInputFile2.contains("99999999")) {
+        /*s3Client.getObject(
+          new GetObjectRequest("release-ihtsdo-prod-published", newerInputFile2));
+          objectData2 = file2.getObjectContent();*/
+      } else {
+        MapProject mapProject = mappingService.getMapProject(mapProjectId);
+        final File projectDir = new File(this.getReleaseDirectoryPath(mapProject, "current"));
+        String currentReleaseFile = new File(projectDir, newerInputFile2).getAbsolutePath();
+        objectData2 = new FileInputStream(currentReleaseFile);
+      }
+      
+      //Process the objectData stream.
+      /*BufferedReader in1 =
+          new BufferedReader(new InputStreamReader(objectData1, "UTF-8"));
+      BufferedReader in2 =
+          new BufferedReader(new InputStreamReader(objectData2, "UTF-8"));*/
+      
+      InputStream reportInputStream = null;
       StringBuffer reportName = new StringBuffer();
       if (olderInputFile1.contains("Full") || newerInputFile2.contains("Full")) {
         throw new LocalException("Full files cannot be compared with this tool.");
       }
       if (olderInputFile1.contains("ExtendedMap") && newerInputFile2.contains("ExtendedMap")) {
-        inputStream = compareExtendedMapFiles(olderInputFile1, newerInputFile2);
-        reportName.append(olderInputFile1.substring(olderInputFile1.lastIndexOf("Extended"), olderInputFile1.lastIndexOf('.'))).append("_");
-        reportName.append(newerInputFile2.substring(newerInputFile2.lastIndexOf("Extended"), newerInputFile2.lastIndexOf('.'))).append(".xls");
+        reportInputStream = compareExtendedMapFiles(objectData1, objectData2);
+        reportName.append(olderInputFile1.substring(olderInputFile1.lastIndexOf("Extended"), olderInputFile1.lastIndexOf('.')));
+        if (olderInputFile1.toLowerCase().contains("alpha")) {reportName.append("_ALPHA");}
+        if (olderInputFile1.toLowerCase().contains("beta")) {reportName.append("_BETA");}
+        reportName.append("_");
+        reportName.append(newerInputFile2.substring(newerInputFile2.lastIndexOf("Extended"), newerInputFile2.lastIndexOf('.')));
+        if (newerInputFile2.toLowerCase().contains("alpha")) {reportName.append("_ALPHA");}
+        if (newerInputFile2.toLowerCase().contains("beta")) {reportName.append("_BETA");}
+        reportName.append(".xls");
       } else if (olderInputFile1.contains("SimpleMap") && newerInputFile2.contains("SimpleMap")) {
-        inputStream = compareSimpleMapFiles(olderInputFile1, newerInputFile2);
-        reportName.append(olderInputFile1.substring(olderInputFile1.lastIndexOf("Simple"), olderInputFile1.lastIndexOf('.'))).append("_");
-        reportName.append(newerInputFile2.substring(newerInputFile2.lastIndexOf("Simple"), newerInputFile2.lastIndexOf('.'))).append(".xls");
+        reportInputStream = compareSimpleMapFiles(objectData1, objectData2);
+        reportName.append(olderInputFile1.substring(olderInputFile1.lastIndexOf("Simple"), olderInputFile1.lastIndexOf('.')));
+        if (olderInputFile1.toLowerCase().contains("alpha")) {reportName.append("_ALPHA");}
+        if (olderInputFile1.toLowerCase().contains("beta")) {reportName.append("_BETA");}
+        reportName.append("_");
+        reportName.append(newerInputFile2.substring(newerInputFile2.lastIndexOf("Simple"), newerInputFile2.lastIndexOf('.')));
+        if (newerInputFile2.toLowerCase().contains("alpha")) {reportName.append("_ALPHA");}
+        if (newerInputFile2.toLowerCase().contains("beta")) {reportName.append("_BETA");}
+        reportName.append(".xls");
       } 
 
       // get destination directory for uploaded file
@@ -4827,16 +4907,20 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
           config.getProperty("map.principle.source.document.dir");
       final File dir = new File(docDir);
 
-      final File projectDir = new File(docDir, mapProjectId.toString());
+      final File projectDir = new File(docDir, mapProjectId.toString() + "/reports");
       projectDir.mkdir();
       
       final File file =
           new File(dir, mapProjectId + "/" + reportName.toString());
 
       // save the file to the server
-      saveFile(inputStream, file.getAbsolutePath());
+      saveFile(reportInputStream, file.getAbsolutePath());
       
-      return inputStream;
+
+      objectData1.close();
+      objectData2.close();
+      
+      return reportInputStream;
       
     } catch (Exception e) {
       handleException(e,
@@ -4848,7 +4932,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
   
-  private InputStream compareExtendedMapFiles(String inputFile1, String inputFile2) throws Exception {
+  private InputStream compareExtendedMapFiles(InputStream data1, InputStream data2) throws Exception {
     // map to list of records that have been updated (sorted by key)
     TreeMap<String, String> updatedList = new TreeMap<>();
     // map to list of records that are new in the second file
@@ -4859,10 +4943,15 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     Map<String, String> removedList = new LinkedHashMap<>();
     String line1, line2;
     
-    BufferedReader in1 =
+    /*BufferedReader in1 =
         new BufferedReader(new FileReader(new File(inputFile1)));
     final BufferedReader in2 =
-        new BufferedReader(new FileReader(new File(inputFile2)));
+        new BufferedReader(new FileReader(new File(inputFile2)));*/
+    BufferedReader in1 =
+        new BufferedReader(new InputStreamReader(data1, "UTF-8"));
+    BufferedReader in2 =
+        new BufferedReader(new InputStreamReader(data2, "UTF-8"));
+    
     
       int noChangeCount = 0;
       Map<String, String> key1Map = new HashMap<>();
@@ -4917,7 +5006,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       }
       
       in1.close();
-      in1 = new BufferedReader(new FileReader(new File(inputFile1)));
+      in1 = new BufferedReader(new InputStreamReader(data1, "UTF-8"));
       
       // determine records that were removed
       while ((line1 = in1.readLine()) != null) {
@@ -4949,7 +5038,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       return handler.exportExtendedFileComparisonReport(updatedList, newList, inactivatedList, removedList);
   }
   
-  private InputStream compareSimpleMapFiles(String inputFile1, String inputFile2) throws Exception {
+  private InputStream compareSimpleMapFiles(InputStream data1, InputStream data2) throws Exception {
     
     // map to list of records that have been updated (sorted by key)
     TreeMap<String, String> updatedList = new TreeMap<>();
@@ -4961,10 +5050,14 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     Map<String, String> removedList = new LinkedHashMap<>();
     String line1, line2;
   
-    BufferedReader in1 =
+    /*BufferedReader in1 =
         new BufferedReader(new FileReader(new File(inputFile1)));
     final BufferedReader in2 =
-        new BufferedReader(new FileReader(new File(inputFile2)));
+        new BufferedReader(new FileReader(new File(inputFile2)));*/
+    BufferedReader in1 =
+        new BufferedReader(new InputStreamReader(data1, "UTF-8"));
+    BufferedReader in2 =
+        new BufferedReader(new InputStreamReader(data2, "UTF-8"));
     
       int noChangeCount = 0;
       Map<String, String> key1Map = new HashMap<>();
@@ -5018,8 +5111,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
         }
       }
       
-      in1.close();
-      in1 = new BufferedReader(new FileReader(new File(inputFile1)));
+      in1.close();     
+      /*in1 = new BufferedReader(new InputStreamReader(data1, "UTF-8"));
       
       // determine records that were removed
       while ((line1 = in1.readLine()) != null) {
@@ -5032,7 +5125,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
         }
       }
       
-      in1.close();
+      in1.close();*/
       in2.close();
       
       // log statements
@@ -5078,7 +5171,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       final String docDir =
           config.getProperty("map.principle.source.document.dir");
 
-      final File projectDir = new File(docDir, mapProjectId.toString());
+      final File projectDir = new File(docDir, mapProjectId.toString() + "/reports");
       File[] reports = projectDir.listFiles();
       
       final SearchResultList searchResultList = new SearchResultListJpa();
@@ -5086,10 +5179,10 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
         SearchResult searchResult = new SearchResultJpa();
         searchResult.setValue(report.getName());
         BasicFileAttributes attributes = Files.readAttributes(report.toPath(), BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
-        FileTime creationTime = attributes.creationTime();
+        FileTime lastModifiedTime = attributes.lastModifiedTime();
         SimpleDateFormat df = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
-        String dateCreated = df.format(creationTime.toMillis());
-        searchResult.setValue2(dateCreated);
+        String lastModified = df.format(lastModifiedTime.toMillis());
+        searchResult.setValue2(lastModified);
         searchResultList.addSearchResult(searchResult);
       }
       return searchResultList;
@@ -5102,8 +5195,178 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       securityService.close();
     }
   }
- 
   
+  @Override
+  @GET
+  @Path("/current/release/{id:[0-9][0-9]*}")
+  @ApiOperation(value = "Get release file indicating current state for a given project", notes = "Get release file indicating current state for a given project.", response = SearchResultList.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public SearchResult getCurrentReleaseFile(
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(MappingServiceRestImpl.class)
+        .info("RESTful call (Mapping): /current/release/ " + mapProjectId);
+    String user = null;
+    final MappingService mappingService = new MappingServiceJpa();
+    try {
+      // authorize call
+      user = authorizeApp(authToken, MapUserRole.VIEWER, "get current release file",
+          securityService);
+
+      MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      final File projectDir = new File(this.getReleaseDirectoryPath(mapProject, "current"));
+      File[] releaseFiles = projectDir.listFiles();
+
+      SearchResult searchResult = new SearchResultJpa();
+      if (!projectDir.exists() && releaseFiles == null) {
+        return null;
+      }
+      for (File file : releaseFiles) {
+        if (!file.getName().contains("SimpleMap") && !file.getName().contains("ExtendedMap")){
+          continue;
+        }
+        BasicFileAttributes attributes = Files.readAttributes(file.toPath(), BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+        FileTime creationTime = attributes.creationTime();
+        SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+        String dateCreated = df.format(creationTime.toMillis());
+        // if this is the most recent, return this file
+        if (searchResult.getValue2() == null || 
+            dateCreated.compareTo(searchResult.getValue2()) > 0) {
+          searchResult.setValue(file.getName());
+          searchResult.setValue2(file.getName());
+          searchResult.setTerminologyVersion(dateCreated);
+          searchResult.setTerminology("current");
+        }
+      }
+      return searchResult;
+
+    } catch (Exception e) {
+      handleException(e, "trying to get current release file", user, "", "");
+      return null;
+    } finally {
+      mappingService.close();
+      securityService.close();
+    }
+  }
+ 
+  @Override
+  @GET
+  @Path("/amazons3/files/{id:[0-9][0-9]*}")
+  @ApiOperation(value = "Get list of files from AWS S3 bucket for a given project", notes = "Gets list of files from AWS S3 for a given project.", response = SearchResultList.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public SearchResultList getFileListFromAmazonS3(
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(MappingServiceRestImpl.class)
+        .info("RESTful call (Mapping):  /amazon3/files/" + mapProjectId);
+
+    final MappingService mappingService = new MappingServiceJpa();
+    String user = null;
+    try {
+      // authorize call
+      user = authorizeApp(authToken, MapUserRole.VIEWER,
+          "get concept authoring changes", securityService);
+
+      final MapProject mapProject =
+          mappingService.getMapProject(new Long(mapProjectId).longValue());
+      String destinationTerminology = mapProject.getDestinationTerminology();
+
+      SearchResultList searchResults = new SearchResultListJpa();
+
+      BasicSessionCredentials sessionCredentials = new BasicSessionCredentials(
+          "***REMOVED***", "Eoe5m+KXIT8NvzxTM/J0V1GoFAWQOj1B53hqq7uw",
+          "FQoDYXdzEN7//////////wEaDHGak3v1octsRUk71yK3A9cyrSC0Afi0CD8ZK31zkfaMxwPl+P29GHlk9Wc6INbDYT+Zw10GCoM/MJSd5IdgfyBq428EdQeL/seaKmCk9hXrv6wgF4x8oLW9I++6eGpFWtyv5gvW8ej41zqyEX4hq7MmF5OD3WlgLkFjtC1fvJVntmyBcw9zJ5D9Hvrssu7EVpeed1DWBhGQY9RfeduWIQS97zix08vM8Vp0basGV8bV3biJKTNmTXbWoePlYQSLZjsGdoLRCsJHwE0ReHMdBU4JS20oe8nycnCGv1evFPfSQsa53I8HTeaDeFZQg09iIls6LQBhqJ4a1R0p8240f1FB/zqNsm4uVOyk3ooMGFW90xDxmsOvh16fRgm8iSiVFyprxKRiCaEAbr3iGEiVLvxU18PIcrkM3KS8q2zcIPRf2947ZKl/HF7XeraRU/lqPXGwr7Pu9isxue+3hsDkySyFrRkkLYzKoCFZkvW0cZCPlx3OA2E2lPQccIuDhgXAuRwSfa371JJKSpDYoZxrw2AWbOj5u60Slhfc5/TexFPN0s1+qOXYafRrHViYWHHxrVPjKiYYrXC4w1Sa2ahoImlKp2c5+ZYox7y20QU=");
+      
+      AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
+          .withRegion("us-east-1")
+          .withCredentials(new AWSStaticCredentialsProvider(sessionCredentials))
+          .build();
+
+      ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
+          .withBucketName("release-ihtsdo-prod-published");
+      ObjectListing objectListing;
+
+      do {
+        objectListing = s3Client.listObjects(listObjectsRequest);
+      } while (objectListing.isTruncated());
+/*        for (S3ObjectSummary objectSummary : objectListing
+            .getObjectSummaries()) {
+          // write to file with e.g. a bufferedWriter
+          SearchResult result = new SearchResultJpa();
+          String fileName = objectSummary.getKey();
+          if (fileName.contains("international")
+              && (fileName.contains("ExtendedMap")
+                  || fileName.contains("SimpleMap"))
+              && !fileName.contains("Full") && !fileName.contains("backup")
+              && (fileName.toLowerCase()
+                  .contains(destinationTerminology.toLowerCase())
+                  || (destinationTerminology.contains("ICD10")
+                      && fileName.contains("SnomedCT_RF2")))) {
+            if (fileName.toLowerCase().contains("alpha")) {
+              result.setTerminology("ALPHA");
+            } else if (fileName.toLowerCase().contains("beta")) {
+              result.setTerminology("BETA");
+            } else {
+              result.setTerminology("FINAL");
+            }
+            Matcher m = Pattern.compile("[0-9]{8}").matcher(fileName);
+            while (m.find()) {
+              result.setTerminologyVersion(m.group());
+            }
+
+            result.setValue(fileName.substring(fileName.lastIndexOf('/')));
+            result.setValue2(fileName);
+            searchResults.addSearchResult(result);
+            System.out.println(
+                result.getTerminology() + "\t" + result.getTerminologyVersion()
+                    + "\t" + result.getValue() + "\t\t\t" + result.getValue2());
+          }
+        }
+        listObjectsRequest.setMarker(objectListing.getNextMarker());
+      } while (objectListing.isTruncated());
+
+      // sort files by release date
+      searchResults.sortBy(new Comparator<SearchResult>() {
+        @Override
+        public int compare(SearchResult o1, SearchResult o2) {
+          String releaseDate1 = o1.getTerminologyVersion();
+          String releaseDate2 = o2.getTerminologyVersion();
+          return releaseDate1.compareTo(releaseDate2);
+        }
+      });*/
+
+      S3Object object = s3Client
+          .getObject(new GetObjectRequest("release-ihtsdo-prod-published",
+              objectListing.getObjectSummaries().get(0).getKey()));
+      InputStream objectData = object.getObjectContent();
+      // Process the objectData stream.
+      BufferedReader in1 =
+          new BufferedReader(new InputStreamReader(objectData, "UTF-8"));
+      for (int i = 0; i< 5; i++) {
+        String line = in1.readLine();
+        System.out.println(line);
+      }
+      objectData.close();
+      
+      return searchResults;
+    } catch (Exception e) {
+      handleException(e, "trying to get files from amazon s3", user,
+          mapProjectId.toString(), "");
+    } finally {
+
+      mappingService.close();
+      securityService.close();
+    }
+    return null;
+  }
 
 //  /**
 //   * Reads an InputStream and returns its contents as a String. Also effects
