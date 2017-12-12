@@ -102,7 +102,6 @@ import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.rest.MappingServiceRest;
-import org.ihtsdo.otf.mapping.jpa.services.rest.MetadataServiceRest;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapEntry;
@@ -127,12 +126,9 @@ import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
 import org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
-import com.amazonaws.AmazonClientException;
-import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSCredentialsProviderChain;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.auth.BasicSessionCredentials;
 import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.regions.Regions;
@@ -459,12 +455,10 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     Logger.getLogger(getClass()).info("RESTful call PUT (Mapping): /clone "
         + mapProject.getId() + ", " + mapProject);
 
-    String user = null;
-
     final MappingService mappingService = new MappingServiceJpa();
     try {
     	// authorize call
-        user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+        authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
             "clone a map project", securityService);
 
       mappingService.setTransactionPerOperation(false);
@@ -4811,7 +4805,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
   @POST
   @Path("/compare/files/{id:[0-9][0-9]*}")
-  @ApiOperation(value = "Compare two map files", notes = "Returns the differences between two map files.", response = InputStream.class)
+  @ApiOperation(value = "Compares two map files", notes = "Compares two files and saves the comparison report to the file system.", response = InputStream.class)
   @Consumes({
     MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
@@ -4864,17 +4858,20 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
             .build();
       }
      
-      
+      // stream first file from aws
       S3Object file1 = s3Client.getObject(
           new GetObjectRequest("release-ihtsdo-prod-published", olderInputFile1));
       InputStream objectData1 = file1.getObjectContent();
       
+      // open second file either from aws or current release on file system
       S3Object file2 = null;
       InputStream objectData2 = null;
+      // stream second/later file from aws
       if (!newerInputFile2.contains("99999999")) {
         file2 = s3Client.getObject(
           new GetObjectRequest("release-ihtsdo-prod-published", newerInputFile2));
           objectData2 = file2.getObjectContent();
+      // comparing to current release file saved on file system
       } else {
         MapProject mapProject = mappingService.getMapProject(mapProjectId);
         final File projectDir = new File(this.getReleaseDirectoryPath(mapProject, "current"));
@@ -4888,6 +4885,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       if (olderInputFile1.contains("Full") || newerInputFile2.contains("Full")) {
         throw new LocalException("Full files cannot be compared with this tool.");
       }
+      
+      // compare extended map files and compose report name
       if (olderInputFile1.contains("ExtendedMap") && newerInputFile2.contains("ExtendedMap")) {
         reportInputStream = compareExtendedMapFiles(objectData1, objectData2);
         reportName.append(olderInputFile1.substring(olderInputFile1.lastIndexOf("Extended"), olderInputFile1.lastIndexOf('.')));
@@ -4898,6 +4897,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
         if (newerInputFile2.toLowerCase().contains("alpha")) {reportName.append("_ALPHA");}
         if (newerInputFile2.toLowerCase().contains("beta")) {reportName.append("_BETA");}
         reportName.append(".xls");
+        
+      // compare simple map files and compose report name
       } else if (olderInputFile1.contains("SimpleMap") && newerInputFile2.contains("SimpleMap")) {
         reportInputStream = compareSimpleMapFiles(objectData1, objectData2);
         reportName.append(olderInputFile1.substring(olderInputFile1.lastIndexOf("Simple"), olderInputFile1.lastIndexOf('.')));
@@ -4910,12 +4911,11 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
         reportName.append(".xls");
       } 
 
-      // get destination directory for uploaded file
-      final Properties config = ConfigUtility.getConfigProperties();
-      
+      // create destination directory for saved report
+      final Properties config = ConfigUtility.getConfigProperties();      
       final String docDir =
           config.getProperty("map.principle.source.document.dir");
-
+      
       final File projectDir = new File(docDir, mapProjectId.toString());
       if (!projectDir.exists()) {
         projectDir.mkdir();
@@ -4960,10 +4960,6 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     Map<String, String> removedList = new LinkedHashMap<>();
     String line1, line2;
     
-    /*BufferedReader in1 =
-        new BufferedReader(new FileReader(new File(inputFile1)));
-    final BufferedReader in2 =
-        new BufferedReader(new FileReader(new File(inputFile2)));*/
     BufferedReader in1 =
         new BufferedReader(new InputStreamReader(data1, "UTF-8"));
     in1.mark(100000000);
@@ -5037,15 +5033,15 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       }
       
       // log statements
-      Logger.getLogger(MetadataServiceRest.class).info(
+      Logger.getLogger(MappingServiceRest.class).info(
           "new List count:" + newList.size());
-      Logger.getLogger(MetadataServiceRest.class).info(
+      Logger.getLogger(MappingServiceRest.class).info(
           "inactivated List count:" + inactivatedList.size());
-      Logger.getLogger(MetadataServiceRest.class).info(
+      Logger.getLogger(MappingServiceRest.class).info(
           "updated List count:" + updatedList.size());
-      Logger.getLogger(MetadataServiceRest.class).info(
+      Logger.getLogger(MappingServiceRest.class).info(
           "removed List count:" + removedList.size());
-      Logger.getLogger(MetadataServiceRest.class).info(
+      Logger.getLogger(MappingServiceRest.class).info(
           "no change count:" + noChangeCount);
       
       in1.close();
@@ -5067,10 +5063,6 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     Map<String, String> removedList = new LinkedHashMap<>();
     String line1, line2;
   
-    /*BufferedReader in1 =
-        new BufferedReader(new FileReader(new File(inputFile1)));
-    final BufferedReader in2 =
-        new BufferedReader(new FileReader(new File(inputFile2)));*/
     BufferedReader in1 =
         new BufferedReader(new InputStreamReader(data1, "UTF-8"));
     in1.mark(100000000);
@@ -5146,15 +5138,15 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       in2.close();
       
       // log statements
-      Logger.getLogger(MetadataServiceRest.class).info(
+      Logger.getLogger(MappingServiceRest.class).info(
           "new List count:" + newList.size());
-      Logger.getLogger(MetadataServiceRest.class).info(
+      Logger.getLogger(MappingServiceRest.class).info(
               "inactivated List count:" + inactivatedList.size());
-      Logger.getLogger(MetadataServiceRest.class).info(
+      Logger.getLogger(MappingServiceRest.class).info(
           "updated List count:" + updatedList.size());
-      Logger.getLogger(MetadataServiceRest.class).info(
+      Logger.getLogger(MappingServiceRest.class).info(
           "removed List count:" + removedList.size());
-      Logger.getLogger(MetadataServiceRest.class).info(
+      Logger.getLogger(MappingServiceRest.class).info(
           "no change count:" + noChangeCount);
       
       // produce Excel report file
@@ -5247,6 +5239,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
         return null;
       }
       for (File file : releaseFiles) {
+        // filter out human readable and any other release by-products
         if (!file.getName().contains("SimpleMap") && !file.getName().contains("ExtendedMap")){
           continue;
         }
@@ -5306,6 +5299,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
           .withBucketName("release-ihtsdo-prod-published");
       ObjectListing objectListing;
+      final Properties config = ConfigUtility.getConfigProperties();
       
       try {
         AWSCredentialsProviderChain providers = new AWSCredentialsProviderChain(
@@ -5324,7 +5318,6 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       } catch (Exception e) {
         Logger.getLogger(MappingServiceRestImpl.class)
         .info("amazon exception:" + e.getMessage() + e.toString());
-        final Properties config = ConfigUtility.getConfigProperties();
         final String accessKey = config.getProperty("aws.access.key");
         final String secretAccessKey =
             config.getProperty("aws.secret.access.key");
@@ -5345,7 +5338,9 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
           // write to file with e.g. a bufferedWriter
           SearchResult result = new SearchResultJpa();
           String fileName = objectSummary.getKey();
-          if (fileName.contains("international")
+          // prefix to differentiate international from U.S. files
+          final String awsFilePrefix = config.getProperty("aws.file.prefix");
+          if (fileName.startsWith(awsFilePrefix)
               && (fileName.contains("ExtendedMap")
                   || fileName.contains("SimpleMap"))
               && !fileName.contains("Full") && !fileName.contains("backup")
@@ -5385,19 +5380,6 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
           return releaseDate2.compareTo(releaseDate1);
         }
       });
-
-      /*S3Object object = s3Client
-          .getObject(new GetObjectRequest("release-ihtsdo-prod-published",
-              objectListing.getObjectSummaries().get(0).getKey()));
-      InputStream objectData = object.getObjectContent();
-      // Process the objectData stream.
-      BufferedReader in1 =
-          new BufferedReader(new InputStreamReader(objectData, "UTF-8"));
-      for (int i = 0; i< 5; i++) {
-        String line = in1.readLine();
-        System.out.println(line);
-      }
-      objectData.close();*/
       
       return searchResults;
     } catch (Exception e) {
