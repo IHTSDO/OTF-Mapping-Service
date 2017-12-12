@@ -316,6 +316,7 @@
                   <workflowStatus>${workflow.status}</workflowStatus>
                   <memberFlag>${member.flag}</memberFlag>
                   <recordFlag>${record.flag}</recordFlag>
+                  <refsetId>${refset.id}</refsetId>
                 </configuration>
               </execution>
             </executions>
