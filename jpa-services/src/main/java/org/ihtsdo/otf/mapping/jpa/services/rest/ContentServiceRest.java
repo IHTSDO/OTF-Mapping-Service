@@ -145,15 +145,16 @@ public interface ContentServiceRest {
 
 	/**
 	 * Loads unpublished complex maps.
-	 * 
+	 *
 	 * @param inputFile The input file.
 	 * @param memberFlag The members flag.
 	 * @param recordFlag The records flag.
+	 * @param refsetId the refset id
 	 * @param workflowStatus The workflow status to assign to created map records.
 	 * @param authToken The auth token
 	 * @throws Exception The execution exception
 	 */
-	void loadMapRecordRf2ComplexMap(String inputFile, Boolean memberFlag, Boolean recordFlag,
+	void loadMapRecordRf2ComplexMap(String inputFile, Boolean memberFlag, Boolean recordFlag, String refsetId,
 			String workflowStatus, String authToken) throws Exception;
 	
 	/**

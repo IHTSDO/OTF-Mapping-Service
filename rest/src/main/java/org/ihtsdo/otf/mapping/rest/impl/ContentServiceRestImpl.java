@@ -602,12 +602,13 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 			@ApiParam(value = "RF2 input file", required = true) String inputFile,
 			@ApiParam(value = "Member flag", required = true) @QueryParam("memberFlag") Boolean memeberFlag,
 			@ApiParam(value = "Record flag", required = true) @QueryParam("recordFlag") Boolean recordFlag,
+            @ApiParam(value = "Refset id", required = false) @QueryParam("refsetId") String refsetId,
 			@ApiParam(value = "Workflow status", required = true) @QueryParam("workflowStatus") String workflowStatus,
 			@ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
 			throws Exception {
 
 		Logger.getLogger(getClass())
-				.info("RESTful call (Content): /map/record/");
+				.info("RESTful call (Content): /map/record/rf2/complex");
 
 		// Track system level information
 		long startTimeOrig = System.nanoTime();
@@ -616,7 +617,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 				securityService);
 
 		try (final MapRecordRf2ComplexMapLoaderAlgorithm algo = new MapRecordRf2ComplexMapLoaderAlgorithm(
-				inputFile, memeberFlag, recordFlag, workflowStatus);) {
+				inputFile, memeberFlag, recordFlag, refsetId, workflowStatus);) {
 
 			algo.compute();
 
