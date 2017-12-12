@@ -8,6 +8,7 @@ import org.ihtsdo.otf.mapping.helpers.FeedbackConversationList;
 import org.ihtsdo.otf.mapping.helpers.FeedbackConversationListJpa;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
+import org.ihtsdo.otf.mapping.helpers.TrackingRecordList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa;
 import org.ihtsdo.otf.mapping.jpa.FeedbackJpa;
@@ -15,6 +16,12 @@ import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.model.FeedbackConversation;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Interface WorkflowServiceRest.
+ *
+ * @author ${author}
+ */
 public interface WorkflowServiceRest {
 
 	/**
@@ -68,10 +75,34 @@ public interface WorkflowServiceRest {
 	SearchResultList findAvailableConflicts(Long mapProjectId, String userName, String query,
 			PfsParameterJpa pfsParameter, String authToken) throws Exception;
 
+	/**
+	 * Removes the feedback conversation.
+	 *
+	 * @param feedbackConversation the feedback conversation
+	 * @param authToken the auth token
+	 * @throws Exception the exception
+	 */
 	void removeFeedbackConversation(FeedbackConversationJpa feedbackConversation, String authToken) throws Exception;
 
+	/**
+	 * Removes the feedback.
+	 *
+	 * @param feedback the feedback
+	 * @param authToken the auth token
+	 * @throws Exception the exception
+	 */
 	void removeFeedback(FeedbackJpa feedback, String authToken) throws Exception;
 
+	/**
+	 * Returns the tracking records for map project.
+	 *
+	 * @param mapProjectId the map project id
+	 * @param authToken the auth token
+	 * @return the tracking records for map project
+	 * @throws Exception the exception
+	 */
+	public TrackingRecordList getTrackingRecordsForMapProject(Long mapProjectId, String authToken) throws Exception;	
+	
 	/**
 	   * Finds assigned conflicts for the specified map project and user.
 	   *

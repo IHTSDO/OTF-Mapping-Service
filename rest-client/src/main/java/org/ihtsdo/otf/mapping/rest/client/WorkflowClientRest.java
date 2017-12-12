@@ -11,6 +11,7 @@ import org.ihtsdo.otf.mapping.helpers.FeedbackConversationList;
 import org.ihtsdo.otf.mapping.helpers.FeedbackConversationListJpa;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
+import org.ihtsdo.otf.mapping.helpers.TrackingRecordList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa;
 import org.ihtsdo.otf.mapping.jpa.FeedbackJpa;
@@ -64,6 +65,13 @@ public class WorkflowClientRest extends RootClientRest implements WorkflowServic
 		// TODO Auto-generated method stub
 		
 	}
+	
+	@Override
+	public TrackingRecordList getTrackingRecordsForMapProject(Long mapProjectId, String authToken) throws Exception{
+      // TODO Auto-generated method stub
+	  return null;
+	}
+
 
 	@Override
 	public SearchResultList findAssignedConflicts(Long mapProjectId, String userName, String query,
