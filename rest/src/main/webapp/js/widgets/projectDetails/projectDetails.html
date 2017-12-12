@@ -1271,7 +1271,7 @@
   ng-show="currentRole == 'Administrator' || currentRole == 'Lead'">
 <uib-accordion-heading>
 <h5>Release Handling</h5>
-</uib-accordion-heading> <!-- TODO Add compute workflow button -->
+</uib-accordion-heading>
 <div class="row">
 
   <div class="col-md-6">
@@ -1285,6 +1285,52 @@
         </td>
         <td>Recompute workflow. Provided to check for available
           work prior to running release.</td>
+      </tr>
+      <tr>
+        <td>
+          <button class="btn btn-primary btn-xs"
+            ng-click="checkCompletion()">Check Completion</button>
+        </td>
+        <td>Checks that all in-scope records are ready for publication.<br>
+            NOTE: if above report runs clean, ready to clone to release server.</td>
+      </tr>
+      <tr>
+        <td>
+          <button class="btn btn-primary btn-xs"
+            ng-click="startEditingCycle()">Start Editing Cycle</button>
+        </td>
+        <td>Sets the editing cycle start date for the project to
+          today's date. Current value:
+          {{focusProject.editingCycleBeginDate | date:'short'}}</td>
+      </tr>   
+      <tr style="border-bottom:3px solid black"><td colspan="100%"></td></tr>      
+      <tr>
+        <td colspan="100%">
+        Current source = {{focusProject.sourceTerminology}}, {{focusProject.sourceTerminologyVersion}}
+        <br>
+        Current destination = {{focusProject.destinationTerminology}}, {{focusProject.destinationTerminologyVersion}}        
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <button 
+            class="btn btn-primary btn-xs" ng-click="loadSourceTerminology">Load {{focusProject.sourceTerminology}}</button>
+        </td>
+        <td>Load appropriate {{focusProject.sourceTerminology}} version and set project to it.
+        <br>
+          <select  style="width:100%"
+            ng-model="sourceTerminologyToLoad"
+            ng-options="item for item in sourceTerminologyVersions">
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <button
+            class="btn btn-primary btn-xs" ng-click="loadRefsetMembers()">Load Refset Members</button>
+        </td>
+        <td>Load last-release reset members.
+        </td>
       </tr>
       <tr>
         <td>
@@ -1303,6 +1349,7 @@
         <td>Creates release files. Requires effective time and
           module id.</td>
       </tr>
+      <tr style="border-bottom:3px solid black"><td colspan="100%"></td></tr>            
       <tr>
         <td>
           <button ng-disabled="!release.effectiveTime"
@@ -1325,15 +1372,6 @@
           present on server. <br>
         <strong style="color: red">Cannot be undone.</strong>
         </td>
-      </tr>
-      <tr>
-        <td>
-          <button class="btn btn-primary btn-xs"
-            ng-click="startEditingCycle()">Start Editing Cycle</button>
-        </td>
-        <td>Sets the editing cycle start date for the project to
-          today's date. Current value:
-          {{focusProject.editingCycleBeginDate | date:'short'}}</td>
       </tr>
     </table>
 
@@ -1366,6 +1404,19 @@
       <li>Reports generated from "Preview Finish" are available on
         the dashboard under "Release Finalization QA"</li>
     </ul>
+    
+    <br>
+  
+    <h4>Releases</h4>
+    <select style="width:95%;"
+        ng-model="selectedProjectReleaseFile"
+          ng-options="item for item in projectReleaseFiles">
+          </select>
+    <i
+    style="margin-left: 5px; margin-right: 10px;"
+    ng-click="downloadReleaseFile()" class="noul glyphicon glyphicon-download"
+    title="Download selected release file."></i>
+    
   </div>
 </div>
 
