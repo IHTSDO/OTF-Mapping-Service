@@ -129,10 +129,13 @@ import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.auth.AWSCredentialsProviderChain;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.BasicSessionCredentials;
 import com.amazonaws.auth.InstanceProfileCredentialsProvider;
+import com.amazonaws.auth.profile.ProfileCredentialsProvider;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
@@ -5305,9 +5308,11 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       ObjectListing objectListing;
       
       try {
-        s3Client = AmazonS3ClientBuilder.standard().withRegion("us-east-1")
-            .withCredentials(InstanceProfileCredentialsProvider.getInstance())           
-            .build();
+        AWSCredentialsProviderChain providers = new AWSCredentialsProviderChain(
+            new InstanceProfileCredentialsProvider(true),
+            new ProfileCredentialsProvider());
+        s3Client = AmazonS3ClientBuilder.standard()
+            .withRegion(Regions.US_EAST_1).withCredentials(providers).build();
         do {
           objectListing = s3Client.listObjects(listObjectsRequest);
           for (S3ObjectSummary objectSummary : objectListing
@@ -5325,7 +5330,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
             config.getProperty("aws.secret.access.key");
         BasicAWSCredentials awsCreds =
             new BasicAWSCredentials(accessKey, secretAccessKey);
-        s3Client = AmazonS3ClientBuilder.standard().withRegion("us-east-1")
+        s3Client = AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_1)
             .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
             .build();
       }
