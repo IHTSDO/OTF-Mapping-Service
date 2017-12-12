@@ -922,9 +922,34 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       	  }
       }
       
+      // validate that the selected files can be compared to each other
+      $scope.validateFiles = function() {  	  
+    	  if ($scope.fileArray[0].indexof('Extended') > 0 && $scope.fileArray[1].indexof('Extended') < 0) {
+              window.alert("The selected files must both be Extended Maps or must both be Simple Maps.");
+              return false;
+    	  }
+    	  if ($scope.fileArray[0].indexof('Simple') > 0 && $scope.fileArray[1].indexof('Simple') < 0) {
+              window.alert("The selected files must both be Extended Maps or must both be Simple Maps.");
+              return false;
+    	  }
+    	  if ($scope.fileArray[0].indexof('Delta') > 0 && $scope.fileArray[1].indexof('Delta') < 0) {
+              window.alert("The selected files must both be Delta Maps or must both be Snapshot Maps.");
+              return false;
+    	  }
+    	  if ($scope.fileArray[0].indexof('Snapshot') > 0 && $scope.fileArray[1].indexof('Snapshot') < 0) {
+              window.alert("The selected files must both be Delta Maps or must both be Snapshot Maps.");
+              return false;
+    	  }
+    	  return true;
+      }
+      
       // call rest service to compare files in fileArray and return an Excel report of the differences
       $scope.compareFiles = function() {
           
+    	  if (!$scope.validateFiles()) {
+    		  return;
+    	  }
+    	  
           $rootScope.glassPane++;
           $http({
             url : root_mapping + 'compare/files/' + $scope.focusProject.id,
