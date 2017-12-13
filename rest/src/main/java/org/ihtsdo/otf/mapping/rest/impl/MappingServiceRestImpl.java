@@ -5430,17 +5430,18 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
    }
 
    
-   
-   ObjectListing listing = s3Client.listObjects( bucketName );
-   Logger.getLogger(MappingServiceRestImpl.class).info("CCCC");
+   ObjectListing listing = null;
+   try {
+     listing = s3Client.listObjects( bucketName );
+     Logger.getLogger(MappingServiceRestImpl.class).info("CCC");
+   } catch (Exception e) {
+     Logger.getLogger(MappingServiceRestImpl.class).info("Exception for CCC with msg: " + e.getMessage());
+     return;
+   }
    
    List<S3ObjectSummary> summaries = listing.getObjectSummaries();
-/*
-   while (listing.isTruncated()) {
-      listing = s3Client.listNextBatchOfObjects (listing);
-      summaries.addAll (listing.getObjectSummaries());
-   }
-*/   System.out.println("DDD with " + summaries.size());
+
+   System.out.println("DDD with " + summaries.size());
 
   int i = 1;
   for (S3ObjectSummary sum : summaries) {
