@@ -5409,12 +5409,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     String bucketName = "release-ihtsdo-dev-published";
    String key = "international/SRS_SNOMEDCT_Release_INT_20170731/SRS_SNOMEDCT_Release_INT_20170731/Readme_en_20170731.txt";
 
-   System.out.println("AAA");
+   Logger.getLogger(MappingServiceRestImpl.class).info("AAA");
    
    AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_1)
        .withCredentials(new InstanceProfileCredentialsProvider(false)).build();
    
-   System.out.println("BBB");
+   Logger.getLogger(MappingServiceRestImpl.class).info("BBB");
    
    Bucket foundBucket = null;
    if (s3Client.doesBucketExist(bucketName)) {
@@ -5429,7 +5429,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
        throw new Exception("Bucket not found");
    }
 
-   System.out.println("CCC with foundBucket: " + foundBucket);
+   Logger.getLogger(MappingServiceRestImpl.class).info("CCC with foundBucket: " + foundBucket);
    
    
    ObjectListing listing = s3Client.listObjects( bucketName );
