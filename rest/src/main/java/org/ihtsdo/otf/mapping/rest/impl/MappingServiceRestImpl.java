@@ -30,8 +30,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.naming.AuthenticationException;
 import javax.ws.rs.Consumes;
@@ -126,16 +124,16 @@ import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
 import org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
-import com.amazonaws.auth.AWSCredentialsProviderChain;
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.InstanceProfileCredentialsProvider;
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
@@ -5278,9 +5276,22 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
+    /* AAAA 
+    InstanceProfileCredentialsProvider creds = new InstanceProfileCredentialsProvider(false);
+    
+    AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard()
+        .withCredentials(creds);
+    
 
+    AmazonS3 s3 = builder.build();
+    
+    */
+
+    callTestMethod();
+
+/*
     Logger.getLogger(MappingServiceRestImpl.class)
-        .info("RESTful call (Mapping):  /amazon3/files/" + mapProjectId);
+        .info("RESTful call (Mapping):  /amazons3/files/" + mapProjectId);
 
     final MappingService mappingService = new MappingServiceJpa();
     String user = null;
@@ -5390,8 +5401,58 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       mappingService.close();
       securityService.close();
     }
+    */
     return null;
   }
+
+  private void callTestMethod() throws Exception {
+    String bucketName = "release-ihtsdo-dev-published";
+   String key = "international/SRS_SNOMEDCT_Release_INT_20170731/SRS_SNOMEDCT_Release_INT_20170731/Readme_en_20170731.txt";
+
+   System.out.println("AAA");
+   
+   AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_1)
+       .withCredentials(new InstanceProfileCredentialsProvider(false)).build();
+   
+   System.out.println("BBB");
+   
+   Bucket foundBucket = null;
+   if (s3Client.doesBucketExist(bucketName)) {
+       System.out.format("Bucket %s already exists.\n", bucketName);
+       List<Bucket> buckets = s3Client.listBuckets();
+       for (Bucket b : buckets) {
+           if (b.getName().equals(bucketName)) {
+             foundBucket = b;
+           }
+       }
+   } else {
+       throw new Exception("Bucket not found");
+   }
+
+   System.out.println("CCC with foundBucket: " + foundBucket);
+   
+   
+   ObjectListing listing = s3Client.listObjects( bucketName );
+   List<S3ObjectSummary> summaries = listing.getObjectSummaries();
+/*
+   while (listing.isTruncated()) {
+      listing = s3Client.listNextBatchOfObjects (listing);
+      summaries.addAll (listing.getObjectSummaries());
+   }
+*/   System.out.println("DDD with " + summaries.size());
+
+/*   try {
+     System.out.println("Downloading an object");
+     S3Object s3object =
+         s3Client.getObject(new GetObjectRequest(bucketName, key));
+   } catch (AmazonServiceException ase) {
+     System.err.println("Exception was thrown by the service"
+         + ase.getMessage() + ase.toString());
+   } catch (AmazonClientException ace) {
+     System.err.println("Exception was thrown by the client" + ace.getMessage()
+         + ace.toString());
+   }
+*/  }
 
 //  /**
 //   * Reads an InputStream and returns its contents as a String. Also effects
