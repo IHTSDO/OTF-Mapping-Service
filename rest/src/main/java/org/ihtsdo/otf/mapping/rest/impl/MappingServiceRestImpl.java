@@ -5417,8 +5417,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
    Logger.getLogger(MappingServiceRestImpl.class).info("BBB");
    
    Bucket foundBucket = null;
-   if (s3Client.doesBucketExist(bucketName)) {
-       System.out.format("Bucket %s already exists.\n", bucketName);
+   if (!s3Client.doesBucketExist(bucketName)) {
+     Logger.getLogger(MappingServiceRestImpl.class).info("Bucket " + bucketName + " DOES NOT exist.");
        List<Bucket> buckets = s3Client.listBuckets();
        for (Bucket b : buckets) {
            if (b.getName().equals(bucketName)) {
@@ -5426,13 +5426,14 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
            }
        }
    } else {
-       throw new Exception("Bucket not found");
+     Logger.getLogger(MappingServiceRestImpl.class).info("Bucket " + bucketName + " already exists.");
    }
 
-   Logger.getLogger(MappingServiceRestImpl.class).info("CCC with foundBucket: " + foundBucket);
    
    
    ObjectListing listing = s3Client.listObjects( bucketName );
+   Logger.getLogger(MappingServiceRestImpl.class).info("CCCC");
+   
    List<S3ObjectSummary> summaries = listing.getObjectSummaries();
 /*
    while (listing.isTruncated()) {
@@ -5440,6 +5441,11 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       summaries.addAll (listing.getObjectSummaries());
    }
 */   System.out.println("DDD with " + summaries.size());
+
+  int i = 1;
+  for (S3ObjectSummary sum : summaries) {
+    Logger.getLogger(MappingServiceRestImpl.class).info("Summary #" + i++ + " with: " + sum.getKey());
+  }
 
 /*   try {
      System.out.println("Downloading an object");
