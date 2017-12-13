@@ -5406,7 +5406,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
   }
 
   private void callTestMethod() throws Exception {
-    String bucketName = "release-ihtsdo-dev-published";
+    String bucketName = "release-ihtsdo-prod-published";
    String key = "international/SRS_SNOMEDCT_Release_INT_20170731/SRS_SNOMEDCT_Release_INT_20170731/Readme_en_20170731.txt";
 
    Logger.getLogger(MappingServiceRestImpl.class).info("AAA");
@@ -5414,34 +5414,29 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
    AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_1)
        .withCredentials(new InstanceProfileCredentialsProvider(false)).build();
    
-   Logger.getLogger(MappingServiceRestImpl.class).info("BBB");
-   
-   Bucket foundBucket = null;
+   Logger.getLogger(MappingServiceRestImpl.class).info("BBB1");
+   List<Bucket> buckets = s3Client.listBuckets();
+   Logger.getLogger(MappingServiceRestImpl.class).info("BBB2");
+   for (Bucket b : buckets) {
+     Logger.getLogger(MappingServiceRestImpl.class).info("BBB3 with " + b.getName());
+   }
+   Logger.getLogger(MappingServiceRestImpl.class).info("BBB4");
+
+
    if (!s3Client.doesBucketExist(bucketName)) {
-     Logger.getLogger(MappingServiceRestImpl.class).info("Bucket " + bucketName + " DOES NOT exist.");
-       List<Bucket> buckets = s3Client.listBuckets();
-       for (Bucket b : buckets) {
-           if (b.getName().equals(bucketName)) {
-             foundBucket = b;
-           }
-       }
+     Logger.getLogger(MappingServiceRestImpl.class).info("CCC Bucket " + bucketName + " DOES NOT exist.");
    } else {
-     Logger.getLogger(MappingServiceRestImpl.class).info("Bucket " + bucketName + " already exists.");
+     Logger.getLogger(MappingServiceRestImpl.class).info("CCC Bucket " + bucketName + " already exists.");
    }
 
    
-   ObjectListing listing = null;
-   try {
-     listing = s3Client.listObjects( bucketName );
-     Logger.getLogger(MappingServiceRestImpl.class).info("CCC");
-   } catch (Exception e) {
-     Logger.getLogger(MappingServiceRestImpl.class).info("Exception for CCC with msg: " + e.getMessage());
-     return;
-   }
+   
+   ObjectListing listing = s3Client.listObjects( bucketName );
+   Logger.getLogger(MappingServiceRestImpl.class).info("DDD");
    
    List<S3ObjectSummary> summaries = listing.getObjectSummaries();
 
-   System.out.println("DDD with " + summaries.size());
+   System.out.println("EEE with " + summaries.size());
 
   int i = 1;
   for (S3ObjectSummary sum : summaries) {
