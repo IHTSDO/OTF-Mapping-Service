@@ -1863,6 +1863,34 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
               response.config);
           });
       }
+      
+      // Check completion (i.e. no tracking records present for project)
+      // @Path("/project/id/{id:[0-9][0-9]*}/trackingRecords")
+      $scope.checkCompletion = function() {
+        $rootScope.glassPane++;
+        $http({
+          url : root_workflow + 'project/id/' + $scope.focusProject.id + '/trackingRecords',
+          dataType : 'json',
+          method : 'GET',
+          headers : {
+            'Content-Type' : 'application/json'
+          }
+        }).then(
+          function(data) {
+            $rootScope.glassPane--;
+              if(data.data.count == 0){
+                window.alert('All work is completed');
+              }
+              else{
+                window.alert('There are ' + data.data.count + ' in-scope concepts that are not ready for publication.');
+              }
+          },
+          function(response) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(response.data, response.status, response.headers,
+              response.config);
+          });
+      }      
 
       
       // Open modal to display authoring history for concept
