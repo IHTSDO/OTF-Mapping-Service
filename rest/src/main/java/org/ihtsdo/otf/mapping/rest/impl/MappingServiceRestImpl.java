@@ -5311,16 +5311,14 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
 
     // List All Files on Bucket "release-ihtsdo-prod-published"
-    ObjectListing listing = s3Client.listObjects(bucketName);
+    ObjectListing listing = s3Client.listObjects(bucketName, "international/");
     List<S3ObjectSummary> summaries = listing.getObjectSummaries();
     
     System.out.println("CCC start with " + summaries.size());
     int i = 1;
     for (S3ObjectSummary sum : summaries) {
-      if (sum.getKey().startsWith("international")) {
         Logger.getLogger(MappingServiceRestImpl.class)
           .info("Summary #" + i++ + " with: " + sum.getKey());
-      }
     }
     Logger.getLogger(MappingServiceRestImpl.class).info("CCC end");
 
