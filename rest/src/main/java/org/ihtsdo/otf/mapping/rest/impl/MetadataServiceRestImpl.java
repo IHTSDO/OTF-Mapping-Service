@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.rest.impl;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +21,7 @@ import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.rest.MetadataServiceRest;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -33,7 +35,8 @@ import io.swagger.annotations.ApiParam;
 @Produces({
     MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 })
-public class MetadataServiceRestImpl extends RootServiceRestImpl implements MetadataServiceRest {
+public class MetadataServiceRestImpl extends RootServiceRestImpl
+    implements MetadataServiceRest {
 
   /** The security service. */
   private SecurityService securityService;
@@ -47,8 +50,12 @@ public class MetadataServiceRestImpl extends RootServiceRestImpl implements Meta
     securityService = new SecurityServiceJpa();
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MetadataServiceRest#getMetadata(java.lang.String, java.lang.String, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MetadataServiceRest#getMetadata(java.lang.
+   * String, java.lang.String, java.lang.String)
    */
   @Override
   @GET
@@ -70,9 +77,8 @@ public class MetadataServiceRestImpl extends RootServiceRestImpl implements Meta
     final MetadataService metadataService = new MetadataServiceJpa();
     try {
       // authorize
-      user =
-          authorizeApp(authToken, MapUserRole.VIEWER, "get metadata",
-              securityService);
+      user = authorizeApp(authToken, MapUserRole.VIEWER, "get metadata",
+          securityService);
 
       // call jpa service and get complex map return type
       final Map<String, Map<String, String>> mapOfMaps =
@@ -89,9 +95,8 @@ public class MetadataServiceRestImpl extends RootServiceRestImpl implements Meta
         keyValuePairList.setName(metadataType);
         for (final Map.Entry<String, String> pairEntry : metadataPairs
             .entrySet()) {
-          final KeyValuePair keyValuePair =
-              new KeyValuePair(pairEntry.getKey().toString(),
-                  pairEntry.getValue());
+          final KeyValuePair keyValuePair = new KeyValuePair(
+              pairEntry.getKey().toString(), pairEntry.getValue());
           keyValuePairList.addKeyValuePair(keyValuePair);
         }
         keyValuePairLists.addKeyValuePairList(keyValuePairList);
@@ -106,8 +111,12 @@ public class MetadataServiceRestImpl extends RootServiceRestImpl implements Meta
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MetadataServiceRest#getAllMetadata(java.lang.String, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MetadataServiceRest#getAllMetadata(java.
+   * lang.String, java.lang.String)
    */
   @Override
   @GET
@@ -121,16 +130,15 @@ public class MetadataServiceRestImpl extends RootServiceRestImpl implements Meta
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MetadataServiceRestImpl.class).info(
-        "RESTful call (Metadata): /all/" + terminology);
+    Logger.getLogger(MetadataServiceRestImpl.class)
+        .info("RESTful call (Metadata): /all/" + terminology);
 
     String user = "";
     final MetadataService metadataService = new MetadataServiceJpa();
     try {
       // authorize
-      user =
-          authorizeApp(authToken, MapUserRole.VIEWER, "get all metadata",
-              securityService);
+      user = authorizeApp(authToken, MapUserRole.VIEWER, "get all metadata",
+          securityService);
 
       final String version = metadataService.getLatestVersion(terminology);
       return getMetadata(terminology, version, authToken);
@@ -144,8 +152,11 @@ public class MetadataServiceRestImpl extends RootServiceRestImpl implements Meta
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MetadataServiceRest#getAllTerminologiesLatestVersions(java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MetadataServiceRest#
+   * getAllTerminologiesLatestVersions(java.lang.String)
    */
   @Override
   @GET
@@ -158,30 +169,29 @@ public class MetadataServiceRestImpl extends RootServiceRestImpl implements Meta
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MetadataServiceRestImpl.class).info(
-        "RESTful call (Metadata): /terminologies/latest/");
+    Logger.getLogger(MetadataServiceRestImpl.class)
+        .info("RESTful call (Metadata): /terminologies/latest/");
 
     String user = "";
     final MetadataService metadataService = new MetadataServiceJpa();
     try {
       // authorize
-      user =
-          authorizeApp(authToken, MapUserRole.VIEWER,
-              "get all terminologies and versions", securityService);
+      user = authorizeApp(authToken, MapUserRole.VIEWER,
+          "get all terminologies and versions", securityService);
 
       final Map<String, String> terminologyVersionMap =
           metadataService.getTerminologyLatestVersions();
       final KeyValuePairList keyValuePairList = new KeyValuePairList();
       for (final Map.Entry<String, String> termVersionPair : terminologyVersionMap
           .entrySet()) {
-        keyValuePairList.addKeyValuePair(new KeyValuePair(termVersionPair
-            .getKey(), termVersionPair.getValue()));
+        keyValuePairList.addKeyValuePair(new KeyValuePair(
+            termVersionPair.getKey(), termVersionPair.getValue()));
       }
       return keyValuePairList;
     } catch (Exception e) {
       handleException(e,
-          "trying to get the latest versions of all terminologies", user,
-          "", "");
+          "trying to get the latest versions of all terminologies", user, "",
+          "");
       return null;
     } finally {
       metadataService.close();
@@ -189,8 +199,11 @@ public class MetadataServiceRestImpl extends RootServiceRestImpl implements Meta
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MetadataServiceRest#getAllTerminologiesVersions(java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MetadataServiceRest#
+   * getAllTerminologiesVersions(java.lang.String)
    */
   @Override
   @GET
@@ -203,16 +216,15 @@ public class MetadataServiceRestImpl extends RootServiceRestImpl implements Meta
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MetadataServiceRestImpl.class).info(
-        "RESTful call (Metadata): /terminologies");
+    Logger.getLogger(MetadataServiceRestImpl.class)
+        .info("RESTful call (Metadata): /terminologies");
 
     String user = "";
     final MetadataService metadataService = new MetadataServiceJpa();
     try {
       // authorize
-      user =
-          authorizeApp(authToken, MapUserRole.VIEWER,
-              "get all terminology versions", securityService);
+      user = authorizeApp(authToken, MapUserRole.VIEWER,
+          "get all terminology versions", securityService);
 
       final KeyValuePairLists keyValuePairLists = new KeyValuePairLists();
       final List<String> terminologies = metadataService.getTerminologies();
@@ -220,19 +232,77 @@ public class MetadataServiceRestImpl extends RootServiceRestImpl implements Meta
         final List<String> versions = metadataService.getVersions(terminology);
         final KeyValuePairList keyValuePairList = new KeyValuePairList();
         for (final String version : versions) {
-          keyValuePairList.addKeyValuePair(new KeyValuePair(terminology,
-              version));
+          keyValuePairList
+              .addKeyValuePair(new KeyValuePair(terminology, version));
         }
         keyValuePairList.setName(terminology);
         keyValuePairLists.addKeyValuePairList(keyValuePairList);
       }
       return keyValuePairLists;
     } catch (Exception e) {
-      handleException(e,
-          "trying to get the versions of all terminologies", user, "", "");
+      handleException(e, "trying to get the versions of all terminologies",
+          user, "", "");
       return null;
     } finally {
       metadataService.close();
+      securityService.close();
+    }
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MetadataServiceRest#
+   * getAllTerminologiesVersions(java.lang.String)
+   */
+  @Override
+  @GET
+  @Path("/terminology/gmdn")
+  @ApiOperation(value = "Get all downloaded gmdn versions", notes = "Gets the list of all version of gmdn that are present on the server", response = KeyValuePairList.class)
+  @Produces({
+      MediaType.TEXT_PLAIN
+  })
+  public String getAllGmdnVersions(
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(MetadataServiceRestImpl.class)
+        .info("RESTful call (Metadata): /terminology/gmdn");
+
+    String user = "";
+    try {
+      // authorize
+      user = authorizeApp(authToken, MapUserRole.VIEWER,
+          "get all downloaded gmdn versions", securityService);
+
+      String gmdnVersions = "";
+
+      final String gmdnDir =
+          ConfigUtility.getConfigProperties().getProperty("gmdnsftp.dir");
+
+      File folder = new File(gmdnDir);
+      File[] listOfFiles = folder.listFiles();
+
+      // We only care about the directories that follow a yy_M naming convention
+      for (int i = 0; i < listOfFiles.length; i++) {
+        if (listOfFiles[i].isDirectory()
+            && listOfFiles[i].getName().matches("\\d{2}_\\d{1,2}")) {
+          gmdnVersions += listOfFiles[i].getName() + ";";
+          System.out.println("Directory " + listOfFiles[i].getName());
+        }
+      }
+
+      //get rid of final ';'
+      if(gmdnVersions.length() > 1){
+        gmdnVersions = gmdnVersions.substring(0, gmdnVersions.length()-1);
+      }
+      
+      return gmdnVersions;
+    } catch (Exception e) {
+      handleException(e, "trying to get downloaded versions of gmdn",
+          user, "", "");
+      return null;
+    } finally {
       securityService.close();
     }
   }

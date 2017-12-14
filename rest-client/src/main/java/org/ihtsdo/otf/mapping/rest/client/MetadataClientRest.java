@@ -37,4 +37,10 @@ public class MetadataClientRest extends RootClientRest implements MetadataServic
 		return null;
 	}
 
+    @Override
+    public String getAllGmdnVersions(String authToken) throws Exception{
+      // TODO Auto-generated method stub
+      return null;  
+    }
+	
 }
