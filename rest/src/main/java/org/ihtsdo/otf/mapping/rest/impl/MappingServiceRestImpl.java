@@ -5278,20 +5278,10 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    /* AAAA 
-    InstanceProfileCredentialsProvider creds = new InstanceProfileCredentialsProvider(false);
     
-    AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard()
-        .withCredentials(creds);
-    
-
-    AmazonS3 s3 = builder.build();
-    
-    */
-
     callTestMethod();
 
-/*
+    /*
     Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping):  /amazons3/files/" + mapProjectId);
 
@@ -5408,76 +5398,54 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
   }
 
   private void callTestMethod() throws Exception {
+    Logger.getLogger(MappingServiceRestImpl.class).info("AAA");
     String bucketName = "release-ihtsdo-prod-published";
-   String key = "international/SRS_SNOMEDCT_Release_INT_20170731/SRS_SNOMEDCT_Release_INT_20170731/Readme_en_20170731.txt";
-   String testFileName = "international/xSnomedCT_RF2Release_INT_20170131/Delta/Terminology/xsct2_Concept_Delta_INT_20170131.txt";
-   
-   
-   Logger.getLogger(MappingServiceRestImpl.class).info("AAA");
-   
-   AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_1)
-       .withCredentials(new InstanceProfileCredentialsProvider(false)).build();
-   
-   Logger.getLogger(MappingServiceRestImpl.class).info("BBB1");
-   List<Bucket> buckets = s3Client.listBuckets();
-   Logger.getLogger(MappingServiceRestImpl.class).info("BBB2");
-   for (Bucket b : buckets) {
-     Logger.getLogger(MappingServiceRestImpl.class).info("BBB3 with " + b.getName());
-   }
-   Logger.getLogger(MappingServiceRestImpl.class).info("BBB4");
+    String testFileName =
+        "international/xSnomedCT_RF2Release_INT_20170131/Delta/Terminology/xsct2_Concept_Delta_INT_20170131.txt";
 
+    // Connect to server
+    AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
+        .withRegion(Regions.US_EAST_1)
+        .withCredentials(new InstanceProfileCredentialsProvider(false)).build();
 
-   if (!s3Client.doesBucketExist(bucketName)) {
-     Logger.getLogger(MappingServiceRestImpl.class).info("CCC Bucket " + bucketName + " DOES NOT exist.");
-   } else {
-     Logger.getLogger(MappingServiceRestImpl.class).info("CCC Bucket " + bucketName + " already exists.");
-   }
+    // List Buckets
+    Logger.getLogger(MappingServiceRestImpl.class).info("BBB start");
+    List<Bucket> buckets = s3Client.listBuckets();
+    for (Bucket b : buckets) {
+      Logger.getLogger(MappingServiceRestImpl.class)
+          .info("BBB with bucket name" + b.getName());
+    }
+    Logger.getLogger(MappingServiceRestImpl.class).info("BBB end");
 
-   
-   
-   ObjectListing listing = s3Client.listObjects( bucketName );
-   Logger.getLogger(MappingServiceRestImpl.class).info("DDD");
-   
-   List<S3ObjectSummary> summaries = listing.getObjectSummaries();
+    // Verify Buckets Exists
+    if (!s3Client.doesBucketExist(bucketName)) {
+      throw new Exception("Cannot find Bucket Name");
+    } else {
+      Logger.getLogger(MappingServiceRestImpl.class)
+          .info("CCC Bucket " + bucketName + " accessed.");
+    }
 
-   System.out.println("EEE with " + summaries.size());
+    // List All Files on Bucket "release-ihtsdo-prod-published"
+    ObjectListing listing = s3Client.listObjects(bucketName);
+    List<S3ObjectSummary> summaries = listing.getObjectSummaries();
+    
+    System.out.println("CCC start with " + summaries.size());
+    int i = 1;
+    for (S3ObjectSummary sum : summaries) {
+      Logger.getLogger(MappingServiceRestImpl.class)
+          .info("Summary #" + i++ + " with: " + sum.getKey());
+    }
+    Logger.getLogger(MappingServiceRestImpl.class).info("CCC end");
 
-  int i = 1;
-  for (S3ObjectSummary sum : summaries) {
-    Logger.getLogger(MappingServiceRestImpl.class).info("Summary #" + i++ + " with: " + sum.getKey());
+    
+    // Pull File Down and Copy to Local Directory (Directory must have rw/rw/rw (666) permissions )
+    Logger.getLogger(MappingServiceRestImpl.class).info("DDD start");
+    S3Object s3object = s3Client.getObject(bucketName, testFileName);
+    S3ObjectInputStream inputStream = s3object.getObjectContent();
+    FileUtils.copyInputStreamToFile(inputStream, new File("~/aws/test.txt"));
+    inputStream.close();
+    Logger.getLogger(MappingServiceRestImpl.class).info("DDD end");
   }
-  
-  
-  
-  Logger.getLogger(MappingServiceRestImpl.class).info("FFF1");
-
-  S3Object s3object = s3Client.getObject(bucketName, testFileName);
-  Logger.getLogger(MappingServiceRestImpl.class).info("FFF2");
-  S3ObjectInputStream inputStream = s3object.getObjectContent();
-  Logger.getLogger(MappingServiceRestImpl.class).info("FFF3");
-  FileUtils.copyInputStreamToFile(inputStream, new File("/home/jefron/aws/test.txt"));
-  Logger.getLogger(MappingServiceRestImpl.class).info("FFF4");
-  inputStream.close();
-  Logger.getLogger(MappingServiceRestImpl.class).info("FFF5");
-  
-  /*
-   * S3Object s3object = s3client.getObject(bucketName, "picture/pic.png");
-S3ObjectInputStream inputStream = s3object.getObjectContent();
-FileUtils.copyInputStreamToFile(inputStream, new File("/Users/user/Desktop/hello.txt"));
-
-   */
-/*   try {
-     System.out.println("Downloading an object");
-     S3Object s3object =
-         s3Client.getObject(new GetObjectRequest(bucketName, key));
-   } catch (AmazonServiceException ase) {
-     System.err.println("Exception was thrown by the service"
-         + ase.getMessage() + ase.toString());
-   } catch (AmazonClientException ace) {
-     System.err.println("Exception was thrown by the client" + ace.getMessage()
-         + ace.toString());
-   }
-*/  }
 
 //  /**
 //   * Reads an InputStream and returns its contents as a String. Also effects
