@@ -298,7 +298,7 @@ public class ContentClientRest extends RootClientRest
 				+ URL_SERVICE_ROOT + "/map/record/" + refsetId);
 
 		final Response response = target.request(MediaType.APPLICATION_JSON)
-				.header("Authorization", authToken).get();
+				.header("Authorization", authToken).delete();
 
 		if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
 			// do nothing

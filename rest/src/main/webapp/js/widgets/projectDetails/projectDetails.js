@@ -75,11 +75,12 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
     '$sce',
     '$rootScope',
     '$location',
+    '$uibModal',
     'localStorageService',
     '$q',
     'Upload',
     'utilService',
-    function($scope, $http, $sce, $rootScope, $location, localStorageService, $q, Upload,
+    function($scope, $http, $sce, $rootScope, $location, $uibModal, localStorageService, $q, Upload,
       utilService) {
       $scope.page = 'project';
 
@@ -1891,4 +1892,74 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
           });
       }      
 
+      
+      // Open modal to display authoring history for concept
+      $scope.openLog = function(logTypes) {
+
+        if (logTypes == null) {
+          return;
+        }
+
+        var modalInstance = $uibModal.open({
+          templateUrl : 'js/widgets/projectDetails/log.html',
+          controller : LogModalCtrl,
+          size : 'lg',
+          resolve : {
+            logTypes : function() {
+              return logTypes;
+            },
+            project : function() {
+              return $scope.focusProject;
+            }
+          }
+        });
+
+        modalInstance.result.then(
+
+        // called on Done clicked by user
+        function() {
+        })
+
+      };
+        
+
+      var LogModalCtrl = function($scope, $uibModalInstance, $q, logTypes, project) {
+
+    	$scope.logTypes = logTypes.split(',');
+        $scope.projectId = project.id
+        $scope.edits = [];
+        $scope.filter = '';
+
+        // get log
+        $scope.getLog = function() {
+          console.debug('LogModalCtrl: retrieve log');
+
+          $rootScope.glassPane++;
+          $http({
+            url : root_mapping + 'log/' + $scope.projectId + '?query=' + $scope.filter,
+            dataType : 'json',
+            data : $scope.logTypes,
+            method : 'POST',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+            console.debug('Success in getting log.', $scope.filter);
+            $scope.log = data;
+             
+            $rootScope.glassPane--;
+            
+          }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        };
+        
+        $scope.close = function() {
+          $uibModalInstance.close();
+        };
+        
+        $scope.getLog();
+      }
+      
     } ]);

@@ -3,11 +3,13 @@
  */
 package org.ihtsdo.otf.mapping.rest.impl;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.nio.channels.FileChannel;
@@ -4762,7 +4764,84 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       securityService.close();
     }
 
+  }
+  
+  /* see superclass */
+  @POST
+  @Path("/log/{projectId}")
+  @Produces("text/plain")
+  @ApiOperation(value = "Get log(s)", notes = "Gets log(s) for specified project and log type(s).", response = String.class)
+  @Consumes({
+    MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  @Override
+  public String getLog(
+    @ApiParam(value = "Project id", required = true) @PathParam("projectId") String projectId,
+    @ApiParam(value = "Logs requested", required = true) List<String> logTypes,
+    @ApiParam(value = "Query, e.g. UPDATE", required = false) @QueryParam("query") String query,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info("RESTful call (Mapping):  /log/" + projectId + "/" );
+
+    final MappingService mappingService = new MappingServiceJpa();
+    String line = null;
+    StringBuffer log = new StringBuffer();
+    try {
+      // authorize call
+      authorizeApp(authToken, MapUserRole.VIEWER, "get log", securityService);
+
+      final MapProject mapProject =
+        mappingService.getMapProject(new Long(projectId).longValue());
+
+      // look for logs first in the project log dir, second in the remover/loader log dir
+      final File projectLogDir =
+        new File(this.getReleaseDirectoryPath(mapProject, "logs"));
+      for (String logType : logTypes) {
+        File logFile = new File(projectLogDir, logType + ".log");
+        if (!logFile.exists()) {
+          final Properties config = ConfigUtility.getConfigProperties();
+          final String removerLoaderLogDir =
+              config.getProperty("map.principle.source.document.dir") + "/logs";
+          logFile = new File(removerLoaderLogDir, logType.replace("Terminology", mapProject.getSourceTerminology()) + ".log");
+          if (!logFile.exists()) {
+            log.append("\nA log for " + logType + " is not yet available on this server.").append("\n");
+            log.append("A log will be created when the process is run.").append("\n");
+            continue;
+          }
+        }
+
+        String logFilePath = logFile.getAbsolutePath();
+        BufferedReader logReader = new BufferedReader(
+            new InputStreamReader(new FileInputStream(logFilePath), "UTF-8"));
+        while ((line = logReader.readLine()) != null) {
+          // if filter is set
+          if (query != null) {
+            // if line contains filter search term, keep line
+            if (line.contains(query)) {
+              log.append(line).append("\n");
+              // otherwise don't add line to log
+            } else {
+              continue;
+            }
+            // no filter set
+          } else {
+            log.append(line).append("\n");
+          }
+        }
+        logReader.close();
       }
+
+      return log.toString();
+
+    } catch (Exception e) {
+      handleException(e, "trying to get log");
+    } finally {
+      mappingService.close();
+      securityService.close();
+    }
+    return null;
+  }
+
 
 //  /**
 //   * Reads an InputStream and returns its contents as a String. Also effects
