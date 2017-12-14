@@ -5325,6 +5325,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     List<S3ObjectSummary> summaries = listing.getObjectSummaries();
     int j=0;
     
+    Logger.getLogger(MappingServiceRestImpl.class)
+    .info("Destination terminology *" + destinationTerminology + "*");
     while (listing.isTruncated()) {
       listing = s3Client.listNextBatchOfObjects(listing);
       summaries = listing.getObjectSummaries();
@@ -5335,10 +5337,10 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
         String fileName = sum.getKey();
         if ((fileName.contains("ExtendedMap") || fileName.contains("SimpleMap"))
             && !fileName.contains("Full") && !fileName.contains("backup")
-            && (fileName.toLowerCase()
+            /*&& (fileName.toLowerCase()
                 .contains(destinationTerminology.toLowerCase())
                 || (destinationTerminology.contains("ICD10")
-                    && fileName.contains("SnomedCT_")))) {
+                    && fileName.contains("SnomedCT_")))*/) {
           Logger.getLogger(MappingServiceRestImpl.class)
               .info("Summary #" + i++ + " with: " + sum.getKey());
           SearchResult result = new SearchResultJpa();
