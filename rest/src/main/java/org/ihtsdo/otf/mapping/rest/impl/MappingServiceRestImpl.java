@@ -51,6 +51,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
@@ -136,6 +137,7 @@ import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
@@ -5408,7 +5410,9 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
   private void callTestMethod() throws Exception {
     String bucketName = "release-ihtsdo-prod-published";
    String key = "international/SRS_SNOMEDCT_Release_INT_20170731/SRS_SNOMEDCT_Release_INT_20170731/Readme_en_20170731.txt";
-
+   String testFileName = "international/xSnomedCT_RF2Release_INT_20170131/Delta/Terminology/xsct2_Concept_Delta_INT_20170131.txt";
+   
+   
    Logger.getLogger(MappingServiceRestImpl.class).info("AAA");
    
    AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_1)
@@ -5443,6 +5447,17 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     Logger.getLogger(MappingServiceRestImpl.class).info("Summary #" + i++ + " with: " + sum.getKey());
   }
 
+  S3Object s3object = s3Client.getObject(bucketName, testFileName);
+  S3ObjectInputStream inputStream = s3object.getObjectContent();
+  FileUtils.copyInputStreamToFile(inputStream, new File("/home/jefron/aws/test.txt"));
+  inputStream.close();
+  
+  /*
+   * S3Object s3object = s3client.getObject(bucketName, "picture/pic.png");
+S3ObjectInputStream inputStream = s3object.getObjectContent();
+FileUtils.copyInputStreamToFile(inputStream, new File("/Users/user/Desktop/hello.txt"));
+
+   */
 /*   try {
      System.out.println("Downloading an object");
      S3Object s3object =
