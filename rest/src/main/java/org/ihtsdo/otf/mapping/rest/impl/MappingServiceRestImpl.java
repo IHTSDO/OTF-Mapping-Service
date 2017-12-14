@@ -5322,36 +5322,41 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     // List All Files on Bucket "release-ihtsdo-prod-published"
     ObjectListing listing = s3Client.listObjects(bucketName, "international/");
     List<S3ObjectSummary> summaries = listing.getObjectSummaries();
+    int j=0;
     
-    System.out.println("CCC start with " + summaries.size());
-    int i = 1;
-    for (S3ObjectSummary sum : summaries) {
-      String fileName = sum.getKey();
-      if ((fileName.contains("ExtendedMap")
-                  || fileName.contains("SimpleMap"))
-              && !fileName.contains("Full") && !fileName.contains("backup")
-              && (fileName.toLowerCase()
-                  .contains(destinationTerminology.toLowerCase())
-                  || (destinationTerminology.contains("ICD10")
-                      && fileName.contains("SnomedCT_RF2")))) {
-        Logger.getLogger(MappingServiceRestImpl.class)
-          .info("Summary #" + i++ + " with: " + sum.getKey());
-        SearchResult result = new SearchResultJpa();
-        if (fileName.toLowerCase().contains("alpha")) {
-          result.setTerminology("ALPHA");
-        } else if (fileName.toLowerCase().contains("beta")) {
-          result.setTerminology("BETA");
-        } else {
-          result.setTerminology("FINAL");
-        }
-        Matcher m = Pattern.compile("[0-9]{8}").matcher(fileName);
-        while (m.find()) {
-          result.setTerminologyVersion(m.group());
-        }
+    while (listing.isTruncated()) {
+      listing = s3Client.listNextBatchOfObjects(listing);
+      summaries = listing.getObjectSummaries();
+      
+      System.out.println("CCC start with " + j++ + ": " + summaries.size());
+      int i = 1;
+      for (S3ObjectSummary sum : summaries) {
+        String fileName = sum.getKey();
+        if ((fileName.contains("ExtendedMap") || fileName.contains("SimpleMap"))
+            && !fileName.contains("Full") && !fileName.contains("backup")
+            && (fileName.toLowerCase()
+                .contains(destinationTerminology.toLowerCase())
+                || (destinationTerminology.contains("ICD10")
+                    && fileName.contains("SnomedCT_RF2")))) {
+          Logger.getLogger(MappingServiceRestImpl.class)
+              .info("Summary #" + i++ + " with: " + sum.getKey());
+          SearchResult result = new SearchResultJpa();
+          if (fileName.toLowerCase().contains("alpha")) {
+            result.setTerminology("ALPHA");
+          } else if (fileName.toLowerCase().contains("beta")) {
+            result.setTerminology("BETA");
+          } else {
+            result.setTerminology("FINAL");
+          }
+          Matcher m = Pattern.compile("[0-9]{8}").matcher(fileName);
+          while (m.find()) {
+            result.setTerminologyVersion(m.group());
+          }
 
-        result.setValue(fileName.substring(fileName.lastIndexOf('/')));
-        result.setValue2(fileName);
-        searchResults.addSearchResult(result);
+          result.setValue(fileName.substring(fileName.lastIndexOf('/')));
+          result.setValue2(fileName);
+          searchResults.addSearchResult(result);
+        }
       }
     }
     Logger.getLogger(MappingServiceRestImpl.class).info("CCC end");
