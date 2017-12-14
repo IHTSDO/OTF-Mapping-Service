@@ -940,7 +940,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
               window.alert("The selected files must both be Delta Maps or must both be Snapshot Maps.");
               return false;
     	  }
-    	  if ($scope.fileArray[0].terminologyVersion > $scope.fileArray[1].terminologyVersion) {
+    	  if ($scope.fileArray[1].terminology.indexOf('current') != 0 && $scope.fileArray[0].terminologyVersion > $scope.fileArray[1].terminologyVersion) {
     		  window.alert("The file selected from the 'Later File' picklist must not be from a release earlier than the file selected from the 'Initial File' picklist.");
               return false;
     	  }
