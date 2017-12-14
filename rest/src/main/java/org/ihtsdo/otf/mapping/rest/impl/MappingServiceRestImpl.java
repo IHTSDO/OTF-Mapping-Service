@@ -5478,7 +5478,6 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       securityService.close();
     }
     */
-    return null;
   }
 
   private void callTestMethod() throws Exception {
