@@ -1792,4 +1792,78 @@
   </table>
 </div>
 
-</uib-accordion-group></uib-accordion>
+</uib-accordion-group><uib-accordion-group> <uib-accordion-heading>
+<h5>
+  <span tooltip-placement="right" uib-tooltip="List of loaded terminologies.">
+    Terminologies </span>
+</h5>
+</uib-accordion-heading> 
+
+<table class="table pure-table" style="width: 100%; margin-bottom: 5px;">
+  <thead>
+    <tr>
+      <th style="width: 100%;">Loaded Terminologies</th>
+    </tr>
+  </thead>
+  <tbody ng-repeat="terminology in terminologyVersionPairs"
+    style="border: 2px solid #ccc;">
+
+    <tr>
+      <td>
+        {{terminology}}
+      </td>
+      <td>
+        <div tooltip-placement="top" title="Remove {{terminology}} from application">
+          <i class="noul glyphicon glyphicon-remove" ng-click="deleteTerminology(terminology)"></i>
+        </div>
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+<div>
+  <div style="margin-top: 15px;">
+    <b>Load New Terminology</b>
+  </div>
+  <table class="table pure-table">
+    <thead>
+      <tr>
+        <th style="width: 25%;"></th>
+        <th style="width: 75%;"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Input Type</td>
+        <td>
+          <select ng-model="inputType"
+            ng-options="item for item in terminologyInputTypes">
+          </select>
+        </td>
+      </tr>
+      <!-- 
+      For Loading GMDN 
+      -->
+      <tr ng-show="inputType == 'GMDN xml'">
+        <td>GMDN version to load
+        <br><br>
+                 <button class="btn btn-xs btn-primary"
+            ng-show="inputType == 'GMDN xml'"
+            ng-click="downloadTerminologyGmdn()">Check for new GMDN versions</button>
+        </td>
+        <td>
+          <select ng-model="gmdnVersion"
+            ng-options="item for item in downloadedGmdnVersions">
+          </select>         
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  
+  
+  <button class="btn btn-xs btn-primary"
+    ng-show="inputType == 'GMDN xml' && gmdnVersion != null"
+    ng-click="loadTerminologyGmdn(gmdnVersion)">Load</button>
+</div>
+</uib-accordion-group> </uib-accordion>
