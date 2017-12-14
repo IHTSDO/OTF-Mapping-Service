@@ -554,4 +554,11 @@ public class MappingClientRest extends RootClientRest implements MappingServiceR
 		return null;
 	}
 
+	@Override
+	public String getLog(String projectId, List<String> logTypes, String query,
+			String authToken) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
