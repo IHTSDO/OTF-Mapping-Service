@@ -5295,6 +5295,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
       final MapProject mapProject =
           mappingService.getMapProject(new Long(mapProjectId).longValue());
+      String sourceTerminology = mapProject.getSourceTerminology();
       String destinationTerminology = mapProject.getDestinationTerminology();
 
       String bucketName = "release-ihtsdo-prod-published";
@@ -5320,17 +5321,20 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
         Logger.getLogger(MappingServiceRestImpl.class)
             .info("Bucket " + bucketName + " accessed.");
       }
+      
+      // Determine international or U.S.  
+      String nationalPrefix = sourceTerminology.equals("SNOMEDCT_US") ? "us" : "international";
 
       if (mapProject.getDestinationTerminology().equals("ICPC")
           || mapProject.getDestinationTerminology().equals("GMDN")) {
         // List Files on Bucket "release-ihtsdo-prod-published"
         ObjectListing listing = null;
         if (mapProject.getDestinationTerminology().equals("ICPC")) {
-          listing = s3Client.listObjects(bucketName,
-              "international/SnomedCT_GPFPICPC2");
+          listing = s3Client.listObjects(bucketName, nationalPrefix + 
+              "/SnomedCT_GPFPICPC2");
         } else {
           listing =
-              s3Client.listObjects(bucketName, "international/SnomedCT_GMDN");
+              s3Client.listObjects(bucketName, nationalPrefix + "/SnomedCT_GMDN");
         }
         List<S3ObjectSummary> summaries = listing.getObjectSummaries();
 
@@ -5364,7 +5368,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
         // List All Files on Bucket "release-ihtsdo-prod-published"
         ObjectListing listing =
-            s3Client.listObjects(bucketName, "international/");
+            s3Client.listObjects(bucketName, nationalPrefix + "/");
         List<S3ObjectSummary> summaries = listing.getObjectSummaries();
         int j = 0;
         int i = 1;
