@@ -17,6 +17,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.algo.Algorithm;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
+import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
@@ -104,6 +105,35 @@ public class MapRecordRf2ComplexMapLoaderAlgorithm extends RootServiceJpa
             .info("No user specified, defaulting to user 'loader'");
       }
 
+      // Instantiate services
+      mappingService = new MappingServiceJpa();
+      contentService = new ContentServiceJpa();
+
+      // get the loader user
+      MapUser loaderUser = mappingService.getMapUser("loader");
+
+      // if loader user does not exist, add it
+      if (loaderUser == null) {
+        loaderUser = new MapUserJpa();
+        loaderUser.setApplicationRole(MapUserRole.VIEWER);
+        loaderUser.setUserName("loader");
+        loaderUser.setName("Loader Record");
+        loaderUser.setEmail("none");
+        loaderUser = mappingService.addMapUser(loaderUser);
+      }
+
+      final Map<String, MapProject> mapProjectMap = new HashMap<>();
+      for (MapProject project : mappingService.getMapProjects().getIterable()) {
+        mapProjectMap.put(project.getRefSetId(), project);
+      }
+      Logger.getLogger(getClass()).info("  Map projects");
+      for (final String refsetId : mapProjectMap.keySet()) {
+        final MapProject project = mapProjectMap.get(refsetId);
+        Logger.getLogger(getClass()).info("    project = " + project.getId()
+            + "," + project.getRefSetId() + ", " + project.getName());
+
+      }
+
       // if refsetId is specified, remove all rows that don't have that refsetId
       if (refsetId != null) {
         Logger.getLogger(getClass())
@@ -125,19 +155,34 @@ public class MapRecordRf2ComplexMapLoaderAlgorithm extends RootServiceJpa
         // Write each line where the refsetId matches the specified one into the
         // output file
         while ((line = fileReader.readLine()) != null) {
+          Boolean keepLine = true;
           line = line.replace("\r", "");
           String fields[] = line.split("\t");
 
-          if (fields[4].equals(refsetId)) {
+          if (!fields[4].equals(refsetId)) {
+            keepLine = false;
+          }
+
+          // also take into account any additional project-specific validation,
+          // if any
+          ProjectSpecificAlgorithmHandler handler = mappingService
+              .getProjectSpecificAlgorithmHandler(mapProjectMap.get(refsetId));
+
+          if (!handler.isMapRecordLineValid(line)) {
+            keepLine = false;
+          }
+
+          if (keepLine) {
             bw.write(line);
+            bw.newLine();
           }
         }
         fileReader.close();
         bw.close();
-        
-        //overwrite the input file as this new temp file
+
+        // overwrite the input file as this new temp file
         inputFile = outputFile.getAbsolutePath();
-        
+
       }
 
       // sort input file
@@ -228,34 +273,6 @@ public class MapRecordRf2ComplexMapLoaderAlgorithm extends RootServiceJpa
           });
       Logger.getLogger(getClass()).info("  Done sorting the file ");
 
-      // Instantiate services
-      mappingService = new MappingServiceJpa();
-      contentService = new ContentServiceJpa();
-
-      // get the loader user
-      MapUser loaderUser = mappingService.getMapUser("loader");
-
-      // if loader user does not exist, add it
-      if (loaderUser == null) {
-        loaderUser = new MapUserJpa();
-        loaderUser.setApplicationRole(MapUserRole.VIEWER);
-        loaderUser.setUserName("loader");
-        loaderUser.setName("Loader Record");
-        loaderUser.setEmail("none");
-        loaderUser = mappingService.addMapUser(loaderUser);
-      }
-
-      final Map<String, MapProject> mapProjectMap = new HashMap<>();
-      for (MapProject project : mappingService.getMapProjects().getIterable()) {
-        mapProjectMap.put(project.getRefSetId(), project);
-      }
-      Logger.getLogger(getClass()).info("  Map projects");
-      for (final String refsetId : mapProjectMap.keySet()) {
-        final MapProject project = mapProjectMap.get(refsetId);
-        Logger.getLogger(getClass()).info("    project = " + project.getId()
-            + "," + project.getRefSetId() + ", " + project.getName());
-
-      }
       // load complexMapRefSetMembers from extendedMap file
       final List<ComplexMapRefSetMember> members =
           getComplexMaps(outputFile, mapProjectMap);

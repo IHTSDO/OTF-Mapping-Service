@@ -49,6 +49,14 @@ public class MapRecordRf2SimpleMapLoaderMojo
 	 */
 	private boolean recordFlag;
 
+
+    /**
+     * The refset Id to filter the input file by (optional).
+     *
+     * @parameter
+     */
+    private String refsetId;	
+	
 	/**
 	 * The workflow status to assign to created map records.
 	 *
@@ -71,6 +79,7 @@ public class MapRecordRf2SimpleMapLoaderMojo
 		getLog().info("  inputFile      = " + inputFile);
 		getLog().info("  membersFlag    = " + memberFlag);
 		getLog().info("  recordFlag     = " + recordFlag);
+        getLog().info("  refsetId       = " + refsetId);
 		getLog().info("  workflowStatus = " + workflowStatus);
 
 		try {
@@ -87,7 +96,7 @@ public class MapRecordRf2SimpleMapLoaderMojo
 
 				ContentServiceRestImpl service = new ContentServiceRestImpl();
 				service.loadMapRecordRf2SimpleMap(inputFile, memberFlag,
-						recordFlag, workflowStatus, getAuthToken());
+						recordFlag, refsetId, workflowStatus, getAuthToken()); 
 
 			} else {
 				getLog().info("Running against server");
@@ -95,7 +104,7 @@ public class MapRecordRf2SimpleMapLoaderMojo
 				// invoke the client
 				ContentClientRest client = new ContentClientRest(properties);
 				client.loadMapRecordRf2SimpleMap(inputFile, memberFlag,
-						recordFlag, workflowStatus, getAuthToken());
+						recordFlag, refsetId, workflowStatus, getAuthToken());
 			}
 
 		} catch (Exception e) {
