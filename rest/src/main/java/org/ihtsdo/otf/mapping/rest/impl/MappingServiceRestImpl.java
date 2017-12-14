@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.naming.AuthenticationException;
 import javax.ws.rs.Consumes;
@@ -5285,8 +5287,15 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping):  /amazons3/files/" + mapProjectId);
     
+
+    final MappingService mappingService = new MappingServiceJpa();
+    final MapProject mapProject =
+        mappingService.getMapProject(new Long(mapProjectId).longValue());
+    String destinationTerminology = mapProject.getDestinationTerminology();
+    
     Logger.getLogger(MappingServiceRestImpl.class).info("AAA");
     String bucketName = "release-ihtsdo-prod-published";
+    SearchResultList searchResults = new SearchResultListJpa();
     
     // Connect to server
     AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
@@ -5317,11 +5326,47 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     System.out.println("CCC start with " + summaries.size());
     int i = 1;
     for (S3ObjectSummary sum : summaries) {
+      String fileName = sum.getKey();
+      if ((fileName.contains("ExtendedMap")
+                  || fileName.contains("SimpleMap"))
+              && !fileName.contains("Full") && !fileName.contains("backup")
+              && (fileName.toLowerCase()
+                  .contains(destinationTerminology.toLowerCase())
+                  || (destinationTerminology.contains("ICD10")
+                      && fileName.contains("SnomedCT_RF2")))) {
         Logger.getLogger(MappingServiceRestImpl.class)
           .info("Summary #" + i++ + " with: " + sum.getKey());
+        SearchResult result = new SearchResultJpa();
+        if (fileName.toLowerCase().contains("alpha")) {
+          result.setTerminology("ALPHA");
+        } else if (fileName.toLowerCase().contains("beta")) {
+          result.setTerminology("BETA");
+        } else {
+          result.setTerminology("FINAL");
+        }
+        Matcher m = Pattern.compile("[0-9]{8}").matcher(fileName);
+        while (m.find()) {
+          result.setTerminologyVersion(m.group());
+        }
+
+        result.setValue(fileName.substring(fileName.lastIndexOf('/')));
+        result.setValue2(fileName);
+        searchResults.addSearchResult(result);
+      }
     }
     Logger.getLogger(MappingServiceRestImpl.class).info("CCC end");
-
+    
+    // sort files by release date
+    searchResults.sortBy(new Comparator<SearchResult>() {
+      @Override
+      public int compare(SearchResult o1, SearchResult o2) {
+        String releaseDate1 = o1.getTerminologyVersion();
+        String releaseDate2 = o2.getTerminologyVersion();
+        return releaseDate2.compareTo(releaseDate1);
+      }
+    });
+    
+    return searchResults;
     
     /*
     final MappingService mappingService = new MappingServiceJpa();
