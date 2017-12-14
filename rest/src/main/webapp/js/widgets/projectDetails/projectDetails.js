@@ -941,7 +941,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
               return false;
     	  }
     	  if ($scope.fileArray[0].terminologyVersion > $scope.fileArray[1].terminologyVersion) {
-    		  window.alert("The file selected from the 'Later File' picklist must be from a release later than the file selected from the 'Initial File' picklist.");
+    		  window.alert("The file selected from the 'Later File' picklist must not be from a release earlier than the file selected from the 'Initial File' picklist.");
               return false;
     	  }
     	  if ($scope.fileArray[0].terminology.indexOf('ALPHA') == 0 && $scope.fileArray[1].terminology.indexOf('ALPHA') == 0) {
