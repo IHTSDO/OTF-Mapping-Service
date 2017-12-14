@@ -5446,11 +5446,19 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
   for (S3ObjectSummary sum : summaries) {
     Logger.getLogger(MappingServiceRestImpl.class).info("Summary #" + i++ + " with: " + sum.getKey());
   }
+  
+  
+  
+  Logger.getLogger(MappingServiceRestImpl.class).info("FFF1");
 
   S3Object s3object = s3Client.getObject(bucketName, testFileName);
+  Logger.getLogger(MappingServiceRestImpl.class).info("FFF2");
   S3ObjectInputStream inputStream = s3object.getObjectContent();
+  Logger.getLogger(MappingServiceRestImpl.class).info("FFF3");
   FileUtils.copyInputStreamToFile(inputStream, new File("/home/jefron/aws/test.txt"));
+  Logger.getLogger(MappingServiceRestImpl.class).info("FFF4");
   inputStream.close();
+  Logger.getLogger(MappingServiceRestImpl.class).info("FFF5");
   
   /*
    * S3Object s3object = s3client.getObject(bucketName, "picture/pic.png");
