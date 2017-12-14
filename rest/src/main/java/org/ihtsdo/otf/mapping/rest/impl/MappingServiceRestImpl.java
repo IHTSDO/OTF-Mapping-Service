@@ -5279,12 +5279,53 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     
-    callTestMethod();
+    //callTestMethod();
 
-    /*
+    
     Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping):  /amazons3/files/" + mapProjectId);
+    
+    Logger.getLogger(MappingServiceRestImpl.class).info("AAA");
+    String bucketName = "release-ihtsdo-prod-published";
+    
+    // Connect to server
+    AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
+        .withRegion(Regions.US_EAST_1)
+        .withCredentials(new InstanceProfileCredentialsProvider(false)).build();
 
+    // List Buckets
+    Logger.getLogger(MappingServiceRestImpl.class).info("BBB start");
+    List<Bucket> buckets = s3Client.listBuckets();
+    for (Bucket b : buckets) {
+      Logger.getLogger(MappingServiceRestImpl.class)
+          .info("BBB with bucket name" + b.getName());
+    }
+    Logger.getLogger(MappingServiceRestImpl.class).info("BBB end");
+
+    // Verify Buckets Exists
+    if (!s3Client.doesBucketExist(bucketName)) {
+      throw new Exception("Cannot find Bucket Name");
+    } else {
+      Logger.getLogger(MappingServiceRestImpl.class)
+          .info("CCC Bucket " + bucketName + " accessed.");
+    }
+
+    // List All Files on Bucket "release-ihtsdo-prod-published"
+    ObjectListing listing = s3Client.listObjects(bucketName);
+    List<S3ObjectSummary> summaries = listing.getObjectSummaries();
+    
+    System.out.println("CCC start with " + summaries.size());
+    int i = 1;
+    for (S3ObjectSummary sum : summaries) {
+      if (sum.getKey().startsWith("international")) {
+        Logger.getLogger(MappingServiceRestImpl.class)
+          .info("Summary #" + i++ + " with: " + sum.getKey());
+      }
+    }
+    Logger.getLogger(MappingServiceRestImpl.class).info("CCC end");
+
+    
+    /*
     final MappingService mappingService = new MappingServiceJpa();
     String user = null;
     try {
