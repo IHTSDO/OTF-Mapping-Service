@@ -5320,53 +5320,127 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
           .info("CCC Bucket " + bucketName + " accessed.");
     }
 
-    // List All Files on Bucket "release-ihtsdo-prod-published"
-    ObjectListing listing = s3Client.listObjects(bucketName, "international/");
-    List<S3ObjectSummary> summaries = listing.getObjectSummaries();
-    int j=0;
-    
-    Logger.getLogger(MappingServiceRestImpl.class)
-    .info("Destination terminology *" + destinationTerminology + "*");
-    while (listing.isTruncated()) {
-      listing = s3Client.listNextBatchOfObjects(listing);
-      summaries = listing.getObjectSummaries();
-      
-      System.out.println("CCC start with " + j++ + ": " + summaries.size());
-      int i = 1;
-      for (S3ObjectSummary sum : summaries) {
-        String fileName = sum.getKey();
-        if ((fileName.contains("ExtendedMap") || fileName.contains("SimpleMap"))
-            && !fileName.contains("Full") && !fileName.contains("backup")
-            /*&& (fileName.toLowerCase()
-                .contains(destinationTerminology.toLowerCase())
-                || (destinationTerminology.contains("ICD10")
-                    && fileName.contains("SnomedCT_")))*/) {
-          Logger.getLogger(MappingServiceRestImpl.class)
-              .info("Summary #" + i++ + " with: " + sum.getKey());
-          SearchResult result = new SearchResultJpa();
-          String shortName = fileName.substring(fileName.lastIndexOf('/'));
-          if (fileName.toLowerCase().contains("alpha")) {
-            result.setTerminology("ALPHA");
-          } else if (fileName.toLowerCase().contains("beta")) {
-            result.setTerminology("BETA");
-          } else if (shortName.startsWith("x")) {
-            result.setTerminology("A/B");
-          } else {
-            result.setTerminology("FINAL");
-          }
-          Matcher m = Pattern.compile("[0-9]{8}").matcher(fileName);
-          while (m.find()) {
-            result.setTerminologyVersion(m.group());
-          }
+      if (mapProject.getDestinationTerminology().equals("ICPC")) {
+        // List All Files on Bucket "release-ihtsdo-prod-published"
+        ObjectListing listing = s3Client.listObjects(bucketName,
+            "international/SnomedCT_GPFPICPC2");
+        List<S3ObjectSummary> summaries = listing.getObjectSummaries();
 
-          result.setValue(shortName);
-          result.setValue2(fileName);
-          searchResults.addSearchResult(result);
+        int i = 1;
+
+        System.out.println("CCC ICPC start with " + ": " + summaries.size());
+        for (S3ObjectSummary sum : summaries) {
+          String fileName = sum.getKey();
+          if ((fileName.contains("ExtendedMap")
+              || fileName.contains("SimpleMap")) && !fileName.contains("Full")
+              && !fileName.contains("backup")) {
+            Logger.getLogger(MappingServiceRestImpl.class)
+                .info("ICPC Summary #" + i++ + " with: " + sum.getKey());
+            SearchResult result = new SearchResultJpa();
+            String shortName = fileName.substring(fileName.lastIndexOf('/'));
+            if (fileName.toLowerCase().contains("alpha")) {
+              result.setTerminology("ALPHA");
+            } else if (fileName.toLowerCase().contains("beta")) {
+              result.setTerminology("BETA");
+            } else {
+              result.setTerminology("FINAL");
+            }
+            Matcher m = Pattern.compile("[0-9]{8}").matcher(fileName);
+            while (m.find()) {
+              result.setTerminologyVersion(m.group());
+            }
+            result.setValue(shortName);
+            result.setValue2(fileName);
+            searchResults.addSearchResult(result);
+          }
+        }
+      } else if (mapProject.getDestinationTerminology().equals("GMDN")) {
+          // List All Files on Bucket "release-ihtsdo-prod-published"
+          ObjectListing listing = s3Client.listObjects(bucketName,
+              "international/SnomedCT_GMDN");
+          List<S3ObjectSummary> summaries = listing.getObjectSummaries();
+
+          int i = 1;
+
+          System.out.println("CCC GMDN start with " + ": " + summaries.size());
+          for (S3ObjectSummary sum : summaries) {
+            String fileName = sum.getKey();
+            if ((fileName.contains("ExtendedMap")
+                || fileName.contains("SimpleMap")) && !fileName.contains("Full")
+                && !fileName.contains("backup")) {
+              Logger.getLogger(MappingServiceRestImpl.class)
+                  .info("GMDN Summary #" + i++ + " with: " + sum.getKey());
+              SearchResult result = new SearchResultJpa();
+              String shortName = fileName.substring(fileName.lastIndexOf('/'));
+              if (fileName.toLowerCase().contains("alpha")) {
+                result.setTerminology("ALPHA");
+              } else if (fileName.toLowerCase().contains("beta")) {
+                result.setTerminology("BETA");
+              } else {
+                result.setTerminology("FINAL");
+              }
+              Matcher m = Pattern.compile("[0-9]{8}").matcher(fileName);
+              while (m.find()) {
+                result.setTerminologyVersion(m.group());
+              }
+              result.setValue(shortName);
+              result.setValue2(fileName);
+              searchResults.addSearchResult(result);
+            }
+          }
+      } else {
+
+        // List All Files on Bucket "release-ihtsdo-prod-published"
+        ObjectListing listing =
+            s3Client.listObjects(bucketName, "international/");
+        List<S3ObjectSummary> summaries = listing.getObjectSummaries();
+        int j = 0;
+        int i = 1;
+        Logger.getLogger(MappingServiceRestImpl.class)
+            .info("Destination terminology *" + destinationTerminology + "*");
+        while (listing.isTruncated()) {
+          listing = s3Client.listNextBatchOfObjects(listing);
+          summaries = listing.getObjectSummaries();
+
+          System.out.println("CCC start with " + j++ + ": " + summaries.size());
+          for (S3ObjectSummary sum : summaries) {
+            String fileName = sum.getKey();
+            if ((fileName.contains("ExtendedMap")
+                || fileName.contains("SimpleMap")) && !fileName.contains("Full")
+                && !fileName.contains("backup")
+            /*
+             * && (fileName.toLowerCase()
+             * .contains(destinationTerminology.toLowerCase()) ||
+             * (destinationTerminology.contains("ICD10") &&
+             * fileName.contains("SnomedCT_")))
+             */) {
+              Logger.getLogger(MappingServiceRestImpl.class)
+                  .info("Summary #" + i++ + " with: " + sum.getKey());
+              SearchResult result = new SearchResultJpa();
+              String shortName = fileName.substring(fileName.lastIndexOf('/'));
+              if (fileName.toLowerCase().contains("alpha")) {
+                result.setTerminology("ALPHA");
+              } else if (fileName.toLowerCase().contains("beta")) {
+                result.setTerminology("BETA");
+              } else if (shortName.startsWith("x")) {
+                result.setTerminology("A/B");
+              } else {
+                result.setTerminology("FINAL");
+              }
+              Matcher m = Pattern.compile("[0-9]{8}").matcher(fileName);
+              while (m.find()) {
+                result.setTerminologyVersion(m.group());
+              }
+
+              result.setValue(shortName);
+              result.setValue2(fileName);
+              searchResults.addSearchResult(result);
+            }
+          }
         }
       }
-    }
-    Logger.getLogger(MappingServiceRestImpl.class).info("CCC end");
-    
+      Logger.getLogger(MappingServiceRestImpl.class).info("CCC end");
+ 
     // sort files by release date
     searchResults.sortBy(new Comparator<SearchResult>() {
       @Override
