@@ -5285,6 +5285,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping):  /amazons3/files/" + mapProjectId);
 
+    callTestMethod();
+    
     final MappingService mappingService = new MappingServiceJpa();
     String user = "";
 
@@ -5438,15 +5440,16 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     Logger.getLogger(MappingServiceRestImpl.class).info("AAA");
     String bucketName = "release-ihtsdo-prod-published";
     String testFileName =
-        "international/xSnomedCT_RF2Release_INT_20170131/Delta/Terminology/xsct2_Concept_Delta_INT_20170131.txt";
-
+        //"international/xSnomedCT_RF2Release_INT_20170131/Delta/Terminology/xsct2_Concept_Delta_INT_20170131.txt";
+        "international/SnomedCT_GMDNMapRelease_Production_20170908T120000Z/SnomedCT_GMDNMapRelease_Production_20170908T120000Z/Snapshot/Refset/Map/der2_sRefset_GMDNMapSimpleMapSnapshot_INT_20170731.txt";
+        
     // Connect to server
     AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
         .withRegion(Regions.US_EAST_1)
         .withCredentials(new InstanceProfileCredentialsProvider(false)).build();
 
     // List Buckets
-    Logger.getLogger(MappingServiceRestImpl.class).info("BBB start");
+   /* Logger.getLogger(MappingServiceRestImpl.class).info("BBB start");
     List<Bucket> buckets = s3Client.listBuckets();
     for (Bucket b : buckets) {
       Logger.getLogger(MappingServiceRestImpl.class)
@@ -5472,14 +5475,14 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       Logger.getLogger(MappingServiceRestImpl.class)
           .info("Summary #" + i++ + " with: " + sum.getKey());
     }
-    Logger.getLogger(MappingServiceRestImpl.class).info("CCC end");
+    Logger.getLogger(MappingServiceRestImpl.class).info("CCC end");*/
 
     
     // Pull File Down and Copy to Local Directory (Directory must have rw/rw/rw (666) permissions )
     Logger.getLogger(MappingServiceRestImpl.class).info("DDD start");
     S3Object s3object = s3Client.getObject(bucketName, testFileName);
     S3ObjectInputStream inputStream = s3object.getObjectContent();
-    FileUtils.copyInputStreamToFile(inputStream, new File("~/aws/test.txt"));
+    FileUtils.copyInputStreamToFile(inputStream, new File("~/aws/", testFileName.substring(testFileName.lastIndexOf('/') + 1)));
     inputStream.close();
     Logger.getLogger(MappingServiceRestImpl.class).info("DDD end");
   }
