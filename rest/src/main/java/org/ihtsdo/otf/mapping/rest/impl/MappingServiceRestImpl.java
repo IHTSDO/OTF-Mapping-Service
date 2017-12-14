@@ -161,6 +161,7 @@ import io.swagger.annotations.ApiParam;
 public class MappingServiceRestImpl extends RootServiceRestImpl implements MappingServiceRest {
 
   private static final int MAX_RESULTS = 10000;
+  
   /** The security service. */
   private SecurityService securityService;
 
@@ -5283,59 +5284,64 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
     Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping):  /amazons3/files/" + mapProjectId);
-    
 
     final MappingService mappingService = new MappingServiceJpa();
     String user = "";
-    
+
     try {
-    // authorize call
-      user = authorizeApp(authToken, MapUserRole.VIEWER, "get current release file",
-          securityService);
-      
-    final MapProject mapProject =
-        mappingService.getMapProject(new Long(mapProjectId).longValue());
-    String destinationTerminology = mapProject.getDestinationTerminology();
-    
-    String bucketName = "release-ihtsdo-prod-published";
-    SearchResultList searchResults = new SearchResultListJpa();
-    
-    // Connect to server
-    AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
-        .withRegion(Regions.US_EAST_1)
-        .withCredentials(new InstanceProfileCredentialsProvider(false)).build();
+      // authorize call
+      user = authorizeApp(authToken, MapUserRole.VIEWER,
+          "get current release file", securityService);
 
-    // List Buckets
-    List<Bucket> buckets = s3Client.listBuckets();
-    for (Bucket b : buckets) {
-      Logger.getLogger(MappingServiceRestImpl.class)
-          .info("BBB with bucket name" + b.getName());
-    }
+      final MapProject mapProject =
+          mappingService.getMapProject(new Long(mapProjectId).longValue());
+      String destinationTerminology = mapProject.getDestinationTerminology();
 
-    // Verify Buckets Exists
-    if (!s3Client.doesBucketExist(bucketName)) {
-      throw new Exception("Cannot find Bucket Name");
-    } else {
-      Logger.getLogger(MappingServiceRestImpl.class)
-          .info("CCC Bucket " + bucketName + " accessed.");
-    }
+      String bucketName = "release-ihtsdo-prod-published";
+      SearchResultList searchResults = new SearchResultListJpa();
 
-      if (mapProject.getDestinationTerminology().equals("ICPC")) {
-        // List All Files on Bucket "release-ihtsdo-prod-published"
-        ObjectListing listing = s3Client.listObjects(bucketName,
-            "international/SnomedCT_GPFPICPC2");
+      // Connect to server
+      AmazonS3 s3Client =
+          AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_1)
+              .withCredentials(new InstanceProfileCredentialsProvider(false))
+              .build();
+
+      // List Buckets
+      List<Bucket> buckets = s3Client.listBuckets();
+      for (Bucket b : buckets) {
+        Logger.getLogger(MappingServiceRestImpl.class)
+            .info("Bucket name " + b.getName());
+      }
+
+      // Verify Buckets Exists
+      if (!s3Client.doesBucketExist(bucketName)) {
+        throw new Exception("Cannot find Bucket Name");
+      } else {
+        Logger.getLogger(MappingServiceRestImpl.class)
+            .info("Bucket " + bucketName + " accessed.");
+      }
+
+      if (mapProject.getDestinationTerminology().equals("ICPC")
+          || mapProject.getDestinationTerminology().equals("GMDN")) {
+        // List Files on Bucket "release-ihtsdo-prod-published"
+        ObjectListing listing = null;
+        if (mapProject.getDestinationTerminology().equals("ICPC")) {
+          listing = s3Client.listObjects(bucketName,
+              "international/SnomedCT_GPFPICPC2");
+        } else {
+          listing =
+              s3Client.listObjects(bucketName, "international/SnomedCT_GMDN");
+        }
         List<S3ObjectSummary> summaries = listing.getObjectSummaries();
 
         int i = 1;
-
-        System.out.println("CCC ICPC start with " + ": " + summaries.size());
         for (S3ObjectSummary sum : summaries) {
           String fileName = sum.getKey();
           if ((fileName.contains("ExtendedMap")
               || fileName.contains("SimpleMap")) && !fileName.contains("Full")
               && !fileName.contains("backup")) {
             Logger.getLogger(MappingServiceRestImpl.class)
-                .info("ICPC Summary #" + i++ + " with: " + sum.getKey());
+                .info(mapProject.getDestinationTerminology() + " Summary #" + i++ + " with: " + sum.getKey());
             SearchResult result = new SearchResultJpa();
             String shortName = fileName.substring(fileName.lastIndexOf('/'));
             if (fileName.toLowerCase().contains("alpha")) {
@@ -5354,40 +5360,6 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
             searchResults.addSearchResult(result);
           }
         }
-      } else if (mapProject.getDestinationTerminology().equals("GMDN")) {
-          // List All Files on Bucket "release-ihtsdo-prod-published"
-          ObjectListing listing = s3Client.listObjects(bucketName,
-              "international/SnomedCT_GMDN");
-          List<S3ObjectSummary> summaries = listing.getObjectSummaries();
-
-          int i = 1;
-
-          System.out.println("CCC GMDN start with " + ": " + summaries.size());
-          for (S3ObjectSummary sum : summaries) {
-            String fileName = sum.getKey();
-            if ((fileName.contains("ExtendedMap")
-                || fileName.contains("SimpleMap")) && !fileName.contains("Full")
-                && !fileName.contains("backup")) {
-              Logger.getLogger(MappingServiceRestImpl.class)
-                  .info("GMDN Summary #" + i++ + " with: " + sum.getKey());
-              SearchResult result = new SearchResultJpa();
-              String shortName = fileName.substring(fileName.lastIndexOf('/'));
-              if (fileName.toLowerCase().contains("alpha")) {
-                result.setTerminology("ALPHA");
-              } else if (fileName.toLowerCase().contains("beta")) {
-                result.setTerminology("BETA");
-              } else {
-                result.setTerminology("FINAL");
-              }
-              Matcher m = Pattern.compile("[0-9]{8}").matcher(fileName);
-              while (m.find()) {
-                result.setTerminologyVersion(m.group());
-              }
-              result.setValue(shortName);
-              result.setValue2(fileName);
-              searchResults.addSearchResult(result);
-            }
-          }
       } else {
 
         // List All Files on Bucket "release-ihtsdo-prod-published"
@@ -5402,18 +5374,13 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
           listing = s3Client.listNextBatchOfObjects(listing);
           summaries = listing.getObjectSummaries();
 
-          System.out.println("CCC start with " + j++ + ": " + summaries.size());
+          Logger.getLogger(MappingServiceRestImpl.class)
+          .info("CCC start with " + j++ + ": " + summaries.size());
           for (S3ObjectSummary sum : summaries) {
             String fileName = sum.getKey();
             if ((fileName.contains("ExtendedMap")
                 || fileName.contains("SimpleMap")) && !fileName.contains("Full")
-                && !fileName.contains("backup")
-            /*
-             * && (fileName.toLowerCase()
-             * .contains(destinationTerminology.toLowerCase()) ||
-             * (destinationTerminology.contains("ICD10") &&
-             * fileName.contains("SnomedCT_")))
-             */) {
+                && !fileName.contains("backup")) {
               Logger.getLogger(MappingServiceRestImpl.class)
                   .info("Summary #" + i++ + " with: " + sum.getKey());
               SearchResult result = new SearchResultJpa();
@@ -5439,20 +5406,18 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
           }
         }
       }
-      Logger.getLogger(MappingServiceRestImpl.class).info("CCC end");
- 
-    // sort files by release date
-    searchResults.sortBy(new Comparator<SearchResult>() {
-      @Override
-      public int compare(SearchResult o1, SearchResult o2) {
-        String releaseDate1 = o1.getTerminologyVersion();
-        String releaseDate2 = o2.getTerminologyVersion();
-        return releaseDate2.compareTo(releaseDate1);
-      }
-    });
-    
-    return searchResults;
-    
+      
+      // sort files by release date
+      searchResults.sortBy(new Comparator<SearchResult>() {
+        @Override
+        public int compare(SearchResult o1, SearchResult o2) {
+          String releaseDate1 = o1.getTerminologyVersion();
+          String releaseDate2 = o2.getTerminologyVersion();
+          return releaseDate2.compareTo(releaseDate1);
+        }
+      });
+
+      return searchResults;
 
     } catch (Exception e) {
       handleException(e, "trying to get files from amazon s3", user,
