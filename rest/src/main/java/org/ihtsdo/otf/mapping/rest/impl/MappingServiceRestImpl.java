@@ -5280,20 +5280,23 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    
-    //callTestMethod();
 
-    
     Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping):  /amazons3/files/" + mapProjectId);
     
 
     final MappingService mappingService = new MappingServiceJpa();
+    String user = "";
+    
+    try {
+    // authorize call
+      user = authorizeApp(authToken, MapUserRole.VIEWER, "get current release file",
+          securityService);
+      
     final MapProject mapProject =
         mappingService.getMapProject(new Long(mapProjectId).longValue());
     String destinationTerminology = mapProject.getDestinationTerminology();
     
-    Logger.getLogger(MappingServiceRestImpl.class).info("AAA");
     String bucketName = "release-ihtsdo-prod-published";
     SearchResultList searchResults = new SearchResultListJpa();
     
@@ -5303,13 +5306,11 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
         .withCredentials(new InstanceProfileCredentialsProvider(false)).build();
 
     // List Buckets
-    Logger.getLogger(MappingServiceRestImpl.class).info("BBB start");
     List<Bucket> buckets = s3Client.listBuckets();
     for (Bucket b : buckets) {
       Logger.getLogger(MappingServiceRestImpl.class)
           .info("BBB with bucket name" + b.getName());
     }
-    Logger.getLogger(MappingServiceRestImpl.class).info("BBB end");
 
     // Verify Buckets Exists
     if (!s3Client.doesBucketExist(bucketName)) {
@@ -5337,14 +5338,17 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
             && (fileName.toLowerCase()
                 .contains(destinationTerminology.toLowerCase())
                 || (destinationTerminology.contains("ICD10")
-                    && fileName.contains("SnomedCT_RF2")))) {
+                    && fileName.contains("SnomedCT_")))) {
           Logger.getLogger(MappingServiceRestImpl.class)
               .info("Summary #" + i++ + " with: " + sum.getKey());
           SearchResult result = new SearchResultJpa();
+          String shortName = fileName.substring(fileName.lastIndexOf('/'));
           if (fileName.toLowerCase().contains("alpha")) {
             result.setTerminology("ALPHA");
           } else if (fileName.toLowerCase().contains("beta")) {
             result.setTerminology("BETA");
+          } else if (shortName.startsWith("x")) {
+            result.setTerminology("A/B");
           } else {
             result.setTerminology("FINAL");
           }
@@ -5353,7 +5357,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
             result.setTerminologyVersion(m.group());
           }
 
-          result.setValue(fileName.substring(fileName.lastIndexOf('/')));
+          result.setValue(shortName);
           result.setValue2(fileName);
           searchResults.addSearchResult(result);
         }
@@ -5373,107 +5377,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     
     return searchResults;
     
-    /*
-    final MappingService mappingService = new MappingServiceJpa();
-    String user = null;
-    try {
-      // authorize call
-      user = authorizeApp(authToken, MapUserRole.VIEWER,
-          "get concept authoring changes", securityService);
 
-      final MapProject mapProject =
-          mappingService.getMapProject(new Long(mapProjectId).longValue());
-      String destinationTerminology = mapProject.getDestinationTerminology();
-
-      SearchResultList searchResults = new SearchResultListJpa();
-
-      AmazonS3 s3Client = null;
-      ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
-          .withBucketName("release-ihtsdo-prod-published");
-      ObjectListing objectListing;
-      final Properties config = ConfigUtility.getConfigProperties();
-      
-      try {
-        AWSCredentialsProviderChain providers = new AWSCredentialsProviderChain(
-            new InstanceProfileCredentialsProvider(true),
-            new ProfileCredentialsProvider());
-        s3Client = AmazonS3ClientBuilder.standard()
-            .withRegion(Regions.US_EAST_1).withCredentials(providers).build();
-        do {
-          objectListing = s3Client.listObjects(listObjectsRequest);
-          for (S3ObjectSummary objectSummary : objectListing
-              .getObjectSummaries()) {
-            Logger.getLogger(MappingServiceRestImpl.class)
-            .info(objectSummary.getKey());
-          }
-        } while (objectListing.isTruncated());
-      } catch (Exception e) {
-        Logger.getLogger(MappingServiceRestImpl.class)
-        .info("amazon exception:" + e.getMessage() + e.toString());
-        final String accessKey = config.getProperty("aws.access.key");
-        final String secretAccessKey =
-            config.getProperty("aws.secret.access.key");
-        BasicAWSCredentials awsCreds =
-            new BasicAWSCredentials(accessKey, secretAccessKey);
-        s3Client = AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_1)
-            .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-            .build();
-      }
-      
-      
-
-      do {
-        objectListing = s3Client.listObjects(listObjectsRequest);
-      
-        for (S3ObjectSummary objectSummary : objectListing
-            .getObjectSummaries()) {
-          // write to file with e.g. a bufferedWriter
-          SearchResult result = new SearchResultJpa();
-          String fileName = objectSummary.getKey();
-          // prefix to differentiate international from U.S. files
-          final String awsFilePrefix = config.getProperty("aws.file.prefix");
-          if (fileName.startsWith(awsFilePrefix)
-              && (fileName.contains("ExtendedMap")
-                  || fileName.contains("SimpleMap"))
-              && !fileName.contains("Full") && !fileName.contains("backup")
-              && (fileName.toLowerCase()
-                  .contains(destinationTerminology.toLowerCase())
-                  || (destinationTerminology.contains("ICD10")
-                      && fileName.contains("SnomedCT_RF2")))) {
-            if (fileName.toLowerCase().contains("alpha")) {
-              result.setTerminology("ALPHA");
-            } else if (fileName.toLowerCase().contains("beta")) {
-              result.setTerminology("BETA");
-            } else {
-              result.setTerminology("FINAL");
-            }
-            Matcher m = Pattern.compile("[0-9]{8}").matcher(fileName);
-            while (m.find()) {
-              result.setTerminologyVersion(m.group());
-            }
-
-            result.setValue(fileName.substring(fileName.lastIndexOf('/')));
-            result.setValue2(fileName);
-            searchResults.addSearchResult(result);
-            System.out.println(
-                result.getTerminology() + "\t" + result.getTerminologyVersion()
-                    + "\t" + result.getValue() + "\t\t\t" + result.getValue2());
-          }
-        }
-        listObjectsRequest.setMarker(objectListing.getNextMarker());
-      } while (objectListing.isTruncated());
-
-      // sort files by release date
-      searchResults.sortBy(new Comparator<SearchResult>() {
-        @Override
-        public int compare(SearchResult o1, SearchResult o2) {
-          String releaseDate1 = o1.getTerminologyVersion();
-          String releaseDate2 = o2.getTerminologyVersion();
-          return releaseDate2.compareTo(releaseDate1);
-        }
-      });
-      
-      return searchResults;
     } catch (Exception e) {
       handleException(e, "trying to get files from amazon s3", user,
           mapProjectId.toString(), "");
@@ -5482,7 +5386,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       mappingService.close();
       securityService.close();
     }
-    */
+    return null;
   }
 
   private void callTestMethod() throws Exception {

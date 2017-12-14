@@ -924,19 +924,19 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       
       // validate that the selected files can be compared to each other
       $scope.validateFiles = function() {  	  
-    	  if ($scope.fileArray[0].indexof('Extended') > 0 && $scope.fileArray[1].indexof('Extended') < 0) {
+    	  if ($scope.fileArray[0].indexOf('Extended') > 0 && $scope.fileArray[1].indexOf('Extended') < 0) {
               window.alert("The selected files must both be Extended Maps or must both be Simple Maps.");
               return false;
     	  }
-    	  if ($scope.fileArray[0].indexof('Simple') > 0 && $scope.fileArray[1].indexof('Simple') < 0) {
+    	  if ($scope.fileArray[0].indexOf('Simple') > 0 && $scope.fileArray[1].indexOf('Simple') < 0) {
               window.alert("The selected files must both be Extended Maps or must both be Simple Maps.");
               return false;
     	  }
-    	  if ($scope.fileArray[0].indexof('Delta') > 0 && $scope.fileArray[1].indexof('Delta') < 0) {
+    	  if ($scope.fileArray[0].indexOf('Delta') > 0 && $scope.fileArray[1].indexOf('Delta') < 0) {
               window.alert("The selected files must both be Delta Maps or must both be Snapshot Maps.");
               return false;
     	  }
-    	  if ($scope.fileArray[0].indexof('Snapshot') > 0 && $scope.fileArray[1].indexof('Snapshot') < 0) {
+    	  if ($scope.fileArray[0].indexOf('Snapshot') > 0 && $scope.fileArray[1].indexOf('Snapshot') < 0) {
               window.alert("The selected files must both be Delta Maps or must both be Snapshot Maps.");
               return false;
     	  }
