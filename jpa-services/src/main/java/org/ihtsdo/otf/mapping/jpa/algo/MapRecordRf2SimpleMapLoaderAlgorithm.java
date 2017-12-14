@@ -1,8 +1,10 @@
 package org.ihtsdo.otf.mapping.jpa.algo;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -15,6 +17,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.algo.Algorithm;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
+import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
@@ -50,6 +53,9 @@ public class MapRecordRf2SimpleMapLoaderAlgorithm extends RootServiceJpa
 	/** The records flag. */
 	private boolean recordFlag = true;
 
+    /** The refsetId. */
+    private String refsetId;
+    
 	/** The workflow status to assign to created map records. */
 	private String workflowStatus;
 
@@ -57,12 +63,13 @@ public class MapRecordRf2SimpleMapLoaderAlgorithm extends RootServiceJpa
 	private String userName;
 
 	public MapRecordRf2SimpleMapLoaderAlgorithm(String inputFile,
-			Boolean memberFlag, Boolean recordFlag, String workflowStatus)
+			Boolean memberFlag, Boolean recordFlag, String refsetId, String workflowStatus)
 			throws Exception {
 		super();
 		this.inputFile = inputFile;
 		this.memberFlag = memberFlag;
 		this.recordFlag = recordFlag;
+        this.refsetId = refsetId;
 		this.workflowStatus = workflowStatus;
 	}
 
@@ -73,6 +80,7 @@ public class MapRecordRf2SimpleMapLoaderAlgorithm extends RootServiceJpa
 	    Logger.getLogger(getClass()).info("  inputFile      = " + inputFile);
 	    Logger.getLogger(getClass()).info("  membersFlag    = " + memberFlag);
 	    Logger.getLogger(getClass()).info("  recordFlag     = " + recordFlag);
+        Logger.getLogger(getClass()).info("  refsetId       = " + refsetId);
 	    Logger.getLogger(getClass()).info("  workflowStatus = " + workflowStatus);
 
 	    // Set up map of refsetIds that we may encounter
@@ -115,6 +123,57 @@ public class MapRecordRf2SimpleMapLoaderAlgorithm extends RootServiceJpa
 
 	      }
 
+	      // if refsetId is specified, remove all rows that don't have that refsetId
+	      if (refsetId != null) {
+	        Logger.getLogger(getClass())
+	            .info("  Filtering the file by refsetId into "
+	                + System.getProperty("java.io.tmpdir"));
+
+	        // Open reader
+	        BufferedReader fileReader =
+	            new BufferedReader(new FileReader(inputFile));
+
+	        // Open writer
+	        File outputFile = File.createTempFile("ttt", ".filter",
+	            new File(System.getProperty("java.io.tmpdir")));
+	        FileWriter fw = new FileWriter(outputFile);
+	        BufferedWriter bw = new BufferedWriter(fw);
+
+	        String line = null;
+
+	        // Write each line where the refsetId matches the specified one into the
+	        // output file
+	        while ((line = fileReader.readLine()) != null) {
+	          Boolean keepLine = true;
+	          line = line.replace("\r", "");
+	          String fields[] = line.split("\t");
+
+	          if (!fields[4].equals(refsetId)) {
+	            keepLine = false;
+	          }
+
+	          // also take into account any additional project-specific validation,
+	          // if any
+	          ProjectSpecificAlgorithmHandler handler = mappingService
+	              .getProjectSpecificAlgorithmHandler(mapProjectMap.get(refsetId));
+
+	          if (!handler.isMapRecordLineValid(line)) {
+	            keepLine = false;
+	          }
+
+	          if (keepLine) {
+	            bw.write(line);
+	            bw.newLine();
+	          }
+	        }
+	        fileReader.close();
+	        bw.close();
+
+	        // overwrite the input file as this new temp file
+	        inputFile = outputFile.getAbsolutePath();
+
+	      }
+	      
 	      // load complexMapRefSetMembers from simpleMap file
 	      final List<SimpleMapRefSetMember> members =
 	          getSimpleMaps(new File(inputFile), mapProjectMap);
