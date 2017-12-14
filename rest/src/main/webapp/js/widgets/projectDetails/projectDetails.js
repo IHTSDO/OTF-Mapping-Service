@@ -944,24 +944,24 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
     		  window.alert("The file selected from the 'Later File' picklist must be from a release later than the file selected from the 'Initial File' picklist.");
               return false;
     	  }
-    	  if ($scope.fileArray[0].terminology.indexOf('ALPHA') > 0 && $scope.fileArray[1].terminology.indexOf('ALPHA') > 0) {
+    	  if ($scope.fileArray[0].terminology.indexOf('ALPHA') == 0 && $scope.fileArray[1].terminology.indexOf('ALPHA') == 0) {
     		  window.alert("Two ALPHA files should not be compared.  An initial ALPHA should be compared with a later BETA file of the same version.");
               return false;
     	  }
-    	  if ($scope.fileArray[0].terminology.indexOf('BETA') > 0 && $scope.fileArray[1].terminology.indexOf('BETA') > 0) {
+    	  if ($scope.fileArray[0].terminology.indexOf('BETA') == 0 && $scope.fileArray[1].terminology.indexOf('BETA') == 0) {
     		  window.alert("Two BETA files should not be compared.  An initial ALPHA should be compared with a later BETA file of the same version.");
               return false;
     	  }
-    	  if ($scope.fileArray[0].terminology.indexOf('BETA') > 0 && $scope.fileArray[1].terminology.indexOf('ALPHA') > 0) {
+    	  if ($scope.fileArray[0].terminology.indexOf('BETA') == 0 && $scope.fileArray[1].terminology.indexOf('ALPHA') == 0) {
     		  window.alert("An initial ALPHA should be compared with a later BETA file of the same version.");
               return false;
     	  }
-    	  if ($scope.fileArray[0].terminology.indexOf('ALPHA') > 0 && $scope.fileArray[1].terminology.indexOf('BETA') > 0 &&
+    	  if ($scope.fileArray[0].terminology.indexOf('ALPHA') == 0 && $scope.fileArray[1].terminology.indexOf('BETA') == 0 &&
     			  ($scope.fileArray[0].terminologyVersion != $scope.fileArray[1].terminologyVersion)  ) {
     		  window.alert("An ALPHA file should be compared to a BETA file of the same version.");
               return false;
     	  }
-    	  if ($scope.fileArray[0].terminology.indexOf('BETA') > 0 && $scope.fileArray[1].terminology.indexOf('FINAL') > 0 &&
+    	  if ($scope.fileArray[0].terminology.indexOf('BETA') == 0 && $scope.fileArray[1].terminology.indexOf('FINAL') == 0 &&
     			  ($scope.fileArray[0].terminologyVersion != $scope.fileArray[1].terminologyVersion)  ) {
     		  window.alert("A BETA file should be compared to a FINAL file of the same version.");
               return false;
