@@ -105,7 +105,87 @@ angular
 
         $scope.userApplicationRoles = [ 'VIEWER', 'ADMINISTRATOR' ];
 
-        $scope.terminologyInputTypes = [ 'RF2', 'CLaML', 'GMDN xml' ];        
+        //get list of type in $scope.terminologyFiles?
+        $scope.terminologyInputTypes = [ 'SNOMED', 'RF2', 'CLaML', 'GMDN xml' ];
+        
+        //json object of files (get from metadata service)
+        $scope.terminologyFiles = 
+        {
+        		  "aws": [
+        		    {
+        		      "type": "SNOMED",
+        		      "loaderType": "RF2",
+        		      "files": [
+        		        {
+        		          "name": "snomed_1",
+        		          "location": "snomed_somewhere1"
+        		        },
+        		        {
+        		          "name": "snomed_2",
+        		          "location": "snomed_somewhere2"
+        		        },
+        		        {
+        		          "name": "snomed_3",
+        		          "location": "snomed_somewhere3"
+        		        }
+        		      ]
+        		    },
+        		    {
+        		      "type": "GMDN",
+        		      "loaderType": "GMDN",
+        		      "files": [
+        		        {
+        		          "name": "gmdn_1",
+        		          "location": "gmdn_somewhere1"
+        		        },
+        		        {
+        		          "name": "gmdn_2",
+        		          "location": "gmdn_somewhere2"
+        		        },
+        		        {
+        		          "name": "gmdn_3",
+        		          "location": "gmdn_somewhere3"
+        		        }
+        		      ]
+        		    },
+        		    {
+        		      "type": "ClaML",
+        		      "loaderType": "CLAML",
+        		      "files": [
+        		        {
+        		          "name": "claml1",
+        		          "location": "claml_somewhere1"
+        		        },
+        		        {
+        		          "name": "claml_2",
+        		          "location": "claml_somewhere2"
+        		        },
+        		        {
+        		          "name": "claml_3",
+        		          "location": "claml_somewhere3"
+        		        }
+        		      ]
+        		    },
+        		    {
+        		      "type": "RF2",
+        		      "loaderType": "RF2",
+        		      "files": [
+        		        {
+        		          "name": "rf2_1",
+        		          "location": "RF2_somewhere1"
+        		        },
+        		        {
+        		          "name": "rf2_2",
+        		          "location": "RF2_somewhere2"
+        		        },
+        		        {
+        		          "name": "rf2_3",
+        		          "location": "RF2_somewhere3"
+        		        }
+        		      ]
+        		    }
+        		  ]
+        		};
         
         // Event for focus project change
         $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
@@ -2822,6 +2902,7 @@ angular
           });
         };
         
+        //terminology/load/gmdn
         $scope.loadTerminologyGmdn = function(gmdnVersion) {
           $rootScope.glassPane++;
 
@@ -2858,5 +2939,72 @@ angular
             $rootScope.glassPane--;          
             $rootScope.handleHttpError(data, status, headers, config);
           });
+          
+          //load  load Map Record Rf2 Complex Map
+          $scope.loadMapRecordRf2ComplexMap = function() {
+        	  $rootScope.glassPane++;
+        	  
+        	  var errors = '';
+        	  
+        	  if(error.lenght > 0) {
+        		  alert(errors);
+        		  $rootScope.glassPane--;
+        		  return;
+        	  }
+        	  
+        	  
+          }
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
         };        
       } ]);
